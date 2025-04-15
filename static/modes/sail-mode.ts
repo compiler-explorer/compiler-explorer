@@ -127,7 +127,7 @@ function definition(): monaco.languages.IMonarchLanguage {
             'option',
         ],
 
-        identifier: '[a-zA-Z?_][a-zA-Z?0-9_\'#]*',
+        identifier: "[a-zA-Z?_][a-zA-Z?0-9_'#]*",
 
         // String escape sequences. \\, \", \', \n, \t, \b, \r, \<newline>
         // Or hex/dec: \xHHH, \DD
@@ -190,21 +190,21 @@ function definition(): monaco.languages.IMonarchLanguage {
                 // Whitespace.
                 [/[ \t\r\n]+/, 'white'],
                 // Start of block comment.
-                [/\/\*/,       'comment', '@block_comment' ],
+                [/\/\*/, 'comment', '@block_comment'],
                 // Line comment.
-                [/\/\/.*$/,    'comment'],
+                [/\/\/.*$/, 'comment'],
             ],
 
             block_comment: [
                 // Not / or *, definitely still in the block.
                 // This is not strictly necessary but improves efficiency.
-                [/[^\/*]+/, 'comment' ],
+                [/[^\/*]+/, 'comment'],
                 // /*, push block comment.
-                [/\/\*/,    'comment', '@push' ],
+                [/\/\*/, 'comment', '@push'],
                 // */, pop block comment.
-                ["\\*/",    'comment', '@pop'  ],
+                ['\\*/', 'comment', '@pop'],
                 // Anything else, still a comment.
-                [/./,   'comment' ],
+                [/./, 'comment'],
             ],
 
             string: [
@@ -223,5 +223,3 @@ function definition(): monaco.languages.IMonarchLanguage {
 
 monaco.languages.register({id: 'sail'});
 monaco.languages.setMonarchTokensProvider('sail', definition());
-
-export {};

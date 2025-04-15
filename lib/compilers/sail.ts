@@ -22,15 +22,15 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
+import path from 'node:path';
 import fs from 'fs-extra';
-import path from 'path';
 
+import {CompilationResult, ExecutionOptionsWithEnv} from '../../types/compilation/compilation.interfaces.js';
 import type {PreliminaryCompilerInfo} from '../../types/compiler.interfaces.js';
 import type {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces.js';
+import {SelectedLibraryVersion} from '../../types/libraries/libraries.interfaces.js';
 import {BaseCompiler} from '../base-compiler.js';
 import {CompilationEnvironment} from '../compilation-env.js';
-import { CompilationResult, ExecutionOptionsWithEnv } from '../../types/compilation/compilation.interfaces.js';
-import { SelectedLibraryVersion } from '../../types/libraries/libraries.interfaces.js';
 
 export class SailCompiler extends BaseCompiler {
     // Path to C compiler to use to compile generated C code to binary.
@@ -112,7 +112,10 @@ export class SailCompiler extends BaseCompiler {
             return fullResult;
         }
 
-        const sailDir = sailDirResult.stdout.map(line => line.text).join('\n').trim();
+        const sailDir = sailDirResult.stdout
+            .map(line => line.text)
+            .join('\n')
+            .trim();
 
         // Now compile the C file to an executable.
         const compileResult = await this.doBuildstepAndAddToResult(
@@ -122,7 +125,8 @@ export class SailCompiler extends BaseCompiler {
             [
                 outputFilenameC,
                 // Sail C support files.
-                '-I', `${sailDir}/lib`,
+                '-I',
+                `${sailDir}/lib`,
                 `${sailDir}/lib/elf.c`,
                 `${sailDir}/lib/rts.c`,
                 `${sailDir}/lib/sail.c`,
@@ -137,7 +141,8 @@ export class SailCompiler extends BaseCompiler {
                 // something like `-Wl,..` to pass options through Sail to
                 // here and that doesn't really exist.
                 '-O',
-                '-o', outputFilenameExe,
+                '-o',
+                outputFilenameExe,
             ],
             execOptions,
         );
@@ -147,7 +152,7 @@ export class SailCompiler extends BaseCompiler {
         // and when compiling to a binary. If you don't do this it
         // tries to do nonsensical things like objdumping the C, so we
         // copy the binary back over the C file.
-        if (compileResult.code === 0 && await fs.pathExists(outputFilenameExe)) {
+        if (compileResult.code === 0 && (await fs.pathExists(outputFilenameExe))) {
             console.log(`Copying ${outputFilenameExe} to ${outputFilenameC}`);
             await fs.copyFile(outputFilenameExe, outputFilenameC);
         }
