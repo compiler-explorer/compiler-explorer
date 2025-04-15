@@ -33,7 +33,7 @@
     "big-integer": "^1.6.52",
     "bootstrap": "^4.6.2",
     "buffer": "^6.0.3",
-    "chart.js": "^4.4.8",
+    "chart.js": "^4.4.9",
     "clipboard": "^2.0.11",
     "compression": "^1.8.0",
     "copy-webpack-plugin": "^13.0.0",
