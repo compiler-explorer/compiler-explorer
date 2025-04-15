@@ -44,7 +44,7 @@ import {CompileHandler} from './compile.js';
 
 function methodNotAllowed(req: express.Request, res: express.Response) {
     res.send('Method Not Allowed');
-    return res.status(405).end();
+    res.status(405).end();
 }
 
 export class ApiHandler {

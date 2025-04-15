@@ -35,9 +35,10 @@ const ceProps = props.propsFor('compiler-explorer');
  */
 export const jsonOnly: express.Handler = (req, res, next) => {
     if (req.headers['content-type'] !== 'application/json') {
-        return res.status(400).json({message: 'bad request, expected json content'});
+        res.status(400).json({message: 'bad request, expected json content'});
+        return;
     }
-    return next();
+    next();
 };
 
 /** Add static headers to the response */

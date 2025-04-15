@@ -48,7 +48,8 @@ export class AssemblyDocumentationController implements HttpController {
             const instruction = (req.params.opcode || '__UNKNOWN_OPCODE').toUpperCase();
             const information = provider.getInstructionInformation(instruction);
             if (information === null) {
-                return res.status(404).send({error: `Unknown opcode '${instruction}'`});
+                res.status(404).send({error: `Unknown opcode '${instruction}'`});
+                return;
             }
 
             const contentType = req.accepts(['text', 'json']);
@@ -67,7 +68,7 @@ export class AssemblyDocumentationController implements HttpController {
                 }
             }
         } catch {
-            return res.status(404).send({error: `No documentation for '${req.params.arch}'`});
+            res.status(404).send({error: `No documentation for '${req.params.arch}'`});
         }
     }
 }
