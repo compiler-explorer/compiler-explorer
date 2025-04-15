@@ -54,7 +54,8 @@ export class BrontoRefactorTool extends BaseTool {
         const libOptions = super.getLibraryOptions(compilationInfo.libraries, supportedLibraries || {});
 
         let compileFlags = ['compiler-explorer', sourcefile, '--'].concat(
-            splitArguments(compilationInfo.compiler.options));
+            splitArguments(compilationInfo.compiler.options),
+        );
         compileFlags = compileFlags.concat(includeflags);
         compileFlags = compileFlags.concat(libOptions);
 
