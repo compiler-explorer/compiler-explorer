@@ -61,6 +61,7 @@
     "profanities": "^3.0.1",
     "prom-client": "^15.1.3",
     "pug": "^3.0.3",
+    "pug-runtime": "^3.0.1",
     "request": "^2.88.2",
     "response-time": "^2.3.3",
     "sanitize-filename": "^1.6.3",
@@ -86,6 +87,7 @@
   },
   "devDependencies": {
     "@biomejs/biome": "^1.9.4",
+    "@rollup/plugin-inject": "^5.0.5",
     "@sentry/types": "^8.55.0",
     "@smithy/util-stream": "^4.2.0",
     "@types/bootstrap": "^5.2.10",
@@ -98,6 +100,7 @@
     "@types/js-cookie": "^3.0.6",
     "@types/node-targz": "^0.2.4",
     "@types/nopt": "^3.0.32",
+    "@types/pug": "^2.0.10",
     "@types/request": "^2.48.12",
     "@types/response-time": "^2.3.8",
     "@types/serve-favicon": "^2.5.7",

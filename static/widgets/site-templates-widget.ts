@@ -37,15 +37,12 @@ import {Alert} from './alert.js';
 class SiteTemplatesWidget {
     private readonly modal: JQuery;
     private readonly img: HTMLImageElement;
-    private readonly siteTemplateScreenshots: any;
     private readonly alertSystem: Alert;
     private templatesConfig: null | SiteTemplateResponse = null;
     private populated = false;
     constructor(
-        siteTemplateScreenshots: any,
         private readonly layout: GoldenLayout,
     ) {
-        this.siteTemplateScreenshots = siteTemplateScreenshots;
         this.modal = $('#site-template-loader');
         const siteTemplatePreview = document.getElementById('site-template-preview');
         if (siteTemplatePreview === null) {
@@ -99,7 +96,7 @@ class SiteTemplatesWidget {
         return theme;
     }
     getAsset(name: string) {
-        return this.siteTemplateScreenshots(`./${name}.${this.getCurrentTheme()}.png`);
+        return `/template_screenshots/${name}.${this.getCurrentTheme()}.png`;
     }
     async setDefaultPreview() {
         const templatesConfig = await this.getTemplates(); // by the time this is called it will be cached
@@ -183,8 +180,8 @@ class SiteTemplatesWidget {
     }
 }
 
-export function setupSiteTemplateWidgetButton(siteTemplateScreenshots: any, layout: GoldenLayout) {
-    const siteTemplateModal = new SiteTemplatesWidget(siteTemplateScreenshots, layout);
+export function setupSiteTemplateWidgetButton(layout: GoldenLayout) {
+    const siteTemplateModal = new SiteTemplatesWidget(layout);
     $('#loadSiteTemplate').on('click', () => {
         siteTemplateModal.show();
     });

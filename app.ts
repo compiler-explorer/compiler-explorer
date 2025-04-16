@@ -80,7 +80,6 @@ import {sources} from './lib/sources/index.js';
 import {loadSponsorsFromString} from './lib/sponsors.js';
 import {getStorageTypeByKey} from './lib/storage/index.js';
 import * as utils from './lib/utils.js';
-import {ElementType} from './shared/common-utils.js';
 import {CompilerInfo} from './types/compiler.interfaces.js';
 import type {Language, LanguageKey} from './types/languages.interfaces.js';
 
@@ -401,14 +400,16 @@ async function setupWebPackDevMiddleware(router: express.Router) {
         appType: "custom",
     })
     router.use(vite.middlewares)
-    router.use('/static/*', async (req, res, next) => {
+    router.use('/static/:file', async (req, res, next) => {
         let sourcePath;
         if (req.path.endsWith(".css")) {
             sourcePath = new URL(import.meta.url, path.join("static", req.path.replace(/\.css$/, ".scss")))
         } else if (req.path.endsWith(".js")) {
             sourcePath = new URL(import.meta.url, path.join("static", req.path.replace(/\.js$/, ".ts")))
+        } else if (req.path.endsWith(".pug?import")) {
+            sourcePath = new URL(import.meta.url, path.join("static", req.path.replace("?import", "")))
         } else {
-            return next();
+            return next()
         }
 
         const module = await vite.transformRequest(sourcePath)
@@ -418,7 +419,7 @@ async function setupWebPackDevMiddleware(router: express.Router) {
         let contentType;
         if (req.path.endsWith(".scss")) {
             contentType = "text/css"
-        } else if (req.path.endsWith(".ts")) {
+        } else if (req.path.endsWith(".ts") || req.path.endsWith(".pug?import ")) {
             contentType = "application/javascript"
         }
         res.setHeader("Content-Type", contentType)

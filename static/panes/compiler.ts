@@ -84,8 +84,6 @@ import {LanguageKey} from '../languages.interfaces.js';
 import {SentryCapture} from '../sentry.js';
 import {CompilerVersionInfo, setCompilerVersionPopoverForPane} from '../widgets/compiler-version-info.js';
 
-const toolIcons = require.context('../../views/resources/logos', false, /\.(png|svg)$/);
-
 type CachedOpcode = {
     found: boolean;
     data: AssemblyInstructionInfo | string;
@@ -2695,8 +2693,8 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
             btn.addClass('view-' + toolName);
             btn.data('toolname', toolName);
             if (toolIcon) {
-                const light = toolIcons(toolIcon);
-                const dark = toolIconDark ? toolIcons(toolIconDark) : light;
+                const light = `/logos/${toolIcon}`;
+                const dark = toolIconDark ? `/logos/${toolIconDark}` : light;
                 btn.append(
                     '<span class="dropdown-icon fas">' +
                         '<img src="' +

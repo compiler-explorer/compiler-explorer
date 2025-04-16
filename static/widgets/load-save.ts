@@ -33,8 +33,7 @@ import * as BootstrapUtils from '../bootstrap-utils.js';
 import {HistorySource} from '../history.js';
 import {localStorage} from '../local.js';
 import {Alert} from './alert.js';
-
-const history = require('../history');
+import * as history from "../history"
 
 type PopulateItem = {name: string; load: () => void; delete?: () => void; overwrite?: () => void};
 

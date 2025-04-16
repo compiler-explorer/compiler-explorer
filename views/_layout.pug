@@ -19,10 +19,6 @@ html(lang="en")
       |   }
       | })();
 
-    block styles
-        link(href=require("vendor.css") rel="stylesheet")
-        link(href=require("main.css") rel="stylesheet")
-
     //- partially apply theme as soon as possible to minimize the page load flashbang duration when using dark theme
     script
       | (function () {
@@ -59,6 +55,4 @@ html(lang="en")
     block scripts
         script(src=`${httpRoot}client-options.js?hash=${optionsHash}`)
         div#config(extraOptions=encodeURIComponent(compilerExplorerOptions), httpRoot=httpRoot, staticRoot=staticRoot)
-        script(src=require("runtime.js"))
-        script(src=require("vendor.js"))
-        script(src=require("main.js"), type="module")
+        script(src=require("main.ts"), type="module")

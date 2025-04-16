@@ -22,6 +22,8 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
+/// <reference path="../vite.d.ts" />
+
 // Setup sentry before anything else so we can capture errors
 import {SentryCapture, SetupSentry, setSentryLayout} from './sentry.js';
 
@@ -31,8 +33,8 @@ import 'whatwg-fetch';
 import '@popperjs/core';
 import 'bootstrap';
 
-import $ from 'jquery';
 import _ from 'underscore';
+import $ from 'jquery'
 
 import clipboard from 'clipboard';
 import GoldenLayout from 'golden-layout';
@@ -69,12 +71,8 @@ import {Printerinator} from './print-view.js';
 import {setupRealDark, takeUsersOutOfRealDark} from './real-dark.js';
 import {formatISODate, updateAndCalcTopBarHeight} from './utils.js';
 
-const logos = require.context('../views/resources/logos', false, /\.(png|svg)$/);
-
-const siteTemplateScreenshots = require.context('../views/resources/template_screenshots', false, /\.png$/);
-
 if (!window.PRODUCTION && !options.embedded) {
-    require('./tests/_all');
+    import("./tests/_all.js")
 }
 
 import 'bootstrap/dist/css/bootstrap.min.css';
@@ -83,6 +81,10 @@ import 'tom-select/dist/css/tom-select.bootstrap5.css';
 import './styles/colours.scss';
 import './styles/explorer.scss';
 
+import cookieDocument from "./generated/cookies.pug";
+import privacyDocument from "./generated/privacy.pug";
+import changelogDocument from "./generated/changelog.pug";
+
 // Check to see if the current unload is a UI reset.
 // Forgive me the global usage here
 let hasUIBeenReset = false;
@@ -90,8 +92,10 @@ const simpleCooks = new SimpleCook();
 const historyWidget = new HistoryWidget();
 
 const policyDocuments = {
-    cookies: require('./generated/cookies.pug').default,
-    privacy: require('./generated/privacy.pug').default,
+    cookies: cookieDocument(),
+    cookiesHash: '08712179739d3679',
+    privacy: privacyDocument(),
+    privacyHash: 'c0dad1f48a56b761',
 };
 
 function setupSettings(hub: Hub): [Themer, SiteSettings] {
@@ -122,7 +126,7 @@ function setupSettings(hub: Hub): [Themer, SiteSettings] {
 }
 
 function hasCookieConsented(options: CompilerExplorerOptions) {
-    return jsCookie.get(options.policies.cookies.key) === policyDocuments.cookies.hash;
+    return jsCookie.get(options.policies.cookies.key) === policyDocuments.cookiesHash;
 }
 
 function isMobileViewer() {
@@ -142,11 +146,11 @@ function setupButtons(options: CompilerExplorerOptions, hub: Hub) {
     // so we instead trigger a click here when we want it to open with this effect. Sorry!
     if (options.policies.privacy.enabled) {
         $('#privacy').on('click', (event, data) => {
-            const modal = alertSystem.alert(data?.title ? data.title : 'Privacy policy', policyDocuments.privacy.text);
+            const modal = alertSystem.alert(data?.title ? data.title : 'Privacy policy', policyDocuments.privacy);
             calcLocaleChangedDate(modal);
             // I can't remember why this check is here as it seems superfluous
             if (options.policies.privacy.enabled) {
-                jsCookie.set(options.policies.privacy.key, policyDocuments.privacy.hash, {
+                jsCookie.set(options.policies.privacy.key, policyDocuments.privacyHash, {
                     expires: 365,
                     sameSite: 'strict',
                 });
@@ -165,7 +169,7 @@ function setupButtons(options: CompilerExplorerOptions, hub: Hub) {
             );
         };
         $('#cookies').on('click', () => {
-            const modal = alertSystem.ask(getCookieTitle(), policyDocuments.cookies.text, {
+            const modal = alertSystem.ask(getCookieTitle(), policyDocuments.cookies, {
                 yes: () => {
                     simpleCooks.callDoConsent.apply(simpleCooks);
                 },
@@ -192,7 +196,7 @@ function setupButtons(options: CompilerExplorerOptions, hub: Hub) {
 
     $('#changes').on('click', () => {
         // TODO(jeremy-rifkin): Fix types
-        alertSystem.alert('Changelog', $(require('./generated/changelog.pug').default.text) as any);
+        alertSystem.alert('Changelog', $(changelogDocument()) as any);
     });
 
     $.get(window.location.origin + window.httpRoot + 'bits/icons.html')
@@ -387,7 +391,7 @@ function initPolicies(options: CompilerExplorerOptions) {
             $('#privacy').trigger('click', {
                 title: 'New Privacy Policy. Please take a moment to read it',
             });
-        } else if (policyDocuments.privacy.hash !== jsCookie.get(options.policies.privacy.key)) {
+        } else if (policyDocuments.privacyHash !== jsCookie.get(options.policies.privacy.key)) {
             // When the user has already accepted the privacy, just show a pretty notification.
             const ppolicyBellNotification = $('#policyBellNotification');
             const pprivacyBellNotification = $('#privacyBellNotification');
@@ -404,7 +408,7 @@ function initPolicies(options: CompilerExplorerOptions) {
         }
     }
     simpleCooks.setOnDoConsent(() => {
-        jsCookie.set(options.policies.cookies.key, policyDocuments.cookies.hash, {
+        jsCookie.set(options.policies.cookies.key, policyDocuments.cookiesHash, {
             expires: 365,
             sameSite: 'strict',
         });
@@ -428,7 +432,7 @@ function initPolicies(options: CompilerExplorerOptions) {
     // '' means no consent. Hash match means consent of old. Null means new user!
     const storedCookieConsent = jsCookie.get(options.policies.cookies.key);
     if (options.policies.cookies.enabled) {
-        if (storedCookieConsent !== '' && policyDocuments.cookies.hash !== storedCookieConsent) {
+        if (storedCookieConsent !== '' && policyDocuments.cookiesHash !== storedCookieConsent) {
             simpleCooks.show();
             const cpolicyBellNotification = $('#policyBellNotification');
             const cprivacyBellNotification = $('#privacyBellNotification');
@@ -483,9 +487,9 @@ function setupLanguageLogos(languages: Partial<Record<LanguageKey, Language>>) {
     for (const lang of Object.values(languages)) {
         try {
             if (lang.logoUrl !== null) {
-                lang.logoData = logos('./' + lang.logoUrl);
+                lang.logoData = `/logos/${lang.logoUrl}`;
                 if (lang.logoUrlDark !== null) {
-                    lang.logoDataDark = logos('./' + lang.logoUrlDark);
+                    lang.logoDataDark = `/logos/${lang.logoUrlDark}`;
                 }
             }
         } catch (ignored) {
@@ -777,7 +781,7 @@ function start() {
     }
 
     History.trackHistory(layout);
-    setupSiteTemplateWidgetButton(siteTemplateScreenshots, layout);
+    setupSiteTemplateWidgetButton(layout);
     if (!options.embedded) new Sharing(layout);
     new Printerinator(hub, themer);
 }
