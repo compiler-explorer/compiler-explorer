@@ -25,8 +25,8 @@
 import GoldenLayout from 'golden-layout';
 import _ from 'underscore';
 
-const lzstring = require('lz-string');
-const Components = require('./components');
+import * as lzstring from "lz-string"
+import * as Components from "./components"
 
 import * as rison from './rison.js';
 
@@ -47,6 +47,7 @@ export function convertOldState(state: any): any {
     };
     const filters = _.clone(state.filterAsm);
     delete filters.colouriseAsm;
+    // @ts-expect-error: TODO: This has been broken a very long time
     content.push(Components.getEditorWith(1, source, options));
     content.push(Components.getCompilerWith(1, filters, sc.options, sc.compiler));
     return {version: 4, content: [{type: 'row', content: content}]};
