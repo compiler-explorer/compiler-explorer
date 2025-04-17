@@ -47,6 +47,7 @@ import systemdSocket from 'systemd-socket';
 import _ from 'underscore';
 import urljoin from 'url-join';
 
+import {unwrap} from './lib/assert.js';
 import * as aws from './lib/aws.js';
 import * as normalizer from './lib/clientstate-normalizer.js';
 import {GoldenLayoutRootStruct} from './lib/clientstate-normalizer.js';
@@ -635,9 +636,10 @@ async function main() {
         logger.debug('Compilers:', compilers);
         prevCompilers = compilers;
         await clientOptionsHandler.setCompilers(compilers);
-        routeApi.apiHandler.setCompilers(compilers);
-        routeApi.apiHandler.setLanguages(languages);
-        routeApi.apiHandler.setOptions(clientOptionsHandler);
+        const apiHandler = unwrap(routeApi.apiHandler);
+        apiHandler.setCompilers(compilers);
+        apiHandler.setLanguages(languages);
+        apiHandler.setOptions(clientOptionsHandler);
     }
 
     await onCompilerChange(initialCompilers);
