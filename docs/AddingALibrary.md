@@ -205,7 +205,7 @@ libraries for libc++, just to be sure that doesn't give any runtime issues.
 There are also some specific compiler flags that cause ABI incompatibility, but we're still looking for common cases; if
 you have any use-cases of flags that causes linking or runtime errors, please let us know.
 
-For us to have the possibility of crosscompiling with multiple compilers, it's recommended to be able to build with
+For us to have the possibility of cross-compiling with multiple compilers, it's recommended to be able to build with
 CMake. CMake by default has support to provide different flags during compilation. Makefiles can provide ways for doing
 the same, but often they have variables and flags that cannot be changed. If you're a library developer, please take
 into account that we will need ways to set at least CC, CXX, CXXFLAGS. Be also aware that we will probably supply
@@ -214,3 +214,20 @@ into account that we will need ways to set at least CC, CXX, CXXFLAGS. Be also a
 Because of the amount of combinations we need to produce, only the later tagged versions of most libraries have priority
 in providing builds for. Daily trunk/master versions are out as well, until we figure out a way to efficiently provide
 builds for this.
+
+## Behind the scenes
+
+We use a `conan` service to warehouse all the built libraries, on a per-library, per-compiler basis. You can access this
+at https://conan.compiler-explorer.com/. You can see the list of failed builds
+[here](https://conan.compiler-explorer.com/failedbuilds.html), which can be useful in working out what's going on.
+
+Because of the expense we only build libraries for the top few compilers each night (on a crontab). However, each Sunday
+night we build everything we can.
+
+We're working on a newer improved process, and are trialling it for our Windows builds
+(see [here](https://github.com/compiler-explorer/infra/actions/workflows/win-lib-build.yaml) for example). For all the
+reasons you might expect in dealing with so many compilers, libraries and build systems, the process is necessarily
+fragile.
+
+We have some [internal docs](internal/AddingLinkableLibrary.md) that go into more depth, but that might only be useful
+for CE maintainers.

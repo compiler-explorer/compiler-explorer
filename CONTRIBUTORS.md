@@ -157,3 +157,5 @@ From oldest to newest contributor, we would like to thank:
 - [Stephen Heumann](https://github.com/sheumann)
 - [Joshua Batty](https://github.com/joshuabatty)
 - [Dana Jansens](https://github.com/danakj)
+- [Mathias Gredal](https://github.com/mathiasgredal)
+- [Adrien Bertrand](https://github.com/adriweb)

@@ -24,6 +24,7 @@
 
 import {WriteStream, createWriteStream} from 'node:fs';
 import {constants as fsConstants} from 'node:fs';
+import * as oldfs from 'node:fs';
 import * as fs from 'node:fs/promises';
 import * as net from 'node:net';
 import path from 'node:path';
@@ -111,7 +112,7 @@ export class HeaptrackWrapper extends BaseRuntimeTool {
         return this.execFunc(this.interpreter, [this.rawOutput], execOptions);
     }
 
-    private async finishPipesAndStreams(fd: fs.FileHandle, file: WriteStream, socket: net.Socket) {
+    private async finishPipesAndStreams(fd: number, file: WriteStream, socket: net.Socket) {
         socket.push(null);
         await new Promise(resolve => socket.end(() => resolve(true)));
 
@@ -129,7 +130,7 @@ export class HeaptrackWrapper extends BaseRuntimeTool {
             });
         });
 
-        await fd.close();
+        return new Promise(resolve => oldfs.close(fd, () => resolve(true)));
     }
 
     private async interpretAndSave(execOptions: ExecutionOptions, result: UnprocessedExecResult) {
@@ -168,8 +169,8 @@ export class HeaptrackWrapper extends BaseRuntimeTool {
 
         await this.makePipe();
 
-        const fd = await fs.open(this.pipe, O_NONBLOCK | fsConstants.O_RDWR);
-        const socket = new net.Socket({fd: fd.fd, readable: true, writable: true});
+        const fd = oldfs.openSync(this.pipe, O_NONBLOCK | fsConstants.O_RDWR);
+        const socket = new net.Socket({fd: fd, readable: true, writable: true});
 
         const file = createWriteStream(this.rawOutput);
         pipeline(socket, file, err => {
