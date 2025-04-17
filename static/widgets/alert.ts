@@ -109,7 +109,7 @@ export class Alert {
             <div class="toast" tabindex="-1" role="alert" aria-live="assertive" aria-atomic="true">
                 <div class="toast-header ${alertClass}">
                     <strong class="me-auto">${this.prefixMessage}</strong>
-                    <button type="button" class="ms-2 mb-1 close" data-dismiss="toast" aria-label="Close">
+                    <button type="button" class="ms-2 mb-1 close" data-bs-dismiss="toast" aria-label="Close">
                         <span aria-hidden="true">&times;</span>
                     </button>
                 </div>

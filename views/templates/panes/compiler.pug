@@ -19,7 +19,7 @@ mixin newPaneButton(classId, text, title, icon)
                 span.status-icon
         input.options.form-control(type="text" placeholder="Compiler options..." size="256" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false")
         .input-group-append.populararguments(title="Popular arguments")
-          button.btn.btn-sm.btn-light.btn-outline-secondary.dropdown-toggle.dropdown-toggle-split.popular-arguments-btn(type="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false")
+          button.btn.btn-sm.btn-light.btn-outline-secondary.dropdown-toggle.dropdown-toggle-split.popular-arguments-btn(type="button" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false")
             span.sr-only Popular arguments
           div.dropdown-menu.dropdown-menu-right
             button.dropdown-item.btn.btn-light.btn-sm
@@ -28,13 +28,13 @@ mixin newPaneButton(classId, text, title, icon)
                 span.argdescription Open a new window to edit verbose compiler flags
     include ../../font-size
     .btn-group.btn-group-sm.filters(role="group")
-      button.btn.btn-sm.btn-light.dropdown-toggle(type="button" title="Compiler output options" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" aria-label="Change how the compiler's output is generated")
+      button.btn.btn-sm.btn-light.dropdown-toggle(type="button" title="Compiler output options" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false" aria-label="Change how the compiler's output is generated")
         span.fas.fa-cog
         span.hideable Output...
       .dropdown-menu
         include ../../options-output
     .btn-group.btn-group-sm.filters(role="group")
-      button.btn.btn-sm.btn-light.dropdown-toggle(type="button" title="Compiler output filters" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" aria-label="Change how the compiler output is filtered")
+      button.btn.btn-sm.btn-light.dropdown-toggle(type="button" title="Compiler output filters" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false" aria-label="Change how the compiler output is filtered")
         span.fas.fa-filter
         span.hideable Filter...
       .dropdown-menu
@@ -48,7 +48,7 @@ mixin newPaneButton(classId, text, title, icon)
         span.fas.fa-wrench
         span.dp-text.hideable Overrides
     .btn-group.btn-group-sm(role="group")
-      button.btn.btn-sm.btn-light.dropdown-toggle.add-pane(type="button" title="Add a new pane" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" aria-label="Add new element for this compiler" data-cy="new-compiler-dropdown-btn")
+      button.btn.btn-sm.btn-light.dropdown-toggle.add-pane(type="button" title="Add a new pane" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false" aria-label="Add new element for this compiler" data-cy="new-compiler-dropdown-btn")
         span.fas.fa-plus
         span.hideable Add new...
       .dropdown-menu.dropdown-menu-right.new-pane-dropdown(data-cy="new-compiler-pane-dropdown")
@@ -73,7 +73,7 @@ mixin newPaneButton(classId, text, title, icon)
         +newPaneButton("view-gnatdebug", "GNAT Debug Expanded Code", "Show GNAT debug expanded code", "fas fa-tree")
         +newPaneButton("view-cfg", "Control Flow Graph", "Show assembly control flow graphs", "fas fa-exchange-alt")
     .btn-group.btn-group-sm(role="group")
-      button.btn.btn-sm.btn-light.dropdown-toggle.add-tool(type="button" title="Add tool" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" aria-label="Add tooling to this editor and compiler")
+      button.btn.btn-sm.btn-light.dropdown-toggle.add-tool(type="button" title="Add tool" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false" aria-label="Add tooling to this editor and compiler")
         span.fas.fa-screwdriver
         span.hideable Add tool...
       .dropdown-menu.dropdown-menu-right.new-tool-dropdown

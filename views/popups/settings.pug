@@ -21,7 +21,7 @@ mixin input(cls, type, text, style)
       .modal-header
         h5.modal-title
           | Compiler Explorer Settings
-        button.close(type="button" data-dismiss="modal" aria-label="Close")
+        button.close(type="button" data-bs-dismiss="modal" aria-label="Close")
           span(aria-hidden="true") &times;
       .modal-body
         .card
@@ -112,4 +112,4 @@ mixin input(cls, type, text, style)
                 +checkbox("executorCompileOnChange", "Compile executor automatically when arguments change")
                 +checkbox("shakeStatusIconOnWarnings", "Shake the status icon on argument warnings")
       .modal-footer
-        button.btn.btn-outline-primary(type="button" data-dismiss="modal") Close
+        button.btn.btn-outline-primary(type="button" data-bs-dismiss="modal") Close

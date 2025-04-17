@@ -56,13 +56,13 @@ allows for:
 
 ## Phase 3: HTML Attribute Updates
 
-- [ ] Update data attributes across the codebase
-    - [ ] data-toggle → data-bs-toggle
-    - [ ] data-target → data-bs-target
-    - [ ] data-dismiss → data-bs-dismiss
-    - [ ] data-ride → data-bs-ride
-    - [ ] data-spy → data-bs-spy
-    - [ ] Other data attributes as needed
+- [x] Update data attributes across the codebase
+    - [x] data-toggle → data-bs-toggle
+    - [x] data-target → data-bs-target
+    - [x] data-dismiss → data-bs-dismiss
+    - [x] data-ride → data-bs-ride (not used in codebase)
+    - [x] data-spy → data-bs-spy (not used in codebase)
+    - [x] Other data attributes as needed
 - [ ] Test components to ensure they function correctly with new attributes
 
 ### Notes for Human Testers (Phase 3)
@@ -224,5 +224,12 @@ allows for:
   - Updated text alignment classes (text-left/right → text-start/end)
   - Updated other renamed classes (badge-pill → rounded-pill, etc.)
   - Testing and verification of styling changes pending
+- Phase 3 completed:
+  - Updated data attributes to use Bootstrap 5 naming convention with bs- prefix:
+    - data-toggle → data-bs-toggle
+    - data-target → data-bs-target
+    - data-dismiss → data-bs-dismiss
+  - Identified that data-ride and data-spy attributes are not used in the codebase
+  - Testing component functionality pending
 
 This plan will be updated as progress is made, with each completed step marked accordingly.
