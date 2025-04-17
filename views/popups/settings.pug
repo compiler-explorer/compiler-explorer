@@ -30,11 +30,11 @@ mixin input(cls, type, text, style)
             | preserved as part of shared URLs, and are persisted locally using browser
             | local storage.
             ul.nav.nav-tabs.card-header-tabs(role="tablist")
-              li.nav-item(role="presentation"): a.nav-link.active(href="#colouring" role="tab" data-toggle="tab") Colouring
-              li.nav-item(role="presentation"): a.nav-link(href="#site-behaviour" role="tab" data-toggle="tab") Site behaviour
-              li.nav-item(role="presentation"): a.nav-link(href="#keybindings" role="tab" data-toggle="tab") Keybindings
-              li.nav-item(role="presentation"): a.nav-link(href="#editor" role="tab" data-toggle="tab") Editor
-              li.nav-item(role="presentation"): a.nav-link(href="#compilation" role="tab" data-toggle="tab") Compilation
+              li.nav-item(role="presentation"): a.nav-link.active(href="#colouring" role="tab" data-bs-toggle="tab") Colouring
+              li.nav-item(role="presentation"): a.nav-link(href="#site-behaviour" role="tab" data-bs-toggle="tab") Site behaviour
+              li.nav-item(role="presentation"): a.nav-link(href="#keybindings" role="tab" data-bs-toggle="tab") Keybindings
+              li.nav-item(role="presentation"): a.nav-link(href="#editor" role="tab" data-bs-toggle="tab") Editor
+              li.nav-item(role="presentation"): a.nav-link(href="#compilation" role="tab" data-bs-toggle="tab") Compilation
           .card-body.tab-content
             #colouring.tab-pane.active.form-group(role="group")
               +select("theme", "Site theme")

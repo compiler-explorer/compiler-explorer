@@ -264,7 +264,41 @@ allows for:
     - Updated sharing.ts to use BootstrapUtils for tooltips, modals, and dropdowns
     - Updated compiler-picker-popup.ts to use BootstrapUtils for modals
     - Updated load-save.ts to use BootstrapUtils for modals
+  - Fixed initial jQuery popover() compatibility issues:
+    - Updated editor.ts to use Bootstrap 5 popover API
+    - Updated compiler.ts to use bootstrap-utils for popover operations
+    - Updated libs-widget.ts to use proper Bootstrap 5 patterns for popovers
+    - Fixed popover disposal and hiding in various components
   - Created plan to eventually remove compatibility layer in Phase 12
   - Further component updates and testing pending
+
+## Known Issues To Investigate and Fix
+
+The following issues need to be addressed as part of the ongoing Bootstrap 5 migration:
+
+1. **UI Layout & Display Issues**
+   - The font dropdown is broken (it appears too small)
+   - Templates view is very long and thin
+   - All dialogs look weird, likely related to tab issues
+   - The "other" dropdown clips off the right hand side of the page
+
+2. **Navigation Issues**
+   - ~~Clicking on tabs in any dialog (load/save, browser settings) causes page reloads~~ ✓ Fixed
+   - ~~URL changes to include fragment identifiers (e.g., `http://localhost:10240/#site-behaviour`)~~ ✓ Fixed
+   - ~~Internal `<a href="...">` elements are being treated as real links instead of switching tabs~~ ✓ Fixed
+   - ~~Need to replace with proper Bootstrap 5 tab navigation~~ ✓ Fixed
+   
+   *Tab navigation was fixed by updating `data-toggle="tab"` to `data-bs-toggle="tab"` in modal templates. The data attribute prefix change was missed in some Pug templates during Phase 3.*
+
+3. **Functional Issues**
+   - Share dialog is unpopulated (only shows "Loading...")
+   - The sponsors view generates `Uncaught TypeError: Cannot read properties of undefined (reading 'backdrop')` in `initializeBackdrop` inside `model.js`
+
+4. **Next Actions**
+   - Continue replacing jQuery plugin methods with Bootstrap 5 API equivalents
+   - Use `BootstrapUtils` compatibility layer consistently throughout codebase
+   - ~~Fix tab navigation in modals (high priority)~~ ✓ Fixed
+   - Address UI layout issues in dropdowns and dialogs
+   - Investigate remaining dialog appearance issues
 
 This plan will be updated as progress is made, with each completed step marked accordingly.
