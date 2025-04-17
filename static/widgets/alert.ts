@@ -24,6 +24,7 @@
 
 import $ from 'jquery';
 
+import {BootstrapUtils} from '../bootstrap-utils.js';
 import {AlertAskOptions, AlertEnterTextOptions, AlertNotifyOptions} from './alert.interfaces.js';
 
 export class Alert {
@@ -57,7 +58,8 @@ export class Alert {
         modal.toggleClass('error-alert', isError === true);
         modal.find('.modal-title').html(title);
         modal.find('.modal-body').html(body);
-        modal.modal();
+        BootstrapUtils.showModal(modal);
+
         if (onClose) {
             modal.off('hidden.bs.modal');
             modal.on('hidden.bs.modal', onClose);
@@ -86,7 +88,8 @@ export class Alert {
             modal.off('hidden.bs.modal');
             modal.on('hidden.bs.modal', askOptions.onClose);
         }
-        modal.modal();
+
+        BootstrapUtils.showModal(modal);
         return modal;
     }
 
@@ -119,21 +122,26 @@ export class Alert {
             </div>
         `);
         container.append(newElement);
-        newElement.toast({
+        const toastOptions = {
             autohide: autoDismiss,
             delay: dismissTime,
-        });
+        };
+
+        BootstrapUtils.initToast(newElement, toastOptions);
+
         if (group !== '') {
             if (collapseSimilar) {
                 // Only collapsing if a group has been specified
                 const old = container.find(`[data-group="${group}"]`);
-                old.toast('hide');
-                old.remove();
+                old.each((_, element) => {
+                    BootstrapUtils.hideToast(element);
+                    $(element).remove();
+                });
             }
             newElement.attr('data-group', group);
         }
         onBeforeShow(newElement);
-        newElement.toast('show');
+        BootstrapUtils.showToast(newElement);
     }
 
     /**
@@ -181,7 +189,7 @@ export class Alert {
         modal.on('shown.bs.modal', () => {
             answerEdit.trigger('focus');
         });
-        modal.modal();
+        BootstrapUtils.showModal(modal);
         return modal;
     }
 }

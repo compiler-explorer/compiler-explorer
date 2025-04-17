@@ -79,11 +79,16 @@ allows for:
 
 ## Phase 4: JavaScript API Compatibility Layer
 
-- [ ] Create a Bootstrap compatibility utility module to abstract component initialization
-  - [ ] This will help transition from jQuery-based initialization to native JS
-  - [ ] It will also make future jQuery removal easier if desired
-- [ ] Define methods for each component type (Modal, Dropdown, Toast, etc.)
-- [ ] Implement both jQuery and native JS paths depending on configuration
+- [x] Create a temporary Bootstrap compatibility utility module to abstract component initialization
+  - [x] Implement a hybrid approach with `bootstrap-utils.ts` as a compatibility layer
+  - [x] Mark clearly as temporary code to be removed after migration is complete
+  - [x] Define methods for each component type (Modal, Dropdown, Toast, etc.)
+- [x] Update component initialization in key files:
+  - [x] widgets/alert.ts (modals and toasts)
+  - [x] sharing.ts (modals, tooltips, and dropdowns)
+  - [ ] compiler-picker-popup.ts (modals)
+  - [ ] load-save.ts (modals)
+  - [ ] Other files with Bootstrap component initialization
 - [ ] Test the compatibility layer with basic components
 
 ### Notes for Human Testers (Phase 4)
@@ -185,10 +190,13 @@ allows for:
 - [ ] Document custom component implementations
 - [ ] Note any deprecated features or changes in functionality
 
-## Phase 12: Optional jQuery Removal (Future Work)
+## Phase 12: Optional jQuery Removal and Cleanup (Future Work)
 
 - [ ] Create plan for jQuery removal (if desired)
 - [ ] Identify non-Bootstrap jQuery usage that would need refactoring
+- [ ] Remove the temporary `bootstrap-utils.ts` compatibility layer
+  - [ ] Replace all uses with direct Bootstrap 5 API calls
+  - [ ] Document the native Bootstrap 5 API for future reference
 - [ ] Note: This would be a separate effort after the Bootstrap migration is stable
 
 ## Notes for Implementation
@@ -231,5 +239,11 @@ allows for:
     - data-dismiss → data-bs-dismiss
   - Identified that data-ride and data-spy attributes are not used in the codebase
   - Testing component functionality pending
+- Phase 4 in progress:
+  - Created temporary `bootstrap-utils.ts` compatibility layer to abstract Bootstrap 5 APIs
+  - Updated alert.ts to use BootstrapUtils for modals and toasts
+  - Updated sharing.ts to use BootstrapUtils for tooltips, modals, and dropdowns
+  - Created plan to eventually remove compatibility layer in Phase 12
+  - Further component updates and testing pending
 
 This plan will be updated as progress is made, with each completed step marked accordingly.

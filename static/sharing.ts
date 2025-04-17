@@ -26,6 +26,7 @@ import ClipboardJS from 'clipboard';
 import GoldenLayout from 'golden-layout';
 import $ from 'jquery';
 import _ from 'underscore';
+import {BootstrapUtils} from './bootstrap-utils.js';
 import {sessionThenLocalStorage} from './local.js';
 import {options} from './options.js';
 import * as url from './url.js';
@@ -269,7 +270,7 @@ export class Sharing {
             event.stopPropagation();
             this.copyLinkTypeToClipboard(type);
             // As we prevented bubbling, the dropdown won't close by itself. We need to trigger it manually
-            this.share.dropdown('hide');
+            BootstrapUtils.hideDropdown(this.share);
         }
     }
 
@@ -307,15 +308,24 @@ export class Sharing {
     }
 
     private displayTooltip(where: JQuery, message: string): void {
-        where.tooltip('dispose');
-        where.tooltip({
+        // First dispose any existing tooltip
+        const tooltipEl = where[0];
+        const existingTooltip = window.bootstrap.Tooltip.getInstance(tooltipEl);
+        if (existingTooltip) {
+            existingTooltip.dispose();
+        }
+
+        // Create and show new tooltip
+        const tooltip = BootstrapUtils.initTooltip(tooltipEl, {
             placement: 'bottom',
             trigger: 'manual',
             title: message,
         });
-        where.tooltip('show');
+
+        tooltip.show();
+
         // Manual triggering of tooltips does not hide them automatically. This timeout ensures they do
-        setTimeout(() => where.tooltip('hide'), 1500);
+        setTimeout(() => tooltip.hide(), 1500);
     }
 
     private openShareModalForType(type: LinkType): void {
