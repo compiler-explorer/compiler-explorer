@@ -95,7 +95,7 @@ allows for:
       - [x] widgets/compiler-overrides.ts
       - [x] widgets/timing-info-widget.ts
       - [x] widgets/history-widget.ts
-      - [ ] widgets/libs-widget.ts
+      - [x] widgets/libs-widget.ts
       - [ ] main.ts
     - [ ] **Dropdown Handling**:
       - [ ] panes/tree.ts
