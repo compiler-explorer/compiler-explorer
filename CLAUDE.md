@@ -13,6 +13,11 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 - Cypress Tests: `npm run cypress`
 - Pre-commit Check: `make pre-commit` or `npm run check`
 
+## Important Workflow Requirements
+- ALWAYS run `npm run lint` before any git operations (`git add`, `git commit`, etc.)
+- The linter will automatically fix formatting issues, so this must be run before committing
+- Failing to run the linter may result in style issues and commit failures
+
 ## Style Guidelines
 - TypeScript: Strict typing, no implicit any, no unused locals
 - Formatting: 4-space indentation, 120 char line width, single quotes

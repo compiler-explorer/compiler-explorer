@@ -28,7 +28,7 @@ import {SentryCapture, SetupSentry, setSentryLayout} from './sentry.js';
 SetupSentry();
 
 import 'whatwg-fetch';
-import 'popper.js';
+import '@popperjs/core';
 import 'bootstrap';
 
 import $ from 'jquery';
@@ -79,7 +79,7 @@ if (!window.PRODUCTION && !options.embedded) {
 //css
 require('bootstrap/dist/css/bootstrap.min.css');
 require('golden-layout/src/css/goldenlayout-base.css');
-require('tom-select/dist/css/tom-select.bootstrap4.css');
+require('tom-select/dist/css/tom-select.bootstrap5.css');
 require('./styles/colours.scss');
 require('./styles/explorer.scss');
 
