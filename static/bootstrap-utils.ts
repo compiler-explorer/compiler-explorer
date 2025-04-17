@@ -143,8 +143,22 @@ export class BootstrapUtils {
      * @param elementOrSelector Element or selector for the modal
      * @param options Modal options
      * @returns Modal instance
+     * @throws Error if the element cannot be found
      */
     static initModal(elementOrSelector: string | HTMLElement | JQuery, options?: any): any {
+        const element = BootstrapUtils.getElement(elementOrSelector);
+        if (!element) throw new Error(`Failed to find element for modal: ${elementOrSelector}`);
+
+        return new window.bootstrap.Modal(element, options);
+    }
+
+    /**
+     * Initialize a modal if the element exists, returning null otherwise
+     * @param elementOrSelector Element or selector for the modal
+     * @param options Modal options
+     * @returns Modal instance or null if the element cannot be found
+     */
+    static initModalIfExists(elementOrSelector: string | HTMLElement | JQuery, options?: any): any | null {
         const element = BootstrapUtils.getElement(elementOrSelector);
         if (!element) return null;
 
@@ -217,8 +231,22 @@ export class BootstrapUtils {
      * @param elementOrSelector Element or selector for the dropdown
      * @param options Dropdown options
      * @returns Dropdown instance
+     * @throws Error if the element cannot be found
      */
     static initDropdown(elementOrSelector: string | HTMLElement | JQuery, options?: any): any {
+        const element = BootstrapUtils.getElement(elementOrSelector);
+        if (!element) throw new Error(`Failed to find element for dropdown: ${elementOrSelector}`);
+
+        return new window.bootstrap.Dropdown(element, options);
+    }
+
+    /**
+     * Initialize a dropdown if the element exists, returning null otherwise
+     * @param elementOrSelector Element or selector for the dropdown
+     * @param options Dropdown options
+     * @returns Dropdown instance or null if the element cannot be found
+     */
+    static initDropdownIfExists(elementOrSelector: string | HTMLElement | JQuery, options?: any): any | null {
         const element = BootstrapUtils.getElement(elementOrSelector);
         if (!element) return null;
 
@@ -267,8 +295,22 @@ export class BootstrapUtils {
      * @param elementOrSelector Element or selector for the popover
      * @param options Popover options
      * @returns Popover instance
+     * @throws Error if the element cannot be found
      */
     static initPopover(elementOrSelector: string | HTMLElement | JQuery, options?: any): any {
+        const element = BootstrapUtils.getElement(elementOrSelector);
+        if (!element) throw new Error(`Failed to find element for popover: ${elementOrSelector}`);
+
+        return new window.bootstrap.Popover(element, options);
+    }
+
+    /**
+     * Initialize a popover if the element exists, returning null otherwise
+     * @param elementOrSelector Element or selector for the popover
+     * @param options Popover options
+     * @returns Popover instance or null if the element cannot be found
+     */
+    static initPopoverIfExists(elementOrSelector: string | HTMLElement | JQuery, options?: any): any | null {
         const element = BootstrapUtils.getElement(elementOrSelector);
         if (!element) return null;
 

@@ -24,6 +24,7 @@
 
 import $ from 'jquery';
 import {escapeHTML} from '../../shared/common-utils.js';
+import {BootstrapUtils} from '../bootstrap-utils.js';
 import {options} from '../options.js';
 
 export type CompilerVersionInfo = {version: string; fullVersion?: string};
@@ -78,14 +79,19 @@ function reallySetCompilerVersionPopover(
             .on('click', () => {
                 versionContent.toggle();
                 hiddenVersionText.toggle();
-                pane.fullCompilerName.popover('update');
+                const popover = BootstrapUtils.initPopoverIfExists(pane.fullCompilerName);
+                if (popover) popover.update();
             });
         hiddenSection.append(hiddenVersionText).append(clickToExpandContent);
         bodyContent.append(hiddenSection);
     }
 
-    pane.fullCompilerName.popover('dispose');
-    pane.fullCompilerName.popover({
+    // Dispose of existing popover
+    const existingPopover = BootstrapUtils.initPopoverIfExists(pane.fullCompilerName);
+    if (existingPopover) existingPopover.dispose();
+
+    // Initialize new popover
+    BootstrapUtils.initPopover(pane.fullCompilerName, {
         html: true,
         title: notification
             ? ($.parseHTML('<span>Compiler Version: ' + notification + '</span>')[0] as Element)
