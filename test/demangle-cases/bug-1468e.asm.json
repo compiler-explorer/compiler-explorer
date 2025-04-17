@@ -1,0 +1,35 @@
+{
+  "asm": [
+    {
+      "labels": [],
+      "source": null,
+      "text": "g():                                  # @g()",
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        push    rax",
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        call    qword ptr [rip + foo::baz+8]",
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        xor     eax, eax",
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        pop     rcx",
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        ret",
+    },
+  ],
+  "labelDefinitions": {},
+}
