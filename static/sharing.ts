@@ -316,16 +316,21 @@ export class Sharing {
         }
 
         // Create and show new tooltip
-        const tooltip = BootstrapUtils.initTooltip(tooltipEl, {
-            placement: 'bottom',
-            trigger: 'manual',
-            title: message,
-        });
+        try {
+            const tooltip = BootstrapUtils.initTooltip(tooltipEl, {
+                placement: 'bottom',
+                trigger: 'manual',
+                title: message,
+            });
 
-        tooltip.show();
+            tooltip.show();
 
-        // Manual triggering of tooltips does not hide them automatically. This timeout ensures they do
-        setTimeout(() => tooltip.hide(), 1500);
+            // Manual triggering of tooltips does not hide them automatically. This timeout ensures they do
+            setTimeout(() => tooltip.hide(), 1500);
+        } catch (e) {
+            // If element doesn't exist, just silently fail
+            console.warn('Could not show tooltip:', e);
+        }
     }
 
     private openShareModalForType(type: LinkType): void {
