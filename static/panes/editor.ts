@@ -599,7 +599,10 @@ export class Editor extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Edit
                 .createDragSource(dragSource, dragConfig)
                 // @ts-expect-error: createDragSource returns not void
                 ._dragListener.on('dragStart', () => {
-                    BootstrapUtils.initDropdown(paneAdderDropdown).toggle();
+                    const dropdown = BootstrapUtils.getDropdownInstance(paneAdderDropdown);
+                    if (dropdown) {
+                        dropdown.toggle();
+                    }
                 });
 
             dragSource.on('click', () => {

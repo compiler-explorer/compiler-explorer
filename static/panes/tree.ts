@@ -450,7 +450,10 @@ export class Tree {
             'dragStart',
             () => {
                 const dropdown = this.domRoot.find('.add-pane');
-                BootstrapUtils.initDropdown(dropdown).toggle();
+                const dropdownInstance = BootstrapUtils.getDropdownInstance(dropdown);
+                if (dropdownInstance) {
+                    dropdownInstance.toggle();
+                }
             },
         );
 

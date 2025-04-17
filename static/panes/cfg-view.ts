@@ -282,10 +282,8 @@ export class Cfg extends Pane<CfgState> {
             if (this.tooltipOpen) {
                 if (!e.target.classList.contains('fold') && $(e.target).parents('.popover.in').length === 0) {
                     this.tooltipOpen = false;
-                    // In Bootstrap 5, we need to get existing popover instances and hide them
                     $('.fold').each((_, element) => {
-                        const popover = BootstrapUtils.getPopoverInstance(element);
-                        if (popover) popover.hide();
+                        BootstrapUtils.hidePopover(element);
                     });
                 }
             }
@@ -506,10 +504,10 @@ export class Cfg extends Pane<CfgState> {
     // Display the cfg for the specified function if it exists
     // This function sets this.state.selectedFunction if the input is non-null and valid
     async selectFunction(name: string | null) {
-        // In Bootstrap 5, we need to get existing popover instances and dispose them
         $('.fold').each((_, element) => {
             const popover = BootstrapUtils.getPopoverInstance(element);
             if (popover) popover.dispose();
+            // We need to dispose here, not just hide
         });
         this.blockContainer.innerHTML = '';
         this.svg.innerHTML = '';
@@ -679,10 +677,8 @@ export class Cfg extends Pane<CfgState> {
             const topBarHeight = utils.updateAndCalcTopBarHeight(this.domRoot, this.topBar, this.hideable);
             this.graphContainer.style.width = `${unwrap(this.domRoot.width())}px`;
             this.graphContainer.style.height = `${unwrap(this.domRoot.height()) - topBarHeight}px`;
-            // In Bootstrap 5, we need to get existing popover instances and hide them
             $('.fold').each((_, element) => {
-                const popover = BootstrapUtils.getPopoverInstance(element);
-                if (popover) popover.hide();
+                BootstrapUtils.hidePopover(element);
             });
         });
     }
