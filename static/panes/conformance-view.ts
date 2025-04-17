@@ -29,6 +29,7 @@ import {escapeHTML, unique} from '../../shared/common-utils.js';
 import {CompilationResult} from '../../types/compilation/compilation.interfaces.js';
 import {CompilerInfo} from '../../types/compiler.interfaces.js';
 import {unwrapString} from '../assert.js';
+import {BootstrapUtils} from '../bootstrap-utils.js';
 import {CompilationStatus} from '../compiler-service.interfaces.js';
 import {CompilerService} from '../compiler-service.js';
 import * as Components from '../components.js';
@@ -100,7 +101,8 @@ export class Conformance extends Pane<ConformanceViewState> {
         // Dismiss the popover on escape.
         $(document).on('keyup.editable', e => {
             if (e.which === 27) {
-                this.libsButton.popover('hide');
+                const popover = BootstrapUtils.getPopoverInstance(this.libsButton);
+                if (popover) popover.hide();
             }
         });
 
@@ -114,7 +116,8 @@ export class Conformance extends Pane<ConformanceViewState> {
                 elem.has(target as unknown as Element).length === 0 &&
                 target.closest('.popover').length === 0
             ) {
-                elem.popover('hide');
+                const popover = BootstrapUtils.getPopoverInstance(elem);
+                if (popover) popover.hide();
             }
         });
     }
@@ -301,15 +304,19 @@ export class Conformance extends Pane<ConformanceViewState> {
     ): void {}
 
     setCompilationOptionsPopover(element: JQuery<HTMLElement> | null, content: string): void {
-        element?.popover('dispose');
-        element?.popover({
-            content: content || 'No options in use',
-            template:
-                '<div class="popover' +
-                (content ? ' compiler-options-popover' : '') +
-                '" role="tooltip"><div class="arrow"></div>' +
-                '<h3 class="popover-header"></h3><div class="popover-body"></div></div>',
-        });
+        if (element) {
+            const existingPopover = BootstrapUtils.getPopoverInstance(element);
+            if (existingPopover) existingPopover.dispose();
+
+            BootstrapUtils.initPopover(element, {
+                content: content || 'No options in use',
+                template:
+                    '<div class="popover' +
+                    (content ? ' compiler-options-popover' : '') +
+                    '" role="tooltip"><div class="arrow"></div>' +
+                    '<h3 class="popover-header"></h3><div class="popover-body"></div></div>',
+            });
+        }
     }
 
     removeCompilerPicker(compilerEntry: CompilerEntry): void {

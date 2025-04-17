@@ -166,6 +166,18 @@ export class BootstrapUtils {
     }
 
     /**
+     * Get an existing modal instance for an element
+     * @param elementOrSelector Element or selector for the modal
+     * @returns Existing modal instance or null if not found
+     */
+    static getModalInstance(elementOrSelector: string | HTMLElement | JQuery): any | null {
+        const element = BootstrapUtils.getElement(elementOrSelector);
+        if (!element) return null;
+
+        return window.bootstrap.Modal.getInstance(element);
+    }
+
+    /**
      * Show a modal
      * @param elementOrSelector Element or selector for the modal
      */
@@ -254,6 +266,18 @@ export class BootstrapUtils {
     }
 
     /**
+     * Get an existing dropdown instance for an element
+     * @param elementOrSelector Element or selector for the dropdown
+     * @returns Existing dropdown instance or null if not found
+     */
+    static getDropdownInstance(elementOrSelector: string | HTMLElement | JQuery): any | null {
+        const element = BootstrapUtils.getElement(elementOrSelector);
+        if (!element) return null;
+
+        return window.bootstrap.Dropdown.getInstance(element);
+    }
+
+    /**
      * Show a dropdown
      * @param elementOrSelector Element or selector for the dropdown
      */
@@ -318,6 +342,18 @@ export class BootstrapUtils {
     }
 
     /**
+     * Get an existing popover instance for an element
+     * @param elementOrSelector Element or selector for the popover
+     * @returns Existing popover instance or null if not found
+     */
+    static getPopoverInstance(elementOrSelector: string | HTMLElement | JQuery): any | null {
+        const element = BootstrapUtils.getElement(elementOrSelector);
+        if (!element) return null;
+
+        return window.bootstrap.Popover.getInstance(element);
+    }
+
+    /**
      * Initialize a tab
      * @param elementOrSelector Element or selector for the tab
      * @returns Tab instance
@@ -363,5 +399,32 @@ export class BootstrapUtils {
         }
 
         return null;
+    }
+
+    /**
+     * Hide an existing popover if it exists
+     * @param elementOrSelector Element or selector for the popover
+     */
+    static hidePopover(elementOrSelector: string | HTMLElement | JQuery): void {
+        const popover = BootstrapUtils.getPopoverInstance(elementOrSelector);
+        if (popover) popover.hide();
+    }
+
+    /**
+     * Show an existing popover if it exists
+     * @param elementOrSelector Element or selector for the popover
+     */
+    static showPopover(elementOrSelector: string | HTMLElement | JQuery): void {
+        const popover = BootstrapUtils.getPopoverInstance(elementOrSelector);
+        if (popover) popover.show();
+    }
+
+    /**
+     * Show an existing modal if it exists (uses existing instance only)
+     * @param elementOrSelector Element or selector for the modal
+     */
+    static showModalIfExists(elementOrSelector: string | HTMLElement | JQuery): void {
+        const modal = BootstrapUtils.getModalInstance(elementOrSelector);
+        if (modal) modal.show();
     }
 }

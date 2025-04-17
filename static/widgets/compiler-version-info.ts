@@ -79,7 +79,7 @@ function reallySetCompilerVersionPopover(
             .on('click', () => {
                 versionContent.toggle();
                 hiddenVersionText.toggle();
-                const popover = BootstrapUtils.initPopoverIfExists(pane.fullCompilerName);
+                const popover = BootstrapUtils.getPopoverInstance(pane.fullCompilerName);
                 if (popover) popover.update();
             });
         hiddenSection.append(hiddenVersionText).append(clickToExpandContent);
@@ -87,7 +87,7 @@ function reallySetCompilerVersionPopover(
     }
 
     // Dispose of existing popover
-    const existingPopover = BootstrapUtils.initPopoverIfExists(pane.fullCompilerName);
+    const existingPopover = BootstrapUtils.getPopoverInstance(pane.fullCompilerName);
     if (existingPopover) existingPopover.dispose();
 
     // Initialize new popover

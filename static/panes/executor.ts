@@ -801,7 +801,7 @@ export class Executor extends Pane<ExecutorState> {
                 this.prependOptions.has(target as any).length === 0 &&
                 target.closest('.popover').length === 0
             ) {
-                const popover = BootstrapUtils.initPopoverIfExists(this.prependOptions);
+                const popover = BootstrapUtils.getPopoverInstance(this.prependOptions);
                 if (popover) popover.hide();
             }
 
@@ -810,7 +810,7 @@ export class Executor extends Pane<ExecutorState> {
                 this.fullCompilerName.has(target as any).length === 0 &&
                 target.closest('.popover').length === 0
             ) {
-                const popover = BootstrapUtils.initPopoverIfExists(this.fullCompilerName);
+                const popover = BootstrapUtils.getPopoverInstance(this.fullCompilerName);
                 if (popover) popover.hide();
             }
         });
@@ -968,7 +968,7 @@ export class Executor extends Pane<ExecutorState> {
         // Dismiss the popover on escape.
         $(document).on('keyup.editable', e => {
             if (e.which === 27) {
-                const popover = BootstrapUtils.initPopoverIfExists(this.libsButton);
+                const popover = BootstrapUtils.getPopoverInstance(this.libsButton);
                 if (popover) popover.hide();
             }
         });
@@ -1003,7 +1003,7 @@ export class Executor extends Pane<ExecutorState> {
             const elem = this.libsButton;
             const target = $(e.target);
             if (!target.is(elem) && elem.has(target as any).length === 0 && target.closest('.popover').length === 0) {
-                const popover = BootstrapUtils.initPopoverIfExists(elem);
+                const popover = BootstrapUtils.getPopoverInstance(elem);
                 if (popover) popover.hide();
             }
         });
@@ -1194,7 +1194,7 @@ export class Executor extends Pane<ExecutorState> {
 
     setCompilationOptionsPopover(content: string | null) {
         // Dispose of existing popover
-        const existingPopover = BootstrapUtils.initPopoverIfExists(this.prependOptions);
+        const existingPopover = BootstrapUtils.getPopoverInstance(this.prependOptions);
         if (existingPopover) existingPopover.dispose();
 
         // Initialize new popover

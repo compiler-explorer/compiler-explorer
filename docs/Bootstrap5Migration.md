@@ -101,12 +101,12 @@ allows for:
       - [x] panes/tree.ts
       - [x] panes/compiler.ts
       - [x] panes/editor.ts
-    - [ ] **Popover Handling**:
+    - [x] **Popover Handling**:
       - [x] main.ts
-      - [ ] widgets/compiler-version-info.ts
-      - [ ] panes/executor.ts
-      - [ ] panes/conformance-view.ts
-      - [ ] panes/cfg-view.ts
+      - [x] widgets/compiler-version-info.ts
+      - [x] panes/executor.ts
+      - [x] panes/conformance-view.ts
+      - [x] panes/cfg-view.ts
 - [ ] Test the compatibility layer with basic components
 
 ### Notes for Human Testers (Phase 4)
