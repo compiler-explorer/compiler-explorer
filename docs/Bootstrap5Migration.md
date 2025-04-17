@@ -23,6 +23,13 @@ allows for:
 - [x] Update webpack configuration if needed for Bootstrap 5 compatibility
 - [x] Verify the application still builds and runs with basic functionality
 
+### Notes for Human Testers (Phase 1)
+- At this phase, the application will have console errors related to Bootstrap component initialization
+- Tom Select dropdowns (like compiler picker) may have styling differences with the new bootstrap5 theme
+- Initial page load should still work, but dropdown functionality will be broken
+- Modal dialogs like Settings and Sharing may not function correctly
+- The primary layout and basic display of panes should still function
+
 ## Phase 2: Global CSS Class Migration
 
 - [x] Update directional utility classes (ml/mr → ms/me)
@@ -33,6 +40,19 @@ allows for:
 - [x] Update text alignment classes (text-left/right → text-start/end)
 - [x] Update other renamed classes (badge-pill → rounded-pill, etc.)
 - [ ] Test and verify styling changes
+
+### Notes for Human Testers (Phase 2)
+- Look for proper spacing and margin alignment in the UI
+- Specific components to check:
+  - Compiler output area: Check the spacing in compiler.pug (short-compiler-name, compile-info spans)
+  - Navbar spacing: The navbar items should maintain proper spacing (ms/me instead of ml/mr)
+  - Code editor components: Check the button and icon alignment in codeEditor.pug
+  - Tree view components: The tree.pug file had utility class changes
+  - Alert messages (widgets/alert.ts): Check that toast messages appear with correct alignment
+  - Compiler picker (compiler-picker.ts and compiler-picker-popup.ts): Check dropdown spacing
+  - Rounded badge display in menu-policies.pug (now using rounded-pill instead of badge-pill)
+- The float-end class replaces float-right in the index.pug file's copy buttons
+- Any LTR/RTL layout impacts should be especially checked for correct directionality
 
 ## Phase 3: HTML Attribute Updates
 
@@ -45,6 +65,18 @@ allows for:
     - [ ] Other data attributes as needed
 - [ ] Test components to ensure they function correctly with new attributes
 
+### Notes for Human Testers (Phase 3)
+- This phase should restore basic functionality of several Bootstrap components
+- Specific components to check:
+  - Dropdowns: All dropdown menus throughout the application should open/close properly
+  - Modal dialogs: Settings, Sharing, and other modal dialogs should open/close correctly
+  - Tooltips: Hover tooltips (using data-bs-toggle="tooltip") should display properly
+  - Popovers: Any popovers used in the UI should function correctly
+  - Collapse components: Any collapsible sections should toggle properly
+  - Tabs: Any tabbed interfaces should switch between tabs correctly
+- Watch for console errors related to Bootstrap component initialization
+- Some JavaScript component initialization may still be broken until Phase 4 is completed
+
 ## Phase 4: JavaScript API Compatibility Layer
 
 - [ ] Create a Bootstrap compatibility utility module to abstract component initialization
@@ -53,6 +85,22 @@ allows for:
 - [ ] Define methods for each component type (Modal, Dropdown, Toast, etc.)
 - [ ] Implement both jQuery and native JS paths depending on configuration
 - [ ] Test the compatibility layer with basic components
+
+### Notes for Human Testers (Phase 4)
+- This is one of the most critical phases as it involves creating a compatibility layer for the JavaScript API
+- A new utility file will be created for component initialization that abstracts Bootstrap 5's new approach
+- Key differences to watch for:
+  - Modal initialization and events: Bootstrap 5 uses a completely different event system
+  - Dropdown initialization: Now requires explicit instantiation via JavaScript
+  - Toast components: The API has changed significantly
+  - Popover/Tooltip initialization: These now need explicit initialization
+- Components to thoroughly test:
+  - Alert dialogs (widgets/alert.ts): Check all types of alerts (info, warning, error)
+  - Sharing functionality (sharing.ts): The share modal should work properly
+  - Compiler picker popup (compiler-picker-popup.ts): Should display and function correctly
+  - All dropdown menus: Should open and close properly
+  - All tooltips and popovers: Should display correctly on hover/click
+- Watch for event handling issues where Bootstrap 4 events no longer exist or are renamed
 
 ## Phase 5: Component Migration (By Component Type)
 
