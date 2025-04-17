@@ -114,9 +114,9 @@ allows for:
 - A new utility file will be created for component initialization that abstracts Bootstrap 5's new approach
 - Key differences to watch for:
   - Modal initialization and events: Bootstrap 5 uses a completely different event system
-  - Dropdown initialization: Now requires explicit instantiation via JavaScript
+  - Dropdown initialization: Works with data attributes but requires `data-bs-toggle` instead of `data-toggle`
   - Toast components: The API has changed significantly
-  - Popover/Tooltip initialization: These now need explicit initialization
+  - Popover/Tooltip initialization: API changes but still support data attributes with proper prefixes
 - Components to thoroughly test:
   - Alert dialogs (widgets/alert.ts): Check all types of alerts (info, warning, error)
   - Sharing functionality (sharing.ts): The share modal should work properly
@@ -124,6 +124,13 @@ allows for:
   - All dropdown menus: Should open and close properly
   - All tooltips and popovers: Should display correctly on hover/click
 - Watch for event handling issues where Bootstrap 4 events no longer exist or are renamed
+
+### Key Learnings From Implementation
+- **Data Attributes Still Work Without JavaScript Initialization**: Despite some documentation suggesting otherwise, Bootstrap 5 components with data attributes (like tabs) still work without explicit JavaScript initialization. The key is using the correct `data-bs-*` prefix.
+- **Close Button Implementation Completely Changed**: Bootstrap 4 used `.close` class with a `&times;` entity inside a span, while Bootstrap 5 uses `.btn-close` class with a background image and no inner content.
+- **Easy to Miss Data Attributes**: Initial migration scripts may miss data attributes in template files and JavaScript. Double-check all files for remaining `data-toggle`, `data-placement`, etc., attributes.
+- **Tab Navigation Issues**: The tab navigation problems were fixed by simply updating data attributes, not by adding JavaScript initialization.
+- **jQuery Plugin Methods Removal**: jQuery methods like `.popover()` need to be replaced with code that uses the Bootstrap 5 API through a compatibility layer.
 
 ## Phase 5: Component Migration (By Component Type)
 
