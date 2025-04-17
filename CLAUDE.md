@@ -27,6 +27,11 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 - Write tests for new server-side components
 - Where appropriate suggest follow-up improvements to code to improve code quality, and DRY up where feasible
 - Documentation is in `docs/` directory; update where necessary, in particular if anything about the RESTful API changes
+- Don't add comments above code that's clearly self-documenting. For example, don't put comments like this:
+  ```
+  // Initialises the thing
+  initialiseThing();
+  ```
 
 ## Testing Guidelines
 - Use Vitest for unit tests (compatible with Jest syntax)

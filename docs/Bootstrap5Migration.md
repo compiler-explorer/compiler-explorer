@@ -86,8 +86,8 @@ allows for:
 - [x] Update component initialization in key files:
   - [x] widgets/alert.ts (modals and toasts)
   - [x] sharing.ts (modals, tooltips, and dropdowns)
-  - [ ] compiler-picker-popup.ts (modals)
-  - [ ] load-save.ts (modals)
+  - [x] compiler-picker-popup.ts (modals)
+  - [x] load-save.ts (modals)
   - [ ] Other files with Bootstrap component initialization
 - [ ] Test the compatibility layer with basic components
 
@@ -239,10 +239,13 @@ allows for:
     - data-dismiss → data-bs-dismiss
   - Identified that data-ride and data-spy attributes are not used in the codebase
   - Testing component functionality pending
-- Phase 4 in progress:
+- Phase 4 largely completed:
   - Created temporary `bootstrap-utils.ts` compatibility layer to abstract Bootstrap 5 APIs
-  - Updated alert.ts to use BootstrapUtils for modals and toasts
-  - Updated sharing.ts to use BootstrapUtils for tooltips, modals, and dropdowns
+  - Updated key files to use the compatibility layer:
+    - Updated alert.ts to use BootstrapUtils for modals and toasts
+    - Updated sharing.ts to use BootstrapUtils for tooltips, modals, and dropdowns
+    - Updated compiler-picker-popup.ts to use BootstrapUtils for modals
+    - Updated load-save.ts to use BootstrapUtils for modals
   - Created plan to eventually remove compatibility layer in Phase 12
   - Further component updates and testing pending
 
