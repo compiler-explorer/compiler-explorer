@@ -283,6 +283,8 @@ The following issues need to be addressed as part of the ongoing Bootstrap 5 mig
    - Templates view is very long and thin
    - ~~All dialogs look weird, likely related to tab issues~~ ✓ Fixed
    - The "other" dropdown clips off the right hand side of the page
+   - TomSelect dropdowns are missing the dropdown arrow, and the "pop out" button isn't styled correctly
+   - "IDE mode" has unwanted border lines around everything
    
    *Dialog appearance was fixed by updating close buttons from Bootstrap 4's `.close` class with `&times;` to Bootstrap 5's `.btn-close` class which uses a background image.*
 
@@ -303,6 +305,8 @@ The following issues need to be addressed as part of the ongoing Bootstrap 5 mig
    - Use `BootstrapUtils` compatibility layer consistently throughout codebase
    - ~~Fix tab navigation in modals (high priority)~~ ✓ Fixed
    - Address UI layout issues in dropdowns and dialogs
-   - Investigate remaining dialog appearance issues
+   - Fix TomSelect styling and dropdown arrows
+   - Investigate IDE mode border styling issues
+   - ~~Investigate remaining dialog appearance issues~~ ✓ Fixed
 
 This plan will be updated as progress is made, with each completed step marked accordingly.
