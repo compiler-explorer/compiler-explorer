@@ -393,8 +393,6 @@ export class RuntimeToolsWidget {
 
         const lastOverrides = JSON.stringify(this.configured);
 
-        BootstrapUtils.showModal(this.popupDomRoot);
-
         // popup is shared, so clear the events first
         this.popupDomRoot.off('hidden.bs.modal').on('hidden.bs.modal', () => {
             this.configured = this.loadStateFromUI();
@@ -406,5 +404,7 @@ export class RuntimeToolsWidget {
                 this.onChangeCallback();
             }
         });
+
+        BootstrapUtils.showModal(this.popupDomRoot);
     }
 }
