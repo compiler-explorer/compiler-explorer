@@ -3054,14 +3054,14 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
                 this.prependOptions.has(target as unknown as Element).length === 0 &&
                 target.closest('.popover').length === 0
             )
-                this.prependOptions.popover('hide');
+                BootstrapUtils.hidePopover(this.prependOptions);
 
             if (
                 !target.is(this.fullCompilerName) &&
                 this.fullCompilerName.has(target as unknown as Element).length === 0 &&
                 target.closest('.popover').length === 0
             )
-                this.fullCompilerName.popover('hide');
+                BootstrapUtils.hidePopover(this.fullCompilerName);
         });
     }
 
@@ -3105,7 +3105,7 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
         // Dismiss the popover on escape.
         $(document).on('keyup.editable', e => {
             if (e.which === 27) {
-                this.libsButton.popover('hide');
+                BootstrapUtils.hidePopover(this.libsButton);
             }
         });
 
@@ -3119,7 +3119,7 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
                 elem.has(target as unknown as Element).length === 0 &&
                 target.closest('.popover').length === 0
             ) {
-                elem.popover('hide');
+                BootstrapUtils.hidePopover(elem);
             }
         });
     }
@@ -3461,8 +3461,13 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
     setCompilationOptionsPopover(content: string | null, warnings: string[]): void {
         const infoLine =
             '<div class="compiler-arg-warning info">You can configure icon animations in Settings>Compilation</div>\n';
-        this.prependOptions.popover('dispose');
-        this.prependOptions.popover({
+
+        // Dispose any existing popover
+        const existingPopover = BootstrapUtils.getPopoverInstance(this.prependOptions);
+        if (existingPopover) existingPopover.dispose();
+
+        // Create new popover
+        BootstrapUtils.initPopover(this.prependOptions, {
             content:
                 warnings.map(w => `<div class="compiler-arg-warning">${w}</div>`).join('\n') +
                 '\n' +

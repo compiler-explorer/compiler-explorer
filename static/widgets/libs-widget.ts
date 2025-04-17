@@ -343,11 +343,14 @@ export class LibsWidget {
     }
 
     hidePopups() {
-        this.searchResults.find('.lib-info-button').popover('hide');
+        this.searchResults.find('.lib-info-button').each((_, el) => BootstrapUtils.hidePopover($(el)));
     }
 
     clearSearchResults() {
-        this.searchResults.find('.lib-info-button').popover('dispose');
+        this.searchResults.find('.lib-info-button').each((_, el) => {
+            const popover = BootstrapUtils.getPopoverInstance($(el));
+            if (popover) popover.dispose();
+        });
         this.searchResults.html('');
     }
 
@@ -499,7 +502,7 @@ export class LibsWidget {
             '<div class="arrow"></div>' +
             '<h3 class="popover-header"></h3><div class="popover-body"></div>' +
             '</div>';
-        infoButton.popover({
+        BootstrapUtils.initPopover(infoButton, {
             html: true,
             title: 'Build info for ' + getCompilerName(this.currentCompilerId),
             content: () => {

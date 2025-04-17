@@ -101,8 +101,7 @@ export class Conformance extends Pane<ConformanceViewState> {
         // Dismiss the popover on escape.
         $(document).on('keyup.editable', e => {
             if (e.which === 27) {
-                const popover = BootstrapUtils.getPopoverInstance(this.libsButton);
-                if (popover) popover.hide();
+                BootstrapUtils.hidePopover(this.libsButton);
             }
         });
 
@@ -116,8 +115,7 @@ export class Conformance extends Pane<ConformanceViewState> {
                 elem.has(target as unknown as Element).length === 0 &&
                 target.closest('.popover').length === 0
             ) {
-                const popover = BootstrapUtils.getPopoverInstance(elem);
-                if (popover) popover.hide();
+                BootstrapUtils.hidePopover(elem);
             }
         });
     }

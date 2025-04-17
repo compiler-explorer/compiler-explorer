@@ -542,7 +542,7 @@ export class Editor extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Edit
         });
 
         this.languageInfoButton = this.domRoot.find('.language-info');
-        this.languageInfoButton.popover({});
+        BootstrapUtils.initPopover(this.languageInfoButton);
         this.languageBtn = this.domRoot.find('.change-language');
         const changeLanguageButton = this.languageBtn[0];
         assert(changeLanguageButton instanceof HTMLSelectElement);
@@ -1965,9 +1965,12 @@ export class Editor extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Edit
     onCompiler(compilerId: number, compiler: unknown, options: string, editorId: number, treeId: number): void {}
 
     updateLanguageTooltip() {
-        this.languageInfoButton.popover('dispose');
+        // Dispose existing popover instance
+        const existingPopover = BootstrapUtils.getPopoverInstance(this.languageInfoButton);
+        if (existingPopover) existingPopover.dispose();
+
         if (this.currentLanguage?.tooltip) {
-            this.languageInfoButton.popover({
+            BootstrapUtils.initPopover(this.languageInfoButton, {
                 title: 'More info about this language',
                 content: this.currentLanguage.tooltip,
                 container: 'body',
