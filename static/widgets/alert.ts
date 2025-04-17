@@ -108,8 +108,8 @@ export class Alert {
         const newElement = $(`
             <div class="toast" tabindex="-1" role="alert" aria-live="assertive" aria-atomic="true">
                 <div class="toast-header ${alertClass}">
-                    <strong class="mr-auto">${this.prefixMessage}</strong>
-                    <button type="button" class="ml-2 mb-1 close" data-dismiss="toast" aria-label="Close">
+                    <strong class="me-auto">${this.prefixMessage}</strong>
+                    <button type="button" class="ms-2 mb-1 close" data-dismiss="toast" aria-label="Close">
                         <span aria-hidden="true">&times;</span>
                     </button>
                 </div>

@@ -25,13 +25,13 @@ allows for:
 
 ## Phase 2: Global CSS Class Migration
 
-- [ ] Update directional utility classes (ml/mr → ms/me)
-    - [ ] Search and replace in .pug templates
-    - [ ] Search and replace in .scss files
-    - [ ] Search and replace in JavaScript/TypeScript files that generate HTML
-- [ ] Update floating utility classes (float-left/right → float-start/end)
-- [ ] Update text alignment classes (text-left/right → text-start/end)
-- [ ] Update other renamed classes (badge-pill → rounded-pill, etc.)
+- [x] Update directional utility classes (ml/mr → ms/me)
+    - [x] Search and replace in .pug templates
+    - [x] Search and replace in .scss files
+    - [x] Search and replace in JavaScript/TypeScript files that generate HTML
+- [x] Update floating utility classes (float-left/right → float-start/end)
+- [x] Update text alignment classes (text-left/right → text-start/end)
+- [x] Update other renamed classes (badge-pill → rounded-pill, etc.)
 - [ ] Test and verify styling changes
 
 ## Phase 3: HTML Attribute Updates
@@ -170,5 +170,11 @@ allows for:
   - Updated import statements in main.ts and noscript.ts
   - Successfully built with webpack
   - Basic functionality verified (with expected issues due to pending component updates)
+- Phase 2 largely completed:
+  - Updated directional utility classes (ml/mr → ms/me)
+  - Updated floating utility classes (float-left/right → float-start/end)
+  - Updated text alignment classes (text-left/right → text-start/end)
+  - Updated other renamed classes (badge-pill → rounded-pill, etc.)
+  - Testing and verification of styling changes pending
 
 This plan will be updated as progress is made, with each completed step marked accordingly.

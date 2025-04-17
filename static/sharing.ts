@@ -455,7 +455,7 @@ export class Sharing {
             const newElement = baseTemplate.children('a.share-item').clone();
             if (service.logoClass) {
                 newElement.prepend(
-                    $('<span>').addClass('dropdown-icon mr-1').addClass(service.logoClass).prop('title', serviceName),
+                    $('<span>').addClass('dropdown-icon me-1').addClass(service.logoClass).prop('title', serviceName),
                 );
             }
             if (service.text) {

@@ -186,7 +186,7 @@ export class CompilerPickerPopup {
                     `
                     <div class="compiler d-flex" data-value="${compiler.id}">
                         <div>${searchRegexes ? highlight(name, searchRegexes) : name}</div>
-                        <div title="Click to mark or unmark as a favorite" class="ml-auto toggle-fav">
+                        <div title="Click to mark or unmark as a favorite" class="ms-auto toggle-fav">
                             <i class="${extraClasses}"></i>
                         </div>
                     </div>

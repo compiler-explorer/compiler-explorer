@@ -1921,7 +1921,7 @@ export class Editor extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Edit
     ): string {
         let result =
             '<div class="d-flex" style="align-items: center">' +
-            '<div class="mr-1 d-flex" style="align-items: center">' +
+            '<div class="me-1 d-flex" style="align-items: center">' +
             '<img src="' +
             (data.logoData ? data.logoData : '') +
             '" class="' +
