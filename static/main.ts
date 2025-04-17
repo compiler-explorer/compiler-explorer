@@ -62,6 +62,7 @@ import {ComponentConfig, EmptyCompilerState, StateWithId, StateWithLanguage} fro
 import {CompilerExplorerOptions} from './global.js';
 
 import * as utils from '../shared/common-utils.js';
+import {BootstrapUtils} from './bootstrap-utils.js';
 import {ParseFiltersAndOutputOptions} from './features/filters.interfaces.js';
 import {localStorage, sessionThenLocalStorage} from './local.js';
 import {Printerinator} from './print-view.js';
@@ -225,7 +226,7 @@ function setupButtons(options: CompilerExplorerOptions, hub: Hub) {
             window.location.reload();
         });
 
-        $('#history').modal();
+        BootstrapUtils.showModal('#history');
     });
 
     $('#ui-apply-default-font-scale').on('click', () => {
@@ -530,7 +531,7 @@ function initShortlinkInfoButton() {
         buttonText.html('');
 
         const button = $('.shortlinkInfo');
-        button.popover({
+        BootstrapUtils.initPopover(button, {
             html: true,
             title: 'Link created',
             content: formatISODate(dt, true),
