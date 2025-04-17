@@ -88,7 +88,25 @@ allows for:
   - [x] sharing.ts (modals, tooltips, and dropdowns)
   - [x] compiler-picker-popup.ts (modals)
   - [x] load-save.ts (modals)
-  - [ ] Other files with Bootstrap component initialization
+  - [ ] Other files with Bootstrap component initialization:
+    - [ ] **Modal Initialization**:
+      - [x] widgets/site-templates-widget.ts
+      - [x] widgets/runtime-tools.ts
+      - [x] widgets/compiler-overrides.ts
+      - [x] widgets/timing-info-widget.ts
+      - [x] widgets/history-widget.ts
+      - [ ] widgets/libs-widget.ts
+      - [ ] main.ts
+    - [ ] **Dropdown Handling**:
+      - [ ] panes/tree.ts
+      - [ ] panes/compiler.ts
+      - [ ] panes/editor.ts
+    - [ ] **Popover Handling**:
+      - [ ] main.ts
+      - [ ] widgets/compiler-version-info.ts
+      - [ ] panes/executor.ts
+      - [ ] panes/conformance-view.ts
+      - [ ] panes/cfg-view.ts
 - [ ] Test the compatibility layer with basic components
 
 ### Notes for Human Testers (Phase 4)

@@ -30,6 +30,7 @@ import {
     EnvVarOverrides,
 } from '../../types/compilation/compiler-overrides.interfaces.js';
 import {assert, unwrap} from '../assert.js';
+import {BootstrapUtils} from '../bootstrap-utils.js';
 import {CompilerInfo} from '../compiler.interfaces.js';
 import {localStorage} from '../local.js';
 import {options} from '../options.js';
@@ -416,9 +417,10 @@ export class CompilerOverridesWidget {
 
         const lastOverrides = JSON.stringify(this.configured);
 
-        const popup = this.popupDomRoot.modal();
+        BootstrapUtils.showModal(this.popupDomRoot);
+
         // popup is shared, so clear the events first
-        popup.off('hidden.bs.modal').on('hidden.bs.modal', () => {
+        this.popupDomRoot.off('hidden.bs.modal').on('hidden.bs.modal', () => {
             this.configured = this.loadStateFromUI();
 
             const newOverrides = JSON.stringify(this.configured);

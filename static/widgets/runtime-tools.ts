@@ -32,6 +32,7 @@ import {
     RuntimeToolType,
 } from '../../types/execution/execution.interfaces.js';
 import {assert} from '../assert.js';
+import {BootstrapUtils} from '../bootstrap-utils.js';
 import {CompilerInfo} from '../compiler.interfaces.js';
 import {localStorage} from '../local.js';
 import {options} from '../options.js';
@@ -392,9 +393,10 @@ export class RuntimeToolsWidget {
 
         const lastOverrides = JSON.stringify(this.configured);
 
-        const popup = this.popupDomRoot.modal();
+        BootstrapUtils.showModal(this.popupDomRoot);
+
         // popup is shared, so clear the events first
-        popup.off('hidden.bs.modal').on('hidden.bs.modal', () => {
+        this.popupDomRoot.off('hidden.bs.modal').on('hidden.bs.modal', () => {
             this.configured = this.loadStateFromUI();
 
             const newOverrides = JSON.stringify(this.configured);
