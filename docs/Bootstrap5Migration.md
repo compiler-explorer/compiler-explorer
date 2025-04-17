@@ -97,10 +97,10 @@ allows for:
       - [x] widgets/history-widget.ts
       - [x] widgets/libs-widget.ts
       - [x] main.ts
-    - [ ] **Dropdown Handling**:
-      - [ ] panes/tree.ts
-      - [ ] panes/compiler.ts
-      - [ ] panes/editor.ts
+    - [x] **Dropdown Handling**:
+      - [x] panes/tree.ts
+      - [x] panes/compiler.ts
+      - [x] panes/editor.ts
     - [ ] **Popover Handling**:
       - [x] main.ts
       - [ ] widgets/compiler-version-info.ts

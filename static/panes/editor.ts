@@ -29,6 +29,7 @@ import * as monaco from 'monaco-editor';
 import * as monacoVim from 'monaco-vim';
 import TomSelect from 'tom-select';
 import _ from 'underscore';
+import {BootstrapUtils} from '../bootstrap-utils.js';
 import * as colour from '../colour.js';
 import * as Components from '../components.js';
 import * as monacoConfig from '../monaco-config.js';
@@ -598,7 +599,7 @@ export class Editor extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Edit
                 .createDragSource(dragSource, dragConfig)
                 // @ts-expect-error: createDragSource returns not void
                 ._dragListener.on('dragStart', () => {
-                    paneAdderDropdown.dropdown('toggle');
+                    BootstrapUtils.initDropdown(paneAdderDropdown).toggle();
                 });
 
             dragSource.on('click', () => {
