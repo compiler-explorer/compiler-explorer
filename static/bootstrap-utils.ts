@@ -38,105 +38,8 @@
 
 import $ from 'jquery';
 
-// Import Bootstrap JS
 import 'bootstrap';
-
-// Type definitions for Bootstrap 5 objects
-declare global {
-    interface Window {
-        bootstrap: {
-            Modal: ModalClass;
-            Dropdown: DropdownClass;
-            Toast: ToastClass;
-            Tooltip: TooltipClass;
-            Popover: PopoverClass;
-            Tab: TabClass;
-            Collapse: CollapseClass;
-        };
-    }
-
-    interface ModalClass {
-        new (element: HTMLElement, options?: any): ModalInstance;
-        getInstance(element: HTMLElement): ModalInstance | null;
-    }
-
-    interface ModalInstance {
-        show(): void;
-        hide(): void;
-        toggle(): void;
-        dispose(): void;
-    }
-
-    interface DropdownClass {
-        new (element: HTMLElement, options?: any): DropdownInstance;
-        getInstance(element: HTMLElement): DropdownInstance | null;
-    }
-
-    interface DropdownInstance {
-        show(): void;
-        hide(): void;
-        toggle(): void;
-        dispose(): void;
-    }
-
-    interface ToastClass {
-        new (element: HTMLElement, options?: any): ToastInstance;
-        getInstance(element: HTMLElement): ToastInstance | null;
-    }
-
-    interface ToastInstance {
-        show(): void;
-        hide(): void;
-        dispose(): void;
-    }
-
-    interface TooltipClass {
-        new (element: HTMLElement, options?: any): TooltipInstance;
-        getInstance(element: HTMLElement): TooltipInstance | null;
-    }
-
-    interface TooltipInstance {
-        show(): void;
-        hide(): void;
-        toggle(): void;
-        dispose(): void;
-    }
-
-    interface PopoverClass {
-        new (element: HTMLElement, options?: any): PopoverInstance;
-        getInstance(element: HTMLElement): PopoverInstance | null;
-    }
-
-    interface PopoverInstance {
-        show(): void;
-        hide(): void;
-        toggle(): void;
-        dispose(): void;
-        update(): void;
-    }
-
-    interface TabClass {
-        new (element: HTMLElement): TabInstance;
-        getInstance(element: HTMLElement): TabInstance | null;
-    }
-
-    interface TabInstance {
-        show(): void;
-        dispose(): void;
-    }
-
-    interface CollapseClass {
-        new (element: HTMLElement, options?: any): CollapseInstance;
-        getInstance(element: HTMLElement): CollapseInstance | null;
-    }
-
-    interface CollapseInstance {
-        show(): void;
-        hide(): void;
-        toggle(): void;
-        dispose(): void;
-    }
-}
+import {Collapse, Dropdown, Modal, Popover, Tab, Toast, Tooltip} from 'bootstrap';
 
 export class BootstrapUtils {
     /**
@@ -146,11 +49,11 @@ export class BootstrapUtils {
      * @returns Modal instance
      * @throws Error if the element cannot be found
      */
-    static initModal(elementOrSelector: string | HTMLElement | JQuery, options?: any): ModalInstance {
+    static initModal(elementOrSelector: string | HTMLElement | JQuery, options?: Partial<Modal.Options>): Modal {
         const element = BootstrapUtils.getElement(elementOrSelector);
         if (!element) throw new Error(`Failed to find element for modal: ${elementOrSelector}`);
 
-        return new window.bootstrap.Modal(element, options);
+        return new Modal(element, options);
     }
 
     /**
@@ -159,11 +62,14 @@ export class BootstrapUtils {
      * @param options Modal options
      * @returns Modal instance or null if the element cannot be found
      */
-    static initModalIfExists(elementOrSelector: string | HTMLElement | JQuery, options?: any): ModalInstance | null {
+    static initModalIfExists(
+        elementOrSelector: string | HTMLElement | JQuery,
+        options?: Partial<Modal.Options>,
+    ): Modal | null {
         const element = BootstrapUtils.getElement(elementOrSelector);
         if (!element) return null;
 
-        return new window.bootstrap.Modal(element, options);
+        return new Modal(element, options);
     }
 
     /**
@@ -171,11 +77,11 @@ export class BootstrapUtils {
      * @param elementOrSelector Element or selector for the modal
      * @returns Existing modal instance or null if not found
      */
-    static getModalInstance(elementOrSelector: string | HTMLElement | JQuery): ModalInstance | null {
+    static getModalInstance(elementOrSelector: string | HTMLElement | JQuery): Modal | null {
         const element = BootstrapUtils.getElement(elementOrSelector);
         if (!element) return null;
 
-        return window.bootstrap.Modal.getInstance(element);
+        return Modal.getInstance(element);
     }
 
     /**
@@ -186,7 +92,7 @@ export class BootstrapUtils {
         const element = BootstrapUtils.getElement(elementOrSelector);
         if (!element) return;
 
-        const modal = window.bootstrap.Modal.getInstance(element) || new window.bootstrap.Modal(element);
+        const modal = Modal.getInstance(element) || new Modal(element);
         modal.show();
     }
 
@@ -198,7 +104,7 @@ export class BootstrapUtils {
         const element = BootstrapUtils.getElement(elementOrSelector);
         if (!element) return;
 
-        const modal = window.bootstrap.Modal.getInstance(element);
+        const modal = Modal.getInstance(element);
         if (modal) modal.hide();
     }
 
@@ -208,11 +114,11 @@ export class BootstrapUtils {
      * @param options Toast options
      * @returns Toast instance
      */
-    static initToast(elementOrSelector: string | HTMLElement | JQuery, options?: any): ToastInstance {
+    static initToast(elementOrSelector: string | HTMLElement | JQuery, options?: Partial<Toast.Options>): Toast {
         const element = BootstrapUtils.getElement(elementOrSelector);
         if (!element) throw new Error(`Failed to find element for toast: ${elementOrSelector}`);
 
-        return new window.bootstrap.Toast(element, options);
+        return new Toast(element, options);
     }
 
     /**
@@ -221,11 +127,14 @@ export class BootstrapUtils {
      * @param options Toast options
      * @returns Toast instance or null if element doesn't exist
      */
-    static initToastIfExists(elementOrSelector: string | HTMLElement | JQuery, options?: any): ToastInstance | null {
+    static initToastIfExists(
+        elementOrSelector: string | HTMLElement | JQuery,
+        options?: Partial<Toast.Options>,
+    ): Toast | null {
         const element = BootstrapUtils.getElement(elementOrSelector);
         if (!element) return null;
 
-        return new window.bootstrap.Toast(element, options);
+        return new Toast(element, options);
     }
 
     /**
@@ -236,7 +145,7 @@ export class BootstrapUtils {
         const element = BootstrapUtils.getElement(elementOrSelector);
         if (!element) return;
 
-        const toast = window.bootstrap.Toast.getInstance(element) || new window.bootstrap.Toast(element);
+        const toast = Toast.getInstance(element) || new Toast(element);
         toast.show();
     }
 
@@ -248,7 +157,7 @@ export class BootstrapUtils {
         const element = BootstrapUtils.getElement(elementOrSelector);
         if (!element) return;
 
-        const toast = window.bootstrap.Toast.getInstance(element);
+        const toast = Toast.getInstance(element);
         if (toast) toast.hide();
     }
 
@@ -259,11 +168,14 @@ export class BootstrapUtils {
      * @returns Dropdown instance
      * @throws Error if the element cannot be found
      */
-    static initDropdown(elementOrSelector: string | HTMLElement | JQuery, options?: any): DropdownInstance {
+    static initDropdown(
+        elementOrSelector: string | HTMLElement | JQuery,
+        options?: Partial<Dropdown.Options>,
+    ): Dropdown {
         const element = BootstrapUtils.getElement(elementOrSelector);
         if (!element) throw new Error(`Failed to find element for dropdown: ${elementOrSelector}`);
 
-        return new window.bootstrap.Dropdown(element, options);
+        return new Dropdown(element, options);
     }
 
     /**
@@ -274,12 +186,12 @@ export class BootstrapUtils {
      */
     static initDropdownIfExists(
         elementOrSelector: string | HTMLElement | JQuery,
-        options?: any,
-    ): DropdownInstance | null {
+        options?: Partial<Dropdown.Options>,
+    ): Dropdown | null {
         const element = BootstrapUtils.getElement(elementOrSelector);
         if (!element) return null;
 
-        return new window.bootstrap.Dropdown(element, options);
+        return new Dropdown(element, options);
     }
 
     /**
@@ -287,11 +199,11 @@ export class BootstrapUtils {
      * @param elementOrSelector Element or selector for the dropdown
      * @returns Existing dropdown instance or null if not found
      */
-    static getDropdownInstance(elementOrSelector: string | HTMLElement | JQuery): DropdownInstance | null {
+    static getDropdownInstance(elementOrSelector: string | HTMLElement | JQuery): Dropdown | null {
         const element = BootstrapUtils.getElement(elementOrSelector);
         if (!element) return null;
 
-        return window.bootstrap.Dropdown.getInstance(element);
+        return Dropdown.getInstance(element);
     }
 
     /**
@@ -302,7 +214,7 @@ export class BootstrapUtils {
         const element = BootstrapUtils.getElement(elementOrSelector);
         if (!element) return;
 
-        const dropdown = window.bootstrap.Dropdown.getInstance(element) || new window.bootstrap.Dropdown(element);
+        const dropdown = Dropdown.getInstance(element) || new Dropdown(element);
         dropdown.show();
     }
 
@@ -314,7 +226,7 @@ export class BootstrapUtils {
         const element = BootstrapUtils.getElement(elementOrSelector);
         if (!element) return;
 
-        const dropdown = window.bootstrap.Dropdown.getInstance(element);
+        const dropdown = Dropdown.getInstance(element);
         if (dropdown) dropdown.hide();
     }
 
@@ -324,11 +236,11 @@ export class BootstrapUtils {
      * @param options Tooltip options
      * @returns Tooltip instance
      */
-    static initTooltip(elementOrSelector: string | HTMLElement | JQuery, options?: any): TooltipInstance {
+    static initTooltip(elementOrSelector: string | HTMLElement | JQuery, options?: Partial<Tooltip.Options>): Tooltip {
         const element = BootstrapUtils.getElement(elementOrSelector);
         if (!element) throw new Error(`Failed to find element for tooltip: ${elementOrSelector}`);
 
-        return new window.bootstrap.Tooltip(element, options);
+        return new Tooltip(element, options);
     }
 
     /**
@@ -339,12 +251,12 @@ export class BootstrapUtils {
      */
     static initTooltipIfExists(
         elementOrSelector: string | HTMLElement | JQuery,
-        options?: any,
-    ): TooltipInstance | null {
+        options?: Partial<Tooltip.Options>,
+    ): Tooltip | null {
         const element = BootstrapUtils.getElement(elementOrSelector);
         if (!element) return null;
 
-        return new window.bootstrap.Tooltip(element, options);
+        return new Tooltip(element, options);
     }
 
     /**
@@ -354,11 +266,11 @@ export class BootstrapUtils {
      * @returns Popover instance
      * @throws Error if the element cannot be found
      */
-    static initPopover(elementOrSelector: string | HTMLElement | JQuery, options?: any): PopoverInstance {
+    static initPopover(elementOrSelector: string | HTMLElement | JQuery, options?: Partial<Popover.Options>): Popover {
         const element = BootstrapUtils.getElement(elementOrSelector);
         if (!element) throw new Error(`Failed to find element for popover: ${elementOrSelector}`);
 
-        return new window.bootstrap.Popover(element, options);
+        return new Popover(element, options);
     }
 
     /**
@@ -369,12 +281,12 @@ export class BootstrapUtils {
      */
     static initPopoverIfExists(
         elementOrSelector: string | HTMLElement | JQuery,
-        options?: any,
-    ): PopoverInstance | null {
+        options?: Partial<Popover.Options>,
+    ): Popover | null {
         const element = BootstrapUtils.getElement(elementOrSelector);
         if (!element) return null;
 
-        return new window.bootstrap.Popover(element, options);
+        return new Popover(element, options);
     }
 
     /**
@@ -382,11 +294,11 @@ export class BootstrapUtils {
      * @param elementOrSelector Element or selector for the popover
      * @returns Existing popover instance or null if not found
      */
-    static getPopoverInstance(elementOrSelector: string | HTMLElement | JQuery): PopoverInstance | null {
+    static getPopoverInstance(elementOrSelector: string | HTMLElement | JQuery): Popover | null {
         const element = BootstrapUtils.getElement(elementOrSelector);
         if (!element) return null;
 
-        return window.bootstrap.Popover.getInstance(element);
+        return Popover.getInstance(element);
     }
 
     /**
@@ -394,11 +306,11 @@ export class BootstrapUtils {
      * @param elementOrSelector Element or selector for the tab
      * @returns Tab instance
      */
-    static initTab(elementOrSelector: string | HTMLElement | JQuery): TabInstance {
+    static initTab(elementOrSelector: string | HTMLElement | JQuery): Tab {
         const element = BootstrapUtils.getElement(elementOrSelector);
         if (!element) throw new Error(`Failed to find element for tab: ${elementOrSelector}`);
 
-        return new window.bootstrap.Tab(element);
+        return new Tab(element);
     }
 
     /**
@@ -406,11 +318,11 @@ export class BootstrapUtils {
      * @param elementOrSelector Element or selector for the tab
      * @returns Tab instance or null if element doesn't exist
      */
-    static initTabIfExists(elementOrSelector: string | HTMLElement | JQuery): TabInstance | null {
+    static initTabIfExists(elementOrSelector: string | HTMLElement | JQuery): Tab | null {
         const element = BootstrapUtils.getElement(elementOrSelector);
         if (!element) return null;
 
-        return new window.bootstrap.Tab(element);
+        return new Tab(element);
     }
 
     /**
@@ -419,11 +331,14 @@ export class BootstrapUtils {
      * @param options Collapse options
      * @returns Collapse instance
      */
-    static initCollapse(elementOrSelector: string | HTMLElement | JQuery, options?: any): CollapseInstance {
+    static initCollapse(
+        elementOrSelector: string | HTMLElement | JQuery,
+        options?: Partial<Collapse.Options>,
+    ): Collapse {
         const element = BootstrapUtils.getElement(elementOrSelector);
         if (!element) throw new Error(`Failed to find element for collapse: ${elementOrSelector}`);
 
-        return new window.bootstrap.Collapse(element, options);
+        return new Collapse(element, options);
     }
 
     /**
@@ -434,12 +349,12 @@ export class BootstrapUtils {
      */
     static initCollapseIfExists(
         elementOrSelector: string | HTMLElement | JQuery,
-        options?: any,
-    ): CollapseInstance | null {
+        options?: Partial<Collapse.Options>,
+    ): Collapse | null {
         const element = BootstrapUtils.getElement(elementOrSelector);
         if (!element) return null;
 
-        return new window.bootstrap.Collapse(element, options);
+        return new Collapse(element, options);
     }
 
     /**
