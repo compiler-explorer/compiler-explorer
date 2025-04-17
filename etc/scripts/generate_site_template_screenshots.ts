@@ -92,7 +92,7 @@ async function generateScreenshot(url: string, output_path: string, settings, wi
     }, settings);
     await page.goto(url);
     //await sleep(2000);
-    //await page.click(".modal.show button.btn.btn-outline-primary[data-dismiss=modal]");
+    //await page.click(".modal.show button.btn.btn-outline-primary[data-bs-dismiss=modal]");
     //await sleep(5000);
     //await page.click("#simplecook .btn.btn-primary.btn-sm.cook-do-consent");
     await page.evaluate(() => {

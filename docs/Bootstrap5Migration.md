@@ -255,7 +255,9 @@ allows for:
     - data-toggle → data-bs-toggle
     - data-target → data-bs-target
     - data-dismiss → data-bs-dismiss
+    - data-placement → data-bs-placement
   - Identified that data-ride and data-spy attributes are not used in the codebase
+  - Fixed additional data attribute in widget JavaScript code
   - Testing component functionality pending
 - Phase 4 largely completed:
   - Created temporary `bootstrap-utils.ts` compatibility layer to abstract Bootstrap 5 APIs

@@ -161,8 +161,8 @@ export class CompilerOverridesWidget {
             btn.addClass('active');
         } else if (state instanceof IncompatibleState) {
             btn.prop('disabled', true);
-            btn.prop('data-toggle', 'tooltip');
-            btn.prop('data-placement', 'top');
+            btn.prop('data-bs-toggle', 'tooltip');
+            btn.prop('data-bs-placement', 'top');
             btn.prop('title', state.reason);
         }
         div.data('ov-name', fave.name);
