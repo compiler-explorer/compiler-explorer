@@ -90,6 +90,7 @@ export class Sharing {
     private lastState: any;
 
     private readonly share: JQuery;
+    private readonly shareTooltipTarget: JQuery;
     private readonly shareShort: JQuery;
     private readonly shareFull: JQuery;
     private readonly shareEmbed: JQuery;
@@ -105,6 +106,7 @@ export class Sharing {
         this.shareLinkDialog = unwrap(document.getElementById('sharelinkdialog'), 'Share modal element not found');
 
         this.share = $('#share');
+        this.shareTooltipTarget = $('#share-tooltip-target');
         this.shareShort = $('#shareShort');
         this.shareFull = $('#shareFull');
         this.shareEmbed = $('#shareEmbed');
@@ -291,7 +293,7 @@ export class Sharing {
         return new Promise<string>((resolve, reject) => {
             Sharing.getLinks(config, type, (error: any, newUrl: string, extra: string, updateState: boolean) => {
                 if (error || !newUrl) {
-                    this.displayTooltip(this.share, 'Oops, something went wrong');
+                    this.displayTooltip(this.shareTooltipTarget, 'Oops, something went wrong');
                     SentryCapture(error, 'Getting short link failed');
                     reject();
                 } else {
@@ -308,7 +310,7 @@ export class Sharing {
         const config = this.layout.toConfig();
         Sharing.getLinks(config, type, (error: any, newUrl: string, extra: string, updateState: boolean) => {
             if (error || !newUrl) {
-                this.displayTooltip(this.share, 'Oops, something went wrong');
+                this.displayTooltip(this.shareTooltipTarget, 'Oops, something went wrong');
                 SentryCapture(error, 'Getting short link failed');
             } else {
                 if (updateState) {
@@ -319,6 +321,7 @@ export class Sharing {
         });
     }
 
+    // TODO we can consider using bootstrap's "Toast" support in future.
     private displayTooltip(where: JQuery, message: string): void {
         // First dispose any existing tooltip
         const tooltipEl = where[0];
@@ -365,7 +368,7 @@ export class Sharing {
         if (Sharing.isNavigatorClipboardAvailable()) {
             navigator.clipboard
                 .writeText(link)
-                .then(() => this.displayTooltip(this.share, 'Link copied to clipboard'))
+                .then(() => this.displayTooltip(this.shareTooltipTarget, 'Link copied to clipboard'))
                 .catch(() => this.openShareModalForType(type));
         } else {
             this.openShareModalForType(type);
