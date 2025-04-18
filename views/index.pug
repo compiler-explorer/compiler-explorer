@@ -72,7 +72,7 @@ block prepend content
             include sponsor-icons.pug
         li.nav-item.dropdown#share-tooltip-target
           button.btn.btn-light.nav-link.dropdown-toggle#share(role="button" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false") Share
-          div.dropdown-menu.dropdown-menu-right
+          div.dropdown-menu.dropdown-menu-end
             // In order for these to support both the clipboard button _and_ optionally opening the dialog, we can't
             // use `data-bs-toggle="modal"` on the `<a>` itself, as that would prevent the clipboard button from working.
             // Bootstrap's default blanket event handler beats out any event handler we manually attach to the button.
@@ -99,11 +99,11 @@ block prepend content
               | Policies
               span#policyBellNotification.d-none.badge.rounded-pill.badge-primary
                 span.fa.fa-bell
-            div.dropdown-menu.dropdown-menu-right(aria-labelledby="policiesDropdown")
+            div.dropdown-menu.dropdown-menu-end(aria-labelledby="policiesDropdown")
               include menu-policies.pug
         li.nav-item.dropdown
           button.btn.btn-light.nav-link.dropdown-toggle#otherDropdown(role="button" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false") Other
-          div.dropdown-menu.dropdown-menu-right(aria-labelledby="otherDropdown")
+          div.dropdown-menu.dropdown-menu-end(aria-labelledby="otherDropdown")
             include menu-other.pug
 
 block append footer
