@@ -298,7 +298,7 @@ The following issues need to be addressed as part of the ongoing Bootstrap 5 mig
    - ~~All dialogs look weird, likely related to tab issues~~ ✓ Fixed
    - ~~The "other" dropdown clips off the right hand side of the page~~ ✓ Fixed
    - ~~TomSelect dropdowns are missing the dropdown arrow, and the "pop out" button isn't styled correctly~~ ✓ Fixed
-   - "IDE mode" has unwanted border lines around everything
+   - ~~"IDE mode" has unwanted border lines around everything~~ ✓ Fixed (temporarily)
    - Sponsors window styling is broken and needs to be fixed
 
    *Dialog appearance was fixed by updating close buttons from Bootstrap 4's `.close` class with `&times;` to Bootstrap 5's `.btn-close` class which uses a background image.*
@@ -310,6 +310,8 @@ The following issues need to be addressed as part of the ongoing Bootstrap 5 mig
    *The dropdown positioning issue for right-aligned dropdowns was fixed by updating Bootstrap 4's `.dropdown-menu-right` class to Bootstrap 5's `.dropdown-menu-end`. This change is part of Bootstrap 5's improved RTL support and is required for proper dropdown positioning.*
 
    *TomSelect dropdown arrow and pop-out button issues were fixed by adding custom CSS to recreate the dropdown arrow using CSS triangles (::after pseudo-element with borders). Bootstrap 5 switched from CSS triangles to SVG background images for dropdowns, but this approach wasn't working properly with TomSelect, so we restored the Bootstrap 4-style CSS approach. We also removed `.input-group-prepend` and `.input-group-append` wrapper divs throughout the templates, as Bootstrap 5 no longer requires these wrappers for input groups.*
+   
+   *IDE mode border issues were temporarily fixed by adding `.list-group-flush` to the list groups in tree.pug. This minimizes the border lines that appeared in Bootstrap 5. A more comprehensive solution should be revisited in a later phase, possibly involving a complete redesign of the tree structure using card components or custom elements. @partouf (the main implementer of this feature) should be consulted for feedback on the best long-term approach.*
 
 2. **Navigation Issues**
    - ~~Clicking on tabs in any dialog (load/save, browser settings) causes page reloads~~ ✓ Fixed
@@ -337,11 +339,13 @@ The following issues need to be addressed as part of the ongoing Bootstrap 5 mig
    - ~~Fix share dialog functionality~~ ✓ Fixed
    - ~~Address UI layout issues in dropdowns and dialogs~~ ✓ Fixed
    - ~~Fix TomSelect styling and dropdown arrows~~ ✓ Fixed
-   - Investigate IDE mode border styling issues
+   - ~~Investigate IDE mode border styling issues~~ ✓ Fixed (temporarily)
    - ~~Investigate remaining dialog appearance issues~~ ✓ Fixed
+   - Fix Sponsors window styling
    - Conduct thorough testing using the Final Testing Checklist
    - Check input group appearance and functionality across all components
    - Verify responsive behavior on mobile devices
+   - Plan for a more comprehensive redesign of the IDE tree view in a future phase
 
 ## Final Testing Checklist
 

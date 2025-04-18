@@ -34,12 +34,12 @@
   .top-bar.btn-toolbar.bg-light.panel-outputfile.d-none(role="toolbar")
     input.cmake-customOutputFilename.form-control(type="text" placeholder="output.s" size="256" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false")
   .tree.v-scroll
-    ul.list-group
+    ul.list-group.list-group-flush
       li.root.list-group-item.far-fa-folder
         .group-header Included files
-        ul.list-group.named-editors
+        ul.list-group.list-group-flush.named-editors
       li.root.list-group-item.far-fa-folder
         .group-header Excluded files
-        ul.list-group.unnamed-editors
+        ul.list-group.list-group-flush.unnamed-editors
       li.drophere.row.align-items-center(style="display: none;")
         span.col-lg.text-center Drop files here
