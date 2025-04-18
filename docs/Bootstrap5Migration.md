@@ -39,7 +39,7 @@ allows for:
 - [x] Update floating utility classes (float-left/right → float-start/end)
 - [x] Update text alignment classes (text-left/right → text-start/end)
 - [x] Update other renamed classes (badge-pill → rounded-pill, etc.)
-- [ ] Test and verify styling changes
+- [x] Test and verify styling changes
 
 ### Notes for Human Testers (Phase 2)
 - Look for proper spacing and margin alignment in the UI
@@ -63,7 +63,7 @@ allows for:
     - [x] data-ride → data-bs-ride (not used in codebase)
     - [x] data-spy → data-bs-spy (not used in codebase)
     - [x] Other data attributes as needed
-- [ ] Test components to ensure they function correctly with new attributes
+- [x] Test components to ensure they function correctly with new attributes
 
 ### Notes for Human Testers (Phase 3)
 - This phase should restore basic functionality of several Bootstrap components
@@ -88,7 +88,7 @@ allows for:
   - [x] sharing.ts (modals, tooltips, and dropdowns)
   - [x] compiler-picker-popup.ts (modals)
   - [x] load-save.ts (modals)
-  - [ ] Other files with Bootstrap component initialization:
+  - [x] Other files with Bootstrap component initialization:
     - [x] **Modal Initialization**:
       - [x] widgets/site-templates-widget.ts
       - [x] widgets/runtime-tools.ts
@@ -107,7 +107,7 @@ allows for:
       - [x] panes/executor.ts
       - [x] panes/conformance-view.ts
       - [x] panes/cfg-view.ts
-- [ ] Test the compatibility layer with basic components
+- [x] Test the compatibility layer with basic components
 
 ### Notes for Human Testers (Phase 4)
 - This is one of the most critical phases as it involves creating a compatibility layer for the JavaScript API
@@ -251,104 +251,82 @@ allows for:
 
 ## Current Progress
 
-- Initial planning document created
-- Phase 1 completed:
+### Completed Phases
+- ✅ **Phase 1: Dependency Updates and Basic Setup**
   - Updated Bootstrap from 4.6.2 to 5.3.5
   - Replaced popper.js with @popperjs/core
   - Updated Tom Select theme from bootstrap4 to bootstrap5
-  - Updated import statements in main.ts and noscript.ts
-  - Successfully built with webpack
-  - Basic functionality verified (with expected issues due to pending component updates)
-- Phase 2 largely completed:
+  - Updated import statements and built successfully with webpack
+
+- ✅ **Phase 2: Global CSS Class Migration**
   - Updated directional utility classes (ml/mr → ms/me)
   - Updated floating utility classes (float-left/right → float-start/end)
   - Updated text alignment classes (text-left/right → text-start/end)
   - Updated other renamed classes (badge-pill → rounded-pill, etc.)
-  - Testing and verification of styling changes pending
-- Phase 3 completed:
-  - Updated data attributes to use Bootstrap 5 naming convention with bs- prefix:
-    - data-toggle → data-bs-toggle
-    - data-target → data-bs-target
-    - data-dismiss → data-bs-dismiss
-    - data-placement → data-bs-placement
-  - Identified that data-ride and data-spy attributes are not used in the codebase
-  - Fixed additional data attribute in widget JavaScript code
-  - Testing component functionality pending
-- Phase 4 largely completed:
-  - Created temporary `bootstrap-utils.ts` compatibility layer to abstract Bootstrap 5 APIs
-  - Updated key files to use the compatibility layer:
-    - Updated alert.ts to use BootstrapUtils for modals and toasts
-    - Updated sharing.ts to use BootstrapUtils for tooltips, modals, and dropdowns
-    - Updated compiler-picker-popup.ts to use BootstrapUtils for modals
-    - Updated load-save.ts to use BootstrapUtils for modals
-  - Fixed initial jQuery popover() compatibility issues:
-    - Updated editor.ts to use Bootstrap 5 popover API
-    - Updated compiler.ts to use bootstrap-utils for popover operations
-    - Updated libs-widget.ts to use proper Bootstrap 5 patterns for popovers
-    - Fixed popover disposal and hiding in various components
-  - Created plan to eventually remove compatibility layer in Phase 12
-  - Further component updates and testing pending
+  - Verified styling changes and fixed layout issues
 
-## Known Issues To Investigate and Fix
+- ✅ **Phase 3: HTML Attribute Updates**
+  - Updated all data attributes to use Bootstrap 5 naming convention with bs- prefix
+  - Verified data attributes in templates and JavaScript code
+  - Fixed tab navigation and other component initialization
 
-The following issues need to be addressed as part of the ongoing Bootstrap 5 migration:
+- ✅ **Phase 4: JavaScript API Compatibility Layer**
+  - Created `bootstrap-utils.ts` compatibility layer
+  - Updated all key component initialization code:
+    - Modal initialization in multiple widgets
+    - Dropdown handling in panes and components
+    - Popover/tooltip implementation with proper disposal
+  - Fixed all critical functionality issues:
+    - Share dialog functionality
+    - Sponsors window functionality
+    - Tab navigation in modals
+    - TomSelect dropdown styling
+
+### Current Phase
+- 🔄 **Phase 5: Component Migration**
+  - Beginning systematic updates to each component type
+  - Using the compatibility layer consistently
+  - Testing each component thoroughly
+
+### Next Steps
+- Complete remaining phases systematically
+- Conduct comprehensive testing using the Final Testing Checklist
+- Review responsive behavior on mobile devices
+- Plan for further improvements to IDE tree view
+
+## Migration Status Summary
+
+### Completed Fixes
 
 1. **UI Layout & Display Issues**
-   - ~~The font dropdown is broken (it appears too small)~~ ✓ Fixed
-   - ~~Templates view is very long and thin~~ ✓ Fixed
-   - ~~All dialogs look weird, likely related to tab issues~~ ✓ Fixed
-   - ~~The "other" dropdown clips off the right hand side of the page~~ ✓ Fixed
-   - ~~TomSelect dropdowns are missing the dropdown arrow, and the "pop out" button isn't styled correctly~~ ✓ Fixed
-   - ~~"IDE mode" has unwanted border lines around everything~~ ✓ Fixed (temporarily)
-   - ~~Sponsors window styling is broken and needs to be fixed~~ ✓ Fixed
+   - ✓ Font dropdown styling fixed
+   - ✓ Templates view proportions fixed (min-width added to columns and modal)
+   - ✓ Dialog appearance fixed (updated close buttons to use `.btn-close`)
+   - ✓ Dropdown positioning fixed (updated to `.dropdown-menu-end`)
+   - ✓ TomSelect dropdown arrows fixed (custom CSS implementation)
+   - ✓ IDE mode border styling improved (temporarily with `.list-group-flush`)
+   - ✓ Sponsors window styling fixed (replaced `.btn-block` with `.d-grid` approach)
 
-   *Dialog appearance was fixed by updating close buttons from Bootstrap 4's `.close` class with `&times;` to Bootstrap 5's `.btn-close` class which uses a background image.*
+2. **Navigation & Functional Issues**
+   - ✓ Tab navigation fixed (updated data attributes to `data-bs-toggle="tab"`)
+   - ✓ Share dialog functionality fixed (proper Bootstrap 5 modal initialization)
+   - ✓ Sponsors modal error fixed (removed conflicting data attributes)
+   - ✓ Share dropdown tooltip conflict fixed (moved tooltip to parent element)
 
-   *Font dropdown was fixed by improving the styling with proper width and padding, simplifying dropdown item classes, and adding proper active state styling to all themes.*
+### Remaining Tasks
 
-   *Templates view layout was fixed by adding minimum widths to the list columns (min-width: 150px, width: 20%) and ensuring the preview area has appropriate flex properties with a minimum width of 400px. Also added a minimum width to the modal dialog to prevent it from becoming too narrow in Bootstrap 5.*
-
-   *The dropdown positioning issue for right-aligned dropdowns was fixed by updating Bootstrap 4's `.dropdown-menu-right` class to Bootstrap 5's `.dropdown-menu-end`. This change is part of Bootstrap 5's improved RTL support and is required for proper dropdown positioning.*
-
-   *TomSelect dropdown arrow and pop-out button issues were fixed by adding custom CSS to recreate the dropdown arrow using CSS triangles (::after pseudo-element with borders). Bootstrap 5 switched from CSS triangles to SVG background images for dropdowns, but this approach wasn't working properly with TomSelect, so we restored the Bootstrap 4-style CSS approach. We also removed `.input-group-prepend` and `.input-group-append` wrapper divs throughout the templates, as Bootstrap 5 no longer requires these wrappers for input groups.*
-
-   *IDE mode border issues were temporarily fixed by adding `.list-group-flush` to the list groups in tree.pug. This minimizes the border lines that appeared in Bootstrap 5. A more comprehensive solution should be revisited in a later phase, possibly involving a complete redesign of the tree structure using card components or custom elements. @partouf (the main implementer of this feature) should be consulted for feedback on the best long-term approach.*
-   
-   *Sponsors window styling was fixed by updating the deprecated Bootstrap 4 `.btn-block` class (removed in Bootstrap 5) to use the recommended approach of adding `.d-grid` to the container and `.btn` to the button elements. Additional styling improvements were made using Bootstrap 5's CSS variables (--bs-btn-font-size) and adjusting the height values for better display of corporate and legendary sponsor sections.*
-
-2. **Navigation Issues**
-   - ~~Clicking on tabs in any dialog (load/save, browser settings) causes page reloads~~ ✓ Fixed
-   - ~~URL changes to include fragment identifiers (e.g., `http://localhost:10240/#site-behaviour`)~~ ✓ Fixed
-   - ~~Internal `<a href="...">` elements are being treated as real links instead of switching tabs~~ ✓ Fixed
-   - ~~Need to replace with proper Bootstrap 5 tab navigation~~ ✓ Fixed
-
-   *Tab navigation was fixed by updating `data-toggle="tab"` to `data-bs-toggle="tab"` in modal templates. The data attribute prefix change was missed in some Pug templates during Phase 3.*
-
-3. **Functional Issues**
-   - ~~Share dialog is unpopulated (only shows "Loading...")~~ ✓ Fixed
-   - ~~The sponsors view generates `Uncaught TypeError: Cannot read properties of undefined (reading 'backdrop')` in `initializeBackdrop` inside `model.js`~~ ✓ Fixed
-   - ~~Share dropdown tooltip shows error "Bootstrap doesn't allow more than one instance per element"~~ ✓ Fixed
-
-   *The sponsors modal error was fixed by removing the `data-bs-toggle="modal"` attribute from the sponsors button in index.pug. The error occurred because the button had a toggle attribute but no matching `data-bs-target`. Since the modal content is loaded dynamically via AJAX, we use our own JavaScript-based modal creation instead of Bootstrap's automatic handling.*
-
-   *The share dialog issue was fixed by properly initializing the modal with the Bootstrap 5 API and updating the event handling. In Bootstrap 5, the modal events work differently, requiring explicit initialization and adjustments to how event parameters are typed and used. We imported the Modal and Tooltip types directly from bootstrap and updated the displayTooltip method as well.*
-
-   *The share dropdown tooltip conflict was fixed by moving the tooltip target from the dropdown button (which already had a Bootstrap dropdown component) to its parent element. Bootstrap 5 doesn't allow multiple components on the same DOM element, so we needed to use a different element for the tooltip.*
-
-4. **Next Actions**
-   - Continue replacing jQuery plugin methods with Bootstrap 5 API equivalents
+1. **Continue Implementation**
+   - Replace remaining jQuery plugin methods with Bootstrap 5 API equivalents
    - Use `BootstrapUtils` compatibility layer consistently throughout codebase
-   - ~~Fix tab navigation in modals (high priority)~~ ✓ Fixed
-   - ~~Fix share dialog functionality~~ ✓ Fixed
-   - ~~Address UI layout issues in dropdowns and dialogs~~ ✓ Fixed
-   - ~~Fix TomSelect styling and dropdown arrows~~ ✓ Fixed
-   - ~~Investigate IDE mode border styling issues~~ ✓ Fixed (temporarily)
-   - ~~Investigate remaining dialog appearance issues~~ ✓ Fixed
-   - ~~Fix Sponsors window styling~~ ✓ Fixed
    - Conduct thorough testing using the Final Testing Checklist
    - Check input group appearance and functionality across all components
    - Verify responsive behavior on mobile devices
    - Plan for a more comprehensive redesign of the IDE tree view in a future phase
+
+2. **Technical Notes**
+   - IDE mode: Current fix is temporary; a redesign using card components should be considered
+   - Share dropdown: Bootstrap 5 doesn't allow multiple components on the same DOM element
+   - Input groups: Bootstrap 5 no longer requires `.input-group-prepend` and `.input-group-append` wrappers
 
 ## Final Testing Checklist
 
