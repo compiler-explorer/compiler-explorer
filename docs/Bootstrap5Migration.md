@@ -163,18 +163,18 @@ allows for:
 - [ ] Test popover and tooltip functionality thoroughly
 
 ### Card Component Updates
-- [ ] Review card usage and update to Bootstrap 5 standards
-- [ ] Replace any card-deck implementations with grid system
-- [ ] Test card layouts
+- [x] Review card usage and update to Bootstrap 5 standards
+- [x] ~~Replace any card-deck implementations with grid system~~ (Not needed - card-deck not used in codebase)
+- [ ] Test card layouts, especially tab navigation within cards
 
 ### Collapse Component Updates
-- [ ] Update any collapse component implementations
-- [ ] Test collapse functionality
+- [x] ~~Update any collapse component implementations~~ (Not needed - minimal collapse usage in codebase)
+- [x] Test collapse functionality (limited to navbar hamburger menu on mobile)
 
 ### Button Group Updates
-- [ ] Review button group implementations
-- [ ] Update to Bootstrap 5 standards
-- [ ] Test button group functionality
+- [x] Review button group implementations
+- [x] Update to Bootstrap 5 standards (no changes needed - Bootstrap 5 maintains same button group classes)
+- [ ] Test button group functionality in toolbars and dropdown menus
 
 ## Phase 6: Form System Updates
 
