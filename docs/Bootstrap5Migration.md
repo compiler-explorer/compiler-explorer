@@ -131,6 +131,7 @@ allows for:
 - **Easy to Miss Data Attributes**: Initial migration scripts may miss data attributes in template files and JavaScript. Double-check all files for remaining `data-toggle`, `data-placement`, etc., attributes.
 - **Tab Navigation Issues**: The tab navigation problems were fixed by simply updating data attributes, not by adding JavaScript initialization.
 - **jQuery Plugin Methods Removal**: jQuery methods like `.popover()` need to be replaced with code that uses the Bootstrap 5 API through a compatibility layer.
+- **Don't Mix Data Attributes and JavaScript Modal Creation**: When creating modals via JavaScript (e.g., for dynamically loaded content), don't include `data-bs-toggle="modal"` on the trigger element unless you also add a matching `data-bs-target` attribute pointing to a valid modal element.
 
 ## Phase 5: Component Migration (By Component Type)
 
@@ -292,6 +293,7 @@ The following issues need to be addressed as part of the ongoing Bootstrap 5 mig
    - The "other" dropdown clips off the right hand side of the page
    - TomSelect dropdowns are missing the dropdown arrow, and the "pop out" button isn't styled correctly
    - "IDE mode" has unwanted border lines around everything
+   - Sponsors window styling is broken and needs to be fixed
    
    *Dialog appearance was fixed by updating close buttons from Bootstrap 4's `.close` class with `&times;` to Bootstrap 5's `.btn-close` class which uses a background image.*
 
@@ -305,7 +307,9 @@ The following issues need to be addressed as part of the ongoing Bootstrap 5 mig
 
 3. **Functional Issues**
    - Share dialog is unpopulated (only shows "Loading...")
-   - The sponsors view generates `Uncaught TypeError: Cannot read properties of undefined (reading 'backdrop')` in `initializeBackdrop` inside `model.js`
+   - ~~The sponsors view generates `Uncaught TypeError: Cannot read properties of undefined (reading 'backdrop')` in `initializeBackdrop` inside `model.js`~~ ✓ Fixed
+   
+   *The sponsors modal error was fixed by removing the `data-bs-toggle="modal"` attribute from the sponsors button in index.pug. The error occurred because the button had a toggle attribute but no matching `data-bs-target`. Since the modal content is loaded dynamically via AJAX, we use our own JavaScript-based modal creation instead of Bootstrap's automatic handling.*
 
 4. **Next Actions**
    - Continue replacing jQuery plugin methods with Bootstrap 5 API equivalents
