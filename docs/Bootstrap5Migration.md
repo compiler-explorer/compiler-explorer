@@ -176,6 +176,7 @@ allows for:
 - [x] Update to Bootstrap 5 standards (no changes needed - Bootstrap 5 maintains same button group classes)
 - [ ] Test button group functionality in toolbars and dropdown menus
 
+
 ## Phase 6: Form System Updates
 
 - [ ] Update form control classes to Bootstrap 5 standards
@@ -332,67 +333,146 @@ allows for:
 
 Before considering the Bootstrap 5 migration complete, the following areas should be thoroughly tested to ensure proper functionality and appearance:
 
-### UI Components and Controls
-- **Dropdowns**
-  - All dropdown menus (especially on the right side of the screen)
-  - Font size dropdown
-  - Compiler picker dropdown and popout functionality
-  - Popular arguments dropdown
-  - TomSelect dropdowns in all contexts
+### Modal Components
+- **Settings Modal**
+  - Open and close using the "Settings" option in the "More" dropdown
+  - Test tab navigation between all tab sections (Colouring, Site behaviour, etc.)
+  - Verify form controls within settings (checkboxes, selects, inputs)
+  - Check that the close button works
+  - Verify proper modal appearance/styling in both light and dark themes
 
-- **Input Groups**
-  - Search and filter inputs with buttons
-  - Compiler options inputs
-  - Input groups with multiple buttons
+- **Share Modal**
+  - Open and close using the "Share" button
+  - Verify the URL is generated correctly
+  - Test the copy button
+  - Check that social sharing buttons display correctly
+  - Verify proper styling in both light and dark themes
+  - Test "Copied to clipboard" tooltip functionality
 
-- **Buttons and Button Groups**
-  - Button alignment and spacing
-  - Button groups in toolbars
-  - Icon buttons with tooltips
+- **Load/Save Modal**
+  - Open and close using "Save" or "Load" options
+  - Test tab navigation between sections (Examples, Browser-local storage, etc.)
+  - Verify save functionality to browser storage
+  - Test loading from browser storage
+  - Check proper styling/layout in both light and dark themes
+
+- **Compiler Picker Modal**
+  - Open using the popout button next to a compiler selector
+  - Test filter functionality (architecture, compiler type, search)
+  - Verify compiler selection works
+  - Check proper styling in both light and dark themes
+
+- **Other Modals**
+  - Test confirmation dialogs (alert.ts)
+  - Test library selection modal
+  - Test compiler overrides modal
+  - Test runtime tools modal
+  - Test templates modal
+  - Verify proper styling in both light and dark themes
+
+### Dropdown Components
+- **Main Navigation Dropdowns**
+  - Test "More" dropdown menu (all items work and have proper styling)
+  - Test "Other" dropdown menu (all items work and have proper styling)
+  - Verify dropdowns are properly positioned (not clipped)
+  - Test on different screen sizes to ensure responsive behavior
+
+- **Compiler Option Dropdowns**
+  - Test filter dropdowns in compiler pane
+  - Test "Add new..." dropdown
+  - Test "Add tool..." dropdown
+  - Test popular arguments dropdown
+  - Verify proper positioning, especially for dropdowns at the right edge of the screen
+
+- **Editor Dropdowns**
+  - Test language selector dropdown
+  - Test font size dropdown
+  - Verify proper styling and positioning
+
+- **TomSelect Dropdowns**
+  - Test compiler selectors
+  - Test library version selectors
+  - Verify dropdown arrows appear correctly
+  - Verify dropdown items are styled correctly
+
+### Toast/Alert Components
+- **Alert Notifications**
+  - Trigger various notifications (info, warning, error)
+  - Verify proper styling
+  - Test auto-dismiss functionality
+  - Check that close button works
+  - Test stacking behavior of multiple notifications
+
+- **Alert Dialogs**
+  - Test info/warning/error alert dialogs (using the Alert class)
+  - Verify proper styling and positioning
+  - Check button functionality within dialogs
+
+### Popover/Tooltip Components
+- **Tooltips**
+  - Hover over various buttons with tooltips (toolbar buttons, share button, etc.)
+  - Verify tooltip text appears correctly
+  - Check tooltip positioning (above/below/left/right of trigger)
+  - Verify proper styling in both light and dark themes
+
+- **Popovers**
+  - Trigger popovers on compiler info
+  - Check popover content displays correctly
+  - Verify popover positioning
+  - Test dismissal by clicking outside
+  - Verify proper styling in both light and dark themes
+
+### Card Components
+- Check card styling in modals (Settings, Load/Save, etc.)
+- Verify tab navigation within card headers
+- Test card body content layout
+- Check responsive behavior on different screen sizes
+
+### Button Group Components
+- **Toolbar Button Groups**
+  - Test button groups in compiler pane toolbar
+  - Test button groups in editor pane toolbar
+  - Verify proper alignment and styling
+  - Check dropdown buttons within button groups
+
+- **Other Button Groups**
+  - Test font size button group
+  - Test bottom bar button groups
+  - Verify proper styling in both light and dark themes
+
+### Collapse Components
+- Test mobile view hamburger menu
+- Verify menu expands/collapses correctly
+- Check that all menu items are accessible in collapsed mode
 
 ### Specialized Views
 - **Conformance View**
-  - Compiler selectors and options
-  - Results display
+  - Test compiler selectors and options
+  - Verify results display correctly
 
 - **Tree View (IDE Mode)**
-  - Tree structure and file display
-  - Right-click menus and dropdowns
-  - File manipulation controls
+  - Check tree structure and file display
+  - Test right-click menus and dropdowns
+  - Verify file manipulation controls
 
 - **Visualization Components**
-  - CFG view rendering and controls
-  - Opt pipeline viewer
-  - AST view
+  - Test CFG view rendering and controls
+  - Check opt pipeline viewer
+  - Verify AST view
 
-- **Sponsor popup**
-  - Sponsor list display
-  - Modal dialog appearance and functionality
+- **Sponsor Window**
+  - Check sponsor list display
+  - Verify modal dialog appearance and functionality
 
-### Modals and Dialogs
-- **Settings Dialog**
-  - All tabs and sections
-  - Form controls within settings
-
-- **Share Dialog**
-  - Link generation
-  - Copy to clipboard functionality
-  - Tooltips (e.g., "Copied to clipboard" messages)
-
-- **Load/Save Dialog**
-  - Local storage interaction
-  - File list display
-
-### Library Management
-- **Library Views**
-  - Library selection and version dropdowns
-  - Library information display
+### Form Components
+- Verify form control styling (inputs, selects, checkboxes)
+- Test input groups with buttons
+- Check validation states
 
 ### Responsive Behavior
-- **Mobile View**
-  - Test at various viewport sizes
-  - Verify mobile menu functionality
-  - Check input group stacking behavior
+- Test at various viewport sizes
+- Verify mobile menu functionality
+- Check input group stacking behavior
 
 
 This plan will be updated as progress is made, with each completed step marked accordingly.
