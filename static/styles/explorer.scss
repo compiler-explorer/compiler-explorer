@@ -907,17 +907,18 @@ div.populararguments div.dropdown-menu {
 }
 
 .corporate .ces {
-    font-size: 165%;
-    height: 9em;
+    .btn {
+        --bs-btn-font-size: 24px;
+    }
+    height: 20em;
 }
 
 .legendary .ces {
-    font-size: 165%;
-    height: 7em;
-}
-
-.legendary .ces button {
-    padding: 1em;
+    .btn {
+        --bs-btn-font-size: 24px;
+        padding: 1em;
+    }
+    height: 20em;
 }
 
 .ces-logo {

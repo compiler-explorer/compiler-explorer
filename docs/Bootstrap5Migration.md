@@ -136,6 +136,7 @@ allows for:
 - **Tooltip API Changed**: The global `window.bootstrap.Tooltip` reference no longer exists. Import the `Tooltip` class directly from bootstrap instead.
 - **Input Group Structure Simplified**: Bootstrap 5 removed the need for `.input-group-prepend` and `.input-group-append` wrapper divs. Buttons and other controls can now be direct children of the `.input-group` container. This simplifies the markup but requires template updates.
 - **TomSelect Widget Integration**: Bootstrap 5's switch from CSS triangles to SVG background images for dropdowns caused issues with TomSelect. Adding back custom CSS for dropdown arrows was necessary to maintain correct appearance.
+- **Btn-block Removed**: Bootstrap 5 removed the `.btn-block` class. Instead, the recommended approach is to wrap buttons in a container with `.d-grid` and use standard `.btn` classes. This affects any full-width buttons in the application.
 
 ## Phase 5: Component Migration (By Component Type)
 
@@ -299,7 +300,7 @@ The following issues need to be addressed as part of the ongoing Bootstrap 5 mig
    - ~~The "other" dropdown clips off the right hand side of the page~~ ✓ Fixed
    - ~~TomSelect dropdowns are missing the dropdown arrow, and the "pop out" button isn't styled correctly~~ ✓ Fixed
    - ~~"IDE mode" has unwanted border lines around everything~~ ✓ Fixed (temporarily)
-   - Sponsors window styling is broken and needs to be fixed
+   - ~~Sponsors window styling is broken and needs to be fixed~~ ✓ Fixed
 
    *Dialog appearance was fixed by updating close buttons from Bootstrap 4's `.close` class with `&times;` to Bootstrap 5's `.btn-close` class which uses a background image.*
 
@@ -310,8 +311,10 @@ The following issues need to be addressed as part of the ongoing Bootstrap 5 mig
    *The dropdown positioning issue for right-aligned dropdowns was fixed by updating Bootstrap 4's `.dropdown-menu-right` class to Bootstrap 5's `.dropdown-menu-end`. This change is part of Bootstrap 5's improved RTL support and is required for proper dropdown positioning.*
 
    *TomSelect dropdown arrow and pop-out button issues were fixed by adding custom CSS to recreate the dropdown arrow using CSS triangles (::after pseudo-element with borders). Bootstrap 5 switched from CSS triangles to SVG background images for dropdowns, but this approach wasn't working properly with TomSelect, so we restored the Bootstrap 4-style CSS approach. We also removed `.input-group-prepend` and `.input-group-append` wrapper divs throughout the templates, as Bootstrap 5 no longer requires these wrappers for input groups.*
-   
+
    *IDE mode border issues were temporarily fixed by adding `.list-group-flush` to the list groups in tree.pug. This minimizes the border lines that appeared in Bootstrap 5. A more comprehensive solution should be revisited in a later phase, possibly involving a complete redesign of the tree structure using card components or custom elements. @partouf (the main implementer of this feature) should be consulted for feedback on the best long-term approach.*
+   
+   *Sponsors window styling was fixed by updating the deprecated Bootstrap 4 `.btn-block` class (removed in Bootstrap 5) to use the recommended approach of adding `.d-grid` to the container and `.btn` to the button elements. Additional styling improvements were made using Bootstrap 5's CSS variables (--bs-btn-font-size) and adjusting the height values for better display of corporate and legendary sponsor sections.*
 
 2. **Navigation Issues**
    - ~~Clicking on tabs in any dialog (load/save, browser settings) causes page reloads~~ ✓ Fixed
@@ -341,7 +344,7 @@ The following issues need to be addressed as part of the ongoing Bootstrap 5 mig
    - ~~Fix TomSelect styling and dropdown arrows~~ ✓ Fixed
    - ~~Investigate IDE mode border styling issues~~ ✓ Fixed (temporarily)
    - ~~Investigate remaining dialog appearance issues~~ ✓ Fixed
-   - Fix Sponsors window styling
+   - ~~Fix Sponsors window styling~~ ✓ Fixed
    - Conduct thorough testing using the Final Testing Checklist
    - Check input group appearance and functionality across all components
    - Verify responsive behavior on mobile devices
@@ -358,12 +361,12 @@ Before considering the Bootstrap 5 migration complete, the following areas shoul
   - Compiler picker dropdown and popout functionality
   - Popular arguments dropdown
   - TomSelect dropdowns in all contexts
-  
+
 - **Input Groups**
   - Search and filter inputs with buttons
   - Compiler options inputs
   - Input groups with multiple buttons
-  
+
 - **Buttons and Button Groups**
   - Button alignment and spacing
   - Button groups in toolbars
@@ -373,36 +376,40 @@ Before considering the Bootstrap 5 migration complete, the following areas shoul
 - **Conformance View**
   - Compiler selectors and options
   - Results display
-  
+
 - **Tree View (IDE Mode)**
   - Tree structure and file display
   - Right-click menus and dropdowns
   - File manipulation controls
-  
+
 - **Visualization Components**
   - CFG view rendering and controls
   - Opt pipeline viewer
   - AST view
-  
+
+- **Sponsor popup**
+  - Sponsor list display
+  - Modal dialog appearance and functionality
+
 ### Modals and Dialogs
 - **Settings Dialog**
   - All tabs and sections
   - Form controls within settings
-  
+
 - **Share Dialog**
   - Link generation
   - Copy to clipboard functionality
   - Tooltips (e.g., "Copied to clipboard" messages)
-  
+
 - **Load/Save Dialog**
   - Local storage interaction
   - File list display
-  
+
 ### Library Management
 - **Library Views**
   - Library selection and version dropdowns
   - Library information display
-  
+
 ### Responsive Behavior
 - **Mobile View**
   - Test at various viewport sizes
