@@ -141,26 +141,26 @@ allows for:
 ## Phase 5: Component Migration (By Component Type)
 
 ### Modal Component Migration
-- [ ] Update modal implementation in alert.ts
-- [ ] Update modal usage in compiler-picker-popup.ts
-- [ ] Update modal handling in load-save.ts
-- [ ] Update modal event handling in sharing.ts
+- [x] Update modal implementation in alert.ts
+- [x] Update modal usage in compiler-picker-popup.ts
+- [x] Update modal handling in load-save.ts
+- [x] Update modal event handling in sharing.ts
 - [ ] Test modal functionality thoroughly
 
 ### Dropdown Component Migration
-- [ ] Update dropdown handling in sharing.ts
-- [ ] Update dropdown usage in compiler.ts, editor.ts, etc.
-- [ ] Test dropdown functionality
+- [x] Update dropdown handling in sharing.ts
+- [x] Update dropdown usage in compiler.ts, editor.ts, etc.
+- [ ] Test dropdown functionality thoroughly
 
 ### Toast/Alert Component Migration
-- [ ] Update toast implementation in alert.ts
-- [ ] Update toast styling in explorer.scss
+- [x] Update toast implementation in alert.ts
+- [x] Update toast styling in explorer.scss
 - [ ] Test toast notifications and alerts
 
 ### Popover/Tooltip Migration
-- [ ] Update tooltip initialization in sharing.ts
-- [ ] Update popover usage in compiler.ts, executor.ts, editor.ts, etc.
-- [ ] Test popover and tooltip functionality
+- [x] Update tooltip initialization in sharing.ts
+- [x] Update popover usage in compiler.ts, executor.ts, editor.ts, etc.
+- [ ] Test popover and tooltip functionality thoroughly
 
 ### Card Component Updates
 - [ ] Review card usage and update to Bootstrap 5 standards
