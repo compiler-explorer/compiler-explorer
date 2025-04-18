@@ -235,6 +235,11 @@ textarea.form-control {
         color: #fff !important;
         background-color: $lighter !important;
     }
+    
+    &.active {
+        background-color: #405f9d !important;
+        color: #fff !important;
+    }
 }
 
 .dropdown-menu {

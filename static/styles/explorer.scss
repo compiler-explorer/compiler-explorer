@@ -387,17 +387,25 @@ pre.content.wrap * {
 }
 
 .font-size-list {
-    min-width: 43px !important;
-    max-height: 70% !important;
-    overflow-y: scroll;
+    min-width: 60px !important;
+    max-height: 70vh !important;
+    overflow-y: auto;
     width: auto;
     // For my fellow Firefox users
     scrollbar-width: thin;
+    padding: 0.25rem 0;
 }
 
 .font-size-list button {
     margin-left: 0 !important;
     border-radius: 0;
+    width: 100%;
+    text-align: center;
+    padding: 0.25rem 0.5rem;
+}
+
+.font-size-list button:hover {
+    background-color: rgba(0, 0, 0, 0.075);
 }
 
 .font-option {

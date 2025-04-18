@@ -387,6 +387,11 @@ div.argmenuitem span.argdescription {
     background-color: #dae0e5;
 }
 
+.dropdown-item.active {
+    background-color: #007bfd;
+    color: white;
+}
+
 .currentCursorPosition {
     color: #15a3b9;
     background-color: darken(rgba(248, 249, 250, 0.85), 3%);
