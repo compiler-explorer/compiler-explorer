@@ -28,8 +28,8 @@
                   button.delete.btn.btn-sm.btn-light
                     span.fa.fa-trash.me-1
                     | Delete
-              .input-group
-                input.save-name(type="text" size="20" placeholder="Set name of state")
+              .input-group.mb-3
+                input.form-control.save-name(type="text" placeholder="Set name of state")
                 button.btn.btn-light.save-button(type="button") Save to browser-local storage
             #load-browser-local-history.tab-pane(role="tabpanel")
               h4.card-title Load from browser-local history:
@@ -37,9 +37,10 @@
                 li.template: a(href="javascript:;")
             #load-file-system.tab-pane(role="tabpanel")
               h4.card-title Load/save to your system
-              label.btn.btn-outline-secondary.btn-file(role="button") Load from a local file
-                input.local-file(type="file")
-              label.btn.btn-outline-secondary.btn-file.save-btn(role="button") Save to file
-                input.save-file(type="button")
+              .mb-3
+                label.form-label Load from a local file
+                input.form-control.local-file(type="file")
+              .mb-3
+                button.btn.btn-outline-secondary.save-btn(type="button") Save to file
       .modal-footer
         button.btn.btn-outline-primary(type="button" data-bs-dismiss="modal" aria-label="Close") Close

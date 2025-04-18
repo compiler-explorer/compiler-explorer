@@ -12,14 +12,12 @@
                 input.form-control.permalink(type="text" placeholder="Loading" readonly size="1024")
                 button.btn.btn-outline-secondary.clippy(type="button" data-clipboard-target="#sharelinkdialog .permalink" title="Copy to clipboard")
                   span.fa.fa-clipboard
-              #embedsettings.form-group(role="group")
-                .checkbox
-                  label
-                    input.readOnly(type="checkbox")
-                    | Read Only
-                .checkbox
-                  label
-                    input.hideEditorToolbars(type="checkbox")
-                    | Hide Editor Toolbars
+              #embedsettings.mb-3(role="group")
+                .form-check
+                  input.form-check-input.readOnly(type="checkbox" id="share-checkbox-readonly")
+                  label.form-check-label(for="share-checkbox-readonly") Read Only
+                .form-check
+                  input.form-check-input.hideEditorToolbars(type="checkbox" id="share-checkbox-hideEditorToolbars")
+                  label.form-check-label(for="share-checkbox-hideEditorToolbars") Hide Editor Toolbars
               if sharingEnabled
                 .socialsharing.mt-2
