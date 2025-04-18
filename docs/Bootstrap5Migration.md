@@ -312,10 +312,13 @@ The following issues need to be addressed as part of the ongoing Bootstrap 5 mig
 3. **Functional Issues**
    - ~~Share dialog is unpopulated (only shows "Loading...")~~ ✓ Fixed
    - ~~The sponsors view generates `Uncaught TypeError: Cannot read properties of undefined (reading 'backdrop')` in `initializeBackdrop` inside `model.js`~~ ✓ Fixed
+   - ~~Share dropdown tooltip shows error "Bootstrap doesn't allow more than one instance per element"~~ ✓ Fixed
 
    *The sponsors modal error was fixed by removing the `data-bs-toggle="modal"` attribute from the sponsors button in index.pug. The error occurred because the button had a toggle attribute but no matching `data-bs-target`. Since the modal content is loaded dynamically via AJAX, we use our own JavaScript-based modal creation instead of Bootstrap's automatic handling.*
    
    *The share dialog issue was fixed by properly initializing the modal with the Bootstrap 5 API and updating the event handling. In Bootstrap 5, the modal events work differently, requiring explicit initialization and adjustments to how event parameters are typed and used. We imported the Modal and Tooltip types directly from bootstrap and updated the displayTooltip method as well.*
+
+   *The share dropdown tooltip conflict was fixed by moving the tooltip target from the dropdown button (which already had a Bootstrap dropdown component) to its parent element. Bootstrap 5 doesn't allow multiple components on the same DOM element, so we needed to use a different element for the tooltip.*
 
 4. **Next Actions**
    - Continue replacing jQuery plugin methods with Bootstrap 5 API equivalents
