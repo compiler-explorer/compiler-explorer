@@ -36,6 +36,11 @@ body {
     padding: 0;
 }
 
+// Fix for Bootstrap 5 navbar
+.navbar .container-fluid {
+    padding-left: 0;
+}
+
 .navbar-brand img.logo-overlay {
     position: absolute;
     top: 0;
