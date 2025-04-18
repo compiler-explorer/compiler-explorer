@@ -134,6 +134,8 @@ allows for:
 - **Don't Mix Data Attributes and JavaScript Modal Creation**: When creating modals via JavaScript (e.g., for dynamically loaded content), don't include `data-bs-toggle="modal"` on the trigger element unless you also add a matching `data-bs-target` attribute pointing to a valid modal element.
 - **Modal Events Changed Significantly**: Bootstrap 5 modal events need to be attached directly to the native DOM element rather than jQuery objects, and the event parameter type is different. For proper typing, import the `Modal` type from bootstrap and use `Modal.Event` type.
 - **Tooltip API Changed**: The global `window.bootstrap.Tooltip` reference no longer exists. Import the `Tooltip` class directly from bootstrap instead.
+- **Input Group Structure Simplified**: Bootstrap 5 removed the need for `.input-group-prepend` and `.input-group-append` wrapper divs. Buttons and other controls can now be direct children of the `.input-group` container. This simplifies the markup but requires template updates.
+- **TomSelect Widget Integration**: Bootstrap 5's switch from CSS triangles to SVG background images for dropdowns caused issues with TomSelect. Adding back custom CSS for dropdown arrows was necessary to maintain correct appearance.
 
 ## Phase 5: Component Migration (By Component Type)
 
@@ -295,17 +297,19 @@ The following issues need to be addressed as part of the ongoing Bootstrap 5 mig
    - ~~Templates view is very long and thin~~ ✓ Fixed
    - ~~All dialogs look weird, likely related to tab issues~~ ✓ Fixed
    - ~~The "other" dropdown clips off the right hand side of the page~~ ✓ Fixed
-   - TomSelect dropdowns are missing the dropdown arrow, and the "pop out" button isn't styled correctly
+   - ~~TomSelect dropdowns are missing the dropdown arrow, and the "pop out" button isn't styled correctly~~ ✓ Fixed
    - "IDE mode" has unwanted border lines around everything
    - Sponsors window styling is broken and needs to be fixed
 
    *Dialog appearance was fixed by updating close buttons from Bootstrap 4's `.close` class with `&times;` to Bootstrap 5's `.btn-close` class which uses a background image.*
-   
+
    *Font dropdown was fixed by improving the styling with proper width and padding, simplifying dropdown item classes, and adding proper active state styling to all themes.*
-   
+
    *Templates view layout was fixed by adding minimum widths to the list columns (min-width: 150px, width: 20%) and ensuring the preview area has appropriate flex properties with a minimum width of 400px. Also added a minimum width to the modal dialog to prevent it from becoming too narrow in Bootstrap 5.*
-   
+
    *The dropdown positioning issue for right-aligned dropdowns was fixed by updating Bootstrap 4's `.dropdown-menu-right` class to Bootstrap 5's `.dropdown-menu-end`. This change is part of Bootstrap 5's improved RTL support and is required for proper dropdown positioning.*
+
+   *TomSelect dropdown arrow and pop-out button issues were fixed by adding custom CSS to recreate the dropdown arrow using CSS triangles (::after pseudo-element with borders). Bootstrap 5 switched from CSS triangles to SVG background images for dropdowns, but this approach wasn't working properly with TomSelect, so we restored the Bootstrap 4-style CSS approach. We also removed `.input-group-prepend` and `.input-group-append` wrapper divs throughout the templates, as Bootstrap 5 no longer requires these wrappers for input groups.*
 
 2. **Navigation Issues**
    - ~~Clicking on tabs in any dialog (load/save, browser settings) causes page reloads~~ ✓ Fixed
@@ -321,7 +325,7 @@ The following issues need to be addressed as part of the ongoing Bootstrap 5 mig
    - ~~Share dropdown tooltip shows error "Bootstrap doesn't allow more than one instance per element"~~ ✓ Fixed
 
    *The sponsors modal error was fixed by removing the `data-bs-toggle="modal"` attribute from the sponsors button in index.pug. The error occurred because the button had a toggle attribute but no matching `data-bs-target`. Since the modal content is loaded dynamically via AJAX, we use our own JavaScript-based modal creation instead of Bootstrap's automatic handling.*
-   
+
    *The share dialog issue was fixed by properly initializing the modal with the Bootstrap 5 API and updating the event handling. In Bootstrap 5, the modal events work differently, requiring explicit initialization and adjustments to how event parameters are typed and used. We imported the Modal and Tooltip types directly from bootstrap and updated the displayTooltip method as well.*
 
    *The share dropdown tooltip conflict was fixed by moving the tooltip target from the dropdown button (which already had a Bootstrap dropdown component) to its parent element. Bootstrap 5 doesn't allow multiple components on the same DOM element, so we needed to use a different element for the tooltip.*
@@ -331,9 +335,75 @@ The following issues need to be addressed as part of the ongoing Bootstrap 5 mig
    - Use `BootstrapUtils` compatibility layer consistently throughout codebase
    - ~~Fix tab navigation in modals (high priority)~~ ✓ Fixed
    - ~~Fix share dialog functionality~~ ✓ Fixed
-   - Address UI layout issues in dropdowns and dialogs
-   - Fix TomSelect styling and dropdown arrows
+   - ~~Address UI layout issues in dropdowns and dialogs~~ ✓ Fixed
+   - ~~Fix TomSelect styling and dropdown arrows~~ ✓ Fixed
    - Investigate IDE mode border styling issues
    - ~~Investigate remaining dialog appearance issues~~ ✓ Fixed
+   - Conduct thorough testing using the Final Testing Checklist
+   - Check input group appearance and functionality across all components
+   - Verify responsive behavior on mobile devices
+
+## Final Testing Checklist
+
+Before considering the Bootstrap 5 migration complete, the following areas should be thoroughly tested to ensure proper functionality and appearance:
+
+### UI Components and Controls
+- **Dropdowns**
+  - All dropdown menus (especially on the right side of the screen)
+  - Font size dropdown
+  - Compiler picker dropdown and popout functionality
+  - Popular arguments dropdown
+  - TomSelect dropdowns in all contexts
+  
+- **Input Groups**
+  - Search and filter inputs with buttons
+  - Compiler options inputs
+  - Input groups with multiple buttons
+  
+- **Buttons and Button Groups**
+  - Button alignment and spacing
+  - Button groups in toolbars
+  - Icon buttons with tooltips
+
+### Specialized Views
+- **Conformance View**
+  - Compiler selectors and options
+  - Results display
+  
+- **Tree View (IDE Mode)**
+  - Tree structure and file display
+  - Right-click menus and dropdowns
+  - File manipulation controls
+  
+- **Visualization Components**
+  - CFG view rendering and controls
+  - Opt pipeline viewer
+  - AST view
+  
+### Modals and Dialogs
+- **Settings Dialog**
+  - All tabs and sections
+  - Form controls within settings
+  
+- **Share Dialog**
+  - Link generation
+  - Copy to clipboard functionality
+  - Tooltips (e.g., "Copied to clipboard" messages)
+  
+- **Load/Save Dialog**
+  - Local storage interaction
+  - File list display
+  
+### Library Management
+- **Library Views**
+  - Library selection and version dropdowns
+  - Library information display
+  
+### Responsive Behavior
+- **Mobile View**
+  - Test at various viewport sizes
+  - Verify mobile menu functionality
+  - Check input group stacking behavior
+
 
 This plan will be updated as progress is made, with each completed step marked accordingly.

@@ -26,9 +26,8 @@ mixin optionButton(bind, isActive, text, title)
         //- +optionButton("library-functions", true, "Filter Library Functions", "Filter library functions")
     .btn-group.btn-group-sm
       .input-group.input-group-sm.mb-auto
-        .input-group-prepend
-          label.input-group-text.opt-group-name
-            | Function:&nbsp;
+        label.input-group-text.opt-group-name
+          | Function:&nbsp;
         select.opt-group-picker.group-selector(placeholder="Select group")
   div.opt-pipeline-body
     .passes-column(style="width: 250px;") Passes:

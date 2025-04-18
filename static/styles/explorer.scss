@@ -1199,6 +1199,28 @@ html[data-theme='one-dark'] {
     padding-right: 2rem !important;
 }
 
+/* Add back the dropdown arrow for TomSelect in Bootstrap 5 */
+.ts-wrapper.single .ts-control:not(.input-active)::after {
+    content: " ";
+    display: block;
+    position: absolute;
+    top: 50%;
+    right: 15px;
+    margin-top: -3px;
+    width: 0;
+    height: 0;
+    border-style: solid;
+    border-width: 5px 5px 0 5px;
+    border-color: #343a40 transparent transparent transparent;
+}
+
+/* Styling for the dropdown arrow when dropdown is active */
+.ts-wrapper.single.dropdown-active .ts-control::after {
+    margin-top: -4px;
+    border-width: 0 5px 5px 5px;
+    border-color: transparent transparent #343a40 transparent;
+}
+
 .copy-link-btn {
     padding-top: 0;
 }
