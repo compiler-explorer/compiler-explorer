@@ -132,6 +132,8 @@ allows for:
 - **Tab Navigation Issues**: The tab navigation problems were fixed by simply updating data attributes, not by adding JavaScript initialization.
 - **jQuery Plugin Methods Removal**: jQuery methods like `.popover()` need to be replaced with code that uses the Bootstrap 5 API through a compatibility layer.
 - **Don't Mix Data Attributes and JavaScript Modal Creation**: When creating modals via JavaScript (e.g., for dynamically loaded content), don't include `data-bs-toggle="modal"` on the trigger element unless you also add a matching `data-bs-target` attribute pointing to a valid modal element.
+- **Modal Events Changed Significantly**: Bootstrap 5 modal events need to be attached directly to the native DOM element rather than jQuery objects, and the event parameter type is different. For proper typing, import the `Modal` type from bootstrap and use `Modal.Event` type.
+- **Tooltip API Changed**: The global `window.bootstrap.Tooltip` reference no longer exists. Import the `Tooltip` class directly from bootstrap instead.
 
 ## Phase 5: Component Migration (By Component Type)
 
@@ -233,6 +235,8 @@ allows for:
 4. **Focus on accessibility** to ensure the site remains accessible throughout changes
 5. **Maintain browser compatibility** with all currently supported browsers
 6. **Consider performance implications** of the changes
+7. **NEVER mark any issue as fixed in this document** until you have explicit confirmation from the reviewer that the issue is completely resolved
+8. **NEVER commit changes** until you have explicit confirmation that the fix works correctly
 
 ## Technical References
 
@@ -294,7 +298,7 @@ The following issues need to be addressed as part of the ongoing Bootstrap 5 mig
    - TomSelect dropdowns are missing the dropdown arrow, and the "pop out" button isn't styled correctly
    - "IDE mode" has unwanted border lines around everything
    - Sponsors window styling is broken and needs to be fixed
-   
+
    *Dialog appearance was fixed by updating close buttons from Bootstrap 4's `.close` class with `&times;` to Bootstrap 5's `.btn-close` class which uses a background image.*
 
 2. **Navigation Issues**
@@ -302,19 +306,22 @@ The following issues need to be addressed as part of the ongoing Bootstrap 5 mig
    - ~~URL changes to include fragment identifiers (e.g., `http://localhost:10240/#site-behaviour`)~~ ✓ Fixed
    - ~~Internal `<a href="...">` elements are being treated as real links instead of switching tabs~~ ✓ Fixed
    - ~~Need to replace with proper Bootstrap 5 tab navigation~~ ✓ Fixed
-   
+
    *Tab navigation was fixed by updating `data-toggle="tab"` to `data-bs-toggle="tab"` in modal templates. The data attribute prefix change was missed in some Pug templates during Phase 3.*
 
 3. **Functional Issues**
-   - Share dialog is unpopulated (only shows "Loading...")
+   - ~~Share dialog is unpopulated (only shows "Loading...")~~ ✓ Fixed
    - ~~The sponsors view generates `Uncaught TypeError: Cannot read properties of undefined (reading 'backdrop')` in `initializeBackdrop` inside `model.js`~~ ✓ Fixed
-   
+
    *The sponsors modal error was fixed by removing the `data-bs-toggle="modal"` attribute from the sponsors button in index.pug. The error occurred because the button had a toggle attribute but no matching `data-bs-target`. Since the modal content is loaded dynamically via AJAX, we use our own JavaScript-based modal creation instead of Bootstrap's automatic handling.*
+   
+   *The share dialog issue was fixed by properly initializing the modal with the Bootstrap 5 API and updating the event handling. In Bootstrap 5, the modal events work differently, requiring explicit initialization and adjustments to how event parameters are typed and used. We imported the Modal and Tooltip types directly from bootstrap and updated the displayTooltip method as well.*
 
 4. **Next Actions**
    - Continue replacing jQuery plugin methods with Bootstrap 5 API equivalents
    - Use `BootstrapUtils` compatibility layer consistently throughout codebase
    - ~~Fix tab navigation in modals (high priority)~~ ✓ Fixed
+   - ~~Fix share dialog functionality~~ ✓ Fixed
    - Address UI layout issues in dropdowns and dialogs
    - Fix TomSelect styling and dropdown arrows
    - Investigate IDE mode border styling issues

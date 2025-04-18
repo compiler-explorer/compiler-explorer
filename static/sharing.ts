@@ -22,17 +22,18 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
+import {Modal, Tooltip} from 'bootstrap';
 import ClipboardJS from 'clipboard';
 import GoldenLayout from 'golden-layout';
 import $ from 'jquery';
 import _ from 'underscore';
+import {unwrap} from './assert.js';
 import {BootstrapUtils} from './bootstrap-utils.js';
 import {sessionThenLocalStorage} from './local.js';
 import {options} from './options.js';
 import * as url from './url.js';
 
 import ClickEvent = JQuery.ClickEvent;
-import TriggeredEvent = JQuery.TriggeredEvent;
 import {SentryCapture} from './sentry.js';
 import {Settings, SiteSettings} from './settings.js';
 
@@ -123,9 +124,11 @@ export class Sharing {
         });
         this.layout.on('stateChanged', this.onStateChanged.bind(this));
 
-        $('#sharelinkdialog')
-            .on('show.bs.modal', this.onOpenModalPane.bind(this))
-            .on('hidden.bs.modal', this.onCloseModalPane.bind(this));
+        const shareModal = unwrap(document.getElementById('sharelinkdialog'), 'Share modal element not found');
+        BootstrapUtils.initModal(shareModal);
+
+        shareModal.addEventListener('show.bs.modal', this.onOpenModalPane.bind(this) as EventListener);
+        shareModal.addEventListener('hidden.bs.modal', this.onCloseModalPane.bind(this) as EventListener);
 
         this.layout.eventHub.on('settingsChange', (newSettings: SiteSettings) => {
             this.settings = newSettings;
@@ -177,11 +180,16 @@ export class Sharing {
         }
     }
 
-    private onOpenModalPane(event: TriggeredEvent<HTMLElement, undefined, HTMLElement, HTMLElement>): void {
-        // @ts-ignore The property is added by bootstrap
-        const button = $(event.relatedTarget);
-        const currentBind = Sharing.bindToLinkType(button.data('bind'));
-        const modal = $(event.currentTarget);
+    private onOpenModalPane(event: Event): void {
+        const modalEvent = event as Modal.Event;
+        if (!modalEvent.relatedTarget) {
+            throw new Error('No relatedTarget found in modal event');
+        }
+
+        const button = $(modalEvent.relatedTarget);
+        const bindStr = button.data('bind') as string;
+        const currentBind = Sharing.bindToLinkType(bindStr);
+        const modal = $(event.currentTarget as HTMLElement);
         const socialSharingElements = modal.find('.socialsharing');
         const permalink = modal.find('.permalink');
         const embedsettings = modal.find('#embedsettings');
@@ -310,7 +318,9 @@ export class Sharing {
     private displayTooltip(where: JQuery, message: string): void {
         // First dispose any existing tooltip
         const tooltipEl = where[0];
-        const existingTooltip = window.bootstrap.Tooltip.getInstance(tooltipEl);
+        if (!tooltipEl) return;
+
+        const existingTooltip = Tooltip.getInstance(tooltipEl);
         if (existingTooltip) {
             existingTooltip.dispose();
         }
