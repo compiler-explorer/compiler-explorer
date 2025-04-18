@@ -292,7 +292,7 @@ The following issues need to be addressed as part of the ongoing Bootstrap 5 mig
 
 1. **UI Layout & Display Issues**
    - ~~The font dropdown is broken (it appears too small)~~ ✓ Fixed
-   - Templates view is very long and thin
+   - ~~Templates view is very long and thin~~ ✓ Fixed
    - ~~All dialogs look weird, likely related to tab issues~~ ✓ Fixed
    - The "other" dropdown clips off the right hand side of the page
    - TomSelect dropdowns are missing the dropdown arrow, and the "pop out" button isn't styled correctly
@@ -302,6 +302,8 @@ The following issues need to be addressed as part of the ongoing Bootstrap 5 mig
    *Dialog appearance was fixed by updating close buttons from Bootstrap 4's `.close` class with `&times;` to Bootstrap 5's `.btn-close` class which uses a background image.*
    
    *Font dropdown was fixed by improving the styling with proper width and padding, simplifying dropdown item classes, and adding proper active state styling to all themes.*
+   
+   *Templates view layout was fixed by adding minimum widths to the list columns (min-width: 150px, width: 20%) and ensuring the preview area has appropriate flex properties with a minimum width of 400px. Also added a minimum width to the modal dialog to prevent it from becoming too narrow in Bootstrap 5.*
 
 2. **Navigation Issues**
    - ~~Clicking on tabs in any dialog (load/save, browser settings) causes page reloads~~ ✓ Fixed

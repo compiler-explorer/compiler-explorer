@@ -294,6 +294,12 @@ pre.content.wrap * {
     }
 }
 
+#site-template-loader {
+    .modal-dialog {
+        min-width: 800px; /* ensure template modal has adequate width */
+    }
+}
+
 .modal-body {
     min-height: 200px;
     overflow-y: auto; /* make body scrollable -> keep Header & Footer onscreen, if possible */
@@ -1323,9 +1329,14 @@ html[data-theme='one-dark'] {
     > div {
         padding: 0;
         flex-shrink: 0;
+        &.site-templates-list-col {
+            min-width: 150px;
+            width: 20%;
+        }
         &.site-template-preview-col {
             flex-grow: 1;
             flex-shrink: 1;
+            min-width: 400px;
             img {
                 width: 1000px;
                 aspect-ratio: 1000 / 800;
