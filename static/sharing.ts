@@ -33,9 +33,9 @@ import {sessionThenLocalStorage} from './local.js';
 import {options} from './options.js';
 import * as url from './url.js';
 
-import ClickEvent = JQuery.ClickEvent;
 import {SentryCapture} from './sentry.js';
 import {Settings, SiteSettings} from './settings.js';
+import ClickEvent = JQuery.ClickEvent;
 
 const cloneDeep = require('lodash.clonedeep');
 
@@ -89,24 +89,29 @@ export class Sharing {
     private layout: GoldenLayout;
     private lastState: any;
 
-    private share: JQuery;
-    private shareShort: JQuery;
-    private shareFull: JQuery;
-    private shareEmbed: JQuery;
+    private readonly share: JQuery;
+    private readonly shareShort: JQuery;
+    private readonly shareFull: JQuery;
+    private readonly shareEmbed: JQuery;
 
     private settings: SiteSettings;
 
     private clippyButton: ClipboardJS | null;
+    private readonly shareLinkDialog: HTMLElement;
 
     constructor(layout: any) {
         this.layout = layout;
         this.lastState = null;
+        this.shareLinkDialog = unwrap(document.getElementById('sharelinkdialog'), 'Share modal element not found');
 
         this.share = $('#share');
         this.shareShort = $('#shareShort');
         this.shareFull = $('#shareFull');
         this.shareEmbed = $('#shareEmbed');
 
+        [this.shareShort, this.shareFull, this.shareEmbed].forEach(el =>
+            el.on('click', e => BootstrapUtils.showModal(this.shareLinkDialog, e.currentTarget)),
+        );
         this.settings = Settings.getStoredSettings();
 
         this.clippyButton = null;
@@ -124,11 +129,9 @@ export class Sharing {
         });
         this.layout.on('stateChanged', this.onStateChanged.bind(this));
 
-        const shareModal = unwrap(document.getElementById('sharelinkdialog'), 'Share modal element not found');
-        BootstrapUtils.initModal(shareModal);
-
-        shareModal.addEventListener('show.bs.modal', this.onOpenModalPane.bind(this) as EventListener);
-        shareModal.addEventListener('hidden.bs.modal', this.onCloseModalPane.bind(this) as EventListener);
+        BootstrapUtils.initModal(this.shareLinkDialog);
+        this.shareLinkDialog.addEventListener('show.bs.modal', this.onOpenModalPane.bind(this));
+        this.shareLinkDialog.addEventListener('hidden.bs.modal', this.onCloseModalPane.bind(this));
 
         this.layout.eventHub.on('settingsChange', (newSettings: SiteSettings) => {
             this.settings = newSettings;
@@ -271,15 +274,16 @@ export class Sharing {
         }
     }
 
-    private onClipButtonPressed(event: ClickEvent, type: LinkType): void {
+    private onClipButtonPressed(event: ClickEvent, type: LinkType): boolean {
         // Don't let the modal show up.
         // We need this because the button is a child of the dropdown-item with a data-bs-toggle=modal
         if (Sharing.isNavigatorClipboardAvailable()) {
-            event.stopPropagation();
             this.copyLinkTypeToClipboard(type);
-            // As we prevented bubbling, the dropdown won't close by itself. We need to trigger it manually
+            event.stopPropagation();
+            // As we prevented bubbling, the dropdown won't close by itself.
             BootstrapUtils.hideDropdown(this.share);
         }
+        return false;
     }
 
     private getLinkOfType(type: LinkType): Promise<string> {
@@ -422,7 +426,7 @@ export class Sharing {
     ): string {
         const embedUrl = Sharing.getEmbeddedUrl(config, root, isReadOnly, extraOptions);
         // The attributes must be double quoted, the full url's rison contains single quotes
-        return `<iframe width="800px" height="200px" src="${embedUrl}"></iframe>`;
+        return `<iframe width='800px' height='200px' src='${embedUrl}'></iframe>`;
     }
 
     private static getEmbeddedUrl(config: any, root: string, readOnly: boolean, extraOptions: object): string {

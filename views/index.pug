@@ -73,18 +73,21 @@ block prepend content
         li.nav-item.dropdown
           button.btn.btn-light.nav-link.dropdown-toggle#share(role="button" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false") Share
           div.dropdown-menu.dropdown-menu-right
+            // In order for these to support both the clipboard button _and_ optionally opening the dialog, we can't
+            // use `data-bs-toggle="modal"` on the `<a>` itself, as that would prevent the clipboard button from working.
+            // Bootstrap's default blanket event handler beats out any event handler we manually attach to the button.
             if storageSolution !== "null"
-              a.dropdown-item#shareShort(href="javascript:;" data-bs-target="#sharelinkdialog" data-bs-toggle="modal" data-bind="Short")
+              a.dropdown-item#shareShort(href="javascript:;" data-bs-target="#sharelinkdialog" data-bind="Short")
                 span.dropdown-icon.fas.fa-cloud.d-inline
                 | Short Link
-                button.btn.btn-sm.copy-link-btn.clip-icon.float-end(data-bs-toggle="none")
+                button.btn.btn-sm.copy-link-btn.clip-icon.float-end(data-bs-target="" data-bs-toggle="none")
                   span.dropdown-icon.fa.fa-clipboard
-            a.dropdown-item#shareFull(href="javascript:;" data-bs-target="#sharelinkdialog" data-bs-toggle="modal" data-bind="Full")
+            a.dropdown-item#shareFull(href="javascript:;" data-bs-target="#sharelinkdialog" data-bind="Full")
               span.dropdown-icon.fas.fa-store-slash.d-inline
               | Full Link
               button.btn.btn-sm.copy-link-btn.clip-icon.float-end(data-bs-toggle="none")
                 span.dropdown-icon.fa.fa-clipboard
-            a.dropdown-item#shareEmbed(href="javascript:;" data-bs-target="#sharelinkdialog" data-bs-toggle="modal" data-bind="Embed")
+            a.dropdown-item#shareEmbed(href="javascript:;" data-bs-target="#sharelinkdialog" data-bind="Embed")
               span.dropdown-icon.fas.fa-window-restore.d-inline
               | Embed in iframe
               // This is not an oversight, there is in fact a .float-end missing here that's there in the other 2

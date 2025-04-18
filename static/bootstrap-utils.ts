@@ -87,13 +87,14 @@ export class BootstrapUtils {
     /**
      * Show a modal
      * @param elementOrSelector Element or selector for the modal
+     * @param relatedTarget Optional related target element
      */
-    static showModal(elementOrSelector: string | HTMLElement | JQuery): void {
+    static showModal(elementOrSelector: string | HTMLElement | JQuery, relatedTarget?: HTMLElement): void {
         const element = BootstrapUtils.getElement(elementOrSelector);
         if (!element) return;
 
         const modal = Modal.getInstance(element) || new Modal(element);
-        modal.show();
+        modal.show(relatedTarget);
     }
 
     /**
