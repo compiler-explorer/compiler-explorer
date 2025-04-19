@@ -47,6 +47,7 @@ import systemdSocket from 'systemd-socket';
 import _ from 'underscore';
 import urljoin from 'url-join';
 
+import {unwrap} from './lib/assert.js';
 import * as aws from './lib/aws.js';
 import * as normalizer from './lib/clientstate-normalizer.js';
 import {GoldenLayoutRootStruct} from './lib/clientstate-normalizer.js';
@@ -635,9 +636,10 @@ async function main() {
         logger.debug('Compilers:', compilers);
         prevCompilers = compilers;
         await clientOptionsHandler.setCompilers(compilers);
-        routeApi.apiHandler.setCompilers(compilers);
-        routeApi.apiHandler.setLanguages(languages);
-        routeApi.apiHandler.setOptions(clientOptionsHandler);
+        const apiHandler = unwrap(routeApi.apiHandler);
+        apiHandler.setCompilers(compilers);
+        apiHandler.setLanguages(languages);
+        apiHandler.setOptions(clientOptionsHandler);
     }
 
     await onCompilerChange(initialCompilers);
@@ -687,7 +689,7 @@ async function main() {
             next({status: 404, message: `page "${req.path}" could not be found`});
         })
         // sentry error handler must be the first error handling middleware
-        .use(Sentry.Handlers.errorHandler)
+        .use(Sentry.Handlers.errorHandler())
         // eslint-disable-next-line no-unused-vars
         .use((err: any, req: express.Request, res: express.Response, _next: express.NextFunction) => {
             const status = err.status || err.statusCode || err.status_code || err.output?.statusCode || 500;
@@ -837,7 +839,7 @@ async function main() {
             res.set('Content-Type', 'application/javascript');
             res.end(`window.compilerExplorerOptions = ${clientOptionsHandler.getJSON()};`);
         })
-        .use('/bits/:bits(\\w+).html', cached, csp, (req, res) => {
+        .use('/bits/:bits.html', cached, csp, (req, res) => {
             res.render(
                 `bits/${sanitize(req.params.bits)}`,
                 renderConfig(
