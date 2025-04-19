@@ -1,3 +1,7 @@
 {
+  "compilerOptions": {
+      "target": "es2017",
+      "module": "commonjs"
+  },
   "extends": "../tsconfig.frontend.json"
 }
