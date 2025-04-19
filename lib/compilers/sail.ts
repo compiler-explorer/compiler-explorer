@@ -22,8 +22,8 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
+import fs from 'node:fs/promises';
 import path from 'node:path';
-import fs from 'fs-extra';
 
 import {CompilationResult, ExecutionOptionsWithEnv} from '../../types/compilation/compilation.interfaces.js';
 import type {PreliminaryCompilerInfo} from '../../types/compiler.interfaces.js';
@@ -31,6 +31,7 @@ import type {ParseFiltersAndOutputOptions} from '../../types/features/filters.in
 import {SelectedLibraryVersion} from '../../types/libraries/libraries.interfaces.js';
 import {BaseCompiler} from '../base-compiler.js';
 import {CompilationEnvironment} from '../compilation-env.js';
+import * as utils from '../utils.js';
 
 export class SailCompiler extends BaseCompiler {
     // Path to C compiler to use to compile generated C code to binary.
@@ -152,7 +153,7 @@ export class SailCompiler extends BaseCompiler {
         // and when compiling to a binary. If you don't do this it
         // tries to do nonsensical things like objdumping the C, so we
         // copy the binary back over the C file.
-        if (compileResult.code === 0 && (await fs.pathExists(outputFilenameExe))) {
+        if (compileResult.code === 0 && (await utils.fileExists(outputFilenameExe))) {
             console.log(`Copying ${outputFilenameExe} to ${outputFilenameC}`);
             await fs.copyFile(outputFilenameExe, outputFilenameC);
         }
