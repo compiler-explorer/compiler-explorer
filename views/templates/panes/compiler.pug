@@ -13,11 +13,11 @@ mixin newPaneButton(classId, text, title, icon)
             i.fa-solid.fa-arrow-up-right-from-square
         button.btn.btn-sm.btn-light.prepend-options(data-trigger="click" style="cursor: pointer;" role="button" title="All compilation options")
           span.status-icon
-        input.options.form-control(type="text" placeholder="Compiler options..." size="256" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false")
+        input.options.form-control(type="text" placeholder="Compiler options..." size="256" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" aria-label="Compiler options")
         .populararguments(title="Popular arguments")
           button.btn.btn-sm.btn-light.btn-outline-secondary.dropdown-toggle.dropdown-toggle-split.popular-arguments-btn(type="button" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false")
-            span.sr-only Popular arguments
-          div.dropdown-menu.dropdown-menu-right
+            span.visually-hidden Popular arguments
+          div.dropdown-menu.dropdown-menu-end
             button.dropdown-item.btn.btn-light.btn-sm
               .argmenuitem
                 span.argtitle Detailed Compiler Flags
@@ -78,12 +78,12 @@ mixin newPaneButton(classId, text, title, icon)
     if !embedded
       .btn-group.btn-group-sm
         .input-group
-          button.btn.btn-sm.btn-light.clear-cache(title="Clear cache & recompile")
+          button.btn.btn-sm.btn-light.clear-cache(title="Clear cache & recompile" aria-label="Clear cache and recompile")
             span.fas.fa-redo
-          button.btn.btn-sm.btn-light.output-btn(data-cy="new-output-pane-btn")
+          button.btn.btn-sm.btn-light.output-btn(data-cy="new-output-pane-btn" aria-label="Show compiler output")
             span.fas.fa-receipt.status-text
             | &nbsp;Output
-            span.output-count
+            span.output-count(aria-live="polite")
               | &nbsp;(
               span.text-count
                 | 0
@@ -91,11 +91,11 @@ mixin newPaneButton(classId, text, title, icon)
               span.err-count
                 | 0
               | )
-      span.short-compiler-name.me-1
-      button.btn.btn-sm.btn-light.full-compiler-name(data-trigger="click" style="cursor: pointer;" role="button")
+      span.short-compiler-name.me-1(aria-hidden="true")
+      button.btn.btn-sm.btn-light.full-compiler-name(data-trigger="click" style="cursor: pointer;" role="button" aria-label="Show compiler information")
         span.fas.fa-info
-      span.compile-info.me-1(title="Compilation info")
-      button.btn.btn-sm.btn-light.full-timing-info(data-trigger="click" style="cursor: pointer;" role="button")
+      span.compile-info.me-1(title="Compilation info" aria-label="Compilation information")
+      button.btn.btn-sm.btn-light.full-timing-info(data-trigger="click" style="cursor: pointer;" role="button" aria-label="Show full timing information")
         span.fas.fa-chart-bar
-      button.btn.btn-sm.btn-light.compiler-license(data-trigger="click" style="cursor: pointer;" role="button")
+      button.btn.btn-sm.btn-light.compiler-license(data-trigger="click" style="cursor: pointer;" role="button" aria-label="View compiler license")
         span Compiler License
