@@ -366,6 +366,18 @@ allows for:
    - Share dropdown: Bootstrap 5 doesn't allow multiple components on the same DOM element
    - Input groups: Bootstrap 5 no longer requires `.input-group-prepend` and `.input-group-append` wrappers
 
+3. **Bugs to Fix (From Beta Testing)**
+   - The X to close the community/alert notes is harder to see in dark mode than before
+   - History view is broken (empty when clicking radio buttons)
+   - TomSelect dropdowns for compilers are excessively long (both in executor view and normal view)
+   - Default text/placeholder text is too dark, making it hard to read (especially "Compiler options")
+   - Conformance view's "add compiler" functionality is broken (likely related to old Bootstrap v4 code in main.ts)
+   - Dropdown in the library menu has changed color (possibly acceptable)
+   - Layout has changed slightly in the library menu
+   - The "popout" on the TomSelect compiler dropdown is misaligned
+   - Need to check for more instances of old Bootstrap v4 code patterns (like `dropdown('toggle')` in main.ts)
+   - Check Sentry for additional errors on the beta site
+
 ## Final Testing Checklist
 
 Before considering the Bootstrap 5 migration complete, the following areas should be thoroughly tested to ensure proper functionality and appearance:
@@ -511,5 +523,39 @@ Before considering the Bootstrap 5 migration complete, the following areas shoul
 - Verify mobile menu functionality
 - Check input group stacking behavior
 
+### Additional Specific Tests (from Beta Feedback)
+- **Alert/Note Close Button**
+  - Verify the X to close community notes is visible in dark mode
+  - Check contrast and visibility in all themes
+
+- **History View**
+  - Verify the history view populates correctly when clicking radio buttons
+  - Test all history functions (load, delete, etc.)
+
+- **TomSelect Dropdowns**
+  - Check the length of compiler dropdowns in executor view
+  - Check the length of compiler dropdowns in normal view
+  - Verify dropdown sizes are appropriate and consistent
+  - Check that the popout button alignment is correct on all dropdowns
+
+- **Placeholder Text**
+  - Check visibility and contrast of placeholder text in all input fields
+  - Specifically test "Compiler options" field visibility
+  - Verify that all placeholder text is readable in both light and dark themes
+
+- **Conformance View**
+  - Test the "add compiler" functionality in conformance view
+  - Verify that compilers can be added and removed
+  - Check that conformance testing works end-to-end
+
+- **Library Menu**
+  - Compare library menu appearance with production site
+  - Check dropdown colors and layout
+  - Verify all library functionality works correctly
+
+- **General Testing**
+  - Check pixel-perfect alignment of elements compared to production site
+  - Inspect for old Bootstrap 4 patterns in JavaScript (like `dropdown('toggle')`)
+  - Test all components for unexpected behavioral differences
 
 This plan will be updated as progress is made, with each completed step marked accordingly.
