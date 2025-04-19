@@ -198,6 +198,11 @@ textarea.form-control {
     &:hover {
         background-color: $dark !important;
     }
+    
+    &.active {
+        background-color: $darker !important;
+        color: #212529 !important;
+    }
 }
 
 .dropdown-menu {

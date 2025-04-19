@@ -3,9 +3,7 @@
     .modal-content
       .modal-header
         h5.modal-title Rename Pane
-        button.close(type="button" data-dismiss="modal" aria-hidden="true" aria-label="Close")
-          span(aria-hidden="true")
-            | &times;
+        button.btn-close(type="button" data-bs-dismiss="modal" aria-hidden="true" aria-label="Close")
       .modal-body
         .card
           .card-body
@@ -13,5 +11,5 @@
               .input-group
                 input#renamepaneinput.form-control.panename(type="text" placeholder="New pane name" size="1024")
       .modal-footer
-        button.btn.btn-outline-secondary(type="button" data-dismiss="modal") Close
-        button#renamepanesubmit.btn.btn-outline-primary(type="submit" data-dismiss="modal" value="Save Changes") Save Changes
+        button.btn.btn-outline-secondary(type="button" data-bs-dismiss="modal") Close
+        button#renamepanesubmit.btn.btn-outline-primary(type="submit" data-bs-dismiss="modal" value="Save Changes") Save Changes

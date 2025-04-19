@@ -36,6 +36,11 @@ body {
     padding: 0;
 }
 
+// Fix for Bootstrap 5 navbar
+.navbar .container-fluid {
+    padding-left: 0;
+}
+
 .navbar-brand img.logo-overlay {
     position: absolute;
     top: 0;
@@ -294,6 +299,12 @@ pre.content.wrap * {
     }
 }
 
+#site-template-loader {
+    .modal-dialog {
+        min-width: 800px; /* ensure template modal has adequate width */
+    }
+}
+
 .modal-body {
     min-height: 200px;
     overflow-y: auto; /* make body scrollable -> keep Header & Footer onscreen, if possible */
@@ -387,17 +398,25 @@ pre.content.wrap * {
 }
 
 .font-size-list {
-    min-width: 43px !important;
-    max-height: 70% !important;
-    overflow-y: scroll;
+    min-width: 60px !important;
+    max-height: 70vh !important;
+    overflow-y: auto;
     width: auto;
     // For my fellow Firefox users
     scrollbar-width: thin;
+    padding: 0.25rem 0;
 }
 
 .font-size-list button {
     margin-left: 0 !important;
     border-radius: 0;
+    width: 100%;
+    text-align: center;
+    padding: 0.25rem 0.5rem;
+}
+
+.font-size-list button:hover {
+    background-color: rgba(0, 0, 0, 0.075);
 }
 
 .font-option {
@@ -893,17 +912,18 @@ div.populararguments div.dropdown-menu {
 }
 
 .corporate .ces {
-    font-size: 165%;
-    height: 9em;
+    .btn {
+        --bs-btn-font-size: 24px;
+    }
+    height: 20em;
 }
 
 .legendary .ces {
-    font-size: 165%;
-    height: 7em;
-}
-
-.legendary .ces button {
-    padding: 1em;
+    .btn {
+        --bs-btn-font-size: 24px;
+        padding: 1em;
+    }
+    height: 20em;
 }
 
 .ces-logo {
@@ -1185,6 +1205,28 @@ html[data-theme='one-dark'] {
     padding-right: 2rem !important;
 }
 
+/* Add back the dropdown arrow for TomSelect in Bootstrap 5 */
+.ts-wrapper.single .ts-control:not(.input-active)::after {
+    content: " ";
+    display: block;
+    position: absolute;
+    top: 50%;
+    right: 15px;
+    margin-top: -3px;
+    width: 0;
+    height: 0;
+    border-style: solid;
+    border-width: 5px 5px 0 5px;
+    border-color: #343a40 transparent transparent transparent;
+}
+
+/* Styling for the dropdown arrow when dropdown is active */
+.ts-wrapper.single.dropdown-active .ts-control::after {
+    margin-top: -4px;
+    border-width: 0 5px 5px 5px;
+    border-color: transparent transparent #343a40 transparent;
+}
+
 .copy-link-btn {
     padding-top: 0;
 }
@@ -1315,9 +1357,14 @@ html[data-theme='one-dark'] {
     > div {
         padding: 0;
         flex-shrink: 0;
+        &.site-templates-list-col {
+            min-width: 150px;
+            width: 20%;
+        }
         &.site-template-preview-col {
             flex-grow: 1;
             flex-shrink: 1;
+            min-width: 400px;
             img {
                 width: 1000px;
                 aspect-ratio: 1000 / 800;

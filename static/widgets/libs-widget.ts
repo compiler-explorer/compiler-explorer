@@ -24,6 +24,7 @@
 
 import $ from 'jquery';
 import {unwrapString} from '../assert.js';
+import {BootstrapUtils} from '../bootstrap-utils.js';
 import {localStorage} from '../local.js';
 import {Library, LibraryVersion} from '../options.interfaces.js';
 import {options} from '../options.js';
@@ -212,7 +213,7 @@ export class LibsWidget {
         this.domRoot.find('.lib-search-button').on('click', this.startSearching.bind(this));
 
         this.dropdownButton.on('click', () => {
-            this.domRoot.modal({});
+            BootstrapUtils.showModal(this.domRoot);
         });
 
         this.updateButton();
@@ -342,11 +343,14 @@ export class LibsWidget {
     }
 
     hidePopups() {
-        this.searchResults.find('.lib-info-button').popover('hide');
+        this.searchResults.find('.lib-info-button').each((_, el) => BootstrapUtils.hidePopover($(el)));
     }
 
     clearSearchResults() {
-        this.searchResults.find('.lib-info-button').popover('dispose');
+        this.searchResults.find('.lib-info-button').each((_, el) => {
+            const popover = BootstrapUtils.getPopoverInstance($(el));
+            if (popover) popover.dispose();
+        });
         this.searchResults.html('');
     }
 
@@ -498,7 +502,7 @@ export class LibsWidget {
             '<div class="arrow"></div>' +
             '<h3 class="popover-header"></h3><div class="popover-body"></div>' +
             '</div>';
-        infoButton.popover({
+        BootstrapUtils.initPopover(infoButton, {
             html: true,
             title: 'Build info for ' + getCompilerName(this.currentCompilerId),
             content: () => {

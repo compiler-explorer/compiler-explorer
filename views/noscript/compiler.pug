@@ -6,7 +6,7 @@ block content
       input#filterAnsi(name='filterAnsi' value='true' type='hidden')
 
       .form-pair.inlined.dropdown
-        a.btn.nodropdown-toggle#outputDropdown(href="javascript:;" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false")
+        a.btn.nodropdown-toggle#outputDropdown(href="javascript:;" role="button" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false")
           span.fas.fa-cog
           | Output
 
@@ -14,7 +14,7 @@ block content
           include ../options-output.pug
 
       .form-pair.inlined.dropdown
-        a.btn.nodropdown-toggle#filtersDropdown(href="javascript:;" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false")
+        a.btn.nodropdown-toggle#filtersDropdown(href="javascript:;" role="button" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false")
           span.fas.fa-filter
           | Filters
 

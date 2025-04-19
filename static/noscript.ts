@@ -25,8 +25,8 @@
 // This jQuery import needs to be here, because noscript.ts is a different entrypoint than the rest of the code.
 // See webpack.config.esm.ts -> entry for more details.
 import $ from 'jquery';
+import '@popperjs/core';
 import 'bootstrap';
-import 'popper.js';
 
 import {Toggles} from './widgets/toggles.js';
 import './styles/noscript.scss';
