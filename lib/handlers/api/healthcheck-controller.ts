@@ -62,7 +62,8 @@ export class HealthcheckController implements HttpController {
         // If this is a worker, we don't require that the server has languages configured.
         if (!this.isExecutionWorker && !this.compileHandler.hasLanguages()) {
             logger.error('*** HEALTH CHECK FAILURE: no languages/compilers detected');
-            return res.status(500).send();
+            res.status(500).send();
+            return;
         }
 
         // If we have a healthcheck file, we require that it exists and it is non-empty. The /efs/.health file contents
@@ -74,14 +75,16 @@ export class HealthcheckController implements HttpController {
                     throw new Error('File is empty');
                 }
                 res.set('Content-Type', 'text/html');
-                return res.send(content);
+                res.send(content);
+                return;
             } catch (e) {
                 logger.error(`*** HEALTH CHECK FAILURE: while reading file '${this.healthCheckFilePath}' got ${e}`);
                 SentryCapture(e, 'Health check');
-                return res.status(500).send();
+                res.status(500).send();
+                return;
             }
         }
 
-        return res.send('Everything is awesome');
+        res.send('Everything is awesome');
     }
 }
