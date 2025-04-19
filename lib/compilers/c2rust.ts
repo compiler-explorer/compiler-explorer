@@ -58,4 +58,26 @@ export class C2RustCompiler extends BaseCompiler {
     override getOutputFilename(dirPath: string) {
         return path.join(dirPath, 'example.rs');
     }
+
+    override orderArguments(
+        options: string[],
+        inputFilename: string,
+        libIncludes: string[],
+        libOptions: string[],
+        libPaths: string[],
+        libLinks: string[],
+        userOptions: string[],
+        staticLibLinks: string[],
+    ): string[] {
+        return options.concat(
+            [this.filename(inputFilename)],
+            userOptions,
+            userOptions.includes('--') ? [] : ['--'],
+            libIncludes,
+            libOptions,
+            libPaths,
+            libLinks,
+            staticLibLinks,
+        );
+    }
 }
