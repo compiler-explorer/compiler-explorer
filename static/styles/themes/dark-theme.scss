@@ -34,6 +34,10 @@ textarea {
     background-color: #474747;
     border: 0 !important;
 
+    &::placeholder {
+        color: #888 !important;
+    }
+
     &:focus {
         color: #eee !important;
         background-color: #474747;
@@ -196,7 +200,7 @@ textarea.form-control {
         color: #fff !important;
         background-color: #23272b !important;
     }
-    
+
     &.active {
         background-color: #235765 !important;
         color: #fff !important;

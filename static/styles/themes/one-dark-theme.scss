@@ -44,6 +44,10 @@ input {
     background-color: $lighter;
     border: 0 !important;
 
+    &::placeholder {
+        color: #888 !important;
+    }
+
     &:focus {
         color: #eee !important;
         background-color: $lightest;
@@ -235,7 +239,7 @@ textarea.form-control {
         color: #fff !important;
         background-color: $lighter !important;
     }
-    
+
     &.active {
         background-color: #405f9d !important;
         color: #fff !important;

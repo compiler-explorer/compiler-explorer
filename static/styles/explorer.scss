@@ -80,6 +80,7 @@ body {
 
 .compiler-picker {
     min-width: 14em;
+    flex-grow: 0 !important; // Ensures the compiler picker doesn't flex-grow to take up more space
 }
 
 .compiler-picker .ts-input {
@@ -1300,6 +1301,7 @@ html[data-theme='one-dark'] {
 
 .popular-arguments-btn {
     border-top-right-radius: 0;
+    height: 100%;
 }
 
 .panel-compilation {

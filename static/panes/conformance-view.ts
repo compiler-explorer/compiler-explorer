@@ -151,7 +151,7 @@ export class Conformance extends Pane<ConformanceViewState> {
         this.conformanceContentRoot = this.domRoot.find('.conformance-wrapper');
         this.selectorList = this.domRoot.find('.compiler-list');
         this.addCompilerButton = this.domRoot.find('.add-compiler');
-        this.selectorTemplate = $('#compiler-selector').find('.form-row');
+        this.selectorTemplate = $('#compiler-selector').find('.row');
         this.topBar = this.domRoot.find('.top-bar');
         this.libsButton = this.topBar.find('.show-libs');
         this.hideable = this.domRoot.find('.hideable');

@@ -678,11 +678,13 @@ function start() {
         setupButtons(options, hub);
     }
 
-    const addDropdown = $('#addDropdown');
-
     function setupAdd<C>(thing: JQuery, func: () => ComponentConfig<C>) {
         (layout.createDragSource(thing, func as any) as any)._dragListener.on('dragStart', () => {
-            addDropdown.dropdown('toggle');
+            const addDropdown = unwrap(
+                BootstrapUtils.getDropdownInstance('#addDropdown'),
+                'Dropdown instance not found for #addDropdown',
+            );
+            addDropdown.toggle();
         });
 
         thing.on('click', () => {
