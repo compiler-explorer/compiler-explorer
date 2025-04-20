@@ -28,6 +28,14 @@ body {
     background-color: #333 !important;
 }
 
+// Border color adjustments for form elements in dark theme
+.form-select,
+.form-control,
+.input-group-text,
+.ts-wrapper .ts-control {
+    --bs-border-color: #444;
+}
+
 input,
 textarea {
     color: #eee !important;

@@ -36,6 +36,14 @@ body {
     background-color: $base !important;
 }
 
+// Border color adjustments for form elements
+.form-select,
+.form-control,
+.input-group-text,
+.ts-wrapper .ts-control {
+    --bs-border-color: $dark;
+}
+
 input {
     //color: #000 !important;
     background-color: $base;

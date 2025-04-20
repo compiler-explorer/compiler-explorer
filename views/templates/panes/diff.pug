@@ -1,14 +1,14 @@
 #diff
-  .top-bar.btn-toolbar.bg-light(role="toolbar")
+  .top-bar.btn-toolbar.bg-light.py-1.d-flex.align-items-center(role="toolbar")
     include ../../font-size
-    .btn-group.btn-group-sm
-      .input-group.input-group-sm.mb-auto
+    .btn-group.btn-group-sm.flex-grow-1.me-2
+      .input-group.input-group-sm.w-100
         label.input-group-text
           | Left:&nbsp;
         select.form-select.diff-picker.lhs(placeholder="Select compiler...")
         select.form-select.difftype-picker.lhsdifftype(placeholder="...")
-    .btn-group.btn-group-sm.ms-4
-      .input-group.input-group-sm.mb-auto
+    .btn-group.btn-group-sm.flex-grow-1
+      .input-group.input-group-sm.w-100
         label.input-group-text
           | Right:&nbsp;
         select.form-select.diff-picker.rhs(placeholder="Select compiler...")
