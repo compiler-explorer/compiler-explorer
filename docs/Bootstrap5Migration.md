@@ -234,6 +234,10 @@ allows for:
 - [ ] Remove the temporary `bootstrap-utils.ts` compatibility layer
   - [ ] Replace all uses with direct Bootstrap 5 API calls
   - [ ] Document the native Bootstrap 5 API for future reference
+- [ ] Investigate and fix modal accessibility warnings
+  - [ ] Address the warning: "Blocked aria-hidden on an element because its descendant retained focus"
+  - [ ] Update modal template markup to leverage Bootstrap 5.3's built-in support for the `inert` attribute
+  - [ ] Ensure proper focus management in modals for improved accessibility
 - [ ] Note: This would be a separate effort after the Bootstrap migration is stable
 
 ## Notes for Implementation
