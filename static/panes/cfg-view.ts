@@ -392,8 +392,10 @@ export class Cfg extends Pane<CfgState> {
                 }" aria-describedby="wtf">&#8943;</span>`;
             }
             div.innerHTML = lines.join('<br/>');
-            for (const fold of div.getElementsByClassName('fold')) {
-                BootstrapUtils.initPopover(fold as HTMLElement, {
+            for (const foldElement of div.getElementsByClassName('fold')) {
+                const fold = foldElement as HTMLElement;
+
+                BootstrapUtils.initPopover(fold, {
                     content: unwrap(fold.getAttribute('data-extra')),
                     html: true,
                     placement: 'top',
@@ -405,13 +407,12 @@ export class Cfg extends Pane<CfgState> {
                         '</div>',
                 });
 
-                $(fold)
-                    .on('show.bs.popover', () => {
-                        this.tooltipOpen = true;
-                    })
-                    .on('hide.bs.popover', () => {
-                        this.tooltipOpen = false;
-                    });
+                BootstrapUtils.setElementEventHandler(fold, 'show.bs.popover', () => {
+                    this.tooltipOpen = true;
+                });
+                BootstrapUtils.setElementEventHandler(fold, 'hide.bs.popover', () => {
+                    this.tooltipOpen = false;
+                });
             }
             // So because this is async there's a race condition here if you rapidly switch functions.
             // This can be triggered by loading an example program. Because the fix going to be tricky I'll defer
