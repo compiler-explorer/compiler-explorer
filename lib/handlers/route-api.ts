@@ -29,7 +29,7 @@ import express from 'express';
 import {AppDefaultArguments, CompilerExplorerOptions} from '../../app.js';
 import {isString} from '../../shared/common-utils.js';
 import {Language} from '../../types/languages.interfaces.js';
-import {assert} from '../assert.js';
+import {assert, unwrap} from '../assert.js';
 import {ClientStateGoldenifier, ClientStateNormalizer} from '../clientstate-normalizer.js';
 import {ClientState} from '../clientstate.js';
 import {CompilationEnvironment} from '../compilation-env.js';
@@ -67,7 +67,7 @@ export type ShortLinkMetaData = {
 export class RouteAPI {
     renderGoldenLayout: any;
     storageHandler: StorageBase;
-    apiHandler: ApiHandler;
+    apiHandler: ApiHandler | undefined;
 
     constructor(
         private readonly router: express.Router,
@@ -89,17 +89,19 @@ export class RouteAPI {
 
             this.apiHandler.setReleaseInfo(config.defArgs.gitReleaseName, config.defArgs.releaseBuildNumber);
         } else {
-            this.apiHandler = undefined as any;
+            this.apiHandler = undefined;
         }
     }
 
     InitializeRoutes() {
+        if (this.apiHandler) {
+            this.router.use('/api', this.apiHandler.handle);
+        }
         this.router
-            .use('/api', this.apiHandler.handle)
             .get('/z/:id', cached, csp, this.storedStateHandler.bind(this))
             .get('/z/:id/code/:session', cached, csp, this.storedCodeHandler.bind(this))
             .get('/resetlayout/:id', cached, csp, this.storedStateHandlerResetLayout.bind(this))
-            .get('/clientstate/:clientstatebase64([^]*)', cached, csp, this.unstoredStateHandler.bind(this))
+            .get(/^\/clientstate\/(?<clientstatebase64>.*)/, cached, csp, this.unstoredStateHandler.bind(this))
             .get('/fromsimplelayout', cached, csp, this.simpleLayoutHandler.bind(this));
     }
 
@@ -111,7 +113,7 @@ export class RouteAPI {
             .then(result => {
                 const config = JSON.parse(result.config);
 
-                let clientstate: ClientState | null = null;
+                let clientstate: ClientState | null;
                 if (config.content) {
                     const normalizer = new ClientStateNormalizer();
                     normalizer.fromGoldenLayout(config);
@@ -268,7 +270,7 @@ export class RouteAPI {
             const sources = utils.glGetMainContents(config.content);
             if (sources.editors.length === 1) {
                 const editor = sources.editors[0];
-                lang = this.apiHandler.languages[editor.language];
+                lang = unwrap(this.apiHandler).languages[editor.language];
                 source = editor.source;
             } else {
                 const normalizer = new ClientStateNormalizer();
@@ -277,7 +279,7 @@ export class RouteAPI {
 
                 if (clientstate.trees && clientstate.trees.length === 1) {
                     const tree = clientstate.trees[0];
-                    lang = this.apiHandler.languages[tree.compilerLanguageId];
+                    lang = unwrap(this.apiHandler).languages[tree.compilerLanguageId];
 
                     if (tree.isCMakeProject) {
                         const firstSource = tree.files.find(file => {
@@ -304,7 +306,7 @@ export class RouteAPI {
                 metadata.ogTitle += ` - ${lang.name}`;
                 if (sources && sources.compilers.length === 1) {
                     const compilerId = sources.compilers[0].compiler;
-                    const compiler = this.apiHandler.compilers.find(c => c.id === compilerId);
+                    const compiler = unwrap(this.apiHandler).compilers.find(c => c.id === compilerId);
                     if (compiler) {
                         metadata.ogTitle += ` (${compiler.name})`;
                     }

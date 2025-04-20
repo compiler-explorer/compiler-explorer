@@ -35,6 +35,7 @@ export const InstructionSetsList = [
     'ebpf',
     'evm',
     'eravm',
+    'ez80',
     'hook',
     'core',
     'java',
@@ -61,6 +62,7 @@ export const InstructionSetsList = [
     'wasm64',
     'wdc65c816',
     'xtensa',
+    'z180',
     'z80',
 ] as const;
 

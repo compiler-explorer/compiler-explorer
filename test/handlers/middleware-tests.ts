@@ -31,7 +31,9 @@ import {cached, cors} from '../../lib/handlers/middleware.js';
 describe('middleware functions', () => {
     it('adds cache controls headers with cached()', async () => {
         const app = express();
-        app.use('/', cached, (_, res) => res.send('Hello World!'));
+        app.use('/', cached, (_, res) => {
+            res.send('Hello World!');
+        });
         await request(app)
             .get('/')
             .expect(200, 'Hello World!')
@@ -40,7 +42,9 @@ describe('middleware functions', () => {
 
     it('adds cors headers with cors()', async () => {
         const app = express();
-        app.use('/', cors, (_, res) => res.send('Hello World!'));
+        app.use('/', cors, (_, res) => {
+            res.send('Hello World!');
+        });
         await request(app)
             .get('/')
             .expect(200, 'Hello World!')

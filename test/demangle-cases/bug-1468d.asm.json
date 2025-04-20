@@ -1,0 +1,37 @@
+{
+  "asm": [
+    {
+      "labels": [],
+      "source": null,
+      "text": "g():",
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        pushq   %rax",
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        callq   *foo::baz+8(%rip)",
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        xorl    %eax, %eax",
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        popq    %rcx",
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        retq",
+    },
+  ],
+  "labelDefinitions": {
+    "g()": 1,
+  },
+}

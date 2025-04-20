@@ -24,9 +24,17 @@
 
 import zlib from 'node:zlib';
 
-import {describe, expect, it} from 'vitest';
+import {beforeAll, describe, expect, it} from 'vitest';
 
-import {extractJsonFromBufferAndInflateIfRequired} from '../../lib/handlers/route-api.js';
+import express from 'express';
+import request from 'supertest';
+import {GoldenLayoutRootStruct} from '../../lib/clientstate-normalizer.js';
+import {
+    HandlerConfig,
+    RouteAPI,
+    ShortLinkMetaData,
+    extractJsonFromBufferAndInflateIfRequired,
+} from '../../lib/handlers/route-api.js';
 
 function possibleCompression(buffer: Buffer): boolean {
     // code used in extractJsonFromBufferAndInflateIfRequired
@@ -61,5 +69,49 @@ describe('extractJsonFromBufferAndInflateIfRequired test cases', () => {
     it('check that data extraction fails (bad case)', () => {
         const buffer = Buffer.from('no json');
         expect(() => extractJsonFromBufferAndInflateIfRequired(buffer)).toThrow();
+    });
+});
+
+describe('clientStateHandler', () => {
+    let app: express.Express;
+
+    beforeAll(() => {
+        app = express();
+        const apiHandler = new RouteAPI(app, {
+            renderGoldenLayout: (
+                config: GoldenLayoutRootStruct,
+                metadata: ShortLinkMetaData,
+                req: express.Request,
+                res: express.Response,
+            ) => {
+                res.send('This is ok');
+            },
+        } as unknown as HandlerConfig);
+        apiHandler.InitializeRoutes();
+    });
+
+    it('should return 200 for /clientstate', async () => {
+        // A valid document is a base64 encoded JSON object with a sessions array.
+        const document = Buffer.from(JSON.stringify({sessions: []}), 'utf-8').toString('base64');
+        const response = await request(app).get(`/clientstate/${document}`);
+        expect(response.status).toBe(200);
+    });
+    it('should return 200 for /clientstate even if the base64 contains `/`', async () => {
+        let document = '';
+        for (let i = 0; i < 1000; i++) {
+            document = Buffer.from(
+                JSON.stringify({
+                    sessions: [],
+                    magic: String.fromCharCode(i, i + 1234),
+                }),
+                'utf-8',
+            ).toString('base64');
+            if (document.includes('/')) {
+                break;
+            }
+        }
+        expect(document).toContain('/');
+        const response = await request(app).get(`/clientstate/${document}`);
+        expect(response.status).toBe(200);
     });
 });

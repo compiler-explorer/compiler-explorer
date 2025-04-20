@@ -486,7 +486,8 @@ export class CompileHandler implements ICompileHandler {
     handlePopularArguments(req: express.Request, res: express.Response) {
         const compiler = this.compilerFor(req);
         if (!compiler) {
-            return res.sendStatus(404);
+            res.sendStatus(404);
+            return;
         }
         res.send(compiler.possibleArguments.getPopularArguments(this.getUsedOptions(req)));
     }
@@ -494,7 +495,8 @@ export class CompileHandler implements ICompileHandler {
     handleOptimizationArguments(req: express.Request, res: express.Response) {
         const compiler = this.compilerFor(req);
         if (!compiler) {
-            return res.sendStatus(404);
+            res.sendStatus(404);
+            return;
         }
         res.send(compiler.possibleArguments.getOptimizationArguments(this.getUsedOptions(req)));
     }
@@ -513,18 +515,20 @@ export class CompileHandler implements ICompileHandler {
 
     handleApiError(error: any, res: express.Response, next: express.NextFunction) {
         if (error.message) {
-            return res.status(400).send({
+            res.status(400).send({
                 error: true,
                 message: error.message,
             });
+            return;
         }
-        return next(error);
+        next(error);
     }
 
     handleCmake(req: express.Request, res: express.Response, next: express.NextFunction) {
         const compiler = this.compilerFor(req);
         if (!compiler) {
-            return res.sendStatus(404);
+            res.sendStatus(404);
+            return;
         }
 
         const remote = compiler.getRemote();
@@ -561,14 +565,16 @@ export class CompileHandler implements ICompileHandler {
                     return this.handleApiError(e, res, next);
                 });
         } catch (e) {
-            return this.handleApiError(e, res, next);
+            this.handleApiError(e, res, next);
+            return;
         }
     }
 
     handle(req: express.Request, res: express.Response, next: express.NextFunction) {
         const compiler = this.compilerFor(req);
         if (!compiler) {
-            return res.sendStatus(404);
+            res.sendStatus(404);
+            return;
         }
 
         const remote = compiler.getRemote();
@@ -585,7 +591,8 @@ export class CompileHandler implements ICompileHandler {
         try {
             parsedRequest = this.parseRequest(req, compiler);
         } catch (error) {
-            return this.handleApiError(error, res, next);
+            this.handleApiError(error, res, next);
+            return;
         }
 
         const {source, options, backendOptions, filters, bypassCache, tools, executeParameters, libraries} =
