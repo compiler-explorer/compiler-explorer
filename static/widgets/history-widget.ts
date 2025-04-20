@@ -143,7 +143,8 @@ export class HistoryWidget {
         this.onLoadCallback = onLoad;
 
         // It can't tell that we initialize modal on initializeIfNeeded, so it sticks to the possibility of it being null
-        unwrap(this.modal).on('shown.bs.modal', () => this.resizeLayout());
-        BootstrapUtils.showModal(unwrap(this.modal));
+        const modalElement = unwrap(this.modal)[0];
+        modalElement.addEventListener('shown.bs.modal', () => this.resizeLayout());
+        BootstrapUtils.showModal(modalElement);
     }
 }

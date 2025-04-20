@@ -134,6 +134,7 @@ allows for:
 - **Grid and Form Class Renaming**: Bootstrap 5 renamed several core classes, such as changing `.form-row` to `.row`. This can cause subtle template selector issues in code that relies on these class names.
 - **Don't Mix Data Attributes and JavaScript Modal Creation**: When creating modals via JavaScript (e.g., for dynamically loaded content), don't include `data-bs-toggle="modal"` on the trigger element unless you also add a matching `data-bs-target` attribute pointing to a valid modal element.
 - **Modal Events Changed Significantly**: Bootstrap 5 modal events need to be attached directly to the native DOM element rather than jQuery objects, and the event parameter type is different. For proper typing, import the `Modal` type from bootstrap and use `Modal.Event` type.
+- **jQuery Event Binding vs Native DOM Events**: Bootstrap 5 requires native DOM event binding instead of jQuery's `.on()` method. Replace `$(selector).on('shown.bs.modal', handler)` with `domElement.addEventListener('shown.bs.modal', handler)`. This is particularly important for modal events like 'shown.bs.modal'.
 - **Tooltip API Changed**: The global `window.bootstrap.Tooltip` reference no longer exists. Import the `Tooltip` class directly from bootstrap instead.
 - **Input Group Structure Simplified**: Bootstrap 5 removed the need for `.input-group-prepend` and `.input-group-append` wrapper divs. Buttons and other controls can now be direct children of the `.input-group` container. This simplifies the markup but requires template updates.
 - **TomSelect Widget Integration**: Bootstrap 5's switch from CSS triangles to SVG background images for dropdowns caused issues with TomSelect. Adding back custom CSS for dropdown arrows was necessary to maintain correct appearance.
@@ -374,9 +375,9 @@ allows for:
 
 3. **Bugs to Fix (From Beta Testing)**
    - The X to close the community/alert notes is harder to see in dark mode than before
-   - History view is broken (empty when clicking radio buttons)
-   - TomSelect dropdowns for compilers are excessively long (both in executor view and normal view)
-   - Default text/placeholder text is too dark, making it hard to read (especially "Compiler options")
+   - ✓ History view is broken (empty when clicking radio buttons) (fixed: updated modal event binding from jQuery's `.on('shown.bs.modal')` to native DOM `addEventListener('shown.bs.modal')`)
+   - ✓ TomSelect dropdowns for compilers are excessively long (both in executor view and normal view) (fixed manually)
+   - ✓ Default text/placeholder text is too dark, making it hard to read (especially "Compiler options") (fixed manually)
    - ✓ Conformance view's "add compiler" functionality is broken (fixed: template selector was looking for `.form-row` which changed to `.row` in Bootstrap 5)
    - Dropdown in the library menu has changed color (possibly acceptable)
    - Layout has changed slightly in the library menu
