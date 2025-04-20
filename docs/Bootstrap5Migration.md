@@ -384,10 +384,10 @@ allows for:
    - The "popout" on the TomSelect compiler dropdown is misaligned
    - ✓ Need to check for more instances of old Bootstrap v4 code patterns (fixed: replaced `dropdown('toggle')` in main.ts with `BootstrapUtils.getDropdownInstance()` and `.toggle()`)
    - Check Sentry for additional errors on the beta site
-   - Compiler combobox rounding overlaps left border by 1 pixel
-   - Diff view - changing left/right side compiler/window turns combobox to a white background
-   - Runtime tools window is broken - doesn't save settings anymore (modal hide event not triggering)
-   - Emulation functionality is broken due to modal issues (example: https://godbolt.org/beta/z/qnE7jhnvc)
+   - ✓ Compiler combobox rounding overlaps left border by 1 pixel (fixed: overrode CSS variables to reset Bootstrap 5's negative margin)
+   - ✓ Diff view - changing left/right side compiler/window turns combobox to a white background (fixed: removed form-select class to avoid transparent background)
+   - ✓ Runtime tools window is broken - doesn't save settings anymore (fixed: updated modal hide event handling with setElementEventHandler)
+   - ✓ Emulation functionality is broken due to modal issues (fixed: replaced direct .modal() calls with BootstrapUtils.showModal)
 
 ## Final Testing Checklist
 
@@ -548,6 +548,29 @@ Before considering the Bootstrap 5 migration complete, the following areas shoul
   - Check the length of compiler dropdowns in normal view
   - Verify dropdown sizes are appropriate and consistent
   - Check that the popout button alignment is correct on all dropdowns
+  - Verify border colors in dark themes are appropriate (not too bright/white)
+  - Test TomSelect dropdowns in diff view with dark themes when changing compilers
+  - Confirm that input group borders don't overlap incorrectly with TomSelect elements
+
+- **Runtime Tools**
+  - Open the runtime tools window from compiler pane
+  - Change settings and click outside the modal to close
+  - Verify settings are properly saved
+  - Test with multiple runtime tool options
+  - Verify event handling properly handles modal opening/closing
+
+- **Emulation Features**
+  - Test BBC emulation by clicking emulator links
+  - Check Z80 emulation features
+  - Verify emulator modals open properly
+  - Test interaction between emulator windows and the main interface
+
+- **Diff View**
+  - Test changing compilers in both left and right panes
+  - Verify backgrounds remain themed correctly in dark mode
+  - Check that the diff view layout is correct (no excessive height)
+  - Confirm that input groups and buttons are properly sized
+  - Test different diff view types (Assembly, Compiler output, etc.)
 
 - **Placeholder Text**
   - Check visibility and contrast of placeholder text in all input fields
@@ -568,5 +591,6 @@ Before considering the Bootstrap 5 migration complete, the following areas shoul
   - Check pixel-perfect alignment of elements compared to production site
   - Inspect for old Bootstrap 4 patterns in JavaScript (like `dropdown('toggle')`)
   - Test all components for unexpected behavioral differences
+  - Verify modal events work properly in all modal dialog types
 
 This plan will be updated as progress is made, with each completed step marked accordingly.
