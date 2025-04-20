@@ -24,12 +24,12 @@ jobs:
       - name: Run checks
         run: |
           npm run lint-check
-          npm run test
+          npm run test -- --coverage
           npm run ts-check
           python3 ./etc/scripts/util/propscheck.py
           python3 ./etc/scripts/util/propschecktest.py
           python3 ./etc/scripts/test_numba_wrapper.py
-      - uses: codecov/codecov-action@v4
+      - uses: codecov/codecov-action@v5
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
           verbose: true
