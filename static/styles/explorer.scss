@@ -1228,6 +1228,15 @@ html[data-theme='one-dark'] {
     border-color: transparent transparent #343a40 transparent;
 }
 
+// Fix Bootstrap 5's input-group border overlap issues with TomSelect
+// Bootstrap applies a -1px margin to elements matching `:not(:first-child)` in input groups
+// TomSelect creates a wrapper (.ts-wrapper) around the select element, which becomes a
+// child of the input-group. This wrapper gets the negative margin, causing it to shift
+// left by 1px and visually overflow its container boundary.
+.input-group > .ts-wrapper:not(:first-child) {
+  margin-left: 0 !important; // Reset Bootstrap's negative margin for TomSelect wrappers
+}
+
 .copy-link-btn {
     padding-top: 0;
 }
