@@ -130,13 +130,15 @@ allows for:
 - **Close Button Implementation Completely Changed**: Bootstrap 4 used `.close` class with a `&times;` entity inside a span, while Bootstrap 5 uses `.btn-close` class with a background image and no inner content.
 - **Easy to Miss Data Attributes**: Initial migration scripts may miss data attributes in template files and JavaScript. Double-check all files for remaining `data-toggle`, `data-placement`, etc., attributes.
 - **Tab Navigation Issues**: The tab navigation problems were fixed by simply updating data attributes, not by adding JavaScript initialization.
-- **jQuery Plugin Methods Removal**: jQuery methods like `.popover()` need to be replaced with code that uses the Bootstrap 5 API through a compatibility layer.
+- **jQuery Plugin Methods Removal**: jQuery methods like `.popover()` and `.dropdown('toggle')` need to be replaced with code that uses the Bootstrap 5 API through a compatibility layer. Always use `BootstrapUtils` helper methods rather than direct jQuery plugin calls.
+- **Grid and Form Class Renaming**: Bootstrap 5 renamed several core classes, such as changing `.form-row` to `.row`. This can cause subtle template selector issues in code that relies on these class names.
 - **Don't Mix Data Attributes and JavaScript Modal Creation**: When creating modals via JavaScript (e.g., for dynamically loaded content), don't include `data-bs-toggle="modal"` on the trigger element unless you also add a matching `data-bs-target` attribute pointing to a valid modal element.
 - **Modal Events Changed Significantly**: Bootstrap 5 modal events need to be attached directly to the native DOM element rather than jQuery objects, and the event parameter type is different. For proper typing, import the `Modal` type from bootstrap and use `Modal.Event` type.
 - **Tooltip API Changed**: The global `window.bootstrap.Tooltip` reference no longer exists. Import the `Tooltip` class directly from bootstrap instead.
 - **Input Group Structure Simplified**: Bootstrap 5 removed the need for `.input-group-prepend` and `.input-group-append` wrapper divs. Buttons and other controls can now be direct children of the `.input-group` container. This simplifies the markup but requires template updates.
 - **TomSelect Widget Integration**: Bootstrap 5's switch from CSS triangles to SVG background images for dropdowns caused issues with TomSelect. Adding back custom CSS for dropdown arrows was necessary to maintain correct appearance.
 - **Btn-block Removed**: Bootstrap 5 removed the `.btn-block` class. Instead, the recommended approach is to wrap buttons in a container with `.d-grid` and use standard `.btn` classes. This affects any full-width buttons in the application.
+- **Element Selection for Components**: When working with Bootstrap 5 components, prefer passing CSS selectors to `BootstrapUtils` methods rather than jQuery objects, as this provides more consistent behavior.
 
 ## Phase 5: Component Migration (By Component Type)
 
@@ -371,11 +373,11 @@ allows for:
    - History view is broken (empty when clicking radio buttons)
    - TomSelect dropdowns for compilers are excessively long (both in executor view and normal view)
    - Default text/placeholder text is too dark, making it hard to read (especially "Compiler options")
-   - Conformance view's "add compiler" functionality is broken (likely related to old Bootstrap v4 code in main.ts)
+   - ✓ Conformance view's "add compiler" functionality is broken (fixed: template selector was looking for `.form-row` which changed to `.row` in Bootstrap 5)
    - Dropdown in the library menu has changed color (possibly acceptable)
    - Layout has changed slightly in the library menu
    - The "popout" on the TomSelect compiler dropdown is misaligned
-   - Need to check for more instances of old Bootstrap v4 code patterns (like `dropdown('toggle')` in main.ts)
+   - ✓ Need to check for more instances of old Bootstrap v4 code patterns (fixed: replaced `dropdown('toggle')` in main.ts with `BootstrapUtils.getDropdownInstance()` and `.toggle()`)
    - Check Sentry for additional errors on the beta site
 
 ## Final Testing Checklist
