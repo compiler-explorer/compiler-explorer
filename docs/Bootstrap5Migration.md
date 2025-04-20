@@ -384,6 +384,10 @@ allows for:
    - The "popout" on the TomSelect compiler dropdown is misaligned
    - ✓ Need to check for more instances of old Bootstrap v4 code patterns (fixed: replaced `dropdown('toggle')` in main.ts with `BootstrapUtils.getDropdownInstance()` and `.toggle()`)
    - Check Sentry for additional errors on the beta site
+   - Compiler combobox rounding overlaps left border by 1 pixel
+   - Diff view - changing left/right side compiler/window turns combobox to a white background
+   - Runtime tools window is broken - doesn't save settings anymore (modal hide event not triggering)
+   - Emulation functionality is broken due to modal issues (example: https://godbolt.org/beta/z/qnE7jhnvc)
 
 ## Final Testing Checklist
 

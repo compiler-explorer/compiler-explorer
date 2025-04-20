@@ -65,7 +65,7 @@ export class CompilerPickerPopup {
         this.categoryFilters = [];
         this.searchBar.val('');
 
-        this.modal.on('shown.bs.modal', () => {
+        BootstrapUtils.setElementEventHandler(this.modal, 'shown.bs.modal', () => {
             this.searchBar[0].focus();
         });
     }

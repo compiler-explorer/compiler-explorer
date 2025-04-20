@@ -1869,7 +1869,7 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
                 dismissTime: 10000,
                 onBeforeShow: elem => {
                     elem.find('#miracle_emulink').on('click', () => {
-                        dialog.modal();
+                        BootstrapUtils.showModal(dialog);
 
                         const miracleMenuFrame = dialog.find('#miracleemuframe')[0];
                         assert(miracleMenuFrame instanceof HTMLIFrameElement);
@@ -1897,7 +1897,7 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
                 dismissTime: 10000,
                 onBeforeShow: elem => {
                     elem.find('#jsspeccy_emulink').on('click', () => {
-                        dialog.modal();
+                        BootstrapUtils.showModal(dialog);
 
                         const speccyemuframe = dialog.find('#speccyemuframe')[0];
                         assert(speccyemuframe instanceof HTMLIFrameElement);
@@ -1924,7 +1924,7 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
                 dismissTime: 10000,
                 onBeforeShow: elem => {
                     elem.find('#emulink').on('click', () => {
-                        dialog.modal();
+                        BootstrapUtils.showModal(dialog);
 
                         const jsbeebemuframe = dialog.find('#jsbeebemuframe')[0];
                         assert(jsbeebemuframe instanceof HTMLIFrameElement);
@@ -1951,7 +1951,7 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
                 dismissTime: 10000,
                 onBeforeShow: elem => {
                     elem.find('#emulink').on('click', () => {
-                        dialog.modal();
+                        BootstrapUtils.showModal(dialog);
 
                         const jsnesemuframe = dialog.find('#jsnesemuframe')[0];
                         assert(jsnesemuframe instanceof HTMLIFrameElement);

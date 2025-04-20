@@ -61,8 +61,7 @@ export class Alert {
         BootstrapUtils.showModal(modal);
 
         if (onClose) {
-            modal.off('hidden.bs.modal');
-            modal.on('hidden.bs.modal', onClose);
+            BootstrapUtils.setElementEventHandler(modal, 'hidden.bs.modal', onClose);
         }
         return modal;
     }
@@ -85,8 +84,7 @@ export class Alert {
             modal.find('.modal-footer .no').removeClass('btn-link').addClass(askOptions.noClass);
         }
         if (askOptions.onClose) {
-            modal.off('hidden.bs.modal');
-            modal.on('hidden.bs.modal', askOptions.onClose);
+            BootstrapUtils.setElementEventHandler(modal, 'hidden.bs.modal', askOptions.onClose);
         }
 
         BootstrapUtils.showModal(modal);
@@ -180,11 +178,10 @@ export class Alert {
             noButton.removeClass('btn-light').addClass(askOptions.noClass);
         }
         if (askOptions.onClose) {
-            modal.off('hidden.bs.modal');
-            modal.on('hidden.bs.modal', askOptions.onClose);
+            BootstrapUtils.setElementEventHandler(modal, 'hidden.bs.modal', askOptions.onClose);
         }
 
-        modal.on('shown.bs.modal', () => {
+        BootstrapUtils.setElementEventHandler(modal, 'shown.bs.modal', () => {
             answerEdit.trigger('focus');
         });
         BootstrapUtils.showModal(modal);

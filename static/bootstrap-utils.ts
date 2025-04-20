@@ -407,4 +407,65 @@ export class BootstrapUtils {
         const modal = BootstrapUtils.getModalInstance(elementOrSelector);
         if (modal) modal.show();
     }
+
+    // Private static map to track event listeners
+    private static eventListenerMap = new WeakMap<HTMLElement, Map<string, EventListener>>();
+
+    /**
+     * Private helper that sets an event handler on a single DOM element
+     * Handles the removal of existing handlers and tracking of the new one
+     *
+     * @param domElement The DOM element to attach the event to
+     * @param eventName The event name (e.g., 'hidden.bs.modal', 'shown.bs.modal', 'click', etc.)
+     * @param handler The event handler function
+     */
+    private static setDomElementEventHandler(
+        domElement: HTMLElement,
+        eventName: string,
+        handler: (event: Event) => void,
+    ): void {
+        // Initialize nested map structure if needed
+        if (!this.eventListenerMap.has(domElement)) {
+            this.eventListenerMap.set(domElement, new Map());
+        }
+
+        const elementEvents = this.eventListenerMap.get(domElement)!;
+
+        // Remove existing handler if present
+        if (elementEvents.has(eventName)) {
+            const oldHandler = elementEvents.get(eventName)!;
+            domElement.removeEventListener(eventName, oldHandler);
+        }
+
+        // Store and add new handler
+        elementEvents.set(eventName, handler);
+        domElement.addEventListener(eventName, handler);
+    }
+
+    /**
+     * Registers an event handler on element(s), removing any previous handler for the same event
+     * Similar to jQuery's off().on() pattern
+     * Works with both single elements and jQuery collections with multiple elements
+     *
+     * @param element The element(s) or jQuery object to attach the event to
+     * @param eventName The event name (e.g., 'hidden.bs.modal', 'shown.bs.modal', 'click', etc.)
+     * @param handler The event handler function
+     */
+    static setElementEventHandler(
+        element: JQuery<HTMLElement> | HTMLElement,
+        eventName: string,
+        handler: (event: Event) => void,
+    ): void {
+        // If jQuery object with potentially multiple elements
+        if (!(element instanceof HTMLElement)) {
+            // Loop through all elements in the jQuery collection
+            element.each((_index, domElement) => {
+                this.setDomElementEventHandler(domElement, eventName, handler);
+            });
+            return;
+        }
+
+        // Otherwise it's a single DOM element
+        this.setDomElementEventHandler(element, eventName, handler);
+    }
 }

@@ -394,7 +394,7 @@ export class RuntimeToolsWidget {
         const lastOverrides = JSON.stringify(this.configured);
 
         // popup is shared, so clear the events first
-        this.popupDomRoot.off('hidden.bs.modal').on('hidden.bs.modal', () => {
+        BootstrapUtils.setElementEventHandler(this.popupDomRoot, 'hidden.bs.modal', () => {
             this.configured = this.loadStateFromUI();
 
             const newOverrides = JSON.stringify(this.configured);

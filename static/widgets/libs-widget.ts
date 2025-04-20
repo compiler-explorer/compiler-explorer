@@ -188,25 +188,25 @@ export class LibsWidget {
             this.domRoot.addClass('mobile');
         }
 
-        this.domRoot
-            .on('shown.bs.modal', () => {
-                searchInput.trigger('focus');
+        BootstrapUtils.setElementEventHandler(this.domRoot, 'shown.bs.modal', () => {
+            searchInput.trigger('focus');
 
-                for (const filter of this.filters) {
-                    const filterResult = filter(this.currentCompilerId, this.currentLangId);
-                    if (filterResult !== null) {
-                        const alertSystem = new Alert();
-                        alertSystem.notify(`${filterResult.title}: ${filterResult.content}`, {
-                            group: 'libs',
-                            alertClass: 'notification-error',
-                        });
-                        break;
-                    }
+            for (const filter of this.filters) {
+                const filterResult = filter(this.currentCompilerId, this.currentLangId);
+                if (filterResult !== null) {
+                    const alertSystem = new Alert();
+                    alertSystem.notify(`${filterResult.title}: ${filterResult.content}`, {
+                        group: 'libs',
+                        alertClass: 'notification-error',
+                    });
+                    break;
                 }
-            })
-            .on('hide.bs.modal', () => {
-                this.hidePopups();
-            });
+            }
+        });
+
+        BootstrapUtils.setElementEventHandler(this.domRoot, 'hide.bs.modal', () => {
+            this.hidePopups();
+        });
 
         searchInput.on('input', this.startSearching.bind(this));
 
