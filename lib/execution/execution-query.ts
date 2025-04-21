@@ -76,7 +76,7 @@ export class RemoteExecutionQuery {
         const triple = new BaseExecutionTriple();
 
         if (result.executableFilename) {
-            const info = await BinaryInfoLinux.readFile(result.executableFilename);
+            const info = await BinaryInfoLinux.readFile(result.executableFilename, result.instructionSet);
             if (info) {
                 triple.instructionSet = info.instructionSet;
                 triple.os = info.os;
