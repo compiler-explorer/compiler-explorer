@@ -62,9 +62,8 @@ export class BrontoRefactorTool extends BaseTool {
         const manualCompileFlags = options.filter(option => option !== sourcefile);
         compileFlags = compileFlags.concat(manualCompileFlags);
 
-        const result = await super.runTool(compilationInfo, sourcefile, compileFlags);
+        const result = await super.runTool(compilationInfo, sourcefile, compileFlags, stdin, supportedLibraries);
         result.sourcechanged = false;
-
-        return await super.runTool(compilationInfo, sourcefile, compileFlags, stdin);
+        return result;
     }
 }
