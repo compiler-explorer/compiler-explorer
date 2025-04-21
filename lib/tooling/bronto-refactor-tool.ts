@@ -44,8 +44,8 @@ export class BrontoRefactorTool extends BaseTool {
     override async runTool(
         compilationInfo: CompilationInfo,
         inputFilepath: string,
-        args?: string[],
-        stdin?: string,
+        _args?: string[],
+        _stdin?: string,
         supportedLibraries?: Record<string, OptionsHandlerLibrary>,
     ) {
         const sourcefile = inputFilepath;
@@ -61,10 +61,6 @@ export class BrontoRefactorTool extends BaseTool {
 
         const manualCompileFlags = options.filter(option => option !== sourcefile);
         compileFlags = compileFlags.concat(manualCompileFlags);
-
-        const result = await super.runTool(compilationInfo, sourcefile, compileFlags);
-        result.sourcechanged = false;
-
-        return await super.runTool(compilationInfo, sourcefile, compileFlags, stdin);
+        return super.runTool(compilationInfo, sourcefile, compileFlags);
     }
 }
