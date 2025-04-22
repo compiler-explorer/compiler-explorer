@@ -159,3 +159,4 @@ From oldest to newest contributor, we would like to thank:
 - [Dana Jansens](https://github.com/danakj)
 - [Mathias Gredal](https://github.com/mathiasgredal)
 - [RongDong Xu](https://github.com/arong)
+- [Adrien Bertrand](https://github.com/adriweb)

@@ -1,0 +1,114 @@
+{
+  "asm": [
+    {
+      "labels": [],
+      "source": null,
+      "text": "D::a():",
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "  push rbp",
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "  mov rbp, rsp",
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "  mov QWORD PTR [rbp-8], rdi",
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "  mov eax, 1",
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "  pop rbp",
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "  ret",
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "D::abc():",
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "  push rbp",
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "  mov rbp, rsp",
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "  mov QWORD PTR [rbp-8], rdi",
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "  mov eax, 1",
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "  pop rbp",
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "  ret",
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "C::a():",
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "  push rbp",
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "  mov rbp, rsp",
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "  mov QWORD PTR [rbp-8], rdi",
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "  mov eax, 1",
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "  pop rbp",
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "  ret",
+    },
+  ],
+  "labelDefinitions": {
+    "C::a()": 15,
+    "D::a()": 1,
+    "D::abc()": 8,
+  },
+}

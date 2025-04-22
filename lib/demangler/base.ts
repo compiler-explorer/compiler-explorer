@@ -116,8 +116,19 @@ export class BaseDemangler extends AsmRegex {
             this.ptxFuncDef,
             this.ptxVarDef,
         ];
-        for (const {text: line} of this.result.asm) {
+        for (const {text: line, labels} of this.result.asm) {
             if (!line) continue;
+
+            if (labels) {
+                for (const label of labels) {
+                    if (label.target !== undefined) {
+                        unwrap(this.symbolstore).add(label.target);
+                        this.othersymbols.add(label.name);
+                    } else {
+                        unwrap(this.symbolstore).add(label.name);
+                    }
+                }
+            }
 
             const labelMatch = line.match(this.labelDef);
             if (labelMatch) unwrap(this.symbolstore).add(labelMatch[labelMatch.length - 1]);
@@ -179,6 +190,7 @@ export class BaseDemangler extends AsmRegex {
         ].filter(elem => elem[0] !== elem[1]);
         if (translations.length > 0) {
             const tree = new PrefixTree(translations);
+            const translationsDict = Object.fromEntries(translations);
             for (const asm of this.result.asm) {
                 const {newText, mapRanges, mapNames} = tree.replaceAll(asm.text);
                 asm.text = newText;
@@ -189,6 +201,9 @@ export class BaseDemangler extends AsmRegex {
                         if (mapRanges[label.range.startCol])
                             label.range = mapRanges[label.range.startCol][label.range.endCol] || label.range;
                         label.name = mapNames[label.name] || label.name;
+                        if (label.target !== undefined) {
+                            label.target = translationsDict[label.target] || label.target;
+                        }
                     }
                 }
             }
