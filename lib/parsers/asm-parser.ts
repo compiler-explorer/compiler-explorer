@@ -105,7 +105,7 @@ export class AsmParser extends AsmRegex implements IAsmParser {
         // Opcode expression here matches LLVM-style opcodes of the form `%blah = opcode`
         this.hasOpcodeRe = /^\s*(%[$.A-Z_a-z][\w$.]*\s*=\s*)?[A-Za-z]/;
         this.instructionRe = /^\s*[A-Za-z]+/;
-        this.identifierFindRe = /[$.@A-Z_a-z]\w*/g;
+        this.identifierFindRe = /([$.@A-Z_a-z]\w*)(?:@\w+)*/g;
         this.hasNvccOpcodeRe = /^\s*[@A-Za-z|]/;
         this.definesFunction = /^\s*\.(type.*,\s*[#%@]function|proc\s+[.A-Z_a-z][\w$.]*:.*)$/;
         this.definesGlobal = /^\s*\.(?:globa?l|GLB|export)\s*([.A-Z_a-z][\w$.]*)/;
@@ -340,7 +340,7 @@ export class AsmParser extends AsmRegex implements IAsmParser {
     removeLabelsWithoutDefinition(asm: ParsedAsmResultLine[], labelDefinitions: Record<string, number>) {
         for (const obj of asm) {
             if (obj.labels) {
-                obj.labels = obj.labels.filter(label => labelDefinitions[label.name]);
+                obj.labels = obj.labels.filter(label => labelDefinitions[label.target || label.name]);
             }
         }
     }
@@ -356,16 +356,20 @@ export class AsmParser extends AsmRegex implements IAsmParser {
         const params = instruction.replace(this.instructionRe, '');
 
         const removedCol = instruction.length - params.length + 1;
-        params.replace(this.identifierFindRe, (label, index) => {
+        params.replace(this.identifierFindRe, (symbol, target, index) => {
             const startCol = removedCol + index;
-            labelsInLine.push({
-                name: label,
+            const label: AsmResultLabel = {
+                name: symbol,
                 range: {
                     startCol: startCol,
-                    endCol: startCol + label.length,
+                    endCol: startCol + symbol.length,
                 },
-            });
-            return label;
+            };
+            if (target !== symbol) {
+                label.target = target;
+            }
+            labelsInLine.push(label);
+            return symbol;
         });
 
         return labelsInLine;

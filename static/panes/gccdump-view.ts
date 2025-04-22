@@ -230,6 +230,17 @@ export class GccDump extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Gcc
             // Prevent overflowing the window
             const dropdown = this.selectize.dropdown_content;
             dropdown.style.maxHeight = `${window.innerHeight - dropdown.getBoundingClientRect().top - 10}px`;
+            if (!this.selectedPass) return;
+            const activeOption = Object.entries(this.selectize.options).find(
+                op => op[1].filename_suffix === this.selectedPass,
+            );
+            const selectedPassId = activeOption![0];
+            const option = this.selectize.getOption(selectedPassId);
+            // Workaround for a TomSelect glitch: onFocus sets the active option to the first one
+            // on the first re-open, so this setActiveOption call needs to be delayed.
+            setTimeout(() => {
+                this.selectize.setActiveOption(option);
+            }, 0);
         });
         this.selectize.on('dropdown_close', () => {
             // scroll back to the selection on the next open

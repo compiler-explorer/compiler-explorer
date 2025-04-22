@@ -44,7 +44,8 @@ export class FormattingController implements HttpController {
         const formatter = this.formattingService.getFormatterById(req.params.tool);
         // Ensure the target formatter exists
         if (formatter === null) {
-            return res.status(422).json({exit: 2, answer: `Unknown format tool '${req.params.tool}'`});
+            res.status(422).json({exit: 2, answer: `Unknown format tool '${req.params.tool}'`});
+            return;
         }
         // Ensure there is source code to format
         if (!req.body || !req.body.source) {
@@ -53,7 +54,8 @@ export class FormattingController implements HttpController {
         }
         // Ensure that the requested style is supported by the formatter
         if (!formatter.isValidStyle(req.body.base)) {
-            return res.status(422).json({exit: 3, answer: `Style '${req.body.base}' is not supported`});
+            res.status(422).json({exit: 3, answer: `Style '${req.body.base}' is not supported`});
+            return;
         }
         // Do the formatting
         try {
