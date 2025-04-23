@@ -1,1 +1,1 @@
-BEGIN puts ("Hello world!\n") END
+begin puts ("Hello world\n") end
