@@ -123,11 +123,11 @@ export class BinaryInfoLinux {
         return undefined;
     }
 
-    static async readFile(filepath: string): Promise<BinaryInfo | undefined> {
+    static async readFile(filepath: string, instructionSetHint?: InstructionSet): Promise<BinaryInfo | undefined> {
         if (os.platform() === 'win32') {
             return {
                 os: OSType.windows,
-                instructionSet: 'amd64',
+                instructionSet: instructionSetHint || 'amd64',
             };
         }
         const info = await executeDirect('/usr/bin/file', ['-b', filepath], {});

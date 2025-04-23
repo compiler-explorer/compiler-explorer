@@ -211,8 +211,11 @@ export class Output extends Pane<OutputState> {
             }
         }
 
-        if (result.execResult && (result.execResult.didExecute || result.didExecute)) {
-            this.add('Program returned: ' + result.execResult.code);
+        if (result.execResult) {
+            if (result.execResult.didExecute || result.didExecute) {
+                this.add('Program returned: ' + result.execResult.code);
+            }
+
             if (result.execResult.stderr.length || result.execResult.stdout.length) {
                 for (const obj of result.execResult.stderr) {
                     // Conserve empty lines as they are discarded by ansiToHtml
