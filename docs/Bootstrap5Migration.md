@@ -388,6 +388,8 @@ allows for:
    - ✓ Diff view - changing left/right side compiler/window turns combobox to a white background (fixed: removed form-select class to avoid transparent background)
    - ✓ Runtime tools window is broken - doesn't save settings anymore (fixed: updated modal hide event handling with setElementEventHandler)
    - ✓ Emulation functionality is broken due to modal issues (fixed: replaced direct .modal() calls with BootstrapUtils.showModal)
+   - The popular arguments dropdown at the right of the options isn't properly aligned
+   - Long compiler names wrap instead of widening the dropdown (flex-grow: 0 issue)
 
 ## Final Testing Checklist
 
@@ -572,6 +574,16 @@ Before considering the Bootstrap 5 migration complete, the following areas shoul
   - Confirm that input groups and buttons are properly sized
   - Test different diff view types (Assembly, Compiler output, etc.)
 
+- **Dropdown Alignment**
+  - Check the popular arguments dropdown alignment at the right of compiler options
+  - Verify dropdown menus are properly aligned and don't get cut off at screen edges
+  - Test dropdown positioning on narrow screens
+
+- **Compiler Selection Dropdowns**
+  - Verify long compiler names display properly without excessive wrapping
+  - Check that dropdowns expand to fit compiler names rather than wrapping text
+  - Test the flex-grow behavior of dropdown elements
+  
 - **Placeholder Text**
   - Check visibility and contrast of placeholder text in all input fields
   - Specifically test "Compiler options" field visibility
