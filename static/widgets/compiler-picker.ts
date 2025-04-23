@@ -143,6 +143,7 @@ export class CompilerPicker {
                         '</div>'
                     );
                 },
+                item: (data, escapeHtml) => `<div title="${escapeHtml(data.name)}">${escapeHtml(data.name)}</div>`,
             },
         });
 

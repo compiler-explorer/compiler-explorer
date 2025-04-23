@@ -80,7 +80,13 @@ body {
 
 .compiler-picker {
     min-width: 14em;
-    flex-grow: 0 !important; // Ensures the compiler picker doesn't flex-grow to take up more space
+    flex-grow: 0.2 !important; // Ensures the compiler picker doesn't flex-grow too much and take up more space
+}
+
+// Prevent TomSelect items from spilling onto multiple lines
+.ts-wrapper .item {
+    white-space: nowrap;
+    overflow: hidden;
 }
 
 .compiler-picker .ts-input {
