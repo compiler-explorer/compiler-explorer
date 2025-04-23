@@ -48,6 +48,8 @@ interface SymbolMap {
 }
 
 export class SwayCompiler extends BaseCompiler {
+    protected std?: string;
+
     static get key() {
         return 'sway-compiler';
     }
@@ -57,6 +59,7 @@ export class SwayCompiler extends BaseCompiler {
         this.compiler.supportsIrView = true;
         this.compiler.irArg = ['build', '--ir', 'final'];
         this.compiler.supportsIntel = true;
+        this.std = this.compilerProps<string>(`compiler.${this.compiler.id}.std`, undefined);
     }
 
     override async checkOutputFileAndDoPostProcess(asmResult: CompilationResult): Promise<[any, any[], any[]]> {
@@ -109,7 +112,7 @@ export class SwayCompiler extends BaseCompiler {
 
     override optionsForFilter(filters: ParseFiltersAndOutputOptions, outputFilename: string): string[] {
         // return an array of command line options for the compiler
-        return ['-o', outputFilename];
+        return [];
     }
 
     override async runCompiler(
@@ -122,11 +125,12 @@ export class SwayCompiler extends BaseCompiler {
         // Make a temp directory for a forc project
         const projectDir = await this.newTempDir();
 
-        const {symbolsPath} = await setupForcProject(projectDir, inputFilename, this.compiler['std']);
+        const {symbolsPath} = await setupForcProject(projectDir, inputFilename, this.std);
 
         // Run `forc build`
         // "compiler" is the path to the forc binary from .properties
-        const buildResult = await this.exec(compiler, ['build', '-g', symbolsPath], {
+        const buildOptions = ['build', '-g', symbolsPath, ...options.filter(arg => arg !== inputFilename)];
+        const buildResult = await this.exec(compiler, buildOptions, {
             ...execOptions,
             customCwd: projectDir,
         });
@@ -209,6 +213,7 @@ export class SwayCompiler extends BaseCompiler {
         const result: CompilationResult = {
             code: buildResult.code,
             timedOut: buildResult.timedOut ?? false,
+            compilationOptions: buildOptions,
             stdout: splitLines(buildResult.stdout).map(line => ({text: line})),
             stderr: splitLines(buildResult.stderr).map(line => ({text: line})),
             asm,
