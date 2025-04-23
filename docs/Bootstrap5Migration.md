@@ -373,7 +373,15 @@ allows for:
    - Share dropdown: Bootstrap 5 doesn't allow multiple components on the same DOM element
    - Input groups: Bootstrap 5 no longer requires `.input-group-prepend` and `.input-group-append` wrappers
 
-3. **Bugs to Fix (From Beta Testing)**
+3. **Additional Issues Found During Code Review**
+   - ✓ Custom classes in runtime tools selection (`.custom-runtimetool`) and overrides selection (`.custom-override`) - removed as they were superfluous
+   - ✓ `.form-row` still used in theme files (dark-theme.scss, one-dark-theme.scss, pink-theme.scss) - replaced with standard `.row`
+   - ✓ Border directional properties in explorer.scss updated for better RTL support - added `border-inline-start` and border radius logical properties with appropriate fallbacks for older browsers
+   - ✓ Input group structures verified - all instances of the deprecated `.input-group-prepend` and `.input-group-append` have already been updated to use Bootstrap 5's simplified approach
+   - ✓ Toast header close button styling verified - explorer.scss already uses `.btn-close` consistently for toast components
+   - ✓ Event handlers verified - history-widget.ts and sharing.ts are correctly using native DOM addEventListener methods with the appropriate Bootstrap 5 event names
+
+4. **Bugs to Fix (From Beta Testing)**
    - ✓ The X to close the community/alert notes is harder to see in dark mode than before (fixed: added `filter: invert(100%)` to make btn-close buttons visible in dark themes)
    - ✓ History view is broken (empty when clicking radio buttons) (fixed: updated modal event binding from jQuery's `.on('shown.bs.modal')` to native DOM `addEventListener('shown.bs.modal')`)
    - ✓ TomSelect dropdowns for compilers are excessively long (both in executor view and normal view) (fixed manually)

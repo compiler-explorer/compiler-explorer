@@ -91,9 +91,12 @@ body {
 
 .compiler-picker .ts-input {
     text-align: center;
-    border-left: none !important;
-    border-top-left-radius: 0;
-    border-bottom-left-radius: 0;
+    border-left: none !important; /* Fallback for older browsers */
+    border-inline-start: none !important; /* Logical property for RTL support */
+    border-top-left-radius: 0; /* Fallback for older browsers */
+    border-bottom-left-radius: 0; /* Fallback for older browsers */
+    border-start-start-radius: 0; /* Logical property for RTL support */
+    border-end-start-radius: 0; /* Logical property for RTL support */
 }
 
 .function-picker {
@@ -1287,8 +1290,10 @@ html[data-theme='one-dark'] {
 
 .prepend-options,
 .picker-popout-button {
-    border-top-right-radius: 0;
-    border-bottom-right-radius: 0;
+    border-top-right-radius: 0; /* Fallback for older browsers */
+    border-bottom-right-radius: 0; /* Fallback for older browsers */
+    border-start-end-radius: 0; /* Logical property for RTL support */
+    border-end-end-radius: 0; /* Logical property for RTL support */
 }
 
 .picker-popout-button {
@@ -1315,7 +1320,8 @@ html[data-theme='one-dark'] {
 }
 
 .popular-arguments-btn {
-    border-top-right-radius: 0;
+    border-top-right-radius: 0; /* Fallback for older browsers */
+    border-start-end-radius: 0; /* Logical property for RTL support */
     height: 100%;
 }
 
