@@ -439,8 +439,8 @@ textarea.form-control {
     color: #eee !important;
     background-color: $base !important;
 
-    .close {
-        color: #eee;
+    .btn-close {
+        filter: invert(90%);
     }
 }
 
@@ -510,8 +510,8 @@ textarea.form-control {
     background-color: #aa3333 !important;
     color: #fff;
 
-    .close {
-        color: #fff;
+    .btn-close {
+        filter: invert(100%);
     }
 }
 
@@ -524,8 +524,8 @@ textarea.form-control {
     background-color: #222 !important;
     color: #fff;
 
-    .close {
-        color: #fff;
+    .btn-close {
+        filter: invert(100%);
     }
 }
 

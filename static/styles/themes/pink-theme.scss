@@ -396,10 +396,6 @@ textarea.form-control {
     color: #212529 !important;
     background-color: $base !important;
     border-bottom-color: $dark;
-
-    .close {
-        color: #212529;
-    }
 }
 
 .nav.nav-tabs {
@@ -472,8 +468,8 @@ textarea.form-control {
     background-color: #aa3333 !important;
     color: #fff;
 
-    .close {
-        color: #fff;
+    .btn-close {
+        filter: invert(100%);
     }
 }
 
@@ -486,8 +482,8 @@ textarea.form-control {
     background-color: #222 !important;
     color: #fff;
 
-    .close {
-        color: #fff;
+    .btn-close {
+        filter: invert(100%);
     }
 }
 

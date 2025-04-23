@@ -320,7 +320,7 @@ allows for:
   - Confirmed z-index variables don't conflict
   - Added navbar container padding fix for proper alignment
   - Verified CSS variables for theme support
-  
+
 - ✅ **Phase 9: Accessibility Improvements**
   - Updated sr-only class to visually-hidden
   - Added proper aria-live regions for dynamic content
@@ -374,22 +374,22 @@ allows for:
    - Input groups: Bootstrap 5 no longer requires `.input-group-prepend` and `.input-group-append` wrappers
 
 3. **Bugs to Fix (From Beta Testing)**
-   - The X to close the community/alert notes is harder to see in dark mode than before
+   - ✓ The X to close the community/alert notes is harder to see in dark mode than before (fixed: added `filter: invert(100%)` to make btn-close buttons visible in dark themes)
    - ✓ History view is broken (empty when clicking radio buttons) (fixed: updated modal event binding from jQuery's `.on('shown.bs.modal')` to native DOM `addEventListener('shown.bs.modal')`)
    - ✓ TomSelect dropdowns for compilers are excessively long (both in executor view and normal view) (fixed manually)
    - ✓ Default text/placeholder text is too dark, making it hard to read (especially "Compiler options") (fixed manually)
    - ✓ Conformance view's "add compiler" functionality is broken (fixed: template selector was looking for `.form-row` which changed to `.row` in Bootstrap 5)
-   - Dropdown in the library menu has changed color (possibly acceptable)
-   - Layout has changed slightly in the library menu
-   - The "popout" on the TomSelect compiler dropdown is misaligned
+   - ✓ Dropdown in the library menu has changed color (fixed: updated `.custom-select` to `.form-select` in theme files)
+   - ~~Layout has changed slightly in the library menu~~ (decided it looks better now)
+   - ✓ The "popout" on the TomSelect compiler dropdown is misaligned (fixed: updated styling for TomSelect components)
    - ✓ Need to check for more instances of old Bootstrap v4 code patterns (fixed: replaced `dropdown('toggle')` in main.ts with `BootstrapUtils.getDropdownInstance()` and `.toggle()`)
    - Check Sentry for additional errors on the beta site
    - ✓ Compiler combobox rounding overlaps left border by 1 pixel (fixed: overrode CSS variables to reset Bootstrap 5's negative margin)
    - ✓ Diff view - changing left/right side compiler/window turns combobox to a white background (fixed: removed form-select class to avoid transparent background)
    - ✓ Runtime tools window is broken - doesn't save settings anymore (fixed: updated modal hide event handling with setElementEventHandler)
    - ✓ Emulation functionality is broken due to modal issues (fixed: replaced direct .modal() calls with BootstrapUtils.showModal)
-   - The popular arguments dropdown at the right of the options isn't properly aligned
-   - Long compiler names wrap instead of widening the dropdown (flex-grow: 0 issue)
+   - ✓ The popular arguments dropdown at the right of the options isn't properly aligned (fixed: updated dropdown styling in compiler.pug)
+   - ✓ Long compiler names wrap instead of widening the dropdown (fixed: improved styling for TomSelect dropdowns)
 
 ## Final Testing Checklist
 
@@ -583,7 +583,7 @@ Before considering the Bootstrap 5 migration complete, the following areas shoul
   - Verify long compiler names display properly without excessive wrapping
   - Check that dropdowns expand to fit compiler names rather than wrapping text
   - Test the flex-grow behavior of dropdown elements
-  
+
 - **Placeholder Text**
   - Check visibility and contrast of placeholder text in all input fields
   - Specifically test "Compiler options" field visibility

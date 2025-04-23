@@ -47,7 +47,7 @@ mixin newPaneButton(classId, text, title, icon)
       button.btn.btn-sm.btn-light.dropdown-toggle.add-pane(type="button" title="Add a new pane" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false" aria-label="Add new element for this compiler" data-cy="new-compiler-dropdown-btn")
         span.fas.fa-plus
         span.hideable Add new...
-      .dropdown-menu.dropdown-menu-right.new-pane-dropdown(data-cy="new-compiler-pane-dropdown")
+      .dropdown-menu.dropdown-menu-end.new-pane-dropdown(data-cy="new-compiler-pane-dropdown")
         +newPaneButton("add-compiler", "Clone Compiler", "Clone this compiler window (click or drag)", "far fa-clone")
         +newPaneButton("create-executor", "Executor From This", "Create executor from this compiler", "fas fa-microchip")
         +newPaneButton("view-optimization", "Opt Remarks", "Show optimization remarks", "fas fa-weight")
@@ -72,7 +72,7 @@ mixin newPaneButton(classId, text, title, icon)
       button.btn.btn-sm.btn-light.dropdown-toggle.add-tool(type="button" title="Add tool" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false" aria-label="Add tooling to this editor and compiler")
         span.fas.fa-screwdriver
         span.hideable Add tool...
-      .dropdown-menu.dropdown-menu-right.new-tool-dropdown
+      .dropdown-menu.dropdown-menu-end.new-tool-dropdown
   .monaco-placeholder
   .bottom-bar.bg-light
     if !embedded

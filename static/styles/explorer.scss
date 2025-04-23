@@ -395,7 +395,7 @@ pre.content.wrap * {
     max-width: 100% !important;
 }
 
-.toast-header .close {
+.toast-header .btn-close {
     float: left;
     margin-right: 5px;
 }
@@ -1142,7 +1142,7 @@ div.populararguments div.dropdown-menu {
     margin-right: 2pt;
 }
 
-span.badge.badge-pill {
+span.badge.rounded-pill {
     margin-left: 2pt;
 }
 
@@ -1247,7 +1247,7 @@ html[data-theme='one-dark'] {
     padding-top: 0;
 }
 
-.conformance-wrapper .compiler-list .form-row {
+.conformance-wrapper .compiler-list .row {
     padding-top: 3px;
 }
 
@@ -1643,11 +1643,11 @@ html[data-theme='one-dark'] {
             }
         }
 
-        .close {
+        .dark-close {
             position: absolute;
-            bottom: 0px;
+            bottom: 0;
             right: -12px;
-            //background: #e787e7;
+            padding: 0;
             background: linear-gradient(90deg, rgba(255, 255, 255, 0) 0%, #1a1a1a 48%, #1a1a1a 100%);
             width: 24px;
             height: 24px;

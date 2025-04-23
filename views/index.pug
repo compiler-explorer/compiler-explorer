@@ -61,13 +61,13 @@ block prepend content
             a.nav-link.ui-presentation-next(href="javascript:;")
               span.dropdown-icon.fas.fa-forward
               | Next
-        
+
         ul#motd.navbar-nav.community-advert.d-none.mx-auto
           span.content
             | Thanks for using Compiler Explorer
           span.community-hide(title="Hide and never show again" aria-label="Close")
             button.btn-close(type="button" aria-label="Close")
-        
+
         ul.navbar-nav.ms-auto.mb-2.mb-md-0
           if showSponsors
             li.nav-item.btn.btn-outline-info#ces
@@ -114,5 +114,4 @@ block append footer
   #real-dark
   #true-dark
     .content Try the real dark theme 🔦
-      .close
-        i.fa-solid.fa-xmark
+      button.btn.dark-close.fas.fa-times(type="button" aria-label="Close")

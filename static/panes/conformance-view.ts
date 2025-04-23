@@ -226,15 +226,11 @@ export class Conformance extends Pane<ConformanceViewState> {
             .on('change', onOptionsChange)
             .on('keyup', onOptionsChange);
 
-        newSelector
-            .find('.close')
-            .not('.extract-compiler')
-            .not('.copy-compiler')
-            .on('click', () => {
-                this.removeCompilerPicker(newCompilerEntry);
-            });
+        newSelector.find('.close-compiler').on('click', () => {
+            this.removeCompilerPicker(newCompilerEntry);
+        });
 
-        newSelector.find('.close.copy-compiler').on('click', () => {
+        newSelector.find('.copy-compiler').on('click', () => {
             const config: AddCompilerPickerConfig = {
                 compilerId: newCompilerEntry.picker?.lastCompilerId ?? '',
                 options: newCompilerEntry.optionsField?.val() || '',
