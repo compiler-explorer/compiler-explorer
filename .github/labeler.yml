@@ -467,7 +467,6 @@
           - 'lib/compilers/zig.ts'
           - 'etc/config/zig.*.properties'
           - 'static/modes/zig-mode.ts'
-
 'documentation':
   - changed-files:
       - any-glob-to-any-file:
@@ -475,3 +474,9 @@
           - 'README.md'
           - 'CONTRIBUTING.md'
           - 'SECURITY.md'
+
+'lang-perl':
+  - changed-files:
+      - any-glob-to-any-file:
+          - 'lib/compilers/perl.ts'
+          - 'etc/config/perl.*.properties'
