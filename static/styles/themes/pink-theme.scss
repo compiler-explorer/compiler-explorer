@@ -196,7 +196,7 @@ textarea.form-control {
     background-color: opacify($dark, 0.8);
 }
 
-.custom-select {
+.form-select {
     background-color: #76a1c8 !important;
 }
 
@@ -206,7 +206,7 @@ textarea.form-control {
     &:hover {
         background-color: $dark !important;
     }
-    
+
     &.active {
         background-color: $darker !important;
         color: #212529 !important;
