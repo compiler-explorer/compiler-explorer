@@ -47,11 +47,7 @@ function makeFontSizeDropdown(elem: JQuery, obj: FontScale, buttonDropdown: JQue
     for (let i = 8; i <= 30; i++) {
         const item = $('<button></button>');
 
-        item.attr('data-value', i)
-            .addClass('dropdown-item btn btn-sm btn-light')
-            .text(i)
-            .appendTo(elem)
-            .on('click', onClickEvent);
+        item.attr('data-value', i).addClass('dropdown-item').text(i).appendTo(elem).on('click', onClickEvent);
 
         if (obj.scale === i) {
             item.addClass('active');

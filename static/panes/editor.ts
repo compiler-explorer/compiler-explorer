@@ -29,6 +29,7 @@ import * as monaco from 'monaco-editor';
 import * as monacoVim from 'monaco-vim';
 import TomSelect from 'tom-select';
 import _ from 'underscore';
+import * as BootstrapUtils from '../bootstrap-utils.js';
 import * as colour from '../colour.js';
 import * as Components from '../components.js';
 import * as monacoConfig from '../monaco-config.js';
@@ -472,7 +473,7 @@ export class Editor extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Edit
     }
 
     enableVim(): void {
-        const statusElem = this.domRoot.find('#v-status')[0];
+        const statusElem = this.domRoot.find('.v-status')[0];
         const vimMode = monacoVim.initVimMode(this.editor, statusElem);
         this.vimMode = vimMode;
         this.vimFlag.prop('class', 'btn btn-info');
@@ -481,7 +482,7 @@ export class Editor extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Edit
 
     disableVim(): void {
         this.vimMode.dispose();
-        this.domRoot.find('#v-status').html('');
+        this.domRoot.find('.v-status').html('');
         this.vimFlag.prop('class', 'btn btn-light');
         (this.editor as any).vimInUse = false;
     }
@@ -520,8 +521,8 @@ export class Editor extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Edit
         this.addExecutorButton = this.domRoot.find('.btn.add-executor');
         this.conformanceViewerButton = this.domRoot.find('.btn.conformance');
         const addEditorButton = this.domRoot.find('.btn.add-editor');
-        const toggleVimButton = this.domRoot.find('#vim-flag');
-        this.vimFlag = this.domRoot.find('#vim-flag');
+        const toggleVimButton = this.domRoot.find('.vim-flag');
+        this.vimFlag = this.domRoot.find('.vim-flag');
         toggleVimButton.on('click', () => {
             if ((this.editor as any).vimInUse) {
                 this.disableVim();
@@ -541,7 +542,7 @@ export class Editor extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Edit
         });
 
         this.languageInfoButton = this.domRoot.find('.language-info');
-        this.languageInfoButton.popover({});
+        BootstrapUtils.initPopover(this.languageInfoButton);
         this.languageBtn = this.domRoot.find('.change-language');
         const changeLanguageButton = this.languageBtn[0];
         assert(changeLanguageButton instanceof HTMLSelectElement);
@@ -598,7 +599,10 @@ export class Editor extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Edit
                 .createDragSource(dragSource, dragConfig)
                 // @ts-expect-error: createDragSource returns not void
                 ._dragListener.on('dragStart', () => {
-                    paneAdderDropdown.dropdown('toggle');
+                    const dropdown = BootstrapUtils.getDropdownInstance(paneAdderDropdown);
+                    if (dropdown) {
+                        dropdown.toggle();
+                    }
                 });
 
             dragSource.on('click', () => {
@@ -1921,7 +1925,7 @@ export class Editor extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Edit
     ): string {
         let result =
             '<div class="d-flex" style="align-items: center">' +
-            '<div class="mr-1 d-flex" style="align-items: center">' +
+            '<div class="me-1 d-flex" style="align-items: center">' +
             '<img src="' +
             (data.logoData ? data.logoData : '') +
             '" class="' +
@@ -1961,9 +1965,12 @@ export class Editor extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Edit
     onCompiler(compilerId: number, compiler: unknown, options: string, editorId: number, treeId: number): void {}
 
     updateLanguageTooltip() {
-        this.languageInfoButton.popover('dispose');
+        // Dispose existing popover instance
+        const existingPopover = BootstrapUtils.getPopoverInstance(this.languageInfoButton);
+        if (existingPopover) existingPopover.dispose();
+
         if (this.currentLanguage?.tooltip) {
-            this.languageInfoButton.popover({
+            BootstrapUtils.initPopover(this.languageInfoButton, {
                 title: 'More info about this language',
                 content: this.currentLanguage.tooltip,
                 container: 'body',

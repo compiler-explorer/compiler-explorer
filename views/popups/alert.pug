@@ -3,9 +3,7 @@
     .modal-content
       .modal-header
         h5.modal-title Something alert worthy
-        button.close(type="button" data-dismiss="modal" aria-hidden="true" aria-label="Close")
-          span(aria-hidden="true")
-            | &times;
+        button.btn-close(type="button" data-bs-dismiss="modal" aria-hidden="true" aria-label="Close")
       .modal-body
       .modal-footer
-        button.btn.btn-outline-primary(type="button" data-dismiss="modal" data-cy="close-alert-btn") Close
+        button.btn.btn-outline-primary(type="button" data-bs-dismiss="modal" data-cy="close-alert-btn") Close

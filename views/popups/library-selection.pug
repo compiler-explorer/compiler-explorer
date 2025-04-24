@@ -3,9 +3,7 @@
     .modal-content
       .modal-header
         h5.modal-title Libraries
-        button.close(type="button" data-dismiss="modal" aria-hidden="true" aria-label="Close")
-          span(aria-hidden="true")
-            | &times;
+        button.btn-close(type="button" data-bs-dismiss="modal" aria-hidden="true" aria-label="Close")
       .modal-body
         .card
           .card-body
@@ -13,8 +11,9 @@
               .row
                 .col-lg
                   div(style='text-align: center')
-                    input.lib-search-input(value="" placeholder="Search text")
-                    button.btn.btn-primary.lib-search-button(type="button") Search
+                    .input-group.mb-3
+                      input.form-control.lib-search-input(value="" placeholder="Search text")
+                      button.btn.btn-primary.lib-search-button(type="button") Search
                     hr
               .row
                 .col-lg.libs-how-to-use

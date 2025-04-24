@@ -26,6 +26,7 @@ import * as fileSaver from 'file-saver';
 import $ from 'jquery';
 import * as monaco from 'monaco-editor';
 import _ from 'underscore';
+import * as BootstrapUtils from '../bootstrap-utils.js';
 import {Pane} from './pane.js';
 
 import {Container} from 'golden-layout';
@@ -281,7 +282,9 @@ export class Cfg extends Pane<CfgState> {
             if (this.tooltipOpen) {
                 if (!e.target.classList.contains('fold') && $(e.target).parents('.popover.in').length === 0) {
                     this.tooltipOpen = false;
-                    $('.fold').popover('hide');
+                    $('.fold').each((_, element) => {
+                        BootstrapUtils.hidePopover(element);
+                    });
                 }
             }
         });
@@ -389,25 +392,27 @@ export class Cfg extends Pane<CfgState> {
                 }" aria-describedby="wtf">&#8943;</span>`;
             }
             div.innerHTML = lines.join('<br/>');
-            for (const fold of div.getElementsByClassName('fold')) {
-                $(fold)
-                    .popover({
-                        content: unwrap(fold.getAttribute('data-extra')),
-                        html: true,
-                        placement: 'top',
-                        template:
-                            '<div class="popover cfg-fold-popover" role="tooltip">' +
-                            '<div class="arrow"></div>' +
-                            '<h3 class="popover-header"></h3>' +
-                            '<div class="popover-body"></div>' +
-                            '</div>',
-                    })
-                    .on('show.bs.popover', () => {
-                        this.tooltipOpen = true;
-                    })
-                    .on('hide.bs.popover', () => {
-                        this.tooltipOpen = false;
-                    });
+            for (const foldElement of div.getElementsByClassName('fold')) {
+                const fold = foldElement as HTMLElement;
+
+                BootstrapUtils.initPopover(fold, {
+                    content: unwrap(fold.getAttribute('data-extra')),
+                    html: true,
+                    placement: 'top',
+                    template:
+                        '<div class="popover cfg-fold-popover" role="tooltip">' +
+                        '<div class="arrow"></div>' +
+                        '<h3 class="popover-header"></h3>' +
+                        '<div class="popover-body"></div>' +
+                        '</div>',
+                });
+
+                BootstrapUtils.setElementEventHandler(fold, 'show.bs.popover', () => {
+                    this.tooltipOpen = true;
+                });
+                BootstrapUtils.setElementEventHandler(fold, 'hide.bs.popover', () => {
+                    this.tooltipOpen = false;
+                });
             }
             // So because this is async there's a race condition here if you rapidly switch functions.
             // This can be triggered by loading an example program. Because the fix going to be tricky I'll defer
@@ -500,7 +505,11 @@ export class Cfg extends Pane<CfgState> {
     // Display the cfg for the specified function if it exists
     // This function sets this.state.selectedFunction if the input is non-null and valid
     async selectFunction(name: string | null) {
-        $('.fold').popover('dispose');
+        $('.fold').each((_, element) => {
+            const popover = BootstrapUtils.getPopoverInstance(element);
+            if (popover) popover.dispose();
+            // We need to dispose here, not just hide
+        });
         this.blockContainer.innerHTML = '';
         this.svg.innerHTML = '';
         this.estimatedPNGSize.innerHTML = '';
@@ -669,7 +678,9 @@ export class Cfg extends Pane<CfgState> {
             const topBarHeight = utils.updateAndCalcTopBarHeight(this.domRoot, this.topBar, this.hideable);
             this.graphContainer.style.width = `${unwrap(this.domRoot.width())}px`;
             this.graphContainer.style.height = `${unwrap(this.domRoot.height()) - topBarHeight}px`;
-            $('.fold').popover('hide');
+            $('.fold').each((_, element) => {
+                BootstrapUtils.hidePopover(element);
+            });
         });
     }
 

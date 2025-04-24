@@ -36,6 +36,11 @@ body {
     padding: 0;
 }
 
+// Fix for Bootstrap 5 navbar
+.navbar .container-fluid {
+    padding-left: 0;
+}
+
 .navbar-brand img.logo-overlay {
     position: absolute;
     top: 0;
@@ -75,13 +80,23 @@ body {
 
 .compiler-picker {
     min-width: 14em;
+    flex-grow: 0.2 !important; // Ensures the compiler picker doesn't flex-grow too much and take up more space
+}
+
+// Prevent TomSelect items from spilling onto multiple lines
+.ts-wrapper .item {
+    white-space: nowrap;
+    overflow: hidden;
 }
 
 .compiler-picker .ts-input {
     text-align: center;
-    border-left: none !important;
-    border-top-left-radius: 0;
-    border-bottom-left-radius: 0;
+    border-left: none !important; /* Fallback for older browsers */
+    border-inline-start: none !important; /* Logical property for RTL support */
+    border-top-left-radius: 0; /* Fallback for older browsers */
+    border-bottom-left-radius: 0; /* Fallback for older browsers */
+    border-start-start-radius: 0; /* Logical property for RTL support */
+    border-end-start-radius: 0; /* Logical property for RTL support */
 }
 
 .function-picker {
@@ -294,6 +309,12 @@ pre.content.wrap * {
     }
 }
 
+#site-template-loader {
+    .modal-dialog {
+        min-width: 800px; /* ensure template modal has adequate width */
+    }
+}
+
 .modal-body {
     min-height: 200px;
     overflow-y: auto; /* make body scrollable -> keep Header & Footer onscreen, if possible */
@@ -377,7 +398,7 @@ pre.content.wrap * {
     max-width: 100% !important;
 }
 
-.toast-header .close {
+.toast-header .btn-close {
     float: left;
     margin-right: 5px;
 }
@@ -387,17 +408,25 @@ pre.content.wrap * {
 }
 
 .font-size-list {
-    min-width: 43px !important;
-    max-height: 70% !important;
-    overflow-y: scroll;
+    min-width: 60px !important;
+    max-height: 70vh !important;
+    overflow-y: auto;
     width: auto;
     // For my fellow Firefox users
     scrollbar-width: thin;
+    padding: 0.25rem 0;
 }
 
 .font-size-list button {
     margin-left: 0 !important;
     border-radius: 0;
+    width: 100%;
+    text-align: center;
+    padding: 0.25rem 0.5rem;
+}
+
+.font-size-list button:hover {
+    background-color: rgba(0, 0, 0, 0.075);
 }
 
 .font-option {
@@ -893,17 +922,18 @@ div.populararguments div.dropdown-menu {
 }
 
 .corporate .ces {
-    font-size: 165%;
-    height: 9em;
+    .btn {
+        --bs-btn-font-size: 24px;
+    }
+    height: 20em;
 }
 
 .legendary .ces {
-    font-size: 165%;
-    height: 7em;
-}
-
-.legendary .ces button {
-    padding: 1em;
+    .btn {
+        --bs-btn-font-size: 24px;
+        padding: 1em;
+    }
+    height: 20em;
 }
 
 .ces-logo {
@@ -1115,7 +1145,7 @@ div.populararguments div.dropdown-menu {
     margin-right: 2pt;
 }
 
-span.badge.badge-pill {
+span.badge.rounded-pill {
     margin-left: 2pt;
 }
 
@@ -1185,11 +1215,42 @@ html[data-theme='one-dark'] {
     padding-right: 2rem !important;
 }
 
+/* Add back the dropdown arrow for TomSelect in Bootstrap 5 */
+.ts-wrapper.single .ts-control:not(.input-active)::after {
+    content: " ";
+    display: block;
+    position: absolute;
+    top: 50%;
+    right: 15px;
+    margin-top: -3px;
+    width: 0;
+    height: 0;
+    border-style: solid;
+    border-width: 5px 5px 0 5px;
+    border-color: #343a40 transparent transparent transparent;
+}
+
+/* Styling for the dropdown arrow when dropdown is active */
+.ts-wrapper.single.dropdown-active .ts-control::after {
+    margin-top: -4px;
+    border-width: 0 5px 5px 5px;
+    border-color: transparent transparent #343a40 transparent;
+}
+
+// Fix Bootstrap 5's input-group border overlap issues with TomSelect
+// Bootstrap applies a -1px margin to elements matching `:not(:first-child)` in input groups
+// TomSelect creates a wrapper (.ts-wrapper) around the select element, which becomes a
+// child of the input-group. This wrapper gets the negative margin, causing it to shift
+// left by 1px and visually overflow its container boundary.
+.input-group > .ts-wrapper:not(:first-child) {
+  margin-left: 0 !important; // Reset Bootstrap's negative margin for TomSelect wrappers
+}
+
 .copy-link-btn {
     padding-top: 0;
 }
 
-.conformance-wrapper .compiler-list .form-row {
+.conformance-wrapper .compiler-list .row {
     padding-top: 3px;
 }
 
@@ -1229,8 +1290,10 @@ html[data-theme='one-dark'] {
 
 .prepend-options,
 .picker-popout-button {
-    border-top-right-radius: 0;
-    border-bottom-right-radius: 0;
+    border-top-right-radius: 0; /* Fallback for older browsers */
+    border-bottom-right-radius: 0; /* Fallback for older browsers */
+    border-start-end-radius: 0; /* Logical property for RTL support */
+    border-end-end-radius: 0; /* Logical property for RTL support */
 }
 
 .picker-popout-button {
@@ -1257,7 +1320,9 @@ html[data-theme='one-dark'] {
 }
 
 .popular-arguments-btn {
-    border-top-right-radius: 0;
+    border-top-right-radius: 0; /* Fallback for older browsers */
+    border-start-end-radius: 0; /* Logical property for RTL support */
+    height: 100%;
 }
 
 .panel-compilation {
@@ -1315,9 +1380,14 @@ html[data-theme='one-dark'] {
     > div {
         padding: 0;
         flex-shrink: 0;
+        &.site-templates-list-col {
+            min-width: 150px;
+            width: 20%;
+        }
         &.site-template-preview-col {
             flex-grow: 1;
             flex-shrink: 1;
+            min-width: 400px;
             img {
                 width: 1000px;
                 aspect-ratio: 1000 / 800;
@@ -1579,11 +1649,11 @@ html[data-theme='one-dark'] {
             }
         }
 
-        .close {
+        .dark-close {
             position: absolute;
-            bottom: 0px;
+            bottom: 0;
             right: -12px;
-            //background: #e787e7;
+            padding: 0;
             background: linear-gradient(90deg, rgba(255, 255, 255, 0) 0%, #1a1a1a 48%, #1a1a1a 100%);
             width: 24px;
             height: 24px;

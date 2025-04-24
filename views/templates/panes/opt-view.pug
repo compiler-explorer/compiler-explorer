@@ -14,7 +14,7 @@ mixin optionButton(bind, isActive, text, title)
         input.d-none(type="checkbox" checked=false)
     // TODO: Options -  display inlining context, color token (from col-num), remove duplicates
     .btn-group.btn-group-sm.filters(role="group")
-      button.btn.btn-sm.btn-light.dropdown-toggle(type="button" title="Opt-Remarks Filters" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" aria-label="Set output filters")
+      button.btn.btn-sm.btn-light.dropdown-toggle(type="button" title="Opt-Remarks Filters" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false" aria-label="Set output filters")
         span.fas.fa-filter
         span.hideable Filters
       .dropdown-menu

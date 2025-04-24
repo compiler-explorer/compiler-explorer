@@ -29,6 +29,7 @@ import TomSelect from 'tom-select';
 import _ from 'underscore';
 import {escapeHTML} from '../../shared/common-utils.js';
 import {assert, unwrap, unwrapString} from '../assert.js';
+import * as BootstrapUtils from '../bootstrap-utils.js';
 import * as Components from '../components.js';
 import {EventHub} from '../event-hub.js';
 import {Hub} from '../hub.js';
@@ -448,7 +449,11 @@ export class Tree {
         (this.container.layoutManager.createDragSource(dragSource, dragConfig.bind(this)) as any)._dragListener.on(
             'dragStart',
             () => {
-                this.domRoot.find('.add-pane').dropdown('toggle');
+                const dropdown = this.domRoot.find('.add-pane');
+                const dropdownInstance = BootstrapUtils.getDropdownInstance(dropdown);
+                if (dropdownInstance) {
+                    dropdownInstance.toggle();
+                }
             },
         );
 

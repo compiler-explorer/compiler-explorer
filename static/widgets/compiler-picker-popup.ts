@@ -29,6 +29,7 @@ import * as sifter from '@orchidjs/sifter';
 import {escapeHTML, intersection, remove, unique} from '../../shared/common-utils.js';
 import {CompilerInfo} from '../../types/compiler.interfaces.js';
 import {unwrap, unwrapString} from '../assert.js';
+import * as BootstrapUtils from '../bootstrap-utils.js';
 import {CompilerService} from '../compiler-service.js';
 import {highlight} from '../highlight.js';
 import {CompilerPicker} from './compiler-picker.js';
@@ -64,7 +65,7 @@ export class CompilerPickerPopup {
         this.categoryFilters = [];
         this.searchBar.val('');
 
-        this.modal.on('shown.bs.modal', () => {
+        BootstrapUtils.setElementEventHandler(this.modal, 'shown.bs.modal', () => {
             this.searchBar[0].focus();
         });
     }
@@ -186,7 +187,7 @@ export class CompilerPickerPopup {
                     `
                     <div class="compiler d-flex" data-value="${compiler.id}">
                         <div>${searchRegexes ? highlight(name, searchRegexes) : name}</div>
-                        <div title="Click to mark or unmark as a favorite" class="ml-auto toggle-fav">
+                        <div title="Click to mark or unmark as a favorite" class="ms-auto toggle-fav">
                             <i class="${extraClasses}"></i>
                         </div>
                     </div>
@@ -264,10 +265,10 @@ export class CompilerPickerPopup {
     show() {
         this.searchBar.trigger('input');
         this.fillCompilers();
-        this.modal.modal({});
+        BootstrapUtils.showModal(this.modal);
     }
 
     hide() {
-        this.modal.modal('hide');
+        BootstrapUtils.hideModal(this.modal);
     }
 }

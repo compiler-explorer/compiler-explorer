@@ -3,9 +3,7 @@
     .modal-content
       .modal-header
         h5.modal-title Runtime tools
-        button.close(type="button" data-dismiss="modal" aria-hidden="true" aria-label="Close")
-          span(aria-hidden="true")
-            | &times;
+        button.btn-close(type="button" data-bs-dismiss="modal" aria-hidden="true" aria-label="Close")
       .modal-body
         .card
           .card-body
@@ -23,8 +21,8 @@
                         span.runtimetool-name Runtime environment variables
                       .card-body
                         span.description One environment variable per line, KEY=VALUE.
-                        span.custom-runtimetool
-                          textarea.envvars(cols="30")
+                        span
+                          textarea.form-control.envvars(cols="30", rows="3")
                   .possible-runtimetools.items
                 .runtimetools-favorites-col.col-md
                   h6 Favorites

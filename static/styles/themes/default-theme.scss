@@ -164,16 +164,16 @@ a.navbar-brand img.logo.normal {
 .notification-error {
     background-color: indianred;
     color: white;
-    .close {
-        color: white;
+    .btn-close {
+        filter: invert(100%);
     }
 }
 
 .notification-on {
     background-color: green;
     color: #fff;
-    .close {
-        color: white;
+    .btn-close {
+        filter: invert(100%);
     }
 }
 
@@ -346,7 +346,7 @@ div.argmenuitem span.argdescription {
     color: #007bfd;
 }
 
-.conformance-wrapper .compiler-list .form-row {
+.conformance-wrapper .compiler-list .row {
     border-bottom: 1px solid #e3e3e3;
 }
 
@@ -385,6 +385,11 @@ div.argmenuitem span.argdescription {
 
 .ts-dropdown .selected {
     background-color: #dae0e5;
+}
+
+.dropdown-item.active {
+    background-color: #007bfd;
+    color: white;
 }
 
 .currentCursorPosition {

@@ -30,7 +30,7 @@ function ensureShownMessage(message: string, motdNode: JQuery) {
     motdNode.find('.content').html(message);
     motdNode.removeClass('d-none');
     motdNode
-        .find('.close')
+        .find('.btn-close')
         .on('click', () => {
             motdNode.addClass('d-none');
         })
