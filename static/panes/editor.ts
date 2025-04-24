@@ -473,7 +473,7 @@ export class Editor extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Edit
     }
 
     enableVim(): void {
-        const statusElem = this.domRoot.find('#v-status')[0];
+        const statusElem = this.domRoot.find('.v-status')[0];
         const vimMode = monacoVim.initVimMode(this.editor, statusElem);
         this.vimMode = vimMode;
         this.vimFlag.prop('class', 'btn btn-info');
@@ -482,7 +482,7 @@ export class Editor extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Edit
 
     disableVim(): void {
         this.vimMode.dispose();
-        this.domRoot.find('#v-status').html('');
+        this.domRoot.find('.v-status').html('');
         this.vimFlag.prop('class', 'btn btn-light');
         (this.editor as any).vimInUse = false;
     }
@@ -521,8 +521,8 @@ export class Editor extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Edit
         this.addExecutorButton = this.domRoot.find('.btn.add-executor');
         this.conformanceViewerButton = this.domRoot.find('.btn.conformance');
         const addEditorButton = this.domRoot.find('.btn.add-editor');
-        const toggleVimButton = this.domRoot.find('#vim-flag');
-        this.vimFlag = this.domRoot.find('#vim-flag');
+        const toggleVimButton = this.domRoot.find('.vim-flag');
+        this.vimFlag = this.domRoot.find('.vim-flag');
         toggleVimButton.on('click', () => {
             if ((this.editor as any).vimInUse) {
                 this.disableVim();

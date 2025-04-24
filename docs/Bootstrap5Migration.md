@@ -230,7 +230,7 @@ allows for:
 
 ## Phase 12: Optional jQuery Removal and Cleanup (Future Work)
 
-- [ ] Create plan for jQuery removal (if desired)
+- [ ] Create a plan for jQuery removal (if desired)
 - [ ] Identify non-Bootstrap jQuery usage that would need refactoring
 - [ ] Remove the temporary `bootstrap-utils.ts` compatibility layer
   - [ ] Replace all uses with direct Bootstrap 5 API calls
@@ -240,6 +240,8 @@ allows for:
   - [ ] Update modal template markup to leverage Bootstrap 5.3's built-in support for the `inert` attribute
   - [ ] Ensure proper focus management in modals for improved accessibility
 - [ ] Note: This would be a separate effort after the Bootstrap migration is stable
+- [ ] Investigate the "focus" selected check boxes in the settings view. They're very light
+      when focused, in particular in pink theme. I couldn't work out how to fix this, but it seemed minor.
 
 ## Notes for Implementation
 
