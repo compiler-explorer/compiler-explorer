@@ -254,6 +254,22 @@ export function initPopover(
 }
 
 /**
+ * Initialize a popover if the element exists, returning null otherwise
+ * @param elementOrSelector Element or selector for the popover
+ * @param options Popover options
+ * @returns Popover instance or null if the element cannot be found
+ */
+export function initPopoverIfExists(
+    elementOrSelector: string | HTMLElement | JQuery,
+    options?: Partial<Popover.Options>,
+): Popover | null {
+    const element = getElement(elementOrSelector);
+    if (!element) return null;
+
+    return new Popover(element, options);
+}
+
+/**
  * Get an existing popover instance for an element
  * @param elementOrSelector Element or selector for the popover
  * @returns Existing popover instance or null if not found
