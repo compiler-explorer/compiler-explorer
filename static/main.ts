@@ -779,7 +779,7 @@ function start() {
 
     History.trackHistory(layout);
     setupSiteTemplateWidgetButton(siteTemplateScreenshots, layout);
-    new Sharing(layout);
+    if (!options.embedded) new Sharing(layout);
     new Printerinator(hub, themer);
 }
 
