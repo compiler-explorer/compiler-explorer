@@ -23,17 +23,17 @@
 // POSSIBILITY OF SUCH DAMAGE.
 
 /**
- * TEMPORARY COMPATIBILITY LAYER
+ * Bootstrap Utilities
  *
- * This module provides utilities to help transition from Bootstrap 4's jQuery-based API
- * to Bootstrap 5's vanilla JavaScript API. This is intended as a temporary solution
- * during the migration from Bootstrap 4 to 5 and should be removed once the migration
- * is complete.
+ * This module provides utilities that bridge Bootstrap 5's vanilla JavaScript API
+ * with jQuery-based code in the Compiler Explorer codebase. It centralizes Bootstrap
+ * API interactions to provide consistent behavior across the application.
  *
- * The goal is to minimize changes throughout the codebase by centralizing the Bootstrap
- * API changes in this file, while still allowing for gradual migration to direct API calls.
- *
- * @deprecated This module should be removed after the Bootstrap 5 migration is complete.
+ * Key benefits:
+ * - Handles conversion between jQuery objects and DOM elements
+ * - Provides simplified event handling compatible with jQuery patterns
+ * - Maintains consistent API for Bootstrap components
+ * - Simplifies Bootstrap component initialization and management
  */
 
 import $ from 'jquery';
@@ -46,6 +46,11 @@ const eventListenerMap = new WeakMap<HTMLElement, Map<string, EventListener>>();
 
 /**
  * Helper method to get an HTMLElement from various input types
+ *
+ * This is a core utility function that bridges jQuery objects with native DOM elements,
+ * allowing our codebase to work with both paradigms while the Bootstrap 5 API requires
+ * native DOM elements.
+ *
  * @param elementOrSelector Element, jQuery object, or selector
  * @returns HTMLElement or null
  */
@@ -127,6 +132,9 @@ export function setElementEventHandler(
  * @param options Modal options
  * @returns Modal instance
  * @throws Error if the element cannot be found
+ *
+ * Note: When possible, prefer direct Bootstrap 5 API:
+ * `new Modal(element, options)`
  */
 export function initModal(elementOrSelector: string | HTMLElement | JQuery, options?: Partial<Modal.Options>): Modal {
     const element = getElement(elementOrSelector);
@@ -140,6 +148,9 @@ export function initModal(elementOrSelector: string | HTMLElement | JQuery, opti
  * @param elementOrSelector Element or selector for the modal
  * @param options Modal options
  * @returns Modal instance or null if the element cannot be found
+ *
+ * Note: When possible, prefer direct Bootstrap 5 API:
+ * `element ? new Modal(element, options) : null`
  */
 export function initModalIfExists(
     elementOrSelector: string | HTMLElement | JQuery,
@@ -167,6 +178,12 @@ export function getModalInstance(elementOrSelector: string | HTMLElement | JQuer
  * Show a modal
  * @param elementOrSelector Element or selector for the modal
  * @param relatedTarget Optional related target element
+ *
+ * Note: When possible, prefer direct Bootstrap 5 API:
+ * ```
+ * const modal = Modal.getInstance(element) || new Modal(element);
+ * modal.show(relatedTarget);
+ * ```
  */
 export function showModal(elementOrSelector: string | HTMLElement | JQuery, relatedTarget?: HTMLElement): void {
     const element = getElement(elementOrSelector);
@@ -193,6 +210,9 @@ export function hideModal(elementOrSelector: string | HTMLElement | JQuery): voi
  * @param elementOrSelector Element or selector for the toast
  * @param options Toast options
  * @returns Toast instance
+ *
+ * Note: When possible, prefer direct Bootstrap 5 API:
+ * `new Toast(element, options)`
  */
 export function initToast(elementOrSelector: string | HTMLElement | JQuery, options?: Partial<Toast.Options>): Toast {
     const element = getElement(elementOrSelector);
@@ -206,6 +226,9 @@ export function initToast(elementOrSelector: string | HTMLElement | JQuery, opti
  * @param elementOrSelector Element or selector for the toast
  * @param options Toast options
  * @returns Toast instance or null if element doesn't exist
+ *
+ * Note: When possible, prefer direct Bootstrap 5 API:
+ * `element ? new Toast(element, options) : null`
  */
 export function initToastIfExists(
     elementOrSelector: string | HTMLElement | JQuery,
@@ -220,6 +243,9 @@ export function initToastIfExists(
 /**
  * Show a toast
  * @param elementOrSelector Element or selector for the toast
+ *
+ * Note: When possible, prefer direct Bootstrap 5 API:
+ * `const toast = Toast.getInstance(element) || new Toast(element); toast.show();`
  */
 export function showToast(elementOrSelector: string | HTMLElement | JQuery): void {
     const element = getElement(elementOrSelector);
@@ -232,6 +258,9 @@ export function showToast(elementOrSelector: string | HTMLElement | JQuery): voi
 /**
  * Hide a toast
  * @param elementOrSelector Element or selector for the toast
+ *
+ * Note: When possible, prefer direct Bootstrap 5 API:
+ * `const toast = Toast.getInstance(element); if (toast) toast.hide();`
  */
 export function hideToast(elementOrSelector: string | HTMLElement | JQuery): void {
     const element = getElement(elementOrSelector);
@@ -301,6 +330,9 @@ export function showDropdown(elementOrSelector: string | HTMLElement | JQuery): 
 /**
  * Hide a dropdown
  * @param elementOrSelector Element or selector for the dropdown
+ *
+ * Note: When possible, prefer direct Bootstrap 5 API:
+ * `const dropdown = Dropdown.getInstance(element); if (dropdown) dropdown.hide();`
  */
 export function hideDropdown(elementOrSelector: string | HTMLElement | JQuery): void {
     const element = getElement(elementOrSelector);
@@ -315,6 +347,9 @@ export function hideDropdown(elementOrSelector: string | HTMLElement | JQuery): 
  * @param elementOrSelector Element or selector for the tooltip
  * @param options Tooltip options
  * @returns Tooltip instance
+ *
+ * Note: When possible, prefer direct Bootstrap 5 API:
+ * `new Tooltip(element, options)`
  */
 export function initTooltip(
     elementOrSelector: string | HTMLElement | JQuery,
@@ -331,6 +366,9 @@ export function initTooltip(
  * @param elementOrSelector Element or selector for the tooltip
  * @param options Tooltip options
  * @returns Tooltip instance or null if element doesn't exist
+ *
+ * Note: When possible, prefer direct Bootstrap 5 API:
+ * `element ? new Tooltip(element, options) : null`
  */
 export function initTooltipIfExists(
     elementOrSelector: string | HTMLElement | JQuery,
