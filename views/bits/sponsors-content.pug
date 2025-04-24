@@ -24,8 +24,8 @@ block content
           div.ces-item-description= level.description
           .ces-top
             each sponsor in level.sponsors
-              .ces
-                button.btn-block.btn-secondary(title=sponsor.title onclick=sponsor.onclick disabled=!sponsor.url style=sponsor.style)
+              .ces.d-grid
+                button.btn.btn-secondary(title=sponsor.title onclick=sponsor.onclick disabled=!sponsor.url style=sponsor.style)
                   if sponsor.displayType === 'SideBySide'
                     .d-flex
                       .ces-item-title

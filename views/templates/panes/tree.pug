@@ -1,7 +1,7 @@
 #tree
   .top-bar.btn-toolbar.bg-light.mainbar(role="toolbar")
     .btn-group.btn-group-sm.menu(role="group" aria-label="Menu")
-      button.dropdown-toggle.btn.btn-sm.btn-light.file-menu(type="button" title="File" aria-label="File" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false")
+      button.dropdown-toggle.btn.btn-sm.btn-light.file-menu(type="button" title="File" aria-label="File" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false")
         span.fa.fa-save
         span.hideable Project
       .dropdown-menu
@@ -10,7 +10,7 @@
           span.dropdown-icon.fa.fa-save
           | Save
     .btn-group.btn-group-sm.options(role="group" aria-label="Tree settings")
-      button.dropdown-toggle.btn.btn-sm.btn-light.add-pane(type="button" title="Add a new pane" aria-label="Add a new pane" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false")
+      button.dropdown-toggle.btn.btn-sm.btn-light.add-pane(type="button" title="Add a new pane" aria-label="Add a new pane" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false")
         span.fa.fa-plus
         span.hideable Add new...
       .dropdown-menu
@@ -27,19 +27,19 @@
         button.btn.btn-sm.btn-light.cmake-project(type="button" title="CMake project" data-bind="isCMakeProject" aria-pressed="false" aria-label="CMake project")
           span CMake
         input.d-none(type="checkbox" checked=false)
-    .btn-group.btn-group-sm.ml-auto(role="group" aria-label="Language")
+    .btn-group.btn-group-sm.ms-auto(role="group" aria-label="Language")
       select.change-language(title="Change the language" placeholder="Language" disabled=embedded && readOnly)
   .top-bar.btn-toolbar.bg-light.panel-args.d-none(role="toolbar")
     input.cmake-arguments.form-control(type="text" placeholder="CMake arguments..." size="256" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false")
   .top-bar.btn-toolbar.bg-light.panel-outputfile.d-none(role="toolbar")
     input.cmake-customOutputFilename.form-control(type="text" placeholder="output.s" size="256" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false")
   .tree.v-scroll
-    ul.list-group
+    ul.list-group.list-group-flush
       li.root.list-group-item.far-fa-folder
         .group-header Included files
-        ul.list-group.named-editors
+        ul.list-group.list-group-flush.named-editors
       li.root.list-group-item.far-fa-folder
         .group-header Excluded files
-        ul.list-group.unnamed-editors
+        ul.list-group.list-group-flush.unnamed-editors
       li.drophere.row.align-items-center(style="display: none;")
         span.col-lg.text-center Drop files here

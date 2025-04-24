@@ -482,10 +482,7 @@ export class Diff extends MonacoPane<monaco.editor.IStandaloneDiffEditor, DiffSt
     ) {
         if (!compiler) return;
         options = options || '';
-        let name = compiler.name + ' ' + options;
-        // TODO: tomselect doesn't play nicely with CSS tricks for truncation; this is the best I can do
-        const maxLength = 30;
-        if (name.length > maxLength - 3) name = name.substring(0, maxLength - 3) + '...';
+        const name = compiler.name + ' ' + options;
         this.compilers[id] = {
             id: id,
             name: name,

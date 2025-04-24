@@ -89,6 +89,8 @@ and shorter startup times.
 
 You can also use `npm run dev` to run if `make dev` doesn't work on your machine.
 
+When making UI changes, we recommend following the [UI Testing Checklist](docs/TestingTheUi.md) to ensure all components work correctly.
+
 Some languages need extra tools to demangle them, e.g. `rust`, `d`, or `haskell`. Such tools are kept separately in the
 [tools repo](https://github.com/compiler-explorer/compiler-explorer-tools).
 

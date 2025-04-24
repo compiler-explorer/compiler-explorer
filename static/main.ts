@@ -28,7 +28,7 @@ import {SentryCapture, SetupSentry, setSentryLayout} from './sentry.js';
 SetupSentry();
 
 import 'whatwg-fetch';
-import 'popper.js';
+import '@popperjs/core';
 import 'bootstrap';
 
 import $ from 'jquery';
@@ -62,6 +62,7 @@ import {ComponentConfig, EmptyCompilerState, StateWithId, StateWithLanguage} fro
 import {CompilerExplorerOptions} from './global.js';
 
 import * as utils from '../shared/common-utils.js';
+import * as BootstrapUtils from './bootstrap-utils.js';
 import {ParseFiltersAndOutputOptions} from './features/filters.interfaces.js';
 import {localStorage, sessionThenLocalStorage} from './local.js';
 import {Printerinator} from './print-view.js';
@@ -79,7 +80,7 @@ if (!window.PRODUCTION && !options.embedded) {
 //css
 require('bootstrap/dist/css/bootstrap.min.css');
 require('golden-layout/src/css/goldenlayout-base.css');
-require('tom-select/dist/css/tom-select.bootstrap4.css');
+require('tom-select/dist/css/tom-select.bootstrap5.css');
 require('./styles/colours.scss');
 require('./styles/explorer.scss');
 
@@ -225,7 +226,7 @@ function setupButtons(options: CompilerExplorerOptions, hub: Hub) {
             window.location.reload();
         });
 
-        $('#history').modal();
+        BootstrapUtils.showModal('#history');
     });
 
     $('#ui-apply-default-font-scale').on('click', () => {
@@ -530,7 +531,7 @@ function initShortlinkInfoButton() {
         buttonText.html('');
 
         const button = $('.shortlinkInfo');
-        button.popover({
+        BootstrapUtils.initPopover(button, {
             html: true,
             title: 'Link created',
             content: formatISODate(dt, true),
@@ -677,11 +678,13 @@ function start() {
         setupButtons(options, hub);
     }
 
-    const addDropdown = $('#addDropdown');
-
     function setupAdd<C>(thing: JQuery, func: () => ComponentConfig<C>) {
         (layout.createDragSource(thing, func as any) as any)._dragListener.on('dragStart', () => {
-            addDropdown.dropdown('toggle');
+            const addDropdown = unwrap(
+                BootstrapUtils.getDropdownInstance('#addDropdown'),
+                'Dropdown instance not found for #addDropdown',
+            );
+            addDropdown.toggle();
         });
 
         thing.on('click', () => {

@@ -24,11 +24,12 @@
 
 import {Chart, ChartData, defaults} from 'chart.js';
 import $ from 'jquery';
-import {Settings} from '../settings.js';
-import 'chart.js/auto';
 import {isString} from '../../shared/common-utils.js';
 import {CompilationResult} from '../../types/compilation/compilation.interfaces.js';
 import {unwrap} from '../assert.js';
+import * as BootstrapUtils from '../bootstrap-utils.js';
+import {Settings} from '../settings.js';
+import 'chart.js/auto';
 
 type Data = ChartData<'bar', number[], string> & {steps: number};
 
@@ -188,7 +189,7 @@ function displayData(data: Data) {
             },
         },
     });
-    modal.modal('show');
+    BootstrapUtils.showModal(modal);
 }
 
 export function displayCompilationTiming(compileResult: CompilationResult | null, totalTime: number) {

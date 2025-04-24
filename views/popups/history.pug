@@ -3,9 +3,7 @@
     .modal-content
       .modal-header
         h5.modal-title History
-        button.close(type="button" data-dismiss="modal" aria-hidden="true" aria-label="Close")
-          span(aria-hidden="true")
-            | &times;
+        button.btn-close(type="button" data-bs-dismiss="modal" aria-hidden="true" aria-label="Close")
       .modal-body
         .card
           .card-body
@@ -18,4 +16,4 @@
               div.src-content#load-history-src-display(style="height:600px;overflow-y:scroll;flex:2")
                 div.monaco-placeholder
       .modal-footer
-        button.btn.btn-outline-primary(type="button" data-dismiss="modal") Close
+        button.btn.btn-outline-primary(type="button" data-bs-dismiss="modal") Close

@@ -2,111 +2,116 @@ extends _layout.pug
 
 block prepend content
   nav.navbar.navbar-godbolt.navbar-expand-md.navbar-light.bg-light
-    include logo.pug
-    button.navbar-toggler(type="button" data-toggle="collapse" data-target="#navbarContent" aria-controls="navbarContent" aria-expanded="false" aria-label="Toggle navigation")
-      span.navbar-toggler-icon
-    .collapse.navbar-collapse#navbarContent
-      ul.navbar-nav.navbar-left.mr-auto
-        li.nav-item.dropdown
-          button.btn.btn-light.nav-link.dropdown-toggle#addDropdown(role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false") Add...
-          div.dropdown-menu(aria-labelledby="addDropdown")
-            button.dropdown-item.btn#add-editor(title="Click or drag to desired destination")
-              span.dropdown-icon.fa.fa-code
-              | Source Editor
-            button.dropdown-item.btn#add-diff(title="Click or drag to desired destination")
-              span.dropdown-icon.fas.fa-exchange-alt
-              | Diff View
-            button.dropdown-item.btn#add-tree(title="Click or drag to desired destination")
-              span.dropdown-icon.fa.fa-list-alt
-              | Tree (IDE Mode)
-        li.nav-item.dropdown
-          button.btn.btn-light.nav-link.dropdown-toggle#moreDropdown(role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" data-cy="more-dropdown-btn") More
-          div.dropdown-menu(aria-labelledby="moreDropdown")
-            button.dropdown-item.btn#setting(data-target="#settings" data-toggle="modal")
-              span.dropdown-icon.fas.fa-sliders-h
-              | Settings
-            div.dropdown-divider
-            a.dropdown-item.btn#ui-brokenlink
-              span.dropdown-icon.fas.fa-undo-alt
-              | Reset UI layout
-            button.dropdown-item.btn#ui-reset(data-cy="reset-ui-btn")
-              span.dropdown-icon.fas.fa-trash-alt
-              | Reset code and UI layout
-            button.dropdown-item.btn#ui-duplicate
-              span.dropdown-icon.fas.fa-external-link-alt
-              | Open new tab
-            button.dropdown-item.btn#ui-history
-              span.dropdown-icon.fas.fa-exchange-alt
-              | History
-            div.dropdown-divider
-            button.dropdown-item.btn#ui-apply-default-font-scale
-              span.dropdown-icon.fas.fa-font
-              | Apply Default Font Scale
-        li.nav-item
-            button.btn.btn-light.nav-link#loadSiteTemplate(role="button") Templates
-        li.nav-item.shortlinkInfo.d-none
-          button.btn.btn-light.nav-link.shortlinkInfoBtn
-            span.fa.fa-info-circle
-            span.hideable.shortlinkInfoText
-        li.nav-item.ui-presentation-control.d-none
-          a.nav-link.ui-presentation-first(href="javascript:;")
-            span.dropdown-icon.fas.fa-fast-backward
-            | Start
-        li.nav-item.ui-presentation-control.d-none
-          a.nav-link.ui-presentation-prev(href="javascript:;")
-            span.dropdown-icon.fas.fa-backward
-            | Previous
-        li.nav-item.ui-presentation-control.d-none
-          a.nav-link.ui-presentation-next(href="javascript:;")
-            span.dropdown-icon.fas.fa-forward
-            | Next
-      ul#motd.navbar-nav.navbar-left.mr-auto.community-advert.d-none
-        span.content
-          | Thanks for using Compiler Explorer
-        span.community-hide(title="Hide and never show again" aria-label="Close")
-          button.close(type="button" aria-hidden="true") &times;
-      ul.navbar-nav.navbar-right
-        if showSponsors
-          li.nav-item.btn.btn-outline-info#ces(data-toggle="modal")
-            span#ces-banner-text Sponsors
-            include sponsor-icons.pug
-        li.nav-item.dropdown
-          button.btn.btn-light.nav-link.dropdown-toggle#share(role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false") Share
-          div.dropdown-menu.dropdown-menu-right
-            if storageSolution !== "null"
-              a.dropdown-item#shareShort(href="javascript:;" data-target="#sharelinkdialog" data-toggle="modal" data-bind="Short")
-                span.dropdown-icon.fas.fa-cloud.d-inline
-                | Short Link
-                button.btn.btn-sm.copy-link-btn.clip-icon.float-right(data-toggle="none")
-                  span.dropdown-icon.fa.fa-clipboard
-            a.dropdown-item#shareFull(href="javascript:;" data-target="#sharelinkdialog" data-toggle="modal" data-bind="Full")
-              span.dropdown-icon.fas.fa-store-slash.d-inline
-              | Full Link
-              button.btn.btn-sm.copy-link-btn.clip-icon.float-right(data-toggle="none")
-                span.dropdown-icon.fa.fa-clipboard
-            a.dropdown-item#shareEmbed(href="javascript:;" data-target="#sharelinkdialog" data-toggle="modal" data-bind="Embed")
-              span.dropdown-icon.fas.fa-window-restore.d-inline
-              | Embed in iframe
-              // This is not an oversight, there is in fact a .float-right missing here that's there in the other 2
-              button.btn.btn-sm.copy-link-btn.clip-icon(data-toggle="none")
-                span.dropdown-icon.fa.fa-clipboard
-        if policies.cookies.enabled || policies.privacy.enabled
+    .container-fluid
+      include logo.pug
+      button.navbar-toggler(type="button" data-bs-toggle="collapse" data-bs-target="#navbarContent" aria-controls="navbarContent" aria-expanded="false" aria-label="Toggle navigation")
+        span.navbar-toggler-icon
+      .collapse.navbar-collapse#navbarContent
+        ul.navbar-nav.me-auto.mb-2.mb-md-0
           li.nav-item.dropdown
-            button.btn.btn-light.nav-link.dropdown-toggle#policiesDropdown(role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false")
-              | Policies
-              span#policyBellNotification.d-none.badge.badge-pill.badge-primary
-                span.fa.fa-bell
-            div.dropdown-menu.dropdown-menu-right(aria-labelledby="policiesDropdown")
-              include menu-policies.pug
-        li.nav-item.dropdown
-          button.btn.btn-light.nav-link.dropdown-toggle#otherDropdown(role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false") Other
-          div.dropdown-menu.dropdown-menu-right(aria-labelledby="otherDropdown")
-            include menu-other.pug
+            button.btn.btn-light.nav-link.dropdown-toggle#addDropdown(role="button" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false") Add...
+            div.dropdown-menu(aria-labelledby="addDropdown")
+              button.dropdown-item.btn#add-editor(title="Click or drag to desired destination")
+                span.dropdown-icon.fa.fa-code
+                | Source Editor
+              button.dropdown-item.btn#add-diff(title="Click or drag to desired destination")
+                span.dropdown-icon.fas.fa-exchange-alt
+                | Diff View
+              button.dropdown-item.btn#add-tree(title="Click or drag to desired destination")
+                span.dropdown-icon.fa.fa-list-alt
+                | Tree (IDE Mode)
+          li.nav-item.dropdown
+            button.btn.btn-light.nav-link.dropdown-toggle#moreDropdown(role="button" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false" data-cy="more-dropdown-btn") More
+            div.dropdown-menu(aria-labelledby="moreDropdown")
+              button.dropdown-item.btn#setting(data-bs-target="#settings" data-bs-toggle="modal")
+                span.dropdown-icon.fas.fa-sliders-h
+                | Settings
+              div.dropdown-divider
+              a.dropdown-item.btn#ui-brokenlink
+                span.dropdown-icon.fas.fa-undo-alt
+                | Reset UI layout
+              button.dropdown-item.btn#ui-reset(data-cy="reset-ui-btn")
+                span.dropdown-icon.fas.fa-trash-alt
+                | Reset code and UI layout
+              button.dropdown-item.btn#ui-duplicate
+                span.dropdown-icon.fas.fa-external-link-alt
+                | Open new tab
+              button.dropdown-item.btn#ui-history
+                span.dropdown-icon.fas.fa-exchange-alt
+                | History
+              div.dropdown-divider
+              button.dropdown-item.btn#ui-apply-default-font-scale
+                span.dropdown-icon.fas.fa-font
+                | Apply Default Font Scale
+          li.nav-item
+            button.btn.btn-light.nav-link#loadSiteTemplate(role="button") Templates
+          li.nav-item.shortlinkInfo.d-none
+            button.btn.btn-light.nav-link.shortlinkInfoBtn
+              span.fa.fa-info-circle
+              span.hideable.shortlinkInfoText
+          li.nav-item.ui-presentation-control.d-none
+            a.nav-link.ui-presentation-first(href="javascript:;")
+              span.dropdown-icon.fas.fa-fast-backward
+              | Start
+          li.nav-item.ui-presentation-control.d-none
+            a.nav-link.ui-presentation-prev(href="javascript:;")
+              span.dropdown-icon.fas.fa-backward
+              | Previous
+          li.nav-item.ui-presentation-control.d-none
+            a.nav-link.ui-presentation-next(href="javascript:;")
+              span.dropdown-icon.fas.fa-forward
+              | Next
+
+        ul#motd.navbar-nav.community-advert.d-none.mx-auto
+          span.content
+            | Thanks for using Compiler Explorer
+          span.community-hide(title="Hide and never show again" aria-label="Close")
+            button.btn-close(type="button" aria-label="Close")
+
+        ul.navbar-nav.ms-auto.mb-2.mb-md-0
+          if showSponsors
+            li.nav-item.btn.btn-outline-info#ces
+              span#ces-banner-text Sponsors
+              include sponsor-icons.pug
+          li.nav-item.dropdown#share-tooltip-target
+            button.btn.btn-light.nav-link.dropdown-toggle#share(role="button" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false") Share
+            div.dropdown-menu.dropdown-menu-end
+              // In order for these to support both the clipboard button _and_ optionally opening the dialog, we can't
+              // use `data-bs-toggle="modal"` on the `<a>` itself, as that would prevent the clipboard button from working.
+              // Bootstrap's default blanket event handler beats out any event handler we manually attach to the button.
+              if storageSolution !== "null"
+                a.dropdown-item#shareShort(href="javascript:;" data-bs-target="#sharelinkdialog" data-bind="Short")
+                  span.dropdown-icon.fas.fa-cloud.d-inline
+                  | Short Link
+                  button.btn.btn-sm.copy-link-btn.clip-icon.float-end(data-bs-target="" data-bs-toggle="none")
+                    span.dropdown-icon.fa.fa-clipboard
+              a.dropdown-item#shareFull(href="javascript:;" data-bs-target="#sharelinkdialog" data-bind="Full")
+                span.dropdown-icon.fas.fa-store-slash.d-inline
+                | Full Link
+                button.btn.btn-sm.copy-link-btn.clip-icon.float-end(data-bs-toggle="none")
+                  span.dropdown-icon.fa.fa-clipboard
+              a.dropdown-item#shareEmbed(href="javascript:;" data-bs-target="#sharelinkdialog" data-bind="Embed")
+                span.dropdown-icon.fas.fa-window-restore.d-inline
+                | Embed in iframe
+                // This is not an oversight, there is in fact a .float-end missing here that's there in the other 2
+                button.btn.btn-sm.copy-link-btn.clip-icon(data-bs-toggle="none")
+                  span.dropdown-icon.fa.fa-clipboard
+          if policies.cookies.enabled || policies.privacy.enabled
+            li.nav-item.dropdown
+              button.btn.btn-light.nav-link.dropdown-toggle#policiesDropdown(role="button" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false")
+                | Policies
+                span#policyBellNotification.d-none.badge.rounded-pill.bg-primary
+                  span.fa.fa-bell
+              div.dropdown-menu.dropdown-menu-end(aria-labelledby="policiesDropdown")
+                include menu-policies.pug
+          li.nav-item.dropdown
+            button.btn.btn-light.nav-link.dropdown-toggle#otherDropdown(role="button" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false") Other
+            div.dropdown-menu.dropdown-menu-end(aria-labelledby="otherDropdown")
+              include menu-other.pug
 
 block append footer
   include popups/_all
   #real-dark
   #true-dark
     .content Try the real dark theme 🔦
-      .close
-        i.fa-solid.fa-xmark
+      button.btn.dark-close.fas.fa-times(type="button" aria-label="Close")

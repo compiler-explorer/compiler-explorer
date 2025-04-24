@@ -10,7 +10,7 @@ mixin optionButton(bind, isActive, text, title)
     .btn-group.btn-group-sm(role="group")
       select.gccdump-pass-picker(placeholder="Select a pass...")
     .btn-group.btn-group-sm.dump-filters
-      button.btn.btn-sm.btn-light.dropdown-toggle(type="button" title="Dump passes" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" aria-label="Available dump passes")
+      button.btn.btn-sm.btn-light.dropdown-toggle(type="button" title="Dump passes" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false" aria-label="Available dump passes")
         span.fas.fa-compass
         span.hideable Passes
       .dropdown-menu
@@ -18,7 +18,7 @@ mixin optionButton(bind, isActive, text, title)
         +optionButton("rtlDump", true, "RTL Pass", "Show RTL passes")
         +optionButton("ipaDump", true, "IPA Pass", "Show IPA passes")
     .btn-group.btn-group-sm.dump-filters
-      button.btn.btn-sm.btn-light.dropdown-toggle(type="button" title="Dump pass options" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" aria-label="Control the details of the dump")
+      button.btn.btn-sm.btn-light.dropdown-toggle(type="button" title="Dump pass options" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false" aria-label="Control the details of the dump")
         span.fas.fa-microchip
         span.hideable Options
       .dropdown-menu

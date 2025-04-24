@@ -42,6 +42,7 @@ import {
 import {CompilerInfo} from '../../types/compiler.interfaces.js';
 import {ResultLine} from '../../types/resultline/resultline.interfaces.js';
 import {getAssemblyDocumentation} from '../api/api.js';
+import * as BootstrapUtils from '../bootstrap-utils.js';
 import * as codeLensHandler from '../codelens-handler.js';
 import * as colour from '../colour.js';
 import {OptPipelineBackendOptions} from '../compilation/opt-pipeline-output.interfaces.js';
@@ -678,7 +679,7 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
 
         const newPaneDropdown = this.domRoot.find('.new-pane-dropdown');
         const hidePaneAdder = () => {
-            newPaneDropdown.dropdown('hide');
+            BootstrapUtils.hideDropdown(newPaneDropdown);
         };
 
         // Note that the .d.ts file lies in more than 1 way!
@@ -729,7 +730,7 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
                 .createDragSource(this.flagsButton, createFlagsView as any)
 
                 // @ts-ignore
-                ._dragListener.on('dragStart', () => popularArgumentsMenu.dropdown('hide'));
+                ._dragListener.on('dragStart', () => BootstrapUtils.hideDropdown(popularArgumentsMenu));
 
             this.flagsButton.on('click', () => {
                 const insertPoint =
@@ -1868,7 +1869,7 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
                 dismissTime: 10000,
                 onBeforeShow: elem => {
                     elem.find('#miracle_emulink').on('click', () => {
-                        dialog.modal();
+                        BootstrapUtils.showModal(dialog);
 
                         const miracleMenuFrame = dialog.find('#miracleemuframe')[0];
                         assert(miracleMenuFrame instanceof HTMLIFrameElement);
@@ -1896,7 +1897,7 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
                 dismissTime: 10000,
                 onBeforeShow: elem => {
                     elem.find('#jsspeccy_emulink').on('click', () => {
-                        dialog.modal();
+                        BootstrapUtils.showModal(dialog);
 
                         const speccyemuframe = dialog.find('#speccyemuframe')[0];
                         assert(speccyemuframe instanceof HTMLIFrameElement);
@@ -1923,7 +1924,7 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
                 dismissTime: 10000,
                 onBeforeShow: elem => {
                     elem.find('#emulink').on('click', () => {
-                        dialog.modal();
+                        BootstrapUtils.showModal(dialog);
 
                         const jsbeebemuframe = dialog.find('#jsbeebemuframe')[0];
                         assert(jsbeebemuframe instanceof HTMLIFrameElement);
@@ -1950,7 +1951,7 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
                 dismissTime: 10000,
                 onBeforeShow: elem => {
                     elem.find('#emulink').on('click', () => {
-                        dialog.modal();
+                        BootstrapUtils.showModal(dialog);
 
                         const jsnesemuframe = dialog.find('#jsnesemuframe')[0];
                         assert(jsnesemuframe instanceof HTMLIFrameElement);
@@ -2683,7 +2684,7 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
     initToolButtons(): void {
         this.toolsMenu = this.domRoot.find('.new-tool-dropdown');
         const hideToolDropdown = () => {
-            this.toolsMenu?.dropdown('hide');
+            if (this.toolsMenu) BootstrapUtils.hideDropdown(this.toolsMenu);
         };
         this.toolsMenu.empty();
 
@@ -3053,14 +3054,14 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
                 this.prependOptions.has(target as unknown as Element).length === 0 &&
                 target.closest('.popover').length === 0
             )
-                this.prependOptions.popover('hide');
+                BootstrapUtils.hidePopover(this.prependOptions);
 
             if (
                 !target.is(this.fullCompilerName) &&
                 this.fullCompilerName.has(target as unknown as Element).length === 0 &&
                 target.closest('.popover').length === 0
             )
-                this.fullCompilerName.popover('hide');
+                BootstrapUtils.hidePopover(this.fullCompilerName);
         });
     }
 
@@ -3104,7 +3105,7 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
         // Dismiss the popover on escape.
         $(document).on('keyup.editable', e => {
             if (e.which === 27) {
-                this.libsButton.popover('hide');
+                BootstrapUtils.hidePopover(this.libsButton);
             }
         });
 
@@ -3118,7 +3119,7 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
                 elem.has(target as unknown as Element).length === 0 &&
                 target.closest('.popover').length === 0
             ) {
-                elem.popover('hide');
+                BootstrapUtils.hidePopover(elem);
             }
         });
     }
@@ -3460,8 +3461,13 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
     setCompilationOptionsPopover(content: string | null, warnings: string[]): void {
         const infoLine =
             '<div class="compiler-arg-warning info">You can configure icon animations in Settings>Compilation</div>\n';
-        this.prependOptions.popover('dispose');
-        this.prependOptions.popover({
+
+        // Dispose any existing popover
+        const existingPopover = BootstrapUtils.getPopoverInstance(this.prependOptions);
+        if (existingPopover) existingPopover.dispose();
+
+        // Create new popover
+        BootstrapUtils.initPopover(this.prependOptions, {
             content:
                 warnings.map(w => `<div class="compiler-arg-warning">${w}</div>`).join('\n') +
                 '\n' +

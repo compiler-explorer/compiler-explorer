@@ -39,10 +39,22 @@ body {
     background-color: $base !important;
 }
 
+// Border color adjustments for form elements in dark theme
+.form-select,
+.form-control,
+.input-group-text,
+.ts-wrapper .ts-control {
+    --bs-border-color: $dark;
+}
+
 input {
     color: #eee !important;
     background-color: $lighter;
     border: 0 !important;
+
+    &::placeholder {
+        color: #888 !important;
+    }
 
     &:focus {
         color: #eee !important;
@@ -204,7 +216,7 @@ textarea.form-control {
 .conformance-wrapper {
     background-color: #1e1e1e !important;
 
-    .compiler-list .form-row {
+    .compiler-list .row {
         border-bottom: 1px solid #3e3e3e;
     }
 }
@@ -222,7 +234,7 @@ textarea.form-control {
     background-color: opacify($dark, 0.8);
 }
 
-.custom-select {
+.form-select {
     background-color: #dddddd !important;
     color: #000 !important;
 }
@@ -234,6 +246,11 @@ textarea.form-control {
     &:hover {
         color: #fff !important;
         background-color: $lighter !important;
+    }
+
+    &.active {
+        background-color: #405f9d !important;
+        color: #fff !important;
     }
 }
 
@@ -325,7 +342,7 @@ textarea.form-control {
     }
 }
 
-#v-status {
+.v-status {
     color: #eee !important;
 }
 
@@ -422,8 +439,8 @@ textarea.form-control {
     color: #eee !important;
     background-color: $base !important;
 
-    .close {
-        color: #eee;
+    .btn-close {
+        filter: invert(90%);
     }
 }
 
@@ -493,8 +510,8 @@ textarea.form-control {
     background-color: #aa3333 !important;
     color: #fff;
 
-    .close {
-        color: #fff;
+    .btn-close {
+        filter: invert(100%);
     }
 }
 
@@ -507,8 +524,8 @@ textarea.form-control {
     background-color: #222 !important;
     color: #fff;
 
-    .close {
-        color: #fff;
+    .btn-close {
+        filter: invert(100%);
     }
 }
 
