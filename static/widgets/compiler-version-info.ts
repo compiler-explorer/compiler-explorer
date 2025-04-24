@@ -90,8 +90,8 @@ function reallySetCompilerVersionPopover(
     const existingPopover = BootstrapUtils.getPopoverInstance(pane.fullCompilerName);
     if (existingPopover) existingPopover.dispose();
 
-    // Initialize new popover
-    BootstrapUtils.initPopover(pane.fullCompilerName, {
+    // Initialize a new popover; may not exist in embedded links.
+    BootstrapUtils.initPopoverIfExists(pane.fullCompilerName, {
         html: true,
         title: notification
             ? ($.parseHTML('<span>Compiler Version: ' + notification + '</span>')[0] as Element)
