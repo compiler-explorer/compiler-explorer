@@ -387,7 +387,7 @@ export class Sharing {
             case LinkType.Embed: {
                 const options: Record<string, boolean> = {};
                 $('#sharelinkdialog input:checked').each((i, element) => {
-                    options[$(element).prop('class')] = true;
+                    options[$(element).data('option')] = true;
                 });
                 done(null, Sharing.getEmbeddedHtml(config, root, false, options), false);
                 return;
