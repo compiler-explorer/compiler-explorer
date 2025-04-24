@@ -319,33 +319,146 @@ These insights were gathered during the migration process and may be helpful for
 
 ## Future Work
 
-### Phase 11: Documentation Update
+### Phase 11: Documentation Update ✅
 
-- [ ] Update any documentation that references Bootstrap components
-- [ ] Document custom component implementations
-- [ ] Note any deprecated features or changes in functionality
+- [x] Update any documentation that references Bootstrap components
+- [x] Document custom component implementations
+- [x] Note any deprecated features or changes in functionality
 
 ### Phase 12: Optional jQuery Removal and Cleanup
 
-- [ ] Create a plan for jQuery removal (if desired)
-- [ ] Identify non-Bootstrap jQuery usage that would need refactoring
+- [x] ~~Create a plan for jQuery removal (if desired)~~ (tracked in [issue #7600](https://github.com/compiler-explorer/compiler-explorer/issues/7600))
+- [x] ~~Identify non-Bootstrap jQuery usage that would need refactoring~~ (tracked in [issue #7600](https://github.com/compiler-explorer/compiler-explorer/issues/7600))
 - [ ] Remove the temporary `bootstrap-utils.ts` compatibility layer
     - [ ] Replace all uses with direct Bootstrap 5 API calls
     - [ ] Document the native Bootstrap 5 API for future reference
-- [ ] Investigate and fix modal accessibility warnings
-    - [ ] Address the warning: "Blocked aria-hidden on an element because its descendant retained focus"
-    - [ ] Update modal template markup to leverage Bootstrap 5.3's built-in support for the `inert` attribute
-    - [ ] Ensure proper focus management in modals for improved accessibility
+- [ ] ~~Investigate and fix modal accessibility warnings~~ (tracked in [issue #7602](https://github.com/compiler-explorer/compiler-explorer/issues/7602))
+    - [ ] ~~Address the warning: "Blocked aria-hidden on an element because its descendant retained focus"~~ (part of issue #7602)
+    - [ ] ~~Update modal template markup to leverage Bootstrap 5.3's built-in support for the `inert` attribute~~ (part of issue #7602)
+    - [ ] ~~Ensure proper focus management in modals for improved accessibility~~ (part of issue #7602)
 
 ### Additional Pending Issues
 
-- [ ] Check Sentry for additional errors on the beta site
-- [ ] Investigate the "focus" selected check boxes in the settings view. They're very light when focused, in particular
-  in pink theme. I couldn't work out how to fix this, but it seemed minor.
-- [ ] The "pop out" div that's attached to the compiler picker doesn't work on the conformance view: this was broken
-  before. Essentially the z-order means it's drawn behind the lower conformance compilers and `z-index` can't fix it.
-  Needs a rethink of how this is done.
-- [ ] File tracking issues for anything on this list we don't complete.
+- [ ] Check Sentry for additional errors on the live site
+- [ ] ~~Investigate the "focus" selected check boxes in the settings view. They're very light when focused, in particular in pink theme. I couldn't work out how to fix this, but it seemed minor.~~ (tracked in [issue #7603](https://github.com/compiler-explorer/compiler-explorer/issues/7603))
+- [ ] ~~The "pop out" div that's attached to the compiler picker doesn't work on the conformance view: this was broken before. Essentially the z-order means it's drawn behind the lower conformance compilers and `z-index` can't fix it. Needs a rethink of how this is done.~~ (tracked in [issue #7604](https://github.com/compiler-explorer/compiler-explorer/issues/7604))
+- [x] ~~File tracking issues for anything on this list we don't complete.~~ (completed - all issues have been tracked)
+
+## Custom Component Implementations Reference
+
+This section provides documentation for the custom Bootstrap component implementations developed during the migration.
+
+### BootstrapUtils (bootstrap-utils.ts)
+
+The `bootstrap-utils.ts` file serves as a temporary compatibility layer between jQuery-based Bootstrap 4 code and the new Bootstrap 5 JavaScript API. It provides methods for initializing and controlling various Bootstrap components.
+
+#### Modal Component
+
+**Methods:**
+- `showModal(selector)`: Displays a modal using a CSS selector or jQuery object
+- `hideModal(selector)`: Hides a modal using a CSS selector or jQuery object
+- `setModalHiddenHandler(selector, handler)`: Sets a handler for the 'hidden.bs.modal' event
+- `setModalShownHandler(selector, handler)`: Sets a handler for the 'shown.bs.modal' event
+- `getModalInstance(selector)`: Gets the Bootstrap Modal instance for a given element
+
+**Key Changes from Bootstrap 4:**
+- Modal events like 'shown.bs.modal' now need native DOM event listeners
+- Modal objects are obtained using `bootstrap.Modal.getInstance()` or `new bootstrap.Modal()`
+- jQuery's `.modal('show')` is replaced with `modalInstance.show()`
+
+#### Dropdown Component
+
+**Methods:**
+- `getDropdownInstance(selector)`: Gets the Bootstrap Dropdown instance for a given element
+- `initializeAllDropdowns()`: Initializes all dropdowns on the page
+
+**Key Changes from Bootstrap 4:**
+- Dropdown toggling with jQuery's `.dropdown('toggle')` is replaced with `dropdownInstance.toggle()`
+- Data attributes changed from `data-toggle="dropdown"` to `data-bs-toggle="dropdown"`
+
+#### Tooltip Component
+
+**Methods:**
+- `createTooltip(element, options)`: Creates a tooltip instance on an element
+- `initializeAllTooltips(selector, options)`: Initializes all tooltips matching a selector
+
+**Key Changes from Bootstrap 4:**
+- Tooltips must be explicitly initialized with `new bootstrap.Tooltip()`
+- Global tooltip access changed from `$.fn.tooltip` to direct import from bootstrap
+- Data attribute changed from `data-toggle="tooltip"` to `data-bs-toggle="tooltip"`
+
+#### Popover Component
+
+**Methods:**
+- `createPopover(element, options)`: Creates a popover instance on an element
+- `initializeAllPopovers(selector, options)`: Initializes all popovers matching a selector
+
+**Key Changes from Bootstrap 4:**
+- Popovers must be explicitly initialized with `new bootstrap.Popover()`
+- Data attribute changed from `data-toggle="popover"` to `data-bs-toggle="popover"`
+
+#### Tab Component
+
+**Methods:**
+- `activateTab(selector)`: Activates a specific tab
+
+**Key Changes from Bootstrap 4:**
+- Tab activation changed from `$(selector).tab('show')` to `tabInstance.show()`
+- Data attribute changed from `data-toggle="tab"` to `data-bs-toggle="tab"`
+
+#### Toast Component
+
+**Methods:**
+- `createToast(element, options)`: Creates a toast instance on an element
+- `showToast(selector)`: Shows a toast using a CSS selector or jQuery object
+
+**Key Changes from Bootstrap 4:**
+- Toasts must be explicitly initialized with `new bootstrap.Toast()`
+- Toast show/hide methods are direct methods on the toast instance
+
+### Event Handling
+
+**Key Changes:**
+- jQuery event methods (`.on()`, `.off()`, etc.) should be replaced with native DOM methods
+- Event registration for Bootstrap components now requires direct DOM element access
+- Event types include the `bs` prefix (e.g., `shown.bs.modal`)
+
+### CSS Class Changes
+
+Several Bootstrap CSS classes were renamed in version 5:
+
+- Directional classes: `ml-*` → `ms-*`, `mr-*` → `me-*`, etc.
+- Floating classes: `float-left` → `float-start`, `float-right` → `float-end`
+- Text alignment: `text-left` → `text-start`, `text-right` → `text-end`
+- Form classes: `custom-select` → `form-select`, `form-row` → `row`
+- Close button: `.close` → `.btn-close` (with completely different HTML structure)
+- Dropdown alignment: `.dropdown-menu-right` → `.dropdown-menu-end`
+- Full-width buttons: `.btn-block` → Container with `.d-grid`
+
+### Special Integration Notes
+
+**TomSelect Integration:**
+- Bootstrap 5 changed dropdown indicators from CSS triangles to SVG backgrounds
+- Custom CSS was needed in explorer.scss to fix dropdown arrow appearance
+- The bootstrap5 theme for TomSelect needed additional styling fixes
+
+**Modal Focus Management:**
+- Bootstrap 5 has stricter focus management in modals
+- Focus must be properly handled when modals are shown/hidden
+- The `inert` attribute is now supported for better accessibility
+
+## Deprecated Features
+
+The following Bootstrap 4 features were deprecated or removed in Bootstrap 5:
+
+1. **jQuery Dependency**: Bootstrap 5 no longer requires jQuery
+2. **jQuery Plugin Methods**: Methods like `.modal('show')` no longer exist
+3. **Global Bootstrap Access**: No more `$.fn.modal` or similar
+4. **Card Decks**: Replaced by grid system
+5. **Form Row**: `.form-row` replaced by standard `.row`
+6. **Input Group Prepend/Append**: Wrappers removed, children can be direct
+7. **Button Block**: `.btn-block` removed in favor of `.d-grid`
+8. **Close Class**: `.close` replaced by `.btn-close` with different HTML structure
 
 ## Final Testing Checklist
 
