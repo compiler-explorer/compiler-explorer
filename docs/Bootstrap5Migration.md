@@ -148,27 +148,27 @@ allows for:
 - [x] Update modal usage in compiler-picker-popup.ts
 - [x] Update modal handling in load-save.ts
 - [x] Update modal event handling in sharing.ts
-- [ ] Test modal functionality thoroughly
+- [x] Test modal functionality thoroughly
 
 ### Dropdown Component Migration
 - [x] Update dropdown handling in sharing.ts
 - [x] Update dropdown usage in compiler.ts, editor.ts, etc.
-- [ ] Test dropdown functionality thoroughly
+- [x] Test dropdown functionality thoroughly
 
 ### Toast/Alert Component Migration
 - [x] Update toast implementation in alert.ts
 - [x] Update toast styling in explorer.scss
-- [ ] Test toast notifications and alerts
+- [x] Test toast notifications and alerts
 
 ### Popover/Tooltip Migration
 - [x] Update tooltip initialization in sharing.ts
 - [x] Update popover usage in compiler.ts, executor.ts, editor.ts, etc.
-- [ ] Test popover and tooltip functionality thoroughly
+- [x] Test popover and tooltip functionality thoroughly
 
 ### Card Component Updates
 - [x] Review card usage and update to Bootstrap 5 standards
 - [x] ~~Replace any card-deck implementations with grid system~~ (Not needed - card-deck not used in codebase)
-- [ ] Test card layouts, especially tab navigation within cards
+- [x] Test card layouts, especially tab navigation within cards
 
 ### Collapse Component Updates
 - [x] ~~Update any collapse component implementations~~ (Not needed - minimal collapse usage in codebase)
@@ -177,8 +177,7 @@ allows for:
 ### Button Group Updates
 - [x] Review button group implementations
 - [x] Update to Bootstrap 5 standards (no changes needed - Bootstrap 5 maintains same button group classes)
-- [ ] Test button group functionality in toolbars and dropdown menus
-
+- [x] Test button group functionality in toolbars and dropdown menus
 
 ## Phase 6: Form System Updates
 
@@ -203,7 +202,7 @@ allows for:
 - [x] Update any custom themes to use Bootstrap 5 variables
 - [x] Check z-index variable changes in Bootstrap 5
 - [x] Add navbar container padding fix for proper alignment
-- [ ] Test theme switching functionality
+- [x] Test theme switching functionality
 
 ## Phase 9: Accessibility Improvements
 
@@ -211,16 +210,16 @@ allows for:
 - [x] Leverage Bootstrap 5's improved accessibility features
 - [x] Add ARIA labels and live regions for dynamic content
 - [x] Enhance form controls with proper accessibility attributes
-- [ ] Test with screen readers and keyboard navigation
-- [ ] Ensure color contrast meets accessibility guidelines
+- [ ] ~~Test with screen readers and keyboard navigation~~ (left for future work)
+- [ ] ~~Ensure color contrast meets accessibility guidelines~~ (left for future work)
 
 ## Phase 10: Final Testing and Refinement
 
-- [ ] Comprehensive testing across different viewports
-- [ ] Cross-browser testing
-- [ ] Fix any styling issues or inconsistencies
-- [ ] Performance testing (Bootstrap 5 should be more performant)
-- [ ] Ensure no regressions in functionality
+- [x] ~~Comprehensive testing across different viewports~~ cursory testing with a few viewports
+- [x] Cross-browser testing (at least; looked in FireFox and we're good)
+- [x] Fix any styling issues or inconsistencies
+- [x] ~~Performance testing (Bootstrap 5 should be more performant)~~ (don't care; site is fine)
+- [x] Ensure no regressions in functionality
 
 ## Phase 11: Documentation Update
 
@@ -242,6 +241,10 @@ allows for:
 - [ ] Note: This would be a separate effort after the Bootstrap migration is stable
 - [ ] Investigate the "focus" selected check boxes in the settings view. They're very light
       when focused, in particular in pink theme. I couldn't work out how to fix this, but it seemed minor.
+- [ ] The "pop out" div that's attached to the compiler picker doesn't work on the conformance view:
+      this was broken before. Essentially the z-order means it's drawn behind the lower conformance compilers
+      and `z-index` can't fix it. Needs a rethink of how this is done.
+- [ ] File tracking issues for anything on this list we don't complete.
 
 ## Notes for Implementation
 
