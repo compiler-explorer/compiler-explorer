@@ -23,29 +23,34 @@
 // POSSIBILITY OF SUCH DAMAGE.
 
 /**
- * TEMPORARY COMPATIBILITY LAYER
+ * Bootstrap Utilities
  *
- * This module provides utilities to help transition from Bootstrap 4's jQuery-based API
- * to Bootstrap 5's vanilla JavaScript API. This is intended as a temporary solution
- * during the migration from Bootstrap 4 to 5 and should be removed once the migration
- * is complete.
+ * This module provides utilities that bridge Bootstrap 5's vanilla JavaScript API
+ * with jQuery-based code in the Compiler Explorer codebase. It centralizes Bootstrap
+ * API interactions to provide consistent behavior across the application.
  *
- * The goal is to minimize changes throughout the codebase by centralizing the Bootstrap
- * API changes in this file, while still allowing for gradual migration to direct API calls.
- *
- * @deprecated This module should be removed after the Bootstrap 5 migration is complete.
+ * Key benefits:
+ * - Handles conversion between jQuery objects and DOM elements
+ * - Provides simplified event handling compatible with jQuery patterns
+ * - Maintains consistent API for Bootstrap components
+ * - Simplifies Bootstrap component initialization and management
  */
 
 import $ from 'jquery';
 
 import 'bootstrap';
-import {Collapse, Dropdown, Modal, Popover, Tab, Toast, Tooltip} from 'bootstrap';
+import {Dropdown, Modal, Popover, Toast} from 'bootstrap';
 
 // Private event listener tracking map
 const eventListenerMap = new WeakMap<HTMLElement, Map<string, EventListener>>();
 
 /**
  * Helper method to get an HTMLElement from various input types
+ *
+ * This is a core utility function that bridges jQuery objects with native DOM elements,
+ * allowing our codebase to work with both paradigms while the Bootstrap 5 API requires
+ * native DOM elements.
+ *
  * @param elementOrSelector Element, jQuery object, or selector
  * @returns HTMLElement or null
  */
@@ -122,36 +127,6 @@ export function setElementEventHandler(
 }
 
 /**
- * Initialize a modal
- * @param elementOrSelector Element or selector for the modal
- * @param options Modal options
- * @returns Modal instance
- * @throws Error if the element cannot be found
- */
-export function initModal(elementOrSelector: string | HTMLElement | JQuery, options?: Partial<Modal.Options>): Modal {
-    const element = getElement(elementOrSelector);
-    if (!element) throw new Error(`Failed to find element for modal: ${elementOrSelector}`);
-
-    return new Modal(element, options);
-}
-
-/**
- * Initialize a modal if the element exists, returning null otherwise
- * @param elementOrSelector Element or selector for the modal
- * @param options Modal options
- * @returns Modal instance or null if the element cannot be found
- */
-export function initModalIfExists(
-    elementOrSelector: string | HTMLElement | JQuery,
-    options?: Partial<Modal.Options>,
-): Modal | null {
-    const element = getElement(elementOrSelector);
-    if (!element) return null;
-
-    return new Modal(element, options);
-}
-
-/**
  * Get an existing modal instance for an element
  * @param elementOrSelector Element or selector for the modal
  * @returns Existing modal instance or null if not found
@@ -167,6 +142,12 @@ export function getModalInstance(elementOrSelector: string | HTMLElement | JQuer
  * Show a modal
  * @param elementOrSelector Element or selector for the modal
  * @param relatedTarget Optional related target element
+ *
+ * Note: When possible, prefer direct Bootstrap 5 API:
+ * ```
+ * const modal = Modal.getInstance(element) || new Modal(element);
+ * modal.show(relatedTarget);
+ * ```
  */
 export function showModal(elementOrSelector: string | HTMLElement | JQuery, relatedTarget?: HTMLElement): void {
     const element = getElement(elementOrSelector);
@@ -189,49 +170,24 @@ export function hideModal(elementOrSelector: string | HTMLElement | JQuery): voi
 }
 
 /**
- * Initialize a toast
- * @param elementOrSelector Element or selector for the toast
- * @param options Toast options
- * @returns Toast instance
- */
-export function initToast(elementOrSelector: string | HTMLElement | JQuery, options?: Partial<Toast.Options>): Toast {
-    const element = getElement(elementOrSelector);
-    if (!element) throw new Error(`Failed to find element for toast: ${elementOrSelector}`);
-
-    return new Toast(element, options);
-}
-
-/**
- * Initialize a toast if the element exists
- * @param elementOrSelector Element or selector for the toast
- * @param options Toast options
- * @returns Toast instance or null if element doesn't exist
- */
-export function initToastIfExists(
-    elementOrSelector: string | HTMLElement | JQuery,
-    options?: Partial<Toast.Options>,
-): Toast | null {
-    const element = getElement(elementOrSelector);
-    if (!element) return null;
-
-    return new Toast(element, options);
-}
-
-/**
  * Show a toast
  * @param elementOrSelector Element or selector for the toast
+ * @param options Optional Toast options if a new instance needs to be created
  */
-export function showToast(elementOrSelector: string | HTMLElement | JQuery): void {
+export function showToast(elementOrSelector: string | HTMLElement | JQuery, options?: Partial<Toast.Options>): void {
     const element = getElement(elementOrSelector);
     if (!element) return;
 
-    const toast = Toast.getInstance(element) || new Toast(element);
+    const toast = Toast.getInstance(element) || new Toast(element, options);
     toast.show();
 }
 
 /**
  * Hide a toast
  * @param elementOrSelector Element or selector for the toast
+ *
+ * Note: When possible, prefer direct Bootstrap 5 API:
+ * `const toast = Toast.getInstance(element); if (toast) toast.hide();`
  */
 export function hideToast(elementOrSelector: string | HTMLElement | JQuery): void {
     const element = getElement(elementOrSelector);
@@ -239,39 +195,6 @@ export function hideToast(elementOrSelector: string | HTMLElement | JQuery): voi
 
     const toast = Toast.getInstance(element);
     if (toast) toast.hide();
-}
-
-/**
- * Initialize a dropdown
- * @param elementOrSelector Element or selector for the dropdown
- * @param options Dropdown options
- * @returns Dropdown instance
- * @throws Error if the element cannot be found
- */
-export function initDropdown(
-    elementOrSelector: string | HTMLElement | JQuery,
-    options?: Partial<Dropdown.Options>,
-): Dropdown {
-    const element = getElement(elementOrSelector);
-    if (!element) throw new Error(`Failed to find element for dropdown: ${elementOrSelector}`);
-
-    return new Dropdown(element, options);
-}
-
-/**
- * Initialize a dropdown if the element exists, returning null otherwise
- * @param elementOrSelector Element or selector for the dropdown
- * @param options Dropdown options
- * @returns Dropdown instance or null if the element cannot be found
- */
-export function initDropdownIfExists(
-    elementOrSelector: string | HTMLElement | JQuery,
-    options?: Partial<Dropdown.Options>,
-): Dropdown | null {
-    const element = getElement(elementOrSelector);
-    if (!element) return null;
-
-    return new Dropdown(element, options);
 }
 
 /**
@@ -301,6 +224,9 @@ export function showDropdown(elementOrSelector: string | HTMLElement | JQuery): 
 /**
  * Hide a dropdown
  * @param elementOrSelector Element or selector for the dropdown
+ *
+ * Note: When possible, prefer direct Bootstrap 5 API:
+ * `const dropdown = Dropdown.getInstance(element); if (dropdown) dropdown.hide();`
  */
 export function hideDropdown(elementOrSelector: string | HTMLElement | JQuery): void {
     const element = getElement(elementOrSelector);
@@ -308,38 +234,6 @@ export function hideDropdown(elementOrSelector: string | HTMLElement | JQuery): 
 
     const dropdown = Dropdown.getInstance(element);
     if (dropdown) dropdown.hide();
-}
-
-/**
- * Initialize a tooltip
- * @param elementOrSelector Element or selector for the tooltip
- * @param options Tooltip options
- * @returns Tooltip instance
- */
-export function initTooltip(
-    elementOrSelector: string | HTMLElement | JQuery,
-    options?: Partial<Tooltip.Options>,
-): Tooltip {
-    const element = getElement(elementOrSelector);
-    if (!element) throw new Error(`Failed to find element for tooltip: ${elementOrSelector}`);
-
-    return new Tooltip(element, options);
-}
-
-/**
- * Initialize a tooltip if the element exists
- * @param elementOrSelector Element or selector for the tooltip
- * @param options Tooltip options
- * @returns Tooltip instance or null if element doesn't exist
- */
-export function initTooltipIfExists(
-    elementOrSelector: string | HTMLElement | JQuery,
-    options?: Partial<Tooltip.Options>,
-): Tooltip | null {
-    const element = getElement(elementOrSelector);
-    if (!element) return null;
-
-    return new Tooltip(element, options);
 }
 
 /**
@@ -388,84 +282,10 @@ export function getPopoverInstance(elementOrSelector: string | HTMLElement | JQu
 }
 
 /**
- * Initialize a tab
- * @param elementOrSelector Element or selector for the tab
- * @returns Tab instance
- */
-export function initTab(elementOrSelector: string | HTMLElement | JQuery): Tab {
-    const element = getElement(elementOrSelector);
-    if (!element) throw new Error(`Failed to find element for tab: ${elementOrSelector}`);
-
-    return new Tab(element);
-}
-
-/**
- * Initialize a tab if the element exists
- * @param elementOrSelector Element or selector for the tab
- * @returns Tab instance or null if element doesn't exist
- */
-export function initTabIfExists(elementOrSelector: string | HTMLElement | JQuery): Tab | null {
-    const element = getElement(elementOrSelector);
-    if (!element) return null;
-
-    return new Tab(element);
-}
-
-/**
- * Initialize a collapse
- * @param elementOrSelector Element or selector for the collapse
- * @param options Collapse options
- * @returns Collapse instance
- */
-export function initCollapse(
-    elementOrSelector: string | HTMLElement | JQuery,
-    options?: Partial<Collapse.Options>,
-): Collapse {
-    const element = getElement(elementOrSelector);
-    if (!element) throw new Error(`Failed to find element for collapse: ${elementOrSelector}`);
-
-    return new Collapse(element, options);
-}
-
-/**
- * Initialize a collapse if the element exists
- * @param elementOrSelector Element or selector for the collapse
- * @param options Collapse options
- * @returns Collapse instance or null if element doesn't exist
- */
-export function initCollapseIfExists(
-    elementOrSelector: string | HTMLElement | JQuery,
-    options?: Partial<Collapse.Options>,
-): Collapse | null {
-    const element = getElement(elementOrSelector);
-    if (!element) return null;
-
-    return new Collapse(element, options);
-}
-
-/**
  * Hide an existing popover if it exists
  * @param elementOrSelector Element or selector for the popover
  */
 export function hidePopover(elementOrSelector: string | HTMLElement | JQuery): void {
     const popover = getPopoverInstance(elementOrSelector);
     if (popover) popover.hide();
-}
-
-/**
- * Show an existing popover if it exists
- * @param elementOrSelector Element or selector for the popover
- */
-export function showPopover(elementOrSelector: string | HTMLElement | JQuery): void {
-    const popover = getPopoverInstance(elementOrSelector);
-    if (popover) popover.show();
-}
-
-/**
- * Show an existing modal if it exists (uses existing instance only)
- * @param elementOrSelector Element or selector for the modal
- */
-export function showModalIfExists(elementOrSelector: string | HTMLElement | JQuery): void {
-    const modal = getModalInstance(elementOrSelector);
-    if (modal) modal.show();
 }

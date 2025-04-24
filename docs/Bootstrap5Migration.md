@@ -329,9 +329,9 @@ These insights were gathered during the migration process and may be helpful for
 
 - [x] ~~Create a plan for jQuery removal (if desired)~~ (tracked in [issue #7600](https://github.com/compiler-explorer/compiler-explorer/issues/7600))
 - [x] ~~Identify non-Bootstrap jQuery usage that would need refactoring~~ (tracked in [issue #7600](https://github.com/compiler-explorer/compiler-explorer/issues/7600))
-- [ ] Remove the temporary `bootstrap-utils.ts` compatibility layer
-    - [ ] Replace all uses with direct Bootstrap 5 API calls
-    - [ ] Document the native Bootstrap 5 API for future reference
+- [x] ~~Remove the temporary `bootstrap-utils.ts` compatibility layer~~ (Decision: Keep this utility for the foreseeable future as it provides valuable functionality for jQuery-Bootstrap 5 integration)
+    - [x] ~~Replace all uses with direct Bootstrap 5 API calls~~ (Not necessary - updated documentation to indicate direct API usage when possible)
+    - [x] ~~Document the native Bootstrap 5 API for future reference~~ (Added documentation in the utilities themselves)
 - [ ] ~~Investigate and fix modal accessibility warnings~~ (tracked in [issue #7602](https://github.com/compiler-explorer/compiler-explorer/issues/7602))
     - [ ] ~~Address the warning: "Blocked aria-hidden on an element because its descendant retained focus"~~ (part of issue #7602)
     - [ ] ~~Update modal template markup to leverage Bootstrap 5.3's built-in support for the `inert` attribute~~ (part of issue #7602)
