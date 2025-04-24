@@ -22,6 +22,7 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
+import {Toast} from 'bootstrap';
 import $ from 'jquery';
 
 import * as BootstrapUtils from '../bootstrap-utils.js';
@@ -123,7 +124,7 @@ export class Alert {
             delay: dismissTime,
         };
 
-        BootstrapUtils.initToast(newElement, toastOptions);
+        new Toast(newElement[0], toastOptions);
 
         if (group !== '') {
             if (collapseSimilar) {

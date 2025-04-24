@@ -131,7 +131,6 @@ export class Sharing {
         });
         this.layout.on('stateChanged', this.onStateChanged.bind(this));
 
-        BootstrapUtils.initModal(this.shareLinkDialog);
         this.shareLinkDialog.addEventListener('show.bs.modal', this.onOpenModalPane.bind(this));
         this.shareLinkDialog.addEventListener('hidden.bs.modal', this.onCloseModalPane.bind(this));
 
@@ -334,7 +333,7 @@ export class Sharing {
 
         // Create and show new tooltip
         try {
-            const tooltip = BootstrapUtils.initTooltip(tooltipEl, {
+            const tooltip = new Tooltip(tooltipEl, {
                 placement: 'bottom',
                 trigger: 'manual',
                 title: message,
