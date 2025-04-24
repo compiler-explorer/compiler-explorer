@@ -62,7 +62,7 @@ import {ComponentConfig, EmptyCompilerState, StateWithId, StateWithLanguage} fro
 import {CompilerExplorerOptions} from './global.js';
 
 import * as utils from '../shared/common-utils.js';
-import {BootstrapUtils} from './bootstrap-utils.js';
+import * as BootstrapUtils from './bootstrap-utils.js';
 import {ParseFiltersAndOutputOptions} from './features/filters.interfaces.js';
 import {localStorage, sessionThenLocalStorage} from './local.js';
 import {Printerinator} from './print-view.js';

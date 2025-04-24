@@ -29,7 +29,7 @@ import * as sifter from '@orchidjs/sifter';
 import {escapeHTML, intersection, remove, unique} from '../../shared/common-utils.js';
 import {CompilerInfo} from '../../types/compiler.interfaces.js';
 import {unwrap, unwrapString} from '../assert.js';
-import {BootstrapUtils} from '../bootstrap-utils.js';
+import * as BootstrapUtils from '../bootstrap-utils.js';
 import {CompilerService} from '../compiler-service.js';
 import {highlight} from '../highlight.js';
 import {CompilerPicker} from './compiler-picker.js';

@@ -42,7 +42,7 @@ import {
 import {CompilerInfo} from '../../types/compiler.interfaces.js';
 import {ResultLine} from '../../types/resultline/resultline.interfaces.js';
 import {getAssemblyDocumentation} from '../api/api.js';
-import {BootstrapUtils} from '../bootstrap-utils.js';
+import * as BootstrapUtils from '../bootstrap-utils.js';
 import * as codeLensHandler from '../codelens-handler.js';
 import * as colour from '../colour.js';
 import {OptPipelineBackendOptions} from '../compilation/opt-pipeline-output.interfaces.js';

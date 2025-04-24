@@ -24,7 +24,7 @@
 
 import $ from 'jquery';
 import {escapeHTML} from '../../shared/common-utils.js';
-import {BootstrapUtils} from '../bootstrap-utils.js';
+import * as BootstrapUtils from '../bootstrap-utils.js';
 import {options} from '../options.js';
 
 export type CompilerVersionInfo = {version: string; fullVersion?: string};

@@ -29,7 +29,7 @@ import {escapeHTML} from '../../shared/common-utils.js';
 import {Language} from '../../types/languages.interfaces.js';
 import {SourceApiEntry} from '../../types/source.interfaces.js';
 import {unwrap, unwrapString} from '../assert.js';
-import {BootstrapUtils} from '../bootstrap-utils.js';
+import * as BootstrapUtils from '../bootstrap-utils.js';
 import {HistorySource} from '../history.js';
 import {localStorage} from '../local.js';
 import {Alert} from './alert.js';

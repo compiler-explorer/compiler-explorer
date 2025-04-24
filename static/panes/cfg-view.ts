@@ -26,7 +26,7 @@ import * as fileSaver from 'file-saver';
 import $ from 'jquery';
 import * as monaco from 'monaco-editor';
 import _ from 'underscore';
-import {BootstrapUtils} from '../bootstrap-utils.js';
+import * as BootstrapUtils from '../bootstrap-utils.js';
 import {Pane} from './pane.js';
 
 import {Container} from 'golden-layout';

@@ -30,7 +30,7 @@ import {
     EnvVarOverrides,
 } from '../../types/compilation/compiler-overrides.interfaces.js';
 import {assert, unwrap} from '../assert.js';
-import {BootstrapUtils} from '../bootstrap-utils.js';
+import * as BootstrapUtils from '../bootstrap-utils.js';
 import {CompilerInfo} from '../compiler.interfaces.js';
 import {localStorage} from '../local.js';
 import {options} from '../options.js';

@@ -32,7 +32,7 @@ import {
     RuntimeToolType,
 } from '../../types/execution/execution.interfaces.js';
 import {assert} from '../assert.js';
-import {BootstrapUtils} from '../bootstrap-utils.js';
+import * as BootstrapUtils from '../bootstrap-utils.js';
 import {CompilerInfo} from '../compiler.interfaces.js';
 import {localStorage} from '../local.js';
 import {options} from '../options.js';

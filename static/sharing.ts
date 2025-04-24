@@ -28,7 +28,7 @@ import GoldenLayout from 'golden-layout';
 import $ from 'jquery';
 import _ from 'underscore';
 import {unwrap} from './assert.js';
-import {BootstrapUtils} from './bootstrap-utils.js';
+import * as BootstrapUtils from './bootstrap-utils.js';
 import {sessionThenLocalStorage} from './local.js';
 import {options} from './options.js';
 import * as url from './url.js';

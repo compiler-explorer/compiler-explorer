@@ -41,431 +41,431 @@ import $ from 'jquery';
 import 'bootstrap';
 import {Collapse, Dropdown, Modal, Popover, Tab, Toast, Tooltip} from 'bootstrap';
 
-export class BootstrapUtils {
-    /**
-     * Initialize a modal
-     * @param elementOrSelector Element or selector for the modal
-     * @param options Modal options
-     * @returns Modal instance
-     * @throws Error if the element cannot be found
-     */
-    static initModal(elementOrSelector: string | HTMLElement | JQuery, options?: Partial<Modal.Options>): Modal {
-        const element = BootstrapUtils.getElement(elementOrSelector);
-        if (!element) throw new Error(`Failed to find element for modal: ${elementOrSelector}`);
+// Private event listener tracking map
+const eventListenerMap = new WeakMap<HTMLElement, Map<string, EventListener>>();
 
-        return new Modal(element, options);
+/**
+ * Helper method to get an HTMLElement from various input types
+ * @param elementOrSelector Element, jQuery object, or selector
+ * @returns HTMLElement or null
+ */
+function getElement(elementOrSelector: string | HTMLElement | JQuery): HTMLElement | null {
+    if (!elementOrSelector) return null;
+
+    if (typeof elementOrSelector === 'string') {
+        return document.querySelector(elementOrSelector as string);
     }
 
-    /**
-     * Initialize a modal if the element exists, returning null otherwise
-     * @param elementOrSelector Element or selector for the modal
-     * @param options Modal options
-     * @returns Modal instance or null if the element cannot be found
-     */
-    static initModalIfExists(
-        elementOrSelector: string | HTMLElement | JQuery,
-        options?: Partial<Modal.Options>,
-    ): Modal | null {
-        const element = BootstrapUtils.getElement(elementOrSelector);
-        if (!element) return null;
-
-        return new Modal(element, options);
+    if (elementOrSelector instanceof HTMLElement) {
+        return elementOrSelector;
     }
 
-    /**
-     * Get an existing modal instance for an element
-     * @param elementOrSelector Element or selector for the modal
-     * @returns Existing modal instance or null if not found
-     */
-    static getModalInstance(elementOrSelector: string | HTMLElement | JQuery): Modal | null {
-        const element = BootstrapUtils.getElement(elementOrSelector);
-        if (!element) return null;
-
-        return Modal.getInstance(element);
+    if (elementOrSelector instanceof $) {
+        return (elementOrSelector as JQuery)[0] as HTMLElement;
     }
 
-    /**
-     * Show a modal
-     * @param elementOrSelector Element or selector for the modal
-     * @param relatedTarget Optional related target element
-     */
-    static showModal(elementOrSelector: string | HTMLElement | JQuery, relatedTarget?: HTMLElement): void {
-        const element = BootstrapUtils.getElement(elementOrSelector);
-        if (!element) return;
+    return null;
+}
 
-        const modal = Modal.getInstance(element) || new Modal(element);
-        modal.show(relatedTarget);
+/**
+ * Private helper that sets an event handler on a single DOM element
+ * Handles the removal of existing handlers and tracking of the new one
+ *
+ * @param domElement The DOM element to attach the event to
+ * @param eventName The event name (e.g., 'hidden.bs.modal', 'shown.bs.modal', 'click', etc.)
+ * @param handler The event handler function
+ */
+function setDomElementEventHandler(domElement: HTMLElement, eventName: string, handler: (event: Event) => void): void {
+    // Initialize nested map structure if needed
+    if (!eventListenerMap.has(domElement)) {
+        eventListenerMap.set(domElement, new Map());
     }
 
-    /**
-     * Hide a modal
-     * @param elementOrSelector Element or selector for the modal
-     */
-    static hideModal(elementOrSelector: string | HTMLElement | JQuery): void {
-        const element = BootstrapUtils.getElement(elementOrSelector);
-        if (!element) return;
+    const elementEvents = eventListenerMap.get(domElement)!;
 
-        const modal = Modal.getInstance(element);
-        if (modal) modal.hide();
+    // Remove existing handler if present
+    if (elementEvents.has(eventName)) {
+        const oldHandler = elementEvents.get(eventName)!;
+        domElement.removeEventListener(eventName, oldHandler);
     }
 
-    /**
-     * Initialize a toast
-     * @param elementOrSelector Element or selector for the toast
-     * @param options Toast options
-     * @returns Toast instance
-     */
-    static initToast(elementOrSelector: string | HTMLElement | JQuery, options?: Partial<Toast.Options>): Toast {
-        const element = BootstrapUtils.getElement(elementOrSelector);
-        if (!element) throw new Error(`Failed to find element for toast: ${elementOrSelector}`);
+    // Store and add new handler
+    elementEvents.set(eventName, handler);
+    domElement.addEventListener(eventName, handler);
+}
 
-        return new Toast(element, options);
+/**
+ * Registers an event handler on element(s), removing any previous handler for the same event
+ * Similar to jQuery's off().on() pattern
+ * Works with both single elements and jQuery collections with multiple elements
+ *
+ * @param element The element(s) or jQuery object to attach the event to
+ * @param eventName The event name (e.g., 'hidden.bs.modal', 'shown.bs.modal', 'click', etc.)
+ * @param handler The event handler function
+ */
+export function setElementEventHandler(
+    element: JQuery<HTMLElement> | HTMLElement,
+    eventName: string,
+    handler: (event: Event) => void,
+): void {
+    // If jQuery object with potentially multiple elements
+    if (!(element instanceof HTMLElement)) {
+        // Loop through all elements in the jQuery collection
+        element.each((_index, domElement) => {
+            setDomElementEventHandler(domElement, eventName, handler);
+        });
+        return;
     }
 
-    /**
-     * Initialize a toast if the element exists
-     * @param elementOrSelector Element or selector for the toast
-     * @param options Toast options
-     * @returns Toast instance or null if element doesn't exist
-     */
-    static initToastIfExists(
-        elementOrSelector: string | HTMLElement | JQuery,
-        options?: Partial<Toast.Options>,
-    ): Toast | null {
-        const element = BootstrapUtils.getElement(elementOrSelector);
-        if (!element) return null;
+    // Otherwise it's a single DOM element
+    setDomElementEventHandler(element, eventName, handler);
+}
 
-        return new Toast(element, options);
-    }
+/**
+ * Initialize a modal
+ * @param elementOrSelector Element or selector for the modal
+ * @param options Modal options
+ * @returns Modal instance
+ * @throws Error if the element cannot be found
+ */
+export function initModal(elementOrSelector: string | HTMLElement | JQuery, options?: Partial<Modal.Options>): Modal {
+    const element = getElement(elementOrSelector);
+    if (!element) throw new Error(`Failed to find element for modal: ${elementOrSelector}`);
 
-    /**
-     * Show a toast
-     * @param elementOrSelector Element or selector for the toast
-     */
-    static showToast(elementOrSelector: string | HTMLElement | JQuery): void {
-        const element = BootstrapUtils.getElement(elementOrSelector);
-        if (!element) return;
+    return new Modal(element, options);
+}
 
-        const toast = Toast.getInstance(element) || new Toast(element);
-        toast.show();
-    }
+/**
+ * Initialize a modal if the element exists, returning null otherwise
+ * @param elementOrSelector Element or selector for the modal
+ * @param options Modal options
+ * @returns Modal instance or null if the element cannot be found
+ */
+export function initModalIfExists(
+    elementOrSelector: string | HTMLElement | JQuery,
+    options?: Partial<Modal.Options>,
+): Modal | null {
+    const element = getElement(elementOrSelector);
+    if (!element) return null;
 
-    /**
-     * Hide a toast
-     * @param elementOrSelector Element or selector for the toast
-     */
-    static hideToast(elementOrSelector: string | HTMLElement | JQuery): void {
-        const element = BootstrapUtils.getElement(elementOrSelector);
-        if (!element) return;
+    return new Modal(element, options);
+}
 
-        const toast = Toast.getInstance(element);
-        if (toast) toast.hide();
-    }
+/**
+ * Get an existing modal instance for an element
+ * @param elementOrSelector Element or selector for the modal
+ * @returns Existing modal instance or null if not found
+ */
+export function getModalInstance(elementOrSelector: string | HTMLElement | JQuery): Modal | null {
+    const element = getElement(elementOrSelector);
+    if (!element) return null;
 
-    /**
-     * Initialize a dropdown
-     * @param elementOrSelector Element or selector for the dropdown
-     * @param options Dropdown options
-     * @returns Dropdown instance
-     * @throws Error if the element cannot be found
-     */
-    static initDropdown(
-        elementOrSelector: string | HTMLElement | JQuery,
-        options?: Partial<Dropdown.Options>,
-    ): Dropdown {
-        const element = BootstrapUtils.getElement(elementOrSelector);
-        if (!element) throw new Error(`Failed to find element for dropdown: ${elementOrSelector}`);
+    return Modal.getInstance(element);
+}
 
-        return new Dropdown(element, options);
-    }
+/**
+ * Show a modal
+ * @param elementOrSelector Element or selector for the modal
+ * @param relatedTarget Optional related target element
+ */
+export function showModal(elementOrSelector: string | HTMLElement | JQuery, relatedTarget?: HTMLElement): void {
+    const element = getElement(elementOrSelector);
+    if (!element) return;
 
-    /**
-     * Initialize a dropdown if the element exists, returning null otherwise
-     * @param elementOrSelector Element or selector for the dropdown
-     * @param options Dropdown options
-     * @returns Dropdown instance or null if the element cannot be found
-     */
-    static initDropdownIfExists(
-        elementOrSelector: string | HTMLElement | JQuery,
-        options?: Partial<Dropdown.Options>,
-    ): Dropdown | null {
-        const element = BootstrapUtils.getElement(elementOrSelector);
-        if (!element) return null;
+    const modal = Modal.getInstance(element) || new Modal(element);
+    modal.show(relatedTarget);
+}
 
-        return new Dropdown(element, options);
-    }
+/**
+ * Hide a modal
+ * @param elementOrSelector Element or selector for the modal
+ */
+export function hideModal(elementOrSelector: string | HTMLElement | JQuery): void {
+    const element = getElement(elementOrSelector);
+    if (!element) return;
 
-    /**
-     * Get an existing dropdown instance for an element
-     * @param elementOrSelector Element or selector for the dropdown
-     * @returns Existing dropdown instance or null if not found
-     */
-    static getDropdownInstance(elementOrSelector: string | HTMLElement | JQuery): Dropdown | null {
-        const element = BootstrapUtils.getElement(elementOrSelector);
-        if (!element) return null;
+    const modal = Modal.getInstance(element);
+    if (modal) modal.hide();
+}
 
-        return Dropdown.getInstance(element);
-    }
+/**
+ * Initialize a toast
+ * @param elementOrSelector Element or selector for the toast
+ * @param options Toast options
+ * @returns Toast instance
+ */
+export function initToast(elementOrSelector: string | HTMLElement | JQuery, options?: Partial<Toast.Options>): Toast {
+    const element = getElement(elementOrSelector);
+    if (!element) throw new Error(`Failed to find element for toast: ${elementOrSelector}`);
 
-    /**
-     * Show a dropdown
-     * @param elementOrSelector Element or selector for the dropdown
-     */
-    static showDropdown(elementOrSelector: string | HTMLElement | JQuery): void {
-        const element = BootstrapUtils.getElement(elementOrSelector);
-        if (!element) return;
+    return new Toast(element, options);
+}
 
-        const dropdown = Dropdown.getInstance(element) || new Dropdown(element);
-        dropdown.show();
-    }
+/**
+ * Initialize a toast if the element exists
+ * @param elementOrSelector Element or selector for the toast
+ * @param options Toast options
+ * @returns Toast instance or null if element doesn't exist
+ */
+export function initToastIfExists(
+    elementOrSelector: string | HTMLElement | JQuery,
+    options?: Partial<Toast.Options>,
+): Toast | null {
+    const element = getElement(elementOrSelector);
+    if (!element) return null;
 
-    /**
-     * Hide a dropdown
-     * @param elementOrSelector Element or selector for the dropdown
-     */
-    static hideDropdown(elementOrSelector: string | HTMLElement | JQuery): void {
-        const element = BootstrapUtils.getElement(elementOrSelector);
-        if (!element) return;
+    return new Toast(element, options);
+}
 
-        const dropdown = Dropdown.getInstance(element);
-        if (dropdown) dropdown.hide();
-    }
+/**
+ * Show a toast
+ * @param elementOrSelector Element or selector for the toast
+ */
+export function showToast(elementOrSelector: string | HTMLElement | JQuery): void {
+    const element = getElement(elementOrSelector);
+    if (!element) return;
 
-    /**
-     * Initialize a tooltip
-     * @param elementOrSelector Element or selector for the tooltip
-     * @param options Tooltip options
-     * @returns Tooltip instance
-     */
-    static initTooltip(elementOrSelector: string | HTMLElement | JQuery, options?: Partial<Tooltip.Options>): Tooltip {
-        const element = BootstrapUtils.getElement(elementOrSelector);
-        if (!element) throw new Error(`Failed to find element for tooltip: ${elementOrSelector}`);
+    const toast = Toast.getInstance(element) || new Toast(element);
+    toast.show();
+}
 
-        return new Tooltip(element, options);
-    }
+/**
+ * Hide a toast
+ * @param elementOrSelector Element or selector for the toast
+ */
+export function hideToast(elementOrSelector: string | HTMLElement | JQuery): void {
+    const element = getElement(elementOrSelector);
+    if (!element) return;
 
-    /**
-     * Initialize a tooltip if the element exists
-     * @param elementOrSelector Element or selector for the tooltip
-     * @param options Tooltip options
-     * @returns Tooltip instance or null if element doesn't exist
-     */
-    static initTooltipIfExists(
-        elementOrSelector: string | HTMLElement | JQuery,
-        options?: Partial<Tooltip.Options>,
-    ): Tooltip | null {
-        const element = BootstrapUtils.getElement(elementOrSelector);
-        if (!element) return null;
+    const toast = Toast.getInstance(element);
+    if (toast) toast.hide();
+}
 
-        return new Tooltip(element, options);
-    }
+/**
+ * Initialize a dropdown
+ * @param elementOrSelector Element or selector for the dropdown
+ * @param options Dropdown options
+ * @returns Dropdown instance
+ * @throws Error if the element cannot be found
+ */
+export function initDropdown(
+    elementOrSelector: string | HTMLElement | JQuery,
+    options?: Partial<Dropdown.Options>,
+): Dropdown {
+    const element = getElement(elementOrSelector);
+    if (!element) throw new Error(`Failed to find element for dropdown: ${elementOrSelector}`);
 
-    /**
-     * Initialize a popover
-     * @param elementOrSelector Element or selector for the popover
-     * @param options Popover options
-     * @returns Popover instance
-     * @throws Error if the element cannot be found
-     */
-    static initPopover(elementOrSelector: string | HTMLElement | JQuery, options?: Partial<Popover.Options>): Popover {
-        const element = BootstrapUtils.getElement(elementOrSelector);
-        if (!element) throw new Error(`Failed to find element for popover: ${elementOrSelector}`);
+    return new Dropdown(element, options);
+}
 
-        return new Popover(element, options);
-    }
+/**
+ * Initialize a dropdown if the element exists, returning null otherwise
+ * @param elementOrSelector Element or selector for the dropdown
+ * @param options Dropdown options
+ * @returns Dropdown instance or null if the element cannot be found
+ */
+export function initDropdownIfExists(
+    elementOrSelector: string | HTMLElement | JQuery,
+    options?: Partial<Dropdown.Options>,
+): Dropdown | null {
+    const element = getElement(elementOrSelector);
+    if (!element) return null;
 
-    /**
-     * Initialize a popover if the element exists, returning null otherwise
-     * @param elementOrSelector Element or selector for the popover
-     * @param options Popover options
-     * @returns Popover instance or null if the element cannot be found
-     */
-    static initPopoverIfExists(
-        elementOrSelector: string | HTMLElement | JQuery,
-        options?: Partial<Popover.Options>,
-    ): Popover | null {
-        const element = BootstrapUtils.getElement(elementOrSelector);
-        if (!element) return null;
+    return new Dropdown(element, options);
+}
 
-        return new Popover(element, options);
-    }
+/**
+ * Get an existing dropdown instance for an element
+ * @param elementOrSelector Element or selector for the dropdown
+ * @returns Existing dropdown instance or null if not found
+ */
+export function getDropdownInstance(elementOrSelector: string | HTMLElement | JQuery): Dropdown | null {
+    const element = getElement(elementOrSelector);
+    if (!element) return null;
 
-    /**
-     * Get an existing popover instance for an element
-     * @param elementOrSelector Element or selector for the popover
-     * @returns Existing popover instance or null if not found
-     */
-    static getPopoverInstance(elementOrSelector: string | HTMLElement | JQuery): Popover | null {
-        const element = BootstrapUtils.getElement(elementOrSelector);
-        if (!element) return null;
+    return Dropdown.getInstance(element);
+}
 
-        return Popover.getInstance(element);
-    }
+/**
+ * Show a dropdown
+ * @param elementOrSelector Element or selector for the dropdown
+ */
+export function showDropdown(elementOrSelector: string | HTMLElement | JQuery): void {
+    const element = getElement(elementOrSelector);
+    if (!element) return;
 
-    /**
-     * Initialize a tab
-     * @param elementOrSelector Element or selector for the tab
-     * @returns Tab instance
-     */
-    static initTab(elementOrSelector: string | HTMLElement | JQuery): Tab {
-        const element = BootstrapUtils.getElement(elementOrSelector);
-        if (!element) throw new Error(`Failed to find element for tab: ${elementOrSelector}`);
+    const dropdown = Dropdown.getInstance(element) || new Dropdown(element);
+    dropdown.show();
+}
 
-        return new Tab(element);
-    }
+/**
+ * Hide a dropdown
+ * @param elementOrSelector Element or selector for the dropdown
+ */
+export function hideDropdown(elementOrSelector: string | HTMLElement | JQuery): void {
+    const element = getElement(elementOrSelector);
+    if (!element) return;
 
-    /**
-     * Initialize a tab if the element exists
-     * @param elementOrSelector Element or selector for the tab
-     * @returns Tab instance or null if element doesn't exist
-     */
-    static initTabIfExists(elementOrSelector: string | HTMLElement | JQuery): Tab | null {
-        const element = BootstrapUtils.getElement(elementOrSelector);
-        if (!element) return null;
+    const dropdown = Dropdown.getInstance(element);
+    if (dropdown) dropdown.hide();
+}
 
-        return new Tab(element);
-    }
+/**
+ * Initialize a tooltip
+ * @param elementOrSelector Element or selector for the tooltip
+ * @param options Tooltip options
+ * @returns Tooltip instance
+ */
+export function initTooltip(
+    elementOrSelector: string | HTMLElement | JQuery,
+    options?: Partial<Tooltip.Options>,
+): Tooltip {
+    const element = getElement(elementOrSelector);
+    if (!element) throw new Error(`Failed to find element for tooltip: ${elementOrSelector}`);
 
-    /**
-     * Initialize a collapse
-     * @param elementOrSelector Element or selector for the collapse
-     * @param options Collapse options
-     * @returns Collapse instance
-     */
-    static initCollapse(
-        elementOrSelector: string | HTMLElement | JQuery,
-        options?: Partial<Collapse.Options>,
-    ): Collapse {
-        const element = BootstrapUtils.getElement(elementOrSelector);
-        if (!element) throw new Error(`Failed to find element for collapse: ${elementOrSelector}`);
+    return new Tooltip(element, options);
+}
 
-        return new Collapse(element, options);
-    }
+/**
+ * Initialize a tooltip if the element exists
+ * @param elementOrSelector Element or selector for the tooltip
+ * @param options Tooltip options
+ * @returns Tooltip instance or null if element doesn't exist
+ */
+export function initTooltipIfExists(
+    elementOrSelector: string | HTMLElement | JQuery,
+    options?: Partial<Tooltip.Options>,
+): Tooltip | null {
+    const element = getElement(elementOrSelector);
+    if (!element) return null;
 
-    /**
-     * Initialize a collapse if the element exists
-     * @param elementOrSelector Element or selector for the collapse
-     * @param options Collapse options
-     * @returns Collapse instance or null if element doesn't exist
-     */
-    static initCollapseIfExists(
-        elementOrSelector: string | HTMLElement | JQuery,
-        options?: Partial<Collapse.Options>,
-    ): Collapse | null {
-        const element = BootstrapUtils.getElement(elementOrSelector);
-        if (!element) return null;
+    return new Tooltip(element, options);
+}
 
-        return new Collapse(element, options);
-    }
+/**
+ * Initialize a popover
+ * @param elementOrSelector Element or selector for the popover
+ * @param options Popover options
+ * @returns Popover instance
+ * @throws Error if the element cannot be found
+ */
+export function initPopover(
+    elementOrSelector: string | HTMLElement | JQuery,
+    options?: Partial<Popover.Options>,
+): Popover {
+    const element = getElement(elementOrSelector);
+    if (!element) throw new Error(`Failed to find element for popover: ${elementOrSelector}`);
 
-    /**
-     * Helper method to get an HTMLElement from various input types
-     * @param elementOrSelector Element, jQuery object, or selector
-     * @returns HTMLElement or null
-     */
-    private static getElement(elementOrSelector: string | HTMLElement | JQuery): HTMLElement | null {
-        if (!elementOrSelector) return null;
+    return new Popover(element, options);
+}
 
-        if (typeof elementOrSelector === 'string') {
-            return document.querySelector(elementOrSelector as string);
-        }
+/**
+ * Initialize a popover if the element exists, returning null otherwise
+ * @param elementOrSelector Element or selector for the popover
+ * @param options Popover options
+ * @returns Popover instance or null if the element cannot be found
+ */
+export function initPopoverIfExists(
+    elementOrSelector: string | HTMLElement | JQuery,
+    options?: Partial<Popover.Options>,
+): Popover | null {
+    const element = getElement(elementOrSelector);
+    if (!element) return null;
 
-        if (elementOrSelector instanceof HTMLElement) {
-            return elementOrSelector;
-        }
+    return new Popover(element, options);
+}
 
-        if (elementOrSelector instanceof $) {
-            return (elementOrSelector as JQuery)[0] as HTMLElement;
-        }
+/**
+ * Get an existing popover instance for an element
+ * @param elementOrSelector Element or selector for the popover
+ * @returns Existing popover instance or null if not found
+ */
+export function getPopoverInstance(elementOrSelector: string | HTMLElement | JQuery): Popover | null {
+    const element = getElement(elementOrSelector);
+    if (!element) return null;
 
-        return null;
-    }
+    return Popover.getInstance(element);
+}
 
-    /**
-     * Hide an existing popover if it exists
-     * @param elementOrSelector Element or selector for the popover
-     */
-    static hidePopover(elementOrSelector: string | HTMLElement | JQuery): void {
-        const popover = BootstrapUtils.getPopoverInstance(elementOrSelector);
-        if (popover) popover.hide();
-    }
+/**
+ * Initialize a tab
+ * @param elementOrSelector Element or selector for the tab
+ * @returns Tab instance
+ */
+export function initTab(elementOrSelector: string | HTMLElement | JQuery): Tab {
+    const element = getElement(elementOrSelector);
+    if (!element) throw new Error(`Failed to find element for tab: ${elementOrSelector}`);
 
-    /**
-     * Show an existing popover if it exists
-     * @param elementOrSelector Element or selector for the popover
-     */
-    static showPopover(elementOrSelector: string | HTMLElement | JQuery): void {
-        const popover = BootstrapUtils.getPopoverInstance(elementOrSelector);
-        if (popover) popover.show();
-    }
+    return new Tab(element);
+}
 
-    /**
-     * Show an existing modal if it exists (uses existing instance only)
-     * @param elementOrSelector Element or selector for the modal
-     */
-    static showModalIfExists(elementOrSelector: string | HTMLElement | JQuery): void {
-        const modal = BootstrapUtils.getModalInstance(elementOrSelector);
-        if (modal) modal.show();
-    }
+/**
+ * Initialize a tab if the element exists
+ * @param elementOrSelector Element or selector for the tab
+ * @returns Tab instance or null if element doesn't exist
+ */
+export function initTabIfExists(elementOrSelector: string | HTMLElement | JQuery): Tab | null {
+    const element = getElement(elementOrSelector);
+    if (!element) return null;
 
-    // Private static map to track event listeners
-    private static eventListenerMap = new WeakMap<HTMLElement, Map<string, EventListener>>();
+    return new Tab(element);
+}
 
-    /**
-     * Private helper that sets an event handler on a single DOM element
-     * Handles the removal of existing handlers and tracking of the new one
-     *
-     * @param domElement The DOM element to attach the event to
-     * @param eventName The event name (e.g., 'hidden.bs.modal', 'shown.bs.modal', 'click', etc.)
-     * @param handler The event handler function
-     */
-    private static setDomElementEventHandler(
-        domElement: HTMLElement,
-        eventName: string,
-        handler: (event: Event) => void,
-    ): void {
-        // Initialize nested map structure if needed
-        if (!this.eventListenerMap.has(domElement)) {
-            this.eventListenerMap.set(domElement, new Map());
-        }
+/**
+ * Initialize a collapse
+ * @param elementOrSelector Element or selector for the collapse
+ * @param options Collapse options
+ * @returns Collapse instance
+ */
+export function initCollapse(
+    elementOrSelector: string | HTMLElement | JQuery,
+    options?: Partial<Collapse.Options>,
+): Collapse {
+    const element = getElement(elementOrSelector);
+    if (!element) throw new Error(`Failed to find element for collapse: ${elementOrSelector}`);
 
-        const elementEvents = this.eventListenerMap.get(domElement)!;
+    return new Collapse(element, options);
+}
 
-        // Remove existing handler if present
-        if (elementEvents.has(eventName)) {
-            const oldHandler = elementEvents.get(eventName)!;
-            domElement.removeEventListener(eventName, oldHandler);
-        }
+/**
+ * Initialize a collapse if the element exists
+ * @param elementOrSelector Element or selector for the collapse
+ * @param options Collapse options
+ * @returns Collapse instance or null if element doesn't exist
+ */
+export function initCollapseIfExists(
+    elementOrSelector: string | HTMLElement | JQuery,
+    options?: Partial<Collapse.Options>,
+): Collapse | null {
+    const element = getElement(elementOrSelector);
+    if (!element) return null;
 
-        // Store and add new handler
-        elementEvents.set(eventName, handler);
-        domElement.addEventListener(eventName, handler);
-    }
+    return new Collapse(element, options);
+}
 
-    /**
-     * Registers an event handler on element(s), removing any previous handler for the same event
-     * Similar to jQuery's off().on() pattern
-     * Works with both single elements and jQuery collections with multiple elements
-     *
-     * @param element The element(s) or jQuery object to attach the event to
-     * @param eventName The event name (e.g., 'hidden.bs.modal', 'shown.bs.modal', 'click', etc.)
-     * @param handler The event handler function
-     */
-    static setElementEventHandler(
-        element: JQuery<HTMLElement> | HTMLElement,
-        eventName: string,
-        handler: (event: Event) => void,
-    ): void {
-        // If jQuery object with potentially multiple elements
-        if (!(element instanceof HTMLElement)) {
-            // Loop through all elements in the jQuery collection
-            element.each((_index, domElement) => {
-                this.setDomElementEventHandler(domElement, eventName, handler);
-            });
-            return;
-        }
+/**
+ * Hide an existing popover if it exists
+ * @param elementOrSelector Element or selector for the popover
+ */
+export function hidePopover(elementOrSelector: string | HTMLElement | JQuery): void {
+    const popover = getPopoverInstance(elementOrSelector);
+    if (popover) popover.hide();
+}
 
-        // Otherwise it's a single DOM element
-        this.setDomElementEventHandler(element, eventName, handler);
-    }
+/**
+ * Show an existing popover if it exists
+ * @param elementOrSelector Element or selector for the popover
+ */
+export function showPopover(elementOrSelector: string | HTMLElement | JQuery): void {
+    const popover = getPopoverInstance(elementOrSelector);
+    if (popover) popover.show();
+}
+
+/**
+ * Show an existing modal if it exists (uses existing instance only)
+ * @param elementOrSelector Element or selector for the modal
+ */
+export function showModalIfExists(elementOrSelector: string | HTMLElement | JQuery): void {
+    const modal = getModalInstance(elementOrSelector);
+    if (modal) modal.show();
 }

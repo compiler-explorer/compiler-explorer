@@ -38,7 +38,7 @@ import {Language} from '../../types/languages.interfaces.js';
 import {ResultLine} from '../../types/resultline/resultline.interfaces.js';
 import {Artifact, ArtifactType} from '../../types/tool.interfaces.js';
 import {Filter as AnsiToHtml} from '../ansi-to-html.js';
-import {BootstrapUtils} from '../bootstrap-utils.js';
+import * as BootstrapUtils from '../bootstrap-utils.js';
 import {CompilationStatus as CompilerServiceCompilationStatus} from '../compiler-service.interfaces.js';
 import {CompilerService} from '../compiler-service.js';
 import {ICompilerShared} from '../compiler-shared.interfaces.js';

@@ -24,7 +24,7 @@
 
 import $ from 'jquery';
 import {unwrapString} from '../assert.js';
-import {BootstrapUtils} from '../bootstrap-utils.js';
+import * as BootstrapUtils from '../bootstrap-utils.js';
 import {localStorage} from '../local.js';
 import {Library, LibraryVersion} from '../options.interfaces.js';
 import {options} from '../options.js';

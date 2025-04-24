@@ -24,7 +24,7 @@
 
 import $ from 'jquery';
 
-import {BootstrapUtils} from '../bootstrap-utils.js';
+import * as BootstrapUtils from '../bootstrap-utils.js';
 import {AlertAskOptions, AlertEnterTextOptions, AlertNotifyOptions} from './alert.interfaces.js';
 
 export class Alert {

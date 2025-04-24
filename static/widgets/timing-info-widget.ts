@@ -27,7 +27,7 @@ import $ from 'jquery';
 import {isString} from '../../shared/common-utils.js';
 import {CompilationResult} from '../../types/compilation/compilation.interfaces.js';
 import {unwrap} from '../assert.js';
-import {BootstrapUtils} from '../bootstrap-utils.js';
+import * as BootstrapUtils from '../bootstrap-utils.js';
 import {Settings} from '../settings.js';
 import 'chart.js/auto';
 
