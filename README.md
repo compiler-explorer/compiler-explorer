@@ -157,7 +157,7 @@ language already selected.
 We would like to thank the contributors listed in the [CONTRIBUTORS](CONTRIBUTORS.md) file, who have helped shape
 **Compiler Explorer**.
 
-We would also like to specially thank these people for their contributions to **Compiler Explorer**:
+We would also like to especially thank these people for their contributions to **Compiler Explorer**:
 
 - [Gabriel Devillers](https://github.com/voxelf) (_while working for [Kalray](http://www.kalrayinc.com/)_)
 - [Johan Engelen](https://github.com/JohanEngelen)
