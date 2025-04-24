@@ -16,10 +16,10 @@
               small.form-text.text-muted#share-permalink-help Use this URL to share your code with others
               #embedsettings.mb-3(role="group")
                 .form-check
-                  input.form-check-input.readOnly(type="checkbox" id="share-checkbox-readonly")
+                  input.form-check-input(type="checkbox" id="share-checkbox-readonly" data-option="readOnly")
                   label.form-check-label(for="share-checkbox-readonly") Read Only
                 .form-check
-                  input.form-check-input.hideEditorToolbars(type="checkbox" id="share-checkbox-hideEditorToolbars")
+                  input.form-check-input(type="checkbox" id="share-checkbox-hideEditorToolbars" data-option="hideEditorToolbars")
                   label.form-check-label(for="share-checkbox-hideEditorToolbars") Hide Editor Toolbars
               if sharingEnabled
                 .socialsharing.mt-2
