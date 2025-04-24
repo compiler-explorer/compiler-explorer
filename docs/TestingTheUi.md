@@ -20,7 +20,7 @@ major UI changes, framework updates, or when implementing significant new featur
 - Test the copy button
 - Check that social sharing buttons display correctly
 - Verify proper styling in both light and dark themes
-- Check the `<iframe>` of embed is correct HTML
+- Check the `<iframe>` of embed is correct HTML, including its various options
 - Check the inner link of the iframe for embed works still (that is, embed mode)
 - Test "Copied to clipboard" tooltip functionality
 
