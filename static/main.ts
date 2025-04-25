@@ -24,6 +24,12 @@
 
 /// <reference path="../vite.d.ts" />
 
+import 'vite/modulepreload-polyfill'
+import jQuery from 'jquery'
+
+Object.assign(window, { $: jQuery, jQuery })
+Object.assign(globalThis, { $: jQuery, jQuery })
+
 // Setup sentry before anything else so we can capture errors
 import {SentryCapture, SetupSentry, setSentryLayout} from './sentry.js';
 
@@ -34,7 +40,7 @@ import '@popperjs/core';
 import 'bootstrap';
 
 import _ from 'underscore';
-import $ from 'jquery'
+import $ from 'jquery';
 
 import clipboard from 'clipboard';
 import GoldenLayout from 'golden-layout';

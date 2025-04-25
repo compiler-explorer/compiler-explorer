@@ -387,7 +387,7 @@ let pugRequireHandler: (path: string) => any = () => {
 };
 
 async function setupWebPackDevMiddleware(router: express.Router) {
-    logger.info('  using webpack dev middleware');
+    logger.info('  using vite dev middleware');
 
     const { createServer} = await import("vite")
     const { default: viteConfiguration } = await import("./vite.config.js")
@@ -400,34 +400,6 @@ async function setupWebPackDevMiddleware(router: express.Router) {
         appType: "custom",
     })
     router.use(vite.middlewares)
-    router.use('/static/:file', async (req, res, next) => {
-        let sourcePath;
-        if (req.path.endsWith(".css")) {
-            sourcePath = new URL(import.meta.url, path.join("static", req.path.replace(/\.css$/, ".scss")))
-        } else if (req.path.endsWith(".js")) {
-            sourcePath = new URL(import.meta.url, path.join("static", req.path.replace(/\.js$/, ".ts")))
-        } else if (req.path.endsWith(".pug?import")) {
-            sourcePath = new URL(import.meta.url, path.join("static", req.path.replace("?import", "")))
-        } else {
-            return next()
-        }
-
-        const module = await vite.transformRequest(sourcePath)
-        if (module === null) {
-            throw new Error("failed to translate vite module");
-        }
-        let contentType;
-        if (req.path.endsWith(".scss")) {
-            contentType = "text/css"
-        } else if (req.path.endsWith(".ts") || req.path.endsWith(".pug?import ")) {
-            contentType = "application/javascript"
-        }
-        res.setHeader("Content-Type", contentType)
-        if (module.etag) {
-            res.setHeader("ETag", module.etag)
-        }
-        res.send(module.code);
-    })
     // In dev, we rewrite the paths to .ts so that we can feed it directly to vite
     pugRequireHandler = path => urljoin(httpRoot, 'static', path.replace(/js$/, 'ts'));
 }

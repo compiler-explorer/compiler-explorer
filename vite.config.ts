@@ -1,22 +1,25 @@
 import {defineConfig} from 'vite';
 import {vitePluginPug} from './vite-plugin-pug.js';
-import inject from "@rollup/plugin-inject"
 
 export default defineConfig({
-    plugins: [vitePluginPug(), inject({
-        $: ['jquery', '*'],
-        jQuery: 'jquery'
-    })],
+    plugins: [vitePluginPug()],
     build: {
         manifest: true,
         rollupOptions: {
             input: './static/main.ts',
+            output: {
+                globals: {
+                    'jQuery': 'window.jQuery',
+                    'jquery': 'window.jQuery',
+                    '$': 'window.jQuery',
+                }
+            }
         },
         commonjsOptions: {
             include: [/pug-runtime/],
         },
     },
     optimizeDeps: {
-        include: ['pug-runtime']
+        include: ['pug-runtime', 'jquery'],
     },
 });
