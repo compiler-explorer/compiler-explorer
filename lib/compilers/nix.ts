@@ -50,13 +50,20 @@ export class NixCompiler extends BaseCompiler {
         const compilerExecResult = await super.runCompiler(compiler, options, inputFilename, execOptions);
         if (compilerExecResult.stdout.length > 0) {
             const outputFilename = this.getOutputFilename(dirPath, this.outputFilebase);
-            const jsonOutput = compilerExecResult.stdout.map(line => line.text).join('\n');
-            fs.writeFileSync(outputFilename, JSON.stringify(JSON.parse(jsonOutput), null, 2));
+            const outputText = compilerExecResult.stdout.map(line => line.text).join('\n');
+
+            if (options.includes('--json')) {
+                // Parse and pretty-print if --json is passed
+                fs.writeFileSync(outputFilename, JSON.stringify(JSON.parse(outputText), null, 2));
+            } else {
+                // Otherwise, write raw output (Should call nixfmt probably)
+                fs.writeFileSync(outputFilename, outputText);
+            }
         }
         return compilerExecResult;
     }
 
     override optionsForFilter(): any[] {
-        return ['eval', '--json', '--store', 'dummy://', '--extra-experimental-features', 'nix-command', '--file'];
+        return ['eval', '--store', 'dummy://', '--extra-experimental-features', 'nix-command', '--file'];
     }
 }
