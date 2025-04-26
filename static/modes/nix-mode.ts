@@ -29,10 +29,8 @@ function definition(): monaco.languages.IMonarchLanguage {
         defaultToken: '',
         tokenPostfix: '.nix',
 
-        // Keywords in Nix
         keywords: ['if', 'then', 'else', 'with', 'assert', 'let', 'in', 'rec', 'inherit'],
 
-        // Built-in constants and functions
         builtins: ['builtins', 'true', 'false', 'null'],
         functions: [
             'scopedImport',
@@ -49,7 +47,6 @@ function definition(): monaco.languages.IMonarchLanguage {
             'derivation',
         ],
 
-        // Operators and punctuation
         operators: [
             'or',
             '.',
@@ -79,33 +76,23 @@ function definition(): monaco.languages.IMonarchLanguage {
             {open: '(', close: ')', token: 'delimiter.parenthesis'},
         ],
 
-        // Tokenizer rules
         tokenizer: {
             root: [
-                // Whitespace
                 {include: '@whitespace'},
-
-                // Comments
                 [/#.*$/, 'comment'],
                 [/\/\*([^*]|\*(?!\/))*\*\//, 'comment'],
 
-                // Strings: double-quoted
                 [/"/, {token: 'string.quote', next: '@string_double'}],
-                // Long strings: two single-quotes
                 [/''/, {token: 'string.quote', next: '@string_long'}],
 
-                // Interpolation start
                 [/\$\{/, {token: 'delimiter.bracket', next: '@interpolation'}],
 
-                // Numbers
                 [/\b[0-9]+\b/, 'number'],
 
-                // Paths and URLs
                 [/~?[A-Za-z0-9_.\-+]+(\/[A-Za-z0-9_.\-+]+)+/, 'string.unquoted.path'],
                 [/<[A-Za-z0-9_.\-+]+(\/[A-Za-z0-9_.\-+]+)*>/, 'string.unquoted.spath'],
                 [/[A-Za-z][A-Za-z0-9+\-.]*:[A-Za-z0-9%\/\?:@&=+\$,\-_.!~\*']+/, 'string.unquoted.url'],
 
-                // Identifiers and keywords
                 [
                     /[a-zA-Z_][\w'\-]*/,
                     {
@@ -119,32 +106,30 @@ function definition(): monaco.languages.IMonarchLanguage {
                     },
                 ],
 
-                // Operators
                 [/[=><!~?:&|+\-*\/]+/, 'operator'],
-
-                // Delimiters
                 [/[;,.]/, 'delimiter'],
-
-                // Brackets
                 [/[{}()\[\]]/, '@brackets'],
             ],
 
-            // Deal with whitespace
             whitespace: [[/[ \t\r\n]+/, 'white']],
 
-            // Double-quoted string
-            string_double: [[/\\./, 'string.escape'], [/"/, {token: 'string.quote', next: '@pop'}], {include: '@root'}],
-
-            // Long string ('' ... '')
-            string_long: [
-                [/''/, {token: 'string.quote', next: '@pop'}],
+            string_double: [
+                [/[^\\"\$]+/, 'string'],
+                [/\$\{/, {token: 'delimiter.bracket', next: '@interpolationInString'}],
                 [/\\./, 'string.escape'],
-                [/\$\{/, {token: 'delimiter.bracket', next: '@interpolation'}],
-                {include: '@root'},
+                [/"/, {token: 'string.quote', next: '@pop'}],
             ],
 
-            // Interpolation inside strings
+            string_long: [
+                [/[^\\'\$]+/, 'string'],
+                [/\$\{/, {token: 'delimiter.bracket', next: '@interpolationInString'}],
+                [/\\./, 'string.escape'],
+                [/''/, {token: 'string.quote', next: '@pop'}],
+            ],
+
             interpolation: [[/\}/, {token: 'delimiter.bracket', next: '@pop'}], {include: 'root'}],
+
+            interpolationInString: [[/\}/, {token: 'delimiter.bracket', next: '@pop'}], {include: 'root'}],
         },
     };
 }

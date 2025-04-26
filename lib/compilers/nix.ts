@@ -47,6 +47,7 @@ export class NixCompiler extends BaseCompiler {
         if (!execOptions.customCwd) {
             execOptions.customCwd = dirPath;
         }
+
         const compilerExecResult = await super.runCompiler(compiler, options, inputFilename, execOptions);
         if (compilerExecResult.stdout.length > 0) {
             const outputFilename = this.getOutputFilename(dirPath, this.outputFilebase);
@@ -64,6 +65,27 @@ export class NixCompiler extends BaseCompiler {
     }
 
     override optionsForFilter(): any[] {
-        return ['eval', '--store', 'dummy://', '--extra-experimental-features', 'nix-command', '--file'];
+        return [];
+    }
+
+    override orderArguments(
+        options: string[],
+        inputFilename: string,
+        libIncludes: string[],
+        libOptions: string[],
+        libPaths: string[],
+        libLinks: string[],
+        userOptions: string[],
+        staticLibLinks: string[],
+    ): string[] {
+        return [
+            'eval',
+            '--store',
+            'dummy://',
+            '--extra-experimental-features',
+            'nix-command',
+            '--file',
+            this.filename(inputFilename),
+        ].concat(options, userOptions);
     }
 }
