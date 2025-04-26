@@ -63,7 +63,8 @@ If you want to add a new language to the site, you should follow this steps:
 
 - Add a `etc/config/{language-key}.local.properties` file:
 
-  - The syntax for its basic contents is documented in [AddingACompiler.md](AddingACompiler.md)
+  - For the general configuration system details, refer to [Configuration.md](Configuration.md)
+  - The specific configuration syntax for compilers is documented in [AddingACompiler.md](AddingACompiler.md)
   - This file is ignored by Git, so that you can test the config locally
   - You should add 1 compiler for the language you want to test
   - Test the command line options of the language compilers outside CE

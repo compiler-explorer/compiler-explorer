@@ -12,6 +12,7 @@ that the process is similar for all other types of compilers.
 - The installation puts compilers on a shared NFS drive at `/opt/compiler-explorer/gcc-some-version/`
 - We then configure CE to look for the compiler
   [here](https://github.com/compiler-explorer/compiler-explorer/blob/main/etc/config/c%2B%2B.amazon.properties#L9).
+  See [Configuration.md](Configuration.md) for details on the configuration system.
 - If we need to customise the way we execute the compiler and/or display the results, then we can change the
   "[driver](https://github.com/compiler-explorer/compiler-explorer/tree/main/lib/compilers)" for the compiler. Usually
   we can just override a few aspects of the driver, relying on the defaults from the
