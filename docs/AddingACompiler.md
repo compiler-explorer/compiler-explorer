@@ -8,16 +8,13 @@ and then how to submit PRs to get it into the main CE site.
 Compiler configuration is done through the `etc/config/c++.*.properties` files (for C++, other languages follow the
 obvious pattern, replace as needed for your case).
 
-The various named configuration files are used in different contexts: for example `etc/config/c++.local.properties` take
-priority over `etc/config/c++.defaults.properties`. The `local` version is ignored by git, so you can make your own
-personalised changes there. The live site uses the `etc/config/c++.amazon.properties` file.
+For a comprehensive overview of the configuration system, including file hierarchy, property types, and group inheritance,
+refer to [Configuration.md](Configuration.md).
 
-Within the file, configuration is a set of key and value pairs, separated by an `=`. Whitespace is _not_ trimmed. Lines
-starting with `#` are considered comments and not parsed. The list of compilers is set by the `compilers` key and is a
-list of compiler identifiers or groups, separated by colons. Group names have an `&` prepended. As a nod to backwards
-compatibility with very old configurations, a path to a compiler can also be put in the list, but that doesn't let you
-configure many aspects of the compiler, nor does it allow paths with colons in them (since these are used as
-separators). The identifier itself is not important, but must be unique to that compiler.
+Below are compiler-specific configuration details:
+
+The list of compilers is set by the `compilers` key and is a list of compiler identifiers or groups, separated by colons. 
+Group names have an `&` prepended. The identifier itself is not important, but must be unique to that compiler.
 
 An example configuration:
 
@@ -55,32 +52,8 @@ compiler.clang5.name=Clang 5
 compiler.clang5.exe=/usr/bin/clang5
 ```
 
-Note about configuration files hierarchy:
-
-As mentioned previously, the live site uses `etc/config/c++.amazon.properties` to load its configuration from, but for
-properties not defined in the `amazon` file, the values present in `etc/config/c++.defaults.properties` will be used.
-
-By design, this does not however work for groups (Nor any other nested property). That is, if in
-`etc/config/c++.defaults.properties` you define the `intelAsm` property as:
-
-```INI
-versionFlag=--version
-compilers=&clang
-group.clang.intelAsm=-mllvm -x86-asm-syntax=intel
-group.clang.groupName=Clang
-...
-```
-
-but `etc/config/c++.amazon.properties` only has:
-
-```INI
-compilers=&clang
-group.clang.groupName=Clang
-...
-```
-
-once the site runs on the Amazon environment, the `&clang` group **will not** have the `intelAsm` property set, but
-`versionFlag` will.
+Note about group properties: Properties defined for a group in one configuration file (e.g., `defaults`) will not be carried 
+forward if that group is redefined in a higher-priority configuration file (e.g., `amazon`) without that property.
 
 ### Configuration keys
 

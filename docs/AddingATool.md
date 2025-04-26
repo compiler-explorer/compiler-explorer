@@ -2,7 +2,7 @@
 
 Tools are a way to execute something on your code or the output of a compilation.
 
-Adding tools requires adding configuration to a properties file for a specific language:
+Adding tools requires adding configuration to a properties file for a specific language. For a comprehensive overview of the configuration system, see [Configuration.md](Configuration.md).
 
 ```INI
 tools=rewritecpp
