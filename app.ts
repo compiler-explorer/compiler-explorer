@@ -80,7 +80,6 @@ import {sources} from './lib/sources/index.js';
 import {loadSponsorsFromString} from './lib/sponsors.js';
 import {getStorageTypeByKey} from './lib/storage/index.js';
 import * as utils from './lib/utils.js';
-import {ElementType} from './shared/common-utils.js';
 import {CompilerInfo} from './types/compiler.interfaces.js';
 import type {Language, LanguageKey} from './types/languages.interfaces.js';
 
@@ -388,27 +387,21 @@ let pugRequireHandler: (path: string) => any = () => {
 };
 
 async function setupWebPackDevMiddleware(router: express.Router) {
-    logger.info('  using webpack dev middleware');
+    logger.info('  using vite dev middleware');
 
-    /* eslint-disable n/no-unpublished-import,import/extensions, */
-    const {default: webpackDevMiddleware} = await import('webpack-dev-middleware');
-    const {default: webpackConfig} = await import('./webpack.config.esm.js');
-    const {default: webpack} = await import('webpack');
-    /* eslint-enable */
-    type WebpackConfiguration = ElementType<Parameters<typeof webpack>[0]>;
-
-    const webpackCompiler = webpack([webpackConfig as WebpackConfiguration]);
-    router.use(
-        webpackDevMiddleware(webpackCompiler, {
-            publicPath: '/static',
-            stats: {
-                preset: 'errors-only',
-                timings: true,
-            },
-        }),
-    );
-
-    pugRequireHandler = path => urljoin(httpRoot, 'static', path);
+    const { createServer} = await import("vite")
+    const { default: viteConfiguration } = await import("./vite.config.js")
+    const vite = await createServer({
+        ...viteConfiguration,
+        server: {
+            ...viteConfiguration.server,
+            middlewareMode: true,
+        },
+        appType: "custom",
+    })
+    router.use(vite.middlewares)
+    // In dev, we rewrite the paths to .ts so that we can feed it directly to vite
+    pugRequireHandler = path => urljoin(httpRoot, 'static', path.replace(/js$/, 'ts'));
 }
 
 async function setupStaticMiddleware(router: express.Router) {
