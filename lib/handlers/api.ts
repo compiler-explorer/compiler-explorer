@@ -130,6 +130,11 @@ export class ApiHandler {
 
         this.handle.route('/version').get(this.handleReleaseName.bind(this)).all(methodNotAllowed);
         this.handle.route('/releaseBuild').get(this.handleReleaseBuild.bind(this)).all(methodNotAllowed);
+        // Let's not document this one, eh?
+        this.handle.route('/forceServerError').get((req, res) => {
+            logger.error(`Forced server error from ${req.ip}`);
+            throw new Error('Forced server error');
+        });
     }
 
     shortlinkInfoHandler(req: express.Request, res: express.Response, next: express.NextFunction) {
