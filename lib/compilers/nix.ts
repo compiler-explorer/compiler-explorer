@@ -57,6 +57,6 @@ export class NixCompiler extends BaseCompiler {
     }
 
     override optionsForFilter(): any[] {
-        return ['eval', '--json', '--extra-experimental-features', 'nix-command', '--file'];
+        return ['eval', '--json', '--store', 'dummy://', '--extra-experimental-features', 'nix-command', '--file'];
     }
 }
