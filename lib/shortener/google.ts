@@ -22,6 +22,8 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
+// This will stop working in August 2025.
+// https://developers.googleblog.com/en/google-url-shortener-links-will-no-longer-be-available/
 export class ShortLinkResolver {
     resolve(url: string) {
         return new Promise<{longUrl: string}>((resolve, reject) => {
@@ -30,7 +32,7 @@ export class ShortLinkResolver {
                 redirect: 'manual',
             };
 
-            fetch(url, settings)
+            fetch(url + '?si=1', settings)
                 .then((res: Response) => {
                     if (res.status !== 302) {
                         reject(`Got response ${res.status}`);
