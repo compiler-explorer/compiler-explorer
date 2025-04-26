@@ -44,7 +44,7 @@ describe('Google short URL resolver tests', () => {
 
         await expect(resolver.resolve(googlEndpoint)).resolves.toEqual({longUrl: 'http://long.url/'});
         expect(fetch.requests().length).toEqual(1);
-        expect(fetch.requests()[0].url).toEqual(googlEndpoint + "?si=1");
+        expect(fetch.requests()[0].url).toEqual(googlEndpoint + '?si=1');
         expect(fetch.requests()[0].method).toEqual('HEAD');
     });
 
