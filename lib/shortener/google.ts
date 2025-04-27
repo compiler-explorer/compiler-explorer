@@ -22,29 +22,32 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import request from 'request';
-
+// This will stop working in August 2025.
+// https://developers.googleblog.com/en/google-url-shortener-links-will-no-longer-be-available/
 export class ShortLinkResolver {
     resolve(url: string) {
         return new Promise<{longUrl: string}>((resolve, reject) => {
-            request({method: 'HEAD', uri: url, followRedirect: false}, (err, res) => {
-                if (err !== null) {
-                    reject(err.message);
-                    return;
-                }
-                if (res.statusCode !== 302) {
-                    reject(`Got response ${res.statusCode}`);
-                    return;
-                }
-                const targetLocation = res.headers['location'];
-                if (!targetLocation) {
-                    reject(`Missing location url in ${targetLocation}`);
-                    return;
-                }
-                resolve({
-                    longUrl: targetLocation,
-                });
-            });
+            const settings: RequestInit = {
+                method: 'HEAD',
+                redirect: 'manual',
+            };
+
+            fetch(url + '?si=1', settings)
+                .then((res: Response) => {
+                    if (res.status !== 302) {
+                        reject(`Got response ${res.status}`);
+                        return;
+                    }
+                    const targetLocation = res.headers.get('Location');
+                    if (!targetLocation) {
+                        reject(`Missing location url in ${targetLocation}`);
+                        return;
+                    }
+                    resolve({
+                        longUrl: targetLocation,
+                    });
+                })
+                .catch(err => reject(err.message));
         });
     }
 }

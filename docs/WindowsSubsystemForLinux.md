@@ -76,7 +76,7 @@ CE only required a few changes in order to run properly under WSL. Those changes
   custom behaviors for a compiler. This file does two interesting things:
   - The `CompileCl` function translates from Linux-style directories to Windows-style directories (`/mnt/c/tmp` to
     `c:/tmp`) so that `CL.exe` can find its input files.
-- `etc/config/c++.defaults.properties`: Add a configuration (`&cl19`) for MSVC compilers. This edits in here are
+- `etc/config/c++.defaults.properties`: Add a configuration (`&cl19`) for MSVC compilers. For details on the configuration system, see [Configuration.md](Configuration.md). The edits in here are
   currently wrong in two ways, but it doesn't affect the main CE instance as it uses `amazon` properties files, and it
   doesn't affect anyone running a local copy of CE because CE will just fail silently when it can't find a compiler.
   - The locations of these are hardcoded to a particular install location. See **MSVC setup** below for more

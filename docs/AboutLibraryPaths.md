@@ -35,6 +35,8 @@ or executables.
 
 ## Specific properties that are used in certain situations
 
+For a comprehensive overview of the configuration system, see [Configuration.md](Configuration.md).
+
 - Compiler .ldPath
   - is used for `LD_LIBRARY_PATH` to support running the compiler
   - is used for linking (`-Wl,-rpath=` and/or `-L`) during building binaries

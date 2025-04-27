@@ -22,6 +22,11 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
+////
+// see https://docs.sentry.io/platforms/javascript/guides/node/install/late-initialization/
+import '@sentry/node/preload'; // preload Sentry's "preload" support before any other imports
+////
+
 import child_process from 'node:child_process';
 import os from 'node:os';
 import path from 'node:path';
@@ -523,11 +528,9 @@ const awsProps = props.propsFor('aws');
 // eslint-disable-next-line max-statements
 async function main() {
     await aws.initConfig(awsProps);
-    // Initialise express and then sentry. Sentry as early as possible to catch errors during startup.
+    SetupSentry(aws.getConfig('sentryDsn'), ceProps, releaseBuildNumber, gitReleaseName, defArgs);
     const webServer = express();
     const router = express.Router();
-
-    SetupSentry(aws.getConfig('sentryDsn'), ceProps, releaseBuildNumber, gitReleaseName, defArgs);
 
     startWineInit();
 
@@ -664,12 +667,6 @@ async function main() {
         .set('trust proxy', true)
         .set('view engine', 'pug')
         .on('error', err => logger.error('Caught error in web handler; continuing:', err))
-        // sentry request handler must be the first middleware on the app
-        .use(
-            Sentry.Handlers.requestHandler({
-                ip: true,
-            }),
-        )
         // The healthcheck controller is hoisted to prevent it from being logged.
         // TODO: Migrate the logger to a shared middleware.
         .use(healthCheckController.createRouter())
@@ -687,19 +684,20 @@ async function main() {
         .use(httpRoot, router)
         .use((req, res, next) => {
             next({status: 404, message: `page "${req.path}" could not be found`});
-        })
-        // sentry error handler must be the first error handling middleware
-        .use(Sentry.Handlers.errorHandler())
-        // eslint-disable-next-line no-unused-vars
-        .use((err: any, req: express.Request, res: express.Response, _next: express.NextFunction) => {
-            const status = err.status || err.statusCode || err.status_code || err.output?.statusCode || 500;
-            const message = err.message || 'Internal Server Error';
-            res.status(status);
-            res.render('error', renderConfig({error: {code: status, message: message}}));
-            if (status >= 500) {
-                logger.error('Internal server error:', err);
-            }
         });
+
+    Sentry.setupExpressErrorHandler(webServer);
+
+    // eslint-disable-next-line no-unused-vars
+    webServer.use((err: any, req: express.Request, res: express.Response, _next: express.NextFunction) => {
+        const status = err.status || err.statusCode || err.status_code || err.output?.statusCode || 500;
+        const message = err.message || 'Internal Server Error';
+        res.status(status);
+        res.render('error', renderConfig({error: {code: status, message: message}}));
+        if (status >= 500) {
+            logger.error('Internal server error:', err);
+        }
+    });
 
     const sponsorConfig = loadSponsorsFromString(await fs.readFile(configDir + '/sponsors.yaml', 'utf8'));
 

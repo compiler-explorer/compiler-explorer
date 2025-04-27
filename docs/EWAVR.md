@@ -44,6 +44,8 @@ $ WINEARCH=win32 winecfg
 
 ## Setup and Configuration
 
+For more information about the configuration system, see [Configuration.md](Configuration.md).
+
 ### Running locally on a Windows workstation or a windows server
 
 Refer to the readme on running [Native on Windows](WindowsNative.md) for general setup of Compiler Explorer and other
