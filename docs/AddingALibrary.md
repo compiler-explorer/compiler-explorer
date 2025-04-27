@@ -12,10 +12,8 @@ https://github.com/compiler-explorer/infra/blob/main/docs/adding_rust_crates.md
 ## Configuration
 
 Library configurations are part of the compiler's properties, which is done through the `etc/config/c++.*.properties`
-files (for C++, other languages follow the obvious pattern). The various named configuration files are used in different
-contexts: for example `etc/config/c++.local.properties` take priority over `etc/config/c++.defaults.properties`. The
-`local` version is ignored by git, so you can make your own personalised changes there. The live site uses the
-`etc/config/c++.amazon.properties` file.
+files (for C++, other languages follow the obvious pattern). For a comprehensive overview of the configuration system, 
+see [Configuration.md](Configuration.md).
 
 Within the file, configuration is a set of key and value pairs, separated by an `=`. Whitespace is _not_ trimmed. Lines
 starting with `#` are considered comments and not parsed. The list of libraries is set by the `libs` key and is a list
