@@ -29,8 +29,9 @@ Now you can execute the `cerberus-cheri` and `cerberus` commands using `opam exe
 ## Configuration
 
 Once you have Cerberus installed, as described in the previous section, you can enable it by modifying the file
-`etc/config/c.defaults.properties` as shown below. This change defines a group of two compilers: 'cerberus' for ISO C
-and 'cerberus-cheri' for CHERI-C.
+`etc/config/c.defaults.properties` as shown below. For more information about the configuration system and properties files, see [Configuration.md](Configuration.md).
+
+This change defines a group of two compilers: 'cerberus' for ISO C and 'cerberus-cheri' for CHERI-C.
 
 ```
 compilers=&gcc:&clang:&cerberus
