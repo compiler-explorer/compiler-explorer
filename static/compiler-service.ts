@@ -91,17 +91,9 @@ export class CompilerService {
                             langId: langId,
                         };
                     }
-                    return {
-                        // There were no compilers, so return null, the selection will show up empty
-                        compiler: null,
-                        langId: langId,
-                    };
                 }
-                return {
-                    compiler: foundCompiler,
-                    langId: langId,
-                };
             }
+
             if (compilerId) {
                 const matchingCompilers = Object.values(options.languages).map(lang => {
                     const compiler = this.findCompiler(lang.id, compilerId);
@@ -113,9 +105,11 @@ export class CompilerService {
                     }
                     return null;
                 });
+
                 // Ensure that if no compiler is present, we return null instead of undefined
                 return matchingCompilers.find(compiler => compiler !== null) ?? null;
             }
+
             const languages = Object.values(options.languages);
             if (languages.length > 0) {
                 const firstLang = languages[0];
