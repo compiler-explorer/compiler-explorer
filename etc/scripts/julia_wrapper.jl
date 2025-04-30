@@ -69,8 +69,9 @@ function main()
 
     # Find functions and method specializations
     m_methods = Any[]
-    for name in names(m, all=true, imported=true)
-        local fun = getfield(m, name)
+    # `Base.invokelatest` is needed for <https://github.com/JuliaLang/julia/issues/58286>.
+    for name in Base.invokelatest(names, m; all=true, imported=true)
+        local fun = Base.invokelatest(getfield, m, name)
         if fun isa Function
             if verbose
                 println("Function: ", fun)
