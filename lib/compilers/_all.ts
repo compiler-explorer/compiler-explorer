@@ -139,6 +139,7 @@ export {SlangCompiler} from './slang.js';
 export {SnowballCompiler} from './snowball.js';
 export {SolidityCompiler} from './solidity.js';
 export {SolidityZKsyncCompiler} from './solidity-zksync.js';
+export {SolxCompiler} from './solx.js';
 export {SpiceCompiler} from './spice.js';
 export {SwayCompiler} from './sway.js';
 export {SwiftCompiler} from './swift.js';

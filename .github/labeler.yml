@@ -357,6 +357,7 @@
       - any-glob-to-any-file:
           - 'lib/compilers/solidity.ts'
           - 'lib/compilers/solidity-zksync.ts'
+          - 'lib/compilers/solx.ts'
           - 'etc/config/solidity.*.properties'
 
 'lang-spice':

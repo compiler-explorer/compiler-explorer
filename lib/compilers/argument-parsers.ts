@@ -935,6 +935,14 @@ export class ZksolcParser extends RustParser {
     }
 }
 
+export class SolxParser extends RustParser {
+    static override async parse(compiler: BaseCompiler) {
+        const options = await this.getOptions(compiler, '--help');
+        await this.setCompilerSettingsFromOptions(compiler, options);
+        return compiler;
+    }
+}
+
 export class MrustcParser extends BaseParser {
     static override async parse(compiler: BaseCompiler) {
         await this.getOptions(compiler, '--help');
