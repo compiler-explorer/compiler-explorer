@@ -1,3 +1,4 @@
+import fs from 'node:fs/promises';
 // Copyright (c) 2025, Compiler Explorer Authors
 // All rights reserved.
 //
@@ -22,7 +23,6 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 import path from 'node:path';
-import fs from 'fs-extra';
 
 import {ExecutionOptions} from '../../types/compilation/compilation.interfaces.js';
 import {BaseCompiler} from '../base-compiler.js';
@@ -55,10 +55,10 @@ export class NixCompiler extends BaseCompiler {
 
             if (options.includes('--json')) {
                 // Parse and pretty-print if --json is passed
-                fs.writeFileSync(outputFilename, JSON.stringify(JSON.parse(outputText), null, 2));
+                await fs.writeFile(outputFilename, JSON.stringify(JSON.parse(outputText), null, 2));
             } else {
                 // Otherwise, write raw output (Should call nixfmt probably)
-                fs.writeFileSync(outputFilename, outputText);
+                await fs.writeFile(outputFilename, outputText);
             }
         }
         return compilerExecResult;
@@ -78,14 +78,8 @@ export class NixCompiler extends BaseCompiler {
         userOptions: string[],
         staticLibLinks: string[],
     ): string[] {
-        return [
-            'eval',
-            '--store',
-            'dummy://',
-            '--extra-experimental-features',
-            'nix-command',
-            '--file',
-            this.filename(inputFilename),
-        ].concat(options, userOptions);
+        return ['eval', '--extra-experimental-features', 'nix-command', '--file', this.filename(inputFilename)]
+            .concat(options, userOptions)
+            .concat(['--store', 'dummy://']);
     }
 }
