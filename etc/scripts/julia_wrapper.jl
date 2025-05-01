@@ -138,7 +138,7 @@ function main()
                     InteractiveUtils.code_native(io, me_fun, me_types; debuginfo)
                 end
             elseif format == "warntype"
-                Base.invokelatest(InteractiveUtils.code_warntype, io, me_fun, me_types; debuginfo=args.debuginfo)
+                Base.invokelatest(InteractiveUtils.code_warntype, io, me_fun, me_types; debuginfo)
             end
             # Add extra newline, because some of the above tools don't add a final newline,
             # and when we have multiple functions to be shown, they'd be mixed up.
