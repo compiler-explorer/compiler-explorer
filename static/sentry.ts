@@ -65,7 +65,7 @@ export function SetupSentry() {
             release: options.release,
             environment: options.sentryEnvironment,
             ignoreErrors: [
-                /CancellationError\(monaco-editor/,
+                /this.error\(new CancellationError\(\)/,
                 /new StandardMouseEvent\(monaco-editor/,
                 /Object Not Found Matching Id:2/,
                 /i is null _doHitTestWithCaretPositionFromPoint/,
