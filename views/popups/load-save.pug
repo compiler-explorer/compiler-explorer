@@ -30,7 +30,7 @@
                     | Delete
               .input-group.mb-3
                 input.form-control.save-name(type="text" placeholder="Set name of state")
-                button.btn.btn-light.save-button(type="button") Save to browser-local storage
+                button.btn.btn-outline-secondary.save-button(type="button") Save to browser-local storage
             #load-browser-local-history.tab-pane(role="tabpanel")
               h4.card-title Load from browser-local history:
               ul.local-history.small-v-scrollable
@@ -41,6 +41,6 @@
                 label.form-label Load from a local file
                 input.form-control.local-file(type="file")
               .mb-3
-                button.btn.btn-outline-secondary.save-btn(type="button") Save to file
+                button.btn.btn-outline-secondary.save-file(type="button") Save to file
       .modal-footer
         button.btn.btn-outline-primary(type="button" data-bs-dismiss="modal" aria-label="Close") Close
