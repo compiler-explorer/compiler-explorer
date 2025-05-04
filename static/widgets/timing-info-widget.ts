@@ -153,7 +153,12 @@ function displayData(data: Data) {
 
     const settings = Settings.getStoredSettings();
     let fontColour = defaults.color.toString();
-    if (settings.theme !== 'default') {
+    if (settings.theme === 'system') {
+        if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
+            fontColour = '#ffffff';
+        }
+    }
+    else if (settings.theme !== 'default' && settings.theme !== 'pink') {
         fontColour = '#ffffff';
     }
 
