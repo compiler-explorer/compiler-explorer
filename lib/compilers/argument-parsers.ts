@@ -845,7 +845,7 @@ export class RustParser extends BaseParser {
 
     static override async getPossibleEditions(compiler: BaseCompiler): Promise<string[]> {
         const result = await compiler.execCompilerCached(compiler.compiler.exe, ['--help']);
-        const re = /--edition ([\d|]*)/;
+        const re = /--edition <?([\w|]*)>?/;
 
         const match = result.stdout.match(re);
         if (match?.[1]) {
