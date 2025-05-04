@@ -157,8 +157,7 @@ function displayData(data: Data) {
         if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
             fontColour = '#ffffff';
         }
-    }
-    else if (settings.theme !== 'default' && settings.theme !== 'pink') {
+    } else if (settings.theme !== 'default' && settings.theme !== 'pink') {
         fontColour = '#ffffff';
     }
 
