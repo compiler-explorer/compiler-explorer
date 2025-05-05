@@ -31,6 +31,7 @@ import {
     GCCParser,
     ICCParser,
     PascalParser,
+    RustParser,
     TableGenParser,
     VCParser,
 } from '../../lib/compilers/argument-parsers.js';
@@ -260,5 +261,40 @@ describe('TableGen argument parser', () => {
             {name: 'print-detailed-records: Print full details...', value: '--print-detailed-records'},
             {name: 'gen-x86-mnemonic-tables: Generate X86...', value: '--gen-x86-mnemonic-tables'},
         ]);
+    });
+});
+
+describe('Rust editions parser', () => {
+    it('Should extract new format editions', async () => {
+        // From Rust nightly-2025-05-05 output
+        const lines = [
+            'USAGE: rustc [OPTIONS]',
+            '',
+            'OPTIONS:',
+            '',
+            '        --edition <2015|2018|2021|2024|future>',
+            '                        Specify which edition of the compiler to use when',
+            '                        compiling code. The default is 2015 and the latest',
+            '                        stable edition is 2024.',
+        ];
+        const compiler = makeCompiler(lines.join('\n'));
+        const editions = await RustParser.getPossibleEditions(compiler);
+        expect(editions).toEqual(['2015', '2018', '2021', '2024', 'future']);
+    });
+
+    it('Should extract old format editions', async () => {
+        // From Rust 1.31 with verbose output
+        const lines = [
+            'USAGE: rustc [OPTIONS]',
+            '',
+            'OPTIONS:',
+            '',
+            '        --edition 2015|2018',
+            '                        Specify which edition of the compiler to use when',
+            '                        compiling code.',
+        ];
+        const compiler = makeCompiler(lines.join('\n'));
+        const editions = await RustParser.getPossibleEditions(compiler);
+        expect(editions).toEqual(['2015', '2018']);
     });
 });
