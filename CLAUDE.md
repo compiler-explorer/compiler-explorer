@@ -17,6 +17,14 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 - ALWAYS run `npm run lint` before any git operations (`git add`, `git commit`, etc.)
 - The linter will automatically fix formatting issues, so this must be run before committing
 - Failing to run the linter may result in style issues and commit failures
+- ALWAYS use HEREDOC syntax for complex shell commands, especially those containing quotes, newlines, or special characters:
+  ```bash
+  gh pr create --title "Title" --body "$(cat <<'EOF'
+  PR body content with "quotes" and special chars like $variables
+  that would otherwise need escaping
+  EOF
+  )"
+  ```
 
 ## Style Guidelines
 - TypeScript: Strict typing, no implicit any, no unused locals
