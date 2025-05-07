@@ -3097,7 +3097,7 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
             this.compile(true);
         });
 
-        this.compilerLicenseButton.on('click', () => {
+        BootstrapUtils.setElementEventHandler(this.compilerLicenseButton, 'click', () => {
             const title = this.compiler ? 'License for ' + this.compiler.name : 'No compiler selected';
             this.alertSystem.alert(title, this.generateLicenseInfo());
         });
