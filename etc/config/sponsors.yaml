@@ -29,7 +29,7 @@ levels:
         displayType: SideBySide
         statsId: google
       - name: CLion
-        description: CLion, the cross-platform IDE for C and C++, is robust, responsive, and loaded with new functionality to help you make your development experience smoother and more productive.
+        description: CLion is a powerful, cross-platform IDE for C and C++ that boosts your productivity – and it’s free for learning, contributing to open-source projects, creating content, developing educational courses, and programming as a hobby.
         icon: https://static.ce-cdn.net/jetbrains/Jetbrains.png
         icon_dark: https://static.ce-cdn.net/jetbrains/JetbrainsWhite.png
         img: https://static.ce-cdn.net/jetbrains/ClionWhite.png
