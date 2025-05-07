@@ -624,6 +624,13 @@ export class MachParser extends BaseParser {
     }
 }
 
+export class PorfforParser extends BaseParser {
+    static override async parse(compiler: BaseCompiler) {
+        await this.getOptions(compiler, '--help');
+        return compiler;
+    }
+}
+
 export class ICCParser extends GCCParser {
     override async setCompilerSettingsFromOptions(options: Record<string, Argument>) {
         const keys = _.keys(options);
