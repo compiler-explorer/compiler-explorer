@@ -613,6 +613,17 @@ const definitions: Record<LanguageKey, LanguageDefinition> = {
         previewFilter: null,
         monacoDisassembly: null,
     },
+    nix: {
+        name: 'Nix',
+        monaco: 'nix',
+        extensions: ['.nix'],
+        alias: [],
+        logoUrl: 'nix.svg',
+        logoUrlDark: null,
+        formatter: null,
+        previewFilter: null,
+        monacoDisassembly: null,
+    },
     objc: {
         name: 'Objective-C',
         monaco: 'objective-c',

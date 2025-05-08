@@ -267,6 +267,13 @@
           - 'etc/config/nim.*.properties'
           - 'static/modes/nim-mode.ts'
 
+'lang-nix':
+  - changed-files:
+      - any-glob-to-any-file:
+          - 'lib/compilers/nix.ts'
+          - 'etc/config/nix.*.properties'
+          - 'static/modes/nix-mode.ts'
+
 'lang-numba':
   - changed-files:
       - any-glob-to-any-file:
