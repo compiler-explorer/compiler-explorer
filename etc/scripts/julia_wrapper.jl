@@ -69,8 +69,9 @@ function main()
 
     # Find functions and method specializations
     m_methods = Any[]
-    for name in names(m, all=true, imported=true)
-        local fun = getfield(m, name)
+    # `Base.invokelatest` is needed for <https://github.com/JuliaLang/julia/issues/58286>.
+    for name in Base.invokelatest(names, m; all=true, imported=true)
+        local fun = Base.invokelatest(getfield, m, name)
         if fun isa Function
             if verbose
                 println("Function: ", fun)
@@ -137,7 +138,7 @@ function main()
                     InteractiveUtils.code_native(io, me_fun, me_types; debuginfo)
                 end
             elseif format == "warntype"
-                InteractiveUtils.code_warntype(io, me_fun, me_types; debuginfo)
+                Base.invokelatest(InteractiveUtils.code_warntype, io, me_fun, me_types; debuginfo)
             end
             # Add extra newline, because some of the above tools don't add a final newline,
             # and when we have multiple functions to be shown, they'd be mixed up.
