@@ -152,3 +152,7 @@ From oldest to newest contributor, we would like to thank:
 - [Pierre Bayerl](https://github.com/goto40)
 - [James Touton](https://github.com/Bekenn)
 - [Waqar Ahmed](https://github.com/waqar144)
+- [Siddhi Bajpai] (https://github.com/siddhi-bajpai)
+- [Aditya Agre] (https://github.com/adityaagre)
+- [Amay Chandravanshi] (https://github.com/AmayX)
+- [Yash Athawale] (https://github.com/yash20903) 
