@@ -28,7 +28,13 @@ import path from 'node:path';
 import {isString} from '../shared/common-utils.js';
 import {parse} from '../shared/stacktrace.js';
 
+let ce_base_directory = '';
+
 const filePrefix = 'file://';
+
+export function setBaseDirectory(base_url_path: URL) {
+    ce_base_directory = base_url_path.pathname;
+}
 
 function removeFileProtocol(path: string) {
     if (path.startsWith(filePrefix)) {
@@ -37,9 +43,9 @@ function removeFileProtocol(path: string) {
     return path;
 }
 
-function check_path(parent: URL, directory: string) {
+function check_path(parent: string, directory: string) {
     // https://stackoverflow.com/a/45242825/15675011
-    const relative = path.relative(parent.pathname, directory);
+    const relative = path.relative(parent, directory);
     if (relative && !relative.startsWith('..') && !path.isAbsolute(relative)) {
         return relative;
     }
@@ -53,7 +59,7 @@ function get_diagnostic() {
         const invoker_frame = trace[3];
         if (invoker_frame.fileName && invoker_frame.lineNumber) {
             // Just out of an abundance of caution...
-            const relative = check_path(global.ce_base_directory, removeFileProtocol(invoker_frame.fileName));
+            const relative = check_path(ce_base_directory, removeFileProtocol(invoker_frame.fileName));
             if (relative) {
                 try {
                     const file = fs.readFileSync(invoker_frame.fileName, 'utf8');
