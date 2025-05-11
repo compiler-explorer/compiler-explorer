@@ -36,12 +36,12 @@ import url from 'node:url';
 import * as fsSync from 'node:fs';
 import fs from 'node:fs/promises';
 import * as Sentry from '@sentry/node';
+import {Command, OptionValues} from 'commander';
 import compression from 'compression';
 import express from 'express';
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-ignore
 import morgan from 'morgan';
-import nopt from 'nopt';
 import PromClient from 'prom-client';
 import responseTime from 'response-time';
 import sanitize from 'sanitize-filename';
@@ -92,13 +92,6 @@ import type {Language, LanguageKey} from './types/languages.interfaces.js';
 // Used by assert.ts
 global.ce_base_directory = new URL('.', import.meta.url);
 
-(nopt as any).invalidHandler = (key: string, val: unknown, types: unknown[]) => {
-    logger.error(
-        `Command line argument type error for "--${key}=${val}",
-        expected ${types.map((t: unknown) => typeof t).join(' | ')}`,
-    );
-};
-
 export type CompilerExplorerOptions = Partial<{
     env: string[];
     rootDir: string;
@@ -127,38 +120,99 @@ export type CompilerExplorerOptions = Partial<{
     noLocal: boolean;
 }>;
 
-// Parse arguments from command line 'node ./app.js args...'
-const opts = nopt({
-    env: [String, Array],
-    rootDir: [String],
-    host: [String],
-    port: [Number],
-    propDebug: [Boolean],
-    debug: [Boolean],
-    dist: [Boolean],
-    archivedVersions: [String],
-    // Ignore fetch marks and assume every compiler is found locally
-    noRemoteFetch: [Boolean],
-    tmpDir: [String],
-    wsl: [Boolean],
-    // If specified, only loads the specified languages, resulting in faster loadup/iteration times
-    language: [String, Array],
-    // Do not use caching for compilation results (Requests might still be cached by the client's browser)
-    noCache: [Boolean],
-    // Don't cleanly run if two or more compilers have clashing ids
-    ensureNoIdClash: [Boolean],
-    logHost: [String],
-    logPort: [Number],
-    hostnameForLogging: [String],
-    suppressConsoleLog: [Boolean],
-    metricsPort: [Number],
-    loki: [String],
-    discoveryonly: [String],
-    prediscovered: [String],
-    version: [Boolean],
-    webpackContent: [String],
-    noLocal: [Boolean],
-}) as CompilerExplorerOptions;
+// Define an interface for our Commander options
+interface CommanderOptions extends OptionValues {
+    env: string[];
+    rootDir: string;
+    host?: string;
+    port?: string;
+    propDebug?: boolean;
+    debug?: boolean;
+    dist?: boolean;
+    archivedVersions?: string;
+    remoteFetch: boolean; // Note: this is inverted from our target
+    tmpDir?: string;
+    wsl?: boolean;
+    language?: string[];
+    cache: boolean; // Note: this is inverted from our target
+    ensureNoIdClash?: boolean;
+    logHost?: string;
+    logPort?: string;
+    hostnameForLogging?: string;
+    suppressConsoleLog?: boolean;
+    metricsPort?: string;
+    loki?: string;
+    discoveryOnly?: string;
+    prediscovered?: string;
+    webpackContent?: string;
+    local: boolean; // Note: this is inverted from our target
+    version?: boolean;
+}
+
+// Parse arguments from command line
+const program = new Command();
+program
+    .name('compiler-explorer')
+    .description('Interactively investigate compiler output')
+    .option('--env <environments...>', 'Environment(s) to use', ['dev'])
+    .option('--root-dir <dir>', 'Root directory for config files', './etc')
+    .option('--host <hostname>', 'Hostname to listen on')
+    .option('--port <port>', 'Port to listen on', '10240')
+    .option('--prop-debug', 'Debug properties')
+    .option('--debug', 'Enable debug output')
+    .option('--dist', 'Running in dist mode')
+    .option('--archived-versions <path>', 'Path to archived versions')
+    .option('--no-remote-fetch', 'Ignore fetch marks and assume every compiler is found locally')
+    .option('--tmp-dir <dir>', 'Directory to use for temporary files')
+    .option('--wsl', 'Running under Windows Subsystem for Linux')
+    .option('--language <languages...>', 'Only load specified languages for faster startup')
+    .option('--no-cache', 'Do not use caching for compilation results')
+    .option('--ensure-no-id-clash', "Don't run if compilers have clashing ids")
+    .option('--log-host <hostname>', 'Hostname for remote logging')
+    .option('--log-port <port>', 'Port for remote logging')
+    .option('--hostname-for-logging <hostname>', 'Hostname to use in logs')
+    .option('--suppress-console-log', 'Disable console logging')
+    .option('--metrics-port <port>', 'Port to serve metrics on')
+    .option('--loki <url>', 'URL for Loki logging')
+    .option('--discovery-only <file>', 'Output discovery info to file and exit')
+    .option('--prediscovered <file>', 'Input discovery info from file')
+    .option('--webpack-content <dir>', 'Path to webpack content')
+    .option('--no-local', 'Disable local config')
+    .option('--version', 'Show version information');
+
+program.parse();
+
+// Get the options with the correct type
+const commanderOpts = program.opts() as CommanderOptions;
+
+// Convert to our expected CompilerExplorerOptions format
+const opts: CompilerExplorerOptions = {
+    env: commanderOpts.env,
+    rootDir: commanderOpts.rootDir,
+    host: commanderOpts.host,
+    port: commanderOpts.port ? Number.parseInt(commanderOpts.port, 10) : undefined,
+    propDebug: commanderOpts.propDebug,
+    debug: commanderOpts.debug,
+    dist: commanderOpts.dist,
+    archivedVersions: commanderOpts.archivedVersions,
+    noRemoteFetch: !commanderOpts.remoteFetch,
+    tmpDir: commanderOpts.tmpDir,
+    wsl: commanderOpts.wsl,
+    language: commanderOpts.language,
+    noCache: !commanderOpts.cache,
+    ensureNoIdClash: commanderOpts.ensureNoIdClash,
+    logHost: commanderOpts.logHost,
+    logPort: commanderOpts.logPort ? Number.parseInt(commanderOpts.logPort, 10) : undefined,
+    hostnameForLogging: commanderOpts.hostnameForLogging,
+    suppressConsoleLog: commanderOpts.suppressConsoleLog,
+    metricsPort: commanderOpts.metricsPort ? Number.parseInt(commanderOpts.metricsPort, 10) : undefined,
+    loki: commanderOpts.loki,
+    discoveryonly: commanderOpts.discoveryOnly,
+    prediscovered: commanderOpts.prediscovered,
+    webpackContent: commanderOpts.webpackContent,
+    noLocal: !commanderOpts.local,
+    version: commanderOpts.version,
+};
 
 if (opts.debug) logger.level = 'debug';
 
