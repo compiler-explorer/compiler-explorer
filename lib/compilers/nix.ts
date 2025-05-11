@@ -1,4 +1,3 @@
-import fs from 'node:fs/promises';
 // Copyright (c) 2025, Compiler Explorer Authors
 // All rights reserved.
 //
@@ -22,6 +21,8 @@ import fs from 'node:fs/promises';
 // CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
+
+import fs from 'node:fs/promises';
 import path from 'node:path';
 
 import {ExecutionOptions} from '../../types/compilation/compilation.interfaces.js';
