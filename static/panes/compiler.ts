@@ -192,6 +192,7 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
     private haskellCmmButton: JQuery<HTMLButtonElement>;
     private gccDumpButton: JQuery<HTMLButtonElement>;
     private cfgButton: JQuery<HTMLButtonElement>;
+    private ssaButton: JQuery<HTMLButtonElement>;
     private executorButton: JQuery<HTMLButtonElement>;
     private libsButton: JQuery<HTMLButtonElement>;
     private compileInfoLabel: JQuery<HTMLElement>;
@@ -653,6 +654,10 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
             return Components.getCfgViewWith(this.id, this.sourceEditorId ?? 0, this.sourceTreeId ?? 0);
         };
 
+        const createSsaView = () => {
+            return Components.getSsaViewWith(this.id, this.sourceEditorId ?? 0, this.sourceTreeId ?? 0);
+        };
+
         const createExecutor = () => {
             const currentState = this.getCurrentState();
             const editorId = currentState.source;
@@ -949,6 +954,13 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
                 this.container.layoutManager.root.contentItems[0];
             insertPoint.addChild(createCfgView());
         });
+
+        this.ssaButton.on('click', () => {
+            const insertPoint =
+                this.hub.findParentRowOrColumn(this.container.parent) ||
+                this.container.layoutManager.root.contentItems[0];
+            insertPoint.addChild(createSsaView());
+         });
 
         this.container.layoutManager
             .createDragSource(this.executorButton, createExecutor as any)
@@ -2543,6 +2555,7 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
         this.haskellCmmButton = this.domRoot.find('.btn.view-haskellCmm');
         this.gccDumpButton = this.domRoot.find('.btn.view-gccdump');
         this.cfgButton = this.domRoot.find('.btn.view-cfg');
+        this.ssaButton = this.domRoot.find('.btn.view-ssa');
         this.executorButton = this.domRoot.find('.create-executor');
         this.libsButton = this.domRoot.find('.btn.show-libs');
 

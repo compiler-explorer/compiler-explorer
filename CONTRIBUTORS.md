@@ -160,3 +160,7 @@ From oldest to newest contributor, we would like to thank:
 - [Mathias Gredal](https://github.com/mathiasgredal)
 - [RongDong Xu](https://github.com/arong)
 - [Adrien Bertrand](https://github.com/adriweb)
+- [Siddhi Bajpai] (https://github.com/siddhi-bajpai)
+- [Aditya Agre] (https://github.com/adityaagre)
+- [Amay Chandravanshi] (https://github.com/AmayX)
+- [Yash Athawale] (https://github.com/yash20903)
