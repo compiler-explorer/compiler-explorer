@@ -22,101 +22,13 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import path from 'node:path';
-
 import {beforeEach, describe, expect, it} from 'vitest';
 
-import {assert, setBaseDirectory, unwrap, unwrapString} from '../lib/assert.js';
-
-// Helper to access non-exported functions for testing
-function testHelpers() {
-    // We're importing these from the actual module
-    return {
-        removeFileProtocol: (path: string) => {
-            if (path.startsWith('file://')) {
-                return path.slice('file://'.length);
-            }
-            return path;
-        },
-
-        check_path: (parent: string, directory: string) => {
-            const relative = path.relative(parent, directory);
-            if (relative && !relative.startsWith('..') && !path.isAbsolute(relative)) {
-                return relative;
-            }
-            return false;
-        },
-
-        // Mock version of get_diagnostic that simulates stack trace parsing
-        get_diagnostic: (): {file: string; line: number; src: string} | undefined => {
-            // Mock implementation that's easier to test
-            return undefined;
-        },
-
-        // Test function that mocks parse() to simulate a stack trace
-        test_stack_trace_parsing: (
-            mockTrace: {fileName: string; lineNumber: number}[],
-            baseDir: string,
-            fileContent: string,
-        ) => {
-            // Simulate the Error.stack parsing functionality by providing a mock trace
-            const invokerFrame = mockTrace.length > 3 ? mockTrace[3] : undefined;
-            if (invokerFrame?.fileName && invokerFrame.lineNumber) {
-                const removedPath = invokerFrame.fileName.startsWith('file://')
-                    ? invokerFrame.fileName.slice('file://'.length)
-                    : invokerFrame.fileName;
-
-                const relative = path.relative(baseDir, removedPath);
-                if (relative && !relative.startsWith('..') && !path.isAbsolute(relative)) {
-                    const lines = fileContent.split('\n');
-                    if (invokerFrame.lineNumber > 0 && invokerFrame.lineNumber <= lines.length) {
-                        return {
-                            file: relative,
-                            line: invokerFrame.lineNumber,
-                            src: lines[invokerFrame.lineNumber - 1].trim(),
-                        };
-                    }
-                }
-            }
-            return undefined;
-        },
-
-        // Function to directly test the diagnostic logic with mocked deps
-        // This allows us to test the function's behavior without relying on the stack trace
-        test_diagnostic_logic: (
-            baseDir: string,
-            fileName: string,
-            lineNumber: number,
-            fileContent: string,
-        ): {file: string; line: number; src: string} | undefined => {
-            // Self-contained implementation that doesn't rely on outer functions
-            const filePrefix = 'file://';
-            // First, handle file:// protocol if present
-            const removed = fileName.startsWith(filePrefix) ? fileName.slice(filePrefix.length) : fileName;
-
-            // Check if path is relative to base dir (reimplementing check_path logic)
-            const relative = path.relative(baseDir, removed);
-            if (relative && !relative.startsWith('..') && !path.isAbsolute(relative)) {
-                const lines = fileContent.split('\n');
-                if (lineNumber > 0 && lineNumber <= lines.length) {
-                    return {
-                        file: relative,
-                        line: lineNumber,
-                        src: lines[lineNumber - 1].trim(),
-                    };
-                }
-            }
-            return undefined;
-        },
-    };
-}
+import {assert, check_path, removeFileProtocol, setBaseDirectory, unwrap, unwrapString} from '../lib/assert.js';
 
 describe('Assert module', () => {
-    const {removeFileProtocol, check_path, get_diagnostic, test_diagnostic_logic, test_stack_trace_parsing} =
-        testHelpers();
-
+    // Reset the base directory for each test
     beforeEach(() => {
-        // Reset the base directory before each test
         setBaseDirectory(new URL('file:///test/path/'));
     });
 
@@ -125,8 +37,8 @@ describe('Assert module', () => {
             const testUrl = new URL('file:///test/path/');
             setBaseDirectory(testUrl);
 
-            // We need to create a test that verifies the base directory was set
-            // We can do this by checking if check_path works correctly
+            // We can verify the base directory was set by testing check_path
+            // which uses the base directory internally
             const result = check_path('/test/path/', '/test/path/subdir/file.js');
             expect(result).toEqual('subdir/file.js');
         });
@@ -157,130 +69,53 @@ describe('Assert module', () => {
         });
     });
 
-    describe('get_diagnostic', () => {
-        it('should exist as a function', () => {
-            expect(typeof get_diagnostic).toEqual('function');
-        });
+    describe('get_diagnostic function components', () => {
+        // Since get_diagnostic relies on stack traces which are hard to test directly,
+        // we test each component separately to verify the logic is correct
 
-        describe('stack trace parsing', () => {
-            it('should extract diagnostic info from stack trace', () => {
-                const baseDir = '/code/compiler-explorer';
-                const mockTrace = [
-                    {fileName: 'first-frame.js', lineNumber: 1},
-                    {fileName: 'second-frame.js', lineNumber: 2},
-                    {fileName: 'third-frame.js', lineNumber: 3},
-                    {fileName: '/code/compiler-explorer/lib/assert.js', lineNumber: 5}, // Invoker frame (index 3)
-                    {fileName: '/code/compiler-explorer/app.js', lineNumber: 42},
-                ];
-                const fileContent = 'line1\nline2\nline3\nline4\nconst assertionCode = "assert(x > 0);"';
+        describe('stack trace handling', () => {
+            it('should correctly process file paths with removeFileProtocol', () => {
+                const pathWithProtocol = 'file:///path/to/file.js';
+                expect(removeFileProtocol(pathWithProtocol)).toEqual('/path/to/file.js');
 
-                const result = test_stack_trace_parsing(mockTrace, baseDir, fileContent);
-
-                expect(result).toBeDefined();
-                expect(result?.file).toEqual('lib/assert.js');
-                expect(result?.line).toEqual(5);
-                expect(result?.src).toEqual('const assertionCode = "assert(x > 0);"');
+                const pathWithoutProtocol = '/path/to/file.js';
+                expect(removeFileProtocol(pathWithoutProtocol)).toEqual('/path/to/file.js');
             });
 
-            it('should handle file:// protocol in stack trace filenames', () => {
-                const baseDir = '/code/compiler-explorer';
-                const mockTrace = [
-                    {fileName: 'first-frame.js', lineNumber: 1},
-                    {fileName: 'second-frame.js', lineNumber: 2},
-                    {fileName: 'third-frame.js', lineNumber: 3},
-                    {fileName: 'file:///code/compiler-explorer/lib/utils.js', lineNumber: 42}, // Invoker frame with file:// protocol
-                    {fileName: '/code/compiler-explorer/app.js', lineNumber: 100},
-                ];
-                const fileContent = 'line1\n'.repeat(41) + 'function doSomething() { return true; }';
+            it('should properly determine if a path is within the base directory using check_path', () => {
+                // Valid paths inside base directory
+                expect(check_path('/base/dir', '/base/dir/file.js')).toEqual('file.js');
+                expect(check_path('/base/dir', '/base/dir/subdir/file.js')).toEqual('subdir/file.js');
 
-                const result = test_stack_trace_parsing(mockTrace, baseDir, fileContent);
-
-                expect(result).toBeDefined();
-                expect(result?.file).toEqual('lib/utils.js');
-                expect(result?.line).toEqual(42);
-                expect(result?.src).toEqual('function doSomething() { return true; }');
+                // Invalid paths
+                expect(check_path('/base/dir', '/other/path/file.js')).toBe(false);
+                expect(check_path('/base/dir', '/base')).toBe(false);
             });
 
-            it('should return undefined if invoker frame is outside the base directory', () => {
-                const baseDir = '/code/compiler-explorer';
-                const mockTrace = [
-                    {fileName: 'first-frame.js', lineNumber: 1},
-                    {fileName: 'second-frame.js', lineNumber: 2},
-                    {fileName: 'third-frame.js', lineNumber: 3},
-                    {fileName: '/other/directory/file.js', lineNumber: 10}, // Outside base directory
-                    {fileName: '/code/compiler-explorer/app.js', lineNumber: 100},
-                ];
-                const fileContent = 'line1\nline2\nline3';
+            it('should handle the combination of file protocol removal and path checking', () => {
+                const baseDir = '/base/dir';
+                const filePathWithProtocol = 'file:///base/dir/file.js';
 
-                const result = test_stack_trace_parsing(mockTrace, baseDir, fileContent);
+                // First remove protocol (as done in get_diagnostic)
+                const filePath = removeFileProtocol(filePathWithProtocol);
 
-                expect(result).toBeUndefined();
-            });
+                // Then check if path is within base directory (as done in get_diagnostic)
+                const relativePath = check_path(baseDir, filePath);
 
-            it('should return undefined if invoker frame is missing', () => {
-                const baseDir = '/code/compiler-explorer';
-                const mockTrace = [
-                    {fileName: 'first-frame.js', lineNumber: 1},
-                    {fileName: 'second-frame.js', lineNumber: 2},
-                ];
-                const fileContent = 'line1\nline2\nline3';
-
-                const result = test_stack_trace_parsing(mockTrace, baseDir, fileContent);
-
-                expect(result).toBeUndefined();
+                // The relative path should be 'file.js' because it's directly in the base dir
+                expect(relativePath).toEqual('file.js');
             });
         });
 
-        // Test the diagnostic logic directly using our test helper function
-        describe('diagnostic logic', () => {
-            it('should return the correct diagnostic info when file exists and is in base dir', () => {
-                const baseDir = '/test/base';
-                const fileName = '/test/base/src/file.js';
-                const lineNumber = 3;
-                const fileContent = 'line1\nline2\nsome code here\nline4';
+        describe('file content extraction', () => {
+            it('should correctly extract a specific line from file content', () => {
+                // This mimics the line extraction logic in get_diagnostic
+                const fileContent = 'line1\nline2\nline3\nline4\nline5';
+                const lines = fileContent.split('\n');
 
-                const result = test_diagnostic_logic(baseDir, fileName, lineNumber, fileContent);
-
-                expect(result).toBeDefined();
-                expect(result?.file).toEqual('src/file.js');
-                expect(result?.line).toEqual(lineNumber);
-                expect(result?.src).toEqual('some code here');
-            });
-
-            it('should handle file:// protocol in filenames', () => {
-                const baseDir = '/test/base';
-                const fileName = 'file:///test/base/src/file.js';
-                const lineNumber = 2;
-                const fileContent = 'line1\nsome code here\nline3';
-
-                const result = test_diagnostic_logic(baseDir, fileName, lineNumber, fileContent);
-
-                expect(result).toBeDefined();
-                expect(result?.file).toEqual('src/file.js');
-                expect(result?.line).toEqual(lineNumber);
-                expect(result?.src).toEqual('some code here');
-            });
-
-            it('should return undefined for files outside the base directory', () => {
-                const baseDir = '/test/base';
-                const fileName = '/other/path/file.js';
-                const lineNumber = 1;
-                const fileContent = 'line1\nline2';
-
-                const result = test_diagnostic_logic(baseDir, fileName, lineNumber, fileContent);
-
-                expect(result).toBeUndefined();
-            });
-
-            it('should handle invalid line numbers', () => {
-                const baseDir = '/test/base';
-                const fileName = '/test/base/file.js';
-                const lineNumber = 10; // Beyond file length
-                const fileContent = 'line1\nline2';
-
-                const result = test_diagnostic_logic(baseDir, fileName, lineNumber, fileContent);
-
-                expect(result).toBeUndefined();
+                expect(lines[0].trim()).toEqual('line1');
+                expect(lines[2].trim()).toEqual('line3');
+                expect(lines[4].trim()).toEqual('line5');
             });
         });
     });
