@@ -14,9 +14,15 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 - Pre-commit Check: `make pre-commit` or `npm run check`
 
 ## Important Workflow Requirements
-- ALWAYS run `npm run lint` before any git operations (`git add`, `git commit`, etc.)
-- The linter will automatically fix formatting issues, so this must be run before committing
-- Failing to run the linter may result in style issues and commit failures
+- ⚠️ NEVER BYPASS PRE-COMMIT HOOKS! NEVER use `git commit -n` or `--no-verify` ⚠️
+- ALWAYS run `make pre-commit` or at minimum `npm run ts-check` and `npm run lint` before committing
+- The full process must always be:
+  1. Make changes
+  2. Run `npm run ts-check` to verify TypeScript types
+  3. Run `npm run lint` to fix style issues (will auto-fix many problems)
+  4. Run `npm run test` to verify functionality (or at least `npm run test-min`)
+  5. ONLY THEN commit changes with plain `git commit` (NO FLAGS!)
+- Bypassing these checks will lead to broken builds, failed tests, and PRs that cannot be merged
 - ALWAYS use HEREDOC syntax for complex shell commands, especially those containing quotes, newlines, or special characters:
   ```bash
   gh pr create --title "Title" --body "$(cat <<'EOF'

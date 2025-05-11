@@ -36,14 +36,16 @@ export function setBaseDirectory(base_url_path: URL) {
     ce_base_directory = base_url_path.pathname;
 }
 
-function removeFileProtocol(path: string) {
+// Explicitly export for testing purposes - not part of the public API
+export function removeFileProtocol(path: string) {
     if (path.startsWith(filePrefix)) {
         return path.slice(filePrefix.length);
     }
     return path;
 }
 
-function check_path(parent: string, directory: string) {
+// Explicitly export for testing purposes - not part of the public API
+export function check_path(parent: string, directory: string) {
     // https://stackoverflow.com/a/45242825/15675011
     const relative = path.relative(parent, directory);
     if (relative && !relative.startsWith('..') && !path.isAbsolute(relative)) {
@@ -52,7 +54,8 @@ function check_path(parent: string, directory: string) {
     return false;
 }
 
-function get_diagnostic() {
+// Explicitly export for testing purposes - not part of the public API
+export function get_diagnostic() {
     const e = new Error();
     const trace = parse(e);
     if (trace.length >= 4) {
