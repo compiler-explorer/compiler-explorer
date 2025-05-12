@@ -71,7 +71,7 @@ import {NoScriptController} from './lib/handlers/api/noscript-controller.js';
 import {SiteTemplateController} from './lib/handlers/api/site-template-controller.js';
 import {SourceController} from './lib/handlers/api/source-controller.js';
 import {CompileHandler} from './lib/handlers/compile.js';
-import {RenderConfigUrlOptions, ShortLinkMetaData} from './lib/handlers/handler.interfaces.js';
+import {ShortLinkMetaData} from './lib/handlers/handler.interfaces.js';
 import {cached, createFormDataHandler, csp} from './lib/handlers/middleware.js';
 import {NoScriptHandler} from './lib/handlers/noscript.js';
 import {RouteAPI} from './lib/handlers/route-api.js';
@@ -690,11 +690,10 @@ async function main() {
 
     const sponsorConfig = loadSponsorsFromString(await fs.readFile(configDir + '/sponsors.yaml', 'utf8'));
 
-    function renderConfig(extra: Record<string, any>, urlOptions?: Partial<RenderConfigUrlOptions>) {
-        const urlOptionsAllowed = Object.keys({} as RenderConfigUrlOptions) as (keyof RenderConfigUrlOptions)[];
-        const filteredUrlOptions = _.mapObject(
-            _.pick(urlOptions || {}, urlOptionsAllowed) as Partial<RenderConfigUrlOptions>,
-            val => utils.toProperty(val),
+    function renderConfig(extra: Record<string, any>, urlOptions?: Record<string, any>) {
+        const urlOptionsAllowed = ['readOnly', 'hideEditorToolbars', 'language'];
+        const filteredUrlOptions = _.mapObject(_.pick(urlOptions || {}, urlOptionsAllowed), val =>
+            utils.toProperty(val),
         );
         const allExtraOptions = _.extend({}, filteredUrlOptions, extra);
 

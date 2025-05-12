@@ -22,26 +22,17 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
+import express from 'express';
+
 import {AppArguments} from '../app.interfaces.js';
+import {GoldenLayoutRootStruct} from '../clientstate-normalizer.js';
 import {CompilationEnvironment} from '../compilation-env.js';
 import {ClientOptionsHandler} from '../options-handler.js';
 import {PropertyGetter} from '../properties.interfaces.js';
 import {StorageBase} from '../storage/index.js';
-
-import express from 'express';
-import {GoldenLayoutRootStruct} from '../clientstate-normalizer.js';
 import {CompileHandler} from './compile.js';
 
-export interface RenderConfigUrlOptions {
-    readOnly: string;
-    hideEditorToolbars: string;
-    language: string;
-}
-
-export type RenderConfig = (
-    extra: Record<string, any>,
-    urlOptions?: Partial<RenderConfigUrlOptions>,
-) => Record<string, any>;
+export type RenderConfig = (extra: Record<string, any>, urlOptions?: Record<string, any>) => Record<string, any>;
 
 export type RenderGoldenLayout = (
     config: GoldenLayoutRootStruct,
