@@ -30,10 +30,31 @@ import {
     detectWsl,
     getGitReleaseName,
     getReleaseBuildNumber,
+    parseNumberForOptions,
     setupTempDir,
 } from '../../lib/app/cli.js';
 
 describe('CLI Module', () => {
+    describe('parseNumberForOptions', () => {
+        it('should parse valid numbers', () => {
+            expect(parseNumberForOptions('123')).toEqual(123);
+            expect(parseNumberForOptions('0')).toEqual(0);
+            expect(parseNumberForOptions('-10')).toEqual(-10);
+        });
+
+        it('should throw on invalid number - abc', () => {
+            expect(() => parseNumberForOptions('abc')).toThrow();
+        });
+
+        it('should throw on invalid number - 123abc', () => {
+            expect(() => parseNumberForOptions('123abc')).toThrow();
+        });
+
+        it('should throw on empty string', () => {
+            expect(() => parseNumberForOptions('')).toThrow();
+        });
+    });
+
     describe('getGitReleaseName', () => {
         beforeEach(() => {
             vi.mock('node:fs', () => ({

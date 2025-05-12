@@ -23,29 +23,9 @@
 // POSSIBILITY OF SUCH DAMAGE.
 
 import {afterEach, beforeEach, describe, expect, it} from 'vitest';
-import {getFaviconFilename, isDevMode, measureEventLoopLag, parseNumberForOptions} from '../../lib/app/utils.js';
+import {getFaviconFilename, isDevMode, measureEventLoopLag} from '../../lib/app/utils.js';
 
 describe('App Utils', () => {
-    describe('parseNumberForOptions', () => {
-        it('should parse valid numbers', () => {
-            expect(parseNumberForOptions('123')).toEqual(123);
-            expect(parseNumberForOptions('0')).toEqual(0);
-            expect(parseNumberForOptions('-10')).toEqual(-10);
-        });
-
-        it('should throw on invalid number - abc', () => {
-            expect(() => parseNumberForOptions('abc')).toThrow();
-        });
-
-        it('should throw on invalid number - 123abc', () => {
-            expect(() => parseNumberForOptions('123abc')).toThrow();
-        });
-
-        it('should throw on empty string', () => {
-            expect(() => parseNumberForOptions('')).toThrow();
-        });
-    });
-
     describe('isDevMode', () => {
         let originalNodeEnv: string | undefined;
 

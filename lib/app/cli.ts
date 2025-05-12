@@ -30,7 +30,22 @@ import {Command} from 'commander';
 import {AppArguments} from '../app.interfaces.js';
 import {logger} from '../logger.js';
 import * as utils from '../utils.js';
-import {parseNumberForOptions} from './utils.js';
+
+/**
+ * Parses a command line option into a number.
+ */
+export function parseNumberForOptions(value: string): number {
+    // Ensure string contains only digits (and optional leading minus sign)
+    if (!/^-?\d+$/.test(value)) {
+        throw new Error(`Invalid number: "${value}"`);
+    }
+
+    const parsedValue = Number.parseInt(value, 10);
+    if (Number.isNaN(parsedValue)) {
+        throw new Error(`Invalid number: "${value}"`);
+    }
+    return parsedValue;
+}
 
 /**
  * Options parsed from command-line arguments

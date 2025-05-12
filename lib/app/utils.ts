@@ -23,22 +23,6 @@
 // POSSIBILITY OF SUCH DAMAGE.
 
 /**
- * Parses a command line option into a number.
- */
-export function parseNumberForOptions(value: string): number {
-    // Ensure string contains only digits (and optional leading minus sign)
-    if (!/^-?\d+$/.test(value)) {
-        throw new Error(`Invalid number: "${value}"`);
-    }
-
-    const parsedValue = Number.parseInt(value, 10);
-    if (Number.isNaN(parsedValue)) {
-        throw new Error(`Invalid number: "${value}"`);
-    }
-    return parsedValue;
-}
-
-/**
  * Determines whether the app is running in development mode.
  */
 export function isDevMode(): boolean {
