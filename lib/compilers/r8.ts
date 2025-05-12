@@ -36,7 +36,6 @@ import {SimpleOutputFilenameCompiler} from '../base-compiler.js';
 import {CompilationEnvironment} from '../compilation-env.js';
 import {logger} from '../logger.js';
 
-import '../global.js';
 import {D8Compiler} from './d8.js';
 import {JavaCompiler} from './java.js';
 import {KotlinCompiler} from './kotlin.js';
@@ -64,9 +63,7 @@ export class R8Compiler extends D8Compiler implements SimpleOutputFilenameCompil
         let outputFilename = '';
         let initialResult: CompilationResult | null = null;
 
-        const javaCompiler = unwrap(
-            global.handler_config.compileHandler.findCompiler('java', this.javaId),
-        ) as JavaCompiler;
+        const javaCompiler = unwrap(this.env.findCompiler('java', this.javaId)) as JavaCompiler;
 
         // Instantiate Java or Kotlin compiler based on the current language.
         if (this.lang.id === 'android-java') {
@@ -89,9 +86,7 @@ export class R8Compiler extends D8Compiler implements SimpleOutputFilenameCompil
                 javaCompiler.getDefaultExecOptions(),
             );
         } else if (this.lang.id === 'android-kotlin') {
-            const kotlinCompiler = unwrap(
-                global.handler_config.compileHandler.findCompiler('kotlin', this.kotlinId),
-            ) as KotlinCompiler;
+            const kotlinCompiler = unwrap(this.env.findCompiler('kotlin', this.kotlinId)) as KotlinCompiler;
             outputFilename = kotlinCompiler.getOutputFilename(preliminaryCompilePath);
             const kotlinOptions = _.compact(
                 kotlinCompiler.prepareArguments(

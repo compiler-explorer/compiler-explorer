@@ -602,6 +602,7 @@ async function main() {
         defArgs.doCache,
     );
     const compileHandler = new CompileHandler(compilationEnvironment, awsProps);
+    compilationEnvironment.setCompilerFinder(compileHandler.findCompiler.bind(compileHandler));
     const storageType = getStorageTypeByKey(storageSolution);
     const storageHandler = new storageType(httpRoot, compilerProps, awsProps);
     const compilerFinder = new CompilerFinder(compileHandler, compilerProps, defArgs, clientOptionsHandler);
@@ -668,8 +669,7 @@ async function main() {
         process.exit(0);
     }
 
-    // Exported to allow compilers to refer to other existing compilers.
-    global.handler_config = {
+    const handler_config = {
         compileHandler,
         clientOptionsHandler,
         storageHandler,
@@ -681,8 +681,8 @@ async function main() {
         renderGoldenLayout,
     };
 
-    const noscriptHandler = new NoScriptHandler(router, global.handler_config);
-    const routeApi = new RouteAPI(router, global.handler_config);
+    const noscriptHandler = new NoScriptHandler(router, handler_config);
+    const routeApi = new RouteAPI(router, handler_config);
 
     async function onCompilerChange(compilers: CompilerInfo[]) {
         if (JSON.stringify(prevCompilers) === JSON.stringify(compilers)) {

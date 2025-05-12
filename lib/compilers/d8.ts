@@ -36,7 +36,6 @@ import {unwrap} from '../assert.js';
 import {BaseCompiler, SimpleOutputFilenameCompiler} from '../base-compiler.js';
 import {CompilationEnvironment} from '../compilation-env.js';
 import {logger} from '../logger.js';
-import '../global.js';
 
 import * as utils from '../utils.js';
 import {JavaCompiler} from './java.js';
@@ -103,9 +102,7 @@ export class D8Compiler extends BaseCompiler implements SimpleOutputFilenameComp
         let outputFilename = '';
         let initialResult: CompilationResult | null = null;
 
-        const javaCompiler = global.handler_config.compileHandler.findCompiler('java', this.javaId) as
-            | JavaCompiler
-            | undefined;
+        const javaCompiler = this.env.findCompiler('java', this.javaId) as JavaCompiler | undefined;
         if (!javaCompiler) {
             return {
                 ...this.handleUserError(
@@ -137,9 +134,7 @@ export class D8Compiler extends BaseCompiler implements SimpleOutputFilenameComp
                 javaCompiler.getDefaultExecOptions(),
             );
         } else if (this.lang.id === 'android-kotlin') {
-            const kotlinCompiler = unwrap(
-                global.handler_config.compileHandler.findCompiler('kotlin', this.kotlinId),
-            ) as KotlinCompiler;
+            const kotlinCompiler = unwrap(this.env.findCompiler('kotlin', this.kotlinId)) as KotlinCompiler;
             outputFilename = kotlinCompiler.getOutputFilename(preliminaryCompilePath);
             const kotlinOptions = _.compact(
                 kotlinCompiler.prepareArguments(
@@ -217,9 +212,7 @@ export class D8Compiler extends BaseCompiler implements SimpleOutputFilenameComp
     async generateSmali(outputFilename: string, maxSize: number) {
         const dirPath = path.dirname(outputFilename);
 
-        const javaCompiler = unwrap(
-            global.handler_config.compileHandler.findCompiler('java', this.javaId),
-        ) as JavaCompiler;
+        const javaCompiler = unwrap(this.env.findCompiler('java', this.javaId)) as JavaCompiler;
 
         // There is only one dex file for all classes.
         let files = await fs.readdir(dirPath);
