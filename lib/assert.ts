@@ -28,32 +28,47 @@ import path from 'node:path';
 import {isString} from '../shared/common-utils.js';
 import {parse} from '../shared/stacktrace.js';
 
+// Helper for cross-platform path handling in tests
+export function normalizePath(filePath: string): string {
+    return filePath.split(path.sep).join('/');
+}
+
+let ce_base_directory = '';
+
 const filePrefix = 'file://';
 
-function removeFileProtocol(path: string) {
+export function setBaseDirectory(base_url_path: URL) {
+    ce_base_directory = base_url_path.pathname;
+}
+
+// Explicitly export for testing purposes - not part of the public API
+export function removeFileProtocol(path: string) {
     if (path.startsWith(filePrefix)) {
         return path.slice(filePrefix.length);
     }
     return path;
 }
 
-function check_path(parent: URL, directory: string) {
+// Explicitly export for testing purposes - not part of the public API
+export function check_path(parent: string, directory: string) {
     // https://stackoverflow.com/a/45242825/15675011
-    const relative = path.relative(parent.pathname, directory);
+    const relative = path.relative(parent, directory);
     if (relative && !relative.startsWith('..') && !path.isAbsolute(relative)) {
-        return relative;
+        // Normalize separators to forward slashes for consistent behavior across platforms
+        return normalizePath(relative);
     }
     return false;
 }
 
-function get_diagnostic() {
+// Explicitly export for testing purposes - not part of the public API
+export function get_diagnostic() {
     const e = new Error();
     const trace = parse(e);
     if (trace.length >= 4) {
         const invoker_frame = trace[3];
         if (invoker_frame.fileName && invoker_frame.lineNumber) {
             // Just out of an abundance of caution...
-            const relative = check_path(global.ce_base_directory, removeFileProtocol(invoker_frame.fileName));
+            const relative = check_path(ce_base_directory, removeFileProtocol(invoker_frame.fileName));
             if (relative) {
                 try {
                     const file = fs.readFileSync(invoker_frame.fileName, 'utf8');

@@ -36,7 +36,6 @@ import {unwrap} from '../assert.js';
 import {BaseCompiler, SimpleOutputFilenameCompiler} from '../base-compiler.js';
 import {CompilationEnvironment} from '../compilation-env.js';
 import {logger} from '../logger.js';
-import '../global.js';
 
 import * as utils from '../utils.js';
 import {JavaCompiler} from './java.js';

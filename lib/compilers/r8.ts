@@ -36,7 +36,6 @@ import {SimpleOutputFilenameCompiler} from '../base-compiler.js';
 import {CompilationEnvironment} from '../compilation-env.js';
 import {logger} from '../logger.js';
 
-import '../global.js';
 import {D8Compiler} from './d8.js';
 import {JavaCompiler} from './java.js';
 import {KotlinCompiler} from './kotlin.js';
