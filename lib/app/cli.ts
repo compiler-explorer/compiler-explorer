@@ -126,7 +126,7 @@ export function getGitReleaseName(distPath: string, isDist: boolean): string {
     }
 
     // Check if we have been cloned and not downloaded
-    if (fs.existsSync('.git/')) {
+    if (fs.existsSync('.git')) {
         return child_process.execSync('git rev-parse HEAD').toString().trim();
     }
 
