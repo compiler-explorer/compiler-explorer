@@ -119,14 +119,14 @@ interface CompilerExplorerOptions extends OptionValues {
     logHost?: string;
     logPort?: number;
     hostnameForLogging?: string;
-    suppressConsoleLog?: boolean;
+    suppressConsoleLog: boolean;
     metricsPort?: number;
     loki?: string;
     discoveryOnly?: string;
     prediscovered?: string;
     webpackContent?: string;
     local: boolean;
-    version?: boolean;
+    version: boolean;
 }
 
 // Parse arguments from command line
@@ -237,8 +237,8 @@ function patchUpLanguageArg(languages: string[] | undefined): string[] | null {
 
 // Set default values for omitted arguments
 const defArgs: AppArguments = {
-    rootDir: opts.rootDir || './etc',
-    env: opts.env || ['dev'],
+    rootDir: opts.rootDir,
+    env: opts.env,
     hostname: opts.host,
     port: opts.port,
     gitReleaseName: gitReleaseName,
@@ -247,7 +247,7 @@ const defArgs: AppArguments = {
     doCache: opts.cache,
     fetchCompilersFromRemote: opts.remoteFetch,
     ensureNoCompilerClash: opts.ensureNoIdClash,
-    suppressConsoleLog: opts.suppressConsoleLog || false,
+    suppressConsoleLog: opts.suppressConsoleLog,
 };
 
 if (opts.logHost && opts.logPort) {
