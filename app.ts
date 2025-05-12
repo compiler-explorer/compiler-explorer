@@ -52,6 +52,7 @@ import _ from 'underscore';
 import urljoin from 'url-join';
 
 import {AppArguments} from './lib/app.interfaces.js';
+import {getFaviconFilename, isDevMode, measureEventLoopLag, parseNumberForOptions} from './lib/app/utils.js';
 import {setBaseDirectory, unwrap} from './lib/assert.js';
 import * as aws from './lib/aws.js';
 import * as normalizer from './lib/clientstate-normalizer.js';
@@ -91,14 +92,6 @@ import {CompilerInfo} from './types/compiler.interfaces.js';
 import type {Language, LanguageKey} from './types/languages.interfaces.js';
 
 setBaseDirectory(new URL('.', import.meta.url));
-
-function parseNumberForOptions(value: string): number {
-    const parsedValue = Number.parseInt(value, 10);
-    if (Number.isNaN(parsedValue)) {
-        throw new Error(`Invalid number: "${value}"`);
-    }
-    return parsedValue;
-}
 
 interface CompilerExplorerOptions extends OptionValues {
     env: string[];
@@ -259,21 +252,6 @@ if (appArgs.suppressConsoleLog) {
     suppressConsoleLog();
 }
 
-const isDevMode = () => process.env.NODE_ENV !== 'production';
-
-function getFaviconFilename() {
-    if (isDevMode()) {
-        return 'favicon-dev.ico';
-    }
-    if (opts.env?.includes('beta')) {
-        return 'favicon-beta.ico';
-    }
-    if (opts.env?.includes('staging')) {
-        return 'favicon-staging.ico';
-    }
-    return 'favicon.ico';
-}
-
 const propHierarchy = [
     'defaults',
     appArgs.env,
@@ -332,17 +310,6 @@ const httpRoot = urljoin(ceProps('httpRoot', '/'), '/');
 
 const staticUrl = ceProps<string | undefined>('staticUrl');
 const staticRoot = urljoin(staticUrl || urljoin(httpRoot, 'static'), '/');
-
-function measureEventLoopLag(delayMs: number) {
-    return new Promise<number>(resolve => {
-        const start = process.hrtime.bigint();
-        setTimeout(() => {
-            const elapsed = process.hrtime.bigint() - start;
-            const delta = elapsed - BigInt(delayMs * 1000000);
-            return resolve(Number(delta) / 1000000);
-        }, delayMs);
-    });
-}
 
 function setupEventLoopLagLogging() {
     const lagIntervalMs = ceProps('eventLoopMeasureIntervalMs', 0);
@@ -812,7 +779,7 @@ async function main() {
             res.set('Content-Type', 'application/xml');
             res.render('sitemap');
         })
-        .use(sFavicon(utils.resolvePathFromAppRoot('static/favicons', getFaviconFilename())))
+        .use(sFavicon(utils.resolvePathFromAppRoot('static/favicons', getFaviconFilename(isDevMode(), opts.env))))
         .get('/client-options.js', cached, (req, res) => {
             res.set('Content-Type', 'application/javascript');
             res.end(`window.compilerExplorerOptions = ${clientOptionsHandler.getJSON()};`);
