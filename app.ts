@@ -92,33 +92,7 @@ import type {Language, LanguageKey} from './types/languages.interfaces.js';
 
 setBaseDirectory(new URL('.', import.meta.url));
 
-type CompilerExplorerOptions = Partial<{
-    env: string[];
-    rootDir: string;
-    host: string;
-    port: number;
-    propDebug: boolean;
-    debug: boolean;
-    dist: boolean;
-    archivedVersions: string;
-    noRemoteFetch: boolean;
-    tmpDir: string;
-    wsl: boolean;
-    language: string[];
-    noCache: boolean;
-    ensureNoIdClash: boolean;
-    logHost: string;
-    logPort: number;
-    hostnameForLogging: string;
-    suppressConsoleLog: boolean;
-    metricsPort: number;
-    loki: string;
-    discoveryonly: string;
-    prediscovered: string;
-    version: boolean;
-    webpackContent: string;
-    noLocal: boolean;
-}>;
+// CompilerExplorerOptions has been removed in favor of CommanderOptions
 
 // Define an interface for our Commander options
 interface CommanderOptions extends OptionValues {
@@ -185,36 +159,7 @@ program.parse();
 // Get the options with the correct type
 const commanderOpts = program.opts() as CommanderOptions;
 
-// Convert to our expected CompilerExplorerOptions format
-const opts: CompilerExplorerOptions = {
-    env: commanderOpts.env,
-    rootDir: commanderOpts.rootDir,
-    host: commanderOpts.host,
-    port: commanderOpts.port ? Number.parseInt(commanderOpts.port, 10) : undefined,
-    propDebug: commanderOpts.propDebug,
-    debug: commanderOpts.debug,
-    dist: commanderOpts.dist,
-    archivedVersions: commanderOpts.archivedVersions,
-    noRemoteFetch: !commanderOpts.remoteFetch,
-    tmpDir: commanderOpts.tmpDir,
-    wsl: commanderOpts.wsl,
-    language: commanderOpts.language,
-    noCache: !commanderOpts.cache,
-    ensureNoIdClash: commanderOpts.ensureNoIdClash,
-    logHost: commanderOpts.logHost,
-    logPort: commanderOpts.logPort ? Number.parseInt(commanderOpts.logPort, 10) : undefined,
-    hostnameForLogging: commanderOpts.hostnameForLogging,
-    suppressConsoleLog: commanderOpts.suppressConsoleLog,
-    metricsPort: commanderOpts.metricsPort ? Number.parseInt(commanderOpts.metricsPort, 10) : undefined,
-    loki: commanderOpts.loki,
-    discoveryonly: commanderOpts.discoveryOnly,
-    prediscovered: commanderOpts.prediscovered,
-    webpackContent: commanderOpts.webpackContent,
-    noLocal: !commanderOpts.local,
-    version: commanderOpts.version,
-};
-
-if (opts.debug) logger.level = 'debug';
+if (commanderOpts.debug) logger.level = 'debug';
 
 // AP: Detect if we're running under Windows Subsystem for Linux. Temporary modification
 // of process.env is allowed: https://nodejs.org/api/process.html#process_process_env
@@ -226,14 +171,14 @@ if (process.platform === 'linux' && child_process.execSync('uname -a').toString(
 // Allow setting of the temporary directory (that which `os.tmpdir()` returns).
 // WSL requires a directory on a Windows volume. Set that to Windows %TEMP% if no -tmpDir supplied.
 // If a tempDir is supplied then assume that it will work for WSL processes as well.
-if (opts.tmpDir) {
+if (commanderOpts.tmpDir) {
     if (process.env.wsl) {
-        process.env.TEMP = opts.tmpDir; // for Windows
+        process.env.TEMP = commanderOpts.tmpDir; // for Windows
     } else {
-        process.env.TMP = opts.tmpDir; // for Linux
+        process.env.TMP = commanderOpts.tmpDir; // for Linux
     }
-    if (os.tmpdir() !== opts.tmpDir)
-        throw new Error(`Unable to set the temporary dir to ${opts.tmpDir} - stuck at  ${os.tmpdir()}`);
+    if (os.tmpdir() !== commanderOpts.tmpDir)
+        throw new Error(`Unable to set the temporary dir to ${commanderOpts.tmpDir} - stuck at  ${os.tmpdir()}`);
 } else if (process.env.wsl) {
     // Dec 2017 preview builds of WSL include /bin/wslpath; do the parsing work for now.
     // Parsing example %TEMP% is C:\Users\apardoe\AppData\Local\Temp
@@ -254,7 +199,7 @@ logger.debug(`Distpath=${distPath}`);
 const gitReleaseName = (() => {
     // Use the canned git_hash if provided
     const gitHashFilePath = path.join(distPath, 'git_hash');
-    if (opts.dist && fsSync.existsSync(gitHashFilePath)) {
+    if (commanderOpts.dist && fsSync.existsSync(gitHashFilePath)) {
         return fsSync.readFileSync(gitHashFilePath).toString().trim();
     }
 
@@ -270,7 +215,7 @@ const gitReleaseName = (() => {
 const releaseBuildNumber = (() => {
     // Use the canned build only if provided
     const releaseBuildPath = path.join(distPath, 'release_build');
-    if (opts.dist && fsSync.existsSync(releaseBuildPath)) {
+    if (commanderOpts.dist && fsSync.existsSync(releaseBuildPath)) {
         return fsSync.readFileSync(releaseBuildPath).toString().trim();
     }
     return '';
@@ -287,25 +232,27 @@ function patchUpLanguageArg(languages: string[] | undefined): string[] | null {
 
 // Set default values for omitted arguments
 const defArgs: AppArguments = {
-    rootDir: opts.rootDir || './etc',
-    env: opts.env || ['dev'],
-    hostname: opts.host,
-    port: opts.port || 10240,
+    rootDir: commanderOpts.rootDir || './etc',
+    env: commanderOpts.env || ['dev'],
+    hostname: commanderOpts.host,
+    port: commanderOpts.port ? Number.parseInt(commanderOpts.port, 10) : 10240,
     gitReleaseName: gitReleaseName,
     releaseBuildNumber: releaseBuildNumber,
-    wantedLanguages: patchUpLanguageArg(opts.language),
-    doCache: !opts.noCache,
-    fetchCompilersFromRemote: !opts.noRemoteFetch,
-    ensureNoCompilerClash: opts.ensureNoIdClash,
-    suppressConsoleLog: opts.suppressConsoleLog || false,
+    wantedLanguages: patchUpLanguageArg(commanderOpts.language),
+    doCache: commanderOpts.cache, // Note: inverted logic from noCache
+    fetchCompilersFromRemote: commanderOpts.remoteFetch, // Note: inverted logic from noRemoteFetch
+    ensureNoCompilerClash: commanderOpts.ensureNoIdClash,
+    suppressConsoleLog: commanderOpts.suppressConsoleLog || false,
 };
 
-if (opts.logHost && opts.logPort) {
-    logToPapertrail(opts.logHost, opts.logPort, defArgs.env.join('.'), opts.hostnameForLogging);
+if (commanderOpts.logHost && commanderOpts.logPort) {
+    // Parse the port string to number
+    const logPort = Number.parseInt(commanderOpts.logPort, 10);
+    logToPapertrail(commanderOpts.logHost, logPort, defArgs.env.join('.'), commanderOpts.hostnameForLogging);
 }
 
-if (opts.loki) {
-    logToLoki(opts.loki);
+if (commanderOpts.loki) {
+    logToLoki(commanderOpts.loki);
 }
 
 if (defArgs.suppressConsoleLog) {
@@ -319,10 +266,10 @@ function getFaviconFilename() {
     if (isDevMode()) {
         return 'favicon-dev.ico';
     }
-    if (opts.env?.includes('beta')) {
+    if (commanderOpts.env?.includes('beta')) {
         return 'favicon-beta.ico';
     }
-    if (opts.env?.includes('staging')) {
+    if (commanderOpts.env?.includes('staging')) {
         return 'favicon-staging.ico';
     }
     return 'favicon.ico';
@@ -335,13 +282,13 @@ const propHierarchy = [
     process.platform,
     os.hostname(),
 ].flat();
-if (!opts.noLocal) {
+if (commanderOpts.local) {
     propHierarchy.push('local');
 }
 logger.info(`properties hierarchy: ${propHierarchy.join(', ')}`);
 
 // Propagate debug mode if need be
-if (opts.propDebug) props.setDebug(true);
+if (commanderOpts.propDebug) props.setDebug(true);
 
 // *All* files in config dir are parsed
 const configDir = path.join(defArgs.rootDir, 'config');
@@ -377,7 +324,7 @@ if (Object.keys(languages).length === 0) {
 
 const compilerProps = new props.CompilerProps(languages, ceProps);
 
-const staticPath = opts.webpackContent || path.join(distPath, 'static');
+const staticPath = commanderOpts.webpackContent || path.join(distPath, 'static');
 const staticMaxAgeSecs = ceProps('staticMaxAgeSecs', 0);
 const maxUploadSize = ceProps('maxUploadSize', '1mb');
 const extraBodyClass = ceProps('extraBodyClass', isDevMode() ? 'dev' : '');
@@ -617,8 +564,8 @@ async function main() {
     let initialCompilers: CompilerInfo[];
     let prevCompilers: CompilerInfo[];
 
-    if (opts.prediscovered) {
-        const prediscoveredCompilersJson = await fs.readFile(opts.prediscovered, 'utf8');
+    if (commanderOpts.prediscovered) {
+        const prediscoveredCompilersJson = await fs.readFile(commanderOpts.prediscovered, 'utf8');
         initialCompilers = JSON.parse(prediscoveredCompilersJson);
         const prediscResult = await compilerFinder.loadPrediscovered(initialCompilers);
         if (prediscResult.length === 0) {
@@ -640,7 +587,7 @@ async function main() {
         }
     }
 
-    if (opts.discoveryonly) {
+    if (commanderOpts.discoveryOnly) {
         for (const compiler of initialCompilers) {
             if (compiler.buildenvsetup && compiler.buildenvsetup.id === '') delete compiler.buildenvsetup;
 
@@ -651,8 +598,8 @@ async function main() {
                 compiler.cachedPossibleArguments = compilerInstance.possibleArguments.possibleArguments;
             }
         }
-        await fs.writeFile(opts.discoveryonly, JSON.stringify(initialCompilers));
-        logger.info(`Discovered compilers saved to ${opts.discoveryonly}`);
+        await fs.writeFile(commanderOpts.discoveryOnly, JSON.stringify(initialCompilers));
+        logger.info(`Discovered compilers saved to ${commanderOpts.discoveryOnly}`);
         process.exit(0);
     }
 
@@ -691,7 +638,7 @@ async function main() {
     await onCompilerChange(initialCompilers);
 
     const rescanCompilerSecs = ceProps('rescanCompilerSecs', 0);
-    if (rescanCompilerSecs && !opts.prediscovered) {
+    if (rescanCompilerSecs && !commanderOpts.prediscovered) {
         logger.info(`Rescanning compilers every ${rescanCompilerSecs} secs`);
         setInterval(
             () => compilerFinder.find().then(result => onCompilerChange(result.compilers)),
@@ -701,9 +648,10 @@ async function main() {
 
     const sentrySlowRequestMs = ceProps('sentrySlowRequestMs', 0);
 
-    if (opts.metricsPort) {
-        logger.info(`Running metrics server on port ${opts.metricsPort}`);
-        setupMetricsServer(opts.metricsPort, defArgs.hostname);
+    if (commanderOpts.metricsPort) {
+        const metricsPort = Number.parseInt(commanderOpts.metricsPort, 10);
+        logger.info(`Running metrics server on port ${metricsPort}`);
+        setupMetricsServer(metricsPort, defArgs.hostname);
     }
 
     webServer
@@ -919,7 +867,7 @@ async function main() {
     startListening(webServer);
 }
 
-if (opts.version) {
+if (commanderOpts.version) {
     logger.info('Compiler Explorer version info:');
     logger.info(`  git release ${gitReleaseName}`);
     logger.info(`  release build ${releaseBuildNumber}`);
