@@ -702,6 +702,17 @@ const definitions: Record<LanguageKey, LanguageDefinition> = {
         previewFilter: null,
         monacoDisassembly: null,
     },
+    ptx: {
+        name: 'PTX',
+        monaco: 'ptx',
+        extensions: ['.ptx'],
+        alias: [],
+        logoUrl: 'cuda.svg',
+        logoUrlDark: 'cuda-dark.svg',
+        formatter: null,
+        previewFilter: null,
+        monacoDisassembly: null,
+    },
     python: {
         name: 'Python',
         monaco: 'python',

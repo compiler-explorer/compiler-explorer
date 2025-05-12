@@ -1,0 +1,39 @@
+.version 8.7
+.target sm_52
+.address_size 64
+
+.visible .entry vectorAdd(
+    .param .u64 vectorAdd_param_0,
+    .param .u64 vectorAdd_param_1,
+    .param .u64 vectorAdd_param_2,
+    .param .u32 vectorAdd_param_3
+)
+{
+    .reg .pred %p<2>;
+    .reg .b32 %r<4>;
+    .reg .b64 %rd<8>;
+    .reg .f32 %f<5>;
+
+    ld.param.u64 %rd1, [vectorAdd_param_0];
+    ld.param.u64 %rd2, [vectorAdd_param_1];
+    ld.param.u64 %rd3, [vectorAdd_param_2];
+    ld.param.u32 %r1, [vectorAdd_param_3];
+    mov.u32 %r2, %tid.x;
+    setp.ge.u32 %p1, %r2, %r1;
+    @%p1 bra BB0_2;
+
+    cvta.to.global.u64 %rd4, %rd1;
+    cvta.to.global.u64 %rd5, %rd2;
+    cvta.to.global.u64 %rd6, %rd3;
+    mul.wide.u32 %rd7, %r2, 4;
+    add.s64 %rd4, %rd4, %rd7;
+    add.s64 %rd5, %rd5, %rd7;
+    add.s64 %rd6, %rd6, %rd7;
+    ld.global.f32 %f1, [%rd4];
+    ld.global.f32 %f2, [%rd5];
+    add.f32 %f3, %f1, %f2;
+    st.global.f32 [%rd6], %f3;
+
+BB0_2:
+    ret;
+}
