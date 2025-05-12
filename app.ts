@@ -860,8 +860,8 @@ async function main() {
         .use(noScriptController.createRouter())
         .get('/g/:id', oldGoogleUrlHandler);
 
-    noscriptHandler.InitializeRoutes();
-    routeApi.InitializeRoutes();
+    noscriptHandler.initializeRoutes();
+    routeApi.initializeRoutes();
 
     if (!defArgs.doCache) {
         logger.info('  with disabled caching');

@@ -50,7 +50,7 @@ export class NoScriptHandler {
         private readonly defaultLanguage: string | undefined,
     ) {}
 
-    InitializeRoutes() {
+    initializeRoutes() {
         this.router
             .get('/noscript', cached, csp, (req, res) => {
                 this.renderNoScriptLayout(undefined, req, res);
