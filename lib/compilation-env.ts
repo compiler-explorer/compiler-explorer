@@ -30,7 +30,9 @@ import _ from 'underscore';
 import type {CacheableValue} from '../types/cache.interfaces.js';
 import {CompilerOverrideOptions} from '../types/compilation/compiler-overrides.interfaces.js';
 
+import {LanguageKey} from '../types/languages.interfaces.js';
 import {unwrap} from './assert.js';
+import {BaseCompiler} from './base-compiler.js';
 import type {Cache} from './cache/base.interfaces.js';
 import {BaseCache} from './cache/base.js';
 import {createCacheFromConfig} from './cache/from-config.js';
@@ -40,6 +42,8 @@ import {logger} from './logger.js';
 import type {PropertyGetter} from './properties.interfaces.js';
 import {CompilerProps, PropFunc} from './properties.js';
 import {IStatsNoter, createStatsNoter} from './stats.js';
+
+type FindCompiler = (langId: LanguageKey, compilerId: string) => BaseCompiler | undefined;
 
 export class CompilationEnvironment {
     ceProps: PropertyGetter;
@@ -58,6 +62,7 @@ export class CompilationEnvironment {
     statsNoter: IStatsNoter;
     private logCompilerCacheAccesses: boolean;
     private cachingInProgress: Record<string, boolean>;
+    private findCompilerFunc?: FindCompiler;
 
     constructor(
         compilerProps: CompilerProps,
@@ -201,5 +206,14 @@ export class CompilationEnvironment {
 
     getCompilerPropsForLanguage(languageId: string): PropFunc {
         return _.partial(this.compilerProps as any, languageId);
+    }
+
+    setCompilerFinder(compilerFinder: FindCompiler) {
+        this.findCompilerFunc = compilerFinder;
+    }
+
+    findCompiler(langId: LanguageKey, compilerId: string): BaseCompiler | undefined {
+        if (!this.findCompilerFunc) throw new Error('Compiler finder not set');
+        return this.findCompilerFunc(langId, compilerId);
     }
 }
