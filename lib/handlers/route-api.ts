@@ -93,7 +93,7 @@ export class RouteAPI {
         }
     }
 
-    InitializeRoutes() {
+    initializeRoutes() {
         if (this.apiHandler) {
             this.router.use('/api', this.apiHandler.handle);
         }
