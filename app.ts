@@ -146,7 +146,7 @@ program
     .option('--ensure-no-id-clash', "Don't run if compilers have clashing ids")
     .option('--logHost, --log-host <hostname>', 'Hostname for remote logging')
     .option('--logPort, --log-port <port>', 'Port for remote logging', parseNumberForOptions)
-    .option('--hostname-for-logging <hostname>', 'Hostname to use in logs')
+    .option('--hostnameForLogging, --hostname-for-logging <hostname>', 'Hostname to use in logs')
     .option('--suppressConsoleLog, --suppress-console-log', 'Disable console logging')
     .option('--metricsPort, --metrics-port <port>', 'Port to serve metrics on', parseNumberForOptions)
     .option('--loki <url>', 'URL for Loki logging')
