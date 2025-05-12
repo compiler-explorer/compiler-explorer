@@ -26,16 +26,13 @@
 // see https://docs.sentry.io/platforms/javascript/guides/node/install/late-initialization/
 import '@sentry/node/preload'; // preload Sentry's "preload" support before any other imports
 ////
-import child_process from 'node:child_process';
 import os from 'node:os';
 import path from 'node:path';
 import process from 'node:process';
 import url from 'node:url';
 
-import * as fsSync from 'node:fs';
 import fs from 'node:fs/promises';
 import * as Sentry from '@sentry/node';
-import {Command, OptionValues} from 'commander';
 import compression from 'compression';
 import express from 'express';
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
@@ -51,8 +48,9 @@ import systemdSocket from 'systemd-socket';
 import _ from 'underscore';
 import urljoin from 'url-join';
 
-import {AppArguments} from './lib/app.interfaces.js';
-import {getFaviconFilename, isDevMode, measureEventLoopLag, parseNumberForOptions} from './lib/app/utils.js';
+import {initializeOptionsFromCommandLine} from './lib/app/cli.js';
+import {loadConfiguration, setupEventLoopLagMonitoring} from './lib/app/config.js';
+import {getFaviconFilename, isDevMode} from './lib/app/utils.js';
 import {setBaseDirectory, unwrap} from './lib/assert.js';
 import * as aws from './lib/aws.js';
 import * as normalizer from './lib/clientstate-normalizer.js';
@@ -93,151 +91,11 @@ import type {Language, LanguageKey} from './types/languages.interfaces.js';
 
 setBaseDirectory(new URL('.', import.meta.url));
 
-interface CompilerExplorerOptions extends OptionValues {
-    env: string[];
-    rootDir: string;
-    host?: string;
-    port: number;
-    propDebug?: boolean;
-    debug?: boolean;
-    dist?: boolean;
-    remoteFetch: boolean;
-    tmpDir?: string;
-    wsl?: boolean;
-    language?: string[];
-    cache: boolean;
-    ensureNoIdClash?: boolean;
-    logHost?: string;
-    logPort?: number;
-    hostnameForLogging?: string;
-    suppressConsoleLog: boolean;
-    metricsPort?: number;
-    loki?: string;
-    discoveryOnly?: string;
-    prediscovered?: string;
-    static?: string;
-    local: boolean;
-    version: boolean;
-}
+// Initialize configuration from command-line arguments
+const {appArgs, options: opts} = initializeOptionsFromCommandLine();
 
-const program = new Command();
-program
-    .name('compiler-explorer')
-    .description('Interactively investigate compiler output')
-    .option('--env <environments...>', 'Environment(s) to use', ['dev'])
-    .option('--root-dir <dir>', 'Root directory for config files', './etc')
-    .option('--host <hostname>', 'Hostname to listen on')
-    .option('--port <port>', 'Port to listen on', parseNumberForOptions, 10240)
-    .option('--prop-debug', 'Debug properties')
-    .option('--debug', 'Enable debug output')
-    .option('--dist', 'Running in dist mode')
-    .option('--no-remote-fetch', 'Ignore fetch marks and assume every compiler is found locally')
-    .option('--tmpDir, --tmp-dir <dir>', 'Directory to use for temporary files')
-    .option('--wsl', 'Running under Windows Subsystem for Linux')
-    .option('--language <languages...>', 'Only load specified languages for faster startup')
-    .option('--no-cache', 'Do not use caching for compilation results')
-    .option('--ensure-no-id-clash', "Don't run if compilers have clashing ids")
-    .option('--logHost, --log-host <hostname>', 'Hostname for remote logging')
-    .option('--logPort, --log-port <port>', 'Port for remote logging', parseNumberForOptions)
-    .option('--hostnameForLogging, --hostname-for-logging <hostname>', 'Hostname to use in logs')
-    .option('--suppressConsoleLog, --suppress-console-log', 'Disable console logging')
-    .option('--metricsPort, --metrics-port <port>', 'Port to serve metrics on', parseNumberForOptions)
-    .option('--loki <url>', 'URL for Loki logging')
-    .option('--discoveryonly, --discovery-only <file>', 'Output discovery info to file and exit')
-    .option('--prediscovered <file>', 'Input discovery info from file')
-    .option('--static <dir>', 'Path to static content')
-    .option('--no-local', 'Disable local config')
-    .option('--version', 'Show version information');
-
-program.parse();
-
-const opts = program.opts<CompilerExplorerOptions>();
-
-if (opts.debug) logger.level = 'debug';
-
-// AP: Detect if we're running under Windows Subsystem for Linux. Temporary modification
-// of process.env is allowed: https://nodejs.org/api/process.html#process_process_env
-if (process.platform === 'linux' && child_process.execSync('uname -a').toString().toLowerCase().includes('microsoft')) {
-    // Node wants process.env is essentially a Record<key, string | undefined>. Any non-empty string should be fine.
-    process.env.wsl = 'true';
-}
-
-// Allow setting of the temporary directory (that which `os.tmpdir()` returns).
-// WSL requires a directory on a Windows volume. Set that to Windows %TEMP% if no -tmpDir supplied.
-// If a tempDir is supplied then assume that it will work for WSL processes as well.
-if (opts.tmpDir) {
-    if (process.env.wsl) {
-        process.env.TEMP = opts.tmpDir; // for Windows
-    } else {
-        process.env.TMP = opts.tmpDir; // for Linux
-    }
-    if (os.tmpdir() !== opts.tmpDir)
-        throw new Error(`Unable to set the temporary dir to ${opts.tmpDir} - stuck at  ${os.tmpdir()}`);
-} else if (process.env.wsl) {
-    // Dec 2017 preview builds of WSL include /bin/wslpath; do the parsing work for now.
-    // Parsing example %TEMP% is C:\Users\apardoe\AppData\Local\Temp
-    try {
-        const windowsTemp = child_process.execSync('cmd.exe /c echo %TEMP%').toString().replaceAll('\\', '/');
-        const driveLetter = windowsTemp.substring(0, 1).toLowerCase();
-        const directoryPath = windowsTemp.substring(2).trim();
-        process.env.TEMP = path.join('/mnt', driveLetter, directoryPath);
-    } catch (e) {
-        logger.warn('Unable to invoke cmd.exe to get windows %TEMP% path.');
-    }
-}
-logger.info(`Using temporary dir: ${os.tmpdir()}`);
-
+// Get distribution path for static files
 const distPath = utils.resolvePathFromAppRoot('.');
-logger.debug(`Distpath=${distPath}`);
-
-const gitReleaseName = (() => {
-    // Use the canned git_hash if provided
-    const gitHashFilePath = path.join(distPath, 'git_hash');
-    if (opts.dist && fsSync.existsSync(gitHashFilePath)) {
-        return fsSync.readFileSync(gitHashFilePath).toString().trim();
-    }
-
-    // Just if we have been cloned and not downloaded (Thanks David!)
-    if (fsSync.existsSync('.git/')) {
-        return child_process.execSync('git rev-parse HEAD').toString().trim();
-    }
-
-    // unknown case
-    return '';
-})();
-
-const releaseBuildNumber = (() => {
-    // Use the canned build only if provided
-    const releaseBuildPath = path.join(distPath, 'release_build');
-    if (opts.dist && fsSync.existsSync(releaseBuildPath)) {
-        return fsSync.readFileSync(releaseBuildPath).toString().trim();
-    }
-    return '';
-})();
-
-// TODO: only used in the windows run.ps1 - remove this once that's gone!
-function patchUpLanguageArg(languages: string[] | undefined): string[] | undefined {
-    if (!languages) return undefined;
-    if (languages.length === 1) {
-        // Support old style comma-separated language args.
-        return languages[0].split(',');
-    }
-    return languages;
-}
-
-const appArgs: AppArguments = {
-    rootDir: opts.rootDir,
-    env: opts.env,
-    hostname: opts.host,
-    port: opts.port,
-    gitReleaseName: gitReleaseName,
-    releaseBuildNumber: releaseBuildNumber,
-    wantedLanguages: patchUpLanguageArg(opts.language),
-    doCache: opts.cache,
-    fetchCompilersFromRemote: opts.remoteFetch,
-    ensureNoCompilerClash: opts.ensureNoIdClash,
-    suppressConsoleLog: opts.suppressConsoleLog,
-};
 
 if (opts.logHost && opts.logPort) {
     logToPapertrail(opts.logHost, opts.logPort, appArgs.env.join('.'), opts.hostnameForLogging);
@@ -470,7 +328,7 @@ const awsProps = props.propsFor('aws');
 // eslint-disable-next-line max-statements
 async function main() {
     await aws.initConfig(awsProps);
-    SetupSentry(aws.getConfig('sentryDsn'), ceProps, releaseBuildNumber, gitReleaseName, appArgs);
+    SetupSentry(aws.getConfig('sentryDsn'), ceProps, appArgs.releaseBuildNumber, appArgs.gitReleaseName, appArgs);
     const webServer = express();
     const router = express.Router();
 
@@ -513,8 +371,8 @@ async function main() {
     const noScriptController = new NoScriptController(compileHandler, formDataHandler);
 
     logger.info('=======================================');
-    if (gitReleaseName) logger.info(`  git release ${gitReleaseName}`);
-    if (releaseBuildNumber) logger.info(`  release build ${releaseBuildNumber}`);
+    if (appArgs.gitReleaseName) logger.info(`  git release ${appArgs.gitReleaseName}`);
+    if (appArgs.releaseBuildNumber) logger.info(`  release build ${appArgs.releaseBuildNumber}`);
 
     let initialCompilers: CompilerInfo[];
     let prevCompilers: CompilerInfo[];
@@ -823,8 +681,8 @@ async function main() {
 
 if (opts.version) {
     logger.info('Compiler Explorer version info:');
-    logger.info(`  git release ${gitReleaseName}`);
-    logger.info(`  release build ${releaseBuildNumber}`);
+    logger.info(`  git release ${appArgs.gitReleaseName}`);
+    logger.info(`  release build ${appArgs.releaseBuildNumber}`);
     logger.info('Exiting');
     process.exit(0);
 }
