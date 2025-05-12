@@ -222,6 +222,16 @@ const releaseBuildNumber = (() => {
     return '';
 })();
 
+// TODO: only used in the windows run.ps1 - remove this once that's gone!
+function patchUpLanguageArg(languages: string[] | undefined): string[] | undefined {
+    if (!languages) return undefined;
+    if (languages.length === 1) {
+        // Support old style comma-separated language args.
+        return languages[0].split(',');
+    }
+    return languages;
+}
+
 const appArgs: AppArguments = {
     rootDir: opts.rootDir,
     env: opts.env,
@@ -229,7 +239,7 @@ const appArgs: AppArguments = {
     port: opts.port,
     gitReleaseName: gitReleaseName,
     releaseBuildNumber: releaseBuildNumber,
-    wantedLanguages: opts.language,
+    wantedLanguages: patchUpLanguageArg(opts.language),
     doCache: opts.cache,
     fetchCompilersFromRemote: opts.remoteFetch,
     ensureNoCompilerClash: opts.ensureNoIdClash,
