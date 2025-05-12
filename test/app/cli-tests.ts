@@ -219,6 +219,9 @@ describe('CLI Module', () => {
         });
 
         it('should set TMP env var with tmpDir option on non-WSL', () => {
+            // Skip on Windows as it has different environment variable defaults
+            if (process.platform === 'win32') return;
+
             const options = {
                 tmpDir: '/custom/tmp',
             } as any;
@@ -230,6 +233,9 @@ describe('CLI Module', () => {
         });
 
         it('should set TEMP env var with tmpDir option on WSL', () => {
+            // Skip on Windows as it has different environment variable defaults
+            if (process.platform === 'win32') return;
+
             const options = {
                 tmpDir: '/custom/tmp',
             } as any;
@@ -241,6 +247,9 @@ describe('CLI Module', () => {
         });
 
         it('should try to use Windows TEMP on WSL without tmpDir option', () => {
+            // Skip on Windows due to path separator differences (we ironically test this from linux)
+            if (process.platform === 'win32') return;
+
             const options = {} as any;
             vi.mocked(child_process.execSync).mockReturnValue(Buffer.from('C:\\Users\\user\\AppData\\Local\\Temp\n'));
 
