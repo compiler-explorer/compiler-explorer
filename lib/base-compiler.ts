@@ -3150,7 +3150,11 @@ export class BaseCompiler {
     }
 
     async processAsm(result, filters: ParseFiltersAndOutputOptions, options: string[]) {
-        if ((options && isOutputLikelyLllvmIr(options)) || this.llvmIr.isLlvmIr(result.asm)) {
+        if (
+            result.languageId === 'llvm-ir' ||
+            (options && isOutputLikelyLllvmIr(options)) ||
+            this.llvmIr.isLlvmIr(result.asm)
+        ) {
             return await this.llvmIr.processFromFilters(result.asm, filters);
         }
 
