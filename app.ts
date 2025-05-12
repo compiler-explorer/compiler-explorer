@@ -122,7 +122,7 @@ interface CompilerExplorerOptions extends OptionValues {
     loki?: string;
     discoveryOnly?: string;
     prediscovered?: string;
-    webpackContent?: string;
+    static?: string;
     local: boolean;
     version: boolean;
 }
@@ -152,7 +152,7 @@ program
     .option('--loki <url>', 'URL for Loki logging')
     .option('--discoveryonly, --discovery-only <file>', 'Output discovery info to file and exit')
     .option('--prediscovered <file>', 'Input discovery info from file')
-    .option('--webpack-content <dir>', 'Path to webpack content')
+    .option('--static <dir>', 'Path to static content')
     .option('--no-local', 'Disable local config')
     .option('--version', 'Show version information');
 
@@ -313,7 +313,7 @@ if (Object.keys(languages).length === 0) {
 
 const compilerProps = new props.CompilerProps(languages, ceProps);
 
-const staticPath = opts.webpackContent || path.join(distPath, 'static');
+const staticPath = opts.static || path.join(distPath, 'static');
 const staticMaxAgeSecs = ceProps('staticMaxAgeSecs', 0);
 const maxUploadSize = ceProps('maxUploadSize', '1mb');
 const extraBodyClass = ceProps('extraBodyClass', isDevMode() ? 'dev' : '');
