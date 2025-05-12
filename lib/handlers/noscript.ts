@@ -33,13 +33,12 @@ import {logger} from '../logger.js';
 import {ClientOptionsHandler} from '../options-handler.js';
 import {StorageBase} from '../storage/index.js';
 
+import {RenderConfig} from './handler.interfaces.js';
 import {cached, csp} from './middleware.js';
 
 function isMobileViewer(req: express.Request) {
     return req.header('CloudFront-Is-Mobile-Viewer') === 'true';
 }
-
-type RenderConfig = (extra: Record<string, any>, urlOptions?: any) => Record<string, any>;
 
 export class NoScriptHandler {
     constructor(
