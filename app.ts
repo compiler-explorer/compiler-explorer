@@ -26,7 +26,6 @@
 // see https://docs.sentry.io/platforms/javascript/guides/node/install/late-initialization/
 import '@sentry/node/preload'; // preload Sentry's "preload" support before any other imports
 ////
-import os from 'node:os';
 import path from 'node:path';
 import process from 'node:process';
 import url from 'node:url';
@@ -74,7 +73,6 @@ import {ShortLinkMetaData} from './lib/handlers/handler.interfaces.js';
 import {cached, createFormDataHandler, csp} from './lib/handlers/middleware.js';
 import {NoScriptHandler} from './lib/handlers/noscript.js';
 import {RouteAPI} from './lib/handlers/route-api.js';
-import {languages as allLanguages} from './lib/languages.js';
 import {logToLoki, logToPapertrail, logger, makeLogStream, suppressConsoleLog} from './lib/logger.js';
 import {setupMetricsServer} from './lib/metrics-server.js';
 import {ClientOptionsHandler} from './lib/options-handler.js';
@@ -87,7 +85,6 @@ import {getStorageTypeByKey} from './lib/storage/index.js';
 import * as utils from './lib/utils.js';
 import {ElementType} from './shared/common-utils.js';
 import {CompilerInfo} from './types/compiler.interfaces.js';
-import type {Language, LanguageKey} from './types/languages.interfaces.js';
 
 setBaseDirectory(new URL('.', import.meta.url));
 
@@ -110,94 +107,31 @@ if (appArgs.suppressConsoleLog) {
     suppressConsoleLog();
 }
 
-const propHierarchy = [
-    'defaults',
-    appArgs.env,
-    appArgs.env.map(e => `${e}.${process.platform}`),
-    process.platform,
-    os.hostname(),
-].flat();
-if (opts.local) {
-    propHierarchy.push('local');
-}
-logger.info(`properties hierarchy: ${propHierarchy.join(', ')}`);
+// Load configuration
+const config = loadConfiguration({
+    appArgs,
+    options: opts,
+    propDebug: opts.propDebug,
+});
 
-// Propagate debug mode if need be
-if (opts.propDebug) props.setDebug(true);
-
-// *All* files in config dir are parsed
-const configDir = path.join(appArgs.rootDir, 'config');
-props.initialize(configDir, propHierarchy);
-// Instantiate a function to access records concerning "compiler-explorer"
-// in hidden object props.properties
-const ceProps = props.propsFor('compiler-explorer');
-const restrictToLanguages = ceProps<string>('restrictToLanguages');
-if (restrictToLanguages) {
-    appArgs.wantedLanguages = restrictToLanguages.split(',');
-}
-
-const languages = (() => {
-    if (appArgs.wantedLanguages) {
-        const filteredLangs: Partial<Record<LanguageKey, Language>> = {};
-        for (const wantedLang of appArgs.wantedLanguages) {
-            for (const lang of Object.values(allLanguages)) {
-                if (lang.id === wantedLang || lang.name === wantedLang || lang.alias.includes(wantedLang)) {
-                    filteredLangs[lang.id] = lang;
-                }
-            }
-        }
-        // Always keep cmake for IDE mode, just in case
-        filteredLangs[allLanguages.cmake.id] = allLanguages.cmake;
-        return filteredLangs;
-    }
-    return allLanguages;
-})();
-
-if (Object.keys(languages).length === 0) {
-    logger.error('Trying to start Compiler Explorer without a language');
-}
-
-const compilerProps = new props.CompilerProps(languages, ceProps);
+// Destructure configuration items for use in app
+const {
+    ceProps,
+    compilerProps,
+    languages,
+    staticMaxAgeSecs,
+    maxUploadSize,
+    extraBodyClass,
+    storageSolution,
+    httpRoot,
+    staticRoot,
+    staticUrl,
+} = config;
 
 const staticPath = opts.static || path.join(distPath, 'static');
-const staticMaxAgeSecs = ceProps('staticMaxAgeSecs', 0);
-const maxUploadSize = ceProps('maxUploadSize', '1mb');
-const extraBodyClass = ceProps('extraBodyClass', isDevMode() ? 'dev' : '');
-const storageSolution = compilerProps.ceProps('storageSolution', 'local');
-const httpRoot = urljoin(ceProps('httpRoot', '/'), '/');
 
-const staticUrl = ceProps<string | undefined>('staticUrl');
-const staticRoot = urljoin(staticUrl || urljoin(httpRoot, 'static'), '/');
-
-function setupEventLoopLagLogging() {
-    const lagIntervalMs = ceProps('eventLoopMeasureIntervalMs', 0);
-    const thresWarn = ceProps('eventLoopLagThresholdWarn', 0);
-    const thresErr = ceProps('eventLoopLagThresholdErr', 0);
-
-    let totalLag = 0;
-    const ceLagSecondsTotalGauge = new PromClient.Gauge({
-        name: 'ce_lag_seconds_total',
-        help: 'Total event loop lag since application startup',
-    });
-
-    async function eventLoopLagHandler() {
-        const lagMs = await measureEventLoopLag(lagIntervalMs);
-        totalLag += Math.max(lagMs / 1000, 0);
-        ceLagSecondsTotalGauge.set(totalLag);
-
-        if (thresErr && lagMs >= thresErr) {
-            logger.error(`Event Loop Lag: ${lagMs} ms`);
-        } else if (thresWarn && lagMs >= thresWarn) {
-            logger.warn(`Event Loop Lag: ${lagMs} ms`);
-        }
-
-        setImmediate(eventLoopLagHandler);
-    }
-
-    if (lagIntervalMs > 0) {
-        setImmediate(eventLoopLagHandler);
-    }
-}
+// Set up event loop lag monitoring
+setupEventLoopLagMonitoring(ceProps);
 
 let pugRequireHandler: (path: string) => any = () => {
     logger.error('pug require handler not configured');
@@ -502,6 +436,7 @@ async function main() {
         }
     });
 
+    const configDir = path.join(appArgs.rootDir, 'config');
     const sponsorConfig = loadSponsorsFromString(await fs.readFile(configDir + '/sponsors.yaml', 'utf8'));
 
     function renderConfig(extra: Record<string, any>, urlOptions?: Record<string, any>) {
@@ -668,7 +603,6 @@ async function main() {
     if (!appArgs.doCache) {
         logger.info('  with disabled caching');
     }
-    setupEventLoopLagLogging();
 
     if (isExecutionWorker) {
         await initHostSpecialties();
