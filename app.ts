@@ -26,7 +26,6 @@
 // see https://docs.sentry.io/platforms/javascript/guides/node/install/late-initialization/
 import '@sentry/node/preload'; // preload Sentry's "preload" support before any other imports
 ////
-
 import child_process from 'node:child_process';
 import os from 'node:os';
 import path from 'node:path';
@@ -52,6 +51,7 @@ import systemdSocket from 'systemd-socket';
 import _ from 'underscore';
 import urljoin from 'url-join';
 
+import {AppArguments} from './lib/app.interfaces.js';
 import {setBaseDirectory, unwrap} from './lib/assert.js';
 import * as aws from './lib/aws.js';
 import * as normalizer from './lib/clientstate-normalizer.js';
@@ -71,9 +71,10 @@ import {NoScriptController} from './lib/handlers/api/noscript-controller.js';
 import {SiteTemplateController} from './lib/handlers/api/site-template-controller.js';
 import {SourceController} from './lib/handlers/api/source-controller.js';
 import {CompileHandler} from './lib/handlers/compile.js';
+import {ShortLinkMetaData} from './lib/handlers/handler.interfaces.js';
 import {cached, createFormDataHandler, csp} from './lib/handlers/middleware.js';
 import {NoScriptHandler} from './lib/handlers/noscript.js';
-import {RouteAPI, ShortLinkMetaData} from './lib/handlers/route-api.js';
+import {RouteAPI} from './lib/handlers/route-api.js';
 import {languages as allLanguages} from './lib/languages.js';
 import {logToLoki, logToPapertrail, logger, makeLogStream, suppressConsoleLog} from './lib/logger.js';
 import {setupMetricsServer} from './lib/metrics-server.js';
@@ -91,7 +92,7 @@ import type {Language, LanguageKey} from './types/languages.interfaces.js';
 
 setBaseDirectory(new URL('.', import.meta.url));
 
-export type CompilerExplorerOptions = Partial<{
+type CompilerExplorerOptions = Partial<{
     env: string[];
     rootDir: string;
     host: string;
@@ -275,20 +276,6 @@ const releaseBuildNumber = (() => {
     return '';
 })();
 
-export type AppDefaultArguments = {
-    rootDir: string;
-    env: string[];
-    hostname?: string;
-    port: number;
-    gitReleaseName: string;
-    releaseBuildNumber: string;
-    wantedLanguages: string[] | null;
-    doCache: boolean;
-    fetchCompilersFromRemote: boolean;
-    ensureNoCompilerClash: boolean | undefined;
-    suppressConsoleLog: boolean;
-};
-
 function patchUpLanguageArg(languages: string[] | undefined): string[] | null {
     if (!languages) return null;
     if (languages.length === 1) {
@@ -299,7 +286,7 @@ function patchUpLanguageArg(languages: string[] | undefined): string[] | null {
 }
 
 // Set default values for omitted arguments
-const defArgs: AppDefaultArguments = {
+const defArgs: AppArguments = {
     rootDir: opts.rootDir || './etc',
     env: opts.env || ['dev'],
     hostname: opts.host,
@@ -682,7 +669,6 @@ async function main() {
         storageHandler,
         compilationEnvironment,
         ceProps,
-        opts,
         defArgs,
         renderConfig,
         renderGoldenLayout,
@@ -758,9 +744,11 @@ async function main() {
 
     const sponsorConfig = loadSponsorsFromString(await fs.readFile(configDir + '/sponsors.yaml', 'utf8'));
 
-    function renderConfig(extra: Record<string, any>, urlOptions?: any) {
+    function renderConfig(extra: Record<string, any>, urlOptions?: Record<string, any>) {
         const urlOptionsAllowed = ['readOnly', 'hideEditorToolbars', 'language'];
-        const filteredUrlOptions = _.mapObject(_.pick(urlOptions, urlOptionsAllowed), val => utils.toProperty(val));
+        const filteredUrlOptions = _.mapObject(_.pick(urlOptions || {}, urlOptionsAllowed), val =>
+            utils.toProperty(val),
+        );
         const allExtraOptions = _.extend({}, filteredUrlOptions, extra);
 
         if (allExtraOptions.mobileViewer && allExtraOptions.config) {
