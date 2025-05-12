@@ -22,6 +22,7 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
+import path from 'node:path';
 import {beforeEach, describe, expect, it} from 'vitest';
 
 import {assert, check_path, removeFileProtocol, setBaseDirectory, unwrap, unwrapString} from '../lib/assert.js';
@@ -56,6 +57,7 @@ describe('Assert module', () => {
 
     describe('check_path', () => {
         it('should return relative path for valid subdirectories', () => {
+            // This test now uses normalized paths with forward slashes for cross-platform compatibility
             expect(check_path('/root', '/root/sub/file.js')).toEqual('sub/file.js');
         });
 
@@ -83,9 +85,14 @@ describe('Assert module', () => {
             });
 
             it('should properly determine if a path is within the base directory using check_path', () => {
-                // Valid paths inside base directory
-                expect(check_path('/base/dir', '/base/dir/file.js')).toEqual('file.js');
-                expect(check_path('/base/dir', '/base/dir/subdir/file.js')).toEqual('subdir/file.js');
+                // Valid paths inside base directory - these paths use forward slashes regardless of platform
+                // for cross-platform test compatibility
+                const testRoot = '/base/dir';
+                const testFile = path.join(testRoot, 'file.js');
+                const testSubdirFile = path.join(testRoot, 'subdir', 'file.js');
+
+                expect(check_path(testRoot, testFile)).toEqual('file.js');
+                expect(check_path(testRoot, testSubdirFile)).toEqual('subdir/file.js');
 
                 // Invalid paths
                 expect(check_path('/base/dir', '/other/path/file.js')).toBe(false);

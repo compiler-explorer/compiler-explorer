@@ -28,6 +28,11 @@ import path from 'node:path';
 import {isString} from '../shared/common-utils.js';
 import {parse} from '../shared/stacktrace.js';
 
+// Helper for cross-platform path handling in tests
+export function normalizePath(filePath: string): string {
+    return filePath.split(path.sep).join('/');
+}
+
 let ce_base_directory = '';
 
 const filePrefix = 'file://';
@@ -49,7 +54,8 @@ export function check_path(parent: string, directory: string) {
     // https://stackoverflow.com/a/45242825/15675011
     const relative = path.relative(parent, directory);
     if (relative && !relative.startsWith('..') && !path.isAbsolute(relative)) {
-        return relative;
+        // Normalize separators to forward slashes for consistent behavior across platforms
+        return normalizePath(relative);
     }
     return false;
 }
