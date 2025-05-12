@@ -669,7 +669,14 @@ async function main() {
         process.exit(0);
     }
 
-    const handler_config = {
+    const noscriptHandler = new NoScriptHandler(
+        router,
+        clientOptionsHandler,
+        renderConfig,
+        storageHandler,
+        defArgs.wantedLanguages?.[0],
+    );
+    const routeApi = new RouteAPI(router, {
         compileHandler,
         clientOptionsHandler,
         storageHandler,
@@ -679,10 +686,7 @@ async function main() {
         defArgs,
         renderConfig,
         renderGoldenLayout,
-    };
-
-    const noscriptHandler = new NoScriptHandler(router, handler_config);
-    const routeApi = new RouteAPI(router, handler_config);
+    });
 
     async function onCompilerChange(compilers: CompilerInfo[]) {
         if (JSON.stringify(prevCompilers) === JSON.stringify(compilers)) {
@@ -910,8 +914,8 @@ async function main() {
         .use(noScriptController.createRouter())
         .get('/g/:id', oldGoogleUrlHandler);
 
-    noscriptHandler.InitializeRoutes();
-    routeApi.InitializeRoutes();
+    noscriptHandler.initializeRoutes();
+    routeApi.initializeRoutes();
 
     if (!defArgs.doCache) {
         logger.info('  with disabled caching');

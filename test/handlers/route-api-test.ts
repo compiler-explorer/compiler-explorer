@@ -87,7 +87,7 @@ describe('clientStateHandler', () => {
                 res.send('This is ok');
             },
         } as unknown as HandlerConfig);
-        apiHandler.InitializeRoutes();
+        apiHandler.initializeRoutes();
     });
 
     it('should return 200 for /clientstate', async () => {

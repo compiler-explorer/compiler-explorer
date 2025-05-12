@@ -33,34 +33,24 @@ import {logger} from '../logger.js';
 import {ClientOptionsHandler} from '../options-handler.js';
 import {StorageBase} from '../storage/index.js';
 
-import {CompileHandler} from './compile.js';
 import {cached, csp} from './middleware.js';
 
 function isMobileViewer(req: express.Request) {
     return req.header('CloudFront-Is-Mobile-Viewer') === 'true';
 }
 
-export class NoScriptHandler {
-    readonly clientOptionsHandler: ClientOptionsHandler;
-    readonly renderConfig: (a: any, b: any) => any;
-    readonly storageHandler: StorageBase;
-    readonly defaultLanguage: string;
-    readonly compileHandler: CompileHandler;
+type RenderConfig = (extra: Record<string, any>, urlOptions?: any) => Record<string, any>;
 
-    /* the type for config makes the most sense to define in app.ts or api.ts */
+export class NoScriptHandler {
     constructor(
         private readonly router: express.Router,
-        config: any,
-    ) {
-        this.clientOptionsHandler = config.clientOptionsHandler;
-        this.renderConfig = config.renderConfig;
-        this.storageHandler = config.storageHandler;
+        private readonly clientOptionsHandler: ClientOptionsHandler,
+        private readonly renderConfig: RenderConfig,
+        private readonly storageHandler: StorageBase,
+        private readonly defaultLanguage: string | undefined,
+    ) {}
 
-        this.compileHandler = config.compileHandler;
-        this.defaultLanguage = config.opts.wantedLanguage;
-    }
-
-    InitializeRoutes() {
+    initializeRoutes() {
         this.router
             .get('/noscript', cached, csp, (req, res) => {
                 this.renderNoScriptLayout(undefined, req, res);
