@@ -102,11 +102,11 @@ interface CompilerExplorerOptions extends OptionValues {
     debug?: boolean;
     dist?: boolean;
     archivedVersions?: string;
-    remoteFetch: boolean; // Note: this is inverted from our target
+    remoteFetch: boolean;
     tmpDir?: string;
     wsl?: boolean;
     language?: string[];
-    cache: boolean; // Note: this is inverted from our target
+    cache: boolean;
     ensureNoIdClash?: boolean;
     logHost?: string;
     logPort?: string;
@@ -117,7 +117,7 @@ interface CompilerExplorerOptions extends OptionValues {
     discoveryOnly?: string;
     prediscovered?: string;
     webpackContent?: string;
-    local: boolean; // Note: this is inverted from our target
+    local: boolean;
     version?: boolean;
 }
 
@@ -155,7 +155,7 @@ program
 program.parse();
 
 // Get the options with the correct type
-const opts = program.opts() as CompilerExplorerOptions;
+const opts = program.opts<CompilerExplorerOptions>();
 
 if (opts.debug) logger.level = 'debug';
 
@@ -237,8 +237,8 @@ const defArgs: AppArguments = {
     gitReleaseName: gitReleaseName,
     releaseBuildNumber: releaseBuildNumber,
     wantedLanguages: patchUpLanguageArg(opts.language),
-    doCache: opts.cache, // Note: inverted logic from noCache
-    fetchCompilersFromRemote: opts.remoteFetch, // Note: inverted logic from noRemoteFetch
+    doCache: opts.cache,
+    fetchCompilersFromRemote: opts.remoteFetch,
     ensureNoCompilerClash: opts.ensureNoIdClash,
     suppressConsoleLog: opts.suppressConsoleLog || false,
 };
