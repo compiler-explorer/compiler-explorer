@@ -27,7 +27,6 @@ import {HandlerConfig} from './handlers/route-api.js';
 declare global {
     // var is required
 
-    var ce_base_directory: URL;
     var handler_config: HandlerConfig;
     /* eslint-enable no-var */
 }

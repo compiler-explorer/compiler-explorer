@@ -52,7 +52,7 @@ import systemdSocket from 'systemd-socket';
 import _ from 'underscore';
 import urljoin from 'url-join';
 
-import {unwrap} from './lib/assert.js';
+import {setBaseDirectory, unwrap} from './lib/assert.js';
 import * as aws from './lib/aws.js';
 import * as normalizer from './lib/clientstate-normalizer.js';
 import {GoldenLayoutRootStruct} from './lib/clientstate-normalizer.js';
@@ -89,8 +89,7 @@ import {ElementType} from './shared/common-utils.js';
 import {CompilerInfo} from './types/compiler.interfaces.js';
 import type {Language, LanguageKey} from './types/languages.interfaces.js';
 
-// Used by assert.ts
-global.ce_base_directory = new URL('.', import.meta.url);
+setBaseDirectory(new URL('.', import.meta.url));
 
 export type CompilerExplorerOptions = Partial<{
     env: string[];
