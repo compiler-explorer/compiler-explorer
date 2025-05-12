@@ -23,13 +23,16 @@
 // POSSIBILITY OF SUCH DAMAGE.
 
 import child_process from 'node:child_process';
+import fs from 'node:fs';
+import os from 'node:os';
 import path from 'node:path';
-import {afterEach, beforeEach, describe, expect, it, vi} from 'vitest';
+import {MockInstance, afterEach, beforeEach, describe, expect, it, vi} from 'vitest';
 import {
     convertOptionsToAppArguments,
     detectWsl,
     getGitReleaseName,
     getReleaseBuildNumber,
+    parseCommandLine,
     parseNumberForOptions,
     setupTempDir,
 } from '../../lib/app/cli.js';
@@ -56,103 +59,96 @@ describe('CLI Module', () => {
     });
 
     describe('getGitReleaseName', () => {
+        // Create a temporary directory for each test
+        let tempDir: string;
+        let spyOnExecSync: MockInstance;
+
         beforeEach(() => {
-            vi.mock('node:fs', () => ({
-                existsSync: vi.fn(),
-                readFileSync: vi.fn(),
-            }));
-            vi.spyOn(child_process, 'execSync');
+            tempDir = fs.mkdtempSync(path.join(os.tmpdir(), 'ce-git-test-'));
+            spyOnExecSync = vi.spyOn(child_process, 'execSync');
         });
 
         afterEach(() => {
+            // Clean up the temporary directory
+            fs.rmSync(tempDir, {recursive: true, force: true});
             vi.restoreAllMocks();
-            vi.resetModules();
         });
 
-        it('should read from git_hash in dist mode', async () => {
-            const fs = await import('node:fs');
-            const distPath = '/path/to/dist';
-            const gitHashPath = path.join(distPath, 'git_hash');
+        it('should read from git_hash in dist mode', () => {
+            // Create the git_hash file with a known hash
             const expectedHash = 'abcdef123456';
+            fs.writeFileSync(path.join(tempDir, 'git_hash'), expectedHash + '\n');
 
-            vi.mocked(fs.existsSync).mockReturnValue(true);
-            vi.mocked(fs.readFileSync).mockReturnValue(Buffer.from(expectedHash + '\n'));
+            const result = getGitReleaseName(tempDir, true);
 
-            const result = getGitReleaseName(distPath, true);
-
-            expect(fs.existsSync).toHaveBeenCalledWith(gitHashPath);
-            expect(fs.readFileSync).toHaveBeenCalledWith(gitHashPath);
             expect(result).toEqual(expectedHash);
+            // Ensure git command was not called
+            expect(spyOnExecSync).not.toHaveBeenCalled();
         });
 
-        it('should use git command if not in dist mode but in git repo', async () => {
-            const fs = await import('node:fs');
-            const distPath = '/path/to/dist';
-            const expectedHash = 'abcdef123456';
+        it('should use git command if not in dist mode but in git repo', () => {
+            // We need to ensure a fake .git directory exists in the current directory
+            // since that's what the function checks for
+            const prevDir = process.cwd();
+            try {
+                process.chdir(tempDir);
+                const gitDir = path.join(tempDir, '.git');
+                fs.mkdirSync(gitDir, {recursive: true});
 
-            vi.mocked(fs.existsSync).mockImplementation(filePath => {
-                const pathStr = filePath.toString();
-                if (pathStr === path.join(distPath, 'git_hash')) return false;
-                if (pathStr === '.git/') return true;
-                return false;
-            });
-            vi.mocked(child_process.execSync).mockReturnValue(Buffer.from(expectedHash + '\n'));
+                // Create a mock implementation for execSync
+                const expectedHash = 'abcdef123456';
+                spyOnExecSync.mockReturnValue(Buffer.from(expectedHash + '\n'));
 
-            const result = getGitReleaseName(distPath, false);
+                // Run the test
+                const result = getGitReleaseName(tempDir, false);
 
-            expect(fs.existsSync).toHaveBeenCalledWith('.git/');
-            expect(child_process.execSync).toHaveBeenCalledWith('git rev-parse HEAD');
-            expect(result).toEqual(expectedHash);
+                // Verify expectations
+                expect(spyOnExecSync).toHaveBeenCalledWith('git rev-parse HEAD');
+                expect(result).toEqual(expectedHash);
+            } finally {
+                process.chdir(prevDir);
+            }
         });
 
-        it('should return empty string if no git info available', async () => {
-            const fs = await import('node:fs');
-            const distPath = '/path/to/dist';
-
-            vi.mocked(fs.existsSync).mockReturnValue(false);
-
-            const result = getGitReleaseName(distPath, false);
-
-            expect(result).toEqual('');
+        it('should return empty string if no git info available', () => {
+            // No git_hash file and no .git directory
+            const prevDir = process.cwd();
+            try {
+                process.chdir(tempDir);
+                const result = getGitReleaseName(tempDir, false);
+                expect(result).toEqual('');
+            } finally {
+                process.chdir(prevDir);
+            }
         });
     });
 
     describe('getReleaseBuildNumber', () => {
+        // Create a temporary directory for each test
+        let tempDir: string;
+
         beforeEach(() => {
-            vi.mock('node:fs', () => ({
-                existsSync: vi.fn(),
-                readFileSync: vi.fn(),
-            }));
+            tempDir = fs.mkdtempSync(path.join(os.tmpdir(), 'ce-release-test-'));
         });
 
         afterEach(() => {
-            vi.restoreAllMocks();
-            vi.resetModules();
+            // Clean up the temporary directory
+            fs.rmSync(tempDir, {recursive: true, force: true});
         });
 
-        it('should read from release_build in dist mode', async () => {
-            const fs = await import('node:fs');
-            const distPath = '/path/to/dist';
-            const releaseBuildPath = path.join(distPath, 'release_build');
+        it('should read from release_build in dist mode', () => {
+            // Create the release_build file with a known build number
             const expectedBuild = '12345';
+            fs.writeFileSync(path.join(tempDir, 'release_build'), expectedBuild + '\n');
 
-            vi.mocked(fs.existsSync).mockReturnValue(true);
-            vi.mocked(fs.readFileSync).mockReturnValue(Buffer.from(expectedBuild + '\n'));
+            const result = getReleaseBuildNumber(tempDir, true);
 
-            const result = getReleaseBuildNumber(distPath, true);
-
-            expect(fs.existsSync).toHaveBeenCalledWith(releaseBuildPath);
-            expect(fs.readFileSync).toHaveBeenCalledWith(releaseBuildPath);
             expect(result).toEqual(expectedBuild);
         });
 
-        it('should return empty string if no release build info available', async () => {
-            const fs = await import('node:fs');
-            const distPath = '/path/to/dist';
-
-            vi.mocked(fs.existsSync).mockReturnValue(false);
-
-            const result = getReleaseBuildNumber(distPath, false);
+        it('should return empty string if no release build info available', () => {
+            // No release_build file
+            const result = getReleaseBuildNumber(tempDir, false);
 
             expect(result).toEqual('');
         });
@@ -288,6 +284,46 @@ describe('CLI Module', () => {
                 ensureNoCompilerClash: true,
                 suppressConsoleLog: false,
             });
+        });
+    });
+
+    describe('parseCommandLine', () => {
+        // Integration tests for command-line parsing
+        it('should parse basic command-line args', () => {
+            const argv = ['node', 'app.js', '--port', '1234', '--debug'];
+
+            const result = parseCommandLine(argv);
+
+            expect(result.port).toEqual(1234);
+            expect(result.debug).toBe(true);
+            expect(result.env).toEqual(['dev']); // Default value
+        });
+
+        it('should parse array options', () => {
+            const argv = ['node', 'app.js', '--env', 'prod', 'beta', '--language', 'cpp', 'rust'];
+
+            const result = parseCommandLine(argv);
+
+            expect(result.env).toEqual(['prod', 'beta']);
+            expect(result.language).toEqual(['cpp', 'rust']);
+        });
+
+        it('should handle negated options', () => {
+            const argv = ['node', 'app.js', '--no-cache', '--no-local'];
+
+            const result = parseCommandLine(argv);
+
+            expect(result.cache).toBe(false);
+            expect(result.local).toBe(false);
+        });
+
+        it('should handle long option names with dashes', () => {
+            const argv = ['node', 'app.js', '--root-dir', '/custom/path', '--metrics-port', '9000'];
+
+            const result = parseCommandLine(argv);
+
+            expect(result.rootDir).toEqual('/custom/path');
+            expect(result.metricsPort).toEqual(9000);
         });
     });
 });

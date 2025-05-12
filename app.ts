@@ -89,7 +89,7 @@ import {CompilerInfo} from './types/compiler.interfaces.js';
 setBaseDirectory(new URL('.', import.meta.url));
 
 // Initialize configuration from command-line arguments
-const {appArgs, options: opts} = initializeOptionsFromCommandLine();
+const {appArgs, options: opts} = initializeOptionsFromCommandLine(process.argv);
 
 // Get distribution path for static files
 const distPath = utils.resolvePathFromAppRoot('.');

@@ -79,8 +79,9 @@ export interface CompilerExplorerOptions {
 
 /**
  * Parse command-line arguments and return parsed options
+ * @param argv The command-line arguments to parse
  */
-export function parseCommandLine(): CompilerExplorerOptions {
+export function parseCommandLine(argv: string[]): CompilerExplorerOptions {
     const program = new Command();
     program
         .name('compiler-explorer')
@@ -110,7 +111,7 @@ export function parseCommandLine(): CompilerExplorerOptions {
         .option('--no-local', 'Disable local config')
         .option('--version', 'Show version information');
 
-    program.parse();
+    program.parse(argv);
     return program.opts() as CompilerExplorerOptions;
 }
 
@@ -209,11 +210,15 @@ export function convertOptionsToAppArguments(
 
 /**
  * Initialize configuration from command-line arguments
+ * @param argv The command-line arguments to parse
  * @returns Application arguments and raw options
  */
-export function initializeOptionsFromCommandLine(): {appArgs: AppArguments; options: CompilerExplorerOptions} {
+export function initializeOptionsFromCommandLine(argv: string[]): {
+    appArgs: AppArguments;
+    options: CompilerExplorerOptions;
+} {
     // Parse command-line arguments
-    const options = parseCommandLine();
+    const options = parseCommandLine(argv);
 
     // Set debug level if requested
     if (options.debug) {
