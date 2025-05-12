@@ -29,7 +29,7 @@ export type AppArguments = {
     port: number;
     gitReleaseName: string;
     releaseBuildNumber: string;
-    wantedLanguages: string[] | null;
+    wantedLanguages: string[] | undefined;
     doCache: boolean;
     fetchCompilersFromRemote: boolean;
     ensureNoCompilerClash: boolean | undefined;

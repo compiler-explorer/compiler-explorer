@@ -92,8 +92,7 @@ import type {Language, LanguageKey} from './types/languages.interfaces.js';
 
 setBaseDirectory(new URL('.', import.meta.url));
 
-// Custom number parser for Commander options
-function parseNumber(value: string): number {
+function parseNumberForOptions(value: string): number {
     const parsedValue = Number.parseInt(value, 10);
     if (Number.isNaN(parsedValue)) {
         throw new Error(`Invalid number: "${value}"`);
@@ -101,7 +100,6 @@ function parseNumber(value: string): number {
     return parsedValue;
 }
 
-// Define an interface for our Commander options
 interface CompilerExplorerOptions extends OptionValues {
     env: string[];
     rootDir: string;
@@ -129,7 +127,6 @@ interface CompilerExplorerOptions extends OptionValues {
     version: boolean;
 }
 
-// Parse arguments from command line
 const program = new Command();
 program
     .name('compiler-explorer')
@@ -137,7 +134,7 @@ program
     .option('--env <environments...>', 'Environment(s) to use', ['dev'])
     .option('--root-dir <dir>', 'Root directory for config files', './etc')
     .option('--host <hostname>', 'Hostname to listen on')
-    .option('--port <port>', 'Port to listen on', parseNumber, 10240)
+    .option('--port <port>', 'Port to listen on', parseNumberForOptions, 10240)
     .option('--prop-debug', 'Debug properties')
     .option('--debug', 'Enable debug output')
     .option('--dist', 'Running in dist mode')
@@ -148,10 +145,10 @@ program
     .option('--no-cache', 'Do not use caching for compilation results')
     .option('--ensure-no-id-clash', "Don't run if compilers have clashing ids")
     .option('--logHost, --log-host <hostname>', 'Hostname for remote logging')
-    .option('--logPort, --log-port <port>', 'Port for remote logging', parseNumber)
+    .option('--logPort, --log-port <port>', 'Port for remote logging', parseNumberForOptions)
     .option('--hostname-for-logging <hostname>', 'Hostname to use in logs')
     .option('--suppressConsoleLog, --suppress-console-log', 'Disable console logging')
-    .option('--metricsPort, --metrics-port <port>', 'Port to serve metrics on', parseNumber)
+    .option('--metricsPort, --metrics-port <port>', 'Port to serve metrics on', parseNumberForOptions)
     .option('--loki <url>', 'URL for Loki logging')
     .option('--discoveryonly, --discovery-only <file>', 'Output discovery info to file and exit')
     .option('--prediscovered <file>', 'Input discovery info from file')
@@ -161,7 +158,6 @@ program
 
 program.parse();
 
-// Get the options with the correct type
 const opts = program.opts<CompilerExplorerOptions>();
 
 if (opts.debug) logger.level = 'debug';
@@ -226,24 +222,14 @@ const releaseBuildNumber = (() => {
     return '';
 })();
 
-function patchUpLanguageArg(languages: string[] | undefined): string[] | null {
-    if (!languages) return null;
-    if (languages.length === 1) {
-        // Support old style comma-separated language args.
-        return languages[0].split(',');
-    }
-    return languages;
-}
-
-// Set default values for omitted arguments
-const defArgs: AppArguments = {
+const appArgs: AppArguments = {
     rootDir: opts.rootDir,
     env: opts.env,
     hostname: opts.host,
     port: opts.port,
     gitReleaseName: gitReleaseName,
     releaseBuildNumber: releaseBuildNumber,
-    wantedLanguages: patchUpLanguageArg(opts.language),
+    wantedLanguages: opts.language,
     doCache: opts.cache,
     fetchCompilersFromRemote: opts.remoteFetch,
     ensureNoCompilerClash: opts.ensureNoIdClash,
@@ -251,14 +237,14 @@ const defArgs: AppArguments = {
 };
 
 if (opts.logHost && opts.logPort) {
-    logToPapertrail(opts.logHost, opts.logPort, defArgs.env.join('.'), opts.hostnameForLogging);
+    logToPapertrail(opts.logHost, opts.logPort, appArgs.env.join('.'), opts.hostnameForLogging);
 }
 
 if (opts.loki) {
     logToLoki(opts.loki);
 }
 
-if (defArgs.suppressConsoleLog) {
+if (appArgs.suppressConsoleLog) {
     logger.info('Disabling further console logging');
     suppressConsoleLog();
 }
@@ -280,8 +266,8 @@ function getFaviconFilename() {
 
 const propHierarchy = [
     'defaults',
-    defArgs.env,
-    defArgs.env.map(e => `${e}.${process.platform}`),
+    appArgs.env,
+    appArgs.env.map(e => `${e}.${process.platform}`),
     process.platform,
     os.hostname(),
 ].flat();
@@ -294,20 +280,20 @@ logger.info(`properties hierarchy: ${propHierarchy.join(', ')}`);
 if (opts.propDebug) props.setDebug(true);
 
 // *All* files in config dir are parsed
-const configDir = path.join(defArgs.rootDir, 'config');
+const configDir = path.join(appArgs.rootDir, 'config');
 props.initialize(configDir, propHierarchy);
 // Instantiate a function to access records concerning "compiler-explorer"
 // in hidden object props.properties
 const ceProps = props.propsFor('compiler-explorer');
 const restrictToLanguages = ceProps<string>('restrictToLanguages');
 if (restrictToLanguages) {
-    defArgs.wantedLanguages = restrictToLanguages.split(',');
+    appArgs.wantedLanguages = restrictToLanguages.split(',');
 }
 
 const languages = (() => {
-    if (defArgs.wantedLanguages) {
+    if (appArgs.wantedLanguages) {
         const filteredLangs: Partial<Record<LanguageKey, Language>> = {};
-        for (const wantedLang of defArgs.wantedLanguages) {
+        for (const wantedLang of appArgs.wantedLanguages) {
             for (const lang of Object.values(allLanguages)) {
                 if (lang.id === wantedLang || lang.name === wantedLang || lang.alias.includes(wantedLang)) {
                     filteredLangs[lang.id] = lang;
@@ -484,11 +470,11 @@ function startListening(server: express.Express) {
         logger.info(`  Listening on systemd socket: ${JSON.stringify(ss)}`);
         server.listen(ss);
     } else {
-        logger.info(`  Listening on http://${defArgs.hostname || 'localhost'}:${defArgs.port}/`);
-        if (defArgs.hostname) {
-            server.listen(defArgs.port, defArgs.hostname);
+        logger.info(`  Listening on http://${appArgs.hostname || 'localhost'}:${appArgs.port}/`);
+        if (appArgs.hostname) {
+            server.listen(appArgs.port, appArgs.hostname);
         } else {
-            server.listen(defArgs.port);
+            server.listen(appArgs.port);
         }
     }
 
@@ -507,31 +493,31 @@ const awsProps = props.propsFor('aws');
 // eslint-disable-next-line max-statements
 async function main() {
     await aws.initConfig(awsProps);
-    SetupSentry(aws.getConfig('sentryDsn'), ceProps, releaseBuildNumber, gitReleaseName, defArgs);
+    SetupSentry(aws.getConfig('sentryDsn'), ceProps, releaseBuildNumber, gitReleaseName, appArgs);
     const webServer = express();
     const router = express.Router();
 
     startWineInit();
 
-    RemoteExecutionQuery.initRemoteExecutionArchs(ceProps, defArgs.env);
+    RemoteExecutionQuery.initRemoteExecutionArchs(ceProps, appArgs.env);
 
     const formattingService = new FormattingService();
     await formattingService.initialize(ceProps);
 
-    const clientOptionsHandler = new ClientOptionsHandler(sources, compilerProps, defArgs);
+    const clientOptionsHandler = new ClientOptionsHandler(sources, compilerProps, appArgs);
     const compilationQueue = CompilationQueue.fromProps(compilerProps.ceProps);
     const compilationEnvironment = new CompilationEnvironment(
         compilerProps,
         awsProps,
         compilationQueue,
         formattingService,
-        defArgs.doCache,
+        appArgs.doCache,
     );
     const compileHandler = new CompileHandler(compilationEnvironment, awsProps);
     compilationEnvironment.setCompilerFinder(compileHandler.findCompiler.bind(compileHandler));
     const storageType = getStorageTypeByKey(storageSolution);
     const storageHandler = new storageType(httpRoot, compilerProps, awsProps);
-    const compilerFinder = new CompilerFinder(compileHandler, compilerProps, defArgs, clientOptionsHandler);
+    const compilerFinder = new CompilerFinder(compileHandler, compilerProps, appArgs, clientOptionsHandler);
 
     const isExecutionWorker = ceProps<boolean>('execqueue.is_worker', false);
     const healthCheckFilePath = ceProps('healthCheckFilePath', null) as string | null;
@@ -569,7 +555,7 @@ async function main() {
         if (!isExecutionWorker && initialCompilers.length === 0) {
             throw new Error('Unexpected failure, no compilers found!');
         }
-        if (defArgs.ensureNoCompilerClash) {
+        if (appArgs.ensureNoCompilerClash) {
             logger.warn('Ensuring no compiler ids clash');
             if (initialFindResults.foundClash) {
                 // If we are forced to have no clashes, throw an error with some explanation
@@ -600,7 +586,7 @@ async function main() {
         clientOptionsHandler,
         renderConfig,
         storageHandler,
-        defArgs.wantedLanguages?.[0],
+        appArgs.wantedLanguages?.[0],
     );
     const routeApi = new RouteAPI(router, {
         compileHandler,
@@ -608,7 +594,7 @@ async function main() {
         storageHandler,
         compilationEnvironment,
         ceProps,
-        defArgs,
+        defArgs: appArgs,
         renderConfig,
         renderGoldenLayout,
     });
@@ -642,7 +628,7 @@ async function main() {
 
     if (opts.metricsPort) {
         logger.info(`Running metrics server on port ${opts.metricsPort}`);
-        setupMetricsServer(opts.metricsPort, defArgs.hostname);
+        setupMetricsServer(opts.metricsPort, appArgs.hostname);
     }
 
     webServer
@@ -844,7 +830,7 @@ async function main() {
     noscriptHandler.initializeRoutes();
     routeApi.initializeRoutes();
 
-    if (!defArgs.doCache) {
+    if (!appArgs.doCache) {
         logger.info('  with disabled caching');
     }
     setupEventLoopLagLogging();
