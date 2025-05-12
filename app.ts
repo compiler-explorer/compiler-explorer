@@ -92,16 +92,24 @@ import type {Language, LanguageKey} from './types/languages.interfaces.js';
 
 setBaseDirectory(new URL('.', import.meta.url));
 
+// Custom number parser for Commander options
+function parseNumber(value: string): number {
+    const parsedValue = Number.parseInt(value, 10);
+    if (Number.isNaN(parsedValue)) {
+        throw new Error(`Invalid number: "${value}"`);
+    }
+    return parsedValue;
+}
+
 // Define an interface for our Commander options
 interface CompilerExplorerOptions extends OptionValues {
     env: string[];
     rootDir: string;
     host?: string;
-    port?: string;
+    port: number;
     propDebug?: boolean;
     debug?: boolean;
     dist?: boolean;
-    archivedVersions?: string;
     remoteFetch: boolean;
     tmpDir?: string;
     wsl?: boolean;
@@ -109,10 +117,10 @@ interface CompilerExplorerOptions extends OptionValues {
     cache: boolean;
     ensureNoIdClash?: boolean;
     logHost?: string;
-    logPort?: string;
+    logPort?: number;
     hostnameForLogging?: string;
     suppressConsoleLog?: boolean;
-    metricsPort?: string;
+    metricsPort?: number;
     loki?: string;
     discoveryOnly?: string;
     prediscovered?: string;
@@ -129,22 +137,21 @@ program
     .option('--env <environments...>', 'Environment(s) to use', ['dev'])
     .option('--root-dir <dir>', 'Root directory for config files', './etc')
     .option('--host <hostname>', 'Hostname to listen on')
-    .option('--port <port>', 'Port to listen on', '10240')
+    .option('--port <port>', 'Port to listen on', parseNumber, 10240)
     .option('--prop-debug', 'Debug properties')
     .option('--debug', 'Enable debug output')
     .option('--dist', 'Running in dist mode')
-    .option('--archived-versions <path>', 'Path to archived versions')
     .option('--no-remote-fetch', 'Ignore fetch marks and assume every compiler is found locally')
-    .option('--tmp-dir <dir>', 'Directory to use for temporary files')
+    .option('--tmpDir, --tmp-dir <dir>', 'Directory to use for temporary files')
     .option('--wsl', 'Running under Windows Subsystem for Linux')
     .option('--language <languages...>', 'Only load specified languages for faster startup')
     .option('--no-cache', 'Do not use caching for compilation results')
     .option('--ensure-no-id-clash', "Don't run if compilers have clashing ids")
-    .option('--log-host <hostname>', 'Hostname for remote logging')
-    .option('--log-port <port>', 'Port for remote logging')
+    .option('--logHost, --log-host <hostname>', 'Hostname for remote logging')
+    .option('--logPort, --log-port <port>', 'Port for remote logging', parseNumber)
     .option('--hostname-for-logging <hostname>', 'Hostname to use in logs')
-    .option('--suppress-console-log', 'Disable console logging')
-    .option('--metrics-port <port>', 'Port to serve metrics on')
+    .option('--suppressConsoleLog, --suppress-console-log', 'Disable console logging')
+    .option('--metricsPort, --metrics-port <port>', 'Port to serve metrics on', parseNumber)
     .option('--loki <url>', 'URL for Loki logging')
     .option('--discoveryonly, --discovery-only <file>', 'Output discovery info to file and exit')
     .option('--prediscovered <file>', 'Input discovery info from file')
@@ -233,7 +240,7 @@ const defArgs: AppArguments = {
     rootDir: opts.rootDir || './etc',
     env: opts.env || ['dev'],
     hostname: opts.host,
-    port: opts.port ? Number.parseInt(opts.port, 10) : 10240,
+    port: opts.port,
     gitReleaseName: gitReleaseName,
     releaseBuildNumber: releaseBuildNumber,
     wantedLanguages: patchUpLanguageArg(opts.language),
@@ -244,9 +251,7 @@ const defArgs: AppArguments = {
 };
 
 if (opts.logHost && opts.logPort) {
-    // Parse the port string to number
-    const logPort = Number.parseInt(opts.logPort, 10);
-    logToPapertrail(opts.logHost, logPort, defArgs.env.join('.'), opts.hostnameForLogging);
+    logToPapertrail(opts.logHost, opts.logPort, defArgs.env.join('.'), opts.hostnameForLogging);
 }
 
 if (opts.loki) {
@@ -458,8 +463,7 @@ function oldGoogleUrlHandler(req: express.Request, res: express.Response, next: 
 }
 
 function startListening(server: express.Express) {
-    const ss = systemdSocket();
-    let _port;
+    const ss: {fd: number} | null = systemdSocket(); // TODO: I'm not sure this works any more
     if (ss) {
         // ms (5 min default)
         const idleTimeout = process.env.IDLE_TIMEOUT;
@@ -477,9 +481,15 @@ function startListening(server: express.Express) {
             server.all('*', reset);
             logger.info(`  IDLE_TIMEOUT: ${idleTimeout}`);
         }
-        _port = ss;
+        logger.info(`  Listening on systemd socket: ${JSON.stringify(ss)}`);
+        server.listen(ss);
     } else {
-        _port = defArgs.port;
+        logger.info(`  Listening on http://${defArgs.hostname || 'localhost'}:${defArgs.port}/`);
+        if (defArgs.hostname) {
+            server.listen(defArgs.port, defArgs.hostname);
+        } else {
+            server.listen(defArgs.port);
+        }
     }
 
     const startupGauge = new PromClient.Gauge({
@@ -488,24 +498,8 @@ function startListening(server: express.Express) {
     });
     startupGauge.set(process.uptime());
     const startupDurationMs = Math.floor(process.uptime() * 1000);
-    if (Number.isNaN(Number.parseInt(_port))) {
-        // unix socket, not a port number...
-        logger.info(`  Listening on socket: //${_port}/`);
-        logger.info(`  Startup duration: ${startupDurationMs}ms`);
-        logger.info('=======================================');
-        server.listen(_port);
-    } else {
-        // normal port number
-        logger.info(`  Listening on http://${defArgs.hostname || 'localhost'}:${_port}/`);
-        logger.info(`  Startup duration: ${startupDurationMs}ms`);
-        logger.info('=======================================');
-        // silly express typing, passing undefined is fine but
-        if (defArgs.hostname) {
-            server.listen(_port, defArgs.hostname);
-        } else {
-            server.listen(_port);
-        }
-    }
+    logger.info(`  Startup duration: ${startupDurationMs}ms`);
+    logger.info('=======================================');
 }
 
 const awsProps = props.propsFor('aws');
@@ -647,9 +641,8 @@ async function main() {
     const sentrySlowRequestMs = ceProps('sentrySlowRequestMs', 0);
 
     if (opts.metricsPort) {
-        const metricsPort = Number.parseInt(opts.metricsPort, 10);
-        logger.info(`Running metrics server on port ${metricsPort}`);
-        setupMetricsServer(metricsPort, defArgs.hostname);
+        logger.info(`Running metrics server on port ${opts.metricsPort}`);
+        setupMetricsServer(opts.metricsPort, defArgs.hostname);
     }
 
     webServer
