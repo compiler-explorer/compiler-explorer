@@ -116,8 +116,7 @@ export function setupEventLoopLagMonitoring(ceProps: PropertyGetter): void {
 /**
  * Load and initialize application configuration
  */
-export function loadConfiguration(options: ConfigLoadOptions): ConfigurationResult {
-    const {appArgs, options: opts, propDebug} = options;
+export function loadConfiguration({appArgs, options: opts, propDebug}: ConfigLoadOptions): ConfigurationResult {
 
     // Set up property debugging if needed
     if (propDebug) {
