@@ -209,9 +209,6 @@ export function convertOptionsToAppArguments(
 export function parseArgsToAppArguments(argv: string[]): AppArguments {
     const options = parseCommandLine(argv);
     const isWsl = detectWsl();
-    if (isWsl) {
-        process.env.wsl = 'true';
-    }
 
     const distPath = utils.resolvePathFromAppRoot('.');
     logger.debug(`Distpath=${distPath}`);

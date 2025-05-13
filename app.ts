@@ -61,6 +61,7 @@ function uncaughtHandler(err: Error, origin: NodeJS.UncaughtExceptionOrigin) {
 
 // Parse command line arguments
 const appArgs = parseArgsToAppArguments(process.argv);
+if (appArgs.isWsl) process.env.wsl = 'true';
 
 // Initialize logging reasonably early in startup
 initialiseLogging(appArgs.loggingOptions);
