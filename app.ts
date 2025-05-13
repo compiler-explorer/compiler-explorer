@@ -32,7 +32,7 @@ import {initializeOptionsFromCommandLine} from './lib/app/cli.js';
 import {loadConfiguration} from './lib/app/config.js';
 import {initializeApplication} from './lib/app/main.js';
 import {setBaseDirectory} from './lib/assert.js';
-import {logToLoki, logToPapertrail, logger, suppressConsoleLog} from './lib/logger.js';
+import {logger} from './lib/logger.js';
 import * as props from './lib/properties.js';
 import * as utils from './lib/utils.js';
 
@@ -45,38 +45,15 @@ const {appArgs, options: opts} = initializeOptionsFromCommandLine(process.argv);
 // Get distribution path for static files
 const distPath = utils.resolvePathFromAppRoot('.');
 
-// Configure logging
-if (opts.logHost && opts.logPort) {
-    logToPapertrail(opts.logHost, opts.logPort, appArgs.env.join('.'), opts.hostnameForLogging);
-}
-
-if (opts.loki) {
-    logToLoki(opts.loki);
-}
-
-if (appArgs.suppressConsoleLog) {
-    logger.info('Disabling further console logging');
-    suppressConsoleLog();
-}
-
 // Load configuration
 const config = loadConfiguration({
     appArgs,
-    options: opts,
+    useLocal: opts.local,
     propDebug: opts.propDebug,
 });
 
 // Get AWS properties
 const awsProps = props.propsFor('aws');
-
-// Version info handling
-if (opts.version) {
-    logger.info('Compiler Explorer version info:');
-    logger.info(`  git release ${appArgs.gitReleaseName}`);
-    logger.info(`  release build ${appArgs.releaseBuildNumber}`);
-    logger.info('Exiting');
-    process.exit(0);
-}
 
 // Set up signal handlers
 process.on('uncaughtException', uncaughtHandler);

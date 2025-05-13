@@ -116,15 +116,14 @@ export function setupEventLoopLagMonitoring(ceProps: PropertyGetter): void {
 /**
  * Load and initialize application configuration
  */
-export function loadConfiguration({appArgs, options: opts, propDebug}: ConfigLoadOptions): ConfigurationResult {
-
+export function loadConfiguration({appArgs, useLocal, propDebug}: ConfigLoadOptions): ConfigurationResult {
     // Set up property debugging if needed
     if (propDebug) {
         props.setDebug(true);
     }
 
     // Create property hierarchy based on environment
-    const propHierarchy = createPropertyHierarchy(appArgs.env, opts.local);
+    const propHierarchy = createPropertyHierarchy(appArgs.env, useLocal);
 
     // Initialize properties from config directory
     const configDir = path.join(appArgs.rootDir, 'config');

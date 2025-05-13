@@ -45,6 +45,6 @@ export interface ConfigurationResult {
 
 export interface ConfigLoadOptions {
     appArgs: AppArguments;
-    options: any; // Options from CLI
+    useLocal: boolean;
     propDebug?: boolean;
 }

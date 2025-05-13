@@ -32,6 +32,7 @@ import LokiTransport from 'winston-loki';
 // @ts-ignore
 import {Papertrail} from 'winston-papertrail';
 import TransportStream, {TransportStreamOptions} from 'winston-transport';
+import {CompilerExplorerOptions} from './app/cli.js';
 
 const consoleTransportInstance = new winston.transports.Console();
 export const logger = winston.createLogger({
@@ -106,7 +107,7 @@ class MyPapertrailTransport extends TransportStream {
     }
 }
 
-export function logToLoki(url: string) {
+function logToLoki(url: string) {
     const transport = new LokiTransport({
         host: url,
         labels: {job: 'ce'},
@@ -123,7 +124,7 @@ export function logToLoki(url: string) {
     logger.info('Configured loki');
 }
 
-export function logToPapertrail(host: string, port: number, identifier: string, hostnameForLogging?: string) {
+function logToPapertrail(host: string, port: number, identifier: string, hostnameForLogging?: string) {
     const settings: MyPapertrailTransportOptions = {
         host: host,
         port: port,
@@ -147,6 +148,25 @@ export function logToPapertrail(host: string, port: number, identifier: string, 
 class Blackhole extends TransportStream {
     override log(info: any, callback: () => void) {
         callback();
+    }
+}
+
+export function initialiseLogging(options: CompilerExplorerOptions) {
+    if (options.debug) {
+        logger.level = 'debug';
+    }
+
+    if (options.logHost && options.logPort) {
+        logToPapertrail(options.logHost, options.logPort, options.env.join('.'), options.hostnameForLogging);
+    }
+
+    if (options.loki) {
+        logToLoki(options.loki);
+    }
+
+    if (options.suppressConsoleLog) {
+        logger.info('Disabling further console logging');
+        suppressConsoleLog();
     }
 }
 

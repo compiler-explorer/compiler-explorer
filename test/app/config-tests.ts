@@ -324,9 +324,7 @@ describe('Config Module', () => {
 
             const options: ConfigLoadOptions = {
                 appArgs,
-                options: {
-                    local: true,
-                },
+                useLocal: true,
                 propDebug: false,
             };
 
@@ -354,9 +352,7 @@ describe('Config Module', () => {
 
             const options: ConfigLoadOptions = {
                 appArgs,
-                options: {
-                    local: true,
-                },
+                useLocal: true,
                 propDebug: true,
             };
 
@@ -371,9 +367,7 @@ describe('Config Module', () => {
 
             const options: ConfigLoadOptions = {
                 appArgs,
-                options: {
-                    local: true,
-                },
+                useLocal: true,
                 propDebug: false,
             };
 
@@ -400,9 +394,7 @@ describe('Config Module', () => {
 
             const options: ConfigLoadOptions = {
                 appArgs,
-                options: {
-                    local: true,
-                },
+                useLocal: true,
                 propDebug: false,
             };
 

@@ -28,7 +28,7 @@ import path from 'node:path';
 import {Command} from 'commander';
 
 import {AppArguments} from '../app.interfaces.js';
-import {logger} from '../logger.js';
+import {initialiseLogging, logger} from '../logger.js';
 import * as utils from '../utils.js';
 
 /**
@@ -217,33 +217,34 @@ export function initializeOptionsFromCommandLine(argv: string[]): {
     appArgs: AppArguments;
     options: CompilerExplorerOptions;
 } {
-    // Parse command-line arguments
     const options = parseCommandLine(argv);
+    initialiseLogging(options);
 
-    // Set debug level if requested
-    if (options.debug) {
-        logger.level = 'debug';
-    }
-
-    // Detect WSL environment
     const isWsl = detectWsl();
     if (isWsl) {
         process.env.wsl = 'true';
     }
 
-    // Set up temporary directory
     setupTempDir(options, isWsl);
     logger.info(`Using temporary dir: ${process.env.TEMP || process.env.TMP}`);
 
-    // Get distribution path and version information
     const distPath = utils.resolvePathFromAppRoot('.');
     logger.debug(`Distpath=${distPath}`);
 
     const gitReleaseName = getGitReleaseName(distPath, options.dist === true);
     const releaseBuildNumber = getReleaseBuildNumber(distPath, options.dist === true);
 
-    // Convert to AppArguments
     const appArgs = convertOptionsToAppArguments(options, gitReleaseName, releaseBuildNumber);
+
+    if (options.version) {
+        // We can't use the `--version` support in Commander, as we need to parse the args
+        // to find the directory for the git release and whatnot.
+        logger.info('Compiler Explorer version info:');
+        logger.info(`  git release ${appArgs.gitReleaseName}`);
+        logger.info(`  release build ${appArgs.releaseBuildNumber}`);
+        logger.info('Exiting');
+        process.exit(0);
+    }
 
     return {appArgs, options};
 }
