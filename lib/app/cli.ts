@@ -34,15 +34,15 @@ import * as utils from '../utils.js';
 /**
  * Parses a command line option into a number.
  */
-export function parseNumberForOptions(value: string): number {
-    // Ensure string contains only digits (and optional leading minus sign)
-    if (!/^-?\d+$/.test(value)) {
-        throw new Error(`Invalid number: "${value}"`);
+export function parsePortNumberForOptions(value: string): number {
+    // Ensure string contains only digits
+    if (!/^\d+$/.test(value)) {
+        throw new Error(`Invalid port number: "${value}"`);
     }
 
     const parsedValue = Number.parseInt(value, 10);
-    if (Number.isNaN(parsedValue)) {
-        throw new Error(`Invalid number: "${value}"`);
+    if (Number.isNaN(parsedValue) || parsedValue > 65535) {
+        throw new Error(`Invalid port number: "${value}"`);
     }
     return parsedValue;
 }
@@ -89,7 +89,7 @@ export function parseCommandLine(argv: string[]): CompilerExplorerOptions {
         .option('--env <environments...>', 'Environment(s) to use', ['dev'])
         .option('--root-dir <dir>', 'Root directory for config files', './etc')
         .option('--host <hostname>', 'Hostname to listen on')
-        .option('--port <port>', 'Port to listen on', parseNumberForOptions, 10240)
+        .option('--port <port>', 'Port to listen on', parsePortNumberForOptions, 10240)
         .option('--prop-debug', 'Debug properties')
         .option('--debug', 'Enable debug output')
         .option('--dist', 'Running in dist mode')
@@ -100,10 +100,10 @@ export function parseCommandLine(argv: string[]): CompilerExplorerOptions {
         .option('--no-cache', 'Do not use caching for compilation results')
         .option('--ensure-no-id-clash', "Don't run if compilers have clashing ids")
         .option('--logHost, --log-host <hostname>', 'Hostname for remote logging')
-        .option('--logPort, --log-port <port>', 'Port for remote logging', parseNumberForOptions)
+        .option('--logPort, --log-port <port>', 'Port for remote logging', parsePortNumberForOptions)
         .option('--hostnameForLogging, --hostname-for-logging <hostname>', 'Hostname to use in logs')
         .option('--suppressConsoleLog, --suppress-console-log', 'Disable console logging')
-        .option('--metricsPort, --metrics-port <port>', 'Port to serve metrics on', parseNumberForOptions)
+        .option('--metricsPort, --metrics-port <port>', 'Port to serve metrics on', parsePortNumberForOptions)
         .option('--loki <url>', 'URL for Loki logging')
         .option('--discoveryonly, --discovery-only <file>', 'Output discovery info to file and exit')
         .option('--prediscovered <file>', 'Input discovery info from file')

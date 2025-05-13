@@ -33,28 +33,36 @@ import {
     getGitReleaseName,
     getReleaseBuildNumber,
     parseCommandLine,
-    parseNumberForOptions,
+    parsePortNumberForOptions,
     setupTempDir,
 } from '../../lib/app/cli.js';
 
 describe('CLI Module', () => {
-    describe('parseNumberForOptions', () => {
+    describe('parsePortNumberForOptions', () => {
         it('should parse valid numbers', () => {
-            expect(parseNumberForOptions('123')).toEqual(123);
-            expect(parseNumberForOptions('0')).toEqual(0);
-            expect(parseNumberForOptions('-10')).toEqual(-10);
+            expect(parsePortNumberForOptions('123')).toEqual(123);
+            expect(parsePortNumberForOptions('0')).toEqual(0);
+            expect(parsePortNumberForOptions('65535')).toEqual(65535);
+        });
+
+        it('should throw on negative numbers', () => {
+            expect(() => parsePortNumberForOptions('-1')).toThrow();
+        });
+
+        it('should throw on invalid numbers', () => {
+            expect(() => parsePortNumberForOptions('65536')).toThrow();
         });
 
         it('should throw on invalid number - abc', () => {
-            expect(() => parseNumberForOptions('abc')).toThrow();
+            expect(() => parsePortNumberForOptions('abc')).toThrow();
         });
 
         it('should throw on invalid number - 123abc', () => {
-            expect(() => parseNumberForOptions('123abc')).toThrow();
+            expect(() => parsePortNumberForOptions('123abc')).toThrow();
         });
 
         it('should throw on empty string', () => {
-            expect(() => parseNumberForOptions('')).toThrow();
+            expect(() => parsePortNumberForOptions('')).toThrow();
         });
     });
 
