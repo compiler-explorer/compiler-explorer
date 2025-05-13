@@ -77,4 +77,5 @@ export interface ServerDependencies {
     ceProps: PropertyGetter;
     sponsorConfig: any;
     clientOptionsHandler: any;
+    storageSolution: string;
 }

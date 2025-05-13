@@ -126,16 +126,16 @@ export async function setupWebServer(
         options.extraBodyClass = options.embedded ? 'embedded' : extraBodyClass;
         options.httpRoot = httpRoot;
         options.staticRoot = staticRoot;
-        options.storageSolution = 'local'; // TODO: Don't hardcode this
+        options.storageSolution = options.storageSolution || dependencies.storageSolution;
         options.require = pugRequireHandler;
         options.sponsors = sponsorConfig;
         return options;
     }
 
     /**
-     * Renders GoldenLayout for a given configuration
+     * Creates a function to render GoldenLayout for a given configuration
      */
-    function renderGoldenLayout(
+    function createGoldenLayoutRenderer(
         config: GoldenLayoutRootStruct,
         metadata: ShortLinkMetaData,
         req: Request,
@@ -177,34 +177,35 @@ export async function setupWebServer(
     /**
      * Handles legacy Google URL shortener redirects
      */
-    function oldGoogleUrlHandler(req: Request, res: Response, next: NextFunction) {
+    async function oldGoogleUrlHandler(req: Request, res: Response, next: NextFunction) {
         const id = req.params.id;
         const googleUrl = `https://goo.gl/${encodeURIComponent(id)}`;
-        googleShortUrlResolver
-            .resolve(googleUrl)
-            .then(resultObj => {
-                const parsed = new url.URL(resultObj.longUrl);
-                const allowedRe = new RegExp(ceProps<string>('allowedShortUrlHostRe'));
-                if (parsed.host.match(allowedRe) === null) {
-                    logger.warn(`Denied access to short URL ${id} - linked to ${resultObj.longUrl}`);
-                    return next({
-                        statusCode: 404,
-                        message: `ID "${id}" could not be found`,
-                    });
-                }
-                res.writeHead(301, {
-                    Location: resultObj.longUrl,
-                    'Cache-Control': 'public',
-                });
-                res.end();
-            })
-            .catch(e => {
-                logger.error(`Failed to expand ${googleUrl} - ${e}`);
-                next({
+
+        try {
+            const resultObj = await googleShortUrlResolver.resolve(googleUrl);
+            const parsed = new url.URL(resultObj.longUrl);
+            const allowedRe = new RegExp(ceProps<string>('allowedShortUrlHostRe'));
+
+            if (parsed.host.match(allowedRe) === null) {
+                logger.warn(`Denied access to short URL ${id} - linked to ${resultObj.longUrl}`);
+                return next({
                     statusCode: 404,
                     message: `ID "${id}" could not be found`,
                 });
+            }
+
+            res.writeHead(301, {
+                Location: resultObj.longUrl,
+                'Cache-Control': 'public',
             });
+            res.end();
+        } catch (e) {
+            logger.error(`Failed to expand ${googleUrl} - ${e}`);
+            next({
+                statusCode: 404,
+                message: `ID "${id}" could not be found`,
+            });
+        }
     }
 
     /**
@@ -389,7 +390,7 @@ export async function setupWebServer(
         router,
         pugRequireHandler,
         renderConfig,
-        renderGoldenLayout,
+        renderGoldenLayout: createGoldenLayoutRenderer,
     };
 }
 

@@ -110,13 +110,13 @@ describe('CLI Module', () => {
             }
         });
 
-        it('should return empty string if no git info available', () => {
+        it('should return a placeholder message if no git info available', () => {
             // No git_hash file and no .git directory
             const prevDir = process.cwd();
             try {
                 process.chdir(tempDir);
                 const result = getGitReleaseName(tempDir, false);
-                expect(result).toEqual('');
+                expect(result).toEqual('<no git hash found>');
             } finally {
                 process.chdir(prevDir);
             }

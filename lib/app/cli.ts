@@ -131,7 +131,7 @@ export function getGitReleaseName(distPath: string, isDist: boolean): string {
     }
 
     // unknown case
-    return '';
+    return '<no git hash found>';
 }
 
 /**
