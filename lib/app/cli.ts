@@ -49,8 +49,9 @@ export function parsePortNumberForOptions(value: string): number {
 
 /**
  * Options parsed from command-line arguments
+ * @private
  */
-export interface CompilerExplorerOptions {
+interface CompilerExplorerOptions {
     env: string[];
     rootDir: string;
     host?: string;
@@ -163,13 +164,13 @@ export function detectWsl(): boolean {
 /**
  * Set up temporary directory, especially for WSL environments
  */
-export function setupTempDir(options: CompilerExplorerOptions, isWsl: boolean): void {
+export function setupTempDir(tmpDir: string | undefined, isWsl: boolean): void {
     // If a tempDir is supplied, use it
-    if (options.tmpDir) {
+    if (tmpDir) {
         if (isWsl) {
-            process.env.TEMP = options.tmpDir; // for Windows
+            process.env.TEMP = tmpDir; // for Windows
         } else {
-            process.env.TMP = options.tmpDir; // for Linux
+            process.env.TMP = tmpDir; // for Linux
         }
     }
     // If running under WSL without explicit tmpDir, try to use Windows %TEMP%
@@ -183,6 +184,7 @@ export function setupTempDir(options: CompilerExplorerOptions, isWsl: boolean): 
             logger.warn('Unable to invoke cmd.exe to get windows %TEMP% path.');
         }
     }
+    logger.info(`Using temporary dir: ${process.env.TEMP || process.env.TMP}`);
 }
 
 /**
@@ -204,13 +206,13 @@ export function convertOptionsToAppArguments(
         doCache: options.cache,
         fetchCompilersFromRemote: options.remoteFetch,
         ensureNoCompilerClash: options.ensureNoIdClash,
-        suppressConsoleLog: options.suppressConsoleLog,
         prediscovered: options.prediscovered,
         discoveryOnly: options.discoveryOnly,
         staticPath: options.static,
         metricsPort: options.metricsPort,
         useLocalProps: options.local,
-        propDebug: options.propDebug,
+        propDebug: options.propDebug || false,
+        tmpDir: options.tmpDir,
     };
 }
 
@@ -221,15 +223,24 @@ export function convertOptionsToAppArguments(
  */
 export function initialiseOptionsFromCommandLine(argv: string[]): AppArguments {
     const options = parseCommandLine(argv);
-    initialiseLogging(options);
+
+    // Logging initialised here so it's done as early as possible.
+    initialiseLogging({
+        debug: options.debug || false,
+        logHost: options.logHost,
+        logPort: options.logPort,
+        hostnameForLogging: options.hostnameForLogging,
+        loki: options.loki,
+        suppressConsoleLog: options.suppressConsoleLog,
+        paperTrailIdentifier: options.env.join('.'),
+    });
 
     const isWsl = detectWsl();
     if (isWsl) {
         process.env.wsl = 'true';
     }
 
-    setupTempDir(options, isWsl);
-    logger.info(`Using temporary dir: ${process.env.TEMP || process.env.TMP}`);
+    setupTempDir(options.tmpDir, isWsl);
 
     const distPath = utils.resolvePathFromAppRoot('.');
     logger.debug(`Distpath=${distPath}`);

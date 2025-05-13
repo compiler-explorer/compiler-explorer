@@ -117,13 +117,13 @@ describe('Main module', () => {
         doCache: true,
         fetchCompilersFromRemote: true,
         ensureNoCompilerClash: false,
-        suppressConsoleLog: false,
         prediscovered: undefined,
         discoveryOnly: undefined,
         staticPath: undefined,
         metricsPort: undefined,
         useLocalProps: true,
         propDebug: false,
+        tmpDir: undefined,
     };
 
     const mockConfig = {

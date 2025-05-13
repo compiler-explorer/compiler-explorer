@@ -33,11 +33,11 @@ export type AppArguments = {
     doCache: boolean;
     fetchCompilersFromRemote: boolean;
     ensureNoCompilerClash: boolean | undefined;
-    suppressConsoleLog: boolean;
     prediscovered?: string;
     discoveryOnly?: string;
     staticPath?: string;
     metricsPort?: number;
     useLocalProps: boolean;
-    propDebug?: boolean;
+    propDebug: boolean;
+    tmpDir?: string;
 };

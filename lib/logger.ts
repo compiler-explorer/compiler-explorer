@@ -32,7 +32,18 @@ import LokiTransport from 'winston-loki';
 // @ts-ignore
 import {Papertrail} from 'winston-papertrail';
 import TransportStream, {TransportStreamOptions} from 'winston-transport';
-import {CompilerExplorerOptions} from './app/cli.js';
+/**
+ * Options required for configuring logging
+ */
+export interface LoggingOptions {
+    debug: boolean;
+    logHost?: string;
+    logPort?: number;
+    hostnameForLogging?: string;
+    loki?: string;
+    suppressConsoleLog: boolean;
+    paperTrailIdentifier: string;
+}
 
 const consoleTransportInstance = new winston.transports.Console();
 export const logger = winston.createLogger({
@@ -151,13 +162,13 @@ class Blackhole extends TransportStream {
     }
 }
 
-export function initialiseLogging(options: CompilerExplorerOptions) {
+export function initialiseLogging(options: LoggingOptions) {
     if (options.debug) {
         logger.level = 'debug';
     }
 
     if (options.logHost && options.logPort) {
-        logToPapertrail(options.logHost, options.logPort, options.env.join('.'), options.hostnameForLogging);
+        logToPapertrail(options.logHost, options.logPort, options.paperTrailIdentifier, options.hostnameForLogging);
     }
 
     if (options.loki) {

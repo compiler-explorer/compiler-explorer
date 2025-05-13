@@ -30,7 +30,6 @@ function createMockAppArgs(overrides: Partial<AppArguments> = {}): AppArguments 
         port: 10240,
         hostname: 'localhost',
         env: ['test'],
-        suppressConsoleLog: false,
         gitReleaseName: '',
         releaseBuildNumber: '',
         rootDir: '/test/root',
@@ -44,6 +43,7 @@ function createMockAppArgs(overrides: Partial<AppArguments> = {}): AppArguments 
         metricsPort: undefined,
         useLocalProps: true,
         propDebug: false,
+        tmpDir: undefined,
         ...overrides,
     };
 }

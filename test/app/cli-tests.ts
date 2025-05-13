@@ -230,11 +230,7 @@ describe('CLI Module', () => {
             // Skip on Windows as it has different environment variable defaults
             if (process.platform === 'win32') return;
 
-            const options = {
-                tmpDir: '/custom/tmp',
-            } as any;
-
-            setupTempDir(options, false);
+            setupTempDir('/custom/tmp', false);
 
             expect(process.env.TMP).toEqual('/custom/tmp');
             expect(process.env.TEMP).toBeUndefined();
@@ -244,11 +240,7 @@ describe('CLI Module', () => {
             // Skip on Windows as it has different environment variable defaults
             if (process.platform === 'win32') return;
 
-            const options = {
-                tmpDir: '/custom/tmp',
-            } as any;
-
-            setupTempDir(options, true);
+            setupTempDir('/custom/tmp', true);
 
             expect(process.env.TEMP).toEqual('/custom/tmp');
             expect(process.env.TMP).toEqual(originalEnv.TMP);
@@ -258,10 +250,9 @@ describe('CLI Module', () => {
             // Skip on Windows due to path separator differences (we ironically test this from linux)
             if (process.platform === 'win32') return;
 
-            const options = {} as any;
             vi.mocked(child_process.execSync).mockReturnValue(Buffer.from('C:\\Users\\user\\AppData\\Local\\Temp\n'));
 
-            setupTempDir(options, true);
+            setupTempDir(undefined, true);
 
             expect(process.env.TEMP).toEqual('/mnt/c/Users/user/AppData/Local/Temp');
             expect(child_process.execSync).toHaveBeenCalledWith('cmd.exe /c echo %TEMP%');
@@ -279,13 +270,13 @@ describe('CLI Module', () => {
                 cache: true,
                 remoteFetch: true,
                 ensureNoIdClash: true,
-                suppressConsoleLog: false,
                 prediscovered: './prediscovered.json',
                 discoveryOnly: './discoveryOnly.json',
                 static: './static',
                 metricsPort: 8081,
                 local: true,
                 propDebug: true,
+                tmpDir: '/custom/tmp',
                 extraField: 'should be ignored',
             } as any;
 
@@ -305,13 +296,13 @@ describe('CLI Module', () => {
                 doCache: true,
                 fetchCompilersFromRemote: true,
                 ensureNoCompilerClash: true,
-                suppressConsoleLog: false,
                 prediscovered: './prediscovered.json',
                 discoveryOnly: './discoveryOnly.json',
                 staticPath: './static',
                 metricsPort: 8081,
                 useLocalProps: true,
                 propDebug: true,
+                tmpDir: '/custom/tmp',
             });
         });
     });
