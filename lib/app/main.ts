@@ -22,6 +22,7 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
+import child_process from 'node:child_process';
 import fs from 'node:fs/promises';
 import path from 'node:path';
 
@@ -58,11 +59,40 @@ import {ApplicationOptions, ApplicationResult} from './main.interfaces.js';
 import {setupWebServer, startListening} from './server.js';
 
 /**
+ * Set up temporary directory, especially for WSL environments
+ */
+export function setupTempDir(tmpDir: string | undefined, isWsl: boolean): void {
+    // If a tempDir is supplied, use it
+    if (tmpDir) {
+        if (isWsl) {
+            process.env.TEMP = tmpDir; // for Windows
+        } else {
+            process.env.TMP = tmpDir; // for Linux
+        }
+    }
+    // If running under WSL without explicit tmpDir, try to use Windows %TEMP%
+    else if (isWsl) {
+        try {
+            const windowsTemp = child_process.execSync('cmd.exe /c echo %TEMP%').toString().replaceAll('\\', '/');
+            const driveLetter = windowsTemp.substring(0, 1).toLowerCase();
+            const directoryPath = windowsTemp.substring(2).trim();
+            process.env.TEMP = path.join('/mnt', driveLetter, directoryPath);
+        } catch (e) {
+            logger.warn('Unable to invoke cmd.exe to get windows %TEMP% path.');
+        }
+    }
+    logger.info(`Using temporary dir: ${process.env.TEMP || process.env.TMP}`);
+}
+
+/**
  * Initialize the Compiler Explorer application
  */
 export async function initialiseApplication(options: ApplicationOptions): Promise<ApplicationResult> {
     const {appArgs, config, distPath, awsProps} = options;
     const {ceProps, compilerProps, languages, storageSolution} = config;
+
+    // Set up temporary directory
+    setupTempDir(appArgs.tmpDir, appArgs.isWsl);
 
     // Initialize AWS configuration
     await aws.initConfig(awsProps);

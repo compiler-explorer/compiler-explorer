@@ -28,11 +28,11 @@ import '@sentry/node/preload'; // preload Sentry's "preload" support before any 
 ////
 import process from 'node:process';
 
-import {initialiseOptionsFromCommandLine} from './lib/app/cli.js';
+import {parseArgsToAppArguments} from './lib/app/cli.js';
 import {loadConfiguration} from './lib/app/config.js';
 import {initialiseApplication} from './lib/app/main.js';
 import {setBaseDirectory} from './lib/assert.js';
-import {logger} from './lib/logger.js';
+import {initialiseLogging, logger} from './lib/logger.js';
 import * as props from './lib/properties.js';
 import * as utils from './lib/utils.js';
 
@@ -59,8 +59,13 @@ function uncaughtHandler(err: Error, origin: NodeJS.UncaughtExceptionOrigin) {
     process.exitCode = 1;
 }
 
-// Initialise configuration
-const appArgs = initialiseOptionsFromCommandLine(process.argv);
+// Parse command line arguments
+const appArgs = parseArgsToAppArguments(process.argv);
+
+// Initialize logging reasonably early in startup
+initialiseLogging(appArgs.loggingOptions);
+
+// Load configuration
 const distPath = utils.resolvePathFromAppRoot('.');
 const config = loadConfiguration(appArgs);
 const awsProps = props.propsFor('aws');

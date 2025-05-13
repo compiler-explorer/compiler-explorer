@@ -22,6 +22,8 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
+import type {LoggingOptions} from './logger.js';
+
 export type AppArguments = {
     rootDir: string;
     env: string[];
@@ -40,4 +42,6 @@ export type AppArguments = {
     useLocalProps: boolean;
     propDebug: boolean;
     tmpDir?: string;
+    loggingOptions: LoggingOptions;
+    isWsl: boolean;
 };

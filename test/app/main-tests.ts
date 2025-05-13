@@ -22,12 +22,14 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
+import child_process from 'node:child_process';
 import fs from 'node:fs/promises';
+import process from 'node:process';
 import express from 'express';
 import {afterEach, beforeEach, describe, expect, it, vi} from 'vitest';
 
 import {AppArguments} from '../../lib/app.interfaces.js';
-import {initialiseApplication} from '../../lib/app/main.js';
+import {initialiseApplication, setupTempDir} from '../../lib/app/main.js';
 import * as server from '../../lib/app/server.js';
 import * as aws from '../../lib/aws.js';
 import {CompilationEnvironment} from '../../lib/compilation-env.js';
@@ -107,6 +109,52 @@ vi.mock('../../lib/handlers/api/source-controller.js', () => ({
 }));
 
 describe('Main module', () => {
+    describe('setupTempDir', () => {
+        let originalEnv: NodeJS.ProcessEnv;
+
+        beforeEach(() => {
+            originalEnv = {...process.env};
+            vi.spyOn(child_process, 'execSync');
+        });
+
+        afterEach(() => {
+            process.env = originalEnv;
+            vi.restoreAllMocks();
+        });
+
+        it('should set TMP env var with tmpDir option on non-WSL', () => {
+            // Skip on Windows as it has different environment variable defaults
+            if (process.platform === 'win32') return;
+
+            setupTempDir('/custom/tmp', false);
+
+            expect(process.env.TMP).toEqual('/custom/tmp');
+            expect(process.env.TEMP).toBeUndefined();
+        });
+
+        it('should set TEMP env var with tmpDir option on WSL', () => {
+            // Skip on Windows as it has different environment variable defaults
+            if (process.platform === 'win32') return;
+
+            setupTempDir('/custom/tmp', true);
+
+            expect(process.env.TEMP).toEqual('/custom/tmp');
+            expect(process.env.TMP).toEqual(originalEnv.TMP);
+        });
+
+        it('should try to use Windows TEMP on WSL without tmpDir option', () => {
+            // Skip on Windows due to path separator differences (we ironically test this from linux)
+            if (process.platform === 'win32') return;
+
+            vi.mocked(child_process.execSync).mockReturnValue(Buffer.from('C:\\Users\\user\\AppData\\Local\\Temp\n'));
+
+            setupTempDir(undefined, true);
+
+            expect(process.env.TEMP).toEqual('/mnt/c/Users/user/AppData/Local/Temp');
+            expect(child_process.execSync).toHaveBeenCalledWith('cmd.exe /c echo %TEMP%');
+        });
+    });
+
     const mockAppArgs: AppArguments = {
         rootDir: '/test/root',
         env: ['test'],
@@ -124,6 +172,12 @@ describe('Main module', () => {
         useLocalProps: true,
         propDebug: false,
         tmpDir: undefined,
+        isWsl: false,
+        loggingOptions: {
+            debug: false,
+            suppressConsoleLog: false,
+            paperTrailIdentifier: 'test',
+        },
     };
 
     const mockConfig = {

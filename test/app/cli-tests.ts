@@ -32,9 +32,9 @@ import {
     detectWsl,
     getGitReleaseName,
     getReleaseBuildNumber,
+    parseArgsToAppArguments,
     parseCommandLine,
     parsePortNumberForOptions,
-    setupTempDir,
 } from '../../lib/app/cli.js';
 
 describe('CLI Module', () => {
@@ -213,52 +213,6 @@ describe('CLI Module', () => {
         });
     });
 
-    describe('setupTempDir', () => {
-        let originalEnv: NodeJS.ProcessEnv;
-
-        beforeEach(() => {
-            originalEnv = {...process.env};
-            vi.spyOn(child_process, 'execSync');
-        });
-
-        afterEach(() => {
-            process.env = originalEnv;
-            vi.restoreAllMocks();
-        });
-
-        it('should set TMP env var with tmpDir option on non-WSL', () => {
-            // Skip on Windows as it has different environment variable defaults
-            if (process.platform === 'win32') return;
-
-            setupTempDir('/custom/tmp', false);
-
-            expect(process.env.TMP).toEqual('/custom/tmp');
-            expect(process.env.TEMP).toBeUndefined();
-        });
-
-        it('should set TEMP env var with tmpDir option on WSL', () => {
-            // Skip on Windows as it has different environment variable defaults
-            if (process.platform === 'win32') return;
-
-            setupTempDir('/custom/tmp', true);
-
-            expect(process.env.TEMP).toEqual('/custom/tmp');
-            expect(process.env.TMP).toEqual(originalEnv.TMP);
-        });
-
-        it('should try to use Windows TEMP on WSL without tmpDir option', () => {
-            // Skip on Windows due to path separator differences (we ironically test this from linux)
-            if (process.platform === 'win32') return;
-
-            vi.mocked(child_process.execSync).mockReturnValue(Buffer.from('C:\\Users\\user\\AppData\\Local\\Temp\n'));
-
-            setupTempDir(undefined, true);
-
-            expect(process.env.TEMP).toEqual('/mnt/c/Users/user/AppData/Local/Temp');
-            expect(child_process.execSync).toHaveBeenCalledWith('cmd.exe /c echo %TEMP%');
-        });
-    });
-
     describe('convertOptionsToAppArguments', () => {
         it('should convert command-line options to AppArguments', () => {
             const options = {
@@ -277,13 +231,16 @@ describe('CLI Module', () => {
                 local: true,
                 propDebug: true,
                 tmpDir: '/custom/tmp',
+                debug: true,
+                suppressConsoleLog: false,
                 extraField: 'should be ignored',
             } as any;
 
             const gitReleaseName = 'abc123';
             const releaseBuildNumber = '456';
+            const isWsl = false;
 
-            const result = convertOptionsToAppArguments(options, gitReleaseName, releaseBuildNumber);
+            const result = convertOptionsToAppArguments(options, gitReleaseName, releaseBuildNumber, isWsl);
 
             expect(result).toEqual({
                 rootDir: './etc',
@@ -303,6 +260,16 @@ describe('CLI Module', () => {
                 useLocalProps: true,
                 propDebug: true,
                 tmpDir: '/custom/tmp',
+                isWsl: false,
+                loggingOptions: {
+                    debug: true,
+                    logHost: undefined,
+                    logPort: undefined,
+                    hostnameForLogging: undefined,
+                    loki: undefined,
+                    suppressConsoleLog: false,
+                    paperTrailIdentifier: 'dev',
+                },
             });
         });
     });
@@ -344,6 +311,27 @@ describe('CLI Module', () => {
 
             expect(result.rootDir).toEqual('/custom/path');
             expect(result.metricsPort).toEqual(9000);
+        });
+    });
+
+    describe('parseArgsToAppArguments', () => {
+        // This is a higher-level function that depends on other functions,
+        // so we'll test it with a more integration-style approach
+        it('should parse command line arguments into AppArguments', () => {
+            const argv = ['node', 'app.js', '--port', '1234'];
+
+            const result = parseArgsToAppArguments(argv);
+
+            // Verify the basic structure and a few key properties
+            expect(result).toHaveProperty('port', 1234);
+            expect(result).toHaveProperty('loggingOptions');
+            expect(result).toHaveProperty('propDebug');
+            expect(result).toHaveProperty('gitReleaseName');
+            expect(result).toHaveProperty('releaseBuildNumber');
+            expect(result).toHaveProperty('isWsl');
+
+            // Verify the expected env array
+            expect(result.env).toEqual(['dev']); // Default value
         });
     });
 });

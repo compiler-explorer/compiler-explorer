@@ -46,6 +46,12 @@ function createMockAppArgs(overrides: Partial<AppArguments> = {}): AppArguments 
         useLocalProps: true,
         propDebug: false,
         tmpDir: undefined,
+        isWsl: false,
+        loggingOptions: {
+            debug: false,
+            suppressConsoleLog: false,
+            paperTrailIdentifier: 'prod',
+        },
         ...overrides,
     };
 }

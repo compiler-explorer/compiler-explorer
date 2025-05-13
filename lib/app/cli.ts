@@ -28,7 +28,7 @@ import path from 'node:path';
 import {Command} from 'commander';
 
 import {AppArguments} from '../app.interfaces.js';
-import {initialiseLogging, logger} from '../logger.js';
+import {logger} from '../logger.js';
 import * as utils from '../utils.js';
 
 /**
@@ -162,38 +162,13 @@ export function detectWsl(): boolean {
 }
 
 /**
- * Set up temporary directory, especially for WSL environments
- */
-export function setupTempDir(tmpDir: string | undefined, isWsl: boolean): void {
-    // If a tempDir is supplied, use it
-    if (tmpDir) {
-        if (isWsl) {
-            process.env.TEMP = tmpDir; // for Windows
-        } else {
-            process.env.TMP = tmpDir; // for Linux
-        }
-    }
-    // If running under WSL without explicit tmpDir, try to use Windows %TEMP%
-    else if (isWsl) {
-        try {
-            const windowsTemp = child_process.execSync('cmd.exe /c echo %TEMP%').toString().replaceAll('\\', '/');
-            const driveLetter = windowsTemp.substring(0, 1).toLowerCase();
-            const directoryPath = windowsTemp.substring(2).trim();
-            process.env.TEMP = path.join('/mnt', driveLetter, directoryPath);
-        } catch (e) {
-            logger.warn('Unable to invoke cmd.exe to get windows %TEMP% path.');
-        }
-    }
-    logger.info(`Using temporary dir: ${process.env.TEMP || process.env.TMP}`);
-}
-
-/**
  * Convert command-line options to AppArguments for the application
  */
 export function convertOptionsToAppArguments(
     options: CompilerExplorerOptions,
     gitReleaseName: string,
     releaseBuildNumber: string,
+    isWsl: boolean,
 ): AppArguments {
     return {
         rootDir: options.rootDir,
@@ -213,34 +188,30 @@ export function convertOptionsToAppArguments(
         useLocalProps: options.local,
         propDebug: options.propDebug || false,
         tmpDir: options.tmpDir,
+        isWsl: isWsl,
+        loggingOptions: {
+            debug: options.debug || false,
+            logHost: options.logHost,
+            logPort: options.logPort,
+            hostnameForLogging: options.hostnameForLogging,
+            loki: options.loki,
+            suppressConsoleLog: options.suppressConsoleLog,
+            paperTrailIdentifier: options.env.join('.'),
+        },
     };
 }
 
 /**
- * Initialize configuration from command-line arguments
+ * Parse command-line arguments into an AppArguments object
  * @param argv The command-line arguments to parse
  * @returns Application arguments
  */
-export function initialiseOptionsFromCommandLine(argv: string[]): AppArguments {
+export function parseArgsToAppArguments(argv: string[]): AppArguments {
     const options = parseCommandLine(argv);
-
-    // Logging initialised here so it's done as early as possible.
-    initialiseLogging({
-        debug: options.debug || false,
-        logHost: options.logHost,
-        logPort: options.logPort,
-        hostnameForLogging: options.hostnameForLogging,
-        loki: options.loki,
-        suppressConsoleLog: options.suppressConsoleLog,
-        paperTrailIdentifier: options.env.join('.'),
-    });
-
     const isWsl = detectWsl();
     if (isWsl) {
         process.env.wsl = 'true';
     }
-
-    setupTempDir(options.tmpDir, isWsl);
 
     const distPath = utils.resolvePathFromAppRoot('.');
     logger.debug(`Distpath=${distPath}`);
@@ -248,7 +219,7 @@ export function initialiseOptionsFromCommandLine(argv: string[]): AppArguments {
     const gitReleaseName = getGitReleaseName(distPath, options.dist === true);
     const releaseBuildNumber = getReleaseBuildNumber(distPath, options.dist === true);
 
-    const appArgs = convertOptionsToAppArguments(options, gitReleaseName, releaseBuildNumber);
+    const appArgs = convertOptionsToAppArguments(options, gitReleaseName, releaseBuildNumber, isWsl);
 
     if (options.version) {
         // We can't use the `--version` support in Commander, as we need to parse the args
