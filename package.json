@@ -147,7 +147,7 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "test-min": "vitest run --exclude test/filter-tests.ts",
-    "check": "npm run ts-check && npm run lint-check && npm run test-min -- --reporter min",
+    "check": "npm run ts-check && npm run lint-check && npm run test-min -- --reporter dot",
     "dev": "cross-env NODE_ENV=DEV node --no-warnings=ExperimentalWarning --import=tsx app.ts",
     "debugger": "cross-env NODE_ENV=DEV node --import=tsx --inspect-brk app.ts",
     "debug": "cross-env NODE_ENV=DEV node --no-warnings=ExperimentalWarning --import=tsx app.ts --debug",
