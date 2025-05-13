@@ -47,6 +47,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
   // Initialises the thing
   initialiseThing();
   ```
+- Use British English spellings for things like "initialise" and "colour", but only in new code. It's a preference not a hard requirement
 
 ## Testing Guidelines
 - Use Vitest for unit tests (compatible with Jest syntax)
