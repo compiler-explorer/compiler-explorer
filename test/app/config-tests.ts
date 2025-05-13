@@ -62,10 +62,11 @@ import type {AppArguments} from '../../lib/app.interfaces.js';
 import {
     createPropertyHierarchy,
     filterLanguages,
+    isDevMode,
     loadConfiguration,
+    measureEventLoopLag,
     setupEventLoopLagMonitoring,
 } from '../../lib/app/config.js';
-import * as appUtils from '../../lib/app/utils.js';
 import * as logger from '../../lib/logger.js';
 import * as props from '../../lib/properties.js';
 import type {CompilerProps} from '../../lib/properties.js';
@@ -119,6 +120,42 @@ vi.mock('prom-client', () => {
 });
 
 describe('Config Module', () => {
+    describe('isDevMode', () => {
+        let originalNodeEnv: string | undefined;
+
+        beforeEach(() => {
+            originalNodeEnv = process.env.NODE_ENV;
+        });
+
+        afterEach(() => {
+            process.env.NODE_ENV = originalNodeEnv;
+        });
+
+        it('should return true when NODE_ENV is not production', () => {
+            process.env.NODE_ENV = 'development';
+            expect(isDevMode()).toBe(true);
+
+            process.env.NODE_ENV = '';
+            expect(isDevMode()).toBe(true);
+
+            delete process.env.NODE_ENV;
+            expect(isDevMode()).toBe(true);
+        });
+
+        it('should return false when NODE_ENV is production', () => {
+            process.env.NODE_ENV = 'production';
+            expect(isDevMode()).toBe(false);
+        });
+    });
+
+    describe('measureEventLoopLag', () => {
+        it('should return a Promise resolving to a number', () => {
+            // Just verify the function returns a Promise that resolves to a number
+            // We don't test actual timing as that's environment-dependent
+            return expect(measureEventLoopLag(1)).resolves.toBeTypeOf('number');
+        });
+    });
+
     describe('createPropertyHierarchy', () => {
         let originalPlatform: string;
         let platformMock: string;
@@ -258,7 +295,7 @@ describe('Config Module', () => {
 
         beforeEach(() => {
             setImmediateSpy = vi.spyOn(global, 'setImmediate');
-            measureEventLoopLagSpy = vi.spyOn(appUtils, 'measureEventLoopLag');
+            measureEventLoopLagSpy = vi.spyOn({measureEventLoopLag}, 'measureEventLoopLag');
             measureEventLoopLagSpy.mockResolvedValue(50);
         });
 
@@ -323,7 +360,7 @@ describe('Config Module', () => {
             vi.spyOn(props, 'CompilerProps').mockImplementation(() => mockCompilerProps);
 
             // Mock isDevMode
-            vi.spyOn(appUtils, 'isDevMode').mockReturnValue(false);
+            vi.spyOn({isDevMode}, 'isDevMode').mockReturnValue(false);
         });
 
         afterEach(() => {

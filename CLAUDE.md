@@ -47,6 +47,16 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
   // Initialises the thing
   initialiseThing();
   ```
+- Avoid redundant function header comments that merely repeat the function name. For example:
+  ```
+  /**
+   * Sets up compiler change handling
+   */
+  function setupCompilerChangeHandling() {...}
+  ```
+  In this case, the function name already clearly states what it does.
+- Comments should provide additional context or explain "why" something is done, not just restate "what" is being done.
+- Only add function header comments when they provide meaningful information beyond what the function name and signature convey.
 - Use British English spellings for things like "initialise" and "colour", but only in new code. It's a preference not a hard requirement
 
 ## Testing Guidelines

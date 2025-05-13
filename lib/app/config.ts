@@ -35,7 +35,30 @@ import {logger} from '../logger.js';
 import type {PropertyGetter} from '../properties.interfaces.js';
 import * as props from '../properties.js';
 import type {AppConfiguration} from './config.interfaces.js';
-import {isDevMode, measureEventLoopLag} from './utils.js';
+
+/**
+ * Determines whether the app is running in development mode.
+ */
+export function isDevMode(): boolean {
+    return process.env.NODE_ENV !== 'production';
+}
+
+/**
+ * Measures event loop lag to monitor server performance.
+ * Used to detect when the server is under heavy load or not responding quickly.
+ * @param delayMs - The delay in milliseconds to measure against
+ * @returns The lag in milliseconds
+ */
+export function measureEventLoopLag(delayMs: number): Promise<number> {
+    return new Promise<number>(resolve => {
+        const start = process.hrtime.bigint();
+        setTimeout(() => {
+            const elapsed = process.hrtime.bigint() - start;
+            const delta = elapsed - BigInt(delayMs * 1000000);
+            return resolve(Number(delta) / 1000000);
+        }, delayMs);
+    });
+}
 
 /**
  * Creates the property hierarchy for configuration loading

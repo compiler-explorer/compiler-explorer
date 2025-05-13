@@ -53,6 +53,7 @@ import {cached, csp} from '../handlers/middleware.js';
 import {logger, makeLogStream} from '../logger.js';
 import {ShortLinkResolver} from '../shortener/google.js';
 import * as utils from '../utils.js';
+import {isDevMode} from './config.js';
 import type {
     PugRequireHandler,
     RenderConfig,
@@ -60,7 +61,24 @@ import type {
     ServerOptions,
     WebServerResult,
 } from './server.interfaces.js';
-import {getFaviconFilename, isDevMode} from './utils.js';
+
+/**
+ * Gets the appropriate favicon filename based on the environment.
+ * @param isDevModeValue - Whether the app is running in development mode
+ * @param env - The environment names array
+ */
+export function getFaviconFilename(isDevModeValue: boolean, env?: string[]): string {
+    if (isDevModeValue) {
+        return 'favicon-dev.ico';
+    }
+    if (env?.includes('beta')) {
+        return 'favicon-beta.ico';
+    }
+    if (env?.includes('staging')) {
+        return 'favicon-staging.ico';
+    }
+    return 'favicon.ico';
+}
 
 /**
  * Detects if the request is from a mobile viewer
@@ -199,8 +217,8 @@ export async function setupWebServer(
                 'Cache-Control': 'public',
             });
             res.end();
-        } catch (e) {
-            logger.error(`Failed to expand ${googleUrl} - ${e}`);
+        } catch (err: unknown) {
+            logger.error(`Failed to expand ${googleUrl} - ${err}`);
             next({
                 statusCode: 404,
                 message: `ID "${id}" could not be found`,
@@ -208,9 +226,6 @@ export async function setupWebServer(
         }
     }
 
-    /**
-     * Sets up webpack dev middleware for development mode
-     */
     async function setupWebPackDevMiddleware(router: express.Router) {
         logger.info('  using webpack dev middleware');
 
@@ -235,9 +250,6 @@ export async function setupWebServer(
         pugRequireHandler = path => urljoin(httpRoot, 'static', path);
     }
 
-    /**
-     * Sets up static file middleware for production mode
-     */
     async function setupStaticMiddleware(router: express.Router) {
         const staticManifest = JSON.parse(await fs.readFile(path.join(distPath, 'manifest.json'), 'utf-8'));
 
@@ -258,40 +270,141 @@ export async function setupWebServer(
         pugRequireHandler = createDefaultPugRequireHandler(staticRoot, staticManifest);
     }
 
-    // Note: Server listening functionality is handled by the standalone startListening function
+    function setupBaseServerConfig() {
+        webServer
+            .set('trust proxy', true)
+            .set('view engine', 'pug')
+            .on('error', err => logger.error('Caught error in web handler; continuing:', err))
+            .use(
+                responseTime((req, res, time) => {
+                    if (sentrySlowRequestMs > 0 && time >= sentrySlowRequestMs) {
+                        Sentry.withScope((scope: Sentry.Scope) => {
+                            scope.setExtra('duration_ms', time);
+                            Sentry.captureMessage('SlowRequest', 'warning');
+                        });
+                    }
+                }),
+            )
+            .use(httpRoot, router)
+            .use((req, res, next) => {
+                next({status: 404, message: `page "${req.path}" could not be found`});
+            });
+
+        Sentry.setupExpressErrorHandler(webServer);
+
+        // eslint-disable-next-line no-unused-vars
+        webServer.use((err: any, req: Request, res: Response, _next: NextFunction) => {
+            const status = err.status || err.statusCode || err.status_code || err.output?.statusCode || 500;
+            const message = err.message || 'Internal Server Error';
+            res.status(status);
+            res.render('error', renderConfig({error: {code: status, message: message}}));
+            if (status >= 500) {
+                logger.error('Internal server error:', err);
+            }
+        });
+    }
+
+    function setupLoggingMiddleware() {
+        morgan.token('gdpr_ip', (req: any) => (req.ip ? utils.anonymizeIp(req.ip) : ''));
+
+        // Based on combined format, but: GDPR compliant IP, no timestamp & no unused fields for our usecase
+        const morganFormat = isDevMode() ? 'dev' : ':gdpr_ip ":method :url" :status';
+
+        router.use(
+            morgan(morganFormat, {
+                stream: makeLogStream('info'),
+                // Skip for non errors (2xx, 3xx)
+                skip: (req: Request, res: Response) => res.statusCode >= 400,
+            }),
+        );
+        router.use(
+            morgan(morganFormat, {
+                stream: makeLogStream('warn'),
+                // Skip for non user errors (4xx)
+                skip: (req: Request, res: Response) => res.statusCode < 400 || res.statusCode >= 500,
+            }),
+        );
+        router.use(
+            morgan(morganFormat, {
+                stream: makeLogStream('error'),
+                // Skip for non server errors (5xx)
+                skip: (req: Request, res: Response) => res.statusCode < 500,
+            }),
+        );
+    }
+
+    function setupBasicRoutes() {
+        router
+            .use(compression())
+            .get('/', cached, csp, (req, res) => {
+                res.render(
+                    'index',
+                    renderConfig(
+                        {
+                            embedded: false,
+                            mobileViewer: isMobileViewer(req),
+                        },
+                        req.query,
+                    ),
+                );
+            })
+            .get('/e', cached, csp, embeddedHandler)
+            // legacy. not a 301 to prevent any redirect loops between old e links and embed.html
+            .get('/embed.html', cached, csp, embeddedHandler)
+            .get('/embed-ro', cached, csp, (req, res) => {
+                res.render(
+                    'embed',
+                    renderConfig(
+                        {
+                            embedded: true,
+                            readOnly: true,
+                            mobileViewer: isMobileViewer(req),
+                        },
+                        req.query,
+                    ),
+                );
+            })
+            .get('/robots.txt', cached, (req, res) => {
+                res.end('User-agent: *\nSitemap: https://godbolt.org/sitemap.xml\nDisallow:');
+            })
+            .get('/sitemap.xml', cached, (req, res) => {
+                res.set('Content-Type', 'application/xml');
+                res.render('sitemap');
+            });
+
+        // Try to add favicon support, but don't fail if it's not available (useful for tests)
+        try {
+            router.use(
+                sFavicon(utils.resolvePathFromAppRoot('static/favicons', getFaviconFilename(isDevMode(), appArgs.env))),
+            );
+        } catch (err: unknown) {
+            const error = err as Error;
+            logger.warn(`Could not set up favicon: ${error.message}`);
+        }
+
+        router
+            .get('/client-options.js', cached, (req, res) => {
+                res.set('Content-Type', 'application/javascript');
+                res.end(`window.compilerExplorerOptions = ${clientOptionsHandler.getJSON()};`);
+            })
+            .use('/bits/:bits.html', cached, csp, (req, res) => {
+                res.render(
+                    `bits/${sanitize(req.params.bits)}`,
+                    renderConfig(
+                        {
+                            embedded: false,
+                            mobileViewer: isMobileViewer(req),
+                        },
+                        req.query,
+                    ),
+                );
+            })
+            .use(express.json({limit: ceProps('bodyParserLimit', maxUploadSize)}))
+            .get('/g/:id', oldGoogleUrlHandler);
+    }
 
     // Set up the base Express server configuration
-    webServer
-        .set('trust proxy', true)
-        .set('view engine', 'pug')
-        .on('error', err => logger.error('Caught error in web handler; continuing:', err))
-        .use(
-            responseTime((req, res, time) => {
-                if (sentrySlowRequestMs > 0 && time >= sentrySlowRequestMs) {
-                    Sentry.withScope((scope: Sentry.Scope) => {
-                        scope.setExtra('duration_ms', time);
-                        Sentry.captureMessage('SlowRequest', 'warning');
-                    });
-                }
-            }),
-        )
-        .use(httpRoot, router)
-        .use((req, res, next) => {
-            next({status: 404, message: `page "${req.path}" could not be found`});
-        });
-
-    Sentry.setupExpressErrorHandler(webServer);
-
-    // eslint-disable-next-line no-unused-vars
-    webServer.use((err: any, req: Request, res: Response, _next: NextFunction) => {
-        const status = err.status || err.statusCode || err.status_code || err.output?.statusCode || 500;
-        const message = err.message || 'Internal Server Error';
-        res.status(status);
-        res.render('error', renderConfig({error: {code: status, message: message}}));
-        if (status >= 500) {
-            logger.error('Internal server error:', err);
-        }
-    });
+    setupBaseServerConfig();
 
     // Configure static file handling based on environment
     try {
@@ -304,100 +417,11 @@ export async function setupWebServer(
         pugRequireHandler = createDefaultPugRequireHandler(staticRoot);
     }
 
-    morgan.token('gdpr_ip', (req: any) => (req.ip ? utils.anonymizeIp(req.ip) : ''));
+    // Set up logging middleware
+    setupLoggingMiddleware();
 
-    // Based on combined format, but: GDPR compliant IP, no timestamp & no unused fields for our usecase
-    const morganFormat = isDevMode() ? 'dev' : ':gdpr_ip ":method :url" :status';
-
-    // Configure basic routes and middleware
-    router
-        .use(
-            morgan(morganFormat, {
-                stream: makeLogStream('info'),
-                // Skip for non errors (2xx, 3xx)
-                skip: (req: Request, res: Response) => res.statusCode >= 400,
-            }),
-        )
-        .use(
-            morgan(morganFormat, {
-                stream: makeLogStream('warn'),
-                // Skip for non user errors (4xx)
-                skip: (req: Request, res: Response) => res.statusCode < 400 || res.statusCode >= 500,
-            }),
-        )
-        .use(
-            morgan(morganFormat, {
-                stream: makeLogStream('error'),
-                // Skip for non server errors (5xx)
-                skip: (req: Request, res: Response) => res.statusCode < 500,
-            }),
-        )
-        .use(compression())
-        .get('/', cached, csp, (req, res) => {
-            res.render(
-                'index',
-                renderConfig(
-                    {
-                        embedded: false,
-                        mobileViewer: isMobileViewer(req),
-                    },
-                    req.query,
-                ),
-            );
-        })
-        .get('/e', cached, csp, embeddedHandler)
-        // legacy. not a 301 to prevent any redirect loops between old e links and embed.html
-        .get('/embed.html', cached, csp, embeddedHandler)
-        .get('/embed-ro', cached, csp, (req, res) => {
-            res.render(
-                'embed',
-                renderConfig(
-                    {
-                        embedded: true,
-                        readOnly: true,
-                        mobileViewer: isMobileViewer(req),
-                    },
-                    req.query,
-                ),
-            );
-        })
-        .get('/robots.txt', cached, (req, res) => {
-            res.end('User-agent: *\nSitemap: https://godbolt.org/sitemap.xml\nDisallow:');
-        })
-        .get('/sitemap.xml', cached, (req, res) => {
-            res.set('Content-Type', 'application/xml');
-            res.render('sitemap');
-        });
-
-    // Try to add favicon support, but don't fail if it's not available (useful for tests)
-    try {
-        router.use(
-            sFavicon(utils.resolvePathFromAppRoot('static/favicons', getFaviconFilename(isDevMode(), appArgs.env))),
-        );
-    } catch (err: unknown) {
-        const error = err as Error;
-        logger.warn(`Could not set up favicon: ${error.message}`);
-    }
-
-    router
-        .get('/client-options.js', cached, (req, res) => {
-            res.set('Content-Type', 'application/javascript');
-            res.end(`window.compilerExplorerOptions = ${clientOptionsHandler.getJSON()};`);
-        })
-        .use('/bits/:bits.html', cached, csp, (req, res) => {
-            res.render(
-                `bits/${sanitize(req.params.bits)}`,
-                renderConfig(
-                    {
-                        embedded: false,
-                        mobileViewer: isMobileViewer(req),
-                    },
-                    req.query,
-                ),
-            );
-        })
-        .use(express.json({limit: ceProps('bodyParserLimit', maxUploadSize)}))
-        .get('/g/:id', oldGoogleUrlHandler);
+    // Set up basic routes
+    setupBasicRoutes();
 
     // Return needed server elements
     return {
@@ -415,33 +439,49 @@ export async function setupWebServer(
 export function startListening(webServer: express.Express, appArgs: AppArguments): void {
     const ss: {fd: number} | null = systemdSocket(); // TODO: I'm not sure this works any more
     if (ss) {
-        // ms (5 min default)
-        const idleTimeout = process.env.IDLE_TIMEOUT;
-        const timeout = (idleTimeout === undefined ? 300 : Number.parseInt(idleTimeout)) * 1000;
-        if (idleTimeout) {
-            const exit = () => {
-                logger.info('Inactivity timeout reached, exiting.');
-                process.exit(0);
-            };
-            let idleTimer = setTimeout(exit, timeout);
-            const reset = () => {
-                clearTimeout(idleTimer);
-                idleTimer = setTimeout(exit, timeout);
-            };
-            webServer.all('*', reset);
-            logger.info(`  IDLE_TIMEOUT: ${idleTimeout}`);
-        }
-        logger.info(`  Listening on systemd socket: ${JSON.stringify(ss)}`);
-        webServer.listen(ss);
+        setupSystemdSocketListening(webServer, ss);
     } else {
-        logger.info(`  Listening on http://${appArgs.hostname || 'localhost'}:${appArgs.port}/`);
-        if (appArgs.hostname) {
-            webServer.listen(appArgs.port, appArgs.hostname);
-        } else {
-            webServer.listen(appArgs.port);
-        }
+        setupStandardHttpListening(webServer, appArgs);
     }
 
+    setupStartupMetrics();
+}
+
+function setupSystemdSocketListening(webServer: express.Express, ss: {fd: number}): void {
+    // ms (5 min default)
+    const idleTimeout = process.env.IDLE_TIMEOUT;
+    const timeout = (idleTimeout === undefined ? 300 : Number.parseInt(idleTimeout)) * 1000;
+    if (idleTimeout) {
+        setupIdleTimeout(webServer, timeout);
+        logger.info(`  IDLE_TIMEOUT: ${idleTimeout}`);
+    }
+    logger.info(`  Listening on systemd socket: ${JSON.stringify(ss)}`);
+    webServer.listen(ss);
+}
+
+function setupIdleTimeout(webServer: express.Express, timeout: number): void {
+    const exit = () => {
+        logger.info('Inactivity timeout reached, exiting.');
+        process.exit(0);
+    };
+    let idleTimer = setTimeout(exit, timeout);
+    const reset = () => {
+        clearTimeout(idleTimer);
+        idleTimer = setTimeout(exit, timeout);
+    };
+    webServer.all('*', reset);
+}
+
+function setupStandardHttpListening(webServer: express.Express, appArgs: AppArguments): void {
+    logger.info(`  Listening on http://${appArgs.hostname || 'localhost'}:${appArgs.port}/`);
+    if (appArgs.hostname) {
+        webServer.listen(appArgs.port, appArgs.hostname);
+    } else {
+        webServer.listen(appArgs.port);
+    }
+}
+
+function setupStartupMetrics(): void {
     try {
         const startupGauge = new PromClient.Gauge({
             name: 'ce_startup_seconds',

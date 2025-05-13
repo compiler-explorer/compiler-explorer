@@ -28,6 +28,8 @@ import path from 'node:path';
 
 import _ from 'underscore';
 
+import type {Router} from 'express';
+import {AppArguments} from '../app.interfaces.js';
 import {unwrap} from '../assert.js';
 import * as aws from '../aws.js';
 import {CompilationEnvironment} from '../compilation-env.js';
@@ -51,10 +53,13 @@ import {RouteAPI} from '../handlers/route-api.js';
 import {logger} from '../logger.js';
 import {setupMetricsServer} from '../metrics-server.js';
 import {ClientOptionsHandler} from '../options-handler.js';
+import {PropertyGetter} from '../properties.interfaces.js';
+import {CompilerProps} from '../properties.js';
 import {SetupSentry} from '../sentry.js';
 import {sources} from '../sources/index.js';
 import {loadSponsorsFromString} from '../sponsors.js';
 import {getStorageTypeByKey} from '../storage/index.js';
+import type {AppConfiguration} from './config.interfaces.js';
 import {ApplicationOptions, ApplicationResult} from './main.interfaces.js';
 import {setupWebServer, startListening} from './server.js';
 
@@ -91,29 +96,111 @@ export async function initialiseApplication(options: ApplicationOptions): Promis
     const {appArgs, config, distPath, awsProps} = options;
     const {ceProps, compilerProps, languages, storageSolution} = config;
 
-    // Set up temporary directory
+    await initializeCoreServices(appArgs, awsProps, ceProps);
+
+    const {compilationQueue, compilationEnvironment, compileHandler, formattingService} =
+        await initializeCompilationEnvironment(appArgs, compilerProps, ceProps, awsProps);
+
+    const clientOptionsHandler = new ClientOptionsHandler(sources, compilerProps, appArgs);
+    const storageType = getStorageTypeByKey(storageSolution);
+    const storageHandler = new storageType(config.httpRoot, compilerProps, awsProps);
+
+    const compilerFinder = new CompilerFinder(compileHandler, compilerProps, appArgs, clientOptionsHandler);
+
+    // Get execution configuration
+    const isExecutionWorker = ceProps<boolean>('execqueue.is_worker', false);
+    const healthCheckFilePath = ceProps('healthCheckFilePath', null) as string | null;
+
+    const formDataHandler = createFormDataHandler();
+
+    const controllers = await setupControllersAndHandlers(
+        compileHandler,
+        formattingService,
+        compilationQueue,
+        healthCheckFilePath,
+        isExecutionWorker,
+        formDataHandler,
+    );
+
+    logVersionInfo(appArgs);
+
+    const {initialCompilers, prevCompilers} = await discoverCompilers(appArgs, compilerFinder, isExecutionWorker);
+
+    const {webServer, router, renderConfig, renderGoldenLayout} = await setupWebServerWithOptions(
+        appArgs,
+        config,
+        distPath,
+        ceProps,
+        clientOptionsHandler,
+        storageSolution,
+        storageHandler,
+    );
+
+    const routeApi = setupRoutesAndApi(
+        router,
+        controllers,
+        clientOptionsHandler,
+        renderConfig,
+        renderGoldenLayout,
+        storageHandler,
+        appArgs,
+        compileHandler,
+        compilationEnvironment,
+        ceProps,
+    );
+
+    await setupCompilerChangeHandling(
+        initialCompilers,
+        prevCompilers,
+        clientOptionsHandler,
+        routeApi,
+        languages,
+        ceProps,
+        compilerFinder,
+        appArgs,
+    );
+
+    if (appArgs.metricsPort) {
+        logger.info(`Running metrics server on port ${appArgs.metricsPort}`);
+        setupMetricsServer(appArgs.metricsPort, appArgs.hostname);
+    }
+
+    if (!appArgs.doCache) {
+        logger.info('  with disabled caching');
+    }
+
+    if (isExecutionWorker) {
+        await initHostSpecialties();
+        startExecutionWorkerThread(ceProps, awsProps, compilationEnvironment);
+    }
+
+    startListening(webServer, appArgs);
+
+    return {webServer};
+}
+
+async function initializeCoreServices(appArgs: AppArguments, awsProps: PropertyGetter, ceProps: PropertyGetter) {
     setupTempDir(appArgs.tmpDir, appArgs.isWsl);
 
-    // Initialize AWS configuration
     await aws.initConfig(awsProps);
 
-    // Setup Sentry for error tracking
     SetupSentry(aws.getConfig('sentryDsn'), ceProps, appArgs.releaseBuildNumber, appArgs.gitReleaseName, appArgs);
 
     // Start Wine initialization (for Windows compilers)
     startWineInit();
 
-    // Initialize remote execution architectures
     RemoteExecutionQuery.initRemoteExecutionArchs(ceProps, appArgs.env);
+}
 
-    // Initialize the formatting service
+async function initializeCompilationEnvironment(
+    appArgs: AppArguments,
+    compilerProps: CompilerProps,
+    ceProps: PropertyGetter,
+    awsProps: PropertyGetter,
+) {
     const formattingService = new FormattingService();
     await formattingService.initialize(ceProps);
 
-    // Initialize client options handler
-    const clientOptionsHandler = new ClientOptionsHandler(sources, compilerProps, appArgs);
-
-    // Set up compilation queue and environment
     const compilationQueue = CompilationQueue.fromProps(compilerProps.ceProps);
     const compilationEnvironment = new CompilationEnvironment(
         compilerProps,
@@ -123,24 +210,25 @@ export async function initialiseApplication(options: ApplicationOptions): Promis
         appArgs.doCache,
     );
 
-    // Set up compilation handler
     const compileHandler = new CompileHandler(compilationEnvironment, awsProps);
     compilationEnvironment.setCompilerFinder(compileHandler.findCompiler.bind(compileHandler));
 
-    // Initialize storage handler
-    const storageType = getStorageTypeByKey(storageSolution);
-    const storageHandler = new storageType(config.httpRoot, compilerProps, awsProps);
+    return {
+        compilationQueue,
+        compilationEnvironment,
+        compileHandler,
+        formattingService,
+    };
+}
 
-    // Set up compiler finder
-    const compilerFinder = new CompilerFinder(compileHandler, compilerProps, appArgs, clientOptionsHandler);
-
-    // Get execution configuration
-    const isExecutionWorker = ceProps<boolean>('execqueue.is_worker', false);
-    const healthCheckFilePath = ceProps('healthCheckFilePath', null) as string | null;
-
-    // Create form data handler
-    const formDataHandler = createFormDataHandler();
-
+async function setupControllersAndHandlers(
+    compileHandler: CompileHandler,
+    formattingService: FormattingService,
+    compilationQueue: CompilationQueue,
+    healthCheckFilePath: string | null,
+    isExecutionWorker: boolean,
+    formDataHandler: any,
+) {
     // Initialize API controllers
     const siteTemplateController = new SiteTemplateController();
     const sourceController = new SourceController(sources);
@@ -151,56 +239,95 @@ export async function initialiseApplication(options: ApplicationOptions): Promis
     // Initialize healthcheck controller (handled separately in web server setup)
     new HealthcheckController(compilationQueue, healthCheckFilePath, compileHandler, isExecutionWorker);
 
-    // Log version information
+    return {
+        siteTemplateController,
+        sourceController,
+        assemblyDocumentationController,
+        formattingController,
+        noScriptController,
+    };
+}
+
+function logVersionInfo(appArgs: AppArguments) {
     logger.info('=======================================');
     if (appArgs.gitReleaseName) logger.info(`  git release ${appArgs.gitReleaseName}`);
     if (appArgs.releaseBuildNumber) logger.info(`  release build ${appArgs.releaseBuildNumber}`);
+}
 
-    // Discover compilers
+async function discoverCompilers(appArgs: AppArguments, compilerFinder: CompilerFinder, isExecutionWorker: boolean) {
     let initialCompilers;
     let prevCompilers;
 
     if (appArgs.prediscovered) {
-        const prediscoveredCompilersJson = await fs.readFile(appArgs.prediscovered, 'utf8');
-        initialCompilers = JSON.parse(prediscoveredCompilersJson);
-        const prediscResult = await compilerFinder.loadPrediscovered(initialCompilers);
-        if (prediscResult.length === 0) {
-            throw new Error('Unexpected failure, no compilers found!');
-        }
+        initialCompilers = await loadPrediscoveredCompilers(appArgs.prediscovered, compilerFinder);
     } else {
-        const initialFindResults = await compilerFinder.find();
-        initialCompilers = initialFindResults.compilers;
-        if (!isExecutionWorker && initialCompilers.length === 0) {
-            throw new Error('Unexpected failure, no compilers found!');
-        }
-        if (appArgs.ensureNoCompilerClash) {
-            logger.warn('Ensuring no compiler ids clash');
-            if (initialFindResults.foundClash) {
-                // If we are forced to have no clashes, throw an error with some explanation
-                throw new Error('Clashing compilers in the current environment found!');
-            }
-            logger.info('No clashing ids found, continuing normally...');
-        }
+        const result = await findAndValidateCompilers(appArgs, compilerFinder, isExecutionWorker);
+        initialCompilers = result.compilers;
     }
 
-    // Handle discovery-only mode if requested
     if (appArgs.discoveryOnly) {
-        for (const compiler of initialCompilers) {
-            if (compiler.buildenvsetup && compiler.buildenvsetup.id === '') delete compiler.buildenvsetup;
-
-            if (compiler.externalparser && compiler.externalparser.id === '') delete compiler.externalparser;
-
-            const compilerInstance = compilerFinder.compileHandler.findCompiler(compiler.lang, compiler.id);
-            if (compilerInstance) {
-                compiler.cachedPossibleArguments = compilerInstance.possibleArguments.possibleArguments;
-            }
-        }
-        await fs.writeFile(appArgs.discoveryOnly, JSON.stringify(initialCompilers));
-        logger.info(`Discovered compilers saved to ${appArgs.discoveryOnly}`);
-        process.exit(0);
+        await handleDiscoveryOnlyMode(appArgs.discoveryOnly, initialCompilers, compilerFinder);
     }
 
-    // Create web server with needed configurations
+    return {initialCompilers, prevCompilers};
+}
+
+async function loadPrediscoveredCompilers(filename: string, compilerFinder: CompilerFinder) {
+    const prediscoveredCompilersJson = await fs.readFile(filename, 'utf8');
+    const initialCompilers = JSON.parse(prediscoveredCompilersJson);
+    const prediscResult = await compilerFinder.loadPrediscovered(initialCompilers);
+    if (prediscResult.length === 0) {
+        throw new Error('Unexpected failure, no compilers found!');
+    }
+    return initialCompilers;
+}
+
+async function findAndValidateCompilers(
+    appArgs: AppArguments,
+    compilerFinder: CompilerFinder,
+    isExecutionWorker: boolean,
+) {
+    const initialFindResults = await compilerFinder.find();
+    const initialCompilers = initialFindResults.compilers;
+    if (!isExecutionWorker && initialCompilers.length === 0) {
+        throw new Error('Unexpected failure, no compilers found!');
+    }
+    if (appArgs.ensureNoCompilerClash) {
+        logger.warn('Ensuring no compiler ids clash');
+        if (initialFindResults.foundClash) {
+            // If we are forced to have no clashes, throw an error with some explanation
+            throw new Error('Clashing compilers in the current environment found!');
+        }
+        logger.info('No clashing ids found, continuing normally...');
+    }
+    return initialFindResults;
+}
+
+async function handleDiscoveryOnlyMode(savePath: string, initialCompilers: any[], compilerFinder: CompilerFinder) {
+    for (const compiler of initialCompilers) {
+        if (compiler.buildenvsetup && compiler.buildenvsetup.id === '') delete compiler.buildenvsetup;
+
+        if (compiler.externalparser && compiler.externalparser.id === '') delete compiler.externalparser;
+
+        const compilerInstance = compilerFinder.compileHandler.findCompiler(compiler.lang, compiler.id);
+        if (compilerInstance) {
+            compiler.cachedPossibleArguments = compilerInstance.possibleArguments.possibleArguments;
+        }
+    }
+    await fs.writeFile(savePath, JSON.stringify(initialCompilers));
+    logger.info(`Discovered compilers saved to ${savePath}`);
+    process.exit(0);
+}
+
+async function setupWebServerWithOptions(
+    appArgs: AppArguments,
+    config: AppConfiguration,
+    distPath: string,
+    ceProps: PropertyGetter,
+    clientOptionsHandler: any,
+    storageSolution: string,
+    storageHandler: any,
+) {
     const serverOptions = {
         staticPath: appArgs.staticPath || path.join(distPath, 'static'),
         staticMaxAgeSecs: config.staticMaxAgeSecs,
@@ -215,7 +342,7 @@ export async function initialiseApplication(options: ApplicationOptions): Promis
 
     const serverDependencies = {
         ceProps: ceProps,
-        sponsorConfig: await loadSponsorsFromString(
+        sponsorConfig: loadSponsorsFromString(
             await fs.readFile(path.join(appArgs.rootDir, 'config', 'sponsors.yaml'), 'utf8'),
         ),
         clientOptionsHandler: clientOptionsHandler,
@@ -223,11 +350,28 @@ export async function initialiseApplication(options: ApplicationOptions): Promis
     };
 
     // Initialize web server
-    const {webServer, router, renderConfig, renderGoldenLayout} = await setupWebServer(
-        appArgs,
-        serverOptions,
-        serverDependencies,
-    );
+    return await setupWebServer(appArgs, serverOptions, serverDependencies);
+}
+
+function setupRoutesAndApi(
+    router: Router,
+    controllers: any,
+    clientOptionsHandler: any,
+    renderConfig: any,
+    renderGoldenLayout: any,
+    storageHandler: any,
+    appArgs: AppArguments,
+    compileHandler: any,
+    compilationEnvironment: any,
+    ceProps: any,
+) {
+    const {
+        siteTemplateController,
+        sourceController,
+        assemblyDocumentationController,
+        formattingController,
+        noScriptController,
+    } = controllers;
 
     // Set up NoScript handler and RouteAPI
     const noscriptHandler = new NoScriptHandler(
@@ -249,7 +393,34 @@ export async function initialiseApplication(options: ApplicationOptions): Promis
         renderGoldenLayout,
     });
 
-    // Define compiler change handler
+    // Set up controllers
+    try {
+        router.use(siteTemplateController.createRouter());
+        router.use(sourceController.createRouter());
+        router.use(assemblyDocumentationController.createRouter());
+        router.use(formattingController.createRouter());
+        router.use(noScriptController.createRouter());
+    } catch (err: unknown) {
+        // In case of errors (e.g. during testing), log but continue
+        logger.debug('Error setting up controllers, possibly in test environment:', err);
+    }
+
+    noscriptHandler.initializeRoutes();
+    routeApi.initializeRoutes();
+
+    return routeApi;
+}
+
+async function setupCompilerChangeHandling(
+    initialCompilers: any,
+    prevCompilers: any,
+    clientOptionsHandler: any,
+    routeApi: any,
+    languages: any,
+    ceProps: PropertyGetter,
+    compilerFinder: CompilerFinder,
+    appArgs: AppArguments,
+) {
     async function onCompilerChange(compilers) {
         if (JSON.stringify(prevCompilers) === JSON.stringify(compilers)) {
             return;
@@ -277,40 +448,5 @@ export async function initialiseApplication(options: ApplicationOptions): Promis
         );
     }
 
-    // Set up metrics server if configured
-    if (appArgs.metricsPort) {
-        logger.info(`Running metrics server on port ${appArgs.metricsPort}`);
-        setupMetricsServer(appArgs.metricsPort, appArgs.hostname);
-    }
-
-    // Set up controllers
-    try {
-        router.use(siteTemplateController.createRouter());
-        router.use(sourceController.createRouter());
-        router.use(assemblyDocumentationController.createRouter());
-        router.use(formattingController.createRouter());
-        router.use(noScriptController.createRouter());
-    } catch (error) {
-        // In case of errors (e.g. during testing), log but continue
-        logger.debug('Error setting up controllers, possibly in test environment:', error);
-    }
-
-    // Initialize routes
-    noscriptHandler.initializeRoutes();
-    routeApi.initializeRoutes();
-
-    if (!appArgs.doCache) {
-        logger.info('  with disabled caching');
-    }
-
-    // Start execution worker if configured
-    if (isExecutionWorker) {
-        await initHostSpecialties();
-        startExecutionWorkerThread(ceProps, awsProps, compilationEnvironment);
-    }
-
-    // Start listening for connections
-    startListening(webServer, appArgs);
-
-    return {webServer};
+    return {onCompilerChange};
 }

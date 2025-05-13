@@ -67,9 +67,9 @@ import systemdSocket from 'systemd-socket';
 import {afterEach, beforeEach, describe, expect, it, vi} from 'vitest';
 
 import type {AppArguments} from '../../lib/app.interfaces.js';
+import * as appConfig from '../../lib/app/config.js';
 import type {ServerDependencies, ServerOptions} from '../../lib/app/server.interfaces.js';
-import {isMobileViewer, setupWebServer, startListening} from '../../lib/app/server.js';
-import * as appUtils from '../../lib/app/utils.js';
+import {getFaviconFilename, isMobileViewer, setupWebServer, startListening} from '../../lib/app/server.js';
 import * as logger from '../../lib/logger.js';
 import * as utils from '../../lib/utils.js';
 
@@ -158,6 +158,29 @@ describe('Server Module', () => {
         vi.restoreAllMocks();
     });
 
+    describe('getFaviconFilename', () => {
+        it('should return dev favicon when in dev mode', () => {
+            expect(getFaviconFilename(true, [])).toBe('favicon-dev.ico');
+            expect(getFaviconFilename(true, ['beta'])).toBe('favicon-dev.ico');
+        });
+
+        it('should return beta favicon when in beta environment', () => {
+            expect(getFaviconFilename(false, ['beta'])).toBe('favicon-beta.ico');
+            expect(getFaviconFilename(false, ['beta', 'other'])).toBe('favicon-beta.ico');
+        });
+
+        it('should return staging favicon when in staging environment', () => {
+            expect(getFaviconFilename(false, ['staging'])).toBe('favicon-staging.ico');
+            expect(getFaviconFilename(false, ['other', 'staging'])).toBe('favicon-staging.ico');
+        });
+
+        it('should return default favicon otherwise', () => {
+            expect(getFaviconFilename(false, [])).toBe('favicon.ico');
+            expect(getFaviconFilename(false, ['other'])).toBe('favicon.ico');
+            expect(getFaviconFilename(false)).toBe('favicon.ico');
+        });
+    });
+
     describe('isMobileViewer', () => {
         it('should return true if CloudFront-Is-Mobile-Viewer header is "true"', () => {
             const mockRequest = {
@@ -239,7 +262,7 @@ describe('Server Module', () => {
 
             // Setup utils mock
             vi.spyOn(utils, 'resolvePathFromAppRoot').mockReturnValue('/mocked/path');
-            vi.spyOn(appUtils, 'isDevMode').mockReturnValue(false); // Ensure prod mode for tests
+            vi.spyOn(appConfig, 'isDevMode').mockReturnValue(false); // Ensure prod mode for tests
         });
 
         it('should create a web server instance', async () => {
