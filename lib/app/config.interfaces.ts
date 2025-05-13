@@ -26,7 +26,7 @@ import type {Language, LanguageKey} from '../../types/languages.interfaces.js';
 import type {PropertyGetter} from '../properties.interfaces.js';
 import type {CompilerProps} from '../properties.js';
 
-export interface ConfigurationResult {
+export interface AppConfiguration {
     // Core properties
     ceProps: PropertyGetter;
     compilerProps: CompilerProps;

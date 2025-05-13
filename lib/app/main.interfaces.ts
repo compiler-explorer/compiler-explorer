@@ -25,14 +25,14 @@
 import type {Express} from 'express';
 import type {AppArguments} from '../app.interfaces.js';
 import type {PropertyGetter} from '../properties.interfaces.js';
-import type {ConfigurationResult} from './config.interfaces.js';
+import type {AppConfiguration} from './config.interfaces.js';
 
 /**
  * Input options for initializing the application
  */
 export interface ApplicationOptions {
     appArgs: AppArguments;
-    config: ConfigurationResult;
+    config: AppConfiguration;
     distPath: string;
     awsProps: PropertyGetter;
 }

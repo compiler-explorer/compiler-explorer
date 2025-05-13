@@ -34,7 +34,7 @@ import {languages as allLanguages} from '../languages.js';
 import {logger} from '../logger.js';
 import type {PropertyGetter} from '../properties.interfaces.js';
 import * as props from '../properties.js';
-import type {ConfigurationResult} from './config.interfaces.js';
+import type {AppConfiguration} from './config.interfaces.js';
 import {isDevMode, measureEventLoopLag} from './utils.js';
 
 /**
@@ -117,7 +117,7 @@ export function setupEventLoopLagMonitoring(ceProps: PropertyGetter): void {
 /**
  * Load and initialize application configuration
  */
-export function loadConfiguration(appArgs: AppArguments): ConfigurationResult {
+export function loadConfiguration(appArgs: AppArguments): AppConfiguration {
     // Set up property debugging if needed
     if (appArgs.propDebug) {
         props.setDebug(true);
