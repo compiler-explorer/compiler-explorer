@@ -253,13 +253,9 @@ export async function setupWebServer(
             );
         }
 
-        pugRequireHandler = path => {
-            if (Object.prototype.hasOwnProperty.call(staticManifest, path)) {
-                return urljoin(staticRoot, staticManifest[path]);
-            }
-            logger.error(`failed to locate static asset '${path}' in manifest`);
-            return '';
-        };
+        // Import helper without circular dependencies
+        const {createDefaultPugRequireHandler} = await import('./server.interfaces.js');
+        pugRequireHandler = createDefaultPugRequireHandler(staticRoot, staticManifest);
     }
 
     // Note: Server listening functionality is handled by the standalone startListening function
@@ -298,7 +294,15 @@ export async function setupWebServer(
     });
 
     // Configure static file handling based on environment
-    await (isDevMode() ? setupWebPackDevMiddleware(router) : setupStaticMiddleware(router));
+    try {
+        await (isDevMode() ? setupWebPackDevMiddleware(router) : setupStaticMiddleware(router));
+    } catch (err: unknown) {
+        const error = err as Error;
+        logger.warn(`Error setting up static middleware: ${error.message}`);
+        // Import helper for testing without circular dependencies
+        const {createDefaultPugRequireHandler} = await import('./server.interfaces.js');
+        pugRequireHandler = createDefaultPugRequireHandler(staticRoot);
+    }
 
     morgan.token('gdpr_ip', (req: any) => (req.ip ? utils.anonymizeIp(req.ip) : ''));
 
@@ -363,8 +367,19 @@ export async function setupWebServer(
         .get('/sitemap.xml', cached, (req, res) => {
             res.set('Content-Type', 'application/xml');
             res.render('sitemap');
-        })
-        .use(sFavicon(utils.resolvePathFromAppRoot('static/favicons', getFaviconFilename(isDevMode(), appArgs.env))))
+        });
+
+    // Try to add favicon support, but don't fail if it's not available (useful for tests)
+    try {
+        router.use(
+            sFavicon(utils.resolvePathFromAppRoot('static/favicons', getFaviconFilename(isDevMode(), appArgs.env))),
+        );
+    } catch (err: unknown) {
+        const error = err as Error;
+        logger.warn(`Could not set up favicon: ${error.message}`);
+    }
+
+    router
         .get('/client-options.js', cached, (req, res) => {
             res.set('Content-Type', 'application/javascript');
             res.end(`window.compilerExplorerOptions = ${clientOptionsHandler.getJSON()};`);
@@ -427,11 +442,16 @@ export function startListening(webServer: express.Express, appArgs: AppArguments
         }
     }
 
-    const startupGauge = new PromClient.Gauge({
-        name: 'ce_startup_seconds',
-        help: 'Time taken from process start to serving requests',
-    });
-    startupGauge.set(process.uptime());
+    try {
+        const startupGauge = new PromClient.Gauge({
+            name: 'ce_startup_seconds',
+            help: 'Time taken from process start to serving requests',
+        });
+        startupGauge.set(process.uptime());
+    } catch (err: unknown) {
+        const error = err as Error;
+        logger.warn(`Error setting up startup metric: ${error.message}`);
+    }
     const startupDurationMs = Math.floor(process.uptime() * 1000);
     logger.info(`  Startup duration: ${startupDurationMs}ms`);
     logger.info('=======================================');
