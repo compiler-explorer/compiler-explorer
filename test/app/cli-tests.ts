@@ -154,11 +154,11 @@ describe('CLI Module', () => {
             expect(result).toEqual(expectedBuild);
         });
 
-        it('should return empty string if no release build info available', () => {
+        it('should return placeholder if no release build info available', () => {
             // No release_build file
             const result = getReleaseBuildNumber(tempDir, false);
 
-            expect(result).toEqual('');
+            expect(result).toEqual('<no build number found>');
         });
     });
 

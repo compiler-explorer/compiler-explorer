@@ -143,7 +143,7 @@ export function getReleaseBuildNumber(distPath: string, isDist: boolean): string
     if (isDist && fs.existsSync(releaseBuildPath)) {
         return fs.readFileSync(releaseBuildPath).toString().trim();
     }
-    return '';
+    return '<no build number found>';
 }
 
 /**
