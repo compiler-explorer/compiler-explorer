@@ -23,7 +23,6 @@
 // POSSIBILITY OF SUCH DAMAGE.
 
 import type {Language, LanguageKey} from '../../types/languages.interfaces.js';
-import type {AppArguments} from '../app.interfaces.js';
 import type {PropertyGetter} from '../properties.interfaces.js';
 import type {CompilerProps} from '../properties.js';
 
@@ -41,10 +40,4 @@ export interface ConfigurationResult {
     httpRoot: string;
     staticRoot: string;
     staticUrl?: string;
-}
-
-export interface ConfigLoadOptions {
-    appArgs: AppArguments;
-    useLocal: boolean;
-    propDebug?: boolean;
 }

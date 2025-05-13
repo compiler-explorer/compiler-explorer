@@ -38,6 +38,12 @@ function createMockAppArgs(overrides: Partial<AppArguments> = {}): AppArguments 
         doCache: true,
         fetchCompilersFromRemote: false,
         ensureNoCompilerClash: undefined,
+        prediscovered: undefined,
+        discoveryOnly: undefined,
+        staticPath: undefined,
+        metricsPort: undefined,
+        useLocalProps: true,
+        propDebug: false,
         ...overrides,
     };
 }
@@ -192,19 +198,10 @@ describe('Server Module', () => {
             process.env.NODE_ENV = 'PROD';
 
             // Setup mock dependencies
-            mockAppArgs = {
-                port: 10240,
-                hostname: 'localhost',
-                env: ['test'],
-                suppressConsoleLog: false,
+            mockAppArgs = createMockAppArgs({
                 gitReleaseName: 'test-release',
                 releaseBuildNumber: '123',
-                rootDir: '/test/root',
-                wantedLanguages: undefined,
-                doCache: true,
-                fetchCompilersFromRemote: false,
-                ensureNoCompilerClash: undefined,
-            };
+            });
 
             mockOptions = {
                 staticPath: './static',

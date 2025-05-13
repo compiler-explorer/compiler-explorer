@@ -25,7 +25,6 @@
 import type {Express} from 'express';
 import type {AppArguments} from '../app.interfaces.js';
 import type {PropertyGetter} from '../properties.interfaces.js';
-import type {CompilerExplorerOptions} from './cli.js';
 import type {ConfigurationResult} from './config.interfaces.js';
 
 /**
@@ -33,7 +32,6 @@ import type {ConfigurationResult} from './config.interfaces.js';
  */
 export interface ApplicationOptions {
     appArgs: AppArguments;
-    options: CompilerExplorerOptions;
     config: ConfigurationResult;
     distPath: string;
     awsProps: PropertyGetter;

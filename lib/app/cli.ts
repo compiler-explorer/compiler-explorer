@@ -205,18 +205,21 @@ export function convertOptionsToAppArguments(
         fetchCompilersFromRemote: options.remoteFetch,
         ensureNoCompilerClash: options.ensureNoIdClash,
         suppressConsoleLog: options.suppressConsoleLog,
+        prediscovered: options.prediscovered,
+        discoveryOnly: options.discoveryOnly,
+        staticPath: options.static,
+        metricsPort: options.metricsPort,
+        useLocalProps: options.local,
+        propDebug: options.propDebug,
     };
 }
 
 /**
  * Initialize configuration from command-line arguments
  * @param argv The command-line arguments to parse
- * @returns Application arguments and raw options
+ * @returns Application arguments
  */
-export function initializeOptionsFromCommandLine(argv: string[]): {
-    appArgs: AppArguments;
-    options: CompilerExplorerOptions;
-} {
+export function initialiseOptionsFromCommandLine(argv: string[]): AppArguments {
     const options = parseCommandLine(argv);
     initialiseLogging(options);
 
@@ -246,5 +249,5 @@ export function initializeOptionsFromCommandLine(argv: string[]): {
         process.exit(0);
     }
 
-    return {appArgs, options};
+    return appArgs;
 }

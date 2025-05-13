@@ -60,7 +60,7 @@ import {setupWebServer, startListening} from './server.js';
 /**
  * Initialize the Compiler Explorer application
  */
-export async function initializeApplication(options: ApplicationOptions): Promise<ApplicationResult> {
+export async function initialiseApplication(options: ApplicationOptions): Promise<ApplicationResult> {
     const {appArgs, config, distPath, awsProps} = options;
     const {ceProps, compilerProps, languages, storageSolution} = config;
 
@@ -130,8 +130,8 @@ export async function initializeApplication(options: ApplicationOptions): Promis
     let initialCompilers;
     let prevCompilers;
 
-    if (options.options.prediscovered) {
-        const prediscoveredCompilersJson = await fs.readFile(options.options.prediscovered, 'utf8');
+    if (appArgs.prediscovered) {
+        const prediscoveredCompilersJson = await fs.readFile(appArgs.prediscovered, 'utf8');
         initialCompilers = JSON.parse(prediscoveredCompilersJson);
         const prediscResult = await compilerFinder.loadPrediscovered(initialCompilers);
         if (prediscResult.length === 0) {
@@ -154,7 +154,7 @@ export async function initializeApplication(options: ApplicationOptions): Promis
     }
 
     // Handle discovery-only mode if requested
-    if (options.options.discoveryOnly) {
+    if (appArgs.discoveryOnly) {
         for (const compiler of initialCompilers) {
             if (compiler.buildenvsetup && compiler.buildenvsetup.id === '') delete compiler.buildenvsetup;
 
@@ -165,14 +165,14 @@ export async function initializeApplication(options: ApplicationOptions): Promis
                 compiler.cachedPossibleArguments = compilerInstance.possibleArguments.possibleArguments;
             }
         }
-        await fs.writeFile(options.options.discoveryOnly, JSON.stringify(initialCompilers));
-        logger.info(`Discovered compilers saved to ${options.options.discoveryOnly}`);
+        await fs.writeFile(appArgs.discoveryOnly, JSON.stringify(initialCompilers));
+        logger.info(`Discovered compilers saved to ${appArgs.discoveryOnly}`);
         process.exit(0);
     }
 
     // Create web server with needed configurations
     const serverOptions = {
-        staticPath: options.options.static || path.join(distPath, 'static'),
+        staticPath: appArgs.staticPath || path.join(distPath, 'static'),
         staticMaxAgeSecs: config.staticMaxAgeSecs,
         staticUrl: config.staticUrl,
         staticRoot: config.staticRoot,
@@ -239,7 +239,7 @@ export async function initializeApplication(options: ApplicationOptions): Promis
 
     // Set up compiler rescanning if configured
     const rescanCompilerSecs = ceProps('rescanCompilerSecs', 0);
-    if (rescanCompilerSecs && !options.options.prediscovered) {
+    if (rescanCompilerSecs && !appArgs.prediscovered) {
         logger.info(`Rescanning compilers every ${rescanCompilerSecs} secs`);
         setInterval(
             () => compilerFinder.find().then(result => onCompilerChange(result.compilers)),
@@ -248,9 +248,9 @@ export async function initializeApplication(options: ApplicationOptions): Promis
     }
 
     // Set up metrics server if configured
-    if (options.options.metricsPort) {
-        logger.info(`Running metrics server on port ${options.options.metricsPort}`);
-        setupMetricsServer(options.options.metricsPort, appArgs.hostname);
+    if (appArgs.metricsPort) {
+        logger.info(`Running metrics server on port ${appArgs.metricsPort}`);
+        setupMetricsServer(appArgs.metricsPort, appArgs.hostname);
     }
 
     // Set up controllers

@@ -27,7 +27,7 @@ import express from 'express';
 import {afterEach, beforeEach, describe, expect, it, vi} from 'vitest';
 
 import {AppArguments} from '../../lib/app.interfaces.js';
-import {initializeApplication} from '../../lib/app/main.js';
+import {initialiseApplication} from '../../lib/app/main.js';
 import * as server from '../../lib/app/server.js';
 import * as aws from '../../lib/aws.js';
 import {CompilationEnvironment} from '../../lib/compilation-env.js';
@@ -118,6 +118,12 @@ describe('Main module', () => {
         fetchCompilersFromRemote: true,
         ensureNoCompilerClash: false,
         suppressConsoleLog: false,
+        prediscovered: undefined,
+        discoveryOnly: undefined,
+        staticPath: undefined,
+        metricsPort: undefined,
+        useLocalProps: true,
+        propDebug: false,
     };
 
     const mockConfig = {
@@ -253,13 +259,8 @@ describe('Main module', () => {
     });
 
     it('should initialize and return a web server', async () => {
-        const result = await initializeApplication({
+        const result = await initialiseApplication({
             appArgs: mockAppArgs,
-            options: {
-                prediscovered: undefined,
-                discoveryOnly: undefined,
-                metricsPort: undefined,
-            } as any,
             config: mockConfig as any,
             distPath: '/test/dist',
             awsProps: vi.fn() as any,
@@ -284,13 +285,11 @@ describe('Main module', () => {
             return 'sponsors: []';
         });
 
-        const result = await initializeApplication({
-            appArgs: mockAppArgs,
-            options: {
+        const result = await initialiseApplication({
+            appArgs: {
+                ...mockAppArgs,
                 prediscovered: '/path/to/prediscovered.json',
-                discoveryOnly: undefined,
-                metricsPort: undefined,
-            } as any,
+            },
             config: mockConfig as any,
             distPath: '/test/dist',
             awsProps: vi.fn() as any,
@@ -303,13 +302,11 @@ describe('Main module', () => {
     it('should handle discovery-only mode', async () => {
         const mockExit = vi.spyOn(process, 'exit').mockImplementation(() => undefined as never);
 
-        await initializeApplication({
-            appArgs: mockAppArgs,
-            options: {
-                prediscovered: undefined,
+        await initialiseApplication({
+            appArgs: {
+                ...mockAppArgs,
                 discoveryOnly: '/path/to/output.json',
-                metricsPort: undefined,
-            } as any,
+            },
             config: mockConfig as any,
             distPath: '/test/dist',
             awsProps: vi.fn() as any,
@@ -322,13 +319,11 @@ describe('Main module', () => {
     });
 
     it('should set up metrics server if configured', async () => {
-        await initializeApplication({
-            appArgs: mockAppArgs,
-            options: {
-                prediscovered: undefined,
-                discoveryOnly: undefined,
+        await initialiseApplication({
+            appArgs: {
+                ...mockAppArgs,
                 metricsPort: 9000,
-            } as any,
+            },
             config: mockConfig as any,
             distPath: '/test/dist',
             awsProps: vi.fn() as any,
@@ -343,13 +338,8 @@ describe('Main module', () => {
             return defaultValue;
         });
 
-        await initializeApplication({
+        await initialiseApplication({
             appArgs: mockAppArgs,
-            options: {
-                prediscovered: undefined,
-                discoveryOnly: undefined,
-                metricsPort: undefined,
-            } as any,
             config: mockConfig as any,
             distPath: '/test/dist',
             awsProps: vi.fn() as any,
@@ -366,13 +356,8 @@ describe('Main module', () => {
         vi.mocked(CompilerFinder).mockImplementation(() => mockCompilerFinder as any);
 
         await expect(
-            initializeApplication({
+            initialiseApplication({
                 appArgs: mockAppArgs,
-                options: {
-                    prediscovered: undefined,
-                    discoveryOnly: undefined,
-                    metricsPort: undefined,
-                } as any,
                 config: mockConfig as any,
                 distPath: '/test/dist',
                 awsProps: vi.fn() as any,
@@ -387,13 +372,8 @@ describe('Main module', () => {
         vi.mocked(CompilerFinder).mockImplementation(() => mockCompilerFinder as any);
 
         await expect(
-            initializeApplication({
+            initialiseApplication({
                 appArgs: {...mockAppArgs, ensureNoCompilerClash: true},
-                options: {
-                    prediscovered: undefined,
-                    discoveryOnly: undefined,
-                    metricsPort: undefined,
-                } as any,
                 config: mockConfig as any,
                 distPath: '/test/dist',
                 awsProps: vi.fn() as any,

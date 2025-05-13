@@ -40,6 +40,12 @@ function createMockAppArgs(overrides: Partial<AppArguments> = {}): AppArguments 
         doCache: true,
         fetchCompilersFromRemote: false,
         ensureNoCompilerClash: undefined,
+        prediscovered: undefined,
+        discoveryOnly: undefined,
+        staticPath: undefined,
+        metricsPort: undefined,
+        useLocalProps: true,
+        propDebug: false,
         ...overrides,
     };
 }
@@ -47,7 +53,6 @@ function createMockAppArgs(overrides: Partial<AppArguments> = {}): AppArguments 
 import {afterEach, beforeEach, describe, expect, it, vi} from 'vitest';
 
 import type {AppArguments} from '../../lib/app.interfaces.js';
-import type {ConfigLoadOptions} from '../../lib/app/config.interfaces.js';
 import {
     createPropertyHierarchy,
     filterLanguages,
@@ -320,15 +325,12 @@ describe('Config Module', () => {
         });
 
         it('should load configuration and return expected properties', () => {
-            const appArgs = createMockAppArgs();
-
-            const options: ConfigLoadOptions = {
-                appArgs,
-                useLocal: true,
+            const appArgs = createMockAppArgs({
+                useLocalProps: true,
                 propDebug: false,
-            };
+            });
 
-            const result = loadConfiguration(options);
+            const result = loadConfiguration(appArgs);
 
             // Verify initialization happened correctly
             expect(props.initialize).toHaveBeenCalledWith(path.normalize('/test/root/config'), expect.any(Array));
@@ -348,30 +350,24 @@ describe('Config Module', () => {
         });
 
         it('should enable property debugging when propDebug is true', () => {
-            const appArgs = createMockAppArgs();
-
-            const options: ConfigLoadOptions = {
-                appArgs,
-                useLocal: true,
+            const appArgs = createMockAppArgs({
+                useLocalProps: true,
                 propDebug: true,
-            };
+            });
 
-            loadConfiguration(options);
+            loadConfiguration(appArgs);
 
             expect(props.setDebug).toHaveBeenCalledWith(true);
         });
 
         it('should set wantedLanguages from restrictToLanguages property', () => {
             mockCeProps.restrictToLanguages = 'c++,rust';
-            const appArgs = createMockAppArgs();
-
-            const options: ConfigLoadOptions = {
-                appArgs,
-                useLocal: true,
+            const appArgs = createMockAppArgs({
+                useLocalProps: true,
                 propDebug: false,
-            };
+            });
 
-            loadConfiguration(options);
+            loadConfiguration(appArgs);
 
             expect(appArgs.wantedLanguages).toEqual(['c++', 'rust']);
         });
@@ -390,15 +386,12 @@ describe('Config Module', () => {
 
         it('should handle staticUrl when provided', () => {
             mockCeProps.staticUrl = 'https://static.example.com';
-            const appArgs = createMockAppArgs();
-
-            const options: ConfigLoadOptions = {
-                appArgs,
-                useLocal: true,
+            const appArgs = createMockAppArgs({
+                useLocalProps: true,
                 propDebug: false,
-            };
+            });
 
-            const result = loadConfiguration(options);
+            const result = loadConfiguration(appArgs);
 
             expect(result.staticUrl).toBe('https://static.example.com');
             expect(result.staticRoot).toBe('https://static.example.com/');

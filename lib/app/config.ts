@@ -29,11 +29,12 @@ import PromClient from 'prom-client';
 import urljoin from 'url-join';
 
 import type {Language, LanguageKey} from '../../types/languages.interfaces.js';
+import {AppArguments} from '../app.interfaces.js';
 import {languages as allLanguages} from '../languages.js';
 import {logger} from '../logger.js';
 import type {PropertyGetter} from '../properties.interfaces.js';
 import * as props from '../properties.js';
-import type {ConfigLoadOptions, ConfigurationResult} from './config.interfaces.js';
+import type {ConfigurationResult} from './config.interfaces.js';
 import {isDevMode, measureEventLoopLag} from './utils.js';
 
 /**
@@ -116,14 +117,14 @@ export function setupEventLoopLagMonitoring(ceProps: PropertyGetter): void {
 /**
  * Load and initialize application configuration
  */
-export function loadConfiguration({appArgs, useLocal, propDebug}: ConfigLoadOptions): ConfigurationResult {
+export function loadConfiguration(appArgs: AppArguments): ConfigurationResult {
     // Set up property debugging if needed
-    if (propDebug) {
+    if (appArgs.propDebug) {
         props.setDebug(true);
     }
 
     // Create property hierarchy based on environment
-    const propHierarchy = createPropertyHierarchy(appArgs.env, useLocal);
+    const propHierarchy = createPropertyHierarchy(appArgs.env, appArgs.useLocalProps);
 
     // Initialize properties from config directory
     const configDir = path.join(appArgs.rootDir, 'config');

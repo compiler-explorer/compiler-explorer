@@ -1,4 +1,4 @@
-// Copyright (c) 2012, Compiler Explorer Authors
+// Copyright (c) 2025, Compiler Explorer Authors
 // All rights reserved.
 //
 // Redistribution and use in source and binary forms, with or without
@@ -28,9 +28,9 @@ import '@sentry/node/preload'; // preload Sentry's "preload" support before any 
 ////
 import process from 'node:process';
 
-import {initializeOptionsFromCommandLine} from './lib/app/cli.js';
+import {initialiseOptionsFromCommandLine} from './lib/app/cli.js';
 import {loadConfiguration} from './lib/app/config.js';
-import {initializeApplication} from './lib/app/main.js';
+import {initialiseApplication} from './lib/app/main.js';
 import {setBaseDirectory} from './lib/assert.js';
 import {logger} from './lib/logger.js';
 import * as props from './lib/properties.js';
@@ -38,22 +38,6 @@ import * as utils from './lib/utils.js';
 
 // Set base directory for resolving paths
 setBaseDirectory(new URL('.', import.meta.url));
-
-// Initialize configuration from command-line arguments
-const {appArgs, options: opts} = initializeOptionsFromCommandLine(process.argv);
-
-// Get distribution path for static files
-const distPath = utils.resolvePathFromAppRoot('.');
-
-// Load configuration
-const config = loadConfiguration({
-    appArgs,
-    useLocal: opts.local,
-    propDebug: opts.propDebug,
-});
-
-// Get AWS properties
-const awsProps = props.propsFor('aws');
 
 // Set up signal handlers
 process.on('uncaughtException', uncaughtHandler);
@@ -75,10 +59,15 @@ function uncaughtHandler(err: Error, origin: NodeJS.UncaughtExceptionOrigin) {
     process.exitCode = 1;
 }
 
+// Initialise configuration
+const appArgs = initialiseOptionsFromCommandLine(process.argv);
+const distPath = utils.resolvePathFromAppRoot('.');
+const config = loadConfiguration(appArgs);
+const awsProps = props.propsFor('aws');
+
 // Initialize and start the application
-initializeApplication({
+initialiseApplication({
     appArgs,
-    options: opts,
     config,
     distPath,
     awsProps,

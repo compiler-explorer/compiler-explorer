@@ -280,6 +280,12 @@ describe('CLI Module', () => {
                 remoteFetch: true,
                 ensureNoIdClash: true,
                 suppressConsoleLog: false,
+                prediscovered: './prediscovered.json',
+                discoveryOnly: './discoveryOnly.json',
+                static: './static',
+                metricsPort: 8081,
+                local: true,
+                propDebug: true,
                 extraField: 'should be ignored',
             } as any;
 
@@ -300,6 +306,12 @@ describe('CLI Module', () => {
                 fetchCompilersFromRemote: true,
                 ensureNoCompilerClash: true,
                 suppressConsoleLog: false,
+                prediscovered: './prediscovered.json',
+                discoveryOnly: './discoveryOnly.json',
+                staticPath: './static',
+                metricsPort: 8081,
+                useLocalProps: true,
+                propDebug: true,
             });
         });
     });

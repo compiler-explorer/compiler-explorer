@@ -34,4 +34,10 @@ export type AppArguments = {
     fetchCompilersFromRemote: boolean;
     ensureNoCompilerClash: boolean | undefined;
     suppressConsoleLog: boolean;
+    prediscovered?: string;
+    discoveryOnly?: string;
+    staticPath?: string;
+    metricsPort?: number;
+    useLocalProps: boolean;
+    propDebug?: boolean;
 };
