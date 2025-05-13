@@ -1,0 +1,403 @@
+// Copyright (c) 2025, Compiler Explorer Authors
+// All rights reserved.
+//
+// Redistribution and use in source and binary forms, with or without
+// modification, are permitted provided that the following conditions are met:
+//
+//     * Redistributions of source code must retain the above copyright notice,
+//       this list of conditions and the following disclaimer.
+//     * Redistributions in binary form must reproduce the above copyright
+//       notice, this list of conditions and the following disclaimer in the
+//       documentation and/or other materials provided with the distribution.
+//
+// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+// AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+// IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+// ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
+// LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+// CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+// SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+// INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+// CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+// ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+// POSSIBILITY OF SUCH DAMAGE.
+
+import fs from 'node:fs/promises';
+import express from 'express';
+import {afterEach, beforeEach, describe, expect, it, vi} from 'vitest';
+
+import {AppArguments} from '../../lib/app.interfaces.js';
+import {initializeApplication} from '../../lib/app/main.js';
+import * as server from '../../lib/app/server.js';
+import * as aws from '../../lib/aws.js';
+import {CompilationEnvironment} from '../../lib/compilation-env.js';
+import {CompilationQueue} from '../../lib/compilation-queue.js';
+import {CompilerFinder} from '../../lib/compiler-finder.js';
+import * as exec from '../../lib/exec.js';
+import {RemoteExecutionQuery} from '../../lib/execution/execution-query.js';
+import * as execTriple from '../../lib/execution/execution-triple.js';
+import * as execQueue from '../../lib/execution/sqs-execution-queue.js';
+import {FormattingService} from '../../lib/formatting-service.js';
+import {CompileHandler} from '../../lib/handlers/compile.js';
+import {NoScriptHandler} from '../../lib/handlers/noscript.js';
+import {RouteAPI} from '../../lib/handlers/route-api.js';
+import {logger} from '../../lib/logger.js';
+import {setupMetricsServer} from '../../lib/metrics-server.js';
+import {ClientOptionsHandler} from '../../lib/options-handler.js';
+import * as sentry from '../../lib/sentry.js';
+import * as sponsors from '../../lib/sponsors.js';
+import {getStorageTypeByKey} from '../../lib/storage/index.js';
+
+// We need to mock all these modules to avoid actual API calls
+vi.mock('../../lib/aws.js');
+vi.mock('../../lib/exec.js');
+vi.mock('../../lib/execution/execution-query.js');
+vi.mock('../../lib/execution/execution-triple.js');
+vi.mock('../../lib/execution/sqs-execution-queue.js');
+vi.mock('../../lib/compilation-env.js');
+vi.mock('../../lib/compilation-queue.js');
+vi.mock('../../lib/compiler-finder.js');
+vi.mock('../../lib/formatting-service.js');
+vi.mock('../../lib/handlers/compile.js');
+vi.mock('../../lib/handlers/noscript.js');
+vi.mock('../../lib/handlers/route-api.js');
+vi.mock('../../lib/metrics-server.js');
+vi.mock('../../lib/options-handler.js');
+vi.mock('../../lib/sentry.js');
+vi.mock('../../lib/sponsors.js');
+vi.mock('../../lib/storage/index.js');
+vi.mock('../../lib/app/server.js');
+vi.mock('node:fs/promises');
+
+// Mock the AssemblyDocumentationController and other controllers
+vi.mock('../../lib/handlers/api/assembly-documentation-controller.js', () => ({
+    AssemblyDocumentationController: vi.fn().mockImplementation(() => ({
+        createRouter: vi.fn().mockReturnValue({}),
+    })),
+}));
+
+vi.mock('../../lib/handlers/api/formatting-controller.js', () => ({
+    FormattingController: vi.fn().mockImplementation(() => ({
+        createRouter: vi.fn().mockReturnValue({}),
+    })),
+}));
+
+vi.mock('../../lib/handlers/api/healthcheck-controller.js', () => ({
+    HealthcheckController: vi.fn().mockImplementation(() => ({
+        createRouter: vi.fn().mockReturnValue({}),
+    })),
+}));
+
+vi.mock('../../lib/handlers/api/noscript-controller.js', () => ({
+    NoScriptController: vi.fn().mockImplementation(() => ({
+        createRouter: vi.fn().mockReturnValue({}),
+    })),
+}));
+
+vi.mock('../../lib/handlers/api/site-template-controller.js', () => ({
+    SiteTemplateController: vi.fn().mockImplementation(() => ({
+        createRouter: vi.fn().mockReturnValue({}),
+    })),
+}));
+
+vi.mock('../../lib/handlers/api/source-controller.js', () => ({
+    SourceController: vi.fn().mockImplementation(() => ({
+        createRouter: vi.fn().mockReturnValue({}),
+    })),
+}));
+
+describe('Main module', () => {
+    const mockAppArgs: AppArguments = {
+        rootDir: '/test/root',
+        env: ['test'],
+        port: 10240,
+        gitReleaseName: 'test-release',
+        releaseBuildNumber: '123',
+        wantedLanguages: ['c++'],
+        doCache: true,
+        fetchCompilersFromRemote: true,
+        ensureNoCompilerClash: false,
+        suppressConsoleLog: false,
+    };
+
+    const mockConfig = {
+        ceProps: vi.fn(),
+        compilerProps: {
+            ceProps: vi.fn(),
+        },
+        languages: {},
+        staticMaxAgeSecs: 60,
+        maxUploadSize: '1mb',
+        extraBodyClass: '',
+        storageSolution: 'local',
+        httpRoot: '/',
+        staticRoot: '/static',
+        staticUrl: undefined,
+    };
+
+    const mockCompilers = [
+        {
+            id: 'gcc',
+            name: 'GCC',
+            lang: 'c++',
+        },
+    ];
+
+    // Setup mocks
+    beforeEach(() => {
+        vi.spyOn(logger, 'info').mockImplementation(() => logger as any);
+        vi.spyOn(logger, 'warn').mockImplementation(() => logger as any);
+        vi.spyOn(logger, 'debug').mockImplementation(() => logger as any);
+
+        vi.mocked(aws.initConfig).mockResolvedValue();
+        vi.mocked(aws.getConfig).mockReturnValue('sentinel');
+        vi.mocked(sentry.SetupSentry).mockReturnValue();
+        vi.mocked(exec.startWineInit).mockReturnValue();
+        vi.mocked(RemoteExecutionQuery.initRemoteExecutionArchs).mockReturnValue();
+
+        const mockFormattingService = {
+            initialize: vi.fn().mockResolvedValue(undefined),
+        };
+        vi.mocked(FormattingService).mockImplementation(() => mockFormattingService as any);
+
+        const mockCompilationQueue = {
+            queue: vi.fn(),
+        };
+        vi.mocked(CompilationQueue.fromProps).mockReturnValue(mockCompilationQueue as any);
+
+        const mockCompilationEnv = {
+            setCompilerFinder: vi.fn(),
+        };
+        vi.mocked(CompilationEnvironment).mockImplementation(() => mockCompilationEnv as any);
+
+        const mockCompileHandler = {
+            findCompiler: vi.fn().mockReturnValue({
+                possibleArguments: {possibleArguments: []},
+            }),
+            handle: vi.fn(),
+        };
+        vi.mocked(CompileHandler).mockImplementation(() => mockCompileHandler as any);
+
+        const mockStorageType = vi.fn();
+        vi.mocked(getStorageTypeByKey).mockReturnValue(mockStorageType as any);
+
+        const mockFindResult = {
+            compilers: mockCompilers,
+            foundClash: false,
+        };
+        const mockCompilerFinder = {
+            find: vi.fn().mockResolvedValue(mockFindResult),
+            loadPrediscovered: vi.fn().mockResolvedValue(mockCompilers),
+            compileHandler: {findCompiler: mockCompileHandler.findCompiler},
+        };
+        vi.mocked(CompilerFinder).mockImplementation(() => mockCompilerFinder as any);
+
+        vi.mocked(mockConfig.ceProps).mockImplementation((key, defaultValue) => {
+            if (key === 'execqueue.is_worker') return false;
+            if (key === 'healthCheckFilePath') return null;
+            if (key === 'sentrySlowRequestMs') return 0;
+            if (key === 'rescanCompilerSecs') return 0;
+            return defaultValue;
+        });
+
+        vi.mocked(sponsors.loadSponsorsFromString).mockResolvedValue({
+            getLevels: vi.fn().mockReturnValue([]),
+            pickTopIcons: vi.fn().mockReturnValue([]),
+            getAllTopIcons: vi.fn().mockReturnValue([]),
+        });
+        vi.mocked(fs.readFile).mockResolvedValue('sponsors: []');
+
+        const mockRouter = {
+            use: vi.fn().mockReturnThis(),
+        };
+
+        const mockWebServerResult = {
+            webServer: {} as express.Express,
+            router: mockRouter as any,
+            renderConfig: vi.fn(),
+            renderGoldenLayout: vi.fn(),
+            pugRequireHandler: vi.fn(),
+        };
+        vi.mocked(server.setupWebServer).mockResolvedValue(mockWebServerResult);
+        vi.mocked(server.startListening).mockImplementation(() => {});
+
+        const mockNoscriptHandler = {
+            initializeRoutes: vi.fn(),
+            createRouter: vi.fn().mockReturnValue({}),
+        };
+        vi.mocked(NoScriptHandler).mockImplementation(() => mockNoscriptHandler as any);
+
+        const mockApiHandler = {
+            setCompilers: vi.fn(),
+            setLanguages: vi.fn(),
+            setOptions: vi.fn(),
+        };
+        const mockRouteApi = {
+            apiHandler: mockApiHandler,
+            initializeRoutes: vi.fn(),
+        };
+        vi.mocked(RouteAPI).mockImplementation(() => mockRouteApi as any);
+
+        // Mock ClientOptionsHandler
+        const mockClientOptionsHandler = {
+            setCompilers: vi.fn().mockResolvedValue(undefined),
+            get: vi.fn(),
+            getHash: vi.fn(),
+            getJSON: vi.fn(),
+        };
+        vi.mocked(ClientOptionsHandler).mockImplementation(() => mockClientOptionsHandler as any);
+    });
+
+    afterEach(() => {
+        vi.restoreAllMocks();
+    });
+
+    it('should initialize and return a web server', async () => {
+        const result = await initializeApplication({
+            appArgs: mockAppArgs,
+            options: {
+                prediscovered: undefined,
+                discoveryOnly: undefined,
+                metricsPort: undefined,
+            } as any,
+            config: mockConfig as any,
+            distPath: '/test/dist',
+            awsProps: vi.fn() as any,
+        });
+
+        // Verify the application was properly initialized
+        expect(result).toHaveProperty('webServer');
+        expect(aws.initConfig).toHaveBeenCalled();
+        expect(sentry.SetupSentry).toHaveBeenCalled();
+        expect(exec.startWineInit).toHaveBeenCalled();
+        expect(RemoteExecutionQuery.initRemoteExecutionArchs).toHaveBeenCalled();
+        expect(CompilationQueue.fromProps).toHaveBeenCalled();
+        expect(server.setupWebServer).toHaveBeenCalled();
+        expect(server.startListening).toHaveBeenCalled();
+    });
+
+    it('should load prediscovered compilers if provided', async () => {
+        vi.mocked(fs.readFile).mockImplementation(async path => {
+            if (typeof path === 'string' && path.includes('prediscovered')) {
+                return JSON.stringify(mockCompilers);
+            }
+            return 'sponsors: []';
+        });
+
+        const result = await initializeApplication({
+            appArgs: mockAppArgs,
+            options: {
+                prediscovered: '/path/to/prediscovered.json',
+                discoveryOnly: undefined,
+                metricsPort: undefined,
+            } as any,
+            config: mockConfig as any,
+            distPath: '/test/dist',
+            awsProps: vi.fn() as any,
+        });
+
+        expect(result).toHaveProperty('webServer');
+        expect(fs.readFile).toHaveBeenCalledWith('/path/to/prediscovered.json', 'utf8');
+    });
+
+    it('should handle discovery-only mode', async () => {
+        const mockExit = vi.spyOn(process, 'exit').mockImplementation(() => undefined as never);
+
+        await initializeApplication({
+            appArgs: mockAppArgs,
+            options: {
+                prediscovered: undefined,
+                discoveryOnly: '/path/to/output.json',
+                metricsPort: undefined,
+            } as any,
+            config: mockConfig as any,
+            distPath: '/test/dist',
+            awsProps: vi.fn() as any,
+        });
+
+        expect(fs.writeFile).toHaveBeenCalledWith('/path/to/output.json', JSON.stringify(mockCompilers));
+        expect(mockExit).toHaveBeenCalledWith(0);
+
+        mockExit.mockRestore();
+    });
+
+    it('should set up metrics server if configured', async () => {
+        await initializeApplication({
+            appArgs: mockAppArgs,
+            options: {
+                prediscovered: undefined,
+                discoveryOnly: undefined,
+                metricsPort: 9000,
+            } as any,
+            config: mockConfig as any,
+            distPath: '/test/dist',
+            awsProps: vi.fn() as any,
+        });
+
+        expect(setupMetricsServer).toHaveBeenCalledWith(9000, undefined);
+    });
+
+    it('should initialize execution worker if configured', async () => {
+        vi.mocked(mockConfig.ceProps).mockImplementation((key, defaultValue) => {
+            if (key === 'execqueue.is_worker') return true;
+            return defaultValue;
+        });
+
+        await initializeApplication({
+            appArgs: mockAppArgs,
+            options: {
+                prediscovered: undefined,
+                discoveryOnly: undefined,
+                metricsPort: undefined,
+            } as any,
+            config: mockConfig as any,
+            distPath: '/test/dist',
+            awsProps: vi.fn() as any,
+        });
+
+        expect(execTriple.initHostSpecialties).toHaveBeenCalled();
+        expect(execQueue.startExecutionWorkerThread).toHaveBeenCalled();
+    });
+
+    it('should throw an error if no compilers are found', async () => {
+        const mockCompilerFinder = {
+            find: vi.fn().mockResolvedValue({compilers: [], foundClash: false}),
+        };
+        vi.mocked(CompilerFinder).mockImplementation(() => mockCompilerFinder as any);
+
+        await expect(
+            initializeApplication({
+                appArgs: mockAppArgs,
+                options: {
+                    prediscovered: undefined,
+                    discoveryOnly: undefined,
+                    metricsPort: undefined,
+                } as any,
+                config: mockConfig as any,
+                distPath: '/test/dist',
+                awsProps: vi.fn() as any,
+            }),
+        ).rejects.toThrow('Unexpected failure, no compilers found!');
+    });
+
+    it('should throw an error if there are compiler clashes and ensureNoCompilerClash is set', async () => {
+        const mockCompilerFinder = {
+            find: vi.fn().mockResolvedValue({compilers: mockCompilers, foundClash: true}),
+        };
+        vi.mocked(CompilerFinder).mockImplementation(() => mockCompilerFinder as any);
+
+        await expect(
+            initializeApplication({
+                appArgs: {...mockAppArgs, ensureNoCompilerClash: true},
+                options: {
+                    prediscovered: undefined,
+                    discoveryOnly: undefined,
+                    metricsPort: undefined,
+                } as any,
+                config: mockConfig as any,
+                distPath: '/test/dist',
+                awsProps: vi.fn() as any,
+            }),
+        ).rejects.toThrow('Clashing compilers in the current environment found!');
+    });
+});

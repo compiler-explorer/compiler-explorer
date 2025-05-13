@@ -26,36 +26,42 @@ We'll take an incremental approach to migration:
 
 Based on the analysis, we propose the following initial modules:
 
-### 1. `lib/app/cli.ts`
+### 1. `lib/app/cli.ts` ✅
 - Command-line argument parsing (lines ~93-165)
 - Environment variable setup (lines ~166-195)
 - Git/release info extraction (lines ~196-223)
 
-### 2. `lib/app/config.ts`
+### 2. `lib/app/config.ts` ✅
 - Configuration hierarchy setup
 - Property loading and initialization
 - Language filtering
 
-### 3. `lib/app/server.ts`
+### 3. `lib/app/server.ts` ✅
 - Web server setup and configuration
 - Middleware configuration
 - Static file handling
 
-### 4. `lib/app/routes.ts`
+### 4. `lib/app/main.ts` ✅
+- Core application initialization 
+- Setup services and components
+- Compiler discovery and initialization
+- Handle application startup flow
+
+### 5. `lib/app/routes.ts`
 - Route initialization
 - Route handlers and controllers
 
-### 5. `lib/app/render.ts`
+### 6. `lib/app/render.ts`
 - Template rendering functions
 - Golden layout rendering
 - Config processing for views
 
-### 6. `lib/app/metrics.ts`
+### 7. `lib/app/metrics.ts`
 - Event loop monitoring
 - Prometheus metrics
 - Performance monitoring
 
-### 7. `lib/app/signals.ts`
+### 8. `lib/app/signals.ts`
 - Signal handlers
 - Process management
 - Shutdown procedures
@@ -65,17 +71,19 @@ Based on the analysis, we propose the following initial modules:
 ### Phase 1: Initial Setup and Simple Extractions
 1. ✅ Create `lib/app/` directory
 2. ✅ Extract utility functions (`measureEventLoopLag`, `getFaviconFilename`, etc.)
-3. Create types/interfaces for shared data
+3. ✅ Create types/interfaces for shared data
 
 ### Phase 2: Module Creation
 1. ✅ Extract command-line handling
 2. ✅ Extract configuration setup
 3. ✅ Extract web server setup
+4. ✅ Extract main application initialization
 
 ### Phase 3: Service Extraction
 1. Extract route initialization
 2. Extract rendering functions
 3. Extract metrics and monitoring
+4. Extract signal handling
 
 ### Phase 4: Integration
 1. Connect extracted modules
