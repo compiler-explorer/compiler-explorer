@@ -8,8 +8,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 - Lint: `npm run lint` (auto-fix), `npm run lint-check` (check only)
 - Type Check: `npm run ts-check`
 - Test: `npm run test` (all), `npm run test-min` (minimal)
-- Test Single File: `npm run test -- --run base-compiler-tests.ts`
-- Test Specific Pattern: `npm run test -- -t "should handle execution failures"`
+- Test Single File: `npx vitest <path/to/test>`
 - Cypress Tests: `npm run cypress`
 - Pre-commit Check: `make pre-commit` or `npm run check`
 
