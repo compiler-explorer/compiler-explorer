@@ -253,6 +253,11 @@ export class BuildEnvSetupCeConanDirect extends BuildEnvSetupBase {
                 if (key === 'compiler.libcxx' && elem.settings['compiler'] === 'cshared') {
                     return true;
                 }
+                if (key === 'stdver') {
+                    // unless ABI breakage happens in future stdversions, assume they are all cxx11 and compatible
+                    //  or if not that the compiler.version has already made sure those won't be matched
+                    return true;
+                }
                 return val === elem.settings[key];
             });
         });
