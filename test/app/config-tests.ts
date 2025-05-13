@@ -23,6 +23,7 @@
 // POSSIBILITY OF SUCH DAMAGE.
 
 import os from 'node:os';
+import path from 'node:path';
 import process from 'node:process';
 
 // Test helper functions
@@ -332,7 +333,7 @@ describe('Config Module', () => {
             const result = loadConfiguration(options);
 
             // Verify initialization happened correctly
-            expect(props.initialize).toHaveBeenCalledWith('/test/root/config', expect.any(Array));
+            expect(props.initialize).toHaveBeenCalledWith(path.normalize('/test/root/config'), expect.any(Array));
             expect(props.propsFor).toHaveBeenCalledWith('compiler-explorer');
             expect(props.CompilerProps).toHaveBeenCalled();
 
