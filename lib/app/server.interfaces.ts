@@ -57,28 +57,15 @@ export interface RenderConfig extends PugOptions {
     storedStateId?: string | false;
     [key: string]: any;
 }
+export type RenderConfigFunction = (extra: Record<string, any>, urlOptions?: Record<string, any>) => RenderConfig;
 
 export type PugRequireHandler = (path: string) => string;
-
-// Export helper for testing
-export const createDefaultPugRequireHandler = (staticRoot: string, manifest?: Record<string, string>) => {
-    return (path: string) => {
-        if (manifest && Object.prototype.hasOwnProperty.call(manifest, path)) {
-            return `${staticRoot}/${manifest[path]}`;
-        }
-        if (manifest) {
-            console.error(`Failed to locate static asset '${path}' in manifest`);
-            return '';
-        }
-        return `${staticRoot}/${path}`;
-    };
-};
 
 export interface WebServerResult {
     webServer: Express;
     router: Router;
     pugRequireHandler: PugRequireHandler;
-    renderConfig: (extra: Record<string, any>, urlOptions?: Record<string, any>) => RenderConfig;
+    renderConfig: RenderConfigFunction;
     renderGoldenLayout: (
         config: GoldenLayoutRootStruct,
         metadata: ShortLinkMetaData,

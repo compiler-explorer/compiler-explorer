@@ -51,16 +51,31 @@ import * as normalizer from '../clientstate-normalizer.js';
 import type {ShortLinkMetaData} from '../handlers/handler.interfaces.js';
 import {cached, csp} from '../handlers/middleware.js';
 import {logger, makeLogStream} from '../logger.js';
+import {PropertyGetter} from '../properties.interfaces.js';
 import {ShortLinkResolver} from '../shortener/google.js';
 import * as utils from '../utils.js';
 import {isDevMode} from './config.js';
 import type {
     PugRequireHandler,
     RenderConfig,
+    RenderConfigFunction,
     ServerDependencies,
     ServerOptions,
     WebServerResult,
 } from './server.interfaces.js';
+
+function createDefaultPugRequireHandler(staticRoot: string, manifest?: Record<string, string>) {
+    return (path: string) => {
+        if (manifest && Object.prototype.hasOwnProperty.call(manifest, path)) {
+            return `${staticRoot}/${manifest[path]}`;
+        }
+        if (manifest) {
+            console.error(`Failed to locate static asset '${path}' in manifest`);
+            return '';
+        }
+        return `${staticRoot}/${path}`;
+    };
+}
 
 /**
  * Gets the appropriate favicon filename based on the environment.
@@ -88,6 +103,234 @@ export function isMobileViewer(req: Request): boolean {
 }
 
 /**
+ * Handles legacy Google URL shortener redirects
+ */
+class OldGoogleUrlHandler {
+    private readonly googleShortUrlResolver: ShortLinkResolver;
+    constructor(private readonly ceProps: PropertyGetter) {
+        this.googleShortUrlResolver = new ShortLinkResolver();
+    }
+    async handle(req: Request, res: Response, next: NextFunction) {
+        const id = req.params.id;
+        const googleUrl = `https://goo.gl/${encodeURIComponent(id)}`;
+
+        try {
+            const resultObj = await this.googleShortUrlResolver.resolve(googleUrl);
+            const parsed = new url.URL(resultObj.longUrl);
+            const allowedRe = new RegExp(this.ceProps<string>('allowedShortUrlHostRe'));
+
+            if (parsed.host.match(allowedRe) === null) {
+                logger.warn(`Denied access to short URL ${id} - linked to ${resultObj.longUrl}`);
+                return next({
+                    statusCode: 404,
+                    message: `ID "${id}" could not be found`,
+                });
+            }
+
+            res.writeHead(301, {
+                Location: resultObj.longUrl,
+                'Cache-Control': 'public',
+            });
+            res.end();
+        } catch (err: unknown) {
+            logger.error(`Failed to expand ${googleUrl} - ${err}`);
+            next({
+                statusCode: 404,
+                message: `ID "${id}" could not be found`,
+            });
+        }
+    }
+}
+
+async function setupWebPackDevMiddleware(options: ServerOptions, router: express.Router): Promise<PugRequireHandler> {
+    logger.info('  using webpack dev middleware');
+
+    /* eslint-disable n/no-unpublished-import,import/extensions, */
+    const {default: webpackDevMiddleware} = await import('webpack-dev-middleware');
+    const {default: webpackConfig} = await import('../../webpack.config.esm.js');
+    const {default: webpack} = await import('webpack');
+    /* eslint-enable */
+    type WebpackConfiguration = ElementType<Parameters<typeof webpack>[0]>;
+
+    const webpackCompiler = webpack([webpackConfig as WebpackConfiguration]);
+    router.use(
+        webpackDevMiddleware(webpackCompiler, {
+            publicPath: '/static',
+            stats: {
+                preset: 'errors-only',
+                timings: true,
+            },
+        }),
+    );
+
+    return path => urljoin(options.httpRoot, 'static', path);
+}
+
+async function setupStaticMiddleware(options: ServerOptions, router: express.Router): Promise<PugRequireHandler> {
+    const staticManifest = JSON.parse(await fs.readFile(path.join(options.distPath, 'manifest.json'), 'utf-8'));
+
+    if (options.staticUrl) {
+        logger.info(`  using static files from '${options.staticUrl}'`);
+    } else {
+        logger.info(`  serving static files from '${options.staticPath}'`);
+        router.use(
+            '/static',
+            express.static(options.staticPath, {
+                maxAge: options.staticMaxAgeSecs * 1000,
+            }),
+        );
+    }
+
+    return createDefaultPugRequireHandler(options.staticRoot, staticManifest);
+}
+
+function setupBaseServerConfig(
+    options: ServerOptions,
+    renderConfig: RenderConfigFunction,
+    webServer: express.Express,
+    router: express.Router,
+) {
+    webServer
+        .set('trust proxy', true)
+        .set('view engine', 'pug')
+        .on('error', err => logger.error('Caught error in web handler; continuing:', err))
+        .use(
+            responseTime((req, res, time) => {
+                if (options.sentrySlowRequestMs > 0 && time >= options.sentrySlowRequestMs) {
+                    Sentry.withScope((scope: Sentry.Scope) => {
+                        scope.setExtra('duration_ms', time);
+                        Sentry.captureMessage('SlowRequest', 'warning');
+                    });
+                }
+            }),
+        )
+        .use(options.httpRoot, router)
+        .use((req, res, next) => {
+            next({status: 404, message: `page "${req.path}" could not be found`});
+        });
+
+    Sentry.setupExpressErrorHandler(webServer);
+
+    // eslint-disable-next-line no-unused-vars
+    webServer.use((err: any, req: Request, res: Response, _next: NextFunction) => {
+        const status = err.status || err.statusCode || err.status_code || err.output?.statusCode || 500;
+        const message = err.message || 'Internal Server Error';
+        res.status(status);
+        res.render('error', renderConfig({error: {code: status, message: message}}));
+        if (status >= 500) {
+            logger.error('Internal server error:', err);
+        }
+    });
+}
+
+function setupLoggingMiddleware(router: express.Router) {
+    morgan.token('gdpr_ip', (req: any) => (req.ip ? utils.anonymizeIp(req.ip) : ''));
+
+    // Based on combined format, but: GDPR compliant IP, no timestamp & no unused fields for our usecase
+    const morganFormat = isDevMode() ? 'dev' : ':gdpr_ip ":method :url" :status';
+
+    router.use(
+        morgan(morganFormat, {
+            stream: makeLogStream('info'),
+            // Skip for non errors (2xx, 3xx)
+            skip: (req: Request, res: Response) => res.statusCode >= 400,
+        }),
+    );
+    router.use(
+        morgan(morganFormat, {
+            stream: makeLogStream('warn'),
+            // Skip for non user errors (4xx)
+            skip: (req: Request, res: Response) => res.statusCode < 400 || res.statusCode >= 500,
+        }),
+    );
+    router.use(
+        morgan(morganFormat, {
+            stream: makeLogStream('error'),
+            // Skip for non server errors (5xx)
+            skip: (req: Request, res: Response) => res.statusCode < 500,
+        }),
+    );
+}
+
+function setupBasicRoutes(
+    router: express.Router,
+    renderConfig: RenderConfigFunction,
+    embeddedHandler: express.Handler,
+    ceProps: PropertyGetter,
+    faviconFilename: string,
+    options: ServerOptions,
+    clientOptionsHandler: any,
+) {
+    const oldGoogleUrlHandler = new OldGoogleUrlHandler(ceProps);
+
+    router
+        .use(compression())
+        .get('/', cached, csp, (req, res) => {
+            res.render(
+                'index',
+                renderConfig(
+                    {
+                        embedded: false,
+                        mobileViewer: isMobileViewer(req),
+                    },
+                    req.query,
+                ),
+            );
+        })
+        .get('/e', cached, csp, embeddedHandler)
+        // legacy. not a 301 to prevent any redirect loops between old e links and embed.html
+        .get('/embed.html', cached, csp, embeddedHandler)
+        .get('/embed-ro', cached, csp, (req, res) => {
+            res.render(
+                'embed',
+                renderConfig(
+                    {
+                        embedded: true,
+                        readOnly: true,
+                        mobileViewer: isMobileViewer(req),
+                    },
+                    req.query,
+                ),
+            );
+        })
+        .get('/robots.txt', cached, (req, res) => {
+            res.end('User-agent: *\nSitemap: https://godbolt.org/sitemap.xml\nDisallow:');
+        })
+        .get('/sitemap.xml', cached, (req, res) => {
+            res.set('Content-Type', 'application/xml');
+            res.render('sitemap');
+        });
+
+    // Try to add favicon support, but don't fail if it's not available (useful for tests)
+    try {
+        router.use(sFavicon(utils.resolvePathFromAppRoot('static/favicons', faviconFilename)));
+    } catch (err: unknown) {
+        const error = err as Error;
+        logger.warn(`Could not set up favicon: ${error.message}`);
+    }
+
+    router
+        .get('/client-options.js', cached, (req, res) => {
+            res.set('Content-Type', 'application/javascript');
+            res.end(`window.compilerExplorerOptions = ${clientOptionsHandler.getJSON()};`);
+        })
+        .use('/bits/:bits.html', cached, csp, (req, res) => {
+            res.render(
+                `bits/${sanitize(req.params.bits)}`,
+                renderConfig(
+                    {
+                        embedded: false,
+                        mobileViewer: isMobileViewer(req),
+                    },
+                    req.query,
+                ),
+            );
+        })
+        .use(express.json({limit: ceProps('bodyParserLimit', options.maxUploadSize)}))
+        .get('/g/:id', oldGoogleUrlHandler.handle.bind(oldGoogleUrlHandler));
+}
+
+/**
  * Configure a web server and its routes
  */
 export async function setupWebServer(
@@ -96,24 +339,14 @@ export async function setupWebServer(
     dependencies: ServerDependencies,
 ): Promise<WebServerResult> {
     const {ceProps, sponsorConfig, clientOptionsHandler} = dependencies;
-    const {
-        staticPath,
-        staticMaxAgeSecs,
-        staticUrl,
-        staticRoot,
-        httpRoot,
-        sentrySlowRequestMs,
-        distPath,
-        extraBodyClass,
-        maxUploadSize,
-    } = options;
+    const {staticRoot, httpRoot, extraBodyClass} = options;
 
     // Create the Express application and router
     const webServer = express();
     const router = express.Router();
 
     // Initialize services
-    const googleShortUrlResolver = new ShortLinkResolver();
+    // TODO: ideally remove this (cc @junlarsen for details)
     let pugRequireHandler: PugRequireHandler = () => {
         logger.error('pug require handler not configured');
         return '';
@@ -151,9 +384,9 @@ export async function setupWebServer(
     }
 
     /**
-     * Creates a function to render GoldenLayout for a given configuration
+     * Renders GoldenLayout for a given configuration
      */
-    function createGoldenLayoutRenderer(
+    function renderGoldenLayout(
         config: GoldenLayoutRootStruct,
         metadata: ShortLinkMetaData,
         req: Request,
@@ -192,236 +425,31 @@ export async function setupWebServer(
         );
     };
 
-    /**
-     * Handles legacy Google URL shortener redirects
-     */
-    async function oldGoogleUrlHandler(req: Request, res: Response, next: NextFunction) {
-        const id = req.params.id;
-        const googleUrl = `https://goo.gl/${encodeURIComponent(id)}`;
-
-        try {
-            const resultObj = await googleShortUrlResolver.resolve(googleUrl);
-            const parsed = new url.URL(resultObj.longUrl);
-            const allowedRe = new RegExp(ceProps<string>('allowedShortUrlHostRe'));
-
-            if (parsed.host.match(allowedRe) === null) {
-                logger.warn(`Denied access to short URL ${id} - linked to ${resultObj.longUrl}`);
-                return next({
-                    statusCode: 404,
-                    message: `ID "${id}" could not be found`,
-                });
-            }
-
-            res.writeHead(301, {
-                Location: resultObj.longUrl,
-                'Cache-Control': 'public',
-            });
-            res.end();
-        } catch (err: unknown) {
-            logger.error(`Failed to expand ${googleUrl} - ${err}`);
-            next({
-                statusCode: 404,
-                message: `ID "${id}" could not be found`,
-            });
-        }
-    }
-
-    async function setupWebPackDevMiddleware(router: express.Router) {
-        logger.info('  using webpack dev middleware');
-
-        /* eslint-disable n/no-unpublished-import,import/extensions, */
-        const {default: webpackDevMiddleware} = await import('webpack-dev-middleware');
-        const {default: webpackConfig} = await import('../../webpack.config.esm.js');
-        const {default: webpack} = await import('webpack');
-        /* eslint-enable */
-        type WebpackConfiguration = ElementType<Parameters<typeof webpack>[0]>;
-
-        const webpackCompiler = webpack([webpackConfig as WebpackConfiguration]);
-        router.use(
-            webpackDevMiddleware(webpackCompiler, {
-                publicPath: '/static',
-                stats: {
-                    preset: 'errors-only',
-                    timings: true,
-                },
-            }),
-        );
-
-        pugRequireHandler = path => urljoin(httpRoot, 'static', path);
-    }
-
-    async function setupStaticMiddleware(router: express.Router) {
-        const staticManifest = JSON.parse(await fs.readFile(path.join(distPath, 'manifest.json'), 'utf-8'));
-
-        if (staticUrl) {
-            logger.info(`  using static files from '${staticUrl}'`);
-        } else {
-            logger.info(`  serving static files from '${staticPath}'`);
-            router.use(
-                '/static',
-                express.static(staticPath, {
-                    maxAge: staticMaxAgeSecs * 1000,
-                }),
-            );
-        }
-
-        // Import helper without circular dependencies
-        const {createDefaultPugRequireHandler} = await import('./server.interfaces.js');
-        pugRequireHandler = createDefaultPugRequireHandler(staticRoot, staticManifest);
-    }
-
-    function setupBaseServerConfig() {
-        webServer
-            .set('trust proxy', true)
-            .set('view engine', 'pug')
-            .on('error', err => logger.error('Caught error in web handler; continuing:', err))
-            .use(
-                responseTime((req, res, time) => {
-                    if (sentrySlowRequestMs > 0 && time >= sentrySlowRequestMs) {
-                        Sentry.withScope((scope: Sentry.Scope) => {
-                            scope.setExtra('duration_ms', time);
-                            Sentry.captureMessage('SlowRequest', 'warning');
-                        });
-                    }
-                }),
-            )
-            .use(httpRoot, router)
-            .use((req, res, next) => {
-                next({status: 404, message: `page "${req.path}" could not be found`});
-            });
-
-        Sentry.setupExpressErrorHandler(webServer);
-
-        // eslint-disable-next-line no-unused-vars
-        webServer.use((err: any, req: Request, res: Response, _next: NextFunction) => {
-            const status = err.status || err.statusCode || err.status_code || err.output?.statusCode || 500;
-            const message = err.message || 'Internal Server Error';
-            res.status(status);
-            res.render('error', renderConfig({error: {code: status, message: message}}));
-            if (status >= 500) {
-                logger.error('Internal server error:', err);
-            }
-        });
-    }
-
-    function setupLoggingMiddleware() {
-        morgan.token('gdpr_ip', (req: any) => (req.ip ? utils.anonymizeIp(req.ip) : ''));
-
-        // Based on combined format, but: GDPR compliant IP, no timestamp & no unused fields for our usecase
-        const morganFormat = isDevMode() ? 'dev' : ':gdpr_ip ":method :url" :status';
-
-        router.use(
-            morgan(morganFormat, {
-                stream: makeLogStream('info'),
-                // Skip for non errors (2xx, 3xx)
-                skip: (req: Request, res: Response) => res.statusCode >= 400,
-            }),
-        );
-        router.use(
-            morgan(morganFormat, {
-                stream: makeLogStream('warn'),
-                // Skip for non user errors (4xx)
-                skip: (req: Request, res: Response) => res.statusCode < 400 || res.statusCode >= 500,
-            }),
-        );
-        router.use(
-            morgan(morganFormat, {
-                stream: makeLogStream('error'),
-                // Skip for non server errors (5xx)
-                skip: (req: Request, res: Response) => res.statusCode < 500,
-            }),
-        );
-    }
-
-    function setupBasicRoutes() {
-        router
-            .use(compression())
-            .get('/', cached, csp, (req, res) => {
-                res.render(
-                    'index',
-                    renderConfig(
-                        {
-                            embedded: false,
-                            mobileViewer: isMobileViewer(req),
-                        },
-                        req.query,
-                    ),
-                );
-            })
-            .get('/e', cached, csp, embeddedHandler)
-            // legacy. not a 301 to prevent any redirect loops between old e links and embed.html
-            .get('/embed.html', cached, csp, embeddedHandler)
-            .get('/embed-ro', cached, csp, (req, res) => {
-                res.render(
-                    'embed',
-                    renderConfig(
-                        {
-                            embedded: true,
-                            readOnly: true,
-                            mobileViewer: isMobileViewer(req),
-                        },
-                        req.query,
-                    ),
-                );
-            })
-            .get('/robots.txt', cached, (req, res) => {
-                res.end('User-agent: *\nSitemap: https://godbolt.org/sitemap.xml\nDisallow:');
-            })
-            .get('/sitemap.xml', cached, (req, res) => {
-                res.set('Content-Type', 'application/xml');
-                res.render('sitemap');
-            });
-
-        // Try to add favicon support, but don't fail if it's not available (useful for tests)
-        try {
-            router.use(
-                sFavicon(utils.resolvePathFromAppRoot('static/favicons', getFaviconFilename(isDevMode(), appArgs.env))),
-            );
-        } catch (err: unknown) {
-            const error = err as Error;
-            logger.warn(`Could not set up favicon: ${error.message}`);
-        }
-
-        router
-            .get('/client-options.js', cached, (req, res) => {
-                res.set('Content-Type', 'application/javascript');
-                res.end(`window.compilerExplorerOptions = ${clientOptionsHandler.getJSON()};`);
-            })
-            .use('/bits/:bits.html', cached, csp, (req, res) => {
-                res.render(
-                    `bits/${sanitize(req.params.bits)}`,
-                    renderConfig(
-                        {
-                            embedded: false,
-                            mobileViewer: isMobileViewer(req),
-                        },
-                        req.query,
-                    ),
-                );
-            })
-            .use(express.json({limit: ceProps('bodyParserLimit', maxUploadSize)}))
-            .get('/g/:id', oldGoogleUrlHandler);
-    }
-
     // Set up the base Express server configuration
-    setupBaseServerConfig();
+    setupBaseServerConfig(options, renderConfig, webServer, router);
 
     // Configure static file handling based on environment
     try {
-        await (isDevMode() ? setupWebPackDevMiddleware(router) : setupStaticMiddleware(router));
+        pugRequireHandler = await (isDevMode()
+            ? setupWebPackDevMiddleware(options, router)
+            : setupStaticMiddleware(options, router));
     } catch (err: unknown) {
         const error = err as Error;
         logger.warn(`Error setting up static middleware: ${error.message}`);
         // Import helper for testing without circular dependencies
-        const {createDefaultPugRequireHandler} = await import('./server.interfaces.js');
         pugRequireHandler = createDefaultPugRequireHandler(staticRoot);
     }
 
-    // Set up logging middleware
-    setupLoggingMiddleware();
-
-    // Set up basic routes
-    setupBasicRoutes();
+    setupLoggingMiddleware(router);
+    setupBasicRoutes(
+        router,
+        renderConfig,
+        embeddedHandler,
+        ceProps,
+        getFaviconFilename(isDevMode(), appArgs.env),
+        options,
+        clientOptionsHandler,
+    );
 
     // Return needed server elements
     return {
@@ -429,7 +457,7 @@ export async function setupWebServer(
         router,
         pugRequireHandler,
         renderConfig,
-        renderGoldenLayout: createGoldenLayoutRenderer,
+        renderGoldenLayout,
     };
 }
 
