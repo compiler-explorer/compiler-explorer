@@ -158,10 +158,6 @@ export function loadConfiguration(appArgs: AppArguments): AppConfiguration {
     // Filter languages based on wanted languages
     const languages = filterLanguages(appArgs.wantedLanguages, allLanguages);
 
-    if (Object.keys(languages).length === 0) {
-        logger.error('Trying to start Compiler Explorer without a language');
-    }
-
     // Set up compiler properties
     const compilerProps = new props.CompilerProps(languages, ceProps);
 

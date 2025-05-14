@@ -270,18 +270,6 @@ describe('Server Module', () => {
             expect(typeof webServer).toBe('function');
         });
 
-        it.skip('should configure static file serving in production mode', async () => {
-            // Skipping this test because it's tricky to mock properly
-            // We've made the server.ts file more robust to handle errors in testing
-            expect(true).toBeTruthy();
-        });
-
-        it.skip('should handle unknown files in static manifest', async () => {
-            // Skipping this test because it's tricky to mock properly
-            // We've made the server.ts file more robust to handle errors in testing
-            expect(true).toBeTruthy();
-        });
-
         it('should create a renderConfig function', async () => {
             const {renderConfig} = await setupWebServer(mockAppArgs, mockOptions, mockDependencies);
             const config = renderConfig({foo: 'bar'});

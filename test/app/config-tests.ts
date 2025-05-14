@@ -135,6 +135,7 @@ describe('Config Module', () => {
 
         beforeEach(() => {
             vi.spyOn(logger.logger, 'info').mockImplementation(() => logger.logger as any);
+            vi.spyOn(logger.logger, 'error').mockImplementation(() => logger.logger as any);
             originalPlatform = process.platform;
             platformMock = 'linux';
             Object.defineProperty(process, 'platform', {
@@ -312,14 +313,13 @@ describe('Config Module', () => {
                 httpRoot: '/ce',
                 staticUrl: undefined,
                 restrictToLanguages: undefined,
-                props: {},
             };
 
             // Set up props mocks
             vi.spyOn(props, 'initialize').mockImplementation(() => {});
-            vi.spyOn(props, 'propsFor').mockImplementation(() => (key: string) => {
+            vi.spyOn(props, 'propsFor').mockImplementation(() => (key: string, defaultValue?: any) => {
                 if (key in mockCeProps) return mockCeProps[key];
-                return mockCeProps.props[key];
+                return defaultValue;
             });
 
             mockCompilerProps = {
@@ -384,16 +384,20 @@ describe('Config Module', () => {
             expect(appArgs.wantedLanguages).toEqual(['c++', 'rust']);
         });
 
-        it.skip('should handle extraBodyClass for dev mode', () => {
-            // This test is tricky because it relies on the way the mock is implemented
-            // Skip it for now as not critical to functionality
-            expect(true).toBeTruthy();
-        });
+        it('should handle extraBodyClass for dev mode', () => {
+            // Set up app args with dev mode enabled
+            const appArgs = createMockAppArgs({
+                devMode: true,
+            });
 
-        it.skip('should log an error when no languages are available', () => {
-            // This test is tricky to set up properly
-            // The mocking approach for languages needs to be improved
-            expect(true).toBeTruthy();
+            // Don't set extraBodyClass in mockCeProps, so it will use the default
+            delete mockCeProps.extraBodyClass;
+
+            // Load configuration with dev mode enabled
+            const result = loadConfiguration(appArgs);
+
+            // In dev mode, extraBodyClass should be 'dev'
+            expect(result.extraBodyClass).toBe('dev');
         });
 
         it('should handle staticUrl when provided', () => {
