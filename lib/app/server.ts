@@ -425,7 +425,6 @@ export async function setupWebServer(
         );
     };
 
-    // Set up the base Express server configuration
     setupBaseServerConfig(options, renderConfig, webServer, router);
 
     // Configure static file handling based on environment
@@ -436,7 +435,6 @@ export async function setupWebServer(
     } catch (err: unknown) {
         const error = err as Error;
         logger.warn(`Error setting up static middleware: ${error.message}`);
-        // Import helper for testing without circular dependencies
         pugRequireHandler = createDefaultPugRequireHandler(staticRoot);
     }
 

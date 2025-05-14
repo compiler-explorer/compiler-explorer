@@ -57,7 +57,15 @@ export interface RenderConfig extends PugOptions {
     storedStateId?: string | false;
     [key: string]: any;
 }
+
 export type RenderConfigFunction = (extra: Record<string, any>, urlOptions?: Record<string, any>) => RenderConfig;
+
+export type RenderGoldenLayoutHandler = (
+    config: GoldenLayoutRootStruct,
+    metadata: ShortLinkMetaData,
+    req: Request,
+    res: Response,
+) => void;
 
 export type PugRequireHandler = (path: string) => string;
 
@@ -66,12 +74,7 @@ export interface WebServerResult {
     router: Router;
     pugRequireHandler: PugRequireHandler;
     renderConfig: RenderConfigFunction;
-    renderGoldenLayout: (
-        config: GoldenLayoutRootStruct,
-        metadata: ShortLinkMetaData,
-        req: Request,
-        res: Response,
-    ) => void;
+    renderGoldenLayout: RenderGoldenLayoutHandler;
 }
 
 export interface ServerDependencies {
