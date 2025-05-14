@@ -96,7 +96,16 @@ export async function initialiseApplication(options: ApplicationOptions): Promis
     const {appArgs, config, distPath, awsProps} = options;
     const {ceProps, compilerProps, languages, storageSolution} = config;
 
-    await initializeCoreServices(appArgs, awsProps, ceProps);
+    setupTempDir(appArgs.tmpDir, appArgs.isWsl);
+
+    await aws.initConfig(awsProps);
+
+    SetupSentry(aws.getConfig('sentryDsn'), ceProps, appArgs.releaseBuildNumber, appArgs.gitReleaseName, appArgs);
+
+    // Start Wine initialization (for Windows compilers)
+    startWineInit();
+
+    RemoteExecutionQuery.initRemoteExecutionArchs(ceProps, appArgs.env);
 
     const {compilationQueue, compilationEnvironment, compileHandler, formattingService} =
         await initializeCompilationEnvironment(appArgs, compilerProps, ceProps, awsProps);
@@ -124,7 +133,7 @@ export async function initialiseApplication(options: ApplicationOptions): Promis
 
     logVersionInfo(appArgs);
 
-    const {initialCompilers, prevCompilers} = await discoverCompilers(appArgs, compilerFinder, isExecutionWorker);
+    const initialCompilers = await discoverCompilers(appArgs, compilerFinder, isExecutionWorker);
 
     const {webServer, router, renderConfig, renderGoldenLayout} = await setupWebServerWithOptions(
         appArgs,
@@ -151,7 +160,6 @@ export async function initialiseApplication(options: ApplicationOptions): Promis
 
     await setupCompilerChangeHandling(
         initialCompilers,
-        prevCompilers,
         clientOptionsHandler,
         routeApi,
         languages,
@@ -177,19 +185,6 @@ export async function initialiseApplication(options: ApplicationOptions): Promis
     startListening(webServer, appArgs);
 
     return {webServer};
-}
-
-async function initializeCoreServices(appArgs: AppArguments, awsProps: PropertyGetter, ceProps: PropertyGetter) {
-    setupTempDir(appArgs.tmpDir, appArgs.isWsl);
-
-    await aws.initConfig(awsProps);
-
-    SetupSentry(aws.getConfig('sentryDsn'), ceProps, appArgs.releaseBuildNumber, appArgs.gitReleaseName, appArgs);
-
-    // Start Wine initialization (for Windows compilers)
-    startWineInit();
-
-    RemoteExecutionQuery.initRemoteExecutionArchs(ceProps, appArgs.env);
 }
 
 async function initializeCompilationEnvironment(
@@ -255,21 +250,19 @@ function logVersionInfo(appArgs: AppArguments) {
 }
 
 async function discoverCompilers(appArgs: AppArguments, compilerFinder: CompilerFinder, isExecutionWorker: boolean) {
-    let initialCompilers;
-    let prevCompilers;
-
+    let compilers;
     if (appArgs.prediscovered) {
-        initialCompilers = await loadPrediscoveredCompilers(appArgs.prediscovered, compilerFinder);
+        compilers = await loadPrediscoveredCompilers(appArgs.prediscovered, compilerFinder);
     } else {
         const result = await findAndValidateCompilers(appArgs, compilerFinder, isExecutionWorker);
-        initialCompilers = result.compilers;
+        compilers = result.compilers;
     }
 
     if (appArgs.discoveryOnly) {
-        await handleDiscoveryOnlyMode(appArgs.discoveryOnly, initialCompilers, compilerFinder);
+        await handleDiscoveryOnlyMode(appArgs.discoveryOnly, compilers, compilerFinder);
     }
 
-    return {initialCompilers, prevCompilers};
+    return compilers;
 }
 
 async function loadPrediscoveredCompilers(filename: string, compilerFinder: CompilerFinder) {
@@ -413,21 +406,22 @@ function setupRoutesAndApi(
 
 async function setupCompilerChangeHandling(
     initialCompilers: any,
-    prevCompilers: any,
     clientOptionsHandler: any,
-    routeApi: any,
+    routeApi: RouteAPI,
     languages: any,
     ceProps: PropertyGetter,
     compilerFinder: CompilerFinder,
     appArgs: AppArguments,
 ) {
+    let prevCompilers = '';
     async function onCompilerChange(compilers) {
-        if (JSON.stringify(prevCompilers) === JSON.stringify(compilers)) {
+        const compilersAsJson = JSON.stringify(compilers);
+        if (prevCompilers === compilersAsJson) {
             return;
         }
         logger.info(`Compiler scan count: ${compilers.length}`);
         logger.debug('Compilers:', compilers);
-        prevCompilers = compilers;
+        prevCompilers = compilersAsJson;
         await clientOptionsHandler.setCompilers(compilers);
         const apiHandler = unwrap(routeApi.apiHandler);
         apiHandler.setCompilers(compilers);
@@ -447,6 +441,4 @@ async function setupCompilerChangeHandling(
             rescanCompilerSecs * 1000,
         );
     }
-
-    return {onCompilerChange};
 }
