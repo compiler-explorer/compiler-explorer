@@ -376,9 +376,9 @@ export class ClientOptionsHandler {
         return libraries;
     }
 
-    getRemoteId(remoteUrl: string, language: LanguageKey) {
+    getRemoteId(remoteUrl: string, language: LanguageKey): string {
         const url = new URL(remoteUrl);
-        return url.host.replaceAll('.', '_') + '_' + language;
+        return url.host.replaceAll('.', '_') + url.pathname.replaceAll('/', '_') + '_' + language;
     }
 
     libArrayToObject(libsArr: any[]) {
@@ -399,7 +399,7 @@ export class ClientOptionsHandler {
     async getRemoteLibraries(language: LanguageKey, remoteUrl: string) {
         const remoteId = this.getRemoteId(remoteUrl, language);
         if (!this.remoteLibs[remoteId]) {
-            return new Promise(resolve => {
+            return await new Promise(resolve => {
                 const url = ClientOptionsHandler.getRemoteUrlForLibraries(remoteUrl, language);
                 logger.info(`Fetching remote libraries from ${url}`);
                 let fullData = '';

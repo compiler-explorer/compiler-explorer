@@ -30,7 +30,7 @@ const LIB_MATCH_RE = /([\w-]*)\.([\w-]*)/i;
 
 function getRemoteId(language: string, remoteUrl: string): string {
     const url: URL = new URL(remoteUrl);
-    return url.host.replace(/\./g, '_') + '_' + language;
+    return url.host.replace(/\./g, '_') + url.pathname.replace(/\//g, '_') + '_' + language;
 }
 
 function getRemoteLibraries(language: string, remoteUrl: string): LanguageLibs {
@@ -78,7 +78,7 @@ export function getSupportedLibraries(
         }
         return allLibs;
     }
-    const allLibs = getRemoteLibraries(langId, remote.target);
+    const allLibs = getRemoteLibraries(langId, remote.target + remote.basePath);
     if (supportedLibrariesArr && supportedLibrariesArr.length > 0) {
         return copyAndFilterLibraries(allLibs, supportedLibrariesArr);
     }
