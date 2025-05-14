@@ -44,4 +44,5 @@ export type AppArguments = {
     tmpDir?: string;
     loggingOptions: LoggingOptions;
     isWsl: boolean;
+    devMode: boolean;
 };

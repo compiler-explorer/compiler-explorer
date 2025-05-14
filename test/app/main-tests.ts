@@ -173,6 +173,7 @@ describe('Main module', () => {
         propDebug: false,
         tmpDir: undefined,
         isWsl: false,
+        devMode: false,
         loggingOptions: {
             debug: false,
             suppressConsoleLog: false,

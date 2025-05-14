@@ -45,6 +45,7 @@ function createMockAppArgs(overrides: Partial<AppArguments> = {}): AppArguments 
         propDebug: false,
         tmpDir: undefined,
         isWsl: false,
+        devMode: false,
         loggingOptions: {
             debug: false,
             suppressConsoleLog: false,
@@ -67,7 +68,6 @@ import systemdSocket from 'systemd-socket';
 import {afterEach, beforeEach, describe, expect, it, vi} from 'vitest';
 
 import type {AppArguments} from '../../lib/app.interfaces.js';
-import * as appConfig from '../../lib/app/config.js';
 import type {ServerDependencies, ServerOptions} from '../../lib/app/server.interfaces.js';
 import {getFaviconFilename, isMobileViewer, setupWebServer, startListening} from '../../lib/app/server.js';
 import * as logger from '../../lib/logger.js';
@@ -262,7 +262,6 @@ describe('Server Module', () => {
 
             // Setup utils mock
             vi.spyOn(utils, 'resolvePathFromAppRoot').mockReturnValue('/mocked/path');
-            vi.spyOn(appConfig, 'isDevMode').mockReturnValue(false); // Ensure prod mode for tests
         });
 
         it('should create a web server instance', async () => {

@@ -47,6 +47,7 @@ function createMockAppArgs(overrides: Partial<AppArguments> = {}): AppArguments 
         propDebug: false,
         tmpDir: undefined,
         isWsl: false,
+        devMode: false,
         loggingOptions: {
             debug: false,
             suppressConsoleLog: false,
@@ -62,7 +63,6 @@ import type {AppArguments} from '../../lib/app.interfaces.js';
 import {
     createPropertyHierarchy,
     filterLanguages,
-    isDevMode,
     loadConfiguration,
     measureEventLoopLag,
     setupEventLoopLagMonitoring,
@@ -120,34 +120,6 @@ vi.mock('prom-client', () => {
 });
 
 describe('Config Module', () => {
-    describe('isDevMode', () => {
-        let originalNodeEnv: string | undefined;
-
-        beforeEach(() => {
-            originalNodeEnv = process.env.NODE_ENV;
-        });
-
-        afterEach(() => {
-            process.env.NODE_ENV = originalNodeEnv;
-        });
-
-        it('should return true when NODE_ENV is not production', () => {
-            process.env.NODE_ENV = 'development';
-            expect(isDevMode()).toBe(true);
-
-            process.env.NODE_ENV = '';
-            expect(isDevMode()).toBe(true);
-
-            delete process.env.NODE_ENV;
-            expect(isDevMode()).toBe(true);
-        });
-
-        it('should return false when NODE_ENV is production', () => {
-            process.env.NODE_ENV = 'production';
-            expect(isDevMode()).toBe(false);
-        });
-    });
-
     describe('measureEventLoopLag', () => {
         it('should return a Promise resolving to a number', () => {
             // Just verify the function returns a Promise that resolves to a number
@@ -358,9 +330,6 @@ describe('Config Module', () => {
             } as any;
 
             vi.spyOn(props, 'CompilerProps').mockImplementation(() => mockCompilerProps);
-
-            // Mock isDevMode
-            vi.spyOn({isDevMode}, 'isDevMode').mockReturnValue(false);
         });
 
         afterEach(() => {

@@ -54,7 +54,6 @@ import {logger, makeLogStream} from '../logger.js';
 import {PropertyGetter} from '../properties.interfaces.js';
 import {ShortLinkResolver} from '../shortener/google.js';
 import * as utils from '../utils.js';
-import {isDevMode} from './config.js';
 import type {
     PugRequireHandler,
     RenderConfig,
@@ -79,11 +78,11 @@ function createDefaultPugRequireHandler(staticRoot: string, manifest?: Record<st
 
 /**
  * Gets the appropriate favicon filename based on the environment.
- * @param isDevModeValue - Whether the app is running in development mode
+ * @param isDevMode - Whether the app is running in development mode
  * @param env - The environment names array
  */
-export function getFaviconFilename(isDevModeValue: boolean, env?: string[]): string {
-    if (isDevModeValue) {
+export function getFaviconFilename(isDevMode: boolean, env?: string[]): string {
+    if (isDevMode) {
         return 'favicon-dev.ico';
     }
     if (env?.includes('beta')) {
@@ -223,11 +222,11 @@ function setupBaseServerConfig(
     });
 }
 
-function setupLoggingMiddleware(router: express.Router) {
+function setupLoggingMiddleware(isDevMode: boolean, router: express.Router) {
     morgan.token('gdpr_ip', (req: any) => (req.ip ? utils.anonymizeIp(req.ip) : ''));
 
     // Based on combined format, but: GDPR compliant IP, no timestamp & no unused fields for our usecase
-    const morganFormat = isDevMode() ? 'dev' : ':gdpr_ip ":method :url" :status';
+    const morganFormat = isDevMode ? 'dev' : ':gdpr_ip ":method :url" :status';
 
     router.use(
         morgan(morganFormat, {
@@ -429,7 +428,7 @@ export async function setupWebServer(
 
     // Configure static file handling based on environment
     try {
-        pugRequireHandler = await (isDevMode()
+        pugRequireHandler = await (appArgs.devMode
             ? setupWebPackDevMiddleware(options, router)
             : setupStaticMiddleware(options, router));
     } catch (err: unknown) {
@@ -438,13 +437,13 @@ export async function setupWebServer(
         pugRequireHandler = createDefaultPugRequireHandler(staticRoot);
     }
 
-    setupLoggingMiddleware(router);
+    setupLoggingMiddleware(appArgs.devMode, router);
     setupBasicRoutes(
         router,
         renderConfig,
         embeddedHandler,
         ceProps,
-        getFaviconFilename(isDevMode(), appArgs.env),
+        getFaviconFilename(appArgs.devMode, appArgs.env),
         options,
         clientOptionsHandler,
     );

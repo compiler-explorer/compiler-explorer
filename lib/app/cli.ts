@@ -76,6 +76,7 @@ interface CompilerExplorerOptions {
     static?: string;
     local: boolean;
     version: boolean;
+    devMode: boolean;
 }
 
 /**
@@ -110,7 +111,12 @@ export function parseCommandLine(argv: string[]): CompilerExplorerOptions {
         .option('--prediscovered <file>', 'Input discovery info from file')
         .option('--static <dir>', 'Path to static content')
         .option('--no-local', 'Disable local config')
-        .option('--version', 'Show version information');
+        .option('--version', 'Show version information')
+        .option(
+            '--dev-mode',
+            'Run in dev mode (default if NODE_ENV is not production)',
+            process.env.NODE_ENV !== 'production',
+        );
 
     program.parse(argv);
     return program.opts() as CompilerExplorerOptions;
@@ -189,6 +195,7 @@ export function convertOptionsToAppArguments(
         propDebug: options.propDebug || false,
         tmpDir: options.tmpDir,
         isWsl: isWsl,
+        devMode: options.devMode,
         loggingOptions: {
             debug: options.debug || false,
             logHost: options.logHost,

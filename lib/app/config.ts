@@ -37,13 +37,6 @@ import * as props from '../properties.js';
 import type {AppConfiguration} from './config.interfaces.js';
 
 /**
- * Determines whether the app is running in development mode.
- */
-export function isDevMode(): boolean {
-    return process.env.NODE_ENV !== 'production';
-}
-
-/**
  * Measures event loop lag to monitor server performance.
  * Used to detect when the server is under heavy load or not responding quickly.
  * @param delayMs - The delay in milliseconds to measure against
@@ -175,7 +168,7 @@ export function loadConfiguration(appArgs: AppArguments): AppConfiguration {
     // Load environment settings
     const staticMaxAgeSecs = ceProps('staticMaxAgeSecs', 0);
     const maxUploadSize = ceProps('maxUploadSize', '1mb');
-    const extraBodyClass = ceProps('extraBodyClass', isDevMode() ? 'dev' : '');
+    const extraBodyClass = ceProps('extraBodyClass', appArgs.devMode ? 'dev' : '');
     const storageSolution = compilerProps.ceProps('storageSolution', 'local');
     const httpRoot = urljoin(ceProps('httpRoot', '/'), '/');
 
