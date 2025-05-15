@@ -376,7 +376,7 @@ export class ClientOptionsHandler {
         return libraries;
     }
 
-    getRemoteId(remoteUrl: string, language: LanguageKey): string {
+    static getRemoteId(remoteUrl: string, language: LanguageKey): string {
         const url = new URL(remoteUrl);
         return url.host.replaceAll('.', '_') + url.pathname.replaceAll('/', '_') + '_' + language;
     }
@@ -397,7 +397,7 @@ export class ClientOptionsHandler {
     }
 
     async getRemoteLibraries(language: LanguageKey, remoteUrl: string) {
-        const remoteId = this.getRemoteId(remoteUrl, language);
+        const remoteId = ClientOptionsHandler.getRemoteId(remoteUrl, language);
         if (!this.remoteLibs[remoteId]) {
             return await new Promise(resolve => {
                 const url = ClientOptionsHandler.getRemoteUrlForLibraries(remoteUrl, language);
