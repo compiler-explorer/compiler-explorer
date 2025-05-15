@@ -89,7 +89,7 @@ export class StackUsage extends MonacoPane<monaco.editor.IStandaloneCodeEditor, 
         if (this.compilerInfo.compilerId !== id || !this.isCompilerSupported) return;
         this.editor.setValue(unwrap(result.source));
         if (result.stackUsageOutput) {
-            this.showStackUsageResults(result.stackUsageOutput);
+            this.showStackUsageResults(result.stackUsageOutput, result.source);
         }
 
         // TODO: This is inelegant again. Previously took advantage of fourth argument for the compileResult event.
