@@ -1,6 +1,4 @@
-import path from 'node:path';
-import type {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces.js';
-// Copyright (c) 2019, Sebastian Rath
+// Copyright (c) 2025, Compiler Explorer Authors
 // All rights reserved.
 //
 // Redistribution and use in source and binary forms, with or without
@@ -23,6 +21,9 @@ import type {ParseFiltersAndOutputOptions} from '../../types/features/filters.in
 // CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
+
+import path from 'node:path';
+import type {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces.js';
 import {BaseCompiler} from '../base-compiler.js';
 
 export class MojoCompiler extends BaseCompiler {
@@ -44,7 +45,6 @@ export class MojoCompiler extends BaseCompiler {
     }
 
     override optionsForFilter(filters: ParseFiltersAndOutputOptions, outputFilename: string, userOptions: string[]) {
-        console.log('Mojo optionsForFilter:outputFileName', outputFilename);
         if (filters.binary) return ['build'];
         return ['build', '--emit=asm'];
     }
