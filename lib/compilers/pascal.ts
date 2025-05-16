@@ -125,7 +125,7 @@ export class FPCCompiler extends BaseCompiler {
 
     override getOutputFilename(dirPath: string, outputFilebase: string, key?: any): string {
         let baseFilename: string = outputFilebase;
-        if (key) {
+        if (key?.source) {
             const inputFilename = this.getMainSourceFilename(key.source);
             baseFilename = inputFilename.substring(0, inputFilename.length - 4);
         }
@@ -134,8 +134,9 @@ export class FPCCompiler extends BaseCompiler {
     }
 
     override getExecutableFilename(dirPath: string, outputFilebase: string, key?: CacheKey | CompilationCacheKey) {
-        if (key?.source && this.pasUtils.isProgram(key?.source)) {
-            return path.join(dirPath, this.pasUtils.getProgName(key?.source));
+        const source = (key && (key as CacheKey).source) || '';
+        if (key && this.pasUtils.isProgram(source)) {
+            return path.join(dirPath, this.pasUtils.getProgName(source));
         }
 
         return path.join(dirPath, 'prog');
