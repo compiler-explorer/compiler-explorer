@@ -37,6 +37,7 @@ import type {Source} from '../types/source.interfaces.js';
 import type {ToolTypeKey} from '../types/tool.interfaces.js';
 import {AppArguments} from './app.interfaces.js';
 
+import {getRemoteId} from '../shared/remote-utils.js';
 import {logger} from './logger.js';
 import type {PropertyGetter, PropertyValue} from './properties.interfaces.js';
 import {CompilerProps} from './properties.js';
@@ -376,11 +377,6 @@ export class ClientOptionsHandler {
         return libraries;
     }
 
-    static getRemoteId(remoteUrl: string, language: LanguageKey): string {
-        const url = new URL(remoteUrl);
-        return url.host.replaceAll('.', '_') + url.pathname.replaceAll('/', '_') + '_' + language;
-    }
-
     libArrayToObject(libsArr: any[]) {
         const libs: Record<string, any> = {};
         for (const lib of libsArr) {
@@ -397,7 +393,7 @@ export class ClientOptionsHandler {
     }
 
     async getRemoteLibraries(language: LanguageKey, remoteUrl: string) {
-        const remoteId = ClientOptionsHandler.getRemoteId(remoteUrl, language);
+        const remoteId = getRemoteId(remoteUrl, language);
         if (!this.remoteLibs[remoteId]) {
             return await new Promise(resolve => {
                 const url = ClientOptionsHandler.getRemoteUrlForLibraries(remoteUrl, language);
