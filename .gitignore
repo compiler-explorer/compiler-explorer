@@ -32,3 +32,4 @@ newrelic_agent.log
 
 # Claude local settings
 .claude/settings.local.json
+.aider*

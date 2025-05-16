@@ -223,7 +223,7 @@ Note that path-style properties often support variable substitution as shown abo
 
 ### Property Debugging
 
-You can enable detailed debugging of property resolution by using the `--propDebug` flag when starting Compiler
+You can enable detailed debugging of property resolution by using the `--prop-debug` flag when starting Compiler
 Explorer. This shows every property lookup, including where properties are being overridden and which configuration
 source they come from.
 
@@ -257,7 +257,7 @@ The configuration system is implemented primarily in the following files:
 If you need to troubleshoot configuration issues, you can run Compiler Explorer with debug output:
 
 ```
-make EXTRA_ARGS='--propDebug' dev
+make EXTRA_ARGS='--prop-debug' dev
 ```
 
 This will show detailed logs about property resolution, including which properties are being overridden and from which

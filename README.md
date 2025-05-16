@@ -5,9 +5,9 @@
 
 # Compiler Explorer
 
-Is an interactive compiler exploration website. Edit code in C, C++, C#, F#, Rust, Go, D, Haskell, Swift, Pascal,
+Compiler Explorer is an interactive compiler exploration website. Edit code in C, C++, C#, F#, Rust, Go, D, Haskell, Swift, Pascal,
 [ispc](https://ispc.github.io/), Python, Java, or any of the other
-[30+ supported languages](https://godbolt.org/api/languages) components, and see how that code looks after being
+[30+ supported languages](https://godbolt.org/api/languages), and see how that code looks after being
 compiled in real time.
 
 [Bug Report](https://github.com/compiler-explorer/compiler-explorer/issues/new?assignees=&labels=bug&projects=&template=bug_report.yml&title=%5BBUG%5D%3A+)
@@ -75,7 +75,7 @@ Assuming you have a compatible version of `node` installed, on Linux simply runn
 running with an Explorer running on port 10240 on your local machine:
 [http://localhost:10240/](http://localhost:10240/). If this doesn't work for you, please contact us, as we consider it
 important you can quickly and easily get running. Currently, **Compiler Explorer** requires
-[`node` 22](CONTRIBUTING.md#node-version) installed, either on the path or at `NODE_DIR` (an environment variable or
+[`node` 20 or higher](CONTRIBUTING.md#node-version) installed, either on the path or at `NODE_DIR` (an environment variable or
 `make` parameter).
 
 Running with `make EXTRA_ARGS='--language LANG'` will allow you to load `LANG` exclusively, where `LANG` is one for the

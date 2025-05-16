@@ -14,9 +14,15 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 - Pre-commit Check: `make pre-commit` or `npm run check`
 
 ## Important Workflow Requirements
-- ALWAYS run `npm run lint` before any git operations (`git add`, `git commit`, etc.)
-- The linter will automatically fix formatting issues, so this must be run before committing
-- Failing to run the linter may result in style issues and commit failures
+- ⚠️ NEVER BYPASS PRE-COMMIT HOOKS! NEVER use `git commit -n` or `--no-verify` ⚠️
+- ALWAYS run `make pre-commit` or at minimum `npm run ts-check` and `npm run lint` before committing
+- The full process must always be:
+  1. Make changes
+  2. Run `npm run ts-check` to verify TypeScript types
+  3. Run `npm run lint` to fix style issues (will auto-fix many problems)
+  4. Run `npm run test` to verify functionality (or at least `npm run test-min`)
+  5. ONLY THEN commit changes with plain `git commit` (NO FLAGS!)
+- Bypassing these checks will lead to broken builds, failed tests, and PRs that cannot be merged
 - ALWAYS use HEREDOC syntax for complex shell commands, especially those containing quotes, newlines, or special characters:
   ```bash
   gh pr create --title "Title" --body "$(cat <<'EOF'
@@ -41,6 +47,17 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
   // Initialises the thing
   initialiseThing();
   ```
+- Avoid redundant function header comments that merely repeat the function name. For example:
+  ```
+  /**
+   * Sets up compiler change handling
+   */
+  function setupCompilerChangeHandling() {...}
+  ```
+  In this case, the function name already clearly states what it does.
+- Comments should provide additional context or explain "why" something is done, not just restate "what" is being done.
+- Only add function header comments when they provide meaningful information beyond what the function name and signature convey.
+- Use British English spellings for things like "initialise" and "colour", but only in new code. It's a preference not a hard requirement
 
 ## Testing Guidelines
 - Use Vitest for unit tests (compatible with Jest syntax)

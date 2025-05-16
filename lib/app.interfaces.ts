@@ -1,4 +1,4 @@
-// Copyright (c) 2023, Compiler Explorer Authors
+// Copyright (c) 2025, Compiler Explorer Authors
 // All rights reserved.
 //
 // Redistribution and use in source and binary forms, with or without
@@ -22,7 +22,16 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import './frontend-testing';
-import './hello-world';
-import './motd';
-import './remote-id';
+export type AppArguments = {
+    rootDir: string;
+    env: string[];
+    hostname?: string;
+    port: number;
+    gitReleaseName: string;
+    releaseBuildNumber: string;
+    wantedLanguages: string[] | undefined;
+    doCache: boolean;
+    fetchCompilersFromRemote: boolean;
+    ensureNoCompilerClash: boolean | undefined;
+    suppressConsoleLog: boolean;
+};

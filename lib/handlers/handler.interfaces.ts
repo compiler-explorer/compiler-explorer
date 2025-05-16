@@ -1,4 +1,4 @@
-// Copyright (c) 2023, Compiler Explorer Authors
+// Copyright (c) 2025, Compiler Explorer Authors
 // All rights reserved.
 //
 // Redistribution and use in source and binary forms, with or without
@@ -22,7 +22,39 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import './frontend-testing';
-import './hello-world';
-import './motd';
-import './remote-id';
+import express from 'express';
+
+import {AppArguments} from '../app.interfaces.js';
+import {GoldenLayoutRootStruct} from '../clientstate-normalizer.js';
+import {CompilationEnvironment} from '../compilation-env.js';
+import {ClientOptionsHandler} from '../options-handler.js';
+import {PropertyGetter} from '../properties.interfaces.js';
+import {StorageBase} from '../storage/index.js';
+import {CompileHandler} from './compile.js';
+
+export type RenderConfig = (extra: Record<string, any>, urlOptions?: Record<string, any>) => Record<string, any>;
+
+export type RenderGoldenLayout = (
+    config: GoldenLayoutRootStruct,
+    metadata: ShortLinkMetaData,
+    req: express.Request,
+    res: express.Response,
+) => void;
+
+export type HandlerConfig = {
+    compileHandler: CompileHandler;
+    clientOptionsHandler: ClientOptionsHandler;
+    storageHandler: StorageBase;
+    ceProps: PropertyGetter;
+    defArgs: AppArguments;
+    renderConfig: RenderConfig;
+    renderGoldenLayout: RenderGoldenLayout;
+    compilationEnvironment: CompilationEnvironment;
+};
+
+export type ShortLinkMetaData = {
+    ogDescription?: string;
+    ogAuthor?: string;
+    ogTitle?: string;
+    ogCreated?: Date;
+};

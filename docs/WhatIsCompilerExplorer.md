@@ -16,7 +16,7 @@ and `esi`, and result left in `eax`:
 01fe89f0c3
 ```
 
-Machine code may be what the computer needs, it is not a convenient representation for humans. Instead, _assembly_ is
+Machine code may be what the computer needs, but it is not a convenient representation for humans. Instead, _assembly_ is
 commonly used, a (somewhat readable) text representation of the machine code. The encoding is bidirectional: humans can
 write assembly and have it encoded as machine code with a program called an _assembler_, and machine code can be turned
 into assembly with a _disassembler_.
@@ -39,7 +39,7 @@ int add(int x, int y) {
 ```
 
 A compiler turns this source into machine code (for example, GCC). The compiler parses and understands the C language,
-turning the programmer's intention into the nitty-gritties of the target CPU's machine code. Compilers can also also
+turning the programmer's intention into the nitty-gritties of the target CPU's machine code. Compilers can also
 perform _optimizations_ which can significantly improve the code performance over a naive transliteration.
 
 For example, passing GCC the C source above and asking it to optimize produces the following machine code/assembly:

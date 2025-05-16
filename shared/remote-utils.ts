@@ -1,4 +1,4 @@
-// Copyright (c) 2023, Compiler Explorer Authors
+// Copyright (c) 2025, Compiler Explorer Authors
 // All rights reserved.
 //
 // Redistribution and use in source and binary forms, with or without
@@ -22,12 +22,7 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import {HandlerConfig} from './handlers/route-api.js';
-
-declare global {
-    // var is required
-
-    var ce_base_directory: URL;
-    var handler_config: HandlerConfig;
-    /* eslint-enable no-var */
+export function getRemoteId(remoteUrl: string, language: string): string {
+    const url: URL = new URL(remoteUrl);
+    return url.host.replace(/\./g, '_') + url.pathname.replace(/\//g, '_') + '_' + language;
 }
