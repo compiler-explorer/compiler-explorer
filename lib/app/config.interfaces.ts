@@ -22,27 +22,22 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import type {LoggingOptions} from './logger.js';
+import type {Language, LanguageKey} from '../../types/languages.interfaces.js';
+import type {PropertyGetter} from '../properties.interfaces.js';
+import type {CompilerProps} from '../properties.js';
 
-export type AppArguments = {
-    rootDir: string;
-    env: string[];
-    hostname?: string;
-    port: number;
-    gitReleaseName: string;
-    releaseBuildNumber: string;
-    wantedLanguages: string[] | undefined;
-    doCache: boolean;
-    fetchCompilersFromRemote: boolean;
-    ensureNoCompilerClash: boolean | undefined;
-    prediscovered?: string;
-    discoveryOnly?: string;
-    staticPath?: string;
-    metricsPort?: number;
-    useLocalProps: boolean;
-    propDebug: boolean;
-    tmpDir?: string;
-    loggingOptions: LoggingOptions;
-    isWsl: boolean;
-    devMode: boolean;
-};
+export interface AppConfiguration {
+    // Core properties
+    ceProps: PropertyGetter;
+    compilerProps: CompilerProps;
+    languages: Record<LanguageKey, Language>;
+
+    // Environment settings
+    staticMaxAgeSecs: number;
+    maxUploadSize: string;
+    extraBodyClass: string;
+    storageSolution: string;
+    httpRoot: string;
+    staticRoot: string;
+    staticUrl?: string;
+}

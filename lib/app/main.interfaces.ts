@@ -22,27 +22,24 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import type {LoggingOptions} from './logger.js';
+import type {Express} from 'express';
+import type {AppArguments} from '../app.interfaces.js';
+import type {PropertyGetter} from '../properties.interfaces.js';
+import type {AppConfiguration} from './config.interfaces.js';
 
-export type AppArguments = {
-    rootDir: string;
-    env: string[];
-    hostname?: string;
-    port: number;
-    gitReleaseName: string;
-    releaseBuildNumber: string;
-    wantedLanguages: string[] | undefined;
-    doCache: boolean;
-    fetchCompilersFromRemote: boolean;
-    ensureNoCompilerClash: boolean | undefined;
-    prediscovered?: string;
-    discoveryOnly?: string;
-    staticPath?: string;
-    metricsPort?: number;
-    useLocalProps: boolean;
-    propDebug: boolean;
-    tmpDir?: string;
-    loggingOptions: LoggingOptions;
-    isWsl: boolean;
-    devMode: boolean;
-};
+/**
+ * Input options for initializing the application
+ */
+export interface ApplicationOptions {
+    appArgs: AppArguments;
+    config: AppConfiguration;
+    distPath: string;
+    awsProps: PropertyGetter;
+}
+
+/**
+ * Result returned after initializing the application
+ */
+export interface ApplicationResult {
+    webServer: Express;
+}
