@@ -99,6 +99,7 @@ export type LanguageKey =
     | 'swift'
     | 'tablegen'
     | 'toit'
+    | 'triton'
     | 'typescript'
     | 'v'
     | 'vala'
