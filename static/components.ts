@@ -29,6 +29,7 @@ import {ConfiguredOverrides} from './compilation/compiler-overrides.interfaces.j
 import {
     AST_VIEW_COMPONENT_NAME,
     CFG_VIEW_COMPONENT_NAME,
+    SSA_VIEW_COMPONENT_NAME,
     CLANGIR_VIEW_COMPONENT_NAME,
     COMPILER_COMPONENT_NAME,
     CONFORMANCE_VIEW_COMPONENT_NAME,
@@ -577,6 +578,25 @@ export function getCfgViewWith(
         },
     };
 }
+
+export function getSsaViewWith(
+     id: number,
+     editorid: number,
+     treeid: number,
+     isircfg?: boolean,
+ ): ComponentConfig<PopulatedCfgViewState> {
+     return {
+         type: 'component',
+         componentName: SSA_VIEW_COMPONENT_NAME,
+         componentState: {
+             selectedFunction: null,
+             id,
+             editorid,
+             treeid,
+             isircfg,
+         },
+     };
+ }
 
 /** Get a conformance view with the given configuration. */
 export function getConformanceView(
