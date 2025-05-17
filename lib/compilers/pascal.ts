@@ -27,7 +27,11 @@ import path from 'node:path';
 import fs from 'node:fs/promises';
 import _ from 'underscore';
 
-import type {ExecutionOptionsWithEnv} from '../../types/compilation/compilation.interfaces.js';
+import type {
+    CacheKey,
+    CompilationCacheKey,
+    ExecutionOptionsWithEnv,
+} from '../../types/compilation/compilation.interfaces.js';
 import type {PreliminaryCompilerInfo} from '../../types/compiler.interfaces.js';
 import type {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces.js';
 import {unwrap} from '../assert.js';
@@ -120,13 +124,21 @@ export class FPCCompiler extends BaseCompiler {
     }
 
     override getOutputFilename(dirPath: string, outputFilebase: string, key?: any): string {
-        const inputFilename = this.getMainSourceFilename(key.source);
-        const baseFilename = inputFilename.substring(0, inputFilename.length - 4);
+        let baseFilename: string = outputFilebase;
+        if (key?.source) {
+            const inputFilename = this.getMainSourceFilename(key.source);
+            baseFilename = inputFilename.substring(0, inputFilename.length - 4);
+        }
 
         return path.join(dirPath, `${baseFilename}.s`);
     }
 
-    override getExecutableFilename(dirPath: string) {
+    override getExecutableFilename(dirPath: string, outputFilebase: string, key?: CacheKey | CompilationCacheKey) {
+        const source = (key && (key as CacheKey).source) || '';
+        if (key && this.pasUtils.isProgram(source)) {
+            return path.join(dirPath, this.pasUtils.getProgName(source));
+        }
+
         return path.join(dirPath, 'prog');
     }
 
@@ -142,11 +154,15 @@ export class FPCCompiler extends BaseCompiler {
     ) {
         const dirPath = path.dirname(outputFilename);
 
-        let execBinary = this.getExecutableFilename(dirPath);
+        let execBinary = '';
 
         const inputExt = path.extname(result.inputFilename);
         if (inputExt.toLowerCase() === '.dpr') {
             execBinary = path.join(dirPath, path.basename(result.inputFilename, inputExt));
+        } else if (result.executableFilename) {
+            execBinary = unwrap<string>(result.executableFilename);
+        } else {
+            execBinary = this.getExecutableFilename(dirPath, path.basename(result.inputFilename, inputExt));
         }
 
         if (await utils.fileExists(execBinary)) {
