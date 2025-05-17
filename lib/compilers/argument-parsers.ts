@@ -604,6 +604,13 @@ export class PascalParser extends BaseParser {
     }
 }
 
+export class MojoParser extends BaseParser {
+    static override async parse(compiler: BaseCompiler) {
+        await this.getOptions(compiler, '-help');
+        return compiler;
+    }
+}
+
 export class ICCParser extends GCCParser {
     static override async setCompilerSettingsFromOptions(compiler: BaseCompiler, options: Record<string, Argument>) {
         const keys = _.keys(options);

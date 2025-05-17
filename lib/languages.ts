@@ -591,6 +591,18 @@ const definitions: Record<LanguageKey, LanguageDefinition> = {
         previewFilter: null,
         monacoDisassembly: null,
     },
+    mojo: {
+        name: 'Mojo',
+        monaco: 'mojo',
+        extensions: ['.mojo', '.🔥'],
+        alias: [],
+        logoUrl: 'mojo.svg',
+        logoUrlDark: null,
+        formatter: 'mblack',
+        previewFilter: null,
+        monacoDisassembly: null,
+        digitSeparator: '_',
+    },
     nim: {
         name: 'Nim',
         monaco: 'nim',

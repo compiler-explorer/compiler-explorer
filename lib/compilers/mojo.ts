@@ -1,4 +1,4 @@
-// Copyright (c) 2021, Compiler Explorer Authors
+// Copyright (c) 2025, Compiler Explorer Authors
 // All rights reserved.
 //
 // Redistribution and use in source and binary forms, with or without
@@ -22,53 +22,38 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import './ada-mode';
-import './asm6502-mode';
-import './asm-mode';
-import './asmruby-mode';
-import './c3-mode';
-import './carbon-mode';
-import './clean-mode';
-import './cmake-mode';
-import './cobol-mode';
-import './cppcircle-mode';
-import './cpp-for-opencl-mode';
-import './cppfront-mode';
-import './cppp-mode';
-import './cppx-blue-mode';
-import './cppx-gold-mode';
-import './crystal-mode';
-import './cuda-mode';
-import './d-mode';
-import './no-highlight-mode';
-import './erlang-mode';
-import './fortran-mode';
-import './gccdump-rtl-gimple-mode';
-import './glsl-mode';
-import './haskell-mode';
-import './hlsl-mode';
-import './hook-mode';
-import './hylo-mode';
-import './ispc-mode';
-import './jakt-mode';
-import './llvm-ir-mode';
-import './mlir-mode';
-import './modula2-mode';
-import './mojo-mode';
-import './nc-mode';
-import './nim-mode';
-import './nix-mode';
-import './ocaml-mode';
-import './odin-mode';
-import './openclc-mode';
-import './ptx-mode';
-import './sail-mode';
-import './slang-mode';
-import './spice-mode';
-import './spirv-mode';
-import './sway-mode';
-import './tablegen-mode';
-import './v-mode';
-import './vala-mode';
-import './wat-mode';
-import './zig-mode';
+import path from 'node:path';
+import type {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces.js';
+import {BaseCompiler} from '../base-compiler.js';
+
+export class MojoCompiler extends BaseCompiler {
+    static get key() {
+        return 'mojo';
+    }
+
+    constructor(info, env) {
+        super(info, env);
+        this.delayCleanupTemp = true;
+        this.compiler.supportsIrView = true;
+        this.compiler.irArg = ['--emit=llvm'];
+    }
+
+    override getOutputFilename(dirPath: string, inputFileBase: string) {
+        // This method tells CE where to find the assembly output
+        const outputPath = path.join(dirPath, 'example.s');
+        return outputPath;
+    }
+
+    override optionsForFilter(filters: ParseFiltersAndOutputOptions, outputFilename: string, userOptions: string[]) {
+        if (filters.binary) return ['build'];
+        return ['build', '--emit=asm'];
+    }
+
+    override getSharedLibraryPathsAsArguments() {
+        return [];
+    }
+
+    override getExecutableFilename(dirPath: string, outputFilebase: string) {
+        return path.join(dirPath, 'example');
+    }
+}

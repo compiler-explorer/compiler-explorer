@@ -74,6 +74,7 @@ export type LanguageKey =
     | 'llvm_mir'
     | 'mlir'
     | 'modula2'
+    | 'mojo'
     | 'nim'
     | 'nix'
     | 'numba'
