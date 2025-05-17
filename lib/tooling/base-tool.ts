@@ -170,7 +170,8 @@ export class BaseTool implements ITool {
                 name: this.tool.name,
             });
         }
-        const execOptions = this.getDefaultExecOptions();
+        const execOptions = compilationInfo.execOptions || this.getDefaultExecOptions();
+        if (compilationInfo.preparedLdPaths) execOptions.ldPath = compilationInfo.preparedLdPaths;
         if (inputFilepath) execOptions.customCwd = path.dirname(inputFilepath);
         execOptions.input = stdin;
 

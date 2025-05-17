@@ -2254,6 +2254,11 @@ export class BaseCompiler {
                 this.outputFilebase,
                 key,
             ),
+            preparedLdPaths: this.getSharedLibraryPathsAsLdLibraryPathsForExecution(
+                key,
+                customBuildPath || result.dirPath || '',
+            ),
+            defaultExecOptions: this.getDefaultExecOptions(),
             asmParser: this.asm,
             ...key,
             ...result,
