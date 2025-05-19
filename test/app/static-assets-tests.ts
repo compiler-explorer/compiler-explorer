@@ -26,13 +26,17 @@ import {describe, expect, it, vi} from 'vitest';
 import {getFaviconFilename} from '../../lib/app/server.js';
 import {createDefaultPugRequireHandler} from '../../lib/app/static-assets.js';
 
+// Mock the logger
+vi.mock('../../lib/logger.js', () => ({
+    logger: {
+        error: vi.fn(),
+    },
+}));
+import {logger} from '../../lib/logger.js';
+
 describe('Static assets', () => {
     describe('createDefaultPugRequireHandler', () => {
         it('should handle paths with manifest', () => {
-            // Temporarily silence console.error for this test
-            const originalConsoleError = console.error;
-            console.error = vi.fn();
-
             const manifest = {
                 'file1.js': 'file1.hash123.js',
             };
@@ -40,10 +44,7 @@ describe('Static assets', () => {
 
             expect(handler('file1.js')).toBe('/static/file1.hash123.js');
             expect(handler('file2.js')).toBe(''); // Not in manifest
-            expect(console.error).toHaveBeenCalledWith("Failed to locate static asset 'file2.js' in manifest");
-
-            // Restore console.error
-            console.error = originalConsoleError;
+            expect(logger.error).toHaveBeenCalledWith("Failed to locate static asset 'file2.js' in manifest");
         });
 
         it('should handle paths without manifest', () => {
