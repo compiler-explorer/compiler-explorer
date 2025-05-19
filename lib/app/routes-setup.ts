@@ -29,7 +29,6 @@ import {CompileHandler} from '../handlers/compile.js';
 import type {RenderConfig, RenderGoldenLayout} from '../handlers/handler.interfaces.js';
 import {NoScriptHandler} from '../handlers/noscript.js';
 import {RouteAPI} from '../handlers/route-api.js';
-import {logger} from '../logger.js';
 import {ClientOptionsHandler} from '../options-handler.js';
 import {PropertyGetter} from '../properties.interfaces.js';
 import {StorageBase} from '../storage/index.js';
@@ -90,16 +89,11 @@ export function setupRoutesAndApi(
     });
 
     // Set up controllers
-    try {
-        router.use(siteTemplateController.createRouter());
-        router.use(sourceController.createRouter());
-        router.use(assemblyDocumentationController.createRouter());
-        router.use(formattingController.createRouter());
-        router.use(noScriptController.createRouter());
-    } catch (err: unknown) {
-        // In case of errors (e.g. during testing), log but continue
-        logger.debug('Error setting up controllers, possibly in test environment:', err);
-    }
+    router.use(siteTemplateController.createRouter());
+    router.use(sourceController.createRouter());
+    router.use(assemblyDocumentationController.createRouter());
+    router.use(formattingController.createRouter());
+    router.use(noScriptController.createRouter());
 
     noscriptHandler.initializeRoutes();
     routeApi.initializeRoutes();

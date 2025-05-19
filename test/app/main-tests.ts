@@ -69,41 +69,21 @@ vi.mock('../../lib/storage/index.js');
 vi.mock('../../lib/app/server.js');
 vi.mock('node:fs/promises');
 
-// Mock the AssemblyDocumentationController and other controllers
-vi.mock('../../lib/handlers/api/assembly-documentation-controller.js', () => ({
-    AssemblyDocumentationController: vi.fn().mockImplementation(() => ({
-        createRouter: vi.fn().mockReturnValue({}),
+// Mock the routes-setup module with a simplified implementation that doesn't use the controllers
+vi.mock('../../lib/app/routes-setup.js', () => ({
+    setupRoutesAndApi: vi.fn().mockImplementation(() => ({
+        apiHandler: {
+            setCompilers: vi.fn(),
+            setLanguages: vi.fn(),
+            setOptions: vi.fn(),
+        },
+        initializeRoutes: vi.fn(),
     })),
 }));
 
-vi.mock('../../lib/handlers/api/formatting-controller.js', () => ({
-    FormattingController: vi.fn().mockImplementation(() => ({
-        createRouter: vi.fn().mockReturnValue({}),
-    })),
-}));
-
-vi.mock('../../lib/handlers/api/healthcheck-controller.js', () => ({
-    HealthcheckController: vi.fn().mockImplementation(() => ({
-        createRouter: vi.fn().mockReturnValue({}),
-    })),
-}));
-
-vi.mock('../../lib/handlers/api/noscript-controller.js', () => ({
-    NoScriptController: vi.fn().mockImplementation(() => ({
-        createRouter: vi.fn().mockReturnValue({}),
-    })),
-}));
-
-vi.mock('../../lib/handlers/api/site-template-controller.js', () => ({
-    SiteTemplateController: vi.fn().mockImplementation(() => ({
-        createRouter: vi.fn().mockReturnValue({}),
-    })),
-}));
-
-vi.mock('../../lib/handlers/api/source-controller.js', () => ({
-    SourceController: vi.fn().mockImplementation(() => ({
-        createRouter: vi.fn().mockReturnValue({}),
-    })),
+// Also mock the compiler-changes module to avoid the apiHandler issue
+vi.mock('../../lib/app/compiler-changes.js', () => ({
+    setupCompilerChangeHandling: vi.fn().mockResolvedValue(undefined),
 }));
 
 describe('Main module', () => {
