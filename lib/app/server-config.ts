@@ -31,6 +31,7 @@ import sanitize from 'sanitize-filename';
 import sFavicon from 'serve-favicon';
 
 import {logger, makeLogStream} from '../logger.js';
+import {ClientOptionsSource} from '../options-handler.interfaces.js';
 import {PropertyGetter} from '../properties.interfaces.js';
 import * as utils from '../utils.js';
 import {ServerOptions} from './server.interfaces.js';
@@ -153,7 +154,7 @@ export function setupBasicRoutes(
     ceProps: PropertyGetter,
     faviconFilename: string,
     options: ServerOptions,
-    clientOptionsHandler: {getJSON(): string},
+    clientOptionsHandler: ClientOptionsSource,
 ): void {
     const legacyGoogleUrlHandler = new LegacyGoogleUrlHandler(ceProps);
 

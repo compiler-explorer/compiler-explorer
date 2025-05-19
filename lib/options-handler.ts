@@ -36,6 +36,7 @@ import type {LanguageKey} from '../types/languages.interfaces.js';
 import type {Source} from '../types/source.interfaces.js';
 import type {ToolTypeKey} from '../types/tool.interfaces.js';
 import {AppArguments} from './app.interfaces.js';
+import {ClientOptionsSource} from './options-handler.interfaces.js';
 
 import {getRemoteId} from '../shared/remote-utils.js';
 import {logger} from './logger.js';
@@ -126,7 +127,7 @@ export type ClientOptionsType = {
 /***
  * Handles the setup of the options object passed on each page request
  */
-export class ClientOptionsHandler {
+export class ClientOptionsHandler implements ClientOptionsSource {
     compilerProps: CompilerProps['get'];
     ceProps: PropertyGetter;
     supportsBinary: Record<LanguageKey, boolean>;

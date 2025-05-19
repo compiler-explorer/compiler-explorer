@@ -61,6 +61,7 @@ import {afterEach, beforeEach, describe, expect, it, vi} from 'vitest';
 import type {AppArguments} from '../../lib/app.interfaces.js';
 import type {ServerDependencies, ServerOptions} from '../../lib/app/server.interfaces.js';
 import {setupWebServer} from '../../lib/app/server.js'; // TODO
+import type {ClientOptionsSource} from '../../lib/options-handler.interfaces.js';
 import * as utils from '../../lib/utils.js';
 
 describe('Server Module', () => {
@@ -101,7 +102,7 @@ describe('Server Module', () => {
                 maxUploadSize: '1mb',
             };
 
-            const mockClientOptionsHandler = {
+            const mockClientOptionsHandler: ClientOptionsSource = {
                 get: vi.fn().mockReturnValue({}),
                 getHash: vi.fn().mockReturnValue('hash123'),
                 getJSON: vi.fn().mockReturnValue('{}'),
