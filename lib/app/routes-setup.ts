@@ -24,9 +24,15 @@
 
 import type {Router} from 'express';
 import type {AppArguments} from '../app.interfaces.js';
+import {CompilationEnvironment} from '../compilation-env.js';
+import {CompileHandler} from '../handlers/compile.js';
+import type {RenderConfig, RenderGoldenLayout} from '../handlers/handler.interfaces.js';
 import {NoScriptHandler} from '../handlers/noscript.js';
 import {RouteAPI} from '../handlers/route-api.js';
 import {logger} from '../logger.js';
+import {ClientOptionsHandler} from '../options-handler.js';
+import {PropertyGetter} from '../properties.interfaces.js';
+import {StorageBase} from '../storage/index.js';
 import type {ApiControllers} from './controllers.js';
 
 /**
@@ -46,14 +52,14 @@ import type {ApiControllers} from './controllers.js';
 export function setupRoutesAndApi(
     router: Router,
     controllers: ApiControllers,
-    clientOptionsHandler: any,
-    renderConfig: any,
-    renderGoldenLayout: any,
-    storageHandler: any,
+    clientOptionsHandler: ClientOptionsHandler,
+    renderConfig: RenderConfig,
+    renderGoldenLayout: RenderGoldenLayout,
+    storageHandler: StorageBase,
     appArgs: AppArguments,
-    compileHandler: any,
-    compilationEnvironment: any,
-    ceProps: any,
+    compileHandler: CompileHandler,
+    compilationEnvironment: CompilationEnvironment,
+    ceProps: PropertyGetter,
 ): RouteAPI {
     const {
         siteTemplateController,
