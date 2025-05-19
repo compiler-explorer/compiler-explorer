@@ -35,7 +35,7 @@ import {PropertyGetter} from '../properties.interfaces.js';
 import * as utils from '../utils.js';
 import {ServerOptions} from './server.interfaces.js';
 import {RenderConfigFunction} from './server.interfaces.js';
-import {OldGoogleUrlHandler, isMobileViewer} from './url-handlers.js';
+import {LegacyGoogleUrlHandler, isMobileViewer} from './url-handlers.js';
 
 /**
  * Setup base server configuration
@@ -155,7 +155,7 @@ export function setupBasicRoutes(
     options: ServerOptions,
     clientOptionsHandler: any,
 ): void {
-    const oldGoogleUrlHandler = new OldGoogleUrlHandler(ceProps);
+    const legacyGoogleUrlHandler = new LegacyGoogleUrlHandler(ceProps);
 
     router
         .use(compression())
@@ -221,7 +221,7 @@ export function setupBasicRoutes(
             );
         })
         .use(express.json({limit: ceProps('bodyParserLimit', options.maxUploadSize)}))
-        .get('/g/:id', oldGoogleUrlHandler.handle.bind(oldGoogleUrlHandler));
+        .get('/g/:id', legacyGoogleUrlHandler.handle.bind(legacyGoogleUrlHandler));
 }
 
 /**

@@ -41,7 +41,7 @@ export function isMobileViewer(req: Request): boolean {
 /**
  * Handles legacy Google URL shortener redirects
  */
-export class OldGoogleUrlHandler {
+export class LegacyGoogleUrlHandler {
     private readonly googleShortUrlResolver: ShortLinkResolver;
 
     /**

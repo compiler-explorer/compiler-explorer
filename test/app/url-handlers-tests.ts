@@ -24,7 +24,7 @@
 
 import type {Request, Response} from 'express';
 import {afterEach, beforeEach, describe, expect, it, vi} from 'vitest';
-import {OldGoogleUrlHandler, isMobileViewer} from '../../lib/app/url-handlers.js';
+import {LegacyGoogleUrlHandler, isMobileViewer} from '../../lib/app/url-handlers.js';
 
 describe('Url Handlers', () => {
     describe('isMobileViewer', () => {
@@ -61,8 +61,8 @@ describe('Url Handlers', () => {
             expect(mockRequest.header).toHaveBeenCalledWith('CloudFront-Is-Mobile-Viewer');
         });
     });
-    describe('OldGoogleUrlHandler', () => {
-        let handler: OldGoogleUrlHandler;
+    describe('LegacyGoogleUrlHandler', () => {
+        let handler: LegacyGoogleUrlHandler;
         let mockCeProps: any;
         let mockRequest: Partial<Request>;
         let mockResponse: Partial<Response>;
@@ -73,7 +73,7 @@ describe('Url Handlers', () => {
                 if (key === 'allowedShortUrlHostRe') return '.*';
                 return '';
             });
-            handler = new OldGoogleUrlHandler(mockCeProps);
+            handler = new LegacyGoogleUrlHandler(mockCeProps);
 
             // Mock ShortLinkResolver (private property)
             Object.defineProperty(handler, 'googleShortUrlResolver', {
