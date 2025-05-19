@@ -57,7 +57,9 @@ export interface RenderConfig extends PugOptions {
     config?: GoldenLayoutRootStruct;
     metadata?: ShortLinkMetaData;
     storedStateId?: string | false;
-    [key: string]: any;
+    require?: PugRequireHandler;
+    sponsors?: Sponsors;
+    slides?: any[];
 }
 
 export type RenderConfigFunction = (extra: Record<string, any>, urlOptions?: Record<string, any>) => RenderConfig;
