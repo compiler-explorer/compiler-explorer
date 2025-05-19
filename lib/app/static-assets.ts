@@ -30,12 +30,7 @@ import urljoin from 'url-join';
 
 import {ElementType} from '../../shared/common-utils.js';
 import {logger} from '../logger.js';
-import {ServerOptions} from './server.interfaces.js';
-
-/**
- * Function signature for handling Pug template requires
- */
-export type PugRequireHandler = (path: string) => string;
+import {PugRequireHandler, ServerOptions} from './server.interfaces.js';
 
 /**
  * Creates a default handler for Pug requires

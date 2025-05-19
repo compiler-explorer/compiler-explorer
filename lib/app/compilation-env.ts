@@ -30,13 +30,6 @@ import {CompileHandler} from '../handlers/compile.js';
 import {PropertyGetter} from '../properties.interfaces.js';
 import {CompilerProps} from '../properties.js';
 
-export interface CompilationEnvResult {
-    compilationQueue: CompilationQueue;
-    compilationEnvironment: CompilationEnvironment;
-    compileHandler: CompileHandler;
-    formattingService: FormattingService;
-}
-
 /**
  * Initialize the compilation environment components
  * @param appArgs - Application arguments
@@ -50,7 +43,7 @@ export async function initializeCompilationEnvironment(
     compilerProps: CompilerProps,
     ceProps: PropertyGetter,
     awsProps: PropertyGetter,
-): Promise<CompilationEnvResult> {
+) {
     const formattingService = new FormattingService();
     await formattingService.initialize(ceProps);
 
@@ -67,9 +60,7 @@ export async function initializeCompilationEnvironment(
     compilationEnvironment.setCompilerFinder(compileHandler.findCompiler.bind(compileHandler));
 
     return {
-        compilationQueue,
         compilationEnvironment,
         compileHandler,
-        formattingService,
     };
 }

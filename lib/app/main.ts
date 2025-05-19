@@ -25,8 +25,6 @@
 import fs from 'node:fs/promises';
 import path from 'node:path';
 
-import _ from 'underscore';
-
 import type {AppArguments} from '../app.interfaces.js';
 import {initializeCompilationEnvironment} from './compilation-env.js';
 import {setupCompilerChangeHandling} from './compiler-changes.js';
@@ -68,8 +66,12 @@ export async function initialiseApplication(options: ApplicationOptions): Promis
 
     RemoteExecutionQuery.initRemoteExecutionArchs(ceProps, appArgs.env);
 
-    const {compilationQueue, compilationEnvironment, compileHandler, formattingService} =
-        await initializeCompilationEnvironment(appArgs, compilerProps, ceProps, awsProps);
+    const {compilationEnvironment, compileHandler} = await initializeCompilationEnvironment(
+        appArgs,
+        compilerProps,
+        ceProps,
+        awsProps,
+    );
 
     const clientOptionsHandler = new ClientOptionsHandler(sources, compilerProps, appArgs);
     const storageType = getStorageTypeByKey(storageSolution);
@@ -84,8 +86,8 @@ export async function initialiseApplication(options: ApplicationOptions): Promis
 
     const controllers = setupControllersAndHandlers(
         compileHandler,
-        formattingService,
-        compilationQueue,
+        compilationEnvironment.formattingService,
+        compilationEnvironment.compilationQueue,
         healthCheckFilePath,
         isExecutionWorker,
         formDataHandler,
