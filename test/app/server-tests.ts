@@ -113,7 +113,11 @@ describe('Server Module', () => {
                     if (key === 'allowedShortUrlHostRe') return '.*';
                     return '';
                 }),
-                sponsorConfig: {},
+                sponsorConfig: {
+                    getLevels: vi.fn().mockReturnValue([]),
+                    pickTopIcons: vi.fn().mockReturnValue([]),
+                    getAllTopIcons: vi.fn().mockReturnValue([]),
+                },
                 clientOptionsHandler: mockClientOptionsHandler,
                 storageSolution: 'mock-storage',
             };

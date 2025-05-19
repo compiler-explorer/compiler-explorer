@@ -26,6 +26,7 @@ import type {Express, Request, Response, Router} from 'express';
 import type {GoldenLayoutRootStruct} from '../clientstate-normalizer.js';
 import type {ShortLinkMetaData} from '../handlers/handler.interfaces.js';
 import type {PropertyGetter} from '../properties.interfaces.js';
+import type {Sponsors} from '../sponsors.interfaces.js';
 
 export interface ServerOptions {
     staticPath: string;
@@ -79,7 +80,7 @@ export interface WebServerResult {
 
 export interface ServerDependencies {
     ceProps: PropertyGetter;
-    sponsorConfig: any;
-    clientOptionsHandler: any;
+    sponsorConfig: Sponsors;
+    clientOptionsHandler: {get(): Record<string, any>; getHash(): string; getJSON(): string};
     storageSolution: string;
 }

@@ -153,7 +153,7 @@ export function setupBasicRoutes(
     ceProps: PropertyGetter,
     faviconFilename: string,
     options: ServerOptions,
-    clientOptionsHandler: any,
+    clientOptionsHandler: {getJSON(): string},
 ): void {
     const legacyGoogleUrlHandler = new LegacyGoogleUrlHandler(ceProps);
 

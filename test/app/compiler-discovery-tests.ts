@@ -35,6 +35,7 @@ import {
 } from '../../lib/app/compiler-discovery.js';
 import {CompilerFinder} from '../../lib/compiler-finder.js';
 import {logger} from '../../lib/logger.js';
+import {LanguageKey} from '../../types/languages.interfaces.js';
 
 vi.mock('node:fs/promises');
 vi.mock('../../lib/logger.js');
@@ -160,14 +161,14 @@ describe('compiler-discovery module', () => {
         const compilers = [
             {
                 id: 'gcc1',
-                lang: 'c++',
-                buildenvsetup: {id: ''},
+                lang: 'c++' as unknown as LanguageKey,
+                buildenvsetup: {id: '', props: vi.fn()},
                 externalparser: {id: ''},
             },
             {
                 id: 'gcc2',
-                lang: 'c++',
-                buildenvsetup: {id: 'setup1'},
+                lang: 'c++' as unknown as LanguageKey,
+                buildenvsetup: {id: 'setup1', props: vi.fn()},
                 externalparser: {id: 'parser1'},
             },
         ];

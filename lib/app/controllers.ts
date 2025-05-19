@@ -22,6 +22,7 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
+import express from 'express';
 import {CompilationQueue} from '../compilation-queue.js';
 import {FormattingService} from '../formatting-service.js';
 import {AssemblyDocumentationController} from '../handlers/api/assembly-documentation-controller.js';
@@ -57,7 +58,7 @@ export function setupControllersAndHandlers(
     compilationQueue: CompilationQueue,
     healthCheckFilePath: string | null,
     isExecutionWorker: boolean,
-    formDataHandler: any,
+    formDataHandler: express.Handler,
 ): ApiControllers {
     // Initialize API controllers
     const siteTemplateController = new SiteTemplateController();

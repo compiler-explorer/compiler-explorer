@@ -91,11 +91,13 @@ describe('Rendering Module', () => {
                         defaultLanguage: 'c++',
                     }),
                     getHash: vi.fn().mockReturnValue('hash123'),
+                    getJSON: vi.fn().mockReturnValue('{}'),
                 },
                 storageSolution: 'localStorage',
                 sponsorConfig: {
-                    showSponsors: true,
-                    displayCount: 6,
+                    getLevels: vi.fn().mockReturnValue([]),
+                    pickTopIcons: vi.fn().mockReturnValue([]),
+                    getAllTopIcons: vi.fn().mockReturnValue([]),
                 },
                 ceProps: vi.fn(),
             };

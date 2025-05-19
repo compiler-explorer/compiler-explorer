@@ -112,7 +112,7 @@ export async function findAndValidateCompilers(
  */
 export async function handleDiscoveryOnlyMode(
     savePath: string,
-    initialCompilers: any[],
+    initialCompilers: Partial<CompilerInfo>[],
     compilerFinder: CompilerFinder,
 ) {
     for (const compiler of initialCompilers) {
@@ -120,7 +120,10 @@ export async function handleDiscoveryOnlyMode(
 
         if (compiler.externalparser && compiler.externalparser.id === '') delete compiler.externalparser;
 
-        const compilerInstance = compilerFinder.compileHandler.findCompiler(compiler.lang, compiler.id);
+        const compilerInstance =
+            compiler.lang && compiler.id
+                ? compilerFinder.compileHandler.findCompiler(compiler.lang, compiler.id)
+                : undefined;
         if (compilerInstance) {
             compiler.cachedPossibleArguments = compilerInstance.possibleArguments.possibleArguments;
         }
