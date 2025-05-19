@@ -87,9 +87,10 @@ export class StackUsage extends MonacoPane<monaco.editor.IStandaloneCodeEditor, 
 
     override onCompileResult(id: number, compiler: CompilerInfo, result: CompilationResult) {
         if (this.compilerInfo.compilerId !== id || !this.isCompilerSupported) return;
-        this.editor.setValue(unwrap(result.source));
+        const source = unwrap(result.source);
+        this.editor.setValue(source);
         if (result.stackUsageOutput) {
-            this.showStackUsageResults(result.stackUsageOutput);
+            this.showStackUsageResults(result.stackUsageOutput, source);
         }
 
         // TODO: This is inelegant again. Previously took advantage of fourth argument for the compileResult event.
@@ -121,7 +122,7 @@ export class StackUsage extends MonacoPane<monaco.editor.IStandaloneCodeEditor, 
         return '<Unimplemented>';
     }
 
-    showStackUsageResults(suEntries: suCodeEntry[], source?: string) {
+    showStackUsageResults(suEntries: suCodeEntry[], source: string) {
         const splitLines = (text: string): string[] => {
             if (!text) return [];
             const result = text.split(/\r?\n/);

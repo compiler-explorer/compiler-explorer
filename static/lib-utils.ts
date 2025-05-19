@@ -22,19 +22,15 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
+import {getRemoteId} from '../shared/remote-utils.js';
 import {Remote} from './compiler.interfaces.js';
 import {LanguageLibs, Library} from './options.interfaces.js';
 import {options} from './options.js';
 
 const LIB_MATCH_RE = /([\w-]*)\.([\w-]*)/i;
 
-function getRemoteId(language: string, remoteUrl: string): string {
-    const url: URL = new URL(remoteUrl);
-    return url.host.replace(/\./g, '_') + '_' + language;
-}
-
 function getRemoteLibraries(language: string, remoteUrl: string): LanguageLibs {
-    const remoteId = getRemoteId(language, remoteUrl);
+    const remoteId = getRemoteId(remoteUrl, language);
     return options.remoteLibs[remoteId];
 }
 
@@ -78,7 +74,7 @@ export function getSupportedLibraries(
         }
         return allLibs;
     }
-    const allLibs = getRemoteLibraries(langId, remote.target);
+    const allLibs = getRemoteLibraries(langId, remote.target + remote.basePath);
     if (supportedLibrariesArr && supportedLibrariesArr.length > 0) {
         return copyAndFilterLibraries(allLibs, supportedLibrariesArr);
     }

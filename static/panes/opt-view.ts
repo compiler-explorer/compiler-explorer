@@ -38,14 +38,6 @@ import {Hub} from '../hub.js';
 import {extendConfig} from '../monaco-config.js';
 import {Toggles} from '../widgets/toggles.js';
 
-type OptClass = 'None' | 'Missed' | 'Passed' | 'Analysis';
-
-type OptviewLine = {
-    text: string;
-    srcLine: number;
-    optClass: OptClass;
-};
-
 export class Opt extends MonacoPane<monaco.editor.IStandaloneCodeEditor, OptState> {
     // Note: bool | undef here instead of just bool because of an issue with field initialization order
     private isCompilerSupported?: boolean;
@@ -54,13 +46,14 @@ export class Opt extends MonacoPane<monaco.editor.IStandaloneCodeEditor, OptStat
     private wrapButton: JQuery<HTMLElement>;
     private wrapTitle: JQuery<HTMLElement>;
 
-    // Keep optRemarks as state, to avoid triggerring a recompile when options change
+    // Keep optRemarks as state, to avoid triggering a recompile when options change
     private optRemarks: OptRemark[];
-    private srcAsOptview: OptviewLine[];
+    private optRemarkViewZoneIds: string[];
 
     constructor(hub: Hub, container: Container, state: OptState & MonacoPaneState) {
         super(hub, container, state);
         this.optRemarks = state.optOutput ?? [];
+        this.optRemarkViewZoneIds = [];
         this.eventHub.emit('optViewOpened', this.compilerInfo.compilerId);
     }
 
@@ -124,29 +117,19 @@ export class Opt extends MonacoPane<monaco.editor.IStandaloneCodeEditor, OptStat
         this.editor.onDidChangeCursorSelection(e => {
             cursorSelectionThrottledFunction(e);
         });
+
+        this.editor.onDidLayoutChange(({contentWidth}) => {
+            this.showOptRemarks(contentWidth);
+        });
     }
 
     override onCompileResult(id: number, compiler: CompilerInfo, result: CompilationResult) {
         if (this.compilerInfo.compilerId !== id || !this.isCompilerSupported) return;
 
-        const splitLines = (text: string): string[] => {
-            if (!text) return [];
-            const result = text.split(/\r?\n/);
-            if (result.length > 0 && result[result.length - 1] === '') return result.slice(0, -1);
-            return result;
-        };
-        const srcLines: string[] = result.source ? splitLines(result.source) : [];
-        this.srcAsOptview = [];
-
-        for (const i in srcLines) {
-            this.srcAsOptview.push({text: srcLines[i], srcLine: Number(i), optClass: 'None'});
-        }
-
         this.editor.setValue(unwrap(result.source));
-        if (result.optOutput) {
-            this.optRemarks = result.optOutput;
-            this.showOptRemarks();
-        }
+        this.optRemarks = result.optOutput ?? [];
+        this.showOptRemarks();
+
         // TODO: This is inelegant again. Previously took advantage of fourth argument for the compileResult event.
         const lang = compiler.lang === 'c++' ? 'cpp' : compiler.lang;
         const model = this.editor.getModel();
@@ -172,7 +155,7 @@ export class Opt extends MonacoPane<monaco.editor.IStandaloneCodeEditor, OptStat
         return 'Opt Viewer';
     }
 
-    showOptRemarks() {
+    showOptRemarks(width?: number) {
         const filters = this.filters.get();
         const includeMissed: boolean = filters['filter-missed'];
         const includePassed: boolean = filters['filter-passed'];
@@ -186,41 +169,32 @@ export class Opt extends MonacoPane<monaco.editor.IStandaloneCodeEditor, OptStat
                     (rem.optType === 'Analysis' && includeAnalysis))
             );
         });
-        const groupedRemarks = _(remarksToDisplay).groupBy(x => x.DebugLoc.Line);
 
-        const resLines = [...this.srcAsOptview];
-        for (const [key, value] of Object.entries(groupedRemarks)) {
-            const origLineNum = Number(key);
-            const curLineNum = resLines.findIndex(line => line.srcLine === origLineNum);
-            const contents = value.map(rem => ({
-                text: rem.displayString,
-                srcLine: -1,
-                optClass: rem.optType,
-            }));
-            resLines.splice(curLineNum, 0, ...contents);
-        }
+        this.editor?.changeViewZones(accessor => {
+            const maxWidth = width ?? this.editor.getLayoutInfo().contentWidth;
+            this.optRemarkViewZoneIds.forEach(id => accessor.removeZone(id));
+            this.optRemarkViewZoneIds = remarksToDisplay.map(({displayString, optType, DebugLoc}) => {
+                const domNode = document.createElement('div');
+                domNode.classList.add('view-line', 'opt-line', optType.toLowerCase());
+                this.editor.applyFontInfo(domNode);
+                domNode.innerText = displayString;
 
-        const newText: string = resLines.reduce((accText, curSrcLine) => {
-            return accText + (curSrcLine.optClass === 'None' ? curSrcLine.text : '  ') + '\n';
-        }, '');
-        this.editor.setValue(newText);
+                // let the browser calculate the height that the text needs
+                domNode.style.visibility = 'hidden';
+                domNode.style.maxWidth = `${maxWidth}px`;
+                document.body.appendChild(domNode);
+                const heightInPx = domNode.clientHeight;
+                document.body.removeChild(domNode);
+                domNode.style.removeProperty('visibility');
+                domNode.style.removeProperty('max-width');
 
-        const optDecorations: monaco.editor.IModelDeltaDecoration[] = [];
-        resLines.forEach((line, lineNum) => {
-            if (line.optClass !== 'None') {
-                optDecorations.push({
-                    range: new monaco.Range(lineNum + 1, 1, lineNum + 1, Number.POSITIVE_INFINITY),
-                    options: {
-                        isWholeLine: true,
-                        after: {
-                            content: line.text,
-                        },
-                        inlineClassName: 'opt-line.' + line.optClass.toLowerCase(),
-                    },
+                return accessor.addZone({
+                    domNode,
+                    heightInPx,
+                    afterLineNumber: DebugLoc.Line === 0 ? 0 : DebugLoc.Line - 1,
                 });
-            }
+            });
         });
-        this.editorDecorations.set(optDecorations);
     }
 
     override onCompiler(id: number, compiler: CompilerInfo | null, options: string, editorId: number, treeId: number) {
@@ -230,6 +204,8 @@ export class Opt extends MonacoPane<monaco.editor.IStandaloneCodeEditor, OptStat
             this.isCompilerSupported = compiler ? compiler.supportsOptOutput : false;
             if (!this.isCompilerSupported) {
                 this.editor.setValue('<OPT remarks are not supported for this compiler>');
+                this.optRemarks = [];
+                this.showOptRemarks();
             }
         }
     }

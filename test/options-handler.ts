@@ -37,6 +37,9 @@ import {BaseTool} from '../lib/tooling/base-tool.js';
 import {CompilerInfo} from '../types/compiler.interfaces.js';
 import {LanguageKey} from '../types/languages.interfaces.js';
 
+import {getRemoteId} from '../shared/remote-utils.js';
+import {UrlTestCases} from '../shared/url-testcases.js';
+
 import {makeFakeCompilerInfo} from './utils.js';
 
 const languages = {
@@ -592,5 +595,14 @@ describe('Options handler', () => {
         const librariesUrl = ClientOptionsHandler.getRemoteUrlForLibraries(fullUrl, 'c++');
 
         expect(librariesUrl).toEqual('https://godbolt.org:443/gpu/api/libraries/c++');
+    });
+
+    describe('getRemoteId', () => {
+        UrlTestCases.forEach(testCase => {
+            it(`should generate remote ID for URL "${testCase.remoteUrl}" with language "${testCase.language}"`, () => {
+                const result = getRemoteId(testCase.remoteUrl, testCase.language);
+                expect(result).toBe(testCase.expectedId);
+            });
+        });
     });
 });
