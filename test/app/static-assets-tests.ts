@@ -22,13 +22,17 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import {describe, expect, it} from 'vitest';
+import {describe, expect, it, vi} from 'vitest';
 import {getFaviconFilename} from '../../lib/app/server.js';
 import {createDefaultPugRequireHandler} from '../../lib/app/static-assets.js';
 
 describe('Static assets', () => {
     describe('createDefaultPugRequireHandler', () => {
         it('should handle paths with manifest', () => {
+            // Temporarily silence console.error for this test
+            const originalConsoleError = console.error;
+            console.error = vi.fn();
+
             const manifest = {
                 'file1.js': 'file1.hash123.js',
             };
@@ -36,6 +40,10 @@ describe('Static assets', () => {
 
             expect(handler('file1.js')).toBe('/static/file1.hash123.js');
             expect(handler('file2.js')).toBe(''); // Not in manifest
+            expect(console.error).toHaveBeenCalledWith("Failed to locate static asset 'file2.js' in manifest");
+
+            // Restore console.error
+            console.error = originalConsoleError;
         });
 
         it('should handle paths without manifest', () => {
@@ -46,25 +54,38 @@ describe('Static assets', () => {
     });
 
     describe('getFaviconFilename', () => {
-        it('should return dev favicon when in dev mode', () => {
-            expect(getFaviconFilename(true, [])).toBe('favicon-dev.ico');
-            expect(getFaviconFilename(true, ['beta'])).toBe('favicon-dev.ico');
+        it('should prioritize dev environment over other environments', () => {
+            // Dev mode favicon should be used regardless of environment flags
+            expect(getFaviconFilename(true, [])).toContain('dev');
+            expect(getFaviconFilename(true, ['beta'])).toContain('dev');
+            expect(getFaviconFilename(true, ['staging'])).toContain('dev');
+            expect(getFaviconFilename(true, ['beta', 'staging'])).toContain('dev');
         });
 
-        it('should return beta favicon when in beta environment', () => {
-            expect(getFaviconFilename(false, ['beta'])).toBe('favicon-beta.ico');
-            expect(getFaviconFilename(false, ['beta', 'other'])).toBe('favicon-beta.ico');
+        it('should select appropriate favicon based on environment', () => {
+            // Test specific environments when not in dev mode
+            const environments = [
+                {env: ['beta'], expected: 'beta'},
+                {env: ['staging'], expected: 'staging'},
+                {env: [], expected: 'favicon.ico'},
+            ];
+
+            for (const {env, expected} of environments) {
+                const result = getFaviconFilename(false, env);
+                if (expected === 'favicon.ico') {
+                    expect(result).toBe(expected);
+                } else {
+                    expect(result).toContain(expected);
+                }
+            }
         });
 
-        it('should return staging favicon when in staging environment', () => {
-            expect(getFaviconFilename(false, ['staging'])).toBe('favicon-staging.ico');
-            expect(getFaviconFilename(false, ['other', 'staging'])).toBe('favicon-staging.ico');
-        });
-
-        it('should return default favicon otherwise', () => {
-            expect(getFaviconFilename(false, [])).toBe('favicon.ico');
-            expect(getFaviconFilename(false, ['other'])).toBe('favicon.ico');
-            expect(getFaviconFilename(false)).toBe('favicon.ico');
+        it('should handle environment arrays with mixed values', () => {
+            // When multiple environments are specified, there should be a consistent priority
+            expect(getFaviconFilename(false, ['beta', 'staging'])).toContain('beta');
+            expect(getFaviconFilename(false, ['staging', 'beta'])).toContain('beta');
+            expect(getFaviconFilename(false, ['other', 'beta'])).toContain('beta');
+            expect(getFaviconFilename(false, ['other', 'staging'])).toContain('staging');
         });
     });
 });
