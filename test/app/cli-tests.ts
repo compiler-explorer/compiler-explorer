@@ -45,25 +45,12 @@ describe('CLI Module', () => {
             expect(parsePortNumberForOptions('65535')).toEqual(65535);
         });
 
-        it('should throw on negative numbers', () => {
-            expect(() => parsePortNumberForOptions('-1')).toThrow();
-        });
-
-        it('should throw on invalid numbers', () => {
-            expect(() => parsePortNumberForOptions('65536')).toThrow();
-        });
-
-        it('should throw on invalid number - abc', () => {
-            expect(() => parsePortNumberForOptions('abc')).toThrow();
-        });
-
-        it('should throw on invalid number - 123abc', () => {
-            expect(() => parsePortNumberForOptions('123abc')).toThrow();
-        });
-
-        it('should throw on empty string', () => {
-            expect(() => parsePortNumberForOptions('')).toThrow();
-        });
+        it.each(['-1', '65536', 'abc', '123abc', '', '123.45', '12.34.56', '12-34-56', '12,34,56'])(
+            'should throw on bad numbers: "%s"',
+            notNumber => {
+                expect(() => parsePortNumberForOptions(notNumber)).toThrow();
+            },
+        );
     });
 
     describe('getGitReleaseName', () => {

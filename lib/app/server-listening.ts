@@ -36,7 +36,7 @@ import {logger} from '../logger.js';
  * @param appArgs - Application arguments
  */
 export function startListening(webServer: express.Express, appArgs: AppArguments): void {
-    const ss: {fd: number} | null = systemdSocket(); // TODO: I'm not sure this works any more
+    const ss: {fd: number} | null = systemdSocket();
     if (ss) {
         setupSystemdSocketListening(webServer, ss);
     } else {
