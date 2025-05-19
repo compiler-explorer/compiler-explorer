@@ -25,6 +25,7 @@
 import fs from 'node:fs/promises';
 import process from 'node:process';
 
+import {CompilerInfo} from '../../types/compiler.interfaces.js';
 import {AppArguments} from '../app.interfaces.js';
 import {CompilerFinder} from '../compiler-finder.js';
 import {logger} from '../logger.js';
@@ -40,8 +41,8 @@ export async function discoverCompilers(
     appArgs: AppArguments,
     compilerFinder: CompilerFinder,
     isExecutionWorker: boolean,
-) {
-    let compilers;
+): Promise<CompilerInfo[]> {
+    let compilers: CompilerInfo[];
     if (appArgs.prediscovered) {
         compilers = await loadPrediscoveredCompilers(appArgs.prediscovered, compilerFinder);
     } else {
@@ -62,9 +63,12 @@ export async function discoverCompilers(
  * @param compilerFinder - Compiler finder instance
  * @returns Array of loaded compilers
  */
-export async function loadPrediscoveredCompilers(filename: string, compilerFinder: CompilerFinder) {
+export async function loadPrediscoveredCompilers(
+    filename: string,
+    compilerFinder: CompilerFinder,
+): Promise<CompilerInfo[]> {
     const prediscoveredCompilersJson = await fs.readFile(filename, 'utf8');
-    const initialCompilers = JSON.parse(prediscoveredCompilersJson);
+    const initialCompilers = JSON.parse(prediscoveredCompilersJson) as CompilerInfo[];
     const prediscResult = await compilerFinder.loadPrediscovered(initialCompilers);
     if (prediscResult.length === 0) {
         throw new Error('Unexpected failure, no compilers found!');

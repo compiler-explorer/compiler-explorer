@@ -22,11 +22,14 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
+import {CompilerInfo} from '../../types/compiler.interfaces.js';
+import type {Language, LanguageKey} from '../../types/languages.interfaces.js';
 import type {AppArguments} from '../app.interfaces.js';
 import {unwrap} from '../assert.js';
 import {CompilerFinder} from '../compiler-finder.js';
 import {RouteAPI} from '../handlers/route-api.js';
 import {logger} from '../logger.js';
+import {ClientOptionsHandler} from '../options-handler.js';
 import {PropertyGetter} from '../properties.interfaces.js';
 
 /**
@@ -40,10 +43,10 @@ import {PropertyGetter} from '../properties.interfaces.js';
  * @param appArgs - Application arguments
  */
 export async function setupCompilerChangeHandling(
-    initialCompilers: any,
-    clientOptionsHandler: any,
+    initialCompilers: CompilerInfo[],
+    clientOptionsHandler: ClientOptionsHandler,
     routeApi: RouteAPI,
-    languages: any,
+    languages: Record<LanguageKey, Language>,
     ceProps: PropertyGetter,
     compilerFinder: CompilerFinder,
     appArgs: AppArguments,
@@ -54,7 +57,7 @@ export async function setupCompilerChangeHandling(
      * Handle compiler change events
      * @param compilers - New set of compilers
      */
-    async function onCompilerChange(compilers) {
+    async function onCompilerChange(compilers: CompilerInfo[]) {
         const compilersAsJson = JSON.stringify(compilers);
         if (prevCompilers === compilersAsJson) {
             return;
