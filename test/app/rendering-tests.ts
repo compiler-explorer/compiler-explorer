@@ -22,7 +22,7 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import type {Request, Response} from 'express';
+import type {NextFunction, Request, Response} from 'express';
 import {afterEach, beforeEach, describe, expect, it, vi} from 'vitest';
 
 import {createRenderHandlers} from '../../lib/app/rendering.js';
@@ -216,7 +216,9 @@ describe('Rendering Module', () => {
                 render: vi.fn(),
             } as unknown as Response;
 
-            embeddedHandler(mockReq, mockRes);
+            const mockNext = vi.fn() as unknown as NextFunction;
+
+            embeddedHandler(mockReq, mockRes, mockNext);
 
             expect(mockRes.render).toHaveBeenCalledWith('embed', expect.any(Object));
 

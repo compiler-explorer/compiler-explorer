@@ -22,7 +22,7 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import type {Request, Response} from 'express';
+import express, {Request, Response} from 'express';
 import _ from 'underscore';
 
 import {GoldenLayoutRootStruct} from '../clientstate-normalizer.js';
@@ -33,6 +33,7 @@ import {
     PugRequireHandler,
     RenderConfig,
     RenderConfigFunction,
+    RenderGoldenLayoutHandler,
     ServerDependencies,
     ServerOptions,
 } from './server.interfaces.js';
@@ -51,13 +52,8 @@ export function createRenderHandlers(
     dependencies: ServerDependencies,
 ): {
     renderConfig: RenderConfigFunction;
-    renderGoldenLayout: (
-        config: GoldenLayoutRootStruct,
-        metadata: ShortLinkMetaData,
-        req: Request,
-        res: Response,
-    ) => void;
-    embeddedHandler: (req: Request, res: Response) => void;
+    renderGoldenLayout: RenderGoldenLayoutHandler;
+    embeddedHandler: express.Handler;
 } {
     const {clientOptionsHandler, storageSolution, sponsorConfig} = dependencies;
     const {httpRoot, staticRoot, extraBodyClass} = options;
