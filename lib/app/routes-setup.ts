@@ -26,13 +26,13 @@ import type {Router} from 'express';
 import type {AppArguments} from '../app.interfaces.js';
 import {CompilationEnvironment} from '../compilation-env.js';
 import {CompileHandler} from '../handlers/compile.js';
-import type {RenderConfig, RenderGoldenLayout} from '../handlers/handler.interfaces.js';
 import {NoScriptHandler} from '../handlers/noscript.js';
 import {RouteAPI} from '../handlers/route-api.js';
 import {ClientOptionsHandler} from '../options-handler.js';
 import {PropertyGetter} from '../properties.interfaces.js';
 import {StorageBase} from '../storage/index.js';
 import type {ApiControllers} from './controllers.js';
+import {RenderConfigFunction, RenderGoldenLayoutHandler} from './server.interfaces.js';
 
 /**
  * Set up routes and API endpoints for the application
@@ -52,8 +52,8 @@ export function setupRoutesAndApi(
     router: Router,
     controllers: ApiControllers,
     clientOptionsHandler: ClientOptionsHandler,
-    renderConfig: RenderConfig,
-    renderGoldenLayout: RenderGoldenLayout,
+    renderConfig: RenderConfigFunction,
+    renderGoldenLayout: RenderGoldenLayoutHandler,
     storageHandler: StorageBase,
     appArgs: AppArguments,
     compileHandler: CompileHandler,

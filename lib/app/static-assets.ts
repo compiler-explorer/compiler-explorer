@@ -47,7 +47,7 @@ export function createDefaultPugRequireHandler(
             return `${staticRoot}/${manifest[path]}`;
         }
         if (manifest) {
-            console.error(`Failed to locate static asset '${path}' in manifest`);
+            logger.error(`Failed to locate static asset '${path}' in manifest`);
             return '';
         }
         return `${staticRoot}/${path}`;
