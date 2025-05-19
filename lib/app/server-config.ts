@@ -35,7 +35,7 @@ import {PropertyGetter} from '../properties.interfaces.js';
 import * as utils from '../utils.js';
 import {ServerOptions} from './server.interfaces.js';
 import {RenderConfigFunction} from './server.interfaces.js';
-import {OldGoogleUrlHandler} from './url-handlers.js';
+import {OldGoogleUrlHandler, isMobileViewer} from './url-handlers.js';
 
 /**
  * Setup base server configuration
@@ -222,13 +222,6 @@ export function setupBasicRoutes(
         })
         .use(express.json({limit: ceProps('bodyParserLimit', options.maxUploadSize)}))
         .get('/g/:id', oldGoogleUrlHandler.handle.bind(oldGoogleUrlHandler));
-}
-
-/**
- * Detects if the request is from a mobile viewer
- */
-function isMobileViewer(req: Request): boolean {
-    return req.header('CloudFront-Is-Mobile-Viewer') === 'true';
 }
 
 /**

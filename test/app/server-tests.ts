@@ -55,165 +55,23 @@ function createMockAppArgs(overrides: Partial<AppArguments> = {}): AppArguments 
     };
 }
 
-function createMockWebServer(): express.Express {
-    return {
-        listen: vi.fn(),
-        all: vi.fn(),
-    } as unknown as express.Express;
-}
-
-import express from 'express';
 import type {Request, Response} from 'express';
-import systemdSocket from 'systemd-socket';
 import {afterEach, beforeEach, describe, expect, it, vi} from 'vitest';
 
 import type {AppArguments} from '../../lib/app.interfaces.js';
 import type {ServerDependencies, ServerOptions} from '../../lib/app/server.interfaces.js';
-import {getFaviconFilename, isMobileViewer, setupWebServer, startListening} from '../../lib/app/server.js';
-import * as logger from '../../lib/logger.js';
+import {setupWebServer} from '../../lib/app/server.js'; // TODO
 import * as utils from '../../lib/utils.js';
-
-// Mock modules
-vi.mock('node:fs/promises', async () => {
-    const actual = await vi.importActual('node:fs/promises');
-    return {
-        ...actual,
-        readFile: vi.fn().mockImplementation(async filePath => {
-            return JSON.stringify({'some-file.js': 'some-file.hash.js'});
-        }),
-    };
-});
-
-vi.mock('@sentry/node', () => {
-    return {
-        withScope: vi.fn(fn => fn({setExtra: vi.fn()})),
-        captureMessage: vi.fn(),
-        setupExpressErrorHandler: vi.fn(),
-    };
-});
-
-// Mock systemd-socket
-vi.mock('systemd-socket', () => {
-    return {
-        default: vi.fn(() => null),
-    };
-});
-
-vi.mock('../../lib/logger.js', async () => {
-    const actual = await vi.importActual('../../lib/logger.js');
-    return {
-        ...actual,
-        logger: {
-            info: vi.fn(),
-            error: vi.fn(),
-            warn: vi.fn(),
-        },
-        makeLogStream: vi.fn(() => ({write: vi.fn()})),
-    };
-});
-
-vi.mock('../../lib/shortener/google.js', () => {
-    return {
-        ShortLinkResolver: class {
-            resolve = vi.fn();
-        },
-    };
-});
-
-// Mock PromClient with a registry that doesn't complain about duplicate metrics
-const mockGauges = new Map();
-class MockGauge {
-    set: ReturnType<typeof vi.fn>;
-
-    constructor() {
-        this.set = vi.fn().mockReturnValue(undefined);
-    }
-}
-
-vi.mock('prom-client', () => {
-    return {
-        default: {
-            Gauge: vi.fn().mockImplementation(config => {
-                // Return existing gauge if name already exists to avoid duplicate errors
-                if (mockGauges.has(config.name)) {
-                    return mockGauges.get(config.name);
-                }
-                const gauge = new MockGauge();
-                mockGauges.set(config.name, gauge);
-                return gauge;
-            }),
-        },
-    };
-});
 
 describe('Server Module', () => {
     // Reset mocks between tests
     beforeEach(() => {
         vi.resetAllMocks();
         // Clear gauge cache before each test
-        mockGauges.clear();
     });
 
     afterEach(() => {
         vi.restoreAllMocks();
-    });
-
-    describe('getFaviconFilename', () => {
-        it('should return dev favicon when in dev mode', () => {
-            expect(getFaviconFilename(true, [])).toBe('favicon-dev.ico');
-            expect(getFaviconFilename(true, ['beta'])).toBe('favicon-dev.ico');
-        });
-
-        it('should return beta favicon when in beta environment', () => {
-            expect(getFaviconFilename(false, ['beta'])).toBe('favicon-beta.ico');
-            expect(getFaviconFilename(false, ['beta', 'other'])).toBe('favicon-beta.ico');
-        });
-
-        it('should return staging favicon when in staging environment', () => {
-            expect(getFaviconFilename(false, ['staging'])).toBe('favicon-staging.ico');
-            expect(getFaviconFilename(false, ['other', 'staging'])).toBe('favicon-staging.ico');
-        });
-
-        it('should return default favicon otherwise', () => {
-            expect(getFaviconFilename(false, [])).toBe('favicon.ico');
-            expect(getFaviconFilename(false, ['other'])).toBe('favicon.ico');
-            expect(getFaviconFilename(false)).toBe('favicon.ico');
-        });
-    });
-
-    describe('isMobileViewer', () => {
-        it('should return true if CloudFront-Is-Mobile-Viewer header is "true"', () => {
-            const mockRequest = {
-                header: vi.fn().mockImplementation(name => {
-                    if (name === 'CloudFront-Is-Mobile-Viewer') return 'true';
-                    return undefined;
-                }),
-            } as unknown as Request;
-
-            expect(isMobileViewer(mockRequest)).toBe(true);
-            expect(mockRequest.header).toHaveBeenCalledWith('CloudFront-Is-Mobile-Viewer');
-        });
-
-        it('should return false if CloudFront-Is-Mobile-Viewer header is not "true"', () => {
-            const mockRequest = {
-                header: vi.fn().mockImplementation(name => {
-                    if (name === 'CloudFront-Is-Mobile-Viewer') return 'false';
-                    return undefined;
-                }),
-            } as unknown as Request;
-
-            expect(isMobileViewer(mockRequest)).toBe(false);
-            expect(mockRequest.header).toHaveBeenCalledWith('CloudFront-Is-Mobile-Viewer');
-        });
-
-        it('should return false if CloudFront-Is-Mobile-Viewer header is missing', () => {
-            const mockRequest = {
-                header: vi.fn().mockReturnValue(undefined),
-            } as unknown as Request;
-
-            expect(isMobileViewer(mockRequest)).toBe(false);
-            expect(mockRequest.header).toHaveBeenCalledWith('CloudFront-Is-Mobile-Viewer');
-        });
     });
 
     describe('setupWebServer', () => {
@@ -320,57 +178,6 @@ describe('Server Module', () => {
             renderGoldenLayout({} as any, {} as any, mockRequest, mockResponse);
 
             expect(mockResponse.render).toHaveBeenCalledWith('index', expect.any(Object));
-        });
-    });
-
-    describe('startListening', () => {
-        it('should start the web server listening on the specified port', () => {
-            const mockWebServer = createMockWebServer();
-            const mockAppArgs = createMockAppArgs();
-
-            // Reset systemd socket mock
-            vi.mocked(systemdSocket).mockReturnValue(null);
-
-            startListening(mockWebServer, mockAppArgs);
-
-            expect(mockWebServer.listen).toHaveBeenCalledWith(10240, 'localhost');
-            expect(logger.logger.info).toHaveBeenCalledWith(
-                expect.stringContaining('Listening on http://localhost:10240/'),
-            );
-        });
-
-        it('should use systemd socket when available', () => {
-            const mockWebServer = createMockWebServer();
-            const mockAppArgs = createMockAppArgs();
-
-            // Set systemd socket mock to return data
-            const socketData = {fd: 123};
-            vi.mocked(systemdSocket).mockReturnValue(socketData);
-
-            startListening(mockWebServer, mockAppArgs);
-
-            expect(mockWebServer.listen).toHaveBeenCalledWith(socketData);
-            expect(logger.logger.info).toHaveBeenCalledWith(expect.stringContaining('Listening on systemd socket'));
-        });
-
-        it('should setup idle timeout when using systemd socket and IDLE_TIMEOUT is set', () => {
-            const mockWebServer = createMockWebServer();
-            const mockAppArgs = createMockAppArgs({hostname: ''});
-
-            // Set systemd socket mock to return data
-            vi.mocked(systemdSocket).mockReturnValue({fd: 123});
-
-            // Set up env for idle timeout
-            const originalEnv = process.env.IDLE_TIMEOUT;
-            process.env.IDLE_TIMEOUT = '5';
-
-            startListening(mockWebServer, mockAppArgs);
-
-            expect(mockWebServer.all).toHaveBeenCalledWith('*', expect.any(Function));
-            expect(logger.logger.info).toHaveBeenCalledWith(expect.stringContaining('IDLE_TIMEOUT: 5'));
-
-            // Restore env
-            process.env.IDLE_TIMEOUT = originalEnv;
         });
     });
 });

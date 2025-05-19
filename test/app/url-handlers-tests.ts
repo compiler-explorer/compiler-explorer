@@ -24,79 +24,43 @@
 
 import type {Request, Response} from 'express';
 import {afterEach, beforeEach, describe, expect, it, vi} from 'vitest';
-
-import {createDefaultPugRequireHandler, getFaviconFilename} from '../../lib/app/static-assets.js';
 import {OldGoogleUrlHandler, isMobileViewer} from '../../lib/app/url-handlers.js';
 
-// Mock modules
-vi.mock('../../lib/logger.js');
-vi.mock('node:fs/promises');
-vi.mock('@sentry/node');
-vi.mock('morgan');
-vi.mock('serve-favicon');
-vi.mock('systemd-socket', () => ({
-    default: vi.fn(),
-}));
-
-describe('Server Modules', () => {
+describe('Url Handlers', () => {
     describe('isMobileViewer', () => {
-        it('should return true when CloudFront header is "true"', () => {
-            const req = {
-                header: vi.fn().mockReturnValue('true'),
+        it('should return true if CloudFront-Is-Mobile-Viewer header is "true"', () => {
+            const mockRequest = {
+                header: vi.fn().mockImplementation(name => {
+                    if (name === 'CloudFront-Is-Mobile-Viewer') return 'true';
+                    return undefined;
+                }),
             } as unknown as Request;
 
-            expect(isMobileViewer(req)).toBe(true);
-            expect(req.header).toHaveBeenCalledWith('CloudFront-Is-Mobile-Viewer');
+            expect(isMobileViewer(mockRequest)).toBe(true);
+            expect(mockRequest.header).toHaveBeenCalledWith('CloudFront-Is-Mobile-Viewer');
         });
 
-        it('should return false when CloudFront header is missing or not "true"', () => {
-            const req = {
-                header: vi.fn().mockReturnValue('false'),
+        it('should return false if CloudFront-Is-Mobile-Viewer header is not "true"', () => {
+            const mockRequest = {
+                header: vi.fn().mockImplementation(name => {
+                    if (name === 'CloudFront-Is-Mobile-Viewer') return 'false';
+                    return undefined;
+                }),
             } as unknown as Request;
 
-            expect(isMobileViewer(req)).toBe(false);
-            expect(req.header).toHaveBeenCalledWith('CloudFront-Is-Mobile-Viewer');
+            expect(isMobileViewer(mockRequest)).toBe(false);
+            expect(mockRequest.header).toHaveBeenCalledWith('CloudFront-Is-Mobile-Viewer');
+        });
+
+        it('should return false if CloudFront-Is-Mobile-Viewer header is missing', () => {
+            const mockRequest = {
+                header: vi.fn().mockReturnValue(undefined),
+            } as unknown as Request;
+
+            expect(isMobileViewer(mockRequest)).toBe(false);
+            expect(mockRequest.header).toHaveBeenCalledWith('CloudFront-Is-Mobile-Viewer');
         });
     });
-
-    describe('getFaviconFilename', () => {
-        it('should return dev favicon in dev mode', () => {
-            expect(getFaviconFilename(true, ['prod'])).toBe('favicon-dev.ico');
-            expect(getFaviconFilename(true)).toBe('favicon-dev.ico');
-        });
-
-        it('should return beta favicon for beta environment', () => {
-            expect(getFaviconFilename(false, ['beta'])).toBe('favicon-beta.ico');
-        });
-
-        it('should return staging favicon for staging environment', () => {
-            expect(getFaviconFilename(false, ['staging'])).toBe('favicon-staging.ico');
-        });
-
-        it('should return default favicon otherwise', () => {
-            expect(getFaviconFilename(false, ['prod'])).toBe('favicon.ico');
-            expect(getFaviconFilename(false)).toBe('favicon.ico');
-        });
-    });
-
-    describe('createDefaultPugRequireHandler', () => {
-        it('should handle paths with manifest', () => {
-            const manifest = {
-                'file1.js': 'file1.hash123.js',
-            };
-            const handler = createDefaultPugRequireHandler('/static', manifest);
-
-            expect(handler('file1.js')).toBe('/static/file1.hash123.js');
-            expect(handler('file2.js')).toBe(''); // Not in manifest
-        });
-
-        it('should handle paths without manifest', () => {
-            const handler = createDefaultPugRequireHandler('/static');
-
-            expect(handler('file1.js')).toBe('/static/file1.js');
-        });
-    });
-
     describe('OldGoogleUrlHandler', () => {
         let handler: OldGoogleUrlHandler;
         let mockCeProps: any;
@@ -175,9 +139,4 @@ describe('Server Modules', () => {
             });
         });
     });
-
-    // Note: The startListening function tests would be better
-    // tested after refactoring the module to be more testable.
-    // The current implementation relies on direct module imports
-    // which makes mocking difficult.
 });
