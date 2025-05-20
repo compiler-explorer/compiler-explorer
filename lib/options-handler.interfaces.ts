@@ -22,27 +22,22 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import type {LoggingOptions} from './logger.js';
+/**
+ * Interface for accessing client options
+ */
+export interface ClientOptionsSource {
+    /**
+     * Get all client options as an object
+     */
+    get(): Record<string, any>;
 
-export type AppArguments = {
-    rootDir: string;
-    env: string[];
-    hostname?: string;
-    port: number;
-    gitReleaseName: string;
-    releaseBuildNumber: string;
-    wantedLanguages: string[] | undefined;
-    doCache: boolean;
-    fetchCompilersFromRemote: boolean;
-    ensureNoCompilerClash: boolean | undefined;
-    prediscovered?: string;
-    discoveryOnly?: string;
-    staticPath?: string;
-    metricsPort?: number;
-    useLocalProps: boolean;
-    propDebug: boolean;
-    tmpDir?: string;
-    loggingOptions: LoggingOptions;
-    isWsl: boolean;
-    devMode: boolean;
-};
+    /**
+     * Get a hash representing the current state of the options
+     */
+    getHash(): string;
+
+    /**
+     * Get all client options as a JSON string
+     */
+    getJSON(): string;
+}
