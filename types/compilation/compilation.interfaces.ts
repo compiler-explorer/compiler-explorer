@@ -280,6 +280,8 @@ export type CompilationInfo = CacheKey &
         asmParser: IAsmParser;
         inputFilename?: string;
         dirPath?: string;
+        preparedLdPaths?: string[];
+        execOptions?: ExecutionOptions;
     };
 
 export type CompilationCacheKey = {

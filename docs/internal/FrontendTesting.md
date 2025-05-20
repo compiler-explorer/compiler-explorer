@@ -1,7 +1,7 @@
 # Frontend testing
 
 We have a mixture of typescript in the main website's code (located in `static/tests`) and Cypress (located in
-`cypress/integration`) to test and report on the workings of that code.
+`cypress/e2e`) to test and report on the workings of that code.
 
 But there's always the possibility to use Cypress code to do UI checks and testing.
 

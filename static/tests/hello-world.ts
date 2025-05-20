@@ -29,7 +29,7 @@ class HelloWorldTests implements ITestable {
 
     public async run() {
         const person = true;
-        person.should.be.true;
+        if (!person) throw new Error('HelloWorldTests failed');
     }
 }
 
