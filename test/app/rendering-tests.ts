@@ -186,7 +186,12 @@ describe('Rendering Module', () => {
                 render: vi.fn(),
             } as unknown as Response;
 
-            renderGoldenLayout(mockConfig as any, mockMetadata as any, mockReq1, mockRes1);
+            renderGoldenLayout(
+                mockConfig as Record<string, unknown>,
+                mockMetadata as Record<string, unknown>,
+                mockReq1,
+                mockRes1,
+            );
             expect(mockRes1.render).toHaveBeenCalledWith('index', expect.any(Object));
 
             // Embedded request
@@ -200,7 +205,12 @@ describe('Rendering Module', () => {
                 render: vi.fn(),
             } as unknown as Response;
 
-            renderGoldenLayout(mockConfig as any, mockMetadata as any, mockReq2, mockRes2);
+            renderGoldenLayout(
+                mockConfig as Record<string, unknown>,
+                mockMetadata as Record<string, unknown>,
+                mockReq2,
+                mockRes2,
+            );
             expect(mockRes2.render).toHaveBeenCalledWith('embed', expect.any(Object));
         });
 

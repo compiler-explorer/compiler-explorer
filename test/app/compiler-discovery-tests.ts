@@ -51,9 +51,9 @@ describe('compiler-discovery module', () => {
     ];
 
     beforeEach(() => {
-        vi.spyOn(logger, 'info').mockImplementation(() => logger as any);
-        vi.spyOn(logger, 'warn').mockImplementation(() => logger as any);
-        vi.spyOn(logger, 'debug').mockImplementation(() => logger as any);
+        vi.spyOn(logger, 'info').mockImplementation(() => logger);
+        vi.spyOn(logger, 'warn').mockImplementation(() => logger);
+        vi.spyOn(logger, 'debug').mockImplementation(() => logger);
         vi.spyOn(process, 'exit').mockImplementation(() => undefined as never);
     });
 

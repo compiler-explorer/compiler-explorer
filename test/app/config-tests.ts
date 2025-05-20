@@ -131,11 +131,11 @@ describe('Config Module', () => {
     describe('createPropertyHierarchy', () => {
         let originalPlatform: string;
         let platformMock: string;
-        let hostnameBackup: any;
+        let hostnameBackup: typeof os.hostname;
 
         beforeEach(() => {
-            vi.spyOn(logger.logger, 'info').mockImplementation(() => logger.logger as any);
-            vi.spyOn(logger.logger, 'error').mockImplementation(() => logger.logger as any);
+            vi.spyOn(logger.logger, 'info').mockImplementation(() => logger.logger);
+            vi.spyOn(logger.logger, 'error').mockImplementation(() => logger.logger);
             originalPlatform = process.platform;
             platformMock = 'linux';
             Object.defineProperty(process, 'platform', {

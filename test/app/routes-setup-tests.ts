@@ -56,19 +56,26 @@ vi.mock('../../lib/logger.js', async () => {
     };
 });
 
+import type {RenderConfigFunction, RenderGoldenLayoutHandler} from '../../lib/app/server.interfaces.js';
 // Skip testing the actual implementation which would require many difficult mocks
 // Instead just test the general structure of what the function does
+import type {CompilationEnvironment} from '../../lib/compilation-env.js';
+import type {CompileHandler} from '../../lib/handlers/compile.js';
+import type {ClientOptionsSource} from '../../lib/options-handler.interfaces.js';
+import type {PropertyGetter} from '../../lib/properties.interfaces.js';
+import type {StorageBase} from '../../lib/storage/base.js';
+
 function setupRoutesAndApiTest(
     router: Router,
     controllers: MockControllers,
-    clientOptionsHandler: any,
-    renderConfig: any,
-    renderGoldenLayout: any,
-    storageHandler: any,
+    clientOptionsHandler: ClientOptionsSource,
+    renderConfig: RenderConfigFunction,
+    renderGoldenLayout: RenderGoldenLayoutHandler,
+    storageHandler: StorageBase,
     appArgs: AppArguments,
-    compileHandler: any,
-    compilationEnvironment: any,
-    ceProps: any,
+    compileHandler: CompileHandler,
+    compilationEnvironment: CompilationEnvironment,
+    ceProps: PropertyGetter,
 ) {
     // Set up controllers
     try {
@@ -105,14 +112,14 @@ describe('Routes Setup Module', () => {
     describe('setupRoutesAndApi', () => {
         let mockRouter: Router;
         let mockControllers: MockControllers;
-        let mockClientOptionsHandler: any;
-        let mockRenderConfig: any;
-        let mockRenderGoldenLayout: any;
-        let mockStorageHandler: any;
+        let mockClientOptionsHandler: ClientOptionsSource;
+        let mockRenderConfig: RenderConfigFunction;
+        let mockRenderGoldenLayout: RenderGoldenLayoutHandler;
+        let mockStorageHandler: StorageBase;
         let mockAppArgs: AppArguments;
-        let mockCompileHandler: any;
-        let mockCompilationEnvironment: any;
-        let mockCeProps: any;
+        let mockCompileHandler: CompileHandler;
+        let mockCompilationEnvironment: CompilationEnvironment;
+        let mockCeProps: PropertyGetter;
 
         beforeEach(() => {
             mockRouter = {
@@ -138,15 +145,67 @@ describe('Routes Setup Module', () => {
                 },
             };
 
-            mockClientOptionsHandler = {};
+            mockClientOptionsHandler = {
+                get: vi.fn(),
+                getHash: vi.fn().mockReturnValue('hash'),
+                getJSON: vi.fn().mockReturnValue('{}'),
+            };
             mockRenderConfig = vi.fn();
             mockRenderGoldenLayout = vi.fn();
-            mockStorageHandler = {};
+            mockStorageHandler = {
+                handler: vi.fn(),
+                storedCodePad: vi.fn(),
+                expandId: vi.fn().mockResolvedValue({}),
+                storeItem: vi.fn().mockResolvedValue({}),
+                httpRootDir: '/api',
+                compilerProps: null,
+            } as unknown as StorageBase;
             mockAppArgs = {
                 wantedLanguages: ['c++'],
-            } as AppArguments;
-            mockCompileHandler = {};
-            mockCompilationEnvironment = {};
+                rootDir: '/test/root',
+                env: ['test'],
+                port: 10240,
+                gitReleaseName: 'test',
+                releaseBuildNumber: '123',
+                doCache: true,
+                fetchCompilersFromRemote: false,
+                useLocalProps: true,
+                propDebug: false,
+                isWsl: false,
+                devMode: false,
+                loggingOptions: {
+                    debug: false,
+                    suppressConsoleLog: false,
+                    paperTrailIdentifier: 'test',
+                },
+                ensureNoCompilerClash: false,
+            };
+            mockCompileHandler = {
+                handle: vi.fn().mockResolvedValue({}),
+                findCompiler: vi.fn(),
+                setCompilers: vi.fn(),
+                setLanguages: vi.fn(),
+                languages: {},
+                compilersById: {},
+                compilerEnv: null,
+                textBanner: null,
+                proxy: null,
+                ceProps: mockCeProps,
+                storageHandler: null,
+                hasLanguages: vi.fn().mockReturnValue(true),
+            } as unknown as CompileHandler;
+            mockCompilationEnvironment = {
+                ceProps: vi.fn(),
+                awsProps: vi.fn(),
+                multiarch: null,
+                compilerProps: null,
+                formattersById: {},
+                formatters: [],
+                executablesById: {},
+                optionsHandler: null,
+                compilerFinder: null,
+                setCompilerFinder: vi.fn(),
+            } as unknown as CompilationEnvironment;
             mockCeProps = vi.fn();
         });
 

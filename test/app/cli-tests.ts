@@ -28,6 +28,7 @@ import os from 'node:os';
 import path from 'node:path';
 import {MockInstance, afterEach, beforeEach, describe, expect, it, vi} from 'vitest';
 import {
+    CompilerExplorerOptions,
     convertOptionsToAppArguments,
     detectWsl,
     getGitReleaseName,
@@ -202,6 +203,7 @@ describe('CLI Module', () => {
 
     describe('convertOptionsToAppArguments', () => {
         it('should convert command-line options to AppArguments', () => {
+            // We include extraField to test that extra fields are ignored by convertOptionsToAppArguments
             const options = {
                 rootDir: './etc',
                 env: ['dev'],
@@ -221,7 +223,11 @@ describe('CLI Module', () => {
                 debug: true,
                 suppressConsoleLog: false,
                 extraField: 'should be ignored',
-            } as any;
+                version: false,
+                devMode: false,
+                dist: false,
+                wsl: false,
+            } as CompilerExplorerOptions;
 
             const gitReleaseName = 'abc123';
             const releaseBuildNumber = '456';
@@ -248,6 +254,7 @@ describe('CLI Module', () => {
                 propDebug: true,
                 tmpDir: '/custom/tmp',
                 isWsl: false,
+                devMode: false,
                 loggingOptions: {
                     debug: true,
                     logHost: undefined,

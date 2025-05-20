@@ -138,9 +138,9 @@ describe('Main module', () => {
 
     // Setup mocks
     beforeEach(() => {
-        vi.spyOn(logger, 'info').mockImplementation(() => logger as any);
-        vi.spyOn(logger, 'warn').mockImplementation(() => logger as any);
-        vi.spyOn(logger, 'debug').mockImplementation(() => logger as any);
+        vi.spyOn(logger, 'info').mockImplementation(() => logger);
+        vi.spyOn(logger, 'warn').mockImplementation(() => logger);
+        vi.spyOn(logger, 'debug').mockImplementation(() => logger);
 
         vi.mocked(aws.initConfig).mockResolvedValue();
         vi.mocked(aws.getConfig).mockReturnValue('sentinel');
@@ -151,17 +151,19 @@ describe('Main module', () => {
         const mockFormattingService = {
             initialize: vi.fn().mockResolvedValue(undefined),
         };
-        vi.mocked(FormattingService).mockImplementation(() => mockFormattingService as any);
+        vi.mocked(FormattingService).mockImplementation(() => mockFormattingService as unknown as FormattingService);
 
         const mockCompilationQueue = {
             queue: vi.fn(),
         };
-        vi.mocked(CompilationQueue.fromProps).mockReturnValue(mockCompilationQueue as any);
+        vi.mocked(CompilationQueue.fromProps).mockReturnValue(mockCompilationQueue as unknown as CompilationQueue);
 
         const mockCompilationEnv = {
             setCompilerFinder: vi.fn(),
         };
-        vi.mocked(CompilationEnvironment).mockImplementation(() => mockCompilationEnv as any);
+        vi.mocked(CompilationEnvironment).mockImplementation(
+            () => mockCompilationEnv as unknown as CompilationEnvironment,
+        );
 
         const mockCompileHandler = {
             findCompiler: vi.fn().mockReturnValue({
@@ -169,10 +171,12 @@ describe('Main module', () => {
             }),
             handle: vi.fn(),
         };
-        vi.mocked(CompileHandler).mockImplementation(() => mockCompileHandler as any);
+        vi.mocked(CompileHandler).mockImplementation(() => mockCompileHandler as unknown as CompileHandler);
 
         const mockStorageType = vi.fn();
-        vi.mocked(getStorageTypeByKey).mockReturnValue(mockStorageType as any);
+        vi.mocked(getStorageTypeByKey).mockReturnValue(
+            mockStorageType as unknown as ReturnType<typeof getStorageTypeByKey>,
+        );
 
         const mockFindResult = {
             compilers: mockCompilers,
@@ -197,7 +201,7 @@ describe('Main module', () => {
             getLevels: vi.fn().mockReturnValue([]),
             pickTopIcons: vi.fn().mockReturnValue([]),
             getAllTopIcons: vi.fn().mockReturnValue([]),
-        });
+        } as unknown as ReturnType<typeof sponsors.loadSponsorsFromString>);
         vi.mocked(fs.readFile).mockResolvedValue('sponsors: []');
 
         const mockRouter = {
@@ -206,7 +210,7 @@ describe('Main module', () => {
 
         const mockWebServerResult = {
             webServer: {} as express.Express,
-            router: mockRouter as any,
+            router: mockRouter as unknown as express.Router,
             renderConfig: vi.fn(),
             renderGoldenLayout: vi.fn(),
             pugRequireHandler: vi.fn(),
@@ -218,7 +222,7 @@ describe('Main module', () => {
             initializeRoutes: vi.fn(),
             createRouter: vi.fn().mockReturnValue({}),
         };
-        vi.mocked(NoScriptHandler).mockImplementation(() => mockNoscriptHandler as any);
+        vi.mocked(NoScriptHandler).mockImplementation(() => mockNoscriptHandler as unknown as NoScriptHandler);
 
         const mockApiHandler = {
             setCompilers: vi.fn(),
@@ -229,7 +233,7 @@ describe('Main module', () => {
             apiHandler: mockApiHandler,
             initializeRoutes: vi.fn(),
         };
-        vi.mocked(RouteAPI).mockImplementation(() => mockRouteApi as any);
+        vi.mocked(RouteAPI).mockImplementation(() => mockRouteApi as unknown as RouteAPI);
 
         // Mock ClientOptionsHandler
         const mockClientOptionsHandler = {
@@ -238,7 +242,9 @@ describe('Main module', () => {
             getHash: vi.fn(),
             getJSON: vi.fn(),
         };
-        vi.mocked(ClientOptionsHandler).mockImplementation(() => mockClientOptionsHandler as any);
+        vi.mocked(ClientOptionsHandler).mockImplementation(
+            () => mockClientOptionsHandler as unknown as ClientOptionsHandler,
+        );
     });
 
     afterEach(() => {

@@ -180,7 +180,7 @@ describe('Server Module', () => {
                 render: vi.fn(),
             } as unknown as Response;
 
-            renderGoldenLayout({} as any, {} as any, mockRequest, mockResponse);
+            renderGoldenLayout({} as Record<string, unknown>, {} as Record<string, unknown>, mockRequest, mockResponse);
 
             expect(mockResponse.render).toHaveBeenCalledWith('index', expect.any(Object));
         });

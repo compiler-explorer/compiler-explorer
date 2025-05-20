@@ -49,9 +49,8 @@ export function parsePortNumberForOptions(value: string): number {
 
 /**
  * Options parsed from command-line arguments
- * @private
  */
-interface CompilerExplorerOptions {
+export interface CompilerExplorerOptions {
     env: string[];
     rootDir: string;
     host?: string;
