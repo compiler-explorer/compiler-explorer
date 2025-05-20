@@ -19,6 +19,7 @@ This approach distributes API load across clients rather than funneling through 
 - [x] Add user consent UI before sending data to API
 - [x] Implement error handling and loading states
 - [x] Update documentation
+- [x] Replace Monaco editor with HTML-based markdown rendering
 - [ ] Test the implementation with various languages
 
 ## Technical Implementation Details
@@ -83,7 +84,29 @@ The server API has been configured to support CORS, allowing direct API calls fr
 - Supporting the necessary HTTP methods (POST, OPTIONS)
 - Including appropriate headers for content type
 
-### 4. Limitations and Future Improvements
+### 4. HTML-Based Rendering (Completed)
+
+We've replaced the Monaco editor display with a custom HTML-based rendering system:
+
+1. **New ExplainHtmlView Component**:
+   - Created a new pug template for the HTML rendering
+   - Extended directly from `Pane` rather than from `Tool` or `MonacoPane`
+   - Implemented markdown rendering using the `marked` library
+
+2. **Benefits**:
+   - Cleaner UI without editor chrome/overhead
+   - Better performance (Monaco editor is heavyweight)
+   - More flexibility in styling and layout
+   - More natural handling of markdown content
+
+3. **Implementation Details**:
+   - Created pug template at `views/templates/panes/explain.pug`
+   - Created new `ExplainHtmlView` class extending `Pane`
+   - Updated hub factory to use the new view class
+   - Added extensive CSS styling with theme support
+   - Implemented proper font scaling and line wrapping
+
+### 5. Limitations and Future Improvements
 
 - **Better Language Detection**: Currently uses a simple heuristic to detect language; could be improved
 - **Instruction Set Detection**: Fixed to 'amd64' currently; should pull from compiler properties
@@ -104,3 +127,4 @@ The server API has been configured to support CORS, allowing direct API calls fr
 2. Consider adding persistent consent across browser sessions
 3. Evaluate API performance and rate limiting needs
 4. Refine instruction set and language detection
+5. Consider additional UI enhancements based on user feedback
