@@ -129,8 +129,6 @@ export class RustCompiler extends BaseCompiler {
                     defaultEdition = '2024';
                 } else if (compilerVersion.compare('1.56.0') >= 0) {
                     defaultEdition = '2021';
-                } else if (compilerVersion.compare('1.31.0') >= 0) {
-                    defaultEdition = '2018';
                 }
             }
 
