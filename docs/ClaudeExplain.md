@@ -44,7 +44,7 @@ The feature consists of:
 
 1. **Server-side configuration**: Minimal property settings to enable the tool and configure the API endpoint.
 
-2. **Client-side component**: 
+2. **Client-side component**:
    - The `ExplainHtmlView` class which extends `Pane` directly to:
      - Display a consent prompt
      - Make API requests to the Claude Explain endpoint

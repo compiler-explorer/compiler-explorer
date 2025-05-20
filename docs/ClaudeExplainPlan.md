@@ -58,7 +58,7 @@ We've implemented direct API calls from the client using `fetch` inside the `Exp
 
 #### C. UI Implementation (Completed)
 
-1. **Tool View**: 
+1. **Tool View**:
    - Created `ExplainView` class extending the existing `Tool` class
    - Set up proper markdown rendering for the explanation
    - Implemented window title updating
@@ -127,4 +127,19 @@ We've replaced the Monaco editor display with a custom HTML-based rendering syst
 2. Consider adding persistent consent across browser sessions
 3. Evaluate API performance and rate limiting needs
 4. Refine instruction set and language detection
-5. Consider additional UI enhancements based on user feedback
+5. Address UI styling improvements based on user feedback:
+   - Update UI styling for "generating explanation" to work with all themes (especially pink theme)
+   - Make "generating explanation" part of the toolbar with proper animation and status colors (similar to `.status-icon` in compiler view)
+   - Reduce excessive padding on the bottom bar
+6. Add appropriate disclaimers about AI agents and their limitations
+7. Fix HTML body not properly updating on page reload (when "#tool-output" shows "The current language or compiler does not support this tool" instead of the explanation content) - appears to be an initialization order issue
+8. Implement restriction to allow only one "Claude Explain" tool instance at a time (similar to other unique tools) to prevent duplicate requests
+9. Fix issue requiring force-recompilation for HTML to appear in the Claude Explain widget at all (related to tool integration)
+
+## Things to address:
+- Sometimes on page reload, the HTML body of the tool doesn't properly update and shows "#tool-output" with "The current language or compiler does not support this tool" instead of the explanation content. This appears to be related to the initialization order.
+- Currently allows multiple "Claude Explain" tool instances which can lead to duplicate API requests for the same output. Should be limited to one instance like other unique tools.
+- Sometimes requires force-recompilation for HTML content to appear in the Claude Explain widget at all, indicating imperfect integration with the tools framework.
+- Better toolbar integration for the "generating explanation" indicator. Just replace with a spinner with no text; that turns red/green on success/failure, like the compiler.ts `.status-icon`
+- Proper theming support across all color schemes. we seem to have put the dark theme in the main sccs.
+- Disclaimers about AI limitations and potential inaccuracies

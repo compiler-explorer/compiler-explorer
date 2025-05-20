@@ -56,6 +56,7 @@ interface ClaudeExplainResponse {
 
 export class ExplainHtmlView extends Pane<PaneState> {
     private lastResult: CompilationResult | null = null;
+    private compiler: CompilerInfo | null = null;
     private loadingElement: JQuery;
     private consentElement: JQuery;
     private contentElement: JQuery;
@@ -70,8 +71,6 @@ export class ExplainHtmlView extends Pane<PaneState> {
     constructor(hub: Hub, container: Container, state: PaneState) {
         super(hub, container, state);
         this.explainApiEndpoint = (options.explainApiEndpoint as string) || 'https://api.compiler-explorer.com/explain';
-        this.paneName = 'Claude Explain';
-        this.updateTitle();
 
         this.loadingElement = this.domRoot.find('.explain-loading');
         this.consentElement = this.domRoot.find('.explain-consent');
@@ -79,11 +78,9 @@ export class ExplainHtmlView extends Pane<PaneState> {
         this.bottomBarElement = this.domRoot.find('.explain-bottom-bar');
         this.statsElement = this.domRoot.find('.explain-stats');
 
-        // Setup font scale
         this.fontScale = new FontScale(this.domRoot, state, '.explain-content');
         this.fontScale.on('change', this.updateState.bind(this));
 
-        // Register event handlers
         this.consentElement.find('.consent-btn').on('click', () => {
             ExplainHtmlView.consentGiven = true;
             this.consentElement.addClass('d-none');
@@ -106,12 +103,14 @@ export class ExplainHtmlView extends Pane<PaneState> {
         this.compilerInfo.compilerName = compiler ? compiler.name : '';
         this.compilerInfo.editorId = editorId;
         this.compilerInfo.treeId = treeId;
+        this.compiler = compiler;
         this.updateTitle();
     }
 
     override onCompileResult(id: number, compiler: CompilerInfo, result: CompilationResult): void {
         try {
             if (id !== this.compilerInfo.compilerId) return;
+            this.compiler = compiler;
 
             const foundTool = _.find(compiler.tools, tool => tool.tool.id === 'explain');
             const isToolAvailable = !!foundTool;
@@ -119,10 +118,6 @@ export class ExplainHtmlView extends Pane<PaneState> {
             this.lastResult = result;
 
             if (!isToolAvailable) return;
-
-            // Make sure title is correctly set
-            this.paneName = 'Claude Explain';
-            this.updateTitle();
 
             if (result.code !== 0) {
                 // If compilation failed, show error message
@@ -180,23 +175,19 @@ export class ExplainHtmlView extends Pane<PaneState> {
     }
 
     private async fetchExplanation(): Promise<void> {
-        if (!this.lastResult || !ExplainHtmlView.consentGiven) return;
+        if (!this.lastResult || !ExplainHtmlView.consentGiven || !this.compiler) return;
 
         this.contentElement.empty();
         this.showLoading();
 
         try {
-            // TODO: Improve language and instructionSet detection
-            // Currently we're guessing language from compiler name and using a fixed architecture
-            // We should get these from the proper compiler properties when available
             const payload = {
-                source: this.lastResult.source || '',
-                compiler: this.compilerInfo.compilerId.toString(),
+                language: this.compiler.lang,
+                compiler: this.compiler.name,
                 code: this.lastResult.source || '',
                 compilationOptions: this.lastResult.compilationOptions || [],
+                instructionSet: this.lastResult.instructionSet || 'amd64',
                 asm: this.lastResult.asm,
-                instructionSet: 'amd64', // TODO: Get from compiler info when available
-                language: this.compilerInfo.compilerName.split(' ')[0].toLowerCase(), // TODO: Get proper language
             };
 
             const response = await window.fetch(this.explainApiEndpoint, {
@@ -233,21 +224,18 @@ export class ExplainHtmlView extends Pane<PaneState> {
     }
 
     private renderMarkdown(markdown: string): void {
-        // Configure marked
-        marked.setOptions({
+        const markedOptions = {
             gfm: true, // GitHub Flavored Markdown
             breaks: true, // Convert line breaks to <br>
-        });
+        };
 
         // Render markdown to HTML
         // marked.parse() is synchronous and returns a string, but TypeScript types suggest it could be Promise<string>
         // The cast is safe because we're using the default synchronous implementation
-        this.contentElement.html(marked.parse(markdown) as string);
+        this.contentElement.html(marked.parse(markdown, markedOptions) as string);
     }
 
     override resize(): void {
-        // With flexbox layout, we don't need to manually calculate heights
-        // Just ensure the topbar is properly sized
         utils.updateAndCalcTopBarHeight(this.domRoot, this.topBar, this.hideable);
     }
 
