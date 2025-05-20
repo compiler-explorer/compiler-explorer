@@ -28,6 +28,22 @@ body {
     overflow: hidden;
 }
 
+// Styles for Claude Explain component
+.explain-consent {
+    padding: 15px;
+    background-color: #f8f9fa;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    margin: 15px 0;
+}
+
+.explain-loading {
+    padding: 10px 15px;
+    background-color: #f8f9fa;
+    font-style: italic;
+    border-left: 3px solid #17a2b8;
+}
+
 .navbar-godbolt {
     padding: 0;
 }

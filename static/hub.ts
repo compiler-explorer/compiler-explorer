@@ -71,6 +71,7 @@ import {DeviceAsm as DeviceView} from './panes/device-view.js';
 import {Diff} from './panes/diff.js';
 import {Editor} from './panes/editor.js';
 import {Executor} from './panes/executor.js';
+import {ExplainView} from './panes/explain-view.js';
 import {Flags as FlagsView} from './panes/flags-view.js';
 import {GccDump as GCCDumpView} from './panes/gccdump-view.js';
 import {GnatDebug as GnatDebugView} from './panes/gnatdebug-view.js';
@@ -460,6 +461,10 @@ export class Hub {
     }
 
     public toolFactory(container: GoldenLayout.Container, state: any): any /* typeof Tool */ {
+        // Use ExplainView for the 'explain' tool
+        if (state.toolId === 'explain') {
+            return new ExplainView(this, container, state);
+        }
         return new Tool(this, container, state);
     }
 
