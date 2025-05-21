@@ -55,7 +55,7 @@ function createMockAppArgs(overrides: Partial<AppArguments> = {}): AppArguments 
     };
 }
 
-import type {Request, Response} from 'express';
+import express, {type Request, type Response} from 'express';
 import {afterEach, beforeEach, describe, expect, it, vi} from 'vitest';
 
 import type {AppArguments} from '../../lib/app.interfaces.js';
@@ -114,6 +114,9 @@ describe('Server Module', () => {
                     if (key === 'allowedShortUrlHostRe') return '.*';
                     return '';
                 }),
+                healthcheckController: {
+                    createRouter: vi.fn().mockReturnValue(express.Router()),
+                },
                 sponsorConfig: {
                     getLevels: vi.fn().mockReturnValue([]),
                     pickTopIcons: vi.fn().mockReturnValue([]),

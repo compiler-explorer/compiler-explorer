@@ -229,10 +229,8 @@ export function setupBasicRoutes(
  * Middleware for content security policy
  */
 function csp(req: Request, res: Response, next: NextFunction) {
-    res.setHeader(
-        'Content-Security-Policy',
-        "default-src 'self' 'unsafe-eval' 'unsafe-inline' *.godbolt.org *.compiler-explorer.com *.googleapis.com *.hcaptcha.com *.cloudflare.com cdn.jsdelivr.net; frame-ancestors *",
-    );
+    // TODO: Consider if CSP should be re-enabled
+    // res.setHeader('Content-Security-Policy', `default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self' data:; connect-src 'self'; frame-src 'self';`);
     next();
 }
 

@@ -22,7 +22,7 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import type {NextFunction, Request, Response} from 'express';
+import express, {type NextFunction, type Request, type Response} from 'express';
 import {afterEach, beforeEach, describe, expect, it, vi} from 'vitest';
 
 import {createRenderHandlers} from '../../lib/app/rendering.js';
@@ -94,6 +94,9 @@ describe('Rendering Module', () => {
                     getJSON: vi.fn().mockReturnValue('{}'),
                 },
                 storageSolution: 'localStorage',
+                healthcheckController: {
+                    createRouter: vi.fn().mockReturnValue(express.Router()),
+                },
                 sponsorConfig: {
                     getLevels: vi.fn().mockReturnValue([]),
                     pickTopIcons: vi.fn().mockReturnValue([]),
