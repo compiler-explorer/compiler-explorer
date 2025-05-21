@@ -44,13 +44,13 @@ export function createDefaultPugRequireHandler(
 ): PugRequireHandler {
     return (path: string) => {
         if (manifest && Object.prototype.hasOwnProperty.call(manifest, path)) {
-            return `${staticRoot}/${manifest[path]}`;
+            return urljoin(staticRoot, manifest[path]);
         }
         if (manifest) {
             logger.error(`Failed to locate static asset '${path}' in manifest`);
             return '';
         }
-        return `${staticRoot}/${path}`;
+        return urljoin(staticRoot, path);
     };
 }
 
