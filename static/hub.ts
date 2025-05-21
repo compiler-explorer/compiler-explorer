@@ -30,6 +30,7 @@ import {CompilerService} from './compiler-service.js';
 import {
     AST_VIEW_COMPONENT_NAME,
     CFG_VIEW_COMPONENT_NAME,
+    SSA_VIEW_COMPONENT_NAME,
     CLANGIR_VIEW_COMPONENT_NAME,
     COMPILER_COMPONENT_NAME,
     CONFORMANCE_VIEW_COMPONENT_NAME,
@@ -64,6 +65,7 @@ import {IdentifierSet} from './identifier-set.js';
 import {LanguageKey} from './languages.interfaces.js';
 import {Ast as AstView} from './panes/ast-view.js';
 import {Cfg as CfgView} from './panes/cfg-view.js';
+import {Ssa as SsaView} from './panes/ssa-view.js';
 import {Clangir as ClangirView} from './panes/clangir-view.js';
 import {Compiler} from './panes/compiler.js';
 import {Conformance as ConformanceView} from './panes/conformance-view.js';
@@ -161,6 +163,7 @@ export class Hub {
         layout.registerComponent(RUST_HIR_VIEW_COMPONENT_NAME, (c: GLC, s: any) => this.rustHirViewFactory(c, s));
         layout.registerComponent(GCC_DUMP_VIEW_COMPONENT_NAME, (c: GLC, s: any) => this.gccDumpViewFactory(c, s));
         layout.registerComponent(CFG_VIEW_COMPONENT_NAME, (c: GLC, s: any) => this.cfgViewFactory(c, s));
+        layout.registerComponent(SSA_VIEW_COMPONENT_NAME, (c: GLC, s: any) => this.ssaViewFactory(c, s));
         layout.registerComponent(CONFORMANCE_VIEW_COMPONENT_NAME, (c: GLC, s: any) =>
             this.conformanceViewFactory(c, s),
         );
@@ -589,6 +592,10 @@ export class Hub {
 
     public cfgViewFactory(container: GoldenLayout.Container, state: ConstructorParameters<typeof CfgView>[2]): CfgView {
         return new CfgView(this, container, state);
+    }
+
+    public ssaViewFactory(container: GoldenLayout.Container, state: ConstructorParameters<typeof SsaView>[2]): SsaView {
+        return new SsaView(this, container, state);
     }
 
     public conformanceViewFactory(container: GoldenLayout.Container, state: any): any /* typeof ConformanceView */ {
