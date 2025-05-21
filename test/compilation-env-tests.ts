@@ -26,6 +26,7 @@ import './utils.js';
 import {beforeAll, describe, expect, it} from 'vitest';
 
 import {CompilationEnvironment} from '../lib/compilation-env.js';
+import {CompilationQueue} from '../lib/compilation-queue.js';
 import {FormattingService} from '../lib/formatting-service.js';
 import {CompilerProps, fakeProps} from '../lib/properties.js';
 
@@ -36,48 +37,47 @@ const props = {
 };
 
 describe('Compilation environment', () => {
-    let compilerProps;
+    let compilerProps: CompilerProps;
+    let compilationQueue: CompilationQueue;
 
     beforeAll(() => {
         compilerProps = new CompilerProps({}, fakeProps(props));
+        compilationQueue = new CompilationQueue(1, 1000, 1000);
     });
 
     it('Should cache by default', async () => {
-        // TODO: Work will need to be done here when CompilationEnvironment's constructor is typed better
-        const ce = new CompilationEnvironment(
-            compilerProps,
-            fakeProps({}),
-            undefined,
-            new FormattingService(),
-            undefined,
-        );
+        const ce = new CompilationEnvironment(compilerProps, fakeProps({}), compilationQueue, new FormattingService());
         await expect(ce.cacheGet('foo')).resolves.toBeNull();
         await ce.cachePut('foo', {res: 'bar'}, undefined);
         await expect(ce.cacheGet('foo')).resolves.toEqual({res: 'bar'});
         await expect(ce.cacheGet('baz')).resolves.toBeNull();
     });
     it('Should cache when asked', async () => {
-        const ce = new CompilationEnvironment(compilerProps, fakeProps({}), undefined, new FormattingService(), true);
+        const ce = new CompilationEnvironment(
+            compilerProps,
+            fakeProps({}),
+            compilationQueue,
+            new FormattingService(),
+            true,
+        );
         await expect(ce.cacheGet('foo')).resolves.toBeNull();
         await ce.cachePut('foo', {res: 'bar'}, undefined);
         await expect(ce.cacheGet('foo')).resolves.toEqual({res: 'bar'});
     });
     it("Shouldn't cache when asked", async () => {
-        // TODO: Work will need to be done here when CompilationEnvironment's constructor is typed better
-        const ce = new CompilationEnvironment(compilerProps, fakeProps({}), undefined, new FormattingService(), false);
+        const ce = new CompilationEnvironment(
+            compilerProps,
+            fakeProps({}),
+            compilationQueue,
+            new FormattingService(),
+            false,
+        );
         await expect(ce.cacheGet('foo')).resolves.toBeNull();
         await ce.cachePut('foo', {res: 'bar'}, undefined);
         await expect(ce.cacheGet('foo')).resolves.toBeNull();
     });
     it('Should filter bad options', () => {
-        // TODO: Work will need to be done here when CompilationEnvironment's constructor is typed better
-        const ce = new CompilationEnvironment(
-            compilerProps,
-            fakeProps({}),
-            undefined,
-            new FormattingService(),
-            undefined,
-        );
+        const ce = new CompilationEnvironment(compilerProps, fakeProps({}), compilationQueue, new FormattingService());
         expect(ce.findBadOptions(['-O3', '-flto'])).toEqual([]);
         expect(ce.findBadOptions(['-O3', '-plugin'])).toEqual(['-plugin']);
     });

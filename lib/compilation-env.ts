@@ -48,7 +48,7 @@ type FindCompiler = (langId: LanguageKey, compilerId: string) => BaseCompiler | 
 export class CompilationEnvironment {
     ceProps: PropertyGetter;
     awsProps: PropFunc;
-    compilationQueue: CompilationQueue | undefined;
+    compilationQueue: CompilationQueue;
     compilerProps: PropFunc;
     okOptions: RegExp;
     badOptions: RegExp;
@@ -67,7 +67,7 @@ export class CompilationEnvironment {
     constructor(
         compilerProps: CompilerProps,
         awsProps: PropFunc,
-        compilationQueue: CompilationQueue | undefined,
+        compilationQueue: CompilationQueue,
         public formattingService: FormattingService,
         doCache?: boolean,
     ) {

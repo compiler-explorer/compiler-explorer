@@ -22,27 +22,36 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import type {LoggingOptions} from './logger.js';
+import child_process from 'node:child_process';
+import path from 'node:path';
+import process from 'node:process';
 
-export type AppArguments = {
-    rootDir: string;
-    env: string[];
-    hostname?: string;
-    port: number;
-    gitReleaseName: string;
-    releaseBuildNumber: string;
-    wantedLanguages: string[] | undefined;
-    doCache: boolean;
-    fetchCompilersFromRemote: boolean;
-    ensureNoCompilerClash: boolean | undefined;
-    prediscovered?: string;
-    discoveryOnly?: string;
-    staticPath?: string;
-    metricsPort?: number;
-    useLocalProps: boolean;
-    propDebug: boolean;
-    tmpDir?: string;
-    loggingOptions: LoggingOptions;
-    isWsl: boolean;
-    devMode: boolean;
-};
+import {logger} from '../logger.js';
+
+/**
+ * Set up temporary directory, especially for WSL environments
+ * @param tmpDir - Optional path to use as temporary directory
+ * @param isWsl - Whether running under Windows Subsystem for Linux
+ */
+export function setupTempDir(tmpDir: string | undefined, isWsl: boolean): void {
+    // If a tempDir is supplied, use it
+    if (tmpDir) {
+        if (isWsl) {
+            process.env.TEMP = tmpDir; // for Windows
+        } else {
+            process.env.TMP = tmpDir; // for Linux
+        }
+    }
+    // If running under WSL without explicit tmpDir, try to use Windows %TEMP%
+    else if (isWsl) {
+        try {
+            const windowsTemp = child_process.execSync('cmd.exe /c echo %TEMP%').toString().replaceAll('\\', '/');
+            const driveLetter = windowsTemp.substring(0, 1).toLowerCase();
+            const directoryPath = windowsTemp.substring(2).trim();
+            process.env.TEMP = path.join('/mnt', driveLetter, directoryPath);
+        } catch (e) {
+            logger.warn('Unable to invoke cmd.exe to get windows %TEMP% path.');
+        }
+    }
+    logger.info(`Using temporary dir: ${process.env.TEMP || process.env.TMP}`);
+}
