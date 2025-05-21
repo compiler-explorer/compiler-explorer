@@ -40,6 +40,7 @@ export interface ApiControllers {
     assemblyDocumentationController: AssemblyDocumentationController;
     formattingController: FormattingController;
     noScriptController: NoScriptController;
+    healthcheckController: HealthcheckController;
 }
 
 /**
@@ -68,7 +69,12 @@ export function setupControllersAndHandlers(
     const noScriptController = new NoScriptController(compileHandler, formDataHandler);
 
     // Initialize healthcheck controller (handled separately in web server setup)
-    new HealthcheckController(compilationQueue, healthCheckFilePath, compileHandler, isExecutionWorker);
+    const healthcheckController = new HealthcheckController(
+        compilationQueue,
+        healthCheckFilePath,
+        compileHandler,
+        isExecutionWorker,
+    );
 
     return {
         siteTemplateController,
@@ -76,5 +82,6 @@ export function setupControllersAndHandlers(
         assemblyDocumentationController,
         formattingController,
         noScriptController,
+        healthcheckController,
     };
 }

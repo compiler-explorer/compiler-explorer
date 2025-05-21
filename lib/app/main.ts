@@ -116,6 +116,7 @@ export async function initialiseApplication(options: ApplicationOptions): Promis
         ),
         clientOptionsHandler: clientOptionsHandler,
         storageSolution: storageSolution,
+        healthcheckController: controllers.healthcheckController,
     };
 
     const {webServer, router, renderConfig, renderGoldenLayout} = await setupWebServer(
