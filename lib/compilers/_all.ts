@@ -103,6 +103,7 @@ export {LLVMMOSCompiler} from './llvm-mos.js';
 export {LLVMmcaTool} from './llvm-mca.js';
 export {MLIRCompiler} from './mlir.js';
 export {MadPascalCompiler} from './madpascal.js';
+export {MojoCompiler} from './mojo.js';
 export {MovfuscatorCompiler} from './movfuscator.js';
 export {MrustcCompiler} from './mrustc.js';
 export {Msp430Compiler} from './msp430.js';
