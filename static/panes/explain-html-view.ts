@@ -70,6 +70,7 @@ export class ExplainHtmlView extends Pane<PaneState> {
 
     constructor(hub: Hub, container: Container, state: PaneState) {
         super(hub, container, state);
+        // TODO - get this from the server in the tool? don't have a fallback here
         this.explainApiEndpoint = (options.explainApiEndpoint as string) || 'https://api.compiler-explorer.com/explain';
 
         this.loadingElement = this.domRoot.find('.explain-loading');
