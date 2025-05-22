@@ -91,8 +91,8 @@ export class ExplainHtmlView extends Pane<PaneState> {
         this.contentElement.text('Waiting for compilation...');
         this.isAwaitingInitialResults = true;
 
-        // Emit singleton opened event
-        this.eventHub.emit('explainViewOpened', this.compilerInfo.compilerId);
+        // Emit standard tool opened event
+        this.eventHub.emit('toolOpened', this.compilerInfo.compilerId, this.getCurrentState());
     }
 
     override getInitialHTML(): string {
@@ -275,8 +275,17 @@ export class ExplainHtmlView extends Pane<PaneState> {
         return 'Claude Explain';
     }
 
+    override getCurrentState() {
+        const state = super.getCurrentState();
+        return {
+            ...state,
+            toolId: 'explain',
+            selection: undefined, // Required for NewToolSettings type but we don't have a Monaco editor
+        };
+    }
+
     override close(): void {
-        this.eventHub.emit('explainViewClosed', this.compilerInfo.compilerId);
+        this.eventHub.emit('toolClosed', this.compilerInfo.compilerId, this.getCurrentState());
         this.eventHub.unsubscribe();
     }
 }

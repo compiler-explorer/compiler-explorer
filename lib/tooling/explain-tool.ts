@@ -49,6 +49,7 @@ export class ExplainTool extends BaseTool {
         }
 
         // Return a minimal result with the API endpoint as custom data
+        // TODO stop casting this and do something better.
         return {
             id: this.tool.id,
             name: this.tool.name,
