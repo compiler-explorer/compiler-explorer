@@ -52,6 +52,62 @@ describe('Static assets', () => {
 
             expect(handler('file1.js')).toBe('/static/file1.js');
         });
+
+        it('should handle staticRoot with trailing slash correctly', () => {
+            const manifest = {
+                'vendor.js': 'vendor.v57.0aa06caf727cfaf434aa.js',
+                'app.css': 'app.v42.123456789abcdef.css',
+            };
+
+            // Test with trailing slash - this is the production scenario
+            const handler = createDefaultPugRequireHandler('https://static.ce-cdn.net/', manifest);
+
+            expect(handler('vendor.js')).toBe('https://static.ce-cdn.net/vendor.v57.0aa06caf727cfaf434aa.js');
+            expect(handler('app.css')).toBe('https://static.ce-cdn.net/app.v42.123456789abcdef.css');
+
+            // Test path not in manifest
+            expect(handler('unknown.js')).toBe('');
+        });
+
+        it('should handle staticRoot with double slash correctly', () => {
+            const manifest = {
+                'vendor.js': 'vendor.v57.0aa06caf727cfaf434aa.js',
+            };
+
+            // Test with double slash - this is what happens with config bug
+            const handler = createDefaultPugRequireHandler('https://static.ce-cdn.net//', manifest);
+
+            // Should normalize to single slash
+            expect(handler('vendor.js')).toBe('https://static.ce-cdn.net/vendor.v57.0aa06caf727cfaf434aa.js');
+        });
+
+        it('should handle staticRoot without trailing slash correctly', () => {
+            const manifest = {
+                'vendor.js': 'vendor.v57.0aa06caf727cfaf434aa.js',
+            };
+
+            // Test without trailing slash
+            const handler = createDefaultPugRequireHandler('https://static.ce-cdn.net', manifest);
+
+            expect(handler('vendor.js')).toBe('https://static.ce-cdn.net/vendor.v57.0aa06caf727cfaf434aa.js');
+        });
+
+        it('should handle local paths with various trailing slash scenarios', () => {
+            const manifest = {
+                'main.js': 'main.hash123.js',
+            };
+
+            // Test various local path formats
+            const scenarios = ['/static', '/static/', '/static//'];
+
+            for (const staticRoot of scenarios) {
+                const handler = createDefaultPugRequireHandler(staticRoot, manifest);
+                const result = handler('main.js');
+
+                // All should resolve to the same normalized path
+                expect(result).toBe('/static/main.hash123.js');
+            }
+        });
     });
 
     describe('getFaviconFilename', () => {

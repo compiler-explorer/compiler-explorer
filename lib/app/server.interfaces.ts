@@ -24,6 +24,7 @@
 
 import type {Express, Request, Response, Router} from 'express';
 import type {GoldenLayoutRootStruct} from '../clientstate-normalizer.js';
+import type {HttpController} from '../handlers/api/controller.interfaces.js';
 import type {ShortLinkMetaData} from '../handlers/handler.interfaces.js';
 import type {ClientOptionsSource} from '../options-handler.interfaces.js';
 import type {PropertyGetter} from '../properties.interfaces.js';
@@ -86,4 +87,5 @@ export interface ServerDependencies {
     sponsorConfig: Sponsors;
     clientOptionsHandler: ClientOptionsSource;
     storageSolution: string;
+    healthcheckController: HttpController;
 }

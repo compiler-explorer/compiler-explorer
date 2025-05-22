@@ -412,5 +412,20 @@ describe('Config Module', () => {
             expect(result.staticUrl).toBe('https://static.example.com');
             expect(result.staticRoot).toBe('https://static.example.com/');
         });
+
+        it('should handle staticUrl with trailing slash correctly', () => {
+            // This tests the production scenario where staticUrl already has trailing slash
+            mockCeProps.staticUrl = 'https://static.ce-cdn.net/';
+            const appArgs = createMockAppArgs({
+                useLocalProps: true,
+                propDebug: false,
+            });
+
+            const result = loadConfiguration(appArgs);
+
+            expect(result.staticUrl).toBe('https://static.ce-cdn.net/');
+            // urljoin normalizes trailing slashes correctly
+            expect(result.staticRoot).toBe('https://static.ce-cdn.net/');
+        });
     });
 });

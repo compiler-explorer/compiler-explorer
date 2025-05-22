@@ -69,6 +69,9 @@ export async function setupWebServer(
         dependencies,
     );
 
+    // Add healthcheck before logging middleware to prevent excessive log entries
+    webServer.use(dependencies.healthcheckController.createRouter());
+
     setupBaseServerConfig(options, renderConfig, webServer, router);
     setupLoggingMiddleware(appArgs.devMode, router);
 
