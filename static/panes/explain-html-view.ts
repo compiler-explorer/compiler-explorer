@@ -87,10 +87,17 @@ export class ExplainHtmlView extends Pane<PaneState> {
             this.consentElement.addClass('d-none');
             this.fetchExplanation();
         });
+
+        // Set initial content to avoid showing template content
+        this.contentElement.text('Waiting for compilation...');
+        this.isAwaitingInitialResults = true;
+
+        // Emit singleton opened event
+        this.eventHub.emit('explainViewOpened', this.compilerInfo.compilerId);
     }
 
     override getInitialHTML(): string {
-        return $('#explain-view').html();
+        return $('#explain').html();
     }
 
     override onCompiler(
@@ -118,7 +125,13 @@ export class ExplainHtmlView extends Pane<PaneState> {
             this.toggleUsable(isToolAvailable);
             this.lastResult = result;
 
-            if (!isToolAvailable) return;
+            if (!isToolAvailable) {
+                this.contentElement.text('Claude Explain is not available for this compiler');
+                return;
+            }
+
+            // Mark that we've received our first result
+            this.isAwaitingInitialResults = false;
 
             if (result.code !== 0) {
                 // If compilation failed, show error message
@@ -245,6 +258,7 @@ export class ExplainHtmlView extends Pane<PaneState> {
     }
 
     override close(): void {
+        this.eventHub.emit('explainViewClosed', this.compilerInfo.compilerId);
         this.eventHub.unsubscribe();
     }
 }
