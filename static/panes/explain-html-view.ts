@@ -53,6 +53,19 @@ interface ClaudeExplainResponse {
     };
 }
 
+// TODO: Improvement opportunities for ExplainHtmlView:
+// 1. Extract loading state management (showLoading/hideLoading) to base class or mixin
+// 2. Create explain-html-view.interfaces.ts file for consistency with other panes
+// 3. Fix type casting in explain-tool.ts (see TODO there)
+// 4. Extract markdown styles to shared markdown.scss (221 lines of duplication)
+// 5. Add caching for identical code/compiler combinations to improve performance
+// 6. Consider state machine pattern for clearer UI state transitions
+// 7. Add tests: unit tests for ExplainTool, frontend tests for ExplainHtmlView
+// 8. Improve error handling with different UI states for different error types
+// 9. Rename from "html" - Just `ExplainView` etc
+// 10. Consider making this a "Pane" instead of a tool, and fixing up the knock-on effects
+// 11. Apply theming correctly (pink mode is broken)
+// 12. Address TODOs in the documentation, and tidy that up too.
 export class ExplainHtmlView extends Pane<PaneState> {
     private lastResult: CompilationResult | null = null;
     private compiler: CompilerInfo | null = null;
