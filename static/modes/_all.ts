@@ -54,6 +54,7 @@ import './jakt-mode';
 import './llvm-ir-mode';
 import './mlir-mode';
 import './modula2-mode';
+import './mojo-mode';
 import './nc-mode';
 import './nim-mode';
 import './nix-mode';

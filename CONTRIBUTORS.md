@@ -160,3 +160,4 @@ From oldest to newest contributor, we would like to thank:
 - [Mathias Gredal](https://github.com/mathiasgredal)
 - [RongDong Xu](https://github.com/arong)
 - [Adrien Bertrand](https://github.com/adriweb)
+- [Roberto Parolin](https://github.com/rparolin)

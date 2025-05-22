@@ -260,6 +260,13 @@
           - 'etc/config/modula2.*.properties'
           - 'static/modes/modula2-mode.ts'
 
+'lang-mojo':
+  - changed-files:
+      - any-glob-to-any-file:
+          - 'lib/compilers/mojo.ts'
+          - 'etc/config/mojo.*.properties'
+          - 'static/modes/mojo-mode.ts'
+
 'lang-nim':
   - changed-files:
       - any-glob-to-any-file:

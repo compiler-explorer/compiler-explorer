@@ -22,27 +22,38 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import type {LoggingOptions} from './logger.js';
+import path from 'node:path';
+import type {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces.js';
+import {BaseCompiler} from '../base-compiler.js';
 
-export type AppArguments = {
-    rootDir: string;
-    env: string[];
-    hostname?: string;
-    port: number;
-    gitReleaseName: string;
-    releaseBuildNumber: string;
-    wantedLanguages: string[] | undefined;
-    doCache: boolean;
-    fetchCompilersFromRemote: boolean;
-    ensureNoCompilerClash: boolean | undefined;
-    prediscovered?: string;
-    discoveryOnly?: string;
-    staticPath?: string;
-    metricsPort?: number;
-    useLocalProps: boolean;
-    propDebug: boolean;
-    tmpDir?: string;
-    loggingOptions: LoggingOptions;
-    isWsl: boolean;
-    devMode: boolean;
-};
+export class MojoCompiler extends BaseCompiler {
+    static get key() {
+        return 'mojo';
+    }
+
+    constructor(info, env) {
+        super(info, env);
+        this.delayCleanupTemp = true;
+        this.compiler.supportsIrView = true;
+        this.compiler.irArg = ['--emit=llvm'];
+    }
+
+    override getOutputFilename(dirPath: string, inputFileBase: string) {
+        // This method tells CE where to find the assembly output
+        const outputPath = path.join(dirPath, 'example.s');
+        return outputPath;
+    }
+
+    override optionsForFilter(filters: ParseFiltersAndOutputOptions, outputFilename: string, userOptions: string[]) {
+        if (filters.binary) return ['build'];
+        return ['build', '--emit=asm'];
+    }
+
+    override getSharedLibraryPathsAsArguments() {
+        return [];
+    }
+
+    override getExecutableFilename(dirPath: string, outputFilebase: string) {
+        return path.join(dirPath, 'example');
+    }
+}
