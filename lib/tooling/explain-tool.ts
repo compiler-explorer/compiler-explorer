@@ -22,13 +22,42 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import {ExecutionOptions} from '../../types/compilation/compilation.interfaces.js';
+import {CompilationInfo, ExecutionOptions} from '../../types/compilation/compilation.interfaces.js';
 import {UnprocessedExecResult} from '../../types/execution/execution.interfaces.js';
+import {ToolResult} from '../../types/tool.interfaces.js';
+import {OptionsHandlerLibrary} from '../options-handler.js';
 import {BaseTool} from './base-tool.js';
 
 export class ExplainTool extends BaseTool {
     static get key() {
         return 'explain-tool';
+    }
+
+    override async runTool(
+        compilationInfo: CompilationInfo,
+        inputFilepath?: string,
+        args?: string[],
+        stdin?: string,
+        supportedLibraries?: Record<string, OptionsHandlerLibrary>,
+        dontAppendInputFilepath?: boolean,
+    ): Promise<ToolResult> {
+        // Get the API endpoint from configuration
+        const apiEndpoint = this.env.ceProps('explainApiEndpoint');
+
+        if (!apiEndpoint) {
+            throw new Error('Claude Explain API endpoint not configured (explainApiEndpoint)');
+        }
+
+        // Return a minimal result with the API endpoint as custom data
+        return {
+            id: this.tool.id,
+            name: this.tool.name,
+            code: 0,
+            stdout: [],
+            stderr: [],
+            // Add API endpoint as a custom field (will be preserved in JSON)
+            explainApiEndpoint: apiEndpoint,
+        } as ToolResult & {explainApiEndpoint: string};
     }
 
     // We don't need to execute anything for this tool

@@ -30,7 +30,6 @@ import _ from 'underscore';
 import {CompilationResult} from '../compilation/compilation.interfaces.js';
 import {CompilerInfo} from '../compiler.interfaces.js';
 import {Hub} from '../hub.js';
-import {options} from '../options.js';
 import {SentryCapture} from '../sentry.js';
 import * as utils from '../utils.js';
 import {FontScale} from '../widgets/fontscale.js';
@@ -70,8 +69,8 @@ export class ExplainHtmlView extends Pane<PaneState> {
 
     constructor(hub: Hub, container: Container, state: PaneState) {
         super(hub, container, state);
-        // TODO - get this from the server in the tool? don't have a fallback here
-        this.explainApiEndpoint = (options.explainApiEndpoint as string) || 'https://api.compiler-explorer.com/explain';
+        // API endpoint will be set from server-provided tool configuration
+        this.explainApiEndpoint = '';
 
         this.loadingElement = this.domRoot.find('.explain-loading');
         this.consentElement = this.domRoot.find('.explain-consent');
@@ -127,6 +126,20 @@ export class ExplainHtmlView extends Pane<PaneState> {
 
             if (!isToolAvailable) {
                 this.contentElement.text('Claude Explain is not available for this compiler');
+                return;
+            }
+
+            // Look for the explain tool result to get the API endpoint
+            let toolResult;
+            if (result.tools) {
+                toolResult = _.find(result.tools, tool => tool.id === 'explain');
+            }
+
+            if (toolResult && (toolResult as any).explainApiEndpoint) {
+                this.explainApiEndpoint = (toolResult as any).explainApiEndpoint;
+            } else if (!this.explainApiEndpoint) {
+                // Only show error if we don't already have an endpoint from a previous result
+                this.contentElement.text('Error: Claude Explain API endpoint not received from server');
                 return;
             }
 
@@ -190,6 +203,11 @@ export class ExplainHtmlView extends Pane<PaneState> {
 
     private async fetchExplanation(): Promise<void> {
         if (!this.lastResult || !ExplainHtmlView.consentGiven || !this.compiler) return;
+
+        if (!this.explainApiEndpoint) {
+            this.contentElement.text('Error: Claude Explain API endpoint not configured');
+            return;
+        }
 
         this.contentElement.empty();
         this.showLoading();
