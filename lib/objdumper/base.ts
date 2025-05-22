@@ -22,6 +22,17 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
+import type {ExecutionOptions} from '../../types/compilation/compilation.interfaces.js';
+import type {UnprocessedExecResult} from '../../types/execution/execution.interfaces.js';
+
+export interface ObjdumpResult {
+    code: number;
+    stdout?: string;
+    stderr?: string;
+    objdumpTime?: string;
+    asm?: string;
+}
+
 export abstract class BaseObjdumper {
     constructor(
         protected readonly intelAsmOptions: string[],
@@ -45,6 +56,32 @@ export abstract class BaseObjdumper {
         if (objdumperArguments) args.push(...objdumperArguments);
 
         return args;
+    }
+
+    async executeObjdump(
+        objdumperPath: string,
+        args: string[],
+        execOptions: ExecutionOptions,
+        exec: (filepath: string, args: string[], options: ExecutionOptions) => Promise<UnprocessedExecResult>,
+        postProcessOutput?: (output: string) => string,
+    ): Promise<ObjdumpResult> {
+        const objResult = await exec(objdumperPath, args, execOptions);
+
+        if (objResult.code === 0) {
+            let asm = objResult.stdout;
+            if (postProcessOutput) {
+                asm = postProcessOutput(asm);
+            }
+            return {
+                code: 0,
+                objdumpTime: objResult.execTime.toString(),
+                asm: asm,
+            };
+        }
+        return {
+            code: objResult.code,
+            stderr: objResult.stderr,
+        };
     }
 
     // There's no way in TS to do an abstract static members and interfaces don't allow "static" at all.
