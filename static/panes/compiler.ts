@@ -1782,6 +1782,8 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
                     this.emulateC64Prg(artifact);
                 } else if (artifact.type === ArtifactType.heaptracktxt) {
                     this.offerViewInSpeedscope(artifact);
+                } else if (artifact.type === ArtifactType.gbrom) {
+                    this.emulateGameBoyROM(artifact.content);
                 }
             }
         }
@@ -1986,6 +1988,35 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
                             prg.content;
 
                         window.open(url, '_blank');
+                    });
+                },
+            },
+        );
+    }
+
+    emulateGameBoyROM(gbrom: string): void {
+        const dialog = $('#gbemu');
+
+        this.alertSystem.notify(
+            'Click <a target="_blank" id="emulink" style="cursor:pointer;" click="javascript:;">here</a> to emulate',
+            {
+                group: 'emulation',
+                collapseSimilar: true,
+                dismissTime: 10000,
+                onBeforeShow: elem => {
+                    elem.find('#emulink').on('click', () => {
+                        BootstrapUtils.showModal(dialog);
+
+                        const gbemuframe = dialog.find('#gbemuframe')[0];
+                        assert(gbemuframe instanceof HTMLIFrameElement);
+                        if ('contentWindow' in gbemuframe) {
+                            const emuwindow = unwrap(gbemuframe.contentWindow);
+                            const tmstr = Date.now();
+                            // TODO: Update URL once wasmboy-ceweb is hosted on CE CDN
+                            // For now, this follows the same pattern as other emulators
+                            emuwindow.location =
+                                'https://static.ce-cdn.net/wasmboy-ceweb/index.html?' + tmstr + '#b64gb=' + gbrom;
+                        }
                     });
                 },
             },
