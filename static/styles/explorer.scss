@@ -252,6 +252,12 @@ body {
     min-height: 2.5rem;
 }
 
+.ai-disclaimer {
+    display: flex;
+    align-items: center;
+    user-select: none;
+}
+
 .navbar-godbolt {
     padding: 0;
 }

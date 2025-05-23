@@ -2,6 +2,9 @@
   .explain-container.d-flex.flex-column.h-100
     .top-bar.btn-toolbar.options-toolbar.bg-light.flex-shrink-0(role="toolbar")
       include ../../font-size
+      .ai-disclaimer.text-muted.small.mx-2(title="AI-generated explanations may contain errors or inaccuracies")
+        i.fas.fa-info-circle.me-1
+        | AI may be inaccurate
       .status.ms-auto
         i.status-icon.fas.d-none
     .explain-consent.d-none.flex-shrink-0
