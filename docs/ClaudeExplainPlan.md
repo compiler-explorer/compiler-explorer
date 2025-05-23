@@ -80,3 +80,4 @@ We've implemented direct API calls from the client using `fetch` inside the `Exp
 5. **Update privacy policy** - we need to mention this in the privacy policy, and check the wording on the "Send my code" consent thingy.
 6. Proper theming support across all color schemes. we seem to have put the dark theme in the main sccs.
 7. Disclaimers about AI limitations and potential inaccuracies. Better and longer text here
+8. Be much clearer about what information is sent before the first submission. Folks didn't necessarily know the source was sent too
