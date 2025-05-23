@@ -63,19 +63,14 @@ export abstract class BaseObjdumper {
         args: string[],
         execOptions: ExecutionOptions,
         exec: (filepath: string, args: string[], options: ExecutionOptions) => Promise<UnprocessedExecResult>,
-        postProcessOutput?: (output: string) => string,
     ): Promise<ObjdumpResult> {
         const objResult = await exec(objdumperPath, args, execOptions);
 
         if (objResult.code === 0) {
-            let asm = objResult.stdout;
-            if (postProcessOutput) {
-                asm = postProcessOutput(asm);
-            }
             return {
                 code: 0,
                 objdumpTime: objResult.execTime.toString(),
-                asm: asm,
+                asm: objResult.stdout,
             };
         }
         return {

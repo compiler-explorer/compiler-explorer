@@ -673,12 +673,11 @@ export class BaseCompiler {
                 args,
                 execOptions,
                 this.exec.bind(this),
-                this.postProcessObjdumpOutput.bind(this),
             );
 
             if (objResult.code === 0) {
                 result.objdumpTime = objResult.objdumpTime;
-                result.asm = objResult.asm;
+                result.asm = this.postProcessObjdumpOutput(objResult.asm);
             } else {
                 logger.error(`Error executing objdump ${this.compiler.objdumper}`, objResult);
                 result.asm = `<No output: objdump returned ${objResult.code}>`;

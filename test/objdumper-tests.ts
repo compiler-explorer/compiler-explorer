@@ -96,43 +96,6 @@ describe('Objdumper', () => {
             expect(result.asm).toBeUndefined();
             expect(result.stderr).toBe('objdump: test.o: No such file');
         });
-
-        it('should apply post-processing to output', async () => {
-            const objdumper = new DefaultObjdumper();
-
-            // Mock exec function
-            const mockExec = async (
-                filepath: string,
-                args: string[],
-                options: ExecutionOptions,
-            ): Promise<UnprocessedExecResult> => {
-                return {
-                    code: 0,
-                    okToCache: true,
-                    filenameTransform: (f: string) => f,
-                    stdout: 'original output',
-                    stderr: '',
-                    execTime: 100,
-                    timedOut: false,
-                    truncated: false,
-                };
-            };
-
-            // Post-processor that transforms the output
-            const postProcess = (output: string) => output.toUpperCase();
-
-            const result = await objdumper.executeObjdump(
-                '/usr/bin/objdump',
-                ['-d', 'test.o'],
-                {maxOutput: 1024},
-                mockExec,
-                postProcess,
-            );
-
-            expect(result.code).toBe(0);
-            expect(result.asm).toBe('ORIGINAL OUTPUT');
-            expect(result.objdumpTime).toBe('100');
-        });
     });
 
     describe('getDefaultArgs', () => {
