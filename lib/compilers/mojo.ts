@@ -49,9 +49,6 @@ export class MojoCompiler extends BaseCompiler {
 
     override optionsForFilter(filters: ParseFiltersAndOutputOptions, outputFilename: string, userOptions: string[]) {
         if (filters.binary) return ['build'];
-        if ((filters as any).produceIr) {
-            return ['build', '--emit=llvm', '-o', outputFilename];
-        }
         return ['build', '--emit=asm', '-o', outputFilename];
     }
 
