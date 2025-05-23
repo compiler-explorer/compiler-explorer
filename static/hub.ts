@@ -37,6 +37,7 @@ import {
     DIFF_VIEW_COMPONENT_NAME,
     EDITOR_COMPONENT_NAME,
     EXECUTOR_COMPONENT_NAME,
+    EXPLAIN_VIEW_COMPONENT_NAME,
     FLAGS_VIEW_COMPONENT_NAME,
     GCC_DUMP_VIEW_COMPONENT_NAME,
     GNAT_DEBUG_TREE_VIEW_COMPONENT_NAME,
@@ -165,6 +166,7 @@ export class Hub {
         layout.registerComponent(CONFORMANCE_VIEW_COMPONENT_NAME, (c: GLC, s: any) =>
             this.conformanceViewFactory(c, s),
         );
+        layout.registerComponent(EXPLAIN_VIEW_COMPONENT_NAME, (c: GLC, s: any) => this.explainViewFactory(c, s));
 
         layout.eventHub.on(
             'editorOpen',
@@ -461,10 +463,6 @@ export class Hub {
     }
 
     public toolFactory(container: GoldenLayout.Container, state: any): any /* typeof Tool */ {
-        // Use ExplainHtmlView for the 'explain' tool
-        if (state.toolId === 'explain') {
-            return new ExplainHtmlView(this, container, state);
-        }
         return new Tool(this, container, state);
     }
 
@@ -598,5 +596,9 @@ export class Hub {
 
     public conformanceViewFactory(container: GoldenLayout.Container, state: any): any /* typeof ConformanceView */ {
         return new ConformanceView(this, container, state);
+    }
+
+    public explainViewFactory(container: GoldenLayout.Container, state: any): ExplainHtmlView {
+        return new ExplainHtmlView(this, container, state);
     }
 }

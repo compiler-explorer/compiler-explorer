@@ -30,6 +30,7 @@ import _ from 'underscore';
 import {CompilationResult} from '../compilation/compilation.interfaces.js';
 import {CompilerInfo} from '../compiler.interfaces.js';
 import {Hub} from '../hub.js';
+import {options} from '../options.js';
 import {SentryCapture} from '../sentry.js';
 import * as utils from '../utils.js';
 import {FontScale} from '../widgets/fontscale.js';
@@ -56,16 +57,14 @@ interface ClaudeExplainResponse {
 // TODO: Improvement opportunities for ExplainHtmlView:
 // 1. Extract loading state management (showLoading/hideLoading) to base class or mixin
 // 2. Create explain-html-view.interfaces.ts file for consistency with other panes
-// 3. Fix type casting in explain-tool.ts (see TODO there)
-// 4. Extract markdown styles to shared markdown.scss (221 lines of duplication)
-// 5. Add caching for identical code/compiler combinations to improve performance
-// 6. Consider state machine pattern for clearer UI state transitions
-// 7. Add tests: unit tests for ExplainTool, frontend tests for ExplainHtmlView
-// 8. Improve error handling with different UI states for different error types
-// 9. Rename from "html" - Just `ExplainView` etc
-// 10. Consider making this a "Pane" instead of a tool, and fixing up the knock-on effects
-// 11. Apply theming correctly (pink mode is broken)
-// 12. Address TODOs in the documentation, and tidy that up too.
+// 3. Extract markdown styles to shared markdown.scss (221 lines of duplication)
+// 4. Add caching for identical code/compiler combinations to improve performance
+// 5. Consider state machine pattern for clearer UI state transitions
+// 6. Add tests: frontend tests for ExplainHtmlView
+// 7. Improve error handling with different UI states for different error types
+// 8. Rename from "html" - Just `ExplainView` etc
+// 9. Apply theming correctly (pink mode is broken)
+// 10. Address TODOs in the documentation, and tidy that up too.
 export class ExplainHtmlView extends Pane<PaneState> {
     private lastResult: CompilationResult | null = null;
     private compiler: CompilerInfo | null = null;
@@ -82,8 +81,8 @@ export class ExplainHtmlView extends Pane<PaneState> {
 
     constructor(hub: Hub, container: Container, state: PaneState) {
         super(hub, container, state);
-        // API endpoint will be set from server-provided tool configuration
-        this.explainApiEndpoint = '';
+        // API endpoint from global options
+        this.explainApiEndpoint = options.explainApiEndpoint || '';
 
         this.loadingElement = this.domRoot.find('.explain-loading');
         this.consentElement = this.domRoot.find('.explain-consent');
@@ -104,8 +103,8 @@ export class ExplainHtmlView extends Pane<PaneState> {
         this.contentElement.text('Waiting for compilation...');
         this.isAwaitingInitialResults = true;
 
-        // Emit standard tool opened event
-        this.eventHub.emit('toolOpened', this.compilerInfo.compilerId, this.getCurrentState());
+        // Emit explain view opened event
+        this.eventHub.emit('explainViewOpened', this.compilerInfo.compilerId);
     }
 
     override getInitialHTML(): string {
@@ -132,29 +131,7 @@ export class ExplainHtmlView extends Pane<PaneState> {
             if (id !== this.compilerInfo.compilerId) return;
             this.compiler = compiler;
 
-            const foundTool = _.find(compiler.tools, tool => tool.tool.id === 'explain');
-            const isToolAvailable = !!foundTool;
-            this.toggleUsable(isToolAvailable);
             this.lastResult = result;
-
-            if (!isToolAvailable) {
-                this.contentElement.text('Claude Explain is not available for this compiler');
-                return;
-            }
-
-            // Look for the explain tool result to get the API endpoint
-            let toolResult;
-            if (result.tools) {
-                toolResult = _.find(result.tools, tool => tool.id === 'explain');
-            }
-
-            if (toolResult && (toolResult as any).explainApiEndpoint) {
-                this.explainApiEndpoint = (toolResult as any).explainApiEndpoint;
-            } else if (!this.explainApiEndpoint) {
-                // Only show error if we don't already have an endpoint from a previous result
-                this.contentElement.text('Error: Claude Explain API endpoint not received from server');
-                return;
-            }
 
             // Mark that we've received our first result
             this.isAwaitingInitialResults = false;
@@ -173,14 +150,6 @@ export class ExplainHtmlView extends Pane<PaneState> {
         } catch (e: any) {
             this.contentElement.text('javascript error: ' + e.message);
             SentryCapture(e);
-        }
-    }
-
-    private toggleUsable(isUsable: boolean): void {
-        if (isUsable) {
-            this.contentElement.css('opacity', '1');
-        } else {
-            this.contentElement.css('opacity', '0.5');
         }
     }
 
@@ -288,17 +257,8 @@ export class ExplainHtmlView extends Pane<PaneState> {
         return 'Claude Explain';
     }
 
-    override getCurrentState() {
-        const state = super.getCurrentState();
-        return {
-            ...state,
-            toolId: 'explain',
-            selection: undefined, // Required for NewToolSettings type but we don't have a Monaco editor
-        };
-    }
-
     override close(): void {
-        this.eventHub.emit('toolClosed', this.compilerInfo.compilerId, this.getCurrentState());
+        this.eventHub.emit('explainViewClosed', this.compilerInfo.compilerId);
         this.eventHub.unsubscribe();
     }
 }

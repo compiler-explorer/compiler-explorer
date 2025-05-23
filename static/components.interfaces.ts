@@ -62,6 +62,7 @@ export const GNAT_DEBUG_VIEW_COMPONENT_NAME = 'gnatdebug';
 export const RUST_MACRO_EXP_VIEW_COMPONENT_NAME = 'rustmacroexp';
 export const RUST_HIR_VIEW_COMPONENT_NAME = 'rusthir';
 export const DEVICE_VIEW_COMPONENT_NAME = 'device';
+export const EXPLAIN_VIEW_COMPONENT_NAME = 'explain';
 
 export interface ComponentConfig<S> {
     type: string;
@@ -325,6 +326,13 @@ export type EmptyDeviceViewState = EmptyState;
 export type PopulatedDeviceViewState = StateWithId & {
     source: string;
     devices: unknown;
+    compilerName: string;
+    editorid: number;
+    treeid: number;
+};
+
+export type EmptyExplainViewState = EmptyState;
+export type PopulatedExplainViewState = StateWithId & {
     compilerName: string;
     editorid: number;
     treeid: number;

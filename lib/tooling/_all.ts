@@ -43,4 +43,3 @@ export {TestingTool} from './testing-tool.js';
 export {BloatyTool} from './bloaty-tool.js';
 export {ClippyTool} from './clippy-tool.js';
 export {BrontoRefactorTool} from './bronto-refactor-tool.js';
-export {ExplainTool} from './explain-tool.js';

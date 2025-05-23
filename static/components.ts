@@ -38,6 +38,7 @@ import {
     DIFF_VIEW_COMPONENT_NAME,
     EDITOR_COMPONENT_NAME,
     EXECUTOR_COMPONENT_NAME,
+    EXPLAIN_VIEW_COMPONENT_NAME,
     EmptyAstViewState,
     EmptyCfgViewState,
     EmptyClangirViewState,
@@ -46,6 +47,7 @@ import {
     EmptyDiffViewState,
     EmptyEditorState,
     EmptyExecutorState,
+    EmptyExplainViewState,
     EmptyFlagsViewState,
     EmptyGccDumpViewState,
     EmptyGnatDebugTreeViewState,
@@ -86,6 +88,7 @@ import {
     PopulatedDiffViewState,
     PopulatedEditorState,
     PopulatedExecutorState,
+    PopulatedExplainViewState,
     PopulatedFlagsViewState,
     PopulatedGccDumpViewState,
     PopulatedGnatDebugTreeViewState,
@@ -977,6 +980,34 @@ export function getDeviceViewWith(
             compilerName: compilerName,
             editorid: editorid,
             treeid: treeid,
+        },
+    };
+}
+
+/** Get an empty explain view component. */
+export function getExplainView(): ComponentConfig<EmptyExplainViewState> {
+    return {
+        type: 'component',
+        componentName: EXPLAIN_VIEW_COMPONENT_NAME,
+        componentState: {},
+    };
+}
+
+/** Get an explain view with the given configuration. */
+export function getExplainViewWith(
+    id: number,
+    compilerName: string,
+    editorid: number,
+    treeid: number,
+): ComponentConfig<PopulatedExplainViewState> {
+    return {
+        type: 'component',
+        componentName: EXPLAIN_VIEW_COMPONENT_NAME,
+        componentState: {
+            id,
+            compilerName,
+            editorid,
+            treeid,
         },
     };
 }

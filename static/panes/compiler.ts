@@ -187,11 +187,13 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
     private gnatDebugButton: JQuery<HTMLButtonElement>;
     private rustMirButton: JQuery<HTMLButtonElement>;
     private rustMacroExpButton: JQuery<HTMLButtonElement>;
+    private rustHirButton: JQuery<HTMLButtonElement>;
     private haskellCoreButton: JQuery<HTMLButtonElement>;
     private haskellStgButton: JQuery<HTMLButtonElement>;
     private haskellCmmButton: JQuery<HTMLButtonElement>;
     private gccDumpButton: JQuery<HTMLButtonElement>;
     private cfgButton: JQuery<HTMLButtonElement>;
+    private explainButton: JQuery<HTMLButtonElement>;
     private executorButton: JQuery<HTMLButtonElement>;
     private libsButton: JQuery<HTMLButtonElement>;
     private compileInfoLabel: JQuery<HTMLElement>;
@@ -234,7 +236,6 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
     private bottomBar: JQuery<HTMLElement>;
     private statusLabel: JQuery<HTMLElement>;
     private statusIcon: JQuery<HTMLElement>;
-    private rustHirButton: JQuery<HTMLButtonElement>;
     private libsWidget: LibsWidget | null;
     private isLabelCtxKey: monaco.editor.IContextKey<boolean>;
     private revealJumpStackHasElementsCtxKey: monaco.editor.IContextKey<boolean>;
@@ -357,6 +358,7 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
         this.options = state.options || (options.compileOptions[this.currentLangId ?? ''] ?? '');
 
         this.deviceViewOpen = !!state.deviceViewOpen;
+        // explainViewOpen doesn't need to be persisted - views close on reload
         this.flagsViewOpen = state.flagsViewOpen || false;
         this.wantOptInfo = state.wantOptInfo;
         this.selection = state.selection;
@@ -651,6 +653,15 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
 
         const createCfgView = () => {
             return Components.getCfgViewWith(this.id, this.sourceEditorId ?? 0, this.sourceTreeId ?? 0);
+        };
+
+        const createExplainView = () => {
+            return Components.getExplainViewWith(
+                this.id,
+                this.getCompilerName(),
+                this.sourceEditorId ?? 0,
+                this.sourceTreeId ?? 0,
+            );
         };
 
         const createExecutor = () => {
@@ -951,6 +962,19 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
         });
 
         this.container.layoutManager
+            .createDragSource(this.explainButton, createExplainView as any)
+
+            // @ts-ignore
+            ._dragListener.on('dragStart', hidePaneAdder);
+
+        this.explainButton.on('click', () => {
+            const insertPoint =
+                this.hub.findParentRowOrColumn(this.container.parent) ||
+                this.container.layoutManager.root.contentItems[0];
+            insertPoint.addChild(createExplainView());
+        });
+
+        this.container.layoutManager
             .createDragSource(this.executorButton, createExecutor as any)
 
             // @ts-ignore
@@ -964,6 +988,11 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
         });
 
         this.initToolButtons();
+
+        // Hide Claude Explain button if no API endpoint is configured
+        if (!options.explainApiEndpoint) {
+            this.explainButton.parent().hide();
+        }
     }
 
     undefer(): void {
@@ -2480,6 +2509,19 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
         }
     }
 
+    onExplainViewOpened(id: number): void {
+        if (this.id === id) {
+            this.explainButton.prop('disabled', true);
+            this.compile();
+        }
+    }
+
+    onExplainViewClosed(id: number): void {
+        if (this.id === id) {
+            this.explainButton.prop('disabled', false);
+        }
+    }
+
     initFilterButtons(): void {
         this.filterBinaryObjectButton = this.domRoot.find("[data-bind='binaryObject']");
         this.filterBinaryObjectTitle = this.filterBinaryObjectButton.prop('title');
@@ -2543,6 +2585,7 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
         this.haskellCmmButton = this.domRoot.find('.btn.view-haskellCmm');
         this.gccDumpButton = this.domRoot.find('.btn.view-gccdump');
         this.cfgButton = this.domRoot.find('.btn.view-cfg');
+        this.explainButton = this.domRoot.find('.btn.view-explain');
         this.executorButton = this.domRoot.find('.create-executor');
         this.libsButton = this.domRoot.find('.btn.show-libs');
 
@@ -3036,6 +3079,8 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
 
         this.eventHub.on('cfgViewOpened', this.onCfgViewOpened, this);
         this.eventHub.on('cfgViewClosed', this.onCfgViewClosed, this);
+        this.eventHub.on('explainViewOpened', this.onExplainViewOpened, this);
+        this.eventHub.on('explainViewClosed', this.onExplainViewClosed, this);
         this.eventHub.on('requestCompiler', id => {
             if (id === this.id) {
                 this.sendCompiler();
