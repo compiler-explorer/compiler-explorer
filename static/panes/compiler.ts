@@ -1783,7 +1783,7 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
                 } else if (artifact.type === ArtifactType.heaptracktxt) {
                     this.offerViewInSpeedscope(artifact);
                 } else if (artifact.type === ArtifactType.gbrom) {
-                    this.emulateGameBoyROM(artifact.content);
+                    this.emulateGameBoyROM(artifact);
                 }
             }
         }
@@ -1994,17 +1994,30 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
         );
     }
 
-    emulateGameBoyROM(gbrom: string): void {
+    emulateGameBoyROM(prg: Artifact): void {
         const dialog = $('#gbemu');
 
         this.alertSystem.notify(
-            'Click <a target="_blank" id="emulink" style="cursor:pointer;" click="javascript:;">here</a> to emulate',
+            'Click <a target="_blank" id="emulink" style="cursor:pointer;" click="javascript:;">here</a> to emulate with a debugger, ' +
+                'or <a target="_blank" id="emulink-play" style="cursor:pointer;" click="javascript:;">here</a> to emulate just to play.',
             {
                 group: 'emulation',
                 collapseSimilar: true,
                 dismissTime: 10000,
                 onBeforeShow: elem => {
                     elem.find('#emulink').on('click', () => {
+                        const tmstr = Date.now();
+                        const url =
+                            'https://static.ce-cdn.net/wasmboy/index.html?' +
+                            tmstr +
+                            '#rom-name=' +
+                            prg.title +
+                            '&rom-data=' +
+                            prg.content;
+                        window.open(url, '_blank');
+                    });
+
+                    elem.find('#emulink-play').on('click', () => {
                         BootstrapUtils.showModal(dialog);
 
                         const gbemuframe = dialog.find('#gbemuframe')[0];
@@ -2012,10 +2025,14 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
                         if ('contentWindow' in gbemuframe) {
                             const emuwindow = unwrap(gbemuframe.contentWindow);
                             const tmstr = Date.now();
-                            // TODO: Update URL once wasmboy-ceweb is hosted on CE CDN
-                            // For now, this follows the same pattern as other emulators
-                            emuwindow.location =
-                                'https://static.ce-cdn.net/wasmboy-ceweb/index.html?' + tmstr + '#b64gb=' + gbrom;
+                            const url =
+                                'https://static.ce-cdn.net/wasmboy/iframe/index.html?' +
+                                tmstr +
+                                '#rom-name=' +
+                                prg.title +
+                                '&rom-data=' +
+                                prg.content;
+                            emuwindow.location = url;
                         }
                     });
                 },
