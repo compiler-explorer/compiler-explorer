@@ -22,6 +22,7 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
+import fs from 'node:fs/promises';
 import path from 'node:path';
 import type {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces.js';
 import {BaseCompiler} from '../base-compiler.js';
@@ -85,7 +86,8 @@ export class MojoCompiler extends BaseCompiler {
             filteredOptions.push(options[i]);
         }
         // Compute the .ll output path
-        const llPath = inputFilename.replace(/\.[^.]+$/, '.ll');
+        const {changeExtension} = await import('../utils.js');
+        const llPath = changeExtension(inputFilename, '.ll');
         const newOptions = [...filteredOptions, '--emit=llvm', '-o', llPath];
         const execOptions = this.getDefaultExecOptions();
         execOptions.maxOutput = 1024 * 1024 * 1024;
@@ -94,7 +96,6 @@ export class MojoCompiler extends BaseCompiler {
             console.error('Mojo IR build failed:', newOptions, output.stderr, output.stdout);
             return {asm: [{text: 'Failed to run compiler to get IR code'}]};
         }
-        const fs = await import('node:fs/promises');
         const irText = await fs.readFile(llPath, 'utf8');
         return {asm: irText.split('\n').map(text => ({text}))};
     }
