@@ -76,15 +76,14 @@ export class MojoCompiler extends BaseCompiler {
         filters: any,
     ) {
         // Remove -o/--emit and their values from options
-        const filteredOptions: string[] = [];
-        for (let i = 0; i < options.length; ++i) {
-            if (options[i] === '-o' || options[i] === '--emit') {
-                i++; // skip the value
-                continue;
-            }
-            if (options[i].startsWith('--emit=')) continue;
-            filteredOptions.push(options[i]);
-        }
+        const filteredOptions: string[] = options.filter(
+            (opt, idx, arr) =>
+                opt !== '-o' &&
+                opt !== '--emit' &&
+                !opt.startsWith('--emit=') &&
+                arr[idx - 1] !== '-o' &&
+                arr[idx - 1] !== '--emit',
+        );
         // Compute the .ll output path
         const {changeExtension} = await import('../utils.js');
         const llPath = changeExtension(inputFilename, '.ll');
