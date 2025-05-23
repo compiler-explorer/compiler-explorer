@@ -24,6 +24,7 @@
 
 import {Container} from 'golden-layout';
 import $ from 'jquery';
+import {LRUCache} from 'lru-cache';
 import {marked} from 'marked';
 import _ from 'underscore';
 // No longer needed with flexbox layout
@@ -54,27 +55,26 @@ interface ClaudeExplainResponse {
     };
 }
 
-// TODO: Improvement opportunities for ExplainHtmlView:
+// TODO: Improvement opportunities for ExplainView:
 // 1. Extract loading state management (showLoading/hideLoading) to base class or mixin
-// 2. Create explain-html-view.interfaces.ts file for consistency with other panes
+// 2. Create explain-view.interfaces.ts file for consistency with other panes
 // 3. Extract markdown styles to shared markdown.scss (221 lines of duplication)
-// 4. Add caching for identical code/compiler combinations to improve performance
 // 5. Consider state machine pattern for clearer UI state transitions
-// 6. Add tests: frontend tests for ExplainHtmlView
+// 6. Add tests: frontend tests for ExplainView
 // 7. Improve error handling with different UI states for different error types
-// 8. Rename from "html" - Just `ExplainView` etc
 // 9. Apply theming correctly (pink mode is broken)
 // 10. Address TODOs in the documentation, and tidy that up too.
-export class ExplainHtmlView extends Pane<PaneState> {
+export class ExplainView extends Pane<PaneState> {
     private lastResult: CompilationResult | null = null;
     private compiler: CompilerInfo | null = null;
-    private loadingElement: JQuery;
+    private statusIcon: JQuery;
     private consentElement: JQuery;
     private contentElement: JQuery;
     private bottomBarElement: JQuery;
     private statsElement: JQuery;
     private explainApiEndpoint: string;
     private fontScale: FontScale;
+    private cache: LRUCache<string, ClaudeExplainResponse>;
 
     // Use a static variable to persist consent across all instances during the session
     private static consentGiven = false;
@@ -84,7 +84,13 @@ export class ExplainHtmlView extends Pane<PaneState> {
         // API endpoint from global options
         this.explainApiEndpoint = options.explainApiEndpoint || '';
 
-        this.loadingElement = this.domRoot.find('.explain-loading');
+        // Initialize cache with same settings as CompilerService
+        this.cache = new LRUCache({
+            maxSize: 200 * 1024,
+            sizeCalculation: n => JSON.stringify(n).length,
+        });
+
+        this.statusIcon = this.domRoot.find('.status-icon');
         this.consentElement = this.domRoot.find('.explain-consent');
         this.contentElement = this.domRoot.find('.explain-content');
         this.bottomBarElement = this.domRoot.find('.explain-bottom-bar');
@@ -94,9 +100,14 @@ export class ExplainHtmlView extends Pane<PaneState> {
         this.fontScale.on('change', this.updateState.bind(this));
 
         this.consentElement.find('.consent-btn').on('click', () => {
-            ExplainHtmlView.consentGiven = true;
+            ExplainView.consentGiven = true;
             this.consentElement.addClass('d-none');
             this.fetchExplanation();
+        });
+
+        // Wire up reload button to bypass cache
+        this.bottomBarElement.find('.explain-reload').on('click', () => {
+            this.fetchExplanation(true);
         });
 
         // Set initial content to avoid showing template content
@@ -139,7 +150,7 @@ export class ExplainHtmlView extends Pane<PaneState> {
             if (result.code !== 0) {
                 // If compilation failed, show error message
                 this.contentElement.text('Cannot explain: Compilation failed');
-            } else if (ExplainHtmlView.consentGiven) {
+            } else if (ExplainView.consentGiven) {
                 // Consent already given, fetch explanation automatically
                 this.fetchExplanation();
             } else {
@@ -154,22 +165,45 @@ export class ExplainHtmlView extends Pane<PaneState> {
     }
 
     private showLoading(): void {
-        this.loadingElement.removeClass('d-none');
+        this.statusIcon
+            .removeClass()
+            .addClass('status-icon fas fa-spinner fa-spin')
+            .css('color', '')
+            .attr('aria-label', 'Generating explanation...');
         this.contentElement.text('Generating explanation...');
     }
 
     private hideLoading(): void {
-        this.loadingElement.addClass('d-none');
+        this.statusIcon.removeClass().addClass('status-icon fas d-none');
+    }
+
+    private showSuccess(): void {
+        this.statusIcon
+            .removeClass()
+            .addClass('status-icon fas fa-check-circle')
+            .css('color', '#4CAF50')
+            .attr('aria-label', 'Explanation generated successfully');
+    }
+
+    private showError(): void {
+        this.statusIcon
+            .removeClass()
+            .addClass('status-icon fas fa-times-circle')
+            .css('color', '#FF6645')
+            .attr('aria-label', 'Error generating explanation');
     }
 
     private showBottomBar(): void {
         this.bottomBarElement.removeClass('d-none');
     }
 
-    private updateStatsInBottomBar(data: ClaudeExplainResponse): void {
+    private updateStatsInBottomBar(data: ClaudeExplainResponse, cacheHit = false): void {
         if (!data.usage) return;
 
         const stats: string[] = [];
+        if (cacheHit) {
+            stats.push('(Cached)');
+        }
         if (data.model) {
             stats.push(`Model: ${data.model}`);
         }
@@ -183,8 +217,22 @@ export class ExplainHtmlView extends Pane<PaneState> {
         this.statsElement.text(stats.join(' | '));
     }
 
-    private async fetchExplanation(): Promise<void> {
-        if (!this.lastResult || !ExplainHtmlView.consentGiven || !this.compiler) return;
+    private generateCacheKey(payload: any): string {
+        // Create a cache key from the request payload
+        // Sort the payload properties to ensure consistent key generation
+        const sortedPayload = {
+            language: payload.language,
+            compiler: payload.compiler,
+            code: payload.code,
+            compilationOptions: payload.compilationOptions?.sort() || [],
+            instructionSet: payload.instructionSet,
+            asm: payload.asm,
+        };
+        return JSON.stringify(sortedPayload);
+    }
+
+    private async fetchExplanation(bypassCache = false): Promise<void> {
+        if (!this.lastResult || !ExplainView.consentGiven || !this.compiler) return;
 
         if (!this.explainApiEndpoint) {
             this.contentElement.text('Error: Claude Explain API endpoint not configured');
@@ -204,6 +252,27 @@ export class ExplainHtmlView extends Pane<PaneState> {
                 asm: this.lastResult.asm,
             };
 
+            const cacheKey = this.generateCacheKey(payload);
+
+            // Check cache first unless bypassing
+            if (!bypassCache) {
+                const cachedResult = this.cache.get(cacheKey);
+                if (cachedResult) {
+                    this.hideLoading();
+                    this.showSuccess();
+                    // Render the cached explanation
+                    this.renderMarkdown(cachedResult.explanation);
+
+                    // Show bottom bar with reload button
+                    this.showBottomBar();
+                    // Show stats if available
+                    if (cachedResult.usage) {
+                        this.updateStatsInBottomBar(cachedResult, true);
+                    }
+                    return;
+                }
+            }
+
             const response = await window.fetch(this.explainApiEndpoint, {
                 method: 'POST',
                 headers: {'Content-Type': 'application/json'},
@@ -218,20 +287,28 @@ export class ExplainHtmlView extends Pane<PaneState> {
             this.hideLoading();
 
             if (data.status === 'error') {
+                this.showError();
                 this.contentElement.text(`Error: ${data.message || 'Unknown error'}`);
                 return;
             }
 
+            this.showSuccess();
+
+            // Cache the successful response
+            this.cache.set(cacheKey, data);
+
             // Render the markdown explanation
             this.renderMarkdown(data.explanation);
 
-            // Show stats in bottom bar
+            // Show bottom bar with reload button
+            this.showBottomBar();
+            // Show stats if available
             if (data.usage) {
-                this.showBottomBar();
                 this.updateStatsInBottomBar(data);
             }
         } catch (error) {
             this.hideLoading();
+            this.showError();
             this.contentElement.text(`Error: ${error instanceof Error ? error.message : String(error)}`);
             SentryCapture(error);
         }

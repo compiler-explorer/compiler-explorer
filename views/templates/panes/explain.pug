@@ -1,12 +1,14 @@
 #explain
-  .top-bar.btn-toolbar.options-toolbar.bg-light.flex-shrink-0(role="toolbar")
-    include ../../font-size
-    .status.ms-auto.explain-loading.d-none
-      i.fas.fa-circle-notch.fa-spin.me-2
-      span Generating explanation...
-  .explain-consent.d-none.flex-shrink-0
-    p.mb-0 Claude Explain will send your code and compilation output to an external API. Continue?
-    button.btn.btn-primary.mt-2.consent-btn Yes, explain this code
-  .explain-content.content.markdown-body.flex-grow-1.overflow-auto
-  .bottom-bar.bg-light.d-none.explain-bottom-bar.flex-shrink-0.px-3.d-flex
-    span.explain-stats.ms-auto
+  .explain-container.d-flex.flex-column.h-100
+    .top-bar.btn-toolbar.options-toolbar.bg-light.flex-shrink-0(role="toolbar")
+      include ../../font-size
+      .status.ms-auto
+        i.status-icon.fas.d-none
+    .explain-consent.d-none.flex-shrink-0
+      p.mb-0 Claude Explain will send your code and compilation output to an external API. Continue?
+      button.btn.btn-primary.mt-2.consent-btn Yes, explain this code
+    .explain-content.content.markdown-body.flex-grow-1.overflow-auto
+    .bottom-bar.bg-light.d-none.explain-bottom-bar.flex-shrink-0.px-3.d-flex.align-items-center
+      button.btn.btn-sm.btn-link.explain-reload(title="Regenerate explanation")
+        i.fas.fa-sync-alt
+      span.explain-stats.ms-auto
