@@ -34,19 +34,24 @@ export class MojoCompiler extends BaseCompiler {
     constructor(info, env) {
         super(info, env);
         this.delayCleanupTemp = true;
+        this.compiler.supportsOptOutput = true;
         this.compiler.supportsIrView = true;
-        this.compiler.irArg = ['--emit=llvm'];
+        this.compiler.irArg = ['--emit', 'llvm'];
+        this.compiler.minIrArgs = ['--emit=llvm'];
     }
 
     override getOutputFilename(dirPath: string, inputFileBase: string) {
         // This method tells CE where to find the assembly output
-        const outputPath = path.join(dirPath, 'example.s');
+        const outputPath = path.join(dirPath, inputFileBase + '.s');
         return outputPath;
     }
 
     override optionsForFilter(filters: ParseFiltersAndOutputOptions, outputFilename: string, userOptions: string[]) {
         if (filters.binary) return ['build'];
-        return ['build', '--emit=asm'];
+        if ((filters as any).produceIr) {
+            return ['build', '--emit=llvm', '-o', outputFilename];
+        }
+        return ['build', '--emit=asm', '-o', outputFilename];
     }
 
     override getSharedLibraryPathsAsArguments() {
@@ -54,6 +59,43 @@ export class MojoCompiler extends BaseCompiler {
     }
 
     override getExecutableFilename(dirPath: string, outputFilebase: string) {
-        return path.join(dirPath, 'example');
+        const executablePath = path.join(dirPath, 'example');
+        return executablePath;
+    }
+
+    override getIrOutputFilename(inputFilename: string): string {
+        return inputFilename.replace(/\.mojo$/, '.ll');
+    }
+
+    override async generateIR(
+        inputFilename: string,
+        options: string[],
+        irOptions: any,
+        produceCfg: boolean,
+        filters: any,
+    ) {
+        // Remove -o/--emit and their values from options
+        const filteredOptions: string[] = [];
+        for (let i = 0; i < options.length; ++i) {
+            if (options[i] === '-o' || options[i] === '--emit') {
+                i++; // skip the value
+                continue;
+            }
+            if (options[i].startsWith('--emit=')) continue;
+            filteredOptions.push(options[i]);
+        }
+        // Compute the .ll output path
+        const llPath = inputFilename.replace(/\.[^.]+$/, '.ll');
+        const newOptions = [...filteredOptions, '--emit=llvm', '-o', llPath];
+        const execOptions = this.getDefaultExecOptions();
+        execOptions.maxOutput = 1024 * 1024 * 1024;
+        const output = await this.runCompiler(this.compiler.exe, newOptions, this.compileFilename, execOptions);
+        if (output.code !== 0) {
+            console.error('Mojo IR build failed:', newOptions, output.stderr, output.stdout);
+            return {asm: [{text: 'Failed to run compiler to get IR code'}]};
+        }
+        const fs = await import('node:fs/promises');
+        const irText = await fs.readFile(llPath, 'utf8');
+        return {asm: irText.split('\n').map(text => ({text}))};
     }
 }
