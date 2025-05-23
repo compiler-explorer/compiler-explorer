@@ -26,6 +26,7 @@ import fs from 'node:fs/promises';
 import path from 'node:path';
 import type {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces.js';
 import {BaseCompiler} from '../base-compiler.js';
+import {changeExtension} from '../utils.js';
 
 export class MojoCompiler extends BaseCompiler {
     static get key() {
@@ -82,7 +83,6 @@ export class MojoCompiler extends BaseCompiler {
                 arr[idx - 1] !== '--emit',
         );
         // Compute the .ll output path
-        const {changeExtension} = await import('../utils.js');
         const llPath = changeExtension(inputFilename, '.ll');
         const newOptions = [...filteredOptions, '--emit=llvm', '-o', llPath];
         const execOptions = this.getDefaultExecOptions();
