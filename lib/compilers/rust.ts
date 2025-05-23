@@ -122,10 +122,12 @@ export class RustCompiler extends BaseCompiler {
         if (possibleEditions.length > 0) {
             let defaultEdition: undefined | string;
             if (!this.compiler.semver || this.isNightly()) {
-                defaultEdition = '2021';
+                defaultEdition = '2024';
             } else {
                 const compilerVersion = new SemVer(this.compiler.semver);
-                if (compilerVersion.compare('1.56.0') >= 0) {
+                if (compilerVersion.compare('1.85.0') >= 0) {
+                    defaultEdition = '2024';
+                } else if (compilerVersion.compare('1.56.0') >= 0) {
                     defaultEdition = '2021';
                 }
             }
