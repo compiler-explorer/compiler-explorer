@@ -1,4 +1,4 @@
-// Copyright (c) 2022, Compiler Explorer Authors
+// Copyright (c) 2025, Compiler Explorer Authors
 // All rights reserved.
 //
 // Redistribution and use in source and binary forms, with or without
@@ -22,25 +22,17 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-export {ClangFormatTool} from './clang-format-tool.js';
-export {ClangQueryTool} from './clang-query-tool.js';
-export {ClangTidyTool} from './clang-tidy-tool.js';
-export {CompilerDropinTool} from './compiler-dropin-tool.js';
-export {LLVMMcaTool} from './llvm-mca-tool.js';
-export {LLVMCovTool} from './llvm-cov-tool.js';
-export {LLVMDWARFDumpTool} from './llvm-dwarfdump-tool.js';
-export {MicrosoftAnalysisTool} from './microsoft-analysis-tool.js';
-export {NmTool} from './nm-tool.js';
-export {OSACATool} from './osaca-tool.js';
-export {PaholeTool} from './pahole-tool.js';
-export {PvsStudioTool} from './pvs-studio-tool.js';
-export {ReadElfTool} from './readelf-tool.js';
-export {RustFmtTool} from './rustfmt-tool.js';
-export {SonarTool} from './sonar-tool.js';
-export {StringsTool} from './strings-tool.js';
-export {x86to6502Tool} from './x86to6502-tool.js';
-export {TestingTool} from './testing-tool.js';
-export {BloatyTool} from './bloaty-tool.js';
-export {ClippyTool} from './clippy-tool.js';
-export {BrontoRefactorTool} from './bronto-refactor-tool.js';
-export {MiriTool} from './miri-tool.js';
+import type {ResultLine} from '../../types/resultline/resultline.interfaces.js';
+import {parseRustOutput} from '../utils.js';
+
+import {BaseTool} from './base-tool.js';
+
+export class MiriTool extends BaseTool {
+    static get key() {
+        return 'miri-tool';
+    }
+
+    override parseOutput(lines: string, inputFilename?: string, pathPrefix?: string): ResultLine[] {
+        return parseRustOutput(lines, inputFilename, pathPrefix);
+    }
+}
