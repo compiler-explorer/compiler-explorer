@@ -667,11 +667,17 @@ export class BaseCompiler {
                 maxOutput: maxSize,
                 customCwd: (result.dirPath as string) || path.dirname(outputFilename),
             };
-            const objResult = await this.exec(this.compiler.objdumper, args, execOptions);
+
+            const objResult = await objdumper.executeObjdump(
+                this.compiler.objdumper,
+                args,
+                execOptions,
+                this.exec.bind(this),
+            );
 
             if (objResult.code === 0) {
-                result.objdumpTime = objResult.execTime;
-                result.asm = this.postProcessObjdumpOutput(objResult.stdout);
+                result.objdumpTime = objResult.objdumpTime;
+                result.asm = this.postProcessObjdumpOutput(objResult.asm);
             } else {
                 logger.error(`Error executing objdump ${this.compiler.objdumper}`, objResult);
                 result.asm = `<No output: objdump returned ${objResult.code}>`;
