@@ -1809,9 +1809,9 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
                             '?' +
                             tmstr +
                             '#customFilename=' +
-                            artifact.name +
+                            encodeURIComponent(artifact.name) +
                             '&b64data=' +
-                            artifact.content;
+                            encodeURIComponent(artifact.content);
                         window.open(speedscope_url);
                     });
                 },
@@ -1878,7 +1878,11 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
                         if ('contentWindow' in miracleMenuFrame) {
                             const emuwindow = unwrap(miracleMenuFrame.contentWindow);
                             const tmstr = Date.now();
-                            emuwindow.location = 'https://xania.org/miracle/miracle.html?' + tmstr + '#b64sms=' + image;
+                            emuwindow.location =
+                                'https://xania.org/miracle/miracle.html?' +
+                                tmstr +
+                                '#b64sms=' +
+                                encodeURIComponent(image);
                         }
                     });
                 },
@@ -1907,7 +1911,10 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
                             const emuwindow = unwrap(speccyemuframe.contentWindow);
                             const tmstr = Date.now();
                             emuwindow.location =
-                                'https://static.ce-cdn.net/jsspeccy/index.html?' + tmstr + '#b64tape=' + image;
+                                'https://static.ce-cdn.net/jsspeccy/index.html?' +
+                                tmstr +
+                                '#b64tape=' +
+                                encodeURIComponent(image);
                         }
                     });
                 },
@@ -1934,7 +1941,10 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
                             const emuwindow = unwrap(jsbeebemuframe.contentWindow);
                             const tmstr = Date.now();
                             emuwindow.location =
-                                'https://bbc.godbolt.org/?' + tmstr + '#embed&autoboot&disc1=b64data:' + bbcdiskimage;
+                                'https://bbc.godbolt.org/?' +
+                                tmstr +
+                                '#embed&autoboot&disc1=b64data:' +
+                                encodeURIComponent(bbcdiskimage);
                         }
                     });
                 },
@@ -1961,7 +1971,10 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
                             const emuwindow = unwrap(jsnesemuframe.contentWindow);
                             const tmstr = Date.now();
                             emuwindow.location =
-                                'https://static.ce-cdn.net/jsnes-ceweb/index.html?' + tmstr + '#b64nes=' + nesrom;
+                                'https://static.ce-cdn.net/jsnes-ceweb/index.html?' +
+                                tmstr +
+                                '#b64nes=' +
+                                encodeURIComponent(nesrom);
                         }
                     });
                 },
@@ -1983,9 +1996,9 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
                             'https://static.ce-cdn.net/viciious/viciious.html?' +
                             tmstr +
                             '#filename=' +
-                            prg.title +
+                            encodeURIComponent(prg.title) +
                             '&b64c64=' +
-                            prg.content;
+                            encodeURIComponent(prg.content);
 
                         window.open(url, '_blank');
                     });
@@ -2011,9 +2024,9 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
                             'https://static.ce-cdn.net/wasmboy/index.html?' +
                             tmstr +
                             '#rom-name=' +
-                            prg.title +
+                            encodeURIComponent(prg.title) +
                             '&rom-data=' +
-                            prg.content;
+                            encodeURIComponent(prg.content);
                         window.open(url, '_blank');
                     });
 
@@ -2029,9 +2042,9 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
                                 'https://static.ce-cdn.net/wasmboy/iframe/index.html?' +
                                 tmstr +
                                 '#rom-name=' +
-                                prg.title +
+                                encodeURIComponent(prg.title) +
                                 '&rom-data=' +
-                                prg.content;
+                                encodeURIComponent(prg.content);
                             emuwindow.location = url;
                         }
                     });
