@@ -81,3 +81,4 @@ We've implemented direct API calls from the client using `fetch` inside the `Exp
 6. Proper theming support across all color schemes. we seem to have put the dark theme in the main sccs.
 7. Disclaimers about AI limitations and potential inaccuracies. Better and longer text here
 8. Be much clearer about what information is sent before the first submission. Folks didn't necessarily know the source was sent too
+9. Support a `// no-ai` magic comment in source to _never_ send to Anthropic etc (cc @hanadusikova)
