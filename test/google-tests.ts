@@ -57,7 +57,7 @@ describe('Google short URL resolver tests', () => {
     it('Handles missing location header', async () => {
         fetch.mockResponse('', {status: 302});
 
-        await expect(resolver.resolve(googlEndpoint)).rejects.toThrow('Missing location url in null');
+        await expect(resolver.resolve(googlEndpoint)).rejects.toThrow('Missing location url');
     });
 
     it('Handles failed requests', async () => {
