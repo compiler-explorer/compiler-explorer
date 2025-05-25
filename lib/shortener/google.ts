@@ -44,10 +44,10 @@ export class ShortLinkResolver {
         if (this.database && fragment) {
             try {
                 const query = this.database.prepare('SELECT expanded_url FROM google_links WHERE fragment = ?');
-                const result = query.get(fragment) as {expanded_url: string} | undefined;
+                const result = query.get(fragment) as {expanded_url: string | null} | undefined;
 
                 if (result) {
-                    if (result.expanded_url === 'NULL') {
+                    if (result.expanded_url === null) {
                         throw new Error('404: Not Found');
                     }
                     return {
