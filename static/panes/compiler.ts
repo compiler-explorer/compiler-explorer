@@ -1782,6 +1782,8 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
                     this.emulateC64Prg(artifact);
                 } else if (artifact.type === ArtifactType.heaptracktxt) {
                     this.offerViewInSpeedscope(artifact);
+                } else if (artifact.type === ArtifactType.gbrom) {
+                    this.emulateGameBoyROM(artifact);
                 }
             }
         }
@@ -1807,9 +1809,9 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
                             '?' +
                             tmstr +
                             '#customFilename=' +
-                            artifact.name +
+                            encodeURIComponent(artifact.name) +
                             '&b64data=' +
-                            artifact.content;
+                            encodeURIComponent(artifact.content);
                         window.open(speedscope_url);
                     });
                 },
@@ -1876,7 +1878,11 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
                         if ('contentWindow' in miracleMenuFrame) {
                             const emuwindow = unwrap(miracleMenuFrame.contentWindow);
                             const tmstr = Date.now();
-                            emuwindow.location = 'https://xania.org/miracle/miracle.html?' + tmstr + '#b64sms=' + image;
+                            emuwindow.location =
+                                'https://xania.org/miracle/miracle.html?' +
+                                tmstr +
+                                '#b64sms=' +
+                                encodeURIComponent(image);
                         }
                     });
                 },
@@ -1905,7 +1911,10 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
                             const emuwindow = unwrap(speccyemuframe.contentWindow);
                             const tmstr = Date.now();
                             emuwindow.location =
-                                'https://static.ce-cdn.net/jsspeccy/index.html?' + tmstr + '#b64tape=' + image;
+                                'https://static.ce-cdn.net/jsspeccy/index.html?' +
+                                tmstr +
+                                '#b64tape=' +
+                                encodeURIComponent(image);
                         }
                     });
                 },
@@ -1932,7 +1941,10 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
                             const emuwindow = unwrap(jsbeebemuframe.contentWindow);
                             const tmstr = Date.now();
                             emuwindow.location =
-                                'https://bbc.godbolt.org/?' + tmstr + '#embed&autoboot&disc1=b64data:' + bbcdiskimage;
+                                'https://bbc.godbolt.org/?' +
+                                tmstr +
+                                '#embed&autoboot&disc1=b64data:' +
+                                encodeURIComponent(bbcdiskimage);
                         }
                     });
                 },
@@ -1959,7 +1971,10 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
                             const emuwindow = unwrap(jsnesemuframe.contentWindow);
                             const tmstr = Date.now();
                             emuwindow.location =
-                                'https://static.ce-cdn.net/jsnes-ceweb/index.html?' + tmstr + '#b64nes=' + nesrom;
+                                'https://static.ce-cdn.net/jsnes-ceweb/index.html?' +
+                                tmstr +
+                                '#b64nes=' +
+                                encodeURIComponent(nesrom);
                         }
                     });
                 },
@@ -1981,11 +1996,57 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
                             'https://static.ce-cdn.net/viciious/viciious.html?' +
                             tmstr +
                             '#filename=' +
-                            prg.title +
+                            encodeURIComponent(prg.title) +
                             '&b64c64=' +
-                            prg.content;
+                            encodeURIComponent(prg.content);
 
                         window.open(url, '_blank');
+                    });
+                },
+            },
+        );
+    }
+
+    emulateGameBoyROM(prg: Artifact): void {
+        const dialog = $('#gbemu');
+
+        this.alertSystem.notify(
+            'Click <a target="_blank" id="emulink" style="cursor:pointer;" click="javascript:;">here</a> to emulate with a debugger, ' +
+                'or <a target="_blank" id="emulink-play" style="cursor:pointer;" click="javascript:;">here</a> to emulate just to play.',
+            {
+                group: 'emulation',
+                collapseSimilar: true,
+                dismissTime: 10000,
+                onBeforeShow: elem => {
+                    elem.find('#emulink').on('click', () => {
+                        const tmstr = Date.now();
+                        const url =
+                            'https://static.ce-cdn.net/wasmboy/index.html?' +
+                            tmstr +
+                            '#rom-name=' +
+                            encodeURIComponent(prg.title) +
+                            '&rom-data=' +
+                            encodeURIComponent(prg.content);
+                        window.open(url, '_blank');
+                    });
+
+                    elem.find('#emulink-play').on('click', () => {
+                        BootstrapUtils.showModal(dialog);
+
+                        const gbemuframe = dialog.find('#gbemuframe')[0];
+                        assert(gbemuframe instanceof HTMLIFrameElement);
+                        if ('contentWindow' in gbemuframe) {
+                            const emuwindow = unwrap(gbemuframe.contentWindow);
+                            const tmstr = Date.now();
+                            const url =
+                                'https://static.ce-cdn.net/wasmboy/iframe/index.html?' +
+                                tmstr +
+                                '#rom-name=' +
+                                encodeURIComponent(prg.title) +
+                                '&rom-data=' +
+                                encodeURIComponent(prg.content);
+                            emuwindow.location = url;
+                        }
                     });
                 },
             },

@@ -129,6 +129,10 @@ export class z88dkCompiler extends BaseCompiler {
         return `${this.outputFilebase}.sms`;
     }
 
+    getGbfilename() {
+        return `${this.outputFilebase}.gb`;
+    }
+
     override async objdump(
         outputFilename: string,
         result: any,
@@ -188,6 +192,11 @@ export class z88dkCompiler extends BaseCompiler {
             const smsFilepath = path.join(result.dirPath, this.getSmsfilename());
             if (await utils.fileExists(smsFilepath)) {
                 await addArtifactToResult(result, smsFilepath, ArtifactType.smsrom);
+            }
+
+            const gbFilepath = path.join(result.dirPath, this.getGbfilename());
+            if (await utils.fileExists(gbFilepath)) {
+                await addArtifactToResult(result, gbFilepath, ArtifactType.gbrom);
             }
         }
 

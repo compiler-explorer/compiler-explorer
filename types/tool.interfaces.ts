@@ -59,6 +59,7 @@ export enum ArtifactType {
     timetrace = 'timetracejson',
     c64prg = 'c64prg',
     heaptracktxt = 'heaptracktxt',
+    gbrom = 'gbrom',
 }
 
 export type Artifact = {
