@@ -49,7 +49,8 @@ export class LegacyGoogleUrlHandler {
      * @param ceProps - Compiler Explorer properties
      */
     constructor(private readonly ceProps: PropertyGetter) {
-        this.googleShortUrlResolver = new ShortLinkResolver();
+        const sqlitePath = this.ceProps<string | undefined>('googleShortLinkSqlitePath');
+        this.googleShortUrlResolver = new ShortLinkResolver(sqlitePath);
     }
 
     /**
