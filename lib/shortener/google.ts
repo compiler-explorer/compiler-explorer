@@ -75,7 +75,7 @@ export class ShortLinkResolver {
         }
         const targetLocation = res.headers.get('Location');
         if (!targetLocation) {
-            throw new Error(`Missing location url in ${targetLocation}`);
+            throw new Error('Missing location url');
         }
         return {
             longUrl: targetLocation,
