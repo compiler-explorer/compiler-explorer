@@ -50,6 +50,7 @@ export class BuildEnvSetupBase {
     public compilerArch: string | false;
     protected compilerTypeOrGCC: any;
     public compilerSupportsX86: boolean;
+    public compilerSupportsAMD64: boolean;
     public defaultLibCxx: string;
 
     constructor(compilerInfo: CompilerInfo, env: CompilationEnvironment) {
@@ -61,22 +62,54 @@ export class BuildEnvSetupBase {
         this.compilerTypeOrGCC = compilerInfo.compilerType || 'gcc';
         if (this.compilerTypeOrGCC === 'clang-intel') this.compilerTypeOrGCC = 'gcc';
         this.compilerSupportsX86 = !this.compilerArch;
+        this.compilerSupportsAMD64 = this.compilerSupportsX86;
         this.defaultLibCxx = 'libstdc++';
     }
 
     async initialise(execCompilerCachedFunc: ExecCompilerCachedFunc) {
         if (this.compilerArch) return;
+
         await this.hasSupportForArch(execCompilerCachedFunc, 'x86')
             .then(res => (this.compilerSupportsX86 = res))
             .catch(error => {
                 // Log & keep going, we assume x86 is supported
                 logger.error('Could not check for x86 arch support', error);
             });
+
+        if (this.compilerTypeOrGCC === 'win32-vc') {
+            await this.hasSupportForArch(execCompilerCachedFunc, 'x86_64')
+                .then(res => (this.compilerSupportsAMD64 = res))
+                .catch(error => {
+                    logger.error('Could not check for x86_64 arch support', error);
+                });
+
+            if (this.compilerSupportsX86) {
+                this.compilerArch = 'x86';
+            } else if (this.compilerSupportsAMD64) {
+                this.compilerArch = 'x86_64';
+            }
+        }
+
+        logger.debug(
+            `Compiler ${this.compiler.exe} supports x86: ${this.compilerSupportsX86}, x86_64: ${this.compilerSupportsAMD64}`,
+        );
+    }
+
+    protected get_support_check_text(group: string, compilerType: string, arch: string) {
+        if (group.includes('icc')) {
+            if (arch === 'x86') return '-m32';
+            if (arch === 'x86_64') return '-m64';
+        } else if (compilerType === 'win32-vc') {
+            if (arch === 'x86') return 'for x86';
+            if (arch === 'x86_64') return 'for x64';
+            if (arch === 'arm64') return 'for ARM64';
+        }
+
+        return arch;
     }
 
     async hasSupportForArch(execCompilerCached: ExecCompilerCachedFunc, arch: Arch): Promise<boolean> {
         let result: any;
-        let searchFor = arch as string;
         if (this.compiler.exe.includes('icpx')) {
             return arch === 'x86' || arch === 'x86_64';
         }
@@ -85,26 +118,29 @@ export class BuildEnvSetupBase {
         }
         if (this.compiler.group === 'icc') {
             result = await execCompilerCached(this.compiler.exe, ['--help']);
-            if (arch === 'x86') {
-                searchFor = '-m32';
-            } else if (arch === 'x86_64') {
-                searchFor = '-m64';
-            }
-        } else if (this.compilerTypeOrGCC === 'gcc') {
+        } else if (this.compilerTypeOrGCC === 'gcc' || this.compilerTypeOrGCC === 'win32-mingw-gcc') {
             if (this.compiler.exe.includes('/icpx')) {
                 return arch === 'x86' || arch === 'x86_64';
             }
             result = await execCompilerCached(this.compiler.exe, ['--target-help']);
-        } else if (this.compilerTypeOrGCC === 'clang') {
+        } else if (this.compilerTypeOrGCC === 'clang' || this.compilerTypeOrGCC === 'win32-mingw-clang') {
             const binpath = path.dirname(this.compiler.exe);
             const llc = path.join(binpath, 'llc');
             if (await utils.fileExists(llc)) {
                 result = await execCompilerCached(llc, ['--version']);
             }
+        } else if (this.compilerTypeOrGCC === 'win32-vc') {
+            result = await execCompilerCached(this.compiler.exe, []);
         }
 
         if (result) {
-            return result.stdout ? result.stdout.includes(searchFor) : false;
+            const searchFor = this.get_support_check_text(this.compiler.group, this.compilerTypeOrGCC, arch as string);
+            if (this.compilerTypeOrGCC === 'win32-vc' && result.stderr) return result.stderr.includes(searchFor);
+            if (result.stdout) {
+                return result.stdout.includes(searchFor);
+            }
+
+            return false;
         }
 
         return false;
@@ -170,6 +206,12 @@ export class BuildEnvSetupBase {
     }
 
     getTarget(key: CacheKey): string {
+        if (this.compilerTypeOrGCC === 'win32-vc') {
+            if (this.compilerSupportsX86) return 'x86';
+            if (this.compilerSupportsAMD64) return 'x86_64';
+            return '';
+        }
+
         if (!this.compilerSupportsX86) return '';
         if (this.compilerArch) return this.compilerArch;
 

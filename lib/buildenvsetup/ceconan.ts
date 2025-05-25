@@ -22,6 +22,7 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
+import os from 'node:os';
 import path from 'node:path';
 import {Readable} from 'node:stream';
 import zlib from 'node:zlib';
@@ -63,6 +64,7 @@ export class BuildEnvSetupCeConanDirect extends BuildEnvSetupBase {
     protected host: any;
     protected onlyonstaticliblink: any;
     protected extractAllToRoot: boolean;
+    protected conan_os: string;
 
     static get key() {
         return 'ceconan';
@@ -74,6 +76,7 @@ export class BuildEnvSetupCeConanDirect extends BuildEnvSetupBase {
         this.host = compilerInfo.buildenvsetup!.props('host', '');
         this.onlyonstaticliblink = compilerInfo.buildenvsetup!.props('onlyonstaticliblink', '');
         this.extractAllToRoot = false;
+        this.conan_os = os.platform() === 'win32' ? 'Windows' : 'Linux';
     }
 
     async getAllPossibleBuilds(libid: string, version: string): Promise<any> {
@@ -233,7 +236,7 @@ export class BuildEnvSetupCeConanDirect extends BuildEnvSetupBase {
         const flagcollection = '';
 
         return {
-            os: 'Linux',
+            os: this.conan_os,
             build_type: 'Debug',
             compiler: this.compilerTypeOrGCC,
             'compiler.version': this.compiler.id,
@@ -247,7 +250,16 @@ export class BuildEnvSetupCeConanDirect extends BuildEnvSetupBase {
     async findMatchingHash(buildProperties: ConanBuildProperties, possibleBuilds: any) {
         return _.findKey(possibleBuilds, elem => {
             return _.all(buildProperties, (val, key) => {
+                if ((key === 'compiler' || key === 'compiler.version') && elem.settings[key] === 'headeronly') {
+                    return true;
+                }
                 if ((key === 'compiler' || key === 'compiler.version') && elem.settings[key] === 'cshared') {
+                    return true;
+                }
+                if (key === 'compiler.libcxx' && elem.settings['compiler'] === 'headeronly') {
+                    return true;
+                }
+                if (key === 'arch' && elem.settings['compiler'] === 'headeronly') {
                     return true;
                 }
                 if (key === 'compiler.libcxx' && elem.settings['compiler'] === 'cshared') {
