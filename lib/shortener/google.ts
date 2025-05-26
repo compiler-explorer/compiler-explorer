@@ -23,10 +23,21 @@
 // POSSIBILITY OF SUCH DAMAGE.
 
 import {DynamoDB} from '@aws-sdk/client-dynamodb';
+import {Counter} from 'prom-client';
 
 import {awsCredentials} from '../aws.js';
 import {logger} from '../logger.js';
 import {PropertyGetter} from '../properties.interfaces.js';
+
+const GoogleLinkDynamoDbHitCounter = new Counter({
+    name: 'ce_google_link_dynamodb_hits_total',
+    help: 'Total number of successful Google short link lookups from DynamoDB',
+});
+
+const GoogleLinkDynamoDbMissCounter = new Counter({
+    name: 'ce_google_link_dynamodb_misses_total',
+    help: 'Total number of Google short link lookups not found in DynamoDB',
+});
 
 // This will stop working in August 2025.
 // https://developers.googleblog.com/en/google-url-shortener-links-will-no-longer-be-available/
@@ -64,10 +75,16 @@ export class ShortLinkResolver {
                     if (!expandedUrl) {
                         throw new Error('404: Not Found');
                     }
+                    GoogleLinkDynamoDbHitCounter.inc();
                     return {
                         longUrl: expandedUrl,
                     };
                 }
+                // DynamoDB is configured but the link wasn't found
+                GoogleLinkDynamoDbMissCounter.inc();
+                logger.warn(
+                    `Google short link '${fragment}' not found in DynamoDB, falling back to Google URL shortener`,
+                );
             } catch (err) {
                 // If DynamoDB lookup fails, fall back to Google URL shortener
                 logger.error('DynamoDB lookup failed:', err);
@@ -78,6 +95,11 @@ export class ShortLinkResolver {
         //     throw new Error('404: Not Found');
 
         // Fall back to Google URL shortener
+        if (this.dynamoDb && this.tableName) {
+            // If we reach here with DynamoDB configured, it means the link wasn't found
+            logger.warn(`Falling back to Google URL shortener for '${url}' - this indicates missing data in DynamoDB`);
+        }
+
         const settings: RequestInit = {
             method: 'HEAD',
             redirect: 'manual',
