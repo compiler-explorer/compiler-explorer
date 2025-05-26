@@ -111,6 +111,7 @@ export async function initialiseApplication(options: ApplicationOptions): Promis
 
     const serverDependencies = {
         ceProps: ceProps,
+        awsProps: awsProps,
         sponsorConfig: loadSponsorsFromString(
             await fs.readFile(path.join(appArgs.rootDir, 'config', 'sponsors.yaml'), 'utf8'),
         ),

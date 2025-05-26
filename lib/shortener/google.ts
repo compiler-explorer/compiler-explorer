@@ -22,18 +22,27 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import {DatabaseSync} from 'node:sqlite';
+import {DynamoDB} from '@aws-sdk/client-dynamodb';
 
+import {awsCredentials} from '../aws.js';
 import {logger} from '../logger.js';
+import {PropertyGetter} from '../properties.interfaces.js';
 
 // This will stop working in August 2025.
 // https://developers.googleblog.com/en/google-url-shortener-links-will-no-longer-be-available/
 export class ShortLinkResolver {
-    private readonly database?: DatabaseSync;
+    private readonly dynamoDb?: DynamoDB;
+    private readonly tableName?: string;
 
-    constructor(sqlitePath?: string) {
-        if (sqlitePath) {
-            this.database = new DatabaseSync(sqlitePath, {readOnly: true});
+    constructor(awsProps?: PropertyGetter) {
+        if (awsProps) {
+            const tableName = awsProps('googleLinksDynamoTable') as string;
+            if (tableName) {
+                const region = awsProps('region') as string;
+                this.tableName = tableName;
+                this.dynamoDb = new DynamoDB({region: region, credentials: awsCredentials()});
+                logger.info(`Using DynamoDB table ${tableName} in region ${region} for Google link resolution`);
+            }
         }
     }
 
@@ -41,22 +50,27 @@ export class ShortLinkResolver {
         // Extract fragment from URL (e.g., "abcd" from "https://goo.gl/abcd")
         const fragment = url.split('/').pop()?.split('?')[0];
 
-        if (this.database && fragment) {
+        if (this.dynamoDb && this.tableName && fragment) {
             try {
-                const query = this.database.prepare('SELECT expanded_url FROM google_links WHERE fragment = ?');
-                const result = query.get(fragment) as {expanded_url: string | null} | undefined;
+                const result = await this.dynamoDb.getItem({
+                    TableName: this.tableName,
+                    Key: {
+                        fragment: {S: fragment},
+                    },
+                });
 
-                if (result) {
-                    if (result.expanded_url === null) {
+                if (result.Item?.expanded_url) {
+                    const expandedUrl = result.Item.expanded_url.S;
+                    if (!expandedUrl) {
                         throw new Error('404: Not Found');
                     }
                     return {
-                        longUrl: result.expanded_url,
+                        longUrl: expandedUrl,
                     };
                 }
             } catch (err) {
-                // If database lookup fails, fall back to Google URL shortener
-                logger.error('Database lookup failed:', err);
+                // If DynamoDB lookup fails, fall back to Google URL shortener
+                logger.error('DynamoDB lookup failed:', err);
             }
         }
 
