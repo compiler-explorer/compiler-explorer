@@ -58,63 +58,74 @@ export class ShortLinkResolver {
     }
 
     async resolve(url: string): Promise<{longUrl: string}> {
-        // Extract fragment from URL (e.g., "abcd" from "https://goo.gl/abcd")
-        const fragment = url.split('/').pop()?.split('?')[0];
+        const fragment = this.extractFragment(url);
 
-        if (this.dynamoDb && this.tableName && fragment) {
-            try {
-                const result = await this.dynamoDb.getItem({
-                    TableName: this.tableName,
-                    Key: {
-                        fragment: {S: fragment},
-                    },
-                });
-
-                if (result.Item?.expanded_url) {
-                    const expandedUrl = result.Item.expanded_url.S;
-                    if (!expandedUrl) {
-                        throw new Error('404: Not Found');
-                    }
-                    GoogleLinkDynamoDbHitCounter.inc();
-                    return {
-                        longUrl: expandedUrl,
-                    };
-                }
-                // DynamoDB is configured but the link wasn't found
-                GoogleLinkDynamoDbMissCounter.inc();
-                logger.warn(
-                    `Google short link '${fragment}' not found in DynamoDB, falling back to Google URL shortener`,
-                );
-            } catch (err) {
-                // If DynamoDB lookup fails, fall back to Google URL shortener
-                logger.error('DynamoDB lookup failed:', err);
+        if (this.hasDynamoDbConfigured() && fragment) {
+            const dynamoResult = await this.tryDynamoDbLookup(fragment);
+            if (dynamoResult) {
+                return dynamoResult;
             }
         }
 
         // In August 2025, the Google URL shortener will stop working. At that point, use this code:
         //     throw new Error('404: Not Found');
 
-        // Fall back to Google URL shortener
-        if (this.dynamoDb && this.tableName) {
-            // If we reach here with DynamoDB configured, it means the link wasn't found
+        return this.fallbackToGoogleShortener(url);
+    }
+
+    // Exported for testing
+    extractFragment(url: string): string | undefined {
+        return url.split('/').pop()?.split('?')[0];
+    }
+
+    // Exported for testing
+    hasDynamoDbConfigured(): boolean {
+        return !!(this.dynamoDb && this.tableName);
+    }
+
+    private async tryDynamoDbLookup(fragment: string): Promise<{longUrl: string} | null> {
+        try {
+            const result = await this.dynamoDb!.getItem({
+                TableName: this.tableName!,
+                Key: {
+                    fragment: {S: fragment},
+                },
+            });
+
+            const expandedUrl = result.Item?.expanded_url?.S;
+            if (expandedUrl) {
+                GoogleLinkDynamoDbHitCounter.inc();
+                return {longUrl: expandedUrl};
+            }
+
+            GoogleLinkDynamoDbMissCounter.inc();
+            logger.warn(`Google short link '${fragment}' not found in DynamoDB, falling back to Google URL shortener`);
+            return null;
+        } catch (err) {
+            logger.error('DynamoDB lookup failed:', err);
+            return null;
+        }
+    }
+
+    private async fallbackToGoogleShortener(url: string): Promise<{longUrl: string}> {
+        if (this.hasDynamoDbConfigured()) {
             logger.warn(`Falling back to Google URL shortener for '${url}' - this indicates missing data in DynamoDB`);
         }
 
-        const settings: RequestInit = {
+        const res = await fetch(url + '?si=1', {
             method: 'HEAD',
             redirect: 'manual',
-        };
+        });
 
-        const res = await fetch(url + '?si=1', settings);
         if (res.status !== 302) {
             throw new Error(`Got response ${res.status}`);
         }
+
         const targetLocation = res.headers.get('Location');
         if (!targetLocation) {
             throw new Error('Missing location url');
         }
-        return {
-            longUrl: targetLocation,
-        };
+
+        return {longUrl: targetLocation};
     }
 }
