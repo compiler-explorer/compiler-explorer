@@ -114,6 +114,7 @@ describe('Server Module', () => {
                     if (key === 'allowedShortUrlHostRe') return '.*';
                     return '';
                 }),
+                awsProps: vi.fn().mockReturnValue(''),
                 healthcheckController: {
                     createRouter: vi.fn().mockReturnValue(express.Router()),
                 },

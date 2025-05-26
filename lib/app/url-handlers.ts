@@ -47,9 +47,13 @@ export class LegacyGoogleUrlHandler {
     /**
      * Create a new handler for legacy Google URL shortcuts
      * @param ceProps - Compiler Explorer properties
+     * @param awsProps - AWS properties
      */
-    constructor(private readonly ceProps: PropertyGetter) {
-        this.googleShortUrlResolver = new ShortLinkResolver();
+    constructor(
+        private readonly ceProps: PropertyGetter,
+        awsProps: PropertyGetter,
+    ) {
+        this.googleShortUrlResolver = new ShortLinkResolver(awsProps);
     }
 
     /**

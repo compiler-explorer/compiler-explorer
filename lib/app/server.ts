@@ -80,6 +80,7 @@ export async function setupWebServer(
         renderConfig,
         embeddedHandler,
         dependencies.ceProps,
+        dependencies.awsProps,
         getFaviconFilename(appArgs.devMode, appArgs.env),
         options,
         dependencies.clientOptionsHandler,

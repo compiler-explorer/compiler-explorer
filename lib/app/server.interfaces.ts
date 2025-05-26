@@ -84,6 +84,7 @@ export interface WebServerResult {
 
 export interface ServerDependencies {
     ceProps: PropertyGetter;
+    awsProps: PropertyGetter;
     sponsorConfig: Sponsors;
     clientOptionsHandler: ClientOptionsSource;
     storageSolution: string;

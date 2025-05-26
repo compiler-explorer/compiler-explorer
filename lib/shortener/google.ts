@@ -22,32 +22,110 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
+import {DynamoDB} from '@aws-sdk/client-dynamodb';
+import {Counter} from 'prom-client';
+
+import {awsCredentials} from '../aws.js';
+import {logger} from '../logger.js';
+import {PropertyGetter} from '../properties.interfaces.js';
+
+const GoogleLinkDynamoDbHitCounter = new Counter({
+    name: 'ce_google_link_dynamodb_hits_total',
+    help: 'Total number of successful Google short link lookups from DynamoDB',
+});
+
+const GoogleLinkDynamoDbMissCounter = new Counter({
+    name: 'ce_google_link_dynamodb_misses_total',
+    help: 'Total number of Google short link lookups not found in DynamoDB',
+});
+
 // This will stop working in August 2025.
 // https://developers.googleblog.com/en/google-url-shortener-links-will-no-longer-be-available/
 export class ShortLinkResolver {
-    resolve(url: string) {
-        return new Promise<{longUrl: string}>((resolve, reject) => {
-            const settings: RequestInit = {
-                method: 'HEAD',
-                redirect: 'manual',
-            };
+    private readonly dynamoDb?: DynamoDB;
+    private readonly tableName?: string;
 
-            fetch(url + '?si=1', settings)
-                .then((res: Response) => {
-                    if (res.status !== 302) {
-                        reject(`Got response ${res.status}`);
-                        return;
-                    }
-                    const targetLocation = res.headers.get('Location');
-                    if (!targetLocation) {
-                        reject(`Missing location url in ${targetLocation}`);
-                        return;
-                    }
-                    resolve({
-                        longUrl: targetLocation,
-                    });
-                })
-                .catch(err => reject(err.message));
+    constructor(awsProps?: PropertyGetter) {
+        if (awsProps) {
+            const tableName = awsProps('googleLinksDynamoTable', '');
+            if (tableName) {
+                const region = awsProps('region') as string;
+                this.tableName = tableName;
+                this.dynamoDb = new DynamoDB({region: region, credentials: awsCredentials()});
+                logger.info(`Using DynamoDB table ${tableName} in region ${region} for Google link resolution`);
+            }
+        }
+    }
+
+    async resolve(url: string): Promise<{longUrl: string}> {
+        const fragment = this.extractFragment(url);
+
+        if (this.hasDynamoDbConfigured() && fragment) {
+            const dynamoResult = await this.tryDynamoDbLookup(fragment);
+            if (dynamoResult) {
+                return dynamoResult;
+            }
+        }
+
+        // In August 2025, the Google URL shortener will stop working. At that point, use this code:
+        //     throw new Error('404: Not Found');
+
+        return this.fallbackToGoogleShortener(url);
+    }
+
+    // Exported for testing
+    extractFragment(url: string): string | undefined {
+        return url.split('/').pop()?.split('?')[0];
+    }
+
+    // Exported for testing
+    hasDynamoDbConfigured(): boolean {
+        return !!(this.dynamoDb && this.tableName);
+    }
+
+    private async tryDynamoDbLookup(fragment: string): Promise<{longUrl: string} | null> {
+        try {
+            const result = await this.dynamoDb!.getItem({
+                TableName: this.tableName!,
+                Key: {
+                    fragment: {S: fragment},
+                },
+            });
+
+            const expandedUrl = result.Item?.expanded_url?.S;
+            if (expandedUrl) {
+                GoogleLinkDynamoDbHitCounter.inc();
+                return {longUrl: expandedUrl};
+            }
+
+            GoogleLinkDynamoDbMissCounter.inc();
+            logger.warn(`Google short link '${fragment}' not found in DynamoDB, falling back to Google URL shortener`);
+            return null;
+        } catch (err) {
+            logger.error('DynamoDB lookup failed:', err);
+            return null;
+        }
+    }
+
+    private async fallbackToGoogleShortener(url: string): Promise<{longUrl: string}> {
+        if (this.hasDynamoDbConfigured()) {
+            logger.warn(`Falling back to Google URL shortener for '${url}' - this indicates missing data in DynamoDB`);
+        }
+
+        const res = await fetch(url + '?si=1', {
+            method: 'HEAD',
+            redirect: 'manual',
         });
+
+        if (res.status !== 302) {
+            throw new Error(`Got response ${res.status}`);
+        }
+
+        const targetLocation = res.headers.get('Location');
+        if (!targetLocation) {
+            throw new Error('Missing location url');
+        }
+
+        return {longUrl: targetLocation};
     }
 }

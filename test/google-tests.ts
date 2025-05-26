@@ -57,7 +57,7 @@ describe('Google short URL resolver tests', () => {
     it('Handles missing location header', async () => {
         fetch.mockResponse('', {status: 302});
 
-        await expect(resolver.resolve(googlEndpoint)).rejects.toThrow('Missing location url in null');
+        await expect(resolver.resolve(googlEndpoint)).rejects.toThrow('Missing location url');
     });
 
     it('Handles failed requests', async () => {
@@ -73,6 +73,66 @@ describe('Google short URL resolver tests', () => {
         // This taken from https://github.com/compiler-explorer/compiler-explorer/issues/113
         await expect(resolver.resolve('https://goo.gl/F02h38')).resolves.toEqual({
             longUrl: expect.stringContaining('http://gcc.godbolt.org/#'),
+        });
+    });
+});
+
+describe('ShortLinkResolver utility methods', () => {
+    const resolver = new google.ShortLinkResolver();
+
+    describe('extractFragment', () => {
+        it('should extract fragment from goo.gl URL', () => {
+            expect(resolver.extractFragment('https://goo.gl/abcd1234')).toBe('abcd1234');
+        });
+
+        it('should extract fragment from URL with query parameters', () => {
+            expect(resolver.extractFragment('https://goo.gl/xyz789?param=value')).toBe('xyz789');
+        });
+
+        it('should handle URL with multiple query parameters', () => {
+            expect(resolver.extractFragment('https://goo.gl/test123?foo=bar&baz=qux')).toBe('test123');
+        });
+
+        it('should handle URL with fragment and query', () => {
+            expect(resolver.extractFragment('https://goo.gl/hello?world=123')).toBe('hello');
+        });
+
+        it('should handle simple fragment', () => {
+            expect(resolver.extractFragment('https://goo.gl/x')).toBe('x');
+        });
+
+        it('should handle URL ending with slash', () => {
+            expect(resolver.extractFragment('https://goo.gl/fragment/')).toBe('');
+        });
+
+        it('should return empty string for empty URL', () => {
+            expect(resolver.extractFragment('')).toBe('');
+        });
+
+        it('should return empty string for URL with no path segments', () => {
+            expect(resolver.extractFragment('https://')).toBe('');
+        });
+
+        it('should handle URL without fragment', () => {
+            expect(resolver.extractFragment('https://goo.gl/')).toBe('');
+        });
+    });
+
+    describe('hasDynamoDbConfigured', () => {
+        it('should return false for resolver without DynamoDB config', () => {
+            const basicResolver = new google.ShortLinkResolver();
+            expect(basicResolver.hasDynamoDbConfigured()).toBe(false);
+        });
+
+        it('should return false for resolver with undefined props', () => {
+            const basicResolver = new google.ShortLinkResolver(undefined);
+            expect(basicResolver.hasDynamoDbConfigured()).toBe(false);
+        });
+
+        it('should return false for resolver with empty props', () => {
+            const mockProps = vi.fn().mockReturnValue(undefined);
+            const basicResolver = new google.ShortLinkResolver(mockProps);
+            expect(basicResolver.hasDynamoDbConfigured()).toBe(false);
         });
     });
 });
