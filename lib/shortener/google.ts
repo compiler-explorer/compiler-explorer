@@ -47,7 +47,7 @@ export class ShortLinkResolver {
 
     constructor(awsProps?: PropertyGetter) {
         if (awsProps) {
-            const tableName = awsProps('googleLinksDynamoTable') as string;
+            const tableName = awsProps('googleLinksDynamoTable', '');
             if (tableName) {
                 const region = awsProps('region') as string;
                 this.tableName = tableName;
