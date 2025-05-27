@@ -61,18 +61,13 @@ const stringifyKeysInOrder = (data: any): string => {
 
 function testFilter(filename: string, suffix: string, filters: ParseFiltersAndOutputOptions) {
     const testName = path.basename(filename + suffix);
-    it(
-        testName,
-        // Bump the timeout a bit so that we don't fail for slow cases
-        {timeout: 10000},
-        async () => {
-            const result = processAsm(filename, filters);
-            delete result.parsingTime;
-            delete result.filteredCount;
-            // TODO normalize line endings?
-            await expect(stringifyKeysInOrder(result)).toMatchFileSnapshot(path.join(casesRoot, testName + '.json'));
-        },
-    );
+    it(testName, async () => {
+        const result = processAsm(filename, filters);
+        delete result.parsingTime;
+        delete result.filteredCount;
+        // TODO normalize line endings?
+        await expect(stringifyKeysInOrder(result)).toMatchFileSnapshot(path.join(casesRoot, testName + '.json'));
+    }, 10000); // Bump the timeout a bit so that we don't fail for slow cases
 }
 
 describe('Filter test cases', () => {
