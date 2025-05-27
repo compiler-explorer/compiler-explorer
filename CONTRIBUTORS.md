@@ -161,3 +161,4 @@ From oldest to newest contributor, we would like to thank:
 - [RongDong Xu](https://github.com/arong)
 - [Adrien Bertrand](https://github.com/adriweb)
 - [Roberto Parolin](https://github.com/rparolin)
+- [Alfredo Correa](https://github.com/correaa)
