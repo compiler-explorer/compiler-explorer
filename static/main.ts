@@ -634,10 +634,7 @@ function start() {
             document.location = document.URL.replace('/z/', '/resetlayout/');
         }
 
-        layout = new GoldenLayout(defaultConfig, root);
-        hub = new Hub(layout, subLangId, defaultLangId);
-        [themer, settings] = setupSettings(hub);
-        hub.initLayout();
+        [layout, hub, themer, settings] = initializeLayout(defaultConfig, root);
     }
 
     setSentryLayout(layout);
