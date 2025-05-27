@@ -143,6 +143,7 @@ export function setupLoggingMiddleware(isDevMode: boolean, router: Router): void
  * @param renderConfig - Function to render configuration for templates
  * @param embeddedHandler - Handler for embedded mode
  * @param ceProps - Compiler Explorer properties
+ * @param awsProps - AWS properties
  * @param faviconFilename - Favicon filename
  * @param options - Server options
  * @param clientOptionsHandler - Client options handler
@@ -152,11 +153,12 @@ export function setupBasicRoutes(
     renderConfig: RenderConfigFunction,
     embeddedHandler: express.Handler,
     ceProps: PropertyGetter,
+    awsProps: PropertyGetter,
     faviconFilename: string,
     options: ServerOptions,
     clientOptionsHandler: ClientOptionsSource,
 ): void {
-    const legacyGoogleUrlHandler = new LegacyGoogleUrlHandler(ceProps);
+    const legacyGoogleUrlHandler = new LegacyGoogleUrlHandler(ceProps, awsProps);
 
     router
         .use(compression())

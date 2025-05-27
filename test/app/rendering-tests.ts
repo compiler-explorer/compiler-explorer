@@ -103,6 +103,7 @@ describe('Rendering Module', () => {
                     getAllTopIcons: vi.fn().mockReturnValue([]),
                 },
                 ceProps: vi.fn(),
+                awsProps: vi.fn(),
             };
         });
 

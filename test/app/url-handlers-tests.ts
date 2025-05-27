@@ -64,6 +64,7 @@ describe('Url Handlers', () => {
     describe('LegacyGoogleUrlHandler', () => {
         let handler: LegacyGoogleUrlHandler;
         let mockCeProps: any;
+        let mockAwsProps: any;
         let mockRequest: Partial<Request>;
         let mockResponse: Partial<Response>;
         let mockNext: any;
@@ -73,7 +74,8 @@ describe('Url Handlers', () => {
                 if (key === 'allowedShortUrlHostRe') return '.*';
                 return '';
             });
-            handler = new LegacyGoogleUrlHandler(mockCeProps);
+            mockAwsProps = vi.fn().mockReturnValue('');
+            handler = new LegacyGoogleUrlHandler(mockCeProps, mockAwsProps);
 
             // Mock ShortLinkResolver (private property)
             Object.defineProperty(handler, 'googleShortUrlResolver', {
