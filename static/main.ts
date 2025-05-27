@@ -615,11 +615,17 @@ function start() {
     let hub: Hub;
     let themer: Themer;
     let settings: SiteSettings;
-    try {
-        layout = new GoldenLayout(config, root);
-        hub = new Hub(layout, subLangId, defaultLangId);
-        [themer, settings] = setupSettings(hub);
+
+    function initializeLayout(config: any, root: JQuery<HTMLElement>): [GoldenLayout, Hub, Themer, SiteSettings] {
+        const layout = new GoldenLayout(config, root);
+        const hub = new Hub(layout, subLangId, defaultLangId);
+        const [themer, settings] = setupSettings(hub);
         hub.initLayout();
+        return [layout, hub, themer, settings];
+    }
+
+    try {
+        [layout, hub, themer, settings] = initializeLayout(config, root);
     } catch (e) {
         SentryCapture(e, 'goldenlayout/hub setup');
         console.log('Exception processing state, resetting layout to default', e);
