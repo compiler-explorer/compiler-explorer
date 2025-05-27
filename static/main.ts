@@ -613,11 +613,16 @@ function start() {
 
     let layout: GoldenLayout;
     let hub: Hub;
+    let themer: Themer;
+    let settings: SiteSettings;
     try {
         layout = new GoldenLayout(config, root);
         hub = new Hub(layout, subLangId, defaultLangId);
+        [themer, settings] = setupSettings(hub);
+        hub.initLayout();
     } catch (e) {
         SentryCapture(e, 'goldenlayout/hub setup');
+        console.log('Exception processing state, resetting layout to default', e);
 
         if (document.URL.includes('/z/')) {
             document.location = document.URL.replace('/z/', '/resetlayout/');
@@ -625,10 +630,9 @@ function start() {
 
         layout = new GoldenLayout(defaultConfig, root);
         hub = new Hub(layout, subLangId, defaultLangId);
+        [themer, settings] = setupSettings(hub);
+        hub.initLayout();
     }
-
-    const [themer, settings] = setupSettings(hub);
-    hub.initLayout();
 
     setSentryLayout(layout);
 
