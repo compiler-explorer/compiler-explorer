@@ -239,12 +239,15 @@ export class Win32Compiler extends BaseCompiler {
         const result = await super.buildExecutableInFolder(key, dirPath);
 
         if (result.code === 0) {
+            const execOptions = this.getDefaultExecOptions();
+            execOptions.customCwd = dirPath;
+
             await copyNeededDlls(
                 dirPath,
                 result.executableFilename,
                 this.exec.bind(this),
                 this.compiler.objdumper,
-                this.getDefaultExecOptions(),
+                execOptions,
             );
         }
 
