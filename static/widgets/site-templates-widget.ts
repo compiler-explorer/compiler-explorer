@@ -28,6 +28,7 @@ import GoldenLayout from 'golden-layout';
 import {escapeHTML} from '../../shared/common-utils.js';
 import {SiteTemplateResponse, UserSiteTemplate} from '../../types/features/site-templates.interfaces.js';
 import {assert, unwrap, unwrapString} from '../assert.js';
+import * as BootstrapUtils from '../bootstrap-utils.js';
 import {localStorage} from '../local.js';
 import {Settings} from '../settings.js';
 import * as url from '../url.js';
@@ -174,7 +175,7 @@ class SiteTemplatesWidget {
         this.populated = true;
     }
     show() {
-        this.modal.modal('show');
+        BootstrapUtils.showModal(this.modal);
         if (!this.populated) {
             this.populate();
         }

@@ -29,12 +29,8 @@ import {beforeAll, describe, expect, it} from 'vitest';
 import express from 'express';
 import request from 'supertest';
 import {GoldenLayoutRootStruct} from '../../lib/clientstate-normalizer.js';
-import {
-    HandlerConfig,
-    RouteAPI,
-    ShortLinkMetaData,
-    extractJsonFromBufferAndInflateIfRequired,
-} from '../../lib/handlers/route-api.js';
+import {HandlerConfig, ShortLinkMetaData} from '../../lib/handlers/handler.interfaces.js';
+import {RouteAPI, extractJsonFromBufferAndInflateIfRequired} from '../../lib/handlers/route-api.js';
 
 function possibleCompression(buffer: Buffer): boolean {
     // code used in extractJsonFromBufferAndInflateIfRequired
@@ -87,7 +83,7 @@ describe('clientStateHandler', () => {
                 res.send('This is ok');
             },
         } as unknown as HandlerConfig);
-        apiHandler.InitializeRoutes();
+        apiHandler.initializeRoutes();
     });
 
     it('should return 200 for /clientstate', async () => {

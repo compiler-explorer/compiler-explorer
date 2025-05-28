@@ -1,4 +1,4 @@
-// Copyright (c) 2023, Compiler Explorer Authors
+// Copyright (c) 2025, Compiler Explorer Authors
 // All rights reserved.
 //
 // Redistribution and use in source and binary forms, with or without
@@ -22,12 +22,22 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import {HandlerConfig} from './handlers/route-api.js';
+import type {Language, LanguageKey} from '../../types/languages.interfaces.js';
+import type {PropertyGetter} from '../properties.interfaces.js';
+import type {CompilerProps} from '../properties.js';
 
-declare global {
-    // var is required
+export interface AppConfiguration {
+    // Core properties
+    ceProps: PropertyGetter;
+    compilerProps: CompilerProps;
+    languages: Record<LanguageKey, Language>;
 
-    var ce_base_directory: URL;
-    var handler_config: HandlerConfig;
-    /* eslint-enable no-var */
+    // Environment settings
+    staticMaxAgeSecs: number;
+    maxUploadSize: string;
+    extraBodyClass: string;
+    storageSolution: string;
+    httpRoot: string;
+    staticRoot: string;
+    staticUrl?: string;
 }

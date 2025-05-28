@@ -604,6 +604,13 @@ export class PascalParser extends BaseParser {
     }
 }
 
+export class MojoParser extends BaseParser {
+    static override async parse(compiler: BaseCompiler) {
+        await this.getOptions(compiler, '-help');
+        return compiler;
+    }
+}
+
 export class ICCParser extends GCCParser {
     static override async setCompilerSettingsFromOptions(compiler: BaseCompiler, options: Record<string, Argument>) {
         const keys = _.keys(options);
@@ -844,8 +851,8 @@ export class RustParser extends BaseParser {
     }
 
     static override async getPossibleEditions(compiler: BaseCompiler): Promise<string[]> {
-        const result = await compiler.execCompilerCached(compiler.compiler.exe, ['--help']);
-        const re = /--edition ([\d|]*)/;
+        const result = await compiler.execCompilerCached(compiler.compiler.exe, ['--help', '-v']);
+        const re = /--edition <?([\w|]*)>?/;
 
         const match = result.stdout.match(re);
         if (match?.[1]) {
@@ -928,6 +935,14 @@ export class RustParser extends BaseParser {
 }
 
 export class ZksolcParser extends RustParser {
+    static override async parse(compiler: BaseCompiler) {
+        const options = await this.getOptions(compiler, '--help');
+        await this.setCompilerSettingsFromOptions(compiler, options);
+        return compiler;
+    }
+}
+
+export class SolxParser extends RustParser {
     static override async parse(compiler: BaseCompiler) {
         const options = await this.getOptions(compiler, '--help');
         await this.setCompilerSettingsFromOptions(compiler, options);

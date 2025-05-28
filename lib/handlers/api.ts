@@ -43,7 +43,7 @@ import {StorageBase} from '../storage/index.js';
 import {CompileHandler} from './compile.js';
 
 function methodNotAllowed(req: express.Request, res: express.Response) {
-    res.status(405).send('Method Not Allowed').end();
+    res.status(405).send('Method Not Allowed');
 }
 
 export class ApiHandler {
@@ -75,7 +75,11 @@ export class ApiHandler {
                 'Access-Control-Allow-Headers': 'Origin, X-Requested-With, Content-Type, Accept',
                 'Cache-Control': cacheHeader,
             });
-            next();
+            if (req.method === 'OPTIONS') {
+                res.sendStatus(200);
+            } else {
+                next();
+            }
         });
         this.handle.route('/compilers').get(this.handleCompilers.bind(this)).all(methodNotAllowed);
 
@@ -126,6 +130,11 @@ export class ApiHandler {
 
         this.handle.route('/version').get(this.handleReleaseName.bind(this)).all(methodNotAllowed);
         this.handle.route('/releaseBuild').get(this.handleReleaseBuild.bind(this)).all(methodNotAllowed);
+        // Let's not document this one, eh?
+        this.handle.route('/forceServerError').get((req, res) => {
+            logger.error(`Forced server error from ${req.ip}`);
+            throw new Error('Forced server error');
+        });
     }
 
     shortlinkInfoHandler(req: express.Request, res: express.Response, next: express.NextFunction) {

@@ -135,7 +135,7 @@ export class CompilerPicker {
                         '<div class="d-flex"><div>' +
                         escapeHtml(data.name) +
                         '</div>' +
-                        '<div title="Click to mark or unmark as a favorite" class="ml-auto toggle-fav">' +
+                        '<div title="Click to mark or unmark as a favorite" class="ms-auto toggle-fav">' +
                         '<i class="' +
                         extraClasses +
                         '"></i>' +
@@ -143,6 +143,7 @@ export class CompilerPicker {
                         '</div>'
                     );
                 },
+                item: (data, escapeHtml) => `<div title="${escapeHtml(data.name)}">${escapeHtml(data.name)}</div>`,
             },
         });
 

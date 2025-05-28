@@ -38,6 +38,7 @@ import {Language} from '../../types/languages.interfaces.js';
 import {ResultLine} from '../../types/resultline/resultline.interfaces.js';
 import {Artifact, ArtifactType} from '../../types/tool.interfaces.js';
 import {Filter as AnsiToHtml} from '../ansi-to-html.js';
+import * as BootstrapUtils from '../bootstrap-utils.js';
 import {CompilationStatus as CompilerServiceCompilationStatus} from '../compiler-service.interfaces.js';
 import {CompilerService} from '../compiler-service.js';
 import {ICompilerShared} from '../compiler-shared.interfaces.js';
@@ -799,15 +800,19 @@ export class Executor extends Pane<ExecutorState> {
                 !target.is(this.prependOptions) &&
                 this.prependOptions.has(target as any).length === 0 &&
                 target.closest('.popover').length === 0
-            )
-                this.prependOptions.popover('hide');
+            ) {
+                const popover = BootstrapUtils.getPopoverInstance(this.prependOptions);
+                if (popover) popover.hide();
+            }
 
             if (
                 !target.is(this.fullCompilerName) &&
                 this.fullCompilerName.has(target as any).length === 0 &&
                 target.closest('.popover').length === 0
-            )
-                this.fullCompilerName.popover('hide');
+            ) {
+                const popover = BootstrapUtils.getPopoverInstance(this.fullCompilerName);
+                if (popover) popover.hide();
+            }
         });
 
         this.optionsField.val(this.options);
@@ -963,7 +968,8 @@ export class Executor extends Pane<ExecutorState> {
         // Dismiss the popover on escape.
         $(document).on('keyup.editable', e => {
             if (e.which === 27) {
-                this.libsButton.popover('hide');
+                const popover = BootstrapUtils.getPopoverInstance(this.libsButton);
+                if (popover) popover.hide();
             }
         });
 
@@ -997,7 +1003,8 @@ export class Executor extends Pane<ExecutorState> {
             const elem = this.libsButton;
             const target = $(e.target);
             if (!target.is(elem) && elem.has(target as any).length === 0 && target.closest('.popover').length === 0) {
-                elem.popover('hide');
+                const popover = BootstrapUtils.getPopoverInstance(elem);
+                if (popover) popover.hide();
             }
         });
 
@@ -1186,8 +1193,12 @@ export class Executor extends Pane<ExecutorState> {
     }
 
     setCompilationOptionsPopover(content: string | null) {
-        this.prependOptions.popover('dispose');
-        this.prependOptions.popover({
+        // Dispose of existing popover
+        const existingPopover = BootstrapUtils.getPopoverInstance(this.prependOptions);
+        if (existingPopover) existingPopover.dispose();
+
+        // Initialize new popover
+        BootstrapUtils.initPopover(this.prependOptions, {
             content: content || 'No options in use',
             template:
                 '<div class="popover' +

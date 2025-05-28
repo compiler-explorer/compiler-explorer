@@ -28,7 +28,7 @@ jobs:
       - name: Cypress run
         uses: cypress-io/github-action@v6
         with:
-          start: npm run dev -- --language c++ --noLocal
+          start: npm run dev -- --language c++ --no-local
           wait-on: 'http://localhost:10240'
           wait-on-timeout: 120
           config: screenshotOnRunFailure=true,video=false

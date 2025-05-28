@@ -29,6 +29,7 @@ import {escapeHTML} from '../../shared/common-utils.js';
 import {Language} from '../../types/languages.interfaces.js';
 import {SourceApiEntry} from '../../types/source.interfaces.js';
 import {unwrap, unwrapString} from '../assert.js';
+import * as BootstrapUtils from '../bootstrap-utils.js';
 import {HistorySource} from '../history.js';
 import {localStorage} from '../local.js';
 import {Alert} from './alert.js';
@@ -98,7 +99,9 @@ export class LoadSave {
             window.location.origin + this.base + 'source/builtin/load/' + element.lang + '/' + element.file,
             response => this.onLoad(response.file),
         );
-        this.modal?.modal('hide');
+        if (this.modal) {
+            BootstrapUtils.hideModal(this.modal);
+        }
     }
 
     private static populate(root: JQuery, list: PopulateItem[]) {
@@ -143,7 +146,9 @@ export class LoadSave {
                     name: name,
                     load: () => {
                         this.onLoad(data);
-                        this.modal?.modal('hide');
+                        if (this.modal) {
+                            BootstrapUtils.hideModal(this.modal);
+                        }
                     },
                     delete: () => {
                         this.alertSystem.ask(
@@ -183,7 +188,9 @@ export class LoadSave {
                     name: dt.replace(/\s\(.*\)/, ''),
                     load: () => {
                         this.onLoad(data.source);
-                        this.modal?.modal('hide');
+                        if (this.modal) {
+                            BootstrapUtils.hideModal(this.modal);
+                        }
                     },
                 };
             }),
@@ -214,7 +221,9 @@ export class LoadSave {
             };
             reader.readAsText(file);
         }
-        this.modal?.modal('hide');
+        if (this.modal) {
+            BootstrapUtils.hideModal(this.modal);
+        }
     }
 
     public run(onLoad, editorText, currentLanguage: Language) {
@@ -224,7 +233,11 @@ export class LoadSave {
         this.populateLocalHistory();
         this.onLoadCallback = onLoad;
         unwrap(this.modal).find('.local-file').attr('accept', currentLanguage.extensions.join(','));
-        this.populateBuiltins().then(() => this.modal?.modal());
+        this.populateBuiltins().then(() => {
+            if (this.modal) {
+                BootstrapUtils.showModal(this.modal);
+            }
+        });
     }
 
     private onSaveToBrowserStorage() {
@@ -238,7 +251,9 @@ export class LoadSave {
             LoadSave.setLocalFile(name, this.editorText);
         };
         if (name in LoadSave.getLocalFiles()) {
-            this.modal?.modal('hide');
+            if (this.modal) {
+                BootstrapUtils.hideModal(this.modal);
+            }
             this.alertSystem.ask(
                 'Replace current?',
                 `Do you want to replace the existing saved file '${escapeHTML(name)}'?`,
@@ -246,7 +261,9 @@ export class LoadSave {
             );
         } else {
             doneCallback();
-            this.modal?.modal('hide');
+            if (this.modal) {
+                BootstrapUtils.hideModal(this.modal);
+            }
         }
     }
 

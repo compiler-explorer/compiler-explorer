@@ -183,8 +183,8 @@ structure:
 ```
 
 The name property corresponds to the `<formatter>` when requesting `POST /api/format/<formatter>`. The `type` key in the
-JSON request corresponds to one of the `formatters.<key>.type` found in
-[compiler-explorer.amazon.properties:43](../etc/config/compiler-explorer.amazon.properties#L43)
+JSON request corresponds to one of the `formatters.<key>.type` found in the compiler-explorer configuration properties
+(see [Configuration.md](Configuration.md) for more details)
 
 ### `POST /api/format/<formatter>` - perform a formatter run
 

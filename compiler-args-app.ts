@@ -22,7 +22,7 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import nopt from 'nopt';
+import {Command} from 'commander';
 import _ from 'underscore';
 
 import {CompilerArguments} from './lib/compiler-arguments.js';
@@ -30,12 +30,20 @@ import * as Parsers from './lib/compilers/argument-parsers.js';
 import {executeDirect} from './lib/exec.js';
 import {logger} from './lib/logger.js';
 
-const opts = nopt({
-    parser: [String],
-    exe: [String],
-    padding: [Number],
-    debug: [Boolean],
-});
+const program = new Command();
+program
+    .name('compiler-args-app.ts')
+    .usage('--parser=<compilertype> --exe=<path> [--padding=<number>]')
+    .description(
+        'Extracts compiler arguments\nFor example: node --no-warnings=ExperimentalWarning --import=tsx compiler-args-app.ts --parser=clang --exe=/opt/compiler-explorer/clang-15.0.0/bin/clang++ --padding=50',
+    )
+    .requiredOption('--parser <type>', 'Compiler parser type')
+    .requiredOption('--exe <path>', 'Path to compiler executable')
+    .option('--padding <number>', 'Padding for output formatting', '40')
+    .option('--debug', 'Enable debug output');
+
+program.parse();
+const opts = program.opts();
 
 if (opts.debug) logger.level = 'debug';
 
@@ -73,7 +81,7 @@ class CompilerArgsApp {
     constructor() {
         this.parserName = opts.parser;
         this.executable = opts.exe;
-        this.pad = opts.padding || 40;
+        this.pad = Number.parseInt(opts.padding, 10);
         this.compiler = {
             compiler: {
                 exe: this.executable,
@@ -145,17 +153,7 @@ class CompilerArgsApp {
     }
 }
 
-if (!opts.parser || !opts.exe) {
-    console.error(
-        'Usage: ' +
-            'node --no-warnings=ExperimentalWarning --import=tsx compiler-args-app.ts ' +
-            '--parser=<compilertype> --exe=<path> [--padding=<number>]\n' +
-            'for example: --parser=clang --exe=/opt/compiler-explorer/clang-15.0.0/bin/clang++ --padding=50',
-    );
-    process.exit(1);
-} else {
-    const app = new CompilerArgsApp();
-    app.doTheParsing()
-        .then(() => app.print())
-        .catch(e => console.error(e));
-}
+const app = new CompilerArgsApp();
+app.doTheParsing()
+    .then(() => app.print())
+    .catch(e => console.error(e));

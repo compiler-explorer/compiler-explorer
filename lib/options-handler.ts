@@ -30,13 +30,15 @@ import semverParser from 'semver';
 import _ from 'underscore';
 import urlJoin from 'url-join';
 
-import {AppDefaultArguments} from '../app.js';
 import {splitArguments} from '../shared/common-utils.js';
 import {CompilerInfo, Remote} from '../types/compiler.interfaces.js';
 import type {LanguageKey} from '../types/languages.interfaces.js';
 import type {Source} from '../types/source.interfaces.js';
 import type {ToolTypeKey} from '../types/tool.interfaces.js';
+import {AppArguments} from './app.interfaces.js';
+import {ClientOptionsSource} from './options-handler.interfaces.js';
 
+import {getRemoteId} from '../shared/remote-utils.js';
 import {logger} from './logger.js';
 import type {PropertyGetter, PropertyValue} from './properties.interfaces.js';
 import {CompilerProps} from './properties.js';
@@ -125,7 +127,7 @@ export type ClientOptionsType = {
 /***
  * Handles the setup of the options object passed on each page request
  */
-export class ClientOptionsHandler {
+export class ClientOptionsHandler implements ClientOptionsSource {
     compilerProps: CompilerProps['get'];
     ceProps: PropertyGetter;
     supportsBinary: Record<LanguageKey, boolean>;
@@ -146,7 +148,7 @@ export class ClientOptionsHandler {
      * @param {CompilerProps} compilerProps
      * @param {Object} defArgs - Compiler Explorer arguments
      */
-    constructor(fileSources: Source[], compilerProps: CompilerProps, defArgs: AppDefaultArguments) {
+    constructor(fileSources: Source[], compilerProps: CompilerProps, defArgs: AppArguments) {
         this.compilerProps = compilerProps.get.bind(compilerProps);
         this.ceProps = compilerProps.ceProps;
         const ceProps = compilerProps.ceProps;
@@ -376,11 +378,6 @@ export class ClientOptionsHandler {
         return libraries;
     }
 
-    getRemoteId(remoteUrl: string, language: LanguageKey) {
-        const url = new URL(remoteUrl);
-        return url.host.replaceAll('.', '_') + '_' + language;
-    }
-
     libArrayToObject(libsArr: any[]) {
         const libs: Record<string, any> = {};
         for (const lib of libsArr) {
@@ -397,9 +394,9 @@ export class ClientOptionsHandler {
     }
 
     async getRemoteLibraries(language: LanguageKey, remoteUrl: string) {
-        const remoteId = this.getRemoteId(remoteUrl, language);
+        const remoteId = getRemoteId(remoteUrl, language);
         if (!this.remoteLibs[remoteId]) {
-            return new Promise(resolve => {
+            return await new Promise(resolve => {
                 const url = ClientOptionsHandler.getRemoteUrlForLibraries(remoteUrl, language);
                 logger.info(`Fetching remote libraries from ${url}`);
                 let fullData = '';

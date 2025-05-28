@@ -13,6 +13,8 @@ To run the Turbo C compiler you will need:
 
 ## Configuration
 
+For more information about the configuration system, see [Configuration.md](Configuration.md).
+
 In the `turboc.properties` file you can see an example on how to setup the compiler to work with Compiler Explorer.
 
 Make sure the `.dosbox` path is correct, as well as the `.root` and `.exe`. The `.root` indicates the root of the `C`

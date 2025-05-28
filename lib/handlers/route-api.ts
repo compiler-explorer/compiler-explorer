@@ -26,43 +26,20 @@ import zlib from 'node:zlib';
 
 import express from 'express';
 
-import {AppDefaultArguments, CompilerExplorerOptions} from '../../app.js';
 import {isString} from '../../shared/common-utils.js';
 import {Language} from '../../types/languages.interfaces.js';
 import {assert, unwrap} from '../assert.js';
 import {ClientStateGoldenifier, ClientStateNormalizer} from '../clientstate-normalizer.js';
 import {ClientState} from '../clientstate.js';
-import {CompilationEnvironment} from '../compilation-env.js';
 import {logger} from '../logger.js';
-import {ClientOptionsHandler} from '../options-handler.js';
-import {PropertyGetter} from '../properties.interfaces.js';
 import {SentryCapture} from '../sentry.js';
 import {ExpandedShortLink} from '../storage/base.js';
 import {StorageBase} from '../storage/index.js';
 import * as utils from '../utils.js';
 
 import {ApiHandler} from './api.js';
-import {CompileHandler} from './compile.js';
+import {HandlerConfig, ShortLinkMetaData} from './handler.interfaces.js';
 import {cached, csp} from './middleware.js';
-
-export type HandlerConfig = {
-    compileHandler: CompileHandler;
-    clientOptionsHandler: ClientOptionsHandler;
-    storageHandler: StorageBase;
-    ceProps: PropertyGetter;
-    opts: CompilerExplorerOptions;
-    defArgs: AppDefaultArguments;
-    renderConfig: any;
-    renderGoldenLayout: any;
-    compilationEnvironment: CompilationEnvironment;
-};
-
-export type ShortLinkMetaData = {
-    ogDescription?: string;
-    ogAuthor?: string;
-    ogTitle?: string;
-    ogCreated?: Date;
-};
 
 export class RouteAPI {
     renderGoldenLayout: any;
@@ -93,7 +70,7 @@ export class RouteAPI {
         }
     }
 
-    InitializeRoutes() {
+    initializeRoutes() {
         if (this.apiHandler) {
             this.router.use('/api', this.apiHandler.handle);
         }

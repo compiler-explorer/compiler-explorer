@@ -30,6 +30,7 @@ import {
     EnvVarOverrides,
 } from '../../types/compilation/compiler-overrides.interfaces.js';
 import {assert, unwrap} from '../assert.js';
+import * as BootstrapUtils from '../bootstrap-utils.js';
 import {CompilerInfo} from '../compiler.interfaces.js';
 import {localStorage} from '../local.js';
 import {options} from '../options.js';
@@ -160,8 +161,8 @@ export class CompilerOverridesWidget {
             btn.addClass('active');
         } else if (state instanceof IncompatibleState) {
             btn.prop('disabled', true);
-            btn.prop('data-toggle', 'tooltip');
-            btn.prop('data-placement', 'top');
+            btn.prop('data-bs-toggle', 'tooltip');
+            btn.prop('data-bs-placement', 'top');
             btn.prop('title', state.reason);
         }
         div.data('ov-name', fave.name);
@@ -416,9 +417,8 @@ export class CompilerOverridesWidget {
 
         const lastOverrides = JSON.stringify(this.configured);
 
-        const popup = this.popupDomRoot.modal();
         // popup is shared, so clear the events first
-        popup.off('hidden.bs.modal').on('hidden.bs.modal', () => {
+        BootstrapUtils.setElementEventHandler(this.popupDomRoot, 'hidden.bs.modal', () => {
             this.configured = this.loadStateFromUI();
 
             const newOverrides = JSON.stringify(this.configured);
@@ -428,5 +428,7 @@ export class CompilerOverridesWidget {
                 this.onChangeCallback();
             }
         });
+
+        BootstrapUtils.showModal(this.popupDomRoot);
     }
 }
