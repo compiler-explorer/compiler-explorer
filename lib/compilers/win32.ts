@@ -30,6 +30,7 @@ import {splitArguments} from '../../shared/common-utils.js';
 import type {BuildResult, CacheKey, ExecutionOptions} from '../../types/compilation/compilation.interfaces.js';
 import type {ConfiguredOverrides} from '../../types/compilation/compiler-overrides.interfaces.js';
 import type {PreliminaryCompilerInfo} from '../../types/compiler.interfaces.js';
+import {UnprocessedExecResult} from '../../types/execution/execution.interfaces.js';
 import type {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces.js';
 import {SelectedLibraryVersion} from '../../types/libraries/libraries.interfaces.js';
 import {unwrap} from '../assert.js';
@@ -217,7 +218,7 @@ export class Win32Compiler extends BaseCompiler {
         return this.asm.process(result.asm, filters);
     }
 
-    override exec(compiler: string, args: string[], options_: ExecutionOptions) {
+    override async exec(compiler: string, args: string[], options_: ExecutionOptions): Promise<UnprocessedExecResult> {
         const options = Object.assign({}, options_);
         options.env = Object.assign({}, options.env);
 
@@ -241,7 +242,7 @@ export class Win32Compiler extends BaseCompiler {
             await copyNeededDlls(
                 dirPath,
                 result.executableFilename,
-                this.exec,
+                this.exec.bind(this),
                 this.compiler.objdumper,
                 this.getDefaultExecOptions(),
             );
