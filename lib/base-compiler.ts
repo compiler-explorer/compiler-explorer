@@ -960,6 +960,19 @@ export class BaseCompiler {
         });
     }
 
+    getSharedLibraryBinPaths(libraries: SelectedLibraryVersion[], dirPath?: string): string[] {
+        return libraries.flatMap(selectedLib => {
+            const foundVersion = this.findLibVersion(selectedLib);
+            if (!foundVersion) return [];
+
+            const paths: string[] = [];
+            if (this.buildenvsetup && !this.buildenvsetup.extractAllToRoot && dirPath) {
+                paths.push(path.join(dirPath, selectedLib.id, 'bin'));
+            }
+            return paths;
+        });
+    }
+
     protected getSharedLibraryPathsAsArguments(
         libraries: SelectedLibraryVersion[],
         libDownloadPath: string | undefined,
@@ -2167,6 +2180,13 @@ export class BaseCompiler {
                 buildResult.dirPath || '',
             );
         }
+
+        executeParameters.env.PATH = [
+            ...this.getSharedLibraryBinPaths(key.libraries, buildResult.dirPath),
+            executeParameters.env.PATH,
+        ]
+            .filter(Boolean)
+            .join(path.delimiter);
 
         const execTriple = await RemoteExecutionQuery.guessExecutionTripleForBuildresult(buildResult);
         if (!this.compiler.emulated && !matchesCurrentHost(execTriple)) {
