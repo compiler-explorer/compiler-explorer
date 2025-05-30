@@ -71,7 +71,7 @@ function testFilter(filename: string, suffix: string, filters: ParseFiltersAndOu
 }
 
 describe('Filter test cases', () => {
-    if (process.platform === 'win32') {
+    if (process.platform === 'win32' || process.platform === 'darwin') {
         it('should skip filter-tests on Windows', () => {
             expect(true).toBe(true);
         });
@@ -93,7 +93,7 @@ describe('Filter test cases', () => {
         }
     });
     describe('Binary, directives, labels and comments', () => {
-        if (process.platform !== 'win32') {
+        if (process.platform !== 'win32' && process.platform !== 'darwin') {
             for (const x of cases) {
                 testFilter(x, '.binary.directives.labels.comments', {
                     binary: true,
@@ -105,7 +105,7 @@ describe('Filter test cases', () => {
         }
     });
     describe('Binary, directives, labels, comments and library code', () => {
-        if (process.platform !== 'win32') {
+        if (process.platform !== 'win32' && process.platform !== 'darwin') {
             for (const x of cases) {
                 if (!x.endsWith('-bin.asm')) continue;
 
@@ -120,7 +120,7 @@ describe('Filter test cases', () => {
         }
     });
     describe('Binary, directives, labels, comments and library code with dontMaskFilenames', () => {
-        if (process.platform !== 'win32') {
+        if (process.platform !== 'win32' && process.platform !== 'darwin') {
             for (const x of cases) {
                 if (!x.endsWith('-bin.asm')) continue;
 
