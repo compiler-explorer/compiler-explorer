@@ -101,9 +101,13 @@ export async function copyNeededDlls(
     execoptions: ExecutionOptionsWithEnv,
 ): Promise<void> {
     const winutils = new WinUtils(execFunction, objdumper, execoptions);
-    const dlls = await winutils.get_dlls_used(executableFilename);
-    for (const dll of dlls) {
-        const infolder = path.join(dirPath, path.basename(dll));
-        await fs.copyFile(dll, infolder);
+    try {
+        const dlls = await winutils.get_dlls_used(executableFilename);
+        for (const dll of dlls) {
+            const infolder = path.join(dirPath, path.basename(dll));
+            await fs.copyFile(dll, infolder);
+        }
+    } catch (e) {
+        logger.error(`Error while retreiving or copying dll dependencies of ${executableFilename}`);
     }
 }
