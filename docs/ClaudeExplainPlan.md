@@ -1,84 +1,310 @@
 # Claude Explain Implementation Plan
 
-This document outlines the implementation plan for adding a "Claude Explain" feature to Compiler Explorer. This feature will allow users to get an AI-powered explanation of their code and its compilation results using Claude.
+This document outlines the implementation plan for adding a "Claude Explain" feature to Compiler Explorer. This feature allows users to get an AI-powered explanation of their code and its compilation results using Claude.
 
 ## Overview
 
-The Claude Explain feature is implemented completely as a client-side feature that:
+The Claude Explain feature has been implemented as a client-side feature that:
 1. Takes compilation results from the client (source code, assembly, etc.)
 2. Sends them directly from the client browser to the Claude Explain API
 3. Displays the AI-generated explanation to the user
+4. Caches responses to reduce API costs
 
 This approach distributes API load across clients rather than funneling through the CE server, making rate limiting more natural and reducing server load.
 
 ## Implementation Status
 
-- [x] Create minimal server-side configuration in properties files
-- [x] Add tool registration in client-side config
+- [x] Create minimal server-side configuration in properties files (just API endpoint)
+- [x] Implement as standalone pane component (not a tool)
+- [x] Add button to compiler toolbar with proper enable/disable logic
 - [x] Implement client-side API integration in the UI
 - [x] Add user consent UI before sending data to API
+- [x] Implement session-persistent consent
+- [x] Add LRU caching for API responses
 - [x] Implement error handling and loading states
-- [x] Update documentation
-- [x] Replace Monaco editor with HTML-based markdown rendering
+- [x] Add bottom status bar with usage statistics
+- [x] Implement markdown rendering with syntax highlighting
+- [x] Add reload button to bypass cache
 - [x] Test the implementation with various languages
+- [x] Update documentation to match implementation
 
 ## Technical Implementation Details
 
 ### Client-Side Implementation (Completed)
 
+#### Architecture Decision
+
+Implemented as a standalone pane component rather than a tool:
+- More direct integration with compiler pane
+- Dedicated button in compiler toolbar
+- Simpler configuration (no tool registration needed)
+- Better UX with immediate access
+
 #### API Integration (Completed)
 
-We've implemented direct API calls from the client using `fetch` inside the `ExplainView` class:
+Implemented direct API calls from the client using `fetch` inside the `ExplainView` class:
 
-- The API endpoint is configured through the `explainApiEndpoint` option (which comes from `compiler-explorer.*.properties`)
-- Requests include source code, compiler info, and assembly output
-- Responses are displayed as markdown in the tool window
+- The API endpoint is configured through the `explainApiEndpoint` option
+- Requests include source code, compiler name, compilation options, and assembly output
+- Responses are cached using LRU cache (200KB limit)
+- Responses are displayed as markdown with syntax highlighting
 - Error handling is in place for API communication issues
 
 #### UI Implementation (Completed)
 
 1. **Pane View**:
    - Created `ExplainView` class extending the existing `Pane` class
-   - Set up proper markdown rendering for the explanation
-   - Implemented window title updating
-   - Created pug template at `views/templates/panes/explain.pug`
-   - Added extensive CSS styling with initial theme support
+   - Markdown rendering using `marked` library
+   - Syntax highlighting with Prism.js
+   - Theme-aware styling (light/dark modes)
+   - Font scaling support
+   - Created pug template at `views/panes/explain.pug`
 
 2. **User Consent**:
-   - Added a consent UI that appears before sending data to API
-   - Implemented session-persistent consent using a static class variable
+   - Clear consent UI that explains what data will be sent
+   - Session-persistent consent using a static class variable
    - After consenting once, subsequent compilations explain automatically
 
 3. **Loading State**:
-   - Shows a loading indicator during API calls
-   - Provides user feedback during explanation generation
+   - Animated loading spinner during API calls
+   - Clear "Generating explanation..." message
 
 4. **Error Handling**:
-   - Displays user-friendly error messages
-   - Handles network errors and API communication issues
+   - User-friendly error messages
+   - Network error handling
+   - API error handling
+
+5. **Bottom Status Bar**:
+   - Shows AI model used
+   - Displays token usage (input/output/total)
+   - Shows estimated cost
+   - Includes reload button to bypass cache
 
 ## Current Operation
 
-1. When compilation completes, the Claude Explain tool shows the consent UI
-2. User grants consent (stored for the session)
-3. Data is sent directly to the Claude Explain API
-4. The markdown explanation is displayed in the tool window
-5. Subsequent compilations automatically generate new explanations (no need to re-consent)
+1. User clicks the "Explain with Claude" button in the compiler toolbar
+2. Explain pane opens showing the consent UI (first time only)
+3. User grants consent (stored for the session)
+4. Data is sent directly to the Claude Explain API (or retrieved from cache)
+5. The markdown explanation is displayed with syntax highlighting
+6. Bottom bar shows usage statistics and reload button
+7. Subsequent compilations automatically update the explanation if the pane is open
+8. Users can click reload to bypass cache and get a fresh explanation
 
 ## Next Steps
 
-1. Test with various languages and compilation scenarios
-2. Evaluate API performance and rate limiting needs
-3. Refine instruction set and language detection
-4. Address UI styling improvements based on user feedback:
-   - Update UI styling for "generating explanation" to work with all themes (especially pink theme)
-   - Make "generating explanation" part of the toolbar with proper animation and status colors (similar to `.status-icon` in compiler view)
-   - Reduce excessive padding on the bottom bar
-   - Dark mode AI disclaimer is invisible
-   - General toolbar alignment and padding
-   - Bottom bar sizing
-5. **Update privacy policy** - we need to mention this in the privacy policy, and check the wording on the "Send my code" consent thingy.
-6. Proper theming support across all color schemes. we seem to have put the dark theme in the main sccs.
-7. Disclaimers about AI limitations and potential inaccuracies. Better and longer text here
-8. Be much clearer about what information is sent before the first submission. Folks didn't necessarily know the source was sent too
-9. Support a `// no-ai` magic comment in source to _never_ send to Anthropic etc (cc @hanadusikova)
+### Immediate - API Integration Updates
+
+#### 1. Fetch and Cache Available Options
+- Add method to fetch available options from GET endpoint on first load
+- Cache the options for the session (static variable like consent)
+- Handle loading state while fetching options
+- Gracefully handle if API is unavailable
+
+#### 2. UI State Management for Dynamic Options
+**Critical Requirements:**
+- Must preserve user's previous choices from saved state/URL even if options haven't loaded yet
+- Must handle cases where saved state contains values not in the fetched options
+- Must not lose user selections while options are loading
+
+**Implementation Approach:**
+```typescript
+// Pseudocode for state management
+class ExplainView {
+  // Static cache for options (shared across all instances)
+  private static availableOptions: AvailableOptions | null = null;
+  private static optionsFetchPromise: Promise<AvailableOptions> | null = null;
+  
+  // Instance state
+  private selectedAudience: string = 'beginner';
+  private selectedExplanation: string = 'assembly';
+  
+  // Load from saved state first, validate later
+  loadState(state) {
+    this.selectedAudience = state.audience || 'beginner';
+    this.selectedExplanation = state.explanation || 'assembly';
+    // Don't validate yet - options might not be loaded
+  }
+  
+  // Fetch options if needed, show UI appropriately
+  async ensureOptionsLoaded() {
+    if (!ExplainView.availableOptions && !ExplainView.optionsFetchPromise) {
+      ExplainView.optionsFetchPromise = this.fetchOptions();
+    }
+    if (ExplainView.optionsFetchPromise) {
+      await ExplainView.optionsFetchPromise;
+    }
+    // Now validate saved selections against available options
+    this.validateSelections();
+  }
+}
+```
+
+#### 3. Add UI Controls
+- Add dropdown/select controls for audience level and explanation type
+- Position in toolbar or consent area
+- Update pug template and styles
+- Ensure controls are disabled while options are loading
+- Show tooltips with descriptions from the API
+
+#### 4. Update API Request
+- Include `audience` and `explanation` parameters in POST request
+- Include `bypass_cache: true` when reload button is clicked
+- Update cache key calculation to include new parameters
+
+#### 5. Display Cache Status
+- Parse `cached` field from API response
+- Update bottom bar to show cache source:
+  - Client cache hit: 🔄 "Cached (client)"
+  - Server cache hit: 🔄 "Cached (server)"
+  - Fresh generation: ✨ "Fresh"
+- Consider adding subtle visual indicator (border color, icon)
+
+### High Priority
+1. **Update privacy policy** - mention Claude Explain feature and data handling
+2. Support `// no-ai` magic comment in source to prevent sending to Anthropic
+3. Fix theme-specific styling issues (especially pink theme)
+4. Improve consent UI wording to be clearer about what data is sent
+5. Add better disclaimers about AI limitations and potential inaccuracies
+
+### Medium Priority  
+6. Better language detection based on compiler properties
+7. Instruction set detection from compiler properties
+8. Extract common UI patterns to base classes (reduce code duplication)
+9. Add frontend tests for the explain view
+10. Consider state machine pattern for UI state management
+11. Persist user's audience/explanation preferences in localStorage
+
+### Low Priority
+12. Persistent consent across browser sessions (localStorage)
+13. Improve error handling with more granular UI states
+14. Extract markdown styles to shared file (reduce 221 lines of duplication)
+15. Create explain-view.interfaces.ts file
+
+### Completed Improvements
+- ✅ Session-persistent consent
+- ✅ Client-side LRU caching to reduce API costs  
+- ✅ Bottom status bar with usage statistics
+- ✅ Reload button (needs update to bypass server cache too)
+- ✅ Loading states with clear messaging
+- ✅ Theme-aware styling (though some themes need fixes)
+- ✅ Documentation updated to reflect implementation
+
+### Implementation Risks & Considerations
+
+1. **Race Conditions**: Must handle case where user triggers explanation before options are fetched
+2. **Backwards Compatibility**: Saved states may contain invalid audience/explanation values
+3. **Network Failures**: GET request for options might fail - need sensible defaults
+4. **Cache Key Changes**: Adding new parameters will invalidate existing cache entries
+5. **UI Space**: Need to fit new controls without cluttering the interface
+
+## Detailed Implementation Plan
+
+### Phase 1: API Integration (Backend Communication)
+
+#### 1.1 Update TypeScript Interfaces
+Create or update interfaces for the new API structures:
+```typescript
+interface ExplanationOption {
+    value: string;
+    description: string;
+}
+
+interface AvailableOptions {
+    audience: ExplanationOption[];
+    explanation: ExplanationOption[];
+}
+
+interface ExplainRequest {
+    // existing fields...
+    audience?: string;
+    explanation?: string;
+    bypass_cache?: boolean;
+}
+
+interface ExplainResponse {
+    // existing fields...
+    cached: boolean;
+}
+```
+
+#### 1.2 Add Options Fetching
+- Add static method to fetch and cache available options
+- Implement retry logic with exponential backoff
+- Provide hardcoded fallback options if API fails
+
+#### 1.3 Update Cache Key Generation
+- Include audience and explanation in cache key
+- Ensure consistent key generation
+
+### Phase 2: UI Components
+
+#### 2.1 Update Pug Template
+Add select controls to the explain pane:
+```pug
+.explain-options
+  .explain-option-group
+    label(for="explain-audience") Audience Level:
+    select#explain-audience.explain-select
+      option(value="loading") Loading options...
+  .explain-option-group  
+    label(for="explain-type") Explanation Focus:
+    select#explain-type.explain-select
+      option(value="loading") Loading options...
+```
+
+#### 2.2 Add Styles
+- Style the select controls to match CE theme
+- Ensure proper spacing and alignment
+- Add hover states and transitions
+
+#### 2.3 Wire Up Event Handlers
+- Handle selection changes
+- Update state and trigger new explanations
+- Save preferences to state
+
+### Phase 3: State Management
+
+#### 3.1 Update State Structure
+```typescript
+interface ExplainViewState {
+    // existing fields...
+    audience?: string;
+    explanation?: string;
+}
+```
+
+#### 3.2 Implement State Preservation
+- Save user selections in component state
+- Include in serialized state for sharing
+- Restore from saved state properly
+
+### Phase 4: Cache Status Display
+
+#### 4.1 Update Bottom Bar
+- Add cache status indicator
+- Show different icons/text for different cache sources
+- Update dynamically based on response
+
+#### 4.2 Update Reload Behavior
+- Send `bypass_cache: true` when reload clicked
+- Clear client cache for current request
+- Show appropriate loading state
+
+### Phase 5: Testing & Polish
+
+#### 5.1 Manual Testing Checklist
+- [ ] Options load correctly on first use
+- [ ] Selections persist across compilations
+- [ ] Saved URLs preserve selections
+- [ ] Cache bypass works correctly
+- [ ] Cache status displays accurately
+- [ ] Graceful handling of API failures
+- [ ] UI remains responsive during loading
+
+#### 5.2 Edge Cases to Test
+- [ ] API returns unexpected option values
+- [ ] Saved state has invalid selections
+- [ ] Network failure during options fetch
+- [ ] Rapid selection changes
+- [ ] Multiple explain panes with different selections
