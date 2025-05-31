@@ -161,11 +161,11 @@ class ExplainView {
 - Consider adding subtle visual indicator (border color, icon)
 
 ### High Priority
-1. **Update privacy policy** - mention Claude Explain feature and data handling
+1. ~~**Update privacy policy** - mention Claude Explain feature and data handling~~ DONE
 2. Support `// no-ai` magic comment in source to prevent sending to Anthropic
 3. Fix theme-specific styling issues (especially pink theme)
-4. Improve consent UI wording to be clearer about what data is sent
-5. Add better disclaimers about AI limitations and potential inaccuracies
+4. ~~Improve consent UI wording to be clearer about what data is sent~~ DONE
+5. ~~Add better disclaimers about AI limitations and potential inaccuracies~~ DONE
 
 ### Medium Priority
 6. Better language detection based on compiler properties

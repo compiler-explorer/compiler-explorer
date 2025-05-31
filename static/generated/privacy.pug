@@ -76,8 +76,9 @@ html(lang="en")
       | Prior to storing data itself, Compiler Explorer used an external URL shortening service (
       a(href="https://goo.gl/" target="_blank") goo.gl
       | ) and the resulting short URL was rewritten as #[code https://godbolt.org/g/SHORTURLPART].
-      | The storage for the user experience state in this case remains with the short URL provider,
-      | not Compiler Explorer.
+      | Prior to May 2025, the storage for the user experience state was in the short URL provider. Google's servers
+      | will (or will have) shut down in August 2025. Since May, we archived all we could and now we keep our own
+      | database.
 
     h4 Application, web and error logs
 
@@ -111,6 +112,14 @@ html(lang="en")
       | servers. Execution occurs in a heavily locked-down, isolated environment. We have made reasonable efforts to protect
       | both the Compiler Explorer site and other concurrently-processed requests from information leakage due to rogue
       | executions.
+
+    h4 Claude Explain
+
+    p
+      | The "Claude Explain" view sends your code and data to Anthropic, the makers of Claude. We always ask for consent
+      | before sending your code, and Anthropic do not use anything we send them for training. For the purposes of
+      | Anthropic's own Privacy Policy, we use them as a "data processor", and so our own privacy policy applies to the
+      | data.
 
     h4 Cookies
 
@@ -155,5 +164,6 @@ html(lang="en")
       br
       | Evanston IL 60201 USA
       br
-      | +1 312 792-7931<br>
+      | +1 312 792-7931
+      br
       a(href="mailto:matt@godbolt.org") matt@godbolt.org
