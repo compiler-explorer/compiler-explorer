@@ -27,7 +27,6 @@ import $ from 'jquery';
 import {LRUCache} from 'lru-cache';
 import {marked} from 'marked';
 import _ from 'underscore';
-// No longer needed with flexbox layout
 import {CompilationResult} from '../compilation/compilation.interfaces.js';
 import {CompilerInfo} from '../compiler.interfaces.js';
 import {Hub} from '../hub.js';
@@ -83,15 +82,6 @@ interface ClaudeExplainResponse {
     cached: boolean;
 }
 
-// TODO: Improvement opportunities for ExplainView:
-// 1. Extract loading state management (showLoading/hideLoading) to base class or mixin
-// 2. Create explain-view.interfaces.ts file for consistency with other panes
-// 3. Extract markdown styles to shared markdown.scss (221 lines of duplication)
-// 5. Consider state machine pattern for clearer UI state transitions
-// 6. Add tests: frontend tests for ExplainView
-// 7. Improve error handling with different UI states for different error types
-// 9. Apply theming correctly (pink mode is broken)
-// 10. Address TODOs in the documentation, and tidy that up too.
 export class ExplainView extends Pane<ExplainViewState> {
     private lastResult: CompilationResult | null = null;
     private compiler: CompilerInfo | null = null;

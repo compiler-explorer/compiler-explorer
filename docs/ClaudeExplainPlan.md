@@ -168,18 +168,19 @@ class ExplainView {
 5. ~~Add better disclaimers about AI limitations and potential inaccuracies~~ DONE
 
 ### Medium Priority
-6. Better language detection based on compiler properties
-7. Instruction set detection from compiler properties
-8. Extract common UI patterns to base classes (reduce code duplication)
-9. Add frontend tests for the explain view
-10. Consider state machine pattern for UI state management
-11. Persist user's audience/explanation preferences in localStorage
+6. ~~Better language detection based on compiler properties~~ NOT NEEDED - already uses `compiler.lang`
+7. ~~Instruction set detection from compiler properties~~ NOT NEEDED - already uses `result.instructionSet`
+8. Extract loading state management to base class (showLoading/hideLoading pattern)
+9. Add simple frontend test to ensure explain view opens correctly
+10. ~~Consider state machine pattern for UI state management~~ OVERKILL - current approach is sufficient
+11. ~~Persist user's audience/explanation preferences in localStorage~~ NOT NEEDED
 
 ### Low Priority
-12. Persistent consent across browser sessions (localStorage)
-13. Improve error handling with more granular UI states
-14. Extract markdown styles to shared file (reduce 221 lines of duplication)
-15. Create explain-view.interfaces.ts file
+12. ~~Persistent consent across browser sessions (localStorage)~~ NO - want users to always give consent
+13. ~~Improve error handling with different UI states for different error types~~ NOT NEEDED - current error handling is good
+14. Consider extracting markdown styles to shared file (200+ lines could be reusable)
+15. Create explain-view.interfaces.ts file for consistency with other panes
+16. ~~Apply theming correctly (pink mode is broken)~~ DONE - themes now work correctly
 
 ### Completed Improvements
 - ✅ Session-persistent consent
