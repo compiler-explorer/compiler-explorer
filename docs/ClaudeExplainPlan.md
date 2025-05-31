@@ -171,7 +171,7 @@ class ExplainView {
 6. ~~Better language detection based on compiler properties~~ NOT NEEDED - already uses `compiler.lang`
 7. ~~Instruction set detection from compiler properties~~ NOT NEEDED - already uses `result.instructionSet`
 8. Extract loading state management to base class (showLoading/hideLoading pattern)
-9. Add simple frontend test to ensure explain view opens correctly
+9. ~~Add simple frontend test to ensure explain view opens correctly~~ DONE - added to Cypress tests
 10. ~~Consider state machine pattern for UI state management~~ OVERKILL - current approach is sufficient
 11. ~~Persist user's audience/explanation preferences in localStorage~~ NOT NEEDED
 

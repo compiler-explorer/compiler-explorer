@@ -19,6 +19,7 @@ const PANE_DATA_MAP = {
     tree: {name: 'Tree', selector: 'view-gnatdebugtree'},
     debug: {name: 'Debug', selector: 'view-gnatdebug'},
     cfg: {name: 'CFG', selector: 'view-cfg'},
+    explain: {name: 'Claude Explain', selector: 'view-explain'},
 };
 
 describe('Individual pane testing', () => {
@@ -68,6 +69,7 @@ describe('Individual pane testing', () => {
     addPaneOpenTest(PANE_DATA_MAP.tree);
     addPaneOpenTest(PANE_DATA_MAP.debug);
     addPaneOpenTest(PANE_DATA_MAP.stackusage);
+    addPaneOpenTest(PANE_DATA_MAP.explain);
     // TODO: Bring back once #3899 lands
     // addPaneOpenTest(PaneDataMap.cfg);
 
