@@ -9,11 +9,12 @@ Claude Explain is a feature in Compiler Explorer that uses Claude AI to provide 
 3. Users can customize their explanation by selecting:
    - **Audience Level**: Beginner, Intermediate, or Expert
    - **Explanation Type**: Assembly-focused, Source-to-assembly mapping, or Optimization-focused
-4. Once consent is given (persisted for the browser session), the code, compiler information, and assembly output are sent to the API.
-5. Claude analyzes the relationship between the source code and generated assembly, then provides a tailored explanation.
-6. The explanation is displayed in markdown format with syntax highlighting in the explain pane.
-7. Subsequent compilations automatically update the explanation if the explain pane is open.
-8. Responses are cached both client-side and server-side to avoid redundant API calls.
+4. The system checks for `no-ai` directive in the source code. If found, the explanation feature is disabled with a clear message.
+5. Once consent is given (persisted for the browser session), the code, compiler information, and assembly output are sent to the API.
+6. Claude analyzes the relationship between the source code and generated assembly, then provides a tailored explanation.
+7. The explanation is displayed in markdown format with syntax highlighting in the explain pane.
+8. Subsequent compilations automatically update the explanation if the explain pane is open.
+9. Responses are cached both client-side and server-side to avoid redundant API calls.
 
 ## Configuration
 
@@ -34,8 +35,9 @@ When using Claude Explain:
 - Data is only sent after explicit user consent.
 - Consent is remembered for your browser session.
 - The API is provided by Anthropic, the makers of Claude.
-- The API may store information to improve its service.
-- You can add `// no-ai` comment to your source code to prevent it from being sent to the API (planned feature).
+- Anthropic does not use the data sent to them for training their models.
+- Compiler Explorer's privacy policy has been updated to include Claude Explain usage.
+- If your source code contains `no-ai` (case-insensitive), it will not be sent to the API, and a special message will be displayed.
 
 ## Technical Implementation
 
@@ -46,19 +48,27 @@ The feature consists of:
 2. **Client-side component**:
    - The `ExplainView` class (`static/panes/explain-view.ts`) which extends `Pane` to:
      - Display a consent prompt with clear information about what data is sent
+     - Dynamically fetch available audience levels and explanation types from the API
      - Make API requests to the Claude Explain endpoint
      - Cache responses using an LRU cache (200KB limit) to reduce API costs
      - Present the explanation with markdown rendering and syntax highlighting
      - Handle error states and loading indicators
      - Show usage statistics (tokens, cost, model) in a bottom bar
+     - Persist user preferences (audience level, explanation type) for the session
    - Uses the `marked` library for markdown rendering
    - Features theme-aware styling (light/dark modes)
    - Includes a reload button to bypass cache and get fresh explanations
+   - Provides Bootstrap popovers for option descriptions
 
 3. **Compiler integration**: 
    - A button is added to the compiler pane toolbar
    - The button disables when an explain view is already open for that compiler
    - Proper event handling for view lifecycle
+
+4. **Testing**:
+   - Frontend Cypress tests have been written but are currently disabled
+   - Tests require the `explainApiEndpoint` to be configured in the test environment
+   - Once enabled, tests verify the explain pane opens correctly when the button is clicked
 
 ## UI Features
 
@@ -73,6 +83,7 @@ The explain pane provides:
 - Customization controls:
   - **Audience Level selector**: Choose between Beginner, Intermediate, or Expert explanations
   - **Explanation Type selector**: Focus on Assembly, Source-to-assembly mapping, or Optimizations
+  - **Info buttons**: Click the info icon next to each selector to see descriptions of each option
 - Bottom status bar showing:
   - AI model used (e.g., claude-3-opus-20240229)
   - Token usage (input/output/total)
@@ -196,17 +207,14 @@ The explain feature uses multi-level caching to reduce API costs and improve res
 - Large assemblies may be truncated before being sent to the API.
 - The feature requires an internet connection to access the external API.
 - Currently available for all languages supported by Compiler Explorer.
-- Some UI themes (particularly pink) may have styling issues.
 
 ## Future Improvements
 
-- Support for `// no-ai` magic comment to prevent code from being sent to API
 - Better language detection based on compiler properties
 - Instruction set detection from compiler properties
 - Persistent user preferences (audience level, explanation type) across sessions
 - Persistent consent across browser sessions (currently session-only)
 - Extract common UI patterns to base classes
-- Add frontend tests for the explain view
-- Fix theme-specific styling issues
+- Enable frontend tests once API endpoint is available in test environment
 - Improve error handling with more granular UI states
 - Support for additional explanation types and audience levels as they become available
