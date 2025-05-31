@@ -162,7 +162,7 @@ class ExplainView {
 
 ### High Priority
 1. ~~**Update privacy policy** - mention Claude Explain feature and data handling~~ DONE
-2. Support `// no-ai` magic comment in source to prevent sending to Anthropic
+2. ~~Support `no-ai` directive in source to prevent sending to Anthropic~~ DONE
 3. Fix theme-specific styling issues (especially pink theme)
 4. ~~Improve consent UI wording to be clearer about what data is sent~~ DONE
 5. ~~Add better disclaimers about AI limitations and potential inaccuracies~~ DONE
@@ -189,6 +189,15 @@ class ExplainView {
 - ✅ Loading states with clear messaging
 - ✅ Theme-aware styling (though some themes need fixes)
 - ✅ Documentation updated to reflect implementation
+- ✅ No-AI directive support
+
+#### No-AI Directive Implementation
+The feature now respects a "no-ai" directive in source code:
+- Searches for the string "no-ai" (case-insensitive) in the source code
+- If found, displays a polite message explaining why AI explanation is not available
+- The message explains that CE respects people who don't want their code processed by AI
+- Check happens both when compilation results arrive and before API calls
+- Uses a dedicated UI element in the template rather than dynamic HTML
 
 ### Implementation Risks & Considerations
 

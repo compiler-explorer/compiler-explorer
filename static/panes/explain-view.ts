@@ -97,6 +97,7 @@ export class ExplainView extends Pane<ExplainViewState> {
     private compiler: CompilerInfo | null = null;
     private statusIcon: JQuery;
     private consentElement: JQuery;
+    private noAiElement: JQuery;
     private contentElement: JQuery;
     private bottomBarElement: JQuery;
     private statsElement: JQuery;
@@ -131,6 +132,7 @@ export class ExplainView extends Pane<ExplainViewState> {
 
         this.statusIcon = this.domRoot.find('.status-icon');
         this.consentElement = this.domRoot.find('.explain-consent');
+        this.noAiElement = this.domRoot.find('.explain-no-ai');
         this.contentElement = this.domRoot.find('.explain-content');
         this.bottomBarElement = this.domRoot.find('.explain-bottom-bar');
         this.statsElement = this.domRoot.find('.explain-stats');
@@ -334,9 +336,17 @@ export class ExplainView extends Pane<ExplainViewState> {
             // Mark that we've received our first result
             this.isAwaitingInitialResults = false;
 
+            // Hide all special UI elements first
+            this.consentElement.addClass('d-none');
+            this.noAiElement.addClass('d-none');
+
             if (result.code !== 0) {
                 // If compilation failed, show error message
                 this.contentElement.text('Cannot explain: Compilation failed');
+            } else if (result.source && this.checkForNoAiDirective(result.source)) {
+                // Check for no-ai directive
+                this.noAiElement.removeClass('d-none');
+                this.contentElement.text('');
             } else if (ExplainView.consentGiven) {
                 // Consent already given, fetch explanation automatically
                 this.fetchExplanation();
@@ -427,11 +437,24 @@ export class ExplainView extends Pane<ExplainViewState> {
         return JSON.stringify(sortedPayload);
     }
 
+    private checkForNoAiDirective(sourceCode: string): boolean {
+        // Check for no-ai directive (case insensitive)
+        return /no-ai/i.test(sourceCode);
+    }
+
     private async fetchExplanation(bypassCache = false): Promise<void> {
         if (!this.lastResult || !ExplainView.consentGiven || !this.compiler) return;
 
         if (!this.explainApiEndpoint) {
             this.contentElement.text('Error: Claude Explain API endpoint not configured');
+            return;
+        }
+
+        // Check for no-ai directive in source code
+        if (this.lastResult.source && this.checkForNoAiDirective(this.lastResult.source)) {
+            this.hideLoading();
+            this.noAiElement.removeClass('d-none');
+            this.contentElement.text('');
             return;
         }
 
