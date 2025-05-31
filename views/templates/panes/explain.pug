@@ -11,13 +11,15 @@ Please check before acting on information derived from this view."
         | LLMs can be inaccurate
         i.fas.fa-info-circle.ms-1
       .input-group
-        .input-group-text Audience:
         select.explain-audience.form-select.form-select-sm(style="width: auto;")
           option(value="loading") Loading...
+        button.btn.btn-sm.btn-outline-secondary.explain-audience-info(type="button" title="Audience level" tabindex="0")
+          i.fas.fa-info-circle
       .input-group
-        .input-group-text Focus:
         select.explain-type.form-select.form-select-sm(style="width: auto;")
           option(value="loading") Loading...
+        button.btn.btn-sm.btn-outline-secondary.explain-type-info(type="button" title="Explanation focus" tabindex="0")
+          i.fas.fa-info-circle
       .status.ms-auto
         i.status-icon.fas.d-none
     .explain-consent.explain-box.d-none.flex-shrink-0

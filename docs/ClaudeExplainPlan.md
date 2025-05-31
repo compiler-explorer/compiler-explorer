@@ -183,8 +183,8 @@ class ExplainView {
 16. ~~Apply theming correctly (pink mode is broken)~~ DONE - themes now work correctly
 
 ### Future Enhancements
-17. Surface explanation option descriptions in UI (tooltips, TomSelect with descriptions, etc.)
-18. Consider using richer dropdown component to show both value and description
+17. ~~Surface explanation option descriptions in UI (tooltips, TomSelect with descriptions, etc.)~~ DONE - implemented with Bootstrap popovers
+18. ~~Consider using richer dropdown component to show both value and description~~ DONE - simple popovers work better than complex dropdowns
 
 ### Completed Improvements
 - ✅ Session-persistent consent
@@ -195,6 +195,7 @@ class ExplainView {
 - ✅ Theme-aware styling (though some themes need fixes)
 - ✅ Documentation updated to reflect implementation
 - ✅ No-AI directive support
+- ✅ Bootstrap popover info buttons showing API option descriptions
 
 #### No-AI Directive Implementation
 The feature now respects a "no-ai" directive in source code:

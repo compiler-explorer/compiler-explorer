@@ -27,6 +27,7 @@ import $ from 'jquery';
 import {LRUCache} from 'lru-cache';
 import {marked} from 'marked';
 import _ from 'underscore';
+import {initPopover} from '../bootstrap-utils.js';
 import {CompilationResult} from '../compilation/compilation.interfaces.js';
 import {CompilerInfo} from '../compiler.interfaces.js';
 import {Hub} from '../hub.js';
@@ -48,6 +49,8 @@ export class ExplainView extends Pane<ExplainViewState> {
     private statsElement: JQuery;
     private audienceSelect: JQuery;
     private explanationSelect: JQuery;
+    private audienceInfoButton: JQuery;
+    private explanationInfoButton: JQuery;
     private explainApiEndpoint: string;
     private fontScale: FontScale;
     private cache: LRUCache<string, ClaudeExplainResponse>;
@@ -83,6 +86,8 @@ export class ExplainView extends Pane<ExplainViewState> {
         this.statsElement = this.domRoot.find('.explain-stats');
         this.audienceSelect = this.domRoot.find('.explain-audience');
         this.explanationSelect = this.domRoot.find('.explain-type');
+        this.audienceInfoButton = this.domRoot.find('.explain-audience-info');
+        this.explanationInfoButton = this.domRoot.find('.explain-type-info');
 
         this.fontScale = new FontScale(this.domRoot, state, '.explain-content');
         this.fontScale.on('change', this.updateState.bind(this));
@@ -161,6 +166,9 @@ export class ExplainView extends Pane<ExplainViewState> {
             this.explanationSelect.append(optionElement);
         });
 
+        // Update popover content with the loaded options
+        this.updatePopoverContent(options);
+
         if (this.isInitializing) {
             // During initialization: trust saved state completely, no validation
             this.audienceSelect.val(this.selectedAudience);
@@ -181,6 +189,39 @@ export class ExplainView extends Pane<ExplainViewState> {
             this.audienceSelect.val(validAudienceValue);
             this.explanationSelect.val(validExplanationValue);
         }
+    }
+
+    private updatePopoverContent(options: AvailableOptions): void {
+        // Generate HTML content for audience popover
+        const audienceContent = options.audience
+            .map(
+                option =>
+                    `<div class="mb-2"><strong>${option.value.charAt(0).toUpperCase() + option.value.slice(1)}:</strong> ${option.description}</div>`,
+            )
+            .join('');
+
+        // Generate HTML content for explanation popover
+        const explanationContent = options.explanation
+            .map(
+                option =>
+                    `<div class="mb-2"><strong>${option.value.charAt(0).toUpperCase() + option.value.slice(1)}:</strong> ${option.description}</div>`,
+            )
+            .join('');
+
+        // Initialize Bootstrap popovers with the content
+        initPopover(this.audienceInfoButton, {
+            content: audienceContent,
+            html: true,
+            placement: 'bottom',
+            trigger: 'focus',
+        });
+
+        initPopover(this.explanationInfoButton, {
+            content: explanationContent,
+            html: true,
+            placement: 'bottom',
+            trigger: 'focus',
+        });
     }
 
     private async fetchAvailableOptions(): Promise<AvailableOptions> {
