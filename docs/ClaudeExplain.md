@@ -139,7 +139,7 @@ The client sends a POST request to generate an explanation:
   "asm": ["Assembly output lines"],
   "audience": "intermediate",        // Optional, default: "beginner"
   "explanation": "optimization",     // Optional, default: "assembly"
-  "bypass_cache": false              // Optional, default: false
+  "bypassCache": false               // Optional, default: false
 }
 ```
 
@@ -151,12 +151,14 @@ The API returns:
   "explanation": "Markdown-formatted explanation",
   "model": "claude-3-opus-20240229",
   "usage": {
-    "input_tokens": 500,
-    "output_tokens": 300,
-    "total_tokens": 800,
-    "input_cost": 0.0015,
-    "output_cost": 0.0045,
-    "total_cost": 0.006
+    "inputTokens": 500,
+    "outputTokens": 300,
+    "totalTokens": 800
+  },
+  "cost": {
+    "inputCost": 0.0015,
+    "outputCost": 0.0045,
+    "totalCost": 0.006
   },
   "cached": false  // Indicates if served from server-side cache
 }
@@ -179,7 +181,7 @@ The explain feature uses multi-level caching to reduce API costs and improve res
 
 ### Cache Bypass
 - Users can bypass all caches using the reload button in the bottom bar
-- This sends `bypass_cache: true` to the API, forcing fresh generation
+- This sends `bypassCache: true` to the API, forcing fresh generation
 - Fresh responses are still written to both caches for future use
 
 ### Cache Status Display

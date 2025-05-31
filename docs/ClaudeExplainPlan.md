@@ -149,7 +149,7 @@ class ExplainView {
 
 #### 4. Update API Request
 - Include `audience` and `explanation` parameters in POST request
-- Include `bypass_cache: true` when reload button is clicked
+- Include `bypassCache: true` when reload button is clicked
 - Update cache key calculation to include new parameters
 
 #### 5. Display Cache Status
@@ -219,7 +219,7 @@ interface ExplainRequest {
     // existing fields...
     audience?: string;
     explanation?: string;
-    bypass_cache?: boolean;
+    bypassCache?: boolean;
 }
 
 interface ExplainResponse {
@@ -287,7 +287,7 @@ interface ExplainViewState {
 - Update dynamically based on response
 
 #### 4.2 Update Reload Behavior
-- Send `bypass_cache: true` when reload clicked
+- Send `bypassCache: true` when reload clicked
 - Clear client cache for current request
 - Show appropriate loading state
 
@@ -307,4 +307,4 @@ interface ExplainViewState {
 - [ ] Saved state has invalid selections
 - [ ] Network failure during options fetch
 - [ ] Rapid selection changes
-- [ ] Multiple explain panes with different selections
+- [ ] Switching between different compilers with explain pane open

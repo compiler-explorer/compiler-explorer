@@ -38,21 +38,49 @@ import {FontScale} from '../widgets/fontscale.js';
 import {PaneState} from './pane.interfaces.js';
 import {Pane} from './pane.js';
 
+interface ExplainViewState extends PaneState {
+    audience?: string;
+    explanation?: string;
+}
+
+interface ExplanationOption {
+    value: string;
+    description: string;
+}
+
+interface AvailableOptions {
+    audience: ExplanationOption[];
+    explanation: ExplanationOption[];
+}
+
+interface ExplainRequest {
+    language: string;
+    compiler: string;
+    code: string;
+    compilationOptions: string[];
+    instructionSet: string;
+    asm: any[];
+    audience?: string;
+    explanation?: string;
+    bypassCache?: boolean;
+}
+
 interface ClaudeExplainResponse {
     status: string;
     explanation: string;
     message?: string;
     model?: string;
     usage?: {
-        input_tokens: number;
-        output_tokens: number;
-        total_tokens: number;
+        inputTokens: number;
+        outputTokens: number;
+        totalTokens: number;
     };
     cost?: {
-        input_cost: number;
-        output_cost: number;
-        total_cost: number;
+        inputCost: number;
+        outputCost: number;
+        totalCost: number;
     };
+    cached: boolean;
 }
 
 // TODO: Improvement opportunities for ExplainView:
@@ -64,7 +92,7 @@ interface ClaudeExplainResponse {
 // 7. Improve error handling with different UI states for different error types
 // 9. Apply theming correctly (pink mode is broken)
 // 10. Address TODOs in the documentation, and tidy that up too.
-export class ExplainView extends Pane<PaneState> {
+export class ExplainView extends Pane<ExplainViewState> {
     private lastResult: CompilationResult | null = null;
     private compiler: CompilerInfo | null = null;
     private statusIcon: JQuery;
@@ -72,6 +100,8 @@ export class ExplainView extends Pane<PaneState> {
     private contentElement: JQuery;
     private bottomBarElement: JQuery;
     private statsElement: JQuery;
+    private audienceSelect: JQuery;
+    private explanationSelect: JQuery;
     private explainApiEndpoint: string;
     private fontScale: FontScale;
     private cache: LRUCache<string, ClaudeExplainResponse>;
@@ -79,7 +109,16 @@ export class ExplainView extends Pane<PaneState> {
     // Use a static variable to persist consent across all instances during the session
     private static consentGiven = false;
 
-    constructor(hub: Hub, container: Container, state: PaneState) {
+    // Static cache for available options (shared across all instances)
+    private static availableOptions: AvailableOptions | null = null;
+    private static optionsFetchPromise: Promise<AvailableOptions> | null = null;
+
+    // Instance variables for selected options
+    private selectedAudience: string;
+    private selectedExplanation: string;
+    private isInitializing = true;
+
+    constructor(hub: Hub, container: Container, state: ExplainViewState) {
         super(hub, container, state);
         // API endpoint from global options
         this.explainApiEndpoint = options.explainApiEndpoint || '';
@@ -95,6 +134,8 @@ export class ExplainView extends Pane<PaneState> {
         this.contentElement = this.domRoot.find('.explain-content');
         this.bottomBarElement = this.domRoot.find('.explain-bottom-bar');
         this.statsElement = this.domRoot.find('.explain-stats');
+        this.audienceSelect = this.domRoot.find('.explain-audience');
+        this.explanationSelect = this.domRoot.find('.explain-type');
 
         this.fontScale = new FontScale(this.domRoot, state, '.explain-content');
         this.fontScale.on('change', this.updateState.bind(this));
@@ -110,6 +151,26 @@ export class ExplainView extends Pane<PaneState> {
             this.fetchExplanation(true);
         });
 
+        // Wire up select controls
+        this.audienceSelect.on('change', () => {
+            this.selectedAudience = this.audienceSelect.val() as string;
+            this.updateState();
+            if (ExplainView.consentGiven && this.lastResult) {
+                this.fetchExplanation();
+            }
+        });
+
+        this.explanationSelect.on('change', () => {
+            this.selectedExplanation = this.explanationSelect.val() as string;
+            this.updateState();
+            if (ExplainView.consentGiven && this.lastResult) {
+                this.fetchExplanation();
+            }
+        });
+
+        // Initialize UI controls
+        this.initializeOptions();
+
         // Set initial content to avoid showing template content
         this.contentElement.text('Waiting for compilation...');
         this.isAwaitingInitialResults = true;
@@ -122,10 +183,136 @@ export class ExplainView extends Pane<PaneState> {
         return $('#explain').html();
     }
 
+    private async initializeOptions(): Promise<void> {
+        try {
+            const options = await this.fetchAvailableOptions();
+            this.populateSelectOptions(options);
+        } catch (error) {
+            console.error('Failed to initialize options:', error);
+            // Controls will remain with "Loading..." option
+        }
+    }
+
+    private populateSelectOptions(options: AvailableOptions): void {
+        // Populate audience select
+        this.audienceSelect.empty();
+        options.audience.forEach(option => {
+            const optionElement = $('<option></option>')
+                .attr('value', option.value)
+                .text(option.value.charAt(0).toUpperCase() + option.value.slice(1))
+                .attr('title', option.description);
+            this.audienceSelect.append(optionElement);
+        });
+
+        // Populate explanation type select
+        this.explanationSelect.empty();
+        options.explanation.forEach(option => {
+            const optionElement = $('<option></option>')
+                .attr('value', option.value)
+                .text(option.value.charAt(0).toUpperCase() + option.value.slice(1))
+                .attr('title', option.description);
+            this.explanationSelect.append(optionElement);
+        });
+
+        if (this.isInitializing) {
+            // During initialization: trust saved state completely, no validation
+            this.audienceSelect.val(this.selectedAudience);
+            this.explanationSelect.val(this.selectedExplanation);
+            this.isInitializing = false; // Now user interactions can begin
+        } else {
+            // During runtime: validate user changes normally
+            const validAudienceValue = options.audience.some(opt => opt.value === this.selectedAudience)
+                ? this.selectedAudience
+                : 'beginner';
+            const validExplanationValue = options.explanation.some(opt => opt.value === this.selectedExplanation)
+                ? this.selectedExplanation
+                : 'assembly';
+
+            this.selectedAudience = validAudienceValue;
+            this.selectedExplanation = validExplanationValue;
+
+            this.audienceSelect.val(validAudienceValue);
+            this.explanationSelect.val(validExplanationValue);
+        }
+    }
+
+    private async fetchAvailableOptions(): Promise<AvailableOptions> {
+        // If we already have options cached, return them
+        if (ExplainView.availableOptions) {
+            return ExplainView.availableOptions;
+        }
+
+        // If we're already fetching, wait for that promise
+        if (ExplainView.optionsFetchPromise) {
+            return ExplainView.optionsFetchPromise;
+        }
+
+        // Create the fetch promise
+        ExplainView.optionsFetchPromise = (async () => {
+            try {
+                const response = await window.fetch(this.explainApiEndpoint, {
+                    method: 'GET',
+                    headers: {'Content-Type': 'application/json'},
+                });
+
+                if (!response.ok) {
+                    throw new Error(`Failed to fetch options: ${response.status} ${response.statusText}`);
+                }
+
+                const options = (await response.json()) as AvailableOptions;
+                ExplainView.availableOptions = options;
+                return options;
+            } catch (error) {
+                // If fetch fails, provide fallback options
+                console.error('Failed to fetch available options:', error);
+                const fallbackOptions: AvailableOptions = {
+                    audience: [
+                        {value: 'beginner', description: 'For beginners learning assembly language'},
+                        {value: 'intermediate', description: 'For users familiar with basic assembly concepts'},
+                        {value: 'expert', description: 'For advanced users'},
+                    ],
+                    explanation: [
+                        {value: 'assembly', description: 'Explains the assembly instructions'},
+                        {value: 'source', description: 'Explains how source code maps to assembly'},
+                        {value: 'optimization', description: 'Explains compiler optimizations'},
+                    ],
+                };
+                ExplainView.availableOptions = fallbackOptions;
+                return fallbackOptions;
+            } finally {
+                // Clear the promise once done
+                ExplainView.optionsFetchPromise = null;
+            }
+        })();
+
+        return ExplainView.optionsFetchPromise;
+    }
+
+    override initializeStateDependentProperties(state: ExplainViewState): void {
+        // Set defaults first
+        this.selectedAudience = 'beginner';
+        this.selectedExplanation = 'assembly';
+
+        // Then override with saved state if it exists
+        if (state.audience) {
+            this.selectedAudience = state.audience;
+        }
+        if (state.explanation) {
+            this.selectedExplanation = state.explanation;
+        }
+    }
+
+    override getCurrentState(): ExplainViewState {
+        const state = super.getCurrentState() as ExplainViewState;
+        state.audience = this.selectedAudience;
+        state.explanation = this.selectedExplanation;
+        return state;
+    }
+
     override onCompiler(
         compilerId: number,
         compiler: CompilerInfo | null,
-        options: string,
+        _compilerOptions: string,
         editorId: number,
         treeId: number,
     ): void {
@@ -197,27 +384,34 @@ export class ExplainView extends Pane<PaneState> {
         this.bottomBarElement.removeClass('d-none');
     }
 
-    private updateStatsInBottomBar(data: ClaudeExplainResponse, cacheHit = false): void {
+    private updateStatsInBottomBar(data: ClaudeExplainResponse, clientCacheHit = false, serverCacheHit = false): void {
         if (!data.usage) return;
 
         const stats: string[] = [];
-        if (cacheHit) {
-            stats.push('(Cached)');
+
+        // Display cache status with appropriate icon
+        if (clientCacheHit) {
+            stats.push('🔄 Cached (client)');
+        } else if (serverCacheHit) {
+            stats.push('🔄 Cached (server)');
+        } else {
+            stats.push('✨ Fresh');
         }
+
         if (data.model) {
             stats.push(`Model: ${data.model}`);
         }
-        if (data.usage.total_tokens) {
-            stats.push(`Tokens: ${data.usage.total_tokens}`);
+        if (data.usage.totalTokens) {
+            stats.push(`Tokens: ${data.usage.totalTokens}`);
         }
-        if (data.cost?.total_cost) {
-            stats.push(`Cost: $${data.cost.total_cost.toFixed(6)}`);
+        if (data.cost?.totalCost) {
+            stats.push(`Cost: $${data.cost.totalCost.toFixed(6)}`);
         }
 
         this.statsElement.text(stats.join(' | '));
     }
 
-    private generateCacheKey(payload: any): string {
+    private generateCacheKey(payload: ExplainRequest): string {
         // Create a cache key from the request payload
         // Sort the payload properties to ensure consistent key generation
         const sortedPayload = {
@@ -227,6 +421,8 @@ export class ExplainView extends Pane<PaneState> {
             compilationOptions: payload.compilationOptions?.sort() || [],
             instructionSet: payload.instructionSet,
             asm: payload.asm,
+            audience: payload.audience || 'beginner',
+            explanation: payload.explanation || 'assembly',
         };
         return JSON.stringify(sortedPayload);
     }
@@ -243,14 +439,21 @@ export class ExplainView extends Pane<PaneState> {
         this.showLoading();
 
         try {
-            const payload = {
+            const payload: ExplainRequest = {
                 language: this.compiler.lang,
                 compiler: this.compiler.name,
                 code: this.lastResult.source || '',
                 compilationOptions: this.lastResult.compilationOptions || [],
                 instructionSet: this.lastResult.instructionSet || 'amd64',
-                asm: this.lastResult.asm,
+                asm: Array.isArray(this.lastResult.asm) ? this.lastResult.asm : [],
+                audience: this.selectedAudience,
+                explanation: this.selectedExplanation,
             };
+
+            // Add bypassCache flag if requested
+            if (bypassCache) {
+                payload.bypassCache = true;
+            }
 
             const cacheKey = this.generateCacheKey(payload);
 
@@ -267,7 +470,7 @@ export class ExplainView extends Pane<PaneState> {
                     this.showBottomBar();
                     // Show stats if available
                     if (cachedResult.usage) {
-                        this.updateStatsInBottomBar(cachedResult, true);
+                        this.updateStatsInBottomBar(cachedResult, true, false);
                     }
                     return;
                 }
@@ -304,7 +507,8 @@ export class ExplainView extends Pane<PaneState> {
             this.showBottomBar();
             // Show stats if available
             if (data.usage) {
-                this.updateStatsInBottomBar(data);
+                // Pass server cache status from response
+                this.updateStatsInBottomBar(data, false, data.cached);
             }
         } catch (error) {
             this.hideLoading();

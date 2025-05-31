@@ -5,6 +5,15 @@
       .ai-disclaimer.text-muted.small.mx-2(title="AI-generated explanations may contain errors or inaccuracies")
         i.fas.fa-info-circle.me-1
         | AI may be inaccurate
+      .explain-options.d-flex.mx-2
+        .explain-option-group.me-2
+          label.form-label.small.mb-0.me-1 Audience:
+          select.explain-audience.form-select.form-select-sm.explain-select(style="width: auto;")
+            option(value="loading") Loading...
+        .explain-option-group.me-2
+          label.form-label.small.mb-0.me-1 Focus:
+          select.explain-type.form-select.form-select-sm.explain-select(style="width: auto;")
+            option(value="loading") Loading...
       .status.ms-auto
         i.status-icon.fas.d-none
     .explain-consent.d-none.flex-shrink-0
