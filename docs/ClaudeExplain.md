@@ -60,13 +60,13 @@ The feature consists of:
    - Includes a reload button to bypass cache and get fresh explanations
    - Provides Bootstrap popovers for option descriptions
 
-3. **Compiler integration**: 
+3. **Compiler integration**:
    - A button is added to the compiler pane toolbar
    - The button disables when an explain view is already open for that compiler
    - Proper event handling for view lifecycle
 
 4. **Testing**:
-   - Frontend Cypress tests have been written but are currently disabled
+   - Simple frontend Cypress tests have been written
    - Tests require the `explainApiEndpoint` to be configured in the test environment
    - Once enabled, tests verify the explain pane opens correctly when the button is clicked
 
@@ -198,7 +198,7 @@ The explain feature uses multi-level caching to reduce API costs and improve res
 ### Cache Status Display
 - The bottom bar shows cache status:
   - 🔄 "Cached (client)" - Served from browser cache
-  - 🔄 "Cached (server)" - Served from API server cache  
+  - 🔄 "Cached (server)" - Served from API server cache
   - ✨ "Fresh" - Newly generated explanation
 
 ## Limitations
@@ -206,15 +206,3 @@ The explain feature uses multi-level caching to reduce API costs and improve res
 - Claude may not be able to explain every compiler optimization or assembly pattern.
 - Large assemblies may be truncated before being sent to the API.
 - The feature requires an internet connection to access the external API.
-- Currently available for all languages supported by Compiler Explorer.
-
-## Future Improvements
-
-- Better language detection based on compiler properties
-- Instruction set detection from compiler properties
-- Persistent user preferences (audience level, explanation type) across sessions
-- Persistent consent across browser sessions (currently session-only)
-- Extract common UI patterns to base classes
-- Enable frontend tests once API endpoint is available in test environment
-- Improve error handling with more granular UI states
-- Support for additional explanation types and audience levels as they become available
