@@ -163,7 +163,7 @@ class ExplainView {
 ### High Priority
 1. ~~**Update privacy policy** - mention Claude Explain feature and data handling~~ DONE
 2. ~~Support `no-ai` directive in source to prevent sending to Anthropic~~ DONE
-3. Fix theme-specific styling issues (especially pink theme)
+3. ~~Fix theme-specific styling issues (especially pink theme)~~ DONE
 4. ~~Improve consent UI wording to be clearer about what data is sent~~ DONE
 5. ~~Add better disclaimers about AI limitations and potential inaccuracies~~ DONE
 
