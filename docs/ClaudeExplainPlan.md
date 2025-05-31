@@ -179,8 +179,12 @@ class ExplainView {
 12. ~~Persistent consent across browser sessions (localStorage)~~ NO - want users to always give consent
 13. ~~Improve error handling with different UI states for different error types~~ NOT NEEDED - current error handling is good
 14. ~~Consider extracting markdown styles to shared file (200+ lines could be reusable)~~ DONE - extracted to markdown.scss
-15. Create explain-view.interfaces.ts file for consistency with other panes
+15. ~~Create explain-view.interfaces.ts file for consistency with other panes~~ DONE
 16. ~~Apply theming correctly (pink mode is broken)~~ DONE - themes now work correctly
+
+### Future Enhancements
+17. Surface explanation option descriptions in UI (tooltips, TomSelect with descriptions, etc.)
+18. Consider using richer dropdown component to show both value and description
 
 ### Completed Improvements
 - ✅ Session-persistent consent

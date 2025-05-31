@@ -34,53 +34,8 @@ import {options} from '../options.js';
 import {SentryCapture} from '../sentry.js';
 import * as utils from '../utils.js';
 import {FontScale} from '../widgets/fontscale.js';
-import {PaneState} from './pane.interfaces.js';
+import {AvailableOptions, ClaudeExplainResponse, ExplainRequest, ExplainViewState} from './explain-view.interfaces.js';
 import {Pane} from './pane.js';
-
-interface ExplainViewState extends PaneState {
-    audience?: string;
-    explanation?: string;
-}
-
-interface ExplanationOption {
-    value: string;
-    description: string;
-}
-
-interface AvailableOptions {
-    audience: ExplanationOption[];
-    explanation: ExplanationOption[];
-}
-
-interface ExplainRequest {
-    language: string;
-    compiler: string;
-    code: string;
-    compilationOptions: string[];
-    instructionSet: string;
-    asm: any[];
-    audience?: string;
-    explanation?: string;
-    bypassCache?: boolean;
-}
-
-interface ClaudeExplainResponse {
-    status: string;
-    explanation: string;
-    message?: string;
-    model?: string;
-    usage?: {
-        inputTokens: number;
-        outputTokens: number;
-        totalTokens: number;
-    };
-    cost?: {
-        inputCost: number;
-        outputCost: number;
-        totalCost: number;
-    };
-    cached: boolean;
-}
 
 export class ExplainView extends Pane<ExplainViewState> {
     private lastResult: CompilationResult | null = null;
