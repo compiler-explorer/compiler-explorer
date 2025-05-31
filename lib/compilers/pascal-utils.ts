@@ -22,34 +22,32 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-export class PascalUtils {
-    isProgram(source: string) {
-        const re = /\s?program\s+([\w.-]*);/i;
-        return !!re.test(source);
+export function isProgram(source: string) {
+    const re = /\s?program\s+([\w.-]*);/i;
+    return !!re.test(source);
+}
+
+export function isUnit(source: string) {
+    const re = /\s?unit\s+([\w.-]*);/i;
+    return !!re.test(source);
+}
+
+export function getUnitname(source: string) {
+    const re = /\s?unit\s+([\w.-]*);/i;
+    const match = source.match(re);
+    if (match) {
+        return match[1];
     }
 
-    isUnit(source: string) {
-        const re = /\s?unit\s+([\w.-]*);/i;
-        return !!re.test(source);
+    return 'example';
+}
+
+export function getProgName(source: string) {
+    const re = /\s?program\s+([\w.-]*);/i;
+    const match = source.match(re);
+    if (match) {
+        return match[1];
     }
 
-    getUnitname(source: string) {
-        const re = /\s?unit\s+([\w.-]*);/i;
-        const match = source.match(re);
-        if (match) {
-            return match[1];
-        }
-
-        return 'example';
-    }
-
-    getProgName(source: string) {
-        const re = /\s?program\s+([\w.-]*);/i;
-        const match = source.match(re);
-        if (match) {
-            return match[1];
-        }
-
-        return 'prog';
-    }
+    return 'prog';
 }

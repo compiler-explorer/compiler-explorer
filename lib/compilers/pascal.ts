@@ -40,7 +40,7 @@ import {CompilationEnvironment} from '../compilation-env.js';
 import * as utils from '../utils.js';
 
 import {PascalParser} from './argument-parsers.js';
-import {PascalUtils} from './pascal-utils.js';
+import {getProgName, getUnitname, isProgram} from './pascal-utils.js';
 
 export class FPCCompiler extends BaseCompiler {
     static get key() {
@@ -50,7 +50,6 @@ export class FPCCompiler extends BaseCompiler {
     dprFilename: string;
     supportsOptOutput: boolean;
     nasmPath: string;
-    pasUtils: PascalUtils;
     demangler: any | null = null;
 
     constructor(info: PreliminaryCompilerInfo, env: CompilationEnvironment) {
@@ -60,7 +59,6 @@ export class FPCCompiler extends BaseCompiler {
         this.dprFilename = 'prog.dpr';
         this.supportsOptOutput = false;
         this.nasmPath = this.compilerProps<string>('nasmpath');
-        this.pasUtils = new PascalUtils();
     }
 
     override getSharedLibraryPathsAsArguments() {
@@ -218,11 +216,11 @@ export class FPCCompiler extends BaseCompiler {
     }
 
     getMainSourceFilename(source: string) {
-        let inputFilename;
-        if (this.pasUtils.isProgram(source)) {
-            inputFilename = this.pasUtils.getProgName(source) + '.dpr';
+        let inputFilename: string;
+        if (isProgram(source)) {
+            inputFilename = getProgName(source) + '.dpr';
         } else {
-            const unitName = this.pasUtils.getUnitname(source);
+            const unitName = getUnitname(source);
             if (unitName) {
                 inputFilename = unitName + '.pas';
             } else {
