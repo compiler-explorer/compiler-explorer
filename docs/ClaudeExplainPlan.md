@@ -114,18 +114,18 @@ class ExplainView {
   // Static cache for options (shared across all instances)
   private static availableOptions: AvailableOptions | null = null;
   private static optionsFetchPromise: Promise<AvailableOptions> | null = null;
-  
+
   // Instance state
   private selectedAudience: string = 'beginner';
   private selectedExplanation: string = 'assembly';
-  
+
   // Load from saved state first, validate later
   loadState(state) {
     this.selectedAudience = state.audience || 'beginner';
     this.selectedExplanation = state.explanation || 'assembly';
     // Don't validate yet - options might not be loaded
   }
-  
+
   // Fetch options if needed, show UI appropriately
   async ensureOptionsLoaded() {
     if (!ExplainView.availableOptions && !ExplainView.optionsFetchPromise) {
@@ -167,7 +167,7 @@ class ExplainView {
 4. Improve consent UI wording to be clearer about what data is sent
 5. Add better disclaimers about AI limitations and potential inaccuracies
 
-### Medium Priority  
+### Medium Priority
 6. Better language detection based on compiler properties
 7. Instruction set detection from compiler properties
 8. Extract common UI patterns to base classes (reduce code duplication)
@@ -183,7 +183,7 @@ class ExplainView {
 
 ### Completed Improvements
 - ✅ Session-persistent consent
-- ✅ Client-side LRU caching to reduce API costs  
+- ✅ Client-side LRU caching to reduce API costs
 - ✅ Bottom status bar with usage statistics
 - ✅ Reload button (needs update to bypass server cache too)
 - ✅ Loading states with clear messaging
@@ -240,18 +240,7 @@ interface ExplainResponse {
 ### Phase 2: UI Components
 
 #### 2.1 Update Pug Template
-Add select controls to the explain pane:
-```pug
-.explain-options
-  .explain-option-group
-    label(for="explain-audience") Audience Level:
-    select#explain-audience.explain-select
-      option(value="loading") Loading options...
-  .explain-option-group  
-    label(for="explain-type") Explanation Focus:
-    select#explain-type.explain-select
-      option(value="loading") Loading options...
-```
+Add select controls to the explain pane.
 
 #### 2.2 Add Styles
 - Style the select controls to match CE theme
