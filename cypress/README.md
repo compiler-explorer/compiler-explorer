@@ -4,6 +4,20 @@ This directory contains end-to-end tests for Compiler Explorer using Cypress.
 
 ## Running Tests
 
+### Starting Compiler Explorer for Testing
+
+First, start a local Compiler Explorer instance with a clean configuration:
+
+```bash
+npm run dev -- --language c++ --no-local
+```
+
+The `--no-local` flag is important as it ensures your setup is clean of any local properties.
+
+### Running Cypress Tests
+
+In another terminal:
+
 ```bash
 # Run all Cypress tests
 npm run cypress
@@ -11,9 +25,11 @@ npm run cypress
 # Run specific test file
 npm run cypress -- run --spec "cypress/e2e/claude-explain.cy.ts"
 
-# Open Cypress interactive UI
+# Open Cypress interactive UI (recommended for development)
 npm run cypress:open
 ```
+
+When using the interactive UI, choose "E2E Testing" and select your browser.
 
 ## Important Testing Patterns & Lessons Learned
 
@@ -30,10 +46,16 @@ cy.get('.explain-content:visible').should('contain', 'text');
 ### 2. **Performance: Clear Intercepts in `afterEach`**
 Cypress intercepts accumulate across tests causing O(n²) performance degradation. Always clear them:
 ```javascript
+import {clearAllIntercepts} from '../support/utils';
+
 afterEach(() => {
-    // Clear all Cypress intercepts to prevent accumulation
+    // Use the utility function to clear intercepts
+    clearAllIntercepts();
+    
+    // Or manually clear them:
     cy.state('routes', []);
     cy.state('aliases', {});
+    
     // ... other cleanup
 });
 ```
@@ -108,7 +130,7 @@ cy.intercept('https://api.compiler-explorer.com/**', {
 
 ### Tests Getting Progressively Slower
 - **Cause**: Intercept accumulation
-- **Solution**: Clear intercepts in `afterEach` using `cy.state('routes', [])`
+- **Solution**: Clear intercepts in `afterEach` using `clearAllIntercepts()` from utils or manually with `cy.state('routes', [])`
 
 ### "Element not found" Despite Being Visible
 - **Cause**: Selecting template elements from GoldenLayout
