@@ -4,7 +4,7 @@ Claude Explain is a feature in Compiler Explorer that uses Claude AI to provide 
 
 ## How It Works
 
-1. After compilation, users can click the "Explain with Claude" button (robot icon) in the compiler pane toolbar.
+1. After compilation, users can click the "Claude Explain" button (robot icon) in the compiler pane toolbar.
 2. A dedicated Explain pane opens, prompting users to consent to sending their code and compilation output to the Claude Explain API.
 3. Users can customize their explanation by selecting:
    - **Audience Level**: Beginner, Intermediate, or Expert
