@@ -713,4 +713,10 @@ textarea.form-control {
     }
 }
 
+#motd {
+    .btn-close {
+        filter: invert(100%);
+    }
+}
+
 @import 'ansi-dark';
