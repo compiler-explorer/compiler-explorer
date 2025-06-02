@@ -26,15 +26,19 @@ import $ from 'jquery';
 
 import {Ad, Motd} from './motd.interfaces.js';
 
-function ensureShownMessage(message: string, motdNode: JQuery) {
-    motdNode.find('.content').html(message);
-    motdNode.removeClass('d-none');
+function setupMotd(motdNode: JQuery, onHide: () => void) {
     motdNode
         .find('.btn-close')
         .on('click', () => {
             motdNode.addClass('d-none');
+            onHide();
         })
         .prop('title', 'Hide message');
+}
+
+function ensureShownMessage(message: string, motdNode: JQuery) {
+    motdNode.find('.content').html(message);
+    motdNode.removeClass('d-none');
 }
 
 export function isValidAd(ad: Ad, subLang: string): boolean {
@@ -59,6 +63,7 @@ export function isValidAd(ad: Ad, subLang: string): boolean {
 }
 
 function handleMotd(motd: Motd, motdNode: JQuery, subLang: string, adsEnabled: boolean, onHide: () => void) {
+    setupMotd(motdNode, onHide);
     if (motd.update) {
         ensureShownMessage(motd.update, motdNode);
     } else if (motd.motd) {
@@ -68,12 +73,7 @@ function handleMotd(motd: Motd, motdNode: JQuery, subLang: string, adsEnabled: b
 
         if (applicableAds != null && applicableAds.length > 0) {
             const randomAd = applicableAds[Math.floor(Math.random() * applicableAds.length)];
-            motdNode.find('.content').html(randomAd.html);
-            motdNode.find('.close').on('click', () => {
-                motdNode.addClass('d-none');
-                onHide();
-            });
-            motdNode.removeClass('d-none');
+            ensureShownMessage(randomAd.html, motdNode);
         }
     }
 }
