@@ -554,17 +554,20 @@ export class Cfg extends Pane<CfgState> {
     }
 
     birdsEyeView() {
-        if (this.layout.blocks.length > 0) {
-            const fullW = this.layout.getWidth();
-            const fullH = this.layout.getHeight();
-            const container_size = this.graphContainer.getBoundingClientRect();
-            const zoom = Math.min(container_size.width / fullW, container_size.height / fullH);
-            this.setZoom(zoom);
-            this.setPan({
-                x: container_size.width / 2 - (fullW * zoom) / 2,
-                y: container_size.height / 2 - (fullH * zoom) / 2,
-            });
+        if (!this.layout?.blocks?.length) {
+            // No layout loaded yet or empty layout - nothing to zoom to
+            return;
         }
+
+        const fullW = this.layout.getWidth();
+        const fullH = this.layout.getHeight();
+        const container_size = this.graphContainer.getBoundingClientRect();
+        const zoom = Math.min(container_size.width / fullW, container_size.height / fullH);
+        this.setZoom(zoom);
+        this.setPan({
+            x: container_size.width / 2 - (fullW * zoom) / 2,
+            y: container_size.height / 2 - (fullH * zoom) / 2,
+        });
     }
 
     setZoom(zoom: number, superficial?: boolean) {
