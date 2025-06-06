@@ -91,7 +91,15 @@ class DiffStateObject {
 
     update(id: number | string, compiler: CompilerInfo, result: CompilationResult) {
         if (this.id !== id) return false;
-        this.compiler!.compiler = compiler;
+
+        // Handle the case where compiler hasn't been initialized yet
+        // In a race condition, we might receive results before the compiler is registered
+        if (!this.compiler) {
+            // Ignore the update - the result will be requested again when the compiler is registered
+            return false;
+        }
+
+        this.compiler.compiler = compiler;
         this.result = result;
         this.refresh();
 
