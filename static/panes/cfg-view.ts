@@ -554,7 +554,7 @@ export class Cfg extends Pane<CfgState> {
     }
 
     birdsEyeView() {
-        if (!this.layout?.blocks || this.layout.blocks.length === 0) {
+        if (!this.layout?.blocks?.length) {
             // No layout loaded yet or empty layout - nothing to zoom to
             return;
         }
