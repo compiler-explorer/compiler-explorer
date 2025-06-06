@@ -37,10 +37,25 @@ function definition(): monaco.languages.IMonarchLanguage {
     const rustPatched = $.extend(true, {}, rust.language); // deep copy
 
     // Fix the hexadecimal pattern in the numbers tokenizer
-    // Original Monaco pattern: /(0x[\da-fA-F]+)_?(@intSuffixes)?/
-    // Fixed pattern: /(0x[0-9a-fA-F_]+)(@intSuffixes)?/
-    // This allows underscores throughout the hex number, not just at the end
-    rustPatched.tokenizer.numbers[4] = [/(0x[0-9a-fA-F_]+)(@intSuffixes)?/, {token: 'number'}];
+    // Find and replace the specific problematic pattern to make this robust against Monaco updates
+    const expectedPattern = /(0x[\da-fA-F]+)_?(@intSuffixes)?/;
+    const fixedPattern = [/(0x[0-9a-fA-F_]+)(@intSuffixes)?/, {token: 'number'}];
+
+    let patternFound = false;
+    for (let i = 0; i < rustPatched.tokenizer.numbers.length; i++) {
+        const rule = rustPatched.tokenizer.numbers[i];
+        if (Array.isArray(rule) && rule[0] instanceof RegExp && rule[0].toString() === expectedPattern.toString()) {
+            rustPatched.tokenizer.numbers[i] = fixedPattern;
+            patternFound = true;
+            break;
+        }
+    }
+
+    if (!patternFound) {
+        throw new Error(
+            'Monaco Rust hex pattern not found - check if upstream fixed the issue (https://github.com/microsoft/monaco-editor/issues/4917) and remove this patch',
+        );
+    }
 
     return rustPatched;
 }
