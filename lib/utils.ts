@@ -33,6 +33,7 @@ import {ComponentConfig, ItemConfigType} from 'golden-layout';
 import semverParser from 'semver';
 import _ from 'underscore';
 
+import type {ParsedAsmResultLine} from '../types/asmresult/asmresult.interfaces.js';
 import type {CacheableValue} from '../types/cache.interfaces.js';
 import {BasicExecutionResult, UnprocessedExecResult} from '../types/execution/execution.interfaces.js';
 import {LanguageKey} from '../types/languages.interfaces.js';
@@ -54,7 +55,7 @@ export function splitLines(text: string): string[] {
  * Extracts text lines from either raw assembly string or parsed assembly objects.
  * Handles the union type safely without unsafe casting.
  */
-export function extractTextLines(asm: string | any[]): string[] {
+export function extractTextLines(asm: string | ParsedAsmResultLine[]): string[] {
     if (typeof asm === 'string') {
         return splitLines(asm);
     }
@@ -69,7 +70,7 @@ export function extractTextLines(asm: string | any[]): string[] {
  * Converts assembly data to string format for parser consumption.
  * Handles the union type from CompilationInfo.asm safely.
  */
-export function normalizeAsmToString(asm: string | any[] | undefined): string {
+export function normalizeAsmToString(asm: string | ParsedAsmResultLine[] | undefined): string {
     if (!asm) return '';
     return typeof asm === 'string' ? asm : extractTextLines(asm).join('\n');
 }
