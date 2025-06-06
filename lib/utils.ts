@@ -51,6 +51,30 @@ export function splitLines(text: string): string[] {
 }
 
 /**
+ * Extracts text lines from either raw assembly string or parsed assembly objects.
+ * Handles the union type safely without unsafe casting.
+ */
+export function extractTextLines(asm: string | any[]): string[] {
+    if (typeof asm === 'string') {
+        return splitLines(asm);
+    }
+    if (Array.isArray(asm)) {
+        // Already parsed - extract text from each line object
+        return asm.map(line => line.text);
+    }
+    throw new Error(`extractTextLines called with unexpected type: ${typeof asm}, value: ${asm}`);
+}
+
+/**
+ * Converts assembly data to string format for parser consumption.
+ * Handles the union type from CompilationInfo.asm safely.
+ */
+export function normalizeAsmToString(asm: string | any[] | undefined): string {
+    if (!asm) return '';
+    return typeof asm === 'string' ? asm : extractTextLines(asm).join('\n');
+}
+
+/**
  * Applies a function to each line of text split by `splitLines`
  */
 export function eachLine(text: string, func: (line: string) => void): void {
