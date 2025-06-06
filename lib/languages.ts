@@ -762,7 +762,7 @@ const definitions: Record<LanguageKey, LanguageDefinition> = {
     },
     rust: {
         name: 'Rust',
-        monaco: 'rust',
+        monaco: 'rustp',
         extensions: ['.rs'],
         alias: [],
         logoUrl: 'rust.svg',
