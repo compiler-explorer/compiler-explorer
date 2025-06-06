@@ -63,7 +63,7 @@ export function extractTextLines(asm: string | ParsedAsmResultLine[]): string[] 
         // Already parsed - extract text from each line object
         return asm.map(line => line.text);
     }
-    throw new Error(`extractTextLines called with unexpected type: ${typeof asm}, value: ${asm}`);
+    throw new Error(`extractTextLines called with unexpected type: ${typeof asm}`);
 }
 
 /**
