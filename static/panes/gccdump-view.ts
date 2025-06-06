@@ -303,6 +303,11 @@ export class GccDump extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Gcc
     onPassSelect(passId: string) {
         const selectedPass = this.selectize.options[passId] as unknown as GccDumpViewSelectedPass;
 
+        if (!selectedPass) {
+            // Pass option not found, likely a race condition or stale passId
+            return;
+        }
+
         if (this.inhibitPassSelect !== true) {
             this.eventHub.emit('gccDumpPassSelected', this.compilerInfo.compilerId, selectedPass, true);
         }
