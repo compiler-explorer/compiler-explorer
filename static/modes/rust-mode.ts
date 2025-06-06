@@ -1,4 +1,4 @@
-// Copyright (c) 2021, Compiler Explorer Authors
+// Copyright (c) 2025, Compiler Explorer Team
 // All rights reserved.
 //
 // Redistribution and use in source and binary forms, with or without
@@ -22,54 +22,33 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import './ada-mode';
-import './asm6502-mode';
-import './asm-mode';
-import './asmruby-mode';
-import './c3-mode';
-import './carbon-mode';
-import './clean-mode';
-import './cmake-mode';
-import './cobol-mode';
-import './cppcircle-mode';
-import './cpp-for-opencl-mode';
-import './cppfront-mode';
-import './cppp-mode';
-import './cppx-blue-mode';
-import './cppx-gold-mode';
-import './crystal-mode';
-import './cuda-mode';
-import './d-mode';
-import './no-highlight-mode';
-import './erlang-mode';
-import './fortran-mode';
-import './gccdump-rtl-gimple-mode';
-import './glsl-mode';
-import './haskell-mode';
-import './hlsl-mode';
-import './hook-mode';
-import './hylo-mode';
-import './ispc-mode';
-import './jakt-mode';
-import './llvm-ir-mode';
-import './mlir-mode';
-import './modula2-mode';
-import './mojo-mode';
-import './nc-mode';
-import './nim-mode';
-import './nix-mode';
-import './ocaml-mode';
-import './odin-mode';
-import './openclc-mode';
-import './ptx-mode';
-import './rust-mode';
-import './sail-mode';
-import './slang-mode';
-import './spice-mode';
-import './spirv-mode';
-import './sway-mode';
-import './tablegen-mode';
-import './v-mode';
-import './vala-mode';
-import './wat-mode';
-import './zig-mode';
+import $ from 'jquery';
+
+import * as monaco from 'monaco-editor';
+
+// @ts-ignore  "Could not find a declaration file"
+import * as rust from 'monaco-editor/esm/vs/basic-languages/rust/rust';
+
+// We need to patch the existing rust definition to fix hexadecimal literal highlighting
+// This fixes a bug where hex literals with underscores after hex letters (like 0x01_02_0a_0b)
+// lose highlighting after the underscore that follows hex letters (a-f).
+
+function definition(): monaco.languages.IMonarchLanguage {
+    const rustPatched = $.extend(true, {}, rust.language); // deep copy
+
+    // Fix the hexadecimal pattern in the numbers tokenizer
+    // Original Monaco pattern: /(0x[\da-fA-F]+)_?(@intSuffixes)?/
+    // Fixed pattern: /(0x[0-9a-fA-F_]+)(@intSuffixes)?/
+    // This allows underscores throughout the hex number, not just at the end
+    rustPatched.tokenizer.numbers[4] = [/(0x[0-9a-fA-F_]+)(@intSuffixes)?/, {token: 'number'}];
+
+    return rustPatched;
+}
+
+const def = definition();
+
+monaco.languages.register({id: 'rustp'});
+monaco.languages.setLanguageConfiguration('rustp', rust.conf);
+monaco.languages.setMonarchTokensProvider('rustp', def);
+
+export default def;
