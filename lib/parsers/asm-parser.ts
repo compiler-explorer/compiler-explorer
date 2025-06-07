@@ -32,12 +32,14 @@ import {
     ParsedAsmResultLine,
 } from '../../types/asmresult/asmresult.interfaces.js';
 import {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces.js';
-import {assert, unwrap} from '../assert.js';
+import {assert} from '../assert.js';
 import {PropertyGetter} from '../properties.interfaces.js';
 import * as utils from '../utils.js';
 
 import {IAsmParser} from './asm-parser.interfaces.js';
 import {AsmRegex} from './asmregex.js';
+import {LabelContext, LabelProcessor} from './label-processor.js';
+import {SourceHandlerContext, SourceLineHandler} from './source-line-handler.js';
 
 export type ParsingContext = {
     files: Record<number, string>;
@@ -48,6 +50,10 @@ export type ParsingContext = {
 };
 
 export class AsmParser extends AsmRegex implements IAsmParser {
+    // Helper classes for refactored functionality
+    protected sourceLineHandler: SourceLineHandler;
+    protected labelProcessor: LabelProcessor;
+
     labelFindNonMips: RegExp;
     labelFindMips: RegExp;
     mipsLabelDefinition: RegExp;
@@ -94,6 +100,10 @@ export class AsmParser extends AsmRegex implements IAsmParser {
 
     constructor(compilerProps?: PropertyGetter) {
         super();
+
+        // Initialize helper classes
+        this.sourceLineHandler = new SourceLineHandler();
+        this.labelProcessor = new LabelProcessor();
 
         this.labelFindNonMips = /[.A-Z_a-z][\w$.]*/g;
         // MIPS labels can start with a $ sign, but other assemblers use $ to mean literal.
@@ -171,6 +181,31 @@ export class AsmParser extends AsmRegex implements IAsmParser {
         return inVLIWpacket;
     }
 
+    protected createLabelContext(): LabelContext {
+        return {
+            hasOpcode: this.hasOpcode.bind(this),
+            checkVLIWpacket: this.checkVLIWpacket.bind(this),
+            labelDef: this.labelDef,
+            dataDefn: this.dataDefn,
+            commentRe: this.commentRe,
+            instructionRe: this.instructionRe,
+            identifierFindRe: this.identifierFindRe,
+            definesGlobal: this.definesGlobal,
+            definesWeak: this.definesWeak,
+            definesAlias: this.definesAlias,
+            definesFunction: this.definesFunction,
+            cudaBeginDef: this.cudaBeginDef,
+            startAppBlock: this.startAppBlock,
+            endAppBlock: this.endAppBlock,
+            startAsmNesting: this.startAsmNesting,
+            endAsmNesting: this.endAsmNesting,
+            mipsLabelDefinition: this.mipsLabelDefinition,
+            labelFindNonMips: this.labelFindNonMips,
+            labelFindMips: this.labelFindMips,
+            fixLabelIndentation: this.fixLabelIndentation.bind(this),
+        };
+    }
+
     hasOpcode(line: string, inNvccCode = false, _inVLIWpacket = false) {
         // Remove any leading label definition...
         const match = line.match(this.labelDef);
@@ -190,129 +225,11 @@ export class AsmParser extends AsmRegex implements IAsmParser {
     }
 
     labelFindFor(asmLines: string[]) {
-        const isMips = _.any(asmLines, line => this.mipsLabelDefinition.test(line));
-        return isMips ? this.labelFindMips : this.labelFindNonMips;
+        return this.labelProcessor.getLabelFind(asmLines, this.createLabelContext());
     }
 
     findUsedLabels(asmLines: string[], filterDirectives?: boolean): Set<string> {
-        const labelsUsed: Set<string> = new Set();
-        const weakUsages: Map<string, Set<string>> = new Map();
-
-        function markWeak(fromLabel: string, toLabel: string) {
-            if (!weakUsages.has(fromLabel)) weakUsages.set(fromLabel, new Set());
-            unwrap(weakUsages.get(fromLabel)).add(toLabel);
-        }
-
-        const labelFind = this.labelFindFor(asmLines);
-        // The current label set is the set of labels all pointing at the current code, so:
-        // foo:
-        // bar:
-        //    add r0, r0, #1
-        // in this case [foo, bar] would be the label set for the add instruction.
-        let currentLabelSet: string[] = [];
-        let inLabelGroup = false;
-        let inCustomAssembly = 0;
-        const startBlock = /\.cfi_startproc/;
-        const endBlock = /\.cfi_endproc/;
-        let inFunction = false;
-        let inNvccCode = false;
-        let inVLIWpacket = false;
-        let definingAlias: string | undefined;
-
-        // Scan through looking for definite label usages (ones used by opcodes), and ones that are weakly used: that
-        // is, their use is conditional on another label. For example:
-        // .foo: .string "moo"
-        // .baz: .quad .foo
-        //       mov eax, .baz
-        // In this case, the '.baz' is used by an opcode, and so is strongly used.
-        // The '.foo' is weakly used by .baz.
-        // Also, if we have random data definitions within a block of a function (between cfi_startproc and
-        // cfi_endproc), we assume they are strong usages. This covers things like jump tables embedded in ARM code.
-        // See https://github.com/compiler-explorer/compiler-explorer/issues/2788
-        for (let line of asmLines) {
-            if (this.startAppBlock.test(line.trim()) || this.startAsmNesting.test(line.trim())) {
-                inCustomAssembly++;
-            } else if (this.endAppBlock.test(line.trim()) || this.endAsmNesting.test(line.trim())) {
-                inCustomAssembly--;
-            } else if (startBlock.test(line)) {
-                inFunction = true;
-            } else if (endBlock.test(line)) {
-                inFunction = false;
-            } else if (this.cudaBeginDef.test(line)) {
-                inNvccCode = true;
-            } else {
-                inVLIWpacket = this.checkVLIWpacket(line, inVLIWpacket);
-            }
-
-            if (inCustomAssembly > 0) line = this.fixLabelIndentation(line);
-
-            let match = line.match(this.labelDef);
-            if (match) {
-                if (inLabelGroup) currentLabelSet.push(match[1]);
-                else currentLabelSet = [match[1]];
-                inLabelGroup = true;
-                if (definingAlias) {
-                    // If we're defining an alias, then any labels in this group are weakly used by the alias.
-                    markWeak(definingAlias, match[1]);
-                }
-            } else {
-                if (inLabelGroup) {
-                    inLabelGroup = false;
-                    // Once we exit the label group after an alias, we're no longer defining an alias.
-                    definingAlias = undefined;
-                }
-            }
-            match = line.match(this.definesGlobal);
-            if (!match) match = line.match(this.definesWeak);
-            if (!match) match = line.match(this.cudaBeginDef);
-            if (match) labelsUsed.add(match[1]);
-
-            const definesAlias = line.match(this.definesAlias);
-            if (definesAlias) {
-                // We are defining an alias for match[1]; so the next label definition is the _same_ as this.
-                definingAlias = definesAlias[1];
-            }
-
-            const definesFunction = line.match(this.definesFunction);
-            if (!definesFunction && (!line || line[0] === '.')) continue;
-
-            match = line.match(labelFind);
-            if (!match) continue;
-
-            if (!filterDirectives || this.hasOpcode(line, inNvccCode, inVLIWpacket) || definesFunction) {
-                // Only count a label as used if it's used by an opcode, or else we're not filtering directives.
-                for (const label of match) labelsUsed.add(label);
-            } else {
-                // If we have a current label, then any subsequent opcode or data definition's labels are referred to
-                // weakly by that label.
-                const isDataDefinition = this.dataDefn.test(line);
-                const isOpcode = this.hasOpcode(line, inNvccCode, inVLIWpacket);
-                if (isDataDefinition || isOpcode) {
-                    if (inFunction && isDataDefinition) {
-                        // Data definitions in the middle of code should be treated as if they were used strongly.
-                        for (const label of match) labelsUsed.add(label);
-                    } else {
-                        for (const currentLabel of currentLabelSet) {
-                            for (const label of match) markWeak(currentLabel, label);
-                        }
-                    }
-                }
-            }
-        }
-
-        // Now follow the chains of used labels, marking any weak references they refer to as also used. We recursively
-        // follow the newly-strong references along the path until we hit something that's already marked as used.
-        const recurseMarkUsed = (label: string) => {
-            labelsUsed.add(label);
-            const usages = weakUsages.get(label);
-            if (!usages) return;
-            for (const nowUsed of usages) {
-                if (!labelsUsed.has(nowUsed)) recurseMarkUsed(nowUsed);
-            }
-        };
-        // Iterate over a copy of the initial used labels, as the set will be modified during iteration.
-        for (const label of new Set(labelsUsed)) recurseMarkUsed(label);
-        return labelsUsed;
+        return this.labelProcessor.findUsedLabels(asmLines, filterDirectives || false, this.createLabelContext());
     }
 
     parseFiles(asmLines: string[]) {
@@ -338,41 +255,12 @@ export class AsmParser extends AsmRegex implements IAsmParser {
 
     // Remove labels which do not have a definition.
     removeLabelsWithoutDefinition(asm: ParsedAsmResultLine[], labelDefinitions: Record<string, number>) {
-        for (const obj of asm) {
-            if (obj.labels) {
-                obj.labels = obj.labels.filter(label => labelDefinitions[label.target || label.name]);
-            }
-        }
+        this.labelProcessor.removeLabelsWithoutDefinition(asm, labelDefinitions);
     }
 
     // Get labels which are used in the given line.
     getUsedLabelsInLine(line: string): AsmResultLabel[] {
-        const labelsInLine: AsmResultLabel[] = [];
-
-        // Strip any comments
-        const instruction = line.split(this.commentRe, 1)[0];
-
-        // Remove the instruction.
-        const params = instruction.replace(this.instructionRe, '');
-
-        const removedCol = instruction.length - params.length + 1;
-        params.replace(this.identifierFindRe, (symbol, target, index) => {
-            const startCol = removedCol + index;
-            const label: AsmResultLabel = {
-                name: symbol,
-                range: {
-                    startCol: startCol,
-                    endCol: startCol + symbol.length,
-                },
-            };
-            if (target !== symbol) {
-                label.target = target;
-            }
-            labelsInLine.push(label);
-            return symbol;
-        });
-
-        return labelsInLine;
+        return this.labelProcessor.getUsedLabelsInLine(line, this.createLabelContext());
     }
 
     protected isUserFunctionByLookingAhead(context: ParsingContext, asmLines: string[], idxFrom: number): boolean {
@@ -401,103 +289,26 @@ export class AsmParser extends AsmRegex implements IAsmParser {
     }
 
     protected handleSource(context: ParsingContext, line: string) {
-        let match = line.match(this.sourceTag);
-        if (match) {
-            const file = utils.maskRootdir(context.files[Number.parseInt(match[1])]);
-            const sourceLine = Number.parseInt(match[2]);
-            if (file) {
-                if (context.dontMaskFilenames) {
-                    context.source = {
-                        file: file,
-                        line: sourceLine,
-                        mainsource: this.stdInLooking.test(file),
-                    };
-                } else {
-                    context.source = {
-                        file: this.stdInLooking.test(file) ? null : file,
-                        line: sourceLine,
-                    };
-                }
-                const sourceCol = Number.parseInt(match[3]);
-                if (!Number.isNaN(sourceCol) && sourceCol !== 0) {
-                    context.source.column = sourceCol;
-                }
-            } else {
-                context.source = null;
-            }
-        } else {
-            match = line.match(this.sourceD2Tag);
-            if (match) {
-                const sourceLine = Number.parseInt(match[1]);
-                context.source = {
-                    file: null,
-                    line: sourceLine,
-                };
-            } else {
-                match = line.match(this.sourceCVTag);
-                if (match) {
-                    // cv_loc reports: function file line column
-                    const sourceLine = Number.parseInt(match[3]);
-                    const file = utils.maskRootdir(context.files[Number.parseInt(match[2])]);
-                    if (context.dontMaskFilenames) {
-                        context.source = {
-                            file: file,
-                            line: sourceLine,
-                            mainsource: this.stdInLooking.test(file),
-                        };
-                    } else {
-                        context.source = {
-                            file: this.stdInLooking.test(file) ? null : file,
-                            line: sourceLine,
-                        };
-                    }
-                    const sourceCol = Number.parseInt(match[4]);
-                    if (!Number.isNaN(sourceCol) && sourceCol !== 0) {
-                        context.source.column = sourceCol;
-                    }
-                }
+        const handlerContext: SourceHandlerContext = {
+            files: context.files,
+            dontMaskFilenames: context.dontMaskFilenames,
+        };
+
+        const result = this.sourceLineHandler.processSourceLine(line, handlerContext);
+        if (result.source !== undefined) {
+            context.source = result.source;
+            if (result.resetPrevLabel) {
+                context.prevLabel = '';
             }
         }
     }
 
     protected handleStabs(context: ParsingContext, line: string) {
-        const match = line.match(this.sourceStab);
-        if (!match) return;
-        // cf http://www.math.utah.edu/docs/info/stabs_11.html#SEC48
-        switch (Number.parseInt(match[1])) {
-            case 68: {
-                context.source = {file: null, line: Number.parseInt(match[2])};
-                break;
-            }
-            case 132:
-            case 100: {
-                context.source = null;
-                context.prevLabel = '';
-                break;
-            }
-        }
+        // This is now handled by handleSource using the unified source line handler
     }
 
     protected handle6502(context: ParsingContext, line: string) {
-        const match = line.match(this.source6502Dbg);
-        if (match) {
-            const file = utils.maskRootdir(match[1]);
-            const sourceLine = Number.parseInt(match[2]);
-            if (context.dontMaskFilenames) {
-                context.source = {
-                    file: file,
-                    line: sourceLine,
-                    mainsource: this.stdInLooking.test(file),
-                };
-            } else {
-                context.source = {
-                    file: this.stdInLooking.test(file) ? null : file,
-                    line: sourceLine,
-                };
-            }
-        } else if (this.source6502DbgEnd.test(line)) {
-            context.source = null;
-        }
+        // This is now handled by handleSource using the unified source line handler
     }
 
     processAsm(asmResult: string, filters: ParseFiltersAndOutputOptions): ParsedAsmResult {
