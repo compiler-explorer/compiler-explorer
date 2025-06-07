@@ -761,7 +761,6 @@ export class AsmParser extends AsmRegex implements IAsmParser {
             asmLines = filters.preProcessBinaryAsmLines(asmLines);
         }
 
-        // Pass 1: Collect all referenced functions
         const referencedFunctions = this.collectReferencedFunctions(asmLines);
 
         for (const line of asmLines) {
