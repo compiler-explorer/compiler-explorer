@@ -708,6 +708,36 @@ export class AsmParser extends AsmRegex implements IAsmParser {
         return !this.binaryHideFuncRe.test(func);
     }
 
+    collectReferencedFunctions(asmLines: string[]): Set<string> {
+        const referenced = new Set<string>();
+        let currentFunc: string | null = null;
+        let isInUserFunction = false;
+
+        for (const line of asmLines) {
+            // Check if we're entering a new function
+            const labelMatch = line.match(this.labelRe);
+            if (labelMatch) {
+                currentFunc = labelMatch[2];
+                isInUserFunction = currentFunc ? this.isUserFunction(currentFunc) : false;
+                continue;
+            }
+
+            // Only collect references from user functions
+            if (!isInUserFunction || !currentFunc) continue;
+
+            // Check for function references in destinations
+            const destMatch = line.match(this.destRe);
+            if (destMatch) {
+                const referencedFunc = destMatch[2];
+                if (referencedFunc) {
+                    referenced.add(referencedFunc);
+                }
+            }
+        }
+
+        return referenced;
+    }
+
     processBinaryAsm(asmResult: string, filters: ParseFiltersAndOutputOptions): ParsedAsmResult {
         const startTime = process.hrtime.bigint();
         const asm: ParsedAsmResultLine[] = [];
@@ -730,6 +760,9 @@ export class AsmParser extends AsmRegex implements IAsmParser {
         if (filters.preProcessBinaryAsmLines !== undefined) {
             asmLines = filters.preProcessBinaryAsmLines(asmLines);
         }
+
+        // Pass 1: Collect all referenced functions
+        const referencedFunctions = this.collectReferencedFunctions(asmLines);
 
         for (const line of asmLines) {
             const labelsInLine: AsmResultLabel[] = [];
@@ -762,7 +795,7 @@ export class AsmParser extends AsmRegex implements IAsmParser {
             match = line.match(this.labelRe);
             if (match) {
                 func = match[2];
-                if (func && this.isUserFunction(func)) {
+                if (func && (this.isUserFunction(func) || referencedFunctions.has(func))) {
                     asm.push({
                         text: func + ':',
                         source: null,
@@ -776,7 +809,7 @@ export class AsmParser extends AsmRegex implements IAsmParser {
 
             if (func && line === `${func}():`) continue;
 
-            if (!func || !this.isUserFunction(func)) continue;
+            if (!func || (!this.isUserFunction(func) && !referencedFunctions.has(func))) continue;
 
             // note: normally the source.file will be null if it's code from example.ext but with
             //  filters.dontMaskFilenames it will be filled with the actual filename instead we can test
