@@ -153,20 +153,7 @@ export class RouteAPI {
 
     unstoredStateHandler(req: express.Request, res: express.Response, next: express.NextFunction) {
         try {
-            let buffer: Buffer;
-            try {
-                buffer = Buffer.from(req.params.clientstatebase64, 'base64');
-            } catch (base64Error) {
-                logger.debug('Invalid base64 in client state URL', {
-                    clientstatebase64: req.params.clientstatebase64?.substring(0, 100),
-                });
-                next({
-                    statusCode: 400,
-                    message: 'Invalid client state data in URL',
-                });
-                return;
-            }
-
+            const buffer = Buffer.from(req.params.clientstatebase64, 'base64');
             const state = extractJsonFromBufferAndInflateIfRequired(buffer);
             const config = this.getGoldenLayoutFromClientState(new ClientState(state));
             const metadata = this.getMetaDataFromLink(req, null, config);
