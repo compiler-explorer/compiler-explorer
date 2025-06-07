@@ -227,7 +227,12 @@ export abstract class Pane<S> {
     /** Close the pane if the compiler this pane was attached to closes */
     protected onCompilerClose(compilerId: number) {
         if (this.compilerInfo.compilerId === compilerId) {
-            _.defer(() => this.container.close());
+            _.defer(() => {
+                // Check if container is still valid before attempting to close
+                if (this.container?.parent && this.container.layoutManager?.isInitialised) {
+                    this.container.close();
+                }
+            });
         }
     }
 
