@@ -234,7 +234,8 @@ export class GccDump extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Gcc
             const activeOption = Object.entries(this.selectize.options).find(
                 op => op[1].filename_suffix === this.selectedPass,
             );
-            const selectedPassId = activeOption![0];
+            if (!activeOption) return;
+            const selectedPassId = activeOption[0];
             const option = this.selectize.getOption(selectedPassId);
             // Workaround for a TomSelect glitch: onFocus sets the active option to the first one
             // on the first re-open, so this setActiveOption call needs to be delayed.
@@ -302,6 +303,12 @@ export class GccDump extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Gcc
 
     onPassSelect(passId: string) {
         const selectedPass = this.selectize.options[passId] as unknown as GccDumpViewSelectedPass;
+
+        if (!selectedPass) {
+            // Pass option not found - happens when user deletes selection via TomSelect
+            // and the change event fires with a passId that no longer exists in options
+            return;
+        }
 
         if (this.inhibitPassSelect !== true) {
             this.eventHub.emit('gccDumpPassSelected', this.compilerInfo.compilerId, selectedPass, true);
