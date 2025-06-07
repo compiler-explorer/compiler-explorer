@@ -646,18 +646,19 @@ textarea.form-control {
     .ts-control {
         border: none;
         color: #f2f2f2 !important;
-        background: #444 !important;
+        background-color: #444 !important;
         text-shadow: none !important;
-
-        &:after {
-            border-color: #728690 transparent transparent transparent;
-        }
 
         &.disabled {
             color: #f2f2f2 !important;
             background-color: #383838 !important;
         }
     }
+}
+
+/* Override arrow specifically with the same selector as TomSelect uses */
+.ts-wrapper:not(.form-control, .form-select).single .ts-control {
+    background-image: dropdown-arrow-svg(#aaa) !important;
 }
 
 #compiler-picker-modal {
