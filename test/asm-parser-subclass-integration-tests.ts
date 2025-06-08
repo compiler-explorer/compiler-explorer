@@ -57,26 +57,32 @@ describe('AsmParser subclass compatibility', () => {
             expect(usedLabels.size).toBe(0);
         });
 
-        it('should show base class labelFindFor returns usage regex', () => {
+        it('should show base class labelFindFor identifies tokens that could be labels', () => {
             const parser = new AsmParser();
-            const asmLines = ['main:', 'mov r1, #value', 'bl function', 'b main'];
+            const asmLines = ['_start:', '    call printf', '    jmp _start'];
 
-            // Base class returns a usage finder regex (takes asmLines parameter)
+            // Base class returns a usage finder regex
             const labelFindRegex = parser.labelFindFor(asmLines);
-            expect(labelFindRegex.global).toBe(true); // Should be global for finding multiple matches
-            expect(labelFindRegex.source).toBe('[.A-Z_a-z][\\w$.]*'); // Should match label usage
+            expect(labelFindRegex.global).toBe(true); // Must be global to find all matches
+            expect(labelFindRegex.source).toBe('[.A-Z_a-z][\\w$.]*'); // Matches label patterns
 
-            // This correctly finds used labels
+            // findUsedLabels finds all tokens that match the label pattern
             const usedLabels = parser.findUsedLabels(asmLines, true);
-            expect(usedLabels.has('value')).toBe(true);
-            expect(usedLabels.has('function')).toBe(true);
-            expect(usedLabels.has('main')).toBe(true);
+
+            // It finds instructions AND labels because the regex matches any identifier
+            expect(usedLabels.has('call')).toBe(true); // Instruction
+            expect(usedLabels.has('printf')).toBe(true); // Label reference
+            expect(usedLabels.has('jmp')).toBe(true); // Instruction
+            expect(usedLabels.has('_start')).toBe(true); // Label reference
+
+            // This is why subclasses need custom labelFindFor implementations
+            expect(usedLabels.size).toBeGreaterThan(3);
         });
     });
 
     describe('processAsm custom implementations', () => {
         it('should verify VcAsmParser has different output format than base class', () => {
-            const testCode = 'mov eax, OFFSET _data';
+            const testCode = ['mov eax, OFFSET _data', 'call _function'].join('\n');
 
             const baseParser = new AsmParser();
             const vcParser = new VcAsmParser();
@@ -88,15 +94,25 @@ describe('AsmParser subclass compatibility', () => {
             expect(baseResult).toHaveProperty('labelDefinitions');
             expect(vcResult.labelDefinitions).toBeUndefined();
 
-            // Both should process the assembly successfully
-            expect(baseResult.asm.length).toBeGreaterThan(0);
-            expect(vcResult.asm.length).toBeGreaterThan(0);
+            // Base parser tracks label definitions it finds
+            expect(baseResult.labelDefinitions).toEqual({});
+
+            // Both should preserve the actual assembly instructions
+            const baseMovLine = baseResult.asm.find(line => line.text?.includes('mov'));
+            const vcMovLine = vcResult.asm.find(line => line.text?.includes('mov'));
+
+            expect(baseMovLine?.text).toContain('OFFSET _data');
+            expect(vcMovLine?.text).toContain('OFFSET _data');
+
+            // Verify parsingTime and filteredCount are returned
+            expect(typeof baseResult.parsingTime).toBe('number');
+            expect(typeof baseResult.filteredCount).toBe('number');
         });
 
         it('should verify SPIRVAsmParser getUsedLabelsInLine detects percent labels', () => {
             const spirvParser = new SPIRVAsmParser();
 
-            const spirvCode = 'OpBranch %exit_label\n%exit_label = OpLabel';
+            const spirvCode = ['OpBranch %exit_label', '%exit_label = OpLabel', 'OpReturn'].join('\n');
 
             const result = spirvParser.processAsm(spirvCode, {
                 directives: false,
@@ -104,12 +120,25 @@ describe('AsmParser subclass compatibility', () => {
                 commentOnly: false,
             });
 
-            // Should correctly identify SPIR-V %label syntax
+            // Should correctly identify SPIR-V %label syntax in definitions
+            expect(result.labelDefinitions).toBeDefined();
             expect(result.labelDefinitions).toHaveProperty('%exit_label');
+            expect(result.labelDefinitions!['%exit_label']).toBe(2); // Line number of definition
 
-            // Should find the branch target
-            const hasBranchTarget = result.asm.some(line => line.labels?.some(label => label.name === '%exit_label'));
-            expect(hasBranchTarget).toBe(true);
+            // Should find the branch target in the labels array
+            const branchLine = result.asm.find(line => line.text === 'OpBranch %exit_label');
+            expect(branchLine).toBeDefined();
+            expect(branchLine?.labels).toHaveLength(1);
+            expect(branchLine?.labels?.[0].name).toBe('%exit_label');
+            expect(branchLine?.labels?.[0].range).toBeDefined();
+            expect(branchLine?.labels?.[0].range.startCol).toBeGreaterThan(0);
+            const startCol = branchLine?.labels?.[0].range.startCol;
+            expect(startCol).toBeDefined();
+            expect(branchLine?.labels?.[0].range.endCol).toBeGreaterThan(startCol!);
+
+            // OpReturn should have no labels
+            const returnLine = result.asm.find(line => line.text === 'OpReturn');
+            expect(returnLine?.labels).toHaveLength(0);
         });
     });
 });

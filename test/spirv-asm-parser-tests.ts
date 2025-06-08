@@ -106,8 +106,13 @@ describe('SPIRVAsmParser', () => {
 
     describe('SPIR-V assembly processing', () => {
         it('should detect SPIR-V percent labels with custom getUsedLabelsInLine', () => {
-            const spirvCode =
-                '%main = OpFunction %void None %1\n%entry = OpLabel\nOpBranch %exit\n%exit = OpLabel\nOpReturn';
+            const spirvCode = [
+                '%main = OpFunction %void None %1',
+                '%entry = OpLabel',
+                'OpBranch %exit',
+                '%exit = OpLabel',
+                'OpReturn',
+            ].join('\n');
 
             const result = parser.processAsm(spirvCode, {
                 directives: false,
@@ -126,8 +131,13 @@ describe('SPIRVAsmParser', () => {
         });
 
         it('should handle SPIR-V control flow instructions with multiple label references', () => {
-            const spirvCode =
-                'OpSelectionMerge %merge None\nOpBranchConditional %condition %true_block %false_block\n%true_block = OpLabel\n%false_block = OpLabel\n%merge = OpLabel';
+            const spirvCode = [
+                'OpSelectionMerge %merge None',
+                'OpBranchConditional %condition %true_block %false_block',
+                '%true_block = OpLabel',
+                '%false_block = OpLabel',
+                '%merge = OpLabel',
+            ].join('\n');
 
             const result = parser.processAsm(spirvCode, {
                 directives: false,

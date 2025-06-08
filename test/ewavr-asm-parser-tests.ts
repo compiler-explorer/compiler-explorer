@@ -36,8 +36,12 @@ describe('AsmEWAVRParser', () => {
 
     describe('EWAVR assembly processing functionality', () => {
         it('should process EWAVR assembly and preserve AVR instruction formats', () => {
-            const ewavrAssembly =
-                '_main:\n                ldi r16, 0xFF\n                call _function\n                ret';
+            const ewavrAssembly = [
+                '_main:',
+                '                ldi r16, 0xFF',
+                '                call _function',
+                '                ret',
+            ].join('\n');
 
             const result = parser.processAsm(ewavrAssembly, {
                 directives: false,
@@ -57,8 +61,13 @@ describe('AsmEWAVRParser', () => {
         });
 
         it('should handle EWAVR-specific directives filtering', () => {
-            const ewavrAssembly =
-                'RSEG CODE\nPUBLIC _function\n_function:\n                ldi r16, HIGH(_external_var)\n                END';
+            const ewavrAssembly = [
+                'RSEG CODE',
+                'PUBLIC _function',
+                '_function:',
+                '                ldi r16, HIGH(_external_var)',
+                '                END',
+            ].join('\n');
 
             const resultWithDirectives = parser.processAsm(ewavrAssembly, {
                 directives: false, // Include directives
@@ -81,7 +90,12 @@ describe('AsmEWAVRParser', () => {
         });
 
         it('should filter EWAVR comments when commentOnly is true', () => {
-            const ewavrAssembly = '// This is a comment\n_main:\n                ldi r16, 42\n                ret';
+            const ewavrAssembly = [
+                '// This is a comment',
+                '_main:',
+                '                ldi r16, 42',
+                '                ret',
+            ].join('\n');
 
             const resultWithComments = parser.processAsm(ewavrAssembly, {
                 directives: false,
@@ -110,8 +124,15 @@ describe('AsmEWAVRParser', () => {
 
     describe('EWAVR assembly processing', () => {
         it('should preserve EWAVR AVR instruction operands and labels', () => {
-            const ewavrAssembly =
-                '_main:\n                ldi r16, 0xFF\n                out PORTB, r16\n                call _delay\ndelay_loop:\n                brne delay_loop\n                ret';
+            const ewavrAssembly = [
+                '_main:',
+                '                ldi r16, 0xFF',
+                '                out PORTB, r16',
+                '                call _delay',
+                'delay_loop:',
+                '                brne delay_loop',
+                '                ret',
+            ].join('\n');
 
             const result = parser.processAsm(ewavrAssembly, {
                 directives: false,
@@ -149,8 +170,14 @@ describe('AsmEWAVRParser', () => {
         });
 
         it('should handle EWAVR segment syntax and register operations', () => {
-            const ewavrCode =
-                "CODE32 segment 'CODE'\npublic _main\n_main:\n                    ldi r16, 0xFF\n                    out DDRC, r16\n                CODE32 ends";
+            const ewavrCode = [
+                "CODE32 segment 'CODE'",
+                'public _main',
+                '_main:',
+                '                    ldi r16, 0xFF',
+                '                    out DDRC, r16',
+                '                CODE32 ends',
+            ].join('\n');
 
             const result = parser.processAsm(ewavrCode, {
                 directives: false,

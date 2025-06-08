@@ -52,7 +52,7 @@ describe('VcAsmParser', () => {
         });
 
         it('should handle VC-specific directives correctly', () => {
-            const vcAssembly = 'PUBLIC _function\n_data\tSEGMENT\n_variable\tDD\t42\n_data\tENDS';
+            const vcAssembly = ['PUBLIC _function', '_data\tSEGMENT', '_variable\tDD\t42', '_data\tENDS'].join('\n');
 
             const resultWithDirectives = parser.processAsm(vcAssembly, {
                 directives: false, // Should include directives
