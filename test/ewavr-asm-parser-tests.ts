@@ -35,19 +35,9 @@ describe('AsmEWAVRParser', () => {
     });
 
     describe('EWAVR assembly processing functionality', () => {
-        it('should process EWAVR assembly with label structure', () => {
-            const ewavrAssembly = `
-// 1 "example.c"
-// 2 
-_main:
-                ldi r16, 0xFF
-                call _function
-                br _main
-                
-_function:
-                ldi r17, 255
-                ret
-            `;
+        it('should process EWAVR assembly and preserve AVR instruction formats', () => {
+            const ewavrAssembly =
+                '_main:\n                ldi r16, 0xFF\n                call _function\n                ret';
 
             const result = parser.processAsm(ewavrAssembly, {
                 directives: false,
@@ -55,159 +45,127 @@ _function:
                 commentOnly: false,
             });
 
-            // Should successfully process EWAVR assembly format
-            expect(result).toHaveProperty('asm');
-            expect(Array.isArray(result.asm)).toBe(true);
-            expect(result.asm.length).toBeGreaterThan(0);
+            // Should preserve specific EWAVR/AVR instruction formats
+            const ldiInstruction = result.asm.find(line => line.text?.includes('ldi'));
+            expect(ldiInstruction?.text).toContain('r16, 0xFF');
 
-            // Should preserve assembly instructions
-            const hasInstructions = result.asm.some(
-                line =>
-                    line.text && (line.text.includes('ldi') || line.text.includes('call') || line.text.includes('ret')),
-            );
-            expect(hasInstructions).toBe(true);
+            const callInstruction = result.asm.find(line => line.text?.includes('call'));
+            expect(callInstruction?.text).toContain('_function');
+
+            // AsmEWAVRParser has custom processAsm that doesn't return labelDefinitions
+            expect(result.labelDefinitions).toBeUndefined();
         });
 
-        it('should handle EWAVR-specific directives and segments', () => {
-            const ewavrAssembly = `
-RSEG CODE
-PUBLIC _function
-EXTERN _external_var
-_function:
-                ldi r16, HIGH(_external_var)
-                ldi r17, LOW(_external_var)
-                ret
-                END
-            `;
+        it('should handle EWAVR-specific directives filtering', () => {
+            const ewavrAssembly =
+                'RSEG CODE\nPUBLIC _function\n_function:\n                ldi r16, HIGH(_external_var)\n                END';
 
-            const result = parser.processAsm(ewavrAssembly, {
-                directives: true,
+            const resultWithDirectives = parser.processAsm(ewavrAssembly, {
+                directives: false, // Include directives
                 labels: false,
                 commentOnly: false,
             });
 
-            // Should process EWAVR segments and directives
-            expect(result.asm.length).toBeGreaterThan(0);
-
-            // Should handle filtering of directives when requested
-            const resultWithoutDirectives = parser.processAsm(ewavrAssembly, {
-                directives: false,
+            const resultFilteringDirectives = parser.processAsm(ewavrAssembly, {
+                directives: true, // Filter out directives
                 labels: false,
                 commentOnly: false,
             });
-            // Both should process successfully (directive filtering behavior may vary)
-            expect(resultWithoutDirectives.asm.length).toBeGreaterThanOrEqual(0);
+
+            // When filtering directives, should have fewer lines
+            expect(resultFilteringDirectives.asm.length).toBeLessThan(resultWithDirectives.asm.length);
+
+            // Should preserve the HIGH() function call format
+            const hasHighFunction = resultWithDirectives.asm.some(line => line.text?.includes('HIGH('));
+            expect(hasHighFunction).toBe(true);
         });
 
-        it('should correctly handle EWAVR comment filtering', () => {
-            const ewavrAssembly = `
-// This is a comment
-_main:
-// Another comment
-                ldi r16, 42
-                ret
-            `;
+        it('should filter EWAVR comments when commentOnly is true', () => {
+            const ewavrAssembly = '// This is a comment\n_main:\n                ldi r16, 42\n                ret';
 
             const resultWithComments = parser.processAsm(ewavrAssembly, {
                 directives: false,
                 labels: false,
-                commentOnly: false,
+                commentOnly: false, // Include comments
             });
 
-            const resultWithoutComments = parser.processAsm(ewavrAssembly, {
+            const resultFilteringComments = parser.processAsm(ewavrAssembly, {
                 directives: false,
                 labels: false,
-                commentOnly: true,
+                commentOnly: true, // Filter out comments
             });
 
-            // Comment filtering should reduce output
-            expect(resultWithoutComments.asm.length).toBeLessThanOrEqual(resultWithComments.asm.length);
+            // When filtering comments, should have fewer lines
+            expect(resultFilteringComments.asm.length).toBeLessThan(resultWithComments.asm.length);
 
             // Should still have the actual instruction
-            const hasInstruction = resultWithoutComments.asm.some(line => line.text?.includes('ldi'));
-            expect(hasInstruction).toBe(true);
+            const hasLdiInstruction = resultFilteringComments.asm.some(line => line.text?.includes('ldi'));
+            expect(hasLdiInstruction).toBe(true);
+
+            // Should not have comment lines when filtering
+            const hasCommentLine = resultFilteringComments.asm.some(line => line.text?.startsWith('//'));
+            expect(hasCommentLine).toBe(false);
         });
     });
 
     describe('EWAVR assembly processing', () => {
-        it('should process real EWAVR assembly correctly', () => {
-            const ewavrAssembly = `
-// 1 "example.c"
-_main:
-                ldi r16, 0xFF
-                out PORTB, r16
-                call _delay
-                br _main
-                
-_delay:
-                ldi r17, 255
-delay_loop:
-                dec r17
-                brne delay_loop
-                ret
-            `.trim();
+        it('should preserve EWAVR AVR instruction operands and labels', () => {
+            const ewavrAssembly =
+                '_main:\n                ldi r16, 0xFF\n                out PORTB, r16\n                call _delay\ndelay_loop:\n                brne delay_loop\n                ret';
 
             const result = parser.processAsm(ewavrAssembly, {
-                directives: true,
+                directives: false,
                 labels: false,
                 commentOnly: false,
             });
 
-            expect(result.asm.length).toBeGreaterThan(0);
-            // AsmEWAVRParser doesn't return labelDefinitions - it has its own format
-            expect(result).toHaveProperty('asm');
+            // Should preserve specific AVR instruction formats
+            const outInstruction = result.asm.find(line => line.text?.includes('out'));
+            expect(outInstruction?.text).toContain('PORTB, r16');
+
+            const branchInstruction = result.asm.find(line => line.text?.includes('brne'));
+            expect(branchInstruction?.text).toContain('delay_loop');
+
+            // AsmEWAVRParser has custom processAsm format
             expect(result.labelDefinitions).toBeUndefined();
         });
 
-        it('should handle EWAVR-specific instructions and labels', () => {
+        it('should demonstrate EWAVR labelFindFor bug with label usage detection', () => {
             const asmLines = ['ldi r16, HIGH(_data)', 'ldi r17, LOW(_data)', 'call _subroutine', 'rjmp _loop'];
 
             const usedLabels = parser.findUsedLabels(asmLines, true);
 
-            // Current behavior: EWAVR labelFindFor() is broken - finds no labels
+            // EWAVR labelFindFor() bug: returns definition regex instead of usage regex
+            // This causes findUsedLabels to find no labels in usage contexts
             expect(usedLabels.has('_data')).toBe(false);
             expect(usedLabels.has('_subroutine')).toBe(false);
             expect(usedLabels.has('_loop')).toBe(false);
             expect(usedLabels.size).toBe(0);
+
+            // The regex is designed for definitions (with colons) not usage
+            const labelFindRegex = parser.labelFindFor();
+            expect(labelFindRegex.test('_data:')).toBe(true); // Matches definitions
+            expect(labelFindRegex.test('_data')).toBe(false); // Doesn't match usage
         });
 
-        it('should process real EWAVR test case', () => {
-            // Use the actual test case content if available
-            const ewavrCode = `
-                CODE32 segment 'CODE'
-                public _main
-                extern ?relay:DATA16
-                
-                _main:
-                    ldi r16, 0xFF
-                    out DDRC, r16
-                    call _init
-                    br _main_loop
-                    
-                _main_loop:
-                    in r16, PINC
-                    call _process
-                    br _main_loop
-                    
-                _init:
-                    ldi r17, 0x00
-                    ret
-                    
-                _process:
-                    cpi r16, 0xFF
-                    ret
-                    
-                CODE32 ends
-            `;
+        it('should handle EWAVR segment syntax and register operations', () => {
+            const ewavrCode =
+                "CODE32 segment 'CODE'\npublic _main\n_main:\n                    ldi r16, 0xFF\n                    out DDRC, r16\n                CODE32 ends";
 
             const result = parser.processAsm(ewavrCode, {
-                directives: true,
-                labels: true,
+                directives: false,
+                labels: false,
                 commentOnly: false,
             });
 
-            expect(result.asm.length).toBeGreaterThan(0);
-            // AsmEWAVRParser doesn't return labelDefinitions - it has its own format
+            // Should preserve AVR register operations
+            const ldiInstruction = result.asm.find(line => line.text?.includes('ldi'));
+            expect(ldiInstruction?.text).toContain('r16, 0xFF');
+
+            const outInstruction = result.asm.find(line => line.text?.includes('out'));
+            expect(outInstruction?.text).toContain('DDRC, r16');
+
+            // AsmEWAVRParser uses custom format
             expect(result.labelDefinitions).toBeUndefined();
         });
     });

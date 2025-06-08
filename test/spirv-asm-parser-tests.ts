@@ -105,23 +105,9 @@ describe('SPIRVAsmParser', () => {
     });
 
     describe('SPIR-V assembly processing', () => {
-        it('should process complete SPIR-V function correctly', () => {
-            const spirvCode = `
-                OpCapability Shader
-                OpMemoryModel Logical GLSL450
-                OpEntryPoint Fragment %main "main"
-                OpExecutionMode %main OriginUpperLeft
-                
-                %void = OpTypeVoid
-                %1 = OpTypeFunction %void
-                
-                %main = OpFunction %void None %1
-                %entry = OpLabel
-                OpBranch %exit
-                %exit = OpLabel
-                OpReturn
-                OpFunctionEnd
-            `;
+        it('should detect SPIR-V percent labels with custom getUsedLabelsInLine', () => {
+            const spirvCode =
+                '%main = OpFunction %void None %1\n%entry = OpLabel\nOpBranch %exit\n%exit = OpLabel\nOpReturn';
 
             const result = parser.processAsm(spirvCode, {
                 directives: false,
@@ -129,24 +115,19 @@ describe('SPIRVAsmParser', () => {
                 commentOnly: false,
             });
 
-            expect(result.asm.length).toBeGreaterThan(0);
+            // Should detect SPIR-V %label definitions
+            expect(result.labelDefinitions).toHaveProperty('%main');
+            expect(result.labelDefinitions).toHaveProperty('%entry');
+            expect(result.labelDefinitions).toHaveProperty('%exit');
 
-            // Should detect SPIR-V specific labels in assembly
-            const hasSpirVLabels = result.asm.some(line => line.labels?.some(label => label.name.startsWith('%')));
-            expect(hasSpirVLabels).toBe(true);
+            // Should detect SPIR-V %label usage in OpBranch
+            const branchLine = result.asm.find(line => line.text?.includes('OpBranch'));
+            expect(branchLine?.labels?.some(label => label.name === '%exit')).toBe(true);
         });
 
-        it('should handle complex control flow with multiple labels', () => {
-            const spirvCode = `
-                %condition = OpLoad %bool %condition_var
-                OpSelectionMerge %merge None
-                OpBranchConditional %condition %true_block %false_block
-                %true_block = OpLabel
-                OpBranch %merge
-                %false_block = OpLabel
-                OpBranch %merge
-                %merge = OpLabel
-            `;
+        it('should handle SPIR-V control flow instructions with multiple label references', () => {
+            const spirvCode =
+                'OpSelectionMerge %merge None\nOpBranchConditional %condition %true_block %false_block\n%true_block = OpLabel\n%false_block = OpLabel\n%merge = OpLabel';
 
             const result = parser.processAsm(spirvCode, {
                 directives: false,
@@ -154,10 +135,20 @@ describe('SPIRVAsmParser', () => {
                 commentOnly: false,
             });
 
-            // Should properly identify all the control flow labels
+            // Should identify all label definitions
             expect(result.labelDefinitions).toHaveProperty('%true_block');
             expect(result.labelDefinitions).toHaveProperty('%false_block');
             expect(result.labelDefinitions).toHaveProperty('%merge');
+
+            // Should detect multiple labels in OpBranchConditional
+            const branchCondLine = result.asm.find(line => line.text?.includes('OpBranchConditional'));
+            const labelNames = branchCondLine?.labels?.map(label => label.name) || [];
+            expect(labelNames).toContain('%true_block');
+            expect(labelNames).toContain('%false_block');
+
+            // Should detect label in OpSelectionMerge
+            const mergeLine = result.asm.find(line => line.text?.includes('OpSelectionMerge'));
+            expect(mergeLine?.labels?.some(label => label.name === '%merge')).toBe(true);
         });
     });
 });

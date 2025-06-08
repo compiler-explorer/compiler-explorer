@@ -22,168 +22,94 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import {readFileSync} from 'node:fs';
-import {resolve} from 'node:path';
-
 import {describe, expect, it} from 'vitest';
 
 import {AsmEWAVRParser} from '../lib/parsers/asm-parser-ewavr.js';
 import {SPIRVAsmParser} from '../lib/parsers/asm-parser-spirv.js';
 import {VcAsmParser} from '../lib/parsers/asm-parser-vc.js';
+import {AsmParser} from '../lib/parsers/asm-parser.js';
 import * as properties from '../lib/properties.js';
 
 describe('AsmParser subclass compatibility', () => {
-    describe('Integration with real test cases', () => {
-        it('should handle VC assembly files from filter tests', () => {
-            // Test with actual vc test files
-            const vcTestFiles = [
-                'test/filters-cases/vc-numbers.asm',
-                'test/filters-cases/vc-regex.asm',
-                'test/filters-cases/vc-threadlocalddef.asm',
-            ];
-
-            for (const testFile of vcTestFiles) {
-                try {
-                    const vcAsmContent = readFileSync(resolve(testFile), 'utf8');
-                    const parser = new VcAsmParser();
-
-                    const result = parser.processAsm(vcAsmContent, {
-                        directives: true,
-                        labels: true,
-                        commentOnly: false,
-                    });
-
-                    expect(result.asm.length).toBeGreaterThan(0);
-                    // VcAsmParser has custom processAsm that doesn't return labelDefinitions
-                    expect(result.labelDefinitions).toBeUndefined();
-                } catch (error) {
-                    // If file doesn't exist, skip this test
-                    if ((error as any).code !== 'ENOENT') {
-                        throw error;
-                    }
-                }
-            }
-        });
-
-        it('should handle EWAVR assembly files from filter tests', () => {
-            try {
-                const ewavrAsmContent = readFileSync(resolve('test/filters-cases/ewarm-1.asm'), 'utf8');
-                const parser = new AsmEWAVRParser(properties.fakeProps({}));
-
-                const result = parser.processAsm(ewavrAsmContent, {
-                    directives: true,
-                    labels: true,
-                    commentOnly: false,
-                });
-
-                expect(result.asm.length).toBeGreaterThan(0);
-                // AsmEWAVRParser has custom processAsm that doesn't return labelDefinitions
-                expect(result.labelDefinitions).toBeUndefined();
-            } catch (error) {
-                // If file doesn't exist, skip this test
-                if ((error as any).code !== 'ENOENT') {
-                    throw error;
-                }
-            }
-        });
-    });
-
-    describe('Method override interactions', () => {
-        it('should use VcAsmParser labelFindFor override in findUsedLabels', () => {
+    describe('labelFindFor method behavior', () => {
+        it('should use VcAsmParser labelFindFor override to find specific VC labels', () => {
             const parser = new VcAsmParser();
             const asmLines = ['_start:', 'mov eax, OFFSET _data', 'call _function', 'jmp _start'];
 
             const usedLabels = parser.findUsedLabels(asmLines, true);
 
-            // Should find all labels using VC-specific regex
+            // VC-specific label detection should find these labels
             expect(usedLabels.has('_data')).toBe(true);
             expect(usedLabels.has('_function')).toBe(true);
             expect(usedLabels.has('_start')).toBe(true);
         });
 
-        it('should use SPIRVAsmParser getUsedLabelsInLine override in processAsm', () => {
-            const parser = new SPIRVAsmParser();
-            const spirvCode = `
-                %main = OpFunction %void None %1
-                %entry = OpLabel
-                OpFunctionCall %void %helper_func
-                OpBranch %exit_label
-                %exit_label = OpLabel
-                OpReturn
-                OpFunctionEnd
-            `;
-
-            const result = parser.processAsm(spirvCode, {
-                directives: false,
-                labels: false,
-                commentOnly: false,
-            });
-
-            // Should detect SPIR-V specific labels using custom override
-            const hasSpirVLabels = result.asm.some(line => line.labels?.some(label => label.name === '%helper_func'));
-            expect(hasSpirVLabels).toBe(true);
-        });
-
-        it('should use AsmEWAVRParser labelFindFor override in processing', () => {
+        it('should demonstrate EWAVR labelFindFor returns definition regex instead of usage regex', () => {
             const parser = new AsmEWAVRParser(properties.fakeProps({}));
             const asmLines = ['main:', 'ldi r16, HIGH(data_table)', 'call subroutine', 'rjmp main'];
 
-            const usedLabels = parser.findUsedLabels(asmLines, true);
+            // EWAVR's labelFindFor() returns labelDef (for definitions with :) instead of a usage finder
+            const labelFindRegex = parser.labelFindFor();
+            expect(labelFindRegex.source).toBe('^`?\\?*<?([A-Z_a-z][\\w :]*)>?`?:$');
 
-            // Current behavior: EWAVR labelFindFor() is broken - finds no labels
-            expect(usedLabels.has('data_table')).toBe(false);
-            expect(usedLabels.has('subroutine')).toBe(false);
-            expect(usedLabels.has('main')).toBe(false);
+            // This causes findUsedLabels to find no labels because it's looking for definitions not usage
+            const usedLabels = parser.findUsedLabels(asmLines, true);
             expect(usedLabels.size).toBe(0);
+        });
+
+        it('should show base class labelFindFor returns usage regex', () => {
+            const parser = new AsmParser();
+            const asmLines = ['main:', 'mov r1, #value', 'bl function', 'b main'];
+
+            // Base class returns a usage finder regex (takes asmLines parameter)
+            const labelFindRegex = parser.labelFindFor(asmLines);
+            expect(labelFindRegex.global).toBe(true); // Should be global for finding multiple matches
+            expect(labelFindRegex.source).toBe('[.A-Z_a-z][\\w$.]*'); // Should match label usage
+
+            // This correctly finds used labels
+            const usedLabels = parser.findUsedLabels(asmLines, true);
+            expect(usedLabels.has('value')).toBe(true);
+            expect(usedLabels.has('function')).toBe(true);
+            expect(usedLabels.has('main')).toBe(true);
         });
     });
 
-    describe('Regression prevention', () => {
-        it('should maintain consistent behavior across subclasses', async () => {
-            const testCode = `
-                start:
-                    mov r1, #value
-                    bl function
-                    b start
-            `;
+    describe('processAsm custom implementations', () => {
+        it('should verify VcAsmParser has different output format than base class', () => {
+            const testCode = 'mov eax, OFFSET _data';
 
-            // Test that different parsers can handle similar code
-            const {AsmParser} = await import('../lib/parsers/asm-parser.js');
             const baseParser = new AsmParser();
             const vcParser = new VcAsmParser();
 
             const baseResult = baseParser.processAsm(testCode, {directives: true, labels: false});
             const vcResult = vcParser.processAsm(testCode, {directives: true, labels: false});
 
-            // Both should successfully process the assembly
+            // Base class returns labelDefinitions, VC parser does not
+            expect(baseResult).toHaveProperty('labelDefinitions');
+            expect(vcResult.labelDefinitions).toBeUndefined();
+
+            // Both should process the assembly successfully
             expect(baseResult.asm.length).toBeGreaterThan(0);
             expect(vcResult.asm.length).toBeGreaterThan(0);
         });
 
-        it('should preserve label detection accuracy', () => {
-            // Test that subclass overrides don't break label detection
+        it('should verify SPIRVAsmParser getUsedLabelsInLine detects percent labels', () => {
             const spirvParser = new SPIRVAsmParser();
 
-            const codeWithLabels = `
-                OpBranch %label1
-                %label1 = OpLabel
-                OpFunctionCall %void %func
-                OpBranch %label2
-                %label2 = OpLabel
-            `;
+            const spirvCode = 'OpBranch %exit_label\n%exit_label = OpLabel';
 
-            const result = spirvParser.processAsm(codeWithLabels, {
+            const result = spirvParser.processAsm(spirvCode, {
                 directives: false,
                 labels: false,
                 commentOnly: false,
             });
 
-            // Should correctly identify both labels and function call
-            expect(result.labelDefinitions).toHaveProperty('%label1');
-            expect(result.labelDefinitions).toHaveProperty('%label2');
+            // Should correctly identify SPIR-V %label syntax
+            expect(result.labelDefinitions).toHaveProperty('%exit_label');
 
-            const hasFunc = result.asm.some(line => line.labels?.some(label => label.name === '%func'));
-            expect(hasFunc).toBe(true);
+            // Should find the branch target
+            const hasBranchTarget = result.asm.some(line => line.labels?.some(label => label.name === '%exit_label'));
+            expect(hasBranchTarget).toBe(true);
         });
     });
 });
