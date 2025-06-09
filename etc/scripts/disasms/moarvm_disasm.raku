@@ -11,8 +11,6 @@ sub tempname {
     die "Could not come up with a free temp name file? $lastex.Str()";
 }
 
-dd :@*ARGS;
-
 sub MAIN($rakudoexe, $outputfile, *@extra_args) {
     my $code = @extra_args.pop;
 
