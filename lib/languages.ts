@@ -748,6 +748,17 @@ const definitions: Record<LanguageKey, LanguageDefinition> = {
         previewFilter: null,
         monacoDisassembly: 'scheme',
     },
+    raku: {
+        name: 'Raku',
+        monaco: 'perl',
+        extensions: ['.raku', '.rakutest', '.rakumod', '.rakudoc'],
+        alias: ['Perl 6'],
+        logoUrl: 'camelia.svg',
+        logoUrlDark: null,
+        formatter: null,
+        previewFilter: null,
+        monacoDisassembly: null,
+    },
     ruby: {
         name: 'Ruby',
         monaco: 'ruby',

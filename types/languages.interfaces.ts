@@ -88,6 +88,7 @@ export type LanguageKey =
     | 'python'
     | 'ptx'
     | 'racket'
+    | 'raku'
     | 'ruby'
     | 'rust'
     | 'sail'
