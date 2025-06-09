@@ -44,39 +44,47 @@ describe('AsmParser subclass compatibility', () => {
             expect(usedLabels.has('_start')).toBe(true);
         });
 
-        it('should demonstrate EWAVR labelFindFor returns definition regex instead of usage regex', () => {
+        it('should demonstrate EWAVR labelFindFor bug prevents finding label usage', () => {
             const parser = new AsmEWAVRParser(properties.fakeProps({}));
-            const asmLines = ['main:', 'ldi r16, HIGH(data_table)', 'call subroutine', 'rjmp main'];
+            const asmLines = [
+                '_data:     .word 0x1234',
+                '_main:',
+                '           ldi r16, HIGH(_data)',
+                '           ldi r17, LOW(_data)',
+                '           call _subroutine',
+                '           rjmp _main',
+            ];
 
-            // EWAVR's labelFindFor() returns labelDef (for definitions with :) instead of a usage finder
-            const labelFindRegex = parser.labelFindFor();
-            expect(labelFindRegex.source).toBe('^`?\\?*<?([A-Z_a-z][\\w :]*)>?`?:$');
-
-            // This causes findUsedLabels to find no labels because it's looking for definitions not usage
+            // EWAVR parser should find these label usages but doesn't due to bug
             const usedLabels = parser.findUsedLabels(asmLines, true);
+
+            // Bug: finds no labels because labelFindFor() returns definition regex
             expect(usedLabels.size).toBe(0);
+            expect(usedLabels.has('_data')).toBe(false);
+            expect(usedLabels.has('_subroutine')).toBe(false);
+            expect(usedLabels.has('_main')).toBe(false);
+
+            // The bug is that EWAVR's labelFindFor looks for lines ending with ':'
+            // instead of finding label references in instructions
         });
 
-        it('should show base class labelFindFor identifies tokens that could be labels', () => {
+        it('should show base class finds all identifier-like tokens as potential labels', () => {
             const parser = new AsmParser();
-            const asmLines = ['_start:', '    call printf', '    jmp _start'];
+            const asmLines = ['_start:', '    call printf', '    mov eax, value', '    jmp _start'];
 
-            // Base class returns a usage finder regex
-            const labelFindRegex = parser.labelFindFor(asmLines);
-            expect(labelFindRegex.global).toBe(true); // Must be global to find all matches
-            expect(labelFindRegex.source).toBe('[.A-Z_a-z][\\w$.]*'); // Matches label patterns
-
-            // findUsedLabels finds all tokens that match the label pattern
             const usedLabels = parser.findUsedLabels(asmLines, true);
 
-            // It finds instructions AND labels because the regex matches any identifier
-            expect(usedLabels.has('call')).toBe(true); // Instruction
-            expect(usedLabels.has('printf')).toBe(true); // Label reference
-            expect(usedLabels.has('jmp')).toBe(true); // Instruction
-            expect(usedLabels.has('_start')).toBe(true); // Label reference
+            // Base class finds ALL identifier-like tokens, not just actual labels
+            expect(usedLabels.has('call')).toBe(true); // Instruction (not a label)
+            expect(usedLabels.has('printf')).toBe(true); // Actual label reference
+            expect(usedLabels.has('mov')).toBe(true); // Instruction (not a label)
+            expect(usedLabels.has('eax')).toBe(true); // Register (not a label)
+            expect(usedLabels.has('value')).toBe(true); // Actual label reference
+            expect(usedLabels.has('jmp')).toBe(true); // Instruction (not a label)
+            expect(usedLabels.has('_start')).toBe(true); // Actual label reference
 
-            // This is why subclasses need custom labelFindFor implementations
-            expect(usedLabels.size).toBeGreaterThan(3);
+            // This over-matching is why subclasses override labelFindFor
+            // to be more specific about what constitutes a label in their syntax
         });
     });
 
