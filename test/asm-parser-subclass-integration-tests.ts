@@ -30,13 +30,31 @@ import {VcAsmParser} from '../lib/parsers/asm-parser-vc.js';
 import {AsmParser} from '../lib/parsers/asm-parser.js';
 import * as properties from '../lib/properties.js';
 
+// Helper functions to reduce test duplication
+function initializeParserAndFindLabels<T extends AsmParser>(
+    ParserClass: new (...args: any[]) => T,
+    constructorArgs: any[],
+    asmLines: string[],
+): Set<string> {
+    const parser = new ParserClass(...constructorArgs);
+    return parser.findUsedLabels(asmLines, true);
+}
+
+function processAsmWithParser<T extends AsmParser>(
+    ParserClass: new (...args: any[]) => T,
+    constructorArgs: any[],
+    code: string,
+    options: any,
+) {
+    const parser = new ParserClass(...constructorArgs);
+    return parser.processAsm(code, options);
+}
+
 describe('AsmParser subclass compatibility', () => {
     describe('labelFindFor method behavior', () => {
         it('should use VcAsmParser labelFindFor override to find specific VC labels', () => {
-            const parser = new VcAsmParser();
             const asmLines = ['_start:', 'mov eax, OFFSET _data', 'call _function', 'jmp _start'];
-
-            const usedLabels = parser.findUsedLabels(asmLines, true);
+            const usedLabels = initializeParserAndFindLabels(VcAsmParser, [], asmLines);
 
             // VC-specific label detection should find these labels
             expect(usedLabels.has('_data')).toBe(true);
@@ -45,7 +63,6 @@ describe('AsmParser subclass compatibility', () => {
         });
 
         it('should demonstrate EWAVR labelFindFor bug prevents finding label usage', () => {
-            const parser = new AsmEWAVRParser(properties.fakeProps({}));
             const asmLines = [
                 '_data:     .word 0x1234',
                 '_main:',
@@ -54,9 +71,7 @@ describe('AsmParser subclass compatibility', () => {
                 '           call _subroutine',
                 '           rjmp _main',
             ];
-
-            // EWAVR parser should find these label usages but doesn't due to bug
-            const usedLabels = parser.findUsedLabels(asmLines, true);
+            const usedLabels = initializeParserAndFindLabels(AsmEWAVRParser, [properties.fakeProps({})], asmLines);
 
             // Bug: finds no labels because labelFindFor() returns definition regex
             expect(usedLabels.size).toBe(0);
@@ -69,10 +84,8 @@ describe('AsmParser subclass compatibility', () => {
         });
 
         it('should show base class finds all identifier-like tokens as potential labels', () => {
-            const parser = new AsmParser();
             const asmLines = ['_start:', '    call printf', '    mov eax, value', '    jmp _start'];
-
-            const usedLabels = parser.findUsedLabels(asmLines, true);
+            const usedLabels = initializeParserAndFindLabels(AsmParser, [], asmLines);
 
             // Base class finds ALL identifier-like tokens, not just actual labels
             expect(usedLabels.has('call')).toBe(true); // Instruction (not a label)
@@ -91,12 +104,10 @@ describe('AsmParser subclass compatibility', () => {
     describe('processAsm custom implementations', () => {
         it('should verify VcAsmParser has different output format than base class', () => {
             const testCode = ['mov eax, OFFSET _data', 'call _function'].join('\n');
+            const options = {directives: true, labels: false};
 
-            const baseParser = new AsmParser();
-            const vcParser = new VcAsmParser();
-
-            const baseResult = baseParser.processAsm(testCode, {directives: true, labels: false});
-            const vcResult = vcParser.processAsm(testCode, {directives: true, labels: false});
+            const baseResult = processAsmWithParser(AsmParser, [], testCode, options);
+            const vcResult = processAsmWithParser(VcAsmParser, [], testCode, options);
 
             // Base class returns labelDefinitions, VC parser does not
             expect(baseResult).toHaveProperty('labelDefinitions');
@@ -118,11 +129,9 @@ describe('AsmParser subclass compatibility', () => {
         });
 
         it('should verify SPIRVAsmParser getUsedLabelsInLine detects percent labels', () => {
-            const spirvParser = new SPIRVAsmParser();
-
             const spirvCode = ['OpBranch %exit_label', '%exit_label = OpLabel', 'OpReturn'].join('\n');
 
-            const result = spirvParser.processAsm(spirvCode, {
+            const result = processAsmWithParser(SPIRVAsmParser, [], spirvCode, {
                 directives: false,
                 labels: false,
                 commentOnly: false,
