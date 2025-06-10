@@ -62,7 +62,7 @@ describe('AsmParser subclass compatibility', () => {
             expect(usedLabels.has('_start')).toBe(true);
         });
 
-        it('should demonstrate EWAVR labelFindFor bug prevents finding label usage', () => {
+        it('should show EWAVR label finding now works correctly after refactoring', () => {
             const asmLines = [
                 '_data:     .word 0x1234',
                 '_main:',
@@ -73,14 +73,14 @@ describe('AsmParser subclass compatibility', () => {
             ];
             const usedLabels = initializeParserAndFindLabels(AsmEWAVRParser, [properties.fakeProps({})], asmLines);
 
-            // Bug: finds no labels because labelFindFor() returns definition regex
-            expect(usedLabels.size).toBe(0);
-            expect(usedLabels.has('_data')).toBe(false);
-            expect(usedLabels.has('_subroutine')).toBe(false);
-            expect(usedLabels.has('_main')).toBe(false);
+            // Fixed: now correctly finds labels in usage contexts after refactoring
+            expect(usedLabels.size).toBe(10); // Finds identifier-like tokens including our labels
+            expect(usedLabels.has('_data')).toBe(true);
+            expect(usedLabels.has('_subroutine')).toBe(true);
+            expect(usedLabels.has('_main')).toBe(true);
 
-            // The bug is that EWAVR's labelFindFor looks for lines ending with ':'
-            // instead of finding label references in instructions
+            // The refactoring fixed the issue where EWAVR's labelFindFor returned definition regex
+            // Now it uses the base class identifierFindRe for finding label references
         });
 
         it('should show base class finds all identifier-like tokens as potential labels', () => {
