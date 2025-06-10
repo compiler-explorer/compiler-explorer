@@ -42,6 +42,11 @@ import {LabelContext, LabelProcessor} from './label-processor.js';
 import {ParsingState} from './parsing-state.js';
 import {SourceHandlerContext, SourceLineHandler} from './source-line-handler.js';
 
+function maybeAddBlank(asm: ParsedAsmResultLine[]) {
+    const lastBlank = asm.length === 0 || asm[asm.length - 1].text === '';
+    if (!lastBlank) asm.push({text: '', source: null, labels: []});
+}
+
 export type ParsingContext = {
     files: Record<number, string>;
     source: AsmResultSource | undefined | null;
@@ -194,6 +199,67 @@ export class AsmParser extends AsmRegex implements IAsmParser {
         }
 
         return {match, skipLine: false};
+    }
+
+    private processAllLines(
+        filters: ParseFiltersAndOutputOptions,
+        context: ParsingContext,
+        asmLines: string[],
+        labelsUsed: Set<string>,
+    ): {asm: ParsedAsmResultLine[]; labelDefinitions: Record<string, number>} {
+        const asm: ParsedAsmResultLine[] = [];
+        const labelDefinitions: Record<string, number> = {};
+        for (let line of this.parsingState) {
+            if (line.trim() === '') {
+                maybeAddBlank(asm);
+                continue;
+            }
+
+            this.updateParsingState(line, context);
+
+            if (this.shouldSkipLibraryCode(filters, context, asm, labelDefinitions)) {
+                continue;
+            }
+
+            if (this.shouldSkipCommentOnlyLine(filters, line)) {
+                continue;
+            }
+
+            if (this.parsingState.isInCustomAssembly()) line = this.fixLabelIndentation(line);
+
+            const labelResult = this.processLabelDefinition(
+                line,
+                filters,
+                context,
+                asmLines,
+                labelsUsed,
+                labelDefinitions,
+                asm.length,
+            );
+            const match = labelResult.match;
+            if (labelResult.skipLine) {
+                continue;
+            }
+
+            if (this.shouldSkipDirective(line, filters, context, match)) {
+                continue;
+            }
+
+            line = utils.expandTabs(line);
+            const text = AsmRegex.filterAsmLine(line, filters);
+
+            const labelsInLine = match ? [] : this.getUsedLabelsInLine(text);
+
+            asm.push({
+                text: text,
+                source: this.hasOpcode(line, this.parsingState.inNvccCode, this.parsingState.inVLIWpacket)
+                    ? context.source || null
+                    : null,
+                labels: labelsInLine,
+            });
+        }
+
+        return {asm, labelDefinitions};
     }
 
     private shouldSkipCommentOnlyLine(filters: ParseFiltersAndOutputOptions, line: string): boolean {
@@ -494,9 +560,6 @@ export class AsmParser extends AsmRegex implements IAsmParser {
             asmResult = asmResult.replace(this.blockComments, '');
         }
 
-        const asm: ParsedAsmResultLine[] = [];
-        const labelDefinitions: Record<string, number> = {};
-
         let asmLines = utils.splitLines(asmResult);
         const startingLineCount = asmLines.length;
         if (filters.preProcessLines !== undefined) {
@@ -516,60 +579,7 @@ export class AsmParser extends AsmRegex implements IAsmParser {
             dontMaskFilenames: filters.dontMaskFilenames || false,
         };
 
-        function maybeAddBlank() {
-            const lastBlank = asm.length === 0 || asm[asm.length - 1].text === '';
-            if (!lastBlank) asm.push({text: '', source: null, labels: []});
-        }
-
-        for (let line of this.parsingState) {
-            if (line.trim() === '') {
-                maybeAddBlank();
-                continue;
-            }
-
-            this.updateParsingState(line, context);
-
-            if (this.shouldSkipLibraryCode(filters, context, asm, labelDefinitions)) {
-                continue;
-            }
-
-            if (this.shouldSkipCommentOnlyLine(filters, line)) {
-                continue;
-            }
-
-            if (this.parsingState.isInCustomAssembly()) line = this.fixLabelIndentation(line);
-
-            const labelResult = this.processLabelDefinition(
-                line,
-                filters,
-                context,
-                asmLines,
-                labelsUsed,
-                labelDefinitions,
-                asm.length,
-            );
-            const match = labelResult.match;
-            if (labelResult.skipLine) {
-                continue;
-            }
-
-            if (this.shouldSkipDirective(line, filters, context, match)) {
-                continue;
-            }
-
-            line = utils.expandTabs(line);
-            const text = AsmRegex.filterAsmLine(line, filters);
-
-            const labelsInLine = match ? [] : this.getUsedLabelsInLine(text);
-
-            asm.push({
-                text: text,
-                source: this.hasOpcode(line, this.parsingState.inNvccCode, this.parsingState.inVLIWpacket)
-                    ? context.source || null
-                    : null,
-                labels: labelsInLine,
-            });
-        }
+        const {asm, labelDefinitions} = this.processAllLines(filters, context, asmLines, labelsUsed);
 
         this.removeLabelsWithoutDefinition(asm, labelDefinitions);
 
