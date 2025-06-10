@@ -40,20 +40,6 @@ export class ParsingState {
         public dontMaskFilenames: boolean,
     ) {}
 
-    reset() {
-        this.mayRemovePreviousLabel = true;
-        this.keepInlineCode = false;
-        this.lastOwnSource = null;
-        this.inNvccDef = false;
-        this.inNvccCode = false;
-        this.inCustomAssembly = 0;
-        this.inVLIWpacket = false;
-        this.idxLine = 0;
-        this.source = null;
-        this.prevLabel = '';
-        this.prevLabelIsUserFunction = false;
-    }
-
     updateSource(newSource: AsmResultSource | null | undefined) {
         this.source = newSource;
         if (newSource?.file === null || newSource?.mainsource) {

@@ -88,6 +88,50 @@ describe('SourceLineHandler tests', () => {
         });
     });
 
+    describe('handleCVTag', () => {
+        it('should parse .cv_loc directive', () => {
+            const result = handler.handleCVTag('\t.cv_loc 1 2 42 5', context);
+            expect(result).toEqual({
+                file: '/path/to/header.h',
+                line: 42,
+                column: 5,
+            });
+        });
+
+        it('should parse .cv_loc directive without column', () => {
+            const result = handler.handleCVTag('\t.cv_loc 1 1 23 0', context);
+            expect(result).toEqual({
+                file: '/path/to/source.cpp',
+                line: 23,
+            });
+        });
+
+        it('should return null for non-matching lines', () => {
+            const result = handler.handleCVTag('mov rax, rbx', context);
+            expect(result).toBeNull();
+        });
+    });
+
+    describe('handle6502Debug', () => {
+        it('should parse .dbg line directive', () => {
+            const result = handler.handle6502Debug('\t.dbg line, "test.asm", 42', context);
+            expect(result).toEqual({
+                file: 'test.asm',
+                line: 42,
+            });
+        });
+
+        it('should return null for .dbg line end directive', () => {
+            const result = handler.handle6502Debug('\t.dbg line end', context);
+            expect(result).toBeNull();
+        });
+
+        it('should return undefined for non-matching lines', () => {
+            const result = handler.handle6502Debug('mov rax, rbx', context);
+            expect(result).toBeUndefined();
+        });
+    });
+
     describe('handleStabs', () => {
         it('should handle stab type 68', () => {
             const result = handler.handleStabs('\t.stabn 68,0,42,.');
