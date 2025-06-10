@@ -92,12 +92,14 @@ export class ParsingState {
     }
 
     shouldFilterLibraryCode(filters: {libraryCode?: boolean}): boolean {
-        return Boolean(
-            filters.libraryCode &&
-                !this.prevLabelIsUserFunction &&
-                !this.lastOwnSource &&
-                this.source?.file !== null &&
-                !this.source?.mainsource,
+        const isLibraryCodeFilterEnabled = Boolean(filters.libraryCode);
+        const isNotUserFunction = !this.prevLabelIsUserFunction;
+        const hasNoLastOwnSource = !this.lastOwnSource;
+        const hasSourceFile = this.source?.file !== null;
+        const isNotMainSource = !this.source?.mainsource;
+
+        return (
+            isLibraryCodeFilterEnabled && isNotUserFunction && hasNoLastOwnSource && hasSourceFile && isNotMainSource
         );
     }
 

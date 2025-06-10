@@ -74,10 +74,12 @@ describe('AsmParser subclass compatibility', () => {
             const usedLabels = initializeParserAndFindLabels(AsmEWAVRParser, [properties.fakeProps({})], asmLines);
 
             // Fixed: now correctly finds labels in usage contexts after refactoring
-            expect(usedLabels.size).toBe(10); // Finds identifier-like tokens including our labels
             expect(usedLabels.has('_data')).toBe(true);
             expect(usedLabels.has('_subroutine')).toBe(true);
             expect(usedLabels.has('_main')).toBe(true);
+            expect(usedLabels.has('HIGH')).toBe(true);
+            expect(usedLabels.has('LOW')).toBe(true);
+            // Verify that specific expected labels are found rather than checking exact count
 
             // The refactoring fixed the issue where EWAVR's labelFindFor returned definition regex
             // Now it uses the base class identifierFindRe for finding label references

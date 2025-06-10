@@ -22,8 +22,6 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import _ from 'underscore';
-
 import {AsmResultLabel, ParsedAsmResultLine} from '../../types/asmresult/asmresult.interfaces.js';
 
 export type LabelContext = {
@@ -51,7 +49,7 @@ export type LabelContext = {
 
 export class LabelProcessor {
     getLabelFind(asmLines: string[], context: LabelContext): RegExp {
-        const isMips = _.some(asmLines, line => context.mipsLabelDefinition.test(line));
+        const isMips = asmLines.some(line => context.mipsLabelDefinition.test(line));
         return isMips ? context.labelFindMips : context.labelFindNonMips;
     }
 
