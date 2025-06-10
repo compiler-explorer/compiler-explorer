@@ -24,6 +24,42 @@
 
 import {AsmResultLabel, ParsedAsmResultLine} from '../../types/asmresult/asmresult.interfaces.js';
 
+class FindLabelsState {
+    public labelsUsed = new Set<string>();
+    public weakUsages = new Map<string, Set<string>>();
+    public currentLabelSet: string[] = [];
+    public inLabelGroup = false;
+    public inCustomAssembly = 0;
+    public inFunction = false;
+    public inNvccCode = false;
+    public inVLIWpacket = false;
+    public definingAlias: string | undefined;
+
+    markWeak(fromLabel: string, toLabel: string): void {
+        const usageSet = this.weakUsages.get(fromLabel) ?? new Set<string>();
+        if (!this.weakUsages.has(fromLabel)) this.weakUsages.set(fromLabel, usageSet);
+        usageSet.add(toLabel);
+    }
+
+    enterLabelGroup(label: string): void {
+        if (this.inLabelGroup) {
+            this.currentLabelSet.push(label);
+        } else {
+            this.currentLabelSet = [label];
+        }
+        this.inLabelGroup = true;
+
+        if (this.definingAlias) {
+            this.markWeak(this.definingAlias, label);
+        }
+    }
+
+    exitLabelGroup(): void {
+        this.inLabelGroup = false;
+        this.definingAlias = undefined;
+    }
+}
+
 export type LabelContext = {
     hasOpcode: (line: string, inNvccCode?: boolean, inVLIWpacket?: boolean) => boolean;
     checkVLIWpacket: (line: string, inVLIWpacket: boolean) => boolean;
@@ -90,106 +126,112 @@ export class LabelProcessor {
         }
     }
 
-    findUsedLabels(asmLines: string[], filterDirectives: boolean, context: LabelContext): Set<string> {
-        const labelsUsed: Set<string> = new Set();
-        const weakUsages: Map<string, Set<string>> = new Map();
-
-        function markWeak(fromLabel: string, toLabel: string) {
-            const usageSet = weakUsages.get(fromLabel) ?? new Set<string>();
-            if (!weakUsages.has(fromLabel)) weakUsages.set(fromLabel, usageSet);
-            usageSet.add(toLabel);
-        }
-
-        const labelFind = this.getLabelFind(asmLines, context);
-        let currentLabelSet: string[] = [];
-        let inLabelGroup = false;
-        let inCustomAssembly = 0;
+    private updateAssemblyContext(line: string, context: LabelContext, state: FindLabelsState): void {
         const startBlock = /\.cfi_startproc/;
         const endBlock = /\.cfi_endproc/;
-        let inFunction = false;
-        let inNvccCode = false;
-        let inVLIWpacket = false;
-        let definingAlias: string | undefined;
 
-        for (const originalLine of asmLines) {
-            let line = originalLine;
-            if (context.startAppBlock.test(line.trim()) || context.startAsmNesting.test(line.trim())) {
-                inCustomAssembly++;
-            } else if (context.endAppBlock.test(line.trim()) || context.endAsmNesting.test(line.trim())) {
-                inCustomAssembly--;
-            } else if (startBlock.test(line)) {
-                inFunction = true;
-            } else if (endBlock.test(line)) {
-                inFunction = false;
-            } else if (context.cudaBeginDef.test(line)) {
-                inNvccCode = true;
-            } else {
-                inVLIWpacket = context.checkVLIWpacket(line, inVLIWpacket);
+        if (context.startAppBlock.test(line.trim()) || context.startAsmNesting.test(line.trim())) {
+            state.inCustomAssembly++;
+        } else if (context.endAppBlock.test(line.trim()) || context.endAsmNesting.test(line.trim())) {
+            state.inCustomAssembly--;
+        } else if (startBlock.test(line)) {
+            state.inFunction = true;
+        } else if (endBlock.test(line)) {
+            state.inFunction = false;
+        } else if (context.cudaBeginDef.test(line)) {
+            state.inNvccCode = true;
+        } else {
+            state.inVLIWpacket = context.checkVLIWpacket(line, state.inVLIWpacket);
+        }
+    }
+
+    private preprocessLine(originalLine: string, context: LabelContext, state: FindLabelsState): string {
+        return state.inCustomAssembly > 0 ? context.fixLabelIndentation(originalLine) : originalLine;
+    }
+
+    private processLabelDefinition(line: string, context: LabelContext, state: FindLabelsState): void {
+        const match = line.match(context.labelDef);
+        if (match) {
+            state.enterLabelGroup(match[1]);
+        } else {
+            if (state.inLabelGroup) {
+                state.exitLabelGroup();
             }
+        }
+    }
 
-            if (inCustomAssembly > 0) line = context.fixLabelIndentation(line);
+    private processGlobalWeakDefinitions(line: string, context: LabelContext, state: FindLabelsState): void {
+        const match =
+            line.match(context.definesGlobal) ?? line.match(context.definesWeak) ?? line.match(context.cudaBeginDef);
+        if (match) state.labelsUsed.add(match[1]);
 
-            let match = line.match(context.labelDef);
-            if (match) {
-                if (inLabelGroup) currentLabelSet.push(match[1]);
-                else currentLabelSet = [match[1]];
-                inLabelGroup = true;
-                if (definingAlias) {
-                    markWeak(definingAlias, match[1]);
-                }
-            } else {
-                if (inLabelGroup) {
-                    inLabelGroup = false;
-                    definingAlias = undefined;
-                }
-            }
+        const definesAlias = line.match(context.definesAlias);
+        if (definesAlias) {
+            state.definingAlias = definesAlias[1];
+        }
+    }
 
-            match =
-                line.match(context.definesGlobal) ??
-                line.match(context.definesWeak) ??
-                line.match(context.cudaBeginDef);
-            if (match) labelsUsed.add(match[1]);
+    private processLabelUsages(
+        line: string,
+        context: LabelContext,
+        state: FindLabelsState,
+        filterDirectives: boolean,
+        labelFind: RegExp,
+    ): void {
+        const definesFunction = line.match(context.definesFunction);
+        if (!definesFunction && (!line || line[0] === '.')) return;
 
-            const definesAlias = line.match(context.definesAlias);
-            if (definesAlias) {
-                definingAlias = definesAlias[1];
-            }
+        const match = line.match(labelFind);
+        if (!match) return;
 
-            const definesFunction = line.match(context.definesFunction);
-            if (!definesFunction && (!line || line[0] === '.')) continue;
-
-            match = line.match(labelFind);
-            if (!match) continue;
-
-            if (!filterDirectives || context.hasOpcode(line, inNvccCode, inVLIWpacket) || definesFunction) {
-                for (const label of match) labelsUsed.add(label);
-            } else {
-                const isDataDefinition = context.dataDefn.test(line);
-                const isOpcode = context.hasOpcode(line, inNvccCode, inVLIWpacket);
-                if (isDataDefinition || isOpcode) {
-                    if (inFunction && isDataDefinition) {
-                        for (const label of match) labelsUsed.add(label);
-                    } else {
-                        for (const currentLabel of currentLabelSet) {
-                            for (const label of match) markWeak(currentLabel, label);
-                        }
+        if (!filterDirectives || context.hasOpcode(line, state.inNvccCode, state.inVLIWpacket) || definesFunction) {
+            for (const label of match) state.labelsUsed.add(label);
+        } else {
+            const isDataDefinition = context.dataDefn.test(line);
+            const isOpcode = context.hasOpcode(line, state.inNvccCode, state.inVLIWpacket);
+            if (isDataDefinition || isOpcode) {
+                if (state.inFunction && isDataDefinition) {
+                    for (const label of match) state.labelsUsed.add(label);
+                } else {
+                    for (const currentLabel of state.currentLabelSet) {
+                        for (const label of match) state.markWeak(currentLabel, label);
                     }
                 }
             }
         }
+    }
 
+    private resolveWeakUsages(state: FindLabelsState): void {
         const recurseMarkUsed = (label: string) => {
-            labelsUsed.add(label);
-            const usages = weakUsages.get(label);
+            state.labelsUsed.add(label);
+            const usages = state.weakUsages.get(label);
             if (!usages) return;
             for (const nowUsed of usages) {
-                if (!labelsUsed.has(nowUsed)) recurseMarkUsed(nowUsed);
+                if (!state.labelsUsed.has(nowUsed)) recurseMarkUsed(nowUsed);
             }
         };
 
         // Create a snapshot of labelsUsed to avoid processing labels added during recursion
-        for (const label of new Set(labelsUsed)) recurseMarkUsed(label);
-        return labelsUsed;
+        for (const label of new Set(state.labelsUsed)) recurseMarkUsed(label);
+    }
+
+    findUsedLabels(asmLines: string[], filterDirectives: boolean, context: LabelContext): Set<string> {
+        const state = new FindLabelsState();
+        const labelFind = this.getLabelFind(asmLines, context);
+
+        for (const originalLine of asmLines) {
+            this.updateAssemblyContext(originalLine, context, state);
+            const line = this.preprocessLine(originalLine, context, state);
+
+            // Process label definition (but continue processing the line for other patterns)
+            this.processLabelDefinition(line, context, state);
+
+            this.processGlobalWeakDefinitions(line, context, state);
+            this.processLabelUsages(line, context, state, filterDirectives, labelFind);
+        }
+
+        this.resolveWeakUsages(state);
+        return state.labelsUsed;
     }
 
     isLabelUsed(labelName: string, usedLabels: Set<string>, match: RegExpMatchArray, line: string): boolean {
