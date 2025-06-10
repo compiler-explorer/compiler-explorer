@@ -202,8 +202,8 @@ export class AsmParser extends AsmRegex implements IAsmParser {
         return this.hasOpcodeRe.test(line);
     }
 
-    labelFindFor(asmLines: string[]) {
-        const context: LabelContext = {
+    private createLabelContext(): LabelContext {
+        return {
             hasOpcode: this.hasOpcode.bind(this),
             checkVLIWpacket: this.checkVLIWpacket.bind(this),
             labelDef: this.labelDef,
@@ -225,35 +225,14 @@ export class AsmParser extends AsmRegex implements IAsmParser {
             labelFindMips: this.labelFindMips,
             fixLabelIndentation: this.fixLabelIndentation.bind(this),
         };
+    }
 
-        return this.labelProcessor.getLabelFind(asmLines, context);
+    labelFindFor(asmLines: string[]) {
+        return this.labelProcessor.getLabelFind(asmLines, this.createLabelContext());
     }
 
     findUsedLabels(asmLines: string[], filterDirectives?: boolean): Set<string> {
-        const context: LabelContext = {
-            hasOpcode: this.hasOpcode.bind(this),
-            checkVLIWpacket: this.checkVLIWpacket.bind(this),
-            labelDef: this.labelDef,
-            dataDefn: this.dataDefn,
-            commentRe: this.commentRe,
-            instructionRe: this.instructionRe,
-            identifierFindRe: this.identifierFindRe,
-            definesGlobal: this.definesGlobal,
-            definesWeak: this.definesWeak,
-            definesAlias: this.definesAlias,
-            definesFunction: this.definesFunction,
-            cudaBeginDef: this.cudaBeginDef,
-            startAppBlock: this.startAppBlock,
-            endAppBlock: this.endAppBlock,
-            startAsmNesting: this.startAsmNesting,
-            endAsmNesting: this.endAsmNesting,
-            mipsLabelDefinition: this.mipsLabelDefinition,
-            labelFindNonMips: this.labelFindNonMips,
-            labelFindMips: this.labelFindMips,
-            fixLabelIndentation: this.fixLabelIndentation.bind(this),
-        };
-
-        return this.labelProcessor.findUsedLabels(asmLines, filterDirectives || false, context);
+        return this.labelProcessor.findUsedLabels(asmLines, filterDirectives || false, this.createLabelContext());
     }
 
     parseFiles(asmLines: string[]) {
@@ -284,30 +263,7 @@ export class AsmParser extends AsmRegex implements IAsmParser {
 
     // Get labels which are used in the given line.
     getUsedLabelsInLine(line: string): AsmResultLabel[] {
-        const context: LabelContext = {
-            hasOpcode: this.hasOpcode.bind(this),
-            checkVLIWpacket: this.checkVLIWpacket.bind(this),
-            labelDef: this.labelDef,
-            dataDefn: this.dataDefn,
-            commentRe: this.commentRe,
-            instructionRe: this.instructionRe,
-            identifierFindRe: this.identifierFindRe,
-            definesGlobal: this.definesGlobal,
-            definesWeak: this.definesWeak,
-            definesAlias: this.definesAlias,
-            definesFunction: this.definesFunction,
-            cudaBeginDef: this.cudaBeginDef,
-            startAppBlock: this.startAppBlock,
-            endAppBlock: this.endAppBlock,
-            startAsmNesting: this.startAsmNesting,
-            endAsmNesting: this.endAsmNesting,
-            mipsLabelDefinition: this.mipsLabelDefinition,
-            labelFindNonMips: this.labelFindNonMips,
-            labelFindMips: this.labelFindMips,
-            fixLabelIndentation: this.fixLabelIndentation.bind(this),
-        };
-
-        return this.labelProcessor.getUsedLabelsInLine(line, context);
+        return this.labelProcessor.getUsedLabelsInLine(line, this.createLabelContext());
     }
 
     protected isUserFunctionByLookingAhead(context: ParsingContext, asmLines: string[], idxFrom: number): boolean {
