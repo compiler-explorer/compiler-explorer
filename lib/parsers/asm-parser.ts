@@ -56,7 +56,6 @@ export type ParsingContext = {
 };
 
 export class AsmParser extends AsmRegex implements IAsmParser {
-    // Helper classes for refactored functionality
     protected sourceLineHandler: SourceLineHandler;
     protected labelProcessor: LabelProcessor;
     protected parsingState: ParsingState;
@@ -318,7 +317,6 @@ export class AsmParser extends AsmRegex implements IAsmParser {
     constructor(compilerProps?: PropertyGetter) {
         super();
 
-        // Initialize helper classes
         this.sourceLineHandler = new SourceLineHandler();
         this.labelProcessor = new LabelProcessor();
         this.parsingState = new ParsingState({}, null, '', false, false, []);
@@ -470,12 +468,10 @@ export class AsmParser extends AsmRegex implements IAsmParser {
         return files;
     }
 
-    // Remove labels which do not have a definition.
     removeLabelsWithoutDefinition(asm: ParsedAsmResultLine[], labelDefinitions: Record<string, number>) {
         this.labelProcessor.removeLabelsWithoutDefinition(asm, labelDefinitions);
     }
 
-    // Get labels which are used in the given line.
     getUsedLabelsInLine(line: string): AsmResultLabel[] {
         return this.labelProcessor.getUsedLabelsInLine(line, this.createLabelContext());
     }
@@ -512,12 +508,8 @@ export class AsmParser extends AsmRegex implements IAsmParser {
         };
 
         const result = this.sourceLineHandler.processSourceLine(line, sourceContext);
-        if (result.source !== undefined) {
-            context.source = result.source;
-        }
-        if (result.resetPrevLabel) {
-            context.prevLabel = '';
-        }
+        if (result.source !== undefined) context.source = result.source;
+        if (result.resetPrevLabel) context.prevLabel = '';
     }
 
     protected handleStabs(context: ParsingContext, line: string) {
@@ -527,12 +519,8 @@ export class AsmParser extends AsmRegex implements IAsmParser {
         };
 
         const result = this.sourceLineHandler.processSourceLine(line, sourceContext);
-        if (result.source !== undefined) {
-            context.source = result.source;
-        }
-        if (result.resetPrevLabel) {
-            context.prevLabel = '';
-        }
+        if (result.source !== undefined) context.source = result.source;
+        if (result.resetPrevLabel) context.prevLabel = '';
     }
 
     protected handle6502(context: ParsingContext, line: string) {
@@ -542,12 +530,8 @@ export class AsmParser extends AsmRegex implements IAsmParser {
         };
 
         const result = this.sourceLineHandler.processSourceLine(line, sourceContext);
-        if (result.source !== undefined) {
-            context.source = result.source;
-        }
-        if (result.resetPrevLabel) {
-            context.prevLabel = '';
-        }
+        if (result.source !== undefined) context.source = result.source;
+        if (result.resetPrevLabel) context.prevLabel = '';
     }
 
     processAsm(asmResult: string, filters: ParseFiltersAndOutputOptions): ParsedAsmResult {
@@ -562,9 +546,7 @@ export class AsmParser extends AsmRegex implements IAsmParser {
 
         let asmLines = utils.splitLines(asmResult);
         const startingLineCount = asmLines.length;
-        if (filters.preProcessLines !== undefined) {
-            asmLines = filters.preProcessLines(asmLines);
-        }
+        if (filters.preProcessLines) asmLines = filters.preProcessLines(asmLines);
 
         const labelsUsed = this.findUsedLabels(asmLines, filters.directives);
 
@@ -594,10 +576,7 @@ export class AsmParser extends AsmRegex implements IAsmParser {
 
     fixLabelIndentation(line: string) {
         const match = line.match(this.indentedLabelDef);
-        if (match) {
-            return line.replace(/^\s+/, '');
-        }
-        return line;
+        return match ? line.replace(/^\s+/, '') : line;
     }
 
     isUserFunction(func: string) {
@@ -625,9 +604,7 @@ export class AsmParser extends AsmRegex implements IAsmParser {
             };
         }
 
-        if (filters.preProcessBinaryAsmLines !== undefined) {
-            asmLines = filters.preProcessBinaryAsmLines(asmLines);
-        }
+        if (filters.preProcessBinaryAsmLines) asmLines = filters.preProcessBinaryAsmLines(asmLines);
 
         for (const line of asmLines) {
             const labelsInLine: AsmResultLabel[] = [];
