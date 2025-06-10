@@ -160,15 +160,9 @@ describe('Basic demangling', () => {
             demangler
                 .process(result)
                 .then(output => {
-                    if (process.platform === 'win32') {
-                        expect(output.asm[0].text).toEqual(
-                            'jmp     qword ptr [rip + core::fmt::num::imp::<impl core::fmt::Display for usize>::fmt@GOTPCREL]',
-                        );
-                    } else {
-                        expect(output.asm[0].text).toEqual(
-                            'jmp     qword ptr [rip + core::fmt::num::imp::<impl core::fmt::Display for usize>::fmt::h7bbbd896a38dccca@GOTPCREL]',
-                        );
-                    }
+                    expect(output.asm[0].text).toEqual(
+                        'jmp     qword ptr [rip + core::fmt::num::imp::<impl core::fmt::Display for usize>::fmt::h7bbbd896a38dccca@GOTPCREL]',
+                    );
                 })
                 .catch(catchCppfiltNonexistence),
         ]);

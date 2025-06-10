@@ -654,12 +654,9 @@ textarea.form-control {
     .ts-control {
         border: none;
         color: #343a40 !important;
-        background: $base !important;
+        background-color: $base !important;
         text-shadow: none !important;
 
-        &:after {
-            border-color: #343a40 transparent transparent transparent;
-        }
 
         //&.disabled {
         //    color: #f2f2f2 !important;
