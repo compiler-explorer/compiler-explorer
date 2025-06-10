@@ -30,6 +30,12 @@ export type SourceHandlerContext = {
     dontMaskFilenames: boolean;
 };
 
+// STAB debugging format constants
+// See: http://www.math.utah.edu/docs/info/stabs_11.html#SEC48
+const STAB_N_SLINE = 68; // Source line: maps line numbers to addresses
+const STAB_N_SO = 100; // Source file: marks beginning of source file debugging info
+const STAB_N_SOL = 132; // Included file: tracks #included files
+
 export class SourceLineHandler {
     private sourceTag: RegExp;
     private sourceD2Tag: RegExp;
@@ -121,10 +127,10 @@ export class SourceLineHandler {
 
         // cf http://www.math.utah.edu/docs/info/stabs_11.html#SEC48
         switch (Number.parseInt(match[1])) {
-            case 68:
+            case STAB_N_SLINE:
                 return {file: null, line: Number.parseInt(match[2])};
-            case 132:
-            case 100:
+            case STAB_N_SO:
+            case STAB_N_SOL:
                 return null;
             default:
                 return undefined;
@@ -157,7 +163,8 @@ export class SourceLineHandler {
         const stabResult = this.handleStabs(line);
         if (stabResult !== undefined) {
             const stabMatch = line.match(this.sourceStab);
-            const resetPrevLabel = stabResult === null && (stabMatch?.[1] === '132' || stabMatch?.[1] === '100');
+            const resetPrevLabel =
+                stabResult === null && (stabMatch?.[1] === String(STAB_N_SOL) || stabMatch?.[1] === String(STAB_N_SO));
             return {source: stabResult, resetPrevLabel};
         }
 
