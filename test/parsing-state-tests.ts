@@ -139,6 +139,22 @@ describe('ParsingState tests', () => {
             const result = state.shouldFilterLibraryCode({libraryCode: true});
             expect(result).toBe(false);
         });
+
+        it('should not filter when source is undefined', () => {
+            state.updatePrevLabel('lib_func', false); // not user function
+            state.updateSource(undefined); // no source
+
+            const result = state.shouldFilterLibraryCode({libraryCode: true});
+            expect(result).toBe(false);
+        });
+
+        it('should not filter when source is null', () => {
+            state.updatePrevLabel('lib_func', false); // not user function
+            state.updateSource(null); // no source
+
+            const result = state.shouldFilterLibraryCode({libraryCode: true});
+            expect(result).toBe(false);
+        });
     });
 
     describe('label management', () => {

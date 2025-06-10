@@ -95,7 +95,7 @@ export class ParsingState {
         const isLibraryCodeFilterEnabled = Boolean(filters.libraryCode);
         const isNotUserFunction = !this.prevLabelIsUserFunction;
         const hasNoLastOwnSource = !this.lastOwnSource;
-        const hasSourceFile = this.source?.file !== null;
+        const hasSourceFile = Boolean(this.source?.file);
         const isNotMainSource = !this.source?.mainsource;
 
         return (
