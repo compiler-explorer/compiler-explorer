@@ -154,7 +154,7 @@ export class SourceLineHandler {
 
         for (const handler of handlers) {
             const source = handler();
-            if (source !== null && source !== undefined) {
+            if (source) {
                 return {source, resetPrevLabel: false};
             }
         }
