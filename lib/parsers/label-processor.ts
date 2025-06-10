@@ -108,9 +108,7 @@ export class LabelProcessor {
                     endCol: startCol + symbol.length,
                 },
             };
-            if (target !== symbol) {
-                label.target = target;
-            }
+            if (target !== symbol) label.target = target;
             labelsInLine.push(label);
             return symbol;
         });
@@ -130,9 +128,10 @@ export class LabelProcessor {
         const startBlock = /\.cfi_startproc/;
         const endBlock = /\.cfi_endproc/;
 
-        if (context.startAppBlock.test(line.trim()) || context.startAsmNesting.test(line.trim())) {
+        const trimmedLine = line.trim();
+        if (context.startAppBlock.test(trimmedLine) || context.startAsmNesting.test(trimmedLine)) {
             state.inCustomAssembly++;
-        } else if (context.endAppBlock.test(line.trim()) || context.endAsmNesting.test(line.trim())) {
+        } else if (context.endAppBlock.test(trimmedLine) || context.endAsmNesting.test(trimmedLine)) {
             state.inCustomAssembly--;
         } else if (startBlock.test(line)) {
             state.inFunction = true;
@@ -153,11 +152,7 @@ export class LabelProcessor {
         const match = line.match(context.labelDef);
         if (match) {
             state.enterLabelGroup(match[1]);
-        } else {
-            if (state.inLabelGroup) {
-                state.exitLabelGroup();
-            }
-        }
+        } else if (state.inLabelGroup) state.exitLabelGroup();
     }
 
     private processGlobalWeakDefinitions(line: string, context: LabelContext, state: FindLabelsState): void {
@@ -166,9 +161,7 @@ export class LabelProcessor {
         if (match) state.labelsUsed.add(match[1]);
 
         const definesAlias = line.match(context.definesAlias);
-        if (definesAlias) {
-            state.definingAlias = definesAlias[1];
-        }
+        if (definesAlias) state.definingAlias = definesAlias[1];
     }
 
     private processLabelUsages(
@@ -223,9 +216,7 @@ export class LabelProcessor {
             this.updateAssemblyContext(originalLine, context, state);
             const line = this.preprocessLine(originalLine, context, state);
 
-            // Process label definition (but continue processing the line for other patterns)
             this.processLabelDefinition(line, context, state);
-
             this.processGlobalWeakDefinitions(line, context, state);
             this.processLabelUsages(line, context, state, filterDirectives, labelFind);
         }
