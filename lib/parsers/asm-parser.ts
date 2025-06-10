@@ -134,14 +134,12 @@ export class AsmParser extends AsmRegex implements IAsmParser {
         }
 
         if (!match && filters.directives) {
-            // Check for directives only if it wasn't a label; the regexp would otherwise misinterpret labels as
-            // directives.
+            // Check for directives only if it wasn't a label; the regexp would otherwise misinterpret labels as directives.
             if (this.dataDefn.test(line) && context.prevLabel) {
                 // We're defining data that's being used somewhere.
                 return false;
             }
-            // .inst generates an opcode, so does not count as a directive, nor does an alias definition that's
-            // used.
+            // .inst generates an opcode, so does not count as a directive, nor does an alias definition that's used.
             if (this.directive.test(line) && !this.instOpcodeRe.test(line) && !this.definesAlias.test(line)) {
                 return true;
             }
@@ -158,7 +156,7 @@ export class AsmParser extends AsmRegex implements IAsmParser {
         labelsUsed: Set<string>,
         labelDefinitions: Record<string, number>,
         asmLength: number,
-    ): {match: RegExpMatchArray | null; shouldContinue: boolean} {
+    ): {match: RegExpMatchArray | null; skipLine: boolean} {
         let match = line.match(this.labelDef);
         if (!match) match = line.match(this.assignmentDef);
         if (!match) {
@@ -168,33 +166,34 @@ export class AsmParser extends AsmRegex implements IAsmParser {
             }
         }
 
-        if (match) {
-            // It's a label definition.
-            // g-as shows local labels as eg: "1:  call  mcount". We characterize such a label as "the
-            // label-matching part doesn't equal the whole line" and treat it as used. As a special case, consider
-            // assignments of the form "symbol = ." to be labels.
-            if (!labelsUsed.has(match[1]) && match[0] === line && (match[2] === undefined || match[2].trim() === '.')) {
-                // It's an unused label.
-                if (filters.labels) {
-                    context.prevLabel = '';
-                    return {match, shouldContinue: true};
-                }
-            } else {
-                // A used label.
-                context.prevLabel = match[1];
-                labelDefinitions[match[1]] = asmLength + 1;
+        if (!match) {
+            return {match: null, skipLine: false};
+        }
 
-                if (!this.parsingState.inNvccDef && !this.parsingState.inNvccCode && filters.libraryCode) {
-                    context.prevLabelIsUserFunction = this.isUserFunctionByLookingAhead(
-                        context,
-                        asmLines,
-                        this.parsingState.getCurrentLineIndex(),
-                    );
-                }
+        // It's a label definition. g-as shows local labels as eg: "1:  call  mcount". We characterize such a label
+        // as "the label-matching part doesn't equal the whole line" and treat it as used. As a special case,
+        // consider assignments of the form "symbol = ." to be labels.
+        if (!labelsUsed.has(match[1]) && match[0] === line && (match[2] === undefined || match[2].trim() === '.')) {
+            // It's an unused label.
+            if (filters.labels) {
+                context.prevLabel = '';
+                return {match, skipLine: true};
+            }
+        } else {
+            // A used label.
+            context.prevLabel = match[1];
+            labelDefinitions[match[1]] = asmLength + 1;
+
+            if (!this.parsingState.inNvccDef && !this.parsingState.inNvccCode && filters.libraryCode) {
+                context.prevLabelIsUserFunction = this.isUserFunctionByLookingAhead(
+                    context,
+                    asmLines,
+                    this.parsingState.getCurrentLineIndex(),
+                );
             }
         }
 
-        return {match, shouldContinue: false};
+        return {match, skipLine: false};
     }
 
     private shouldSkipCommentOnlyLine(filters: ParseFiltersAndOutputOptions, line: string): boolean {
@@ -297,8 +296,7 @@ export class AsmParser extends AsmRegex implements IAsmParser {
             this.lineRe = /^(\/[^:]+):(?<line>\d+).*/;
         }
 
-        // labelRe is made very greedy as it's also used with demangled objdump output (eg. it can have c++ template
-        // with <>).
+        // labelRe is made very greedy as it's also used with demangled objdump output (eg. it can have c++ template with <>).
         this.labelRe = /^([\da-f]+)\s+<(.+)>:$/;
         this.destRe = /\s([\da-f]+)\s+<([^+>]+)(\+0x[\da-f]+)?>$/;
         this.commentRe = /[#;]/;
@@ -541,7 +539,7 @@ export class AsmParser extends AsmRegex implements IAsmParser {
                 asm.length,
             );
             const match = labelResult.match;
-            if (labelResult.shouldContinue) {
+            if (labelResult.skipLine) {
                 continue;
             }
 
