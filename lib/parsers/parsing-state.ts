@@ -30,7 +30,7 @@ export class ParsingState {
     public inNvccCode = false;
     public inCustomAssembly = 0;
     public inVLIWpacket = false;
-    public idxLine = 0;
+    private currentIndex = 0;
 
     constructor(
         public files: Record<number, string>,
@@ -38,7 +38,20 @@ export class ParsingState {
         public prevLabel: string,
         public prevLabelIsUserFunction: boolean,
         public dontMaskFilenames: boolean,
+        private asmLines: string[],
     ) {}
+
+    getCurrentLineIndex(): number {
+        return this.currentIndex;
+    }
+
+    *[Symbol.iterator](): Generator<string, void, unknown> {
+        while (this.currentIndex < this.asmLines.length) {
+            const line = this.asmLines[this.currentIndex];
+            this.currentIndex++;
+            yield line;
+        }
+    }
 
     updateSource(newSource: AsmResultSource | null | undefined) {
         this.source = newSource;
@@ -112,13 +125,5 @@ export class ParsingState {
     clearPrevLabel() {
         this.prevLabel = '';
         this.prevLabelIsUserFunction = false;
-    }
-
-    nextLine() {
-        this.idxLine++;
-    }
-
-    getCurrentLineIndex(): number {
-        return this.idxLine;
     }
 }

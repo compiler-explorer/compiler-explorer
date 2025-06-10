@@ -246,7 +246,7 @@ export class AsmParser extends AsmRegex implements IAsmParser {
         // Initialize helper classes
         this.sourceLineHandler = new SourceLineHandler();
         this.labelProcessor = new LabelProcessor();
-        this.parsingState = new ParsingState({}, null, '', false, false);
+        this.parsingState = new ParsingState({}, null, '', false, false, []);
 
         this.labelFindNonMips = /[.A-Z_a-z][\w$.]*/g;
         // MIPS labels can start with a $ sign, but other assemblers use $ to mean literal.
@@ -498,7 +498,7 @@ export class AsmParser extends AsmRegex implements IAsmParser {
         const labelsUsed = this.findUsedLabels(asmLines, filters.directives);
 
         const files = this.parseFiles(asmLines);
-        this.parsingState = new ParsingState(files, null, '', false, filters.dontMaskFilenames || false);
+        this.parsingState = new ParsingState(files, null, '', false, filters.dontMaskFilenames || false, asmLines);
 
         const context: ParsingContext = {
             files: files,
@@ -513,10 +513,7 @@ export class AsmParser extends AsmRegex implements IAsmParser {
             if (!lastBlank) asm.push({text: '', source: null, labels: []});
         }
 
-        while (this.parsingState.getCurrentLineIndex() < asmLines.length) {
-            let line = asmLines[this.parsingState.getCurrentLineIndex()];
-            this.parsingState.nextLine();
-
+        for (let line of this.parsingState) {
             if (line.trim() === '') {
                 maybeAddBlank();
                 continue;

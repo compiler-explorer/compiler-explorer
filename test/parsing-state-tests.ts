@@ -31,7 +31,7 @@ describe('ParsingState tests', () => {
     let state: ParsingState;
 
     beforeEach(() => {
-        state = new ParsingState(files, null, '', false, false);
+        state = new ParsingState(files, null, '', false, false, []);
     });
 
     describe('construction and initialization', () => {
@@ -47,7 +47,7 @@ describe('ParsingState tests', () => {
             expect(state.inNvccCode).toBe(false);
             expect(state.inCustomAssembly).toBe(0);
             expect(state.inVLIWpacket).toBe(false);
-            expect(state.idxLine).toBe(0);
+            expect(state.getCurrentLineIndex()).toBe(0);
         });
     });
 
@@ -153,15 +153,31 @@ describe('ParsingState tests', () => {
         });
     });
 
-    describe('line tracking', () => {
-        it('should track line progression', () => {
-            expect(state.getCurrentLineIndex()).toBe(0);
+    describe('line iteration', () => {
+        it('should iterate through lines', () => {
+            const testLines = ['line1', 'line2', 'line3'];
+            const iterableState = new ParsingState({}, null, '', false, false, testLines);
 
-            state.nextLine();
-            expect(state.getCurrentLineIndex()).toBe(1);
+            const lines: string[] = [];
+            for (const line of iterableState) {
+                lines.push(line);
+            }
 
-            state.nextLine();
-            expect(state.getCurrentLineIndex()).toBe(2);
+            expect(lines).toEqual(testLines);
+        });
+
+        it('should track current index during iteration', () => {
+            const testLines = ['line1', 'line2'];
+            const iterableState = new ParsingState({}, null, '', false, false, testLines);
+
+            expect(iterableState.getCurrentLineIndex()).toBe(0);
+
+            const iterator = iterableState[Symbol.iterator]();
+            iterator.next();
+            expect(iterableState.getCurrentLineIndex()).toBe(1);
+
+            iterator.next();
+            expect(iterableState.getCurrentLineIndex()).toBe(2);
         });
     });
 
