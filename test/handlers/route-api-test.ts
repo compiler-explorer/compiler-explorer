@@ -68,15 +68,11 @@ describe('extractJsonFromBufferAndInflateIfRequired test cases', () => {
     });
     it('check that data extraction fails for empty buffer', () => {
         const buffer = Buffer.from('');
-        expect(() => extractJsonFromBufferAndInflateIfRequired(buffer)).toThrow(
-            'Empty or invalid JSON data in client state',
-        );
+        expect(() => extractJsonFromBufferAndInflateIfRequired(buffer)).toThrow('Invalid JSON in client state');
     });
     it('check that data extraction fails for whitespace-only buffer', () => {
         const buffer = Buffer.from('   \n\t  ');
-        expect(() => extractJsonFromBufferAndInflateIfRequired(buffer)).toThrow(
-            'Empty or invalid JSON data in client state',
-        );
+        expect(() => extractJsonFromBufferAndInflateIfRequired(buffer)).toThrow('Invalid JSON in client state');
     });
     it('check that data extraction fails for truncated JSON', () => {
         const buffer = Buffer.from('{"sessions":[{"id":1,"languag');
@@ -96,9 +92,7 @@ describe('extractJsonFromBufferAndInflateIfRequired test cases', () => {
         const emptyJson = '';
         const buffer = zlib.deflateSync(Buffer.from(emptyJson));
         expect(possibleCompression(buffer)).toBeTruthy();
-        expect(() => extractJsonFromBufferAndInflateIfRequired(buffer)).toThrow(
-            'Empty or invalid JSON data in client state',
-        );
+        expect(() => extractJsonFromBufferAndInflateIfRequired(buffer)).toThrow('Invalid JSON in client state');
     });
     it('check that data extraction handles corrupt gzip data', () => {
         // Create data that looks like gzip (first byte & 0x0f === 0x8) but isn't valid gzip

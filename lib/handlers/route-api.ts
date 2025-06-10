@@ -327,11 +327,6 @@ export function extractJsonFromBufferAndInflateIfRequired(buffer: Buffer): any {
         jsonString = buffer.toString();
     }
 
-    // Validate JSON string before parsing
-    if (!jsonString || jsonString.trim().length === 0) {
-        throw new Error('Empty or invalid JSON data in client state');
-    }
-
     try {
         return JSON.parse(jsonString);
     } catch (parseError) {
