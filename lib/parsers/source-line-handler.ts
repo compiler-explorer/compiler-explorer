@@ -107,13 +107,13 @@ export class SourceLineHandler {
         return this.createSource(file, sourceLine, context, Number.parseInt(match[4]));
     }
 
-    handle6502Debug(line: string, context: SourceHandlerContext): AsmResultSource | null | undefined {
+    handle6502Debug(line: string, context: SourceHandlerContext): AsmResultSource | null {
         if (this.source6502DbgEnd.test(line)) {
             return null;
         }
 
         const match = line.match(this.source6502Dbg);
-        if (!match) return undefined;
+        if (!match) return null;
 
         const file = utils.maskRootdir(match[1]);
         const sourceLine = Number.parseInt(match[2]);
@@ -145,7 +145,7 @@ export class SourceLineHandler {
         resetPrevLabel: boolean;
     } {
         // Try each source handler in order
-        const handlers: Array<() => AsmResultSource | null | undefined> = [
+        const handlers: Array<() => AsmResultSource | null> = [
             () => this.handleSourceTag(line, context),
             () => this.handleD2Tag(line),
             () => this.handleCVTag(line, context),

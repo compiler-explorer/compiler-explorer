@@ -126,9 +126,9 @@ describe('SourceLineHandler tests', () => {
             expect(result).toBeNull();
         });
 
-        it('should return undefined for non-matching lines', () => {
+        it('should return null for non-matching lines', () => {
             const result = handler.handle6502Debug('mov rax, rbx', context);
-            expect(result).toBeUndefined();
+            expect(result).toBeNull();
         });
     });
 
