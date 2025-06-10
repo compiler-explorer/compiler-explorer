@@ -1,9 +1,11 @@
 import path from 'node:path';
 
+import Semver from 'semver';
 import type {PreliminaryCompilerInfo} from '../../types/compiler.interfaces.js';
 import type {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces.js';
 import {BaseCompiler} from '../base-compiler.js';
 import {CompilationEnvironment} from '../compilation-env.js';
+import {asSafeVer} from '../utils.js';
 
 export class C3Compiler extends BaseCompiler {
     static get key() {
@@ -17,7 +19,11 @@ export class C3Compiler extends BaseCompiler {
     }
 
     override optionsForFilter(filters: ParseFiltersAndOutputOptions, outputFilename: string) {
-        return ['compile-only', '-g', '-l', 'pthread', '--no-obj', '--emit-asm'];
+        const options = ['compile-only', '-g', '-l', 'pthread', '--no-obj', '--emit-asm'];
+        if (Semver.gte(asSafeVer(this.compiler.semver), '0.6.8', true)) {
+            options.push('--llvm-out', '.', '--asm-out', '.');
+        }
+        return options;
     }
 
     override getIrOutputFilename(inputFilename: string): string {

@@ -66,6 +66,40 @@ describe('extractJsonFromBufferAndInflateIfRequired test cases', () => {
         const buffer = Buffer.from('no json');
         expect(() => extractJsonFromBufferAndInflateIfRequired(buffer)).toThrow();
     });
+    it('check that data extraction fails for empty buffer', () => {
+        const buffer = Buffer.from('');
+        expect(() => extractJsonFromBufferAndInflateIfRequired(buffer)).toThrow('Invalid JSON in client state');
+    });
+    it('check that data extraction fails for whitespace-only buffer', () => {
+        const buffer = Buffer.from('   \n\t  ');
+        expect(() => extractJsonFromBufferAndInflateIfRequired(buffer)).toThrow('Invalid JSON in client state');
+    });
+    it('check that data extraction fails for truncated JSON', () => {
+        const buffer = Buffer.from('{"sessions":[{"id":1,"languag');
+        expect(() => extractJsonFromBufferAndInflateIfRequired(buffer)).toThrow('Invalid JSON in client state');
+    });
+    it('check that data extraction fails for invalid JSON characters', () => {
+        const buffer = Buffer.from('{"invalid": json}');
+        expect(() => extractJsonFromBufferAndInflateIfRequired(buffer)).toThrow('Invalid JSON in client state');
+    });
+    it('check that data extraction fails for gzipped malformed JSON', () => {
+        const malformedJson = '{"sessions":[{"id":1,"languag';
+        const buffer = zlib.deflateSync(Buffer.from(malformedJson));
+        expect(possibleCompression(buffer)).toBeTruthy();
+        expect(() => extractJsonFromBufferAndInflateIfRequired(buffer)).toThrow('Invalid JSON in client state');
+    });
+    it('check that data extraction fails for gzipped empty data', () => {
+        const emptyJson = '';
+        const buffer = zlib.deflateSync(Buffer.from(emptyJson));
+        expect(possibleCompression(buffer)).toBeTruthy();
+        expect(() => extractJsonFromBufferAndInflateIfRequired(buffer)).toThrow('Invalid JSON in client state');
+    });
+    it('check that data extraction handles corrupt gzip data', () => {
+        // Create data that looks like gzip (first byte & 0x0f === 0x8) but isn't valid gzip
+        const corruptGzipData = Buffer.from([0x18, 0x01, 0x02, 0x03]); // First byte makes it look like gzip
+        expect(possibleCompression(corruptGzipData)).toBeTruthy();
+        expect(() => extractJsonFromBufferAndInflateIfRequired(corruptGzipData)).toThrow();
+    });
 });
 
 describe('clientStateHandler', () => {
@@ -109,5 +143,46 @@ describe('clientStateHandler', () => {
         expect(document).toContain('/');
         const response = await request(app).get(`/clientstate/${document}`);
         expect(response.status).toBe(200);
+    });
+    it('should return 400 for invalid base64 in /clientstate', async () => {
+        const invalidBase64 = 'INVALID_BASE64!!!';
+        const response = await request(app).get(`/clientstate/${invalidBase64}`);
+        expect(response.status).toBe(400);
+    });
+    it('should return 400 for empty data in /clientstate', async () => {
+        const emptyData = Buffer.from('').toString('base64');
+        const response = await request(app).get(`/clientstate/${emptyData}`);
+        expect(response.status).toBe(400);
+    });
+    it('should return 400 for malformed JSON in /clientstate', async () => {
+        const malformedJson = Buffer.from('{"invalid": json}').toString('base64');
+        const response = await request(app).get(`/clientstate/${malformedJson}`);
+        expect(response.status).toBe(400);
+    });
+    it('should return 400 for truncated JSON in /clientstate', async () => {
+        const truncatedJson = Buffer.from('{"sessions":[{"id":1,"languag').toString('base64');
+        const response = await request(app).get(`/clientstate/${truncatedJson}`);
+        expect(response.status).toBe(400);
+    });
+    it('should return 400 for binary data in /clientstate', async () => {
+        const binaryData = Buffer.from([0x00, 0x01, 0x02, 0xff, 0xfe, 0xfd]).toString('base64');
+        const response = await request(app).get(`/clientstate/${binaryData}`);
+        expect(response.status).toBe(400);
+    });
+    it('should return 400 for gzipped malformed JSON in /clientstate', async () => {
+        const malformedJson = '{"sessions":[{"id":1,"languag';
+        const gzippedData = zlib.deflateSync(Buffer.from(malformedJson)).toString('base64');
+        const response = await request(app).get(`/clientstate/${gzippedData}`);
+        expect(response.status).toBe(400);
+    });
+    it('should return 400 for gzipped empty data in /clientstate', async () => {
+        const emptyData = zlib.deflateSync(Buffer.from('')).toString('base64');
+        const response = await request(app).get(`/clientstate/${emptyData}`);
+        expect(response.status).toBe(400);
+    });
+    it('should return 400 for corrupt gzip data in /clientstate', async () => {
+        const corruptGzipData = Buffer.from([0x18, 0x01, 0x02, 0x03]).toString('base64');
+        const response = await request(app).get(`/clientstate/${corruptGzipData}`);
+        expect(response.status).toBe(400);
     });
 });

@@ -151,12 +151,24 @@ export class RouteAPI {
         return goldenifier.golden;
     }
 
-    unstoredStateHandler(req: express.Request, res: express.Response) {
-        const state = extractJsonFromBufferAndInflateIfRequired(Buffer.from(req.params.clientstatebase64, 'base64'));
-        const config = this.getGoldenLayoutFromClientState(new ClientState(state));
-        const metadata = this.getMetaDataFromLink(req, null, config);
+    unstoredStateHandler(req: express.Request, res: express.Response, next: express.NextFunction) {
+        try {
+            const buffer = Buffer.from(req.params.clientstatebase64, 'base64');
+            const state = extractJsonFromBufferAndInflateIfRequired(buffer);
+            const config = this.getGoldenLayoutFromClientState(new ClientState(state));
+            const metadata = this.getMetaDataFromLink(req, null, config);
 
-        this.renderGoldenLayout(config, metadata, req, res);
+            this.renderGoldenLayout(config, metadata, req, res);
+        } catch (err) {
+            logger.debug('Failed to parse client state from URL', {
+                error: err instanceof Error ? err.message : String(err),
+                clientstatebase64: req.params.clientstatebase64?.substring(0, 100),
+            });
+            next({
+                statusCode: 400,
+                message: 'Invalid client state data in URL',
+            });
+        }
     }
 
     simpleLayoutHandler(req: express.Request, res: express.Response) {
@@ -302,13 +314,28 @@ export class RouteAPI {
 export function extractJsonFromBufferAndInflateIfRequired(buffer: Buffer): any {
     const firstByte = buffer.at(0); // for uncompressed data this is probably '{'
     const isGzipUsed = firstByte !== undefined && (firstByte & 0x0f) === 0x8; // https://datatracker.ietf.org/doc/html/rfc1950, https://datatracker.ietf.org/doc/html/rfc1950, for '{' this yields 11
+
+    let jsonString: string;
     if (isGzipUsed) {
         try {
-            return JSON.parse(zlib.inflateSync(buffer).toString());
-        } catch (_) {
-            return JSON.parse(buffer.toString());
+            jsonString = zlib.inflateSync(buffer).toString();
+        } catch (inflateError) {
+            logger.debug('Failed to inflate gzipped buffer, falling back to raw buffer', inflateError);
+            jsonString = buffer.toString();
         }
     } else {
-        return JSON.parse(buffer.toString());
+        jsonString = buffer.toString();
+    }
+
+    try {
+        return JSON.parse(jsonString);
+    } catch (parseError) {
+        logger.debug('Failed to parse JSON from client state', {
+            error: parseError,
+            jsonString: jsonString.substring(0, 100) + (jsonString.length > 100 ? '...' : ''),
+            bufferLength: buffer.length,
+        });
+        const errorMessage = parseError instanceof Error ? parseError.message : 'Unknown parsing error';
+        throw new Error(`Invalid JSON in client state: ${errorMessage}`);
     }
 }

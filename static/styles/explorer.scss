@@ -1,5 +1,12 @@
 @import '~@fortawesome/fontawesome-free/css/all.min.css';
 
+// SCSS function to generate TomSelect dropdown arrow SVG with custom color
+// Based on the SVG from tom-select.bootstrap5.css line 575 in selector:
+// .ts-wrapper:not(.form-control, .form-select).single .ts-control
+@function dropdown-arrow-svg($color) {
+    @return url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'><path fill='none' stroke='#{$color}' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='m2 5 6 6 6-6'/></svg>");
+}
+
 /*
  * https://github.com/Microsoft/monaco-editor/issues/417
  * Safari 10.1, fails inherit correct visibility from parent when we change the visibility of parent element from hidden to inherit, in this particular case.
@@ -1203,27 +1210,6 @@ html[data-theme='one-dark'] {
     padding-right: 2rem !important;
 }
 
-/* Add back the dropdown arrow for TomSelect in Bootstrap 5 */
-.ts-wrapper.single .ts-control:not(.input-active)::after {
-    content: " ";
-    display: block;
-    position: absolute;
-    top: 50%;
-    right: 15px;
-    margin-top: -3px;
-    width: 0;
-    height: 0;
-    border-style: solid;
-    border-width: 5px 5px 0 5px;
-    border-color: #343a40 transparent transparent transparent;
-}
-
-/* Styling for the dropdown arrow when dropdown is active */
-.ts-wrapper.single.dropdown-active .ts-control::after {
-    margin-top: -4px;
-    border-width: 0 5px 5px 5px;
-    border-color: transparent transparent #343a40 transparent;
-}
 
 // Fix Bootstrap 5's input-group border overlap issues with TomSelect
 // Bootstrap applies a -1px margin to elements matching `:not(:first-child)` in input groups
