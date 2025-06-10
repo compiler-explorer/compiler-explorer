@@ -56,7 +56,7 @@ export class ParsingState {
 
     updateSource(newSource: AsmResultSource | null | undefined) {
         this.source = newSource;
-        if (newSource && (newSource.file === null || newSource.mainsource)) {
+        if (newSource?.file === null || newSource?.mainsource) {
             this.lastOwnSource = newSource;
         }
     }
@@ -93,13 +93,12 @@ export class ParsingState {
     }
 
     shouldFilterLibraryCode(filters: {libraryCode?: boolean}): boolean {
-        return !!(
+        return Boolean(
             filters.libraryCode &&
-            !this.prevLabelIsUserFunction &&
-            !this.lastOwnSource &&
-            this.source &&
-            this.source.file !== null &&
-            !this.source.mainsource
+                !this.prevLabelIsUserFunction &&
+                !this.lastOwnSource &&
+                this.source?.file !== null &&
+                !this.source?.mainsource,
         );
     }
 

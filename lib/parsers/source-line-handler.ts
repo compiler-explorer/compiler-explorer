@@ -49,6 +49,26 @@ export class SourceLineHandler {
         this.stdInLooking = /<stdin>|^-$|example\.[^/]+$|<source>/;
     }
 
+    private createSource(file: string, line: number, context: SourceHandlerContext, column?: number): AsmResultSource {
+        const isMainSource = this.stdInLooking.test(file);
+        const source: AsmResultSource = context.dontMaskFilenames
+            ? {
+                  file,
+                  line,
+                  mainsource: isMainSource,
+              }
+            : {
+                  file: isMainSource ? null : file,
+                  line,
+              };
+
+        if (column !== undefined && !Number.isNaN(column) && column !== 0) {
+            source.column = column;
+        }
+
+        return source;
+    }
+
     handleSourceTag(line: string, context: SourceHandlerContext): AsmResultSource | null {
         const match = line.match(this.sourceTag);
         if (!match) return null;
@@ -58,23 +78,7 @@ export class SourceLineHandler {
 
         if (!file) return null;
 
-        const source: AsmResultSource = context.dontMaskFilenames
-            ? {
-                  file: file,
-                  line: sourceLine,
-                  mainsource: this.stdInLooking.test(file),
-              }
-            : {
-                  file: this.stdInLooking.test(file) ? null : file,
-                  line: sourceLine,
-              };
-
-        const sourceCol = Number.parseInt(match[3]);
-        if (!Number.isNaN(sourceCol) && sourceCol !== 0) {
-            source.column = sourceCol;
-        }
-
-        return source;
+        return this.createSource(file, sourceLine, context, Number.parseInt(match[3]));
     }
 
     handleD2Tag(line: string): AsmResultSource | null {
@@ -94,23 +98,7 @@ export class SourceLineHandler {
         const sourceLine = Number.parseInt(match[3]);
         const file = utils.maskRootdir(context.files[Number.parseInt(match[2])]);
 
-        const source: AsmResultSource = context.dontMaskFilenames
-            ? {
-                  file: file,
-                  line: sourceLine,
-                  mainsource: this.stdInLooking.test(file),
-              }
-            : {
-                  file: this.stdInLooking.test(file) ? null : file,
-                  line: sourceLine,
-              };
-
-        const sourceCol = Number.parseInt(match[4]);
-        if (!Number.isNaN(sourceCol) && sourceCol !== 0) {
-            source.column = sourceCol;
-        }
-
-        return source;
+        return this.createSource(file, sourceLine, context, Number.parseInt(match[4]));
     }
 
     handle6502Debug(line: string, context: SourceHandlerContext): AsmResultSource | null | undefined {
@@ -124,16 +112,7 @@ export class SourceLineHandler {
         const file = utils.maskRootdir(match[1]);
         const sourceLine = Number.parseInt(match[2]);
 
-        return context.dontMaskFilenames
-            ? {
-                  file: file,
-                  line: sourceLine,
-                  mainsource: this.stdInLooking.test(file),
-              }
-            : {
-                  file: this.stdInLooking.test(file) ? null : file,
-                  line: sourceLine,
-              };
+        return this.createSource(file, sourceLine, context);
     }
 
     handleStabs(line: string): AsmResultSource | null | undefined {
@@ -160,26 +139,21 @@ export class SourceLineHandler {
         resetPrevLabel: boolean;
     } {
         // Try each source handler in order
-        let source: AsmResultSource | null | undefined = this.handleSourceTag(line, context);
-        if (source !== null) {
-            return {source, resetPrevLabel: false};
+        const handlers: Array<() => AsmResultSource | null | undefined> = [
+            () => this.handleSourceTag(line, context),
+            () => this.handleD2Tag(line),
+            () => this.handleCVTag(line, context),
+            () => this.handle6502Debug(line, context),
+        ];
+
+        for (const handler of handlers) {
+            const source = handler();
+            if (source !== null && source !== undefined) {
+                return {source, resetPrevLabel: false};
+            }
         }
 
-        source = this.handleD2Tag(line);
-        if (source !== null) {
-            return {source, resetPrevLabel: false};
-        }
-
-        source = this.handleCVTag(line, context);
-        if (source !== null) {
-            return {source, resetPrevLabel: false};
-        }
-
-        source = this.handle6502Debug(line, context);
-        if (source !== undefined) {
-            return {source, resetPrevLabel: false};
-        }
-
+        // Special handling for stabs
         const stabResult = this.handleStabs(line);
         if (stabResult !== undefined) {
             const stabMatch = line.match(this.sourceStab);

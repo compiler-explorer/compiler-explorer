@@ -25,7 +25,6 @@
 import _ from 'underscore';
 
 import {AsmResultLabel, ParsedAsmResultLine} from '../../types/asmresult/asmresult.interfaces.js';
-import {unwrap} from '../assert.js';
 
 export type LabelContext = {
     hasOpcode: (line: string, inNvccCode?: boolean, inVLIWpacket?: boolean) => boolean;
@@ -52,7 +51,7 @@ export type LabelContext = {
 
 export class LabelProcessor {
     getLabelFind(asmLines: string[], context: LabelContext): RegExp {
-        const isMips = _.any(asmLines, line => context.mipsLabelDefinition.test(line));
+        const isMips = _.some(asmLines, line => context.mipsLabelDefinition.test(line));
         return isMips ? context.labelFindMips : context.labelFindNonMips;
     }
 
@@ -88,7 +87,7 @@ export class LabelProcessor {
     removeLabelsWithoutDefinition(asm: ParsedAsmResultLine[], labelDefinitions: Record<string, number>) {
         for (const obj of asm) {
             if (obj.labels) {
-                obj.labels = obj.labels.filter(label => labelDefinitions[label.target || label.name]);
+                obj.labels = obj.labels.filter(label => labelDefinitions[label.target ?? label.name]);
             }
         }
     }
@@ -98,8 +97,9 @@ export class LabelProcessor {
         const weakUsages: Map<string, Set<string>> = new Map();
 
         function markWeak(fromLabel: string, toLabel: string) {
-            if (!weakUsages.has(fromLabel)) weakUsages.set(fromLabel, new Set());
-            unwrap(weakUsages.get(fromLabel)).add(toLabel);
+            const usageSet = weakUsages.get(fromLabel) ?? new Set<string>();
+            if (!weakUsages.has(fromLabel)) weakUsages.set(fromLabel, usageSet);
+            usageSet.add(toLabel);
         }
 
         const labelFind = this.getLabelFind(asmLines, context);
@@ -113,7 +113,8 @@ export class LabelProcessor {
         let inVLIWpacket = false;
         let definingAlias: string | undefined;
 
-        for (let line of asmLines) {
+        for (const originalLine of asmLines) {
+            let line = originalLine;
             if (context.startAppBlock.test(line.trim()) || context.startAsmNesting.test(line.trim())) {
                 inCustomAssembly++;
             } else if (context.endAppBlock.test(line.trim()) || context.endAsmNesting.test(line.trim())) {
@@ -145,9 +146,10 @@ export class LabelProcessor {
                 }
             }
 
-            match = line.match(context.definesGlobal);
-            if (!match) match = line.match(context.definesWeak);
-            if (!match) match = line.match(context.cudaBeginDef);
+            match =
+                line.match(context.definesGlobal) ??
+                line.match(context.definesWeak) ??
+                line.match(context.cudaBeginDef);
             if (match) labelsUsed.add(match[1]);
 
             const definesAlias = line.match(context.definesAlias);
@@ -187,6 +189,7 @@ export class LabelProcessor {
             }
         };
 
+        // Create a snapshot of labelsUsed to avoid processing labels added during recursion
         for (const label of new Set(labelsUsed)) recurseMarkUsed(label);
         return labelsUsed;
     }
