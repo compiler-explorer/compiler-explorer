@@ -36,7 +36,7 @@ import {MapFileReaderDelphi} from '../mapfiles/map-file-delphi.js';
 import {PELabelReconstructor} from '../pe32-support.js';
 import * as utils from '../utils.js';
 
-import {getUnitname, isProgram} from './pascal-utils.js';
+import * as pascalUtils from './pascal-utils.js';
 
 export class PascalWinCompiler extends BaseCompiler {
     static get key() {
@@ -123,10 +123,10 @@ export class PascalWinCompiler extends BaseCompiler {
 
     override async writeAllFiles(dirPath: string, source: string, files: any[], filters: ParseFiltersAndOutputOptions) {
         let inputFilename: string;
-        if (isProgram(source)) {
+        if (pascalUtils.isProgram(source)) {
             inputFilename = path.join(dirPath, this.dprFilename);
         } else {
-            const unitName = getUnitname(source);
+            const unitName = pascalUtils.getUnitname(source);
             if (unitName) {
                 inputFilename = path.join(dirPath, unitName + '.pas');
             } else {

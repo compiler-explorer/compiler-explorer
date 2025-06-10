@@ -40,7 +40,7 @@ import {CompilationEnvironment} from '../compilation-env.js';
 import * as utils from '../utils.js';
 
 import {PascalParser} from './argument-parsers.js';
-import {getProgName, getUnitname, isProgram} from './pascal-utils.js';
+import * as pascalUtils from './pascal-utils.js';
 
 export class FPCCompiler extends BaseCompiler {
     static get key() {
@@ -133,8 +133,8 @@ export class FPCCompiler extends BaseCompiler {
 
     override getExecutableFilename(dirPath: string, outputFilebase: string, key?: CacheKey | CompilationCacheKey) {
         const source = (key && (key as CacheKey).source) || '';
-        if (key && this.pasUtils.isProgram(source)) {
-            return path.join(dirPath, this.pasUtils.getProgName(source));
+        if (key && pascalUtils.isProgram(source)) {
+            return path.join(dirPath, pascalUtils.getProgName(source));
         }
 
         return path.join(dirPath, 'prog');
@@ -217,10 +217,10 @@ export class FPCCompiler extends BaseCompiler {
 
     getMainSourceFilename(source: string) {
         let inputFilename: string;
-        if (isProgram(source)) {
-            inputFilename = getProgName(source) + '.dpr';
+        if (pascalUtils.isProgram(source)) {
+            inputFilename = pascalUtils.getProgName(source) + '.dpr';
         } else {
-            const unitName = getUnitname(source);
+            const unitName = pascalUtils.getUnitname(source);
             if (unitName) {
                 inputFilename = unitName + '.pas';
             } else {
