@@ -84,6 +84,7 @@ import type {BuildEnvDownloadInfo} from './buildenvsetup/buildenv.interfaces.js'
 import {BuildEnvSetupBase, getBuildEnvTypeByKey} from './buildenvsetup/index.js';
 import {BaseCache} from './cache/base.js';
 import * as cfg from './cfg/cfg.js';
+import {CmakeCacheDownloader, type CmakeCacheModificationFlags} from './cmake-cache.js';
 import {CompilationEnvironment} from './compilation-env.js';
 import {CompilerArguments} from './compiler-arguments.js';
 import {
@@ -220,6 +221,7 @@ export class BaseCompiler {
         labelNames: [],
     });
     protected executionEnvironmentClass: any;
+    protected cmakeCacheDownloader: CmakeCacheDownloader;
 
     constructor(compilerInfo: PreliminaryCompilerInfo & {disabledFilters?: string[]}, env: CompilationEnvironment) {
         // Information about our compiler
@@ -291,6 +293,8 @@ export class BaseCompiler {
             const externalparserclass = getExternalParserByKey(this.compiler.externalparser.id);
             this.externalparser = new externalparserclass(this.compiler, this.env, this.exec);
         }
+
+        this.cmakeCacheDownloader = new CmakeCacheDownloader(this.env.awsProps);
 
         if (!this.compiler.instructionSet) {
             const isets = new InstructionSets();
@@ -2736,7 +2740,29 @@ export class BaseCompiler {
 
             await fs.mkdir(execParams.customCwd);
 
+            const cacheDownloadResult = await this.cmakeCacheDownloader.downloadAndExtractCmakeCache(
+                this.compiler.id,
+                execParams.customCwd,
+            );
+
             const makeExecParams = this.createCmakeExecParams(execParams, dirPath, libsAndOptions, toolchainPath);
+
+            if (cacheDownloadResult) {
+                const includeFlags = this.getIncludeArguments(libsAndOptions.libraries, dirPath);
+                const linkerFlags = splitArguments(makeExecParams.env.LDFLAGS || '');
+
+                const modificationFlags: CmakeCacheModificationFlags = {
+                    compilerFlags: [
+                        ...(this.compiler.options ? removeToolchainArg(splitArguments(this.compiler.options)) : []),
+                        ...libsAndOptions.options,
+                    ],
+                    includeFlags,
+                    linkerFlags,
+                    language: this.lang.id === 'c' ? 'C' : 'CXX',
+                };
+
+                await this.cmakeCacheDownloader.modifyCmakeCache(execParams.customCwd, modificationFlags);
+            }
 
             fullResult = {
                 code: 0,
@@ -2749,6 +2775,10 @@ export class BaseCompiler {
             };
 
             fullResult.downloads = await this.setupBuildEnvironment(cacheKey, dirPath, true);
+
+            if (cacheDownloadResult) {
+                fullResult.downloads.push(cacheDownloadResult);
+            }
 
             const toolchainparam = this.getCMakeExtToolchainParam(parsedRequest.backendOptions.overrides || []);
 

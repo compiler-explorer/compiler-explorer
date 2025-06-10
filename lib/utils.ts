@@ -69,7 +69,7 @@ export function expandTabs(line: string): string {
     });
 }
 
-function getRegexForTempdir(): RegExp {
+export function getRegexForTempdir(): RegExp {
     const tmp = os.tmpdir();
     return new RegExp(tmp.replaceAll('/', '\\/') + '\\/' + ce_temp_prefix + '[\\w\\d-.]*\\/');
 }
