@@ -210,33 +210,43 @@ export class AsmParser extends AsmRegex implements IAsmParser {
         asm: ParsedAsmResultLine[],
         labelDefinitions: Record<string, number>,
     ): boolean {
+        // Only filter library code if user enabled it AND we're not currently in a user function
         const doLibraryFilterCheck = filters.libraryCode && !context.prevLabelIsUserFunction;
 
+        // Don't skip if any of these conditions indicate this is user code or filtering is disabled
         if (
-            doLibraryFilterCheck &&
-            !this.parsingState.lastOwnSource &&
-            context.source &&
-            context.source.file !== null &&
-            !context.source.mainsource
+            !doLibraryFilterCheck || // Library filtering disabled or we're in user function
+            this.parsingState.lastOwnSource || // We recently processed user source code
+            !context.source || // No source information available
+            context.source.file === null || // Main source file (user code)
+            context.source.mainsource // Explicitly marked as main source
         ) {
-            if (this.parsingState.shouldRemovePreviousLabel() && asm.length > 0) {
-                const lastLine = asm[asm.length - 1];
-                const labelDef = lastLine.text ? lastLine.text.match(this.labelDef) : null;
-
-                if (labelDef) {
-                    asm.pop();
-                    this.parsingState.setKeepInlineCode(false);
-                    delete labelDefinitions[labelDef[1]];
-                } else {
-                    this.parsingState.setKeepInlineCode(true);
-                }
-                this.parsingState.setMayRemovePreviousLabel(false);
-            }
-
-            return !this.parsingState.shouldKeepInlineCode();
+            // We're in user code, so future labels might need removal if we transition to library code
+            this.parsingState.setMayRemovePreviousLabel(true);
+            return false;
         }
-        this.parsingState.setMayRemovePreviousLabel(true);
-        return false;
+
+        // We're in library code that should be filtered. Handle "orphaned labels" that precede filtered code.
+        // When we start filtering library code, we might have just output a label that will now be orphaned.
+        if (this.parsingState.shouldRemovePreviousLabel() && asm.length > 0) {
+            const lastLine = asm[asm.length - 1];
+            const labelDef = lastLine.text ? lastLine.text.match(this.labelDef) : null;
+
+            if (labelDef) {
+                // Last line was a label - it's now orphaned, so remove it retroactively
+                asm.pop();
+                this.parsingState.setKeepInlineCode(false);
+                delete labelDefinitions[labelDef[1]];
+            } else {
+                // Last line wasn't a label - there's user code mixed in, so keep showing library code
+                this.parsingState.setKeepInlineCode(true);
+            }
+            // Don't try to remove labels again until we transition back to user code
+            this.parsingState.setMayRemovePreviousLabel(false);
+        }
+
+        // Skip this line unless we determined there's user code mixed in (keepInlineCode=true)
+        return !this.parsingState.shouldKeepInlineCode();
     }
 
     constructor(compilerProps?: PropertyGetter) {
@@ -377,18 +387,18 @@ export class AsmParser extends AsmRegex implements IAsmParser {
         const files: Record<number, string> = {};
         for (const line of asmLines) {
             const match = line.match(this.fileFind);
-            if (match) {
-                const lineNum = Number.parseInt(match[1]);
-                if (match[4] && !line.includes('.cv_file')) {
-                    // Clang-style file directive '.file X "dir" "filename"'
-                    if (match[4].startsWith('/')) {
-                        files[lineNum] = match[4];
-                    } else {
-                        files[lineNum] = match[2] + '/' + match[4];
-                    }
+            if (!match) continue;
+
+            const lineNum = Number.parseInt(match[1]);
+            if (match[4] && !line.includes('.cv_file')) {
+                // Clang-style file directive '.file X "dir" "filename"'
+                if (match[4].startsWith('/')) {
+                    files[lineNum] = match[4];
                 } else {
-                    files[lineNum] = match[2];
+                    files[lineNum] = match[2] + '/' + match[4];
                 }
+            } else {
+                files[lineNum] = match[2];
             }
         }
         return files;
