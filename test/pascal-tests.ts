@@ -27,7 +27,7 @@ import path from 'node:path';
 
 import {beforeAll, describe, expect, it} from 'vitest';
 
-import {PascalUtils} from '../lib/compilers/pascal-utils.js';
+import * as pascalUtils from '../lib/compilers/pascal-utils.js';
 import {PascalWinCompiler} from '../lib/compilers/pascal-win.js';
 import {FPCCompiler} from '../lib/compilers/pascal.js';
 import {PascalDemangler} from '../lib/demangler/index.js';
@@ -407,18 +407,17 @@ describe('Pascal', () => {
     });
 
     describe('Pascal filetype detection', async () => {
-        const pasUtils = new PascalUtils();
         const progSource = await fs.readFile('test/pascal/prog.dpr', 'utf-8');
         const unitSource = await fs.readFile('test/pascal/example.pas', 'utf-8');
 
         it('Should detect simple program', () => {
-            expect(pasUtils.isProgram(progSource)).toEqual(true);
-            expect(pasUtils.isProgram(unitSource)).toEqual(false);
+            expect(pascalUtils.isProgram(progSource)).toEqual(true);
+            expect(pascalUtils.isProgram(unitSource)).toEqual(false);
         });
 
         it('Should detect simple unit', () => {
-            expect(pasUtils.isUnit(progSource)).toEqual(false);
-            expect(pasUtils.isUnit(unitSource)).toEqual(true);
+            expect(pascalUtils.isUnit(progSource)).toEqual(false);
+            expect(pascalUtils.isUnit(unitSource)).toEqual(true);
         });
     });
 
