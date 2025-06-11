@@ -119,7 +119,7 @@ export class LabelProcessor {
     removeLabelsWithoutDefinition(asm: ParsedAsmResultLine[], labelDefinitions: Record<string, number>) {
         for (const obj of asm) {
             if (obj.labels) {
-                obj.labels = obj.labels.filter(label => labelDefinitions[label.target ?? label.name]);
+                obj.labels = obj.labels.filter(label => labelDefinitions[label.target || label.name]);
             }
         }
     }
