@@ -27,11 +27,24 @@ import {beforeEach, describe, expect, it} from 'vitest';
 import {VcAsmParser} from '../lib/parsers/asm-parser-vc.js';
 import {AsmParser} from '../lib/parsers/asm-parser.js';
 
+// Test helper class that extends VcAsmParser to expose protected properties for testing
+class VcAsmParserForTest extends VcAsmParser {
+    getCommentOnlyRegexForTest() {
+        return this.commentOnly;
+    }
+
+    getDefinesFunctionRegexForTest() {
+        return this.definesFunction;
+    }
+}
+
 describe('VcAsmParser', () => {
     let parser: VcAsmParser;
+    let testParser: VcAsmParserForTest;
 
     beforeEach(() => {
         parser = new VcAsmParser();
+        testParser = new VcAsmParserForTest();
     });
 
     describe('VC assembly processing functionality', () => {
@@ -79,12 +92,14 @@ describe('VcAsmParser', () => {
             const indentedComment = '    ; Indented comment';
             const codeLine = 'mov eax, ebx';
 
+            const commentOnlyRegex = testParser.getCommentOnlyRegexForTest();
+
             // VC commentOnly regex is /^;/ - only matches lines starting with ;
-            expect(parser.commentOnly.test(commentLine)).toBe(true);
-            expect(parser.commentOnly.test(codeLine)).toBe(false);
+            expect(commentOnlyRegex.test(commentLine)).toBe(true);
+            expect(commentOnlyRegex.test(codeLine)).toBe(false);
 
             // VC regex doesn't match comments with leading whitespace
-            expect(parser.commentOnly.test(indentedComment)).toBe(false);
+            expect(commentOnlyRegex.test(indentedComment)).toBe(false);
         });
     });
 
@@ -93,12 +108,14 @@ describe('VcAsmParser', () => {
             const procLine = '_function\tPROC';
             const nonProcLine = '_function:';
 
+            const definesFunctionRegex = testParser.getDefinesFunctionRegexForTest();
+
             // Test the function definition regex directly
-            expect(parser.definesFunction.test(procLine)).toBe(true);
-            expect(parser.definesFunction.test(nonProcLine)).toBe(false);
+            expect(definesFunctionRegex.test(procLine)).toBe(true);
+            expect(definesFunctionRegex.test(nonProcLine)).toBe(false);
 
             // Should extract function name
-            const match = procLine.match(parser.definesFunction);
+            const match = procLine.match(definesFunctionRegex);
             expect(match?.[1]).toBe('_function');
         });
 
