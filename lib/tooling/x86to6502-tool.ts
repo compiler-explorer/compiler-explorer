@@ -49,9 +49,7 @@ export class x86to6502Tool extends BaseTool {
         }
 
         if (!compilationInfo.asm) {
-            return new Promise<ToolResult>(resolve => {
-                resolve(this.createErrorResponse('<no assembly output available>'));
-            });
+            return this.createErrorResponse('<no assembly output available>');
         }
 
         const parser = new AsmParser();
