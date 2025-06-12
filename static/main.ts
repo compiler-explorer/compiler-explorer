@@ -74,8 +74,6 @@ import changelogDocument from './generated/changelog.pug';
 import cookiesDocument from './generated/cookies.pug';
 import privacyDocument from './generated/privacy.pug';
 
-const siteTemplateScreenshots = require.context('../views/resources/template_screenshots', false, /\.png$/);
-//css
 import 'bootstrap/dist/css/bootstrap.min.css';
 import 'golden-layout/src/css/goldenlayout-base.css';
 import 'tom-select/dist/css/tom-select.bootstrap5.css';
@@ -779,7 +777,7 @@ function start() {
     }
 
     History.trackHistory(layout);
-    setupSiteTemplateWidgetButton(siteTemplateScreenshots, layout);
+    setupSiteTemplateWidgetButton(layout);
     if (!options.embedded) new Sharing(layout);
     new Printerinator(hub, themer);
 }
