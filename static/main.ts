@@ -66,16 +66,15 @@ import * as utils from '../shared/common-utils.js';
 import {ParseFiltersAndOutputOptions} from '../types/features/filters.interfaces.js';
 import * as BootstrapUtils from './bootstrap-utils.js';
 import {localStorage, sessionThenLocalStorage} from './local.js';
+import {getLogoImage} from './logos';
 import {Printerinator} from './print-view.js';
 import {setupRealDark, takeUsersOutOfRealDark} from './real-dark.js';
 import {formatISODate, updateAndCalcTopBarHeight} from './utils.js';
-
-const logos = require.context('../views/resources/logos', false, /\.(png|svg)$/);
-const siteTemplateScreenshots = require.context('../views/resources/template_screenshots', false, /\.png$/);
 import changelogDocument from './generated/changelog.pug';
 import cookiesDocument from './generated/cookies.pug';
 import privacyDocument from './generated/privacy.pug';
 
+const siteTemplateScreenshots = require.context('../views/resources/template_screenshots', false, /\.png$/);
 //css
 import 'bootstrap/dist/css/bootstrap.min.css';
 import 'golden-layout/src/css/goldenlayout-base.css';
@@ -476,13 +475,14 @@ function removeOrphanedMaximisedItemFromConfig(config) {
 function setupLanguageLogos(languages: Partial<Record<LanguageKey, Language>>) {
     for (const lang of Object.values(languages)) {
         try {
-            if (lang.logoUrl !== null) {
-                lang.logoData = logos('./' + lang.logoUrl);
-                if (lang.logoUrlDark !== null) {
-                    lang.logoDataDark = logos('./' + lang.logoUrlDark);
-                }
+            if (lang.logoFilename !== null) {
+                lang.logoData = getLogoImage(lang.logoFilename);
             }
-        } catch (ignored) {
+            if (lang.logoFilenameDark !== null) {
+                lang.logoDataDark = getLogoImage(lang.logoFilenameDark);
+            }
+        } catch {
+            // It doesn't really matter to us if the logo is not found, we will just not show it.
             lang.logoData = '';
         }
     }
