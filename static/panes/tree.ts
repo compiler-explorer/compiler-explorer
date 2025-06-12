@@ -32,6 +32,7 @@ import {assert, unwrap, unwrapString} from '../assert.js';
 import * as BootstrapUtils from '../bootstrap-utils.js';
 import * as Components from '../components.js';
 import {EventHub} from '../event-hub.js';
+import {createTypedDragSource, legacyComponentConfigToTyped} from '../goldenlayout-types.js';
 import {Hub} from '../hub.js';
 import {LanguageKey} from '../languages.interfaces.js';
 import {LineColouring} from '../line-colouring.js';
@@ -446,16 +447,15 @@ export class Tree {
     }
 
     private bindClickToOpenPane(dragSource, dragConfig) {
-        (this.container.layoutManager.createDragSource(dragSource, dragConfig.bind(this)) as any)._dragListener.on(
-            'dragStart',
-            () => {
-                const dropdown = this.domRoot.find('.add-pane');
-                const dropdownInstance = BootstrapUtils.getDropdownInstance(dropdown);
-                if (dropdownInstance) {
-                    dropdownInstance.toggle();
-                }
-            },
-        );
+        createTypedDragSource(this.container.layoutManager, dragSource, () =>
+            legacyComponentConfigToTyped(dragConfig.bind(this)()),
+        )._dragListener.on('dragStart', () => {
+            const dropdown = this.domRoot.find('.add-pane');
+            const dropdownInstance = BootstrapUtils.getDropdownInstance(dropdown);
+            if (dropdownInstance) {
+                dropdownInstance.toggle();
+            }
+        });
 
         dragSource.on('click', () => {
             this.hub.addInEditorStackIfPossible(dragConfig.bind(this));

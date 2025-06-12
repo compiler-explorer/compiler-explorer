@@ -34,6 +34,7 @@ import {CompilationStatus} from '../compiler-service.interfaces.js';
 import {CompilerService} from '../compiler-service.js';
 import * as Components from '../components.js';
 import {SourceAndFiles} from '../download-service.js';
+import {createTypedDragSource, legacyComponentConfigToTyped} from '../goldenlayout-types.js';
 import {Hub} from '../hub.js';
 import * as LibUtils from '../lib-utils.js';
 import {SelectedLibraryVersion} from '../libraries/libraries.interfaces.js';
@@ -273,7 +274,9 @@ export class Conformance extends Pane<ConformanceViewState> {
         };
 
         // The .d.ts for GL lies. You can pass a function that returns the config as a second parameter
-        this.container.layoutManager.createDragSource(popCompilerButton, getCompilerConfig as any);
+        createTypedDragSource(this.container.layoutManager, popCompilerButton, () =>
+            legacyComponentConfigToTyped(getCompilerConfig()),
+        );
 
         popCompilerButton.on('click', () => {
             const insertPoint =

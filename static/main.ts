@@ -58,8 +58,15 @@ import {SimpleCook} from './widgets/simplecook.js';
 import {setupSiteTemplateWidgetButton} from './widgets/site-templates-widget.js';
 
 import {Language, LanguageKey} from '../types/languages.interfaces.js';
-import {ComponentConfig, EmptyCompilerState, StateWithId, StateWithLanguage} from './components.interfaces.js';
+import {ComponentConfig} from './components.interfaces.js';
 import {CompilerExplorerOptions} from './global.js';
+import {
+    TypedGoldenLayoutConfig,
+    createTypedDragSource,
+    createTypedLayoutItem,
+    legacyComponentConfigToTyped,
+    toGoldenLayoutConfig,
+} from './goldenlayout-types.js';
 
 import * as utils from '../shared/common-utils.js';
 import * as BootstrapUtils from './bootstrap-utils.js';
@@ -286,18 +293,14 @@ function fixBugsInConfig(config: Record<string, any> & {content?: any[]}) {
     }
 }
 
-type ConfigType = {
-    settings: {
-        showPopoutIcon: boolean;
-    };
-    content: {
-        type: string;
-        content: (ComponentConfig<Partial<StateWithId & StateWithLanguage>> | ComponentConfig<EmptyCompilerState>)[];
-    }[];
-};
+// Removed ConfigType - now using TypedGoldenLayoutConfig from goldenlayout-types.ts
 
-function findConfig(defaultConfig: ConfigType, options: CompilerExplorerOptions, defaultLangId: string) {
-    let config;
+function findConfig(
+    defaultConfig: TypedGoldenLayoutConfig,
+    options: CompilerExplorerOptions,
+    defaultLangId: string,
+): TypedGoldenLayoutConfig {
+    let config: any;
     if (!options.embedded) {
         if (options.slides) {
             const presentation = new Presentation(unwrap(window.compilerExplorerOptions.slides).length);
@@ -368,7 +371,8 @@ function findConfig(defaultConfig: ConfigType, options: CompilerExplorerOptions,
     removeOrphanedMaximisedItemFromConfig(config);
     fixBugsInConfig(config);
 
-    return config;
+    // For now, cast to TypedGoldenLayoutConfig - in the future we should validate the structure
+    return config as TypedGoldenLayoutConfig;
 }
 
 function initializeResetLayoutLink() {
@@ -583,13 +587,13 @@ function start() {
         jsCookie = jsCookie.withAttributes({domain: cookieDomain[0]});
     }
 
-    const defaultConfig = {
+    const defaultConfig: TypedGoldenLayoutConfig = {
         settings: {showPopoutIcon: false},
         content: [
-            {
-                type: 'row',
-                content: [Components.getEditor(defaultLangId, 1), Components.getCompiler(1, defaultLangId)],
-            },
+            createTypedLayoutItem('row', [
+                legacyComponentConfigToTyped(Components.getEditor(defaultLangId, 1)),
+                legacyComponentConfigToTyped(Components.getCompiler(1, defaultLangId)),
+            ]),
         ],
     };
 
@@ -616,8 +620,11 @@ function start() {
     let themer: Themer;
     let settings: SiteSettings;
 
-    function initializeLayout(config: any, root: JQuery<HTMLElement>): [GoldenLayout, Hub, Themer, SiteSettings] {
-        const layout = new GoldenLayout(config, root);
+    function initializeLayout(
+        config: TypedGoldenLayoutConfig,
+        root: JQuery<HTMLElement>,
+    ): [GoldenLayout, Hub, Themer, SiteSettings] {
+        const layout = new GoldenLayout(toGoldenLayoutConfig(config), root);
         const hub = new Hub(layout, subLangId, defaultLangId);
         const [themer, settings] = setupSettings(hub);
         hub.initLayout();
@@ -686,7 +693,8 @@ function start() {
     }
 
     function setupAdd<C>(thing: JQuery, func: () => ComponentConfig<C>) {
-        (layout.createDragSource(thing, func as any) as any)._dragListener.on('dragStart', () => {
+        const typedFactory = () => legacyComponentConfigToTyped(func());
+        createTypedDragSource(layout, thing, typedFactory)._dragListener.on('dragStart', () => {
             const addDropdown = unwrap(
                 BootstrapUtils.getDropdownInstance('#addDropdown'),
                 'Dropdown instance not found for #addDropdown',

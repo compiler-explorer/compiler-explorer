@@ -39,6 +39,7 @@ import {extendConfig} from '../monaco-config.js';
 
 import {unwrap} from '../assert.js';
 import * as Components from '../components.js';
+import {createTypedDragSource, legacyComponentConfigToTyped} from '../goldenlayout-types.js';
 import {Hub} from '../hub.js';
 import {Toggles} from '../widgets/toggles.js';
 
@@ -127,7 +128,9 @@ export class Ir extends MonacoPane<monaco.editor.IStandaloneCodeEditor, IrState>
                 true,
             );
         };
-        this.container.layoutManager.createDragSource(this.cfgButton, createCfgView as any);
+        createTypedDragSource(this.container.layoutManager, this.cfgButton, () =>
+            legacyComponentConfigToTyped(createCfgView()),
+        );
         this.cfgButton.on('click', () => {
             const insertPoint =
                 this.hub.findParentRowOrColumn(this.container.parent) ||
