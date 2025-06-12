@@ -49,11 +49,12 @@ import {OptPipelineBackendOptions} from '../compilation/opt-pipeline-output.inte
 import {CompilationStatus} from '../compiler-service.interfaces.js';
 import {CompilerService} from '../compiler-service.js';
 import {
+    COMPILER_COMPONENT_NAME,
     ComponentConfig,
     NewToolSettings,
     ToolViewState,
+    TypedComponentConfig,
     createTypedDragSource,
-    legacyComponentConfigToTyped,
 } from '../components.interfaces.js';
 import * as Components from '../components.js';
 import {Hub} from '../hub.js';
@@ -445,7 +446,7 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
             insertPoint.addChild(outputConfig);
         });
 
-        const cloneComponent = () => {
+        const cloneComponent = (): TypedComponentConfig<typeof COMPILER_COMPONENT_NAME> => {
             const currentState: CompilerCurrentState = this.getCurrentState();
             // Delete the saved id to force a new one
             delete currentState.id;
@@ -453,10 +454,26 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
             // but do not pertain to the cloned compiler
             delete currentState.flagsViewOpen;
             delete currentState.deviceViewOpen;
+
+            // Ensure source is defined - if not, use a default editor ID
+            if (currentState.source === undefined) {
+                currentState.source = 1; // Default to editor 1
+            }
+
+            // Create a properly typed state for the component
+            const componentState = {
+                source: currentState.source!, // Assert non-null since we just ensured it above
+                filters: currentState.filters,
+                options: currentState.options || '',
+                compiler: currentState.compiler,
+                libs: currentState.libs,
+                lang: currentState.lang,
+            };
+
             return {
                 type: 'component',
-                componentName: 'compiler',
-                componentState: currentState,
+                componentName: COMPILER_COMPONENT_NAME,
+                componentState,
             };
         };
         const createOptView = () => {
@@ -692,7 +709,7 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
         // createDragSource returns the newly created DragSource
         // the second parameter can be a function that returns the config!
         createTypedDragSource(this.container.layoutManager, this.domRoot.find('.btn.add-compiler'), () =>
-            legacyComponentConfigToTyped(cloneComponent()),
+            cloneComponent(),
         )._dragListener.on('dragStart', hidePaneAdder);
 
         this.domRoot.find('.btn.add-compiler').on('click', () => {
@@ -702,9 +719,10 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
             insertPoint.addChild(cloneComponent());
         });
 
-        createTypedDragSource(this.container.layoutManager, this.optButton, () =>
-            legacyComponentConfigToTyped(createOptView()),
-        )._dragListener.on('dragStart', hidePaneAdder);
+        createTypedDragSource(this.container.layoutManager, this.optButton, () => createOptView())._dragListener.on(
+            'dragStart',
+            hidePaneAdder,
+        );
 
         this.optButton.on('click', () => {
             const insertPoint =
@@ -714,7 +732,7 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
         });
 
         createTypedDragSource(this.container.layoutManager, this.stackUsageButton, () =>
-            legacyComponentConfigToTyped(createStackUsageView()),
+            createStackUsageView(),
         )._dragListener.on('dragStart', hidePaneAdder);
 
         this.stackUsageButton.on('click', () => {
@@ -727,7 +745,7 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
         if (this.flagsButton) {
             const popularArgumentsMenu = this.domRoot.find('div.populararguments div.dropdown-menu');
             createTypedDragSource(this.container.layoutManager, this.flagsButton, () =>
-                legacyComponentConfigToTyped(createFlagsView()),
+                createFlagsView(),
             )._dragListener.on('dragStart', () => BootstrapUtils.hideDropdown(popularArgumentsMenu));
 
             this.flagsButton.on('click', () => {
@@ -740,9 +758,10 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
             popularArgumentsMenu.append(this.flagsButton);
         }
 
-        createTypedDragSource(this.container.layoutManager, this.ppButton, () =>
-            legacyComponentConfigToTyped(createPpView()),
-        )._dragListener.on('dragStart', hidePaneAdder);
+        createTypedDragSource(this.container.layoutManager, this.ppButton, () => createPpView())._dragListener.on(
+            'dragStart',
+            hidePaneAdder,
+        );
 
         this.ppButton.on('click', () => {
             const insertPoint =
@@ -751,9 +770,10 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
             insertPoint.addChild(createPpView());
         });
 
-        createTypedDragSource(this.container.layoutManager, this.astButton, () =>
-            legacyComponentConfigToTyped(createAstView()),
-        )._dragListener.on('dragStart', hidePaneAdder);
+        createTypedDragSource(this.container.layoutManager, this.astButton, () => createAstView())._dragListener.on(
+            'dragStart',
+            hidePaneAdder,
+        );
 
         this.astButton.on('click', () => {
             const insertPoint =
@@ -762,9 +782,10 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
             insertPoint.addChild(createAstView());
         });
 
-        createTypedDragSource(this.container.layoutManager, this.irButton, () =>
-            legacyComponentConfigToTyped(createIrView()),
-        )._dragListener.on('dragStart', hidePaneAdder);
+        createTypedDragSource(this.container.layoutManager, this.irButton, () => createIrView())._dragListener.on(
+            'dragStart',
+            hidePaneAdder,
+        );
 
         this.irButton.on('click', () => {
             const insertPoint =
@@ -774,7 +795,7 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
         });
 
         createTypedDragSource(this.container.layoutManager, this.clangirButton, () =>
-            legacyComponentConfigToTyped(createClangirView()),
+            createClangirView(),
         )._dragListener.on('dragStart', hidePaneAdder);
 
         this.clangirButton.on('click', () => {
@@ -785,7 +806,7 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
         });
 
         createTypedDragSource(this.container.layoutManager, this.optPipelineButton, () =>
-            legacyComponentConfigToTyped(createOptPipelineView()),
+            createOptPipelineView(),
         )._dragListener.on('dragStart', hidePaneAdder);
 
         this.optPipelineButton.on('click', () => {
@@ -796,7 +817,7 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
         });
 
         createTypedDragSource(this.container.layoutManager, this.deviceButton, () =>
-            legacyComponentConfigToTyped(createDeviceView()),
+            createDeviceView(),
         )._dragListener.on('dragStart', hidePaneAdder);
 
         this.deviceButton.on('click', () => {
@@ -807,7 +828,7 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
         });
 
         createTypedDragSource(this.container.layoutManager, this.rustMirButton, () =>
-            legacyComponentConfigToTyped(createRustMirView()),
+            createRustMirView(),
         )._dragListener.on('dragStart', hidePaneAdder);
 
         this.rustMirButton.on('click', () => {
@@ -818,7 +839,7 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
         });
 
         createTypedDragSource(this.container.layoutManager, this.haskellCoreButton, () =>
-            legacyComponentConfigToTyped(createHaskellCoreView()),
+            createHaskellCoreView(),
         )._dragListener.on('dragStart', hidePaneAdder);
 
         this.haskellCoreButton.on('click', () => {
@@ -829,7 +850,7 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
         });
 
         createTypedDragSource(this.container.layoutManager, this.haskellStgButton, () =>
-            legacyComponentConfigToTyped(createHaskellStgView()),
+            createHaskellStgView(),
         )._dragListener.on('dragStart', hidePaneAdder);
 
         this.haskellStgButton.on('click', () => {
@@ -840,7 +861,7 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
         });
 
         createTypedDragSource(this.container.layoutManager, this.haskellCmmButton, () =>
-            legacyComponentConfigToTyped(createHaskellCmmView()),
+            createHaskellCmmView(),
         )._dragListener.on('dragStart', hidePaneAdder);
 
         this.haskellCmmButton.on('click', () => {
@@ -851,7 +872,7 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
         });
 
         createTypedDragSource(this.container.layoutManager, this.rustMacroExpButton, () =>
-            legacyComponentConfigToTyped(createRustMacroExpView()),
+            createRustMacroExpView(),
         )._dragListener.on('dragStart', hidePaneAdder);
 
         this.rustMacroExpButton.on('click', () => {
@@ -862,7 +883,7 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
         });
 
         createTypedDragSource(this.container.layoutManager, this.rustHirButton, () =>
-            legacyComponentConfigToTyped(createRustHirView()),
+            createRustHirView(),
         )._dragListener.on('dragStart', hidePaneAdder);
 
         this.rustHirButton.on('click', () => {
@@ -873,7 +894,7 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
         });
 
         createTypedDragSource(this.container.layoutManager, this.gccDumpButton, () =>
-            legacyComponentConfigToTyped(createGccDumpView()),
+            createGccDumpView(),
         )._dragListener.on('dragStart', hidePaneAdder);
 
         this.gccDumpButton.on('click', () => {
@@ -884,7 +905,7 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
         });
 
         createTypedDragSource(this.container.layoutManager, this.gnatDebugTreeButton, () =>
-            legacyComponentConfigToTyped(createGnatDebugTreeView()),
+            createGnatDebugTreeView(),
         )._dragListener.on('dragStart', hidePaneAdder);
 
         this.gnatDebugTreeButton.on('click', () => {
@@ -895,7 +916,7 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
         });
 
         createTypedDragSource(this.container.layoutManager, this.gnatDebugButton, () =>
-            legacyComponentConfigToTyped(createGnatDebugView()),
+            createGnatDebugView(),
         )._dragListener.on('dragStart', hidePaneAdder);
 
         this.gnatDebugButton.on('click', () => {
@@ -905,9 +926,10 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
             insertPoint.addChild(createGnatDebugView());
         });
 
-        createTypedDragSource(this.container.layoutManager, this.cfgButton, () =>
-            legacyComponentConfigToTyped(createCfgView()),
-        )._dragListener.on('dragStart', hidePaneAdder);
+        createTypedDragSource(this.container.layoutManager, this.cfgButton, () => createCfgView())._dragListener.on(
+            'dragStart',
+            hidePaneAdder,
+        );
 
         this.cfgButton.on('click', () => {
             const insertPoint =
@@ -917,7 +939,7 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
         });
 
         createTypedDragSource(this.container.layoutManager, this.executorButton, () =>
-            legacyComponentConfigToTyped(createExecutor()),
+            createExecutor(),
         )._dragListener.on('dragStart', hidePaneAdder);
 
         this.executorButton.on('click', () => {

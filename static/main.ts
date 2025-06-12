@@ -58,12 +58,12 @@ import {SimpleCook} from './widgets/simplecook.js';
 import {setupSiteTemplateWidgetButton} from './widgets/site-templates-widget.js';
 
 import {Language, LanguageKey} from '../types/languages.interfaces.js';
-import {ComponentConfig} from './components.interfaces.js';
 import {
+    ComponentStateMap,
+    TypedComponentConfig,
     TypedGoldenLayoutConfig,
     createTypedDragSource,
     createTypedLayoutItem,
-    legacyComponentConfigToTyped,
     toGoldenLayoutConfig,
 } from './components.interfaces.js';
 import {CompilerExplorerOptions} from './global.js';
@@ -591,8 +591,8 @@ function start() {
         settings: {showPopoutIcon: false},
         content: [
             createTypedLayoutItem('row', [
-                legacyComponentConfigToTyped(Components.getEditor(defaultLangId, 1)),
-                legacyComponentConfigToTyped(Components.getCompiler(1, defaultLangId)),
+                Components.getEditor(defaultLangId, 1),
+                Components.getCompiler(1, defaultLangId),
             ]),
         ],
     };
@@ -692,9 +692,8 @@ function start() {
         setupButtons(options, hub);
     }
 
-    function setupAdd<C>(thing: JQuery, func: () => ComponentConfig<C>) {
-        const typedFactory = () => legacyComponentConfigToTyped(func());
-        createTypedDragSource(layout, thing, typedFactory)._dragListener.on('dragStart', () => {
+    function setupAdd<K extends keyof ComponentStateMap>(thing: JQuery, func: () => TypedComponentConfig<K>) {
+        createTypedDragSource(layout, thing, func)._dragListener.on('dragStart', () => {
             const addDropdown = unwrap(
                 BootstrapUtils.getDropdownInstance('#addDropdown'),
                 'Dropdown instance not found for #addDropdown',
@@ -703,10 +702,11 @@ function start() {
         });
 
         thing.on('click', () => {
+            const config = func();
             if (hub.hasTree()) {
-                hub.addInEditorStackIfPossible(func() as any);
+                hub.addInEditorStackIfPossible(config as unknown as GoldenLayout.ContentItem);
             } else {
-                hub.addAtRoot(func() as any);
+                hub.addAtRoot(config as unknown as GoldenLayout.ContentItem);
             }
         });
     }

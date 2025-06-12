@@ -30,7 +30,7 @@ import _ from 'underscore';
 import {escapeHTML} from '../../shared/common-utils.js';
 import {assert, unwrap, unwrapString} from '../assert.js';
 import * as BootstrapUtils from '../bootstrap-utils.js';
-import {createTypedDragSource, legacyComponentConfigToTyped} from '../components.interfaces.js';
+import {createTypedDragSource} from '../components.interfaces.js';
 import * as Components from '../components.js';
 import {EventHub} from '../event-hub.js';
 import {Hub} from '../hub.js';
@@ -447,15 +447,16 @@ export class Tree {
     }
 
     private bindClickToOpenPane(dragSource, dragConfig) {
-        createTypedDragSource(this.container.layoutManager, dragSource, () =>
-            legacyComponentConfigToTyped(dragConfig.bind(this)()),
-        )._dragListener.on('dragStart', () => {
-            const dropdown = this.domRoot.find('.add-pane');
-            const dropdownInstance = BootstrapUtils.getDropdownInstance(dropdown);
-            if (dropdownInstance) {
-                dropdownInstance.toggle();
-            }
-        });
+        createTypedDragSource(this.container.layoutManager, dragSource, () => dragConfig.bind(this)())._dragListener.on(
+            'dragStart',
+            () => {
+                const dropdown = this.domRoot.find('.add-pane');
+                const dropdownInstance = BootstrapUtils.getDropdownInstance(dropdown);
+                if (dropdownInstance) {
+                    dropdownInstance.toggle();
+                }
+            },
+        );
 
         dragSource.on('click', () => {
             this.hub.addInEditorStackIfPossible(dragConfig.bind(this));

@@ -32,7 +32,7 @@ import {unwrapString} from '../assert.js';
 import * as BootstrapUtils from '../bootstrap-utils.js';
 import {CompilationStatus} from '../compiler-service.interfaces.js';
 import {CompilerService} from '../compiler-service.js';
-import {createTypedDragSource, legacyComponentConfigToTyped} from '../components.interfaces.js';
+import {createTypedDragSource} from '../components.interfaces.js';
 import * as Components from '../components.js';
 import {SourceAndFiles} from '../download-service.js';
 import {Hub} from '../hub.js';
@@ -274,9 +274,7 @@ export class Conformance extends Pane<ConformanceViewState> {
         };
 
         // The .d.ts for GL lies. You can pass a function that returns the config as a second parameter
-        createTypedDragSource(this.container.layoutManager, popCompilerButton, () =>
-            legacyComponentConfigToTyped(getCompilerConfig()),
-        );
+        createTypedDragSource(this.container.layoutManager, popCompilerButton, () => getCompilerConfig());
 
         popCompilerButton.on('click', () => {
             const insertPoint =
