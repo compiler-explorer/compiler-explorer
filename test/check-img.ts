@@ -39,12 +39,12 @@ function checkImage(logo: string) {
 describe('Language logo check', () => {
     for (const langId in languages) {
         const language = languages[langId];
-        if (language.logoUrl !== null) {
-            it(`check if default ${language.name} logo exists`, () => checkImage(language.logoUrl));
+        if (language.logoFilename !== null) {
+            it(`check if default ${language.name} logo exists`, () => checkImage(language.logoFilename));
         }
 
-        if (language.logoUrlDark !== null) {
-            it(`check if dark ${language.name} logo exists`, () => checkImage(language.logoUrlDark));
+        if (language.logoFilenameDark !== null) {
+            it(`check if dark ${language.name} logo exists`, () => checkImage(language.logoFilenameDark));
         }
     }
 });
