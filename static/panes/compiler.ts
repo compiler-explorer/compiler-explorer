@@ -1792,7 +1792,7 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
     offerViewInSpeedscope(artifact: Artifact): void {
         this.alertSystem.notify(
             'Click ' +
-                '<a target="_blank" id="download_link" style="cursor:pointer;" click="javascript:;">here</a>' +
+                '<a class="link-primary" target="_blank" id="download_link" style="cursor:pointer;">here</a>' +
                 ' to view ' +
                 artifact.title +
                 ' in Speedscope',
@@ -1822,7 +1822,7 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
     offerViewInPerfetto(artifact: Artifact): void {
         this.alertSystem.notify(
             'Click ' +
-                '<a target="_blank" id="download_link" style="cursor:pointer;" click="javascript:;">here</a>' +
+                '<a class="link-primary" target="_blank" id="download_link" style="cursor:pointer;">here</a>' +
                 ' to view ' +
                 artifact.title +
                 ' in Perfetto',
@@ -1863,7 +1863,7 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
 
         this.alertSystem.notify(
             'Click ' +
-                '<a target="_blank" id="miracle_emulink" style="cursor:pointer;" click="javascript:;">here</a>' +
+                '<a target="_blank" id="miracle_emulink" style="cursor:pointer;" class="link-primary">here</a>' +
                 ' to emulate',
             {
                 group: 'emulation',
@@ -1895,7 +1895,7 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
 
         this.alertSystem.notify(
             'Click ' +
-                '<a target="_blank" id="jsspeccy_emulink" style="cursor:pointer;" click="javascript:;">here</a>' +
+                '<a target="_blank" id="jsspeccy_emulink" style="cursor:pointer;" class="link-primary">here</a>' +
                 ' to emulate',
             {
                 group: 'emulation',
@@ -1926,7 +1926,7 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
         const dialog = $('#jsbeebemu');
 
         this.alertSystem.notify(
-            'Click <a target="_blank" id="emulink" style="cursor:pointer;" click="javascript:;">here</a> to emulate',
+            'Click <a target="_blank" id="emulink" style="cursor:pointer;" class="link-primary">here</a> to emulate',
             {
                 group: 'emulation',
                 collapseSimilar: true,
@@ -1956,7 +1956,7 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
         const dialog = $('#jsnesemu');
 
         this.alertSystem.notify(
-            'Click <a target="_blank" id="emulink" style="cursor:pointer;" click="javascript:;">here</a> to emulate',
+            'Click <a target="_blank" id="emulink" style="cursor:pointer;" class="link-primary">here</a> to emulate',
             {
                 group: 'emulation',
                 collapseSimilar: true,
@@ -1984,7 +1984,7 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
 
     emulateC64Prg(prg: Artifact): void {
         this.alertSystem.notify(
-            'Click <a target="_blank" id="emulink" style="cursor:pointer;" click="javascript:;">here</a> to emulate',
+            'Click <a target="_blank" id="emulink" style="cursor:pointer;" class="link-primary">here</a> to emulate',
             {
                 group: 'emulation',
                 collapseSimilar: true,
@@ -2011,8 +2011,8 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
         const dialog = $('#gbemu');
 
         this.alertSystem.notify(
-            'Click <a target="_blank" id="emulink" style="cursor:pointer;" click="javascript:;">here</a> to emulate with a debugger, ' +
-                'or <a target="_blank" id="emulink-play" style="cursor:pointer;" click="javascript:;">here</a> to emulate just to play.',
+            'Click <a target="_blank" id="emulink" style="cursor:pointer;" class="link-primary">here</a> to emulate with a debugger, ' +
+                'or <a target="_blank" id="emulink-play" style="cursor:pointer;" class="link-primary">here</a> to emulate just to play.',
             {
                 group: 'emulation',
                 collapseSimilar: true,

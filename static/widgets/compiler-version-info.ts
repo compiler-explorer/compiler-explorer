@@ -74,8 +74,8 @@ function reallySetCompilerVersionPopover(
             '<br/>';
         const hiddenVersionText = $('<div>').html(lines).hide();
         const clickToExpandContent = $('<a>')
-            .attr('href', 'javascript:;')
             .text('Toggle full version output')
+            .addClass('link-primary')
             .on('click', () => {
                 versionContent.toggle();
                 hiddenVersionText.toggle();

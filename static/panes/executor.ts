@@ -697,7 +697,7 @@ export class Executor extends Pane<ExecutorState> {
     offerViewInSpeedscope(artifact: Artifact): void {
         this.alertSystem.notify(
             'Click ' +
-                '<a target="_blank" id="download_link" style="cursor:pointer;" click="javascript:;">here</a>' +
+                '<a target="_blank" id="download_link" style="cursor:pointer;" class="link-primary">here</a>' +
                 ' to view ' +
                 artifact.title +
                 ' in Speedscope',
