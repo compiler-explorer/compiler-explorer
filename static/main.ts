@@ -73,8 +73,6 @@ import changelogDocument from './generated/changelog.pug';
 import cookiesDocument from './generated/cookies.pug';
 import privacyDocument from './generated/privacy.pug';
 
-const siteTemplateScreenshots = require.context('../views/resources/template_screenshots', false, /\.png$/);
-
 if (!window.PRODUCTION && !options.embedded) {
     // TODO: Replace with top-level await import() when we move to Vite
     require('./tests/_all');
@@ -789,7 +787,7 @@ function start() {
     }
 
     History.trackHistory(layout);
-    setupSiteTemplateWidgetButton(siteTemplateScreenshots, layout);
+    setupSiteTemplateWidgetButton(layout);
     if (!options.embedded) new Sharing(layout);
     new Printerinator(hub, themer);
 }
