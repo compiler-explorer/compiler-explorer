@@ -325,7 +325,7 @@ export class Conformance extends Pane<ConformanceViewState> {
 
     copyCompilerPicker(config: AddCompilerPickerConfig): void {
         this.addCompilerPicker(config);
-        this.compileChild(this.compilerPickers.at(-1) as CompilerEntry);
+        this.compileChild(this.compilerPickers[this.compilerPickers.length - 1] as CompilerEntry);
         this.saveState();
     }
 
