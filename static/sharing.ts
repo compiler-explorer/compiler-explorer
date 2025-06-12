@@ -36,8 +36,7 @@ import * as url from './url.js';
 import {SentryCapture} from './sentry.js';
 import {Settings, SiteSettings} from './settings.js';
 import ClickEvent = JQuery.ClickEvent;
-
-const cloneDeep = require('lodash.clonedeep');
+import cloneDeep from 'lodash.clonedeep';
 
 enum LinkType {
     Short = 0,
