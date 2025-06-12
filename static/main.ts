@@ -70,8 +70,6 @@ import {Printerinator} from './print-view.js';
 import {setupRealDark, takeUsersOutOfRealDark} from './real-dark.js';
 import {formatISODate, updateAndCalcTopBarHeight} from './utils.js';
 
-const siteTemplateScreenshots = require.context('../views/resources/template_screenshots', false, /\.png$/);
-
 if (!window.PRODUCTION && !options.embedded) {
     require('./tests/_all');
 }
@@ -785,7 +783,7 @@ function start() {
     }
 
     History.trackHistory(layout);
-    setupSiteTemplateWidgetButton(siteTemplateScreenshots, layout);
+    setupSiteTemplateWidgetButton(layout);
     if (!options.embedded) new Sharing(layout);
     new Printerinator(hub, themer);
 }
