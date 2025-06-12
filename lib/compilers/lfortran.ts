@@ -64,6 +64,7 @@ export class LFortranCompiler extends FortranCompiler {
             execOptions = this.getDefaultExecOptions();
         }
         execOptions.env.LFORTRAN_CC = this.clang;
+        execOptions.env.LFORTRAN_LINKER = this.clang;
         return super.runCompiler(compiler, options, inputFilename, execOptions);
     }
 }
