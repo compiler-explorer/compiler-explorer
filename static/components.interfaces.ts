@@ -329,3 +329,257 @@ export type PopulatedDeviceViewState = StateWithId & {
     editorid: number;
     treeid: number;
 };
+
+// =============================================================================
+// GoldenLayout Type Safety Infrastructure
+// =============================================================================
+// This section provides type-safe wrappers and interfaces for GoldenLayout
+// configurations. It addresses issue #4490 "The War of The Types" by creating
+// a migration path from loosely-typed to strongly-typed layout configurations.
+
+import GoldenLayout from 'golden-layout';
+
+/**
+ * Mapping of component names to their expected state types.
+ * This provides compile-time type safety for component states.
+ * Components can have either empty (default) or populated states.
+ */
+export interface ComponentStateMap {
+    [COMPILER_COMPONENT_NAME]: EmptyCompilerState | PopulatedCompilerState;
+    [EXECUTOR_COMPONENT_NAME]: EmptyExecutorState | PopulatedExecutorState;
+    [EDITOR_COMPONENT_NAME]: EmptyEditorState | PopulatedEditorState;
+    [TREE_COMPONENT_NAME]: EmptyTreeState;
+    [OUTPUT_COMPONENT_NAME]: OutputState;
+    [TOOL_COMPONENT_NAME]: ToolViewState;
+    [TOOL_INPUT_VIEW_COMPONENT_NAME]: PopulatedToolInputViewState;
+    [DIFF_VIEW_COMPONENT_NAME]: PopulatedDiffViewState;
+    [OPT_VIEW_COMPONENT_NAME]: PopulatedOptViewState;
+    [STACK_USAGE_VIEW_COMPONENT_NAME]: PopulatedStackUsageViewState;
+    [FLAGS_VIEW_COMPONENT_NAME]: PopulatedFlagsViewState;
+    [PP_VIEW_COMPONENT_NAME]: PopulatedPpViewState;
+    [AST_VIEW_COMPONENT_NAME]: PopulatedAstViewState;
+    [GCC_DUMP_VIEW_COMPONENT_NAME]: PopulatedGccDumpViewState;
+    [CFG_VIEW_COMPONENT_NAME]: PopulatedCfgViewState;
+    [CONFORMANCE_VIEW_COMPONENT_NAME]: PopulatedConformanceViewState;
+    [IR_VIEW_COMPONENT_NAME]: PopulatedIrViewState;
+    [CLANGIR_VIEW_COMPONENT_NAME]: PopulatedClangirViewState;
+    [OPT_PIPELINE_VIEW_COMPONENT_NAME]: PopulatedOptPipelineViewState;
+    [LLVM_OPT_PIPELINE_VIEW_COMPONENT_NAME]: PopulatedOptPipelineViewState;
+    [RUST_MIR_VIEW_COMPONENT_NAME]: PopulatedRustMirViewState;
+    [HASKELL_CORE_VIEW_COMPONENT_NAME]: PopulatedHaskellCoreViewState;
+    [HASKELL_STG_VIEW_COMPONENT_NAME]: PopulatedHaskellStgViewState;
+    [HASKELL_CMM_VIEW_COMPONENT_NAME]: PopulatedHaskellCmmViewState;
+    [GNAT_DEBUG_TREE_VIEW_COMPONENT_NAME]: PopulatedGnatDebugTreeViewState;
+    [GNAT_DEBUG_VIEW_COMPONENT_NAME]: PopulatedGnatDebugViewState;
+    [RUST_MACRO_EXP_VIEW_COMPONENT_NAME]: PopulatedRustMacroExpViewState;
+    [RUST_HIR_VIEW_COMPONENT_NAME]: PopulatedRustHirViewState;
+    [DEVICE_VIEW_COMPONENT_NAME]: PopulatedDeviceViewState;
+}
+
+/**
+ * Type-safe component configuration.
+ * This is the new, improved version of ComponentConfig that enforces:
+ * - type must be the literal string 'component' (not just any string)
+ * - componentName must be a valid component name from ComponentStateMap
+ * - componentState must match the expected type for that component
+ */
+export interface TypedComponentConfig<K extends keyof ComponentStateMap = keyof ComponentStateMap> {
+    type: 'component';
+    componentName: K;
+    componentState: ComponentStateMap[K];
+    title?: string;
+    isClosable?: boolean;
+    reorderEnabled?: boolean;
+    width?: number;
+    height?: number;
+}
+
+/**
+ * Layout item types (row, column, stack) with typed content
+ */
+export interface TypedLayoutItem {
+    type: 'row' | 'column' | 'stack';
+    content: TypedItemConfig[];
+    isClosable?: boolean;
+    reorderEnabled?: boolean;
+    width?: number;
+    height?: number;
+    activeItemIndex?: number;
+}
+
+/**
+ * Union type for all valid item configurations
+ */
+export type TypedItemConfig = TypedComponentConfig | TypedLayoutItem;
+
+/**
+ * Type-safe GoldenLayout configuration
+ */
+export interface TypedGoldenLayoutConfig extends Omit<GoldenLayout.Config, 'content'> {
+    content?: TypedItemConfig[];
+}
+
+/**
+ * Type guard to check if an item is a component configuration
+ */
+export function isComponentConfig(item: TypedItemConfig): item is TypedComponentConfig {
+    return item.type === 'component';
+}
+
+/**
+ * Type guard to check if an item is a layout item (row, column, stack)
+ */
+export function isLayoutItem(item: TypedItemConfig): item is TypedLayoutItem {
+    return item.type === 'row' || item.type === 'column' || item.type === 'stack';
+}
+
+/**
+ * Helper type for partial component states during initialization
+ */
+export type PartialComponentState<K extends keyof ComponentStateMap> = Partial<ComponentStateMap[K]>;
+
+/**
+ * Helper function to create a typed component configuration
+ */
+export function createTypedComponentConfig<K extends keyof ComponentStateMap>(
+    componentName: K,
+    componentState: ComponentStateMap[K],
+    options?: {
+        title?: string;
+        isClosable?: boolean;
+        reorderEnabled?: boolean;
+        width?: number;
+        height?: number;
+    },
+): TypedComponentConfig<K> {
+    return {
+        type: 'component',
+        componentName,
+        componentState,
+        ...options,
+    };
+}
+
+/**
+ * Helper function to create a typed layout item
+ */
+export function createTypedLayoutItem(
+    type: 'row' | 'column' | 'stack',
+    content: TypedItemConfig[],
+    options?: {
+        isClosable?: boolean;
+        reorderEnabled?: boolean;
+        width?: number;
+        height?: number;
+        activeItemIndex?: number;
+    },
+): TypedLayoutItem {
+    return {
+        type,
+        content,
+        ...options,
+    };
+}
+
+/**
+ * Type for serialized GoldenLayout state (for URL/storage).
+ * This interface is designed for Phase 2/3 of the migration when we'll
+ * implement type-safe serialization/deserialization for:
+ * - URL sharing (when users share layout links)
+ * - localStorage persistence
+ * - Import/export functionality
+ *
+ * Currently unused but defines the target structure for serialization.
+ */
+export interface SerializedLayoutState {
+    version: number;
+    content: TypedItemConfig[];
+    settings?: GoldenLayout.Settings;
+    dimensions?: GoldenLayout.Dimensions;
+    labels?: GoldenLayout.Labels;
+    maximisedItemId?: string | null;
+}
+
+/**
+ * Helper to convert from GoldenLayout's internal config to our typed config.
+ *
+ * WARNING: This is currently just a type cast with no runtime validation!
+ * Phase 2 MUST implement proper validation to ensure component states match
+ * their expected types before this can be safely used with untrusted data
+ * (e.g., from URLs, localStorage, or user imports).
+ *
+ * The proper implementation will:
+ * 1. Validate each component's state matches its expected type
+ * 2. Provide helpful error messages for invalid configurations
+ * 3. Handle version migrations if needed
+ *
+ * @param config - Untyped config from GoldenLayout
+ * @returns Typed config (currently just a cast)
+ */
+export function fromGoldenLayoutConfig(config: GoldenLayout.Config): TypedGoldenLayoutConfig {
+    // TODO(Phase 2): Implement proper validation here
+    // This should validate component states match their expected types
+    // and throw meaningful errors for invalid configurations
+    return config as TypedGoldenLayoutConfig;
+}
+
+/**
+ * Helper to convert to GoldenLayout's expected config format.
+ * This direction is safe since we're going from typed to untyped.
+ */
+export function toGoldenLayoutConfig(config: TypedGoldenLayoutConfig): GoldenLayout.Config {
+    return config as GoldenLayout.Config;
+}
+
+/**
+ * Type for drag source factory functions
+ */
+export type DragSourceFactory<K extends keyof ComponentStateMap> = () => TypedComponentConfig<K>;
+
+/**
+ * Typed wrapper for createDragSource that avoids the need for 'as any'.
+ * Returns the result with _dragListener property for event handling.
+ *
+ * Note: We still need to cast internally because GoldenLayout's TypeScript
+ * definitions don't properly type the second parameter as accepting a function.
+ */
+export function createTypedDragSource<K extends keyof ComponentStateMap>(
+    layout: GoldenLayout,
+    element: HTMLElement | JQuery,
+    factory: DragSourceFactory<K>,
+): any {
+    return layout.createDragSource(element, factory as any);
+}
+
+/**
+ * Helper to convert legacy ComponentConfig to TypedComponentConfig.
+ * This function bridges between the old and new type systems during migration.
+ *
+ * It's called "legacy" because it converts from the existing ComponentConfig
+ * (which uses type: string) to the new TypedComponentConfig (type: 'component').
+ *
+ * This is a temporary bridge function that will be removed in Phase 3 once
+ * all code has been migrated to use TypedComponentConfig directly.
+ */
+export function legacyComponentConfigToTyped<T>(config: ComponentConfig<T>): any {
+    return {
+        ...config,
+        type: 'component' as const,
+    };
+}
+
+/**
+ * Helper to convert TypedComponentConfig to legacy ComponentConfig.
+ * This is the reverse bridge for cases where we need to pass typed configs
+ * to code that still expects the legacy format.
+ *
+ * Also temporary and will be removed in Phase 3.
+ */
+export function typedComponentConfigToLegacy<K extends keyof ComponentStateMap>(
+    config: TypedComponentConfig<K>,
+): ComponentConfig<ComponentStateMap[K]> {
+    return {
+        ...config,
+        type: 'component',
+    };
+}

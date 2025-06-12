@@ -38,8 +38,8 @@ import {applyColours} from '../colour.js';
 import {extendConfig} from '../monaco-config.js';
 
 import {unwrap} from '../assert.js';
+import {createTypedDragSource, legacyComponentConfigToTyped} from '../components.interfaces.js';
 import * as Components from '../components.js';
-import {createTypedDragSource, legacyComponentConfigToTyped} from '../goldenlayout-types.js';
 import {Hub} from '../hub.js';
 import {Toggles} from '../widgets/toggles.js';
 

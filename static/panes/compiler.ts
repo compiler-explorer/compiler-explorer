@@ -48,9 +48,14 @@ import * as colour from '../colour.js';
 import {OptPipelineBackendOptions} from '../compilation/opt-pipeline-output.interfaces.js';
 import {CompilationStatus} from '../compiler-service.interfaces.js';
 import {CompilerService} from '../compiler-service.js';
-import {ComponentConfig, NewToolSettings, ToolViewState} from '../components.interfaces.js';
+import {
+    ComponentConfig,
+    NewToolSettings,
+    ToolViewState,
+    createTypedDragSource,
+    legacyComponentConfigToTyped,
+} from '../components.interfaces.js';
 import * as Components from '../components.js';
-import {createTypedDragSource, legacyComponentConfigToTyped} from '../goldenlayout-types.js';
 import {Hub} from '../hub.js';
 import * as LibUtils from '../lib-utils.js';
 import * as monacoConfig from '../monaco-config.js';

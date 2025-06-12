@@ -59,14 +59,14 @@ import {setupSiteTemplateWidgetButton} from './widgets/site-templates-widget.js'
 
 import {Language, LanguageKey} from '../types/languages.interfaces.js';
 import {ComponentConfig} from './components.interfaces.js';
-import {CompilerExplorerOptions} from './global.js';
 import {
     TypedGoldenLayoutConfig,
     createTypedDragSource,
     createTypedLayoutItem,
     legacyComponentConfigToTyped,
     toGoldenLayoutConfig,
-} from './goldenlayout-types.js';
+} from './components.interfaces.js';
+import {CompilerExplorerOptions} from './global.js';
 
 import * as utils from '../shared/common-utils.js';
 import * as BootstrapUtils from './bootstrap-utils.js';
