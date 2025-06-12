@@ -30,8 +30,10 @@ import {FiledataPair} from '../types/compilation/compilation.interfaces.js';
 import {unwrap} from './assert.js';
 import {Hub} from './hub.js';
 import {LanguageKey} from './languages.interfaces.js';
+import * as options from './options.js';
 import {Alert} from './widgets/alert.js';
-const languages = require('./options').options.languages;
+
+const languages = options.options.languages;
 
 export interface MultifileFile {
     fileId: number;

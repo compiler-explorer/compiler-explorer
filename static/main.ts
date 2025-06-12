@@ -70,19 +70,22 @@ import {setupRealDark, takeUsersOutOfRealDark} from './real-dark.js';
 import {formatISODate, updateAndCalcTopBarHeight} from './utils.js';
 
 const logos = require.context('../views/resources/logos', false, /\.(png|svg)$/);
-
 const siteTemplateScreenshots = require.context('../views/resources/template_screenshots', false, /\.png$/);
+import changelogDocument from './generated/changelog.pug';
+import cookiesDocument from './generated/cookies.pug';
+import privacyDocument from './generated/privacy.pug';
 
 if (!window.PRODUCTION && !options.embedded) {
+    // TODO: Replace with top-level await import() when we move to Vite
     require('./tests/_all');
 }
 
 //css
-require('bootstrap/dist/css/bootstrap.min.css');
-require('golden-layout/src/css/goldenlayout-base.css');
-require('tom-select/dist/css/tom-select.bootstrap5.css');
-require('./styles/colours.scss');
-require('./styles/explorer.scss');
+import 'bootstrap/dist/css/bootstrap.min.css';
+import 'golden-layout/src/css/goldenlayout-base.css';
+import 'tom-select/dist/css/tom-select.bootstrap5.css';
+import './styles/colours.scss';
+import './styles/explorer.scss';
 
 // Check to see if the current unload is a UI reset.
 // Forgive me the global usage here
@@ -91,8 +94,8 @@ const simpleCooks = new SimpleCook();
 const historyWidget = new HistoryWidget();
 
 const policyDocuments = {
-    cookies: require('./generated/cookies.pug').default,
-    privacy: require('./generated/privacy.pug').default,
+    cookies: cookiesDocument,
+    privacy: privacyDocument,
 };
 
 function setupSettings(hub: Hub): [Themer, SiteSettings] {
@@ -193,7 +196,7 @@ function setupButtons(options: CompilerExplorerOptions, hub: Hub) {
 
     $('#changes').on('click', () => {
         // TODO(jeremy-rifkin): Fix types
-        alertSystem.alert('Changelog', $(require('./generated/changelog.pug').default.text) as any);
+        alertSystem.alert('Changelog', changelogDocument.text);
     });
 
     $.get(window.location.origin + window.httpRoot + 'bits/icons.html')
