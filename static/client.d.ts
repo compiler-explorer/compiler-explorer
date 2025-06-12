@@ -1,4 +1,4 @@
-// Copyright (c) 2022, Compiler Explorer Authors
+// Copyright (c) 2025, Compiler Explorer Authors
 // All rights reserved.
 //
 // Redistribution and use in source and binary forms, with or without
@@ -22,29 +22,12 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import fs from 'node:fs';
-import path from 'node:path';
-
-import {describe, expect, it} from 'vitest';
-
-import {languages} from '../lib/languages.js';
-
-const img_dir = path.resolve('views/resources/logos');
-
-function checkImage(logo: string) {
-    const logoPath = path.join(img_dir, logo);
-    expect(fs.existsSync(logoPath)).toBe(true);
+declare module '*.svg' {
+    const src: string;
+    export default src;
 }
 
-describe('Language logo check', () => {
-    for (const langId in languages) {
-        const language = languages[langId];
-        if (language.logoFilename !== null) {
-            it(`check if default ${language.name} logo exists`, () => checkImage(language.logoFilename));
-        }
-
-        if (language.logoFilenameDark !== null) {
-            it(`check if dark ${language.name} logo exists`, () => checkImage(language.logoFilenameDark));
-        }
-    }
-});
+declare module '*.png' {
+    const src: string;
+    export default src;
+}
