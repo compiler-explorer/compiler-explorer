@@ -38,7 +38,7 @@ import {applyColours} from '../colour.js';
 import {extendConfig} from '../monaco-config.js';
 
 import {unwrap} from '../assert.js';
-import {createTypedDragSource} from '../components.interfaces.js';
+import {createTypedDragSource} from '../components.js';
 import * as Components from '../components.js';
 import {Hub} from '../hub.js';
 import {Toggles} from '../widgets/toggles.js';

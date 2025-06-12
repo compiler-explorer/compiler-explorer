@@ -54,8 +54,8 @@ import {
     NewToolSettings,
     ToolViewState,
     TypedComponentConfig,
-    createTypedDragSource,
 } from '../components.interfaces.js';
+import {createTypedDragSource} from '../components.js';
 import * as Components from '../components.js';
 import {Hub} from '../hub.js';
 import * as LibUtils from '../lib-utils.js';

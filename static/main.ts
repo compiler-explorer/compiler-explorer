@@ -58,14 +58,8 @@ import {SimpleCook} from './widgets/simplecook.js';
 import {setupSiteTemplateWidgetButton} from './widgets/site-templates-widget.js';
 
 import {Language, LanguageKey} from '../types/languages.interfaces.js';
-import {
-    ComponentStateMap,
-    TypedComponentConfig,
-    TypedGoldenLayoutConfig,
-    createTypedDragSource,
-    createTypedLayoutItem,
-    toGoldenLayoutConfig,
-} from './components.interfaces.js';
+import {ComponentStateMap, TypedComponentConfig, TypedGoldenLayoutConfig} from './components.interfaces.js';
+import {createTypedDragSource, createTypedLayoutItem, toGoldenLayoutConfig} from './components.js';
 import {CompilerExplorerOptions} from './global.js';
 
 import * as utils from '../shared/common-utils.js';

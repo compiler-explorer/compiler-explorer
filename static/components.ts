@@ -22,6 +22,8 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
+import GoldenLayout from 'golden-layout';
+
 import {ParseFiltersAndOutputOptions} from '../types/features/filters.interfaces.js';
 import {GccDumpViewState} from './panes/gccdump-view.interfaces.js';
 
@@ -32,8 +34,10 @@ import {
     CLANGIR_VIEW_COMPONENT_NAME,
     COMPILER_COMPONENT_NAME,
     CONFORMANCE_VIEW_COMPONENT_NAME,
+    ComponentStateMap,
     DEVICE_VIEW_COMPONENT_NAME,
     DIFF_VIEW_COMPONENT_NAME,
+    DragSourceFactory,
     EDITOR_COMPONENT_NAME,
     EXECUTOR_COMPONENT_NAME,
     FLAGS_VIEW_COMPONENT_NAME,
@@ -44,6 +48,7 @@ import {
     HASKELL_CORE_VIEW_COMPONENT_NAME,
     HASKELL_STG_VIEW_COMPONENT_NAME,
     IR_VIEW_COMPONENT_NAME,
+    LLVM_OPT_PIPELINE_VIEW_COMPONENT_NAME,
     OPT_PIPELINE_VIEW_COMPONENT_NAME,
     OPT_VIEW_COMPONENT_NAME,
     OUTPUT_COMPONENT_NAME,
@@ -56,6 +61,9 @@ import {
     TOOL_INPUT_VIEW_COMPONENT_NAME,
     TREE_COMPONENT_NAME,
     TypedComponentConfig,
+    TypedGoldenLayoutConfig,
+    TypedItemConfig,
+    TypedLayoutItem,
 } from './components.interfaces.js';
 import {ConfiguredRuntimeTools} from './execution/execution.interfaces.js';
 import {LanguageKey} from './languages.interfaces.js';
@@ -929,4 +937,260 @@ export function getDeviceViewWith(
             treeid: treeid,
         },
     };
+}
+
+// =============================================================================
+// GoldenLayout Type Safety Utility Functions
+// =============================================================================
+
+/**
+ * Helper function to create a typed component configuration
+ */
+export function createTypedComponentConfig<K extends keyof ComponentStateMap>(
+    componentName: K,
+    componentState: ComponentStateMap[K],
+    options?: {
+        title?: string;
+        isClosable?: boolean;
+        reorderEnabled?: boolean;
+        width?: number;
+        height?: number;
+    },
+): TypedComponentConfig<K> {
+    return {
+        type: 'component',
+        componentName,
+        componentState,
+        ...options,
+    };
+}
+
+/**
+ * Helper function to create a typed layout item
+ */
+export function createTypedLayoutItem(
+    type: 'row' | 'column' | 'stack',
+    content: TypedItemConfig[],
+    options?: {
+        isClosable?: boolean;
+        reorderEnabled?: boolean;
+        width?: number;
+        height?: number;
+        activeItemIndex?: number;
+    },
+): TypedLayoutItem {
+    return {
+        type,
+        content,
+        ...options,
+    };
+}
+
+/**
+ * Helper to convert from GoldenLayout's internal config to our typed config.
+ *
+ * This function validates that the configuration is valid and all component
+ * states match their expected types. It provides helpful error messages
+ * for invalid configurations.
+ *
+ * @param config - Untyped config from GoldenLayout
+ * @returns Typed config with validated component states
+ * @throws Error if the configuration is invalid
+ */
+export function fromGoldenLayoutConfig(config: GoldenLayout.Config): TypedGoldenLayoutConfig {
+    if (!config || typeof config !== 'object') {
+        throw new Error('Invalid configuration: must be an object');
+    }
+
+    // Validate the root structure
+    return {
+        ...config,
+        content: config.content ? validateItemConfigs(config.content) : undefined,
+    };
+}
+
+/**
+ * Validates an array of item configurations (recursive)
+ */
+function validateItemConfigs(items: any[]): TypedItemConfig[] {
+    if (!Array.isArray(items)) {
+        throw new Error('Configuration content must be an array');
+    }
+
+    return items.map((item, index) => validateItemConfig(item, index));
+}
+
+/**
+ * Validates a single item configuration (component or layout item)
+ */
+function validateItemConfig(item: any, index?: number): TypedItemConfig {
+    const location = index !== undefined ? `item ${index}` : 'item';
+
+    if (!item || typeof item !== 'object') {
+        throw new Error(`Invalid ${location}: must be an object`);
+    }
+
+    if (!item.type) {
+        throw new Error(`Invalid ${location}: missing 'type' property`);
+    }
+
+    if (item.type === 'component') {
+        return validateComponentConfig(item, location);
+    }
+    if (item.type === 'row' || item.type === 'column' || item.type === 'stack') {
+        return validateLayoutItem(item, location);
+    }
+    throw new Error(`Invalid ${location}: unknown type '${item.type}'`);
+}
+
+/**
+ * Validates a component configuration
+ */
+function validateComponentConfig(config: any, location: string): TypedComponentConfig {
+    if (!config.componentName) {
+        throw new Error(`Invalid ${location}: missing 'componentName' property`);
+    }
+
+    if (typeof config.componentName !== 'string') {
+        throw new Error(`Invalid ${location}: 'componentName' must be a string`);
+    }
+
+    // Validate that the component state matches the expected type for this component
+    if (!validateComponentState(config.componentName, config.componentState)) {
+        throw new Error(
+            `Invalid ${location}: invalid component state for component '${config.componentName}'. ` +
+                `State: ${JSON.stringify(config.componentState, null, 2)}`,
+        );
+    }
+
+    return {
+        type: 'component',
+        componentName: config.componentName,
+        componentState: config.componentState,
+        title: config.title,
+        isClosable: config.isClosable,
+        reorderEnabled: config.reorderEnabled,
+        width: config.width,
+        height: config.height,
+    };
+}
+
+/**
+ * Validates a layout item (row, column, stack)
+ */
+function validateLayoutItem(item: any, location: string): TypedLayoutItem {
+    if (!item.content || !Array.isArray(item.content)) {
+        throw new Error(`Invalid ${location}: layout items must have a 'content' array`);
+    }
+
+    return {
+        type: item.type as 'row' | 'column' | 'stack',
+        content: validateItemConfigs(item.content),
+        isClosable: item.isClosable,
+        reorderEnabled: item.reorderEnabled,
+        width: item.width,
+        height: item.height,
+        activeItemIndex: item.activeItemIndex,
+    };
+}
+
+/**
+ * Helper to convert to GoldenLayout's expected config format.
+ * This direction is safe since we're going from typed to untyped.
+ */
+export function toGoldenLayoutConfig(config: TypedGoldenLayoutConfig): GoldenLayout.Config {
+    return config as GoldenLayout.Config;
+}
+
+/**
+ * Typed wrapper for createDragSource that avoids the need for 'as any'.
+ * Returns the result with _dragListener property for event handling.
+ *
+ * Note: We still need to cast internally because GoldenLayout's TypeScript
+ * definitions don't properly type the second parameter as accepting a function.
+ */
+export function createTypedDragSource<K extends keyof ComponentStateMap>(
+    layout: GoldenLayout,
+    element: HTMLElement | JQuery,
+    factory: DragSourceFactory<K>,
+): any {
+    return layout.createDragSource(element, factory as any);
+}
+
+/**
+ * Validation function for component states.
+ * This ensures that component states match their expected types.
+ */
+function validateComponentState(componentName: string, state: any): boolean {
+    // Basic validation - state must be an object
+    if (typeof state !== 'object' || state === null) {
+        return false;
+    }
+
+    switch (componentName) {
+        case COMPILER_COMPONENT_NAME:
+            // Compiler states can have various combinations of properties
+            return (
+                (state.lang && state.source !== undefined) ||
+                (state.source !== undefined && state.compiler) ||
+                (state.lang && state.tree !== undefined)
+            );
+
+        case EXECUTOR_COMPONENT_NAME:
+            // Executor states require compilation panel booleans
+            return typeof state.compilationPanelShown === 'boolean' && typeof state.compilerOutShown === 'boolean';
+
+        case EDITOR_COMPONENT_NAME:
+            // Editor states are flexible but must have valid properties
+            return true;
+
+        case TREE_COMPONENT_NAME:
+            // Tree states are flexible but must have valid properties
+            return true;
+
+        case OUTPUT_COMPONENT_NAME:
+            // Output state needs specific numeric properties
+            return (
+                typeof state.tree === 'number' && typeof state.compiler === 'number' && typeof state.editor === 'number'
+            );
+
+        case TOOL_COMPONENT_NAME:
+            // Tool state needs specific properties
+            return (
+                typeof state.tree === 'number' &&
+                typeof state.toolId === 'string' &&
+                typeof state.id === 'number' &&
+                typeof state.editorid === 'number'
+            );
+
+        // View components have diverse state requirements but must be valid objects
+        case TOOL_INPUT_VIEW_COMPONENT_NAME:
+        case DIFF_VIEW_COMPONENT_NAME:
+        case OPT_VIEW_COMPONENT_NAME:
+        case STACK_USAGE_VIEW_COMPONENT_NAME:
+        case FLAGS_VIEW_COMPONENT_NAME:
+        case PP_VIEW_COMPONENT_NAME:
+        case AST_VIEW_COMPONENT_NAME:
+        case GCC_DUMP_VIEW_COMPONENT_NAME:
+        case CFG_VIEW_COMPONENT_NAME:
+        case CONFORMANCE_VIEW_COMPONENT_NAME:
+        case IR_VIEW_COMPONENT_NAME:
+        case CLANGIR_VIEW_COMPONENT_NAME:
+        case OPT_PIPELINE_VIEW_COMPONENT_NAME:
+        case LLVM_OPT_PIPELINE_VIEW_COMPONENT_NAME:
+        case RUST_MIR_VIEW_COMPONENT_NAME:
+        case HASKELL_CORE_VIEW_COMPONENT_NAME:
+        case HASKELL_STG_VIEW_COMPONENT_NAME:
+        case HASKELL_CMM_VIEW_COMPONENT_NAME:
+        case GNAT_DEBUG_TREE_VIEW_COMPONENT_NAME:
+        case GNAT_DEBUG_VIEW_COMPONENT_NAME:
+        case RUST_MACRO_EXP_VIEW_COMPONENT_NAME:
+        case RUST_HIR_VIEW_COMPONENT_NAME:
+        case DEVICE_VIEW_COMPONENT_NAME:
+            return true;
+
+        default:
+            // Unknown component name - this should not happen with proper typing
+            return false;
+    }
 }

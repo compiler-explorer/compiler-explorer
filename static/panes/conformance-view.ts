@@ -32,7 +32,7 @@ import {unwrapString} from '../assert.js';
 import * as BootstrapUtils from '../bootstrap-utils.js';
 import {CompilationStatus} from '../compiler-service.interfaces.js';
 import {CompilerService} from '../compiler-service.js';
-import {createTypedDragSource} from '../components.interfaces.js';
+import {createTypedDragSource} from '../components.js';
 import * as Components from '../components.js';
 import {SourceAndFiles} from '../download-service.js';
 import {Hub} from '../hub.js';
