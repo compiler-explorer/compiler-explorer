@@ -32,7 +32,7 @@ import {unwrap, unwrapString} from '../assert.js';
 import {CompilationResult} from '../compilation/compilation.interfaces.js';
 import {CompilerService} from '../compiler-service.js';
 import {CompilerInfo} from '../compiler.interfaces.js';
-import {ComponentConfig, NewToolSettings, TOOL_INPUT_VIEW_COMPONENT_NAME, ToolState} from '../components.interfaces.js';
+import {ComponentConfig, NewToolSettings, ToolState} from '../components.interfaces.js';
 import * as Components from '../components.js';
 import {Hub} from '../hub.js';
 import {LanguageKey} from '../languages.interfaces.js';
@@ -68,7 +68,7 @@ export class Tool extends MonacoPane<monaco.editor.IStandaloneCodeEditor, ToolSt
     normalAnsiToHtml: AnsiToHtml.Filter;
     optionsField: JQuery;
     localStdinField: JQuery;
-    createToolInputView: () => ComponentConfig<typeof TOOL_INPUT_VIEW_COMPONENT_NAME>;
+    createToolInputView: () => ComponentConfig<'toolInputView'>;
 
     wrapButton: JQuery;
     wrapTitle: JQuery;

@@ -440,7 +440,7 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
             insertPoint.addChild(outputConfig);
         });
 
-        const cloneComponent = (): ComponentConfig<typeof COMPILER_COMPONENT_NAME> => {
+        const cloneComponent = (): ComponentConfig<'compiler'> => {
             const currentState: CompilerCurrentState = this.getCurrentState();
             // Delete the saved id to force a new one
             delete currentState.id;

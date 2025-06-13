@@ -33,37 +33,51 @@ import {GccDumpViewState} from './panes/gccdump-view.interfaces.js';
 import {IrState} from './panes/ir-view.interfaces.js';
 import {OptPipelineViewState} from './panes/opt-pipeline.interfaces.js';
 import {MonacoPaneState} from './panes/pane.interfaces.js';
-export const COMPILER_COMPONENT_NAME = 'compiler';
-export const EXECUTOR_COMPONENT_NAME = 'executor';
-export const EDITOR_COMPONENT_NAME = 'codeEditor';
-export const TREE_COMPONENT_NAME = 'tree';
-export const OUTPUT_COMPONENT_NAME = 'output';
-export const TOOL_COMPONENT_NAME = 'tool';
 
-export const TOOL_INPUT_VIEW_COMPONENT_NAME = 'toolInputView';
-export const DIFF_VIEW_COMPONENT_NAME = 'diff';
-export const OPT_VIEW_COMPONENT_NAME = 'opt';
-export const STACK_USAGE_VIEW_COMPONENT_NAME = 'stackusage';
-export const FLAGS_VIEW_COMPONENT_NAME = 'flags';
-export const PP_VIEW_COMPONENT_NAME = 'pp';
-export const AST_VIEW_COMPONENT_NAME = 'ast';
-export const GCC_DUMP_VIEW_COMPONENT_NAME = 'gccdump';
-export const CFG_VIEW_COMPONENT_NAME = 'cfg';
-export const CONFORMANCE_VIEW_COMPONENT_NAME = 'conformance';
-export const IR_VIEW_COMPONENT_NAME = 'ir';
-export const CLANGIR_VIEW_COMPONENT_NAME = 'clangir';
-export const OPT_PIPELINE_VIEW_COMPONENT_NAME = 'optPipelineView';
+/**
+ * Component name constants with 'as const' assertions.
+ * This allows TypeScript to infer the literal string type ('compiler') rather than
+ * the general string type, enabling more natural type usage like ComponentConfig<'compiler'>
+ * while still having the constants available for runtime use.
+ */
+export const COMPILER_COMPONENT_NAME = 'compiler' as const;
+export const EXECUTOR_COMPONENT_NAME = 'executor' as const;
+export const EDITOR_COMPONENT_NAME = 'codeEditor' as const;
+export const TREE_COMPONENT_NAME = 'tree' as const;
+export const OUTPUT_COMPONENT_NAME = 'output' as const;
+export const TOOL_COMPONENT_NAME = 'tool' as const;
+
+export const TOOL_INPUT_VIEW_COMPONENT_NAME = 'toolInputView' as const;
+export const DIFF_VIEW_COMPONENT_NAME = 'diff' as const;
+export const OPT_VIEW_COMPONENT_NAME = 'opt' as const;
+export const STACK_USAGE_VIEW_COMPONENT_NAME = 'stackusage' as const;
+export const FLAGS_VIEW_COMPONENT_NAME = 'flags' as const;
+export const PP_VIEW_COMPONENT_NAME = 'pp' as const;
+export const AST_VIEW_COMPONENT_NAME = 'ast' as const;
+export const GCC_DUMP_VIEW_COMPONENT_NAME = 'gccdump' as const;
+export const CFG_VIEW_COMPONENT_NAME = 'cfg' as const;
+export const CONFORMANCE_VIEW_COMPONENT_NAME = 'conformance' as const;
+export const IR_VIEW_COMPONENT_NAME = 'ir' as const;
+export const CLANGIR_VIEW_COMPONENT_NAME = 'clangir' as const;
+export const OPT_PIPELINE_VIEW_COMPONENT_NAME = 'optPipelineView' as const;
 // Historical LLVM-specific name preserved to keep old links working
-export const LLVM_OPT_PIPELINE_VIEW_COMPONENT_NAME = 'llvmOptPipelineView';
-export const RUST_MIR_VIEW_COMPONENT_NAME = 'rustmir';
-export const HASKELL_CORE_VIEW_COMPONENT_NAME = 'haskellCore';
-export const HASKELL_STG_VIEW_COMPONENT_NAME = 'haskellStg';
-export const HASKELL_CMM_VIEW_COMPONENT_NAME = 'haskellCmm';
-export const GNAT_DEBUG_TREE_VIEW_COMPONENT_NAME = 'gnatdebugtree';
-export const GNAT_DEBUG_VIEW_COMPONENT_NAME = 'gnatdebug';
-export const RUST_MACRO_EXP_VIEW_COMPONENT_NAME = 'rustmacroexp';
-export const RUST_HIR_VIEW_COMPONENT_NAME = 'rusthir';
-export const DEVICE_VIEW_COMPONENT_NAME = 'device';
+export const LLVM_OPT_PIPELINE_VIEW_COMPONENT_NAME = 'llvmOptPipelineView' as const;
+export const RUST_MIR_VIEW_COMPONENT_NAME = 'rustmir' as const;
+export const HASKELL_CORE_VIEW_COMPONENT_NAME = 'haskellCore' as const;
+export const HASKELL_STG_VIEW_COMPONENT_NAME = 'haskellStg' as const;
+export const HASKELL_CMM_VIEW_COMPONENT_NAME = 'haskellCmm' as const;
+export const GNAT_DEBUG_TREE_VIEW_COMPONENT_NAME = 'gnatdebugtree' as const;
+export const GNAT_DEBUG_VIEW_COMPONENT_NAME = 'gnatdebug' as const;
+export const RUST_MACRO_EXP_VIEW_COMPONENT_NAME = 'rustmacroexp' as const;
+export const RUST_HIR_VIEW_COMPONENT_NAME = 'rusthir' as const;
+export const DEVICE_VIEW_COMPONENT_NAME = 'device' as const;
+
+/**
+ * Union type of all valid component names.
+ * This allows more natural type annotations like ComponentConfig<'compiler'>
+ * instead of ComponentConfig<typeof COMPILER_COMPONENT_NAME>.
+ */
+export type ComponentName = keyof ComponentStateMap;
 
 export type StateWithLanguage = {lang: string};
 // TODO(#4490 The War of The Types) We should normalize state types
