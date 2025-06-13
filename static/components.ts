@@ -1150,6 +1150,9 @@ export function createDragSource<K extends keyof ComponentStateMap>(
     element: HTMLElement | JQuery,
     factory: DragSourceFactory<K>,
 ): any {
+    // Note: GoldenLayout's TypeScript definitions are incomplete. The createDragSource method
+    // returns void in the types but actually returns an object with _dragListener property.
+    // We need the 'as any' cast because the factory parameter types are also incomplete.
     return layout.createDragSource(element, factory as any);
 }
 

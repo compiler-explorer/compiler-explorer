@@ -699,11 +699,11 @@ function start() {
         });
 
         thing.on('click', () => {
-            const config = func();
+            const config = func(); // Returns ComponentConfig<K>
             if (hub.hasTree()) {
-                hub.addInEditorStackIfPossible(config as unknown as GoldenLayout.ContentItem);
+                hub.addInEditorStackIfPossible(config);
             } else {
-                hub.addAtRoot(config as unknown as GoldenLayout.ContentItem);
+                hub.addAtRoot(config);
             }
         });
     }
