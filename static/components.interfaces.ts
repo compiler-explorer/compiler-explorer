@@ -22,9 +22,9 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
+import {ConfiguredOverrides} from '../types/compilation/compiler-overrides.interfaces.js';
+import {ConfiguredRuntimeTools} from '../types/execution/execution.interfaces.js';
 import {CompilerOutputOptions} from '../types/features/filters.interfaces.js';
-import {ConfiguredOverrides} from './compilation/compiler-overrides.interfaces.js';
-import {ConfiguredRuntimeTools} from './execution/execution.interfaces.js';
 import {CfgState} from './panes/cfg-view.interfaces.js';
 import {ClangirState} from './panes/clangir-view.interfaces.js';
 import {GccDumpViewState} from './panes/gccdump-view.interfaces.js';

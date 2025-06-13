@@ -25,7 +25,9 @@
 import {ParseFiltersAndOutputOptions} from '../types/features/filters.interfaces.js';
 import {GccDumpViewState} from './panes/gccdump-view.interfaces.js';
 
-import {ConfiguredOverrides} from './compilation/compiler-overrides.interfaces.js';
+import {ConfiguredOverrides} from '../types/compilation/compiler-overrides.interfaces.js';
+import {ConfiguredRuntimeTools} from '../types/execution/execution.interfaces.js';
+import {LanguageKey} from '../types/languages.interfaces.js';
 import {
     AST_VIEW_COMPONENT_NAME,
     CFG_VIEW_COMPONENT_NAME,
@@ -111,8 +113,6 @@ import {
     TREE_COMPONENT_NAME,
     ToolViewState,
 } from './components.interfaces.js';
-import {ConfiguredRuntimeTools} from './execution/execution.interfaces.js';
-import {LanguageKey} from './languages.interfaces.js';
 
 /** Get an empty compiler component. */
 export function getCompiler(editorId: number, lang: string): ComponentConfig<EmptyCompilerState> {

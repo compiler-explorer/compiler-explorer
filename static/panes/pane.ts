@@ -33,9 +33,9 @@ import * as utils from '../utils.js';
 import {FontScale} from '../widgets/fontscale.js';
 
 import {escapeHTML} from '../../shared/common-utils.js';
+import {CompilationResult} from '../../types/compilation/compilation.interfaces.js';
+import {CompilerInfo} from '../../types/compiler.interfaces.js';
 import {unwrap} from '../assert.js';
-import {CompilationResult} from '../compilation/compilation.interfaces.js';
-import {CompilerInfo} from '../compiler.interfaces.js';
 import {EventHub} from '../event-hub.js';
 import {Hub} from '../hub.js';
 import {PaneRenaming} from '../widgets/pane-renaming.js';

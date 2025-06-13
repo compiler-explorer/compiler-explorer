@@ -39,13 +39,13 @@ import {
     FiledataPair,
     GccDumpFlags,
 } from '../../types/compilation/compilation.interfaces.js';
+import {OptPipelineBackendOptions} from '../../types/compilation/opt-pipeline-output.interfaces.js';
 import {CompilerInfo} from '../../types/compiler.interfaces.js';
 import {ResultLine} from '../../types/resultline/resultline.interfaces.js';
 import {getAssemblyDocumentation} from '../api/api.js';
 import * as BootstrapUtils from '../bootstrap-utils.js';
 import * as codeLensHandler from '../codelens-handler.js';
 import * as colour from '../colour.js';
-import {OptPipelineBackendOptions} from '../compilation/opt-pipeline-output.interfaces.js';
 import {CompilationStatus} from '../compiler-service.interfaces.js';
 import {CompilerService} from '../compiler-service.js';
 import {ComponentConfig, NewToolSettings, ToolViewState} from '../components.interfaces.js';
@@ -71,16 +71,16 @@ import {PPOptions} from './pp-view.interfaces.js';
 import IEditorMouseEvent = editor.IEditorMouseEvent;
 import fileSaver from 'file-saver';
 import {escapeHTML, splitArguments} from '../../shared/common-utils.js';
+import {ClangirBackendOptions} from '../../types/compilation/clangir.interfaces.js';
+import {LLVMIrBackendOptions} from '../../types/compilation/ir.interfaces.js';
 import {CompilerOutputOptions} from '../../types/features/filters.interfaces.js';
+import {InstructionSet} from '../../types/instructionsets.js';
+import {LanguageKey} from '../../types/languages.interfaces.js';
 import {Artifact, ArtifactType, Tool} from '../../types/tool.interfaces.js';
 import {assert, unwrap, unwrapString} from '../assert.js';
-import {ClangirBackendOptions} from '../compilation/clangir.interfaces.js';
-import {LLVMIrBackendOptions} from '../compilation/ir.interfaces.js';
 import {ICompilerShared} from '../compiler-shared.interfaces.js';
 import {CompilerShared} from '../compiler-shared.js';
 import {SourceAndFiles} from '../download-service.js';
-import {InstructionSet} from '../instructionsets.js';
-import {LanguageKey} from '../languages.interfaces.js';
 import {SentryCapture} from '../sentry.js';
 import {CompilerVersionInfo, setCompilerVersionPopoverForPane} from '../widgets/compiler-version-info.js';
 
