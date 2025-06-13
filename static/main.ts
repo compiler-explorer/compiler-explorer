@@ -693,7 +693,7 @@ function start() {
         });
 
         thing.on('click', () => {
-            const config = func(); // Returns ComponentConfig<K>
+            const config = func();
             if (hub.hasTree()) {
                 hub.addInEditorStackIfPossible(config);
             } else {

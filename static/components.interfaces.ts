@@ -76,13 +76,6 @@ export const RUST_MACRO_EXP_VIEW_COMPONENT_NAME = 'rustmacroexp' as const;
 export const RUST_HIR_VIEW_COMPONENT_NAME = 'rusthir' as const;
 export const DEVICE_VIEW_COMPONENT_NAME = 'device' as const;
 
-/**
- * Union type of all valid component names.
- * This allows more natural type annotations like ComponentConfig<'compiler'>
- * instead of ComponentConfig<typeof COMPILER_COMPONENT_NAME>.
- */
-export type ComponentName = keyof ComponentStateMap;
-
 export type StateWithLanguage = {lang: string};
 // TODO(#7808): Normalize state types to reduce duplication (see #4490)
 export type StateWithEditor = {source: string | number};
@@ -345,9 +338,8 @@ export type PopulatedDeviceViewState = StateWithId & {
 };
 
 /**
- * Mapping of component names to their expected state types.
- * This provides compile-time type safety for component states.
- * Components can have either empty (default) or populated states.
+ * Mapping of component names to their expected state types. This provides compile-time type safety for component
+ * states. Components can have either empty (default) or populated states.
  */
 export interface ComponentStateMap {
     [COMPILER_COMPONENT_NAME]: EmptyCompilerState | PopulatedCompilerState | CompilerForTreeState;
@@ -417,10 +409,9 @@ export interface LayoutItem {
 export type ItemConfig = ComponentConfig | LayoutItem;
 
 /**
- * Type-safe GoldenLayout configuration. We extend GoldenLayout.Config but replace
- * the 'content' field because the original uses 'any[]' which provides no type safety
- * for component configurations. Our ItemConfig[] enforces valid component names and
- * state types at compile time, preventing runtime errors from typos or wrong state types.
+ * Type-safe GoldenLayout configuration. We extend GoldenLayout.Config but replace the 'content' field because the
+ * original uses 'any[]' which provides no type safety for component configurations. Our ItemConfig[] enforces valid
+ * component names and state types at compile time, preventing runtime errors from typos or wrong state types.
  */
 export interface GoldenLayoutConfig extends Omit<GoldenLayout.Config, 'content'> {
     content?: ItemConfig[];
@@ -428,6 +419,7 @@ export interface GoldenLayoutConfig extends Omit<GoldenLayout.Config, 'content'>
 
 /**
  * Type guard to check if an item is a component configuration
+ * TODO(#7808): Use this for configuration validation in fromGoldenLayoutConfig
  */
 export function isComponentConfig(item: ItemConfig): item is ComponentConfig {
     return item.type === 'component';
@@ -435,6 +427,7 @@ export function isComponentConfig(item: ItemConfig): item is ComponentConfig {
 
 /**
  * Type guard to check if an item is a layout item (row, column, stack)
+ * TODO(#7808): Use this for configuration validation and error handling
  */
 export function isLayoutItem(item: ItemConfig): item is LayoutItem {
     return item.type === 'row' || item.type === 'column' || item.type === 'stack';
@@ -442,6 +435,8 @@ export function isLayoutItem(item: ItemConfig): item is LayoutItem {
 
 /**
  * Helper type for partial component states during initialization
+ * TODO(#7807): Use this for handling partial states during serialization/deserialization
+ * TODO(#7808): Use this for graceful handling of incomplete/invalid configurations
  */
 export type PartialComponentState<K extends keyof ComponentStateMap> = Partial<ComponentStateMap[K]>;
 

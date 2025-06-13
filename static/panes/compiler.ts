@@ -443,33 +443,15 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
         const DEFAULT_EDITOR_ID = 1;
 
         const cloneComponent = (): ComponentConfig<typeof COMPILER_COMPONENT_NAME> => {
-            const currentState: CompilerCurrentState = this.getCurrentState();
-            // Delete the saved id to force a new one
-            delete currentState.id;
-            // [flags|device]ViewOpen flags are a part of the state to prevent opening twice,
-            // but do not pertain to the cloned compiler
-            delete currentState.flagsViewOpen;
-            delete currentState.deviceViewOpen;
+            const currentState = this.getCurrentState();
 
-            // Ensure source is defined - if not, use a default editor ID
-            if (currentState.source === undefined) {
-                currentState.source = DEFAULT_EDITOR_ID;
-            }
-
-            // Create a properly typed state for the component
-            const componentState = {
-                source: currentState.source!, // Assert non-null since we just ensured it above
-                filters: currentState.filters,
-                options: currentState.options || '',
-                compiler: currentState.compiler,
-                libs: currentState.libs,
-                lang: currentState.lang,
-            };
+            // Extract only the fields we need, with proper defaults
+            const {source = DEFAULT_EDITOR_ID, filters, options = '', compiler, libs, lang} = currentState;
 
             return {
                 type: 'component',
                 componentName: COMPILER_COMPONENT_NAME,
-                componentState,
+                componentState: {source, filters, options, compiler, libs, lang},
             };
         };
         const createOptView = () => {
