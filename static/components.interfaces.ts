@@ -80,7 +80,7 @@ export const DEVICE_VIEW_COMPONENT_NAME = 'device' as const;
 export type ComponentName = keyof ComponentStateMap;
 
 export type StateWithLanguage = {lang: string};
-// TODO(#4490 The War of The Types) We should normalize state types
+// TODO(#7808): Normalize state types to reduce duplication (see #4490)
 export type StateWithEditor = {source: string | number};
 export type StateWithTree = {tree: number};
 export type StateWithId = {id: number};
