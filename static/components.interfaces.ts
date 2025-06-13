@@ -36,9 +36,13 @@ import {MonacoPaneState} from './panes/pane.interfaces.js';
 
 /**
  * Component name constants with 'as const' assertions.
- * This allows TypeScript to infer the literal string type ('compiler') rather than
- * the general string type, enabling more natural type usage like ComponentConfig<'compiler'>
- * while still having the constants available for runtime use.
+ *
+ * We use `ComponentConfig<typeof CONSTANT_NAME>` to avoid string duplication. Each string literal appears only once
+ * (in the constant), with TypeScript inferring the literal type for type safety. The 'as const' ensures precise literal
+ * types rather than general string types.
+ *
+ * We tried using just string literals, but that led to issues with Typescript type system. We also considered
+ * duplicating each string literal as a type too; but ultimately went with the `typeof` approach as the best balance.
  */
 export const COMPILER_COMPONENT_NAME = 'compiler' as const;
 export const EXECUTOR_COMPONENT_NAME = 'executor' as const;
