@@ -399,7 +399,10 @@ export interface LayoutItem {
 export type ItemConfig = ComponentConfig | LayoutItem;
 
 /**
- * Type-safe GoldenLayout configuration
+ * Type-safe GoldenLayout configuration. We extend GoldenLayout.Config but replace
+ * the 'content' field because the original uses 'any[]' which provides no type safety
+ * for component configurations. Our ItemConfig[] enforces valid component names and
+ * state types at compile time, preventing runtime errors from typos or wrong state types.
  */
 export interface GoldenLayoutConfig extends Omit<GoldenLayout.Config, 'content'> {
     content?: ItemConfig[];
@@ -426,13 +429,54 @@ export type PartialComponentState<K extends keyof ComponentStateMap> = Partial<C
 
 /**
  * Type for serialized GoldenLayout state (for URL/storage).
- * This interface is designed for Phase 2/3 of the migration when we'll
- * implement type-safe serialization/deserialization for:
- * - URL sharing (when users share layout links)
- * - localStorage persistence
- * - Import/export functionality
  *
- * Currently unused but defines the target structure for serialization.
+ * This type is DISTINCT FROM GoldenLayoutConfig because it represents the
+ * serialized state that gets stored/shared, which goes through a different
+ * processing pipeline than runtime configurations.
+ *
+ * SERIALIZATION PIPELINE (main.ts:681 → url.ts:116):
+ * 1. layout.toConfig() → runtime layout state
+ * 2. GoldenLayout.minifyConfig() → compressed/shortened property names
+ * 3. Add version number (version: 4)
+ * 4. Convert to rison format → URL-safe string
+ * 5. Optional compression → base64 + lz-string
+ *
+ * DESERIALIZATION PIPELINE (url.ts:86 → main.ts:345):
+ * 1. Decompress if needed (lz-string)
+ * 2. Parse rison format → object
+ * 3. GoldenLayout.unminifyConfig() → restore full property names
+ * 4. Version migration (url.ts:55-75)
+ * 5. Cast to GoldenLayoutConfig for runtime use
+ *
+ * WHY DISTINCT TYPES ARE NEEDED:
+ * - SerializedLayoutState: Handles version info, minified properties, compression
+ * - GoldenLayoutConfig: Runtime structure with full property names, no version
+ * - Different validation needs (untrusted URLs vs validated runtime state)
+ * - Different error handling (graceful fallbacks vs runtime asserts)
+ *
+ * CURRENT STATUS: This interface is NOT YET IMPLEMENTED but defines the target
+ * structure for type-safe serialization. Currently, serialization happens
+ * WITHOUT type safety in these locations:
+ *
+ * 1. localStorage persistence (main.ts window beforeunload handler):
+ *    sessionThenLocalStorage.set('gl', JSON.stringify(layout.toConfig()));
+ *
+ * 2. localStorage loading (main.ts findConfig function):
+ *    config = JSON.parse(savedState);
+ *
+ * 3. URL serialization (url.ts serialiseState function):
+ *    serialiseState(stateText: any) - works with 'any' types
+ *
+ * 4. URL deserialization (url.ts deserialiseState function):
+ *    deserialiseState(stateText: string): any - returns 'any'
+ *
+ * FUTURE IMPLEMENTATION (Phase 2):
+ * - Replace layout.toConfig() calls with type-safe serializers
+ * - Add validation when loading from untrusted sources (URLs, localStorage)
+ * - Implement version migration for layout format changes
+ * - Use this interface for localStorage persistence and URL sharing
+ * - Handle minified vs full property names correctly
+ * - Add proper error recovery for corrupted/invalid serialized state
  */
 export interface SerializedLayoutState {
     version: number;

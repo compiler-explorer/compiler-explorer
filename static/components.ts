@@ -942,6 +942,32 @@ export function getDeviceViewWith(
 // =============================================================================
 // GoldenLayout Type Safety Utility Functions
 // =============================================================================
+//
+// IMPLEMENTATION STATUS:
+// ✅ Phase 1 (COMPLETED): Type-safe component creation and configuration
+//    - All component factory functions return strongly-typed configs
+//    - ComponentConfig<K> enforces valid component names and state types
+//    - No more 'as any' casts when creating drag sources or components
+//
+// 🚧 Phase 2 (PLANNED): Type-safe serialization and validation
+//    - Replace layout.toConfig() with type-safe serializers
+//    - Use fromGoldenLayoutConfig() for validation instead of casting
+//    - Implement SerializedLayoutState for localStorage and URL sharing
+//    - Add migration from old untyped layout formats
+//
+// 📍 CURRENT TYPE SAFETY GAPS:
+//    1. main.ts findConfig() - config casting without validation
+//    2. main.ts beforeunload handler - JSON.stringify(layout.toConfig()) serialization
+//    3. main.ts findConfig() - JSON.parse(savedState) deserialization
+//    4. url.ts serialiseState() - works with 'any' types
+//    5. url.ts deserialiseState() - returns 'any'
+//
+// 📋 SERIALIZATION VS RUNTIME DISTINCTION:
+//    - GoldenLayoutConfig: Runtime layout state (full property names, no version)
+//    - SerializedLayoutState: Storage format (minified properties, versioned)
+//    - Different processing pipelines require different type safety approaches
+//
+// =============================================================================
 
 /**
  * Helper function to create a typed component configuration
@@ -993,9 +1019,27 @@ export function createLayoutItem(
  * states match their expected types. It provides helpful error messages
  * for invalid configurations.
  *
- * @param config - Untyped config from GoldenLayout
+ * CURRENT STATUS: Function exists but is NOT YET USED in the codebase.
+ *
+ * WHY UNUSED: We currently cast configs directly (main.ts:378) because:
+ * - Need to handle legacy layout formats gracefully
+ * - Need fallback strategies for invalid configs
+ * - Need to test edge cases with real user data
+ *
+ * FUTURE USE (Phase 2): Replace direct casting with this validation:
+ * - main.ts findConfig(): Use this instead of 'as GoldenLayoutConfig'
+ * - localStorage loading: Validate saved layouts before use
+ * - URL deserialization: Validate shared layouts before applying
+ *
+ * IMPLEMENTATION STEPS:
+ * 1. Add error handling for invalid configs (fallback to default)
+ * 2. Add migration support for old layout versions
+ * 3. Test with existing user layouts to ensure compatibility
+ * 4. Replace casting with validation calls
+ *
+ * @param config - Untyped config from GoldenLayout, localStorage, or URLs
  * @returns Typed config with validated component states
- * @throws Error if the configuration is invalid
+ * @throws Error if the configuration is invalid (should be caught and handled)
  */
 export function fromGoldenLayoutConfig(config: GoldenLayout.Config): GoldenLayoutConfig {
     if (!config || typeof config !== 'object') {
