@@ -27,9 +27,9 @@ import JSZip from 'jszip';
 import path from 'path-browserify';
 import _ from 'underscore';
 import {FiledataPair} from '../types/compilation/compilation.interfaces.js';
+import {LanguageKey} from '../types/languages.interfaces.js';
 import {unwrap} from './assert.js';
 import {Hub} from './hub.js';
-import {LanguageKey} from './languages.interfaces.js';
 import * as options from './options.js';
 import {Alert} from './widgets/alert.js';
 

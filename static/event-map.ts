@@ -22,13 +22,13 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
+import {ClangirBackendOptions} from '../types/compilation/clangir.interfaces.js';
 import {CompilationResult} from '../types/compilation/compilation.interfaces.js';
+import {LLVMIrBackendOptions} from '../types/compilation/ir.interfaces.js';
+import {OptPipelineBackendOptions} from '../types/compilation/opt-pipeline-output.interfaces.js';
 import {CompilerInfo} from '../types/compiler.interfaces.js';
 import {Language, LanguageKey} from '../types/languages.interfaces.js';
 import {MessageWithLocation} from '../types/resultline/resultline.interfaces.js';
-import {ClangirBackendOptions} from './compilation/clangir.interfaces.js';
-import {LLVMIrBackendOptions} from './compilation/ir.interfaces.js';
-import {OptPipelineBackendOptions} from './compilation/opt-pipeline-output.interfaces.js';
 import {NewToolSettings, ToolState} from './components.interfaces.js';
 import {Motd} from './motd.interfaces.js';
 import {GccDumpFiltersState, GccDumpViewSelectedPass} from './panes/gccdump-view.interfaces.js';

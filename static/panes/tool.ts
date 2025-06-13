@@ -27,15 +27,15 @@ import {Container} from 'golden-layout';
 import $ from 'jquery';
 import * as monaco from 'monaco-editor';
 import _ from 'underscore';
+import {CompilationResult} from '../../types/compilation/compilation.interfaces.js';
+import {CompilerInfo} from '../../types/compiler.interfaces.js';
+import {LanguageKey} from '../../types/languages.interfaces.js';
 import * as AnsiToHtml from '../ansi-to-html.js';
 import {unwrap, unwrapString} from '../assert.js';
-import {CompilationResult} from '../compilation/compilation.interfaces.js';
 import {CompilerService} from '../compiler-service.js';
-import {CompilerInfo} from '../compiler.interfaces.js';
-import {ComponentConfig, NewToolSettings, PopulatedToolInputViewState, ToolState} from '../components.interfaces.js';
+import {ComponentConfig, NewToolSettings, TOOL_INPUT_VIEW_COMPONENT_NAME, ToolState} from '../components.interfaces.js';
 import * as Components from '../components.js';
 import {Hub} from '../hub.js';
-import {LanguageKey} from '../languages.interfaces.js';
 import * as monacoConfig from '../monaco-config.js';
 import {options as ceoptions} from '../options.js';
 import * as utils from '../utils.js';
@@ -68,7 +68,7 @@ export class Tool extends MonacoPane<monaco.editor.IStandaloneCodeEditor, ToolSt
     normalAnsiToHtml: AnsiToHtml.Filter;
     optionsField: JQuery;
     localStdinField: JQuery;
-    createToolInputView: () => ComponentConfig<PopulatedToolInputViewState>;
+    createToolInputView: () => ComponentConfig<typeof TOOL_INPUT_VIEW_COMPONENT_NAME>;
 
     wrapButton: JQuery;
     wrapTitle: JQuery;

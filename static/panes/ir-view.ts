@@ -38,13 +38,14 @@ import {applyColours} from '../colour.js';
 import {extendConfig} from '../monaco-config.js';
 
 import {unwrap} from '../assert.js';
+import {createDragSource} from '../components.js';
 import * as Components from '../components.js';
 import {Hub} from '../hub.js';
 import {Toggles} from '../widgets/toggles.js';
 
+import {CompilationResult} from '../../types/compilation/compilation.interfaces.js';
 import {LLVMIrBackendOptions} from '../../types/compilation/ir.interfaces.js';
-import {CompilationResult} from '../compilation/compilation.interfaces.js';
-import {CompilerInfo} from '../compiler.interfaces.js';
+import {CompilerInfo} from '../../types/compiler.interfaces.js';
 import {SentryCapture} from '../sentry.js';
 import {Alert} from '../widgets/alert.js';
 import {Compiler} from './compiler.js';
@@ -127,7 +128,7 @@ export class Ir extends MonacoPane<monaco.editor.IStandaloneCodeEditor, IrState>
                 true,
             );
         };
-        this.container.layoutManager.createDragSource(this.cfgButton, createCfgView as any);
+        createDragSource(this.container.layoutManager, this.cfgButton, () => createCfgView());
         this.cfgButton.on('click', () => {
             const insertPoint =
                 this.hub.findParentRowOrColumn(this.container.parent) ||

@@ -23,7 +23,7 @@
 // POSSIBILITY OF SUCH DAMAGE.
 
 import {getRemoteId} from '../shared/remote-utils.js';
-import {Remote} from './compiler.interfaces.js';
+import {Remote} from '../types/compiler.interfaces.js';
 import {LanguageLibs, Library} from './options.interfaces.js';
 import {options} from './options.js';
 

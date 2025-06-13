@@ -31,8 +31,8 @@ import {MonacoPaneState} from './pane.interfaces.js';
 import {MonacoPane} from './pane.js';
 import {RustHirState} from './rusthir-view.interfaces.js';
 
-import {CompilationResult} from '../compilation/compilation.interfaces.js';
-import {CompilerInfo} from '../compiler.interfaces.js';
+import {CompilationResult} from '../../types/compilation/compilation.interfaces.js';
+import {CompilerInfo} from '../../types/compiler.interfaces.js';
 import {Hub} from '../hub.js';
 import {extendConfig} from '../monaco-config.js';
 

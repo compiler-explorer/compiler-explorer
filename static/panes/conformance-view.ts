@@ -28,15 +28,16 @@ import _ from 'underscore';
 import {escapeHTML, unique} from '../../shared/common-utils.js';
 import {CompilationResult} from '../../types/compilation/compilation.interfaces.js';
 import {CompilerInfo} from '../../types/compiler.interfaces.js';
+import {SelectedLibraryVersion} from '../../types/libraries/libraries.interfaces.js';
 import {unwrapString} from '../assert.js';
 import * as BootstrapUtils from '../bootstrap-utils.js';
 import {CompilationStatus} from '../compiler-service.interfaces.js';
 import {CompilerService} from '../compiler-service.js';
+import {createDragSource} from '../components.js';
 import * as Components from '../components.js';
 import {SourceAndFiles} from '../download-service.js';
 import {Hub} from '../hub.js';
 import * as LibUtils from '../lib-utils.js';
-import {SelectedLibraryVersion} from '../libraries/libraries.interfaces.js';
 import {Library, LibraryVersion} from '../options.interfaces.js';
 import {options} from '../options.js';
 import * as utils from '../utils.js';
@@ -273,7 +274,7 @@ export class Conformance extends Pane<ConformanceViewState> {
         };
 
         // The .d.ts for GL lies. You can pass a function that returns the config as a second parameter
-        this.container.layoutManager.createDragSource(popCompilerButton, getCompilerConfig as any);
+        createDragSource(this.container.layoutManager, popCompilerButton, () => getCompilerConfig());
 
         popCompilerButton.on('click', () => {
             const insertPoint =
