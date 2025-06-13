@@ -941,23 +941,8 @@ export function getDeviceViewWith(
 //    - ComponentConfig<K> enforces valid component names and state types
 //    - No more 'as any' casts when creating drag sources or components
 //
-// 🚧 Phase 2 (PLANNED): Type-safe serialization and validation
-//    - Replace layout.toConfig() with type-safe serializers
-//    - Use fromGoldenLayoutConfig() for validation instead of casting
-//    - Implement SerializedLayoutState for localStorage and URL sharing
-//    - Add migration from old untyped layout formats
-//
-// 📍 CURRENT TYPE SAFETY GAPS:
-//    1. main.ts findConfig() - config casting without validation
-//    2. main.ts beforeunload handler - JSON.stringify(layout.toConfig()) serialization
-//    3. main.ts findConfig() - JSON.parse(savedState) deserialization
-//    4. url.ts serialiseState() - works with 'any' types
-//    5. url.ts deserialiseState() - returns 'any'
-//
-// 📋 SERIALIZATION VS RUNTIME DISTINCTION:
-//    - GoldenLayoutConfig: Runtime layout state (full property names, no version)
-//    - SerializedLayoutState: Storage format (minified properties, versioned)
-//    - Different processing pipelines require different type safety approaches
+// TODO(#7807): Implement type-safe serialization/deserialization
+// TODO(#7808): Enable configuration validation and fix remaining type gaps
 //
 // =============================================================================
 
@@ -1011,23 +996,8 @@ export function createLayoutItem(
  * states match their expected types. It provides helpful error messages
  * for invalid configurations.
  *
- * CURRENT STATUS: Function exists but is NOT YET USED in the codebase.
- *
- * WHY UNUSED: We currently cast configs directly (main.ts:378) because:
- * - Need to handle legacy layout formats gracefully
- * - Need fallback strategies for invalid configs
- * - Need to test edge cases with real user data
- *
- * FUTURE USE (Phase 2): Replace direct casting with this validation:
- * - main.ts findConfig(): Use this instead of 'as GoldenLayoutConfig'
- * - localStorage loading: Validate saved layouts before use
- * - URL deserialization: Validate shared layouts before applying
- *
- * IMPLEMENTATION STEPS:
- * 1. Add error handling for invalid configs (fallback to default)
- * 2. Add migration support for old layout versions
- * 3. Test with existing user layouts to ensure compatibility
- * 4. Replace casting with validation calls
+ * TODO(#7808): Enable this function for configuration validation
+ * Currently unused but ready for implementation - see issue for details.
  *
  * @param config - Untyped config from GoldenLayout, localStorage, or URLs
  * @returns Typed config with validated component states
@@ -1150,9 +1120,8 @@ export function createDragSource<K extends keyof ComponentStateMap>(
     element: HTMLElement | JQuery,
     factory: DragSourceFactory<K>,
 ): any {
-    // Note: GoldenLayout's TypeScript definitions are incomplete. The createDragSource method
-    // returns void in the types but actually returns an object with _dragListener property.
-    // We need the 'as any' cast because the factory parameter types are also incomplete.
+    // TODO(#7808): Fix GoldenLayout TypeScript definitions to eliminate 'as any' cast
+    // createDragSource returns object with _dragListener but types say void.
     return layout.createDragSource(element, factory as any);
 }
 

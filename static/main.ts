@@ -362,16 +362,7 @@ function findConfig(
     removeOrphanedMaximisedItemFromConfig(config);
     fixBugsInConfig(config);
 
-    // CURRENT LIMITATION: We cast to GoldenLayoutConfig without validation
-    //
-    // FUTURE IMPLEMENTATION (Phase 2): Replace this with proper validation:
-    // - Use fromGoldenLayoutConfig(config) to validate structure
-    // - Handle invalid configs gracefully (fallback to default)
-    // - Validate component states match expected types
-    // - Add version migration for layout format changes
-    //
-    // The validation function already exists in components.ts but isn't used yet
-    // because we need to handle edge cases and migration from old formats.
+    // TODO(#7808): Replace unsafe casting with fromGoldenLayoutConfig() validation
     return config as GoldenLayoutConfig;
 }
 
