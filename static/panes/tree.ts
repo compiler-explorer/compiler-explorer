@@ -30,7 +30,7 @@ import _ from 'underscore';
 import {escapeHTML} from '../../shared/common-utils.js';
 import {assert, unwrap, unwrapString} from '../assert.js';
 import * as BootstrapUtils from '../bootstrap-utils.js';
-import {createTypedDragSource} from '../components.js';
+import {createDragSource} from '../components.js';
 import * as Components from '../components.js';
 import {EventHub} from '../event-hub.js';
 import {Hub} from '../hub.js';
@@ -447,7 +447,7 @@ export class Tree {
     }
 
     private bindClickToOpenPane(dragSource, dragConfig) {
-        createTypedDragSource(this.container.layoutManager, dragSource, () => dragConfig.bind(this)())._dragListener.on(
+        createDragSource(this.container.layoutManager, dragSource, () => dragConfig.bind(this)())._dragListener.on(
             'dragStart',
             () => {
                 const dropdown = this.domRoot.find('.add-pane');

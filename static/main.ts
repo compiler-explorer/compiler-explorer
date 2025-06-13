@@ -58,8 +58,8 @@ import {SimpleCook} from './widgets/simplecook.js';
 import {setupSiteTemplateWidgetButton} from './widgets/site-templates-widget.js';
 
 import {Language, LanguageKey} from '../types/languages.interfaces.js';
-import {ComponentStateMap, TypedComponentConfig, TypedGoldenLayoutConfig} from './components.interfaces.js';
-import {createTypedDragSource, createTypedLayoutItem, toGoldenLayoutConfig} from './components.js';
+import {ComponentConfig, ComponentStateMap, GoldenLayoutConfig} from './components.interfaces.js';
+import {createDragSource, createLayoutItem, toGoldenLayoutConfig} from './components.js';
 import {CompilerExplorerOptions} from './global.js';
 
 import * as utils from '../shared/common-utils.js';
@@ -287,13 +287,13 @@ function fixBugsInConfig(config: Record<string, any> & {content?: any[]}) {
     }
 }
 
-// Removed ConfigType - now using TypedGoldenLayoutConfig from goldenlayout-types.ts
+// Removed ConfigType - now using GoldenLayoutConfig from components.interfaces.ts
 
 function findConfig(
-    defaultConfig: TypedGoldenLayoutConfig,
+    defaultConfig: GoldenLayoutConfig,
     options: CompilerExplorerOptions,
     defaultLangId: string,
-): TypedGoldenLayoutConfig {
+): GoldenLayoutConfig {
     let config: any;
     if (!options.embedded) {
         if (options.slides) {
@@ -365,8 +365,8 @@ function findConfig(
     removeOrphanedMaximisedItemFromConfig(config);
     fixBugsInConfig(config);
 
-    // For now, cast to TypedGoldenLayoutConfig - in the future we should validate the structure
-    return config as TypedGoldenLayoutConfig;
+    // For now, cast to GoldenLayoutConfig - in the future we should validate the structure
+    return config as GoldenLayoutConfig;
 }
 
 function initializeResetLayoutLink() {
@@ -581,13 +581,10 @@ function start() {
         jsCookie = jsCookie.withAttributes({domain: cookieDomain[0]});
     }
 
-    const defaultConfig: TypedGoldenLayoutConfig = {
+    const defaultConfig: GoldenLayoutConfig = {
         settings: {showPopoutIcon: false},
         content: [
-            createTypedLayoutItem('row', [
-                Components.getEditor(defaultLangId, 1),
-                Components.getCompiler(1, defaultLangId),
-            ]),
+            createLayoutItem('row', [Components.getEditor(defaultLangId, 1), Components.getCompiler(1, defaultLangId)]),
         ],
     };
 
@@ -615,7 +612,7 @@ function start() {
     let settings: SiteSettings;
 
     function initializeLayout(
-        config: TypedGoldenLayoutConfig,
+        config: GoldenLayoutConfig,
         root: JQuery<HTMLElement>,
     ): [GoldenLayout, Hub, Themer, SiteSettings] {
         const layout = new GoldenLayout(toGoldenLayoutConfig(config), root);
@@ -686,8 +683,8 @@ function start() {
         setupButtons(options, hub);
     }
 
-    function setupAdd<K extends keyof ComponentStateMap>(thing: JQuery, func: () => TypedComponentConfig<K>) {
-        createTypedDragSource(layout, thing, func)._dragListener.on('dragStart', () => {
+    function setupAdd<K extends keyof ComponentStateMap>(thing: JQuery, func: () => ComponentConfig<K>) {
+        createDragSource(layout, thing, func)._dragListener.on('dragStart', () => {
             const addDropdown = unwrap(
                 BootstrapUtils.getDropdownInstance('#addDropdown'),
                 'Dropdown instance not found for #addDropdown',

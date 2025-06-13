@@ -34,6 +34,7 @@ import {
     CLANGIR_VIEW_COMPONENT_NAME,
     COMPILER_COMPONENT_NAME,
     CONFORMANCE_VIEW_COMPONENT_NAME,
+    ComponentConfig,
     ComponentStateMap,
     DEVICE_VIEW_COMPONENT_NAME,
     DIFF_VIEW_COMPONENT_NAME,
@@ -44,11 +45,14 @@ import {
     GCC_DUMP_VIEW_COMPONENT_NAME,
     GNAT_DEBUG_TREE_VIEW_COMPONENT_NAME,
     GNAT_DEBUG_VIEW_COMPONENT_NAME,
+    GoldenLayoutConfig,
     HASKELL_CMM_VIEW_COMPONENT_NAME,
     HASKELL_CORE_VIEW_COMPONENT_NAME,
     HASKELL_STG_VIEW_COMPONENT_NAME,
     IR_VIEW_COMPONENT_NAME,
+    ItemConfig,
     LLVM_OPT_PIPELINE_VIEW_COMPONENT_NAME,
+    LayoutItem,
     OPT_PIPELINE_VIEW_COMPONENT_NAME,
     OPT_VIEW_COMPONENT_NAME,
     OUTPUT_COMPONENT_NAME,
@@ -60,16 +64,12 @@ import {
     TOOL_COMPONENT_NAME,
     TOOL_INPUT_VIEW_COMPONENT_NAME,
     TREE_COMPONENT_NAME,
-    TypedComponentConfig,
-    TypedGoldenLayoutConfig,
-    TypedItemConfig,
-    TypedLayoutItem,
 } from './components.interfaces.js';
 import {ConfiguredRuntimeTools} from './execution/execution.interfaces.js';
 import {LanguageKey} from './languages.interfaces.js';
 
 /** Get an empty compiler component. */
-export function getCompiler(editorId: number, lang: string): TypedComponentConfig<typeof COMPILER_COMPONENT_NAME> {
+export function getCompiler(editorId: number, lang: string): ComponentConfig<typeof COMPILER_COMPONENT_NAME> {
     return {
         type: 'component',
         componentName: COMPILER_COMPONENT_NAME,
@@ -95,7 +95,7 @@ export function getCompilerWith(
     compilerId: string,
     langId?: string,
     libs?: unknown,
-): TypedComponentConfig<typeof COMPILER_COMPONENT_NAME> {
+): ComponentConfig<typeof COMPILER_COMPONENT_NAME> {
     return {
         type: 'component',
         componentName: COMPILER_COMPONENT_NAME,
@@ -111,7 +111,7 @@ export function getCompilerWith(
 }
 
 /** Get a compiler for a tree mode component. */
-export function getCompilerForTree(treeId: number, lang: string): TypedComponentConfig<typeof COMPILER_COMPONENT_NAME> {
+export function getCompilerForTree(treeId: number, lang: string): ComponentConfig<typeof COMPILER_COMPONENT_NAME> {
     return {
         type: 'component',
         componentName: COMPILER_COMPONENT_NAME,
@@ -123,7 +123,7 @@ export function getCompilerForTree(treeId: number, lang: string): TypedComponent
 }
 
 /** Get an empty executor component. */
-export function getExecutor(editorId: number, lang: string): TypedComponentConfig<typeof EXECUTOR_COMPONENT_NAME> {
+export function getExecutor(editorId: number, lang: string): ComponentConfig<typeof EXECUTOR_COMPONENT_NAME> {
     return {
         type: 'component',
         componentName: EXECUTOR_COMPONENT_NAME,
@@ -146,7 +146,7 @@ export function getExecutorWith(
     treeId: number,
     overrides?: ConfiguredOverrides,
     runtimeTools?: ConfiguredRuntimeTools,
-): TypedComponentConfig<typeof EXECUTOR_COMPONENT_NAME> {
+): ComponentConfig<typeof EXECUTOR_COMPONENT_NAME> {
     return {
         type: 'component',
         componentName: EXECUTOR_COMPONENT_NAME,
@@ -166,7 +166,7 @@ export function getExecutorWith(
 }
 
 /** Get an executor for a tree mode component. */
-export function getExecutorForTree(treeId: number, lang: string): TypedComponentConfig<typeof EXECUTOR_COMPONENT_NAME> {
+export function getExecutorForTree(treeId: number, lang: string): ComponentConfig<typeof EXECUTOR_COMPONENT_NAME> {
     return {
         type: 'component',
         componentName: EXECUTOR_COMPONENT_NAME,
@@ -184,7 +184,7 @@ export function getExecutorForTree(treeId: number, lang: string): TypedComponent
  *
  * TODO: main.js calls this with no arguments.
  */
-export function getEditor(langId: LanguageKey, id?: number): TypedComponentConfig<typeof EDITOR_COMPONENT_NAME> {
+export function getEditor(langId: LanguageKey, id?: number): ComponentConfig<typeof EDITOR_COMPONENT_NAME> {
     return {
         type: 'component',
         componentName: EDITOR_COMPONENT_NAME,
@@ -201,7 +201,7 @@ export function getEditorWith(
     source: string,
     options: ParseFiltersAndOutputOptions,
     langId: string,
-): TypedComponentConfig<typeof EDITOR_COMPONENT_NAME> {
+): ComponentConfig<typeof EDITOR_COMPONENT_NAME> {
     return {
         type: 'component',
         componentName: EDITOR_COMPONENT_NAME,
@@ -219,7 +219,7 @@ export function getEditorWith(
  *
  * TODO: main.js calls this with no arguments.
  */
-export function getTree(id?: number): TypedComponentConfig<typeof TREE_COMPONENT_NAME> {
+export function getTree(id?: number): ComponentConfig<typeof TREE_COMPONENT_NAME> {
     return {
         type: 'component',
         componentName: TREE_COMPONENT_NAME,
@@ -235,7 +235,7 @@ export function getOutput(
     compiler: number,
     editor: number,
     tree: number,
-): TypedComponentConfig<typeof OUTPUT_COMPONENT_NAME> {
+): ComponentConfig<typeof OUTPUT_COMPONENT_NAME> {
     return {
         type: 'component',
         componentName: OUTPUT_COMPONENT_NAME,
@@ -256,7 +256,7 @@ export function getToolViewWith(
     args: string,
     monacoStdin: boolean,
     tree: number,
-): TypedComponentConfig<typeof TOOL_COMPONENT_NAME> {
+): ComponentConfig<typeof TOOL_COMPONENT_NAME> {
     return {
         type: 'component',
         componentName: TOOL_COMPONENT_NAME,
@@ -273,7 +273,7 @@ export function getToolViewWith(
 }
 
 /** Get an empty tool input view component. */
-export function getToolInputView(): TypedComponentConfig<typeof TOOL_INPUT_VIEW_COMPONENT_NAME> {
+export function getToolInputView(): ComponentConfig<typeof TOOL_INPUT_VIEW_COMPONENT_NAME> {
     return {
         type: 'component',
         componentName: TOOL_INPUT_VIEW_COMPONENT_NAME,
@@ -286,7 +286,7 @@ export function getToolInputViewWith(
     compilerId: number,
     toolId: string,
     toolName: string,
-): TypedComponentConfig<typeof TOOL_INPUT_VIEW_COMPONENT_NAME> {
+): ComponentConfig<typeof TOOL_INPUT_VIEW_COMPONENT_NAME> {
     return {
         type: 'component',
         componentName: TOOL_INPUT_VIEW_COMPONENT_NAME,
@@ -299,7 +299,7 @@ export function getToolInputViewWith(
 }
 
 /** Get an empty diff component. */
-export function getDiffView(): TypedComponentConfig<typeof DIFF_VIEW_COMPONENT_NAME> {
+export function getDiffView(): ComponentConfig<typeof DIFF_VIEW_COMPONENT_NAME> {
     return {
         type: 'component',
         componentName: DIFF_VIEW_COMPONENT_NAME,
@@ -312,7 +312,7 @@ export function getDiffView(): TypedComponentConfig<typeof DIFF_VIEW_COMPONENT_N
  *
  * TODO: possibly unused?
  */
-export function getDiffViewWith(lhs: unknown, rhs: unknown): TypedComponentConfig<typeof DIFF_VIEW_COMPONENT_NAME> {
+export function getDiffViewWith(lhs: unknown, rhs: unknown): ComponentConfig<typeof DIFF_VIEW_COMPONENT_NAME> {
     return {
         type: 'component',
         componentName: DIFF_VIEW_COMPONENT_NAME,
@@ -324,7 +324,7 @@ export function getDiffViewWith(lhs: unknown, rhs: unknown): TypedComponentConfi
 }
 
 /** Get an empty opt view component. */
-export function getOptView(): TypedComponentConfig<typeof OPT_VIEW_COMPONENT_NAME> {
+export function getOptView(): ComponentConfig<typeof OPT_VIEW_COMPONENT_NAME> {
     return {
         type: 'component',
         componentName: OPT_VIEW_COMPONENT_NAME,
@@ -340,7 +340,7 @@ export function getOptViewWith(
     compilerName: string,
     editorid: number,
     treeid: number,
-): TypedComponentConfig<typeof OPT_VIEW_COMPONENT_NAME> {
+): ComponentConfig<typeof OPT_VIEW_COMPONENT_NAME> {
     return {
         type: 'component',
         componentName: OPT_VIEW_COMPONENT_NAME,
@@ -355,7 +355,7 @@ export function getOptViewWith(
     };
 }
 
-export function getStackUsageView(): TypedComponentConfig<typeof STACK_USAGE_VIEW_COMPONENT_NAME> {
+export function getStackUsageView(): ComponentConfig<typeof STACK_USAGE_VIEW_COMPONENT_NAME> {
     return {
         type: 'component',
         componentName: STACK_USAGE_VIEW_COMPONENT_NAME,
@@ -369,7 +369,7 @@ export function getStackUsageViewWith(
     compilerName: string,
     editorid: number,
     treeid: number,
-): TypedComponentConfig<typeof STACK_USAGE_VIEW_COMPONENT_NAME> {
+): ComponentConfig<typeof STACK_USAGE_VIEW_COMPONENT_NAME> {
     return {
         type: 'component',
         componentName: STACK_USAGE_VIEW_COMPONENT_NAME,
@@ -385,7 +385,7 @@ export function getStackUsageViewWith(
 }
 
 /** Get an empty flags view component. */
-export function getFlagsView(): TypedComponentConfig<typeof FLAGS_VIEW_COMPONENT_NAME> {
+export function getFlagsView(): ComponentConfig<typeof FLAGS_VIEW_COMPONENT_NAME> {
     return {
         type: 'component',
         componentName: FLAGS_VIEW_COMPONENT_NAME,
@@ -398,7 +398,7 @@ export function getFlagsViewWith(
     id: number,
     compilerName: string,
     compilerFlags: unknown,
-): TypedComponentConfig<typeof FLAGS_VIEW_COMPONENT_NAME> {
+): ComponentConfig<typeof FLAGS_VIEW_COMPONENT_NAME> {
     return {
         type: 'component',
         componentName: FLAGS_VIEW_COMPONENT_NAME,
@@ -411,7 +411,7 @@ export function getFlagsViewWith(
 }
 
 /** Get an empty preprocessor view component. */
-export function getPpView(): TypedComponentConfig<typeof PP_VIEW_COMPONENT_NAME> {
+export function getPpView(): ComponentConfig<typeof PP_VIEW_COMPONENT_NAME> {
     return {
         type: 'component',
         componentName: PP_VIEW_COMPONENT_NAME,
@@ -427,7 +427,7 @@ export function getPpViewWith(
     compilerName: string,
     editorid: number,
     treeid: number,
-): TypedComponentConfig<typeof PP_VIEW_COMPONENT_NAME> {
+): ComponentConfig<typeof PP_VIEW_COMPONENT_NAME> {
     return {
         type: 'component',
         componentName: PP_VIEW_COMPONENT_NAME,
@@ -443,7 +443,7 @@ export function getPpViewWith(
 }
 
 /** Get an empty ast view component. */
-export function getAstView(): TypedComponentConfig<typeof AST_VIEW_COMPONENT_NAME> {
+export function getAstView(): ComponentConfig<typeof AST_VIEW_COMPONENT_NAME> {
     return {
         type: 'component',
         componentName: AST_VIEW_COMPONENT_NAME,
@@ -459,7 +459,7 @@ export function getAstViewWith(
     compilerName: string,
     editorid: number,
     treeid: number,
-): TypedComponentConfig<typeof AST_VIEW_COMPONENT_NAME> {
+): ComponentConfig<typeof AST_VIEW_COMPONENT_NAME> {
     return {
         type: 'component',
         componentName: AST_VIEW_COMPONENT_NAME,
@@ -475,7 +475,7 @@ export function getAstViewWith(
 }
 
 /** Get an empty gcc dump view component. */
-export function getGccDumpView(): TypedComponentConfig<typeof GCC_DUMP_VIEW_COMPONENT_NAME> {
+export function getGccDumpView(): ComponentConfig<typeof GCC_DUMP_VIEW_COMPONENT_NAME> {
     return {
         type: 'component',
         componentName: GCC_DUMP_VIEW_COMPONENT_NAME,
@@ -490,7 +490,7 @@ export function getGccDumpViewWith(
     editorid: number,
     treeid: number,
     gccDumpOutput: GccDumpViewState,
-): TypedComponentConfig<typeof GCC_DUMP_VIEW_COMPONENT_NAME> {
+): ComponentConfig<typeof GCC_DUMP_VIEW_COMPONENT_NAME> {
     return {
         type: 'component',
         componentName: GCC_DUMP_VIEW_COMPONENT_NAME,
@@ -508,7 +508,7 @@ export function getGccDumpViewWith(
 }
 
 /** Get an empty cfg view component. */
-export function getCfgView(): TypedComponentConfig<typeof CFG_VIEW_COMPONENT_NAME> {
+export function getCfgView(): ComponentConfig<typeof CFG_VIEW_COMPONENT_NAME> {
     return {
         type: 'component',
         componentName: CFG_VIEW_COMPONENT_NAME,
@@ -522,7 +522,7 @@ export function getCfgViewWith(
     editorid: number,
     treeid: number,
     isircfg?: boolean,
-): TypedComponentConfig<typeof CFG_VIEW_COMPONENT_NAME> {
+): ComponentConfig<typeof CFG_VIEW_COMPONENT_NAME> {
     return {
         type: 'component',
         componentName: CFG_VIEW_COMPONENT_NAME,
@@ -542,7 +542,7 @@ export function getConformanceView(
     treeid: number,
     source: string,
     langId: string,
-): TypedComponentConfig<typeof CONFORMANCE_VIEW_COMPONENT_NAME> {
+): ComponentConfig<typeof CONFORMANCE_VIEW_COMPONENT_NAME> {
     return {
         type: 'component',
         componentName: CONFORMANCE_VIEW_COMPONENT_NAME,
@@ -556,7 +556,7 @@ export function getConformanceView(
 }
 
 /** Get an empty ir view component. */
-export function getIrView(): TypedComponentConfig<typeof IR_VIEW_COMPONENT_NAME> {
+export function getIrView(): ComponentConfig<typeof IR_VIEW_COMPONENT_NAME> {
     return {
         type: 'component',
         componentName: IR_VIEW_COMPONENT_NAME,
@@ -572,7 +572,7 @@ export function getIrViewWith(
     compilerName: string,
     editorid: number,
     treeid: number,
-): TypedComponentConfig<typeof IR_VIEW_COMPONENT_NAME> {
+): ComponentConfig<typeof IR_VIEW_COMPONENT_NAME> {
     return {
         type: 'component',
         componentName: IR_VIEW_COMPONENT_NAME,
@@ -587,7 +587,7 @@ export function getIrViewWith(
     };
 }
 
-export function getClangirView(): TypedComponentConfig<typeof CLANGIR_VIEW_COMPONENT_NAME> {
+export function getClangirView(): ComponentConfig<typeof CLANGIR_VIEW_COMPONENT_NAME> {
     return {
         type: 'component',
         componentName: CLANGIR_VIEW_COMPONENT_NAME,
@@ -602,7 +602,7 @@ export function getClangirViewWith(
     compilerName: string,
     editorid: number,
     treeid: number,
-): TypedComponentConfig<typeof CLANGIR_VIEW_COMPONENT_NAME> {
+): ComponentConfig<typeof CLANGIR_VIEW_COMPONENT_NAME> {
     return {
         type: 'component',
         componentName: CLANGIR_VIEW_COMPONENT_NAME,
@@ -618,7 +618,7 @@ export function getClangirViewWith(
 }
 
 /** Get an empty opt pipeline view component. */
-export function getOptPipelineView(): TypedComponentConfig<typeof OPT_PIPELINE_VIEW_COMPONENT_NAME> {
+export function getOptPipelineView(): ComponentConfig<typeof OPT_PIPELINE_VIEW_COMPONENT_NAME> {
     return {
         type: 'component',
         componentName: OPT_PIPELINE_VIEW_COMPONENT_NAME,
@@ -634,7 +634,7 @@ export function getOptPipelineViewWith(
     compilerName: string,
     editorid: number,
     treeid: number,
-): TypedComponentConfig<typeof OPT_PIPELINE_VIEW_COMPONENT_NAME> {
+): ComponentConfig<typeof OPT_PIPELINE_VIEW_COMPONENT_NAME> {
     return {
         type: 'component',
         componentName: OPT_PIPELINE_VIEW_COMPONENT_NAME,
@@ -653,7 +653,7 @@ export function getOptPipelineViewWith(
 }
 
 /** Get an empty rust mir view component. */
-export function getRustMirView(): TypedComponentConfig<typeof RUST_MIR_VIEW_COMPONENT_NAME> {
+export function getRustMirView(): ComponentConfig<typeof RUST_MIR_VIEW_COMPONENT_NAME> {
     return {
         type: 'component',
         componentName: RUST_MIR_VIEW_COMPONENT_NAME,
@@ -669,7 +669,7 @@ export function getRustMirViewWith(
     compilerName: string,
     editorid: number,
     treeid: number,
-): TypedComponentConfig<typeof RUST_MIR_VIEW_COMPONENT_NAME> {
+): ComponentConfig<typeof RUST_MIR_VIEW_COMPONENT_NAME> {
     return {
         type: 'component',
         componentName: RUST_MIR_VIEW_COMPONENT_NAME,
@@ -685,7 +685,7 @@ export function getRustMirViewWith(
 }
 
 /** Get an empty haskell core view component. */
-export function getHaskellCoreView(): TypedComponentConfig<typeof HASKELL_CORE_VIEW_COMPONENT_NAME> {
+export function getHaskellCoreView(): ComponentConfig<typeof HASKELL_CORE_VIEW_COMPONENT_NAME> {
     return {
         type: 'component',
         componentName: HASKELL_CORE_VIEW_COMPONENT_NAME,
@@ -701,7 +701,7 @@ export function getHaskellCoreViewWith(
     compilerName: string,
     editorid: number,
     treeid: number,
-): TypedComponentConfig<typeof HASKELL_CORE_VIEW_COMPONENT_NAME> {
+): ComponentConfig<typeof HASKELL_CORE_VIEW_COMPONENT_NAME> {
     return {
         type: 'component',
         componentName: HASKELL_CORE_VIEW_COMPONENT_NAME,
@@ -717,7 +717,7 @@ export function getHaskellCoreViewWith(
 }
 
 /** Get an empty haskell stg view component. */
-export function getHaskellStgView(): TypedComponentConfig<typeof HASKELL_STG_VIEW_COMPONENT_NAME> {
+export function getHaskellStgView(): ComponentConfig<typeof HASKELL_STG_VIEW_COMPONENT_NAME> {
     return {
         type: 'component',
         componentName: HASKELL_STG_VIEW_COMPONENT_NAME,
@@ -733,7 +733,7 @@ export function getHaskellStgViewWith(
     compilerName: string,
     editorid: number,
     treeid: number,
-): TypedComponentConfig<typeof HASKELL_STG_VIEW_COMPONENT_NAME> {
+): ComponentConfig<typeof HASKELL_STG_VIEW_COMPONENT_NAME> {
     return {
         type: 'component',
         componentName: HASKELL_STG_VIEW_COMPONENT_NAME,
@@ -749,7 +749,7 @@ export function getHaskellStgViewWith(
 }
 
 /** Get an empty haskell cmm view component. */
-export function getHaskellCmmView(): TypedComponentConfig<typeof HASKELL_CMM_VIEW_COMPONENT_NAME> {
+export function getHaskellCmmView(): ComponentConfig<typeof HASKELL_CMM_VIEW_COMPONENT_NAME> {
     return {
         type: 'component',
         componentName: HASKELL_CMM_VIEW_COMPONENT_NAME,
@@ -764,7 +764,7 @@ export function getHaskellCmmViewWith(
     compilerName: string,
     editorid: number,
     treeid: number,
-): TypedComponentConfig<typeof HASKELL_CMM_VIEW_COMPONENT_NAME> {
+): ComponentConfig<typeof HASKELL_CMM_VIEW_COMPONENT_NAME> {
     return {
         type: 'component',
         componentName: HASKELL_CMM_VIEW_COMPONENT_NAME,
@@ -780,7 +780,7 @@ export function getHaskellCmmViewWith(
 }
 
 /** Get an empty gnat debug tree view component. */
-export function getGnatDebugTreeView(): TypedComponentConfig<typeof GNAT_DEBUG_TREE_VIEW_COMPONENT_NAME> {
+export function getGnatDebugTreeView(): ComponentConfig<typeof GNAT_DEBUG_TREE_VIEW_COMPONENT_NAME> {
     return {
         type: 'component',
         componentName: GNAT_DEBUG_TREE_VIEW_COMPONENT_NAME,
@@ -796,7 +796,7 @@ export function getGnatDebugTreeViewWith(
     compilerName: string,
     editorid: number,
     treeid: number,
-): TypedComponentConfig<typeof GNAT_DEBUG_TREE_VIEW_COMPONENT_NAME> {
+): ComponentConfig<typeof GNAT_DEBUG_TREE_VIEW_COMPONENT_NAME> {
     return {
         type: 'component',
         componentName: GNAT_DEBUG_TREE_VIEW_COMPONENT_NAME,
@@ -812,7 +812,7 @@ export function getGnatDebugTreeViewWith(
 }
 
 /** Get an empty gnat debug info view component. */
-export function getGnatDebugView(): TypedComponentConfig<typeof GNAT_DEBUG_VIEW_COMPONENT_NAME> {
+export function getGnatDebugView(): ComponentConfig<typeof GNAT_DEBUG_VIEW_COMPONENT_NAME> {
     return {
         type: 'component',
         componentName: GNAT_DEBUG_VIEW_COMPONENT_NAME,
@@ -828,7 +828,7 @@ export function getGnatDebugViewWith(
     compilerName: string,
     editorid: number,
     treeid: number,
-): TypedComponentConfig<typeof GNAT_DEBUG_VIEW_COMPONENT_NAME> {
+): ComponentConfig<typeof GNAT_DEBUG_VIEW_COMPONENT_NAME> {
     return {
         type: 'component',
         componentName: GNAT_DEBUG_VIEW_COMPONENT_NAME,
@@ -844,7 +844,7 @@ export function getGnatDebugViewWith(
 }
 
 /** Get an empty rust macro exp view component. */
-export function getRustMacroExpView(): TypedComponentConfig<typeof RUST_MACRO_EXP_VIEW_COMPONENT_NAME> {
+export function getRustMacroExpView(): ComponentConfig<typeof RUST_MACRO_EXP_VIEW_COMPONENT_NAME> {
     return {
         type: 'component',
         componentName: RUST_MACRO_EXP_VIEW_COMPONENT_NAME,
@@ -860,7 +860,7 @@ export function getRustMacroExpViewWith(
     compilerName: string,
     editorid: number,
     treeid: number,
-): TypedComponentConfig<typeof RUST_MACRO_EXP_VIEW_COMPONENT_NAME> {
+): ComponentConfig<typeof RUST_MACRO_EXP_VIEW_COMPONENT_NAME> {
     return {
         type: 'component',
         componentName: RUST_MACRO_EXP_VIEW_COMPONENT_NAME,
@@ -876,7 +876,7 @@ export function getRustMacroExpViewWith(
 }
 
 /** Get an empty rust hir view component. */
-export function getRustHirView(): TypedComponentConfig<typeof RUST_HIR_VIEW_COMPONENT_NAME> {
+export function getRustHirView(): ComponentConfig<typeof RUST_HIR_VIEW_COMPONENT_NAME> {
     return {
         type: 'component',
         componentName: RUST_HIR_VIEW_COMPONENT_NAME,
@@ -892,7 +892,7 @@ export function getRustHirViewWith(
     compilerName: string,
     editorid: number,
     treeid: number,
-): TypedComponentConfig<typeof RUST_HIR_VIEW_COMPONENT_NAME> {
+): ComponentConfig<typeof RUST_HIR_VIEW_COMPONENT_NAME> {
     return {
         type: 'component',
         componentName: RUST_HIR_VIEW_COMPONENT_NAME,
@@ -908,7 +908,7 @@ export function getRustHirViewWith(
 }
 
 /** Get an empty device view component. */
-export function getDeviceView(): TypedComponentConfig<typeof DEVICE_VIEW_COMPONENT_NAME> {
+export function getDeviceView(): ComponentConfig<typeof DEVICE_VIEW_COMPONENT_NAME> {
     return {
         type: 'component',
         componentName: DEVICE_VIEW_COMPONENT_NAME,
@@ -924,7 +924,7 @@ export function getDeviceViewWith(
     compilerName: string,
     editorid: number,
     treeid: number,
-): TypedComponentConfig<typeof DEVICE_VIEW_COMPONENT_NAME> {
+): ComponentConfig<typeof DEVICE_VIEW_COMPONENT_NAME> {
     return {
         type: 'component',
         componentName: DEVICE_VIEW_COMPONENT_NAME,
@@ -946,7 +946,7 @@ export function getDeviceViewWith(
 /**
  * Helper function to create a typed component configuration
  */
-export function createTypedComponentConfig<K extends keyof ComponentStateMap>(
+export function createComponentConfig<K extends keyof ComponentStateMap>(
     componentName: K,
     componentState: ComponentStateMap[K],
     options?: {
@@ -956,7 +956,7 @@ export function createTypedComponentConfig<K extends keyof ComponentStateMap>(
         width?: number;
         height?: number;
     },
-): TypedComponentConfig<K> {
+): ComponentConfig<K> {
     return {
         type: 'component',
         componentName,
@@ -968,9 +968,9 @@ export function createTypedComponentConfig<K extends keyof ComponentStateMap>(
 /**
  * Helper function to create a typed layout item
  */
-export function createTypedLayoutItem(
+export function createLayoutItem(
     type: 'row' | 'column' | 'stack',
-    content: TypedItemConfig[],
+    content: ItemConfig[],
     options?: {
         isClosable?: boolean;
         reorderEnabled?: boolean;
@@ -978,7 +978,7 @@ export function createTypedLayoutItem(
         height?: number;
         activeItemIndex?: number;
     },
-): TypedLayoutItem {
+): LayoutItem {
     return {
         type,
         content,
@@ -997,7 +997,7 @@ export function createTypedLayoutItem(
  * @returns Typed config with validated component states
  * @throws Error if the configuration is invalid
  */
-export function fromGoldenLayoutConfig(config: GoldenLayout.Config): TypedGoldenLayoutConfig {
+export function fromGoldenLayoutConfig(config: GoldenLayout.Config): GoldenLayoutConfig {
     if (!config || typeof config !== 'object') {
         throw new Error('Invalid configuration: must be an object');
     }
@@ -1012,7 +1012,7 @@ export function fromGoldenLayoutConfig(config: GoldenLayout.Config): TypedGolden
 /**
  * Validates an array of item configurations (recursive)
  */
-function validateItemConfigs(items: any[]): TypedItemConfig[] {
+function validateItemConfigs(items: any[]): ItemConfig[] {
     if (!Array.isArray(items)) {
         throw new Error('Configuration content must be an array');
     }
@@ -1023,7 +1023,7 @@ function validateItemConfigs(items: any[]): TypedItemConfig[] {
 /**
  * Validates a single item configuration (component or layout item)
  */
-function validateItemConfig(item: any, index?: number): TypedItemConfig {
+function validateItemConfig(item: any, index?: number): ItemConfig {
     const location = index !== undefined ? `item ${index}` : 'item';
 
     if (!item || typeof item !== 'object') {
@@ -1046,7 +1046,7 @@ function validateItemConfig(item: any, index?: number): TypedItemConfig {
 /**
  * Validates a component configuration
  */
-function validateComponentConfig(config: any, location: string): TypedComponentConfig {
+function validateComponentConfig(config: any, location: string): ComponentConfig {
     if (!config.componentName) {
         throw new Error(`Invalid ${location}: missing 'componentName' property`);
     }
@@ -1078,7 +1078,7 @@ function validateComponentConfig(config: any, location: string): TypedComponentC
 /**
  * Validates a layout item (row, column, stack)
  */
-function validateLayoutItem(item: any, location: string): TypedLayoutItem {
+function validateLayoutItem(item: any, location: string): LayoutItem {
     if (!item.content || !Array.isArray(item.content)) {
         throw new Error(`Invalid ${location}: layout items must have a 'content' array`);
     }
@@ -1098,7 +1098,7 @@ function validateLayoutItem(item: any, location: string): TypedLayoutItem {
  * Helper to convert to GoldenLayout's expected config format.
  * This direction is safe since we're going from typed to untyped.
  */
-export function toGoldenLayoutConfig(config: TypedGoldenLayoutConfig): GoldenLayout.Config {
+export function toGoldenLayoutConfig(config: GoldenLayoutConfig): GoldenLayout.Config {
     return config as GoldenLayout.Config;
 }
 
@@ -1109,7 +1109,7 @@ export function toGoldenLayoutConfig(config: TypedGoldenLayoutConfig): GoldenLay
  * Note: We still need to cast internally because GoldenLayout's TypeScript
  * definitions don't properly type the second parameter as accepting a function.
  */
-export function createTypedDragSource<K extends keyof ComponentStateMap>(
+export function createDragSource<K extends keyof ComponentStateMap>(
     layout: GoldenLayout,
     element: HTMLElement | JQuery,
     factory: DragSourceFactory<K>,

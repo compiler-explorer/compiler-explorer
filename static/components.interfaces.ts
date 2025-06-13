@@ -65,12 +65,6 @@ export const RUST_MACRO_EXP_VIEW_COMPONENT_NAME = 'rustmacroexp';
 export const RUST_HIR_VIEW_COMPONENT_NAME = 'rusthir';
 export const DEVICE_VIEW_COMPONENT_NAME = 'device';
 
-export interface ComponentConfig<S> {
-    type: 'component';
-    componentName: string;
-    componentState: S;
-}
-
 export type StateWithLanguage = {lang: string};
 // TODO(#4490 The War of The Types) We should normalize state types
 export type StateWithEditor = {source: string | number};
@@ -370,13 +364,12 @@ export interface ComponentStateMap {
 }
 
 /**
- * Type-safe component configuration.
- * This is the new, improved version of ComponentConfig that enforces:
+ * Type-safe component configuration that enforces:
  * - type must be the literal string 'component' (not just any string)
  * - componentName must be a valid component name from ComponentStateMap
  * - componentState must match the expected type for that component
  */
-export interface TypedComponentConfig<K extends keyof ComponentStateMap = keyof ComponentStateMap> {
+export interface ComponentConfig<K extends keyof ComponentStateMap = keyof ComponentStateMap> {
     type: 'component';
     componentName: K;
     componentState: ComponentStateMap[K];
@@ -390,9 +383,9 @@ export interface TypedComponentConfig<K extends keyof ComponentStateMap = keyof 
 /**
  * Layout item types (row, column, stack) with typed content
  */
-export interface TypedLayoutItem {
+export interface LayoutItem {
     type: 'row' | 'column' | 'stack';
-    content: TypedItemConfig[];
+    content: ItemConfig[];
     isClosable?: boolean;
     reorderEnabled?: boolean;
     width?: number;
@@ -403,26 +396,26 @@ export interface TypedLayoutItem {
 /**
  * Union type for all valid item configurations
  */
-export type TypedItemConfig = TypedComponentConfig | TypedLayoutItem;
+export type ItemConfig = ComponentConfig | LayoutItem;
 
 /**
  * Type-safe GoldenLayout configuration
  */
-export interface TypedGoldenLayoutConfig extends Omit<GoldenLayout.Config, 'content'> {
-    content?: TypedItemConfig[];
+export interface GoldenLayoutConfig extends Omit<GoldenLayout.Config, 'content'> {
+    content?: ItemConfig[];
 }
 
 /**
  * Type guard to check if an item is a component configuration
  */
-export function isComponentConfig(item: TypedItemConfig): item is TypedComponentConfig {
+export function isComponentConfig(item: ItemConfig): item is ComponentConfig {
     return item.type === 'component';
 }
 
 /**
  * Type guard to check if an item is a layout item (row, column, stack)
  */
-export function isLayoutItem(item: TypedItemConfig): item is TypedLayoutItem {
+export function isLayoutItem(item: ItemConfig): item is LayoutItem {
     return item.type === 'row' || item.type === 'column' || item.type === 'stack';
 }
 
@@ -443,7 +436,7 @@ export type PartialComponentState<K extends keyof ComponentStateMap> = Partial<C
  */
 export interface SerializedLayoutState {
     version: number;
-    content: TypedItemConfig[];
+    content: ItemConfig[];
     settings?: GoldenLayout.Settings;
     dimensions?: GoldenLayout.Dimensions;
     labels?: GoldenLayout.Labels;
@@ -453,4 +446,4 @@ export interface SerializedLayoutState {
 /**
  * Type for drag source factory functions
  */
-export type DragSourceFactory<K extends keyof ComponentStateMap> = () => TypedComponentConfig<K>;
+export type DragSourceFactory<K extends keyof ComponentStateMap> = () => ComponentConfig<K>;
