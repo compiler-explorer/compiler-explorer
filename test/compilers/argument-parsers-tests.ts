@@ -298,3 +298,68 @@ describe('Rust editions parser', () => {
         expect(editions).toEqual(['2015', '2018']);
     });
 });
+
+describe('Rust help message parser', () => {
+    it('Should parse <= 1.87 help message', async () => {
+        const lines = [
+            'Usage: rustc [OPTIONS] INPUT',
+            '',
+            'Options:',
+            '    -l [KIND[:MODIFIERS]=]NAME[:RENAME]',
+            '                        Link the generated crate(s) to the specified native',
+            '                        library NAME. The optional KIND can be one of',
+            '        --target TARGET Target triple for which the code is compiled',
+            '    -W, --warn OPT      Set lint warnings',
+        ];
+        const compiler = makeCompiler(lines.join('\n'));
+        await RustParser.parse(compiler);
+        expect(compiler.compiler.supportsTarget).toBe(true);
+        expect(RustParser.getOptions(compiler, '--help')).resolves.toEqual({
+            '-l [KIND[:MODIFIERS]=]NAME[:RENAME]': {
+                description:
+                    'Link the generated crate(s) to the specified native library NAME. The optional KIND can be one of',
+                timesused: 0,
+            },
+            '--target TARGET': {
+                description: 'Target triple for which the code is compiled',
+                timesused: 0,
+            },
+            '-W, --warn OPT': {
+                description: 'Set lint warnings',
+                timesused: 0,
+            },
+        });
+    });
+
+    it('Should parse >= 1.88 help message', async () => {
+        const lines = [
+            'Usage: rustc [OPTIONS] INPUT',
+            '',
+            'Options:',
+            '    -l [<KIND>[:<MODIFIERS>]=]<NAME>[:<RENAME>]',
+            '                        Link the generated crate(s) to the specified native',
+            '                        library NAME. The optional KIND can be one of',
+            '        --target <TARGET>',
+            '                        Target triple for which the code is compiled',
+            '    -W, --warn <LINT>   Set lint warnings',
+        ];
+        const compiler = makeCompiler(lines.join('\n'));
+        await RustParser.parse(compiler);
+        expect(compiler.compiler.supportsTarget).toBe(true);
+        expect(RustParser.getOptions(compiler, '--help')).resolves.toEqual({
+            '-l [<KIND>[:<MODIFIERS>]=]<NAME>[:<RENAME>]': {
+                description:
+                    'Link the generated crate(s) to the specified native library NAME. The optional KIND can be one of',
+                timesused: 0,
+            },
+            '--target <TARGET>': {
+                description: 'Target triple for which the code is compiled',
+                timesused: 0,
+            },
+            '-W, --warn <LINT>': {
+                description: 'Set lint warnings',
+                timesused: 0,
+            },
+        });
+    });
+});
