@@ -274,8 +274,7 @@ function configFromEmbedded(embeddedUrl: string, defaultLangId: string) {
     return url.deserialiseState(embeddedUrl);
 }
 
-// TODO(jeremy-rifkin): Unsure of the type, just typing enough for `content` at the moment
-function fixBugsInConfig(config: Record<string, any> & {content?: any[]}) {
+function fixBugsInConfig(config: Partial<GoldenLayout.Config & {activeItemIndex?: number}>): void {
     if (config.activeItemIndex && config.activeItemIndex >= unwrap(config.content).length) {
         config.activeItemIndex = unwrap(config.content).length - 1;
     }
@@ -286,8 +285,6 @@ function fixBugsInConfig(config: Record<string, any> & {content?: any[]}) {
         }
     }
 }
-
-// Removed ConfigType - now using GoldenLayoutConfig from components.interfaces.ts
 
 function findConfig(
     defaultConfig: GoldenLayoutConfig,
