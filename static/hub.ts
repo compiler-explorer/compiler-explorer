@@ -26,6 +26,7 @@ import GoldenLayout, {ContentItem} from 'golden-layout';
 type GLC = GoldenLayout.Container;
 
 import _ from 'underscore';
+import {LanguageKey} from '../types/languages.interfaces.js';
 import {CompilerService} from './compiler-service.js';
 import {
     AST_VIEW_COMPONENT_NAME,
@@ -61,7 +62,6 @@ import {
 import {EventHub} from './event-hub.js';
 import {EventMap} from './event-map.js';
 import {IdentifierSet} from './identifier-set.js';
-import {LanguageKey} from './languages.interfaces.js';
 import {Ast as AstView} from './panes/ast-view.js';
 import {Cfg as CfgView} from './panes/cfg-view.js';
 import {Clangir as ClangirView} from './panes/clangir-view.js';

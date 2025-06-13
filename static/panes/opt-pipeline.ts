@@ -40,14 +40,14 @@ import * as utils from '../utils.js';
 import {Toggles} from '../widgets/toggles.js';
 
 import {escapeHTML} from '../../shared/common-utils.js';
-import {unwrap, unwrapString} from '../assert.js';
-import {CompilationResult} from '../compilation/compilation.interfaces.js';
+import {CompilationResult} from '../../types/compilation/compilation.interfaces.js';
 import {
     OptPipelineBackendOptions,
     OptPipelineOutput,
     OptPipelineResults,
-} from '../compilation/opt-pipeline-output.interfaces.js';
-import {CompilerInfo} from '../compiler.interfaces.js';
+} from '../../types/compilation/opt-pipeline-output.interfaces.js';
+import {CompilerInfo} from '../../types/compiler.interfaces.js';
+import {unwrap, unwrapString} from '../assert.js';
 
 const MIN_SIDEBAR_WIDTH = 100;
 
