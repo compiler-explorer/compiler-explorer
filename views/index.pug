@@ -50,15 +50,15 @@ block prepend content
               span.fa.fa-info-circle
               span.hideable.shortlinkInfoText
           li.nav-item.ui-presentation-control.d-none
-            a.nav-link.ui-presentation-first(href="javascript:;")
+            a.nav-link.ui-presentation-first.link-primary
               span.dropdown-icon.fas.fa-fast-backward
               | Start
           li.nav-item.ui-presentation-control.d-none
-            a.nav-link.ui-presentation-prev(href="javascript:;")
+            a.nav-link.ui-presentation-prev.link-primary
               span.dropdown-icon.fas.fa-backward
               | Previous
           li.nav-item.ui-presentation-control.d-none
-            a.nav-link.ui-presentation-next(href="javascript:;")
+            a.nav-link.ui-presentation-next.link-primary
               span.dropdown-icon.fas.fa-forward
               | Next
 
@@ -80,17 +80,17 @@ block prepend content
               // use `data-bs-toggle="modal"` on the `<a>` itself, as that would prevent the clipboard button from working.
               // Bootstrap's default blanket event handler beats out any event handler we manually attach to the button.
               if storageSolution !== "null"
-                a.dropdown-item#shareShort(href="javascript:;" data-bs-target="#sharelinkdialog" data-bind="Short")
+                a.dropdown-item.link-primary#shareShort(data-bs-target="#sharelinkdialog" data-bind="Short")
                   span.dropdown-icon.fas.fa-cloud.d-inline
                   | Short Link
                   button.btn.btn-sm.copy-link-btn.clip-icon.float-end(data-bs-target="" data-bs-toggle="none")
                     span.dropdown-icon.fa.fa-clipboard
-              a.dropdown-item#shareFull(href="javascript:;" data-bs-target="#sharelinkdialog" data-bind="Full")
+              a.dropdown-item.link-primary#shareFull(data-bs-target="#sharelinkdialog" data-bind="Full")
                 span.dropdown-icon.fas.fa-store-slash.d-inline
                 | Full Link
                 button.btn.btn-sm.copy-link-btn.clip-icon.float-end(data-bs-toggle="none")
                   span.dropdown-icon.fa.fa-clipboard
-              a.dropdown-item#shareEmbed(href="javascript:;" data-bs-target="#sharelinkdialog" data-bind="Embed")
+              a.dropdown-item.link-primary#shareEmbed(data-bs-target="#sharelinkdialog" data-bind="Embed")
                 span.dropdown-icon.fas.fa-window-restore.d-inline
                 | Embed in iframe
                 // This is not an oversight, there is in fact a .float-end missing here that's there in the other 2

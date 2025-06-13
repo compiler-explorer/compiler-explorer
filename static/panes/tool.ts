@@ -520,7 +520,7 @@ export class Tool extends MonacoPane<monaco.editor.IStandaloneCodeEditor, ToolSt
             elem.empty();
             const editorId = unwrap(this.compilerInfo.editorId);
             $('<a></a>')
-                .prop('href', 'javascript:;')
+                .addClass('link-primary')
                 .html(msg)
                 .on('click', e => {
                     this.eventHub.emit('editorSetDecoration', editorId, lineNum, true, column);
