@@ -22,10 +22,75 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
+import path from 'node:path';
+import {OptRemark} from '../../static/panes/opt-view.interfaces.js';
 import {BaseCompiler} from '../base-compiler.js';
+import * as utils from '../utils.js';
 
 export class GCCCompiler extends BaseCompiler {
     static get key() {
         return 'gcc';
+    }
+
+    override getOptFilePath(dirPath: string, outputFilebase: string): string {
+        return path.join(dirPath, 'all.opt');
+    }
+
+    override processRawOptRemarks(buffer: string, compileFileName = ''): OptRemark[] {
+        const remarks: OptRemark[] = [];
+
+        // example stderr lines:
+        // <source>:3:20: optimized: loop vectorized using 8 byte vectors
+        // <source>: 2: 6: note: vectorized 1 loops in function.
+        // <source>:11:13: missed: statement clobbers memory: somefunc (&i);
+        // BB 3 is always executed in loop 1
+
+        const remarkRegex = /^(.*?):\s*(\d+):\s*(\d+): (.*?): (.*)$/;
+
+        const mapOptType = (type: string): 'Missed' | 'Passed' | 'Analysis' => {
+            if (type === 'missed') return 'Missed';
+            if (type === 'optimized') return 'Passed';
+            return 'Analysis'; // for type 'note' or empty
+        };
+
+        utils.eachLine(buffer, line => {
+            const match = line.match(remarkRegex);
+            if (match) {
+                const [_, file, lineNum, colNum, type, message] = match;
+                // Filter out opt-remarks for included header files
+                if (file.includes(compileFileName) || file.includes('<source>')) {
+                    // opt-remark with line/col info
+                    // convert to llvm-emitted OptRemark format, just because it was here first
+                    remarks.push({
+                        DebugLoc: {
+                            File: file,
+                            // Could use line.tag for these too:
+                            Line: Number.parseInt(lineNum, 10),
+                            Column: Number.parseInt(colNum, 10),
+                        },
+                        optType: mapOptType(type),
+                        displayString: message,
+                        // TODO: make these optional?
+                        Function: '',
+                        Pass: '',
+                        Name: '',
+                        Args: [],
+                    });
+                }
+            } else {
+                // opt-remark without line/col info
+                remarks.push({
+                    DebugLoc: {File: '', Line: -1, Column: -1},
+                    optType: 'Analysis',
+                    displayString: line,
+                    Function: '',
+                    Pass: '',
+                    Name: '',
+                    Args: [],
+                });
+            }
+        });
+
+        return remarks;
     }
 }

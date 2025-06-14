@@ -111,7 +111,6 @@ import {InstructionSets} from './instructionsets.js';
 import {languages} from './languages.js';
 import {LlvmAstParser} from './llvm-ast.js';
 import {LlvmIrParser} from './llvm-ir.js';
-import {processRawOptRemarks} from './llvm-opt-transformer.js';
 import {logger} from './logger.js';
 import {getObjdumperTypeByKey} from './objdumper/index.js';
 import {ClientOptionsType, OptionsHandlerLibrary, VersionInfo} from './options-handler.js';
@@ -140,7 +139,6 @@ import {
 } from './toolchain-utils.js';
 import type {ITool} from './tooling/base-tool.interface.js';
 import * as utils from './utils.js';
-import {resultLinesToText} from './utils.js';
 
 const compilationTimeHistogram = new PromClient.Histogram({
     name: 'ce_base_compiler_compilation_duration_seconds',
@@ -1511,7 +1509,7 @@ export class BaseCompiler {
 
         if (output.code) {
             return {
-                error: `Invocation failed: ${resultLinesToText(output.stderr)}${resultLinesToText(output.stdout)}}`,
+                error: `Invocation failed: ${utils.resultLinesToText(output.stderr)}${utils.resultLinesToText(output.stdout)}}`,
                 results: {},
                 compileTime: output.execTime || compileEnd - compileStart,
             };
@@ -1809,6 +1807,7 @@ export class BaseCompiler {
         asmResult: CompilationResult,
         outputFilename: string,
         filters: ParseFiltersAndOutputOptions,
+        produceOptRemarks = false,
     ) {
         try {
             const stat = await fs.stat(outputFilename);
@@ -1816,7 +1815,7 @@ export class BaseCompiler {
         } catch (e) {
             // Ignore errors
         }
-        return await this.postProcess(asmResult, outputFilename, filters);
+        return await this.postProcess(asmResult, outputFilename, filters, produceOptRemarks);
     }
 
     runToolsOfType(tools: ActiveTool[], type: ToolTypeKey, compilationInfo: CompilationInfo): Promise<ToolResult>[] {
@@ -2357,7 +2356,7 @@ export class BaseCompiler {
         }
     }
 
-    getOptYamlPath(dirPath: string, outputFilebase: string): string {
+    getOptFilePath(dirPath: string, outputFilebase: string): string {
         return path.join(dirPath, `${outputFilebase}.opt.yaml`);
     }
 
@@ -2494,8 +2493,9 @@ export class BaseCompiler {
         }
 
         asmResult.tools = toolsResult;
+        this;
         if (this.compiler.supportsOptOutput && backendOptions.produceOptInfo) {
-            const optPath = this.getOptYamlPath(dirPath, this.outputFilebase);
+            const optPath = this.getOptFilePath(dirPath, this.outputFilebase);
             if (await utils.fileExists(optPath)) {
                 asmResult.optPath = optPath;
             }
@@ -2527,7 +2527,7 @@ export class BaseCompiler {
             return [{...asmResult, asm: '<Compilation failed>'}, [], []];
         }
 
-        return this.checkOutputFileAndDoPostProcess(asmResult, outputFilename, filters);
+        return this.checkOutputFileAndDoPostProcess(asmResult, outputFilename, filters, backendOptions.produceOptInfo);
     }
 
     doTempfolderCleanup(buildResult: BuildResult | CompilationResult) {
@@ -3199,78 +3199,22 @@ export class BaseCompiler {
         return await demangler.process(result);
     }
 
-    processGccOptInfo(stderr: ResultLine[], compileFileName: string): {remarks: OptRemark[]; newStdErr: ResultLine[]} {
-        const remarks: OptRemark[] = [];
-        const nonRemarkStderr: ResultLine[] = [];
-
-        // example stderr lines:
-        // <source>:3:20: optimized: loop vectorized using 8 byte vectors
-        // <source>: 2: 6: note: vectorized 1 loops in function.
-        // <source>:11:13: missed: statement clobbers memory: somefunc (&i);
-        const remarkRegex = /^(.*?):\s*(\d+):\s*(\d+): (.*?): (.*)$/;
-
-        const mapOptType = (type: string, line: ResultLine): 'Missed' | 'Passed' | 'Analysis' => {
-            if (type === 'missed') return 'Missed';
-            if (type === 'optimized') return 'Passed';
-            if (type === 'note') return 'Analysis';
-
-            // Did we miss any types?
-            SentryCapture(line, `Unexpected opt type: ${type}`);
-            return 'Analysis';
-        };
-
-        for (const line of stderr) {
-            const match = line.text.match(remarkRegex);
-            if (match) {
-                const [_, file, lineNum, colNum, type, message] = match;
-                if (!file || (file !== '<source>' && !file.includes(compileFileName))) continue;
-                if (type === 'warning' || type === 'error') {
-                    nonRemarkStderr.push(line);
-                    continue;
-                }
-
-                // convert to llvm-emitted OptRemark format, just because it was here first
-                remarks.push({
-                    DebugLoc: {
-                        File: file,
-                        // Could use line.tag for these too:
-                        Line: Number.parseInt(lineNum, 10),
-                        Column: Number.parseInt(colNum, 10),
-                    },
-                    optType: mapOptType(type, line),
-                    displayString: message,
-                    // TODO: make these optional?
-                    Function: '',
-                    Pass: '',
-                    Name: '',
-                    Args: [],
-                });
-            } else {
-                nonRemarkStderr.push(line);
-            }
-        }
-        // We omit remark lines from stderr to avoid it causing red squigglies in the source pane
-        return {remarks: remarks, newStdErr: nonRemarkStderr};
+    processRawOptRemarks(buffer: string, compileFileName = ''): OptRemark[] {
+        // Shouldn't get here.
+        SentryCapture('', `Unexpected processRawOptRemarks call for compiler: ${this.compiler.name}`);
+        return [];
     }
 
-    async processOptOutput(compilationRes: CompilationResult) {
+    async processOptOutput(compilationRes: CompilationResult): Promise<OptRemark[]> {
         // The distinction between clang and gcc opt remarks is a bit ad-hoc. A cleaner way might have been
         // to override processOptOutput in ClangCompiler and GCCCompiler, but that would have required having
         // all llvm-based compilers inherit ClangCompiler and all gcc-based ones inherit GCCCompiler.
         // Might be a good idea to refactor this some day.
 
-        let remarks: OptRemark[] = [];
-        if (this.compiler.optArg && this.compiler.optArg === '-fopt-info-all') {
-            // gcc-like
-            ({remarks, newStdErr: compilationRes.stderr} = this.processGccOptInfo(
-                compilationRes.stderr,
-                this.compileFilename,
-            ));
-        } else if (compilationRes.optPath) {
-            // clang-like
-            const optRemarksRaw = await fs.readFile(compilationRes.optPath, 'utf8');
-            remarks = processRawOptRemarks(optRemarksRaw, this.compileFilename);
-        }
+        if (!compilationRes.optPath) return [];
+
+        const optRemarksRaw = await fs.readFile(compilationRes.optPath, 'utf8');
+        const remarks = this.processRawOptRemarks(optRemarksRaw, this.compileFilename);
 
         if (remarks.length > 0 && this.compiler.demangler) {
             const result = JSON.stringify(remarks, null, 4);
@@ -3470,10 +3414,15 @@ but nothing was dumped. Possible causes are:
         return source;
     }
 
-    async postProcess(result: CompilationResult, outputFilename: string, filters: ParseFiltersAndOutputOptions) {
+    async postProcess(
+        result: CompilationResult,
+        outputFilename: string,
+        filters: ParseFiltersAndOutputOptions,
+        produceOptRemarks = false,
+    ) {
         const postProcess = _.compact(this.compiler.postProcess);
         const maxSize = this.env.ceProps('max-asm-size', 64 * 1024 * 1024);
-        const optPromise = this.processOptOutput(result);
+        const optPromise = produceOptRemarks ? this.processOptOutput(result) : Promise.resolve([] as OptRemark[]);
         const stackUsagePromise = result.stackUsagePath
             ? this.processStackUsageOutput(result.stackUsagePath)
             : ([] as StackUsage.StackUsageInfo[]);
