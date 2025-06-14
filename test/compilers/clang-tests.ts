@@ -22,6 +22,8 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
+import fs from 'node:fs/promises';
+import path from 'node:path';
 import {describe, expect, it} from 'vitest';
 
 import {ClangCompiler} from '../../lib/compilers/index.js';
@@ -29,23 +31,22 @@ import {makeCompilationEnvironment} from '../utils.js';
 
 describe('clang tests', () => {
     const languages = {'c++': {id: 'c++'}};
-
     const info = {
         exe: 'foobar',
         remote: true,
         lang: 'c++',
         ldPath: [],
     };
+    const clang = new ClangCompiler(info as any, makeCompilationEnvironment({languages}));
 
-    describe('device code...', async () => {
-        const clang = new ClangCompiler(info as any, makeCompilationEnvironment({languages}));
-        it('Should return null for non-device code', async () => {
-            expect(await clang.splitDeviceCode('')).to.be.null;
-            expect(await clang.splitDeviceCode('mov eax, 00h\nadd r0, r0, #1\n')).to.be.null;
-        });
-        it('should separate out bundles ', async () => {
-            expect(
-                await clang.splitDeviceCode(`# __CLANG_OFFLOAD_BUNDLE____START__ openmp-x86_64-unknown-linux-gnu
+    it('Should return null for non-device code', async () => {
+        expect(await clang.splitDeviceCode('')).to.be.null;
+        expect(await clang.splitDeviceCode('mov eax, 00h\nadd r0, r0, #1\n')).to.be.null;
+    });
+
+    it('should separate out bundles ', async () => {
+        expect(
+            await clang.splitDeviceCode(`# __CLANG_OFFLOAD_BUNDLE____START__ openmp-x86_64-unknown-linux-gnu
     i am some
     linux remote stuff
 # __CLANG_OFFLOAD_BUNDLE____END__ openmp-x86_64-unknown-linux-gnu
@@ -55,10 +56,100 @@ describe('clang tests', () => {
     i am host code
 # __CLANG_OFFLOAD_BUNDLE____END__ host-x86_64-unknown-linux-gnu
 `),
-            ).to.deep.equal({
-                'host-x86_64-unknown-linux-gnu': '    whereas\n    i am host code\n',
-                'openmp-x86_64-unknown-linux-gnu': '    i am some\n    linux remote stuff\n',
-            });
+        ).to.deep.equal({
+            'host-x86_64-unknown-linux-gnu': '    whereas\n    i am host code\n',
+            'openmp-x86_64-unknown-linux-gnu': '    i am some\n    linux remote stuff\n',
         });
+    });
+
+    it('should run process llvm opt output', async () => {
+        const test = `--- !Missed
+Pass: inline
+Name: NeverInline
+DebugLoc: { File: example.cpp, Line: 4, Column: 21 }
+Function: main
+Args: []
+...
+`;
+        const dirPath = await clang.newTempDir();
+        const optPath = path.join(dirPath, 'temp.out');
+        await fs.writeFile(optPath, test);
+        const dummyCompilationResult = {optPath: optPath, code: 0, stdout: [], stderr: [], timedOut: false};
+        expect(await clang.processOptOutput(dummyCompilationResult)).toEqual([
+            {
+                Args: [],
+                DebugLoc: {Column: 21, File: 'example.cpp', Line: 4},
+                Function: 'main',
+                Name: 'NeverInline',
+                Pass: 'inline',
+                displayString: '',
+                optType: 'Missed',
+            },
+        ]);
+    });
+
+    it('should process raw opt remarks', async () => {
+        const doc = `--- !Analysis
+Pass:            prologepilog
+Name:            StackSize
+DebugLoc:        { File: example.cpp, Line: 2, Column: 0 }
+Function:        _Z6squarei
+Args:
+  - NumStackBytes:   '8'
+  - String:          ' stack bytes in function'
+...
+--- !Analysis
+Pass:            asm-printer
+Name:            InstructionCount
+DebugLoc:        { File: example.cpp, Line: 2, Column: 0 }
+Function:        _Z6squarei
+Args:
+  - NumInstructions: '7'
+  - String:          ' instructions in function'
+...
+`;
+        const output: object[] = clang.processRawOptRemarks(doc);
+        expect(output).toEqual([
+            {
+                Args: [
+                    {
+                        NumStackBytes: '8',
+                    },
+                    {
+                        String: ' stack bytes in function',
+                    },
+                ],
+                DebugLoc: {
+                    Column: 0,
+                    File: 'example.cpp',
+                    Line: 2,
+                },
+                Function: '_Z6squarei',
+                Name: 'StackSize',
+                Pass: 'prologepilog',
+                displayString: '8 stack bytes in function',
+                optType: 'Analysis',
+            },
+            {
+                Args: [
+                    {
+                        NumInstructions: '7',
+                    },
+                    {
+                        String: ' instructions in function',
+                    },
+                ],
+                DebugLoc: {
+                    Column: 0,
+                    File: 'example.cpp',
+                    Line: 2,
+                },
+                Function: '_Z6squarei',
+                Name: 'InstructionCount',
+                Pass: 'asm-printer',
+                displayString: '7 instructions in function',
+                optType: 'Analysis',
+            },
+        ]);
     });
 });

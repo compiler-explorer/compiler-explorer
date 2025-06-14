@@ -244,7 +244,6 @@
       - any-glob-to-any-file:
           - 'lib/llvm-ast.ts'
           - 'lib/llvm-ir.ts'
-          - 'lib/llvm-opt-transformer.ts'
           - 'lib/compilers/llc.ts'
           - 'lib/compilers/llvm-mca.ts'
           - 'lib/objdumper/llvm.ts'
