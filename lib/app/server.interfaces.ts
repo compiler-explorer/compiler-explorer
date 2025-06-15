@@ -37,7 +37,7 @@ export interface ServerOptions {
     staticRoot: string;
     httpRoot: string;
     sentrySlowRequestMs: number;
-    distPath: string;
+    manifestPath: string;
     extraBodyClass: string;
     maxUploadSize: string;
 }
