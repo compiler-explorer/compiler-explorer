@@ -30,7 +30,6 @@ import {SiteTemplateResponse, UserSiteTemplate} from '../../types/features/site-
 import {assert, unwrap, unwrapString} from '../assert.js';
 import * as BootstrapUtils from '../bootstrap-utils.js';
 import {localStorage} from '../local.js';
-import {getScreenshotImage} from '../screenshots';
 import {Settings} from '../settings.js';
 import * as url from '../url.js';
 import {Alert} from './alert.js';
@@ -95,7 +94,7 @@ class SiteTemplatesWidget {
         return theme;
     }
     getAsset(name: string) {
-        return getScreenshotImage(`${name}.${this.getCurrentTheme()}.png`);
+        return `${window.staticRoot}template_screenshots/${name}.${this.getCurrentTheme()}.png`;
     }
     getDefaultAsset() {
         return 'https://placehold.jp/30/4b4b4b/ffffff/1000x800.png?text=we%27ll+support+screenshot+generation+for+user+templates+some+day';
