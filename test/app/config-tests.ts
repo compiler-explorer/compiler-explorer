@@ -358,7 +358,7 @@ describe('Config Module', () => {
             expect(result).toHaveProperty('extraBodyClass', 'test-class');
             expect(result).toHaveProperty('storageSolution', 'local');
             expect(result).toHaveProperty('httpRoot', '/ce/');
-            expect(result).toHaveProperty('staticRoot', '/ce/static/');
+            expect(result).toHaveProperty('staticRoot', '/ce/');
         });
 
         it('should enable property debugging when propDebug is true', () => {
