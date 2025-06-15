@@ -81,7 +81,6 @@ import {CompilerShared} from '../compiler-shared.js';
 import {SourceAndFiles} from '../download-service.js';
 import {InstructionSet} from '../instructionsets.js';
 import {LanguageKey} from '../languages.interfaces.js';
-import {getLogoImage} from '../logos';
 import {SentryCapture} from '../sentry.js';
 import {CompilerVersionInfo, setCompilerVersionPopoverForPane} from '../widgets/compiler-version-info.js';
 
@@ -2755,17 +2754,14 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
             btn.addClass('view-' + toolName);
             btn.data('toolname', toolName);
             if (toolIcon) {
-                const light = getLogoImage(toolIcon);
-                const dark = toolIconDark ? getLogoImage(toolIconDark) : light;
                 btn.append(
                     '<span class="dropdown-icon fas">' +
                         '<img src="' +
-                        light +
+                        toolIcon +
                         '" class="theme-light-only" width="16px" style="max-height: 16px"/>' +
                         '<img src="' +
-                        dark +
-                        '" class="theme-dark-only" width="16px" style="max-height: 16px"/>' +
-                        '</span>',
+                        toolIconDark ||
+                        toolIcon + '" class="theme-dark-only" width="16px" style="max-height: 16px"/>' + '</span>',
                 );
             } else {
                 btn.append("<span class='dropdown-icon fas fa-cog'></span>");
