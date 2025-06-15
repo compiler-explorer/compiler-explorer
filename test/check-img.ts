@@ -29,7 +29,7 @@ import {describe, expect, it} from 'vitest';
 
 import {languages} from '../lib/languages.js';
 
-const img_dir = path.resolve('views/resources/logos');
+const img_dir = path.resolve('public/logos');
 
 function checkImage(logo: string) {
     const logoPath = path.join(img_dir, logo);
