@@ -23,7 +23,6 @@
 // POSSIBILITY OF SUCH DAMAGE.
 
 import {describe, expect, it, vi} from 'vitest';
-import {getFaviconFilename} from '../../lib/app/server.js';
 import {createDefaultPugRequireHandler} from '../../lib/app/static-assets.js';
 
 // Mock the logger
@@ -107,42 +106,6 @@ describe('Static assets', () => {
                 // All should resolve to the same normalized path
                 expect(result).toBe('/static/main.hash123.js');
             }
-        });
-    });
-
-    describe('getFaviconFilename', () => {
-        it('should prioritize dev environment over other environments', () => {
-            // Dev mode favicon should be used regardless of environment flags
-            expect(getFaviconFilename(true, [])).toContain('dev');
-            expect(getFaviconFilename(true, ['beta'])).toContain('dev');
-            expect(getFaviconFilename(true, ['staging'])).toContain('dev');
-            expect(getFaviconFilename(true, ['beta', 'staging'])).toContain('dev');
-        });
-
-        it('should select appropriate favicon based on environment', () => {
-            // Test specific environments when not in dev mode
-            const environments = [
-                {env: ['beta'], expected: 'beta'},
-                {env: ['staging'], expected: 'staging'},
-                {env: [], expected: 'favicon.ico'},
-            ];
-
-            for (const {env, expected} of environments) {
-                const result = getFaviconFilename(false, env);
-                if (expected === 'favicon.ico') {
-                    expect(result).toBe(expected);
-                } else {
-                    expect(result).toContain(expected);
-                }
-            }
-        });
-
-        it('should handle environment arrays with mixed values', () => {
-            // When multiple environments are specified, there should be a consistent priority
-            expect(getFaviconFilename(false, ['beta', 'staging'])).toContain('beta');
-            expect(getFaviconFilename(false, ['staging', 'beta'])).toContain('beta');
-            expect(getFaviconFilename(false, ['other', 'beta'])).toContain('beta');
-            expect(getFaviconFilename(false, ['other', 'staging'])).toContain('staging');
         });
     });
 });

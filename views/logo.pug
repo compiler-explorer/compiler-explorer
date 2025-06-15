@@ -1,9 +1,8 @@
-a.navbar-brand(href=httpRoot title="Compiler Explorer")
-  svg.logo.align-top(height="50" width="165")
-    include resources/site-logo.svg
-    if extraBodyClass === "beta"
-      include resources/site-logo-beta.svg
-    else if extraBodyClass === "staging"
-      include resources/site-logo-staging.svg
-    else if extraBodyClass === "dev"
-      include resources/site-logo-dev.svg
+a.navbar-brand(href=httpRoot title="Compiler Explorer", style="position: relative")
+  img(src=staticRoot + "site-logo.svg" alt="Compiler Explorer logo" height="50" width="165")
+  if extraBodyClass === "beta"
+    img(src=staticRoot + "site-logo-beta.svg" alt="Compiler Explorer logo (beta)" height="50" width="165" style="position: absolute; top: 0; right: 0;")
+  else if extraBodyClass === "staging"
+    img(src=staticRoot + "site-logo-staging.svg" alt="Compiler Explorer logo (staging)" height="50" width="165" style="position: absolute; top: 0; right: 0;")
+  else if extraBodyClass === "dev"
+    img(src=staticRoot + "site-logo-dev.svg" alt="Compiler Explorer logo (dev)" height="50" width="165" style="position: absolute; top: 0; right: 0;")
