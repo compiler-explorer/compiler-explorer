@@ -27,6 +27,9 @@ import {SentryCapture, SetupSentry, setSentryLayout} from './sentry.js';
 
 SetupSentry();
 
+// Then configure the options so that window.staticRoot/httpRoot are set
+import './options.js';
+
 import 'whatwg-fetch';
 import '@popperjs/core';
 import 'bootstrap';
@@ -57,21 +60,20 @@ import {HistoryWidget} from './widgets/history-widget.js';
 import {SimpleCook} from './widgets/simplecook.js';
 import {setupSiteTemplateWidgetButton} from './widgets/site-templates-widget.js';
 
-import {Language, LanguageKey} from '../types/languages.interfaces.js';
+import {LanguageKey} from '../types/languages.interfaces.js';
 import {ComponentConfig, EmptyCompilerState, StateWithId, StateWithLanguage} from './components.interfaces.js';
 import {CompilerExplorerOptions} from './global.js';
 
 import * as utils from '../shared/common-utils.js';
 import * as BootstrapUtils from './bootstrap-utils.js';
 import {ParseFiltersAndOutputOptions} from './features/filters.interfaces.js';
-import {localStorage, sessionThenLocalStorage} from './local.js';
-import {getLogoImage} from './logos';
-import {Printerinator} from './print-view.js';
-import {setupRealDark, takeUsersOutOfRealDark} from './real-dark.js';
-import {formatISODate, updateAndCalcTopBarHeight} from './utils.js';
 import changelogDocument from './generated/changelog.pug';
 import cookiesDocument from './generated/cookies.pug';
 import privacyDocument from './generated/privacy.pug';
+import {localStorage, sessionThenLocalStorage} from './local.js';
+import {Printerinator} from './print-view.js';
+import {setupRealDark, takeUsersOutOfRealDark} from './real-dark.js';
+import {formatISODate, updateAndCalcTopBarHeight} from './utils.js';
 
 if (!window.PRODUCTION && !options.embedded) {
     // TODO: Replace with top-level await import() when we move to Vite
@@ -481,22 +483,6 @@ function removeOrphanedMaximisedItemFromConfig(config) {
     }
 }
 
-function setupLanguageLogos(languages: Partial<Record<LanguageKey, Language>>) {
-    for (const lang of Object.values(languages)) {
-        try {
-            if (lang.logoFilename !== null) {
-                lang.logoData = getLogoImage(lang.logoFilename);
-            }
-            if (lang.logoFilenameDark !== null) {
-                lang.logoDataDark = getLogoImage(lang.logoFilenameDark);
-            }
-        } catch {
-            // It doesn't really matter to us if the logo is not found, we will just not show it.
-            lang.logoData = '';
-        }
-    }
-}
-
 function earlyGetDefaultLangSetting() {
     return Settings.getStoredSettings().defaultLanguage;
 }
@@ -573,8 +559,6 @@ function start() {
     }
 
     const defaultLangId = getDefaultLangId(subLangId, options);
-
-    setupLanguageLogos(options.languages);
 
     // Cookie domains are matched as a RE against the window location. This allows a flexible
     // way that works across multiple domains (e.g. godbolt.org and compiler-explorer.com).

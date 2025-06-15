@@ -74,7 +74,7 @@ export async function setupWebPackDevMiddleware(options: ServerOptions, router: 
     const webpackCompiler = webpack([webpackConfig as WebpackConfiguration]);
     router.use(
         webpackDevMiddleware(webpackCompiler, {
-            publicPath: '/static',
+            publicPath: '/',
             stats: {
                 preset: 'errors-only',
                 timings: true,
@@ -82,7 +82,7 @@ export async function setupWebPackDevMiddleware(options: ServerOptions, router: 
         }),
     );
 
-    return path => urljoin(options.httpRoot, 'static', path);
+    return path => urljoin(options.httpRoot, path);
 }
 
 /**
