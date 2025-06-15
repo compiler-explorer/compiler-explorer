@@ -30,6 +30,7 @@ import morgan from 'morgan';
 import sanitize from 'sanitize-filename';
 import sFavicon from 'serve-favicon';
 
+import {cached, csp} from '../handlers/middleware.js';
 import {logger, makeLogStream} from '../logger.js';
 import {ClientOptionsSource} from '../options-handler.interfaces.js';
 import {PropertyGetter} from '../properties.interfaces.js';
@@ -225,21 +226,4 @@ export function setupBasicRoutes(
         })
         .use(express.json({limit: ceProps('bodyParserLimit', options.maxUploadSize)}))
         .get('/g/:id', legacyGoogleUrlHandler.handle.bind(legacyGoogleUrlHandler));
-}
-
-/**
- * Middleware for content security policy
- */
-function csp(req: Request, res: Response, next: NextFunction) {
-    // TODO: Consider if CSP should be re-enabled
-    // res.setHeader('Content-Security-Policy', `default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self' data:; connect-src 'self'; frame-src 'self';`);
-    next();
-}
-
-/**
- * Middleware for browser caching control
- */
-function cached(req: Request, res: Response, next: NextFunction) {
-    res.setHeader('Cache-Control', 'public, max-age=60');
-    next();
 }
