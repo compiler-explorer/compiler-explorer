@@ -53,7 +53,7 @@ function definition(): monaco.languages.IMonarchLanguage {
 
     if (!patternFound) {
         throw new Error(
-            'Monaco Rust hex pattern not found - check if upstream fixed the issue (https://github.com/microsoft/monaco-editor/issues/4917) and remove this patch',
+            'Monaco Rust hex pattern not found - check if upstream fixed the issue (https://github.com/microsoft/monaco-editor/issues/4917), remove this patch and revert #7819',
         );
     }
 
