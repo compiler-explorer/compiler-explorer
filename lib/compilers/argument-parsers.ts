@@ -182,7 +182,7 @@ export class GCCParser extends BaseParser {
             compiler.compiler.supportsVerboseAsm = true;
         }
         if (this.hasSupport(options, '-fopt-info')) {
-            compiler.compiler.optArg = '-fopt-info-all';
+            compiler.compiler.optArg = '-fopt-info-all=all.opt';
             compiler.compiler.supportsOptOutput = true;
         }
         // This check is not infallible, but takes care of Rust and Swift being picked up :)
