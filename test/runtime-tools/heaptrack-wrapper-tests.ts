@@ -46,7 +46,7 @@ describe('HeaptrackWrapper FD behavior tests', () => {
             execSync(`mkfifo "${pipePath}"`);
 
             // Open the pipe with O_NONBLOCK (like HeaptrackWrapper does)
-            const O_NONBLOCK = 0x800; // Linux O_NONBLOCK
+            const O_NONBLOCK = fs.constants.O_NONBLOCK; // Use fs.constants for portability
             const O_RDWR = fs.constants.O_RDWR;
             const fd = fs.openSync(pipePath, O_RDWR | O_NONBLOCK);
 
