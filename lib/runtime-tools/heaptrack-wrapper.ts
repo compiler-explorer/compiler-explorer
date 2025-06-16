@@ -130,7 +130,7 @@ export class HeaptrackWrapper extends BaseRuntimeTool {
             });
         });
 
-        return new Promise(resolve => oldfs.close(fd, () => resolve(true)));
+        // Don't manually close fd - the socket owns it and closes it during cleanup
     }
 
     private async interpretAndSave(execOptions: ExecutionOptions, result: UnprocessedExecResult) {
