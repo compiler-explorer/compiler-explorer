@@ -194,9 +194,11 @@ This endpoint allows you to compile CMake projects. The request must be a JSON d
         }
     ],
     "options": {
-        "userArguments": "<CMake-and-compiler-flags>",
+        "userArguments": "<Compiler-flags>",
         "compilerOptions": {
-            "executorRequest": false
+            "executorRequest": false,
+            "cmakeArgs": "<CMake-specific-arguments>",
+            "customOutputFilename": "<custom-output-name>"
         },
         "filters": {
             "binary": false,
@@ -214,6 +216,11 @@ The `files` array must contain all the source files for your CMake project, incl
 Each file must have:
 - `filename`: The name of the file
 - `contents`: The source code contents of the file
+
+Important parameters:
+- `userArguments`: Compiler flags passed to the C++ compiler (not CMake)
+- `compilerOptions.cmakeArgs`: Arguments passed directly to CMake (e.g., "-DCMAKE_BUILD_TYPE=Release")
+- `compilerOptions.customOutputFilename`: Custom name for the output executable
 
 The response will include the compilation results similar to the regular compile endpoint.
 
