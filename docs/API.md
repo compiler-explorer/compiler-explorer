@@ -62,7 +62,8 @@ To specify a compilation request as a JSON document, post it as the appropriate 
         "userArguments": "<Compiler-flags>",
         "compilerOptions": {
               "skipAsm": false,
-              "executorRequest": false
+              "executorRequest": false,
+              "overrides": []
         },
         "filters": {
              "binary": false,
@@ -83,7 +84,12 @@ To specify a compilation request as a JSON document, post it as the appropriate 
         "libraries": [
              {"id": "range-v3", "version": "trunk"},
              {"id": "fmt", "version": "400"}
-        ]
+        ],
+        "executeParameters": {
+            "args": [],
+            "stdin": "",
+            "runtimeTools": []
+        }
     },
     "lang": "<lang-id (Optional)>",
     "allowStoreCodeDebug": true,
@@ -154,8 +160,7 @@ If bypass compile cache is specified and an execution is to happen, the executio
 Note: `bypassCache` previously accepted a boolean. The enum values have been carefully chosen for backwards
 compatibility.
 
-Filters include `binary`, `binaryObject`, `labels`, `intel`, `directives` and `demangle`, which correspond to the UI
-buttons on the HTML version.
+Filters include `binary`, `binaryObject`, `labels`, `intel`, `directives`, `demangle`, `commentOnly`, `execute`, `libraryCode`, `trim`, and `debugCalls`, which correspond to the UI buttons on the HTML version.
 
 With the tools array you can ask CE to execute certain tools available for the current compiler, and also supply
 arguments for this tool.
