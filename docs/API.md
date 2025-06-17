@@ -2,7 +2,8 @@
 
 There's a simple restful API that can be used to do compiles to asm and to list compilers. In general all handlers live
 in `/api/*` endpoints, will accept JSON or text in POSTs, and will return text or JSON responses depending on the
-request's `Accept` header.
+request's `Accept` header. To receive JSON responses, include `Accept: application/json` in your request headers; 
+otherwise responses will be returned in plain text format.
 
 At a later date there may be some form of rate-limiting: currently, requests will be queued and dealt with in the same
 way interactive requests are done for the main site. Authentication might be required at some point in the future (for
@@ -61,7 +62,8 @@ To specify a compilation request as a JSON document, post it as the appropriate 
         "userArguments": "<Compiler-flags>",
         "compilerOptions": {
               "skipAsm": false,
-              "executorRequest": false
+              "executorRequest": false,
+              "overrides": []
         },
         "filters": {
              "binary": false,
@@ -82,10 +84,21 @@ To specify a compilation request as a JSON document, post it as the appropriate 
         "libraries": [
              {"id": "range-v3", "version": "trunk"},
              {"id": "fmt", "version": "400"}
-        ]
+        ],
+        "executeParameters": {
+            "args": [],
+            "stdin": "",
+            "runtimeTools": []
+        }
     },
     "lang": "<lang-id (Optional)>",
-    "allowStoreCodeDebug": true
+    "allowStoreCodeDebug": true,
+    "files": [
+        {
+            "filename": "myheader.h",
+            "contents": "#define MY_CONSTANT 42"
+        }
+    ]
 }
 ```
 
@@ -147,8 +160,7 @@ If bypass compile cache is specified and an execution is to happen, the executio
 Note: `bypassCache` previously accepted a boolean. The enum values have been carefully chosen for backwards
 compatibility.
 
-Filters include `binary`, `binaryObject`, `labels`, `intel`, `directives` and `demangle`, which correspond to the UI
-buttons on the HTML version.
+Filters include `binary`, `binaryObject`, `labels`, `intel`, `directives`, `demangle`, `commentOnly`, `execute`, `libraryCode`, `trim`, and `debugCalls`, which correspond to the UI buttons on the HTML version.
 
 With the tools array you can ask CE to execute certain tools available for the current compiler, and also supply
 arguments for this tool.
@@ -156,6 +168,10 @@ arguments for this tool.
 Libraries can be marked to have their directories available when including their header files. The can be listed by
 supplying the library ids and versions in an array. The id's to supply can be found with the
 `/api/libraries/<language-id>`
+
+The `files` array allows you to provide additional source files for multi-file compilation. Each file is an object with:
+- `filename`: The name of the file (e.g., "myheader.h", "utils.cpp")
+- `contents`: The source code contents of the file
 
 Note that using external header files of the type:
 
@@ -166,6 +182,49 @@ Note that using external header files of the type:
 is not supported for this endpoint for security reasons.
 
 The feature for the site is handled client-side, as the compilation nodes have no internet access.
+
+### `POST /api/compiler/<compiler-id>/cmake` - perform a CMake compilation
+
+This endpoint allows you to compile CMake projects. The request must be a JSON document with the following structure:
+
+```JSON
+{
+    "source": "cmake_minimum_required(VERSION 3.10)\nproject(MyProject)\nadd_executable(main main.cpp)",
+    "files": [
+        {
+            "filename": "main.cpp",
+            "contents": "#include <iostream>\nint main() { std::cout << \"Hello, World!\" << std::endl; return 0; }"
+        }
+    ],
+    "options": {
+        "userArguments": "<Compiler-flags>",
+        "compilerOptions": {
+            "executorRequest": false,
+            "cmakeArgs": "<CMake-specific-arguments>",
+            "customOutputFilename": "<custom-output-name>"
+        },
+        "filters": {
+            "binary": false,
+            "execute": false,
+            // ... other filters
+        },
+        "tools": [],
+        "libraries": []
+    },
+    "bypassCache": 0
+}
+```
+
+The `source` field contains the contents of your `CMakeLists.txt` file. The `files` array contains all additional source files for your CMake project. Each file must have:
+- `filename`: The name of the file
+- `contents`: The source code contents of the file
+
+Important parameters:
+- `userArguments`: Compiler flags passed to the C++ compiler (not CMake)
+- `compilerOptions.cmakeArgs`: Arguments passed directly to CMake (e.g., "-DCMAKE_BUILD_TYPE=Release")
+- `compilerOptions.customOutputFilename`: Custom name for the output executable
+
+The response will include the compilation results similar to the regular compile endpoint.
 
 ### `GET /api/formats` - return available code formatters
 
@@ -226,6 +285,14 @@ Returns documentation for given `opcode` in an `instructionSet` (an attribute of
 ```
 
 In non-JSON version, this endpoint returns only the documentation in HTML format.
+
+### `GET /api/version` - get compiler explorer version
+
+Returns the Git release name of the Compiler Explorer instance.
+
+### `GET /api/releaseBuild` - get release build number
+
+Returns the release build number of the Compiler Explorer instance.
 
 # Non-REST API's
 
