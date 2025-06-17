@@ -183,11 +183,8 @@ This endpoint allows you to compile CMake projects. The request must be a JSON d
 
 ```JSON
 {
+    "source": "cmake_minimum_required(VERSION 3.10)\nproject(MyProject)\nadd_executable(main main.cpp)",
     "files": [
-        {
-            "filename": "CMakeLists.txt",
-            "contents": "cmake_minimum_required(VERSION 3.10)\nproject(MyProject)\nadd_executable(main main.cpp)"
-        },
         {
             "filename": "main.cpp",
             "contents": "#include <iostream>\nint main() { std::cout << \"Hello, World!\" << std::endl; return 0; }"
@@ -212,8 +209,7 @@ This endpoint allows you to compile CMake projects. The request must be a JSON d
 }
 ```
 
-The `files` array must contain all the source files for your CMake project, including the `CMakeLists.txt` file. 
-Each file must have:
+The `source` field contains the contents of your `CMakeLists.txt` file. The `files` array contains all additional source files for your CMake project. Each file must have:
 - `filename`: The name of the file
 - `contents`: The source code contents of the file
 
