@@ -2,7 +2,8 @@
 
 There's a simple restful API that can be used to do compiles to asm and to list compilers. In general all handlers live
 in `/api/*` endpoints, will accept JSON or text in POSTs, and will return text or JSON responses depending on the
-request's `Accept` header.
+request's `Accept` header. To receive JSON responses, include `Accept: application/json` in your request headers; 
+otherwise responses will be returned in plain text format.
 
 At a later date there may be some form of rate-limiting: currently, requests will be queued and dealt with in the same
 way interactive requests are done for the main site. Authentication might be required at some point in the future (for
