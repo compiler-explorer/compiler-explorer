@@ -71,7 +71,6 @@ export async function copyCopperSpicePlugins(
     logger.debug(`CopperSpice GUI detected, setting up Xcb plugins for ${executableFilename}`);
 
     try {
-        // Default CopperSpice library path if none provided
         if (libraryPaths.length === 0) {
             libraryPaths = ['/opt/compiler-explorer/libs/copperspice/1.8.0/lib'];
         }
@@ -83,11 +82,9 @@ export async function copyCopperSpicePlugins(
             return;
         }
 
-        // Create platforms directory for Qt-style plugin discovery
         const platformsDir = path.join(dirPath, 'platforms');
         await fs.mkdir(platformsDir, {recursive: true});
 
-        // Copy plugin files to platforms directory
         for (const pluginFile of pluginFiles) {
             const targetPath = path.join(platformsDir, path.basename(pluginFile));
             await fs.copyFile(pluginFile, targetPath);
