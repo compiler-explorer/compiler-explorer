@@ -684,7 +684,7 @@ function start() {
     }
 
     function setupAdd<K extends keyof ComponentStateMap>(thing: JQuery, func: () => ComponentConfig<K>) {
-        createDragSource(layout, thing, func)._dragListener.on('dragStart', () => {
+        createDragSource(layout, thing, func).on('dragStart', () => {
             const addDropdown = unwrap(
                 BootstrapUtils.getDropdownInstance('#addDropdown'),
                 'Dropdown instance not found for #addDropdown',

@@ -26,12 +26,14 @@ import GoldenLayout from 'golden-layout';
 
 import {ParseFiltersAndOutputOptions} from '../types/features/filters.interfaces.js';
 import {GccDumpViewState} from './panes/gccdump-view.interfaces.js';
+import {SentryCapture} from './sentry.js';
 
 import {ConfiguredOverrides} from '../types/compilation/compiler-overrides.interfaces.js';
 import {ConfiguredRuntimeTools} from '../types/execution/execution.interfaces.js';
 import {LanguageKey} from '../types/languages.interfaces.js';
 import {
     AST_VIEW_COMPONENT_NAME,
+    AnyComponentConfig,
     CFG_VIEW_COMPONENT_NAME,
     CLANGIR_VIEW_COMPONENT_NAME,
     COMPILER_COMPONENT_NAME,
@@ -939,34 +941,13 @@ export function getDeviceViewWith(
     };
 }
 
-// =============================================================================
-// GoldenLayout Type Safety Utility Functions
-// =============================================================================
-//
-// IMPLEMENTATION STATUS:
-// ✅ Phase 1 (COMPLETED): Type-safe component creation and configuration
-//    - All component factory functions return strongly-typed configs
-//    - ComponentConfig<K> enforces valid component names and state types
-//    - No more 'as any' casts when creating drag sources or components
-//
-// TODO(#7807): Implement type-safe serialization/deserialization
-// TODO(#7808): Enable configuration validation and fix remaining type gaps
-//
-// =============================================================================
-
 /**
  * Helper function to create a typed component configuration
  */
 export function createComponentConfig<K extends keyof ComponentStateMap>(
     componentName: K,
     componentState: ComponentStateMap[K],
-    options?: {
-        title?: string;
-        isClosable?: boolean;
-        reorderEnabled?: boolean;
-        width?: number;
-        height?: number;
-    },
+    options?: Pick<AnyComponentConfig, 'title' | 'isClosable' | 'reorderEnabled' | 'width' | 'height'>,
 ): ComponentConfig<K> {
     return {
         type: 'component',
@@ -982,13 +963,7 @@ export function createComponentConfig<K extends keyof ComponentStateMap>(
 export function createLayoutItem(
     type: 'row' | 'column' | 'stack',
     content: ItemConfig[],
-    options?: {
-        isClosable?: boolean;
-        reorderEnabled?: boolean;
-        width?: number;
-        height?: number;
-        activeItemIndex?: number;
-    },
+    options?: Pick<LayoutItem, 'isClosable' | 'reorderEnabled' | 'width' | 'height' | 'activeItemIndex'>,
 ): LayoutItem {
     return {
         type,
@@ -1060,7 +1035,7 @@ function validateItemConfig(item: any, index?: number): ItemConfig {
 /**
  * Validates a component configuration
  */
-function validateComponentConfig(config: any, location: string): ComponentConfig {
+function validateComponentConfig(config: any, location: string): AnyComponentConfig {
     if (!config.componentName) {
         throw new Error(`Invalid ${location}: missing 'componentName' property`);
     }
@@ -1117,8 +1092,8 @@ export function toGoldenLayoutConfig(config: GoldenLayoutConfig): GoldenLayout.C
 }
 
 /**
- * Typed wrapper for createDragSource that avoids the need for 'as any'.
- * Returns the result with _dragListener property for event handling.
+ * Typed wrapper for createDragSource that returns the drag event emitter directly.
+ * This simplifies the API by hiding the internal _dragListener implementation detail.
  *
  * Note: We still need to cast internally because GoldenLayout's TypeScript
  * definitions don't properly type the second parameter as accepting a function.
@@ -1127,10 +1102,11 @@ export function createDragSource<K extends keyof ComponentStateMap>(
     layout: GoldenLayout,
     element: HTMLElement | JQuery,
     factory: DragSourceFactory<K>,
-): any {
+): GoldenLayout.EventEmitter {
     // TODO(#7808): Fix GoldenLayout TypeScript definitions to eliminate 'as any' cast
-    // createDragSource returns object with _dragListener but types say void.
-    return layout.createDragSource(element, factory as any);
+    // Both the factory parameter type and return type are incorrectly defined
+    const result = layout.createDragSource(element, factory as any) as any;
+    return result._dragListener;
 }
 
 /**
@@ -1207,6 +1183,7 @@ function validateComponentState(componentName: string, state: any): boolean {
 
         default:
             // Unknown component name - this should not happen with proper typing
+            SentryCapture(componentName, `Unknown component name in validateComponentState: ${componentName}`);
             return false;
     }
 }

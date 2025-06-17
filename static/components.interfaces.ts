@@ -379,7 +379,7 @@ export interface ComponentStateMap {
  * - componentName must be a valid component name from ComponentStateMap
  * - componentState must match the expected type for that component
  */
-export interface ComponentConfig<K extends keyof ComponentStateMap = keyof ComponentStateMap> {
+export interface ComponentConfig<K extends keyof ComponentStateMap> {
     type: 'component';
     componentName: K;
     componentState: ComponentStateMap[K];
@@ -389,6 +389,11 @@ export interface ComponentConfig<K extends keyof ComponentStateMap = keyof Compo
     width?: number;
     height?: number;
 }
+
+/**
+ * Type alias for any component configuration
+ */
+export type AnyComponentConfig = ComponentConfig<keyof ComponentStateMap>;
 
 /**
  * Layout item types (row, column, stack) with typed content
@@ -406,7 +411,7 @@ export interface LayoutItem {
 /**
  * Union type for all valid item configurations
  */
-export type ItemConfig = ComponentConfig | LayoutItem;
+export type ItemConfig = AnyComponentConfig | LayoutItem;
 
 /**
  * Type-safe GoldenLayout configuration. We extend GoldenLayout.Config but replace the 'content' field because the
@@ -421,7 +426,7 @@ export interface GoldenLayoutConfig extends Omit<GoldenLayout.Config, 'content'>
  * Type guard to check if an item is a component configuration
  * TODO(#7808): Use this for configuration validation in fromGoldenLayoutConfig
  */
-export function isComponentConfig(item: ItemConfig): item is ComponentConfig {
+export function isComponentConfig(item: ItemConfig): item is AnyComponentConfig {
     return item.type === 'component';
 }
 

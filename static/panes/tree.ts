@@ -447,7 +447,7 @@ export class Tree {
     }
 
     private bindClickToOpenPane(dragSource, dragConfig) {
-        createDragSource(this.container.layoutManager, dragSource, () => dragConfig.bind(this)())._dragListener.on(
+        createDragSource(this.container.layoutManager, dragSource, () => dragConfig.bind(this)()).on(
             'dragStart',
             () => {
                 const dropdown = this.domRoot.find('.add-pane');
