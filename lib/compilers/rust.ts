@@ -27,6 +27,7 @@ import path from 'node:path';
 import {SemVer} from 'semver';
 import _ from 'underscore';
 
+import {OptRemark} from '../../static/panes/opt-view.interfaces.js';
 import {ExecutionOptionsWithEnv} from '../../types/compilation/compilation.interfaces.js';
 import {CompilerOverrideType, ConfiguredOverrides} from '../../types/compilation/compiler-overrides.interfaces.js';
 import {LLVMIrBackendOptions} from '../../types/compilation/ir.interfaces.js';
@@ -39,8 +40,8 @@ import {BaseCompiler} from '../base-compiler.js';
 import type {BuildEnvDownloadInfo} from '../buildenvsetup/buildenv.interfaces.js';
 import {CompilationEnvironment} from '../compilation-env.js';
 import {changeExtension, parseRustOutput} from '../utils.js';
-
 import {RustParser} from './argument-parsers.js';
+import {processYamlOptRemarks} from './clang.js';
 
 export class RustCompiler extends BaseCompiler {
     amd64linker: string;
@@ -251,7 +252,7 @@ export class RustCompiler extends BaseCompiler {
         return opts;
     }
 
-    override getOptYamlPath(dirPath: string, outputFilebase: string): string {
+    override getOptFilePath(dirPath: string, outputFilebase: string): string {
         // Find a file in dirPath that ends with codegen.opt.yaml, and return it
         // A bit of a hack, but it works for now
         const files = readdirSync(dirPath);
@@ -335,5 +336,9 @@ export class RustCompiler extends BaseCompiler {
                 !(opt === '--emit' && allOpts[idx + 1].startsWith('mir=')) && !opt.startsWith('mir='),
         );
         return super.runCompiler(compiler, newOptions, inputFilename, execOptions);
+    }
+
+    override processRawOptRemarks(buffer: string, compileFileName?: string): OptRemark[] {
+        return processYamlOptRemarks(buffer, compileFileName);
     }
 }
