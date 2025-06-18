@@ -57,6 +57,7 @@ export interface RenderConfig extends PugOptions {
     readOnly?: boolean;
     config?: GoldenLayoutRootStruct;
     metadata?: ShortLinkMetaData;
+    faviconFilename: string;
     storedStateId?: string | false;
     require?: PugRequireHandler;
     sponsors?: Sponsors;
