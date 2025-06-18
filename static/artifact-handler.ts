@@ -51,16 +51,16 @@ export class ArtifactHandler {
     private handleArtifact(artifact: Artifact): void {
         switch (artifact.type) {
             case ArtifactType.nesrom:
-                this.emulateNESROM(artifact.content);
+                this.emulateNESROM(artifact);
                 break;
             case ArtifactType.bbcdiskimage:
-                this.emulateBbcDisk(artifact.content);
+                this.emulateBbcDisk(artifact);
                 break;
             case ArtifactType.zxtape:
-                this.emulateSpeccyTape(artifact.content);
+                this.emulateSpeccyTape(artifact);
                 break;
             case ArtifactType.smsrom:
-                this.emulateMiracleSMS(artifact.content);
+                this.emulateMiracleSMS(artifact);
                 break;
             case ArtifactType.timetrace:
                 this.offerViewInSpeedscope(artifact);
@@ -146,7 +146,7 @@ export class ArtifactHandler {
         );
     }
 
-    private emulateMiracleSMS(image: string): void {
+    private emulateMiracleSMS(artifact: Artifact): void {
         const dialog = $('#miracleemu');
 
         this.alertSystem.notify(
@@ -170,7 +170,7 @@ export class ArtifactHandler {
                                 'https://xania.org/miracle/miracle.html?' +
                                 tmstr +
                                 '#b64sms=' +
-                                encodeURIComponent(image);
+                                encodeURIComponent(artifact.content);
                         }
                     });
                 },
@@ -178,7 +178,7 @@ export class ArtifactHandler {
         );
     }
 
-    private emulateSpeccyTape(image: string): void {
+    private emulateSpeccyTape(artifact: Artifact): void {
         const dialog = $('#jsspeccyemu');
 
         this.alertSystem.notify(
@@ -202,7 +202,7 @@ export class ArtifactHandler {
                                 'https://static.ce-cdn.net/jsspeccy/index.html?' +
                                 tmstr +
                                 '#b64tape=' +
-                                encodeURIComponent(image);
+                                encodeURIComponent(artifact.content);
                         }
                     });
                 },
@@ -210,7 +210,7 @@ export class ArtifactHandler {
         );
     }
 
-    private emulateBbcDisk(bbcdiskimage: string): void {
+    private emulateBbcDisk(artifact: Artifact): void {
         const dialog = $('#jsbeebemu');
 
         this.alertSystem.notify(
@@ -232,7 +232,7 @@ export class ArtifactHandler {
                                 'https://bbc.godbolt.org/?' +
                                 tmstr +
                                 '#embed&autoboot&disc1=b64data:' +
-                                encodeURIComponent(bbcdiskimage);
+                                encodeURIComponent(artifact.content);
                         }
                     });
                 },
@@ -240,7 +240,7 @@ export class ArtifactHandler {
         );
     }
 
-    private emulateNESROM(nesrom: string): void {
+    private emulateNESROM(artifact: Artifact): void {
         const dialog = $('#jsnesemu');
 
         this.alertSystem.notify(
@@ -262,7 +262,7 @@ export class ArtifactHandler {
                                 'https://static.ce-cdn.net/jsnes-ceweb/index.html?' +
                                 tmstr +
                                 '#b64nes=' +
-                                encodeURIComponent(nesrom);
+                                encodeURIComponent(artifact.content);
                         }
                     });
                 },
