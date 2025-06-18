@@ -108,3 +108,22 @@ export async function setupStaticMiddleware(options: ServerOptions, router: Rout
 
     return createDefaultPugRequireHandler(options.staticRoot, staticManifest);
 }
+
+/**
+ * Gets the appropriate favicon filename based on the environment
+ * @param isDevMode - Whether the app is running in development mode
+ * @param env - The environment names array
+ * @returns The favicon filename to use
+ */
+export function getFaviconFilename(isDevMode: boolean, env?: string[]): string {
+    if (isDevMode) {
+        return 'favicon-dev.ico';
+    }
+    if (env?.includes('beta')) {
+        return 'favicon-beta.ico';
+    }
+    if (env?.includes('staging')) {
+        return 'favicon-staging.ico';
+    }
+    return 'favicon.ico';
+}
