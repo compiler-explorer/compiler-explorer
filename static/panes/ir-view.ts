@@ -42,9 +42,9 @@ import * as Components from '../components.js';
 import {Hub} from '../hub.js';
 import {Toggles} from '../widgets/toggles.js';
 
+import {CompilationResult} from '../../types/compilation/compilation.interfaces.js';
 import {LLVMIrBackendOptions} from '../../types/compilation/ir.interfaces.js';
-import {CompilationResult} from '../compilation/compilation.interfaces.js';
-import {CompilerInfo} from '../compiler.interfaces.js';
+import {CompilerInfo} from '../../types/compiler.interfaces.js';
 import {SentryCapture} from '../sentry.js';
 import {Alert} from '../widgets/alert.js';
 import {Compiler} from './compiler.js';

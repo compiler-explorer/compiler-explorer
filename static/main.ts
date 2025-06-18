@@ -62,8 +62,8 @@ import {ComponentConfig, EmptyCompilerState, StateWithId, StateWithLanguage} fro
 import {CompilerExplorerOptions} from './global.js';
 
 import * as utils from '../shared/common-utils.js';
+import {ParseFiltersAndOutputOptions} from '../types/features/filters.interfaces.js';
 import * as BootstrapUtils from './bootstrap-utils.js';
-import {ParseFiltersAndOutputOptions} from './features/filters.interfaces.js';
 import {localStorage, sessionThenLocalStorage} from './local.js';
 import {Printerinator} from './print-view.js';
 import {setupRealDark, takeUsersOutOfRealDark} from './real-dark.js';
