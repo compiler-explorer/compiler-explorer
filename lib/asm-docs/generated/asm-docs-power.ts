@@ -1,4 +1,4 @@
-import { AssemblyInstructionInfo } from "../base.js";
+import type { AssemblyInstructionInfo } from "../../../types/assembly-docs.interfaces.js";
 
 // Based on the IBM documentation of assembly instructions for AIX 7.3 (https://www.ibm.com/docs/en/aix/7.3?topic=reference-instruction-set).
 //

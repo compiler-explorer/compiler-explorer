@@ -22,7 +22,8 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import {AssemblyInstructionInfo, BaseAssemblyDocumentationProvider} from './base.js';
+import type {AssemblyInstructionInfo} from '../../types/assembly-docs.interfaces.js';
+import {BaseAssemblyDocumentationProvider} from './base.js';
 import {getAsmOpcode} from './generated/asm-docs-java.js';
 
 export class JavaDocumentationProvider extends BaseAssemblyDocumentationProvider {

@@ -1,4 +1,4 @@
-// Copyright (c) 2025, Compiler Explorer Authors
+// Copyright (c) 2021, Compiler Explorer Authors
 // All rights reserved.
 //
 // Redistribution and use in source and binary forms, with or without
@@ -22,15 +22,4 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import type {AssemblyInstructionInfo} from '../../types/assembly-docs.interfaces.js';
-import {BaseAssemblyDocumentationProvider} from './base.js';
-import {getAsmOpcode} from './generated/asm-docs-65c816.js';
-
-export class WDC65c816DocumentationProvider extends BaseAssemblyDocumentationProvider {
-    public static get key() {
-        return 'wdc65c816';
-    }
-    public override getInstructionInformation(instruction: string): AssemblyInstructionInfo | null {
-        return getAsmOpcode(instruction) || null;
-    }
-}
+export type AssemblyInstructionInfo = Record<'tooltip' | 'html' | 'url', string>;
