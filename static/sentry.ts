@@ -72,6 +72,21 @@ export function SetupSentry() {
                 /Illegal value for lineNumber/,
                 'SlowRequest',
             ],
+            beforeSend(event, hint) {
+                // Filter Monaco Editor clipboard cancellation errors
+                if (event.exception?.values?.[0]?.stacktrace?.frames) {
+                    const frames = event.exception.values[0].stacktrace.frames;
+                    const hasClipboardFrame = frames.some(frame =>
+                        frame.filename?.includes('monaco-editor/esm/vs/platform/clipboard/browser/clipboardService.js'),
+                    );
+                    const isCancellationError = event.exception.values[0].value === 'Canceled: Canceled';
+
+                    if (hasClipboardFrame && isCancellationError) {
+                        return null; // Don't send to Sentry
+                    }
+                }
+                return event;
+            },
         });
         window.addEventListener('unhandledrejection', event => {
             SentryCapture(event.reason, 'Unhandled Promise Rejection');
