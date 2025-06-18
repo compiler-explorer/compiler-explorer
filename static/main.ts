@@ -76,11 +76,6 @@ import changelogDocument from './generated/changelog.pug';
 import cookiesDocument from './generated/cookies.pug';
 import privacyDocument from './generated/privacy.pug';
 
-if (!window.PRODUCTION && !options.embedded) {
-    // TODO: Replace with top-level await import() when we move to Vite
-    require('./tests/_all');
-}
-
 //css
 import 'bootstrap/dist/css/bootstrap.min.css';
 import 'golden-layout/src/css/goldenlayout-base.css';

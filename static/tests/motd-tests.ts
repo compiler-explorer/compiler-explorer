@@ -58,8 +58,8 @@ describe('MOTD Tests', () => {
         });
 
         it('should filter ad if now > until', () => {
-            vi.setSystemTime(new Date('2022-01-08T00:00:00+00:00'));
-            expect(isValidAd({filter: [], html: '', valid_from: '2022-01-16T00:00:00+00:00'}, 'langForTest')).toBe(
+            vi.setSystemTime(new Date('2022-01-20T00:00:00+00:00'));
+            expect(isValidAd({filter: [], html: '', valid_until: '2022-01-16T00:00:00+00:00'}, 'langForTest')).toBe(
                 false,
             );
         });
