@@ -71,7 +71,7 @@ export function SetupSentry() {
                 /Illegal value for lineNumber/,
                 'SlowRequest',
             ],
-            beforeSend(event: Sentry.Event, hint: Sentry.EventHint) {
+            beforeSend(event, hint) {
                 // Filter Monaco Editor hit testing errors
                 // See: https://github.com/microsoft/monaco-editor/issues/4527
                 if (event.exception?.values?.[0]?.stacktrace?.frames) {
