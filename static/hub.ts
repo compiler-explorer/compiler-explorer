@@ -363,7 +363,7 @@ export class Hub {
         return this.findEditorInChildren(this.layout.root);
     }
 
-    public addInEditorStackIfPossible(elem: GoldenLayout.ContentItem): void {
+    public addInEditorStackIfPossible(elem: GoldenLayout.ItemConfig): void {
         const insertionPoint = this.findEditorParentRowOrColumn();
         // required not-true check because findEditorParentRowOrColumn returns
         // false if there is no editor parent
@@ -374,7 +374,7 @@ export class Hub {
         }
     }
 
-    public addAtRoot(elem: GoldenLayout.ContentItem): void {
+    public addAtRoot(elem: GoldenLayout.ItemConfig): void {
         if (this.layout.root.contentItems.length > 0) {
             const rootFirstItem = this.layout.root.contentItems[0];
             if (rootFirstItem.isRow || rootFirstItem.isColumn) {

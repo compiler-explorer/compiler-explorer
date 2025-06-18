@@ -32,6 +32,7 @@ import _ from 'underscore';
 import * as BootstrapUtils from '../bootstrap-utils.js';
 import * as colour from '../colour.js';
 import * as Components from '../components.js';
+import {createDragSource} from '../components.js';
 import * as monacoConfig from '../monaco-config.js';
 import {options} from '../options.js';
 import * as quickFixesHandler from '../quick-fixes-handler.js';
@@ -595,15 +596,12 @@ export class Editor extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Edit
         };
 
         const addPaneOpener = (dragSource: JQuery<HTMLElement>, dragConfig) => {
-            this.container.layoutManager
-                .createDragSource(dragSource, dragConfig)
-                // @ts-expect-error: createDragSource returns not void
-                ._dragListener.on('dragStart', () => {
-                    const dropdown = BootstrapUtils.getDropdownInstance(paneAdderDropdown);
-                    if (dropdown) {
-                        dropdown.toggle();
-                    }
-                });
+            createDragSource(this.container.layoutManager, dragSource, () => dragConfig()).on('dragStart', () => {
+                const dropdown = BootstrapUtils.getDropdownInstance(paneAdderDropdown);
+                if (dropdown) {
+                    dropdown.toggle();
+                }
+            });
 
             dragSource.on('click', () => {
                 const insertPoint =

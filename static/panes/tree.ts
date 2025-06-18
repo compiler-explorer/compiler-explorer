@@ -32,6 +32,7 @@ import {LanguageKey} from '../../types/languages.interfaces.js';
 import {ResultLine} from '../../types/resultline/resultline.interfaces.js';
 import {assert, unwrap, unwrapString} from '../assert.js';
 import * as BootstrapUtils from '../bootstrap-utils.js';
+import {createDragSource} from '../components.js';
 import * as Components from '../components.js';
 import {EventHub} from '../event-hub.js';
 import {Hub} from '../hub.js';
@@ -446,7 +447,7 @@ export class Tree {
     }
 
     private bindClickToOpenPane(dragSource, dragConfig) {
-        (this.container.layoutManager.createDragSource(dragSource, dragConfig.bind(this)) as any)._dragListener.on(
+        createDragSource(this.container.layoutManager, dragSource, () => dragConfig.bind(this)()).on(
             'dragStart',
             () => {
                 const dropdown = this.domRoot.find('.add-pane');
