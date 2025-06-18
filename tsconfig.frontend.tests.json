@@ -1,5 +1,5 @@
 {
     "extends": "./tsconfig.frontend.json",
-    "files": [],
-    "include": ["test/static/**/*.js", "test/static/**/*.ts"],
+    "files": ["static/global.ts"],
+    "include": ["static/tests/**/*.ts"],
 }

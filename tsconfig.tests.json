@@ -1,6 +1,5 @@
 {
   "extends": "./tsconfig.backend.json",
   "files": [],
-  "include": ["test/**/*.js", "test/**/*.ts"],
-  "exclude": ["test/**/static"],
+  "include": ["test/**/*.js", "test/**/*.ts"]
 }
