@@ -29,7 +29,7 @@ import {LRUCache} from 'lru-cache';
 import * as monaco from 'monaco-editor';
 import {editor} from 'monaco-editor';
 import _ from 'underscore';
-import {AssemblyInstructionInfo} from '../../lib/asm-docs/base.js';
+import {AssemblyInstructionInfo} from '../../types/assembly-docs.interfaces.js';
 import {
     ActiveTool,
     BypassCache,

@@ -3,7 +3,6 @@
   "compilerOptions": {
     /* Module resolution */
     "target": "es5",
-    "rootDirs": ["./static", "./types"],
     /* Code generation */
     "inlineSources": true,
     "strictPropertyInitialization": false,
