@@ -22,8 +22,17 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
+// These .pug files are different from the ones on the server. Our webpack
+// config will translate the .pug files into JS objects that are importable
+// with `hash` and `text` properties.
+//
+// See the code in `/etc/scripts/parsed-pug/parsed_pug_file.js` for details.
 declare module '*.pug' {
-    const content: any;
+    type WebpackBuiltPugFile = {
+        hash: string;
+        text: string;
+    };
+    declare const content: WebpackBuiltPugFile;
     export default content;
 }
 
