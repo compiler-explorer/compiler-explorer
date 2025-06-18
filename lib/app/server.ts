@@ -65,6 +65,7 @@ export async function setupWebServer(
         pugRequireHandler,
         options,
         dependencies,
+        appArgs,
     );
 
     // Add healthcheck before logging middleware to prevent excessive log entries
