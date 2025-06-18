@@ -422,7 +422,7 @@ export class MultifileService {
         if (file) {
             return this.includeByFileId(file.fileId);
         }
-        return Promise.reject('File not found');
+        return Promise.reject(new Error('File not found'));
     }
 
     public forEachOpenFile(callback: (File) => void) {
@@ -497,7 +497,7 @@ export class MultifileService {
 
     public async renameFile(fileId: number): Promise<boolean> {
         const file = this.getFileByFileId(fileId);
-        if (!file) return Promise.reject('File could not be found');
+        if (!file) return Promise.reject(new Error('File could not be found'));
 
         let editor: any = null;
         if (file.isOpen && file.editorId > 0) {
@@ -546,6 +546,6 @@ export class MultifileService {
         if (file) {
             return this.renameFile(file.fileId);
         }
-        return Promise.reject('File not found');
+        return Promise.reject(new Error('File not found'));
     }
 }

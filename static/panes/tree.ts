@@ -608,10 +608,10 @@ export class Tree {
                         resolve();
                     },
                     no: () => {
-                        reject();
+                        reject(new Error('User cancelled file overwrite'));
                     },
                     onClose: () => {
-                        reject();
+                        reject(new Error('User cancelled file overwrite'));
                     },
                     yesClass: 'btn-danger',
                     yesHtml: 'Yes',

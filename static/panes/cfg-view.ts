@@ -670,7 +670,7 @@ export class Cfg extends Pane<CfgState> {
                 if (blob) {
                     resolve(blob);
                 } else {
-                    reject(blob);
+                    reject(new Error('Failed to create blob from canvas'));
                 }
             }, 'image/png');
         });

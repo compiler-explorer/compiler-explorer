@@ -201,10 +201,10 @@ export class CompilerService {
                     break;
             }
         }
-        reject({
-            request: request,
-            error: error,
-        });
+        const requestError = new Error(error);
+        // Attach request context to the error for debugging
+        (requestError as any).request = request;
+        reject(requestError);
     }
 
     private getBaseUrl() {
