@@ -24,4 +24,3 @@
 
 import './frontend-testing';
 import './hello-world';
-import './motd';
