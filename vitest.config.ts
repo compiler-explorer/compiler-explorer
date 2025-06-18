@@ -19,8 +19,9 @@ export default defineConfig({
                 test: {
                     name: 'frontend unit',
                     include: ['test/static/**/*.ts'],
-                    setupFiles: ['/test/_setup-fake-aws.ts', '/test/_setup-log.ts', '/test/static/_setup-dom.ts'],
-                    environment: 'jsdom',
+                    exclude: ['test/static/_*.ts'],
+                    setupFiles: ['/test/static/_setup-dom.ts'],
+                    environment: 'happy-dom',
                 },
             },
         ],
