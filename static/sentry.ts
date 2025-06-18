@@ -68,10 +68,20 @@ export function SetupSentry() {
                 /this.error\(new CancellationError\(\)/,
                 /new StandardMouseEvent\(monaco-editor/,
                 /Object Not Found Matching Id:2/,
-                /i is null _doHitTestWithCaretPositionFromPoint/,
                 /Illegal value for lineNumber/,
                 'SlowRequest',
             ],
+            beforeSend(event, hint) {
+                // Filter Monaco Editor hit testing errors
+                // See: https://github.com/microsoft/monaco-editor/issues/4527
+                if (event.exception?.values?.[0]?.stacktrace?.frames) {
+                    const topFrame = event.exception.values[0].stacktrace.frames[0];
+                    if (topFrame?.function === '_doHitTestWithCaretPositionFromPoint') {
+                        return null; // Don't send to Sentry
+                    }
+                }
+                return event;
+            },
         });
         window.addEventListener('unhandledrejection', event => {
             SentryCapture(event.reason, 'Unhandled Promise Rejection');
