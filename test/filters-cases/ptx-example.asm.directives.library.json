@@ -73,12 +73,12 @@
     {
       "labels": [],
       "source": null,
-      "text": ""
+      "text": "\t"
     },
     {
       "labels": [],
       "source": null,
-      "text": ""
+      "text": "\t"
     },
     {
       "labels": [],
@@ -107,8 +107,13 @@
     },
     {
       "labels": [],
-      "source": null,
-      "text": "\t.param .b64 param0;"
+      "source": {
+        "column": 5,
+        "file": "example.cu",
+        "line": 4,
+        "mainsource": true
+      },
+      "text": "\t\tst.param.b64 \t[param0+0], %rd2;"
     },
     {
       "labels": [],
@@ -118,12 +123,7 @@
         "line": 4,
         "mainsource": true
       },
-      "text": "\tst.param.b64 \t[param0+0], %rd2;"
-    },
-    {
-      "labels": [],
-      "source": null,
-      "text": "\t.param .b64 param1;"
+      "text": "\t\tst.param.b64 \t[param1+0], 0;"
     },
     {
       "labels": [],
@@ -133,12 +133,7 @@
         "line": 4,
         "mainsource": true
       },
-      "text": "\tst.param.b64 \t[param1+0], 0;"
-    },
-    {
-      "labels": [],
-      "source": null,
-      "text": "\t.param .b32 retval0;"
+      "text": "\t\tcall.uni (retval0),"
     },
     {
       "labels": [],
@@ -148,22 +143,12 @@
         "line": 4,
         "mainsource": true
       },
-      "text": "\tcall.uni (retval0), "
-    },
-    {
-      "labels": [],
-      "source": {
-        "column": 5,
-        "file": "example.cu",
-        "line": 4,
-        "mainsource": true
-      },
-      "text": "\tvprintf, "
+      "text": "\t\tvprintf,"
     },
     {
       "labels": [],
       "source": null,
-      "text": "\t("
+      "text": "\t\t("
     },
     {
       "labels": [],
@@ -173,7 +158,7 @@
         "line": 4,
         "mainsource": true
       },
-      "text": "\tparam0, "
+      "text": "\t\tparam0,"
     },
     {
       "labels": [],
@@ -183,12 +168,12 @@
         "line": 4,
         "mainsource": true
       },
-      "text": "\tparam1"
+      "text": "\t\tparam1"
     },
     {
       "labels": [],
       "source": null,
-      "text": "\t);"
+      "text": "\t\t);"
     },
     {
       "labels": [],
@@ -198,7 +183,7 @@
         "line": 4,
         "mainsource": true
       },
-      "text": "\tld.param.b32 \t%r1, [retval0+0];"
+      "text": "\t\tld.param.b32 \t%r1, [retval0+0];"
     },
     {
       "labels": [],
@@ -218,7 +203,7 @@
     {
       "labels": [],
       "source": null,
-      "text": ""
+      "text": "\t"
     },
     {
       "labels": [],

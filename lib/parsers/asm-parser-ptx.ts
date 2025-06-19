@@ -43,6 +43,12 @@ export class PTXAsmParser extends AsmParser {
     protected closeParen: RegExp;
     protected semicolon: RegExp;
     protected ptxDataDeclaration: RegExp;
+    protected functionStart: RegExp;
+    protected functionEnd: RegExp;
+    protected callInstruction: RegExp;
+    protected functionCallParam: RegExp;
+    protected functionCallEnd: RegExp;
+    protected labelLine: RegExp;
 
     constructor(compilerProps?: PropertyGetter) {
         super(compilerProps);
@@ -65,6 +71,15 @@ export class PTXAsmParser extends AsmParser {
 
         this.ptxDataDeclaration =
             /^\s*\.global\s+\.align\s+\d+\s+\.(b8|b16|b32|b64|u8|u16|u32|u64|s8|s16|s32|s64|f16|f32|f64)/;
+
+        this.functionStart = /^\s*\{/;
+        this.functionEnd = /^\s*\}/;
+
+        this.callInstruction = /^\s*call\./;
+        this.functionCallParam = /^\s*[a-zA-Z_][a-zA-Z0-9_]*,?\s*$/;
+        this.functionCallEnd = /^\s*\)\s*;\s*$/;
+
+        this.labelLine = /^\s*\$?[a-zA-Z_][a-zA-Z0-9_]*:.*$/;
     }
 
     override processAsm(asmResult: string, filters: ParseFiltersAndOutputOptions): ParsedAsmResult {
@@ -80,6 +95,12 @@ export class PTXAsmParser extends AsmParser {
 
         let inExternFuncDeclaration = false;
         let externFuncSeenCloseParen = false;
+        let inFunctionImplementation = false;
+        let functionBraceDepth = 0;
+        let inFunctionCall = false;
+        let callBaseIndent = '';
+        let braceDepth = 0;
+
         for (let line of asmLines) {
             const newSource = this.processSourceLine(line, files);
             if (newSource) {
@@ -91,6 +112,27 @@ export class PTXAsmParser extends AsmParser {
                 externFuncSeenCloseParen = false;
             } else if (inExternFuncDeclaration && this.closeParen.test(line)) {
                 externFuncSeenCloseParen = true;
+            }
+
+            if (this.functionStart.test(line)) {
+                functionBraceDepth++;
+                if (functionBraceDepth === 1) {
+                    inFunctionImplementation = true;
+                }
+            } else if (this.functionEnd.test(line)) {
+                functionBraceDepth--;
+                if (functionBraceDepth === 0) {
+                    inFunctionImplementation = false;
+                }
+            }
+
+            if (this.callInstruction.test(line)) {
+                inFunctionCall = true;
+                const match = line.match(/^(\s*)/);
+                callBaseIndent = match ? match[1] + '\t' : '\t';
+            } else if (inFunctionCall && this.functionCallEnd.test(line)) {
+                inFunctionCall = false;
+                callBaseIndent = '';
             }
 
             if (filters.libraryCode && inExternFuncDeclaration) {
@@ -112,12 +154,43 @@ export class PTXAsmParser extends AsmParser {
                 }
             }
 
-            if (filters.directives && this.shouldSkipPTXDirective(line)) {
+            if (filters.directives && this.shouldSkipPTXDirective(line, inFunctionImplementation)) {
                 continue;
             }
 
+            let processedLine = line;
+
+            // Never indent labels
+            if (this.labelLine.test(line)) {
+                processedLine = line.trim();
+            } else {
+                let indentLevel = braceDepth;
+
+                // Adjust indent for closing braces - they should be at the same level as opening brace
+                if (this.functionEnd.test(line)) {
+                    indentLevel = Math.max(0, braceDepth - 1);
+                }
+
+                if (indentLevel > 0) {
+                    const additionalIndent = '\t'.repeat(indentLevel);
+                    processedLine = additionalIndent + line.trim();
+                } else if (inFunctionCall && !this.functionCallEnd.test(line)) {
+                    processedLine = this.improveCallIndentation(line, callBaseIndent);
+                }
+            }
+
+            if (this.functionStart.test(line)) {
+                braceDepth++;
+            } else if (this.functionEnd.test(line)) {
+                braceDepth--;
+            }
+
+            if (filters.trim) {
+                processedLine = this.applyTrimFilter(processedLine);
+            }
+
             asm.push({
-                text: line,
+                text: processedLine,
                 source: this.hasOpcode(line) ? currentSource : null,
                 labels: [],
             });
@@ -133,7 +206,7 @@ export class PTXAsmParser extends AsmParser {
         };
     }
 
-    private shouldSkipPTXDirective(line: string): boolean {
+    private shouldSkipPTXDirective(line: string, inFunctionImplementation: boolean): boolean {
         if (!this.directive.test(line)) {
             return false;
         }
@@ -143,7 +216,7 @@ export class PTXAsmParser extends AsmParser {
         }
 
         if (this.paramDirective.test(line)) {
-            return false;
+            return inFunctionImplementation;
         }
 
         if (this.visibleDirective.test(line)) {
@@ -176,5 +249,55 @@ export class PTXAsmParser extends AsmParser {
         }
 
         return null;
+    }
+
+    private improveCallIndentation(line: string, baseIndent: string): string {
+        const trimmed = line.trim();
+        if (!trimmed) {
+            return line;
+        }
+
+        const currentIndent = line.match(/^(\s*)/)?.[1] || '';
+
+        if (/^[a-zA-Z_][a-zA-Z0-9_]*,?\s*$/.test(trimmed)) {
+            return currentIndent + baseIndent.slice(currentIndent.length) + trimmed;
+        }
+
+        if (trimmed === '(') {
+            return currentIndent + baseIndent.slice(currentIndent.length) + trimmed;
+        }
+
+        if (trimmed === ')' || trimmed === ');') {
+            const adjustedIndent = baseIndent.slice(0, -1);
+            return currentIndent + adjustedIndent.slice(currentIndent.length) + trimmed;
+        }
+
+        return line;
+    }
+
+    private applyTrimFilter(line: string): string {
+        if (line.trim().length === 0) {
+            return '';
+        }
+
+        // Convert tabs to 2 spaces while preserving the indentation structure
+        const leadingTabsMatch = line.match(/^(\t*)/);
+        const leadingTabs = leadingTabsMatch ? leadingTabsMatch[1].length : 0;
+        const leadingSpaces = '  '.repeat(leadingTabs);
+
+        const contentAfterTabs = line.substring(leadingTabs);
+        const contentWithSpaces = contentAfterTabs.replace(/\t/g, ' ');
+
+        // Squash multiple spaces in the content part but preserve the leading indentation
+        const contentParts = contentWithSpaces.split(/(\s+)/);
+        const processedContent = contentParts
+            .map((part, index) => {
+                if (index === 0) return part;
+                if (/^\s+$/.test(part)) return ' ';
+                return part;
+            })
+            .join('');
+
+        return leadingSpaces + processedContent;
     }
 }
