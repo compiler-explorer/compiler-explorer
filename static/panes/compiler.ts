@@ -1320,45 +1320,68 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
             );
         }
 
-        Promise.all(fetches).then(() => {
-            const treeState = tree.currentState();
-            const cmakeProject = tree.multifileService.isACMakeProject();
-            request.files.push(...moreFiles);
+        Promise.all(fetches)
+            .then(() => {
+                const treeState = tree.currentState();
+                const cmakeProject = tree.multifileService.isACMakeProject();
+                request.files.push(...moreFiles);
 
-            if (bypassCache) request.bypassCache = BypassCache.Compilation;
-            if (!this.compiler) {
-                this.onCompileResponse(request, this.errorResult('<Please select a compiler>'), false);
-            } else if (cmakeProject && request.source === '') {
-                this.onCompileResponse(request, this.errorResult('<Please supply a CMakeLists.txt>'), false);
-            } else {
-                if (cmakeProject) {
-                    request.options.compilerOptions.cmakeArgs = treeState.cmakeArgs;
-                    request.options.compilerOptions.customOutputFilename = treeState.customOutputFilename;
-                    this.sendCMakeCompile(request);
+                if (bypassCache) request.bypassCache = BypassCache.Compilation;
+                if (!this.compiler) {
+                    this.onCompileResponse(request, this.errorResult('<Please select a compiler>'), false);
+                } else if (cmakeProject && request.source === '') {
+                    this.onCompileResponse(request, this.errorResult('<Please supply a CMakeLists.txt>'), false);
                 } else {
-                    this.sendCompile(request);
+                    if (cmakeProject) {
+                        request.options.compilerOptions.cmakeArgs = treeState.cmakeArgs;
+                        request.options.compilerOptions.customOutputFilename = treeState.customOutputFilename;
+                        this.sendCMakeCompile(request);
+                    } else {
+                        this.sendCompile(request);
+                    }
                 }
-            }
-        });
+            })
+            .catch(error => {
+                this.onCompileResponse(
+                    request,
+                    this.errorResult('Failed to expand includes in files: ' + error.message),
+                    false,
+                );
+            });
     }
 
     compileFromEditorSource(options: CompilationRequestOptions, bypassCache: boolean) {
-        this.compilerService.expandToFiles(this.source).then((sourceAndFiles: SourceAndFiles) => {
-            const request: CompilationRequest = {
-                source: sourceAndFiles.source || '',
-                compiler: this.compiler ? this.compiler.id : '',
-                options: options,
-                lang: this.currentLangId,
-                files: sourceAndFiles.files,
-                bypassCache: BypassCache.None,
-            };
-            if (bypassCache) request.bypassCache = BypassCache.Compilation;
-            if (!this.compiler) {
-                this.onCompileResponse(request, this.errorResult('<Please select a compiler>'), false);
-            } else {
-                this.sendCompile(request);
-            }
-        });
+        this.compilerService
+            .expandToFiles(this.source)
+            .then((sourceAndFiles: SourceAndFiles) => {
+                const request: CompilationRequest = {
+                    source: sourceAndFiles.source || '',
+                    compiler: this.compiler ? this.compiler.id : '',
+                    options: options,
+                    lang: this.currentLangId,
+                    files: sourceAndFiles.files,
+                    bypassCache: BypassCache.None,
+                };
+                if (bypassCache) request.bypassCache = BypassCache.Compilation;
+                if (!this.compiler) {
+                    this.onCompileResponse(request, this.errorResult('<Please select a compiler>'), false);
+                } else {
+                    this.sendCompile(request);
+                }
+            })
+            .catch(error => {
+                this.onCompileResponse(
+                    {
+                        source: this.source,
+                        compiler: this.compiler?.id || '',
+                        options: options,
+                        lang: this.currentLangId,
+                        files: [],
+                    },
+                    this.errorResult('Failed to expand includes: ' + error.message),
+                    false,
+                );
+            });
     }
 
     makeCompilingPlaceholderTimeout() {
@@ -1727,6 +1750,10 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
                     if (result?.result) {
                         this.handlePopularArgumentsResult(result.result);
                     }
+                })
+                .catch(error => {
+                    // Log the error but don't show to user - popular arguments are optional
+                    console.warn('Failed to fetch popular arguments:', error);
                 });
         }
 
@@ -2135,11 +2162,17 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
             this.optionsField.prop('placeholder', this.initialOptionsFieldPlacehoder);
             this.flagsButton?.prop('disabled', this.flagsViewOpen);
 
-            this.compilerService.requestPopularArguments(this.compiler?.id ?? '', compilerFlags).then((result: any) => {
-                if (result?.result) {
-                    this.handlePopularArgumentsResult(result.result);
-                }
-            });
+            this.compilerService
+                .requestPopularArguments(this.compiler?.id ?? '', compilerFlags)
+                .then((result: any) => {
+                    if (result?.result) {
+                        this.handlePopularArgumentsResult(result.result);
+                    }
+                })
+                .catch(error => {
+                    // Log the error but don't show to user - popular arguments are optional
+                    console.warn('Failed to fetch popular arguments:', error);
+                });
 
             this.updateState();
         }
