@@ -22,6 +22,7 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
+import fs from 'node:fs';
 import path from 'node:path';
 
 import _ from 'underscore';
@@ -52,6 +53,43 @@ export class Win32Compiler extends BaseCompiler {
         super(compilerInfo, env);
 
         this.binaryAsmParser = new AsmParser(this.compilerProps);
+    }
+
+    private findExistingLibFile(libName: string, libPaths: string[]): string | null {
+        const fullLibName = libName.endsWith('.lib') ? libName : libName + '.lib';
+
+        for (const libPath of libPaths) {
+            const fullPath = path.join(libPath, fullLibName);
+            if (fs.existsSync(fullPath)) {
+                return libName;
+            }
+
+            // Try without 'd' suffix for debug libraries
+            if (fullLibName.endsWith('d.lib')) {
+                const releaseLibName = fullLibName.slice(0, -5) + '.lib';
+                const releaseFullPath = path.join(libPath, releaseLibName);
+                if (fs.existsSync(releaseFullPath)) {
+                    return libName.slice(0, -1);
+                }
+            }
+        }
+
+        // If fullLibName is an absolute path (not just a filename), try it directly
+        if (path.isAbsolute(fullLibName)) {
+            if (fs.existsSync(fullLibName)) {
+                return libName;
+            }
+
+            // Try without 'd' suffix for debug libraries
+            if (fullLibName.endsWith('d.lib')) {
+                const releaseLibName = fullLibName.slice(0, -5) + '.lib';
+                if (fs.existsSync(releaseLibName)) {
+                    return libName.slice(0, -1);
+                }
+            }
+        }
+
+        return null;
     }
 
     override getStdverFlags(): string[] {
@@ -85,14 +123,28 @@ export class Win32Compiler extends BaseCompiler {
                 .map(selectedLib => [selectedLib, this.findLibVersion(selectedLib)])
                 .filter(([selectedLib, foundVersion]) => !!foundVersion)
                 .map(([selectedLib, foundVersion]) => {
-                    return foundVersion.liblink.filter(Boolean).map((lib: string) => `"${lib}.lib"`);
+                    const libPaths = this.compiler.libPath || [];
+                    return foundVersion.liblink.filter(Boolean).map((lib: string) => {
+                        const existingLib = this.findExistingLibFile(lib, libPaths);
+                        if (existingLib) {
+                            return `"${existingLib}.lib"`;
+                        }
+                        // Fall back to original behavior if file not found
+                        return `"${lib}.lib"`;
+                    });
                 })
                 .map(([selectedLib, foundVersion]) => selectedLib),
         );
     }
 
     override getStaticLibraryLinks(libraries: SelectedLibraryVersion[]) {
+        const libPaths = this.compiler.libPath || [];
         return super.getSortedStaticLibraries(libraries).map(lib => {
+            const existingLib = this.findExistingLibFile(lib, libPaths);
+            if (existingLib) {
+                return '"' + existingLib + '.lib"';
+            }
+            // Fall back to original behavior if file not found
             return '"' + lib + '.lib"';
         });
     }
