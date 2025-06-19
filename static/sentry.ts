@@ -96,6 +96,21 @@ export function SetupSentry() {
                     // NOTE: Error value may be "Canceled" or "Canceled\nSentryCapture Context: ..." due to context addition
                     const isCancellationError = event.exception.values[0].value?.startsWith('Canceled');
 
+                    // TEMPORARY DEBUG: Send filter data to Sentry for analysis
+                    if (event.exception.values[0].value?.includes('Canceled')) {
+                        Sentry.captureMessage('DEBUG: Clipboard filter data', {
+                            extra: {
+                                errorValue: event.exception.values[0].value,
+                                errorType: event.exception.values[0].type,
+                                frameCount: frames.length,
+                                frameFilenames: frames.map(f => f.filename),
+                                hasClipboardFrame: hasClipboardFrame,
+                                isCancellationError: isCancellationError,
+                                shouldFilter: hasClipboardFrame && isCancellationError,
+                            },
+                        });
+                    }
+
                     if (hasClipboardFrame && isCancellationError) {
                         return null; // Don't send to Sentry
                     }
