@@ -73,20 +73,27 @@ export function SetupSentry() {
             ],
             beforeSend(event, hint) {
                 // Filter Monaco Editor errors
+                // NOTE: When debugging filters, check the actual JSON structure from Sentry UI
+                // - event.exception.values[0].value contains the error message
+                // - event.exception.values[0].type contains the error type
+                // - Sentry UI shows "type: value" but actual JSON has separate fields
+                // - frames[0] is often Sentry's wrapper, not the original error source
                 if (event.exception?.values?.[0]?.stacktrace?.frames) {
                     const frames = event.exception.values[0].stacktrace.frames;
-                    const topFrame = frames[0];
 
                     // Filter hit testing errors
                     // See: https://github.com/microsoft/monaco-editor/issues/4527
-                    if (topFrame?.function === '_doHitTestWithCaretPositionFromPoint') {
+                    // NOTE: Function name appears in error message, not as frame.function due to Sentry wrapping
+                    if (event.exception.values[0].value?.includes('_doHitTestWithCaretPositionFromPoint')) {
                         return null; // Don't send to Sentry
                     }
 
                     // Filter clipboard cancellation errors
+                    // NOTE: Frame filename matching works as expected for file path filtering
                     const hasClipboardFrame = frames.some(frame =>
                         frame.filename?.includes('monaco-editor/esm/vs/platform/clipboard/browser/clipboardService.js'),
                     );
+                    // NOTE: Error value is just "Canceled", not "Canceled: Canceled" (UI combines type + value)
                     const isCancellationError = event.exception.values[0].value === 'Canceled';
 
                     if (hasClipboardFrame && isCancellationError) {
