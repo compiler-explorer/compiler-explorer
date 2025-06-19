@@ -68,14 +68,22 @@ export function SetupSentry() {
                 /this.error\(new CancellationError\(\)/,
                 /new StandardMouseEvent\(monaco-editor/,
                 /Object Not Found Matching Id:2/,
-                /i is null _doHitTestWithCaretPositionFromPoint/,
                 /Illegal value for lineNumber/,
                 'SlowRequest',
             ],
             beforeSend(event, hint) {
-                // Filter Monaco Editor clipboard cancellation errors
+                // Filter Monaco Editor errors
                 if (event.exception?.values?.[0]?.stacktrace?.frames) {
                     const frames = event.exception.values[0].stacktrace.frames;
+                    const topFrame = frames[0];
+
+                    // Filter hit testing errors
+                    // See: https://github.com/microsoft/monaco-editor/issues/4527
+                    if (topFrame?.function === '_doHitTestWithCaretPositionFromPoint') {
+                        return null; // Don't send to Sentry
+                    }
+
+                    // Filter clipboard cancellation errors
                     const hasClipboardFrame = frames.some(frame =>
                         frame.filename?.includes('monaco-editor/esm/vs/platform/clipboard/browser/clipboardService.js'),
                     );
