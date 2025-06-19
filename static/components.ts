@@ -980,30 +980,28 @@ export function createLayoutItem(
  * states match their expected types. It provides helpful error messages
  * for invalid configurations.
  *
- * TODO(#7808): Enable this function for configuration validation
- * Currently unused but ready for implementation - see issue for details.
- *
  * @param config - Untyped config from GoldenLayout, localStorage, or URLs
  * @returns Typed config with validated component states
  * @throws Error if the configuration is invalid (should be caught and handled)
  */
-export function fromGoldenLayoutConfig(config: unknown): GoldenLayoutConfig | false {
+export function fromGoldenLayoutConfig(config: unknown): GoldenLayoutConfig {
     // Basic validation
     if (!config || typeof config !== 'object') {
-        return false;
+        throw new Error('Invalid configuration: must be an object');
     }
 
     const cfg = config as any;
 
     // Must have content array
     if (!Array.isArray(cfg.content)) {
-        return false;
+        throw new Error('Configuration content must be an array');
     }
 
     // Validate each item in content using the simple validator
-    for (const item of cfg.content) {
+    for (let i = 0; i < cfg.content.length; i++) {
+        const item = cfg.content[i];
         if (!isValidItemConfig(item)) {
-            return false;
+            throw new Error(`Invalid item ${i}: must be a valid layout item or component`);
         }
     }
 
@@ -1013,8 +1011,8 @@ export function fromGoldenLayoutConfig(config: unknown): GoldenLayoutConfig | fa
 }
 
 /**
- * Simple validation function that returns boolean instead of throwing.
- * Used by fromGoldenLayoutConfig for safer validation.
+ * Validation function that checks item structure and basic type safety.
+ * Used by fromGoldenLayoutConfig for comprehensive validation.
  */
 function isValidItemConfig(item: any): boolean {
     if (!item || typeof item !== 'object' || !item.type) {
@@ -1022,11 +1020,14 @@ function isValidItemConfig(item: any): boolean {
     }
 
     if (item.type === 'component') {
-        // Must have componentName and componentState
-        if (!item.componentName || !item.componentState) {
+        // Must have string componentName and object componentState
+        if (typeof item.componentName !== 'string' || !item.componentName) {
             return false;
         }
-        // TODO(#7808): Add more comprehensive component state validation
+        if (!item.componentState || typeof item.componentState !== 'object') {
+            return false;
+        }
+        // TODO(#7808): Add component-specific state validation
         return true;
     }
     if (item.type === 'row' || item.type === 'column' || item.type === 'stack') {

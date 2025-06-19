@@ -225,14 +225,17 @@ function setupButtons(options: CompilerExplorerOptions, hub: Hub) {
 
     $('#ui-history').on('click', () => {
         historyWidget.run(data => {
-            // data.config should already be a valid GoldenLayoutConfig from history
-            const validConfig = fromGoldenLayoutConfig(data.config);
-            if (validConfig) {
+            try {
+                // data.config should already be a valid GoldenLayoutConfig from history
+                const validConfig = fromGoldenLayoutConfig(data.config);
                 const serialized = toSerializedLayoutState(validConfig);
                 sessionThenLocalStorage.set('gl', JSON.stringify(serialized));
                 hasUIBeenReset = true;
                 window.history.replaceState(null, '', window.httpRoot);
                 window.location.reload();
+            } catch (e) {
+                console.error('Invalid configuration from history:', e);
+                // Could show user error or fall back to default
             }
         });
 
@@ -378,13 +381,8 @@ function findConfig(
     removeOrphanedMaximisedItemFromConfig(config);
     fixBugsInConfig(config);
 
-    // Validate the configuration before returning
-    const validatedConfig = fromGoldenLayoutConfig(config);
-    if (!validatedConfig) {
-        // If validation fails, return the default config
-        return defaultConfig;
-    }
-    return validatedConfig;
+    // TODO(#7808): Replace unsafe casting with fromGoldenLayoutConfig() validation
+    return config as GoldenLayoutConfig;
 }
 
 function initializeResetLayoutLink() {

@@ -45,31 +45,33 @@ import {
 describe('Components validation', () => {
     describe('fromGoldenLayoutConfig', () => {
         describe('Input validation', () => {
-            it('should return false for null input', () => {
-                expect(fromGoldenLayoutConfig(null as any)).toBe(false);
+            it('should throw for null input', () => {
+                expect(() => fromGoldenLayoutConfig(null as any)).toThrow('Invalid configuration: must be an object');
             });
 
-            it('should return false for undefined input', () => {
-                expect(fromGoldenLayoutConfig(undefined as any)).toBe(false);
+            it('should throw for undefined input', () => {
+                expect(() => fromGoldenLayoutConfig(undefined as any)).toThrow(
+                    'Invalid configuration: must be an object',
+                );
             });
 
-            it('should return false for non-object input', () => {
-                expect(fromGoldenLayoutConfig('string' as any)).toBe(false);
-                expect(fromGoldenLayoutConfig(123 as any)).toBe(false);
+            it('should throw for non-object input', () => {
+                expect(() => fromGoldenLayoutConfig('string' as any)).toThrow(
+                    'Invalid configuration: must be an object',
+                );
+                expect(() => fromGoldenLayoutConfig(123 as any)).toThrow('Invalid configuration: must be an object');
             });
 
-            it('should accept arrays as valid objects', () => {
-                // Arrays are objects in JavaScript, so they pass the initial validation
-                // The content validation will handle any structure issues later
-                expect(() => fromGoldenLayoutConfig([] as any)).not.toThrow();
+            it('should throw for arrays without content property', () => {
+                // Arrays are objects in JavaScript but they don't have a content property
+                expect(() => fromGoldenLayoutConfig([] as any)).toThrow('Configuration content must be an array');
             });
         });
 
         describe('Valid configurations', () => {
-            it('should return false for empty configuration without content', () => {
+            it('should throw for empty configuration without content', () => {
                 const config = {};
-                const result = fromGoldenLayoutConfig(config);
-                expect(result).toBe(false);
+                expect(() => fromGoldenLayoutConfig(config)).toThrow('Configuration content must be an array');
             });
 
             it('should accept configuration with empty content array', () => {
@@ -199,29 +201,35 @@ describe('Components validation', () => {
         });
 
         describe('Invalid content structure', () => {
-            it('should return false for non-array content', () => {
+            it('should throw for non-array content', () => {
                 const config = {content: 'not-array'} as any;
-                expect(fromGoldenLayoutConfig(config)).toBe(false);
+                expect(() => fromGoldenLayoutConfig(config)).toThrow('Configuration content must be an array');
             });
 
-            it('should return false for content with non-object items', () => {
+            it('should throw for content with non-object items', () => {
                 const config = {content: ['string-item']} as any;
-                expect(fromGoldenLayoutConfig(config)).toBe(false);
+                expect(() => fromGoldenLayoutConfig(config)).toThrow(
+                    'Invalid item 0: must be a valid layout item or component',
+                );
             });
 
-            it('should return false for items missing type', () => {
+            it('should throw for items missing type', () => {
                 const config = {content: [{}]} as any;
-                expect(fromGoldenLayoutConfig(config)).toBe(false);
+                expect(() => fromGoldenLayoutConfig(config)).toThrow(
+                    'Invalid item 0: must be a valid layout item or component',
+                );
             });
 
-            it('should return false for items with unknown type', () => {
+            it('should throw for items with unknown type', () => {
                 const config = {content: [{type: 'unknown'}]} as any;
-                expect(fromGoldenLayoutConfig(config)).toBe(false);
+                expect(() => fromGoldenLayoutConfig(config)).toThrow(
+                    'Invalid item 0: must be a valid layout item or component',
+                );
             });
         });
 
         describe('Invalid component configurations', () => {
-            it('should return false for component missing componentName', () => {
+            it('should throw for component missing componentName', () => {
                 const config = {
                     content: [
                         {
@@ -230,10 +238,12 @@ describe('Components validation', () => {
                         },
                     ],
                 };
-                expect(fromGoldenLayoutConfig(config)).toBe(false);
+                expect(() => fromGoldenLayoutConfig(config)).toThrow(
+                    'Invalid item 0: must be a valid layout item or component',
+                );
             });
 
-            it('should accept component with non-string componentName (lenient validation)', () => {
+            it('should throw for component with non-string componentName', () => {
                 const config = {
                     content: [
                         {
@@ -243,11 +253,12 @@ describe('Components validation', () => {
                         },
                     ],
                 };
-                // Current implementation is lenient for basic structure validation
-                expect(fromGoldenLayoutConfig(config)).toEqual(config);
+                expect(() => fromGoldenLayoutConfig(config)).toThrow(
+                    'Invalid item 0: must be a valid layout item or component',
+                );
             });
 
-            it('should accept invalid compiler state (lenient validation)', () => {
+            it('should accept invalid compiler state (structural validation)', () => {
                 const config = {
                     content: [
                         {
@@ -260,11 +271,11 @@ describe('Components validation', () => {
                         },
                     ],
                 };
-                // Current implementation is lenient for component state validation
+                // Implementation validates structure but not component-specific state details
                 expect(fromGoldenLayoutConfig(config)).toEqual(config);
             });
 
-            it('should accept invalid executor state (lenient validation)', () => {
+            it('should accept invalid executor state (structural validation)', () => {
                 const config = {
                     content: [
                         {
@@ -278,11 +289,11 @@ describe('Components validation', () => {
                         },
                     ],
                 };
-                // Current implementation is lenient for component state validation
+                // Implementation validates structure but not component-specific state details
                 expect(fromGoldenLayoutConfig(config)).toEqual(config);
             });
 
-            it('should accept invalid output state (lenient validation)', () => {
+            it('should accept invalid output state (structural validation)', () => {
                 const config = {
                     content: [
                         {
@@ -296,11 +307,11 @@ describe('Components validation', () => {
                         },
                     ],
                 };
-                // Current implementation is lenient for component state validation
+                // Implementation validates structure but not component-specific state details
                 expect(fromGoldenLayoutConfig(config)).toEqual(config);
             });
 
-            it('should accept invalid tool state (lenient validation)', () => {
+            it('should accept invalid tool state (structural validation)', () => {
                 const config = {
                     content: [
                         {
@@ -313,11 +324,11 @@ describe('Components validation', () => {
                         },
                     ],
                 };
-                // Current implementation is lenient for component state validation
+                // Implementation validates structure but not component-specific state details
                 expect(fromGoldenLayoutConfig(config)).toEqual(config);
             });
 
-            it('should accept unknown component name (lenient validation)', () => {
+            it('should accept unknown component name (structural validation)', () => {
                 const config = {
                     content: [
                         {
@@ -327,13 +338,13 @@ describe('Components validation', () => {
                         },
                     ],
                 };
-                // Current implementation is lenient for component name validation
+                // Implementation validates structure but not component name validity
                 expect(fromGoldenLayoutConfig(config)).toEqual(config);
             });
         });
 
         describe('Invalid layout item configurations', () => {
-            it('should return false for layout item missing content', () => {
+            it('should throw for layout item missing content', () => {
                 const config = {
                     content: [
                         {
@@ -341,10 +352,12 @@ describe('Components validation', () => {
                         },
                     ],
                 } as any;
-                expect(fromGoldenLayoutConfig(config)).toBe(false);
+                expect(() => fromGoldenLayoutConfig(config)).toThrow(
+                    'Invalid item 0: must be a valid layout item or component',
+                );
             });
 
-            it('should return false for layout item with non-array content', () => {
+            it('should throw for layout item with non-array content', () => {
                 const config = {
                     content: [
                         {
@@ -353,7 +366,9 @@ describe('Components validation', () => {
                         },
                     ],
                 } as any;
-                expect(fromGoldenLayoutConfig(config)).toBe(false);
+                expect(() => fromGoldenLayoutConfig(config)).toThrow(
+                    'Invalid item 0: must be a valid layout item or component',
+                );
             });
         });
 
@@ -397,7 +412,7 @@ describe('Components validation', () => {
                 expect(result).toEqual(config);
             });
 
-            it('should accept invalid nested component (lenient validation)', () => {
+            it('should accept invalid nested component (structural validation)', () => {
                 const config = {
                     content: [
                         {
@@ -425,13 +440,13 @@ describe('Components validation', () => {
                         },
                     ],
                 };
-                // Current implementation is lenient for nested component validation
+                // Implementation validates structure but not nested component state details
                 expect(fromGoldenLayoutConfig(config)).toEqual(config);
             });
         });
 
         describe('Edge cases', () => {
-            it('should return false for null component state', () => {
+            it('should throw for null component state', () => {
                 const config = {
                     content: [
                         {
@@ -442,7 +457,9 @@ describe('Components validation', () => {
                     ],
                 };
                 // Null componentState should be rejected
-                expect(fromGoldenLayoutConfig(config)).toBe(false);
+                expect(() => fromGoldenLayoutConfig(config)).toThrow(
+                    'Invalid item 0: must be a valid layout item or component',
+                );
             });
 
             it('should preserve additional properties', () => {
@@ -595,11 +612,8 @@ describe('Components validation', () => {
             };
 
             const validated = fromGoldenLayoutConfig(originalConfig);
-            expect(validated).not.toBe(false);
-            if (validated !== false) {
-                const backToGolden = toGoldenLayoutConfig(validated);
-                expect(backToGolden).toEqual(originalConfig);
-            }
+            const backToGolden = toGoldenLayoutConfig(validated);
+            expect(backToGolden).toEqual(originalConfig);
         });
 
         it('should work with complex real-world config', () => {
