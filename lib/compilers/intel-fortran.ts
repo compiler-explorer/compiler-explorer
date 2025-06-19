@@ -32,7 +32,6 @@ import type {ParseFiltersAndOutputOptions} from '../../types/features/filters.in
 import {CompilationEnvironment} from '../compilation-env.js';
 import {FortranCompiler} from './fortran.js';
 
-// Regex to match offload bundle markers in Intel Fortran output
 const offloadRegexp = /^#\s+__CLANG_OFFLOAD_BUNDLE__(__START__|__END__)\s+(.*)$/gm;
 
 export class IntelFortranCompiler extends FortranCompiler {
@@ -46,26 +45,29 @@ export class IntelFortranCompiler extends FortranCompiler {
     constructor(info: PreliminaryCompilerInfo, env: CompilationEnvironment) {
         super(info, env);
 
-        // Find llvm-dis for disassembling bitcode
+        this.compiler.supportsDeviceAsmView = true;
+
         const llvmDisPath = this.findLlvmDisassembler();
         if (llvmDisPath) {
             this.llvmDisassemblerPath = llvmDisPath;
         }
 
-        // Find clang-offload-bundler for extracting device code
-        // Intel compilers >= 2024.0.0 have a different directory structure
         this.offloadBundlerPath = this.findOffloadBundler();
     }
 
     private findLlvmDisassembler(): string | undefined {
         const compilerDir = path.dirname(this.compiler.exe);
 
-        // Try various possible locations for llvm-dis
         const possiblePaths = [
             path.join(compilerDir, 'llvm-dis'),
             path.join(compilerDir, '../bin-llvm/llvm-dis'),
             path.join(compilerDir, '../bin/llvm-dis'),
             path.join(compilerDir, 'compiler/llvm-dis'),
+            path.join(compilerDir, '../compiler/llvm-dis'),
+            path.join(compilerDir, '../../bin/llvm-dis'),
+            path.join(compilerDir, '../../bin-llvm/llvm-dis'),
+            '/usr/bin/llvm-dis',
+            '/usr/local/bin/llvm-dis',
         ];
 
         for (const llvmDisPath of possiblePaths) {
@@ -80,19 +82,16 @@ export class IntelFortranCompiler extends FortranCompiler {
     private findOffloadBundler(): string | undefined {
         const compilerDir = path.dirname(this.compiler.exe);
 
-        // Try Intel 2024+ structure first
         const newPathBundler = path.join(compilerDir, '../bin-llvm/clang-offload-bundler');
         if (fs.existsSync(newPathBundler)) {
             return path.resolve(newPathBundler);
         }
 
-        // Try older Intel compiler structure
         const oldPathBundler = path.join(compilerDir, 'compiler/clang-offload-bundler');
         if (fs.existsSync(oldPathBundler)) {
             return path.resolve(oldPathBundler);
         }
 
-        // Try same directory as compiler
         const sameDirBundler = path.join(compilerDir, 'clang-offload-bundler');
         if (fs.existsSync(sameDirBundler)) {
             return path.resolve(sameDirBundler);
@@ -105,7 +104,6 @@ export class IntelFortranCompiler extends FortranCompiler {
         const opts = super.getDefaultExecOptions();
         const compilerDir = path.dirname(this.compiler.exe);
 
-        // Add compiler directory and LLVM tool directories to PATH
         const additionalPaths = [
             compilerDir,
             path.join(compilerDir, '../bin-llvm'),
@@ -113,13 +111,11 @@ export class IntelFortranCompiler extends FortranCompiler {
             path.join(compilerDir, 'compiler'),
         ];
 
-        // Find directories that exist and contain llvm-objcopy
         const pathsWithObjcopy = additionalPaths.filter(dir => {
             const objcopyPath = path.join(dir, 'llvm-objcopy');
             return fs.existsSync(dir) && fs.existsSync(objcopyPath);
         });
 
-        // Add all potential tool directories to PATH
         const existingPaths = additionalPaths.filter(dir => fs.existsSync(dir));
         opts.env.PATH = [...pathsWithObjcopy, ...existingPaths, process.env.PATH].join(path.delimiter);
 
@@ -127,7 +123,6 @@ export class IntelFortranCompiler extends FortranCompiler {
     }
 
     async splitDeviceCode(assembly: string): Promise<Record<string, string> | null> {
-        // Check to see if there is any offload code in the assembly file
         if (!offloadRegexp.test(assembly)) return null;
 
         offloadRegexp.lastIndex = 0;
@@ -152,9 +147,20 @@ export class IntelFortranCompiler extends FortranCompiler {
         filters: ParseFiltersAndOutputOptions,
         compilationInfo: CompilationInfo,
     ) {
-        if (!result.asm) return result;
+        let asmString: string;
+        if (result.asm) {
+            asmString = Array.isArray(result.asm)
+                ? result.asm.map(line => line.text || line.toString()).join('\n')
+                : result.asm.toString();
+        } else {
+            try {
+                asmString = await fs.promises.readFile(compilationInfo.outputFilename, 'utf8');
+            } catch (error) {
+                return result;
+            }
+        }
 
-        const split = await this.splitDeviceCode(result.asm);
+        const split = await this.splitDeviceCode(asmString);
         if (!split) return result;
 
         result.devices = {};
@@ -174,15 +180,24 @@ export class IntelFortranCompiler extends FortranCompiler {
         filters: ParseFiltersAndOutputOptions,
         compilationInfo: CompilationInfo,
     ) {
-        // If the device assembly starts with 'BC', it's bitcode that needs to be extracted
-        if (deviceAsm.startsWith('BC')) {
+        if (deviceAsm.length <= 10) {
+            deviceAsm = await this.extractBitcodeFromBundle(compilationInfo.outputFilename, deviceName);
+        } else if (deviceAsm.startsWith('BC')) {
             deviceAsm = await this.extractBitcodeFromBundle(compilationInfo.outputFilename, deviceName);
         }
+        const isLlvmIr = this.llvmIr.isLlvmIr(deviceAsm);
 
-        // Process as LLVM IR if it looks like IR, otherwise process as assembly
-        return this.llvmIr.isLlvmIr(deviceAsm)
-            ? this.llvmIr.processFromFilters(deviceAsm, filters)
+        const processed = isLlvmIr
+            ? await this.llvmIr.processFromFilters(deviceAsm, filters)
             : this.asm.process(deviceAsm, filters);
+
+        return {
+            languageId: isLlvmIr ? 'llvm-ir' : 'asm',
+            code: 0,
+            stdout: [],
+            stderr: [],
+            ...processed,
+        };
     }
 
     async extractBitcodeFromBundle(bundlefile: string, devicename: string): Promise<string> {
@@ -194,7 +209,6 @@ export class IntelFortranCompiler extends FortranCompiler {
         const env = this.getDefaultExecOptions();
         env.customCwd = path.dirname(bundlefile);
 
-        // Use clang-offload-bundler to extract the bitcode
         const unbundleResult: UnprocessedExecResult = await this.exec(
             this.offloadBundlerPath,
             ['-unbundle', '--type', 's', '--inputs', bundlefile, '--outputs', bcfile, '--targets', devicename],
@@ -202,31 +216,43 @@ export class IntelFortranCompiler extends FortranCompiler {
         );
 
         if (unbundleResult.code !== 0) {
-            return unbundleResult.stderr;
+            return `<error: clang-offload-bundler failed with code ${unbundleResult.code}: ${unbundleResult.stderr}>`;
         }
 
-        // If we have llvm-dis, disassemble the bitcode to readable LLVM IR
-        if (this.llvmDisassemblerPath) {
-            const llvmirFile = path.join(path.dirname(bundlefile), devicename + '.ll');
+        if (!fs.existsSync(bcfile)) {
+            return '<error: .bc file was not created by clang-offload-bundler>';
+        }
 
-            const disassembleResult: UnprocessedExecResult = await this.exec(
-                this.llvmDisassemblerPath,
-                [bcfile, '-o', llvmirFile],
-                env,
-            );
+        const llvmirFile = path.join(path.dirname(bundlefile), devicename + '.ll');
 
-            if (disassembleResult.code !== 0) {
-                return disassembleResult.stderr;
+        const llvmDisPaths = this.llvmDisassemblerPath ? [this.llvmDisassemblerPath] : [];
+        llvmDisPaths.push('llvm-dis');
+
+        for (const llvmDisPath of llvmDisPaths) {
+            try {
+                const disassembleResult: UnprocessedExecResult = await this.exec(
+                    llvmDisPath,
+                    [bcfile, '-o', llvmirFile],
+                    env,
+                );
+
+                if (disassembleResult.code === 0 && fs.existsSync(llvmirFile)) {
+                    return await fs.promises.readFile(llvmirFile, 'utf8');
+                }
+            } catch (error) {
+                // Continue to next llvm-dis path
             }
-
-            return await fs.promises.readFile(llvmirFile, 'utf8');
         }
 
-        return '<error: no llvm-dis found to disassemble bitcode>';
+        try {
+            const bcContent = await fs.promises.readFile(bcfile);
+            return `; Raw bitcode file (${bcContent.length} bytes) - llvm-dis not available\n; Device: ${devicename}\n; File: ${bcfile}`;
+        } catch (error) {
+            return `<error: unable to read bitcode file: ${error}>`;
+        }
     }
 
     override async runExecutable(executable: string, executeParameters: ExecutableExecutionOptions, homeDir: string) {
-        // Set up Intel OpenCL runtime paths for GPU execution
         const base = path.dirname(this.compiler.exe);
         const ocl_pre2024 = path.resolve(`${base}/../lib/x64/libintelocl.so`);
         const ocl_2024 = path.resolve(`${base}/../lib/libintelocl.so`);
