@@ -84,7 +84,17 @@ export function SetupSentry() {
             },
         });
         window.addEventListener('unhandledrejection', event => {
-            SentryCapture(event.reason, 'Unhandled Promise Rejection');
+            // Convert non-Error rejection reasons to Error objects
+            let reason = event.reason;
+            if (!(reason instanceof Error)) {
+                const errorMessage =
+                    typeof reason === 'string' ? reason : `Non-Error rejection: ${JSON.stringify(reason)}`;
+                reason = new Error(errorMessage);
+
+                // Preserve original reason for debugging
+                (reason as any).originalReason = event.reason;
+            }
+            SentryCapture(reason, 'Unhandled Promise Rejection');
         });
     }
 }
