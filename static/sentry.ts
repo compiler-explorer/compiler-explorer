@@ -93,8 +93,8 @@ export function SetupSentry() {
                     const hasClipboardFrame = frames.some(frame =>
                         frame.filename?.includes('monaco-editor/esm/vs/platform/clipboard/browser/clipboardService.js'),
                     );
-                    // NOTE: Error value is just "Canceled", not "Canceled: Canceled" (UI combines type + value)
-                    const isCancellationError = event.exception.values[0].value === 'Canceled';
+                    // NOTE: Error value may be "Canceled" or "Canceled\nSentryCapture Context: ..." due to context addition
+                    const isCancellationError = event.exception.values[0].value?.startsWith('Canceled');
 
                     if (hasClipboardFrame && isCancellationError) {
                         return null; // Don't send to Sentry
