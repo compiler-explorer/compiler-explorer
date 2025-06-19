@@ -74,16 +74,18 @@ export class Win32Compiler extends BaseCompiler {
             }
         }
 
-        // If no paths work, try current directory
-        if (fs.existsSync(fullLibName)) {
-            return libName;
-        }
+        // If fullLibName is a full path (not just a filename), try it directly
+        if (path.isAbsolute(fullLibName) || fullLibName.includes(path.sep)) {
+            if (fs.existsSync(fullLibName)) {
+                return libName;
+            }
 
-        // Try without 'd' suffix for debug libraries in current directory
-        if (fullLibName.endsWith('d.lib')) {
-            const releaseLibName = fullLibName.slice(0, -5) + '.lib';
-            if (fs.existsSync(releaseLibName)) {
-                return libName.slice(0, -1);
+            // Try without 'd' suffix for debug libraries
+            if (fullLibName.endsWith('d.lib')) {
+                const releaseLibName = fullLibName.slice(0, -5) + '.lib';
+                if (fs.existsSync(releaseLibName)) {
+                    return libName.slice(0, -1);
+                }
             }
         }
 
