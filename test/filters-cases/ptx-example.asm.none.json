@@ -63,7 +63,7 @@
     {
       "labels": [],
       "source": null,
-      "text": "        // .globl       _Z6kernelv"
+      "text": "\t// .globl\t_Z6kernelv"
     },
     {
       "labels": [],
@@ -78,12 +78,12 @@
     {
       "labels": [],
       "source": null,
-      "text": "        .param .b64 vprintf_param_0,"
+      "text": "\t.param .b64 vprintf_param_0,"
     },
     {
       "labels": [],
       "source": null,
-      "text": "        .param .b64 vprintf_param_1"
+      "text": "\t.param .b64 vprintf_param_1"
     },
     {
       "labels": [],
@@ -118,17 +118,17 @@
     {
       "labels": [],
       "source": null,
-      "text": "        .reg .b32       %r<2>;"
+      "text": "\t.reg .b32 \t%r<2>;"
     },
     {
       "labels": [],
       "source": null,
-      "text": "        .reg .b64       %rd<3>;"
+      "text": "\t.reg .b64 \t%rd<3>;"
     },
     {
       "labels": [],
       "source": null,
-      "text": "        .loc    1 3 0"
+      "text": "\t.loc\t1 3 0"
     },
     {
       "labels": [],
@@ -138,142 +138,107 @@
     {
       "labels": [],
       "source": null,
-      "text": "        .loc    1 4 5"
-    },
-    {
-      "labels": [],
-      "source": {
-        "column": 5,
-        "file": null,
-        "line": 4
-      },
-      "text": "        mov.u64         %rd1, $str;"
-    },
-    {
-      "labels": [],
-      "source": {
-        "column": 5,
-        "file": null,
-        "line": 4
-      },
-      "text": "        cvta.global.u64         %rd2, %rd1;"
+      "text": ""
     },
     {
       "labels": [],
       "source": null,
-      "text": "        { // callseq 0, 0"
+      "text": "\t.loc\t1 4 5"
     },
     {
       "labels": [],
       "source": null,
-      "text": "        .reg .b32 temp_param_reg;"
+      "text": "\tmov.u64 \t%rd1, $str;"
     },
     {
       "labels": [],
       "source": null,
-      "text": "        .param .b64 param0;"
-    },
-    {
-      "labels": [],
-      "source": {
-        "column": 5,
-        "file": null,
-        "line": 4
-      },
-      "text": "        st.param.b64    [param0+0], %rd2;"
+      "text": "\tcvta.global.u64 \t%rd2, %rd1;"
     },
     {
       "labels": [],
       "source": null,
-      "text": "        .param .b64 param1;"
-    },
-    {
-      "labels": [],
-      "source": {
-        "column": 5,
-        "file": null,
-        "line": 4
-      },
-      "text": "        st.param.b64    [param1+0], 0;"
+      "text": "\t{ // callseq 0, 0"
     },
     {
       "labels": [],
       "source": null,
-      "text": "        .param .b32 retval0;"
-    },
-    {
-      "labels": [],
-      "source": {
-        "column": 5,
-        "file": null,
-        "line": 4
-      },
-      "text": "        call.uni (retval0), "
-    },
-    {
-      "labels": [],
-      "source": {
-        "column": 5,
-        "file": null,
-        "line": 4
-      },
-      "text": "        vprintf, "
+      "text": "\t.reg .b32 temp_param_reg;"
     },
     {
       "labels": [],
       "source": null,
-      "text": "        ("
-    },
-    {
-      "labels": [],
-      "source": {
-        "column": 5,
-        "file": null,
-        "line": 4
-      },
-      "text": "        param0, "
-    },
-    {
-      "labels": [],
-      "source": {
-        "column": 5,
-        "file": null,
-        "line": 4
-      },
-      "text": "        param1"
+      "text": "\t.param .b64 param0;"
     },
     {
       "labels": [],
       "source": null,
-      "text": "        );"
-    },
-    {
-      "labels": [],
-      "source": {
-        "column": 5,
-        "file": null,
-        "line": 4
-      },
-      "text": "        ld.param.b32    %r1, [retval0+0];"
+      "text": "\tst.param.b64 \t[param0+0], %rd2;"
     },
     {
       "labels": [],
       "source": null,
-      "text": "        } // callseq 0"
+      "text": "\t.param .b64 param1;"
     },
     {
       "labels": [],
       "source": null,
-      "text": "        .loc    1 5 1"
+      "text": "\tst.param.b64 \t[param1+0], 0;"
     },
     {
       "labels": [],
-      "source": {
-        "column": 1,
-        "file": null,
-        "line": 5
-      },
-      "text": "        ret;"
+      "source": null,
+      "text": "\t.param .b32 retval0;"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "\tcall.uni (retval0), "
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "\tvprintf, "
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "\t("
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "\tparam0, "
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "\tparam1"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "\t);"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "\tld.param.b32 \t%r1, [retval0+0];"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "\t} // callseq 0"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "\t.loc\t1 5 1"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "\tret;"
     },
     {
       "labels": [],
@@ -293,8 +258,9 @@
     {
       "labels": [],
       "source": null,
-      "text": "        .file   1 \"/app/example.cu\""
+      "text": "\t.file\t1 \"/app/example.cu\""
     }
   ],
-  "labelDefinitions": {}
+  "labelDefinitions": {},
+  "languageId": "ptx"
 }

@@ -22,6 +22,62 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
+import {ParsedAsmResult, ParsedAsmResultLine} from '../../types/asmresult/asmresult.interfaces.js';
+import {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces.js';
+import {PropertyGetter} from '../properties.interfaces.js';
+import * as utils from '../utils.js';
+
 import {AsmParser} from './asm-parser.js';
 
-export class PTXAsmParser extends AsmParser {}
+export class PTXAsmParser extends AsmParser {
+    protected commentOnlyLine: RegExp;
+    protected emptyLine: RegExp;
+
+    constructor(compilerProps?: PropertyGetter) {
+        super(compilerProps);
+
+        // PTX comment patterns
+        this.commentOnlyLine = /^\s*\/\//; // Line that starts with // (after optional whitespace)
+        this.emptyLine = /^\s*$/; // Line with only whitespace
+    }
+
+    override processAsm(asmResult: string, filters: ParseFiltersAndOutputOptions): ParsedAsmResult {
+        const startTime = process.hrtime.bigint();
+
+        const asm: ParsedAsmResultLine[] = [];
+        const asmLines = utils.splitLines(asmResult);
+        const startingLineCount = asmLines.length;
+
+        // Process each line and convert to ParsedAsmResultLine
+        for (let line of asmLines) {
+            // Apply comment filter
+            if (filters.commentOnly) {
+                // Skip lines that are only comments or empty
+                if (this.commentOnlyLine.test(line) || this.emptyLine.test(line)) {
+                    continue;
+                }
+
+                // Strip inline comments (// at end of line)
+                const commentIndex = line.indexOf('//');
+                if (commentIndex > 0) {
+                    line = line.substring(0, commentIndex).trimEnd();
+                }
+            }
+
+            asm.push({
+                text: line,
+                source: null,
+                labels: [],
+            });
+        }
+
+        const endTime = process.hrtime.bigint();
+        return {
+            asm: asm,
+            labelDefinitions: {},
+            languageId: 'ptx',
+            parsingTime: utils.deltaTimeNanoToMili(startTime, endTime),
+            filteredCount: startingLineCount - asm.length,
+        };
+    }
+}
