@@ -160,6 +160,10 @@ export class Win32Compiler extends BaseCompiler {
         const libraryPaths = this.getSharedLibraryPaths(libraries);
         const libPaths = [...providedLibPaths, ...compilerLibPaths, ...libraryPaths];
 
+        logger.info(
+            `[MSVC Library Debug] getStaticLibraryLinks called with providedLibPaths: ${JSON.stringify(providedLibPaths)}`,
+        );
+
         return super.getSortedStaticLibraries(libraries).map(lib => {
             const existingLib = this.findExistingLibFile(lib, libPaths);
             if (existingLib) {
@@ -203,7 +207,8 @@ export class Win32Compiler extends BaseCompiler {
             preLink = ['/link'];
             libLinks = this.getSharedLibraryLinks(libraries);
             libPaths = this.getSharedLibraryPathsAsArguments(libraries, undefined, undefined, dirPath);
-            staticlibLinks = this.getStaticLibraryLinks(libraries);
+            const libPathsForLinking = this.getSharedLibraryPaths(libraries, dirPath);
+            staticlibLinks = this.getStaticLibraryLinks(libraries, libPathsForLinking);
         }
 
         userOptions = this.filterUserOptions(userOptions) || [];
