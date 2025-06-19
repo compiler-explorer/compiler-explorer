@@ -72,11 +72,24 @@ export function SetupSentry() {
                 'SlowRequest',
             ],
             beforeSend(event, hint) {
-                // Filter Monaco Editor hit testing errors
-                // See: https://github.com/microsoft/monaco-editor/issues/4527
+                // Filter Monaco Editor errors
                 if (event.exception?.values?.[0]?.stacktrace?.frames) {
-                    const topFrame = event.exception.values[0].stacktrace.frames[0];
+                    const frames = event.exception.values[0].stacktrace.frames;
+                    const topFrame = frames[0];
+
+                    // Filter hit testing errors
+                    // See: https://github.com/microsoft/monaco-editor/issues/4527
                     if (topFrame?.function === '_doHitTestWithCaretPositionFromPoint') {
+                        return null; // Don't send to Sentry
+                    }
+
+                    // Filter clipboard cancellation errors
+                    const hasClipboardFrame = frames.some(frame =>
+                        frame.filename?.includes('monaco-editor/esm/vs/platform/clipboard/browser/clipboardService.js'),
+                    );
+                    const isCancellationError = event.exception.values[0].value === 'Canceled: Canceled';
+
+                    if (hasClipboardFrame && isCancellationError) {
                         return null; // Don't send to Sentry
                     }
                 }
