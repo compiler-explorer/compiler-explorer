@@ -87,7 +87,7 @@ export function SetupSentry() {
                     const hasClipboardFrame = frames.some(frame =>
                         frame.filename?.includes('monaco-editor/esm/vs/platform/clipboard/browser/clipboardService.js'),
                     );
-                    const isCancellationError = event.exception.values[0].value === 'Canceled: Canceled';
+                    const isCancellationError = event.exception.values[0].value === 'Canceled';
 
                     if (hasClipboardFrame && isCancellationError) {
                         return null; // Don't send to Sentry
