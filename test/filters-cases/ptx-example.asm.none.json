@@ -147,12 +147,22 @@
     },
     {
       "labels": [],
-      "source": null,
+      "source": {
+        "column": 5,
+        "file": "example.cu",
+        "line": 4,
+        "mainsource": true
+      },
       "text": "\tmov.u64 \t%rd1, $str;"
     },
     {
       "labels": [],
-      "source": null,
+      "source": {
+        "column": 5,
+        "file": "example.cu",
+        "line": 4,
+        "mainsource": true
+      },
       "text": "\tcvta.global.u64 \t%rd2, %rd1;"
     },
     {
@@ -172,7 +182,12 @@
     },
     {
       "labels": [],
-      "source": null,
+      "source": {
+        "column": 5,
+        "file": "example.cu",
+        "line": 4,
+        "mainsource": true
+      },
       "text": "\tst.param.b64 \t[param0+0], %rd2;"
     },
     {
@@ -182,7 +197,12 @@
     },
     {
       "labels": [],
-      "source": null,
+      "source": {
+        "column": 5,
+        "file": "example.cu",
+        "line": 4,
+        "mainsource": true
+      },
       "text": "\tst.param.b64 \t[param1+0], 0;"
     },
     {
@@ -192,12 +212,22 @@
     },
     {
       "labels": [],
-      "source": null,
+      "source": {
+        "column": 5,
+        "file": "example.cu",
+        "line": 4,
+        "mainsource": true
+      },
       "text": "\tcall.uni (retval0), "
     },
     {
       "labels": [],
-      "source": null,
+      "source": {
+        "column": 5,
+        "file": "example.cu",
+        "line": 4,
+        "mainsource": true
+      },
       "text": "\tvprintf, "
     },
     {
@@ -207,12 +237,22 @@
     },
     {
       "labels": [],
-      "source": null,
+      "source": {
+        "column": 5,
+        "file": "example.cu",
+        "line": 4,
+        "mainsource": true
+      },
       "text": "\tparam0, "
     },
     {
       "labels": [],
-      "source": null,
+      "source": {
+        "column": 5,
+        "file": "example.cu",
+        "line": 4,
+        "mainsource": true
+      },
       "text": "\tparam1"
     },
     {
@@ -222,7 +262,12 @@
     },
     {
       "labels": [],
-      "source": null,
+      "source": {
+        "column": 5,
+        "file": "example.cu",
+        "line": 4,
+        "mainsource": true
+      },
       "text": "\tld.param.b32 \t%r1, [retval0+0];"
     },
     {
@@ -237,7 +282,12 @@
     },
     {
       "labels": [],
-      "source": null,
+      "source": {
+        "column": 1,
+        "file": "example.cu",
+        "line": 5,
+        "mainsource": true
+      },
       "text": "\tret;"
     },
     {
