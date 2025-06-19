@@ -88,7 +88,6 @@ export class Win32Compiler extends BaseCompiler {
                 }
             }
         }
-
         return null;
     }
 
@@ -123,7 +122,11 @@ export class Win32Compiler extends BaseCompiler {
                 .map(selectedLib => [selectedLib, this.findLibVersion(selectedLib)])
                 .filter(([selectedLib, foundVersion]) => !!foundVersion)
                 .map(([selectedLib, foundVersion]) => {
-                    const libPaths = this.compiler.libPath || [];
+                    // Combine compiler libPath with library-specific paths
+                    const compilerLibPaths = this.compiler.libPath || [];
+                    const libraryPaths = this.getSharedLibraryPaths(libraries);
+                    const libPaths = [...compilerLibPaths, ...libraryPaths];
+
                     return foundVersion.liblink.filter(Boolean).map((lib: string) => {
                         const existingLib = this.findExistingLibFile(lib, libPaths);
                         if (existingLib) {
@@ -137,8 +140,12 @@ export class Win32Compiler extends BaseCompiler {
         );
     }
 
-    override getStaticLibraryLinks(libraries: SelectedLibraryVersion[]) {
-        const libPaths = this.compiler.libPath || [];
+    override getStaticLibraryLinks(libraries: SelectedLibraryVersion[], providedLibPaths: string[] = []) {
+        // Combine provided library paths with compiler libPath and library-specific paths
+        const compilerLibPaths = this.compiler.libPath || [];
+        const libraryPaths = this.getSharedLibraryPaths(libraries);
+        const libPaths = [...providedLibPaths, ...compilerLibPaths, ...libraryPaths];
+
         return super.getSortedStaticLibraries(libraries).map(lib => {
             const existingLib = this.findExistingLibFile(lib, libPaths);
             if (existingLib) {
@@ -182,7 +189,8 @@ export class Win32Compiler extends BaseCompiler {
             preLink = ['/link'];
             libLinks = this.getSharedLibraryLinks(libraries);
             libPaths = this.getSharedLibraryPathsAsArguments(libraries, undefined, undefined, dirPath);
-            staticlibLinks = this.getStaticLibraryLinks(libraries);
+            const libPathsForLinking = this.getSharedLibraryPaths(libraries, dirPath);
+            staticlibLinks = this.getStaticLibraryLinks(libraries, libPathsForLinking);
         }
 
         userOptions = this.filterUserOptions(userOptions) || [];
