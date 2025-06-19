@@ -65,53 +65,39 @@ export function SetupSentry() {
             release: options.release,
             environment: options.sentryEnvironment,
             ignoreErrors: [
+                // NOTE: Monaco Editor patterns may not work reliably due to code minification
+                // Source mapping happens AFTER beforeSend/ignoreErrors processing
                 /this.error\(new CancellationError\(\)/,
                 /new StandardMouseEvent\(monaco-editor/,
                 /Object Not Found Matching Id:2/,
                 /Illegal value for lineNumber/,
                 'SlowRequest',
+                // Monaco Editor clipboard cancellation errors
+                'Canceled',
             ],
             beforeSend(event, hint) {
                 // Filter Monaco Editor errors
-                // NOTE: When debugging filters, check the actual JSON structure from Sentry UI
-                // - event.exception.values[0].value contains the error message
-                // - event.exception.values[0].type contains the error type
-                // - Sentry UI shows "type: value" but actual JSON has separate fields
-                // - frames[0] is often Sentry's wrapper, not the original error source
-                if (event.exception?.values?.[0]?.stacktrace?.frames) {
-                    const frames = event.exception.values[0].stacktrace.frames;
+                //
+                // IMPORTANT: Frame-based filtering doesn't work reliably!
+                // In beforeSend hooks, frame.filename contains minified bundle paths like:
+                // "https://static.ce-cdn.net/vendor.v59.be68c0bf31258854d1b2.js"
+                //
+                // Source mapping happens AFTER beforeSend processing, which is why the
+                // final Sentry UI shows readable paths like:
+                // "./node_modules/monaco-editor/esm/vs/platform/clipboard/browser/clipboardService.js"
+                //
+                // For reliable filtering, use:
+                // 1. ignoreErrors patterns (processed before beforeSend)
+                // 2. Error message content (event.exception.values[0].value)
+                // 3. Error type (event.exception.values[0].type)
+                //
+                // DO NOT rely on frame.filename, frame.module, or frame.function for Monaco errors!
 
+                if (event.exception?.values?.[0]) {
                     // Filter hit testing errors
                     // See: https://github.com/microsoft/monaco-editor/issues/4527
-                    // NOTE: Function name appears in error message, not as frame.function due to Sentry wrapping
+                    // Uses error message content since frame data is minified
                     if (event.exception.values[0].value?.includes('_doHitTestWithCaretPositionFromPoint')) {
-                        return null; // Don't send to Sentry
-                    }
-
-                    // Filter clipboard cancellation errors
-                    // NOTE: Frame filename matching works as expected for file path filtering
-                    const hasClipboardFrame = frames.some(frame =>
-                        frame.filename?.includes('monaco-editor/esm/vs/platform/clipboard/browser/clipboardService.js'),
-                    );
-                    // NOTE: Error value may be "Canceled" or "Canceled\nSentryCapture Context: ..." due to context addition
-                    const isCancellationError = event.exception.values[0].value?.startsWith('Canceled');
-
-                    // TEMPORARY DEBUG: Send filter data to Sentry for analysis
-                    if (event.exception.values[0].value?.includes('Canceled')) {
-                        Sentry.captureMessage('DEBUG: Clipboard filter data', {
-                            extra: {
-                                errorValue: event.exception.values[0].value,
-                                errorType: event.exception.values[0].type,
-                                frameCount: frames.length,
-                                frameFilenames: frames.map(f => f.filename),
-                                hasClipboardFrame: hasClipboardFrame,
-                                isCancellationError: isCancellationError,
-                                shouldFilter: hasClipboardFrame && isCancellationError,
-                            },
-                        });
-                    }
-
-                    if (hasClipboardFrame && isCancellationError) {
                         return null; // Don't send to Sentry
                     }
                 }
