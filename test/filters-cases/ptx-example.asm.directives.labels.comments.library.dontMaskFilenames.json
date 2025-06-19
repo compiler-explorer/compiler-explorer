@@ -1,0 +1,165 @@
+{
+  "asm": [
+    {
+      "labels": [],
+      "source": null,
+      "text": "("
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ")"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ""
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "{"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ""
+    },
+    {
+      "labels": [],
+      "source": {
+        "column": 5,
+        "file": "example.cu",
+        "line": 4,
+        "mainsource": true
+      },
+      "text": "        mov.u64         %rd1, $str;"
+    },
+    {
+      "labels": [],
+      "source": {
+        "column": 5,
+        "file": "example.cu",
+        "line": 4,
+        "mainsource": true
+      },
+      "text": "        cvta.global.u64         %rd2, %rd1;"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        { // callseq 0, 0"
+    },
+    {
+      "labels": [],
+      "source": {
+        "column": 5,
+        "file": "example.cu",
+        "line": 4,
+        "mainsource": true
+      },
+      "text": "        st.param.b64    [param0+0], %rd2;"
+    },
+    {
+      "labels": [],
+      "source": {
+        "column": 5,
+        "file": "example.cu",
+        "line": 4,
+        "mainsource": true
+      },
+      "text": "        st.param.b64    [param1+0], 0;"
+    },
+    {
+      "labels": [],
+      "source": {
+        "column": 5,
+        "file": "example.cu",
+        "line": 4,
+        "mainsource": true
+      },
+      "text": "        call.uni (retval0), "
+    },
+    {
+      "labels": [],
+      "source": {
+        "column": 5,
+        "file": "example.cu",
+        "line": 4,
+        "mainsource": true
+      },
+      "text": "        vprintf, "
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        ("
+    },
+    {
+      "labels": [],
+      "source": {
+        "column": 5,
+        "file": "example.cu",
+        "line": 4,
+        "mainsource": true
+      },
+      "text": "        param0, "
+    },
+    {
+      "labels": [],
+      "source": {
+        "column": 5,
+        "file": "example.cu",
+        "line": 4,
+        "mainsource": true
+      },
+      "text": "        param1"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        );"
+    },
+    {
+      "labels": [],
+      "source": {
+        "column": 5,
+        "file": "example.cu",
+        "line": 4,
+        "mainsource": true
+      },
+      "text": "        ld.param.b32    %r1, [retval0+0];"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        } // callseq 0"
+    },
+    {
+      "labels": [],
+      "source": {
+        "column": 1,
+        "file": "example.cu",
+        "line": 5,
+        "mainsource": true
+      },
+      "text": "        ret;"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ""
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "}"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ""
+    }
+  ],
+  "labelDefinitions": {}
+}
