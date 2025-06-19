@@ -28,13 +28,11 @@ import type {AppArguments} from '../app.interfaces.js';
 import {logger} from '../logger.js';
 import {createRenderHandlers} from './rendering.js';
 import {setupBaseServerConfig, setupBasicRoutes, setupLoggingMiddleware} from './server-config.js';
-import {startListening} from './server-listening.js';
 import {ServerDependencies, ServerOptions, WebServerResult} from './server.interfaces.js';
-import {getFaviconFilename, setupStaticMiddleware, setupWebPackDevMiddleware} from './static-assets.js';
-import {isMobileViewer} from './url-handlers.js';
+import {setupStaticMiddleware, setupWebPackDevMiddleware} from './static-assets.js';
 
-// Re-exporting functions that are used by other modules
-export {getFaviconFilename, isMobileViewer, startListening};
+export {startListening} from './server-listening.js';
+export {isMobileViewer} from './url-handlers.js';
 
 /**
  * Configure a web server and its routes
@@ -67,6 +65,7 @@ export async function setupWebServer(
         pugRequireHandler,
         options,
         dependencies,
+        appArgs,
     );
 
     // Add healthcheck before logging middleware to prevent excessive log entries
@@ -81,7 +80,6 @@ export async function setupWebServer(
         embeddedHandler,
         dependencies.ceProps,
         dependencies.awsProps,
-        getFaviconFilename(appArgs.devMode, appArgs.env),
         options,
         dependencies.clientOptionsHandler,
     );

@@ -28,7 +28,6 @@ import express from 'express';
 import type {NextFunction, Request, Response, Router} from 'express';
 import morgan from 'morgan';
 import sanitize from 'sanitize-filename';
-import sFavicon from 'serve-favicon';
 
 import {cached, csp} from '../handlers/middleware.js';
 import {logger, makeLogStream} from '../logger.js';
@@ -119,23 +118,34 @@ export function setupLoggingMiddleware(isDevMode: boolean, router: Router): void
         morgan(morganFormat, {
             stream: makeLogStream('info'),
             // Skip for non errors (2xx, 3xx)
-            skip: (req: Request, res: Response) => res.statusCode >= 400,
+            skip: (req: Request, res: Response) => res.statusCode >= 400 || isFaviconRequest(req),
         }),
     );
     router.use(
         morgan(morganFormat, {
             stream: makeLogStream('warn'),
             // Skip for non user errors (4xx)
-            skip: (req: Request, res: Response) => res.statusCode < 400 || res.statusCode >= 500,
+            skip: (req: Request, res: Response) =>
+                res.statusCode < 400 || res.statusCode >= 500 || isFaviconRequest(req),
         }),
     );
     router.use(
         morgan(morganFormat, {
             stream: makeLogStream('error'),
             // Skip for non server errors (5xx)
-            skip: (req: Request, res: Response) => res.statusCode < 500,
+            skip: (req: Request, res: Response) => res.statusCode < 500 || isFaviconRequest(req),
         }),
     );
+}
+
+function isFaviconRequest(req: Request): boolean {
+    return [
+        'favicon.ico',
+        'favicon-beta.ico',
+        'favicon-dev.ico',
+        'favicon-staging.ico',
+        'favicon-suspend.ico',
+    ].includes(req.path);
 }
 
 /**
@@ -145,7 +155,6 @@ export function setupLoggingMiddleware(isDevMode: boolean, router: Router): void
  * @param embeddedHandler - Handler for embedded mode
  * @param ceProps - Compiler Explorer properties
  * @param awsProps - AWS properties
- * @param faviconFilename - Favicon filename
  * @param options - Server options
  * @param clientOptionsHandler - Client options handler
  */
@@ -155,7 +164,6 @@ export function setupBasicRoutes(
     embeddedHandler: express.Handler,
     ceProps: PropertyGetter,
     awsProps: PropertyGetter,
-    faviconFilename: string,
     options: ServerOptions,
     clientOptionsHandler: ClientOptionsSource,
 ): void {
@@ -198,14 +206,6 @@ export function setupBasicRoutes(
             res.set('Content-Type', 'application/xml');
             res.render('sitemap');
         });
-
-    // Try to add favicon support, but don't fail if it's not available (useful for tests)
-    try {
-        router.use(sFavicon(utils.resolvePathFromAppRoot('static/favicons', faviconFilename)));
-    } catch (err: unknown) {
-        const error = err as Error;
-        logger.warn(`Could not set up favicon: ${error.message}`);
-    }
 
     router
         .get('/client-options.js', cached, (req, res) => {

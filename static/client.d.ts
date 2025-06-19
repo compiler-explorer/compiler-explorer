@@ -36,6 +36,16 @@ declare module '*.pug' {
     export default content;
 }
 
+declare module '*.svg' {
+    const src: string;
+    export default src;
+}
+
+declare module '*.png' {
+    const src: string;
+    export default src;
+}
+
 declare module 'lodash.clonedeep' {
     const cloneDeep: <T>(value: T) => T;
     export = cloneDeep;

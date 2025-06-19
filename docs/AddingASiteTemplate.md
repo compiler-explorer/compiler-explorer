@@ -30,5 +30,5 @@ npm i puppeteer --no-save && npx node --no-warnings=ExperimentalWarning --import
 The script uses puppeteer and chrome to generate screenshots. The script will take a little while to run as it generates
 multiple screenshots per template and gives pages ample time to load.
 
-Screenshots are located in [`views/resources/template_screenshots/`](../views/resources/template_screenshots/). The
+Screenshots are located in [`views/resources/template_screenshots/`](../public/template_screenshots/). The
 script won't regenerate everything by default, to regenerate delete the screenshot images you want deleted.
