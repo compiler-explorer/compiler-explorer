@@ -1083,12 +1083,13 @@ export function createDragSource<K extends keyof ComponentStateMap>(
 
 /**
  * Converts a GoldenLayoutConfig to SerializedLayoutState for storage.
+ * Always assigns the current version since this creates new serialized state.
  */
 export function toSerializedLayoutState(config: GoldenLayoutConfig): SerializedLayoutState {
     // Cast to any to access properties that might exist on the raw config
     const rawConfig = config as any;
     return {
-        version: rawConfig.version || CURRENT_LAYOUT_VERSION,
+        version: CURRENT_LAYOUT_VERSION,
         content: config.content || [],
         settings: config.settings,
         dimensions: config.dimensions,

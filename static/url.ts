@@ -118,7 +118,8 @@ export function deserialiseState(stateText: string): GoldenLayoutConfig {
 
 export function serialiseState(state: SerializedLayoutState): string {
     const ctx = GoldenLayout.minifyConfig({content: state.content});
-    ctx.version = state.version || CURRENT_LAYOUT_VERSION;
+    // Use the version from the state - no fallback as SerializedLayoutState must have a version
+    ctx.version = state.version;
     const uncompressed = risonify(ctx);
     const compressed = risonify({z: lzstring.compressToBase64(uncompressed)});
     const MinimalSavings = 0.2; // at least this ratio smaller
