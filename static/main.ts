@@ -59,7 +59,13 @@ import {setupSiteTemplateWidgetButton} from './widgets/site-templates-widget.js'
 
 import {Language, LanguageKey} from '../types/languages.interfaces.js';
 import {ComponentConfig, ComponentStateMap, GoldenLayoutConfig} from './components.interfaces.js';
-import {createDragSource, createLayoutItem, toGoldenLayoutConfig} from './components.js';
+import {
+    createDragSource,
+    createLayoutItem,
+    fromGoldenLayoutConfig,
+    toGoldenLayoutConfig,
+    toSerializedLayoutState,
+} from './components.js';
 import {CompilerExplorerOptions} from './global.js';
 
 import * as utils from '../shared/common-utils.js';
@@ -219,10 +225,15 @@ function setupButtons(options: CompilerExplorerOptions, hub: Hub) {
 
     $('#ui-history').on('click', () => {
         historyWidget.run(data => {
-            sessionThenLocalStorage.set('gl', JSON.stringify(data.config));
-            hasUIBeenReset = true;
-            window.history.replaceState(null, '', window.httpRoot);
-            window.location.reload();
+            // data.config should already be a valid GoldenLayoutConfig from history
+            const validConfig = fromGoldenLayoutConfig(data.config);
+            if (validConfig) {
+                const serialized = toSerializedLayoutState(validConfig);
+                sessionThenLocalStorage.set('gl', JSON.stringify(serialized));
+                hasUIBeenReset = true;
+                window.history.replaceState(null, '', window.httpRoot);
+                window.location.reload();
+            }
         });
 
         BootstrapUtils.showModal('#history');
@@ -337,7 +348,14 @@ function findConfig(
             }
             if (!config) {
                 const savedState = sessionThenLocalStorage.get('gl', null);
-                if (savedState) config = JSON.parse(savedState);
+                if (savedState) {
+                    try {
+                        const parsed = JSON.parse(savedState);
+                        config = fromGoldenLayoutConfig(parsed);
+                    } catch (e) {
+                        // Invalid JSON, config remains undefined
+                    }
+                }
             }
             if (!config?.content || config.content?.length === 0) {
                 config = defaultConfig;
@@ -360,8 +378,13 @@ function findConfig(
     removeOrphanedMaximisedItemFromConfig(config);
     fixBugsInConfig(config);
 
-    // TODO(#7808): Replace unsafe casting with fromGoldenLayoutConfig() validation
-    return config as GoldenLayoutConfig;
+    // Validate the configuration before returning
+    const validatedConfig = fromGoldenLayoutConfig(config);
+    if (!validatedConfig) {
+        // If validation fails, return the default config
+        return defaultConfig;
+    }
+    return validatedConfig;
 }
 
 function initializeResetLayoutLink() {

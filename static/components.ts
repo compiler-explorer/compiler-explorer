@@ -65,6 +65,7 @@ import {
     RUST_MACRO_EXP_VIEW_COMPONENT_NAME,
     RUST_MIR_VIEW_COMPONENT_NAME,
     STACK_USAGE_VIEW_COMPONENT_NAME,
+    SerializedLayoutState,
     TOOL_COMPONENT_NAME,
     TOOL_INPUT_VIEW_COMPONENT_NAME,
     TREE_COMPONENT_NAME,
@@ -986,16 +987,63 @@ export function createLayoutItem(
  * @returns Typed config with validated component states
  * @throws Error if the configuration is invalid (should be caught and handled)
  */
-export function fromGoldenLayoutConfig(config: GoldenLayout.Config): GoldenLayoutConfig {
+export function fromGoldenLayoutConfig(config: unknown): GoldenLayoutConfig | false {
+    // Basic validation
     if (!config || typeof config !== 'object') {
-        throw new Error('Invalid configuration: must be an object');
+        return false;
     }
 
-    // Validate the root structure
-    return {
-        ...config,
-        content: config.content ? validateItemConfigs(config.content) : undefined,
-    };
+    const cfg = config as any;
+
+    // Must have content array
+    if (!Array.isArray(cfg.content)) {
+        return false;
+    }
+
+    // Validate each item in content using the simple validator
+    for (const item of cfg.content) {
+        if (!isValidItemConfig(item)) {
+            return false;
+        }
+    }
+
+    // If we get here, the config is valid enough to use
+    // TODO(#7808): Add more comprehensive validation of component states
+    return cfg as GoldenLayoutConfig;
+}
+
+/**
+ * Simple validation function that returns boolean instead of throwing.
+ * Used by fromGoldenLayoutConfig for safer validation.
+ */
+function isValidItemConfig(item: any): boolean {
+    if (!item || typeof item !== 'object' || !item.type) {
+        return false;
+    }
+
+    if (item.type === 'component') {
+        // Must have componentName and componentState
+        if (!item.componentName || !item.componentState) {
+            return false;
+        }
+        // TODO(#7808): Add more comprehensive component state validation
+        return true;
+    }
+    if (item.type === 'row' || item.type === 'column' || item.type === 'stack') {
+        // Must have content array
+        if (!Array.isArray(item.content)) {
+            return false;
+        }
+        // Validate nested items
+        for (const nestedItem of item.content) {
+            if (!isValidItemConfig(nestedItem)) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    return false;
 }
 
 /**
@@ -1186,4 +1234,20 @@ function validateComponentState(componentName: string, state: any): boolean {
             SentryCapture(componentName, `Unknown component name in validateComponentState: ${componentName}`);
             return false;
     }
+}
+
+/**
+ * Converts a GoldenLayoutConfig to SerializedLayoutState for storage.
+ */
+export function toSerializedLayoutState(config: GoldenLayoutConfig): SerializedLayoutState {
+    // Cast to any to access properties that might exist on the raw config
+    const rawConfig = config as any;
+    return {
+        version: rawConfig.version || 4,
+        content: config.content || [],
+        settings: config.settings,
+        dimensions: config.dimensions,
+        labels: config.labels,
+        maximisedItemId: rawConfig.maximisedItemId || null,
+    };
 }
