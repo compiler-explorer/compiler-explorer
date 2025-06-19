@@ -74,8 +74,8 @@ export class Win32Compiler extends BaseCompiler {
             }
         }
 
-        // If fullLibName is a full path (not just a filename), try it directly
-        if (path.isAbsolute(fullLibName) || fullLibName.includes(path.sep)) {
+        // If fullLibName is an absolute path (not just a filename), try it directly
+        if (path.isAbsolute(fullLibName)) {
             if (fs.existsSync(fullLibName)) {
                 return libName;
             }
