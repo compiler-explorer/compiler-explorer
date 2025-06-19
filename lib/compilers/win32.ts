@@ -38,7 +38,6 @@ import {unwrap} from '../assert.js';
 import {BaseCompiler} from '../base-compiler.js';
 import {copyNeededDlls} from '../binaries/win-utils.js';
 import {CompilationEnvironment} from '../compilation-env.js';
-import {logger} from '../logger.js';
 import {MapFileReaderVS} from '../mapfiles/map-file-vs.js';
 import {AsmParser} from '../parsers/asm-parser.js';
 import {PELabelReconstructor} from '../pe32-support.js';
@@ -59,14 +58,9 @@ export class Win32Compiler extends BaseCompiler {
     private findExistingLibFile(libName: string, libPaths: string[]): string | null {
         const fullLibName = libName.endsWith('.lib') ? libName : libName + '.lib';
 
-        // Log debug information at info level for papertrail visibility
-        logger.info(`[MSVC Library Debug] Looking for library: ${libName}, paths: ${JSON.stringify(libPaths)}`);
-
         for (const libPath of libPaths) {
             const fullPath = path.join(libPath, fullLibName);
-            logger.info(`[MSVC Library Debug] Trying: ${fullPath}`);
             if (fs.existsSync(fullPath)) {
-                logger.info(`[MSVC Library Debug] Found original: ${fullPath}`);
                 return libName;
             }
 
@@ -74,9 +68,7 @@ export class Win32Compiler extends BaseCompiler {
             if (fullLibName.endsWith('d.lib')) {
                 const releaseLibName = fullLibName.slice(0, -5) + '.lib';
                 const releaseFullPath = path.join(libPath, releaseLibName);
-                logger.info(`[MSVC Library Debug] Trying release fallback: ${releaseFullPath}`);
                 if (fs.existsSync(releaseFullPath)) {
-                    logger.info(`[MSVC Library Debug] Found release fallback: ${releaseFullPath}`);
                     return libName.slice(0, -1);
                 }
             }
@@ -84,24 +76,18 @@ export class Win32Compiler extends BaseCompiler {
 
         // If fullLibName is an absolute path (not just a filename), try it directly
         if (path.isAbsolute(fullLibName)) {
-            logger.info(`[MSVC Library Debug] Trying absolute path: ${fullLibName}`);
             if (fs.existsSync(fullLibName)) {
-                logger.info(`[MSVC Library Debug] Found absolute path: ${fullLibName}`);
                 return libName;
             }
 
             // Try without 'd' suffix for debug libraries
             if (fullLibName.endsWith('d.lib')) {
                 const releaseLibName = fullLibName.slice(0, -5) + '.lib';
-                logger.info(`[MSVC Library Debug] Trying absolute release fallback: ${releaseLibName}`);
                 if (fs.existsSync(releaseLibName)) {
-                    logger.info(`[MSVC Library Debug] Found absolute release fallback: ${releaseLibName}`);
                     return libName.slice(0, -1);
                 }
             }
         }
-
-        logger.info(`[MSVC Library Debug] Library not found: ${libName}`);
         return null;
     }
 
@@ -159,10 +145,6 @@ export class Win32Compiler extends BaseCompiler {
         const compilerLibPaths = this.compiler.libPath || [];
         const libraryPaths = this.getSharedLibraryPaths(libraries);
         const libPaths = [...providedLibPaths, ...compilerLibPaths, ...libraryPaths];
-
-        logger.info(
-            `[MSVC Library Debug] getStaticLibraryLinks called with providedLibPaths: ${JSON.stringify(providedLibPaths)}`,
-        );
 
         return super.getSortedStaticLibraries(libraries).map(lib => {
             const existingLib = this.findExistingLibFile(lib, libPaths);
