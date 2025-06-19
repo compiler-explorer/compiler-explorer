@@ -25,7 +25,7 @@
 import GoldenLayout from 'golden-layout';
 import lzstring from 'lz-string';
 import _ from 'underscore';
-import {GoldenLayoutConfig, SerializedLayoutState} from './components.interfaces.js';
+import {CURRENT_LAYOUT_VERSION, GoldenLayoutConfig, SerializedLayoutState} from './components.interfaces.js';
 import * as Components from './components.js';
 
 import * as rison from './rison.js';
@@ -50,11 +50,13 @@ export function convertOldState(state: any): GoldenLayoutConfig {
     // @ts-expect-error: this is missing the language field, which was never noticed because the import was untyped
     content.push(Components.getEditorWith(1, source, options));
     content.push(Components.getCompilerWith(1, filters, sc.options, sc.compiler));
-    return {version: 4, content: [{type: 'row', content: content}]} as GoldenLayoutConfig;
+    return {version: CURRENT_LAYOUT_VERSION, content: [{type: 'row', content: content}]} as GoldenLayoutConfig;
 }
 
-export function loadState(state: any): GoldenLayoutConfig | false {
-    if (!state || state.version === undefined) return false;
+export function loadState(state: any): GoldenLayoutConfig {
+    if (!state || state.version === undefined) {
+        throw new Error('Invalid state: missing version information');
+    }
     switch (state.version) {
         case 1:
             state.filterAsm = {};
@@ -67,7 +69,7 @@ export function loadState(state: any): GoldenLayoutConfig | false {
         case 3:
             state = convertOldState(state);
             break; // no fall through
-        case 4:
+        case CURRENT_LAYOUT_VERSION:
             state = GoldenLayout.unminifyConfig(state);
             break;
         default:
@@ -84,7 +86,7 @@ export function unrisonify(text: string): any {
     return rison.decode_object(decodeURIComponent(text.replace(/\+/g, '%20')));
 }
 
-export function deserialiseState(stateText: string): GoldenLayoutConfig | false {
+export function deserialiseState(stateText: string): GoldenLayoutConfig {
     let state;
     let exception;
     try {
@@ -116,7 +118,7 @@ export function deserialiseState(stateText: string): GoldenLayoutConfig | false 
 
 export function serialiseState(state: SerializedLayoutState): string {
     const ctx = GoldenLayout.minifyConfig({content: state.content});
-    ctx.version = state.version || 4;
+    ctx.version = state.version || CURRENT_LAYOUT_VERSION;
     const uncompressed = risonify(ctx);
     const compressed = risonify({z: lzstring.compressToBase64(uncompressed)});
     const MinimalSavings = 0.2; // at least this ratio smaller

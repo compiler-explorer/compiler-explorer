@@ -44,6 +44,13 @@ import {MonacoPaneState} from './panes/pane.interfaces.js';
  * We tried using just string literals, but that led to issues with Typescript type system. We also considered
  * duplicating each string literal as a type too; but ultimately went with the `typeof` approach as the best balance.
  */
+/**
+ * Current version of the serialized layout state format.
+ * CRITICAL: Only increment this when making breaking changes to the layout format.
+ * This must ONLY be used when creating new states or up-converting old states.
+ */
+export const CURRENT_LAYOUT_VERSION = 4 as const;
+
 export const COMPILER_COMPONENT_NAME = 'compiler' as const;
 export const EXECUTOR_COMPONENT_NAME = 'executor' as const;
 export const EDITOR_COMPONENT_NAME = 'codeEditor' as const;

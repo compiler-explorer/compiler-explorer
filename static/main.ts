@@ -332,6 +332,11 @@ function findConfig(
                 try {
                     config = url.deserialiseState(window.location.hash.substring(1));
                 } catch (e) {
+                    // Log URL corruption to Sentry for monitoring
+                    SentryCapture(
+                        e,
+                        `URL deserialization failure: hash=${window.location.hash.substring(1, 200)}, length=${window.location.hash.length - 1}`,
+                    );
                     // #3518 Alert the user that the url is invalid
                     const alertSystem = new Alert();
                     alertSystem.alert(
@@ -356,7 +361,12 @@ function findConfig(
                         const parsed = JSON.parse(savedState);
                         config = fromGoldenLayoutConfig(parsed);
                     } catch (e) {
-                        // Invalid JSON, config remains undefined
+                        // Log localStorage corruption to Sentry for monitoring
+                        SentryCapture(
+                            e,
+                            `localStorage layout state corruption: length=${savedState.length}, preview=${savedState.substring(0, 100)}`,
+                        );
+                        // config remains undefined and will fall back to default
                     }
                 }
             }

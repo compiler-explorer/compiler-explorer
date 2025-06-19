@@ -208,23 +208,17 @@ describe('Components validation', () => {
 
             it('should throw for content with non-object items', () => {
                 const config = {content: ['string-item']} as any;
-                expect(() => fromGoldenLayoutConfig(config)).toThrow(
-                    'Invalid item 0: must be a valid layout item or component',
-                );
+                expect(() => fromGoldenLayoutConfig(config)).toThrow('Invalid item 0: must be an object');
             });
 
             it('should throw for items missing type', () => {
                 const config = {content: [{}]} as any;
-                expect(() => fromGoldenLayoutConfig(config)).toThrow(
-                    'Invalid item 0: must be a valid layout item or component',
-                );
+                expect(() => fromGoldenLayoutConfig(config)).toThrow("Invalid item 0: missing 'type' property");
             });
 
             it('should throw for items with unknown type', () => {
                 const config = {content: [{type: 'unknown'}]} as any;
-                expect(() => fromGoldenLayoutConfig(config)).toThrow(
-                    'Invalid item 0: must be a valid layout item or component',
-                );
+                expect(() => fromGoldenLayoutConfig(config)).toThrow("Invalid item 0: unknown type 'unknown'");
             });
         });
 
@@ -239,7 +233,7 @@ describe('Components validation', () => {
                     ],
                 };
                 expect(() => fromGoldenLayoutConfig(config)).toThrow(
-                    'Invalid item 0: must be a valid layout item or component',
+                    "Invalid item 0: missing 'componentName' property",
                 );
             });
 
@@ -254,7 +248,7 @@ describe('Components validation', () => {
                     ],
                 };
                 expect(() => fromGoldenLayoutConfig(config)).toThrow(
-                    'Invalid item 0: must be a valid layout item or component',
+                    "Invalid item 0: 'componentName' must be a string",
                 );
             });
 
@@ -353,7 +347,7 @@ describe('Components validation', () => {
                     ],
                 } as any;
                 expect(() => fromGoldenLayoutConfig(config)).toThrow(
-                    'Invalid item 0: must be a valid layout item or component',
+                    "Invalid item 0: layout items must have a 'content' array",
                 );
             });
 
@@ -367,7 +361,7 @@ describe('Components validation', () => {
                     ],
                 } as any;
                 expect(() => fromGoldenLayoutConfig(config)).toThrow(
-                    'Invalid item 0: must be a valid layout item or component',
+                    "Invalid item 0: layout items must have a 'content' array",
                 );
             });
         });
@@ -458,7 +452,7 @@ describe('Components validation', () => {
                 };
                 // Null componentState should be rejected
                 expect(() => fromGoldenLayoutConfig(config)).toThrow(
-                    'Invalid item 0: must be a valid layout item or component',
+                    "Invalid item 0: missing 'componentState' property",
                 );
             });
 
