@@ -53,10 +53,64 @@ export function convertOldState(state: any): GoldenLayoutConfig {
     return {version: CURRENT_LAYOUT_VERSION, content: [{type: 'row', content: content}]} as GoldenLayoutConfig;
 }
 
+/**
+ * Validation function that checks item structure and basic type safety.
+ * Returns an error message string if invalid, or null if valid.
+ */
+function validateItemConfig(item: any): string | null {
+    if (!item || typeof item !== 'object') {
+        return 'must be an object';
+    }
+    if (!item.type) {
+        return "missing 'type' property";
+    }
+
+    if (item.type === 'component') {
+        if (!item.componentName) {
+            return "missing 'componentName' property";
+        }
+        if (typeof item.componentName !== 'string') {
+            return "'componentName' must be a string";
+        }
+        if (!item.componentState) {
+            return "missing 'componentState' property";
+        }
+        if (typeof item.componentState !== 'object') {
+            return "'componentState' must be an object";
+        }
+        // TODO(#7808): Add component-specific state validation
+        // - Validate component names against known components
+        // - Validate component state structure matches expected types
+        // - Validate required properties are present
+        // - Validate property types (e.g. numbers vs strings)
+        return null;
+    }
+    if (item.type === 'row' || item.type === 'column' || item.type === 'stack') {
+        if (!Array.isArray(item.content)) {
+            return "layout items must have a 'content' array";
+        }
+        // Validate nested items
+        for (let i = 0; i < item.content.length; i++) {
+            const nestedError = validateItemConfig(item.content[i]);
+            if (nestedError) {
+                return `nested item ${i}: ${nestedError}`;
+            }
+        }
+        return null;
+    }
+
+    return `unknown type '${item.type}'`;
+}
+
 export function loadState(state: any): GoldenLayoutConfig {
-    if (!state || state.version === undefined) {
+    if (!state || typeof state !== 'object') {
+        throw new Error('Invalid state: must be an object');
+    }
+    if (state.version === undefined) {
         throw new Error('Invalid state: missing version information');
     }
+
+    // Handle version migration
     switch (state.version) {
         case 1:
             state.filterAsm = {};
@@ -70,12 +124,32 @@ export function loadState(state: any): GoldenLayoutConfig {
             state = convertOldState(state);
             break; // no fall through
         case CURRENT_LAYOUT_VERSION:
-            state = GoldenLayout.unminifyConfig(state);
+            // Only unminify if the config appears to be minified (no 'content' property at top level)
+            // Minified configs use short property names, unminified configs use full names
+            if (!state.content) {
+                state = GoldenLayout.unminifyConfig(state);
+            }
             break;
         default:
             throw new Error("Invalid version '" + state.version + "'");
     }
-    return state as GoldenLayoutConfig;
+
+    // Validate structure after version migration
+    if (!Array.isArray(state.content)) {
+        throw new Error('Configuration content must be an array');
+    }
+
+    // Validate each item in content using the detailed validator
+    for (let i = 0; i < state.content.length; i++) {
+        const item = state.content[i];
+        const error = validateItemConfig(item);
+        if (error) {
+            throw new Error(`Invalid item ${i}: ${error}`);
+        }
+    }
+
+    // Return validated config (no unsafe cast needed)
+    return state;
 }
 
 export function risonify(obj: rison.JSONValue): string {

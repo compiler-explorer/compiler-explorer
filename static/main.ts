@@ -59,13 +59,7 @@ import {setupSiteTemplateWidgetButton} from './widgets/site-templates-widget.js'
 
 import {Language, LanguageKey} from '../types/languages.interfaces.js';
 import {ComponentConfig, ComponentStateMap, GoldenLayoutConfig} from './components.interfaces.js';
-import {
-    createDragSource,
-    createLayoutItem,
-    fromGoldenLayoutConfig,
-    toGoldenLayoutConfig,
-    toSerializedLayoutState,
-} from './components.js';
+import {createDragSource, createLayoutItem, toGoldenLayoutConfig, toSerializedLayoutState} from './components.js';
 import {CompilerExplorerOptions} from './global.js';
 
 import * as utils from '../shared/common-utils.js';
@@ -226,8 +220,8 @@ function setupButtons(options: CompilerExplorerOptions, hub: Hub) {
     $('#ui-history').on('click', () => {
         historyWidget.run(data => {
             try {
-                // data.config should already be a valid GoldenLayoutConfig from history
-                const validConfig = fromGoldenLayoutConfig(data.config);
+                // data.config is a SerializedLayoutState from history
+                const validConfig = url.loadState(data.config);
                 const serialized = toSerializedLayoutState(validConfig);
                 sessionThenLocalStorage.set('gl', JSON.stringify(serialized));
                 hasUIBeenReset = true;
@@ -359,7 +353,7 @@ function findConfig(
                 if (savedState) {
                     try {
                         const parsed = JSON.parse(savedState);
-                        config = fromGoldenLayoutConfig(parsed);
+                        config = url.loadState(parsed);
                     } catch (e) {
                         // Log localStorage corruption to Sentry for monitoring
                         SentryCapture(
@@ -694,8 +688,10 @@ function start() {
             // Only preserve state in localStorage in non-embedded mode.
             const shouldSave = !window.hasUIBeenReset && !hasUIBeenReset;
             if (!options.embedded && !isMobileViewer() && shouldSave) {
-                if (layout.config.content && layout.config.content.length > 0)
-                    sessionThenLocalStorage.set('gl', JSON.stringify(layout.toConfig()));
+                if (layout.config.content && layout.config.content.length > 0) {
+                    const serialized = toSerializedLayoutState(layout.toConfig());
+                    sessionThenLocalStorage.set('gl', JSON.stringify(serialized));
+                }
             }
         })
         .on('keydown', event => {
