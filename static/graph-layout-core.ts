@@ -734,7 +734,7 @@ export class GraphLayoutCore {
         return segments;
     }
 
-    assignEdgeSegments() {
+    computeEdgeSegmentIntervals() {
         const segments = this.getEdgeSegmentInfo();
         segments.sort((a, b) => {
             if (a.kind !== b.kind) {
@@ -793,6 +793,10 @@ export class GraphLayoutCore {
                 }
             }
         }
+    }
+
+    assignEdgeSegments() {
+        this.computeEdgeSegmentIntervals();
         // Assign offsets
         for (const edgeColumn of this.edgeColumns) {
             edgeColumn.width = Math.max(EDGE_SPACING + edgeColumn.intervals.length * EDGE_SPACING, 2 * EDGE_SPACING);
@@ -812,97 +816,111 @@ export class GraphLayoutCore {
         }
     }
 
-    computeCoordinates() {
-        // Compute block row widths and heights
+    updateBlockDimensions() {
         for (const block of this.blocks) {
             // Update block width if it has a ton of incoming edges
             block.data.width = Math.max(block.data.width, (block.incidentEdgeCount - 1) * EDGE_SPACING);
-            //console.log(this.blockRows[block.row].height, block.data.height, block.row);
-            //console.log(this.blockRows);
+        }
+    }
+
+    computeGridDimensions() {
+        for (const block of this.blocks) {
             const halfWidth = (block.data.width - this.edgeColumns[block.col + 1].width) / 2;
-            //console.log("--->", block.col, this.columnCount);
             this.blockRows[block.row].height = Math.max(this.blockRows[block.row].height, block.data.height);
             this.blockColumns[block.col].width = Math.max(this.blockColumns[block.col].width, halfWidth);
             this.blockColumns[block.col + 1].width = Math.max(this.blockColumns[block.col + 1].width, halfWidth);
         }
-        // Compute row total offsets
+    }
+
+    computeGridOffsets() {
         for (let i = 0; i < this.rowCount; i++) {
             // edge row 0 is already at the correct offset, this iteration will set the offset for block row 0 and edge
             // row 1.
             this.blockRows[i].totalOffset = this.edgeRows[i].totalOffset + this.edgeRows[i].height;
             this.edgeRows[i + 1].totalOffset = this.blockRows[i].totalOffset + this.blockRows[i].height;
         }
-        // Compute column total offsets
         for (let i = 0; i < this.columnCount; i++) {
-            // same deal here
             this.blockColumns[i].totalOffset = this.edgeColumns[i].totalOffset + this.edgeColumns[i].width;
             this.edgeColumns[i + 1].totalOffset = this.blockColumns[i].totalOffset + this.blockColumns[i].width;
         }
-        // Compute block coordinates and edge paths
-        for (const block of this.blocks) {
-            block.coordinates.x =
-                this.edgeColumns[block.col + 1].totalOffset -
-                (block.data.width - this.edgeColumns[block.col + 1].width) / 2;
-            block.coordinates.y = this.blockRows[block.row].totalOffset;
-            for (const edge of block.edges) {
-                if (edge.path.length === 1) {
-                    // Special case: Direct dropdown
-                    const segment = edge.path[0];
-                    const target = this.blocks[edge.dest];
-                    segment.start.x = this.edgeColumns[segment.start.col].totalOffset + segment.horizontalOffset;
-                    segment.start.y = block.coordinates.y + block.data.height;
-                    segment.end.x = this.edgeColumns[segment.end.col].totalOffset + segment.horizontalOffset;
-                    segment.end.y = this.edgeRows[target.row].totalOffset + this.edgeRows[target.row].height;
+    }
+
+    computeBlockCoordinates(block: Block) {
+        block.coordinates.x =
+            this.edgeColumns[block.col + 1].totalOffset -
+            (block.data.width - this.edgeColumns[block.col + 1].width) / 2;
+        block.coordinates.y = this.blockRows[block.row].totalOffset;
+    }
+
+    computeEdgeCoordinates(block: Block, edge: Edge) {
+        if (edge.path.length === 1) {
+            // Special case: Direct dropdown
+            const segment = edge.path[0];
+            const target = this.blocks[edge.dest];
+            segment.start.x = this.edgeColumns[segment.start.col].totalOffset + segment.horizontalOffset;
+            segment.start.y = block.coordinates.y + block.data.height;
+            segment.end.x = this.edgeColumns[segment.end.col].totalOffset + segment.horizontalOffset;
+            segment.end.y = this.edgeRows[target.row].totalOffset + this.edgeRows[target.row].height;
+        } else {
+            // push initial point
+            {
+                const segment = edge.path[0];
+                segment.start.x = this.edgeColumns[segment.start.col].totalOffset + segment.horizontalOffset;
+                segment.start.y = block.coordinates.y + block.data.height;
+                segment.end.x = this.edgeColumns[segment.end.col].totalOffset + segment.horizontalOffset;
+                segment.end.y = 0; // this is something we need from the next segment
+            }
+            // first and last handled specially
+            for (const segment of edge.path.slice(1, edge.path.length - 1)) {
+                segment.start.x = this.edgeColumns[segment.start.col].totalOffset + segment.horizontalOffset;
+                segment.start.y = this.edgeRows[segment.start.row].totalOffset + segment.verticalOffset;
+                segment.end.x = this.edgeColumns[segment.end.col].totalOffset + segment.horizontalOffset;
+                segment.end.y = this.edgeRows[segment.end.row].totalOffset + segment.verticalOffset;
+            }
+            // push final point
+            {
+                const target = this.blocks[edge.dest];
+                const segment = edge.path[edge.path.length - 1];
+                segment.start.x = this.edgeColumns[segment.start.col].totalOffset + segment.horizontalOffset;
+                segment.start.y = 0; // something we need from the previous segment
+                segment.end.x = this.edgeColumns[segment.start.col].totalOffset + segment.horizontalOffset;
+                segment.end.y = this.edgeRows[target.row].totalOffset + this.edgeRows[target.row].height;
+            }
+            // apply offsets to neighbor segments
+            for (let i = 0; i < edge.path.length; i++) {
+                const segment = edge.path[i];
+                if (segment.type === SegmentType.Vertical) {
+                    if (i > 0) {
+                        const prev = edge.path[i - 1];
+                        prev.end.x = segment.start.x;
+                    }
+                    if (i < edge.path.length - 1) {
+                        const next = edge.path[i + 1];
+                        next.start.x = segment.end.x;
+                    }
                 } else {
-                    // push initial point
-                    {
-                        const segment = edge.path[0];
-                        segment.start.x = this.edgeColumns[segment.start.col].totalOffset + segment.horizontalOffset;
-                        segment.start.y = block.coordinates.y + block.data.height;
-                        segment.end.x = this.edgeColumns[segment.end.col].totalOffset + segment.horizontalOffset;
-                        segment.end.y = 0; // this is something we need from the next segment
+                    // Horizontal
+                    if (i > 0) {
+                        const prev = edge.path[i - 1];
+                        prev.end.y = segment.start.y;
                     }
-                    // first and last handled specially
-                    for (const segment of edge.path.slice(1, edge.path.length - 1)) {
-                        segment.start.x = this.edgeColumns[segment.start.col].totalOffset + segment.horizontalOffset;
-                        segment.start.y = this.edgeRows[segment.start.row].totalOffset + segment.verticalOffset;
-                        segment.end.x = this.edgeColumns[segment.end.col].totalOffset + segment.horizontalOffset;
-                        segment.end.y = this.edgeRows[segment.end.row].totalOffset + segment.verticalOffset;
-                    }
-                    // push final point
-                    {
-                        const target = this.blocks[edge.dest];
-                        const segment = edge.path[edge.path.length - 1];
-                        segment.start.x = this.edgeColumns[segment.start.col].totalOffset + segment.horizontalOffset;
-                        segment.start.y = 0; // something we need from the previous segment
-                        segment.end.x = this.edgeColumns[segment.start.col].totalOffset + segment.horizontalOffset;
-                        segment.end.y = this.edgeRows[target.row].totalOffset + this.edgeRows[target.row].height;
-                    }
-                    // apply offsets to neighbor segments
-                    for (let i = 0; i < edge.path.length; i++) {
-                        const segment = edge.path[i];
-                        if (segment.type === SegmentType.Vertical) {
-                            if (i > 0) {
-                                const prev = edge.path[i - 1];
-                                prev.end.x = segment.start.x;
-                            }
-                            if (i < edge.path.length - 1) {
-                                const next = edge.path[i + 1];
-                                next.start.x = segment.end.x;
-                            }
-                        } else {
-                            // Horizontal
-                            if (i > 0) {
-                                const prev = edge.path[i - 1];
-                                prev.end.y = segment.start.y;
-                            }
-                            if (i < edge.path.length - 1) {
-                                const next = edge.path[i + 1];
-                                next.start.y = segment.end.y;
-                            }
-                        }
+                    if (i < edge.path.length - 1) {
+                        const next = edge.path[i + 1];
+                        next.start.y = segment.end.y;
                     }
                 }
+            }
+        }
+    }
+
+    computeCoordinates() {
+        this.updateBlockDimensions();
+        this.computeGridDimensions();
+        // Compute block coordinates and edge paths
+        for (const block of this.blocks) {
+            this.computeBlockCoordinates(block);
+            for (const edge of block.edges) {
+                this.computeEdgeCoordinates(block, edge);
             }
         }
     }
