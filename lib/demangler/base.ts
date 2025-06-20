@@ -44,18 +44,18 @@ export class BaseDemangler extends AsmRegex {
     readonly includeMetadata: boolean;
     readonly compiler: BaseCompiler;
 
-    readonly jumpDef = /(j\w+|b|bl|blx)\s+([$_a-z][\w$@]*)/i;
-    readonly callDef = /callq?\s+([$._a-z][\w$.@]*)/i;
-    readonly callPtrDef1 = /callq?.*ptr\s\[[a-z]*\s\+\s([$._a-z][\w$.@]*)]/i;
-    readonly callPtrDef2 = /callq?\s+([$*._a-z][\w$.@]*)/i;
-    readonly callPtrDef3 = /callq?.*\[qword ptr\s([$._a-z][\w$.@]*).*]/i;
-    readonly callPtrDef4 = /callq?.*qword\sptr\s\[[a-z]*\s\+\s([$._a-z][\w$.@]*)\+?\d?]/i;
+    readonly jumpDef = /(j\w+|b|bl|blx)\s+([$_a-z][\w$@]*|"[$_a-z][\w$@]*")/i;
+    readonly callDef = /callq?\s+([$._a-z][\w$.@]*|"[$._a-z][\w$.@]*")/i;
+    readonly callPtrDef1 = /callq?.*ptr\s\[[a-z]*\s\+\s([$._a-z][\w$.@]*|"[$._a-z][\w$.@]*")]/i;
+    readonly callPtrDef2 = /callq?\s+([$*._a-z][\w$.@]*|"[$*._a-z][\w$.@]*")/i;
+    readonly callPtrDef3 = /callq?.*\[qword ptr\s([$._a-z][\w$.@]*|"[$._a-z][\w$.@]*").*]/i;
+    readonly callPtrDef4 = /callq?.*qword\sptr\s\[[a-z]*\s\+\s([$._a-z][\w$.@]*|"[$._a-z][\w$.@]*")\+?\d?]/i;
 
     // symbols in a mov or lea command starting with an underscore
-    readonly movUnderscoreDef = /mov.*[\s:](_[\w$.@]*)/i;
+    readonly movUnderscoreDef = /mov.*[\s:](_[\w$.@]*|"[\w$.@]*")/i;
     readonly leaUnderscoreDef = /lea.*[\s:](_[\w$.@]*)/i;
-    readonly quadUnderscoreDef = /\.quad\s*(_[\w$.@]*)/i;
-    readonly ptrOffset = /\bptr\s*\[.+\b(_[\w$.@]*)\s*]/i;
+    readonly quadUnderscoreDef = /\.quad\s*(_[\w$.@]*|"[\w$.@]*")/i;
+    readonly ptrOffset = /\bptr\s*\[.+\b(_[\w$.@]*|"[\w$.@]*")\s*]/i;
 
     // E.g., ".entry _Z6squarePii("
     // E.g., ".func  (.param .b32 func_retval0) bar("
