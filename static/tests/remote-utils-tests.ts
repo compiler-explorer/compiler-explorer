@@ -1,4 +1,4 @@
-// Copyright (c) 2022, Compiler Explorer Authors
+// Copyright (c) 2025, Compiler Explorer Authors
 // All rights reserved.
 //
 // Redistribution and use in source and binary forms, with or without
@@ -22,15 +22,13 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import {ITestable} from './frontend-testing.interfaces.js';
+import {getRemoteId} from '../../shared/remote-utils.js';
 
-class HelloWorldTests implements ITestable {
-    public readonly description: string = 'HelloWorld';
+import {describe, expect, it} from 'vitest';
+import {UrlTestCases} from '../../shared/url-testcases.js';
 
-    public async run() {
-        const person = true;
-        if (!person) throw new Error('HelloWorldTests failed');
-    }
-}
-
-window.compilerExplorerFrontendTesting.add(new HelloWorldTests());
+describe('Remote ID Tests', () => {
+    it.each(UrlTestCases)('Check $remoteUrl $language', testCase => {
+        expect(getRemoteId(testCase.remoteUrl, testCase.language)).toBe(testCase.expectedId);
+    });
+});
