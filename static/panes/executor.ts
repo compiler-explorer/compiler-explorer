@@ -348,7 +348,7 @@ export class Executor extends Pane<ExecutorState> {
                         lang: this.currentLangId,
                         files: [],
                     },
-                    this.errorResult('Failed to expand includes: ' + error.message),
+                    this.errorResult('Failed to expand includes: ' + (error instanceof Error ? error.message : String(error))),
                     false,
                 );
             });
