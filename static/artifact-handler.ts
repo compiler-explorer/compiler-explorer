@@ -167,7 +167,7 @@ export class ArtifactHandler {
                             const emuwindow = unwrap(miracleMenuFrame.contentWindow);
                             const tmstr = Date.now();
                             emuwindow.location =
-                                'https://xania.org/miracle/miracle.html?' +
+                                'https://miracle.xania.org/?' +
                                 tmstr +
                                 '#b64sms=' +
                                 encodeURIComponent(artifact.content);
