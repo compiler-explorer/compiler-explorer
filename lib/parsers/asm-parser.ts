@@ -320,9 +320,9 @@ export class AsmParser extends AsmRegex implements IAsmParser {
         this.labelProcessor = new LabelProcessor();
         this.parsingState = new ParsingState({}, null, '', false, false, []);
 
-        this.labelFindNonMips = /[.A-Z_a-z][\w$.]*/g;
+        this.labelFindNonMips = /[.A-Z_a-z][\w$.]*|"[.A-Z_a-z][\w$.]*"/g;
         // MIPS labels can start with a $ sign, but other assemblers use $ to mean literal.
-        this.labelFindMips = /[$.A-Z_a-z][\w$.]*/g;
+        this.labelFindMips = /[$.A-Z_a-z][\w$.]*|"[$.A-Z_a-z][\w$.]*"/g;
         this.mipsLabelDefinition = /^\$[\w$.]+:/;
         this.dataDefn =
             /^\s*\.(ascii|asciz|base64|[1248]?byte|dc(?:\.[abdlswx])?|dcb(?:\.[bdlswx])?|ds(?:\.[bdlpswx])?|double|dword|fill|float|half|hword|int|long|octa|quad|short|single|skip|space|string(?:8|16|32|64)?|value|word|xword|zero)/;
@@ -333,10 +333,10 @@ export class AsmParser extends AsmRegex implements IAsmParser {
         this.identifierFindRe = /([$.@A-Z_a-z]\w*)(?:@\w+)*/g;
         this.hasNvccOpcodeRe = /^\s*[@A-Za-z|]/;
         this.definesFunction = /^\s*\.(type.*,\s*[#%@]function|proc\s+[.A-Z_a-z][\w$.]*:.*)$/;
-        this.definesGlobal = /^\s*\.(?:globa?l|GLB|export)\s*([.A-Z_a-z][\w$.]*)/;
-        this.definesWeak = /^\s*\.(?:weakext|weak)\s*([.A-Z_a-z][\w$.]*)/;
-        this.definesAlias = /^\s*\.set\s*([.A-Z_a-z][\w$.]*\s*),\s*\.\s*(\+\s*0)?$/;
-        this.indentedLabelDef = /^\s*([$.A-Z_a-z][\w$.]*):/;
+        this.definesGlobal = /^\s*\.(?:globa?l|GLB|export)\s*([.A-Z_a-z][\w$.]*|"[.A-Z_a-z][\w$.]*")/;
+        this.definesWeak = /^\s*\.(?:weakext|weak)\s*([.A-Z_a-z][\w$.]*|"[.A-Z_a-z][\w$.]*")/;
+        this.definesAlias = /^\s*\.set\s*((?:[.A-Z_a-z][\w$.]*|"[.A-Z_a-z][\w$.]*")\s*),\s*\.\s*(\+\s*0)?$/;
+        this.indentedLabelDef = /^\s*([$.A-Z_a-z][\w$.]*|"[$.A-Z_a-z][\w$.]*"):/;
         this.assignmentDef = /^\s*([$.A-Z_a-z][\w$.]*)\s*=\s*(.*)/;
         this.directive = /^\s*\..*$/;
         // These four regexes when phrased as /\s*#APP.*/ etc exhibit costly polynomial backtracking. Instead use ^$ and
