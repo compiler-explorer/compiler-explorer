@@ -51,8 +51,8 @@ directory.
 
 In the server code, the `app.ts` sets up a basic `express` middleware-driven web server, delegating to the various
 compiler backends in `lib/compilers/`. All of them inherit from `lib/base-compiler.ts` which does most of the work of
-running compilers, then parsing the output and forming a JSON object to send to the client. Any assembly parsing is done
-in the `lib/parsers/asm-parser.ts`, and similar, files.
+running compilers, then parsing the output and forming a JSON object to send to the client. Assembly parsing is done
+in the `lib/parsers/` directory, with specialized parsers for different instruction sets (e.g., PTX, SPIRV).
 
 In the client code, [GoldenLayout](https://www.golden-layout.com/) is used as the container. If you look at some
 components like the `static/panes/compiler.ts`, you'll see the general flow. Any state stored makes it into the URL, so

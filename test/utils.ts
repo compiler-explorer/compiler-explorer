@@ -33,6 +33,7 @@ import {CompilationEnvironment} from '../lib/compilation-env.js';
 import {CompilationQueue} from '../lib/compilation-queue.js';
 import {CC65AsmParser} from '../lib/parsers/asm-parser-cc65.js';
 import {AsmEWAVRParser} from '../lib/parsers/asm-parser-ewavr.js';
+import {PTXAsmParser} from '../lib/parsers/asm-parser-ptx.js';
 import {SassAsmParser} from '../lib/parsers/asm-parser-sass.js';
 import {VcAsmParser} from '../lib/parsers/asm-parser-vc.js';
 import {AsmParser} from '../lib/parsers/asm-parser.js';
@@ -116,6 +117,7 @@ export function processAsm(filename: string, filters: ParseFiltersAndOutputOptio
     let parser: AsmParser;
     if (file.includes('Microsoft')) parser = new VcAsmParser();
     else if (filename.includes('sass-')) parser = new SassAsmParser();
+    else if (filename.includes('ptx-')) parser = new PTXAsmParser();
     else if (filename.includes('cc65-')) parser = new CC65AsmParser(fakeProps({}));
     else if (filename.includes('ewarm-')) parser = new AsmEWAVRParser(fakeProps({}));
     else {
