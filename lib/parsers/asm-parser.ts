@@ -714,8 +714,6 @@ export class AsmParser extends AsmRegex implements IAsmParser {
 
         const endTime = process.hrtime.bigint();
 
-        console.log(labelDefinitions);
-
         return {
             asm: asm,
             labelDefinitions: labelDefinitions,
