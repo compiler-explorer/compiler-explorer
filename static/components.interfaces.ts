@@ -466,7 +466,6 @@ export function isLayoutItem(item: ItemConfig): item is LayoutItem {
 
 /**
  * Helper type for partial component states during initialization
- * TODO(#7807): Use this for handling partial states during serialization/deserialization
  * TODO(#7808): Use this for graceful handling of incomplete/invalid configurations
  */
 export type PartialComponentState<K extends keyof ComponentStateMap> = Partial<ComponentStateMap[K]>;
@@ -478,8 +477,7 @@ export type PartialComponentState<K extends keyof ComponentStateMap> = Partial<C
  * serialized state that gets stored/shared, which goes through a different
  * processing pipeline than runtime configurations.
  *
- * TODO(#7807): Implement type-safe serialization/deserialization
- * Currently unused - implement for localStorage persistence and URL sharing.
+ * Used for type-safe localStorage persistence, URL sharing, and history tracking.
  */
 export interface SerializedLayoutState {
     version: number;
