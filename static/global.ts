@@ -23,7 +23,6 @@
 // POSSIBILITY OF SUCH DAMAGE.
 
 import {Options} from './options.interfaces.js';
-import {IFrontendTesting} from './tests/frontend-testing.interfaces.js';
 
 export type CompilerExplorerOptions = Record<string, unknown> & Options;
 
@@ -32,7 +31,6 @@ declare global {
         httpRoot: string;
         staticRoot: string;
         compilerExplorerOptions: CompilerExplorerOptions;
-        compilerExplorerFrontendTesting: IFrontendTesting;
         hasUIBeenReset: boolean;
         PRODUCTION: boolean;
         onSponsorClick: (sponsorUrl: string) => void;

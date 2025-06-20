@@ -60,6 +60,13 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 - Use British English spellings for things like "initialise" and "colour", but only in new code. It's a preference not a hard requirement
 - Use modern Typescript features like optional chaining when updating existing code or adding new code
 
+## Architecture Guidelines
+- **Frontend/Backend Separation**: Frontend code (`static/`) MUST NOT import from backend code (`lib/`)
+  - Frontend should use API calls to communicate with backend
+  - Shared types should be imported from `types/` directory instead
+  - This separation is enforced by pre-commit hooks (`npm run check-frontend-imports`)
+  - Violations will cause build failures and prevent commits
+
 ## Testing Guidelines
 - Use Vitest for unit tests (compatible with Jest syntax)
 - Tests are in the `/test` directory, typically named like the source files they test

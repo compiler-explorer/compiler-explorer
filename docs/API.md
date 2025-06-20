@@ -365,6 +365,10 @@ If JSON is present in the request's `Accept` header, the compilation results are
 The body of this post should be in the format of a [ClientState](../lib/clientstate.ts) Be sure that the Content-Type of
 your post is application/json
 
+**⚠️ Important: Shell Escaping**
+
+When using curl with inline JSON, be careful of shell escaping issues. C++ code containing `<`, `>`, `&`, or other special characters can cause problems. **Recommended approach: save JSON to a file and use `--data-binary @filename`**.
+
 An example of one the easiest forms of a clientstate:
 
 ```JSON
@@ -395,6 +399,25 @@ An example of one the easiest forms of a clientstate:
   ]
 }
 ```
+
+**Usage Examples:**
+
+```bash
+# Method 1: File-based (recommended for complex code)
+curl -X POST -H "Content-Type: application/json" \
+  --data-binary @payload.json \
+  "https://godbolt.org/api/shortener"
+
+# Method 2: Inline JSON (escape shell characters carefully)
+curl -X POST -H "Content-Type: application/json" \
+  -d '{"sessions":[{"id":1,"language":"c++","source":"int main() { return 42; }","compilers":[{"id":"g82","options":"-O3"}]}]}' \
+  "https://godbolt.org/api/shortener"
+```
+
+**Common Issues:**
+- If you get "Bad escaped character in JSON at position X" errors, it's often a shell escaping issue, not invalid JSON
+- C++ template syntax (`<`, `>`) and operators (`&`, `|`) need careful escaping in shells
+- Use the file-based approach to avoid these issues entirely
 
 Returns:
 

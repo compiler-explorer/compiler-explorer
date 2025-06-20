@@ -22,8 +22,8 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import type {ConfiguredOverrides} from './compilation/compiler-overrides.interfaces.js';
-import type {ConfiguredRuntimeTools} from './execution/execution.interfaces.js';
+import type {ConfiguredOverrides} from '../types/compilation/compiler-overrides.interfaces.js';
+import type {ConfiguredRuntimeTools} from '../types/execution/execution.interfaces.js';
 import type {CompilerState} from './panes/compiler.interfaces.js';
 import type {ExecutorState} from './panes/executor.interfaces.js';
 

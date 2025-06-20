@@ -80,17 +80,17 @@ block prepend content
               // use `data-bs-toggle="modal"` on the `<a>` itself, as that would prevent the clipboard button from working.
               // Bootstrap's default blanket event handler beats out any event handler we manually attach to the button.
               if storageSolution !== "null"
-                a.dropdown-item.link-primary#shareShort(data-bs-target="#sharelinkdialog" data-bind="Short")
+                a.dropdown-item#shareShort(data-bs-target="#sharelinkdialog" data-bind="Short")
                   span.dropdown-icon.fas.fa-cloud.d-inline
                   | Short Link
                   button.btn.btn-sm.copy-link-btn.clip-icon.float-end(data-bs-target="" data-bs-toggle="none")
                     span.dropdown-icon.fa.fa-clipboard
-              a.dropdown-item.link-primary#shareFull(data-bs-target="#sharelinkdialog" data-bind="Full")
+              a.dropdown-item#shareFull(data-bs-target="#sharelinkdialog" data-bind="Full")
                 span.dropdown-icon.fas.fa-store-slash.d-inline
                 | Full Link
                 button.btn.btn-sm.copy-link-btn.clip-icon.float-end(data-bs-toggle="none")
                   span.dropdown-icon.fa.fa-clipboard
-              a.dropdown-item.link-primary#shareEmbed(data-bs-target="#sharelinkdialog" data-bind="Embed")
+              a.dropdown-item#shareEmbed(data-bs-target="#sharelinkdialog" data-bind="Embed")
                 span.dropdown-icon.fas.fa-window-restore.d-inline
                 | Embed in iframe
                 // This is not an oversight, there is in fact a .float-end missing here that's there in the other 2

@@ -28,16 +28,17 @@ import $ from 'jquery';
 import TomSelect from 'tom-select';
 import _ from 'underscore';
 import {escapeHTML} from '../../shared/common-utils.js';
+import {LanguageKey} from '../../types/languages.interfaces.js';
+import {ResultLine} from '../../types/resultline/resultline.interfaces.js';
 import {assert, unwrap, unwrapString} from '../assert.js';
 import * as BootstrapUtils from '../bootstrap-utils.js';
+import {createDragSource} from '../components.js';
 import * as Components from '../components.js';
 import {EventHub} from '../event-hub.js';
 import {Hub} from '../hub.js';
-import {LanguageKey} from '../languages.interfaces.js';
 import {LineColouring} from '../line-colouring.js';
 import {MultifileFile, MultifileService, MultifileServiceState} from '../multifile-service.js';
 import {options} from '../options.js';
-import {ResultLine} from '../resultline/resultline.interfaces.js';
 import {Settings, SiteSettings} from '../settings.js';
 import * as utils from '../utils.js';
 import {Alert} from '../widgets/alert.js';
@@ -446,7 +447,7 @@ export class Tree {
     }
 
     private bindClickToOpenPane(dragSource, dragConfig) {
-        (this.container.layoutManager.createDragSource(dragSource, dragConfig.bind(this)) as any)._dragListener.on(
+        createDragSource(this.container.layoutManager, dragSource, () => dragConfig.bind(this)()).on(
             'dragStart',
             () => {
                 const dropdown = this.domRoot.find('.add-pane');
@@ -607,10 +608,10 @@ export class Tree {
                         resolve();
                     },
                     no: () => {
-                        reject();
+                        reject(new Error(`User cancelled file overwrite for: ${filename}`));
                     },
                     onClose: () => {
-                        reject();
+                        reject(new Error(`User cancelled file overwrite for: ${filename}`));
                     },
                     yesClass: 'btn-danger',
                     yesHtml: 'Yes',

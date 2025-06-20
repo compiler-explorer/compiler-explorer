@@ -22,6 +22,7 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
+import os from 'node:os';
 import path from 'node:path';
 
 import fs from 'node:fs/promises';
@@ -80,6 +81,7 @@ import {type ToolResult, type ToolTypeKey} from '../types/tool.interfaces.js';
 
 import {moveArtifactsIntoResult} from './artifact-utils.js';
 import {assert, unwrap} from './assert.js';
+import {copyCopperSpicePlugins} from './binaries/copperspice-utils.js';
 import type {BuildEnvDownloadInfo} from './buildenvsetup/buildenv.interfaces.js';
 import {BuildEnvSetupBase, getBuildEnvTypeByKey} from './buildenvsetup/index.js';
 import {BaseCache} from './cache/base.js';
@@ -1969,6 +1971,11 @@ export class BaseCompiler {
     }
 
     async afterBuild(key: CacheKey, dirPath: string, buildResult: BuildResult): Promise<BuildResult> {
+        if (os.platform() === 'linux' && buildResult.code === 0 && buildResult.executableFilename) {
+            const libraryPaths = this.getSharedLibraryPaths(key.libraries, dirPath);
+            await copyCopperSpicePlugins(dirPath, buildResult.executableFilename, key.libraries, libraryPaths);
+        }
+
         return buildResult;
     }
 

@@ -22,7 +22,7 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-export type AssemblyInstructionInfo = Record<'tooltip' | 'html' | 'url', string>;
+import type {AssemblyInstructionInfo} from '../../types/assembly-docs.interfaces.js';
 
 /**
  * Base class for all assembly documentation generators.

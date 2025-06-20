@@ -26,6 +26,7 @@ import GoldenLayout, {ContentItem} from 'golden-layout';
 type GLC = GoldenLayout.Container;
 
 import _ from 'underscore';
+import {LanguageKey} from '../types/languages.interfaces.js';
 import {CompilerService} from './compiler-service.js';
 import {
     AST_VIEW_COMPONENT_NAME,
@@ -61,7 +62,6 @@ import {
 import {EventHub} from './event-hub.js';
 import {EventMap} from './event-map.js';
 import {IdentifierSet} from './identifier-set.js';
-import {LanguageKey} from './languages.interfaces.js';
 import {Ast as AstView} from './panes/ast-view.js';
 import {Cfg as CfgView} from './panes/cfg-view.js';
 import {Clangir as ClangirView} from './panes/clangir-view.js';
@@ -363,7 +363,7 @@ export class Hub {
         return this.findEditorInChildren(this.layout.root);
     }
 
-    public addInEditorStackIfPossible(elem: GoldenLayout.ContentItem): void {
+    public addInEditorStackIfPossible(elem: GoldenLayout.ItemConfig): void {
         const insertionPoint = this.findEditorParentRowOrColumn();
         // required not-true check because findEditorParentRowOrColumn returns
         // false if there is no editor parent
@@ -374,7 +374,7 @@ export class Hub {
         }
     }
 
-    public addAtRoot(elem: GoldenLayout.ContentItem): void {
+    public addAtRoot(elem: GoldenLayout.ItemConfig): void {
         if (this.layout.root.contentItems.length > 0) {
             const rootFirstItem = this.layout.root.contentItems[0];
             if (rootFirstItem.isRow || rootFirstItem.isColumn) {

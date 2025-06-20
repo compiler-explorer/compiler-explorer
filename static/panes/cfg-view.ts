@@ -43,9 +43,9 @@ import {
     CFGResult,
     CfgDescriptor,
 } from '../../types/compilation/cfg.interfaces.js';
+import {CompilationResult} from '../../types/compilation/compilation.interfaces.js';
+import {CompilerInfo} from '../../types/compiler.interfaces.js';
 import {assert, unwrap} from '../assert.js';
-import {CompilationResult} from '../compilation/compilation.interfaces.js';
-import {CompilerInfo} from '../compiler.interfaces.js';
 import {GraphLayoutCore} from '../graph-layout-core.js';
 import * as MonacoConfig from '../monaco-config.js';
 
@@ -670,7 +670,7 @@ export class Cfg extends Pane<CfgState> {
                 if (blob) {
                     resolve(blob);
                 } else {
-                    reject(blob);
+                    reject(new Error('Failed to create blob from canvas'));
                 }
             }, 'image/png');
         });

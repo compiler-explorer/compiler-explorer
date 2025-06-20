@@ -39,9 +39,9 @@ import {MonacoPane} from './pane.js';
 
 import {GccDumpFiltersState, GccDumpViewSelectedPass, GccDumpViewState} from './gccdump-view.interfaces.js';
 
+import {CompilationResult} from '../../types/compilation/compilation.interfaces.js';
+import {CompilerInfo} from '../../types/compiler.interfaces.js';
 import {assert, unwrap} from '../assert.js';
-import {CompilationResult} from '../compilation/compilation.interfaces.js';
-import {CompilerInfo} from '../compiler.interfaces.js';
 
 export class GccDump extends MonacoPane<monaco.editor.IStandaloneCodeEditor, GccDumpViewState> {
     selectize: TomSelect;

@@ -58,12 +58,13 @@ import {SimpleCook} from './widgets/simplecook.js';
 import {setupSiteTemplateWidgetButton} from './widgets/site-templates-widget.js';
 
 import {Language, LanguageKey} from '../types/languages.interfaces.js';
-import {ComponentConfig, EmptyCompilerState, StateWithId, StateWithLanguage} from './components.interfaces.js';
+import {ComponentConfig, ComponentStateMap, GoldenLayoutConfig} from './components.interfaces.js';
+import {createDragSource, createLayoutItem, toGoldenLayoutConfig} from './components.js';
 import {CompilerExplorerOptions} from './global.js';
 
 import * as utils from '../shared/common-utils.js';
+import {ParseFiltersAndOutputOptions} from '../types/features/filters.interfaces.js';
 import * as BootstrapUtils from './bootstrap-utils.js';
-import {ParseFiltersAndOutputOptions} from './features/filters.interfaces.js';
 import {localStorage, sessionThenLocalStorage} from './local.js';
 import {Printerinator} from './print-view.js';
 import {setupRealDark, takeUsersOutOfRealDark} from './real-dark.js';
@@ -74,11 +75,6 @@ const siteTemplateScreenshots = require.context('../views/resources/template_scr
 import changelogDocument from './generated/changelog.pug';
 import cookiesDocument from './generated/cookies.pug';
 import privacyDocument from './generated/privacy.pug';
-
-if (!window.PRODUCTION && !options.embedded) {
-    // TODO: Replace with top-level await import() when we move to Vite
-    require('./tests/_all');
-}
 
 //css
 import 'bootstrap/dist/css/bootstrap.min.css';
@@ -276,8 +272,7 @@ function configFromEmbedded(embeddedUrl: string, defaultLangId: string) {
     return url.deserialiseState(embeddedUrl);
 }
 
-// TODO(jeremy-rifkin): Unsure of the type, just typing enough for `content` at the moment
-function fixBugsInConfig(config: Record<string, any> & {content?: any[]}) {
+function fixBugsInConfig(config: Partial<GoldenLayout.Config & {activeItemIndex?: number}>): void {
     if (config.activeItemIndex && config.activeItemIndex >= unwrap(config.content).length) {
         config.activeItemIndex = unwrap(config.content).length - 1;
     }
@@ -289,18 +284,12 @@ function fixBugsInConfig(config: Record<string, any> & {content?: any[]}) {
     }
 }
 
-type ConfigType = {
-    settings: {
-        showPopoutIcon: boolean;
-    };
-    content: {
-        type: string;
-        content: (ComponentConfig<Partial<StateWithId & StateWithLanguage>> | ComponentConfig<EmptyCompilerState>)[];
-    }[];
-};
-
-function findConfig(defaultConfig: ConfigType, options: CompilerExplorerOptions, defaultLangId: string) {
-    let config;
+function findConfig(
+    defaultConfig: GoldenLayoutConfig,
+    options: CompilerExplorerOptions,
+    defaultLangId: string,
+): GoldenLayoutConfig {
+    let config: any;
     if (!options.embedded) {
         if (options.slides) {
             const presentation = new Presentation(unwrap(window.compilerExplorerOptions.slides).length);
@@ -371,7 +360,8 @@ function findConfig(defaultConfig: ConfigType, options: CompilerExplorerOptions,
     removeOrphanedMaximisedItemFromConfig(config);
     fixBugsInConfig(config);
 
-    return config;
+    // TODO(#7808): Replace unsafe casting with fromGoldenLayoutConfig() validation
+    return config as GoldenLayoutConfig;
 }
 
 function initializeResetLayoutLink() {
@@ -586,13 +576,10 @@ function start() {
         jsCookie = jsCookie.withAttributes({domain: cookieDomain[0]});
     }
 
-    const defaultConfig = {
+    const defaultConfig: GoldenLayoutConfig = {
         settings: {showPopoutIcon: false},
         content: [
-            {
-                type: 'row',
-                content: [Components.getEditor(defaultLangId, 1), Components.getCompiler(1, defaultLangId)],
-            },
+            createLayoutItem('row', [Components.getEditor(defaultLangId, 1), Components.getCompiler(1, defaultLangId)]),
         ],
     };
 
@@ -619,8 +606,11 @@ function start() {
     let themer: Themer;
     let settings: SiteSettings;
 
-    function initializeLayout(config: any, root: JQuery<HTMLElement>): [GoldenLayout, Hub, Themer, SiteSettings] {
-        const layout = new GoldenLayout(config, root);
+    function initializeLayout(
+        config: GoldenLayoutConfig,
+        root: JQuery<HTMLElement>,
+    ): [GoldenLayout, Hub, Themer, SiteSettings] {
+        const layout = new GoldenLayout(toGoldenLayoutConfig(config), root);
         const hub = new Hub(layout, subLangId, defaultLangId);
         const [themer, settings] = setupSettings(hub);
         hub.initLayout();
@@ -688,8 +678,8 @@ function start() {
         setupButtons(options, hub);
     }
 
-    function setupAdd<C>(thing: JQuery, func: () => ComponentConfig<C>) {
-        (layout.createDragSource(thing, func as any) as any)._dragListener.on('dragStart', () => {
+    function setupAdd<K extends keyof ComponentStateMap>(thing: JQuery, func: () => ComponentConfig<K>) {
+        createDragSource(layout, thing, func).on('dragStart', () => {
             const addDropdown = unwrap(
                 BootstrapUtils.getDropdownInstance('#addDropdown'),
                 'Dropdown instance not found for #addDropdown',
@@ -698,10 +688,11 @@ function start() {
         });
 
         thing.on('click', () => {
+            const config = func();
             if (hub.hasTree()) {
-                hub.addInEditorStackIfPossible(func() as any);
+                hub.addInEditorStackIfPossible(config);
             } else {
-                hub.addAtRoot(func() as any);
+                hub.addAtRoot(config);
             }
         });
     }

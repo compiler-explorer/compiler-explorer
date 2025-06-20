@@ -22,26 +22,5 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-/// <reference path="../../node_modules/cypress/types/cypress-global-vars.d.ts" />
-
-import {getRemoteId} from '../../shared/remote-utils.js';
-
-import {UrlTestCases} from '../../shared/url-testcases.js';
-
-import {ITestable} from './frontend-testing.interfaces.js';
-
-class RemoteIdTests implements ITestable {
-    public readonly description: string = 'remoteId';
-
-    public async run() {
-        UrlTestCases.forEach(testCase => {
-            if (getRemoteId(testCase.remoteUrl, testCase.language) !== testCase.expectedId) {
-                throw new Error(
-                    `Test case failed for language: ${testCase.language}, remoteUrl: ${testCase.remoteUrl}, expectedId: ${testCase.expectedId}`,
-                );
-            }
-        });
-    }
-}
-
-window.compilerExplorerFrontendTesting.add(new RemoteIdTests());
+globalThis.__webpack_public_path__ = '';
+document.body.innerHTML = '<div id="config" httpRoot="/test/" staticRoot="/test/static/" extraOptions="{}"></div>';

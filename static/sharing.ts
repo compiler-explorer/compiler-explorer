@@ -293,7 +293,13 @@ export class Sharing {
                 if (error || !newUrl) {
                     this.displayTooltip(this.shareTooltipTarget, 'Oops, something went wrong');
                     SentryCapture(error, 'Getting short link failed');
-                    reject();
+                    reject(
+                        new Error(
+                            error
+                                ? `Getting short link failed: ${error}`
+                                : 'Getting short link failed: no URL returned',
+                        ),
+                    );
                 } else {
                     if (updateState) {
                         Sharing.storeCurrentConfig(config, extra);
