@@ -252,7 +252,7 @@ describe('Components validation', () => {
                 );
             });
 
-            it('should accept invalid compiler state (structural validation)', () => {
+            it('should throw for invalid compiler state', () => {
                 const config = {
                     content: [
                         {
@@ -265,11 +265,11 @@ describe('Components validation', () => {
                         },
                     ],
                 };
-                // Implementation validates structure but not component-specific state details
-                expect(fromGoldenLayoutConfig(config)).toEqual(config);
+                // TODO(#7808): Implement component-specific state validation
+                expect(() => fromGoldenLayoutConfig(config)).toThrow('Invalid compiler state');
             });
 
-            it('should accept invalid executor state (structural validation)', () => {
+            it('should throw for invalid executor state', () => {
                 const config = {
                     content: [
                         {
@@ -283,11 +283,11 @@ describe('Components validation', () => {
                         },
                     ],
                 };
-                // Implementation validates structure but not component-specific state details
-                expect(fromGoldenLayoutConfig(config)).toEqual(config);
+                // TODO(#7808): Implement component-specific state validation
+                expect(() => fromGoldenLayoutConfig(config)).toThrow('Invalid executor state');
             });
 
-            it('should accept invalid output state (structural validation)', () => {
+            it('should throw for invalid output state', () => {
                 const config = {
                     content: [
                         {
@@ -301,11 +301,11 @@ describe('Components validation', () => {
                         },
                     ],
                 };
-                // Implementation validates structure but not component-specific state details
-                expect(fromGoldenLayoutConfig(config)).toEqual(config);
+                // TODO(#7808): Implement component-specific state validation
+                expect(() => fromGoldenLayoutConfig(config)).toThrow('Invalid output state');
             });
 
-            it('should accept invalid tool state (structural validation)', () => {
+            it('should throw for invalid tool state', () => {
                 const config = {
                     content: [
                         {
@@ -318,11 +318,11 @@ describe('Components validation', () => {
                         },
                     ],
                 };
-                // Implementation validates structure but not component-specific state details
-                expect(fromGoldenLayoutConfig(config)).toEqual(config);
+                // TODO(#7808): Implement component-specific state validation
+                expect(() => fromGoldenLayoutConfig(config)).toThrow('Invalid tool state');
             });
 
-            it('should accept unknown component name (structural validation)', () => {
+            it('should throw for unknown component name', () => {
                 const config = {
                     content: [
                         {
@@ -332,8 +332,8 @@ describe('Components validation', () => {
                         },
                     ],
                 };
-                // Implementation validates structure but not component name validity
-                expect(fromGoldenLayoutConfig(config)).toEqual(config);
+                // TODO(#7808): Implement component name validation
+                expect(() => fromGoldenLayoutConfig(config)).toThrow('Unknown component name');
             });
         });
 
@@ -406,7 +406,7 @@ describe('Components validation', () => {
                 expect(result).toEqual(config);
             });
 
-            it('should accept invalid nested component (structural validation)', () => {
+            it('should throw for invalid nested component', () => {
                 const config = {
                     content: [
                         {
@@ -434,8 +434,8 @@ describe('Components validation', () => {
                         },
                     ],
                 };
-                // Implementation validates structure but not nested component state details
-                expect(fromGoldenLayoutConfig(config)).toEqual(config);
+                // TODO(#7808): Implement nested component state validation
+                expect(() => fromGoldenLayoutConfig(config)).toThrow('Invalid compiler state');
             });
         });
 

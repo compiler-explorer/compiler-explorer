@@ -25,7 +25,7 @@
 import GoldenLayout from 'golden-layout';
 import lzstring from 'lz-string';
 import _ from 'underscore';
-import {CURRENT_LAYOUT_VERSION, GoldenLayoutConfig, SerializedLayoutState} from './components.interfaces.js';
+import {CURRENT_LAYOUT_VERSION, GoldenLayoutConfig} from './components.interfaces.js';
 import * as Components from './components.js';
 
 import * as rison from './rison.js';
@@ -116,10 +116,10 @@ export function deserialiseState(stateText: string): GoldenLayoutConfig {
     return loadState(state);
 }
 
-export function serialiseState(state: SerializedLayoutState): string {
-    const ctx = GoldenLayout.minifyConfig({content: state.content});
-    // Use the version from the state - no fallback as SerializedLayoutState must have a version
-    ctx.version = state.version;
+export function serialiseState(config: GoldenLayoutConfig): string {
+    const ctx = GoldenLayout.minifyConfig({content: config.content});
+    // Always assign current version when serializing - we only serialize current states
+    ctx.version = CURRENT_LAYOUT_VERSION;
     const uncompressed = risonify(ctx);
     const compressed = risonify({z: lzstring.compressToBase64(uncompressed)});
     const MinimalSavings = 0.2; // at least this ratio smaller

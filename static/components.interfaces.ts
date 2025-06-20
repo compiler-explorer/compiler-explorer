@@ -427,6 +427,25 @@ export type ItemConfig = AnyComponentConfig | LayoutItem;
  */
 export interface GoldenLayoutConfig extends Omit<GoldenLayout.Config, 'content'> {
     content?: ItemConfig[];
+    /**
+     * Tracks whether there's a maximized item in the layout.
+     *
+     * IMPORTANT: Despite the name, this is NOT actually an item ID! It's a marker that works like this:
+     *
+     * 1. When maximizing: GoldenLayout adds the ID '__glMaximised' to the maximized item
+     * 2. When serializing: If any item is maximized, this is set to '__glMaximised'
+     * 3. When restoring: GoldenLayout finds the item with ID '__glMaximised' and maximizes it
+     * 4. When minimizing: The '__glMaximised' ID is removed from the item
+     *
+     * This can cause a bug: if a maximized item is closed without minimizing first, the layout
+     * will have maximisedItemId='__glMaximised' but no item with that ID, causing errors on restore.
+     * See https://github.com/compiler-explorer/compiler-explorer/issues/2056
+     *
+     * The value is always either '__glMaximised' (there is a maximized item) or null (there isn't).
+     * This property is added by GoldenLayout's toConfig() method but is not part of the official
+     * TypeScript interface.
+     */
+    maximisedItemId?: '__glMaximised' | null;
 }
 
 /**
@@ -468,7 +487,7 @@ export interface SerializedLayoutState {
     settings?: GoldenLayout.Settings;
     dimensions?: GoldenLayout.Dimensions;
     labels?: GoldenLayout.Labels;
-    maximisedItemId?: string | null;
+    maximisedItemId?: '__glMaximised' | null;
 }
 
 /**

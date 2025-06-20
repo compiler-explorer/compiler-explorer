@@ -1036,6 +1036,10 @@ function validateItemConfig(item: any): string | null {
             return "'componentState' must be an object";
         }
         // TODO(#7808): Add component-specific state validation
+        // - Validate component names against known components
+        // - Validate component state structure matches expected types
+        // - Validate required properties are present
+        // - Validate property types (e.g. numbers vs strings)
         return null;
     }
     if (item.type === 'row' || item.type === 'column' || item.type === 'stack') {
@@ -1086,14 +1090,12 @@ export function createDragSource<K extends keyof ComponentStateMap>(
  * Always assigns the current version since this creates new serialized state.
  */
 export function toSerializedLayoutState(config: GoldenLayoutConfig): SerializedLayoutState {
-    // Cast to any to access properties that might exist on the raw config
-    const rawConfig = config as any;
     return {
         version: CURRENT_LAYOUT_VERSION,
         content: config.content || [],
         settings: config.settings,
         dimensions: config.dimensions,
         labels: config.labels,
-        maximisedItemId: rawConfig.maximisedItemId || null,
+        maximisedItemId: config.maximisedItemId || null,
     };
 }
