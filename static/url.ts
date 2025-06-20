@@ -102,7 +102,7 @@ function validateItemConfig(item: any): string | null {
     return `unknown type '${item.type}'`;
 }
 
-export function loadState(state: any): GoldenLayoutConfig {
+export function loadState(state: any, shouldUnminify: boolean): GoldenLayoutConfig {
     if (!state || typeof state !== 'object') {
         throw new Error('Invalid state: must be an object');
     }
@@ -124,9 +124,7 @@ export function loadState(state: any): GoldenLayoutConfig {
             state = convertOldState(state);
             break; // no fall through
         case CURRENT_LAYOUT_VERSION:
-            // Only unminify if the config appears to be minified (no 'content' property at top level)
-            // Minified configs use short property names, unminified configs use full names
-            if (!state.content) {
+            if (shouldUnminify) {
                 state = GoldenLayout.unminifyConfig(state);
             }
             break;
@@ -187,7 +185,7 @@ export function deserialiseState(stateText: string): GoldenLayoutConfig {
         }
     }
     if (exception) throw exception;
-    return loadState(state);
+    return loadState(state, true);
 }
 
 export function serialiseState(config: GoldenLayoutConfig): string {

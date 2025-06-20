@@ -221,7 +221,7 @@ function setupButtons(options: CompilerExplorerOptions, hub: Hub) {
         historyWidget.run(data => {
             try {
                 // data.config is a SerializedLayoutState from history
-                const validConfig = url.loadState(data.config);
+                const validConfig = url.loadState(data.config, false);
                 const serialized = toSerializedLayoutState(validConfig);
                 sessionThenLocalStorage.set('gl', JSON.stringify(serialized));
                 hasUIBeenReset = true;
@@ -353,7 +353,7 @@ function findConfig(
                 if (savedState) {
                     try {
                         const parsed = JSON.parse(savedState);
-                        config = url.loadState(parsed);
+                        config = url.loadState(parsed, false);
                     } catch (e) {
                         // Log localStorage corruption to Sentry for monitoring
                         SentryCapture(
