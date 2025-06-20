@@ -413,7 +413,7 @@ export class Executor extends Pane<ExecutorState> {
             .catch(error => {
                 this.onCompileResponse(
                     request,
-                    this.errorResult('Failed to expand includes in files: ' + error.message),
+                    this.errorResult('Failed to expand includes in files: ' + (error instanceof Error ? error.message : String(error))),
                     false,
                 );
             });
