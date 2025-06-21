@@ -25,6 +25,49 @@
 import {describe, expect, it} from 'vitest';
 import {deserialiseState} from '../../static/url.js';
 
+// Helper functions for DRY testing
+function findComponentInConfig(config: any, componentName: string): any {
+    const row = config.content[0];
+    return row.content?.find((item: any) => item.type === 'component' && item.componentName === componentName);
+}
+
+function validateBasicConfig(config: any): void {
+    expect(config).toBeDefined();
+    expect(config.content).toBeDefined();
+    expect(Array.isArray(config.content)).toBe(true);
+}
+
+function validateEditorPane(config: any, expectedSourceSnippets: string[]): any {
+    const editorPane = findComponentInConfig(config, 'codeEditor');
+    expect(editorPane).toBeDefined();
+
+    for (const snippet of expectedSourceSnippets) {
+        expect(editorPane.componentState.source).toContain(snippet);
+    }
+
+    return editorPane;
+}
+
+function validateCompilerPane(
+    config: any,
+    expectedCompiler: string,
+    expectedOptions: string,
+    expectedFilters?: Record<string, boolean>,
+): any {
+    const compilerPane = findComponentInConfig(config, 'compiler');
+    expect(compilerPane).toBeDefined();
+    expect(compilerPane.componentState.compiler).toBe(expectedCompiler);
+    expect(compilerPane.componentState.options).toBe(expectedOptions);
+
+    if (expectedFilters) {
+        for (const [filterName, expectedValue] of Object.entries(expectedFilters)) {
+            expect(compilerPane.componentState.filters[filterName]).toBe(expectedValue);
+        }
+    }
+
+    return compilerPane;
+}
+
 describe('URL serialization/deserialization', () => {
     it('should decode a "Known good state" URL with many panes active', () => {
         // This is a real URL from cypress/e2e/frontend.cy.ts
@@ -37,5 +80,56 @@ describe('URL serialization/deserialization', () => {
         expect(config.content).toBeDefined();
         expect(Array.isArray(config.content)).toBe(true);
         expect(config.content?.length).toBeGreaterThan(0);
+    });
+
+    // Legacy URLs from etc/oldhash.txt
+    it('should handle legacy version 2 URL with icc compiler', () => {
+        // From git history: should be icc, "-O3 -std=c++0x", all filters but comments
+        const url =
+            '%7B%22version%22%3A2%2C%22source%22%3A%22%23include%20%3Cxmmintrin.h%3E%5Cn%5Cnvoid%20f(__m128%20a%2C%20__m128%20b)%5Cn%7B%5Cn%20%20%2F%2F%20I%20am%20a%20walrus.%5Cn%7D%22%2C%22compiler%22%3A%22%2Fhome%2Fmgodbolt%2Fapps%2Fintel-icc-oss%2Fbin%2Ficc%22%2C%22options%22%3A%22-O3%20-std%3Dc%2B%2B0x%22%2C%22filterAsm%22%3A%7B%22labels%22%3Atrue%2C%22directives%22%3Atrue%7D%7D';
+
+        const config = deserialiseState(url);
+
+        validateBasicConfig(config);
+        validateEditorPane(config, ['#include <xmmintrin.h>', 'I am a walrus']);
+        validateCompilerPane(config, '/home/mgodbolt/apps/intel-icc-oss/bin/icc', '-O3 -std=c++0x', {
+            labels: true,
+            directives: true,
+        });
+    });
+
+    it('should handle legacy version 3 URL with GCC 7 and widget source', () => {
+        // From git history: should be GCC 7, with widgets source. Binary mode off, all other labels on. -std=c++1z -O3
+        const url =
+            "compilers:!((compiler:g7snapshot,options:'-std%3Dc%2B%2B1z+-O3+',source:'%23include+%3Cvector%3E%0A%0Astruct+Widget+%7B%0A++int+n%3B%0A++double+x,+y%3B%0A++Widget(const+Widget%26+o)+:+x(o.x),+y(o.y),+n(o.n)+%7B%7D%0A++Widget(int+n,+double+x,+double+y)+:+n(n),+x(x),+y(y)+%7B%7D%0A%7D%3B%0A%0Astd::vector%3CWidget%3E+vector%3B%0Aconst+int+N+%3D+1002%3B%0Adouble+a+%3D+0.1%3B%0Adouble+b+%3D+0.2%3B%0A%0Avoid+demo()+%7B%0A++vector.reserve(N)%3B%0A++for+(int+i+%3D+01%3B+i+%3C+N%3B+%2B%2Bi)%0A++%7B%0A%09Widget+w+%7Bi,+a,+b%7D%3B%0A%09vector.push_back(w)%3B+//+or+vector.push_back(std::move(w))%0A++%7D%0A%7D%0A%0Aint+main()%0A%7B%0A+%0A+%0A%7D%0A')),filterAsm:(colouriseAsm:!t,commentOnly:!t,directives:!t,intel:!t,labels:!t),version:3";
+
+        const config = deserialiseState(url);
+
+        validateBasicConfig(config);
+        validateEditorPane(config, ['struct Widget', 'vector.reserve(N)']);
+        validateCompilerPane(config, 'g7snapshot', '-std=c++1z -O3 ', {
+            commentOnly: true,
+            directives: true,
+            intel: true,
+            labels: true,
+        });
+    });
+
+    it('should handle legacy version 3 URL with base64 encoded source', () => {
+        // From git history: should be 4.7.4, no options, binary, intel, colourise
+        const url =
+            "compilers:!((compiler:g474,options:'',sourcez:PQKgBALgpgzhYHsBmYDGCC2AHATrGAlggHYB0pamGUx8AFlHmEgjmADY0DmEdAXACgAhiNFjxEyVOkzZw2QsVLl85WvVrVG7TolbdB7fsMmlx0xennLNsddu37Dy0%2BenXbwx8%2B7vPo/7OfoGaIMACAgS0YBhCUQAUUfBCOFyoADSUxHBodClgICApXABuAJRgAN4CYGB4EACuOMRgAIwATADcAgC%2BQAA)),filterAsm:(binary:!t,colouriseAsm:!t,commentOnly:!t,directives:!t,intel:!t,labels:!t),version:3";
+
+        const config = deserialiseState(url);
+
+        validateBasicConfig(config);
+        validateEditorPane(config, ['test of compression']);
+        validateCompilerPane(config, 'g474', '', {
+            binary: true,
+            intel: true,
+            commentOnly: true,
+            directives: true,
+            labels: true,
+        });
     });
 });
