@@ -162,6 +162,35 @@ describe('URL serialization/deserialization', () => {
                     'Invalid state: missing version information',
                 );
             });
+
+            it('should throw for array input', () => {
+                expect(() => loadState([] as any, false)).toThrow('Invalid state: missing version information');
+            });
+
+            it('should throw for function input', () => {
+                expect(() => loadState((() => {}) as any, false)).toThrow('Invalid state: must be an object');
+            });
+
+            it('should throw for boolean input', () => {
+                expect(() => loadState(true as any, false)).toThrow('Invalid state: must be an object');
+                expect(() => loadState(false as any, false)).toThrow('Invalid state: must be an object');
+            });
+
+            it('should throw for invalid version types', () => {
+                expect(() => loadState({version: 'invalid', content: []} as any, false)).toThrow(
+                    "Invalid version 'invalid'",
+                );
+                expect(() => loadState({version: [], content: []} as any, false)).toThrow("Invalid version ''");
+                expect(() => loadState({version: {}, content: []} as any, false)).toThrow(
+                    "Invalid version '[object Object]'",
+                );
+            });
+
+            it('should throw for unsupported version numbers', () => {
+                expect(() => loadState({version: 0, content: []} as any, false)).toThrow("Invalid version '0'");
+                expect(() => loadState({version: 5, content: []} as any, false)).toThrow("Invalid version '5'");
+                expect(() => loadState({version: -1, content: []} as any, false)).toThrow("Invalid version '-1'");
+            });
         });
 
         describe('Valid configurations', () => {
@@ -187,8 +216,48 @@ describe('URL serialization/deserialization', () => {
             });
         });
 
-        // TODO(#7807): Add more comprehensive tests for validation
-        // Many tests removed temporarily to make commit possible
-        // Full test coverage will be restored in follow-up work
+        // TODO(#7807): Add comprehensive validation tests covering:
+        //
+        // A. Extended Input Validation:
+        //    - Array inputs (should throw)
+        //    - Function inputs (should throw)
+        //    - Invalid version types (string, array, etc.)
+        //    - Unsupported version numbers
+        //    - Version migration edge cases
+        //
+        // B. Content Array Validation:
+        //    - Non-array content property
+        //    - Content with mixed valid/invalid items
+        //    - Empty vs populated content handling
+        //
+        // C. Item Structure Validation:
+        //    - Items missing 'type' property
+        //    - Items with non-string type property
+        //    - Unknown item types beyond component/row/column/stack
+        //
+        // D. Component Validation:
+        //    - Missing componentName property
+        //    - Non-string componentName
+        //    - Unknown component names (not in COMPONENT_NAMES list)
+        //    - Missing componentState property
+        //    - Non-object componentState
+        //    - Component-specific state validation (future #7808)
+        //
+        // E. Layout Item Validation:
+        //    - row/column/stack items missing content property
+        //    - row/column/stack items with non-array content
+        //    - Nested validation errors (deep nesting)
+        //    - Mixed valid/invalid nested items
+        //
+        // F. Error Message Validation:
+        //    - Verify exact error messages for each case
+        //    - Test error message includes item index for nested errors
+        //    - Test error propagation through nested structures
+        //
+        // G. Edge Cases:
+        //    - Deeply nested valid structures
+        //    - Large configuration objects
+        //    - Boundary conditions (empty arrays, null values)
+        //    - Mixed configuration types
     });
 });
