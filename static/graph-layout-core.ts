@@ -916,6 +916,7 @@ export class GraphLayoutCore {
     computeCoordinates() {
         this.updateBlockDimensions();
         this.computeGridDimensions();
+        this.computeGridOffsets();
         // Compute block coordinates and edge paths
         for (const block of this.blocks) {
             this.computeBlockCoordinates(block);
