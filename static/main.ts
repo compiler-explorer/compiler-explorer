@@ -323,25 +323,29 @@ function findConfig(
             if (options.config) {
                 config = options.config;
             } else {
-                try {
-                    config = url.deserialiseState(window.location.hash.substring(1));
-                } catch (e) {
-                    // Log URL corruption to Sentry for monitoring
-                    SentryCapture(
-                        e,
-                        `URL deserialization failure: hash=${window.location.hash.substring(1, 200)}, length=${window.location.hash.length - 1}`,
-                    );
-                    // #3518 Alert the user that the url is invalid
-                    const alertSystem = new Alert();
-                    alertSystem.alert(
-                        'Decode Error',
-                        'An error was encountered while decoding the URL, the last locally saved configuration will ' +
-                            "be used if present.<br/><br/>Make sure the URL you're using hasn't been truncated, " +
-                            'otherwise if you believe your URL is valid please let us know on ' +
-                            '<a href="https://github.com/compiler-explorer/compiler-explorer/issues">our github</a>.',
-                        {isError: true},
-                    );
+                const hashContent = window.location.hash.substring(1);
+                if (hashContent) {
+                    try {
+                        config = url.deserialiseState(hashContent);
+                    } catch (e) {
+                        // Log URL corruption to Sentry for monitoring
+                        SentryCapture(
+                            e,
+                            `URL deserialization failure: hash=${hashContent.substring(0, 200)}, length=${hashContent.length}`,
+                        );
+                        // #3518 Alert the user that the url is invalid
+                        const alertSystem = new Alert();
+                        alertSystem.alert(
+                            'Decode Error',
+                            'An error was encountered while decoding the URL, the last locally saved configuration will ' +
+                                "be used if present.<br/><br/>Make sure the URL you're using hasn't been truncated, " +
+                                'otherwise if you believe your URL is valid please let us know on ' +
+                                '<a href="https://github.com/compiler-explorer/compiler-explorer/issues">our github</a>.',
+                            {isError: true},
+                        );
+                    }
                 }
+                // If no hash content, config remains undefined and will fall through to default
             }
 
             if (config) {
