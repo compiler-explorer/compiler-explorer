@@ -112,6 +112,22 @@ describe('Basic demangling', () => {
         ]);
     });
 
+    it('One quoted label and some asm', () => {
+        const result = {asm: [{text: '"_Z6squarei":'}, {text: '  ret'}]};
+
+        const demangler = new DummyCppDemangler(cppfiltpath, new DummyCompiler(), ['-n']);
+
+        return Promise.all([
+            demangler
+                .process(result)
+                .then(output => {
+                    expect(output.asm[0].text).toEqual('"square(int)":');
+                    expect(output.asm[1].text).toEqual('  ret');
+                })
+                .catch(catchCppfiltNonexistence),
+        ]);
+    });
+
     it('One label and use of a label', () => {
         const result = {asm: [{text: '_Z6squarei:'}, {text: '  mov eax, $_Z6squarei'}]};
 
@@ -123,6 +139,22 @@ describe('Basic demangling', () => {
                 .then(output => {
                     expect(output.asm[0].text).toEqual('square(int):');
                     expect(output.asm[1].text).toEqual('  mov eax, $square(int)');
+                })
+                .catch(catchCppfiltNonexistence),
+        ]);
+    });
+
+    it('One quoted label and use of a label', () => {
+        const result = {asm: [{text: '"_Z6squarei":'}, {text: '  mov eax, $"_Z6squarei"'}]};
+
+        const demangler = new DummyCppDemangler(cppfiltpath, new DummyCompiler(), ['-n']);
+
+        return Promise.all([
+            demangler
+                .process(result)
+                .then(output => {
+                    expect(output.asm[0].text).toEqual('"square(int)":');
+                    expect(output.asm[1].text).toEqual('  mov eax, $"square(int)"');
                 })
                 .catch(catchCppfiltNonexistence),
         ]);

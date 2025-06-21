@@ -24,6 +24,7 @@
 
 import {describe, expect, it} from 'vitest';
 
+import {PTXAsmParser} from '../lib/parsers/asm-parser-ptx.js';
 import {AsmParser} from '../lib/parsers/asm-parser.js';
 
 describe('AsmParser tests', () => {
@@ -39,5 +40,149 @@ describe('AsmParser tests', () => {
     });
     it('should identify llvm opcodes', () => {
         expect(parser.hasOpcode('  %i1 = phi i32 [ %i2, %.preheader ], [ 0, %bb ]')).toBe(true);
+    });
+});
+
+describe('PTXAsmParser tests', () => {
+    const parser = new PTXAsmParser();
+
+    describe('Nested brace indentation', () => {
+        it('should indent content inside callseq blocks', () => {
+            const input = `{ // callseq 0, 0
+.param .b64 param0;
+st.param.b64 [param0+0], %rd2;
+}`;
+            const result = parser.processAsm(input, {});
+            const lines = result.asm.map(line => line.text);
+
+            expect(lines[0]).toBe('{ // callseq 0, 0');
+            expect(lines[1]).toBe('\t.param .b64 param0;');
+            expect(lines[2]).toBe('\tst.param.b64 [param0+0], %rd2;');
+            expect(lines[3]).toBe('}');
+        });
+
+        it('should properly indent function calls inside nested braces', () => {
+            const input = `{ // callseq 0, 0
+call.uni (retval0),
+vprintf,
+(
+param0,
+param1
+);
+}`;
+            const result = parser.processAsm(input, {});
+            const lines = result.asm.map(line => line.text);
+
+            expect(lines[0]).toBe('{ // callseq 0, 0');
+            expect(lines[1]).toBe('\tcall.uni (retval0),');
+            expect(lines[2]).toBe('\tvprintf,');
+            expect(lines[3]).toBe('\t(');
+            expect(lines[4]).toBe('\tparam0,');
+            expect(lines[5]).toBe('\tparam1');
+            expect(lines[6]).toBe('\t);');
+            expect(lines[7]).toBe('}');
+        });
+
+        it('should have proper indentation logic', () => {
+            const input = `.visible .entry _Z6kernelv()
+{
+mov.u64 %rd1, $str;
+{ // callseq 0, 0
+call.uni (retval0),
+vprintf,
+(
+param0,
+param1
+);
+}
+}`;
+            const result = parser.processAsm(input, {});
+            const lines = result.asm.map(line => line.text);
+
+            expect(lines[0]).toBe('.visible .entry _Z6kernelv()');
+            expect(lines[1]).toBe('{');
+            expect(lines[2]).toBe('\tmov.u64 %rd1, $str;');
+            expect(lines[3]).toBe('\t{ // callseq 0, 0');
+            expect(lines[4]).toBe('\t\tcall.uni (retval0),');
+            expect(lines[5]).toBe('\t\tvprintf,');
+            expect(lines[6]).toBe('\t\t(');
+            expect(lines[7]).toBe('\t\tparam0,');
+            expect(lines[8]).toBe('\t\tparam1');
+            expect(lines[9]).toBe('\t\t);');
+            expect(lines[10]).toBe('\t}');
+            expect(lines[11]).toBe('}');
+        });
+    });
+
+    describe('Label handling', () => {
+        it('should never indent labels', () => {
+            const input = `{ // callseq 0, 0
+$L__BB0_3:
+mov.u64 %rd1, $str;
+}`;
+            const result = parser.processAsm(input, {});
+            const lines = result.asm.map(line => line.text);
+
+            expect(lines[0]).toBe('{ // callseq 0, 0');
+            expect(lines[1]).toBe('$L__BB0_3:');
+            expect(lines[2]).toBe('\tmov.u64 %rd1, $str;');
+            expect(lines[3]).toBe('}');
+        });
+    });
+
+    describe('Trim filter', () => {
+        it('should convert tabs to spaces when trim filter is enabled', () => {
+            const input = `\t\t\tcall.uni (retval0),
+\t\t\tvprintf,
+\t\t\t(
+\t\t\tparam0,
+\t\t\tparam1
+\t\t\t);`;
+            const result = parser.processAsm(input, {trim: true});
+            const lines = result.asm.map(line => line.text);
+
+            expect(lines[0]).toBe('      call.uni (retval0),');
+            expect(lines[1]).toBe('        vprintf,');
+            expect(lines[2]).toBe('        (');
+            expect(lines[3]).toBe('        param0,');
+            expect(lines[4]).toBe('        param1');
+            expect(lines[5]).toBe('      );');
+        });
+
+        it('should preserve structure but compress whitespace with trim filter', () => {
+            const input = `{ // callseq 0, 0
+\t\t\tcall.uni (retval0),
+\t\t\tvprintf,
+}`;
+            const result = parser.processAsm(input, {trim: true});
+            const lines = result.asm.map(line => line.text);
+
+            expect(lines[0]).toBe('{ // callseq 0, 0');
+            expect(lines[1]).toBe('  call.uni (retval0),');
+            expect(lines[2]).toBe('  vprintf,');
+            expect(lines[3]).toBe('}');
+        });
+
+        it('should preserve nested indentation structure with trim filter', () => {
+            const input = `.visible .entry _Z6kernelv()
+{
+mov.u64 %rd1, $str;
+{ // callseq 0, 0
+call.uni (retval0),
+vprintf,
+}
+}`;
+            const result = parser.processAsm(input, {trim: true});
+            const lines = result.asm.map(line => line.text);
+
+            expect(lines[0]).toBe('.visible .entry _Z6kernelv()');
+            expect(lines[1]).toBe('{');
+            expect(lines[2]).toBe('  mov.u64 %rd1, $str;');
+            expect(lines[3]).toBe('  { // callseq 0, 0');
+            expect(lines[4]).toBe('    call.uni (retval0),');
+            expect(lines[5]).toBe('    vprintf,');
+            expect(lines[6]).toBe('  }');
+            expect(lines[7]).toBe('}');
+        });
     });
 });

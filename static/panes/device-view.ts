@@ -115,8 +115,8 @@ export class DeviceAsm extends MonacoPane<monaco.editor.IStandaloneCodeEditor, D
                 if (position != null) {
                     const desiredLine = position.lineNumber - 1;
                     const source = this.deviceCode[desiredLine].source;
-                    if (source && source.file == null && this.compilerInfo.editorId != null) {
-                        // a null file means it was the user's source
+                    if (source && (source.file == null || source.mainsource) && this.compilerInfo.editorId != null) {
+                        // a null file or mainsource means it was the user's source
                         this.eventHub.emit('editorLinkLine', this.compilerInfo.editorId, source.line, -1, -1, true);
                     }
                 }
@@ -363,7 +363,12 @@ export class DeviceAsm extends MonacoPane<monaco.editor.IStandaloneCodeEditor, D
         if (id === this.compilerInfo.compilerId && this.deviceCode) {
             const irColours: Record<number, number> = {};
             this.deviceCode.forEach((x: ResultLine, index: number) => {
-                if (x.source && x.source.file == null && x.source.line > 0 && colours[x.source.line - 1]) {
+                if (
+                    x.source &&
+                    (x.source.file == null || x.source.mainsource) &&
+                    x.source.line > 0 &&
+                    colours[x.source.line - 1]
+                ) {
                     irColours[index] = colours[x.source.line - 1];
                 }
             });
@@ -484,7 +489,11 @@ export class DeviceAsm extends MonacoPane<monaco.editor.IStandaloneCodeEditor, D
         if (Number(compilerId) === this.compilerInfo.compilerId && this.deviceCode) {
             const lineNums: number[] = [];
             this.deviceCode.forEach((line: ResultLine, i: number) => {
-                if (line.source && line.source.file == null && line.source.line === lineNumber) {
+                if (
+                    line.source &&
+                    (line.source.file == null || line.source.mainsource) &&
+                    line.source.line === lineNumber
+                ) {
                     const line = i + 1;
                     lineNums.push(line);
                 }

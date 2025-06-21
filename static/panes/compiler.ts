@@ -22,7 +22,6 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import {Buffer} from 'buffer';
 import {Container} from 'golden-layout';
 import $ from 'jquery';
 import {LRUCache} from 'lru-cache';
@@ -77,8 +76,9 @@ import {LLVMIrBackendOptions} from '../../types/compilation/ir.interfaces.js';
 import {CompilerOutputOptions} from '../../types/features/filters.interfaces.js';
 import {InstructionSet} from '../../types/instructionsets.js';
 import {LanguageKey} from '../../types/languages.interfaces.js';
-import {Artifact, ArtifactType, Tool} from '../../types/tool.interfaces.js';
-import {assert, unwrap, unwrapString} from '../assert.js';
+import {Tool} from '../../types/tool.interfaces.js';
+import {ArtifactHandler} from '../artifact-handler.js';
+import {unwrap, unwrapString} from '../assert.js';
 import {ICompilerShared} from '../compiler-shared.interfaces.js';
 import {CompilerShared} from '../compiler-shared.js';
 import {SourceAndFiles} from '../download-service.js';
@@ -276,6 +276,7 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
     private cursorSelectionThrottledFunction?: ((e: monaco.editor.ICursorSelectionChangedEvent) => void) & _.Cancelable;
     private mouseUpThrottledFunction?: ((e: monaco.editor.IEditorMouseEvent) => void) & _.Cancelable;
     private compilerShared: ICompilerShared;
+    private artifactHandler: ArtifactHandler;
 
     constructor(hub: Hub, container: Container, state: MonacoPaneState & CompilerState) {
         super(hub, container, state);
@@ -308,6 +309,8 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
         this.labelDefinitions = {};
         this.alertSystem = new Alert();
         this.alertSystem.prefixMessage = 'Compiler #' + this.id;
+
+        this.artifactHandler = new ArtifactHandler(this.alertSystem);
 
         this.awaitingInitialResults = false;
 
@@ -1320,45 +1323,68 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
             );
         }
 
-        Promise.all(fetches).then(() => {
-            const treeState = tree.currentState();
-            const cmakeProject = tree.multifileService.isACMakeProject();
-            request.files.push(...moreFiles);
+        Promise.all(fetches)
+            .then(() => {
+                const treeState = tree.currentState();
+                const cmakeProject = tree.multifileService.isACMakeProject();
+                request.files.push(...moreFiles);
 
-            if (bypassCache) request.bypassCache = BypassCache.Compilation;
-            if (!this.compiler) {
-                this.onCompileResponse(request, this.errorResult('<Please select a compiler>'), false);
-            } else if (cmakeProject && request.source === '') {
-                this.onCompileResponse(request, this.errorResult('<Please supply a CMakeLists.txt>'), false);
-            } else {
-                if (cmakeProject) {
-                    request.options.compilerOptions.cmakeArgs = treeState.cmakeArgs;
-                    request.options.compilerOptions.customOutputFilename = treeState.customOutputFilename;
-                    this.sendCMakeCompile(request);
+                if (bypassCache) request.bypassCache = BypassCache.Compilation;
+                if (!this.compiler) {
+                    this.onCompileResponse(request, this.errorResult('<Please select a compiler>'), false);
+                } else if (cmakeProject && request.source === '') {
+                    this.onCompileResponse(request, this.errorResult('<Please supply a CMakeLists.txt>'), false);
                 } else {
-                    this.sendCompile(request);
+                    if (cmakeProject) {
+                        request.options.compilerOptions.cmakeArgs = treeState.cmakeArgs;
+                        request.options.compilerOptions.customOutputFilename = treeState.customOutputFilename;
+                        this.sendCMakeCompile(request);
+                    } else {
+                        this.sendCompile(request);
+                    }
                 }
-            }
-        });
+            })
+            .catch(error => {
+                this.onCompileResponse(
+                    request,
+                    this.errorResult('Failed to expand includes in files: ' + error.message),
+                    false,
+                );
+            });
     }
 
     compileFromEditorSource(options: CompilationRequestOptions, bypassCache: boolean) {
-        this.compilerService.expandToFiles(this.source).then((sourceAndFiles: SourceAndFiles) => {
-            const request: CompilationRequest = {
-                source: sourceAndFiles.source || '',
-                compiler: this.compiler ? this.compiler.id : '',
-                options: options,
-                lang: this.currentLangId,
-                files: sourceAndFiles.files,
-                bypassCache: BypassCache.None,
-            };
-            if (bypassCache) request.bypassCache = BypassCache.Compilation;
-            if (!this.compiler) {
-                this.onCompileResponse(request, this.errorResult('<Please select a compiler>'), false);
-            } else {
-                this.sendCompile(request);
-            }
-        });
+        this.compilerService
+            .expandToFiles(this.source)
+            .then((sourceAndFiles: SourceAndFiles) => {
+                const request: CompilationRequest = {
+                    source: sourceAndFiles.source || '',
+                    compiler: this.compiler ? this.compiler.id : '',
+                    options: options,
+                    lang: this.currentLangId,
+                    files: sourceAndFiles.files,
+                    bypassCache: BypassCache.None,
+                };
+                if (bypassCache) request.bypassCache = BypassCache.Compilation;
+                if (!this.compiler) {
+                    this.onCompileResponse(request, this.errorResult('<Please select a compiler>'), false);
+                } else {
+                    this.sendCompile(request);
+                }
+            })
+            .catch(error => {
+                this.onCompileResponse(
+                    {
+                        source: this.source,
+                        compiler: this.compiler?.id || '',
+                        options: options,
+                        lang: this.currentLangId,
+                        files: [],
+                    },
+                    this.errorResult('Failed to expand includes: ' + error.message),
+                    false,
+                );
+            });
     }
 
     makeCompilingPlaceholderTimeout() {
@@ -1727,6 +1753,10 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
                     if (result?.result) {
                         this.handlePopularArgumentsResult(result.result);
                     }
+                })
+                .catch(error => {
+                    // Log the error but don't show to user - popular arguments are optional
+                    console.warn('Failed to fetch popular arguments:', error);
                 });
         }
 
@@ -1745,291 +1775,7 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
     }
 
     offerFilesIfPossible(result: CompilationResult) {
-        if (result.artifacts) {
-            for (const artifact of result.artifacts) {
-                if (artifact.type === ArtifactType.nesrom) {
-                    this.emulateNESROM(artifact.content);
-                } else if (artifact.type === ArtifactType.bbcdiskimage) {
-                    this.emulateBbcDisk(artifact.content);
-                } else if (artifact.type === ArtifactType.zxtape) {
-                    this.emulateSpeccyTape(artifact.content);
-                } else if (artifact.type === ArtifactType.smsrom) {
-                    this.emulateMiracleSMS(artifact.content);
-                } else if (artifact.type === ArtifactType.timetrace) {
-                    this.offerViewInSpeedscope(artifact);
-                } else if (artifact.type === ArtifactType.c64prg) {
-                    this.emulateC64Prg(artifact);
-                } else if (artifact.type === ArtifactType.heaptracktxt) {
-                    this.offerViewInSpeedscope(artifact);
-                } else if (artifact.type === ArtifactType.gbrom) {
-                    this.emulateGameBoyROM(artifact);
-                }
-            }
-        }
-    }
-
-    offerViewInSpeedscope(artifact: Artifact): void {
-        this.alertSystem.notify(
-            'Click ' +
-                '<a class="link-primary" target="_blank" id="download_link" style="cursor:pointer;">here</a>' +
-                ' to view ' +
-                artifact.title +
-                ' in Speedscope',
-            {
-                group: artifact.type,
-                collapseSimilar: false,
-                dismissTime: 10000,
-                onBeforeShow: elem => {
-                    elem.find('#download_link').on('click', () => {
-                        const tmstr = Date.now();
-                        const live_url = 'https://static.ce-cdn.net/speedscope/index.html';
-                        const speedscope_url =
-                            live_url +
-                            '?' +
-                            tmstr +
-                            '#customFilename=' +
-                            encodeURIComponent(artifact.name) +
-                            '&b64data=' +
-                            encodeURIComponent(artifact.content);
-                        window.open(speedscope_url);
-                    });
-                },
-            },
-        );
-    }
-
-    offerViewInPerfetto(artifact: Artifact): void {
-        this.alertSystem.notify(
-            'Click ' +
-                '<a class="link-primary" target="_blank" id="download_link" style="cursor:pointer;">here</a>' +
-                ' to view ' +
-                artifact.title +
-                ' in Perfetto',
-            {
-                group: artifact.type,
-                collapseSimilar: false,
-                dismissTime: 10000,
-                onBeforeShow: elem => {
-                    elem.find('#download_link').on('click', () => {
-                        const perfetto_url = 'https://ui.perfetto.dev';
-                        const win = window.open(perfetto_url);
-                        if (win) {
-                            const timer = setInterval(() => win.postMessage('PING', perfetto_url), 50);
-
-                            const onMessageHandler = evt => {
-                                if (evt.data !== 'PONG') return;
-                                clearInterval(timer);
-
-                                const data = {
-                                    perfetto: {
-                                        buffer: Buffer.from(artifact.content, 'base64'),
-                                        title: artifact.name,
-                                        filename: artifact.name,
-                                    },
-                                };
-                                win.postMessage(data, perfetto_url);
-                            };
-                            window.addEventListener('message', onMessageHandler);
-                        }
-                    });
-                },
-            },
-        );
-    }
-
-    emulateMiracleSMS(image: string): void {
-        const dialog = $('#miracleemu');
-
-        this.alertSystem.notify(
-            'Click ' +
-                '<a target="_blank" id="miracle_emulink" style="cursor:pointer;" class="link-primary">here</a>' +
-                ' to emulate',
-            {
-                group: 'emulation',
-                collapseSimilar: true,
-                dismissTime: 10000,
-                onBeforeShow: elem => {
-                    elem.find('#miracle_emulink').on('click', () => {
-                        BootstrapUtils.showModal(dialog);
-
-                        const miracleMenuFrame = dialog.find('#miracleemuframe')[0];
-                        assert(miracleMenuFrame instanceof HTMLIFrameElement);
-                        if ('contentWindow' in miracleMenuFrame) {
-                            const emuwindow = unwrap(miracleMenuFrame.contentWindow);
-                            const tmstr = Date.now();
-                            emuwindow.location =
-                                'https://xania.org/miracle/miracle.html?' +
-                                tmstr +
-                                '#b64sms=' +
-                                encodeURIComponent(image);
-                        }
-                    });
-                },
-            },
-        );
-    }
-
-    emulateSpeccyTape(image: string): void {
-        const dialog = $('#jsspeccyemu');
-
-        this.alertSystem.notify(
-            'Click ' +
-                '<a target="_blank" id="jsspeccy_emulink" style="cursor:pointer;" class="link-primary">here</a>' +
-                ' to emulate',
-            {
-                group: 'emulation',
-                collapseSimilar: true,
-                dismissTime: 10000,
-                onBeforeShow: elem => {
-                    elem.find('#jsspeccy_emulink').on('click', () => {
-                        BootstrapUtils.showModal(dialog);
-
-                        const speccyemuframe = dialog.find('#speccyemuframe')[0];
-                        assert(speccyemuframe instanceof HTMLIFrameElement);
-                        if ('contentWindow' in speccyemuframe) {
-                            const emuwindow = unwrap(speccyemuframe.contentWindow);
-                            const tmstr = Date.now();
-                            emuwindow.location =
-                                'https://static.ce-cdn.net/jsspeccy/index.html?' +
-                                tmstr +
-                                '#b64tape=' +
-                                encodeURIComponent(image);
-                        }
-                    });
-                },
-            },
-        );
-    }
-
-    emulateBbcDisk(bbcdiskimage: string): void {
-        const dialog = $('#jsbeebemu');
-
-        this.alertSystem.notify(
-            'Click <a target="_blank" id="emulink" style="cursor:pointer;" class="link-primary">here</a> to emulate',
-            {
-                group: 'emulation',
-                collapseSimilar: true,
-                dismissTime: 10000,
-                onBeforeShow: elem => {
-                    elem.find('#emulink').on('click', () => {
-                        BootstrapUtils.showModal(dialog);
-
-                        const jsbeebemuframe = dialog.find('#jsbeebemuframe')[0];
-                        assert(jsbeebemuframe instanceof HTMLIFrameElement);
-                        if ('contentWindow' in jsbeebemuframe) {
-                            const emuwindow = unwrap(jsbeebemuframe.contentWindow);
-                            const tmstr = Date.now();
-                            emuwindow.location =
-                                'https://bbc.godbolt.org/?' +
-                                tmstr +
-                                '#embed&autoboot&disc1=b64data:' +
-                                encodeURIComponent(bbcdiskimage);
-                        }
-                    });
-                },
-            },
-        );
-    }
-
-    emulateNESROM(nesrom: string): void {
-        const dialog = $('#jsnesemu');
-
-        this.alertSystem.notify(
-            'Click <a target="_blank" id="emulink" style="cursor:pointer;" class="link-primary">here</a> to emulate',
-            {
-                group: 'emulation',
-                collapseSimilar: true,
-                dismissTime: 10000,
-                onBeforeShow: elem => {
-                    elem.find('#emulink').on('click', () => {
-                        BootstrapUtils.showModal(dialog);
-
-                        const jsnesemuframe = dialog.find('#jsnesemuframe')[0];
-                        assert(jsnesemuframe instanceof HTMLIFrameElement);
-                        if ('contentWindow' in jsnesemuframe) {
-                            const emuwindow = unwrap(jsnesemuframe.contentWindow);
-                            const tmstr = Date.now();
-                            emuwindow.location =
-                                'https://static.ce-cdn.net/jsnes-ceweb/index.html?' +
-                                tmstr +
-                                '#b64nes=' +
-                                encodeURIComponent(nesrom);
-                        }
-                    });
-                },
-            },
-        );
-    }
-
-    emulateC64Prg(prg: Artifact): void {
-        this.alertSystem.notify(
-            'Click <a target="_blank" id="emulink" style="cursor:pointer;" class="link-primary">here</a> to emulate',
-            {
-                group: 'emulation',
-                collapseSimilar: true,
-                dismissTime: 10000,
-                onBeforeShow: elem => {
-                    elem.find('#emulink').on('click', () => {
-                        const tmstr = Date.now();
-                        const url =
-                            'https://static.ce-cdn.net/viciious/viciious.html?' +
-                            tmstr +
-                            '#filename=' +
-                            encodeURIComponent(prg.title) +
-                            '&b64c64=' +
-                            encodeURIComponent(prg.content);
-
-                        window.open(url, '_blank');
-                    });
-                },
-            },
-        );
-    }
-
-    emulateGameBoyROM(prg: Artifact): void {
-        const dialog = $('#gbemu');
-
-        this.alertSystem.notify(
-            'Click <a target="_blank" id="emulink" style="cursor:pointer;" class="link-primary">here</a> to emulate with a debugger, ' +
-                'or <a target="_blank" id="emulink-play" style="cursor:pointer;" class="link-primary">here</a> to emulate just to play.',
-            {
-                group: 'emulation',
-                collapseSimilar: true,
-                dismissTime: 10000,
-                onBeforeShow: elem => {
-                    elem.find('#emulink').on('click', () => {
-                        const tmstr = Date.now();
-                        const url =
-                            'https://static.ce-cdn.net/wasmboy/index.html?' +
-                            tmstr +
-                            '#rom-name=' +
-                            encodeURIComponent(prg.title) +
-                            '&rom-data=' +
-                            encodeURIComponent(prg.content);
-                        window.open(url, '_blank');
-                    });
-
-                    elem.find('#emulink-play').on('click', () => {
-                        BootstrapUtils.showModal(dialog);
-
-                        const gbemuframe = dialog.find('#gbemuframe')[0];
-                        assert(gbemuframe instanceof HTMLIFrameElement);
-                        if ('contentWindow' in gbemuframe) {
-                            const emuwindow = unwrap(gbemuframe.contentWindow);
-                            const tmstr = Date.now();
-                            const url =
-                                'https://static.ce-cdn.net/wasmboy/iframe/index.html?' +
-                                tmstr +
-                                '#rom-name=' +
-                                encodeURIComponent(prg.title) +
-                                '&rom-data=' +
-                                encodeURIComponent(prg.content);
-                            emuwindow.location = url;
-                        }
-                    });
-                },
-            },
-        );
+        this.artifactHandler.handle(result);
     }
 
     onEditorChange(editor: number, source: string, langId: string, compilerId?: number): void {
@@ -2135,11 +1881,17 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
             this.optionsField.prop('placeholder', this.initialOptionsFieldPlacehoder);
             this.flagsButton?.prop('disabled', this.flagsViewOpen);
 
-            this.compilerService.requestPopularArguments(this.compiler?.id ?? '', compilerFlags).then((result: any) => {
-                if (result?.result) {
-                    this.handlePopularArgumentsResult(result.result);
-                }
-            });
+            this.compilerService
+                .requestPopularArguments(this.compiler?.id ?? '', compilerFlags)
+                .then((result: any) => {
+                    if (result?.result) {
+                        this.handlePopularArgumentsResult(result.result);
+                    }
+                })
+                .catch(error => {
+                    // Log the error but don't show to user - popular arguments are optional
+                    console.warn('Failed to fetch popular arguments:', error);
+                });
 
             this.updateState();
         }

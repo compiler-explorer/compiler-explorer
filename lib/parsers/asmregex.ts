@@ -31,7 +31,7 @@ export class AsmRegex {
     protected labelDef: RegExp;
 
     constructor() {
-        this.labelDef = /^(?:.proc\s+)?([\w$.@]+):/i;
+        this.labelDef = /^(?:.proc\s+)?([\w$.@]+|"[\w$.@]+"):/i;
     }
 
     static squashHorizontalWhitespace(line: string, atStart: boolean): string {

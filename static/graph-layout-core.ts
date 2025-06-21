@@ -117,6 +117,36 @@ type EdgeRowMetadata = {
     intervals: IntervalTree<EdgeSegment>[]; // pointers to segments
 };
 
+enum LayoutEventType { // note: numbering is important for sorting edges first
+    Edge = 0,
+    Block = 1,
+}
+type LayoutEvent = {
+    blockIndex: number;
+    edgeIndex: number;
+    row: number;
+    type: LayoutEventType;
+};
+
+// Edge kind is the primary heuristic for subrow/column assignment
+// For horizontal edges, think of left/vertical/right terminology rotated 90 degrees right
+enum EdgeKind {
+    LEFTU = -2,
+    LEFTCORNER = -1,
+    VERTICAL = 0,
+    RIGHTCORNER = 1,
+    RIGHTU = 2,
+    // biome-ignore lint/style/useLiteralEnumMembers: ported from cutter
+    NULL = Number.NaN,
+}
+
+type SegmentInfo = {
+    segment: EdgeSegment;
+    length: number;
+    kind: EdgeKind;
+    tiebreaker: number;
+};
+
 const EDGE_SPACING = 10;
 
 export class GraphLayoutCore {
@@ -131,6 +161,15 @@ export class GraphLayoutCore {
     readonly layoutTime: number;
 
     constructor(cfg: AnnotatedCfgDescriptor) {
+        this.populate_graph(cfg);
+
+        const start = performance.now();
+        this.layout();
+        const end = performance.now();
+        this.layoutTime = end - start;
+    }
+
+    populate_graph(cfg: AnnotatedCfgDescriptor) {
         // block id -> block
         const blockMap: Record<string, number> = {};
         for (const node of cfg.nodes) {
@@ -168,34 +207,38 @@ export class GraphLayoutCore {
                 });
             }
         }
-        //console.log(this.blocks);
-        const start = performance.now();
-        this.layout();
-        const end = performance.now();
-        this.layoutTime = end - start;
     }
 
-    dfs(visited: DfsState[], order: number[], node: number) {
+    countEdges() {
+        // Count the number of incoming edges for each block, this is used to adjust block widths so arrows don't
+        // overflow the sides
+        for (const block of this.blocks) {
+            for (const edge of block.edges) {
+                this.blocks[edge.dest].incidentEdgeCount++;
+            }
+        }
+    }
+
+    static postorderDFS(blocks: Block[], visited: DfsState[], node: number, callback: (node: number) => void) {
         if (visited[node] === DfsState.Visited) {
             return;
         }
         if (visited[node] === DfsState.NotVisited) {
             visited[node] = DfsState.Pending;
-            const block = this.blocks[node];
+            const block = blocks[node];
             for (const edge of block.edges) {
-                this.blocks[edge.dest].incidentEdgeCount++;
                 // If we reach another pending node it's a loop edge.
                 // If we reach an unvisited node it's fine, if we reach a visited node that's also part of the dag
                 if (visited[edge.dest] !== DfsState.Pending) {
                     block.dagEdges.push(edge.dest);
                 }
-                this.dfs(visited, order, edge.dest);
+                this.postorderDFS(blocks, visited, edge.dest, callback);
             }
             visited[node] = DfsState.Visited;
-            order.push(node);
+            callback(node);
         } else {
-            // visited[node] == DfsState.Pending
             // If we reach a node in the stack then this is a loop edge; we do nothing
+            assert(visited[node] == DfsState.Pending);
         }
     }
 
@@ -204,20 +247,24 @@ export class GraphLayoutCore {
         // Breaks loop edges with DFS
         // Can consider doing non-recursive dfs later if needed
         const visited = Array(this.blocks.length).fill(DfsState.NotVisited);
+        // Perform a post-order traversal on the graph, adding numbers to the ordering here
         const order: number[] = [];
-        // TODO: Need an actual function entry point from the backend, or will it always be at index 0?
-        this.dfs(visited, order, 0);
+        const action = (node: number) => order.push(node);
+        // Start with block zero, we assume this is the function entry-point. If that's ever not the case we'll need the
+        // back-end to tell us which block is the entry point.
+        GraphLayoutCore.postorderDFS(this.blocks, visited, 0, action);
+        // It may be the case that not all blocks are reachable from the root, walk all the other blocks to ensure the
+        // ordering is made
         for (let i = 0; i < this.blocks.length; i++) {
-            this.dfs(visited, order, i);
+            GraphLayoutCore.postorderDFS(this.blocks, visited, i, action);
         }
-        // we've computed a post-DFS ordering which is always a reverse topological ordering
+        // We've computed a post-DFS ordering which is always a reverse topological ordering
         return order.reverse();
     }
 
     assignRows(topologicalOrder: number[]) {
         for (const i of topologicalOrder) {
             const block = this.blocks[i];
-            //console.log(block);
             for (const j of block.dagEdges) {
                 const target = this.blocks[j];
                 target.row = Math.max(target.row, block.row + 1);
@@ -273,8 +320,9 @@ export class GraphLayoutCore {
         }
     }
 
-    // Note: Currently O(n^2)
     computeTreeColumnPositions(node: number) {
+        // Note: Currently not taking shape into account like Cutter does.
+        // Note: Currently O(n^2) due to constant adjustments
         const block = this.blocks[node];
         if (block.treeEdges.length === 0) {
             block.row = 0;
@@ -294,8 +342,7 @@ export class GraphLayoutCore {
             };
             this.adjustSubtree(childIndex, 1, 0);
         } else {
-            // If the node has more than two children we'll just center between the
-            //let selectedTreeEdges = block.treeEdges.slice(0, 2);
+            // If the node has more than two children we'll just center between the two direct children
             const boundingBox = {
                 rows: 0,
                 cols: 0,
@@ -317,9 +364,8 @@ export class GraphLayoutCore {
         }
     }
 
-    assignColumns(topologicalOrder: number[]) {
-        // Note: Currently not taking shape into account like Cutter does.
-        // Post DFS order means we compute all children before their parents
+    assignBlockColumns(topologicalOrder: number[]) {
+        // Go in reverse topological order, compute subtrees before parents
         for (const i of topologicalOrder.slice().reverse()) {
             this.computeTreeColumnPositions(i);
         }
@@ -334,7 +380,6 @@ export class GraphLayoutCore {
     }
 
     setupRowsAndColumns() {
-        //console.log(this.blocks);
         this.rowCount = Math.max(...this.blocks.map(block => block.row)) + 1; // one more row for zero offset
         this.columnCount = Math.max(...this.blocks.map(block => block.col)) + 2; // blocks are two-wide
         this.blockRows = Array(this.rowCount)
@@ -367,222 +412,163 @@ export class GraphLayoutCore {
             }));
     }
 
-    computeEdgeMainColumns() {
-        // This is heavily inspired by Cutter
-        // We use a sweep line algorithm processing the CFG top to bottom keeping track of when columns are most
-        // recently blocked. Cutter uses an augmented binary tree to assist with finding empty columns, for now this
-        // just naively iterates.
-        enum EventType {
-            Edge = 0,
-            Block = 1,
-        }
-        type Event = {
-            blockIndex: number;
-            edgeIndex: number;
-            row: number;
-            type: EventType;
-        };
-        const events: Event[] = [];
+    getLayoutEvents() {
+        const events: LayoutEvent[] = [];
         for (const [i, block] of this.blocks.entries()) {
             events.push({
                 blockIndex: i,
                 edgeIndex: -1,
                 row: block.row,
-                type: EventType.Block,
+                type: LayoutEventType.Block,
             });
             for (const [j, edge] of block.edges.entries()) {
                 events.push({
                     blockIndex: i,
                     edgeIndex: j,
                     row: Math.max(block.row + 1, this.blocks[edge.dest].row),
-                    type: EventType.Edge,
+                    type: LayoutEventType.Edge,
                 });
             }
         }
-        // Sort by row (max(src row, target row) for edges), edge row n is before block row n
-        events.sort((a: Event, b: Event) => {
-            if (a.row === b.row) {
-                return a.type - b.type;
+        return events;
+    }
+
+    closestUnblockedColumn(sourceColumn: number, topRow: number, blockedColumns: number[]) {
+        const leftCandidate =
+            sourceColumn -
+            1 -
+            blockedColumns
+                .slice(0, sourceColumn)
+                .reverse()
+                .findIndex(v => v < topRow);
+        const rightCandidate = sourceColumn + blockedColumns.slice(sourceColumn).findIndex(v => v < topRow);
+        return [leftCandidate, rightCandidate];
+    }
+
+    assignMainColumn(source: Block, target: Block, edge: Edge, blockedColumns: number[]) {
+        const sourceColumn = source.col + 1;
+        const targetColumn = target.col + 1;
+        const topRow = Math.min(source.row + 1, target.row);
+        if (blockedColumns[sourceColumn] < topRow) {
+            // use column under source block if it isn't blocked
+            edge.mainColumn = sourceColumn;
+        } else if (blockedColumns[targetColumn] < topRow) {
+            // use column of the target if it isn't blocked
+            edge.mainColumn = targetColumn;
+        } else {
+            const [leftCandidate, rightCandidate] = this.closestUnblockedColumn(sourceColumn, topRow, blockedColumns);
+            // hamming distance
+            const distanceLeft = Math.abs(sourceColumn - leftCandidate) + Math.abs(targetColumn - leftCandidate);
+            const distanceRight = Math.abs(sourceColumn - rightCandidate) + Math.abs(targetColumn - rightCandidate);
+            // "figure 8" logic from cutter
+            // Takes a longer path that produces less crossing
+            if (target.row < source.row) {
+                if (
+                    targetColumn < sourceColumn &&
+                    blockedColumns[sourceColumn + 1] < topRow &&
+                    sourceColumn - targetColumn <= distanceLeft + 2
+                ) {
+                    edge.mainColumn = sourceColumn + 1;
+                    return;
+                }
+                if (
+                    targetColumn > sourceColumn &&
+                    blockedColumns[sourceColumn - 1] < topRow &&
+                    targetColumn - sourceColumn <= distanceRight + 2
+                ) {
+                    edge.mainColumn = sourceColumn - 1;
+                    return;
+                }
             }
-            return a.row - b.row;
-        });
-        //
+            if (distanceLeft === distanceRight) {
+                // Place true branches on the left
+                // TODO: Need to investigate further block placement stuff here
+                // TODO: Need to investigate further offset placement stuff for the start segments
+                // TODO: Could also try something considering if the left/right columns are adjacent and target
+                // is <= source
+                if (edge.color === 'green') {
+                    edge.mainColumn = leftCandidate;
+                } else {
+                    edge.mainColumn = rightCandidate;
+                }
+            } else if (distanceLeft < distanceRight) {
+                edge.mainColumn = leftCandidate;
+            } else {
+                edge.mainColumn = rightCandidate;
+            }
+        }
+    }
+
+    computeEdgeMainColumns() {
+        // This is heavily inspired by Cutter
+        // An edge from block A to block B is done with a single vertical segment called the "main column." To choose
+        // these main columns we use a sweep line algorithm to process the CFG top to bottom while keeping track of
+        // which columns blocked. Cutter uses an augmented binary tree to assist with finding close empty columns. For
+        // this just naively iterates to find an empty column.
+        const events = this.getLayoutEvents();
+        // Sort by row (max(src row, target row) for edges), edge row n is before block row n
+        events.sort((a: LayoutEvent, b: LayoutEvent) => (a.row === b.row ? a.type - b.type : a.row - b.row));
+        // Keep track of the last row where the column was blocked, we'll use that to check if we can route an edge
+        // through a column between r0 and r1
         const blockedColumns = Array(this.columnCount + 1).fill(-1);
         for (const event of events) {
-            if (event.type === EventType.Block) {
+            if (event.type === LayoutEventType.Block) {
                 const block = this.blocks[event.blockIndex];
                 blockedColumns[block.col + 1] = block.row;
             } else {
                 const source = this.blocks[event.blockIndex];
                 const edge = source.edges[event.edgeIndex];
                 const target = this.blocks[edge.dest];
-                const sourceColumn = source.col + 1;
-                const targetColumn = target.col + 1;
-                const topRow = Math.min(source.row + 1, target.row);
-                if (blockedColumns[sourceColumn] < topRow) {
-                    // use column under source block
-                    edge.mainColumn = sourceColumn;
-                } else if (blockedColumns[targetColumn] < topRow) {
-                    // use column of the target
-                    edge.mainColumn = targetColumn;
-                } else {
-                    const leftCandidate =
-                        sourceColumn -
-                        1 -
-                        blockedColumns
-                            .slice(0, sourceColumn)
-                            .reverse()
-                            .findIndex(v => v < topRow);
-                    const rightCandidate = sourceColumn + blockedColumns.slice(sourceColumn).findIndex(v => v < topRow);
-                    // hamming distance
-                    const distanceLeft =
-                        Math.abs(sourceColumn - leftCandidate) + Math.abs(targetColumn - leftCandidate);
-                    const distanceRight =
-                        Math.abs(sourceColumn - rightCandidate) + Math.abs(targetColumn - rightCandidate);
-                    // "figure 8" logic from cutter
-                    // Takes a longer path that produces less crossing
-                    if (target.row < source.row) {
-                        if (
-                            targetColumn < sourceColumn &&
-                            blockedColumns[sourceColumn + 1] < topRow &&
-                            sourceColumn - targetColumn <= distanceLeft + 2
-                        ) {
-                            edge.mainColumn = sourceColumn + 1;
-                            continue;
-                        }
-                        if (
-                            targetColumn > sourceColumn &&
-                            blockedColumns[sourceColumn - 1] < topRow &&
-                            targetColumn - sourceColumn <= distanceRight + 2
-                        ) {
-                            edge.mainColumn = sourceColumn - 1;
-                            continue;
-                        }
-                    }
-                    if (distanceLeft === distanceRight) {
-                        // TODO: Could also try this
-                        /*if(target.row <= source.row) {
-                            if(leftCandidate === sourceColumn - 1) {
-                                edge.mainColumn = leftCandidate;
-                                continue;
-                            } else if(rightCandidate === sourceColumn + 1) {
-                                edge.mainColumn = rightCandidate;
-                                continue;
-                            }
-                        }*/
-                        // Place true branches on the left
-                        // TODO: Need to investigate further block placement stuff here
-                        // TODO: Need to investigate further offset placement stuff for the start segments
-                        if (edge.color === 'green') {
-                            edge.mainColumn = leftCandidate;
-                        } else {
-                            edge.mainColumn = rightCandidate;
-                        }
-                    } else if (distanceLeft < distanceRight) {
-                        edge.mainColumn = leftCandidate;
-                    } else {
-                        edge.mainColumn = rightCandidate;
-                    }
-                }
+                this.assignMainColumn(source, target, edge, blockedColumns);
             }
         }
     }
 
-    addEdgePaths() {
-        // (start: GridCoordinate, end: GridCoordinate) => ({
-        const makeSegment = (start: [number, number], end: [number, number]): EdgeSegment => ({
+    addEdgeSegments(block: Block, edge: Edge) {
+        const makeSegment = (
+            [start_row, start_col]: [number, number],
+            [end_row, end_col]: [number, number],
+        ): EdgeSegment => ({
             start: {
-                //...start,
-                row: start[0],
-                col: start[1],
+                row: start_row,
+                col: start_col,
                 x: 0,
                 y: 0,
             },
             end: {
-                //...end,
-                row: end[0],
-                col: end[1],
+                row: end_row,
+                col: end_col,
                 x: 0,
                 y: 0,
             },
             horizontalOffset: 0,
             verticalOffset: 0,
-            type: start[1] === end[1] ? SegmentType.Vertical : SegmentType.Horizontal,
+            type: start_col === end_col ? SegmentType.Vertical : SegmentType.Horizontal,
         });
-        for (const block of this.blocks) {
-            for (const edge of block.edges) {
-                const target = this.blocks[edge.dest];
-                // start just below the source block
-                edge.path.push(makeSegment([block.row + 1, block.col + 1], [block.row + 1, block.col + 1]));
-                // horizontal segment over to main column
-                edge.path.push(makeSegment([block.row + 1, block.col + 1], [block.row + 1, edge.mainColumn]));
-                // vertical segment down the main column
-                edge.path.push(makeSegment([block.row + 1, edge.mainColumn], [target.row, edge.mainColumn]));
-                // horizontal segment over to the target column
-                edge.path.push(makeSegment([target.row, edge.mainColumn], [target.row, target.col + 1]));
-                // finish at the target block
-                edge.path.push(makeSegment([target.row, target.col + 1], [target.row, target.col + 1]));
-                // Simplify segments
-                // Simplifications performed are eliminating (non-sentinel) edges which don't move anywhere and folding
-                // VV -> V and HH -> H.
-                let movement;
-                do {
-                    movement = false;
-                    // i needs to start one into the range since we compare with i - 1
-                    for (let i = 1; i < edge.path.length; i++) {
-                        const prevSegment = edge.path[i - 1];
-                        const segment = edge.path[i];
-                        // sanity checks
-                        for (let j = 0; j < edge.path.length; j++) {
-                            const segment = edge.path[j];
-                            if (
-                                (segment.type === SegmentType.Vertical && segment.start.col !== segment.end.col) ||
-                                (segment.type === SegmentType.Horizontal && segment.start.row !== segment.end.row)
-                            ) {
-                                throw Error("Segment type doesn't match coordinates");
-                            }
-                            if (j > 0) {
-                                const prev = edge.path[j - 1];
-                                if (prev.end.row !== segment.start.row || prev.end.col !== segment.start.col) {
-                                    throw Error("Adjacent segment start/endpoints don't match");
-                                }
-                            }
-                            if (j < edge.path.length - 1) {
-                                const next = edge.path[j + 1];
-                                if (segment.end.row !== next.start.row || segment.end.col !== next.start.col) {
-                                    throw Error("Adjacent segment start/endpoints don't match");
-                                }
-                            }
-                        }
-                        // If a segment doesn't go anywhere and is not a sentinel it can be eliminated
-                        if (
-                            segment.start.col === segment.end.col &&
-                            segment.start.row === segment.end.row &&
-                            i !== edge.path.length - 1
-                        ) {
-                            edge.path.splice(i, 1);
-                            movement = true;
-                            continue;
-                        }
-                        // VV -> V
-                        // HH -> H
-                        if (prevSegment.type === segment.type) {
-                            if (
-                                (prevSegment.type === SegmentType.Vertical &&
-                                    prevSegment.start.col !== segment.start.col) ||
-                                (prevSegment.type === SegmentType.Horizontal &&
-                                    prevSegment.start.row !== segment.start.row)
-                            ) {
-                                throw Error(
-                                    "Adjacent horizontal or vertical segments don't share a common row or column",
-                                );
-                            }
-                            prevSegment.end = segment.end;
-                            edge.path.splice(i, 1);
-                            movement = true;
-                        }
-                    }
-                } while (movement);
+        const target = this.blocks[edge.dest];
+        // start just below the source block
+        edge.path.push(makeSegment([block.row + 1, block.col + 1], [block.row + 1, block.col + 1]));
+        // horizontal segment over to main column
+        edge.path.push(makeSegment([block.row + 1, block.col + 1], [block.row + 1, edge.mainColumn]));
+        // vertical segment down the main column
+        edge.path.push(makeSegment([block.row + 1, edge.mainColumn], [target.row, edge.mainColumn]));
+        // horizontal segment over to the target column
+        edge.path.push(makeSegment([target.row, edge.mainColumn], [target.row, target.col + 1]));
+        // finish at the target block
+        edge.path.push(makeSegment([target.row, target.col + 1], [target.row, target.col + 1]));
+    }
+
+    simplifyEdgePaths(edge: Edge) {
+        // Simplify segments
+        // Simplifications performed are eliminating (non-sentinel) edges which don't move anywhere and folding
+        // VV -> V and HH -> H.
+        let movement;
+        do {
+            movement = false;
+            // i needs to start one into the range since we compare with i - 1
+            for (let i = 1; i < edge.path.length; i++) {
+                const prevSegment = edge.path[i - 1];
+                const segment = edge.path[i];
                 // sanity checks
                 for (let j = 0; j < edge.path.length; j++) {
                     const segment = edge.path[j];
@@ -590,41 +576,141 @@ export class GraphLayoutCore {
                         (segment.type === SegmentType.Vertical && segment.start.col !== segment.end.col) ||
                         (segment.type === SegmentType.Horizontal && segment.start.row !== segment.end.row)
                     ) {
-                        throw Error("Segment type doesn't match coordinates (post-simplification)");
+                        throw Error("Segment type doesn't match coordinates");
                     }
                     if (j > 0) {
                         const prev = edge.path[j - 1];
                         if (prev.end.row !== segment.start.row || prev.end.col !== segment.start.col) {
-                            throw Error("Adjacent segment start/endpoints don't match (post-simplification)");
+                            throw Error("Adjacent segment start/endpoints don't match");
                         }
                     }
                     if (j < edge.path.length - 1) {
                         const next = edge.path[j + 1];
                         if (segment.end.row !== next.start.row || segment.end.col !== next.start.col) {
-                            throw Error("Adjacent segment start/endpoints don't match (post-simplification)");
+                            throw Error("Adjacent segment start/endpoints don't match");
                         }
                     }
                 }
+                // If a segment doesn't go anywhere and is not a sentinel it can be eliminated
+                if (
+                    segment.start.col === segment.end.col &&
+                    segment.start.row === segment.end.row &&
+                    i !== edge.path.length - 1
+                ) {
+                    edge.path.splice(i, 1);
+                    movement = true;
+                    continue;
+                }
+                // VV -> V
+                // HH -> H
+                if (prevSegment.type === segment.type) {
+                    if (
+                        (prevSegment.type === SegmentType.Vertical && prevSegment.start.col !== segment.start.col) ||
+                        (prevSegment.type === SegmentType.Horizontal && prevSegment.start.row !== segment.start.row)
+                    ) {
+                        throw Error("Adjacent horizontal or vertical segments don't share a common row or column");
+                    }
+                    prevSegment.end = segment.end;
+                    edge.path.splice(i, 1);
+                    movement = true;
+                }
+            }
+        } while (movement);
+    }
+
+    checkEdgePaths(edge: Edge) {
+        // sanity checks
+        for (let j = 0; j < edge.path.length; j++) {
+            const segment = edge.path[j];
+            if (
+                (segment.type === SegmentType.Vertical && segment.start.col !== segment.end.col) ||
+                (segment.type === SegmentType.Horizontal && segment.start.row !== segment.end.row)
+            ) {
+                throw Error("Segment type doesn't match coordinates (post-simplification)");
+            }
+            if (j > 0) {
+                const prev = edge.path[j - 1];
+                if (prev.end.row !== segment.start.row || prev.end.col !== segment.start.col) {
+                    throw Error("Adjacent segment start/endpoints don't match (post-simplification)");
+                }
+            }
+            if (j < edge.path.length - 1) {
+                const next = edge.path[j + 1];
+                if (segment.end.row !== next.start.row || segment.end.col !== next.start.col) {
+                    throw Error("Adjacent segment start/endpoints don't match (post-simplification)");
+                }
             }
         }
+    }
 
-        // Edge kind is the primary heuristic for subrow/column assignment
-        // For horizontal edges, think of left/vertical/right terminology rotated 90 degrees right
-        enum EdgeKind {
-            LEFTU = -2,
-            LEFTCORNER = -1,
-            VERTICAL = 0,
-            RIGHTCORNER = 1,
-            RIGHTU = 2,
-            // biome-ignore lint/style/useLiteralEnumMembers: ported from cutter
-            NULL = Number.NaN,
+    routeEdgePaths() {
+        for (const block of this.blocks) {
+            for (const edge of block.edges) {
+                this.addEdgeSegments(block, edge);
+                this.simplifyEdgePaths(edge);
+                this.checkEdgePaths(edge);
+            }
         }
-        const segments: {
-            segment: EdgeSegment;
-            length: number;
-            kind: EdgeKind;
-            tiebreaker: number;
-        }[] = [];
+    }
+
+    classifyEdgeSegment(i: number, path: EdgeSegment[]) {
+        const segment = path[i];
+        let kind = EdgeKind.NULL;
+        if (i === 0) {
+            if (path.length === 1) {
+                // Segment will be vertical
+                kind = EdgeKind.VERTICAL;
+            } else {
+                // There will be a next
+                const next = path[i + 1];
+                if (next.end.col > segment.end.col) {
+                    kind = EdgeKind.RIGHTCORNER;
+                } else {
+                    kind = EdgeKind.LEFTCORNER;
+                }
+            }
+        } else if (i === path.length - 1) {
+            // There will be a previous segment, i !== 0, but no next
+            const previous = path[i - 1];
+            if (previous.start.col > segment.end.col) {
+                kind = EdgeKind.RIGHTCORNER;
+            } else {
+                kind = EdgeKind.LEFTCORNER;
+            }
+        } else {
+            // There will be both a previous and a next
+            const next = path[i + 1];
+            const previous = path[i - 1];
+            if (segment.type === SegmentType.Vertical) {
+                if (previous.start.col < segment.start.col && next.end.col < segment.start.col) {
+                    kind = EdgeKind.LEFTU;
+                } else if (previous.start.col > segment.start.col && next.end.col > segment.start.col) {
+                    kind = EdgeKind.RIGHTU;
+                } else if (previous.start.col > segment.end.col) {
+                    kind = EdgeKind.RIGHTCORNER;
+                } else {
+                    assert(previous.start.col < segment.end.col);
+                    kind = EdgeKind.LEFTCORNER;
+                }
+            } else {
+                assert(segment.type === SegmentType.Horizontal);
+                // Same logic, think rotated 90 degrees right
+                if (previous.start.row <= segment.start.row && next.end.row < segment.start.row) {
+                    kind = EdgeKind.LEFTU;
+                } else if (previous.start.row > segment.start.row && next.end.row > segment.start.row) {
+                    kind = EdgeKind.RIGHTU;
+                } else if (previous.start.row > segment.end.row) {
+                    kind = EdgeKind.RIGHTCORNER;
+                } else {
+                    kind = EdgeKind.LEFTCORNER;
+                }
+            }
+        }
+        return kind;
+    }
+
+    getEdgeSegmentInfo() {
+        const segments: SegmentInfo[] = [];
         for (const block of this.blocks) {
             for (const edge of block.edges) {
                 const edgeLength = edge.path
@@ -632,57 +718,7 @@ export class GraphLayoutCore {
                     .reduce((A, x) => A + x);
                 const target = this.blocks[edge.dest];
                 for (const [i, segment] of edge.path.entries()) {
-                    let kind = EdgeKind.NULL;
-                    if (i === 0) {
-                        if (edge.path.length === 1) {
-                            // Segment will be vertical
-                            kind = EdgeKind.VERTICAL;
-                        } else {
-                            // There will be a next
-                            const next = edge.path[i + 1];
-                            if (next.end.col > segment.end.col) {
-                                kind = EdgeKind.RIGHTCORNER;
-                            } else {
-                                kind = EdgeKind.LEFTCORNER;
-                            }
-                        }
-                    } else if (i === edge.path.length - 1) {
-                        // There will be a previous segment, i !== 0, but no next
-                        const previous = edge.path[i - 1];
-                        if (previous.start.col > segment.end.col) {
-                            kind = EdgeKind.RIGHTCORNER;
-                        } else {
-                            kind = EdgeKind.LEFTCORNER;
-                        }
-                    } else {
-                        // There will be both a previous and a next
-                        const next = edge.path[i + 1];
-                        const previous = edge.path[i - 1];
-                        if (segment.type === SegmentType.Vertical) {
-                            if (previous.start.col < segment.start.col && next.end.col < segment.start.col) {
-                                kind = EdgeKind.LEFTU;
-                            } else if (previous.start.col > segment.start.col && next.end.col > segment.start.col) {
-                                kind = EdgeKind.RIGHTU;
-                            } else if (previous.start.col > segment.end.col) {
-                                kind = EdgeKind.RIGHTCORNER;
-                            } else {
-                                assert(previous.start.col < segment.end.col);
-                                kind = EdgeKind.LEFTCORNER;
-                            }
-                        } else {
-                            assert(segment.type === SegmentType.Horizontal);
-                            // Same logic, think rotated 90 degrees right
-                            if (previous.start.row <= segment.start.row && next.end.row < segment.start.row) {
-                                kind = EdgeKind.LEFTU;
-                            } else if (previous.start.row > segment.start.row && next.end.row > segment.start.row) {
-                                kind = EdgeKind.RIGHTU;
-                            } else if (previous.start.row > segment.end.row) {
-                                kind = EdgeKind.RIGHTCORNER;
-                            } else {
-                                kind = EdgeKind.LEFTCORNER;
-                            }
-                        }
-                    }
+                    const kind = this.classifyEdgeSegment(i, edge.path);
                     assert((kind as any) !== EdgeKind.NULL);
                     segments.push({
                         segment,
@@ -695,6 +731,11 @@ export class GraphLayoutCore {
                 }
             }
         }
+        return segments;
+    }
+
+    computeEdgeSegmentIntervals() {
+        const segments = this.getEdgeSegmentInfo();
         segments.sort((a, b) => {
             if (a.kind !== b.kind) {
                 return a.kind - b.kind;
@@ -752,6 +793,10 @@ export class GraphLayoutCore {
                 }
             }
         }
+    }
+
+    assignEdgeSegments() {
+        this.computeEdgeSegmentIntervals();
         // Assign offsets
         for (const edgeColumn of this.edgeColumns) {
             edgeColumn.width = Math.max(EDGE_SPACING + edgeColumn.intervals.length * EDGE_SPACING, 2 * EDGE_SPACING);
@@ -771,119 +816,130 @@ export class GraphLayoutCore {
         }
     }
 
-    computeCoordinates() {
-        // Compute block row widths and heights
+    updateBlockDimensions() {
         for (const block of this.blocks) {
             // Update block width if it has a ton of incoming edges
             block.data.width = Math.max(block.data.width, (block.incidentEdgeCount - 1) * EDGE_SPACING);
-            //console.log(this.blockRows[block.row].height, block.data.height, block.row);
-            //console.log(this.blockRows);
+        }
+    }
+
+    computeGridDimensions() {
+        for (const block of this.blocks) {
             const halfWidth = (block.data.width - this.edgeColumns[block.col + 1].width) / 2;
-            //console.log("--->", block.col, this.columnCount);
             this.blockRows[block.row].height = Math.max(this.blockRows[block.row].height, block.data.height);
             this.blockColumns[block.col].width = Math.max(this.blockColumns[block.col].width, halfWidth);
             this.blockColumns[block.col + 1].width = Math.max(this.blockColumns[block.col + 1].width, halfWidth);
         }
-        // Compute row total offsets
+    }
+
+    computeGridOffsets() {
         for (let i = 0; i < this.rowCount; i++) {
             // edge row 0 is already at the correct offset, this iteration will set the offset for block row 0 and edge
             // row 1.
             this.blockRows[i].totalOffset = this.edgeRows[i].totalOffset + this.edgeRows[i].height;
             this.edgeRows[i + 1].totalOffset = this.blockRows[i].totalOffset + this.blockRows[i].height;
         }
-        // Compute column total offsets
         for (let i = 0; i < this.columnCount; i++) {
-            // same deal here
             this.blockColumns[i].totalOffset = this.edgeColumns[i].totalOffset + this.edgeColumns[i].width;
             this.edgeColumns[i + 1].totalOffset = this.blockColumns[i].totalOffset + this.blockColumns[i].width;
         }
-        // Compute block coordinates and edge paths
-        for (const block of this.blocks) {
-            block.coordinates.x =
-                this.edgeColumns[block.col + 1].totalOffset -
-                (block.data.width - this.edgeColumns[block.col + 1].width) / 2;
-            block.coordinates.y = this.blockRows[block.row].totalOffset;
-            for (const edge of block.edges) {
-                if (edge.path.length === 1) {
-                    // Special case: Direct dropdown
-                    const segment = edge.path[0];
-                    const target = this.blocks[edge.dest];
-                    segment.start.x = this.edgeColumns[segment.start.col].totalOffset + segment.horizontalOffset;
-                    segment.start.y = block.coordinates.y + block.data.height;
-                    segment.end.x = this.edgeColumns[segment.end.col].totalOffset + segment.horizontalOffset;
-                    segment.end.y = this.edgeRows[target.row].totalOffset + this.edgeRows[target.row].height;
+    }
+
+    computeBlockCoordinates(block: Block) {
+        block.coordinates.x =
+            this.edgeColumns[block.col + 1].totalOffset -
+            (block.data.width - this.edgeColumns[block.col + 1].width) / 2;
+        block.coordinates.y = this.blockRows[block.row].totalOffset;
+    }
+
+    computeEdgeCoordinates(block: Block, edge: Edge) {
+        if (edge.path.length === 1) {
+            // Special case: Direct dropdown
+            const segment = edge.path[0];
+            const target = this.blocks[edge.dest];
+            segment.start.x = this.edgeColumns[segment.start.col].totalOffset + segment.horizontalOffset;
+            segment.start.y = block.coordinates.y + block.data.height;
+            segment.end.x = this.edgeColumns[segment.end.col].totalOffset + segment.horizontalOffset;
+            segment.end.y = this.edgeRows[target.row].totalOffset + this.edgeRows[target.row].height;
+        } else {
+            // push initial point
+            {
+                const segment = edge.path[0];
+                segment.start.x = this.edgeColumns[segment.start.col].totalOffset + segment.horizontalOffset;
+                segment.start.y = block.coordinates.y + block.data.height;
+                segment.end.x = this.edgeColumns[segment.end.col].totalOffset + segment.horizontalOffset;
+                segment.end.y = 0; // this is something we need from the next segment
+            }
+            // first and last handled specially
+            for (const segment of edge.path.slice(1, edge.path.length - 1)) {
+                segment.start.x = this.edgeColumns[segment.start.col].totalOffset + segment.horizontalOffset;
+                segment.start.y = this.edgeRows[segment.start.row].totalOffset + segment.verticalOffset;
+                segment.end.x = this.edgeColumns[segment.end.col].totalOffset + segment.horizontalOffset;
+                segment.end.y = this.edgeRows[segment.end.row].totalOffset + segment.verticalOffset;
+            }
+            // push final point
+            {
+                const target = this.blocks[edge.dest];
+                const segment = edge.path[edge.path.length - 1];
+                segment.start.x = this.edgeColumns[segment.start.col].totalOffset + segment.horizontalOffset;
+                segment.start.y = 0; // something we need from the previous segment
+                segment.end.x = this.edgeColumns[segment.start.col].totalOffset + segment.horizontalOffset;
+                segment.end.y = this.edgeRows[target.row].totalOffset + this.edgeRows[target.row].height;
+            }
+            // apply offsets to neighbor segments
+            for (let i = 0; i < edge.path.length; i++) {
+                const segment = edge.path[i];
+                if (segment.type === SegmentType.Vertical) {
+                    if (i > 0) {
+                        const prev = edge.path[i - 1];
+                        prev.end.x = segment.start.x;
+                    }
+                    if (i < edge.path.length - 1) {
+                        const next = edge.path[i + 1];
+                        next.start.x = segment.end.x;
+                    }
                 } else {
-                    // push initial point
-                    {
-                        const segment = edge.path[0];
-                        segment.start.x = this.edgeColumns[segment.start.col].totalOffset + segment.horizontalOffset;
-                        segment.start.y = block.coordinates.y + block.data.height;
-                        segment.end.x = this.edgeColumns[segment.end.col].totalOffset + segment.horizontalOffset;
-                        segment.end.y = 0; // this is something we need from the next segment
+                    // Horizontal
+                    if (i > 0) {
+                        const prev = edge.path[i - 1];
+                        prev.end.y = segment.start.y;
                     }
-                    // first and last handled specially
-                    for (const segment of edge.path.slice(1, edge.path.length - 1)) {
-                        segment.start.x = this.edgeColumns[segment.start.col].totalOffset + segment.horizontalOffset;
-                        segment.start.y = this.edgeRows[segment.start.row].totalOffset + segment.verticalOffset;
-                        segment.end.x = this.edgeColumns[segment.end.col].totalOffset + segment.horizontalOffset;
-                        segment.end.y = this.edgeRows[segment.end.row].totalOffset + segment.verticalOffset;
-                    }
-                    // push final point
-                    {
-                        const target = this.blocks[edge.dest];
-                        const segment = edge.path[edge.path.length - 1];
-                        segment.start.x = this.edgeColumns[segment.start.col].totalOffset + segment.horizontalOffset;
-                        segment.start.y = 0; // something we need from the previous segment
-                        segment.end.x = this.edgeColumns[segment.start.col].totalOffset + segment.horizontalOffset;
-                        segment.end.y = this.edgeRows[target.row].totalOffset + this.edgeRows[target.row].height;
-                    }
-                    // apply offsets to neighbor segments
-                    for (let i = 0; i < edge.path.length; i++) {
-                        const segment = edge.path[i];
-                        if (segment.type === SegmentType.Vertical) {
-                            if (i > 0) {
-                                const prev = edge.path[i - 1];
-                                prev.end.x = segment.start.x;
-                            }
-                            if (i < edge.path.length - 1) {
-                                const next = edge.path[i + 1];
-                                next.start.x = segment.end.x;
-                            }
-                        } else {
-                            // Horizontal
-                            if (i > 0) {
-                                const prev = edge.path[i - 1];
-                                prev.end.y = segment.start.y;
-                            }
-                            if (i < edge.path.length - 1) {
-                                const next = edge.path[i + 1];
-                                next.start.y = segment.end.y;
-                            }
-                        }
+                    if (i < edge.path.length - 1) {
+                        const next = edge.path[i + 1];
+                        next.start.y = segment.end.y;
                     }
                 }
             }
         }
     }
 
+    computeCoordinates() {
+        this.updateBlockDimensions();
+        this.computeGridDimensions();
+        this.computeGridOffsets();
+        // Compute block coordinates and edge paths
+        for (const block of this.blocks) {
+            this.computeBlockCoordinates(block);
+            for (const edge of block.edges) {
+                this.computeEdgeCoordinates(block, edge);
+            }
+        }
+    }
+
     layout() {
+        this.countEdges();
         const topologicalOrder = this.computeDag();
-        //console.log(topologicalOrder);
         this.assignRows(topologicalOrder);
-        //console.log(this.blocks);
         this.computeTree(topologicalOrder);
-        //console.log(this.blocks);
-        this.assignColumns(topologicalOrder);
-        //console.log(this.blocks);
+        this.assignBlockColumns(topologicalOrder);
         this.setupRowsAndColumns();
         // Edge routing
         this.computeEdgeMainColumns();
-        this.addEdgePaths();
+        this.routeEdgePaths();
+        this.assignEdgeSegments();
         // -- Nothing is pixel aware above this line ---
         // Add pixel coordinates
         this.computeCoordinates();
-        //
-        ///console.log(this);
     }
 
     getWidth() {

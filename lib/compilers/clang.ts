@@ -48,7 +48,7 @@ import {BaseCompiler} from '../base-compiler.js';
 import {CompilationEnvironment} from '../compilation-env.js';
 import {AmdgpuAsmParser} from '../parsers/asm-parser-amdgpu.js';
 import {HexagonAsmParser} from '../parsers/asm-parser-hexagon.js';
-import {SassAsmParser} from '../parsers/asm-parser-sass.js';
+import {PTXAsmParser} from '../parsers/asm-parser-ptx.js';
 import {StackUsageInfo} from '../stack-usage-transformer.js';
 import * as utils from '../utils.js';
 
@@ -373,7 +373,7 @@ export class ClangCudaCompiler extends ClangCompiler {
     constructor(info: PreliminaryCompilerInfo, env: CompilationEnvironment) {
         super(info, env);
 
-        this.asm = new SassAsmParser();
+        this.asm = new PTXAsmParser();
     }
 
     override getCompilerResultLanguageId(filters?: ParseFiltersAndOutputOptions): string | undefined {
