@@ -216,48 +216,532 @@ describe('URL serialization/deserialization', () => {
             });
         });
 
-        // TODO(#7807): Add comprehensive validation tests covering:
-        //
-        // A. Extended Input Validation:
-        //    - Array inputs (should throw)
-        //    - Function inputs (should throw)
-        //    - Invalid version types (string, array, etc.)
-        //    - Unsupported version numbers
-        //    - Version migration edge cases
-        //
-        // B. Content Array Validation:
-        //    - Non-array content property
-        //    - Content with mixed valid/invalid items
-        //    - Empty vs populated content handling
-        //
-        // C. Item Structure Validation:
-        //    - Items missing 'type' property
-        //    - Items with non-string type property
-        //    - Unknown item types beyond component/row/column/stack
-        //
-        // D. Component Validation:
-        //    - Missing componentName property
-        //    - Non-string componentName
-        //    - Unknown component names (not in COMPONENT_NAMES list)
-        //    - Missing componentState property
-        //    - Non-object componentState
-        //    - Component-specific state validation (future #7808)
-        //
-        // E. Layout Item Validation:
-        //    - row/column/stack items missing content property
-        //    - row/column/stack items with non-array content
-        //    - Nested validation errors (deep nesting)
-        //    - Mixed valid/invalid nested items
-        //
-        // F. Error Message Validation:
-        //    - Verify exact error messages for each case
-        //    - Test error message includes item index for nested errors
-        //    - Test error propagation through nested structures
-        //
-        // G. Edge Cases:
-        //    - Deeply nested valid structures
-        //    - Large configuration objects
-        //    - Boundary conditions (empty arrays, null values)
-        //    - Mixed configuration types
+        describe('Content validation', () => {
+            it('should throw for non-array content', () => {
+                const config = {
+                    version: CURRENT_LAYOUT_VERSION,
+                    content: 'invalid',
+                };
+                expect(() => loadState(config as any, false)).toThrow('Configuration content must be an array');
+            });
+
+            it('should throw for null content', () => {
+                const config = {
+                    version: CURRENT_LAYOUT_VERSION,
+                    content: null,
+                };
+                expect(() => loadState(config as any, false)).toThrow('Configuration content must be an array');
+            });
+
+            it('should throw for undefined content', () => {
+                const config = {
+                    version: CURRENT_LAYOUT_VERSION,
+                    content: undefined,
+                };
+                expect(() => loadState(config as any, false)).toThrow('Configuration content must be an array');
+            });
+
+            it('should throw for object content', () => {
+                const config = {
+                    version: CURRENT_LAYOUT_VERSION,
+                    content: {notAnArray: true},
+                };
+                expect(() => loadState(config as any, false)).toThrow('Configuration content must be an array');
+            });
+
+            it('should handle empty content arrays', () => {
+                const config = createVersionedConfig([]);
+                const result = loadState(config, false);
+                expect(result.content).toEqual([]);
+            });
+        });
+
+        describe('Item structure validation', () => {
+            it('should throw for items missing type property', () => {
+                const config = createVersionedConfig([
+                    {
+                        // Missing type property
+                        componentName: 'compiler',
+                        componentState: {},
+                    },
+                ]);
+                expect(() => loadState(config as any, false)).toThrow("Invalid item 0: missing 'type' property");
+            });
+
+            it('should throw for null items', () => {
+                const config = createVersionedConfig([null]);
+                expect(() => loadState(config as any, false)).toThrow('Invalid item 0: must be an object');
+            });
+
+            it('should throw for non-object items', () => {
+                const config = createVersionedConfig(['string']);
+                expect(() => loadState(config as any, false)).toThrow('Invalid item 0: must be an object');
+
+                const config2 = createVersionedConfig([123]);
+                expect(() => loadState(config2 as any, false)).toThrow('Invalid item 0: must be an object');
+
+                const config3 = createVersionedConfig([true]);
+                expect(() => loadState(config3 as any, false)).toThrow('Invalid item 0: must be an object');
+            });
+
+            it('should throw for unknown item types', () => {
+                const config = createVersionedConfig([
+                    {
+                        type: 'unknownType',
+                        someProperty: 'value',
+                    },
+                ]);
+                expect(() => loadState(config as any, false)).toThrow("Invalid item 0: unknown type 'unknownType'");
+            });
+
+            it('should throw for empty string type', () => {
+                const config = createVersionedConfig([
+                    {
+                        type: '',
+                        componentName: 'compiler',
+                    },
+                ]);
+                expect(() => loadState(config as any, false)).toThrow("Invalid item 0: missing 'type' property");
+            });
+
+            it('should throw for non-string type property', () => {
+                const config = createVersionedConfig([
+                    {
+                        type: 123,
+                        componentName: 'compiler',
+                    },
+                ]);
+                expect(() => loadState(config as any, false)).toThrow("Invalid item 0: unknown type '123'");
+            });
+        });
+
+        describe('Component validation', () => {
+            it('should throw for components missing componentName property', () => {
+                const config = createVersionedConfig([
+                    {
+                        type: 'component',
+                        // Missing componentName
+                        componentState: {},
+                    },
+                ]);
+                expect(() => loadState(config as any, false)).toThrow(
+                    "Invalid item 0: missing 'componentName' property",
+                );
+            });
+
+            it('should throw for components with non-string componentName', () => {
+                const config = createVersionedConfig([
+                    {
+                        type: 'component',
+                        componentName: 123,
+                        componentState: {},
+                    },
+                ]);
+                expect(() => loadState(config as any, false)).toThrow(
+                    "Invalid item 0: 'componentName' must be a string",
+                );
+
+                const config2 = createVersionedConfig([
+                    {
+                        type: 'component',
+                        componentName: null,
+                        componentState: {},
+                    },
+                ]);
+                expect(() => loadState(config2 as any, false)).toThrow(
+                    "Invalid item 0: missing 'componentName' property",
+                );
+
+                const config3 = createVersionedConfig([
+                    {
+                        type: 'component',
+                        componentName: [],
+                        componentState: {},
+                    },
+                ]);
+                expect(() => loadState(config3 as any, false)).toThrow(
+                    "Invalid item 0: 'componentName' must be a string",
+                );
+            });
+
+            it('should throw for components with empty componentName', () => {
+                const config = createVersionedConfig([
+                    {
+                        type: 'component',
+                        componentName: '',
+                        componentState: {},
+                    },
+                ]);
+                expect(() => loadState(config as any, false)).toThrow(
+                    "Invalid item 0: missing 'componentName' property",
+                );
+            });
+
+            it('should throw for components missing componentState property', () => {
+                const config = createVersionedConfig([
+                    {
+                        type: 'component',
+                        componentName: 'compiler',
+                        // Missing componentState
+                    },
+                ]);
+                expect(() => loadState(config as any, false)).toThrow(
+                    "Invalid item 0: missing 'componentState' property",
+                );
+            });
+
+            it('should throw for components with non-object componentState', () => {
+                const config = createVersionedConfig([
+                    {
+                        type: 'component',
+                        componentName: 'compiler',
+                        componentState: 'invalid',
+                    },
+                ]);
+                expect(() => loadState(config as any, false)).toThrow(
+                    "Invalid item 0: 'componentState' must be an object",
+                );
+
+                const config2 = createVersionedConfig([
+                    {
+                        type: 'component',
+                        componentName: 'compiler',
+                        componentState: null,
+                    },
+                ]);
+                expect(() => loadState(config2 as any, false)).toThrow(
+                    "Invalid item 0: missing 'componentState' property",
+                );
+
+                const config3 = createVersionedConfig([
+                    {
+                        type: 'component',
+                        componentName: 'compiler',
+                        componentState: 123,
+                    },
+                ]);
+                expect(() => loadState(config3 as any, false)).toThrow(
+                    "Invalid item 0: 'componentState' must be an object",
+                );
+            });
+
+            it('should accept valid components with any componentName and componentState', () => {
+                // Note: Validation of specific component names is future #7808 work
+                const config = createVersionedConfig([
+                    {
+                        type: 'component',
+                        componentName: 'anyValidString',
+                        componentState: {any: 'validObject'},
+                    },
+                ]);
+                const result = loadState(config, false);
+                expect(result.content).toEqual(config.content);
+            });
+        });
+
+        describe('Layout item validation', () => {
+            it('should throw for layout items missing content property', () => {
+                const config = createVersionedConfig([
+                    {
+                        type: 'row',
+                        // Missing content property
+                    },
+                ]);
+                expect(() => loadState(config as any, false)).toThrow(
+                    "Invalid item 0: layout items must have a 'content' array",
+                );
+
+                const config2 = createVersionedConfig([
+                    {
+                        type: 'column',
+                    },
+                ]);
+                expect(() => loadState(config2 as any, false)).toThrow(
+                    "Invalid item 0: layout items must have a 'content' array",
+                );
+
+                const config3 = createVersionedConfig([
+                    {
+                        type: 'stack',
+                    },
+                ]);
+                expect(() => loadState(config3 as any, false)).toThrow(
+                    "Invalid item 0: layout items must have a 'content' array",
+                );
+            });
+
+            it('should throw for layout items with non-array content', () => {
+                const config = createVersionedConfig([
+                    {
+                        type: 'row',
+                        content: 'invalid',
+                    },
+                ]);
+                expect(() => loadState(config as any, false)).toThrow(
+                    "Invalid item 0: layout items must have a 'content' array",
+                );
+
+                const config2 = createVersionedConfig([
+                    {
+                        type: 'column',
+                        content: {},
+                    },
+                ]);
+                expect(() => loadState(config2 as any, false)).toThrow(
+                    "Invalid item 0: layout items must have a 'content' array",
+                );
+
+                const config3 = createVersionedConfig([
+                    {
+                        type: 'stack',
+                        content: null,
+                    },
+                ]);
+                expect(() => loadState(config3 as any, false)).toThrow(
+                    "Invalid item 0: layout items must have a 'content' array",
+                );
+            });
+
+            it('should accept layout items with empty content arrays', () => {
+                const config = createVersionedConfig([
+                    {
+                        type: 'row',
+                        content: [],
+                    },
+                ]);
+                const result = loadState(config, false);
+                expect(result.content).toEqual(config.content);
+            });
+
+            it('should validate nested items in layout content', () => {
+                const config = createVersionedConfig([
+                    {
+                        type: 'row',
+                        content: [
+                            {
+                                // Invalid nested item - missing type
+                                componentName: 'compiler',
+                            },
+                        ],
+                    },
+                ]);
+                expect(() => loadState(config as any, false)).toThrow(
+                    "Invalid item 0: nested item 0: missing 'type' property",
+                );
+            });
+
+            it('should validate deeply nested items', () => {
+                const config = createVersionedConfig([
+                    {
+                        type: 'row',
+                        content: [
+                            {
+                                type: 'column',
+                                content: [
+                                    {
+                                        type: 'stack',
+                                        content: [
+                                            {
+                                                // Invalid deeply nested item
+                                                type: 'component',
+                                                // Missing componentName
+                                                componentState: {},
+                                            },
+                                        ],
+                                    },
+                                ],
+                            },
+                        ],
+                    },
+                ]);
+                expect(() => loadState(config as any, false)).toThrow(
+                    "Invalid item 0: nested item 0: nested item 0: nested item 0: missing 'componentName' property",
+                );
+            });
+
+            it('should accept valid nested layout items', () => {
+                const config = createVersionedConfig([
+                    {
+                        type: 'row',
+                        content: [
+                            {
+                                type: 'component',
+                                componentName: 'compiler',
+                                componentState: {lang: 'c++'},
+                            },
+                            {
+                                type: 'column',
+                                content: [
+                                    {
+                                        type: 'component',
+                                        componentName: 'codeEditor',
+                                        componentState: {id: 1},
+                                    },
+                                ],
+                            },
+                        ],
+                    },
+                ]);
+                const result = loadState(config, false);
+                expect(result.content).toEqual(config.content);
+            });
+        });
+
+        describe('Edge cases and error messages', () => {
+            it('should handle multiple items with errors in different positions', () => {
+                const config = createVersionedConfig([
+                    {
+                        type: 'component',
+                        componentName: 'compiler',
+                        componentState: {},
+                    },
+                    {
+                        // Error in second item
+                        type: 'component',
+                        // Missing componentName
+                        componentState: {},
+                    },
+                ]);
+                expect(() => loadState(config as any, false)).toThrow(
+                    "Invalid item 1: missing 'componentName' property",
+                );
+            });
+
+            it('should handle errors at different nesting levels with correct indexing', () => {
+                const config = createVersionedConfig([
+                    {
+                        type: 'component',
+                        componentName: 'compiler',
+                        componentState: {},
+                    },
+                    {
+                        type: 'row',
+                        content: [
+                            {
+                                type: 'component',
+                                componentName: 'editor',
+                                componentState: {},
+                            },
+                            {
+                                // Error in second nested item
+                                type: 'component',
+                                componentName: '',
+                                componentState: {},
+                            },
+                        ],
+                    },
+                ]);
+                expect(() => loadState(config as any, false)).toThrow(
+                    "Invalid item 1: nested item 1: missing 'componentName' property",
+                );
+            });
+
+            it('should handle complex deeply nested configurations', () => {
+                const config = createVersionedConfig([
+                    {
+                        type: 'row',
+                        content: [
+                            {
+                                type: 'column',
+                                content: [
+                                    {
+                                        type: 'component',
+                                        componentName: 'compiler',
+                                        componentState: {},
+                                    },
+                                    {
+                                        type: 'stack',
+                                        content: [
+                                            {
+                                                type: 'component',
+                                                componentName: 'output',
+                                                componentState: {},
+                                            },
+                                            {
+                                                type: 'component',
+                                                componentName: 'tree',
+                                                componentState: {},
+                                            },
+                                        ],
+                                    },
+                                ],
+                            },
+                            {
+                                type: 'component',
+                                componentName: 'editor',
+                                componentState: {},
+                            },
+                        ],
+                    },
+                ]);
+                const result = loadState(config, false);
+                expect(result.content).toEqual(config.content);
+            });
+
+            it('should handle arrays with mixed valid and invalid items', () => {
+                const config = createVersionedConfig([
+                    {
+                        type: 'component',
+                        componentName: 'compiler',
+                        componentState: {},
+                    },
+                    null, // Invalid item
+                    {
+                        type: 'component',
+                        componentName: 'editor',
+                        componentState: {},
+                    },
+                ]);
+                expect(() => loadState(config as any, false)).toThrow('Invalid item 1: must be an object');
+            });
+
+            it('should handle boundary conditions with empty and minimal objects', () => {
+                // Empty object should fail
+                const config1 = createVersionedConfig([{}]);
+                expect(() => loadState(config1 as any, false)).toThrow("Invalid item 0: missing 'type' property");
+
+                // Object with only type should fail for component
+                const config2 = createVersionedConfig([{type: 'component'}]);
+                expect(() => loadState(config2 as any, false)).toThrow(
+                    "Invalid item 0: missing 'componentName' property",
+                );
+
+                // Object with only type should fail for layout items
+                const config3 = createVersionedConfig([{type: 'row'}]);
+                expect(() => loadState(config3 as any, false)).toThrow(
+                    "Invalid item 0: layout items must have a 'content' array",
+                );
+            });
+
+            it('should handle complex mixed valid and invalid configurations', () => {
+                // Test configuration mixing valid layout items with invalid components
+                const config = createVersionedConfig([
+                    {
+                        type: 'row',
+                        content: [
+                            {
+                                type: 'component',
+                                componentName: 'validComponent',
+                                componentState: {prop: 'value'},
+                            },
+                            {
+                                type: 'component',
+                                componentName: 42, // Invalid - not a string
+                                componentState: {},
+                            },
+                        ],
+                    },
+                ]);
+                expect(() => loadState(config as any, false)).toThrow(
+                    "Invalid item 0: nested item 1: 'componentName' must be a string",
+                );
+            });
+        });
+
+        // TODO(#7808): Add component-specific state validation
+        // - Validate known component names against ComponentStateMap
+        // - Validate component state structure matches expected types
+        // - Validate required properties for specific component types
+        // - Validate property types (e.g. numbers vs strings) for component states
     });
 });
