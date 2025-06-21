@@ -108,7 +108,6 @@ export class Cfg extends Pane<CfgState> {
     graphContainer: HTMLElement;
     graphElement: HTMLElement;
     infoElement: HTMLElement;
-    centerParentsButton: JQuery<HTMLElement>;
     exportPNGButton: JQuery;
     estimatedPNGSize: Element;
     exportSVGButton: JQuery;
@@ -205,7 +204,6 @@ export class Cfg extends Pane<CfgState> {
         this.graphContainer = this.domRoot.find('.graph-container')[0];
         this.graphElement = this.domRoot.find('.graph')[0];
         this.infoElement = this.domRoot.find('.cfg-info')[0];
-        this.centerParentsButton = this.domRoot.find('.center-parents');
         this.exportPNGButton = this.domRoot.find('.export-png').first();
         this.estimatedPNGSize = unwrap(this.exportPNGButton[0].querySelector('.estimated-export-size'));
         this.exportSVGButton = this.domRoot.find('.export-svg').first();
@@ -533,7 +531,8 @@ export class Cfg extends Pane<CfgState> {
         const fn = this.results[name];
         this.bbMap = {};
         await this.createBasicBlocks(fn);
-        this.layout = new GraphLayoutCore(fn as AnnotatedCfgDescriptor, !!this.state.centerparents);
+        console.log(!!this.state.centerparents, !!this.state.compacttrees);
+        this.layout = new GraphLayoutCore(fn as AnnotatedCfgDescriptor, !!this.state.centerparents, !!this.state.compacttrees);
         this.applyLayout();
         this.drawEdges();
         this.infoElement.innerHTML = `Layout time: ${Math.round(this.layout.layoutTime)}ms<br/>Basic blocks: ${
@@ -710,6 +709,7 @@ export class Cfg extends Pane<CfgState> {
             selectedFunction: this.state.selectedFunction,
             isircfg: this.state.isircfg,
             centerparents: this.toggles.get().centerparents,
+            compacttrees: this.toggles.get().compacttrees,
         };
         this.paneRenaming.addState(state);
         return state;
