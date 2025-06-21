@@ -48,6 +48,7 @@ import {CompilerInfo} from '../../types/compiler.interfaces.js';
 import {assert, unwrap} from '../assert.js';
 import {GraphLayoutCore} from '../graph-layout-core.js';
 import * as MonacoConfig from '../monaco-config.js';
+import {Toggles} from '../widgets/toggles.js';
 
 const ColorTable = {
     red: '#FE5D5D',
@@ -107,6 +108,7 @@ export class Cfg extends Pane<CfgState> {
     graphContainer: HTMLElement;
     graphElement: HTMLElement;
     infoElement: HTMLElement;
+    centerParentsButton: JQuery<HTMLElement>;
     exportPNGButton: JQuery;
     estimatedPNGSize: Element;
     exportSVGButton: JQuery;
@@ -118,6 +120,8 @@ export class Cfg extends Pane<CfgState> {
     functionSelector: TomSelect;
     resetViewButton: JQuery;
     zoomOutButton: JQuery;
+    toggles: Toggles;
+
     results: CFGResult;
     state: CfgState & PaneState;
     layout: GraphLayoutCore;
@@ -201,10 +205,13 @@ export class Cfg extends Pane<CfgState> {
         this.graphContainer = this.domRoot.find('.graph-container')[0];
         this.graphElement = this.domRoot.find('.graph')[0];
         this.infoElement = this.domRoot.find('.cfg-info')[0];
+        this.centerParentsButton = this.domRoot.find('.center-parents');
         this.exportPNGButton = this.domRoot.find('.export-png').first();
         this.estimatedPNGSize = unwrap(this.exportPNGButton[0].querySelector('.estimated-export-size'));
         this.exportSVGButton = this.domRoot.find('.export-svg').first();
         this.setupFictitiousGraphContainer();
+
+        this.toggles = new Toggles(this.domRoot.find('.options'), state as unknown as Record<string, boolean>);
     }
 
     setupFictitiousGraphContainer() {
@@ -271,6 +278,7 @@ export class Cfg extends Pane<CfgState> {
             }
             e.preventDefault();
         });
+        this.toggles.on('change', this.onToggleChange.bind(this));
         this.exportPNGButton.on('click', () => {
             this.exportPNG();
         });
@@ -288,6 +296,12 @@ export class Cfg extends Pane<CfgState> {
                 }
             }
         });
+    }
+
+    onToggleChange() {
+        this.state = this.getCurrentState();
+        this.updateState();
+        this.selectFunction(this.state.selectedFunction);
     }
 
     async exportPNG() {
@@ -519,7 +533,7 @@ export class Cfg extends Pane<CfgState> {
         const fn = this.results[name];
         this.bbMap = {};
         await this.createBasicBlocks(fn);
-        this.layout = new GraphLayoutCore(fn as AnnotatedCfgDescriptor);
+        this.layout = new GraphLayoutCore(fn as AnnotatedCfgDescriptor, !!this.state.centerparents);
         this.applyLayout();
         this.drawEdges();
         this.infoElement.innerHTML = `Layout time: ${Math.round(this.layout.layoutTime)}ms<br/>Basic blocks: ${
@@ -695,6 +709,7 @@ export class Cfg extends Pane<CfgState> {
             treeid: this.compilerInfo.treeId,
             selectedFunction: this.state.selectedFunction,
             isircfg: this.state.isircfg,
+            centerparents: this.toggles.get().centerparents,
         };
         this.paneRenaming.addState(state);
         return state;

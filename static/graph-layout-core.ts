@@ -160,7 +160,10 @@ export class GraphLayoutCore {
     edgeRows: (RowDescriptor & EdgeRowMetadata)[];
     readonly layoutTime: number;
 
-    constructor(cfg: AnnotatedCfgDescriptor) {
+    constructor(
+        cfg: AnnotatedCfgDescriptor,
+        readonly centerParents: boolean,
+    ) {
         this.populate_graph(cfg);
 
         const start = performance.now();
@@ -358,9 +361,14 @@ export class GraphLayoutCore {
             boundingBox.rows++;
             block.boundingBox = boundingBox;
             block.row = 0;
-            // between immediate children
-            const [left, right] = [this.blocks[block.treeEdges[0]], this.blocks[block.treeEdges[1]]];
-            block.col = Math.floor((left.col + right.col) / 2); // TODO
+            if (this.centerParents) {
+                // center of bounding box
+                block.col = Math.floor(Math.max(boundingBox.cols - 2, 0) / 2);
+            } else {
+                // center between immediate children
+                const [left, right] = [this.blocks[block.treeEdges[0]], this.blocks[block.treeEdges[1]]];
+                block.col = Math.floor((left.col + right.col) / 2);
+            }
         }
     }
 
