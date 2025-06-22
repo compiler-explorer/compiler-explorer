@@ -23,7 +23,8 @@
 // POSSIBILITY OF SUCH DAMAGE.
 
 import {ResultLine} from '../../../types/resultline/resultline.interfaces.js';
-import {BaseCFGParser} from './base.js';
+import {InstructionType} from '../instruction-sets/base.js';
+import {AssemblyLine, BaseCFGParser, CanonicalBB} from './base.js';
 
 export class PythonCFGParser extends BaseCFGParser {
     static override get key() {
@@ -35,7 +36,8 @@ export class PythonCFGParser extends BaseCFGParser {
     }
 
     override isBasicBlockEnd(inst: string, prevInst: string) {
-        return prevInst.includes('JUMP') || prevInst.includes('RETURN');
+        // Probably applicable to non-python CFGs too:
+        return this.instructionSetInfo.getInstructionType(prevInst) !== InstructionType.notRetInst;
     }
 
     override filterData(bytecode: ResultLine[]) {
@@ -61,7 +63,7 @@ export class PythonCFGParser extends BaseCFGParser {
     }
 
     //      10 POP_JUMP_IF_FALSE        5 (to 22)   ===> captures "22"
-    override extractNodeName(inst: string) {
+    override extractJmpTargetName(inst: string) {
         const candidateName = inst.match(/\(to (\d+)\)$/);
         return candidateName ? candidateName[1] : '';
     }
@@ -74,5 +76,13 @@ export class PythonCFGParser extends BaseCFGParser {
 
     override getBbFirstInstIdx(firstLine: number) {
         return firstLine;
+    }
+
+    override extractAltJmpTargetName(asmArr: AssemblyLine[], bbIdx: number, arrBB: CanonicalBB[]): string {
+        const nextBbStart = arrBB[bbIdx + 1]?.start;
+        if (!nextBbStart) return '';
+
+        const inst = asmArr[nextBbStart];
+        return this.getBbId(inst.text);
     }
 }
