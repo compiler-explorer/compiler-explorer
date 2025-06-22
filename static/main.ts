@@ -228,8 +228,20 @@ function setupButtons(options: CompilerExplorerOptions, hub: Hub) {
                 window.history.replaceState(null, '', window.httpRoot);
                 window.location.reload();
             } catch (e) {
-                console.error('Invalid configuration from history:', e);
-                // Could show user error or fall back to default
+                // Log history configuration corruption to Sentry for monitoring
+                SentryCapture(
+                    e,
+                    `History configuration validation failure: config=${JSON.stringify(data.config).substring(0, 200)}`,
+                );
+                // Alert the user that the history configuration is invalid
+                const alertSystem = new Alert();
+                alertSystem.alert(
+                    'History Error',
+                    'An error was encountered while loading the history configuration. ' +
+                        'Please try selecting a different history entry or contact us on ' +
+                        '<a href="https://github.com/compiler-explorer/compiler-explorer/issues">our github</a>.',
+                    {isError: true},
+                );
             }
         });
 
