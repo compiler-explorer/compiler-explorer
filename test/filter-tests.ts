@@ -70,7 +70,9 @@ function testFilter(filename: string, suffix: string, filters: ParseFiltersAndOu
     }, 10000); // Bump the timeout a bit so that we don't fail for slow cases
 }
 
-describe('Filter test cases', () => {
+const skipExpensiveTests = process.env.SKIP_EXPENSIVE_TESTS === 'true';
+
+describe.skipIf(skipExpensiveTests)('Filter test cases', () => {
     if (process.platform === 'win32' || process.platform === 'darwin') {
         it('should skip filter-tests on Windows', () => {
             expect(true).toBe(true);
