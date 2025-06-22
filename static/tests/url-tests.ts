@@ -365,7 +365,7 @@ describe('URL serialization/deserialization', () => {
                     },
                 ]);
                 expect(() => loadState(config2 as any, false)).toThrow(
-                    "Invalid item 0: missing 'componentName' property",
+                    "Invalid item 0 (type: 'component'): missing 'componentName' property",
                 );
 
                 const config3 = createVersionedConfig([
@@ -376,7 +376,7 @@ describe('URL serialization/deserialization', () => {
                     },
                 ]);
                 expect(() => loadState(config3 as any, false)).toThrow(
-                    "Invalid item 0: 'componentName' must be a string",
+                    "Invalid item 0 (type: 'component', componentName: ''): 'componentName' must be a string",
                 );
             });
 
@@ -426,7 +426,7 @@ describe('URL serialization/deserialization', () => {
                     },
                 ]);
                 expect(() => loadState(config2 as any, false)).toThrow(
-                    "Invalid item 0: missing 'componentState' property",
+                    "Invalid item 0 (type: 'component', componentName: 'compiler'): missing 'componentState' property",
                 );
 
                 const config3 = createVersionedConfig([
@@ -437,7 +437,7 @@ describe('URL serialization/deserialization', () => {
                     },
                 ]);
                 expect(() => loadState(config3 as any, false)).toThrow(
-                    "Invalid item 0: 'componentState' must be an object",
+                    "Invalid item 0 (type: 'component', componentName: 'compiler'): 'componentState' must be an object",
                 );
             });
 
@@ -473,7 +473,7 @@ describe('URL serialization/deserialization', () => {
                     },
                 ]);
                 expect(() => loadState(config2 as any, false)).toThrow(
-                    "Invalid item 0: layout items must have a 'content' array",
+                    "Invalid item 0 (type: 'column'): layout items must have a 'content' array",
                 );
 
                 const config3 = createVersionedConfig([
@@ -482,7 +482,7 @@ describe('URL serialization/deserialization', () => {
                     },
                 ]);
                 expect(() => loadState(config3 as any, false)).toThrow(
-                    "Invalid item 0: layout items must have a 'content' array",
+                    "Invalid item 0 (type: 'stack'): layout items must have a 'content' array",
                 );
             });
 
@@ -504,7 +504,7 @@ describe('URL serialization/deserialization', () => {
                     },
                 ]);
                 expect(() => loadState(config2 as any, false)).toThrow(
-                    "Invalid item 0: layout items must have a 'content' array",
+                    "Invalid item 0 (type: 'column'): layout items must have a 'content' array",
                 );
 
                 const config3 = createVersionedConfig([
@@ -514,7 +514,7 @@ describe('URL serialization/deserialization', () => {
                     },
                 ]);
                 expect(() => loadState(config3 as any, false)).toThrow(
-                    "Invalid item 0: layout items must have a 'content' array",
+                    "Invalid item 0 (type: 'stack'): layout items must have a 'content' array",
                 );
             });
 
@@ -571,7 +571,7 @@ describe('URL serialization/deserialization', () => {
                     },
                 ]);
                 expect(() => loadState(config as any, false)).toThrow(
-                    "Invalid item 0: nested item 0: nested item 0: nested item 0: missing 'componentName' property",
+                    "Invalid item 0 (type: 'row'): nested item 0: nested item 0: nested item 0: missing 'componentName' property",
                 );
             });
 
@@ -648,7 +648,7 @@ describe('URL serialization/deserialization', () => {
                     },
                 ]);
                 expect(() => loadState(config as any, false)).toThrow(
-                    "Invalid item 1: nested item 1: missing 'componentName' property",
+                    "Invalid item 1 (type: 'row'): nested item 1: missing 'componentName' property",
                 );
             });
 
@@ -723,13 +723,13 @@ describe('URL serialization/deserialization', () => {
                 // Object with only type should fail for component
                 const config2 = createVersionedConfig([{type: 'component'}]);
                 expect(() => loadState(config2 as any, false)).toThrow(
-                    "Invalid item 0: missing 'componentName' property",
+                    "Invalid item 0 (type: 'component'): missing 'componentName' property",
                 );
 
                 // Object with only type should fail for layout items
                 const config3 = createVersionedConfig([{type: 'row'}]);
                 expect(() => loadState(config3 as any, false)).toThrow(
-                    "Invalid item 0: layout items must have a 'content' array",
+                    "Invalid item 0 (type: 'row'): layout items must have a 'content' array",
                 );
             });
 
@@ -753,7 +753,7 @@ describe('URL serialization/deserialization', () => {
                     },
                 ]);
                 expect(() => loadState(config as any, false)).toThrow(
-                    "Invalid item 0: nested item 1: 'componentName' must be a string",
+                    "Invalid item 0 (type: 'row'): nested item 1: 'componentName' must be a string",
                 );
             });
         });
