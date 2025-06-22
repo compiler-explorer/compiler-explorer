@@ -1,4 +1,4 @@
-// Copyright (c) 2023, Compiler Explorer Authors
+// Copyright (c) 2025, Compiler Explorer Authors
 // All rights reserved.
 //
 // Redistribution and use in source and binary forms, with or without
@@ -31,7 +31,7 @@ export class PythonInstructionSetInfo extends BaseInstructionSetInfo {
         return 'python';
     }
 
-    // Jump opcodes obtained via:
+    // Jump opcodes obtained on python 3.12 via:
     //   import dis
     //   import opcode
     //   print([opcode.opname[op] for op in dis.hasjump])
@@ -40,7 +40,7 @@ export class PythonInstructionSetInfo extends BaseInstructionSetInfo {
         ['POP_JUMP_IF_FALSE', 'POP_JUMP_IF_NONE', 'POP_JUMP_IF_NOT_NONE', 'POP_JUMP_IF_TRUE', 'FOR_ITER'].join('|'),
     );
     static unconditionalJumps = new RegExp(
-        ['JUMP_BACKWARD', 'JUMP_BACKWARD_NO_INTERRUPT', 'JUMP_FORWARD', 'JUMP', 'JUMP_NO_INTERRUPT'].join(' | '),
+        ['JUMP_BACKWARD', 'JUMP_BACKWARD_NO_INTERRUPT', 'JUMP_FORWARD', 'JUMP', 'JUMP_NO_INTERRUPT'].join('|'),
     );
     static returnInstruction = new RegExp(
         ['RETURN_VALUE', 'RETURN_CONST', 'RETURN_GENERATOR', 'YIELD_VALUE', 'SEND'].join('|'),
