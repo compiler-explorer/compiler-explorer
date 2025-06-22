@@ -30,10 +30,24 @@ import * as Components from './components.js';
 
 import * as rison from './rison.js';
 
-export function convertOldState(state: any): GoldenLayoutConfig {
+// Legacy state format for version migration
+interface LegacyState {
+    compilers: Array<{
+        sourcez?: string;
+        source?: string;
+        options: unknown;
+        compiler: string;
+    }>;
+    filterAsm: {
+        colouriseAsm?: boolean;
+        [key: string]: unknown;
+    };
+}
+
+export function convertOldState(state: LegacyState): GoldenLayoutConfig {
     const sc = state.compilers[0];
     if (!sc) throw new Error('Unable to determine compiler from old state');
-    const content: any[] = [];
+    const content: unknown[] = [];
     let source;
     if (sc.sourcez) {
         source = lzstring.decompressFromBase64(sc.sourcez);
@@ -45,10 +59,13 @@ export function convertOldState(state: any): GoldenLayoutConfig {
         colouriseAsm: state.filterAsm.colouriseAsm,
     };
     const filters = _.clone(state.filterAsm);
-    delete filters.colouriseAsm;
+    if ('colouriseAsm' in filters) {
+        delete filters.colouriseAsm;
+    }
     // TODO(junlarsen): find the missing language field here
     // @ts-expect-error: this is missing the language field, which was never noticed because the import was untyped
     content.push(Components.getEditorWith(1, source, options));
+    // @ts-expect-error: legacy state conversion - filters may not match exact type
     content.push(Components.getCompilerWith(1, filters, sc.options, sc.compiler));
     return {version: CURRENT_LAYOUT_VERSION, content: [{type: 'row', content: content}]} as GoldenLayoutConfig;
 }
@@ -57,7 +74,11 @@ export function convertOldState(state: any): GoldenLayoutConfig {
  * Validation function that checks item structure and basic type safety.
  * Returns an error message string if invalid, or null if valid.
  */
-function validateItemConfig(item: any): string | null {
+function validateItemConfig(item: any, depth = 0): string | null {
+    // Prevent infinite recursion with very deep layouts
+    if (depth > 50) {
+        return 'layout nesting too deep (max 50 levels)';
+    }
     if (!item || typeof item !== 'object') {
         return 'must be an object';
     }
@@ -91,7 +112,7 @@ function validateItemConfig(item: any): string | null {
         }
         // Validate nested items
         for (let i = 0; i < item.content.length; i++) {
-            const nestedError = validateItemConfig(item.content[i]);
+            const nestedError = validateItemConfig(item.content[i], depth + 1);
             if (nestedError) {
                 return `nested item ${i}: ${nestedError}`;
             }
@@ -102,6 +123,14 @@ function validateItemConfig(item: any): string | null {
     return `unknown type '${item.type}'`;
 }
 
+/**
+ * Validates and loads a layout state configuration.
+ * Handles version migration and structural validation for layout configurations.
+ * @param state - The state object to validate (can be any format including legacy)
+ * @param shouldUnminify - Whether to unminify the config (true for URL sources, false for localStorage)
+ * @returns Validated GoldenLayoutConfig ready for use by GoldenLayout
+ * @throws Error if validation fails with detailed error message
+ */
 export function loadState(state: any, shouldUnminify: boolean): GoldenLayoutConfig {
     if (!state || typeof state !== 'object') {
         throw new Error('Invalid state: must be an object');
@@ -142,7 +171,12 @@ export function loadState(state: any, shouldUnminify: boolean): GoldenLayoutConf
         const item = state.content[i];
         const error = validateItemConfig(item);
         if (error) {
-            throw new Error(`Invalid item ${i}: ${error}`);
+            const itemType = item?.type || 'unknown';
+            const componentName = item?.componentName || '';
+            const context = componentName
+                ? ` (type: '${itemType}', componentName: '${componentName}')`
+                : ` (type: '${itemType}')`;
+            throw new Error(`Invalid item ${i}${context}: ${error}`);
         }
     }
 
@@ -154,7 +188,7 @@ export function risonify(obj: rison.JSONValue): string {
     return rison.quote(rison.encode_object(obj));
 }
 
-export function unrisonify(text: string): any {
+export function unrisonify(text: string): unknown {
     return rison.decode_object(decodeURIComponent(text.replace(/\+/g, '%20')));
 }
 

@@ -265,23 +265,33 @@ describe('URL serialization/deserialization', () => {
                         componentState: {},
                     },
                 ]);
-                expect(() => loadState(config as any, false)).toThrow("Invalid item 0: missing 'type' property");
+                expect(() => loadState(config as any, false)).toThrow(
+                    "Invalid item 0 (type: 'unknown', componentName: 'compiler'): missing 'type' property",
+                );
             });
 
             it('should throw for null items', () => {
                 const config = createVersionedConfig([null]);
-                expect(() => loadState(config as any, false)).toThrow('Invalid item 0: must be an object');
+                expect(() => loadState(config as any, false)).toThrow(
+                    "Invalid item 0 (type: 'unknown'): must be an object",
+                );
             });
 
             it('should throw for non-object items', () => {
                 const config = createVersionedConfig(['string']);
-                expect(() => loadState(config as any, false)).toThrow('Invalid item 0: must be an object');
+                expect(() => loadState(config as any, false)).toThrow(
+                    "Invalid item 0 (type: 'unknown'): must be an object",
+                );
 
                 const config2 = createVersionedConfig([123]);
-                expect(() => loadState(config2 as any, false)).toThrow('Invalid item 0: must be an object');
+                expect(() => loadState(config2 as any, false)).toThrow(
+                    "Invalid item 0 (type: 'unknown'): must be an object",
+                );
 
                 const config3 = createVersionedConfig([true]);
-                expect(() => loadState(config3 as any, false)).toThrow('Invalid item 0: must be an object');
+                expect(() => loadState(config3 as any, false)).toThrow(
+                    "Invalid item 0 (type: 'unknown'): must be an object",
+                );
             });
 
             it('should throw for unknown item types', () => {
@@ -291,7 +301,9 @@ describe('URL serialization/deserialization', () => {
                         someProperty: 'value',
                     },
                 ]);
-                expect(() => loadState(config as any, false)).toThrow("Invalid item 0: unknown type 'unknownType'");
+                expect(() => loadState(config as any, false)).toThrow(
+                    "Invalid item 0 (type: 'unknownType'): unknown type 'unknownType'",
+                );
             });
 
             it('should throw for empty string type', () => {
@@ -301,7 +313,9 @@ describe('URL serialization/deserialization', () => {
                         componentName: 'compiler',
                     },
                 ]);
-                expect(() => loadState(config as any, false)).toThrow("Invalid item 0: missing 'type' property");
+                expect(() => loadState(config as any, false)).toThrow(
+                    "Invalid item 0 (type: 'unknown', componentName: 'compiler'): missing 'type' property",
+                );
             });
 
             it('should throw for non-string type property', () => {
@@ -311,7 +325,9 @@ describe('URL serialization/deserialization', () => {
                         componentName: 'compiler',
                     },
                 ]);
-                expect(() => loadState(config as any, false)).toThrow("Invalid item 0: unknown type '123'");
+                expect(() => loadState(config as any, false)).toThrow(
+                    "Invalid item 0 (type: '123', componentName: 'compiler'): unknown type '123'",
+                );
             });
         });
 
@@ -325,7 +341,7 @@ describe('URL serialization/deserialization', () => {
                     },
                 ]);
                 expect(() => loadState(config as any, false)).toThrow(
-                    "Invalid item 0: missing 'componentName' property",
+                    "Invalid item 0 (type: 'component'): missing 'componentName' property",
                 );
             });
 
@@ -338,7 +354,7 @@ describe('URL serialization/deserialization', () => {
                     },
                 ]);
                 expect(() => loadState(config as any, false)).toThrow(
-                    "Invalid item 0: 'componentName' must be a string",
+                    "Invalid item 0 (type: 'component', componentName: '123'): 'componentName' must be a string",
                 );
 
                 const config2 = createVersionedConfig([
@@ -373,7 +389,7 @@ describe('URL serialization/deserialization', () => {
                     },
                 ]);
                 expect(() => loadState(config as any, false)).toThrow(
-                    "Invalid item 0: missing 'componentName' property",
+                    "Invalid item 0 (type: 'component'): missing 'componentName' property",
                 );
             });
 
@@ -386,7 +402,7 @@ describe('URL serialization/deserialization', () => {
                     },
                 ]);
                 expect(() => loadState(config as any, false)).toThrow(
-                    "Invalid item 0: missing 'componentState' property",
+                    "Invalid item 0 (type: 'component', componentName: 'compiler'): missing 'componentState' property",
                 );
             });
 
@@ -399,7 +415,7 @@ describe('URL serialization/deserialization', () => {
                     },
                 ]);
                 expect(() => loadState(config as any, false)).toThrow(
-                    "Invalid item 0: 'componentState' must be an object",
+                    "Invalid item 0 (type: 'component', componentName: 'compiler'): 'componentState' must be an object",
                 );
 
                 const config2 = createVersionedConfig([
@@ -448,7 +464,7 @@ describe('URL serialization/deserialization', () => {
                     },
                 ]);
                 expect(() => loadState(config as any, false)).toThrow(
-                    "Invalid item 0: layout items must have a 'content' array",
+                    "Invalid item 0 (type: 'row'): layout items must have a 'content' array",
                 );
 
                 const config2 = createVersionedConfig([
@@ -478,7 +494,7 @@ describe('URL serialization/deserialization', () => {
                     },
                 ]);
                 expect(() => loadState(config as any, false)).toThrow(
-                    "Invalid item 0: layout items must have a 'content' array",
+                    "Invalid item 0 (type: 'row'): layout items must have a 'content' array",
                 );
 
                 const config2 = createVersionedConfig([
@@ -526,7 +542,7 @@ describe('URL serialization/deserialization', () => {
                     },
                 ]);
                 expect(() => loadState(config as any, false)).toThrow(
-                    "Invalid item 0: nested item 0: missing 'type' property",
+                    "Invalid item 0 (type: 'row'): nested item 0: missing 'type' property",
                 );
             });
 
@@ -603,7 +619,7 @@ describe('URL serialization/deserialization', () => {
                     },
                 ]);
                 expect(() => loadState(config as any, false)).toThrow(
-                    "Invalid item 1: missing 'componentName' property",
+                    "Invalid item 1 (type: 'component'): missing 'componentName' property",
                 );
             });
 
@@ -692,13 +708,17 @@ describe('URL serialization/deserialization', () => {
                         componentState: {},
                     },
                 ]);
-                expect(() => loadState(config as any, false)).toThrow('Invalid item 1: must be an object');
+                expect(() => loadState(config as any, false)).toThrow(
+                    "Invalid item 1 (type: 'unknown'): must be an object",
+                );
             });
 
             it('should handle boundary conditions with empty and minimal objects', () => {
                 // Empty object should fail
                 const config1 = createVersionedConfig([{}]);
-                expect(() => loadState(config1 as any, false)).toThrow("Invalid item 0: missing 'type' property");
+                expect(() => loadState(config1 as any, false)).toThrow(
+                    "Invalid item 0 (type: 'unknown'): missing 'type' property",
+                );
 
                 // Object with only type should fail for component
                 const config2 = createVersionedConfig([{type: 'component'}]);
