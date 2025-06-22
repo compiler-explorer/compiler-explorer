@@ -146,7 +146,7 @@ export function getNumericToolTip(value: string, digitSeparator?: string): strin
 
 // zip two arrays up until min(a.length, b.length)
 export function* zip<T>(a: T[], b: T[]) {
-    for(let i = 0; i < Math.min(a.length, b.length); i++) {
+    for (let i = 0; i < Math.min(a.length, b.length); i++) {
         yield [a[i], b[i]] as [T, T];
     }
 }
