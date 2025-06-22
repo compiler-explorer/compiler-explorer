@@ -108,6 +108,7 @@ export class Cfg extends Pane<CfgState> {
     graphContainer: HTMLElement;
     graphElement: HTMLElement;
     infoElement: HTMLElement;
+    centerParentsButton: JQuery<HTMLElement>;
     exportPNGButton: JQuery;
     estimatedPNGSize: Element;
     exportSVGButton: JQuery;
@@ -204,6 +205,7 @@ export class Cfg extends Pane<CfgState> {
         this.graphContainer = this.domRoot.find('.graph-container')[0];
         this.graphElement = this.domRoot.find('.graph')[0];
         this.infoElement = this.domRoot.find('.cfg-info')[0];
+        this.centerParentsButton = this.domRoot.find('.center-parents');
         this.exportPNGButton = this.domRoot.find('.export-png').first();
         this.estimatedPNGSize = unwrap(this.exportPNGButton[0].querySelector('.estimated-export-size'));
         this.exportSVGButton = this.domRoot.find('.export-svg').first();

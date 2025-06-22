@@ -324,21 +324,38 @@ export class Executor extends Pane<ExecutorState> {
             });
             return;
         }
-        this.hub.compilerService.expandToFiles(this.source).then((sourceAndFiles: SourceAndFiles) => {
-            const request: CompilationRequest = {
-                source: sourceAndFiles.source || '',
-                compiler: this.compiler ? this.compiler.id : '',
-                options: options,
-                lang: this.currentLangId,
-                files: sourceAndFiles.files,
-            };
-            if (bypassCache) request.bypassCache = bypassCache;
-            if (!this.compiler) {
-                this.onCompileResponse(request, this.errorResult('<Please select a compiler>'), false);
-            } else {
-                this.sendCompile(request);
-            }
-        });
+        this.hub.compilerService
+            .expandToFiles(this.source)
+            .then((sourceAndFiles: SourceAndFiles) => {
+                const request: CompilationRequest = {
+                    source: sourceAndFiles.source || '',
+                    compiler: this.compiler ? this.compiler.id : '',
+                    options: options,
+                    lang: this.currentLangId,
+                    files: sourceAndFiles.files,
+                };
+                if (bypassCache) request.bypassCache = bypassCache;
+                if (!this.compiler) {
+                    this.onCompileResponse(request, this.errorResult('<Please select a compiler>'), false);
+                } else {
+                    this.sendCompile(request);
+                }
+            })
+            .catch(error => {
+                this.onCompileResponse(
+                    {
+                        source: this.source,
+                        compiler: this.compiler?.id || '',
+                        options: options,
+                        lang: this.currentLangId,
+                        files: [],
+                    },
+                    this.errorResult(
+                        'Failed to expand includes: ' + (error instanceof Error ? error.message : String(error)),
+                    ),
+                    false,
+                );
+            });
     }
 
     compileFromTree(options: CompilationRequestOptions, bypassCache?: BypassCache): void {
@@ -376,26 +393,37 @@ export class Executor extends Pane<ExecutorState> {
             );
         }
 
-        Promise.all(fetches).then(() => {
-            const treeState = tree.currentState();
-            const cmakeProject = tree.multifileService.isACMakeProject();
-            request.files.push(...moreFiles);
+        Promise.all(fetches)
+            .then(() => {
+                const treeState = tree.currentState();
+                const cmakeProject = tree.multifileService.isACMakeProject();
+                request.files.push(...moreFiles);
 
-            if (bypassCache) request.bypassCache = bypassCache;
-            if (!this.compiler) {
-                this.onCompileResponse(request, this.errorResult('<Please select a compiler>'), false);
-            } else if (cmakeProject && request.source === '') {
-                this.onCompileResponse(request, this.errorResult('<Please supply a CMakeLists.txt>'), false);
-            } else {
-                if (cmakeProject) {
-                    request.options.compilerOptions.cmakeArgs = treeState.cmakeArgs;
-                    request.options.compilerOptions.customOutputFilename = treeState.customOutputFilename;
-                    this.sendCMakeCompile(request);
+                if (bypassCache) request.bypassCache = bypassCache;
+                if (!this.compiler) {
+                    this.onCompileResponse(request, this.errorResult('<Please select a compiler>'), false);
+                } else if (cmakeProject && request.source === '') {
+                    this.onCompileResponse(request, this.errorResult('<Please supply a CMakeLists.txt>'), false);
                 } else {
-                    this.sendCompile(request);
+                    if (cmakeProject) {
+                        request.options.compilerOptions.cmakeArgs = treeState.cmakeArgs;
+                        request.options.compilerOptions.customOutputFilename = treeState.customOutputFilename;
+                        this.sendCMakeCompile(request);
+                    } else {
+                        this.sendCompile(request);
+                    }
                 }
-            }
-        });
+            })
+            .catch(error => {
+                this.onCompileResponse(
+                    request,
+                    this.errorResult(
+                        'Failed to expand includes in files: ' +
+                            (error instanceof Error ? error.message : String(error)),
+                    ),
+                    false,
+                );
+            });
     }
 
     sendCMakeCompile(request: CompilationRequest): void {
