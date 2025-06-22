@@ -27,7 +27,7 @@ import {AnnotatedCfgDescriptor, AnnotatedNodeDescriptor, EdgeColor} from '../typ
 import IntervalTree from '@flatten-js/interval-tree';
 import cloneDeep from 'lodash.clonedeep';
 
-import { zip } from './utils.js';
+import {zip} from './utils.js';
 
 // Much of the algorithm is inspired from
 // https://cutter.re/docs/api/widgets/classGraphGridLayout.html
@@ -161,26 +161,23 @@ type SegmentInfo = {
 const EDGE_SPACING = 10;
 
 function calculateTreePacking(left: BoundingBox, right: BoundingBox) {
-    // console.log("    ", JSON.stringify(left));
-    // console.log("    ", JSON.stringify(right));
     const offsets: number[] = [];
-    for(const [leftRow, rightRow] of zip(left.rows, right.rows)) {
+    for (const [leftRow, rightRow] of zip(left.rows, right.rows)) {
         let offset = 0;
         offset -= left.width - leftRow.end;
         offset -= rightRow.start;
         offsets.push(offset);
     }
-    // console.log("        offsets", offsets, left, right);
     return offsets.length === 0 ? 0 : Math.min(...offsets);
 }
 
 function combineRowBounds(left: RowBound[], right: RowBound[], rightOffset: number) {
-    for(const [leftBound, rightBound] of zip(left, right)) {
+    for (const [leftBound, rightBound] of zip(left, right)) {
         leftBound.start = Math.min(leftBound.start, rightBound.start);
         leftBound.end = Math.max(leftBound.end, rightBound.end);
     }
-    if(left.length < right.length) {
-        left.push(...right.slice(left.length).map(cloneDeep));
+    if (left.length < right.length) {
+        left.push(...right.slice(left.length).map(bound => cloneDeep(bound)));
     }
 }
 
@@ -367,9 +364,7 @@ export class GraphLayoutCore {
         // Note: Currently not taking shape into account like Cutter does.
         // Note: Currently O(n^2) due to constant adjustments
         const block = this.blocks[node];
-        // console.log("============================ positioning tree", block.treeEdges.length);
         if (block.treeEdges.length === 0) {
-            // console.log("block:", block.row, block.col, JSON.stringify(block.boundingBox));
             block.row = 0;
             block.col = 0;
             block.boundingBox = {
@@ -377,38 +372,31 @@ export class GraphLayoutCore {
                 height: 1,
                 rows: [{start: 0, end: 2}],
             };
-            // console.log("position:", block.row, block.col, JSON.stringify(block.boundingBox));
         } else if (block.treeEdges.length === 1) {
-            // console.log("block:", block.row, block.col, JSON.stringify(block.boundingBox));
             const childIndex = block.treeEdges[0];
             const child = this.blocks[childIndex];
-            // console.log("child:", child.row, child.col, JSON.stringify(child.boundingBox));
             block.row = 0;
             block.col = child.col;
             block.boundingBox = {
                 width: child.boundingBox.width,
                 height: child.boundingBox.height + 1,
-                rows: [{start: child.col, end: child.col + 2}, ...child.boundingBox.rows.map(cloneDeep)],
+                rows: [
+                    {start: child.col, end: child.col + 2},
+                    ...child.boundingBox.rows.map(bound => cloneDeep(bound)),
+                ],
             };
             this.adjustSubtree(childIndex, 1, 0);
-            // console.log("block position:", block.row, block.col, JSON.stringify(block.boundingBox));
-            // console.log("child position:", child.row, child.col, JSON.stringify(child.boundingBox));
         } else {
-            // console.log("block:", JSON.stringify(block.boundingBox));
             // If the node has more than two children we'll just center between the two direct children
             const boundingBox: BoundingBox = {
                 width: 0,
                 height: 0,
                 rows: [],
             };
-            // console.log("children:");
             // Place subtrees and update bounding box
             for (const i of block.treeEdges) {
                 const child = this.blocks[i];
-                // console.log("    ", child.row, child.col, JSON.stringify(child.boundingBox));
-                // const offset = i === 0 ? 0 : calculateTreePacking(this.blocks[i - 1].boundingBox, child.boundingBox);
                 const offset = this.compactTrees ? calculateTreePacking(boundingBox, child.boundingBox) : 0;
-                // console.log(offset);
                 this.adjustSubtree(i, 1, boundingBox.width + offset);
                 boundingBox.width += child.boundingBox.width + offset;
                 boundingBox.height = Math.max(boundingBox.height, child.boundingBox.height);
@@ -427,7 +415,6 @@ export class GraphLayoutCore {
                 block.col = Math.floor((left.col + right.col) / 2);
             }
             block.boundingBox.rows.unshift({start: block.col, end: block.col + 2});
-            // console.log("block position", block.row, block.col, JSON.stringify(boundingBox));
         }
     }
 
@@ -449,7 +436,6 @@ export class GraphLayoutCore {
     setupRowsAndColumns() {
         this.rowCount = Math.max(...this.blocks.map(block => block.row)) + 1; // one more row for zero offset
         this.columnCount = Math.max(...this.blocks.map(block => block.col)) + 2; // blocks are two-wide
-        // console.log(this.rowCount, this.columnCount);
         this.blockRows = Array(this.rowCount)
             .fill(0)
             .map(() => ({
@@ -893,7 +879,6 @@ export class GraphLayoutCore {
 
     computeGridDimensions() {
         for (const block of this.blocks) {
-            // console.log(block.col);
             const halfWidth = (block.data.width - this.edgeColumns[block.col + 1].width) / 2;
             this.blockRows[block.row].height = Math.max(this.blockRows[block.row].height, block.data.height);
             this.blockColumns[block.col].width = Math.max(this.blockColumns[block.col].width, halfWidth);
