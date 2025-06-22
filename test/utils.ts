@@ -29,6 +29,9 @@ import {fileURLToPath} from 'node:url';
 import {afterEach, expect, onTestFinished} from 'vitest';
 import * as temp from '../lib/temp.js';
 
+// Check if expensive tests should be skipped (e.g., during pre-commit hooks)
+export const skipExpensiveTests = process.env.SKIP_EXPENSIVE_TESTS === 'true';
+
 import {CompilationEnvironment} from '../lib/compilation-env.js';
 import {CompilationQueue} from '../lib/compilation-queue.js';
 import {CC65AsmParser} from '../lib/parsers/asm-parser-cc65.js';

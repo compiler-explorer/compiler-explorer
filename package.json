@@ -147,7 +147,7 @@
     "test-coverage": "vitest run --coverage",
     "test": "vitest run",
     "test:watch": "vitest",
-    "test-min": "vitest run --exclude test/filter-tests.ts",
+    "test-min": "cross-env SKIP_EXPENSIVE_TESTS=true vitest run",
     "check": "npm run ts-check && npm run lint-check && npm run check-frontend-imports && npm run test-min -- --reporter dot",
     "check-frontend-imports": "node ./etc/scripts/check-frontend-imports.js",
     "dev": "cross-env NODE_ENV=DEV node --no-warnings=ExperimentalWarning --import=tsx app.ts",

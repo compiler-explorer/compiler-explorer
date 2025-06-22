@@ -84,6 +84,13 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
   - Write platform-specific assertions
   - Use path-agnostic checks
 
+### Test Execution with Expensive Test Skipping
+- The `SKIP_EXPENSIVE_TESTS=true` environment variable skips expensive tests (like filter tests)
+- Pre-commit hooks use `vitest related` to run only tests related to changed files
+- Use `npm run test-min` to run tests with expensive tests skipped
+- Use `npm run test` to run all tests including expensive ones
+- To mark tests as expensive, use: `describe.skipIf(process.env.SKIP_EXPENSIVE_TESTS === 'true')('Test suite', () => {...})`
+
 ## Compiler Testing Specifics
 - Mock filesystem operations when testing file I/O
 - Use `makeFakeCompilerInfo()` for creating test compiler configurations
