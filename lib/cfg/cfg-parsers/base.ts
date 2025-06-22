@@ -98,6 +98,15 @@ export class BaseCFGParser {
         return result;
     }
 
+    protected getBbId(firstInst: string): string {
+        return firstInst;
+    }
+
+    protected getBbFirstInstIdx(firstLine: number) {
+        //inst is expected to be .L*: where * in 1,2,...
+        return firstLine + 1;
+    }
+
     protected splitToBasicBlocks(asmArr: AssemblyLine[], range: Range) {
         let first = range.start;
         const last = range.end;
@@ -117,11 +126,11 @@ export class BaseCFGParser {
 
         while (first < last) {
             const inst = asmArr[first].text;
-            if (this.isBasicBlockEnd(inst, asmArr[first - 1] ? asmArr[first - 1].text : '')) {
+            const prevInst = asmArr[first - 1] ? asmArr[first - 1].text : '';
+            if (this.isBasicBlockEnd(inst, prevInst)) {
                 rangeBb.end = first;
                 result.push(_.clone(rangeBb));
-                //inst is expected to be .L*: where * in 1,2,...
-                rangeBb = newRangeWith(rangeBb, inst, first + 1);
+                rangeBb = newRangeWith(rangeBb, this.getBbId(inst), this.getBbFirstInstIdx(first));
             } else if (this.instructionSetInfo.isJmpInstruction(inst)) {
                 rangeBb.actionPos.push(first);
             }
