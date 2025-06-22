@@ -36,7 +36,8 @@ when testing your changes locally.
     warnings.
 - If you're adding a new server-side component, please do your best to add a test to cover it. For client-side changes
   that's trickier.
-- Tests should run automatically as a pre-commit step. _You can disable this check with `git commit --no-verify` if
+- Tests should run automatically as a pre-commit step. The pre-commit hook runs only tests related to changed files
+  and skips expensive tests (like filter tests) for faster feedback. _You can disable this check with `git commit --no-verify` if
   needed_.
 - You can run `make check` to run both the linter and the code tests
 - Do a smoke test: Run `make` and ensure the site works as you'd expect. Concentrate on the areas you'd expect to have

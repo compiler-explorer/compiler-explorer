@@ -29,7 +29,7 @@ import {describe, expect, it} from 'vitest';
 
 import {ParseFiltersAndOutputOptions} from '../types/features/filters.interfaces.js';
 
-import {processAsm, resolvePathFromTestRoot} from './utils.js';
+import {processAsm, resolvePathFromTestRoot, skipExpensiveTests} from './utils.js';
 
 const casesRoot = resolvePathFromTestRoot('filters-cases');
 const files = fs.readdirSync(casesRoot);
@@ -69,8 +69,6 @@ function testFilter(filename: string, suffix: string, filters: ParseFiltersAndOu
         await expect(stringifyKeysInOrder(result)).toMatchFileSnapshot(path.join(casesRoot, testName + '.json'));
     }, 10000); // Bump the timeout a bit so that we don't fail for slow cases
 }
-
-const skipExpensiveTests = process.env.SKIP_EXPENSIVE_TESTS === 'true';
 
 describe.skipIf(skipExpensiveTests)('Filter test cases', () => {
     if (process.platform === 'win32' || process.platform === 'darwin') {
