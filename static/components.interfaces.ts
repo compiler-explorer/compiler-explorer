@@ -32,7 +32,8 @@ import {ClangirState} from './panes/clangir-view.interfaces.js';
 import {GccDumpViewState} from './panes/gccdump-view.interfaces.js';
 import {IrState} from './panes/ir-view.interfaces.js';
 import {OptPipelineViewState} from './panes/opt-pipeline.interfaces.js';
-import {MonacoPaneState} from './panes/pane.interfaces.js';
+import {MonacoPane, Pane} from './panes/pane';
+import {MonacoPaneState, PaneState} from './panes/pane.interfaces.js';
 
 /**
  * Component name constants with 'as const' assertions.
@@ -468,3 +469,9 @@ export interface SerializedLayoutState {
  * Type for drag source factory functions
  */
 export type DragSourceFactory<K extends keyof ComponentStateMap> = () => ComponentConfig<K>;
+
+export type InferComponentState<T> = T extends MonacoPane<infer E, infer S>
+    ? S & MonacoPaneState
+    : T extends Pane<infer S>
+      ? S & PaneState
+      : never;
