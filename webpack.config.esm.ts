@@ -38,7 +38,9 @@ import {WebpackManifestPlugin} from 'webpack-manifest-plugin';
 const __dirname = path.resolve(path.dirname(fileURLToPath(import.meta.url)));
 const isDev = process.env.NODE_ENV !== 'production';
 
-function log(message: string) {}
+function log(message: string) {
+    console.log('webpack: ', message);
+}
 
 log(`compiling for ${isDev ? 'development' : 'production'}.`);
 // Memory limits us in most cases, so restrict parallelism to keep us in a sane amount of RAM
