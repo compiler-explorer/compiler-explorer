@@ -29,7 +29,7 @@ import {logger} from '../logger.js';
 import {createRenderHandlers} from './rendering.js';
 import {setupBaseServerConfig, setupBasicRoutes, setupLoggingMiddleware} from './server-config.js';
 import {ServerDependencies, ServerOptions, WebServerResult} from './server.interfaces.js';
-import {setupStaticMiddleware, setupWebPackDevMiddleware} from './static-assets.js';
+import {setupStaticMiddleware, setupViteDevMiddleware} from './static-assets.js';
 
 export {startListening} from './server-listening.js';
 export {isMobileViewer} from './url-handlers.js';
@@ -53,7 +53,7 @@ export async function setupWebServer(
 
     try {
         pugRequireHandler = await (appArgs.devMode
-            ? setupWebPackDevMiddleware(options, router)
+            ? setupViteDevMiddleware(options, router)
             : setupStaticMiddleware(options, router));
     } catch (err: unknown) {
         const error = err as Error;

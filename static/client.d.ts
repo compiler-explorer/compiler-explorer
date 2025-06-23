@@ -22,17 +22,17 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-// These .pug files are different from the ones on the server. Our webpack
+// These .pug files are different from the ones on the server. Our vite plugin
 // config will translate the .pug files into JS objects that are importable
 // with `hash` and `text` properties.
 //
-// See the code in `/etc/scripts/parsed-pug/parsed_pug_file.js` for details.
+// See the code in `vite-plugin-hashed-pug` for details.
 declare module '*.pug' {
-    type WebpackBuiltPugFile = {
+    type VitePluginHashedPugFile = {
         hash: string;
         text: string;
     };
-    declare const content: WebpackBuiltPugFile;
+    declare const content: VitePluginHashedPugFile;
     export default content;
 }
 

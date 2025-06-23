@@ -2,9 +2,10 @@
   "$schema": "./node_modules/@biomejs/biome/configuration_schema.json",
   "files": {
     "ignore": [
+      "dist",
+      "out",
       "examples/**/*",
       "node_modules/**/*",
-      "out/**/*",
       "coverage/**/*",
       "etc/**/*",
       "static/policies/*.html",

@@ -22,5 +22,4 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-globalThis.__webpack_public_path__ = '';
 document.body.innerHTML = '<div id="config" httpRoot="/test/" staticRoot="/test/static/" extraOptions="{}"></div>';
