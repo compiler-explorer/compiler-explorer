@@ -79,6 +79,7 @@ import type {SelectedLibraryVersion} from '../types/libraries/libraries.interfac
 import type {ResultLine} from '../types/resultline/resultline.interfaces.js';
 import {type ToolResult, type ToolTypeKey} from '../types/tool.interfaces.js';
 
+import {parseAllDocuments} from 'yaml';
 import {moveArtifactsIntoResult} from './artifact-utils.js';
 import {assert, unwrap} from './assert.js';
 import {copyCopperSpicePlugins} from './binaries/copperspice-utils.js';
@@ -123,7 +124,6 @@ import {LlvmPassDumpParser} from './parsers/llvm-pass-dump-parser.js';
 import type {PropertyGetter} from './properties.interfaces.js';
 import {HeaptrackWrapper} from './runtime-tools/heaptrack-wrapper.js';
 import {LibSegFaultHelper} from './runtime-tools/libsegfault-helper.js';
-import {SentryCapture} from './sentry.js';
 import * as StackUsage from './stack-usage-transformer.js';
 import * as temp from './temp.js';
 import {
@@ -3206,10 +3206,50 @@ export class BaseCompiler {
         return await demangler.process(result);
     }
 
+    // LLVM opt-remark yaml processing is used by at least clang, flang, rustc and ldcc.
     processRawOptRemarks(buffer: string, compileFileName = ''): OptRemark[] {
-        // Shouldn't get here.
-        SentryCapture('', `Unexpected processRawOptRemarks call for compiler: ${this.compiler.name}`);
-        return [];
+        const output: OptRemark[] = [];
+        const remarksSet: Set<string> = new Set<string>();
+        const remarks: any = parseAllDocuments(buffer);
+
+        const displayOptInfo = (optInfo: OptRemark) => {
+            let displayString = optInfo.Args.reduce((acc, x) => {
+                let inc = '';
+                for (const [key, value] of Object.entries(x)) {
+                    if (key === 'DebugLoc') {
+                        if (value['Line'] !== 0) {
+                            inc += ' (' + value['Line'] + ':' + value['Column'] + ')';
+                        }
+                    } else {
+                        inc += value;
+                    }
+                }
+                return acc + inc;
+            }, '');
+
+            displayString = displayString.replaceAll('\n', ' ').replaceAll('\r', ' ');
+            return displayString;
+        };
+
+        for (const doc of remarks) {
+            if (doc.errors !== undefined && doc.errors.length > 0) {
+                logger.warn('YAMLParseError: ' + JSON.stringify(doc.errors[0]));
+                continue;
+            }
+
+            const opt = doc.toJS();
+            if (!opt.DebugLoc || !opt.DebugLoc.File || !opt.DebugLoc.File.includes(compileFileName)) continue;
+
+            const strOpt = JSON.stringify(opt);
+            if (!remarksSet.has(strOpt)) {
+                remarksSet.add(strOpt);
+                opt.optType = doc.contents.tag.substring(1); // remove leading '!'
+                opt.displayString = displayOptInfo(opt);
+                output.push(opt as OptRemark);
+            }
+        }
+
+        return output;
     }
 
     async processOptOutput(compilationRes: CompilationResult): Promise<OptRemark[]> {
