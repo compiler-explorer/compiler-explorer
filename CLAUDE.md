@@ -67,6 +67,17 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
   - This separation is enforced by pre-commit hooks (`npm run check-frontend-imports`)
   - Violations will cause build failures and prevent commits
 
+## Worker Mode Configuration
+- **Compilation Workers**: New feature for offloading compilation tasks to dedicated worker instances
+  - `compilequeue.is_worker=true`: Enables compilation worker mode (similar to execution workers)
+  - `compilequeue.queue_url`: SQS queue URL for regular compilation requests
+  - `compilequeue.cmake_queue_url`: SQS queue URL for CMake compilation requests
+  - `compilequeue.events_url`: WebSocket URL for sending compilation results
+  - `compilequeue.worker_threads=2`: Number of concurrent worker threads per queue type
+- **Implementation**: Located in `/lib/compilation/sqs-compilation-queue.ts` and `/lib/compilation/remote-compilation-env.ts`
+- **Queue Architecture**: Uses AWS SQS FIFO queues for reliable message delivery, similar to execution workers
+- **Result Delivery**: Uses WebSocket-based communication via existing `EventsWsSender` infrastructure
+
 ## Testing Guidelines
 - Use Vitest for unit tests (compatible with Jest syntax)
 - Tests are in the `/test` directory, typically named like the source files they test

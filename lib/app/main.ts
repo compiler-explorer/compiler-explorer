@@ -34,6 +34,7 @@ import {setupRoutesAndApi} from './routes-setup.js';
 import {setupTempDir} from './temp-dir.js';
 
 import * as aws from '../aws.js';
+import {startCompilationWorkerThread} from '../compilation/sqs-compilation-queue.js';
 import {CompilerFinder} from '../compiler-finder.js';
 import {startWineInit} from '../exec.js';
 import {RemoteExecutionQuery} from '../execution/execution-query.js';
@@ -80,6 +81,7 @@ export async function initialiseApplication(options: ApplicationOptions): Promis
     const compilerFinder = new CompilerFinder(compileHandler, compilerProps, appArgs, clientOptionsHandler);
 
     const isExecutionWorker = ceProps<boolean>('execqueue.is_worker', false);
+    const isCompilationWorker = ceProps<boolean>('compilequeue.is_worker', false);
     const healthCheckFilePath = ceProps('healthCheckFilePath', null) as string | null;
 
     const formDataHandler = createFormDataHandler();
@@ -90,12 +92,13 @@ export async function initialiseApplication(options: ApplicationOptions): Promis
         compilationEnvironment.compilationQueue,
         healthCheckFilePath,
         isExecutionWorker,
+        isCompilationWorker,
         formDataHandler,
     );
 
     logVersionInfo(appArgs);
 
-    const initialCompilers = await discoverCompilers(appArgs, compilerFinder, isExecutionWorker);
+    const initialCompilers = await discoverCompilers(appArgs, compilerFinder, isExecutionWorker || isCompilationWorker);
 
     const serverOptions = {
         staticPath: appArgs.staticPath || path.join(distPath, 'static'),
@@ -161,6 +164,10 @@ export async function initialiseApplication(options: ApplicationOptions): Promis
     if (isExecutionWorker) {
         await initHostSpecialties();
         startExecutionWorkerThread(ceProps, awsProps, compilationEnvironment);
+    }
+
+    if (isCompilationWorker) {
+        startCompilationWorkerThread(ceProps, awsProps, compilationEnvironment);
     }
 
     startListening(webServer, appArgs);
