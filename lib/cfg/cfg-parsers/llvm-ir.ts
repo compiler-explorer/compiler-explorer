@@ -48,7 +48,7 @@ export class LlvmIrCfgParser extends BaseCFGParser {
         super(instructionSetInfo);
         this.functionDefinition = /^define .+ @("?[^"]+"?)\(/;
         this.labelRe = /^("?[\w$.-]+"?):\s*(;.*)?$/;
-        this.labelReference = /%("?[\w$.-]+"?)/g;
+        this.labelReference = /%("?[\w$.<>-]+"?)/g;
     }
 
     override filterData(asmArr: AssemblyLine[]) {
@@ -211,6 +211,8 @@ export class LlvmIrCfgParser extends BaseCFGParser {
                     break;
                 }
                 case 'br': {
+                    // br label %\"<example::MyAllocator as core::alloc::global::GlobalAlloc>::alloc::h48bb40aafe1fee0e.exit\""
+
                     // br label %16, !dbg !41
                     // br i1 %13, label %59, label %14, !dbg !41
                     if (labels.length === 1) {
