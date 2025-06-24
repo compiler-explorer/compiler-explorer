@@ -3212,7 +3212,7 @@ export class BaseCompiler {
         const remarksSet: Set<string> = new Set<string>();
         const remarks: any = parseAllDocuments(buffer);
 
-        const DisplayOptInfo = (optInfo: OptRemark) => {
+        const displayOptInfo = (optInfo: OptRemark) => {
             let displayString = optInfo.Args.reduce((acc, x) => {
                 let inc = '';
                 for (const [key, value] of Object.entries(x)) {
@@ -3244,7 +3244,7 @@ export class BaseCompiler {
             if (!remarksSet.has(strOpt)) {
                 remarksSet.add(strOpt);
                 opt.optType = doc.contents.tag.substring(1); // remove leading '!'
-                opt.displayString = DisplayOptInfo(opt);
+                opt.displayString = displayOptInfo(opt);
                 output.push(opt as OptRemark);
             }
         }
