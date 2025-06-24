@@ -1685,3 +1685,7 @@ button.new-pane-button:disabled:after {
 .lm_header .lm_tabdropdown_list {
     z-index: 6; // 5 by default, same as the minimap
 }
+
+.link-primary {
+    cursor: pointer;
+}
