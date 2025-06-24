@@ -29,7 +29,6 @@ import {CompilationEnvironment} from '../compilation-env.js';
 import {EventsWsSender} from '../execution/events-websocket.js';
 import {logger} from '../logger.js';
 import {PropertyGetter} from '../properties.interfaces.js';
-import {getHash} from '../utils.js';
 
 export type RemoteCompilationRequest = {
     guid: string;
@@ -49,54 +48,16 @@ export type RemoteCompilationRequest = {
 
 export class SqsCompilationQueueBase {
     protected sqs: SQS;
-    protected compile_queue_url: string;
-    protected cmake_queue_url: string;
+    protected queue_url: string;
 
     constructor(props: PropertyGetter, awsProps: PropertyGetter) {
         const region = awsProps<string>('region', '');
         this.sqs = new SQS({region: region});
-        this.compile_queue_url = props<string>('compilequeue.queue_url', '');
-        this.cmake_queue_url = props<string>('compilequeue.cmake_queue_url', '');
+        this.queue_url = props<string>('compilequeue.queue_url', '');
 
-        if (this.compile_queue_url === '' && this.cmake_queue_url === '') {
-            throw new Error('At least one of compilequeue.queue_url or compilequeue.cmake_queue_url is required');
+        if (this.queue_url === '') {
+            throw new Error('compilequeue.queue_url is required for worker mode');
         }
-    }
-
-    getQueueUrl(isCMake: boolean): string {
-        if (isCMake) {
-            if (this.cmake_queue_url === '') {
-                throw new Error('CMake compilation requested but compilequeue.cmake_queue_url not configured');
-            }
-            return this.cmake_queue_url;
-        }
-        if (this.compile_queue_url === '') {
-            throw new Error('Regular compilation requested but compilequeue.queue_url not configured');
-        }
-        return this.compile_queue_url;
-    }
-}
-
-export class SqsCompileRequester extends SqsCompilationQueueBase {
-    private async sendMsg(url: string, body: string) {
-        try {
-            return await this.sqs.sendMessage({
-                QueueUrl: url,
-                MessageBody: body,
-                MessageGroupId: 'default',
-                MessageDeduplicationId: getHash(body),
-            });
-        } catch (e) {
-            logger.error(`Error sending compilation message to queue with URL: ${url}`);
-            throw e;
-        }
-    }
-
-    async push(message: RemoteCompilationRequest): Promise<any> {
-        const body = JSON.stringify(message);
-        const url = this.getQueueUrl(message.isCMake || false);
-
-        return this.sendMsg(url, body);
     }
 }
 
@@ -113,8 +74,8 @@ export class SqsCompilationWorkerMode extends SqsCompilationQueueBase {
         }
     }
 
-    async pop(isCMake: boolean): Promise<RemoteCompilationRequest | undefined> {
-        const url = this.getQueueUrl(isCMake);
+    async pop(): Promise<RemoteCompilationRequest | undefined> {
+        const url = this.queue_url;
         const queued_messages = await this.receiveMsg(url);
 
         if (queued_messages.Messages && queued_messages.Messages.length === 1) {
@@ -161,15 +122,11 @@ async function sendCompilationResultViaWebsocket(
     }
 }
 
-async function doOneCompilation(
-    queue: SqsCompilationWorkerMode,
-    compilationEnvironment: CompilationEnvironment,
-    isCMake: boolean,
-) {
-    const msg = await queue.pop(isCMake);
+async function doOneCompilation(queue: SqsCompilationWorkerMode, compilationEnvironment: CompilationEnvironment) {
+    const msg = await queue.pop();
     if (msg?.guid) {
         const startTime = Date.now();
-        const compilationType = isCMake ? 'cmake' : 'compile';
+        const compilationType = msg.isCMake ? 'cmake' : 'compile';
         logger.debug(`Processing ${compilationType} request ${msg.guid} for compiler ${msg.compilerId}`);
 
         try {
@@ -179,7 +136,7 @@ async function doOneCompilation(
             }
 
             let result: CompilationResult;
-            if (isCMake) {
+            if (msg.isCMake) {
                 const parsedRequest = {
                     source: msg.source,
                     options: msg.options,
@@ -242,37 +199,16 @@ export function startCompilationWorkerThread(
     const queue = new SqsCompilationWorkerMode(ceProps, awsProps);
     const numThreads = ceProps<number>('compilequeue.worker_threads', 2);
 
-    // Check which queues are configured
-    const hasCompileQueue = ceProps<string>('compilequeue.queue_url', '') !== '';
-    const hasCMakeQueue = ceProps<string>('compilequeue.cmake_queue_url', '') !== '';
-
     logger.info('Starting compilation worker threads', {
-        hasCompileQueue,
-        hasCMakeQueue,
         numThreads,
     });
 
-    // Start worker threads for regular compilation
-    if (hasCompileQueue) {
-        logger.info(`Starting ${numThreads} regular compilation worker threads`);
-        for (let i = 0; i < numThreads; i++) {
-            const doCompilationWork = async () => {
-                await doOneCompilation(queue, compilationEnvironment, false);
-                setTimeout(doCompilationWork, 100);
-            };
-            setTimeout(doCompilationWork, 1500 + i * 30);
-        }
-    }
-
-    // Start worker threads for CMake compilation
-    if (hasCMakeQueue) {
-        logger.info(`Starting ${numThreads} CMake compilation worker threads`);
-        for (let i = 0; i < numThreads; i++) {
-            const doCMakeWork = async () => {
-                await doOneCompilation(queue, compilationEnvironment, true);
-                setTimeout(doCMakeWork, 100);
-            };
-            setTimeout(doCMakeWork, 1600 + i * 30);
-        }
+    logger.info(`Starting ${numThreads} compilation worker threads`);
+    for (let i = 0; i < numThreads; i++) {
+        const doCompilationWork = async () => {
+            await doOneCompilation(queue, compilationEnvironment);
+            setTimeout(doCompilationWork, 100);
+        };
+        setTimeout(doCompilationWork, 1500 + i * 30);
     }
 }
