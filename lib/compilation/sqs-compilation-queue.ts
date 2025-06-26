@@ -198,16 +198,18 @@ export function startCompilationWorkerThread(
 ) {
     const queue = new SqsCompilationWorkerMode(ceProps, awsProps);
     const numThreads = ceProps<number>('compilequeue.worker_threads', 2);
+    const pollIntervalMs = ceProps<number>('compilequeue.poll_interval_ms', 50);
 
     logger.info('Starting compilation worker threads', {
         numThreads,
+        pollIntervalMs,
     });
 
-    logger.info(`Starting ${numThreads} compilation worker threads`);
+    logger.info(`Starting ${numThreads} compilation worker threads with ${pollIntervalMs}ms poll interval`);
     for (let i = 0; i < numThreads; i++) {
         const doCompilationWork = async () => {
             await doOneCompilation(queue, compilationEnvironment);
-            setTimeout(doCompilationWork, 100);
+            setTimeout(doCompilationWork, pollIntervalMs);
         };
         setTimeout(doCompilationWork, 1500 + i * 30);
     }

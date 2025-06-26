@@ -73,6 +73,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
   - `compilequeue.queue_url`: SQS queue URL for compilation requests (both regular and CMake)
   - `compilequeue.events_url`: WebSocket URL for sending compilation results
   - `compilequeue.worker_threads=2`: Number of concurrent worker threads
+  - `compilequeue.poll_interval_ms=50`: Polling interval in milliseconds for checking SQS queue (default: 50ms)
 - **Implementation**: Located in `/lib/compilation/sqs-compilation-queue.ts`
 - **Queue Architecture**: Uses single AWS SQS FIFO queue for reliable message delivery, messages contain isCMake flag to distinguish compilation types
 - **Result Delivery**: Uses WebSocket-based communication via existing `EventsWsSender` infrastructure
