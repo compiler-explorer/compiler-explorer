@@ -67,6 +67,7 @@ export class SqsCompilationWorkerMode extends SqsCompilationQueueBase {
             return await this.sqs.receiveMessage({
                 QueueUrl: url,
                 MaxNumberOfMessages: 1,
+                WaitTimeSeconds: 20, // Long polling - wait up to 20 seconds for a message
             });
         } catch (e) {
             logger.error(`Error retrieving compilation message from queue with URL: ${url}`);
@@ -206,9 +207,21 @@ export function startCompilationWorkerThread(
     });
 
     logger.info(`Starting ${numThreads} compilation worker threads with ${pollIntervalMs}ms poll interval`);
+
+    // Note: With WaitTimeSeconds=20, the receiveMessage call will wait up to 20 seconds
+    // for a message to arrive. This means the actual response time is:
+    // - Immediate when messages are available (< 100ms)
+    // - Up to 20 seconds when queue is empty (cost-effective)
+    // The pollIntervalMs only applies between successful message processing or errors.
+
     for (let i = 0; i < numThreads; i++) {
         const doCompilationWork = async () => {
-            await doOneCompilation(queue, compilationEnvironment);
+            try {
+                await doOneCompilation(queue, compilationEnvironment);
+            } catch (error) {
+                logger.error('Error in compilation worker thread:', error);
+            }
+            // Always reschedule, even after errors
             setTimeout(doCompilationWork, pollIntervalMs);
         };
         setTimeout(doCompilationWork, 1500 + i * 30);
