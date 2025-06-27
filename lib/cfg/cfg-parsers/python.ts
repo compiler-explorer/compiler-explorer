@@ -36,6 +36,9 @@ export class PythonCFGParser extends BaseCFGParser {
     }
 
     override isBasicBlockEnd(inst: string, prevInst: string) {
+        if (inst.includes('>>'))
+            // jmp target
+            return true;
         // Probably applicable to non-python CFGs too:
         return this.instructionSetInfo.getInstructionType(prevInst) !== InstructionType.notRetInst;
     }
@@ -45,7 +48,11 @@ export class PythonCFGParser extends BaseCFGParser {
         // replace 'Disassembly of' with 'Function #<idx>'
         const res: ResultLine[] = [];
         let i = 0;
-        while (i < bytecode.length && !bytecode[i].text.startsWith('Disassembly of')) {
+        while (
+            i < bytecode.length &&
+            !bytecode[i].text.startsWith('Disassembly of') &&
+            !bytecode[i].text.startsWith('Function #')
+        ) {
             i++;
         }
 
@@ -70,12 +77,17 @@ export class PythonCFGParser extends BaseCFGParser {
 
     //'  6     >>   22 LOAD_FAST                0 (num):'   ==> '22'
     //'  4          12 LOAD_FAST                0 (num):'   ==> '12'
+    //'        >>  140 FOR_ITER                98 (to 340)' ==> 140
     override getBbId(firstInst: string): string {
-        return firstInst.match(/^\s*\d+\s+>?>?\s+(\d+)/)?.[1] ?? '';
+        return firstInst.match(/^\s*(\d+)?\s+>?>?\s+(\d+)/)?.[2] ?? '';
     }
 
     override getBbFirstInstIdx(firstLine: number) {
         return firstLine;
+    }
+
+    override extractNodeIdFromInst(inst: string) {
+        return this.getBbId(inst);
     }
 
     override extractAltJmpTargetName(asmArr: AssemblyLine[], bbIdx: number, arrBB: CanonicalBB[]): string {

@@ -28,7 +28,7 @@ import path from 'node:path';
 
 import {describe, expect, it} from 'vitest';
 
-import * as cfg from '../lib/cfg/cfg.js';
+import {generateStructure} from '../lib/cfg/cfg.js';
 
 import {CompilerInfo} from '../types/compiler.interfaces.js';
 import {makeFakeCompilerInfo, resolvePathFromTestRoot} from './utils.js';
@@ -41,7 +41,7 @@ async function DoCfgTest(cfgArg, filename, isLlvmIr = false, compilerInfo?: Comp
             version: cfgArg,
         });
     }
-    const structure = cfg.generateStructure(compilerInfo, contents.asm, isLlvmIr);
+    const structure = generateStructure(compilerInfo, contents.asm, isLlvmIr);
     expect(structure).toEqual(contents.cfg);
 }
 

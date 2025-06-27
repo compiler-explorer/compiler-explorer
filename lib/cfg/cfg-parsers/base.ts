@@ -191,6 +191,10 @@ export class BaseCFGParser {
         return inst.match(/\.L\d+/) + ':';
     }
 
+    protected extractNodeIdFromInst(inst: string) {
+        return inst;
+    }
+
     protected extractAltJmpTargetName(asmArr: AssemblyLine[], bbIdx: number, arrBB: CanonicalBB[]): string {
         const hasName = (asmArr: AssemblyLine[], cbb: CanonicalBB) => {
             const asm = asmArr[cbb.end];
@@ -299,7 +303,7 @@ export class BaseCFGParser {
                     //note : asmArr[x.end] expected to be .L*:(name of a basic block)
                     //       this .L*: has to be exactly after the last instruction in the current canonical basic block
                     if (asmArr[x.end]) {
-                        const targetNode = asmArr[x.end].text;
+                        const targetNode = this.extractNodeIdFromInst(asmArr[x.end].text);
                         edges.push(setEdge(x.nameId, targetNode, 'grey'));
                     }
                     break;

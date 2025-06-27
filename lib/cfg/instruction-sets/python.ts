@@ -37,7 +37,7 @@ export class PythonInstructionSetInfo extends BaseInstructionSetInfo {
     //   print([opcode.opname[op] for op in dis.hasjump])
 
     static conditionalJumps = new RegExp(
-        ['POP_JUMP_IF_FALSE', 'POP_JUMP_IF_NONE', 'POP_JUMP_IF_NOT_NONE', 'POP_JUMP_IF_TRUE', 'FOR_ITER'].join('|'),
+        ['POP_JUMP_IF_FALSE', 'POP_JUMP_IF_NONE', 'POP_JUMP_IF_NOT_NONE', 'POP_JUMP_IF_TRUE'].join('|'),
     );
     static unconditionalJumps = new RegExp(
         ['JUMP_BACKWARD', 'JUMP_BACKWARD_NO_INTERRUPT', 'JUMP_FORWARD', 'JUMP', 'JUMP_NO_INTERRUPT'].join('|'),
