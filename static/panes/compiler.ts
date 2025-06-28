@@ -2484,14 +2484,16 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
             btn.addClass('view-' + toolName);
             btn.data('toolname', toolName);
             if (toolIcon) {
+                const toolIconFull = `${window.staticRoot}/logos/${toolIcon}`;
+                const toolIconDarkFull = toolIconDark ? `${window.staticRoot}/logos/${toolIconDark}` : '';
                 btn.append(
                     '<span class="dropdown-icon fas">' +
                         '<img src="' +
-                        toolIcon +
+                        toolIconFull +
                         '" class="theme-light-only" width="16px" style="max-height: 16px"/>' +
                         '<img src="' +
-                        toolIconDark ||
-                        toolIcon + '" class="theme-dark-only" width="16px" style="max-height: 16px"/>' + '</span>',
+                        toolIconDarkFull ||
+                        toolIconFull + '" class="theme-dark-only" width="16px" style="max-height: 16px"/>' + '</span>',
                 );
             } else {
                 btn.append("<span class='dropdown-icon fas fa-cog'></span>");

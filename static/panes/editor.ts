@@ -1916,10 +1916,13 @@ export class Editor extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Edit
     }
 
     getSelectizeRenderHtml(language: Language, escapeHtml: typeof escape_html, width: number, height: number): string {
+        const logoFilename = language.logoFilename !== null ? `${window.staticRoot}logos/${language.logoFilename}` : '';
+        const logoFilenameDark =
+            language.logoFilenameDark !== null ? `${window.staticRoot}logos/${language.logoFilenameDark}` : '';
         return `
         <div class='d-flex' style='align-items: center'>
           <div class='me-1 d-flex' style='align-items: center'>
-             <img src='${window.staticRoot}logos/${language.logoFilename}'
+             <img src='${logoFilename}'
                   alt='Logo for ${escapeHtml(language.name)}'
                   class='${language.logoFilenameDark ? 'theme-light-only' : ''}'
                   width='${width}px'
@@ -1927,7 +1930,7 @@ export class Editor extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Edit
              <!-- Dark mode logo, if it exists -->
              ${
                  language.logoFilenameDark
-                     ? `<img src='${window.staticRoot}logos/${language.logoFilenameDark}'
+                     ? `<img src='${logoFilenameDark}'
                      alt='Logo for ${escapeHtml(language.name)}'
                      class='theme-dark-only'
                      width='${width}px'
