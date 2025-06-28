@@ -32,6 +32,7 @@ import * as BootstrapUtils from '../bootstrap-utils.js';
 import {localStorage} from '../local.js';
 import {Settings} from '../settings.js';
 import * as url from '../url.js';
+import {getStaticImage} from '../utils';
 import {Alert} from './alert.js';
 
 class SiteTemplatesWidget {
@@ -94,7 +95,7 @@ class SiteTemplatesWidget {
         return theme;
     }
     getAsset(name: string) {
-        return `${window.staticRoot}template_screenshots/${name}.${this.getCurrentTheme()}.png`;
+        return getStaticImage(`${name}.${this.getCurrentTheme()}.png`, 'template_screenshots');
     }
     getDefaultAsset() {
         return 'https://placehold.jp/30/4b4b4b/ffffff/1000x800.png?text=we%27ll+support+screenshot+generation+for+user+templates+some+day';
