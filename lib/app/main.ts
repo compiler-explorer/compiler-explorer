@@ -104,7 +104,7 @@ export async function initialiseApplication(options: ApplicationOptions): Promis
         staticRoot: config.staticRoot,
         httpRoot: config.httpRoot,
         sentrySlowRequestMs: ceProps('sentrySlowRequestMs', 0),
-        distPath: distPath,
+        manifestPath: distPath,
         extraBodyClass: config.extraBodyClass,
         maxUploadSize: config.maxUploadSize,
     };

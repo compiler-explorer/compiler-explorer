@@ -29,7 +29,7 @@ import {describe, expect, it} from 'vitest';
 
 import {languages} from '../lib/languages.js';
 
-const img_dir = path.resolve('views/resources/logos');
+const img_dir = path.resolve('public/logos');
 
 function checkImage(logo: string) {
     const logoPath = path.join(img_dir, logo);
@@ -39,12 +39,12 @@ function checkImage(logo: string) {
 describe('Language logo check', () => {
     for (const langId in languages) {
         const language = languages[langId];
-        if (language.logoUrl !== null) {
-            it(`check if default ${language.name} logo exists`, () => checkImage(language.logoUrl));
+        if (language.logoFilename !== null) {
+            it(`check if default ${language.name} logo exists`, () => checkImage(language.logoFilename));
         }
 
-        if (language.logoUrlDark !== null) {
-            it(`check if dark ${language.name} logo exists`, () => checkImage(language.logoUrlDark));
+        if (language.logoFilenameDark !== null) {
+            it(`check if dark ${language.name} logo exists`, () => checkImage(language.logoFilenameDark));
         }
     }
 });

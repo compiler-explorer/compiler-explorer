@@ -1,7 +1,7 @@
 [![Build Status](https://github.com/compiler-explorer/compiler-explorer/workflows/Compiler%20Explorer/badge.svg)](https://github.com/compiler-explorer/compiler-explorer/actions?query=workflow%3A%22Compiler+Explorer%22)
 [![codecov](https://codecov.io/gh/compiler-explorer/compiler-explorer/branch/main/graph/badge.svg)](https://codecov.io/gh/compiler-explorer/compiler-explorer)
 
-[![logo](views/resources/logos/assembly.png)](https://godbolt.org/)
+[![logo](public/logos/assembly.png)](https://godbolt.org/)
 
 # Compiler Explorer
 

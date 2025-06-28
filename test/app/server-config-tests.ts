@@ -52,12 +52,6 @@ vi.mock('../../lib/logger.js', async () => {
     };
 });
 
-vi.mock('serve-favicon', () => {
-    return {
-        default: vi.fn(),
-    };
-});
-
 vi.mock('../../lib/utils.js', async () => {
     const actual = await vi.importActual('../../lib/utils.js');
     return {

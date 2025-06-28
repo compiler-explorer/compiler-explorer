@@ -37,7 +37,7 @@ export interface ServerOptions {
     staticRoot: string;
     httpRoot: string;
     sentrySlowRequestMs: number;
-    distPath: string;
+    manifestPath: string;
     extraBodyClass: string;
     maxUploadSize: string;
 }
@@ -57,6 +57,7 @@ export interface RenderConfig extends PugOptions {
     readOnly?: boolean;
     config?: GoldenLayoutRootStruct;
     metadata?: ShortLinkMetaData;
+    faviconFilename: string;
     storedStateId?: string | false;
     require?: PugRequireHandler;
     sponsors?: Sponsors;

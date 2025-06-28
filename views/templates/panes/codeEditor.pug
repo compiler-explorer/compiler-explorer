@@ -24,12 +24,10 @@ mixin newPaneButton(classId, text, title, label, icon)
     if thirdPartyIntegrationEnabled
       .btn-group.btn-group-sm(role="group" aria-label="External Sites")
         a.btn.btn-sm.btn-light.open-in-cppinsights(href="https://cppinsights.io/" target="_blank" title="Open in Cppinsights" aria-label="Open in Cppinsights")
-          svg(height="16" width="16")
-            include ../../resources/cppinsights.svg
+          img(height="16" width="16" src=staticRoot + "cppinsights.svg" alt="Cppinsights logo")
           span.hideable CppInsights
         a.btn.btn-sm.btn-light.open-in-quickbench(href="http://quick-bench.com/" target="_blank" title="Open in Quick-bench" aria-label="Open in Quick-bench")
-          svg(height="16" width="16")
-            include ../../resources/quickbench.svg
+          img(height="16" width="16" src=staticRoot + "quickbench.svg" alt="Quick-bench logo")
           span.hideable Quick-bench
     .btn-group.btn-group-sm.mx-auto
       button.btn.btn-sm.btn-outline-info.ctrlSNothing(disabled=true style="display: none")

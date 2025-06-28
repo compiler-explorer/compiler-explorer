@@ -37,15 +37,10 @@ import {Alert} from './alert.js';
 class SiteTemplatesWidget {
     private readonly modal: JQuery;
     private readonly img: HTMLImageElement;
-    private readonly siteTemplateScreenshots: any;
     private readonly alertSystem: Alert;
     private templatesConfig: null | SiteTemplateResponse = null;
     private populated = false;
-    constructor(
-        siteTemplateScreenshots: any,
-        private readonly layout: GoldenLayout,
-    ) {
-        this.siteTemplateScreenshots = siteTemplateScreenshots;
+    constructor(private readonly layout: GoldenLayout) {
         this.modal = $('#site-template-loader');
         const siteTemplatePreview = document.getElementById('site-template-preview');
         if (siteTemplatePreview === null) {
@@ -99,12 +94,15 @@ class SiteTemplatesWidget {
         return theme;
     }
     getAsset(name: string) {
-        return this.siteTemplateScreenshots(`./${name}.${this.getCurrentTheme()}.png`);
+        return `${window.staticRoot}template_screenshots/${name}.${this.getCurrentTheme()}.png`;
+    }
+    getDefaultAsset() {
+        return 'https://placehold.jp/30/4b4b4b/ffffff/1000x800.png?text=we%27ll+support+screenshot+generation+for+user+templates+some+day';
     }
     async setDefaultPreview() {
         const templatesConfig = await this.getTemplates(); // by the time this is called it will be cached
         const first = Object.entries(templatesConfig.templates)[0][0]; // preview the first entry
-        this.img.src = this.getAsset(first);
+        this.img.src = this.getAsset(first) ?? this.getDefaultAsset();
     }
     populateUserTemplates() {
         const userTemplates: Record<string, UserSiteTemplate> = JSON.parse(localStorage.get('userSiteTemplates', '{}'));
@@ -149,13 +147,8 @@ class SiteTemplatesWidget {
                 'mouseover',
                 () => {
                     const name = titleDivCopy.getAttribute('data-name');
-                    this.img.src = '';
-                    if (name) {
-                        this.img.src = this.getAsset(name);
-                    } else {
-                        this.img.src =
-                            'https://placehold.jp/30/4b4b4b/ffffff/1000x800.png?text=we%27ll+support+screenshot+generation+for+user+templates+some+day';
-                    }
+                    this.img.src =
+                        name !== null ? (this.getAsset(name) ?? this.getDefaultAsset()) : this.getDefaultAsset();
                 },
                 false,
             );
@@ -183,8 +176,8 @@ class SiteTemplatesWidget {
     }
 }
 
-export function setupSiteTemplateWidgetButton(siteTemplateScreenshots: any, layout: GoldenLayout) {
-    const siteTemplateModal = new SiteTemplatesWidget(siteTemplateScreenshots, layout);
+export function setupSiteTemplateWidgetButton(layout: GoldenLayout) {
+    const siteTemplateModal = new SiteTemplatesWidget(layout);
     $('#loadSiteTemplate').on('click', () => {
         siteTemplateModal.show();
     });
