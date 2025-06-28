@@ -83,6 +83,7 @@ import {ICompilerShared} from '../compiler-shared.interfaces.js';
 import {CompilerShared} from '../compiler-shared.js';
 import {SourceAndFiles} from '../download-service.js';
 import {SentryCapture} from '../sentry.js';
+import {getStaticImage} from '../utils.js';
 import {CompilerVersionInfo, setCompilerVersionPopoverForPane} from '../widgets/compiler-version-info.js';
 
 type CachedOpcode = {
@@ -2482,18 +2483,18 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
         const addTool = (toolName: string, title: string, toolIcon?: string, toolIconDark?: string) => {
             const btn = $("<button class='dropdown-item btn btn-light btn-sm'>");
             btn.addClass('view-' + toolName);
-            btn.data('toolname', toolName);
             if (toolIcon) {
-                const toolIconFull = `${window.staticRoot}logos/${toolIcon}`;
-                const toolIconDarkFull = toolIconDark ? `${window.staticRoot}logos/${toolIconDark}` : '';
+                const toolIconFull = getStaticImage(toolIcon, 'logos');
+                // If there is a dark icon, we use it, otherwise we use the light icon
+                const toolIconDarkFull =
+                    toolIconDark !== undefined ? getStaticImage(toolIconDark, 'logos') : toolIconFull;
                 btn.append(
-                    '<span class="dropdown-icon fas">' +
-                        '<img src="' +
-                        toolIconFull +
-                        '" class="theme-light-only" width="16px" style="max-height: 16px"/>' +
-                        '<img src="' +
-                        toolIconDarkFull ||
-                        toolIconFull + '" class="theme-dark-only" width="16px" style="max-height: 16px"/>' + '</span>',
+                    `
+                    <span class="dropdown-icon fas">
+                      <img src="${toolIconFull}" class="theme-light-only" width="16px" style="max-height: 16px"/>
+                      <img src="${toolIconDarkFull}" class="theme-dark-only" width="16px" style="max-height: 16px"/>
+                    </span>
+                    `,
                 );
             } else {
                 btn.append("<span class='dropdown-icon fas fa-cog'></span>");

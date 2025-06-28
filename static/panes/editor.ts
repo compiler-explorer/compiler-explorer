@@ -57,6 +57,7 @@ import {EditorState} from './editor.interfaces.js';
 import {MonacoPaneState, PaneState} from './pane.interfaces.js';
 import {MonacoPane} from './pane.js';
 import IModelDeltaDecoration = editor.IModelDeltaDecoration;
+import {getStaticImage} from '../utils';
 
 const loadSave = new loadSaveLib.LoadSave();
 const languages = options.languages;
@@ -1916,28 +1917,31 @@ export class Editor extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Edit
     }
 
     getSelectizeRenderHtml(language: Language, escapeHtml: typeof escape_html, width: number, height: number): string {
-        const logoFilename = language.logoFilename !== null ? `${window.staticRoot}logos/${language.logoFilename}` : '';
-        const logoFilenameDark =
-            language.logoFilenameDark !== null ? `${window.staticRoot}logos/${language.logoFilenameDark}` : '';
         return `
         <div class='d-flex' style='align-items: center'>
-          <div class='me-1 d-flex' style='align-items: center'>
-             <img src='${logoFilename}'
-                  alt='Logo for ${escapeHtml(language.name)}'
-                  class='${language.logoFilenameDark ? 'theme-light-only' : ''}'
-                  width='${width}px'
-                  height='${height}px' />
-             <!-- Dark mode logo, if it exists -->
-             ${
-                 language.logoFilenameDark
-                     ? `<img src='${logoFilenameDark}'
+          <div class='me-1 d-flex' style='align-items: center; width: ${width}px; height: ${height}px'>
+            ${
+                language.logoFilename !== null
+                    ? `
+                <img src='${getStaticImage(language.logoFilename, 'logos')}'
+                     alt='Logo for ${escapeHtml(language.name)}'
+                     class='${language.logoFilenameDark ? 'theme-light-only' : ''}'
+                     width='${width}px'
+                     height='${height}px' />
+                `
+                    : ''
+            }
+            ${
+                language.logoFilenameDark !== null
+                    ? `
+                <img src='${getStaticImage(language.logoFilenameDark, 'logos')}'
                      alt='Logo for ${escapeHtml(language.name)}'
                      class='theme-dark-only'
                      width='${width}px'
                      height='${height}px' />
                `
-                     : ''
-             }
+                    : ''
+            }
           </div>
           <div title='${language.tooltip ?? ''}'>
             ${escapeHtml(language.name)}
