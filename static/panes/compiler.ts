@@ -2484,8 +2484,8 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
             btn.addClass('view-' + toolName);
             btn.data('toolname', toolName);
             if (toolIcon) {
-                const toolIconFull = `${window.staticRoot}/logos/${toolIcon}`;
-                const toolIconDarkFull = toolIconDark ? `${window.staticRoot}/logos/${toolIconDark}` : '';
+                const toolIconFull = `${window.staticRoot}logos/${toolIcon}`;
+                const toolIconDarkFull = toolIconDark ? `${window.staticRoot}logos/${toolIconDark}` : '';
                 btn.append(
                     '<span class="dropdown-icon fas">' +
                         '<img src="' +
