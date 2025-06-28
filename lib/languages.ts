@@ -59,7 +59,7 @@ const definitions: Record<LanguageKey, LanguageDefinition> = {
         monaco: 'cppp',
         extensions: ['.cpp', '.cxx', '.h', '.hpp', '.hxx', '.c', '.cc', '.ixx'],
         alias: ['gcc', 'cpp'],
-        logoFilename: 'c++.svg',
+        logoFilename: 'cpp.svg',
         logoFilenameDark: null,
         formatter: 'clangformat',
         previewFilter: /^\s*#include/,
@@ -186,7 +186,7 @@ const definitions: Record<LanguageKey, LanguageDefinition> = {
         monaco: 'cppp',
         extensions: ['.cpp', '.h'],
         alias: [],
-        logoFilename: 'c++.svg',
+        logoFilename: 'cpp.svg',
         logoFilenameDark: null,
         formatter: 'clangformat',
         previewFilter: /^\s*#include/,
@@ -199,7 +199,7 @@ const definitions: Record<LanguageKey, LanguageDefinition> = {
         extensions: ['.cpp', '.cxx', '.h', '.hpp', '.hxx', '.c'],
         alias: [],
         previewFilter: /^\s*#include/,
-        logoFilename: 'c++.svg', // TODO: Find a better alternative
+        logoFilename: 'cpp.svg', // TODO: Find a better alternative
         logoFilenameDark: null,
         formatter: null,
         monacoDisassembly: null,
@@ -288,7 +288,7 @@ const definitions: Record<LanguageKey, LanguageDefinition> = {
         monaco: 'cppp',
         extensions: ['.cpp', '.cxx', '.h', '.hpp', '.hxx', '.c'],
         alias: [],
-        logoFilename: 'c++.svg',
+        logoFilename: 'cpp.svg',
         logoFilenameDark: null,
         formatter: null,
         previewFilter: /^\s*#include/,
@@ -300,7 +300,7 @@ const definitions: Record<LanguageKey, LanguageDefinition> = {
         monaco: 'cppx-blue',
         extensions: ['.blue', '.cpp', '.cxx', '.h', '.hpp', '.hxx', '.c'],
         alias: [],
-        logoFilename: 'c++.svg', // TODO: Find a better alternative
+        logoFilename: 'cpp.svg', // TODO: Find a better alternative
         logoFilenameDark: null,
         formatter: null,
         previewFilter: null,
@@ -311,7 +311,7 @@ const definitions: Record<LanguageKey, LanguageDefinition> = {
         monaco: 'cppx-gold',
         extensions: ['.usyntax', '.cpp', '.cxx', '.h', '.hpp', '.hxx', '.c'],
         alias: [],
-        logoFilename: 'c++.svg', // TODO: Find a better alternative
+        logoFilename: 'cpp.svg', // TODO: Find a better alternative
         logoFilenameDark: null,
         formatter: null,
         previewFilter: null,
@@ -323,7 +323,7 @@ const definitions: Record<LanguageKey, LanguageDefinition> = {
         monaco: 'cpp2-cppfront',
         extensions: ['.cpp2'],
         alias: [],
-        logoFilename: 'c++.svg', // TODO: Find a better alternative
+        logoFilename: 'cpp.svg', // TODO: Find a better alternative
         logoFilenameDark: null,
         formatter: null,
         previewFilter: null,
