@@ -2483,6 +2483,7 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
         const addTool = (toolName: string, title: string, toolIcon?: string, toolIconDark?: string) => {
             const btn = $("<button class='dropdown-item btn btn-light btn-sm'>");
             btn.addClass('view-' + toolName);
+            btn.data('toolname', toolName);
             if (toolIcon) {
                 const toolIconFull = getStaticImage(toolIcon, 'logos');
                 // If there is a dark icon, we use it, otherwise we use the light icon
