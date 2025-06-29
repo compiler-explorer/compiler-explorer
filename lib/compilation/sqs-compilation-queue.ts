@@ -82,10 +82,49 @@ export class SqsCompilationWorkerMode extends SqsCompilationQueueBase {
         if (queued_messages.Messages && queued_messages.Messages.length === 1) {
             const queued_message = queued_messages.Messages[0];
 
+            logger.info('=== SQS MESSAGE STRUCTURE DEBUG ===');
+            logger.info(`Full SQS response keys: ${Object.keys(queued_messages)}`);
+            logger.info(`Message count: ${queued_messages.Messages.length}`);
+            logger.info(`Message keys: ${Object.keys(queued_message)}`);
+            logger.info(`MessageId: ${queued_message.MessageId}`);
+            logger.info(`ReceiptHandle exists: ${!!queued_message.ReceiptHandle}`);
+            logger.info(`Body exists: ${!!queued_message.Body}`);
+            logger.info('=== END SQS MESSAGE STRUCTURE DEBUG ===');
+
             try {
                 if (queued_message.Body) {
                     const json = queued_message.Body;
-                    return JSON.parse(json) as RemoteCompilationRequest;
+                    logger.info('=== SQS PARSING DEBUG START ===');
+                    logger.info(`Raw queued_message keys: ${Object.keys(queued_message)}`);
+                    logger.info(`Body type: ${typeof json}, constructor: ${json.constructor.name}`);
+                    logger.info(`Body length: ${json.length}`);
+                    logger.info(`Body first 300 chars: ${json.substring(0, 300)}`);
+
+                    let parsed;
+                    try {
+                        parsed = JSON.parse(json);
+                        logger.info(`Parse SUCCESS - type: ${typeof parsed}, constructor: ${parsed.constructor.name}`);
+                        logger.info(`Parsed keys: ${Object.keys(parsed)}`);
+                        logger.info(`Has guid: ${!!parsed.guid}, guid value: ${parsed.guid}`);
+                        logger.info(`Has options: ${!!parsed.options}, options type: ${typeof parsed.options}`);
+                        if (parsed.options) {
+                            logger.info(
+                                `Options is array: ${Array.isArray(parsed.options)}, length: ${parsed.options.length}`,
+                            );
+                        }
+                    } catch (parseError) {
+                        logger.error(
+                            `JSON.parse FAILED: ${parseError instanceof Error ? parseError.message : String(parseError)}`,
+                        );
+                        logger.info('Attempting to log raw body as object properties:');
+                        for (let i = 0; i < Math.min(10, json.length); i++) {
+                            logger.info(`  json[${i}] = "${json[i]}"`);
+                        }
+                        throw parseError;
+                    }
+
+                    logger.info('=== SQS PARSING DEBUG END ===');
+                    return parsed as RemoteCompilationRequest;
                 }
                 return undefined;
             } finally {
@@ -125,6 +164,41 @@ async function sendCompilationResultViaWebsocket(
 
 async function doOneCompilation(queue: SqsCompilationWorkerMode, compilationEnvironment: CompilationEnvironment) {
     const msg = await queue.pop();
+
+    logger.info('=== DOONECOMPILATION DEBUG START ===');
+    logger.info(`msg after pop(): type=${typeof msg}, constructor=${msg?.constructor?.name}`);
+    if (msg) {
+        logger.info(`msg keys: ${Object.keys(msg)}`);
+        logger.info(`msg.guid: type=${typeof msg.guid}, value=${msg.guid}`);
+        logger.info(`msg.options: type=${typeof msg.options}, isArray=${Array.isArray(msg.options)}`);
+        logger.info(`msg.compilerId: type=${typeof msg.compilerId}, value=${msg.compilerId}`);
+
+        // Test accessing properties to see if they work
+        try {
+            const testGuid = msg.guid;
+            const testOptions = msg.options;
+            const testCompilerId = msg.compilerId;
+            logger.info(
+                `Property access test: guid=${testGuid}, options length=${testOptions?.length}, compilerId=${testCompilerId}`,
+            );
+        } catch (propError) {
+            logger.error(
+                `Property access failed: ${propError instanceof Error ? propError.message : String(propError)}`,
+            );
+        }
+
+        // Test JSON.stringify to see what happens
+        try {
+            const stringified = JSON.stringify(msg, null, 2);
+            logger.info(`JSON.stringify test: first 200 chars: ${stringified.substring(0, 200)}`);
+        } catch (stringifyError) {
+            logger.error(
+                `JSON.stringify failed: ${stringifyError instanceof Error ? stringifyError.message : String(stringifyError)}`,
+            );
+        }
+    }
+    logger.info('=== DOONECOMPILATION DEBUG END ===');
+
     if (msg?.guid) {
         const startTime = Date.now();
         const compilationType = msg.isCMake ? 'cmake' : 'compile';
