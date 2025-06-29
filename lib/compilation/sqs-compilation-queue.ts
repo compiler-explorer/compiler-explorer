@@ -27,9 +27,9 @@ import {SQS} from '@aws-sdk/client-sqs';
 import {CompilationResult} from '../../types/compilation/compilation.interfaces.js';
 import {CompilationEnvironment} from '../compilation-env.js';
 import {EventsWsSender} from '../execution/events-websocket.js';
-import {ParsedRequest} from '../handlers/compile.js';
 import {logger} from '../logger.js';
 import {PropertyGetter} from '../properties.interfaces.js';
+import {parseCompilationRequest, sqsMessageToCompilationRequestData} from './compilation-request-parser.js';
 
 export type RemoteCompilationRequest = {
     guid: string;
@@ -185,25 +185,7 @@ export class SqsCompilationWorkerMode extends SqsCompilationQueueBase {
     }
 }
 
-function convertSqsMessageToParsedRequest(msg: RemoteCompilationRequest, compiler: any): ParsedRequest {
-    // The SQS message has fields directly at the top level, but we need to convert to the
-    // format expected by the compile handlers
-
-    return {
-        source: msg.source,
-        options: Array.isArray(msg.options) ? msg.options : [], // Our defensive fix ensures this is an array
-        backendOptions: msg.backendOptions || {},
-        filters: {...compiler.getDefaultFilters(), ...(msg.filters || {})},
-        bypassCache: msg.bypassCache || 0,
-        tools: msg.tools || [],
-        executeParameters: msg.executeParameters || {
-            args: [],
-            stdin: '',
-            runtimeTools: [],
-        },
-        libraries: msg.libraries || [],
-    };
-}
+// Note: This function is now replaced by shared parsing functions in compilation-request-parser.ts
 
 async function sendCompilationResultViaWebsocket(
     compilationEnvironment: CompilationEnvironment,
@@ -279,8 +261,9 @@ async function doOneCompilation(queue: SqsCompilationWorkerMode, compilationEnvi
                 throw new Error(`Compiler with ID ${msg.compilerId} not found for language ${msg.lang}`);
             }
 
-            // Convert SQS message to the proper structure expected by compile handlers
-            const parsedRequest = convertSqsMessageToParsedRequest(msg, compiler);
+            // Convert SQS message to the proper structure using shared parsing functions
+            const requestData = sqsMessageToCompilationRequestData(msg);
+            const parsedRequest = parseCompilationRequest(requestData, compiler);
 
             let result: CompilationResult;
             if (msg.isCMake) {
