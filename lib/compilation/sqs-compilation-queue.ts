@@ -77,7 +77,27 @@ export class SqsCompilationWorkerMode extends SqsCompilationQueueBase {
 
     async pop(): Promise<RemoteCompilationRequest | undefined> {
         const url = this.queue_url;
-        const queued_messages = await this.receiveMsg(url);
+        logger.info('=== SQS POP DEBUG START ===');
+        logger.info(`Queue URL: ${url}`);
+
+        let queued_messages;
+        try {
+            queued_messages = await this.receiveMsg(url);
+            logger.info(`SQS receiveMsg SUCCESS - Response type: ${typeof queued_messages}`);
+            logger.info(`Response keys: ${Object.keys(queued_messages)}`);
+            logger.info(`Has Messages: ${!!queued_messages.Messages}`);
+            if (queued_messages.Messages) {
+                logger.info(`Messages length: ${queued_messages.Messages.length}`);
+            }
+        } catch (receiveError) {
+            logger.error(
+                `SQS receiveMsg FAILED: ${receiveError instanceof Error ? receiveError.message : String(receiveError)}`,
+            );
+            logger.info('=== SQS POP DEBUG END (ERROR) ===');
+            throw receiveError;
+        }
+
+        logger.info('=== SQS POP DEBUG END ===');
 
         if (queued_messages.Messages && queued_messages.Messages.length === 1) {
             const queued_message = queued_messages.Messages[0];
@@ -98,7 +118,8 @@ export class SqsCompilationWorkerMode extends SqsCompilationQueueBase {
                     logger.info(`Raw queued_message keys: ${Object.keys(queued_message)}`);
                     logger.info(`Body type: ${typeof json}, constructor: ${json.constructor.name}`);
                     logger.info(`Body length: ${json.length}`);
-                    logger.info(`Body first 300 chars: ${json.substring(0, 300)}`);
+                    logger.info(`Body first 1000 chars: ${json.substring(0, 1000)}`);
+                    logger.info(`Body last 500 chars: ${json.substring(Math.max(0, json.length - 500))}`);
 
                     let parsed;
                     try {
@@ -124,6 +145,20 @@ export class SqsCompilationWorkerMode extends SqsCompilationQueueBase {
                     }
 
                     logger.info('=== SQS PARSING DEBUG END ===');
+
+                    // Defensive fix: Convert options object to array if needed
+                    if (parsed.options && typeof parsed.options === 'object' && !Array.isArray(parsed.options)) {
+                        logger.warn('Converting options from object to array for compatibility');
+                        // If it's an object with userArguments field, extract that
+                        if (parsed.options.userArguments && typeof parsed.options.userArguments === 'string') {
+                            parsed.options = parsed.options.userArguments.split(' ').filter(Boolean);
+                        } else {
+                            // Otherwise try to extract meaningful values or default to empty array
+                            parsed.options = [];
+                        }
+                        logger.info(`Converted options: ${JSON.stringify(parsed.options)}`);
+                    }
+
                     return parsed as RemoteCompilationRequest;
                 }
                 return undefined;
@@ -135,6 +170,14 @@ export class SqsCompilationWorkerMode extends SqsCompilationQueueBase {
                     });
                 }
             }
+        } else {
+            logger.info('=== NO MESSAGES RECEIVED ===');
+            if (!queued_messages.Messages) {
+                logger.info('No Messages field in response');
+            } else {
+                logger.info(`Messages array length: ${queued_messages.Messages.length}`);
+            }
+            logger.info('=== END NO MESSAGES ===');
         }
 
         return undefined;
@@ -171,6 +214,10 @@ async function doOneCompilation(queue: SqsCompilationWorkerMode, compilationEnvi
         logger.info(`msg keys: ${Object.keys(msg)}`);
         logger.info(`msg.guid: type=${typeof msg.guid}, value=${msg.guid}`);
         logger.info(`msg.options: type=${typeof msg.options}, isArray=${Array.isArray(msg.options)}`);
+        if (msg.options) {
+            logger.info(`msg.options keys: ${Object.keys(msg.options)}`);
+            logger.info(`msg.options content: ${JSON.stringify(msg.options)}`);
+        }
         logger.info(`msg.compilerId: type=${typeof msg.compilerId}, value=${msg.compilerId}`);
 
         // Test accessing properties to see if they work
