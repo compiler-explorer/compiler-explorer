@@ -49,7 +49,7 @@ export class ClangCFGParser extends BaseCFGParser {
         return this.filterTextSection(assembly).map(_.clone).filter(isCode).map(removeComments);
     }
 
-    override extractNodeName(inst: string) {
+    override extractJmpTargetName(inst: string) {
         return inst.match(/\.LBB\d+_\d+/) + ':';
     }
 }

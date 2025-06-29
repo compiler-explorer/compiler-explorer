@@ -40,7 +40,7 @@ export class GccCFGParser extends BaseCFGParser {
         return this.filterTextSection(assembly).map(_.clone).filter(isCode);
     }
 
-    override extractNodeName(inst: string) {
+    override extractJmpTargetName(inst: string) {
         return inst.match(/\.L\d+/) + ':';
     }
 }

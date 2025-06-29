@@ -1,0 +1,647 @@
+{
+    "asm": [
+        {
+            "text": "Function #0",
+            "source": {
+                "line": null,
+                "file": null
+            }
+        },
+        {
+            "text": "  2           0 RESUME                   0",
+            "source": {
+                "line": 2,
+                "file": null
+            }
+        },
+        {
+            "text": "  3           2 LOAD_GLOBAL              0 (os)",
+            "source": {
+                "line": 3,
+                "file": null
+            }
+        },
+        {
+            "text": "             12 LOAD_ATTR                2 (path)",
+            "source": {
+                "line": 3,
+                "file": null
+            }
+        },
+        {
+            "text": "             32 LOAD_ATTR                5 (NULL|self + exists)",
+            "source": {
+                "line": 3,
+                "file": null
+            }
+        },
+        {
+            "text": "             52 LOAD_CONST               1 ('power/.complete-precache')",
+            "source": {
+                "line": 3,
+                "file": null
+            }
+        },
+        {
+            "text": "             54 CALL                     1",
+            "source": {
+                "line": 3,
+                "file": null
+            }
+        },
+        {
+            "text": "             62 POP_JUMP_IF_TRUE        10 (to 84)",
+            "source": {
+                "line": 3,
+                "file": null
+            }
+        },
+        {
+            "text": "  4          64 LOAD_GLOBAL              7 (NULL + precache)",
+            "source": {
+                "line": 4,
+                "file": null
+            }
+        },
+        {
+            "text": "             74 CALL                     0",
+            "source": {
+                "line": 4,
+                "file": null
+            }
+        },
+        {
+            "text": "             82 POP_TOP",
+            "source": {
+                "line": 4,
+                "file": null
+            }
+        },
+        {
+            "text": "  6     >>   84 LOAD_GLOBAL              9 (NULL + Path)",
+            "source": {
+                "line": 6,
+                "file": null
+            }
+        },
+        {
+            "text": "             94 LOAD_CONST               2 ('power')",
+            "source": {
+                "line": 6,
+                "file": null
+            }
+        },
+        {
+            "text": "             96 CALL                     1",
+            "source": {
+                "line": 6,
+                "file": null
+            }
+        },
+        {
+            "text": "            104 STORE_FAST               0 (path)",
+            "source": {
+                "line": 6,
+                "file": null
+            }
+        },
+        {
+            "text": "  8         106 LOAD_FAST                0 (path)",
+            "source": {
+                "line": 8,
+                "file": null
+            }
+        },
+        {
+            "text": "            108 LOAD_ATTR               11 (NULL|self + glob)",
+            "source": {
+                "line": 8,
+                "file": null
+            }
+        },
+        {
+            "text": "            128 LOAD_CONST               3 ('*.html')",
+            "source": {
+                "line": 8,
+                "file": null
+            }
+        },
+        {
+            "text": "            130 CALL                     1",
+            "source": {
+                "line": 8,
+                "file": null
+            }
+        },
+        {
+            "text": "            138 GET_ITER",
+            "source": {
+                "line": 8,
+                "file": null
+            }
+        },
+        {
+            "text": "        >>  140 FOR_ITER                98 (to 340)",
+            "source": {
+                "line": 8,
+                "file": null
+            }
+        },
+        {
+            "text": "            144 STORE_FAST               1 (page)",
+            "source": {
+                "line": 8,
+                "file": null
+            }
+        },
+        {
+            "text": "  9         146 LOAD_FAST                1 (page)",
+            "source": {
+                "line": 9,
+                "file": null
+            }
+        },
+        {
+            "text": "            148 LOAD_ATTR               13 (NULL|self + absolute)",
+            "source": {
+                "line": 9,
+                "file": null
+            }
+        },
+        {
+            "text": "            168 CALL                     0",
+            "source": {
+                "line": 9,
+                "file": null
+            }
+        },
+        {
+            "text": "            176 LOAD_ATTR               15 (NULL|self + open)",
+            "source": {
+                "line": 9,
+                "file": null
+            }
+        },
+        {
+            "text": "            196 LOAD_CONST               4 ('r')",
+            "source": {
+                "line": 9,
+                "file": null
+            }
+        },
+        {
+            "text": "            198 CALL                     1",
+            "source": {
+                "line": 9,
+                "file": null
+            }
+        },
+        {
+            "text": "            206 BEFORE_WITH",
+            "source": {
+                "line": 9,
+                "file": null
+            }
+        },
+        {
+            "text": "            208 STORE_FAST               2 (fp)",
+            "source": {
+                "line": 9,
+                "file": null
+            }
+        },
+        {
+            "text": " 10         210 LOAD_GLOBAL             17 (NULL + BeautifulSoup)",
+            "source": {
+                "line": 10,
+                "file": null
+            }
+        },
+        {
+            "text": "            220 LOAD_FAST                2 (fp)",
+            "source": {
+                "line": 10,
+                "file": null
+            }
+        },
+        {
+            "text": "            222 LOAD_ATTR               19 (NULL|self + read)",
+            "source": {
+                "line": 10,
+                "file": null
+            }
+        },
+        {
+            "text": "            242 CALL                     0",
+            "source": {
+                "line": 10,
+                "file": null
+            }
+        },
+        {
+            "text": "            250 LOAD_CONST               5 ('html.parser')",
+            "source": {
+                "line": 10,
+                "file": null
+            }
+        },
+        {
+            "text": "            252 CALL                     2",
+            "source": {
+                "line": 10,
+                "file": null
+            }
+        },
+        {
+            "text": "            260 STORE_FAST               3 (soup)",
+            "source": {
+                "line": 10,
+                "file": null
+            }
+        },
+        {
+            "text": " 11         262 LOAD_GLOBAL             21 (NULL + _cleanup)",
+            "source": {
+                "line": 11,
+                "file": null
+            }
+        },
+        {
+            "text": "            272 LOAD_FAST                3 (soup)",
+            "source": {
+                "line": 11,
+                "file": null
+            }
+        },
+        {
+            "text": "            274 CALL                     1",
+            "source": {
+                "line": 11,
+                "file": null
+            }
+        },
+        {
+            "text": "            282 STORE_FAST               4 (clean_soup)",
+            "source": {
+                "line": 11,
+                "file": null
+            }
+        },
+        {
+            "text": " 12         284 LOAD_FAST                4 (clean_soup)",
+            "source": {
+                "line": 12,
+                "file": null
+            }
+        },
+        {
+            "text": "            286 GET_ITER",
+            "source": {
+                "line": 12,
+                "file": null
+            }
+        },
+        {
+            "text": "        >>  288 FOR_ITER                13 (to 318)",
+            "source": {
+                "line": 12,
+                "file": null
+            }
+        },
+        {
+            "text": "            292 STORE_FAST               5 (tag)",
+            "source": {
+                "line": 12,
+                "file": null
+            }
+        },
+        {
+            "text": " 13         294 LOAD_GLOBAL             23 (NULL + print)",
+            "source": {
+                "line": 13,
+                "file": null
+            }
+        },
+        {
+            "text": "            304 LOAD_FAST                5 (tag)",
+            "source": {
+                "line": 13,
+                "file": null
+            }
+        },
+        {
+            "text": "            306 CALL                     1",
+            "source": {
+                "line": 13,
+                "file": null
+            }
+        },
+        {
+            "text": "            314 POP_TOP",
+            "source": {
+                "line": 13,
+                "file": null
+            }
+        },
+        {
+            "text": "            316 JUMP_BACKWARD           15 (to 288)",
+            "source": {
+                "line": 13,
+                "file": null
+            }
+        },
+        {
+            "text": " 12     >>  318 END_FOR",
+            "source": {
+                "line": 12,
+                "file": null
+            }
+        },
+        {
+            "text": "            320 NOP",
+            "source": {
+                "line": 12,
+                "file": null
+            }
+        },
+        {
+            "text": "  9         322 LOAD_CONST               0 (None)",
+            "source": {
+                "line": 9,
+                "file": null
+            }
+        },
+        {
+            "text": "            324 LOAD_CONST               0 (None)",
+            "source": {
+                "line": 9,
+                "file": null
+            }
+        },
+        {
+            "text": "            326 LOAD_CONST               0 (None)",
+            "source": {
+                "line": 9,
+                "file": null
+            }
+        },
+        {
+            "text": "            328 CALL                     2",
+            "source": {
+                "line": 9,
+                "file": null
+            }
+        },
+        {
+            "text": "            336 POP_TOP",
+            "source": {
+                "line": 9,
+                "file": null
+            }
+        },
+        {
+            "text": "            338 JUMP_BACKWARD          100 (to 140)",
+            "source": {
+                "line": 9,
+                "file": null
+            }
+        },
+        {
+            "text": "  8     >>  340 END_FOR",
+            "source": {
+                "line": 8,
+                "file": null
+            }
+        },
+        {
+            "text": "            342 RETURN_CONST             0 (None)",
+            "source": {
+                "line": 8,
+                "file": null
+            }
+        },
+        {
+            "text": "  9     >>  344 PUSH_EXC_INFO",
+            "source": {
+                "line": 9,
+                "file": null
+            }
+        },
+        {
+            "text": "            346 WITH_EXCEPT_START",
+            "source": {
+                "line": 9,
+                "file": null
+            }
+        },
+        {
+            "text": "            348 POP_JUMP_IF_TRUE         1 (to 352)",
+            "source": {
+                "line": 9,
+                "file": null
+            }
+        },
+        {
+            "text": "            350 RERAISE                  2",
+            "source": {
+                "line": 9,
+                "file": null
+            }
+        },
+        {
+            "text": "        >>  352 POP_TOP",
+            "source": {
+                "line": 9,
+                "file": null
+            }
+        },
+        {
+            "text": "            354 POP_EXCEPT",
+            "source": {
+                "line": 9,
+                "file": null
+            }
+        },
+        {
+            "text": "            356 POP_TOP",
+            "source": {
+                "line": 9,
+                "file": null
+            }
+        },
+        {
+            "text": "            358 POP_TOP",
+            "source": {
+                "line": 9,
+                "file": null
+            }
+        },
+        {
+            "text": "            360 JUMP_BACKWARD          111 (to 140)",
+            "source": {
+                "line": 9,
+                "file": null
+            }
+        },
+        {
+            "text": "        >>  362 COPY                     3",
+            "source": {
+                "line": 9,
+                "file": null
+            }
+        },
+        {
+            "text": "            364 POP_EXCEPT",
+            "source": {
+                "line": 9,
+                "file": null
+            }
+        },
+        {
+            "text": "            366 RERAISE                  1",
+            "source": {
+                "line": 9,
+                "file": null
+            }
+        },
+        {
+            "text": "ExceptionTable:",
+            "source": {
+                "line": 9,
+                "file": null
+            }
+        },
+        {
+            "text": "  208 to 318 -> 344 [2] lasti",
+            "source": {
+                "line": 208,
+                "file": null
+            }
+        },
+        {
+            "text": "  344 to 352 -> 362 [4] lasti",
+            "source": {
+                "line": 344,
+                "file": null
+            }
+        }
+    ],
+    "cfg": {
+        "Function #0": {
+            "nodes": [
+                {
+                    "id": "Function #0",
+                    "label": "Function #0:\n  2           0 RESUME                   0\n  3           2 LOAD_GLOBAL              0 (os)\n             12 LOAD_ATTR                2 (path)\n             32 LOAD_ATTR                5 (NULL|self + exists)\n             52 LOAD_CONST               1 ('power/.complete-precache')\n             54 CALL                     1\n             62 POP_JUMP_IF_TRUE        10 (to 84)"
+                },
+                {
+                    "id": "64",
+                    "label": "64:\n  4          64 LOAD_GLOBAL              7 (NULL + precache)\n             74 CALL                     0\n             82 POP_TOP"
+                },
+                {
+                    "id": "84",
+                    "label": "84:\n  6     >>   84 LOAD_GLOBAL              9 (NULL + Path)\n             94 LOAD_CONST               2 ('power')\n             96 CALL                     1\n            104 STORE_FAST               0 (path)\n  8         106 LOAD_FAST                0 (path)\n            108 LOAD_ATTR               11 (NULL|self + glob)\n            128 LOAD_CONST               3 ('*.html')\n            130 CALL                     1\n            138 GET_ITER"
+                },
+                {
+                    "id": "140",
+                    "label": "140:\n        >>  140 FOR_ITER                98 (to 340)\n            144 STORE_FAST               1 (page)\n  9         146 LOAD_FAST                1 (page)\n            148 LOAD_ATTR               13 (NULL|self + absolute)\n            168 CALL                     0\n            176 LOAD_ATTR               15 (NULL|self + open)\n            196 LOAD_CONST               4 ('r')\n            198 CALL                     1\n            206 BEFORE_WITH\n            208 STORE_FAST               2 (fp)\n 10         210 LOAD_GLOBAL             17 (NULL + BeautifulSoup)\n            220 LOAD_FAST                2 (fp)\n            222 LOAD_ATTR               19 (NULL|self + read)\n            242 CALL                     0\n            250 LOAD_CONST               5 ('html.parser')\n            252 CALL                     2\n            260 STORE_FAST               3 (soup)\n 11         262 LOAD_GLOBAL             21 (NULL + _cleanup)\n            272 LOAD_FAST                3 (soup)\n            274 CALL                     1\n            282 STORE_FAST               4 (clean_soup)\n 12         284 LOAD_FAST                4 (clean_soup)\n            286 GET_ITER"
+                },
+                {
+                    "id": "288",
+                    "label": "288:\n        >>  288 FOR_ITER                13 (to 318)\n            292 STORE_FAST               5 (tag)\n 13         294 LOAD_GLOBAL             23 (NULL + print)\n            304 LOAD_FAST                5 (tag)\n            306 CALL                     1\n            314 POP_TOP\n            316 JUMP_BACKWARD           15 (to 288)"
+                },
+                {
+                    "id": "318",
+                    "label": "318:\n 12     >>  318 END_FOR\n            320 NOP\n  9         322 LOAD_CONST               0 (None)\n            324 LOAD_CONST               0 (None)\n            326 LOAD_CONST               0 (None)\n            328 CALL                     2\n            336 POP_TOP\n            338 JUMP_BACKWARD          100 (to 140)"
+                },
+                {
+                    "id": "340",
+                    "label": "340:\n  8     >>  340 END_FOR\n            342 RETURN_CONST             0 (None)"
+                },
+                {
+                    "id": "344",
+                    "label": "344:\n  9     >>  344 PUSH_EXC_INFO\n            346 WITH_EXCEPT_START\n            348 POP_JUMP_IF_TRUE         1 (to 352)"
+                },
+                {
+                    "id": "350",
+                    "label": "350:\n            350 RERAISE                  2"
+                },
+                {
+                    "id": "352",
+                    "label": "352:\n        >>  352 POP_TOP\n            354 POP_EXCEPT\n            356 POP_TOP\n            358 POP_TOP\n            360 JUMP_BACKWARD          111 (to 140)"
+                },
+                {
+                    "id": "362",
+                    "label": "362:\n        >>  362 COPY                     3\n            364 POP_EXCEPT\n            366 RERAISE                  1\nExceptionTable:\n  208 to 318 -> 344 [2] lasti\n  344 to 352 -> 362 [4] lasti"
+                }
+            ],
+            "edges": [
+                {
+                    "from": "Function #0",
+                    "to": "84",
+                    "arrows": "to",
+                    "color": "green"
+                },
+                {
+                    "from": "Function #0",
+                    "to": "64",
+                    "arrows": "to",
+                    "color": "red"
+                },
+                {
+                    "from": "64",
+                    "to": "84",
+                    "arrows": "to",
+                    "color": "grey"
+                },
+                {
+                    "from": "84",
+                    "to": "140",
+                    "arrows": "to",
+                    "color": "grey"
+                },
+                {
+                    "from": "140",
+                    "to": "288",
+                    "arrows": "to",
+                    "color": "grey"
+                },
+                {
+                    "from": "288",
+                    "to": "288",
+                    "arrows": "to",
+                    "color": "blue"
+                },
+                {
+                    "from": "318",
+                    "to": "140",
+                    "arrows": "to",
+                    "color": "blue"
+                },
+                {
+                    "from": "344",
+                    "to": "352",
+                    "arrows": "to",
+                    "color": "green"
+                },
+                {
+                    "from": "344",
+                    "to": "350",
+                    "arrows": "to",
+                    "color": "red"
+                },
+                {
+                    "from": "350",
+                    "to": "352",
+                    "arrows": "to",
+                    "color": "grey"
+                },
+                {
+                    "from": "352",
+                    "to": "140",
+                    "arrows": "to",
+                    "color": "blue"
+                }
+            ]
+        }
+    }
+}

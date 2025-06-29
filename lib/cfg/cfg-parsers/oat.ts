@@ -167,13 +167,13 @@ export class OatCFGParser extends BaseCFGParser {
             if (this.isBasicBlockEnd(inst, asmArr[first - 1] ? asmArr[first - 1].text : '')) {
                 rangeBb.end = first;
                 result.push(_.clone(rangeBb));
-                rangeBb = newRangeWith(rangeBb, this.extractNodeName(inst), first + 1);
+                rangeBb = newRangeWith(rangeBb, this.extractJmpTargetName(inst), first + 1);
             } else if (this.instructionSetInfo.isJmpInstruction(opcode)) {
                 rangeBb.actionPos.push(first);
             } else if (this.isJmpTarget(inst, jmpAddrs)) {
                 rangeBb.end = first;
                 result.push(_.clone(rangeBb));
-                rangeBb = newRangeWith(rangeBb, this.extractNodeName(inst), first);
+                rangeBb = newRangeWith(rangeBb, this.extractJmpTargetName(inst), first);
             }
             ++first;
         }
@@ -189,7 +189,7 @@ export class OatCFGParser extends BaseCFGParser {
     }
 
     // All nodes are named after the address of their first instruction.
-    override extractNodeName(inst: string) {
+    override extractJmpTargetName(inst: string) {
         return this.shortenHex(this.getPc(inst));
     }
 
@@ -214,7 +214,7 @@ export class OatCFGParser extends BaseCFGParser {
             return [
                 {nameId: basicBlock.nameId, start: basicBlock.start, end: actionPos[0] + 1},
                 {
-                    nameId: this.extractNodeName(this.code[actionPos[0] + 1].text),
+                    nameId: this.extractJmpTargetName(this.code[actionPos[0] + 1].text),
                     start: actionPos[0] + 1,
                     end: basicBlock.end,
                 },
@@ -227,7 +227,7 @@ export class OatCFGParser extends BaseCFGParser {
         const result: CanonicalBB[] = [];
         result.push(_.clone(tmp));
         while (first !== last - 1) {
-            tmp.nameId = this.extractNodeName(this.code[actionPos[first] + 1].text);
+            tmp.nameId = this.extractJmpTargetName(this.code[actionPos[first] + 1].text);
             tmp.start = actionPos[first] + 1;
             ++first;
             tmp.end = actionPos[first] + 1;
@@ -235,7 +235,7 @@ export class OatCFGParser extends BaseCFGParser {
         }
 
         tmp = {
-            nameId: this.extractNodeName(this.code[actionPos[first] + 1].text),
+            nameId: this.extractJmpTargetName(this.code[actionPos[first] + 1].text),
             start: actionPos[first] + 1,
             end: basicBlock.end,
         };
@@ -269,7 +269,7 @@ export class OatCFGParser extends BaseCFGParser {
                     targetNode = this.shortenHex(this.getJmpAddr(lastInst));
                     edges.push(setEdge(x.nameId, targetNode, 'green'));
                     // Branch not taken
-                    targetNode = this.extractNodeName(asmArr[x.end].text);
+                    targetNode = this.extractJmpTargetName(asmArr[x.end].text);
                     edges.push(setEdge(x.nameId, targetNode, 'red'));
                     break;
                 }
@@ -277,7 +277,7 @@ export class OatCFGParser extends BaseCFGParser {
                     // No jmp, but the next instruction is in a different basic
                     // block because it is the target of another jmp.
                     if (asmArr[x.end]) {
-                        targetNode = this.extractNodeName(asmArr[x.end].text);
+                        targetNode = this.extractJmpTargetName(asmArr[x.end].text);
                         edges.push(setEdge(x.nameId, targetNode, 'grey'));
                     }
                     break;
