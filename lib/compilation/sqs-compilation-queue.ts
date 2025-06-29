@@ -128,6 +128,7 @@ async function doOneCompilation(queue: SqsCompilationWorkerMode, compilationEnvi
     if (msg?.guid) {
         const startTime = Date.now();
         const compilationType = msg.isCMake ? 'cmake' : 'compile';
+        logger.info(`Processing ${compilationType} request ${msg.guid} - Full message:`, JSON.stringify(msg, null, 2));
         logger.debug(`Processing ${compilationType} request ${msg.guid} for compiler ${msg.compilerId}`);
 
         try {
