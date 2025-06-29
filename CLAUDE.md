@@ -74,10 +74,11 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
   - `compilequeue.events_url`: WebSocket URL for sending compilation results
   - `compilequeue.worker_threads=2`: Number of concurrent worker threads
   - `compilequeue.poll_interval_ms=1000`: Interval between poll attempts after processing or errors (default: 1000ms). Note: SQS long polling means actual wait time is up to 20 seconds when queue is empty
-- **Implementation**: Located in `/lib/compilation/sqs-compilation-queue.ts`
+- **Implementation**: Located in `/lib/compilation/sqs-compilation-queue.ts` with shared parsing utilities in `/lib/compilation/compilation-request-parser.ts`
 - **Queue Architecture**: Uses single AWS SQS FIFO queue for reliable message delivery, messages contain isCMake flag to distinguish compilation types
 - **Result Delivery**: Uses WebSocket-based communication via existing `EventsWsSender` infrastructure
 - **Message Production**: Queue messages are produced by external Lambda functions, not by the main Compiler Explorer server
+- **Shared Parsing**: Common request parsing logic is shared between web handlers and SQS workers for consistency
 
 ## Testing Guidelines
 - Use Vitest for unit tests (compatible with Jest syntax)
