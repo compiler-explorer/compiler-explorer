@@ -192,8 +192,43 @@ async function sendCompilationResultViaWebsocket(
     guid: string,
     result: CompilationResult,
 ) {
+    logger.info('=== WEBSOCKET SEND DEBUG START ===');
+    logger.info(`Sending result for guid: ${guid}`);
+    logger.info(`Result keys: ${Object.keys(result)}`);
+    logger.info(`Result success: ${result.code === 0}, code: ${result.code}`);
+    logger.info(`Result asm length: ${result.asm?.length || 0}`);
+    logger.info(`Result stdout length: ${result.stdout?.length || 0}`);
+    logger.info(`Result stderr length: ${result.stderr?.length || 0}`);
+
     try {
-        const sender = new EventsWsSender(compilationEnvironment.ceProps);
+        logger.info('Creating EventsWsSender...');
+        logger.info('Checking WebSocket configuration...');
+
+        // Check for the configuration properties
+        const execqueueEventsUrl = compilationEnvironment.ceProps('execqueue.events_url', '');
+        const compilequeueEventsUrl = compilationEnvironment.ceProps('compilequeue.events_url', '');
+        logger.info(`execqueue.events_url: ${execqueueEventsUrl}`);
+        logger.info(`compilequeue.events_url: ${compilequeueEventsUrl}`);
+
+        // Use compilequeue.events_url if available, otherwise fall back to execqueue.events_url
+        const eventsUrl = compilequeueEventsUrl || execqueueEventsUrl;
+        logger.info(`Using events URL: ${eventsUrl}`);
+
+        if (!eventsUrl) {
+            throw new Error('No events URL configured - need either compilequeue.events_url or execqueue.events_url');
+        }
+
+        // Create a custom property getter that uses the compilation queue events URL
+        const compilationEventsProps = (key: string, defaultValue?: any) => {
+            if (key === 'execqueue.events_url') {
+                return eventsUrl;
+            }
+            return compilationEnvironment.ceProps(key, defaultValue);
+        };
+
+        const sender = new EventsWsSender(compilationEventsProps);
+        logger.info('EventsWsSender created successfully');
+
         // Convert CompilationResult to BasicExecutionResult format expected by EventsWsSender
         const basicResult = {
             ...result, // Include all fields from compilation result first
@@ -201,11 +236,24 @@ async function sendCompilationResultViaWebsocket(
             filenameTransform: (f: string) => f,
             execTime: 0,
         };
+        logger.info('Converted result for WebSocket format');
+        logger.info(`Basic result keys: ${Object.keys(basicResult)}`);
+
+        logger.info('Calling sender.send()...');
         await sender.send(guid, basicResult);
+        logger.info('sender.send() completed successfully');
+
+        logger.info('Closing sender...');
         await sender.close();
+        logger.info('Sender closed successfully');
     } catch (error) {
-        logger.error(error);
+        logger.error('WebSocket send error:', error);
+        logger.error('Error details:', {
+            message: error instanceof Error ? error.message : String(error),
+            stack: error instanceof Error ? error.stack : undefined,
+        });
     }
+    logger.info('=== WEBSOCKET SEND DEBUG END ===');
 }
 
 async function doOneCompilation(queue: SqsCompilationWorkerMode, compilationEnvironment: CompilationEnvironment) {
@@ -252,7 +300,7 @@ async function doOneCompilation(queue: SqsCompilationWorkerMode, compilationEnvi
     if (msg?.guid) {
         const startTime = Date.now();
         const compilationType = msg.isCMake ? 'cmake' : 'compile';
-        logger.info(`Processing ${compilationType} request ${msg.guid} - Full message:`, JSON.stringify(msg, null, 2));
+        logger.info(`Processing ${compilationType} request ${msg.guid}`);
         logger.debug(`Processing ${compilationType} request ${msg.guid} for compiler ${msg.compilerId}`);
 
         try {
