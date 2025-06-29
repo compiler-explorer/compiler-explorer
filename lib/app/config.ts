@@ -169,7 +169,7 @@ export function loadConfiguration(appArgs: AppArguments): AppConfiguration {
     const httpRoot = urljoin(ceProps('httpRoot', '/'), '/');
 
     const staticUrl = ceProps<string | undefined>('staticUrl');
-    const staticRoot = urljoin(staticUrl || urljoin(httpRoot, 'static'), '/');
+    const staticRoot = urljoin(staticUrl || httpRoot, '/');
 
     return {
         ceProps,

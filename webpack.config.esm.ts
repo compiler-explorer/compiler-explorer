@@ -47,7 +47,7 @@ log(`compiling for ${isDev ? 'development' : 'production'}.`);
 const parallelism = Math.floor(os.totalmem() / (4 * 1024 * 1024 * 1024)) + 1;
 log(`Limiting parallelism to ${parallelism}`);
 
-const distPath = path.resolve(__dirname, 'out', 'dist');
+const manifestPath = path.resolve(__dirname, 'out', 'dist');
 const staticPath = path.resolve(__dirname, 'out', 'webpack', 'static');
 const hasGit = fs.existsSync(path.resolve(__dirname, '.git'));
 
@@ -85,14 +85,14 @@ const plugins: Webpack.WebpackPluginInstance[] = [
         filename: isDev ? '[name].css' : `[name]${webpackJsHack}[contenthash].css`,
     }),
     new WebpackManifestPlugin({
-        fileName: path.resolve(distPath, 'manifest.json'),
+        fileName: path.resolve(manifestPath, 'manifest.json'),
         publicPath: '',
     }),
     new Webpack.DefinePlugin({
         'window.PRODUCTION': JSON.stringify(!isDev),
     }),
     new CopyWebpackPlugin({
-        patterns: [{from: './static/favicons', to: path.resolve(distPath, 'static', 'favicons')}],
+        patterns: [{from: './public', to: staticPath}],
     }),
 ];
 
@@ -200,4 +200,4 @@ export default {
         ],
     },
     plugins: plugins,
-};
+} satisfies Webpack.Configuration;

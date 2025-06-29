@@ -519,8 +519,7 @@ export class Tool extends MonacoPane<monaco.editor.IStandaloneCodeEditor, ToolSt
         if (lineNum && this.compilerInfo.editorId) {
             elem.empty();
             const editorId = unwrap(this.compilerInfo.editorId);
-            $('<a></a>')
-                .addClass('link-primary')
+            $('<span class="linked-compiler-output-line"></span>')
                 .html(msg)
                 .on('click', e => {
                     this.eventHub.emit('editorSetDecoration', editorId, lineNum, true, column);

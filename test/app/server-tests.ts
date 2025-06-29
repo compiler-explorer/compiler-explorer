@@ -97,7 +97,7 @@ describe('Server Module', () => {
                 staticRoot: '/static',
                 httpRoot: '',
                 sentrySlowRequestMs: 500,
-                distPath: '/mocked/dist', // Use absolute path for testing
+                manifestPath: '/mocked/dist', // Use absolute path for testing
                 extraBodyClass: 'test-class',
                 maxUploadSize: '1mb',
             };

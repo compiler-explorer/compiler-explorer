@@ -25,6 +25,7 @@
 import {Buffer} from 'buffer';
 import $ from 'jquery';
 import * as monaco from 'monaco-editor';
+import {editor} from 'monaco-editor';
 // @ts-ignore
 import * as monacoVim from 'monaco-vim';
 import TomSelect from 'tom-select';
@@ -42,21 +43,21 @@ import * as loadSaveLib from '../widgets/load-save.js';
 import '../formatter-registry';
 import '../modes/_all';
 import {Container} from 'golden-layout';
-import {editor} from 'monaco-editor';
-import {Language, LanguageKey} from '../../types/languages.interfaces.js';
-import {Hub} from '../hub.js';
-import {EditorState, LanguageSelectData} from './editor.interfaces.js';
-import {MonacoPaneState, PaneState} from './pane.interfaces.js';
-import {MonacoPane} from './pane.js';
-import IModelDeltaDecoration = editor.IModelDeltaDecoration;
 import type {escape_html} from 'tom-select/dist/types/utils.js';
 import {escapeHTML, isString} from '../../shared/common-utils.js';
 import {CompilationResult} from '../../types/compilation/compilation.interfaces.js';
 import {CompilerInfo} from '../../types/compiler.interfaces.js';
+import {Language, LanguageKey} from '../../types/languages.interfaces.js';
 import {MessageWithLocation, ResultLine} from '../../types/resultline/resultline.interfaces.js';
 import {assert, unwrap} from '../assert.js';
+import {Hub} from '../hub.js';
 import {Decoration, Motd} from '../motd.interfaces.js';
 import {Compiler} from './compiler.js';
+import {EditorState} from './editor.interfaces.js';
+import {MonacoPaneState, PaneState} from './pane.interfaces.js';
+import {MonacoPane} from './pane.js';
+import IModelDeltaDecoration = editor.IModelDeltaDecoration;
+import {getStaticImage} from '../utils';
 
 const loadSave = new loadSaveLib.LoadSave();
 const languages = options.languages;
@@ -1915,48 +1916,45 @@ export class Editor extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Edit
         this.hub.removeEditor(this.id);
     }
 
-    getSelectizeRenderHtml(
-        data: LanguageSelectData,
-        escapeHtml: typeof escape_html,
-        width: number,
-        height: number,
-    ): string {
-        let result =
-            '<div class="d-flex" style="align-items: center">' +
-            '<div class="me-1 d-flex" style="align-items: center">' +
-            '<img src="' +
-            (data.logoData ? data.logoData : '') +
-            '" class="' +
-            (data.logoDataDark ? 'theme-light-only' : '') +
-            '" width="' +
-            width +
-            '" style="max-height: ' +
-            height +
-            'px"/>';
-        if (data.logoDataDark) {
-            result +=
-                '<img src="' +
-                data.logoDataDark +
-                '" class="theme-dark-only" width="' +
-                width +
-                '" style="max-height: ' +
-                height +
-                'px"/>';
-        }
-
-        result += '</div><div';
-        if (data.tooltip) {
-            result += ' title="' + data.tooltip + '"';
-        }
-        result += '>' + escapeHtml(data.name) + '</div></div>';
-        return result;
+    getSelectizeRenderHtml(language: Language, escapeHtml: typeof escape_html, width: number, height: number): string {
+        return `
+        <div class='d-flex' style='align-items: center'>
+          <div class='me-1 d-flex' style='align-items: center; width: ${width}px; height: ${height}px'>
+            ${
+                language.logoFilename !== null
+                    ? `
+                <img src='${getStaticImage(language.logoFilename, 'logos')}'
+                     alt='Logo for ${escapeHtml(language.name)}'
+                     class='${language.logoFilenameDark ? 'theme-light-only' : ''}'
+                     width='${width}px'
+                     height='${height}px' />
+                `
+                    : ''
+            }
+            ${
+                language.logoFilenameDark !== null
+                    ? `
+                <img src='${getStaticImage(language.logoFilenameDark, 'logos')}'
+                     alt='Logo for ${escapeHtml(language.name)}'
+                     class='theme-dark-only'
+                     width='${width}px'
+                     height='${height}px' />
+               `
+                    : ''
+            }
+          </div>
+          <div title='${language.tooltip ?? ''}'>
+            ${escapeHtml(language.name)}
+          </div>
+        </div>
+        `;
     }
 
-    renderSelectizeOption(data: LanguageSelectData, escapeHtml: typeof escape_html) {
+    renderSelectizeOption(data: Language, escapeHtml: typeof escape_html) {
         return this.getSelectizeRenderHtml(data, escapeHtml, 23, 23);
     }
 
-    renderSelectizeItem(data: LanguageSelectData, escapeHtml: typeof escape_html) {
+    renderSelectizeItem(data: Language, escapeHtml: typeof escape_html) {
         return this.getSelectizeRenderHtml(data, escapeHtml, 20, 20);
     }
 
