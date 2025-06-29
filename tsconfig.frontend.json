@@ -18,6 +18,8 @@
     "lib",
     "examples",
     "webpack.config.esm.ts",
-    "cypress"
+    "cypress",
+      "vite.config.ts",
+      "vite-plugin-hashed-pug.ts"
   ]
 }

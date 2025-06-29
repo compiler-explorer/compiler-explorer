@@ -28,7 +28,6 @@ import express from 'express';
 import type {Router} from 'express';
 import urljoin from 'url-join';
 
-import {ElementType} from '../../shared/common-utils.js';
 import {logger} from '../logger.js';
 import {PugRequireHandler, ServerOptions} from './server.interfaces.js';
 
@@ -55,33 +54,25 @@ export function createDefaultPugRequireHandler(
 }
 
 /**
- * Sets up webpack dev middleware for development mode
+ * Sets up Vite dev middleware for development mode
  * @param options - Server options
  * @param router - Express router
  * @returns Function to handle Pug requires
  */
-export async function setupWebPackDevMiddleware(options: ServerOptions, router: Router): Promise<PugRequireHandler> {
-    logger.info('  using webpack dev middleware');
+export async function setupViteDevMiddleware(options: ServerOptions, router: Router): Promise<PugRequireHandler> {
+    logger.info('  using vite dev middleware');
 
-    /* eslint-disable n/no-unpublished-import,import/extensions, */
-    const {default: webpackDevMiddleware} = await import('webpack-dev-middleware');
-    const {default: webpackConfig} = await import('../../webpack.config.esm.js');
-    const {default: webpack} = await import('webpack');
-    /* eslint-enable */
-
-    type WebpackConfiguration = ElementType<Parameters<typeof webpack>[0]>;
-
-    const webpackCompiler = webpack([webpackConfig as WebpackConfiguration]);
-    router.use(
-        webpackDevMiddleware(webpackCompiler, {
-            publicPath: '/',
-            stats: {
-                preset: 'errors-only',
-                timings: true,
-            },
-        }),
-    );
-
+    const {createServer} = await import('vite');
+    const {default: viteConfig} = await import('../../vite.config.js');
+    const vite = await createServer({
+        ...viteConfig,
+        server: {
+            ...viteConfig.server,
+            middlewareMode: true,
+        },
+        appType: 'custom',
+    });
+    router.use(vite.middlewares);
     return path => urljoin(options.httpRoot, path);
 }
 

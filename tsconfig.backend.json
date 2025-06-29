@@ -1,8 +1,8 @@
 {
   "extends": "./tsconfig.base.json",
   "files": ["app.ts", "compiler-args-app.ts"],
-  "include": ["**/*.js", "**/*.ts"],
-  "exclude": ["out", "test", "etc", "examples", "static", "**/*.d.ts", "cypress"],
+  "include": ["**/*.js", "**/*.ts", "vite.config.ts", "vite-plugin-hashed-pug.ts"],
+  "exclude": ["out", "dist", "test", "etc", "examples", "static", "**/*.d.ts", "cypress"],
   "compilerOptions": {
     /* Module resolution */
     "target": "esnext",
