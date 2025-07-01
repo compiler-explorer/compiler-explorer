@@ -22,6 +22,8 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
+/// <reference types="vite/client" />
+
 // These .pug files are different from the ones on the server. Our vite plugin
 // config will translate the .pug files into JS objects that are importable
 // with `hash` and `text` properties.
