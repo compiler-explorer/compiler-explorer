@@ -4,7 +4,8 @@ import * as url from 'node:url';
 import {defineConfig} from 'vite';
 import {vitePluginHashedPug} from './vite-plugin-hashed-pug.js';
 
-const hasGit = fss.existsSync(path.resolve(import.meta.url, '.git'));
+const pwd = url.fileURLToPath(new URL('.', import.meta.url));
+const hasGit = fss.existsSync(path.join(pwd, '.git'));
 
 export default defineConfig({
     plugins: [vitePluginHashedPug({useGit: hasGit})],
@@ -17,6 +18,7 @@ export default defineConfig({
             },
         },
         commonjsOptions: {
+            defaultIsModuleExports: true,
             include: [
                 /golden-layout/,
                 /jquery/,
@@ -28,10 +30,9 @@ export default defineConfig({
                 /file-saver/,
                 /path-browserify/,
                 /jszip/,
+                /lz-string/,
+                /monaco-vim/,
             ],
         },
-    },
-    optimizeDeps: {
-        include: ['jquery'],
     },
 });

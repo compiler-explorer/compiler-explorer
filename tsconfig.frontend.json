@@ -8,7 +8,7 @@
     "strictPropertyInitialization": false,
     "lib": ["dom", "es5", "dom.iterable"]
   },
-  "exclude": [
+    "exclude": [
     "out",
     "test",
     "etc",

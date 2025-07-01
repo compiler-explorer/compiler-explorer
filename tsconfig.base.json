@@ -6,6 +6,7 @@
     "importHelpers": true,
     /* Module resolution */
     "esModuleInterop": true,
+    "allowSyntheticDefaultImports": true,
     /* Other options */
     "forceConsistentCasingInFileNames": true,
     "skipLibCheck": true,
