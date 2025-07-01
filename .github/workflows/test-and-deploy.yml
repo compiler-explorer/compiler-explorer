@@ -52,7 +52,7 @@ jobs:
       - name: Run checks
         run: |
           npm run ts-compile
-          npm run webpack
+          npm run build
 
   build_dist:
     if: github.repository_owner == 'compiler-explorer' && github.event_name == 'push'

@@ -28,10 +28,10 @@ cp -R "${ROOT}"/etc \
       .
 rm -rf "${ROOT}"/lib/storage/data
 
-# Set up and build and webpack everything
+# Set up and build vite
 cd "${ROOT}"
 npm install --no-audit
-npm run webpack
+npm run build
 npm run ts-compile
 
 # Now install only the production dependencies in our output directory
@@ -53,7 +53,7 @@ rm -rf "${ROOT}/out/dist-bin"
 mkdir -p "${ROOT}/out/dist-bin"
 export XZ_OPT="-1 -T 0"
 tar -Jcf "${ROOT}/out/dist-bin/${RELEASE_FILE_NAME}.tar.xz" .
-pushd "${ROOT}/out/webpack"
+pushd "${ROOT}/dist"
 tar -Jcf "${ROOT}/out/dist-bin/${RELEASE_FILE_NAME}.static.tar.xz" --transform="s,^static/,," static/*
 popd
 echo "${HASH}" >"${ROOT}/out/dist-bin/${RELEASE_FILE_NAME}.txt"
