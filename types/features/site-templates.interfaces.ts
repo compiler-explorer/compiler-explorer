@@ -29,17 +29,13 @@ export type SiteTemplatesMetadata = {
     };
 };
 
-export type SiteTemplateConfiguration = {
+export type SiteTemplate = {
     meta: SiteTemplatesMetadata;
     templates: {
         name: string;
+        id: string;
         reference: string;
     }[];
-};
-
-export type SiteTemplateResponse = {
-    meta: SiteTemplatesMetadata;
-    templates: Record<string, string>;
 };
 
 export type UserSiteTemplate = {

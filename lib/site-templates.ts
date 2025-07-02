@@ -27,11 +27,11 @@ import path from 'node:path';
 
 import yaml from 'yaml';
 
-import {SiteTemplateConfiguration} from '../types/features/site-templates.interfaces.js';
+import {SiteTemplate} from '../types/features/site-templates.interfaces.js';
 
-let siteTemplates: SiteTemplateConfiguration;
+let siteTemplates: SiteTemplate;
 
-export async function getSiteTemplates(): Promise<SiteTemplateConfiguration> {
+export async function getSiteTemplates(): Promise<SiteTemplate> {
     siteTemplates ??= await loadSiteTemplates('etc/config');
     return siteTemplates;
 }
@@ -41,7 +41,7 @@ export async function getSiteTemplates(): Promise<SiteTemplateConfiguration> {
  *
  * The configuration keys that start with "meta" are returned as metadata keys in the 0th element of the returned tuple
  */
-async function loadSiteTemplates(configDir: string): Promise<SiteTemplateConfiguration> {
+async function loadSiteTemplates(configDir: string): Promise<SiteTemplate> {
     const config = await fsp.readFile(path.join(configDir, 'site-templates.yaml'), 'utf8');
     return yaml.parse(config);
 }
