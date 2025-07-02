@@ -83,9 +83,8 @@ import {ICompilerShared} from '../compiler-shared.interfaces.js';
 import {CompilerShared} from '../compiler-shared.js';
 import {SourceAndFiles} from '../download-service.js';
 import {SentryCapture} from '../sentry.js';
+import {getStaticImage} from '../utils.js';
 import {CompilerVersionInfo, setCompilerVersionPopoverForPane} from '../widgets/compiler-version-info.js';
-
-const toolIcons = require.context('../../views/resources/logos', false, /\.(png|svg)$/);
 
 type CachedOpcode = {
     found: boolean;
@@ -2486,17 +2485,17 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
             btn.addClass('view-' + toolName);
             btn.data('toolname', toolName);
             if (toolIcon) {
-                const light = toolIcons(toolIcon);
-                const dark = toolIconDark ? toolIcons(toolIconDark) : light;
+                const toolIconFull = getStaticImage(toolIcon, 'logos');
+                // If there is a dark icon, we use it, otherwise we use the light icon
+                const toolIconDarkFull =
+                    toolIconDark !== undefined ? getStaticImage(toolIconDark, 'logos') : toolIconFull;
                 btn.append(
-                    '<span class="dropdown-icon fas">' +
-                        '<img src="' +
-                        light +
-                        '" class="theme-light-only" width="16px" style="max-height: 16px"/>' +
-                        '<img src="' +
-                        dark +
-                        '" class="theme-dark-only" width="16px" style="max-height: 16px"/>' +
-                        '</span>',
+                    `
+                    <span class="dropdown-icon fas">
+                      <img src="${toolIconFull}" class="theme-light-only" width="16px" style="max-height: 16px"/>
+                      <img src="${toolIconDarkFull}" class="theme-dark-only" width="16px" style="max-height: 16px"/>
+                    </span>
+                    `,
                 );
             } else {
                 btn.append("<span class='dropdown-icon fas fa-cog'></span>");

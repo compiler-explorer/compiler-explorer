@@ -98,6 +98,15 @@ export class BaseCFGParser {
         return result;
     }
 
+    protected getBbId(firstInst: string): string {
+        return firstInst;
+    }
+
+    protected getBbFirstInstIdx(firstLine: number) {
+        //inst is expected to be .L*: where * in 1,2,...
+        return firstLine + 1;
+    }
+
     protected splitToBasicBlocks(asmArr: AssemblyLine[], range: Range) {
         let first = range.start;
         const last = range.end;
@@ -117,11 +126,11 @@ export class BaseCFGParser {
 
         while (first < last) {
             const inst = asmArr[first].text;
-            if (this.isBasicBlockEnd(inst, asmArr[first - 1] ? asmArr[first - 1].text : '')) {
+            const prevInst = asmArr[first - 1] ? asmArr[first - 1].text : '';
+            if (this.isBasicBlockEnd(inst, prevInst)) {
                 rangeBb.end = first;
                 result.push(_.clone(rangeBb));
-                //inst is expected to be .L*: where * in 1,2,...
-                rangeBb = newRangeWith(rangeBb, inst, first + 1);
+                rangeBb = newRangeWith(rangeBb, this.getBbId(inst), this.getBbFirstInstIdx(first));
             } else if (this.instructionSetInfo.isJmpInstruction(inst)) {
                 rangeBb.actionPos.push(first);
             }
@@ -178,8 +187,28 @@ export class BaseCFGParser {
         return inst[0] === '.' || prevInst.includes(' ret');
     }
 
-    protected extractNodeName(inst: string) {
+    protected extractJmpTargetName(inst: string) {
         return inst.match(/\.L\d+/) + ':';
+    }
+
+    protected extractNodeIdFromInst(inst: string) {
+        return inst;
+    }
+
+    protected extractAltJmpTargetName(asmArr: AssemblyLine[], bbIdx: number, arrBB: CanonicalBB[]): string {
+        const hasName = (asmArr: AssemblyLine[], cbb: CanonicalBB) => {
+            const asm = asmArr[cbb.end];
+            return asm ? this.isBasicBlockEnd(asm.text, '') : false;
+        };
+
+        const generateName = (name: string, suffix: number) => {
+            const pos = name.indexOf('@');
+            if (pos === -1) return `${name}@${suffix}`;
+
+            return name.substring(0, pos + 1) + suffix;
+        };
+        const bb = arrBB[bbIdx];
+        return hasName(asmArr, bb) ? asmArr[bb.end].text : generateName(bb.nameId, bb.end);
     }
 
     protected splitToCanonicalBasicBlock(basicBlock: BBRange): CanonicalBB[] {
@@ -247,38 +276,26 @@ export class BaseCFGParser {
             color: color,
         });
 
-        const hasName = (asmArr: AssemblyLine[], cbb: CanonicalBB) => {
-            const asm = asmArr[cbb.end];
-            return asm ? this.isBasicBlockEnd(asm.text, '') : false;
-        };
-
-        const generateName = (name: string, suffix: number) => {
-            const pos = name.indexOf('@');
-            if (pos === -1) return `${name}@${suffix}`;
-
-            return name.substring(0, pos + 1) + suffix;
-        };
         /* note: x.end-1 possible values:
             jmp .L*, {jne,je,jg,...} .L*, ret/rep ret, call and any other instruction that doesn't change control flow
         */
 
-        for (const x of arrOfCanonicalBasicBlock) {
-            let targetNode;
+        for (const [i, x] of arrOfCanonicalBasicBlock.entries()) {
             const lastInst = asmArr[x.end - 1].text;
             switch (this.instructionSetInfo.getInstructionType(lastInst)) {
                 case InstructionType.jmp: {
                     //we have to deal only with jmp destination, jmp instruction are always taken.
                     //edge from jump inst
-                    targetNode = this.extractNodeName(lastInst);
+                    const targetNode = this.extractJmpTargetName(lastInst);
                     edges.push(setEdge(x.nameId, targetNode, 'blue'));
                     break;
                 }
                 case InstructionType.conditionalJmpInst: {
                     //deal with : branch taken, branch not taken
-                    targetNode = this.extractNodeName(lastInst);
-                    edges.push(setEdge(x.nameId, targetNode, 'green'));
-                    targetNode = hasName(asmArr, x) ? asmArr[x.end].text : generateName(x.nameId, x.end);
-                    edges.push(setEdge(x.nameId, targetNode, 'red'));
+                    const targetNode1 = this.extractJmpTargetName(lastInst);
+                    edges.push(setEdge(x.nameId, targetNode1, 'green'));
+                    const targetNode2 = this.extractAltJmpTargetName(asmArr, i, arrOfCanonicalBasicBlock);
+                    edges.push(setEdge(x.nameId, targetNode2, 'red'));
                     break;
                 }
                 case InstructionType.notRetInst: {
@@ -286,7 +303,7 @@ export class BaseCFGParser {
                     //note : asmArr[x.end] expected to be .L*:(name of a basic block)
                     //       this .L*: has to be exactly after the last instruction in the current canonical basic block
                     if (asmArr[x.end]) {
-                        targetNode = asmArr[x.end].text;
+                        const targetNode = this.extractNodeIdFromInst(asmArr[x.end].text);
                         edges.push(setEdge(x.nameId, targetNode, 'grey'));
                     }
                     break;

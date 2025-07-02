@@ -74,7 +74,7 @@ export async function setupWebPackDevMiddleware(options: ServerOptions, router: 
     const webpackCompiler = webpack([webpackConfig as WebpackConfiguration]);
     router.use(
         webpackDevMiddleware(webpackCompiler, {
-            publicPath: '/static',
+            publicPath: '/',
             stats: {
                 preset: 'errors-only',
                 timings: true,
@@ -82,7 +82,7 @@ export async function setupWebPackDevMiddleware(options: ServerOptions, router: 
         }),
     );
 
-    return path => urljoin(options.httpRoot, 'static', path);
+    return path => urljoin(options.httpRoot, path);
 }
 
 /**
@@ -92,14 +92,14 @@ export async function setupWebPackDevMiddleware(options: ServerOptions, router: 
  * @returns Function to handle Pug requires
  */
 export async function setupStaticMiddleware(options: ServerOptions, router: Router): Promise<PugRequireHandler> {
-    const staticManifest = JSON.parse(await fs.readFile(path.join(options.distPath, 'manifest.json'), 'utf-8'));
+    const staticManifest = JSON.parse(await fs.readFile(path.join(options.manifestPath, 'manifest.json'), 'utf-8'));
 
     if (options.staticUrl) {
         logger.info(`  using static files from '${options.staticUrl}'`);
     } else {
         logger.info(`  serving static files from '${options.staticPath}'`);
         router.use(
-            '/static',
+            '/',
             express.static(options.staticPath, {
                 maxAge: options.staticMaxAgeSecs * 1000,
             }),

@@ -429,7 +429,7 @@ export class Hub {
 
     // Component Factories
 
-    private codeEditorFactory(container: GoldenLayout.Container, state: any): void {
+    private codeEditorFactory(container: GoldenLayout.Container, state: any): Editor {
         // Ensure editors are closable: some older versions had 'isClosable' false.
         // NB there doesn't seem to be a better way to do this than reach into the config and rely on the fact nothing
         // has used it yet.
@@ -439,6 +439,7 @@ export class Hub {
         });
         const editor = new Editor(this, state, container);
         this.editors.push(editor);
+        return editor;
     }
 
     private treeFactory(container: GoldenLayout.Container, state: ConstructorParameters<typeof Tree>[2]): Tree {

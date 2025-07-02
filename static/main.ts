@@ -27,6 +27,9 @@ import {SentryCapture, SetupSentry, setSentryLayout} from './sentry.js';
 
 SetupSentry();
 
+// Then configure the options so that window.staticRoot/httpRoot are set
+import './options.js';
+
 import 'whatwg-fetch';
 import '@popperjs/core';
 import 'bootstrap';
@@ -57,7 +60,7 @@ import {HistoryWidget} from './widgets/history-widget.js';
 import {SimpleCook} from './widgets/simplecook.js';
 import {setupSiteTemplateWidgetButton} from './widgets/site-templates-widget.js';
 
-import {Language, LanguageKey} from '../types/languages.interfaces.js';
+import {LanguageKey} from '../types/languages.interfaces.js';
 import {ComponentConfig, ComponentStateMap, GoldenLayoutConfig} from './components.interfaces.js';
 import {createDragSource, createLayoutItem, toGoldenLayoutConfig} from './components.js';
 import {CompilerExplorerOptions} from './global.js';
@@ -65,18 +68,14 @@ import {CompilerExplorerOptions} from './global.js';
 import * as utils from '../shared/common-utils.js';
 import {ParseFiltersAndOutputOptions} from '../types/features/filters.interfaces.js';
 import * as BootstrapUtils from './bootstrap-utils.js';
+import changelogDocument from './generated/changelog.pug';
+import cookiesDocument from './generated/cookies.pug';
+import privacyDocument from './generated/privacy.pug';
 import {localStorage, sessionThenLocalStorage} from './local.js';
 import {Printerinator} from './print-view.js';
 import {setupRealDark, takeUsersOutOfRealDark} from './real-dark.js';
 import {formatISODate, updateAndCalcTopBarHeight} from './utils.js';
 
-const logos = require.context('../views/resources/logos', false, /\.(png|svg)$/);
-const siteTemplateScreenshots = require.context('../views/resources/template_screenshots', false, /\.png$/);
-import changelogDocument from './generated/changelog.pug';
-import cookiesDocument from './generated/cookies.pug';
-import privacyDocument from './generated/privacy.pug';
-
-//css
 import 'bootstrap/dist/css/bootstrap.min.css';
 import 'golden-layout/src/css/goldenlayout-base.css';
 import 'tom-select/dist/css/tom-select.bootstrap5.css';
@@ -473,21 +472,6 @@ function removeOrphanedMaximisedItemFromConfig(config) {
     }
 }
 
-function setupLanguageLogos(languages: Partial<Record<LanguageKey, Language>>) {
-    for (const lang of Object.values(languages)) {
-        try {
-            if (lang.logoUrl !== null) {
-                lang.logoData = logos('./' + lang.logoUrl);
-                if (lang.logoUrlDark !== null) {
-                    lang.logoDataDark = logos('./' + lang.logoUrlDark);
-                }
-            }
-        } catch (ignored) {
-            lang.logoData = '';
-        }
-    }
-}
-
 function earlyGetDefaultLangSetting() {
     return Settings.getStoredSettings().defaultLanguage;
 }
@@ -564,8 +548,6 @@ function start() {
     }
 
     const defaultLangId = getDefaultLangId(subLangId, options);
-
-    setupLanguageLogos(options.languages);
 
     // Cookie domains are matched as a RE against the window location. This allows a flexible
     // way that works across multiple domains (e.g. godbolt.org and compiler-explorer.com).
@@ -779,7 +761,7 @@ function start() {
     }
 
     History.trackHistory(layout);
-    setupSiteTemplateWidgetButton(siteTemplateScreenshots, layout);
+    setupSiteTemplateWidgetButton(layout);
     if (!options.embedded) new Sharing(layout);
     new Printerinator(hub, themer);
 }

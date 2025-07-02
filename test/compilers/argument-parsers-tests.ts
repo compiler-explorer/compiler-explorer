@@ -314,7 +314,7 @@ describe('Rust help message parser', () => {
         const compiler = makeCompiler(lines.join('\n'));
         await RustParser.parse(compiler);
         expect(compiler.compiler.supportsTarget).toBe(true);
-        expect(RustParser.getOptions(compiler, '--help')).resolves.toEqual({
+        await expect(RustParser.getOptions(compiler, '--help')).resolves.toEqual({
             '-l [KIND[:MODIFIERS]=]NAME[:RENAME]': {
                 description:
                     'Link the generated crate(s) to the specified native library NAME. The optional KIND can be one of',
@@ -346,7 +346,7 @@ describe('Rust help message parser', () => {
         const compiler = makeCompiler(lines.join('\n'));
         await RustParser.parse(compiler);
         expect(compiler.compiler.supportsTarget).toBe(true);
-        expect(RustParser.getOptions(compiler, '--help')).resolves.toEqual({
+        await expect(RustParser.getOptions(compiler, '--help')).resolves.toEqual({
             '-l [<KIND>[:<MODIFIERS>]=]<NAME>[:<RENAME>]': {
                 description:
                     'Link the generated crate(s) to the specified native library NAME. The optional KIND can be one of',
