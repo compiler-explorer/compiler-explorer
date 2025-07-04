@@ -533,7 +533,11 @@ export class Cfg extends Pane<CfgState> {
         const fn = this.results[name];
         this.bbMap = {};
         await this.createBasicBlocks(fn);
-        this.layout = new GraphLayoutCore(fn as AnnotatedCfgDescriptor, !!this.state.centerparents);
+        this.layout = new GraphLayoutCore(
+            fn as AnnotatedCfgDescriptor,
+            !!this.state.centerparents,
+            !!this.state.compacttrees,
+        );
         this.applyLayout();
         this.drawEdges();
         this.infoElement.innerHTML = `Layout time: ${Math.round(this.layout.layoutTime)}ms<br/>Basic blocks: ${
@@ -710,6 +714,7 @@ export class Cfg extends Pane<CfgState> {
             selectedFunction: this.state.selectedFunction,
             isircfg: this.state.isircfg,
             centerparents: this.toggles.get().centerparents,
+            compacttrees: this.toggles.get().compacttrees,
         };
         this.paneRenaming.addState(state);
         return state;
