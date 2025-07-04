@@ -62,7 +62,7 @@ import {setupSiteTemplateWidgetButton} from './widgets/site-templates-widget.js'
 
 import {LanguageKey} from '../types/languages.interfaces.js';
 import {ComponentConfig, ComponentStateMap, GoldenLayoutConfig} from './components.interfaces.js';
-import {createDragSource, createLayoutItem, toGoldenLayoutConfig} from './components.js';
+import {createDragSource, createLayoutItem, toGoldenLayoutConfig, toSerializedLayoutState} from './components.js';
 import {CompilerExplorerOptions} from './global.js';
 
 import * as utils from '../shared/common-utils.js';
@@ -218,10 +218,30 @@ function setupButtons(options: CompilerExplorerOptions, hub: Hub) {
 
     $('#ui-history').on('click', () => {
         historyWidget.run(data => {
-            sessionThenLocalStorage.set('gl', JSON.stringify(data.config));
-            hasUIBeenReset = true;
-            window.history.replaceState(null, '', window.httpRoot);
-            window.location.reload();
+            try {
+                // data.config is a SerializedLayoutState from history
+                const validConfig = url.loadState(data.config, false);
+                const serialized = toSerializedLayoutState(validConfig);
+                sessionThenLocalStorage.set('gl', JSON.stringify(serialized));
+                hasUIBeenReset = true;
+                window.history.replaceState(null, '', window.httpRoot);
+                window.location.reload();
+            } catch (e) {
+                // Log history configuration corruption to Sentry for monitoring
+                SentryCapture(
+                    e,
+                    `History configuration validation failure: config=${JSON.stringify(data.config).substring(0, 200)}`,
+                );
+                // Alert the user that the history configuration is invalid
+                const alertSystem = new Alert();
+                alertSystem.alert(
+                    'History Error',
+                    'An error was encountered while loading the history configuration. ' +
+                        'Please try selecting a different history entry or contact us on ' +
+                        '<a href="https://github.com/compiler-explorer/compiler-explorer/issues">our github</a>.',
+                    {isError: true},
+                );
+            }
         });
 
         BootstrapUtils.showModal('#history');
@@ -314,20 +334,29 @@ function findConfig(
             if (options.config) {
                 config = options.config;
             } else {
-                try {
-                    config = url.deserialiseState(window.location.hash.substring(1));
-                } catch (e) {
-                    // #3518 Alert the user that the url is invalid
-                    const alertSystem = new Alert();
-                    alertSystem.alert(
-                        'Decode Error',
-                        'An error was encountered while decoding the URL, the last locally saved configuration will ' +
-                            "be used if present.<br/><br/>Make sure the URL you're using hasn't been truncated, " +
-                            'otherwise if you believe your URL is valid please let us know on ' +
-                            '<a href="https://github.com/compiler-explorer/compiler-explorer/issues">our github</a>.',
-                        {isError: true},
-                    );
+                const hashContent = window.location.hash.substring(1);
+                if (hashContent) {
+                    try {
+                        config = url.deserialiseState(hashContent);
+                    } catch (e) {
+                        // Log URL corruption to Sentry for monitoring
+                        SentryCapture(
+                            e,
+                            `URL deserialization failure: hash=${hashContent.substring(0, 200)}, length=${hashContent.length}`,
+                        );
+                        // #3518 Alert the user that the url is invalid
+                        const alertSystem = new Alert();
+                        alertSystem.alert(
+                            'Decode Error',
+                            'An error was encountered while decoding the URL, the last locally saved configuration will ' +
+                                "be used if present.<br/><br/>Make sure the URL you're using hasn't been truncated, " +
+                                'otherwise if you believe your URL is valid please let us know on ' +
+                                '<a href="https://github.com/compiler-explorer/compiler-explorer/issues">our github</a>.',
+                            {isError: true},
+                        );
+                    }
                 }
+                // If no hash content, config remains undefined and will fall through to default
             }
 
             if (config) {
@@ -336,7 +365,19 @@ function findConfig(
             }
             if (!config) {
                 const savedState = sessionThenLocalStorage.get('gl', null);
-                if (savedState) config = JSON.parse(savedState);
+                if (savedState) {
+                    try {
+                        const parsed = JSON.parse(savedState);
+                        config = url.loadState(parsed, false);
+                    } catch (e) {
+                        // Log localStorage corruption to Sentry for monitoring
+                        SentryCapture(
+                            e,
+                            `localStorage layout state corruption: length=${savedState.length}, preview=${savedState.substring(0, 100)}`,
+                        );
+                        // config remains undefined and will fall back to default
+                    }
+                }
             }
             if (!config?.content || config.content?.length === 0) {
                 config = defaultConfig;
@@ -645,8 +686,10 @@ function start() {
             // Only preserve state in localStorage in non-embedded mode.
             const shouldSave = !window.hasUIBeenReset && !hasUIBeenReset;
             if (!options.embedded && !isMobileViewer() && shouldSave) {
-                if (layout.config.content && layout.config.content.length > 0)
-                    sessionThenLocalStorage.set('gl', JSON.stringify(layout.toConfig()));
+                if (layout.config.content && layout.config.content.length > 0) {
+                    const serialized = toSerializedLayoutState(layout.toConfig());
+                    sessionThenLocalStorage.set('gl', JSON.stringify(serialized));
+                }
             }
         })
         .on('keydown', event => {
