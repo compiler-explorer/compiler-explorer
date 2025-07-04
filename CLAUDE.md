@@ -3,7 +3,7 @@
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
 ## Build & Test Commands
-- Build: `npm run webpack`, `npm start`
+- Build: `npm run build`, `npm start`
 - Dev Mode: `make dev`, `make gpu-dev`
 - Lint: `npm run lint` (auto-fix), `npm run lint-check` (check only)
 - Type Check: `npm run ts-check`

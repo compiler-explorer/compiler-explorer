@@ -23,7 +23,7 @@
 // POSSIBILITY OF SUCH DAMAGE.
 
 import GoldenLayout from 'golden-layout';
-import lzstring from 'lz-string';
+import * as lzstring from 'lz-string';
 import _ from 'underscore';
 import * as Components from './components.js';
 

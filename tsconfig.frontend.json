@@ -8,7 +8,7 @@
     "strictPropertyInitialization": false,
     "lib": ["dom", "es5", "dom.iterable"]
   },
-  "exclude": [
+    "exclude": [
     "out",
     "test",
     "etc",
@@ -17,7 +17,8 @@
     "compiler-args-app.ts",
     "lib",
     "examples",
-    "webpack.config.esm.ts",
-    "cypress"
+    "cypress",
+    "vite.config.ts",
+    "vite-plugin-hashed-pug.ts"
   ]
 }

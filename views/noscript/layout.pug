@@ -6,16 +6,13 @@ html(lang="en")
         include ../meta.pug
 
     block styles
-        link(href=require("noscript.css") rel="stylesheet")
-        link(href=require("vendor.css") rel="stylesheet")
-        link(href=require("main.css") rel="stylesheet")
         style#theme
 
     block scripts
         if mobileViewer
-            script(src=require("vendor.js"))
-            script(src=require("runtime.js"))
-            script(src=require("noscript.js"))
+            script(type="module" src=require("./static/noscript.ts"))
+        if extraBodyClass === "dev"
+            script(type="module" src="@vite/client")
 
   body(class=extraBodyClass)
     block header

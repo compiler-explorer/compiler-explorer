@@ -83,12 +83,12 @@ clean:  ## Cleans up everything
 
 .PHONY: prebuild
 prebuild: prereqs scripts
-	$(NPM) run webpack
+	$(NPM) run build
 	$(NPM) run ts-compile
 
 .PHONY: run-only
 run-only: node-installed  ## Runs the site like it runs in production without building it
-	env NODE_ENV=production $(NODE) $(NODE_ARGS) ./out/dist/app.js --static ./out/webpack/static $(EXTRA_ARGS)
+	env NODE_ENV=production $(NODE) $(NODE_ARGS) ./out/dist/app.js --static ./dist $(EXTRA_ARGS)
 
 .PHONY: run
 run:  ## Runs the site like it runs in production

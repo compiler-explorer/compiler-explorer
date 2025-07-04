@@ -38,9 +38,4 @@ for (const key in extraOptions) {
     window.compilerExplorerOptions[key] = extraOptions[key as keyof typeof extraOptions];
 }
 
-// biome-ignore lint/style/useConst: can't use const here
-declare let __webpack_public_path__: string;
-
-__webpack_public_path__ = window.staticRoot;
-
 export const options = window.compilerExplorerOptions;

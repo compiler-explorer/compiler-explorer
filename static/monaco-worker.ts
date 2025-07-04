@@ -22,33 +22,18 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-/// <reference types="vite/client" />
+import * as monaco from 'monaco-editor';
 
-// These .pug files are different from the ones on the server. Our vite plugin
-// config will translate the .pug files into JS objects that are importable
-// with `hash` and `text` properties.
-//
-// See the code in `vite-plugin-hashed-pug` for details.
-declare module '*.pug' {
-    type VitePluginHashedPugFile = {
-        hash: string;
-        text: string;
-    };
-    declare const content: VitePluginHashedPugFile;
-    export default content;
-}
+import EditorWorker from 'monaco-editor/esm/vs/editor/editor.worker?worker';
+import TypescriptWorker from 'monaco-editor/esm/vs/language/typescript/ts.worker?worker';
 
-declare module '*.svg' {
-    const src: string;
-    export default src;
-}
+self.MonacoEnvironment = {
+    getWorker(_: unknown, label: string) {
+        if (label === 'typescript' || label === 'javascript') {
+            return new TypescriptWorker();
+        }
+        return new EditorWorker();
+    },
+};
 
-declare module '*.png' {
-    const src: string;
-    export default src;
-}
-
-declare module 'lodash.clonedeep' {
-    const cloneDeep: <T>(value: T) => T;
-    export = cloneDeep;
-}
+monaco.languages.typescript.typescriptDefaults.setEagerModelSync(true);

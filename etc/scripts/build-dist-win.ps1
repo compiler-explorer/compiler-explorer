@@ -36,7 +36,7 @@ Copy-Item -Path "$ROOT/package*.json" -Destination . -Recurse
 
 Remove-Item -Path "$ROOT/lib/storage/data" -Force -Recurse -ErrorAction Ignore
 
-# Set up and build and webpack everything
+# Set up and build vite
 Set-Location -Path $ROOT
 
 npm install --no-audit
@@ -44,9 +44,9 @@ if ($LASTEXITCODE -ne 0) {
    throw "npm install exited with error $LASTEXITCODE"
 }
 
-npm run webpack
+npm run build
 if ($LASTEXITCODE -ne 0) {
-   throw "npm run webpack exited with error $LASTEXITCODE"
+   throw "npm run build exited with error $LASTEXITCODE"
 }
 
 npm run ts-compile
@@ -86,8 +86,8 @@ if ($IsWindows -or $ENV:OS) {
     tar -Jcf "$ROOT/out/dist-bin/$RELEASE_FILE_NAME.tar.xz" .
 }
 
-New-Item -Path $ROOT -Name "out/webpack" -Force -ItemType "directory"
-Push-Location -Path "$ROOT/out/webpack"
+New-Item -Path $ROOT -Name "dist" -Force -ItemType "directory"
+Push-Location -Path "$ROOT/dist"
 if ($IsWindows -or $ENV:OS) {
     Compress-Archive -Path "static/*" -DestinationPath "$ROOT/out/dist-bin/$RELEASE_FILE_NAME.static.zip"
 } else {

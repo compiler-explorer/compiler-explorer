@@ -22,6 +22,15 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
+import 'bootstrap/dist/css/bootstrap.css';
+import 'golden-layout/src/css/goldenlayout-base.css';
+import 'tom-select/dist/css/tom-select.bootstrap5.css';
+import './styles/colours.scss';
+import './styles/explorer.scss';
+
+import 'vite/modulepreload-polyfill';
+import './monaco-worker.js';
+
 // Setup sentry before anything else so we can capture errors
 import {SentryCapture, SetupSentry, setSentryLayout} from './sentry.js';
 
@@ -75,12 +84,6 @@ import {localStorage, sessionThenLocalStorage} from './local.js';
 import {Printerinator} from './print-view.js';
 import {setupRealDark, takeUsersOutOfRealDark} from './real-dark.js';
 import {formatISODate, updateAndCalcTopBarHeight} from './utils.js';
-
-import 'bootstrap/dist/css/bootstrap.min.css';
-import 'golden-layout/src/css/goldenlayout-base.css';
-import 'tom-select/dist/css/tom-select.bootstrap5.css';
-import './styles/colours.scss';
-import './styles/explorer.scss';
 
 // Check to see if the current unload is a UI reset.
 // Forgive me the global usage here

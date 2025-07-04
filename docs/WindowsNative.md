@@ -25,9 +25,6 @@ Once you've finished setting it up, you can `cd` into the `compiler-explorer` di
 
 ```bat
 npm install
-npm install webpack -g
-npm install webpack-cli -g
-npm update webpack
 npm start
 ```
 
