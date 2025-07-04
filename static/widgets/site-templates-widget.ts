@@ -26,7 +26,7 @@ import $ from 'jquery';
 
 import GoldenLayout from 'golden-layout';
 import {escapeHTML} from '../../shared/common-utils.js';
-import {SiteTemplate, UserSiteTemplate} from '../../types/features/site-templates.interfaces.js';
+import {SiteTemplateConfiguration, UserSiteTemplate} from '../../types/features/site-templates.interfaces.js';
 import {assert, unwrap, unwrapString} from '../assert.js';
 import * as BootstrapUtils from '../bootstrap-utils.js';
 import {localStorage} from '../local.js';
@@ -39,7 +39,7 @@ class SiteTemplatesWidget {
     private readonly modal: JQuery;
     private readonly img: HTMLImageElement;
     private readonly alertSystem: Alert;
-    private templatesConfig: null | SiteTemplate = null;
+    private templatesConfig: null | SiteTemplateConfiguration = null;
     private populated = false;
     constructor(private readonly layout: GoldenLayout) {
         this.modal = $('#site-template-loader');
@@ -74,7 +74,7 @@ class SiteTemplatesWidget {
     }
     async getTemplates() {
         if (this.templatesConfig === null) {
-            this.templatesConfig = await new Promise<SiteTemplate>((resolve, reject) => {
+            this.templatesConfig = await new Promise<SiteTemplateConfiguration>((resolve, reject) => {
                 $.getJSON(window.location.origin + window.httpRoot + 'api/siteTemplates', resolve);
             });
         }

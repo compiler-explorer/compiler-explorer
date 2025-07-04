@@ -29,7 +29,7 @@ export type SiteTemplatesMetadata = {
     };
 };
 
-export type SiteTemplate = {
+export type SiteTemplateConfiguration = {
     meta: SiteTemplatesMetadata;
     templates: {
         name: string;

@@ -24,7 +24,7 @@
 
 import express from 'express';
 
-import {SiteTemplate} from '../../../types/features/site-templates.interfaces.js';
+import {SiteTemplateConfiguration} from '../../../types/features/site-templates.interfaces.js';
 import {getSiteTemplates} from '../../site-templates.js';
 import {cached, cors} from '../middleware.js';
 
@@ -39,6 +39,6 @@ export class SiteTemplateController implements HttpController {
 
     public async getSiteTemplates(req: express.Request, res: express.Response) {
         const {meta, templates} = await getSiteTemplates();
-        res.send({meta, templates} satisfies SiteTemplate);
+        res.send({meta, templates} satisfies SiteTemplateConfiguration);
     }
 }
