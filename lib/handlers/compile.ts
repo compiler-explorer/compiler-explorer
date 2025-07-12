@@ -49,6 +49,7 @@ import {SelectedLibraryVersion} from '../../types/libraries/libraries.interfaces
 import {ResultLine} from '../../types/resultline/resultline.interfaces.js';
 import {BaseCompiler} from '../base-compiler.js';
 import {CompilationEnvironment} from '../compilation-env.js';
+import {parseExecutionParameters, parseTools, parseUserArguments} from '../compilation/compilation-request-parser.js';
 import {getCompilerTypeByKey} from '../compilers/index.js';
 import {logger} from '../logger.js';
 import {ClientOptionsType} from '../options-handler.js';
@@ -455,17 +456,9 @@ export class CompileHandler implements ICompileHandler {
             backendOptions.skipAsm = query.skipAsm === 'true';
             backendOptions.skipPopArgs = query.skipPopArgs === 'true';
         }
-        const executeParameters: ExecutionParams = {
-            args: Array.isArray(execReqParams.args) ? execReqParams.args || '' : splitArguments(execReqParams.args),
-            stdin: execReqParams.stdin || '',
-            runtimeTools: execReqParams.runtimeTools || [],
-        };
-
-        const tools: ActiveTool[] = inputTools.map(tool => {
-            // expand tools.args to an array using utils.splitArguments if it was a string
-            if (typeof tool.args === 'string') tool.args = splitArguments(tool.args);
-            return tool as ActiveTool;
-        });
+        // Use shared parsing utilities for consistency with SQS workers
+        const executeParameters = parseExecutionParameters(execReqParams);
+        const tools = parseTools(inputTools);
 
         // Backwards compatibility: bypassCache used to be a boolean.
         // Convert a boolean input to an enum's underlying numeric value
@@ -473,7 +466,7 @@ export class CompileHandler implements ICompileHandler {
 
         return {
             source,
-            options: splitArguments(options),
+            options: parseUserArguments(options), // Use shared utility for consistency
             backendOptions,
             filters,
             bypassCache,
