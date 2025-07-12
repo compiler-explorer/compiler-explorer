@@ -41,7 +41,7 @@ async function DoCfgTest(cfgArg, filename, isLlvmIr = false, compilerInfo?: Comp
             version: cfgArg,
         });
     }
-    const structure = generateStructure(compilerInfo, contents.asm, isLlvmIr);
+    const structure = await generateStructure(compilerInfo, contents.asm, isLlvmIr);
     expect(structure).toEqual(contents.cfg);
 }
 

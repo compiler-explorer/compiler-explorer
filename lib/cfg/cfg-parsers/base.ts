@@ -25,6 +25,7 @@
 import _ from 'underscore';
 
 import {EdgeColor} from '../../../types/compilation/cfg.interfaces.js';
+import {CompilationResult} from '../../../types/compilation/compilation.interfaces.js';
 import type {ResultLineSource} from '../../../types/resultline/resultline.interfaces.js';
 import {logger} from '../../logger.js';
 import {BaseInstructionSetInfo, InstructionType} from '../instruction-sets/base.js';
@@ -71,7 +72,7 @@ export class BaseCFGParser {
 
     constructor(public readonly instructionSetInfo: BaseInstructionSetInfo) {}
 
-    public filterData(assembly: AssemblyLine[]) {
+    public filterData(assembly: AssemblyLine[]): AssemblyLine[] {
         const jmpLabelRegex = /\.L\d+:/;
         const isCode = (x: AssemblyLine) =>
             x?.text && (x.source !== null || jmpLabelRegex.test(x.text) || this.isFunctionName(x));
@@ -144,6 +145,10 @@ export class BaseCFGParser {
 
     protected isFunctionName(line: AssemblyLine) {
         return line.text.trim().indexOf('.') !== 0 || line.text.startsWith('.omp_');
+    }
+
+    public async processFuncNames(code: AssemblyLine[], fullRes?: CompilationResult): Promise<AssemblyLine[]> {
+        return code;
     }
 
     protected getAsmDirective(txt: string) {
