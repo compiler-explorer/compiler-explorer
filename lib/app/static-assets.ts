@@ -104,6 +104,11 @@ export async function setupStaticMiddleware(options: ServerOptions, router: Rout
                 maxAge: options.staticMaxAgeSecs * 1000,
             }),
         );
+        
+        // Serve CodeMirror modules for mobile editor testing
+        router.use('/node_modules', express.static('node_modules', {
+            maxAge: options.staticMaxAgeSecs * 1000,
+        }));
     }
 
     return createDefaultPugRequireHandler(options.staticRoot, staticManifest);

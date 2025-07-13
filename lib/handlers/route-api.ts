@@ -38,19 +38,21 @@ import {StorageBase} from '../storage/index.js';
 import * as utils from '../utils.js';
 
 import {ApiHandler} from './api.js';
-import {HandlerConfig, ShortLinkMetaData} from './handler.interfaces.js';
+import {HandlerConfig, RenderConfig, ShortLinkMetaData} from './handler.interfaces.js';
 import {cached, csp} from './middleware.js';
 
 export class RouteAPI {
     renderGoldenLayout: any;
     storageHandler: StorageBase;
     apiHandler: ApiHandler | undefined;
+    private readonly renderConfig: RenderConfig;
 
     constructor(
         private readonly router: express.Router,
         config: HandlerConfig,
     ) {
         this.renderGoldenLayout = config.renderGoldenLayout;
+        this.renderConfig = config.renderConfig;
 
         this.storageHandler = config.storageHandler;
 
@@ -79,7 +81,8 @@ export class RouteAPI {
             .get('/z/:id/code/:session', cached, csp, this.storedCodeHandler.bind(this))
             .get('/resetlayout/:id', cached, csp, this.storedStateHandlerResetLayout.bind(this))
             .get(/^\/clientstate\/(?<clientstatebase64>.*)/, cached, csp, this.unstoredStateHandler.bind(this))
-            .get('/fromsimplelayout', cached, csp, this.simpleLayoutHandler.bind(this));
+            .get('/fromsimplelayout', cached, csp, this.simpleLayoutHandler.bind(this))
+            .get('/codemirror-test', cached, csp, this.codemirrorTestHandler.bind(this));
     }
 
     storedCodeHandler(req: express.Request, res: express.Response, next: express.NextFunction) {
@@ -308,6 +311,13 @@ export class RouteAPI {
         }
 
         return metadata;
+    }
+
+    codemirrorTestHandler(req: express.Request, res: express.Response) {
+        // Render a test page for CodeMirror 6 editor
+        res.render('codemirror-test', this.renderConfig({
+            title: 'CodeMirror 6 Test - Compiler Explorer'
+        }, req.query));
     }
 }
 

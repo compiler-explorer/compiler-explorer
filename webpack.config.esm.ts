@@ -105,6 +105,7 @@ export default {
     entry: {
         main: './static/main.ts',
         noscript: './static/noscript.ts',
+        'codemirror-test': './static/codemirror-test.ts',
     },
     output: {
         filename: isDev ? '[name].js' : `[name]${webpackJsHack}[contenthash].js`,

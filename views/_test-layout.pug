@@ -1,0 +1,37 @@
+doctype html
+html(lang="en")
+  head
+    base(href=httpRoot)
+    
+    block meta
+        include meta.pug
+
+    block styles
+        link(href=require("vendor.css") rel="stylesheet")
+        link(href=require("main.css") rel="stylesheet")
+
+    //- Basic theme support
+    script
+      | (function () {
+      |   try {
+      |     var settings = window.localStorage.getItem("settings") || '{}';
+      |     var theme = JSON.parse(settings).theme || 'default';
+      |     if(theme === 'darkplus') theme = 'dark';
+      |     document.documentElement.setAttribute('data-theme', theme);
+      |   } catch (e) {
+      |     document.documentElement.setAttribute('data-theme', 'default');
+      |   }
+      | })();
+
+    //- Ensure proper scrolling behavior
+    style.
+      html, body {
+        height: 100%;
+        overflow-y: auto;
+      }
+
+  body(class="dev" style="overflow-y: auto; height: 100vh;")
+    block content
+
+    block scripts
+        // Only load test-specific scripts, not the main CE application

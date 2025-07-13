@@ -1,0 +1,475 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Editor Abstraction Demo - Compiler Explorer</title>
+    <!-- Monaco Editor -->
+    <script src="https://unpkg.com/monaco-editor@latest/min/vs/loader.js"></script>
+    <!-- CodeMirror 6 minimal setup -->
+    <script type="module">
+        try {
+            // Import minimal CodeMirror without problematic extensions
+            const { EditorView } = await import('https://esm.sh/@codemirror/view@6.23.1?bundle');
+            const { EditorState } = await import('https://esm.sh/@codemirror/state@6.4.1?bundle');
+            
+            window.CodeMirror6 = {
+                EditorView,
+                EditorState
+            };
+            window.cm6Loaded = true;
+            console.log('CodeMirror 6 minimal loaded');
+        } catch (error) {
+            console.error('Failed to load CodeMirror 6:', error);
+        }
+    </script>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+            padding: 20px;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .editor-type-selector {
+            background: white;
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        .editor-type-buttons {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            margin-top: 10px;
+        }
+
+        .editor-type-button {
+            background: #f8f9fa;
+            border: 2px solid #dee2e6;
+            color: #495057;
+        }
+
+        .editor-type-button.active {
+            background: #007acc;
+            border-color: #007acc;
+            color: white;
+        }
+
+        .editor-implementation-info {
+            margin-top: 10px;
+            padding: 10px;
+            background: #f8f9fa;
+            border-radius: 4px;
+            font-size: 14px;
+            color: #6c757d;
+        }
+
+        .demo-container {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .editor-section {
+            background: white;
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .controls {
+            background: white;
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+
+        .control-group {
+            margin-bottom: 15px;
+        }
+
+        .control-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 500;
+        }
+
+        .control-group input, .control-group select, .control-group textarea {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-family: inherit;
+        }
+
+        .control-group textarea {
+            height: 60px;
+            resize: vertical;
+        }
+
+        button {
+            background: #007acc;
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin-right: 10px;
+            margin-bottom: 10px;
+        }
+
+        button:hover {
+            background: #005a9e;
+        }
+
+        button.secondary {
+            background: #6c757d;
+        }
+
+        button.secondary:hover {
+            background: #545b62;
+        }
+
+        .mock-editor {
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+
+        .editor-toolbar {
+            background: #f8f9fa;
+            padding: 10px;
+            border-bottom: 1px solid #ddd;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .language-indicator {
+            font-weight: 500;
+            color: #495057;
+        }
+
+        .error-count {
+            font-weight: 500;
+        }
+
+        .editor-errors {
+            max-height: 150px;
+            overflow-y: auto;
+            padding: 10px;
+        }
+
+        .status {
+            background: white;
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .event-log {
+            background: #f8f9fa;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            padding: 10px;
+            height: 200px;
+            overflow-y: auto;
+            font-family: monospace;
+            font-size: 12px;
+        }
+
+        @media (max-width: 768px) {
+            .demo-container {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>Editor Abstraction Layer Demo</h1>
+        <p>Interactive demonstration of the unified editor interface for Compiler Explorer mobile support</p>
+    </div>
+
+    <div class="editor-type-selector">
+        <h3>Editor Implementation</h3>
+        <p>Switch between different editor implementations using the same abstraction API</p>
+        <div class="editor-type-buttons">
+            <button class="editor-type-button active" data-type="mock" onclick="switchEditorType('mock')">
+                Mock Editor
+            </button>
+            <button class="editor-type-button" data-type="monaco" onclick="switchEditorType('monaco')">
+                Monaco Editor
+            </button>
+            <button class="editor-type-button" data-type="codemirror" onclick="switchEditorType('codemirror')">
+                CodeMirror 6
+            </button>
+        </div>
+        <div class="editor-implementation-info" id="implementation-info">
+            <strong>Mock Editor:</strong> Lightweight test implementation using textarea - perfect for testing the abstraction layer
+        </div>
+    </div>
+
+    <div class="controls">
+        <h3>Editor Controls</h3>
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 15px;">
+            <div class="control-group">
+                <label for="content-input">Set Content:</label>
+                <textarea id="content-input" placeholder="Enter code content...">#include &lt;iostream&gt;
+int main() {
+    std::cout &lt;&lt; "Hello World!" &lt;&lt; std::endl;
+    return 0;
+}</textarea>
+                <button onclick="setContent()">Set Content</button>
+            </div>
+
+            <div class="control-group">
+                <label for="language-select">Language:</label>
+                <select id="language-select">
+                    <option value="cpp">C++</option>
+                    <option value="c">C</option>
+                    <option value="javascript">JavaScript</option>
+                    <option value="python">Python</option>
+                    <option value="rust">Rust</option>
+                    <option value="go">Go</option>
+                </select>
+                <button onclick="setLanguage()">Set Language</button>
+            </div>
+
+            <div class="control-group">
+                <label>Quick Actions:</label>
+                <button onclick="addSampleErrors()">Add Sample Errors</button>
+                <button onclick="clearErrors()">Clear Errors</button>
+                <button class="secondary" onclick="getEditorInfo()">Get Editor Info</button>
+                <button class="secondary" onclick="clearLog()">Clear Log</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="demo-container">
+        <div class="editor-section" style="grid-column: 1 / -1;">
+            <h3>Editor</h3>
+            <div id="editor-container"></div>
+        </div>
+    </div>
+
+    <div class="status">
+        <h3>Event Log</h3>
+        <div id="event-log" class="event-log"></div>
+    </div>
+
+    <script src="editor-abstraction.js"></script>
+    <script>
+        // Initialize editor
+        let editor;
+        let eventLogElement;
+        let currentEditorType = 'mock';
+        let isMonacoLoaded = false;
+
+        function log(message) {
+            if (!eventLogElement) {
+                eventLogElement = document.getElementById('event-log');
+            }
+            const timestamp = new Date().toLocaleTimeString();
+            eventLogElement.innerHTML += `[${timestamp}] ${message}\n`;
+            eventLogElement.scrollTop = eventLogElement.scrollHeight;
+        }
+
+        async function loadMonaco() {
+            if (isMonacoLoaded) return;
+            
+            return new Promise((resolve) => {
+                require.config({ 
+                    paths: { 'vs': 'https://unpkg.com/monaco-editor@latest/min/vs' }
+                });
+                require(['vs/editor/editor.main'], function() {
+                    isMonacoLoaded = true;
+                    log('Monaco Editor loaded successfully');
+                    resolve();
+                });
+            });
+        }
+
+        async function initializeEditor(editorType = 'mock') {
+            const container = document.getElementById('editor-container');
+
+            // Dispose existing editor
+            if (editor) {
+                try {
+                    editor.dispose();
+                } catch (e) {
+                    console.warn('Error disposing editor:', e);
+                }
+            }
+
+            // Clear container
+            container.innerHTML = '';
+
+            // Load Monaco if needed
+            if (editorType === 'monaco' && !isMonacoLoaded) {
+                log('Loading Monaco Editor...');
+                await loadMonaco();
+            }
+
+            // Create new editor
+            const options = { language: 'cpp', editorType: editorType };
+            
+            log(`Creating ${editorType} editor...`);
+            editor = window.EditorAbstraction.createEditor(container, options);
+
+            // Wait a bit for async editors to initialize
+            setTimeout(() => {
+                setupEditorListeners();
+            }, 100);
+        }
+
+        function setupEditorListeners() {
+            if (!editor) return;
+
+            // Set up change listener
+            editor.onChange(() => {
+                log('Editor: Content changed');
+            });
+
+            log(`${currentEditorType} editor initialized successfully`);
+        }
+
+        async function switchEditorType(type) {
+            if (currentEditorType === type) return;
+            
+            // Save current content
+            const currentContent = editor ? editor.getValue() : '';
+            const currentLanguage = editor ? editor.getLanguage() : 'cpp';
+            
+            currentEditorType = type;
+            
+            // Update UI
+            document.querySelectorAll('.editor-type-button').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            document.querySelector(`[data-type="${type}"]`).classList.add('active');
+            
+            // Update info
+            const infoTexts = {
+                'mock': '<strong>Mock Editor:</strong> Lightweight test implementation using textarea - perfect for testing the abstraction layer',
+                'monaco': '<strong>Monaco Editor:</strong> Microsoft\'s powerful code editor used in VS Code - full desktop functionality with syntax highlighting and error markers',
+                'codemirror': '<strong>CodeMirror 6:</strong> Modern mobile-friendly editor with transaction-based state management - ideal for touch devices'
+            };
+            document.getElementById('implementation-info').innerHTML = infoTexts[type];
+            
+            log(`Switching to ${type} editor...`);
+            
+            // Initialize new editor
+            await initializeEditor(type);
+            
+            // Restore content
+            setTimeout(() => {
+                if (currentContent) {
+                    setContent(currentContent);
+                }
+                if (currentLanguage !== 'cpp') {
+                    setLanguage(currentLanguage);
+                }
+            }, 200);
+        }
+
+        function setContent(contentOverride = null) {
+            const content = contentOverride || document.getElementById('content-input').value;
+            if (editor) {
+                try {
+                    editor.setValue(content);
+                    log(`Content set: "${content.substring(0, 50)}${content.length > 50 ? '...' : ''}"`);
+                } catch (e) {
+                    console.warn('Error setting content:', e);
+                    log(`Error setting content: ${e.message}`);
+                }
+            }
+        }
+
+        function setLanguage(languageOverride = null) {
+            const language = languageOverride || document.getElementById('language-select').value;
+            if (editor) {
+                try {
+                    editor.setLanguage(language);
+                    log(`Language changed to: ${language}`);
+                } catch (e) {
+                    console.warn('Error setting language:', e);
+                    log(`Error setting language: ${e.message}`);
+                }
+            }
+        }
+
+        function addSampleErrors() {
+            const errors = [
+                { line: 1, column: 1, message: 'Missing semicolon', severity: 'error' },
+                { line: 3, column: 15, message: 'Unused variable', severity: 'warning' },
+                { line: 5, column: 8, message: 'Type mismatch', severity: 'error' }
+            ];
+
+            if (editor) {
+                editor.setErrors(errors);
+                log(`Added ${errors.length} sample errors`);
+            }
+        }
+
+        function clearErrors() {
+            if (editor) {
+                editor.setErrors([]);
+                log('Errors cleared');
+            }
+        }
+
+        function getEditorInfo() {
+            if (editor) {
+                const info = {
+                    content: editor.getValue(),
+                    language: editor.getLanguage(),
+                    errors: editor.getErrors().length,
+                    disposed: editor.isDisposed()
+                };
+
+                log(`Editor Info: ${JSON.stringify(info)}`);
+            }
+        }
+
+        function clearLog() {
+            if (eventLogElement) {
+                eventLogElement.innerHTML = '';
+            }
+        }
+
+        // Initialize when page loads
+        document.addEventListener('DOMContentLoaded', async () => {
+            eventLogElement = document.getElementById('event-log');
+            log('Demo page loaded');
+            
+            await initializeEditor('mock');
+            
+            // Set some initial content
+            setTimeout(() => {
+                setContent();
+            }, 200);
+        });
+
+        // Cleanup on page unload
+        window.addEventListener('beforeunload', () => {
+            if (editor) editor.dispose();
+        });
+    </script>
+</body>
+</html>

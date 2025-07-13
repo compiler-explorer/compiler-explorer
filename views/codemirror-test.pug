@@ -1,0 +1,47 @@
+extends _test-layout.pug
+
+append scripts
+    script(src=require("runtime.js"))
+    script(src=require("vendor.js"))
+    script(src=require("codemirror-test.js"))
+
+block content
+    .container.mt-4
+        h1 CodeMirror 6 Test Page
+        
+        p This page tests the CodeMirror 6 integration for mobile editor support in Compiler Explorer.
+        
+        .row
+            .col-md-6
+                h3 Mock Editor (Current Approach)
+                #mock-editor
+                
+            .col-md-6  
+                h3 CodeMirror 6 Editor (Transaction-based)
+                #codemirror-editor
+                
+        .row.mt-4
+            .col-12
+                h3 CodeMirror 6 Status
+                #cm-status Loading CodeMirror 6...
+                
+        .row.mt-3
+            .col-12
+                h3 API Tests
+                button#test-setValue.btn.btn-primary.me-2 Test setValue()
+                button#test-getValue.btn.btn-secondary.me-2 Test getValue()
+                
+        .row.mt-3
+            .col-12
+                h3 Output
+                #cm-output Content will appear here
+                
+        .row.mt-4
+            .col-12
+                h3 Implementation Notes
+                ul
+                    li Mock Editor: Simple textarea-based implementation for testing abstraction
+                    li CodeMirror 6: Real editor with transaction-based state management  
+                    li Both use identical abstraction API: setValue(), getValue(), onChange()
+                    li CodeMirror uses dispatch() for state changes, Mock uses direct value assignment
+                    li This demonstrates how the abstraction layer works across different implementations
