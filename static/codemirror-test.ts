@@ -1,18 +1,13 @@
 // CodeMirror 6 test page entry point
-import {EditorView} from '@codemirror/view';
-import {EditorState} from '@codemirror/state';
-import {syntaxHighlighting, HighlightStyle} from '@codemirror/language';
-import {tags} from '@lezer/highlight';
+import {EditorView, basicSetup} from 'codemirror';
 import {cpp} from '@codemirror/lang-cpp';
+// import {createEditor, createEditorSync} from './editor-abstraction';
+import {CodeMirrorMobileEditor} from './codemirror-mobile-editor';
 
 console.log('CodeMirror test script loaded, imports successful');
 console.log('EditorView:', EditorView);
-console.log('EditorState:', EditorState);
-console.log('C++ language support:', cpp);
-console.log('C++ language function result:', cpp());
-console.log('Syntax highlighting:', syntaxHighlighting);
-console.log('Highlight tags:', tags);
-console.log('C++ language support:', cpp);
+console.log('basicSetup:', basicSetup);
+console.log('cpp:', cpp);
 
 function initializeCodeMirrorTest() {
     console.log('CodeMirror 6 test page loaded - DOM ready');
@@ -35,141 +30,89 @@ int main() {
     const cmContainer = document.getElementById('codemirror-editor');
     if (cmContainer) {
         try {
-            console.log('Creating CodeMirror editor...');
-            
-            const cppExtension = cpp();
-            console.log('C++ extension created:', cppExtension);
-            console.log('C++ extension type:', typeof cppExtension);
-            console.log('C++ extension constructor:', cppExtension.constructor?.name);
-            
-            // Create a custom highlight style to avoid version conflicts
-            const customHighlightStyle = HighlightStyle.define([
-                { tag: tags.comment, color: '#008000' },
-                { tag: tags.keyword, color: '#0000FF' },
-                { tag: tags.string, color: '#800080' },
-                { tag: tags.number, color: '#FF0000' },
-                { tag: tags.variableName, color: '#000000' },
-                { tag: tags.typeName, color: '#008080' },
-                { tag: tags.operator, color: '#000000' },
-                { tag: tags.bracket, color: '#000000' }
-            ]);
-            
-            console.log('Custom highlight style created:', customHighlightStyle);
-            
-            const highlightExtension = syntaxHighlighting(customHighlightStyle);
-            console.log('Highlight extension created:', highlightExtension);
-            
-            const extensions = [
-                cppExtension, // Add C++ language support first
-                highlightExtension, // Add syntax highlighting
-                EditorView.lineWrapping,
-                EditorView.theme({
-                    '&': { height: '250px', border: '1px solid #ddd' },
-                    '.cm-content': { padding: '10px', fontFamily: 'monospace', fontSize: '14px' },
-                    '.cm-focused': { outline: 'none' }
-                }),
-                EditorView.updateListener.of(update => {
-                    if (update.docChanged) {
-                        console.log('CodeMirror content changed');
-                        const outputEl = document.getElementById('cm-output');
-                        if (outputEl) {
-                            outputEl.textContent = 
-                                'Content: ' + view.state.doc.toString().substring(0, 50) + '...';
-                        }
-                    }
-                })
-            ];
-            
-            console.log('Extensions array:', extensions);
-            console.log('Extensions length:', extensions.length);
-            extensions.forEach((ext, i) => {
-                console.log(`Extension ${i}:`, ext, typeof ext);
-            });
-            
-            const state = EditorState.create({
-                doc: `// CodeMirror 6 Editor (real transaction-based)
-#include <iostream>
+            // Exact official example
+            new EditorView({
+                parent: cmContainer,
+                doc: `#include <iostream>
 int main() {
-    std::cout << "Hello from CodeMirror 6!" << std::endl;
+    std::cout << "Hello World!" << std::endl;
     return 0;
 }`,
-                extensions: extensions
+                extensions: [basicSetup, cpp()]
             });
-            
-            console.log('EditorState created:', state);
-            console.log('State language data:', state.languageDataAt('language', 0));
-            
-            const view = new EditorView({
-                state: state,
-                parent: cmContainer
-            });
-            
-            console.log('EditorView created:', view);
-            
-            // Check if syntax highlighting is working
-            setTimeout(() => {
-                console.log('=== Checking syntax highlighting after render ===');
-                const cmContent = cmContainer.querySelector('.cm-content');
-                if (cmContent) {
-                    console.log('CM content element found:', cmContent);
-                    const highlightedElements = cmContent.querySelectorAll('[class*="cm-"]');
-                    console.log('Highlighted elements found:', highlightedElements.length);
-                    Array.from(highlightedElements).forEach((el, i) => {
-                        if (i < 5) { // Log first 5 elements
-                            console.log(`Highlighted element ${i}:`, el.className, el.textContent);
-                        }
-                    });
-                    
-                    // Check for specific C++ tokens
-                    const includeElements = cmContent.querySelectorAll('[class*="keyword"], [class*="include"]');
-                    console.log('Include/keyword elements:', includeElements.length);
-                    
-                    const commentElements = cmContent.querySelectorAll('[class*="comment"]');
-                    console.log('Comment elements:', commentElements.length);
-                } else {
-                    console.log('CM content element not found');
-                }
-            }, 100);
-            
-            // Test the abstraction API
-            const setValueBtn = document.getElementById('test-setValue');
-            if (setValueBtn) {
-                setValueBtn.onclick = () => {
-                    view.dispatch({
-                        changes: {
-                            from: 0,
-                            to: view.state.doc.length,
-                            insert: 'int main() { return 42; }'
-                        }
-                    });
-                };
-            }
-            
-            const getValueBtn = document.getElementById('test-getValue');
-            if (getValueBtn) {
-                getValueBtn.onclick = () => {
-                    const content = view.state.doc.toString();
-                    const outputEl = document.getElementById('cm-output');
-                    if (outputEl) {
-                        outputEl.textContent = 'Content: ' + content;
-                    }
-                };
-            }
             
             console.log('CodeMirror 6 editor created successfully');
-            const statusEl = document.getElementById('cm-status');
-            if (statusEl) {
-                statusEl.textContent = 'CodeMirror 6 loaded successfully with C++ syntax highlighting!';
-                statusEl.style.color = 'green';
-            }
             
         } catch (error) {
             console.error('Failed to create CodeMirror editor:', error);
-            const statusEl = document.getElementById('cm-status');
-            if (statusEl) {
-                statusEl.textContent = 'CodeMirror 6 failed to load: ' + (error as Error).message;
-                statusEl.style.color = 'red';
-            }
+        }
+    }
+    
+    // Test 3: CodeMirror Mobile Editor Class
+    const mobileContainer = document.getElementById('mobile-editor');
+    if (mobileContainer) {
+        try {
+            console.log('Creating CodeMirrorMobileEditor...');
+            
+            const mobileEditor = new CodeMirrorMobileEditor(mobileContainer, {
+                language: 'cpp',
+                fontSize: 14,
+            });
+            
+            mobileEditor.setValue(`// CodeMirror Mobile Editor Test
+#include <iostream>
+#include <vector>
+
+int main() {
+    std::vector<int> numbers = {1, 2, 3, 4, 5};
+    
+    for (const auto& num : numbers) {
+        std::cout << "Number: " << num << std::endl;
+    }
+    
+    return 0;
+}`);
+
+            // Test language switching
+            setTimeout(() => {
+                console.log('Testing language switch to JavaScript...');
+                mobileEditor.setLanguage('javascript');
+                mobileEditor.setValue(`// JavaScript test
+function fibonacci(n) {
+    if (n <= 1) return n;
+    return fibonacci(n - 1) + fibonacci(n - 2);
+}
+
+console.log('Fibonacci(10):', fibonacci(10));`);
+            }, 2000);
+
+            // Test error display
+            setTimeout(() => {
+                console.log('Testing error display...');
+                mobileEditor.setErrors([
+                    {
+                        line: 3,
+                        column: 10,
+                        message: 'Example compilation error',
+                        severity: 'error'
+                    },
+                    {
+                        line: 8,
+                        column: 5,
+                        message: 'Example warning',
+                        severity: 'warning'
+                    }
+                ]);
+            }, 4000);
+
+            // Test change callback
+            mobileEditor.onChange(() => {
+                console.log('Mobile editor content changed, new length:', mobileEditor.getValue().length);
+            });
+            
+            console.log('CodeMirrorMobileEditor created successfully');
+        } catch (error) {
+            console.error('Failed to create CodeMirrorMobileEditor:', error);
         }
     }
 }

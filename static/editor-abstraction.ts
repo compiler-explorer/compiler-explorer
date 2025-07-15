@@ -94,8 +94,25 @@ export class MockEditor implements ICompilerExplorerEditor {
 }
 
 // Factory function for creating editors
-export function createEditor(container: HTMLElement, options: EditorOptions): ICompilerExplorerEditor {
-    // For now, just return mock editor for testing
-    // Later this will detect mobile and return appropriate implementation
+export async function createEditor(container: HTMLElement, options: EditorOptions): Promise<ICompilerExplorerEditor> {
+    // Detect mobile/touch devices
+    const isMobile = window.compilerExplorerOptions?.mobileViewer || 
+                    'ontouchstart' in window || 
+                    navigator.maxTouchPoints > 0;
+    
+    if (isMobile) {
+        // Dynamic import for CodeMirror to avoid loading on desktop
+        const module = await import('./codemirror-mobile-editor');
+        return new module.CodeMirrorMobileEditor(container, options);
+    } else {
+        // Return mock editor for desktop (later this will be Monaco wrapper)
+        return new MockEditor();
+    }
+}
+
+// Synchronous factory for immediate creation (uses mock for now)
+export function createEditorSync(container: HTMLElement, options: EditorOptions): ICompilerExplorerEditor {
+    // For now, return mock editor for testing
+    // This will be replaced with proper sync creation once we integrate
     return new MockEditor();
 }
