@@ -4,15 +4,24 @@ This script migrates Compiler Explorer shortlinks from local file storage to AWS
 
 ## Prerequisites
 
-- Python 3.6+
-- boto3 library: `pip install boto3`
+- Python 3.8+
+- Poetry (for dependency management)
 - AWS credentials configured (via AWS CLI, environment variables, or IAM role)
+
+## Installation
+
+Install dependencies using Poetry:
+
+```bash
+cd etc/scripts/shortlinkmigration
+poetry install
+```
 
 ## Usage
 
 ### Dry Run (recommended first)
 ```bash
-python migrate_shortlinks.py \
+poetry run python migrate_shortlinks.py \
     --local-storage-dir ./lib/storage/data/ \
     --s3-bucket storage.godbolt.org \
     --s3-prefix ce/ \
@@ -23,7 +32,7 @@ python migrate_shortlinks.py \
 
 ### Actual Migration
 ```bash
-python migrate_shortlinks.py \
+poetry run python migrate_shortlinks.py \
     --local-storage-dir ./lib/storage/data/ \
     --s3-bucket storage.godbolt.org \
     --s3-prefix ce/ \
@@ -33,7 +42,7 @@ python migrate_shortlinks.py \
 
 ### With Verification
 ```bash
-python migrate_shortlinks.py \
+poetry run python migrate_shortlinks.py \
     --local-storage-dir ./lib/storage/data/ \
     --s3-bucket storage.godbolt.org \
     --s3-prefix ce/ \
