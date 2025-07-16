@@ -188,6 +188,52 @@ export class ClangCompiler extends BaseCompiler {
         return userOptions;
     }
 
+    override orderArguments(
+        options: string[],
+        inputFilename: string,
+        libIncludes: string[],
+        libOptions: string[],
+        libPaths: string[],
+        libLinks: string[],
+        userOptions: string[],
+        staticLibLinks: string[],
+    ) {
+        // For cross-compilation with libc++, we need to prevent linking against x86 libc++ libraries
+        if (
+            this.lang.id === 'c++' &&
+            !this.buildenvsetup?.compilerSupportsX86 && // cross-compilation
+            _.any(userOptions, option => {
+                return option === '-stdlib=libc++';
+            })
+        ) {
+            // Add -nostdlib++ to prevent automatic linking of standard library
+            // This prevents clang from automatically adding x86 libc++ libraries when cross-compiling
+            const filteredOptions = options.concat(['-nostdlib++']);
+
+            return super.orderArguments(
+                filteredOptions,
+                inputFilename,
+                libIncludes,
+                libOptions,
+                libPaths,
+                libLinks,
+                userOptions,
+                staticLibLinks,
+            );
+        }
+
+        return super.orderArguments(
+            options,
+            inputFilename,
+            libIncludes,
+            libOptions,
+            libPaths,
+            libLinks,
+            userOptions,
+            staticLibLinks,
+        );
+    }
+
     override async afterCompilation(
         result: CompilationResult,
         doExecute: boolean,
