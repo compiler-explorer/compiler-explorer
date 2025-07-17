@@ -36,8 +36,6 @@ import type {
     OptPipelineBackendOptions,
     OptPipelineOutput,
 } from '../../types/compilation/opt-pipeline-output.interfaces.js';
-import {LLVMIRDemangler} from '../demangler/llvm.js';
-import {LlvmIrParser} from '../llvm-ir.js';
 import {AmdgpuAsmParser} from '../parsers/asm-parser-amdgpu.js';
 import {MlirAsmParser} from '../parsers/asm-parser-mlir.js';
 import {PTXAsmParser} from '../parsers/asm-parser-ptx.js';
@@ -56,7 +54,6 @@ export class TritonCompiler extends BaseCompiler {
 
     group: string;
     parserMap: Record<string, IAsmParser>;
-    llvmIrParser: LlvmIrParser;
     mlirPassDumpParser: MlirPassDumpParser;
 
     constructor(compilerInfo: PreliminaryCompilerInfo, env: CompilationEnvironment) {
@@ -87,10 +84,6 @@ export class TritonCompiler extends BaseCompiler {
             '.amdgcn': amdgpuAsmParser,
             '.llir': mlirAsmParser,
         };
-
-        // LLVM IR parser is a bit special, as it does not implement the IAsmParser interface
-        // and needs to be handled separately
-        this.llvmIrParser = new LlvmIrParser(this.compilerProps, undefined as unknown as LLVMIRDemangler);
     }
 
     override optionsForFilter(filters: ParseFiltersAndOutputOptions, outputFilename: string): string[] {
@@ -139,7 +132,7 @@ export class TritonCompiler extends BaseCompiler {
                 let device;
                 if (ext === '.llir') {
                     device = await this.postProcessAsm(
-                        this.llvmIrParser.process(data, {
+                        this.llvmIr.process(data, {
                             filterDebugInfo: false,
                             filterIRMetadata: false,
                             filterAttributes: false,
