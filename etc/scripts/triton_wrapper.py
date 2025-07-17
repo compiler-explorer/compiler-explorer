@@ -13,6 +13,24 @@ import triton
 
 
 def patch_triton(output_dir: Path, backend: str):
+    """
+    Patch Triton to dump the compiled kernels to output dir without actually running them.
+
+    This is needed because
+    1. Triton does not easily support such use case. There exists an AOT compiler at
+       https://github.com/triton-lang/triton/blob/main/python/triton/tools/compile.py,
+       but it requires a bunch of boilerplate code and also requires additional user
+       input to specify the kernel name, signature, etc.
+    2. Even if Triton adds such support, older versions of Triton (e.g., v2.3.x) still
+       requirs such patching to work.
+
+    This function is a collection of hacks. It has been tested to work with Triton
+    2.3.0, 2.3.1, 3.0.0, 3.1.0, 3.2.0, 3.3.0, 3.3.1.
+    """
+
+    # We mock a GPU driver to avoid the need to initialize CUDA/ROCm
+    # The driver is only used in runtime instead of compile time,
+    # so it's safe to do this.
     class GPUDriver:
         def get_current_device(self):
             return 0
@@ -45,8 +63,9 @@ def patch_triton(output_dir: Path, backend: str):
         # For Triton v2.3.x, we don't have set_active
         triton.runtime.driver._obj = GPUDriver()
 
+    # For Triton v2.3.x, there are some driver code that goes into
+    # the generic code path, so we need to patch it as well.
     try:
-        # For Triton v2.3.x, we need to patch make_launcher_stub
         from triton.compiler.backends.cuda import CUDABackend
 
         def make_launcher_stub(*args, **kwargs):
@@ -58,6 +77,10 @@ def patch_triton(output_dir: Path, backend: str):
     except ImportError:
         pass
 
+    # Usually, Triton will compile the kernel and run it when we call
+    # `kernel[grid](args)`. However, we want to dump the compiled kernel
+    # without actually running it. So we patch the `__getitem__` method
+    # of `triton.JITFunction` with `wramup=True` to avoid actual execution.
     def override_getitem(self: triton.JITFunction, grid):
         def inner(*args, **kwargs):
             return self.run(
