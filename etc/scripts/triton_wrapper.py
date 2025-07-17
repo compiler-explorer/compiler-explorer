@@ -6,13 +6,14 @@ import os
 import shutil
 import sys
 from pathlib import Path
-from typing import Any, Dict, Union
+from typing import Any, Dict, TYPE_CHECKING, Union
 
-from triton import JITFunction
-from triton.compiler.compiler import ASTSource, IRSource
+import triton
+
+IS_TRITON_3 = triton.__version__.startswith("3.")
 
 
-def override_getitem(self: JITFunction, grid):
+def override_getitem(self: triton.JITFunction, grid):
     def inner(*args, **kwargs):
         return self.run(
             grid=grid,
@@ -24,15 +25,32 @@ def override_getitem(self: JITFunction, grid):
     return inner
 
 
-def load_input(input_file: Path) -> Dict[str, JITFunction]:
-    spec = importlib.util.spec_from_file_location("example", input_file)
-    module = importlib.util.module_from_spec(spec)
-    spec.loader.exec_module(module)
-    return {
-        name: fn
-        for name, fn in inspect.getmembers(module)
-        if isinstance(fn, JITFunction)
-    }
+def patch_triton(output_dir: Path):
+    class GPUDriver:
+        def get_current_device(self):
+            return 0
+
+        def get_current_stream(self, device):
+            return 0
+
+        def get_current_target(self):
+            try:
+                from triton.compiler.compiler import GPUTarget
+
+                return GPUTarget(backend="cuda", arch=89, warp_size=32)
+            except ImportError:
+                # For Triton v2.3.1 and below, we don't have GPUTarget
+                return ("cuda", 89)
+
+    if IS_TRITON_3:
+        triton.runtime.driver.set_active(GPUDriver())
+    else:
+        # For Triton v2.3.1 and below, we don't have set_active
+        triton.runtime.driver._obj = GPUDriver()
+
+    triton.JITFunction.__getitem__ = override_getitem
+    # For Triton v3.1.0 and below, we don't have TRITON_DUMP_DIR
+    triton.runtime.cache.default_cache_dir = lambda *args, **kwargs: output_dir
 
 
 def main(input_file: Path, output_file: Path, opt_pipeline_file: Path):
@@ -45,10 +63,17 @@ def main(input_file: Path, output_file: Path, opt_pipeline_file: Path):
     os.environ["TRITON_ALWAYS_COMPILE"] = "1"
     os.environ["TRITON_KERNEL_DUMP"] = "1"
     os.environ["TRITON_DUMP_DIR"] = str(output_dir)
-    JITFunction.__getitem__ = override_getitem
+    patch_triton(output_dir)
 
     # Run the script
-    jit_functions = load_input(input_file)
+    spec = importlib.util.spec_from_file_location("example", input_file)
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    jit_functions = {
+        name: fn
+        for name, fn in inspect.getmembers(module)
+        if isinstance(fn, triton.JITFunction)
+    }
 
     # Prepare output folder
     bin_files = {}
