@@ -243,43 +243,43 @@ export class MlirPassDumpParser {
         for (const [function_name, passDumps] of Object.entries(passDumpsByFunction)) {
             const passes: Pass[] = [];
 
-            // First, collect all "Before" passes in a map keyed by pass name
-            // Since the same pass might occur multiple times, we store arrays of dumps
-            const beforePassesMap = new Map<string, PassDump[]>();
+            // Use a stack of "Before" passes
+            const beforePasses: PassDump[] = [];
 
-            // Process all dumps to collect "Before" passes
+            // Collect all "Before" passes in order
             for (const dump of passDumps) {
                 if (dump.header.startsWith('IR Dump Before ')) {
-                    const passName = extractPassName(dump.header);
-                    if (!beforePassesMap.has(passName)) {
-                        beforePassesMap.set(passName, []);
-                    }
-                    beforePassesMap.get(passName)!.push(dump);
+                    beforePasses.push(dump);
                 }
             }
 
-            // Now process all dumps again to create Pass objects
+            // Process "After" passes and match with "Before" passes
             for (const dump of passDumps) {
                 if (dump.header.startsWith('IR Dump After ')) {
-                    const passName = extractPassName(dump.header);
+                    const afterPassName = extractPassName(dump.header);
                     const pass: Pass = {
-                        name: passName,
+                        name: afterPassName,
                         machine: false,
                         after: dump.lines,
                         before: [],
                         irChanged: true,
                     };
 
-                    // Find the corresponding "Before" pass
-                    const beforeDumps = beforePassesMap.get(passName);
-                    if (beforeDumps && beforeDumps.length > 0) {
-                        // Use the first available "Before" pass with this name
-                        const beforeDump = beforeDumps.shift()!; // Remove from array
-                        pass.before = beforeDump.lines;
+                    // Find matching "Before" pass by name
+                    for (let i = 0; i < beforePasses.length; i++) {
+                        const beforePassName = extractPassName(beforePasses[i].header);
+                        if (beforePassName === afterPassName) {
+                            // Found a match, use it and remove from the stack
+                            pass.before = beforePasses[i].lines;
 
-                        // Check for equality
-                        pass.irChanged =
-                            pass.before.map(x => x.text).join('\n') !== pass.after.map(x => x.text).join('\n');
+                            // Check for equality
+                            pass.irChanged =
+                                pass.before.map(x => x.text).join('\n') !== pass.after.map(x => x.text).join('\n');
+
+                            // Remove the matched "Before" pass
+                            beforePasses.splice(i, 1);
+                            break;
+                        }
                     }
 
                     passes.push(pass);
@@ -287,34 +287,17 @@ export class MlirPassDumpParser {
             }
 
             // Handle any remaining "Before" passes that don't have corresponding "After" passes
-            for (const [passName, beforeDumps] of beforePassesMap.entries()) {
-                for (const beforeDump of beforeDumps) {
-                    const pass: Pass = {
-                        name: passName,
-                        machine: false,
-                        before: beforeDump.lines,
-                        after: [],
-                        irChanged: true, // Assume changed since there's no "After" to compare with
-                    };
-                    passes.push(pass);
-                }
+            for (const beforeDump of beforePasses) {
+                const passName = extractPassName(beforeDump.header);
+                const pass: Pass = {
+                    name: passName,
+                    machine: false,
+                    before: beforeDump.lines,
+                    after: [],
+                    irChanged: true, // Assume changed since there's no "After" to compare with
+                };
+                passes.push(pass);
             }
-
-            // Sort passes by their order in the original passDumps array
-            // This ensures we maintain the chronological order of passes
-            const passOrder = new Map<string, number>();
-            passDumps.forEach((dump, index) => {
-                const key = dump.header;
-                if (!passOrder.has(key)) {
-                    passOrder.set(key, index);
-                }
-            });
-
-            passes.sort((a, b) => {
-                const aIndex = passOrder.get(a.name) || 0;
-                const bIndex = passOrder.get(b.name) || 0;
-                return aIndex - bIndex;
-            });
 
             final_output[function_name] = passes;
         }
