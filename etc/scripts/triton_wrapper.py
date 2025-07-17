@@ -28,10 +28,38 @@ def patch_triton(output_dir: Path, backend: str, arch: Union[int, str], warp_siz
     2.3.0, 2.3.1, 3.0.0, 3.1.0, 3.2.0, 3.3.0, 3.3.1.
     """
 
-    # We mock a GPU driver to avoid the need to initialize CUDA/ROCm
+    # Usually, Triton will compile the kernel and run it when we call
+    # `kernel[grid](args)`. However, we want to dump the compiled kernel
+    # without actually running it.
+    # `CompiledKernel` represents a handle to a compiled kernel, ready to be
+    # launched. We patch it to be a no-op, but still hold the necessary fields
+    # for Triton to be functional.
+    class MockCompiledKernel:
+        def __init__(self, *args, **kwargs):
+            pass
+
+        def __getitem__(self, grid):
+            return lambda *args, **kwargs: None
+
+        def __getattr__(self, name):
+            if name in ["function", "packed_metadata"]:
+                return None
+            if name in ["launch_metadata", "run"]:
+                return lambda *args, **kwargs: None
+            # The following fields are needed for Triton v2.3.x
+            if name in ["num_warps", "num_ctas",  "shared"]:
+                return None
+            if name == "cluster_dims":
+                return [0, 0, 0]
+            if name == "metadata":
+                return {"tensormaps_info": None}
+
+    triton.compiler.compiler.CompiledKernel = MockCompiledKernel
+
+    # We mock a GPU driver to avoid the need to initialize CUDA/ROCm.
     # The driver is only used in runtime instead of compile time,
     # so it's safe to do this.
-    class GPUDriver:
+    class MockGPUDriver:
         def get_current_device(self):
             return 0
 
@@ -47,18 +75,27 @@ def patch_triton(output_dir: Path, backend: str, arch: Union[int, str], warp_siz
                 # For Triton v2.3.x, we don't have GPUTarget
                 return (backend, arch)
 
+        def get_benchmarker(self):
+            return lambda kernel_call, quantiles: [0.0] * len(quantiles)
+
         # This is needed for Triton v2.3.x, which doesn't support AMD, so we just assume it's CUDA
         @property
         def binary_ext(self):
             return "cubin"
 
+        # Needed for Triton v2.3.x
+        def assemble_tensormap_to_arg(self, *args, **kwargs):
+            return []
+
+    # For Triton v2.3.x, there is no `triton.runtime.driver.set_active`,
+    # so manually set the driver to the mocked one.
     try:
         from triton.runtime.driver import DriverConfig
 
-        triton.runtime.driver.set_active(GPUDriver())
+        triton.runtime.driver.set_active(MockGPUDriver())
     except ImportError:
-        # For Triton v2.3.x, we don't have set_active
-        triton.runtime.driver._obj = GPUDriver()
+        triton.runtime.driver._obj = MockGPUDriver()
+
 
     # For Triton v2.3.x, there are some driver code that goes into
     # the generic code path, so we need to patch it as well.
@@ -75,23 +112,6 @@ def patch_triton(output_dir: Path, backend: str, arch: Union[int, str], warp_siz
         CUDABackend.make_launcher_stub = make_launcher_stub
     except ImportError:
         pass
-
-    # Usually, Triton will compile the kernel and run it when we call
-    # `kernel[grid](args)`. However, we want to dump the compiled kernel
-    # without actually running it. So we patch the `__getitem__` method
-    # of `triton.JITFunction` with `wramup=True` to avoid actual execution.
-    def override_getitem(self: triton.JITFunction, grid):
-        def inner(*args, **kwargs):
-            return self.run(
-                grid=grid,
-                warmup=True,  # avoids actual kernel execution
-                *args,
-                **kwargs,
-            )
-
-        return inner
-
-    triton.JITFunction.__getitem__ = override_getitem
 
     # For Triton v3.1.0 and below, we don't have TRITON_DUMP_DIR
     triton.runtime.cache.default_cache_dir = lambda *args, **kwargs: output_dir
