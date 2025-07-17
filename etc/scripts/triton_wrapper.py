@@ -4,13 +4,13 @@ import inspect
 import json
 import os
 import shutil
+import tempfile
 import sys
 from pathlib import Path
 from typing import Any, Dict, TYPE_CHECKING, Union
 
 import triton
 
-IS_TRITON_3 = triton.__version__.startswith("3.")
 
 
 def override_getitem(self: triton.JITFunction, grid):
@@ -42,11 +42,30 @@ def patch_triton(output_dir: Path):
                 # For Triton v2.3.1 and below, we don't have GPUTarget
                 return ("cuda", 89)
 
-    if IS_TRITON_3:
+        @property
+        def binary_ext(self):
+            return "cubin"
+
+    try:
+        from triton.runtime.driver import DriverConfig
+
         triton.runtime.driver.set_active(GPUDriver())
-    else:
+    except ImportError:
         # For Triton v2.3.1 and below, we don't have set_active
         triton.runtime.driver._obj = GPUDriver()
+
+    try:
+        # For Triton v2.3.1 and below, we need to patch make_launcher_stub
+        from triton.compiler.backends.cuda import CUDABackend
+
+        def make_launcher_stub(*args, **kwargs):
+            tmp_file = tempfile.NamedTemporaryFile(suffix=".py", delete=False, mode="w")
+            tmp_file.write("def launch(): pass")
+            return tmp_file.name
+
+        CUDABackend.make_launcher_stub = make_launcher_stub
+    except ImportError:
+        pass
 
     triton.JITFunction.__getitem__ = override_getitem
     # For Triton v3.1.0 and below, we don't have TRITON_DUMP_DIR
