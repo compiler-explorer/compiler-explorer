@@ -6,6 +6,7 @@ import os
 import shutil
 import sys
 import tempfile
+from unittest.mock import MagicMock
 from pathlib import Path
 from typing import Any, Dict, TYPE_CHECKING, Union
 
@@ -32,30 +33,8 @@ def patch_triton(output_dir: Path, backend: str, arch: Union[int, str], warp_siz
     # `kernel[grid](args)`. However, we want to dump the compiled kernel
     # without actually running it.
     # `CompiledKernel` represents a handle to a compiled kernel, ready to be
-    # launched. We patch it to be a no-op, but still hold the necessary fields
-    # for Triton to be functional.
-    class MockCompiledKernel:
-        def __init__(self, *args, **kwargs):
-            pass
-
-        def __getitem__(self, grid):
-            return lambda *args, **kwargs: None
-
-        def __getattr__(self, name):
-            if name in ["function", "packed_metadata"]:
-                return None
-            if name in ["launch_metadata", "run"]:
-                return lambda *args, **kwargs: None
-            # The following fields are needed for Triton v2.3.x
-            if name in ["num_warps", "num_ctas", "shared"]:
-                return None
-            if name == "cluster_dims":
-                return [0, 0, 0]
-            if name == "metadata":
-                return {"tensormaps_info": None}
-            raise AttributeError(f"MockCompiledKernel has no attribute {name}")
-
-    triton.compiler.compiler.CompiledKernel = MockCompiledKernel
+    # launched. We patch it to be a no-op.
+    triton.compiler.compiler.CompiledKernel = MagicMock()
 
     # We mock a GPU driver to avoid the need to initialize CUDA/ROCm.
     # The driver is only used in runtime instead of compile time,
