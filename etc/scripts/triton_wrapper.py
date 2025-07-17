@@ -12,7 +12,7 @@ from typing import Any, Dict, TYPE_CHECKING, Union
 import triton
 
 
-def patch_triton(output_dir: Path, backend: str):
+def patch_triton(output_dir: Path, backend: str, arch: Union[int, str], warp_size: int):
     """
     Patch Triton to dump the compiled kernels to output dir without actually running them.
 
@@ -42,17 +42,14 @@ def patch_triton(output_dir: Path, backend: str):
             try:
                 from triton.compiler.compiler import GPUTarget
 
-                if backend == "cuda":
-                    return GPUTarget(backend="cuda", arch=89, warp_size=32)
-                elif backend == "hip":
-                    return GPUTarget(backend="hip", arch="gfx942", warp_size=32)
+                return GPUTarget(backend=backend, arch=arch, warp_size=warp_size)
             except ImportError:
                 # For Triton v2.3.x, we don't have GPUTarget
-                return ("cuda", 89)
+                return (backend, arch)
 
+        # This is needed for Triton v2.3.x, which doesn't support AMD, so we just assume it's CUDA
         @property
         def binary_ext(self):
-            # For Triton v2.3.x
             return "cubin"
 
     try:
@@ -69,6 +66,8 @@ def patch_triton(output_dir: Path, backend: str):
         from triton.compiler.backends.cuda import CUDABackend
 
         def make_launcher_stub(*args, **kwargs):
+            # This function expects to return a filepath for a launcher stub,
+            # which is a module with a `launch` function
             tmp_file = tempfile.NamedTemporaryFile(suffix=".py", delete=False, mode="w")
             tmp_file.write("def launch(): pass")
             return tmp_file.name
@@ -98,7 +97,14 @@ def patch_triton(output_dir: Path, backend: str):
     triton.runtime.cache.default_cache_dir = lambda *args, **kwargs: output_dir
 
 
-def main(input_file: Path, output_file: Path, opt_pipeline_file: Path, backend: str):
+def main(
+    input_file: Path,
+    output_file: Path,
+    opt_pipeline_file: Path,
+    backend: str,
+    arch: Union[int, str],
+    warp_size: int,
+):
     output_dir = output_file.parent.absolute()
 
     # Setup triton
@@ -108,9 +114,9 @@ def main(input_file: Path, output_file: Path, opt_pipeline_file: Path, backend: 
     os.environ["TRITON_ALWAYS_COMPILE"] = "1"
     os.environ["TRITON_KERNEL_DUMP"] = "1"
     os.environ["TRITON_DUMP_DIR"] = str(output_dir)
-    patch_triton(output_dir, backend)
+    patch_triton(output_dir, backend, arch, warp_size)
 
-    # Run the script
+    # Run the script by importing it as a module
     spec = importlib.util.spec_from_file_location("example", input_file)
     module = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(module)
@@ -120,7 +126,9 @@ def main(input_file: Path, output_file: Path, opt_pipeline_file: Path, backend: 
         if isinstance(fn, triton.JITFunction)
     }
 
-    # Prepare output folder
+    # Prepare output folder.
+    # Since Triton dumps the compiled kernels to a folder with a random name,
+    # we need to copy the files to the output folder.
     bin_files = {}
     asm_files = {}
     for file in output_dir.rglob("*/*"):
@@ -132,6 +140,8 @@ def main(input_file: Path, output_file: Path, opt_pipeline_file: Path, backend: 
                 bin_files[file.stem] = file
 
     # Write the output
+    # Compiler Explorer expects the output to be a single file, so we need to
+    # concatenate all the files into a single one.
     with open(output_file, "w") as fout:
         for name, file in asm_files.items():
             with open(file, "r") as fin:
@@ -145,10 +155,20 @@ if __name__ == "__main__":
     parser.add_argument("--input_file", type=Path)
     parser.add_argument("--opt_pipeline_file", type=Path)
     parser.add_argument("--backend", type=str, default="cuda", choices=["cuda", "hip"])
+    parser.add_argument("--arch", type=str, default=None)
+    parser.add_argument("--warp_size", type=int, default=32)
+
     args = parser.parse_args()
-    main(
-        input_file=args.input_file,
-        output_file=args.output_file,
-        opt_pipeline_file=args.opt_pipeline_file,
-        backend=args.backend,
-    )
+
+    # Set some sane defaults for the arch
+    if args.arch is None:
+        if args.backend == "cuda":
+            args.arch = 89
+        elif args.backend == "hip":
+            args.arch = "gfx942"
+
+    # Triton expects the arch to be an int for CUDA and a string for HIP
+    if args.backend == "cuda":
+        args.arch = int(args.arch)
+
+    main(**vars(args))
