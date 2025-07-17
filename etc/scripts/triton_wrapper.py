@@ -37,42 +37,33 @@ def patch_triton(output_dir: Path, backend: str, arch: Union[int, str], warp_siz
     # We mock a GPU driver to avoid the need to initialize CUDA/ROCm.
     # The driver is only used in runtime instead of compile time,
     # so it's safe to do this.
-    class MockGPUDriver:
-        def get_current_device(self):
-            return 0
+    def get_current_target():
+        try:
+            from triton.compiler.compiler import GPUTarget
 
-        def get_current_stream(self, device):
-            return 0
+            return GPUTarget(backend=backend, arch=arch, warp_size=warp_size)
+        except ImportError:
+            # For Triton v2.3.x, we don't have GPUTarget
+            return (backend, arch)
 
-        def get_current_target(self):
-            try:
-                from triton.compiler.compiler import GPUTarget
+    def get_benchmarker():
+        return lambda kernel_call, quantiles: [0.0] * len(quantiles)
 
-                return GPUTarget(backend=backend, arch=arch, warp_size=warp_size)
-            except ImportError:
-                # For Triton v2.3.x, we don't have GPUTarget
-                return (backend, arch)
-
-        def get_benchmarker(self):
-            return lambda kernel_call, quantiles: [0.0] * len(quantiles)
-
-        # This is needed for Triton v2.3.x, which doesn't support AMD, so we just assume it's CUDA
-        @property
-        def binary_ext(self):
-            return "cubin"
-
-        # Needed for Triton v2.3.x
-        def assemble_tensormap_to_arg(self, *args, **kwargs):
-            return []
+    mockGPUDriver = MagicMock(
+        get_current_target=get_current_target,
+        get_benchmarker=get_benchmarker,
+         # This is needed for Triton v2.3.x, which doesn't support AMD, so we just assume it's CUDA
+        binary_ext = "cubin",
+    )
 
     # For Triton v2.3.x, there is no `triton.runtime.driver.set_active`,
     # so manually set the driver to the mocked one.
     try:
         from triton.runtime.driver import DriverConfig
 
-        triton.runtime.driver.set_active(MockGPUDriver())
+        triton.runtime.driver.set_active(mockGPUDriver)
     except ImportError:
-        triton.runtime.driver._obj = MockGPUDriver()
+        triton.runtime.driver._obj = mockGPUDriver
 
     # For Triton v2.3.x, there are some driver code that goes into
     # the generic code path, so we need to patch it as well.
