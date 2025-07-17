@@ -69,15 +69,9 @@ def patch_triton(output_dir: Path, backend: str, arch: Union[int, str], warp_siz
     # the generic code path, so we need to patch it as well.
     try:
         from triton.compiler.backends.cuda import CUDABackend
+        print("hi")
 
-        def make_launcher_stub(*args, **kwargs):
-            # This function expects to return a filepath for a launcher stub,
-            # which is a module with a `launch` function
-            tmp_file = tempfile.NamedTemporaryFile(suffix=".py", delete=False, mode="w")
-            tmp_file.write("def launch(): pass")
-            return tmp_file.name
-
-        CUDABackend.make_launcher_stub = make_launcher_stub
+        CUDABackend.make_launcher_stub = MagicMock()
     except ImportError:
         pass
 
