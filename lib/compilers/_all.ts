@@ -151,6 +151,7 @@ export {TableGenCompiler} from './tablegen.js';
 export {TenDRACompiler} from './tendra.js';
 export {TinyCCompiler} from './tinyc.js';
 export {ToitCompiler} from './toit.js';
+export {TritonCompiler} from './triton.js';
 export {TurboCCompiler} from './turboc.js';
 export {TypeScriptNativeCompiler} from './typescript-native.js';
 export {V8Compiler} from './v8.js';
