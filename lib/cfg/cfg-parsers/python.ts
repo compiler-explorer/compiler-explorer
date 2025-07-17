@@ -30,6 +30,8 @@ import {InstructionType} from '../instruction-sets/base.js';
 import {AssemblyLine, BaseCFGParser, CanonicalBB} from './base.js';
 
 export class PythonCFGParser extends BaseCFGParser {
+    BBid = 0;
+
     static override get key() {
         return 'python3';
     }
@@ -101,16 +103,14 @@ export class PythonCFGParser extends BaseCFGParser {
     //'      >>  140 FOR_ITER                98 (to 340)' ==> 140
     //'  5       L1: LOAD_FAST                0 (num)'    ==> 'L1'  (labels are present for python >= 3.13)
     //'  3           LOAD_FAST_LOAD_FAST      0 (num, num)'  ===> '3'
+    //'              UNPACK_SEQUENCE          1'    ===>  Block #<id>
     override getBbId(firstInst: string): string {
         const label = firstInst.match(/(\w+):/)?.[1];
         if (label) return label;
         const bytecodeOffset = firstInst.match(/^\s*\d*?\s+>?>?\s+(\d+)/)?.[1];
         if (bytecodeOffset) return bytecodeOffset;
-        const srcLine = firstInst.match(/\d+/)?.[0];
-        if (srcLine) return 'srcLine ' + srcLine;
 
-        // TODO: when this stabilizes a bit, add a sentry report for missed BasicBlock ID
-        return '';
+        return 'Block #' + this.BBid++;
     }
 
     override getBbFirstInstIdx(firstLine: number) {
@@ -122,10 +122,7 @@ export class PythonCFGParser extends BaseCFGParser {
     }
 
     override extractAltJmpTargetName(asmArr: AssemblyLine[], bbIdx: number, arrBB: CanonicalBB[]): string {
-        const nextBbStart = arrBB[bbIdx + 1]?.start;
-        if (!nextBbStart) return '';
-
-        const inst = asmArr[nextBbStart];
-        return this.getBbId(inst.text);
+        if (bbIdx >= arrBB.length) return '';
+        return arrBB[bbIdx + 1].nameId;
     }
 }
