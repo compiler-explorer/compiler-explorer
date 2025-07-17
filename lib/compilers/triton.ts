@@ -54,14 +54,17 @@ export class TritonCompiler extends BaseCompiler {
         return 'triton';
     }
 
+    group: string;
     parserMap: Record<string, IAsmParser>;
     llvmIrParser: LlvmIrParser;
     mlirPassDumpParser: MlirPassDumpParser;
 
     constructor(compilerInfo: PreliminaryCompilerInfo, env: CompilationEnvironment) {
         super(compilerInfo, env);
+
         this.compilerWrapperPath =
             this.compilerProps('compilerWrapper', '') || resolvePathFromAppRoot('etc', 'scripts', 'triton_wrapper.py');
+        this.group = compilerInfo.group;
 
         // Enable the Opt Pipeline view
         this.compiler.optPipeline = {};
@@ -92,7 +95,15 @@ export class TritonCompiler extends BaseCompiler {
 
     override optionsForFilter(filters: ParseFiltersAndOutputOptions, outputFilename: string): string[] {
         // See etc/scripts/triton_wrapper.py for the options
-        return ['-I', this.compilerWrapperPath, '--output_file', outputFilename, '--input_file'];
+        return [
+            '-I',
+            this.compilerWrapperPath,
+            '--backend',
+            this.group == 'triton_cuda' ? 'cuda' : 'hip',
+            '--output_file',
+            outputFilename,
+            '--input_file',
+        ];
     }
 
     override getArgumentParserClass() {

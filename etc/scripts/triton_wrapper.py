@@ -4,28 +4,15 @@ import inspect
 import json
 import os
 import shutil
-import tempfile
 import sys
+import tempfile
 from pathlib import Path
 from typing import Any, Dict, TYPE_CHECKING, Union
 
 import triton
 
 
-
-def override_getitem(self: triton.JITFunction, grid):
-    def inner(*args, **kwargs):
-        return self.run(
-            grid=grid,
-            warmup=True,  # avoids actual kernel execution
-            *args,
-            **kwargs,
-        )
-
-    return inner
-
-
-def patch_triton(output_dir: Path):
+def patch_triton(output_dir: Path, backend: str):
     class GPUDriver:
         def get_current_device(self):
             return 0
@@ -37,13 +24,17 @@ def patch_triton(output_dir: Path):
             try:
                 from triton.compiler.compiler import GPUTarget
 
-                return GPUTarget(backend="cuda", arch=89, warp_size=32)
+                if backend == "cuda":
+                    return GPUTarget(backend="cuda", arch=89, warp_size=32)
+                elif backend == "hip":
+                    return GPUTarget(backend="hip", arch="gfx942", warp_size=32)
             except ImportError:
-                # For Triton v2.3.1 and below, we don't have GPUTarget
+                # For Triton v2.3.x, we don't have GPUTarget
                 return ("cuda", 89)
 
         @property
         def binary_ext(self):
+            # For Triton v2.3.x
             return "cubin"
 
     try:
@@ -51,11 +42,11 @@ def patch_triton(output_dir: Path):
 
         triton.runtime.driver.set_active(GPUDriver())
     except ImportError:
-        # For Triton v2.3.1 and below, we don't have set_active
+        # For Triton v2.3.x, we don't have set_active
         triton.runtime.driver._obj = GPUDriver()
 
     try:
-        # For Triton v2.3.1 and below, we need to patch make_launcher_stub
+        # For Triton v2.3.x, we need to patch make_launcher_stub
         from triton.compiler.backends.cuda import CUDABackend
 
         def make_launcher_stub(*args, **kwargs):
@@ -67,12 +58,24 @@ def patch_triton(output_dir: Path):
     except ImportError:
         pass
 
+    def override_getitem(self: triton.JITFunction, grid):
+        def inner(*args, **kwargs):
+            return self.run(
+                grid=grid,
+                warmup=True,  # avoids actual kernel execution
+                *args,
+                **kwargs,
+            )
+
+        return inner
+
     triton.JITFunction.__getitem__ = override_getitem
+
     # For Triton v3.1.0 and below, we don't have TRITON_DUMP_DIR
     triton.runtime.cache.default_cache_dir = lambda *args, **kwargs: output_dir
 
 
-def main(input_file: Path, output_file: Path, opt_pipeline_file: Path):
+def main(input_file: Path, output_file: Path, opt_pipeline_file: Path, backend: str):
     output_dir = output_file.parent.absolute()
 
     # Setup triton
@@ -82,7 +85,7 @@ def main(input_file: Path, output_file: Path, opt_pipeline_file: Path):
     os.environ["TRITON_ALWAYS_COMPILE"] = "1"
     os.environ["TRITON_KERNEL_DUMP"] = "1"
     os.environ["TRITON_DUMP_DIR"] = str(output_dir)
-    patch_triton(output_dir)
+    patch_triton(output_dir, backend)
 
     # Run the script
     spec = importlib.util.spec_from_file_location("example", input_file)
@@ -118,9 +121,11 @@ if __name__ == "__main__":
     parser.add_argument("--output_file", type=Path)
     parser.add_argument("--input_file", type=Path)
     parser.add_argument("--opt_pipeline_file", type=Path)
+    parser.add_argument("--backend", type=str, default="cuda", choices=["cuda", "hip"])
     args = parser.parse_args()
     main(
         input_file=args.input_file,
         output_file=args.output_file,
         opt_pipeline_file=args.opt_pipeline_file,
+        backend=args.backend,
     )
