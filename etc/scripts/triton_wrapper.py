@@ -8,8 +8,6 @@ import sys
 from pathlib import Path
 from typing import Any, Dict, Union
 
-from torchgen.api.ufunc import kernel_name
-
 from triton import JITFunction
 from triton.compiler.compiler import ASTSource, IRSource
 
@@ -57,7 +55,6 @@ def main(input_file: Path, output_file: Path, opt_pipeline_file: Path):
     asm_files = {}
     for file in output_dir.rglob("*/*"):
         if file.stem in jit_functions:
-            dst = output_dir / file.name
             shutil.copy(file, output_dir / file.name)
             if file.suffix in (".ptx", ".amdgcn"):
                 asm_files[file.stem] = file

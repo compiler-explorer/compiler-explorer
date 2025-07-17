@@ -126,7 +126,7 @@ export class TritonCompiler extends BaseCompiler {
 
                 // Parse the assembly with line numbers
                 let device;
-                if (ext == '.llir') {
+                if (ext === '.llir') {
                     device = await this.postProcessAsm(
                         this.llvmIrParser.process(data, {
                             filterDebugInfo: false,
