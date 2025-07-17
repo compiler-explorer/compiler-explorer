@@ -47,12 +47,13 @@ def patch_triton(output_dir: Path, backend: str, arch: Union[int, str], warp_siz
             if name in ["launch_metadata", "run"]:
                 return lambda *args, **kwargs: None
             # The following fields are needed for Triton v2.3.x
-            if name in ["num_warps", "num_ctas",  "shared"]:
+            if name in ["num_warps", "num_ctas", "shared"]:
                 return None
             if name == "cluster_dims":
                 return [0, 0, 0]
             if name == "metadata":
                 return {"tensormaps_info": None}
+            raise AttributeError(f"MockCompiledKernel has no attribute {name}")
 
     triton.compiler.compiler.CompiledKernel = MockCompiledKernel
 
@@ -95,7 +96,6 @@ def patch_triton(output_dir: Path, backend: str, arch: Union[int, str], warp_siz
         triton.runtime.driver.set_active(MockGPUDriver())
     except ImportError:
         triton.runtime.driver._obj = MockGPUDriver()
-
 
     # For Triton v2.3.x, there are some driver code that goes into
     # the generic code path, so we need to patch it as well.
@@ -143,7 +143,7 @@ def main(
     jit_functions = {
         name: fn
         for name, fn in inspect.getmembers(module)
-        if isinstance(fn, triton.JITFunction)
+        if isinstance(fn, (triton.JITFunction, triton.runtime.autotuner.Autotuner))
     }
 
     # Prepare output folder.
