@@ -379,7 +379,7 @@ export class LibsWidget {
         return libDiv;
     }
 
-    conjureUpExamples(result: JQuery<Node>, lib: Library) {
+    conjureUpExamples(result: JQuery<HTMLElement>, lib: Library) {
         const examples = result.find('.lib-examples');
         if (lib.examples && lib.examples.length > 0) {
             examples.append($('<b>Examples</b>'));
