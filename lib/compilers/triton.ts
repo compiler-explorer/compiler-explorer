@@ -168,12 +168,11 @@ export class TritonCompiler extends BaseCompiler {
         await this.runCompiler(this.compiler.exe, optOptions, inputFilename, execOptions);
         const compileEnd = performance.now();
 
-        // Read the output file
-        const rawText = await fs.readFile(outputFilename, {encoding: 'utf8'});
-        const lines = parseOutput(rawText);
-
-        // Parse the output
+        // Read the output file and parse it
         try {
+            const rawText = await fs.readFile(outputFilename, {encoding: 'utf8'});
+            const lines = parseOutput(rawText);
+
             const parseStart = performance.now();
             const llvmOptPipeline = await this.mlirPassDumpParser.process(lines, filters, optPipelineOptions);
             const parseEnd = performance.now();
