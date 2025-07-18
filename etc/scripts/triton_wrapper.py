@@ -50,13 +50,9 @@ def patch_triton(output_dir: Path, backend: str, arch: Union[int, str], warp_siz
         except ImportError:
             # For Triton v2.3.x, we don't have GPUTarget
             return (backend, arch)
-
-    def get_benchmarker():
-        return lambda kernel_call, quantiles: [0.0] * len(quantiles)
-
     mockGPUDriver = MagicMock(
         get_current_target=get_current_target,
-        get_benchmarker=get_benchmarker,
+        get_benchmarker=lambda: MagicMock(return_value=[0.0]),
         # This is needed for Triton v2.3.x, which doesn't support AMD, so we just assume it's CUDA
         binary_ext="cubin",
     )
