@@ -10,6 +10,7 @@ from unittest.mock import MagicMock
 import torch
 
 import triton
+from torch._subclasses.fake_tensor import FakeTensorMode
 
 
 def patch_triton(output_dir: Path, backend: str, arch: Union[int, str], warp_size: int):
@@ -27,6 +28,9 @@ def patch_triton(output_dir: Path, backend: str, arch: Union[int, str], warp_siz
     This function is a collection of hacks. It has been tested to work with Triton
     2.3.0, 2.3.1, 3.0.0, 3.1.0, 3.2.0, 3.3.0, 3.3.1.
     """
+
+    # For Triton v3.1.0 and below, we don't have TRITON_DUMP_DIR
+    triton.runtime.cache.default_cache_dir = MagicMock(return_value=output_dir)
 
     # Usually, Triton will compile the kernel and run it when we call
     # `kernel[grid](args)`. However, we want to dump the compiled kernel
@@ -75,14 +79,6 @@ def patch_triton(output_dir: Path, backend: str, arch: Union[int, str], warp_siz
     except ImportError:
         pass
 
-    # For Triton v3.1.0 and below, we don't have TRITON_DUMP_DIR
-    triton.runtime.cache.default_cache_dir = lambda *args, **kwargs: output_dir
-
-    # The "meta" device is an abstract device which denotes a tensor
-    # which records only metadata, but no actual data.
-    # https://docs.pytorch.org/docs/stable/meta.html#meta-device
-    torch.set_default_device("meta")
-
 
 def main(
     input_file: Path,
@@ -106,7 +102,12 @@ def main(
     # Run the script by importing it as a module
     spec = importlib.util.spec_from_file_location("example", input_file)
     module = importlib.util.module_from_spec(spec)
-    spec.loader.exec_module(module)
+    with FakeTensorMode():
+        # Use FakeTensor (developed during Dynamo) to avoid actually creating tensors
+        # See https://docs.pytorch.org/docs/stable/torch.compiler_fake_tensor.html
+        # Also set the data_ptr to 0 to avoid PyTorch warning and make alignment check happy
+        torch._subclasses.FakeTensor.data_ptr = MagicMock(return_value=0)
+        spec.loader.exec_module(module)
     jit_functions = {
         name: fn
         for name, fn in inspect.getmembers(module)
