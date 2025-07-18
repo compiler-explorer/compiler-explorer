@@ -1420,7 +1420,7 @@ export class BaseCompiler {
         }
 
         if (produceCfg) {
-            result.cfg = cfg.generateStructure(
+            result.cfg = await cfg.generateStructure(
                 this.compiler,
                 ir.asm.map(line => ({text: line.text})),
                 true,
@@ -3134,7 +3134,7 @@ export class BaseCompiler {
                     this.compiler.instructionSet === 'llvm' ||
                     (options && isOutputLikelyLllvmIr(options)) ||
                     this.llvmIr.isLlvmIr(result.asm);
-                result.cfg = cfg.generateStructure(this.compiler, result.asm, isLlvmIr);
+                result.cfg = await cfg.generateStructure(this.compiler, result.asm, isLlvmIr, result);
             }
         }
 
