@@ -33,7 +33,6 @@ export class MlirAsmParser extends AsmParser {
     protected locDefUnknownRegex: RegExp;
     protected locRefRegex: RegExp;
     protected inlineLocRegex: RegExp;
-    protected hasOpcodeRegex: RegExp;
 
     constructor() {
         super();
@@ -49,13 +48,6 @@ export class MlirAsmParser extends AsmParser {
 
         // Match inline locations like loc("/path/to/file":line:column)
         this.inlineLocRegex = /loc\("([^"]+)":(\d+):(\d+)\)/;
-
-        // Match lines that contain MLIR operations
-        this.hasOpcodeRegex = /^\s*(%[\w\d\.]+\s*=\s*)?[a-zA-Z][\w\d\.]+/;
-    }
-
-    override hasOpcode(line: string): boolean {
-        return this.hasOpcodeRegex.test(line);
     }
 
     override processAsm(asmResult: string, filters: ParseFiltersAndOutputOptions): ParsedAsmResult {
@@ -127,17 +119,17 @@ export class MlirAsmParser extends AsmParser {
             }
 
             // Remove all location references from the displayed text
+            // Example: loc(#loc1)
             processedLine = processedLine.replace(/\s*loc\(#\w+\)/g, '');
+            // Example: loc("/path/to/file":line:column)
             processedLine = processedLine.replace(/\s*loc\("[^"]+"\:\d+\:\d+\)/g, '');
+            // Example: loc(unknown)
             processedLine = processedLine.replace(/\s*loc\(\w+\)/g, '');
-
-            // Only associate source with lines that have opcodes
-            const hasOpcode = this.hasOpcode(line);
 
             // Add the line to the result
             asm.push({
                 text: processedLine,
-                source: hasOpcode ? source : null,
+                source: source,
                 labels: [],
             });
         }

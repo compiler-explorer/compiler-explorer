@@ -8,7 +8,6 @@ from typing import Union
 from unittest.mock import MagicMock
 
 import torch
-
 import triton
 from torch._subclasses.fake_tensor import FakeTensorMode
 
@@ -110,7 +109,7 @@ def main(
         if isinstance(fn, (triton.JITFunction, triton.runtime.autotuner.Autotuner))
     }
 
-    # Prepare output folder.
+    # Prepare output folder
     # Since Triton dumps the compiled kernels to a folder with a random name,
     # we need to copy the files to the output folder.
     bin_files = {}
