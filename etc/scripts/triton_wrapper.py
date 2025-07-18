@@ -3,10 +3,11 @@ import importlib.util
 import inspect
 import os
 import shutil
-import tempfile
-from unittest.mock import MagicMock
 from pathlib import Path
-from typing import Any, Dict, TYPE_CHECKING, Union
+from typing import Union
+from unittest.mock import MagicMock
+
+import torch
 
 import triton
 
@@ -52,8 +53,8 @@ def patch_triton(output_dir: Path, backend: str, arch: Union[int, str], warp_siz
     mockGPUDriver = MagicMock(
         get_current_target=get_current_target,
         get_benchmarker=get_benchmarker,
-         # This is needed for Triton v2.3.x, which doesn't support AMD, so we just assume it's CUDA
-        binary_ext = "cubin",
+        # This is needed for Triton v2.3.x, which doesn't support AMD, so we just assume it's CUDA
+        binary_ext="cubin",
     )
 
     # For Triton v2.3.x, there is no `triton.runtime.driver.set_active`,
@@ -76,6 +77,11 @@ def patch_triton(output_dir: Path, backend: str, arch: Union[int, str], warp_siz
 
     # For Triton v3.1.0 and below, we don't have TRITON_DUMP_DIR
     triton.runtime.cache.default_cache_dir = lambda *args, **kwargs: output_dir
+
+    # The "meta" device is an abstract device which denotes a tensor
+    # which records only metadata, but no actual data.
+    # https://docs.pytorch.org/docs/stable/meta.html#meta-device
+    torch.set_default_device("meta")
 
 
 def main(
