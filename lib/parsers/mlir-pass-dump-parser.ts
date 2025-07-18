@@ -235,6 +235,18 @@ export class MlirPassDumpParser {
         return passDumpsByFunction;
     }
 
+    isIrChanged(before: ResultLine[], after: ResultLine[]) {
+        if (before.length !== after.length) {
+            return true;
+        }
+        for (let i = 0; i < before.length; i++) {
+            if (before[i].text !== after[i].text) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     matchPassDumps(passDumpsByFunction: Record<string, PassDump[]>) {
         // We have all the passes for each function, now we will go through each function and match the before/after
         // dumps, handling the case where the same pass might occur multiple times
@@ -273,8 +285,7 @@ export class MlirPassDumpParser {
                             pass.before = beforePasses[i].lines;
 
                             // Check for equality
-                            pass.irChanged =
-                                pass.before.map(x => x.text).join('\n') !== pass.after.map(x => x.text).join('\n');
+                            pass.irChanged = this.isIrChanged(pass.before, pass.after);
 
                             // Remove the matched "Before" pass
                             beforePasses.splice(i, 1);
@@ -286,17 +297,36 @@ export class MlirPassDumpParser {
                 }
             }
 
-            // Handle any remaining "Before" passes that don't have corresponding "After" passes
-            for (const beforeDump of beforePasses) {
-                const passName = extractPassName(beforeDump.header);
-                const pass: Pass = {
-                    name: passName,
-                    machine: false,
-                    before: beforeDump.lines,
-                    after: [],
-                    irChanged: true, // Assume changed since there's no "After" to compare with
-                };
-                passes.push(pass);
+            // If we only have before passes (no after passes), diff between consecutive before passes
+            // This happened in Triton since it sets enableIRPrinting(printAfterOnlyOnFailure=false)
+            if (passes.length === 0) {
+                for (let i = 0; i < beforePasses.length; i++) {
+                    const passName = extractPassName(beforePasses[i].header);
+                    const before = i !== 0 ? beforePasses[i - 1].lines : beforePasses[i].lines;
+                    const after = beforePasses[i].lines;
+                    const irChanged = i !== 0 ? this.isIrChanged(before, after) : false;
+                    const pass: Pass = {
+                        name: passName,
+                        machine: false,
+                        before: before,
+                        after: after,
+                        irChanged: irChanged,
+                    };
+                    passes.push(pass);
+                }
+            } else {
+                // Handle any remaining "Before" passes that don't have corresponding "After" passes
+                for (const beforeDump of beforePasses) {
+                    const passName = extractPassName(beforeDump.header);
+                    const pass: Pass = {
+                        name: passName,
+                        machine: false,
+                        before: beforeDump.lines,
+                        after: [],
+                        irChanged: true, // Assume changed since there's no "After" to compare with
+                    };
+                    passes.push(pass);
+                }
             }
 
             final_output[function_name] = passes;
