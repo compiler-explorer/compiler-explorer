@@ -110,7 +110,7 @@ def find_config_dir() -> Path:
 @click.option("--verify-only", is_flag=True, help="Only detect and display compiler information without making changes")
 @click.option("--list-types", is_flag=True, help="List all supported compiler types and exit")
 @click.option("--reorganize", help="Reorganize an existing properties file for the specified language")
-@click.option("--validate-discovery", is_flag=True, help="Run discovery validation to verify the compiler is detected")
+@click.option("--validate-discovery", is_flag=True, help="Run discovery validation to verify the compiler is detected (default for local environment)")
 @click.option("--env", default="local", help="Environment to target (local, amazon, etc.)")
 def cli(
     compiler_path: Optional[str],
@@ -498,8 +498,9 @@ def cli(
             print_error(message)
             # Don't exit with error, as the file was written successfully
 
-        # Optional discovery validation
-        if validate_discovery:
+        # Discovery validation (default for local environment, optional for others)
+        should_validate_discovery = validate_discovery or (env == "local")
+        if should_validate_discovery:
             print_info("Validating with discovery...")
             valid, message, discovered_semver = config_mgr.validate_with_discovery(
                 detected_info.language, detected_info.id

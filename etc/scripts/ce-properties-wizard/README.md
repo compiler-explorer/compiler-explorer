@@ -115,7 +115,7 @@ Get-ChildItem "C:\Compilers\*\bin\*.exe" | ForEach-Object {
 - `--verify-only`: Only detect and display compiler information without making changes
 - `--list-types`: List all supported compiler types and exit
 - `--reorganize LANGUAGE`: Reorganize an existing properties file for the specified language
-- `--validate-discovery`: Run discovery validation to verify the compiler is detected
+- `--validate-discovery`: Run discovery validation to verify the compiler is detected (default for local environment)
 - `--env ENV`: Environment to target (local, amazon, etc.) - defaults to 'local'
 
 ## Supported Languages
