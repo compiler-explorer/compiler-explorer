@@ -13,6 +13,7 @@ from colorama import Fore, Style, init
 from .compiler_detector import LANGUAGE_CONFIGS, CompilerDetector, get_supported_compiler_types
 from .config_manager import ConfigManager
 from .models import CompilerInfo
+from .utils import find_ce_config_directory
 
 # Initialize colorama for cross-platform color support
 init(autoreset=True)
@@ -72,29 +73,6 @@ def format_compiler_options(options_input: str) -> str:
     return " ".join(formatted_options)
 
 
-def find_config_dir() -> Path:
-    """Find the etc/config directory."""
-    # Start from the script location and go up to find the main CE directory
-    current = Path(__file__).resolve()
-
-    # Look for the main CE directory by finding etc/config
-    # The wizard is in etc/scripts/ce-properties-wizard/ce_properties_wizard/main.py
-    # So we need to go up to find the root directory containing etc/config
-    for _ in range(6):  # Max 6 levels up
-        config_dir = current / "etc" / "config"
-        if config_dir.exists() and config_dir.is_dir():
-            # Verify this looks like the CE config directory by checking for known files
-            if any(config_dir.glob("*.defaults.properties")):
-                return config_dir
-        current = current.parent
-
-    # Fallback: check if we're already in the main CE directory
-    if Path("etc/config").exists() and Path("etc/config").is_dir():
-        config_dir = Path("etc/config").resolve()
-        if any(config_dir.glob("*.defaults.properties")):
-            return config_dir
-
-    raise FileNotFoundError("Could not find etc/config directory with CE configuration files")
 
 
 @click.command()
@@ -200,7 +178,7 @@ def cli(
             if config_dir:
                 config_path = Path(config_dir)
             else:
-                config_path = find_config_dir()
+                config_path = find_ce_config_directory()
             print_info(f"Using config directory: {config_path}")
             print_info(f"Targeting environment: {env}")
             config_mgr = ConfigManager(config_path, env)
@@ -268,7 +246,7 @@ def cli(
                     detected_info.group = suggested_group
             else:
                 # Verify-only mode - create a temporary config manager just for suggestion
-                temp_config_mgr = ConfigManager(find_config_dir(), env)
+                temp_config_mgr = ConfigManager(find_ce_config_directory(), env)
                 suggested_group = temp_config_mgr.suggest_appropriate_group(detected_info)
                 if suggested_group:
                     detected_info.group = suggested_group

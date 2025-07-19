@@ -8,47 +8,35 @@ from pathlib import Path
 from typing import Optional, Set, Tuple
 
 from .models import CompilerInfo, LanguageConfig
+from .utils import SubprocessRunner, VersionExtractor, find_ce_lib_directory
 
 
 def get_supported_compiler_types() -> Set[str]:
     """Dynamically extract all supported compiler types from lib/compilers/*.ts files."""
     compiler_types = set()
 
-    # Find the lib/compilers directory relative to the current location
-    current_dir = Path(__file__).resolve().parent
-
-    # Look for lib/compilers directory by going up the directory tree
-    # The wizard is in etc/scripts/ce-properties-wizard/ce_properties_wizard/
-    # So we need to go up to find the root directory containing lib/compilers
-    for _ in range(6):  # Max 6 levels up
-        lib_compilers_dir = current_dir / "lib" / "compilers"
-        if lib_compilers_dir.exists() and lib_compilers_dir.is_dir():
-            # Verify this looks like the CE lib/compilers directory
-            if any(lib_compilers_dir.glob("*.ts")):
-                break
-        current_dir = current_dir.parent
-    else:
-        # Fallback: assume we're in the main CE directory
-        lib_compilers_dir = Path("lib/compilers")
-        if not (lib_compilers_dir.exists() and lib_compilers_dir.is_dir() and any(lib_compilers_dir.glob("*.ts"))):
-            # Return a minimal fallback set if we can't find the directory
-            return {
-                "gcc",
-                "clang",
-                "icc",
-                "icx",
-                "ifx",
-                "ifort",
-                "nvcc",
-                "rustc",
-                "golang",
-                "python",
-                "java",
-                "fpc",
-                "z88dk",
-                "tinygo",
-                "other",
-            }
+    try:
+        lib_dir = find_ce_lib_directory()
+        lib_compilers_dir = lib_dir / "compilers"
+    except FileNotFoundError:
+        # Return a minimal fallback set if we can't find the directory
+        return {
+            "gcc",
+            "clang",
+            "icc",
+            "icx",
+            "ifx",
+            "ifort",
+            "nvcc",
+            "rustc",
+            "golang",
+            "python",
+            "java",
+            "fpc",
+            "z88dk",
+            "tinygo",
+            "other",
+        }
 
     # Scan all .ts files in lib/compilers
     for ts_file in lib_compilers_dir.glob("*.ts"):
@@ -223,12 +211,15 @@ class CompilerDetector:
         version_flags = ["--version", "-v", "--help", "-V", "/help", "/?", "version"]
 
         for flag in version_flags:
-            try:
-                result = subprocess.run([compiler_path, flag], capture_output=True, text=True, timeout=5)
-                output = (result.stdout + result.stderr).lower()
+            result = SubprocessRunner.run_with_timeout([compiler_path, flag], timeout=5)
+            if result is None:
+                continue
+            
+            output = (result.stdout + result.stderr).lower()
+            full_output = result.stdout + result.stderr
 
-                # Detect z88dk first (before Clang) since z88dk mentions clang in its help
-                if "z88dk" in output:
+            # Detect z88dk first (before Clang) since z88dk mentions clang in its help
+            if "z88dk" in output:
                     version = self._extract_z88dk_version(result.stdout + result.stderr)
                     return "z88dk", version
 
