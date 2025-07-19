@@ -1,7 +1,6 @@
 """Configuration file management for CE Properties Wizard."""
 
 import re
-import shutil
 from collections import OrderedDict
 from pathlib import Path
 from typing import Dict, List, Optional, Set
@@ -9,7 +8,7 @@ from typing import Dict, List, Optional, Set
 from .compiler_detector import LANGUAGE_CONFIGS
 from .models import CompilerInfo
 from .surgical_editor import PropertiesFileEditor
-from .utils import ArchitectureMapper, SubprocessRunner, VersionExtractor, create_backup, find_ce_lib_directory
+from .utils import ArchitectureMapper, create_backup, find_ce_lib_directory
 
 
 def get_supported_instruction_sets() -> Set[str]:

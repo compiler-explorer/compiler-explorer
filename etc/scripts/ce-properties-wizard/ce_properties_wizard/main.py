@@ -73,8 +73,6 @@ def format_compiler_options(options_input: str) -> str:
     return " ".join(formatted_options)
 
 
-
-
 @click.command()
 @click.argument("compiler_path", required=False)
 @click.option("--id", "compiler_id", help="Compiler ID (auto-generated if not specified)")
@@ -88,7 +86,11 @@ def format_compiler_options(options_input: str) -> str:
 @click.option("--verify-only", is_flag=True, help="Only detect and display compiler information without making changes")
 @click.option("--list-types", is_flag=True, help="List all supported compiler types and exit")
 @click.option("--reorganize", help="Reorganize an existing properties file for the specified language")
-@click.option("--validate-discovery", is_flag=True, help="Run discovery validation to verify the compiler is detected (default for local environment)")
+@click.option(
+    "--validate-discovery",
+    is_flag=True,
+    help="Run discovery validation to verify the compiler is detected (default for local environment)",
+)
 @click.option("--env", default="local", help="Environment to target (local, amazon, etc.)")
 def cli(
     compiler_path: Optional[str],
@@ -135,7 +137,7 @@ def cli(
             if config_dir:
                 config_mgr = ConfigManager(Path(config_dir), env)
             else:
-                config_mgr = ConfigManager(find_config_dir(), env)
+                config_mgr = ConfigManager(find_ce_config_directory(), env)
 
             print_info(f"Reorganizing {reorganize} properties file...")
 

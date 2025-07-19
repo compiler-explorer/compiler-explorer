@@ -3,8 +3,6 @@
 import os
 import platform
 import re
-import subprocess
-from pathlib import Path
 from typing import Optional, Set, Tuple
 
 from .models import CompilerInfo, LanguageConfig
@@ -211,7 +209,7 @@ class CompilerDetector:
             result = SubprocessRunner.run_with_timeout([compiler_path, flag], timeout=5)
             if result is None:
                 continue
-            
+
             output = (result.stdout + result.stderr).lower()
             full_output = result.stdout + result.stderr
 
