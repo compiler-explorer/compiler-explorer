@@ -11,14 +11,9 @@ An interactive command-line tool for adding custom compilers to your local Compi
 - **Validation**: Validates generated properties with `propscheck.py`
 - **Safe Updates**: Only adds/updates, never removes existing configurations
 
-## Installation
+## Requirements
 
-The wizard requires Python 3.10+ and Poetry. To set up:
-
-```bash
-cd etc/scripts/ce-properties-wizard
-poetry install
-```
+The wizard requires Python 3.10+ and Poetry. The run scripts handle all setup automatically.
 
 ## Usage
 
@@ -248,9 +243,8 @@ If `propscheck.py` reports errors, check the generated properties file for synta
 
 To contribute to the wizard:
 
-1. Install development dependencies: `poetry install`
-2. Run tests: `poetry run pytest`
-3. Format code: `./run.sh --format`
-4. Check formatting: `./run.sh --format --check`
+1. Format code: `./run.sh --format`
+2. Check formatting: `./run.sh --format --check`
+3. Run tests: `poetry run pytest` (after `poetry install`)
 
 The `--format` flag runs black, ruff, and pytype formatters on the codebase.
