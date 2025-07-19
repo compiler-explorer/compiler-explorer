@@ -127,6 +127,9 @@ class VersionExtractor:
         "python": [r"python (\d+\.\d+\.\d+)", r"pypy.*?(\d+\.\d+\.\d+)"],
         "fpc": [r"Free Pascal Compiler version (\d+\.\d+\.\d+)", r"fpc.*?(\d+\.\d+\.\d+)"],
         "z88dk": [r"z88dk.*?-\s*v([^-\s]+(?:-[^-\s]+)*)", r"v(\d+[^-\s]*(?:-[^-\s]*)*)"],
+        "kotlin": [r"kotlinc.*?(\d+\.\d+\.\d+)", r"kotlin.*?(\d+\.\d+\.\d+)"],
+        "zig": [r"zig (\d+\.\d+\.\d+)", r"zig.*?(\d+\.\d+\.\d+)"],
+        "dart": [r"Dart SDK version: (\d+\.\d+\.\d+)", r"dart.*?(\d+\.\d+\.\d+)"],
     }
 
     @classmethod

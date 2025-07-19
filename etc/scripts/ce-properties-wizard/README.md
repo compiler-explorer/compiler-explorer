@@ -130,6 +130,9 @@ The wizard currently supports:
 - Java
 - Fortran
 - Pascal
+- Kotlin
+- Zig
+- Dart
 
 ## Compiler Detection
 

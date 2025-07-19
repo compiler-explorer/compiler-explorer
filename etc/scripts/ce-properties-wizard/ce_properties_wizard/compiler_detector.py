@@ -3,6 +3,7 @@
 import os
 import platform
 import re
+from pathlib import Path
 from typing import Optional, Set, Tuple
 
 from .models import CompilerInfo, LanguageConfig
@@ -126,6 +127,27 @@ LANGUAGE_CONFIGS = {
         extensions=[".pas", ".pp", ".p"],
         keywords=["fpc", "pascal", "delphi"],
     ),
+    "kotlin": LanguageConfig(
+        name="Kotlin",
+        properties_file="kotlin.local.properties",
+        compiler_types=["kotlin"],
+        extensions=[".kt", ".kts"],
+        keywords=["kotlin", "kotlinc"],
+    ),
+    "zig": LanguageConfig(
+        name="Zig",
+        properties_file="zig.local.properties",
+        compiler_types=["zig"],
+        extensions=[".zig"],
+        keywords=["zig"],
+    ),
+    "dart": LanguageConfig(
+        name="Dart",
+        properties_file="dart.local.properties",
+        compiler_types=["dart"],
+        extensions=[".dart"],
+        keywords=["dart"],
+    ),
 }
 
 
@@ -161,6 +183,12 @@ class CompilerDetector:
         # Group will be suggested later by smart group suggestion logic
         group = None
 
+        # Detect Java-related properties for Java-based compilers
+        java_home, runtime = self._detect_java_properties(compiler_type, compiler_path)
+        
+        # Detect execution wrapper for specific compilers
+        execution_wrapper = self._detect_execution_wrapper(compiler_type, compiler_path)
+
         return CompilerInfo(
             id=compiler_id,
             name=display_name,
@@ -172,6 +200,9 @@ class CompilerDetector:
             language=language,
             target=target,
             is_cross_compiler=is_cross,
+            java_home=java_home,
+            runtime=runtime,
+            execution_wrapper=execution_wrapper,
         )
 
     def _detect_language(self, compiler_path: str, compiler_name: str) -> str:
@@ -201,6 +232,38 @@ class CompilerDetector:
             if result and "go version" in result.stdout.lower():
                 version = VersionExtractor.extract_version("go", result.stdout)
                 return "go", version
+
+        # Special case for Zig - use 'version' subcommand
+        if compiler_name == "zig" or compiler_name.endswith("/zig"):
+            result = SubprocessRunner.run_with_timeout([compiler_path, "version"], timeout=5)
+            if result and result.stdout.strip():
+                # Zig version command just outputs the version number
+                version = result.stdout.strip()
+                if re.match(r'\d+\.\d+\.\d+', version):
+                    return "zig", version
+
+        # Special case for Kotlin - may need JAVA_HOME environment
+        if "kotlin" in compiler_name:
+            # Try to find a suitable JAVA_HOME if not set
+            original_java_home = os.environ.get("JAVA_HOME")
+            if not original_java_home:
+                # Try to infer JAVA_HOME from nearby JDK installations
+                compiler_dir = Path(compiler_path).parent.parent.parent
+                for potential_jdk in compiler_dir.glob("jdk-*"):
+                    if potential_jdk.is_dir() and (potential_jdk / "bin" / "java").exists():
+                        os.environ["JAVA_HOME"] = str(potential_jdk)
+                        break
+            
+            # Try version detection with potentially updated JAVA_HOME
+            for flag in ["-version", "--version"]:
+                result = SubprocessRunner.run_with_timeout([compiler_path, flag], timeout=10)
+                if result and ("kotlinc" in result.stderr.lower() or "kotlin" in result.stderr.lower()):
+                    version = VersionExtractor.extract_version("kotlin", result.stderr)
+                    return "kotlin", version
+            
+            # Restore original JAVA_HOME if we modified it
+            if not original_java_home and "JAVA_HOME" in os.environ:
+                del os.environ["JAVA_HOME"]
 
         # Try common version flags and subcommands
         version_flags = ["--version", "-v", "--help", "-V", "/help", "/?", "version"]
@@ -278,6 +341,21 @@ class CompilerDetector:
             if "free pascal" in output or "fpc" in output:
                 version = VersionExtractor.extract_version("fpc", full_output)
                 return "fpc", version
+
+            # Detect Kotlin
+            if "kotlinc" in output or "kotlin" in output:
+                version = VersionExtractor.extract_version("kotlin", full_output)
+                return "kotlin", version
+
+            # Detect Zig
+            if "zig" in output:
+                version = VersionExtractor.extract_version("zig", full_output)
+                return "zig", version
+
+            # Detect Dart
+            if "dart" in output:
+                version = VersionExtractor.extract_version("dart", full_output)
+                return "dart", version
 
         return None, None
 
@@ -386,6 +464,8 @@ class CompilerDetector:
             "pypy": "PyPy",
             "fpc": "Free Pascal",
             "z88dk": "z88dk",
+            "zig": "Zig",
+            "dart": "Dart",
         }.get(compiler_type or "", compiler_type.upper() if compiler_type else "")
 
         parts = []
@@ -404,3 +484,61 @@ class CompilerDetector:
             parts.append(compiler_name)
 
         return " ".join(parts)
+
+    def _detect_java_properties(self, compiler_type: Optional[str], compiler_path: str) -> Tuple[Optional[str], Optional[str]]:
+        """Detect JAVA_HOME and runtime for Java-based compilers.
+        
+        Args:
+            compiler_type: Type of compiler (kotlin, etc.)
+            compiler_path: Path to the compiler executable
+            
+        Returns:
+            Tuple of (java_home, runtime) paths
+        """
+        if compiler_type != "kotlin":
+            return None, None
+            
+        # For Kotlin, try to detect JAVA_HOME from environment or infer from common locations
+        java_home = os.environ.get("JAVA_HOME")
+        
+        if not java_home:
+            # Try to infer JAVA_HOME from common locations near the compiler
+            compiler_dir = Path(compiler_path).parent.parent
+            
+            # Look for JDK installations in the same parent directory
+            parent_dir = compiler_dir.parent
+            for potential_jdk in parent_dir.glob("jdk-*"):
+                if potential_jdk.is_dir() and (potential_jdk / "bin" / "java").exists():
+                    java_home = str(potential_jdk)
+                    break
+        
+        # Determine runtime executable
+        runtime = None
+        if java_home:
+            java_exe = Path(java_home) / "bin" / "java"
+            if java_exe.exists():
+                runtime = str(java_exe)
+        
+        return java_home, runtime
+
+    def _detect_execution_wrapper(self, compiler_type: Optional[str], compiler_path: str) -> Optional[str]:
+        """Detect execution wrapper for compilers that need it.
+        
+        Args:
+            compiler_type: Type of compiler (dart, etc.)
+            compiler_path: Path to the compiler executable
+            
+        Returns:
+            Path to execution wrapper if needed, None otherwise
+        """
+        if compiler_type != "dart":
+            return None
+            
+        # For Dart, look for dartaotruntime in the same bin directory
+        compiler_dir = Path(compiler_path).parent
+        dartaotruntime_path = compiler_dir / "dartaotruntime"
+        
+        if dartaotruntime_path.exists() and dartaotruntime_path.is_file():
+            return str(dartaotruntime_path)
+        
+        return None

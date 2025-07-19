@@ -21,6 +21,9 @@ class CompilerInfo(BaseModel):
     target: Optional[str] = Field(None, description="Target platform (for cross-compilers)")
     is_cross_compiler: bool = Field(False, description="Whether this is a cross-compiler")
     force_name: bool = Field(False, description="Force inclusion of .name property even when semver exists")
+    java_home: Optional[str] = Field(None, description="JAVA_HOME path for Java-based compilers")
+    runtime: Optional[str] = Field(None, description="Runtime executable path for Java-based compilers")
+    execution_wrapper: Optional[str] = Field(None, description="Execution wrapper path for languages like Dart")
 
     @validator("id")
     def validate_id(cls, value):  # noqa: N805

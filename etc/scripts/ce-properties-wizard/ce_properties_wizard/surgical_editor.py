@@ -337,6 +337,21 @@ class PropertiesFileEditor:
         # Insert the new property
         self.lines.insert(insertion_point, f"{prop_key}={value}")
 
+    def get_group_property(self, group_name: str, property_name: str) -> Optional[str]:
+        """Get a property value from a group."""
+        group_start, group_end = self.find_group_section(group_name)
+        if group_start is None:
+            return None
+
+        # Check if property exists
+        prop_key = f"group.{group_name}.{property_name}"
+        for i in range(group_start, group_end):
+            line = self.lines[i]
+            if line.startswith(prop_key + "="):
+                return line.split("=", 1)[1]
+
+        return None
+
     def add_compiler_property(self, compiler_id: str, property_name: str, value: str):
         """Add a property to a compiler if it doesn't already exist."""
         compiler_start, compiler_end = self.find_compiler_section(compiler_id)
@@ -381,8 +396,14 @@ class PropertiesFileEditor:
 
         insertion_point = self.find_insertion_point_for_group(group_name)
 
-        # Add empty line before group if needed
-        if insertion_point > 0 and insertion_point < len(self.lines) and self.lines[insertion_point - 1].strip() != "":
+        # Ensure proper spacing: blank line after compilers= and before group
+        compilers_line_idx = self.find_compilers_line()
+        if compilers_line_idx is not None and insertion_point == compilers_line_idx + 1:
+            # We're inserting right after compilers= line, add blank line first
+            self.lines.insert(insertion_point, "")
+            insertion_point += 1
+        elif insertion_point > 0 and insertion_point < len(self.lines) and self.lines[insertion_point - 1].strip() != "":
+            # Add empty line before group if previous line is not empty
             self.lines.insert(insertion_point, "")
             insertion_point += 1
 
@@ -397,7 +418,15 @@ class PropertiesFileEditor:
 
         insertion_point = self.find_insertion_point_for_compiler(compiler.id, compiler.group)
 
-        # Add empty line before compiler if needed
+        # Ensure proper spacing: blank line after group section and before compiler
+        if compiler.group:
+            group_start, group_end = self.find_group_section(compiler.group)
+            if group_end is not None and insertion_point == group_end:
+                # We're inserting right after group section, add blank line first
+                self.lines.insert(insertion_point, "")
+                insertion_point += 1
+        
+        # Add empty line before compiler if previous line is not empty
         if insertion_point > 0 and insertion_point < len(self.lines) and self.lines[insertion_point - 1].strip() != "":
             self.lines.insert(insertion_point, "")
             insertion_point += 1
@@ -412,11 +441,29 @@ class PropertiesFileEditor:
         if compiler.name and (not compiler.semver or compiler.force_name):
             props_to_add.append(f"compiler.{compiler.id}.name={compiler.name}")
 
+        # Only add compilerType if the group doesn't already have the same one
         if compiler.compiler_type:
-            props_to_add.append(f"compiler.{compiler.id}.compilerType={compiler.compiler_type}")
+            group_compiler_type = None
+            if compiler.group:
+                group_compiler_type = self.get_group_property(compiler.group, "compilerType")
+            
+            # Add compilerType only if group doesn't have it or has a different one
+            if not group_compiler_type or group_compiler_type != compiler.compiler_type:
+                props_to_add.append(f"compiler.{compiler.id}.compilerType={compiler.compiler_type}")
 
         if compiler.options:
             props_to_add.append(f"compiler.{compiler.id}.options={compiler.options}")
+
+        # Add Java-related properties for Java-based compilers
+        if compiler.java_home:
+            props_to_add.append(f"compiler.{compiler.id}.java_home={compiler.java_home}")
+        
+        if compiler.runtime:
+            props_to_add.append(f"compiler.{compiler.id}.runtime={compiler.runtime}")
+        
+        # Add execution wrapper for compilers that need it
+        if compiler.execution_wrapper:
+            props_to_add.append(f"compiler.{compiler.id}.executionWrapper={compiler.execution_wrapper}")
 
         # Insert all properties
         for prop in props_to_add:

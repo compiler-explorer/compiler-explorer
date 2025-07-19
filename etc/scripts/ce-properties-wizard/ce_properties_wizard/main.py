@@ -457,6 +457,12 @@ def cli(
             click.echo(f"  compiler.{detected_info.id}.compilerType={detected_info.compiler_type}")
         if detected_info.options:
             click.echo(f"  compiler.{detected_info.id}.options={detected_info.options}")
+        if detected_info.java_home:
+            click.echo(f"  compiler.{detected_info.id}.java_home={detected_info.java_home}")
+        if detected_info.runtime:
+            click.echo(f"  compiler.{detected_info.id}.runtime={detected_info.runtime}")
+        if detected_info.execution_wrapper:
+            click.echo(f"  compiler.{detected_info.id}.executionWrapper={detected_info.execution_wrapper}")
         if detected_info.group:
             click.echo(f"  Will add to group: {detected_info.group}")
 
