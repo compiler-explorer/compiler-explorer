@@ -110,8 +110,13 @@ Get-ChildItem "C:\Compilers\*\bin\*.exe" | ForEach-Object {
 - `--options`: Default compiler options
 - `--language`: Programming language (auto-detected if not specified)
 - `--yes, -y`: Skip confirmation prompts
+- `--non-interactive`: Run in non-interactive mode with auto-detected values
 - `--config-dir`: Path to etc/config directory (auto-detected if not specified)
 - `--verify-only`: Only detect and display compiler information without making changes
+- `--list-types`: List all supported compiler types and exit
+- `--reorganize LANGUAGE`: Reorganize an existing properties file for the specified language
+- `--validate-discovery`: Run discovery validation to verify the compiler is detected
+- `--env ENV`: Environment to target (local, amazon, etc.) - defaults to 'local'
 
 ## Supported Languages
 
@@ -124,6 +129,7 @@ The wizard currently supports:
 - Python
 - Java
 - Fortran
+- Pascal
 
 ## Compiler Detection
 
