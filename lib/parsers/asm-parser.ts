@@ -261,6 +261,9 @@ export class AsmParser extends AsmRegex implements IAsmParser {
     }
 
     private shouldSkipCommentOnlyLine(filters: ParseFiltersAndOutputOptions, line: string): boolean {
+        if (this.labelDef.test(line)) {
+            return false;
+        }
         return Boolean(
             filters.commentOnly &&
                 ((this.commentOnly.test(line) && !this.parsingState.inNvccCode) ||
