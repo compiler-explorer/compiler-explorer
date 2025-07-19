@@ -1,0 +1,20 @@
+[tool.poetry]
+name = "shortlink-migration"
+version = "0.1.0"
+description = "Migrate Compiler Explorer shortlinks from local storage to AWS S3/DynamoDB"
+authors = ["Compiler Explorer Team"]
+readme = "README.md"
+package-mode = false
+
+[tool.poetry.dependencies]
+python = "^3.8"
+boto3 = "^1.26.0"
+
+[tool.poetry.group.dev.dependencies]
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
+
+[tool.poetry.scripts]
+migrate-shortlinks = "migrate_shortlinks:main"
