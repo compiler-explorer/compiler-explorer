@@ -147,7 +147,7 @@ class VersionExtractor:
         "csharp": [r"Microsoft.*?C# Compiler version (\d+\.\d+\.\d+)", r"dotnet.*?(\d+\.\d+\.\d+)"],
         "dotnet": [r"Microsoft.*?\.NET.*?(\d+\.\d+\.\d+)", r"dotnet.*?(\d+\.\d+\.\d+)"],
         "fsharp": [r"F# Compiler.*?(\d+\.\d+\.\d+)", r"fsharpc.*?(\d+\.\d+\.\d+)"],
-        # Scripting/Dynamic languages  
+        # Scripting/Dynamic languages
         "ruby": [r"ruby (\d+\.\d+\.\d+)", r"ruby.*?(\d+\.\d+\.\d+)"],
         "julia": [r"julia version (\d+\.\d+\.\d+)", r"julia.*?(\d+\.\d+\.\d+)"],
         "elixir": [r"Elixir (\d+\.\d+\.\d+)", r"elixir.*?(\d+\.\d+\.\d+)"],

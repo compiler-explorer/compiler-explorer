@@ -402,7 +402,9 @@ class PropertiesFileEditor:
             # We're inserting right after compilers= line, add blank line first
             self.lines.insert(insertion_point, "")
             insertion_point += 1
-        elif insertion_point > 0 and insertion_point < len(self.lines) and self.lines[insertion_point - 1].strip() != "":
+        elif (
+            insertion_point > 0 and insertion_point < len(self.lines) and self.lines[insertion_point - 1].strip() != ""
+        ):
             # Add empty line before group if previous line is not empty
             self.lines.insert(insertion_point, "")
             insertion_point += 1
@@ -425,7 +427,7 @@ class PropertiesFileEditor:
                 # We're inserting right after group section, add blank line first
                 self.lines.insert(insertion_point, "")
                 insertion_point += 1
-        
+
         # Add empty line before compiler if previous line is not empty
         if insertion_point > 0 and insertion_point < len(self.lines) and self.lines[insertion_point - 1].strip() != "":
             self.lines.insert(insertion_point, "")
@@ -446,7 +448,7 @@ class PropertiesFileEditor:
             group_compiler_type = None
             if compiler.group:
                 group_compiler_type = self.get_group_property(compiler.group, "compilerType")
-            
+
             # Add compilerType only if group doesn't have it or has a different one
             if not group_compiler_type or group_compiler_type != compiler.compiler_type:
                 props_to_add.append(f"compiler.{compiler.id}.compilerType={compiler.compiler_type}")
@@ -457,10 +459,10 @@ class PropertiesFileEditor:
         # Add Java-related properties for Java-based compilers
         if compiler.java_home:
             props_to_add.append(f"compiler.{compiler.id}.java_home={compiler.java_home}")
-        
+
         if compiler.runtime:
             props_to_add.append(f"compiler.{compiler.id}.runtime={compiler.runtime}")
-        
+
         # Add execution wrapper for compilers that need it
         if compiler.execution_wrapper:
             props_to_add.append(f"compiler.{compiler.id}.executionWrapper={compiler.execution_wrapper}")

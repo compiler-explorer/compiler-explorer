@@ -331,7 +331,7 @@ class CompilerDetector:
 
         # Detect Java-related properties for Java-based compilers
         java_home, runtime = self._detect_java_properties(compiler_type, compiler_path)
-        
+
         # Detect execution wrapper for specific compilers
         execution_wrapper = self._detect_execution_wrapper(compiler_type, compiler_path)
 
@@ -385,7 +385,7 @@ class CompilerDetector:
             if result and result.stdout.strip():
                 # Zig version command just outputs the version number
                 version = result.stdout.strip()
-                if re.match(r'\d+\.\d+\.\d+', version):
+                if re.match(r"\d+\.\d+\.\d+", version):
                     return "zig", version
 
         # Special case for Kotlin - may need JAVA_HOME environment
@@ -399,14 +399,14 @@ class CompilerDetector:
                     if potential_jdk.is_dir() and (potential_jdk / "bin" / "java").exists():
                         os.environ["JAVA_HOME"] = str(potential_jdk)
                         break
-            
+
             # Try version detection with potentially updated JAVA_HOME
             for flag in ["-version", "--version"]:
                 result = SubprocessRunner.run_with_timeout([compiler_path, flag], timeout=10)
                 if result and ("kotlinc" in result.stderr.lower() or "kotlin" in result.stderr.lower()):
                     version = VersionExtractor.extract_version("kotlin", result.stderr)
                     return "kotlin", version
-            
+
             # Restore original JAVA_HOME if we modified it
             if not original_java_home and "JAVA_HOME" in os.environ:
                 del os.environ["JAVA_HOME"]
@@ -778,60 +778,62 @@ class CompilerDetector:
 
         return " ".join(parts)
 
-    def _detect_java_properties(self, compiler_type: Optional[str], compiler_path: str) -> Tuple[Optional[str], Optional[str]]:
+    def _detect_java_properties(
+        self, compiler_type: Optional[str], compiler_path: str
+    ) -> Tuple[Optional[str], Optional[str]]:
         """Detect JAVA_HOME and runtime for Java-based compilers.
-        
+
         Args:
             compiler_type: Type of compiler (kotlin, etc.)
             compiler_path: Path to the compiler executable
-            
+
         Returns:
             Tuple of (java_home, runtime) paths
         """
         if compiler_type != "kotlin":
             return None, None
-            
+
         # For Kotlin, try to detect JAVA_HOME from environment or infer from common locations
         java_home = os.environ.get("JAVA_HOME")
-        
+
         if not java_home:
             # Try to infer JAVA_HOME from common locations near the compiler
             compiler_dir = Path(compiler_path).parent.parent
-            
+
             # Look for JDK installations in the same parent directory
             parent_dir = compiler_dir.parent
             for potential_jdk in parent_dir.glob("jdk-*"):
                 if potential_jdk.is_dir() and (potential_jdk / "bin" / "java").exists():
                     java_home = str(potential_jdk)
                     break
-        
+
         # Determine runtime executable
         runtime = None
         if java_home:
             java_exe = Path(java_home) / "bin" / "java"
             if java_exe.exists():
                 runtime = str(java_exe)
-        
+
         return java_home, runtime
 
     def _detect_execution_wrapper(self, compiler_type: Optional[str], compiler_path: str) -> Optional[str]:
         """Detect execution wrapper for compilers that need it.
-        
+
         Args:
             compiler_type: Type of compiler (dart, etc.)
             compiler_path: Path to the compiler executable
-            
+
         Returns:
             Path to execution wrapper if needed, None otherwise
         """
         if compiler_type != "dart":
             return None
-            
+
         # For Dart, look for dartaotruntime in the same bin directory
         compiler_dir = Path(compiler_path).parent
         dartaotruntime_path = compiler_dir / "dartaotruntime"
-        
+
         if dartaotruntime_path.exists() and dartaotruntime_path.is_file():
             return str(dartaotruntime_path)
-        
+
         return None
