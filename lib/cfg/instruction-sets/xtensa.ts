@@ -1,4 +1,4 @@
-// Copyright (c) 2023, Compiler Explorer Authors
+// Copyright (c) 2025, Compiler Explorer Authors
 // All rights reserved.
 //
 // Redistribution and use in source and binary forms, with or without
@@ -22,8 +22,31 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-export {ArmInstructionSetInfo} from './arm.js';
-export {BaseInstructionSetInfo} from './base.js';
-export {XtensaInstructionSetInfo} from './xtensa.js';
-export {LlvmIrInstructionSetInfo} from './llvm-ir.js';
-export {PythonInstructionSetInfo} from './python.js';
+import {InstructionSet} from '../../../types/instructionsets.js';
+import {BaseInstructionSetInfo, InstructionType} from './base.js';
+
+export class XtensaInstructionSetInfo extends BaseInstructionSetInfo {
+    static override get key(): InstructionSet {
+        return 'xtensa';
+    }
+
+    // Full list:  BALL, BNALL, BANY, BNONE, BBC, BBCI, BBS, BBSI, BEQ, BEQI, BEQZ, BNE, BNEI, BNEZ
+    // BGE, BGEI, BGEU, BGEUI, BGEZ, BLT, BLTI, BLTU, BLTUI, BLTZ
+    static conditionalJumps = /^\s*b/;
+
+    // whitespaces followed by 'j' or 'jx'
+    static unconditionalJumps = /^\s*jx?/;
+    static returnInstruction = /^\s*ret/;
+
+    override isJmpInstruction(instruction: string) {
+        const instype = this.getInstructionType(instruction);
+        return instype === InstructionType.jmp || instype === InstructionType.conditionalJmpInst;
+    }
+
+    override getInstructionType(instruction: string) {
+        if (XtensaInstructionSetInfo.conditionalJumps.test(instruction)) return InstructionType.conditionalJmpInst;
+        if (XtensaInstructionSetInfo.unconditionalJumps.test(instruction)) return InstructionType.jmp;
+        if (XtensaInstructionSetInfo.returnInstruction.test(instruction)) return InstructionType.retInst;
+        return InstructionType.notRetInst;
+    }
+}
