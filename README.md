@@ -110,6 +110,11 @@ If you want to point it at your own GCC or similar binaries, either edit the `et
 else make a new one with the name `LANG.local.properties`, substituting `LANG` as needed. `*.local.properties` files
 have the highest priority when loading properties.
 
+For a quick and easy way to add local compilers, use the 
+[CE Properties Wizard](etc/scripts/ce-properties-wizard/) which automatically detects and configures compilers 
+for [30+ languages](etc/scripts/ce-properties-wizard/README.md#supported-languages). 
+See [Adding a Compiler](docs/AddingACompiler.md) for more details.
+
 If you want to support multiple compilers and languages like [godbolt.org](https://godbolt.org), you can use the
 `bin/ce_install install compilers` command in the [infra](https://github.com/compiler-explorer/infra) project to install
 all or some of the compilers. Compilers installed in this way can be loaded through the configuration in
