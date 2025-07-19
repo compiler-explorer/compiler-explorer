@@ -128,7 +128,7 @@ export class ZigCompiler extends BaseCompiler {
             if (filters.binary) {
                 options.push('-femit-bin=' + desiredName);
             } else {
-                options.push('-fno-emit-bin', '-femit-asm=' + desiredName);
+                options.push('-fllvm', '-fno-emit-bin', '-femit-asm=' + desiredName);
             }
             return options;
         }
