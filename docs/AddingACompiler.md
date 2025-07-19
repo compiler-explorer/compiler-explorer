@@ -29,13 +29,6 @@ Add a custom GCC installation:
 etc/scripts/ce-properties-wizard/run.sh /opt/gcc-14.2.0/bin/g++
 ```
 
-Add multiple compilers quickly:
-```bash
-for compiler in /opt/compilers/*/bin/*; do
-    etc/scripts/ce-properties-wizard/run.sh "$compiler" --yes
-done
-```
-
 Add a cross-compiler:
 ```bash
 etc/scripts/ce-properties-wizard/run.sh /usr/bin/arm-linux-gnueabihf-g++ \
