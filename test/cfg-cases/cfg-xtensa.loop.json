@@ -1,0 +1,177 @@
+{
+    "asm": [
+        {
+            "text": "square(int, int*, int&):",
+            "source": null,
+            "labels": []
+        },
+        {
+            "text": "        entry   sp, 32",
+            "source": {
+                "file": null,
+                "line": 2,
+                "column": 37
+            },
+            "labels": []
+        },
+        {
+            "text": "        blti    a2, 1, .L1",
+            "source": {
+                "file": null,
+                "line": 3,
+                "column": 20
+            },
+            "labels": [
+                {
+                    "name": ".L1",
+                    "range": {
+                        "startCol": 24,
+                        "endCol": 27
+                    }
+                }
+            ]
+        },
+        {
+            "text": "        slli    a8, a2, 2",
+            "source": {
+                "file": null,
+                "line": 3,
+                "column": 20
+            },
+            "labels": []
+        },
+        {
+            "text": "        addi    a8, a8, -4",
+            "source": {
+                "file": null,
+                "line": 3,
+                "column": 20
+            },
+            "labels": []
+        },
+        {
+            "text": "        srli    a8, a8, 2",
+            "source": {
+                "file": null,
+                "line": 3,
+                "column": 20
+            },
+            "labels": []
+        },
+        {
+            "text": "        addi.n  a8, a8, 1",
+            "source": {
+                "file": null,
+                "line": 3,
+                "column": 20
+            },
+            "labels": []
+        },
+        {
+            "text": "        loop    a8, .L3_LEND",
+            "source": {
+                "file": null,
+                "line": 3,
+                "column": 20
+            },
+            "labels": []
+        },
+        {
+            "text": "        l32i.n  a2, a3, 0",
+            "source": {
+                "file": null,
+                "line": 4,
+                "column": 14
+            },
+            "labels": []
+        },
+        {
+            "text": "        l32i.n  a9, a4, 0",
+            "source": {
+                "file": null,
+                "line": 4,
+                "column": 14
+            },
+            "labels": []
+        },
+        {
+            "text": "        add.n   a2, a2, a9",
+            "source": {
+                "file": null,
+                "line": 4,
+                "column": 14
+            },
+            "labels": []
+        },
+        {
+            "text": "        s32i.n  a2, a3, 0",
+            "source": {
+                "file": null,
+                "line": 4,
+                "column": 14
+            },
+            "labels": []
+        },
+        {
+            "text": "        addi.n  a3, a3, 4",
+            "source": {
+                "file": null,
+                "line": 3,
+                "column": 20
+            },
+            "labels": []
+        },
+        {
+            "text": ".L1:",
+            "source": null,
+            "labels": []
+        },
+        {
+            "text": "        retw.n",
+            "source": {
+                "file": null,
+                "line": 5,
+                "column": 1
+            },
+            "labels": []
+        }
+    ],
+    "cfg": {
+        "square(int, int*, int&):": {
+            "nodes": [
+                {
+                    "id": "square(int, int*, int&):",
+                    "label": "square(int, int*, int&):\n        entry   sp, 32\n        blti    a2, 1, .L1"
+                },
+                {
+                    "id": "square(int, int*, int&):@3",
+                    "label": "square(int, int*, int&):@3\n        slli    a8, a2, 2\n        addi    a8, a8, -4\n        srli    a8, a8, 2\n        addi.n  a8, a8, 1\n        loop    a8, .L3_LEND\n        l32i.n  a2, a3, 0\n        l32i.n  a9, a4, 0\n        add.n   a2, a2, a9\n        s32i.n  a2, a3, 0\n        addi.n  a3, a3, 4"
+                },
+                {
+                    "id": ".L1:",
+                    "label": ".L1:\n        retw.n"
+                }
+            ],
+            "edges": [
+                {
+                    "from": "square(int, int*, int&):",
+                    "to": ".L1:",
+                    "arrows": "to",
+                    "color": "green"
+                },
+                {
+                    "from": "square(int, int*, int&):",
+                    "to": "square(int, int*, int&):@3",
+                    "arrows": "to",
+                    "color": "red"
+                },
+                {
+                    "from": "square(int, int*, int&):@3",
+                    "to": ".L1:",
+                    "arrows": "to",
+                    "color": "grey"
+                }
+            ]
+        }
+    }
+}
