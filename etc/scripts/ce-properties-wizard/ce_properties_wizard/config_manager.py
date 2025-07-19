@@ -9,27 +9,19 @@ from typing import Dict, List, Optional, Set
 from .compiler_detector import LANGUAGE_CONFIGS
 from .models import CompilerInfo
 from .surgical_editor import PropertiesFileEditor
+from .utils import ArchitectureMapper, SubprocessRunner, VersionExtractor, create_backup, find_ce_lib_directory
 
 
 def get_supported_instruction_sets() -> Set[str]:
     """Dynamically extract all supported instruction sets from lib/instructionsets.ts."""
     instruction_sets = set()
 
-    # Find the lib/instructionsets.ts file relative to the current location
-    current_dir = Path(__file__).resolve().parent
-
-    # Look for lib directory by going up the directory tree
-    for _ in range(6):  # Max 6 levels up
-        instructionsets_file = current_dir / "lib" / "instructionsets.ts"
-        if instructionsets_file.exists():
-            break
-        current_dir = current_dir.parent
-    else:
-        # Fallback: assume we're in the main CE directory
-        instructionsets_file = Path("lib/instructionsets.ts")
-        if not instructionsets_file.exists():
-            # Return a minimal fallback set if we can't find the file
-            return {"amd64", "aarch64", "arm32", "x86", "sparc", "s390x", "powerpc", "mips", "riscv64", "riscv32"}
+    try:
+        lib_dir = find_ce_lib_directory()
+        instructionsets_file = lib_dir / "instructionsets.ts"
+    except FileNotFoundError:
+        # Return a minimal fallback set if we can't find the file
+        return {"amd64", "aarch64", "arm32", "x86", "sparc", "s390x", "powerpc", "mips", "riscv64", "riscv32"}
 
     try:
         with open(instructionsets_file, "r", encoding="utf-8") as f:
@@ -52,67 +44,7 @@ def get_supported_instruction_sets() -> Set[str]:
 
 def detect_instruction_set_from_target(target: Optional[str], exe_path: str) -> str:
     """Detect instruction set from target platform or executable path."""
-    if not target:
-        target = ""
-
-    target_lower = target.lower()
-    exe_lower = exe_path.lower()
-
-    # Architecture mapping based on lib/instructionsets.ts
-    arch_mappings = {
-        "aarch64": "aarch64",
-        "arm64": "aarch64",
-        "arm": "arm32",
-        "avr": "avr",
-        "bpf": "ebpf",
-        "ez80": "ez80",
-        "kvx": "kvx",
-        "k1": "kvx",
-        "loongarch": "loongarch",
-        "m68k": "m68k",
-        "mips": "mips",
-        "mipsel": "mips",
-        "mips64": "mips",
-        "mips64el": "mips",
-        "nanomips": "mips",
-        "mrisc32": "mrisc32",
-        "msp430": "msp430",
-        "powerpc": "powerpc",
-        "ppc64": "powerpc",
-        "ppc": "powerpc",
-        "riscv64": "riscv64",
-        "rv64": "riscv64",
-        "riscv32": "riscv32",
-        "rv32": "riscv32",
-        "sh": "sh",
-        "sparc": "sparc",
-        "sparc64": "sparc",
-        "s390x": "s390x",
-        "vax": "vax",
-        "wasm32": "wasm32",
-        "wasm64": "wasm64",
-        "xtensa": "xtensa",
-        "z180": "z180",
-        "z80": "z80",
-        "x86_64": "amd64",
-        "x86-64": "amd64",
-        "amd64": "amd64",
-        "i386": "x86",
-        "i686": "x86",
-    }
-
-    # Check target first
-    for arch_key, instruction_set in arch_mappings.items():
-        if arch_key in target_lower:
-            return instruction_set
-
-    # Check executable path
-    for arch_key, instruction_set in arch_mappings.items():
-        if f"/{arch_key}-" in exe_lower or f"-{arch_key}-" in exe_lower:
-            return instruction_set
-
-    # Default to amd64 for unknown architectures
-    return "amd64"
+    return ArchitectureMapper.detect_instruction_set(target, exe_path)
 
 
 class ConfigManager:
@@ -173,8 +105,7 @@ class ConfigManager:
         """Write properties to file, preserving order and comments."""
         # Create backup if file exists
         if file_path.exists():
-            backup_path = file_path.with_suffix(".properties.bak")
-            shutil.copy2(file_path, backup_path)
+            create_backup(file_path)
 
         with open(file_path, "w", encoding="utf-8") as f:
             previous_key = None

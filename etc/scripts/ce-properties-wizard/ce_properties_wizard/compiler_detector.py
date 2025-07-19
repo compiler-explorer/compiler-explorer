@@ -199,13 +199,10 @@ class CompilerDetector:
 
         # Special case for Go - use 'version' subcommand instead of flag
         if compiler_name == "go" or compiler_name.endswith("/go"):
-            try:
-                result = subprocess.run([compiler_path, "version"], capture_output=True, text=True, timeout=5)
-                if "go version" in result.stdout.lower():
-                    version = self._extract_go_version(result.stdout)
-                    return "go", version
-            except (subprocess.TimeoutExpired, subprocess.SubprocessError):
-                pass
+            result = SubprocessRunner.run_with_timeout([compiler_path, "version"], timeout=5)
+            if result and "go version" in result.stdout.lower():
+                version = VersionExtractor.extract_version("go", result.stdout)
+                return "go", version
 
         # Try common version flags and subcommands
         version_flags = ["--version", "-v", "--help", "-V", "/help", "/?", "version"]
@@ -220,196 +217,75 @@ class CompilerDetector:
 
             # Detect z88dk first (before Clang) since z88dk mentions clang in its help
             if "z88dk" in output:
-                    version = self._extract_z88dk_version(result.stdout + result.stderr)
-                    return "z88dk", version
+                version = VersionExtractor.extract_version("z88dk", full_output)
+                return "z88dk", version
 
-                # Detect Clang (before GCC) since clang output may contain 'gnu'
-                if "clang" in output:
-                    version = self._extract_clang_version(result.stdout + result.stderr)
-                    return "clang", version
+            # Detect Clang (before GCC) since clang output may contain 'gnu'
+            if "clang" in output:
+                version = VersionExtractor.extract_version("clang", full_output)
+                return "clang", version
 
-                # Detect GCC
-                if "gcc" in output or "g++" in output or ("gnu" in output and "clang" not in output):
-                    version = self._extract_gcc_version(result.stdout + result.stderr)
-                    return "gcc", version
+            # Detect GCC
+            if "gcc" in output or "g++" in output or ("gnu" in output and "clang" not in output):
+                version = VersionExtractor.extract_version("gcc", full_output)
+                return "gcc", version
 
-                # Detect Intel Fortran first
-                if "ifx" in output or "ifort" in output:
-                    version = self._extract_intel_fortran_version(result.stdout + result.stderr)
-                    if "ifx" in output:
-                        return "ifx", version
-                    else:
-                        return "ifort", version
+            # Detect Intel Fortran first
+            if "ifx" in output or "ifort" in output:
+                version = VersionExtractor.extract_version("intel_fortran", full_output)
+                if "ifx" in output:
+                    return "ifx", version
+                else:
+                    return "ifort", version
 
-                # Detect Intel C/C++
-                if "intel" in output:
-                    if "icx" in output or "dpcpp" in output:
-                        version = self._extract_intel_version(result.stdout + result.stderr)
-                        return "icx", version
-                    else:
-                        version = self._extract_intel_version(result.stdout + result.stderr)
-                        return "icc", version
+            # Detect Intel C/C++
+            if "intel" in output:
+                version = VersionExtractor.extract_version("intel", full_output)
+                if "icx" in output or "dpcpp" in output:
+                    return "icx", version
+                else:
+                    return "icc", version
 
-                # Detect MSVC
-                if "microsoft" in output or "msvc" in output:
-                    version = self._extract_msvc_version(result.stdout + result.stderr)
-                    return "msvc", version
+            # Detect MSVC
+            if "microsoft" in output or "msvc" in output:
+                version = VersionExtractor.extract_version("msvc", full_output)
+                return "msvc", version
 
-                # Detect NVCC
-                if "nvidia" in output or "nvcc" in output:
-                    version = self._extract_nvcc_version(result.stdout + result.stderr)
-                    return "nvcc", version
+            # Detect NVCC
+            if "nvidia" in output or "nvcc" in output:
+                version = VersionExtractor.extract_version("nvcc", full_output)
+                return "nvcc", version
 
-                # Detect Rust
-                if "rustc" in output:
-                    version = self._extract_rust_version(result.stdout + result.stderr)
-                    return "rustc", version
+            # Detect Rust
+            if "rustc" in output:
+                version = VersionExtractor.extract_version("rust", full_output)
+                return "rustc", version
 
-                # Detect TinyGo first (before regular Go)
-                if "tinygo" in output:
-                    version = self._extract_tinygo_version(result.stdout + result.stderr)
-                    return "tinygo", version
+            # Detect TinyGo first (before regular Go)
+            if "tinygo" in output:
+                version = VersionExtractor.extract_version("tinygo", full_output)
+                return "tinygo", version
 
-                # Detect Go
-                if "go version" in output or "gccgo" in output:
-                    version = self._extract_go_version(result.stdout + result.stderr)
-                    return "go" if "go version" in output else "gccgo", version
+            # Detect Go
+            if "go version" in output or "gccgo" in output:
+                version = VersionExtractor.extract_version("go", full_output)
+                return "go" if "go version" in output else "gccgo", version
 
-                # Detect Python
-                if "python" in output:
-                    version = self._extract_python_version(result.stdout + result.stderr)
-                    return "pypy" if "pypy" in output else "python", version
+            # Detect Python
+            if "python" in output:
+                version = VersionExtractor.extract_version("python", full_output)
+                return "pypy" if "pypy" in output else "python", version
 
-                # Detect Free Pascal
-                if "free pascal" in output or "fpc" in output:
-                    version = self._extract_fpc_version(result.stdout + result.stderr)
-                    return "fpc", version
-
-            except (subprocess.TimeoutExpired, subprocess.SubprocessError):
-                continue
+            # Detect Free Pascal
+            if "free pascal" in output or "fpc" in output:
+                version = VersionExtractor.extract_version("fpc", full_output)
+                return "fpc", version
 
         return None, None
 
-    def _extract_gcc_version(self, output: str) -> Optional[str]:
-        """Extract GCC version from output."""
-        match = re.search(r"gcc.*?(\d+\.\d+\.\d+)", output, re.IGNORECASE)
-        if match:
-            return match.group(1)
-        match = re.search(r"g\+\+.*?(\d+\.\d+\.\d+)", output, re.IGNORECASE)
-        if match:
-            return match.group(1)
-        return None
-
-    def _extract_clang_version(self, output: str) -> Optional[str]:
-        """Extract Clang version from output."""
-        match = re.search(r"clang version (\d+\.\d+\.\d+)", output, re.IGNORECASE)
-        if match:
-            return match.group(1)
-        return None
-
-    def _extract_intel_version(self, output: str) -> Optional[str]:
-        """Extract Intel compiler version from output."""
-        match = re.search(r"(?:icc|icpc|icx|dpcpp).*?(\d+\.\d+\.\d+)", output, re.IGNORECASE)
-        if match:
-            return match.group(1)
-        match = re.search(r"intel.*?compiler.*?(\d+\.\d+)", output, re.IGNORECASE)
-        if match:
-            return match.group(1)
-        return None
-
-    def _extract_intel_fortran_version(self, output: str) -> Optional[str]:
-        """Extract Intel Fortran compiler version from output."""
-        # Match "ifx (IFX) 2024.0.0" or "ifort (IFORT) 2021.1.0"
-        match = re.search(r"(?:ifx|ifort)\s*\([^)]+\)\s*(\d+\.\d+\.\d+)", output, re.IGNORECASE)
-        if match:
-            return match.group(1)
-        # Fallback patterns
-        match = re.search(r"(?:ifx|ifort).*?(\d+\.\d+\.\d+)", output, re.IGNORECASE)
-        if match:
-            return match.group(1)
-        return None
-
-    def _extract_msvc_version(self, output: str) -> Optional[str]:
-        """Extract MSVC version from output."""
-        match = re.search(r"compiler version (\d+\.\d+\.\d+)", output, re.IGNORECASE)
-        if match:
-            return match.group(1)
-        return None
-
-    def _extract_nvcc_version(self, output: str) -> Optional[str]:
-        """Extract NVCC version from output."""
-        match = re.search(r"release (\d+\.\d+)", output, re.IGNORECASE)
-        if match:
-            return match.group(1)
-        return None
-
-    def _extract_rust_version(self, output: str) -> Optional[str]:
-        """Extract Rust version from output."""
-        match = re.search(r"rustc (\d+\.\d+\.\d+)", output, re.IGNORECASE)
-        if match:
-            return match.group(1)
-        return None
-
-    def _extract_go_version(self, output: str) -> Optional[str]:
-        """Extract Go version from output."""
-        # Match "go version go1.24.2" or similar patterns
-        match = re.search(r"go\s*version\s+go(\d+\.\d+(?:\.\d+)?)", output, re.IGNORECASE)
-        if match:
-            return match.group(1)
-        # Fallback to simpler pattern
-        match = re.search(r"go(\d+\.\d+(?:\.\d+)?)", output, re.IGNORECASE)
-        if match:
-            return match.group(1)
-        return None
-
-    def _extract_tinygo_version(self, output: str) -> Optional[str]:
-        """Extract TinyGo version from output."""
-        # Match "tinygo version 0.37.0" or "version: 0.37.0"
-        match = re.search(r"(?:tinygo\s+)?version:?\s+(\d+\.\d+(?:\.\d+)?)", output, re.IGNORECASE)
-        if match:
-            return match.group(1)
-        return None
-
-    def _extract_python_version(self, output: str) -> Optional[str]:
-        """Extract Python version from output."""
-        match = re.search(r"python (\d+\.\d+\.\d+)", output, re.IGNORECASE)
-        if match:
-            return match.group(1)
-        match = re.search(r"pypy.*?(\d+\.\d+\.\d+)", output, re.IGNORECASE)
-        if match:
-            return match.group(1)
-        return None
-
-    def _extract_fpc_version(self, output: str) -> Optional[str]:
-        """Extract Free Pascal Compiler version from output."""
-        match = re.search(r"Free Pascal Compiler version (\d+\.\d+\.\d+)", output, re.IGNORECASE)
-        if match:
-            return match.group(1)
-        match = re.search(r"fpc.*?(\d+\.\d+\.\d+)", output, re.IGNORECASE)
-        if match:
-            return match.group(1)
-        return None
-
-    def _extract_z88dk_version(self, output: str) -> Optional[str]:
-        """Extract z88dk version from output."""
-        # Match "v1-9ffe2042-20220728" or similar version patterns
-        match = re.search(r"z88dk.*?-\s*v([^-\s]+(?:-[^-\s]+)*)", output, re.IGNORECASE)
-        if match:
-            return match.group(1)
-        # Fallback to simpler pattern
-        match = re.search(r"v(\d+[^-\s]*(?:-[^-\s]*)*)", output, re.IGNORECASE)
-        if match:
-            return match.group(1)
-        return None
-
     def _extract_semver(self, version: Optional[str]) -> Optional[str]:
         """Extract semantic version from version string."""
-        if not version:
-            return None
-        match = re.match(r"(\d+\.\d+(?:\.\d+)?)", version)
-        if match:
-            return match.group(1)
-        return None
+        return VersionExtractor.extract_semver(version)
 
     def _detect_target_platform(self, compiler_path: str, compiler_type: Optional[str]) -> Optional[str]:
         """Detect the target platform of the compiler."""
@@ -417,16 +293,13 @@ class CompilerDetector:
             return None
 
         # Try to get target info using -v flag
-        try:
-            result = subprocess.run([compiler_path, "-v"], capture_output=True, text=True, timeout=5)
-
+        result = SubprocessRunner.run_with_timeout([compiler_path, "-v"], timeout=5)
+        if result:
             # Look for Target: line in output
             for line in (result.stdout + result.stderr).split("\n"):
                 if line.strip().startswith("Target:"):
                     target = line.split(":", 1)[1].strip()
                     return target
-        except (subprocess.TimeoutExpired, subprocess.SubprocessError):
-            pass
 
         return None
 

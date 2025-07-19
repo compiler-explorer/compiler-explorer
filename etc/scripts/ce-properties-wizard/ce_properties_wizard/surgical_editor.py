@@ -5,6 +5,7 @@ from pathlib import Path
 from typing import List, Optional, Tuple
 
 from .models import CompilerInfo
+from .utils import create_backup
 
 
 class PropertiesFileEditor:
@@ -27,10 +28,7 @@ class PropertiesFileEditor:
         """Save file with minimal changes."""
         # Create backup if file exists
         if self.file_path.exists():
-            backup_path = self.file_path.with_suffix(".properties.bak")
-            import shutil
-
-            shutil.copy2(self.file_path, backup_path)
+            create_backup(self.file_path)
 
         with open(self.file_path, "w", encoding="utf-8") as f:
             for line in self.lines:
