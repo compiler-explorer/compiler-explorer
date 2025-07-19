@@ -5,6 +5,7 @@ An interactive command-line tool for adding custom compilers to your local Compi
 ## Features
 
 - **Automatic Detection**: Detects compiler type and language from the executable path
+- **Auto-Discovery**: Automatically finds and adds all compilers in your PATH
 - **Interactive Mode**: Guided prompts for configuration
 - **Automation Support**: Command-line flags for scripting
 - **Group Management**: Automatically adds compilers to appropriate groups
@@ -81,6 +82,16 @@ Use command-line flags to automate the process:
   --options "-std=c++20" `
   --language c++ `
   --yes
+```
+
+### Auto-Discovery
+
+Automatically discover and add all compilers in your PATH:
+
+```bash
+./auto_discover_compilers.py --dry-run              # Preview what would be found
+./auto_discover_compilers.py --languages c++,rust   # Add only C++ and Rust compilers
+./auto_discover_compilers.py --yes                  # Add all found compilers automatically
 ```
 
 ### Batch Processing

@@ -321,7 +321,7 @@ class CompilerDetector:
         is_cross = self._is_cross_compiler(target)
 
         # Generate ID based on whether it's a cross-compiler
-        compiler_id = self._generate_id(compiler_type, version, compiler_name, target if is_cross else None)
+        compiler_id = self._generate_id(compiler_type, version, compiler_name, language, target if is_cross else None)
 
         # Generate display name
         display_name = self._generate_display_name(compiler_type, version, compiler_name, target if is_cross else None)
@@ -679,7 +679,7 @@ class CompilerDetector:
         return target_arch != normalized_host
 
     def _generate_id(
-        self, compiler_type: Optional[str], version: Optional[str], compiler_name: str, target: Optional[str] = None
+        self, compiler_type: Optional[str], version: Optional[str], compiler_name: str, language: str, target: Optional[str] = None
     ) -> str:
         """Generate a unique compiler ID."""
         parts = ["custom"]
@@ -688,6 +688,10 @@ class CompilerDetector:
         if target:
             arch = target.split("-")[0]
             parts.append(arch)
+
+        # Add language prefix for C to avoid conflicts with C++
+        if language == "c" and compiler_type in ["gcc", "clang", "icc", "icx"]:
+            parts.append("c")
 
         # Add compiler type
         if compiler_type:
