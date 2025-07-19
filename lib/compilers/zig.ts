@@ -125,6 +125,11 @@ export class ZigCompiler extends BaseCompiler {
             if (Semver.gt(ver, '0.9.0', true) || Semver.lt(ver, '0.7.0', true)) {
                 options.push('-fno-strip');
             }
+            if (Semver.gte(ver, '0.11.0', true) && !filters.binary) {
+                // Ensures assembtly dump, not needed up to 0.14.1 but added just in case
+                // (as of Jul 2025 needed for trunk)
+                options.push('-fllvm');
+            }
         }
 
         if (this.self_hosted_cli) {
@@ -136,7 +141,7 @@ export class ZigCompiler extends BaseCompiler {
             if (filters.binary) {
                 options.push('-femit-bin=' + desiredName);
             } else {
-                options.push('-fllvm', '-fno-emit-bin', '-femit-asm=' + desiredName);
+                options.push('-fno-emit-bin', '-femit-asm=' + desiredName);
             }
             return options;
         }
