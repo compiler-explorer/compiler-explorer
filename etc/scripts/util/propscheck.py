@@ -32,6 +32,7 @@ from argparse import Namespace
 parser = argparse.ArgumentParser(description='Checks for incorrect/suspicious properties.')
 parser.add_argument ('--check-suspicious-in-default-prop', required=False, action="store_true")
 parser.add_argument ('--config-dir', required=False, default="./etc/config")
+parser.add_argument ('--check-local', required=False, action="store_true")
 
 
 PROP_RE = re.compile(r'([^# ]*)=(.*)#*')
@@ -108,6 +109,7 @@ def process_file(file: str, args: Namespace):
     listed_groups = set()
     seen_groups = set()
 
+    no_compilers_list = set()
     listed_compilers = set()
     seen_compilers_exe = set()
     seen_compilers_id = set()
@@ -134,7 +136,7 @@ def process_file(file: str, args: Namespace):
     duplicated_compiler_references = set()
     duplicated_group_references = set()
 
-    suspicious_check = args.check_suspicious_in_default_prop or not (file.endswith('.defaults.properties'))
+    suspicious_check = args.check_suspicious_in_default_prop or (not file.endswith('.defaults.properties') and not file.endswith('.local.properties'))
     suspicious_path = set()
 
     seen_typo_compilers = set()
@@ -235,7 +237,19 @@ def process_file(file: str, args: Namespace):
     bad_tools_exe = listed_tools.symmetric_difference(seen_tools_exe)
     bad_tools_id = listed_tools.symmetric_difference(seen_tools_id)
     bad_default = default_compiler - listed_compilers
+
+    if len(listed_compilers) == 0 and len(listed_groups) == 0:
+        allowed = ('execution.','compiler-explorer.', 'aws.', 'asm-docs.', 'builtin.', '.defaults.')
+        is_allowed_to_be_empty = False
+        for allow in allowed:
+            if allow in file:
+                is_allowed_to_be_empty = True
+                break
+        if not is_allowed_to_be_empty:
+            no_compilers_list.add(file)
+
     return {
+        "no_compilers_list": no_compilers_list,
         "not_a_valid_prop": not_a_valid_prop,
         "bad_compilers_exe": bad_compilers_exe - disabled,
         "bad_compilers_id": bad_compilers_ids - disabled,
@@ -256,11 +270,17 @@ def process_file(file: str, args: Namespace):
     }
 
 def process_folder(folder: str, args):
-    return [(f, process_file(join(folder, f), args))
-            for f in listdir(folder)
-            if isfile(join(folder, f))
-            and not f.endswith('.local.properties')
-            and f.endswith('.properties')]
+    if not args.check_local:
+        return [(f, process_file(join(folder, f), args))
+                for f in listdir(folder)
+                if isfile(join(folder, f))
+                and not f.endswith('.local.properties')
+                and f.endswith('.properties')]
+    else:
+        return [(f, process_file(join(folder, f), args))
+                for f in listdir(folder)
+                if isfile(join(folder, f))
+                and f.endswith('.properties')]
 
 def problems_found(file_result):
     return any(len(file_result[r]) > 0 for r in file_result if r != "filename")
