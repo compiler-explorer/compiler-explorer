@@ -121,18 +121,31 @@ Get-ChildItem "C:\Compilers\*\bin\*.exe" | ForEach-Object {
 ## Supported Languages
 
 The wizard currently supports:
-- C++
-- C
-- CUDA
-- Rust
-- Go
-- Python
-- Java
-- Fortran
-- Pascal
-- Kotlin
-- Zig
-- Dart
+
+**Systems Languages:**
+- C++, C, CUDA
+- Rust, Zig, V, Odin
+- Carbon, Mojo
+
+**Popular Compiled Languages:**
+- D (DMD, LDC, GDC)
+- Swift, Nim, Crystal
+- Go, Kotlin, Java
+
+**Functional Languages:**
+- Haskell (GHC)
+- OCaml, Scala
+
+**.NET Languages:**
+- C#, F#
+
+**Scripting/Dynamic Languages:**
+- Python, Ruby, Julia
+- Dart, Elixir, Erlang
+
+**Other Languages:**
+- Fortran, Pascal, Ada
+- COBOL, Assembly (NASM, GAS, YASM)
 
 ## Compiler Detection
 

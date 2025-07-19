@@ -148,6 +148,152 @@ LANGUAGE_CONFIGS = {
         extensions=[".dart"],
         keywords=["dart"],
     ),
+    # Popular compiled languages
+    "d": LanguageConfig(
+        name="D",
+        properties_file="d.local.properties",
+        compiler_types=["dmd", "ldc", "gdc"],
+        extensions=[".d"],
+        keywords=["dmd", "ldc", "gdc"],
+    ),
+    "swift": LanguageConfig(
+        name="Swift",
+        properties_file="swift.local.properties",
+        compiler_types=["swiftc"],
+        extensions=[".swift"],
+        keywords=["swift", "swiftc"],
+    ),
+    "nim": LanguageConfig(
+        name="Nim",
+        properties_file="nim.local.properties",
+        compiler_types=["nim"],
+        extensions=[".nim"],
+        keywords=["nim"],
+    ),
+    "crystal": LanguageConfig(
+        name="Crystal",
+        properties_file="crystal.local.properties",
+        compiler_types=["crystal"],
+        extensions=[".cr"],
+        keywords=["crystal"],
+    ),
+    "v": LanguageConfig(
+        name="V",
+        properties_file="v.local.properties",
+        compiler_types=["v"],
+        extensions=[".v"],
+        keywords=["v"],
+    ),
+    # Functional languages
+    "haskell": LanguageConfig(
+        name="Haskell",
+        properties_file="haskell.local.properties",
+        compiler_types=["ghc"],
+        extensions=[".hs", ".lhs"],
+        keywords=["ghc", "haskell"],
+    ),
+    "ocaml": LanguageConfig(
+        name="OCaml",
+        properties_file="ocaml.local.properties",
+        compiler_types=["ocamlc", "ocamlopt"],
+        extensions=[".ml", ".mli"],
+        keywords=["ocaml"],
+    ),
+    "scala": LanguageConfig(
+        name="Scala",
+        properties_file="scala.local.properties",
+        compiler_types=["scalac"],
+        extensions=[".scala"],
+        keywords=["scala", "scalac"],
+    ),
+    # JVM languages
+    "csharp": LanguageConfig(
+        name="C#",
+        properties_file="csharp.local.properties",
+        compiler_types=["csharp", "dotnet"],
+        extensions=[".cs"],
+        keywords=["csharp", "dotnet", "mcs", "csc"],
+    ),
+    "fsharp": LanguageConfig(
+        name="F#",
+        properties_file="fsharp.local.properties",
+        compiler_types=["fsharp", "dotnet"],
+        extensions=[".fs", ".fsi", ".fsx"],
+        keywords=["fsharp", "dotnet", "fsharpc"],
+    ),
+    # Scripting/Dynamic languages
+    "ruby": LanguageConfig(
+        name="Ruby",
+        properties_file="ruby.local.properties",
+        compiler_types=["ruby"],
+        extensions=[".rb"],
+        keywords=["ruby"],
+    ),
+    "julia": LanguageConfig(
+        name="Julia",
+        properties_file="julia.local.properties",
+        compiler_types=["julia"],
+        extensions=[".jl"],
+        keywords=["julia"],
+    ),
+    "elixir": LanguageConfig(
+        name="Elixir",
+        properties_file="elixir.local.properties",
+        compiler_types=["elixir"],
+        extensions=[".ex", ".exs"],
+        keywords=["elixir"],
+    ),
+    "erlang": LanguageConfig(
+        name="Erlang",
+        properties_file="erlang.local.properties",
+        compiler_types=["erlc"],
+        extensions=[".erl", ".hrl"],
+        keywords=["erlang", "erlc"],
+    ),
+    # Assembly and low-level
+    "assembly": LanguageConfig(
+        name="Assembly",
+        properties_file="assembly.local.properties",
+        compiler_types=["nasm", "gas", "as", "yasm"],
+        extensions=[".s", ".asm"],
+        keywords=["nasm", "gas", "as", "yasm", "asm"],
+    ),
+    # Modern systems languages
+    "carbon": LanguageConfig(
+        name="Carbon",
+        properties_file="carbon.local.properties",
+        compiler_types=["carbon"],
+        extensions=[".carbon"],
+        keywords=["carbon"],
+    ),
+    "mojo": LanguageConfig(
+        name="Mojo",
+        properties_file="mojo.local.properties",
+        compiler_types=["mojo"],
+        extensions=[".mojo", ".🔥"],
+        keywords=["mojo"],
+    ),
+    "odin": LanguageConfig(
+        name="Odin",
+        properties_file="odin.local.properties",
+        compiler_types=["odin"],
+        extensions=[".odin"],
+        keywords=["odin"],
+    ),
+    "ada": LanguageConfig(
+        name="Ada",
+        properties_file="ada.local.properties",
+        compiler_types=["gnatmake", "gprbuild"],
+        extensions=[".adb", ".ads"],
+        keywords=["ada", "gnat"],
+    ),
+    "cobol": LanguageConfig(
+        name="COBOL",
+        properties_file="cobol.local.properties",
+        compiler_types=["gnucobol", "gcobol"],
+        extensions=[".cob", ".cobol"],
+        keywords=["cobol", "gnucobol", "gcobol"],
+    ),
 }
 
 
@@ -357,6 +503,121 @@ class CompilerDetector:
                 version = VersionExtractor.extract_version("dart", full_output)
                 return "dart", version
 
+            # Detect D language compilers
+            if "dmd" in output:
+                version = VersionExtractor.extract_version("dmd", full_output)
+                return "dmd", version
+            if "ldc" in output:
+                version = VersionExtractor.extract_version("ldc", full_output)
+                return "ldc", version
+            if "gdc" in output and "gnu d compiler" in output:
+                version = VersionExtractor.extract_version("gdc", full_output)
+                return "gdc", version
+
+            # Detect Swift
+            if "swift" in output:
+                version = VersionExtractor.extract_version("swiftc", full_output)
+                return "swiftc", version
+
+            # Detect Nim
+            if "nim" in output:
+                version = VersionExtractor.extract_version("nim", full_output)
+                return "nim", version
+
+            # Detect Crystal
+            if "crystal" in output:
+                version = VersionExtractor.extract_version("crystal", full_output)
+                return "crystal", version
+
+            # Detect V
+            if "v " in output or "vlang" in output:
+                version = VersionExtractor.extract_version("v", full_output)
+                return "v", version
+
+            # Detect Haskell
+            if "ghc" in output or "haskell" in output:
+                version = VersionExtractor.extract_version("ghc", full_output)
+                return "ghc", version
+
+            # Detect OCaml
+            if "ocaml" in output:
+                if "ocamlopt" in output:
+                    version = VersionExtractor.extract_version("ocamlopt", full_output)
+                    return "ocamlopt", version
+                else:
+                    version = VersionExtractor.extract_version("ocamlc", full_output)
+                    return "ocamlc", version
+
+            # Detect Scala
+            if "scala" in output:
+                version = VersionExtractor.extract_version("scalac", full_output)
+                return "scalac", version
+
+            # Detect C# / .NET
+            if "c# compiler" in output or "csharp" in output:
+                version = VersionExtractor.extract_version("csharp", full_output)
+                return "csharp", version
+            if "dotnet" in output:
+                version = VersionExtractor.extract_version("dotnet", full_output)
+                return "dotnet", version
+
+            # Detect F#
+            if "f# compiler" in output or "fsharp" in output:
+                version = VersionExtractor.extract_version("fsharp", full_output)
+                return "fsharp", version
+
+            # Detect Ruby
+            if "ruby" in output:
+                version = VersionExtractor.extract_version("ruby", full_output)
+                return "ruby", version
+
+            # Detect Julia
+            if "julia" in output:
+                version = VersionExtractor.extract_version("julia", full_output)
+                return "julia", version
+
+            # Detect Elixir
+            if "elixir" in output:
+                version = VersionExtractor.extract_version("elixir", full_output)
+                return "elixir", version
+
+            # Detect Erlang
+            if "erlang" in output or "erlc" in output:
+                version = VersionExtractor.extract_version("erlc", full_output)
+                return "erlc", version
+
+            # Detect Assembly tools
+            if "nasm" in output:
+                version = VersionExtractor.extract_version("nasm", full_output)
+                return "nasm", version
+            if "yasm" in output:
+                version = VersionExtractor.extract_version("yasm", full_output)
+                return "yasm", version
+            if "gnu assembler" in output:
+                version = VersionExtractor.extract_version("gas", full_output)
+                return "gas", version
+
+            # Detect modern systems languages
+            if "carbon" in output:
+                version = VersionExtractor.extract_version("carbon", full_output)
+                return "carbon", version
+            if "mojo" in output:
+                version = VersionExtractor.extract_version("mojo", full_output)
+                return "mojo", version
+            if "odin" in output:
+                version = VersionExtractor.extract_version("odin", full_output)
+                return "odin", version
+
+            # Detect Ada
+            if "gnatmake" in output or "ada" in output:
+                version = VersionExtractor.extract_version("gnatmake", full_output)
+                return "gnatmake", version
+
+            # Detect COBOL
+            if "gnucobol" in output or "cobol" in output:
+                version = VersionExtractor.extract_version("gnucobol", full_output)
+                return "gnucobol", version
+
         return None, None
 
     def _extract_semver(self, version: Optional[str]) -> Optional[str]:
@@ -466,6 +727,38 @@ class CompilerDetector:
             "z88dk": "z88dk",
             "zig": "Zig",
             "dart": "Dart",
+            # Popular compiled languages
+            "dmd": "DMD",
+            "ldc": "LDC",
+            "gdc": "GDC",
+            "swiftc": "Swift",
+            "nim": "Nim",
+            "crystal": "Crystal",
+            "v": "V",
+            # Functional languages
+            "ghc": "GHC",
+            "ocamlc": "OCaml",
+            "ocamlopt": "OCaml",
+            "scalac": "Scala",
+            # .NET languages
+            "csharp": "C#",
+            "dotnet": ".NET",
+            "fsharp": "F#",
+            # Scripting/Dynamic languages
+            "ruby": "Ruby",
+            "julia": "Julia",
+            "elixir": "Elixir",
+            "erlc": "Erlang",
+            # Assembly and low-level
+            "nasm": "NASM",
+            "gas": "GAS",
+            "yasm": "YASM",
+            # Modern systems languages
+            "carbon": "Carbon",
+            "mojo": "Mojo",
+            "odin": "Odin",
+            "gnatmake": "Ada",
+            "gnucobol": "COBOL",
         }.get(compiler_type or "", compiler_type.upper() if compiler_type else "")
 
         parts = []

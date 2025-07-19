@@ -130,6 +130,38 @@ class VersionExtractor:
         "kotlin": [r"kotlinc.*?(\d+\.\d+\.\d+)", r"kotlin.*?(\d+\.\d+\.\d+)"],
         "zig": [r"zig (\d+\.\d+\.\d+)", r"zig.*?(\d+\.\d+\.\d+)"],
         "dart": [r"Dart SDK version: (\d+\.\d+\.\d+)", r"dart.*?(\d+\.\d+\.\d+)"],
+        # Popular compiled languages
+        "dmd": [r"DMD.*?v(\d+\.\d+\.\d+)", r"dmd.*?(\d+\.\d+\.\d+)"],
+        "ldc": [r"LDC.*?(\d+\.\d+\.\d+)", r"ldc.*?(\d+\.\d+\.\d+)"],
+        "gdc": [r"gdc.*?(\d+\.\d+\.\d+)", r"GNU D compiler.*?(\d+\.\d+\.\d+)"],
+        "swiftc": [r"Swift version (\d+\.\d+(?:\.\d+)?)", r"swiftc.*?(\d+\.\d+(?:\.\d+)?)"],
+        "nim": [r"Nim Compiler Version (\d+\.\d+\.\d+)", r"nim.*?(\d+\.\d+\.\d+)"],
+        "crystal": [r"Crystal (\d+\.\d+\.\d+)", r"crystal.*?(\d+\.\d+\.\d+)"],
+        "v": [r"V (\d+\.\d+(?:\.\d+)?)", r"v.*?(\d+\.\d+(?:\.\d+)?)"],
+        # Functional languages
+        "ghc": [r"The Glorious Glasgow Haskell Compilation System, version (\d+\.\d+\.\d+)", r"ghc.*?(\d+\.\d+\.\d+)"],
+        "ocamlc": [r"OCaml version (\d+\.\d+\.\d+)", r"ocaml.*?(\d+\.\d+\.\d+)"],
+        "ocamlopt": [r"OCaml version (\d+\.\d+\.\d+)", r"ocaml.*?(\d+\.\d+\.\d+)"],
+        "scalac": [r"Scala compiler version (\d+\.\d+\.\d+)", r"scala.*?(\d+\.\d+\.\d+)"],
+        # .NET languages
+        "csharp": [r"Microsoft.*?C# Compiler version (\d+\.\d+\.\d+)", r"dotnet.*?(\d+\.\d+\.\d+)"],
+        "dotnet": [r"Microsoft.*?\.NET.*?(\d+\.\d+\.\d+)", r"dotnet.*?(\d+\.\d+\.\d+)"],
+        "fsharp": [r"F# Compiler.*?(\d+\.\d+\.\d+)", r"fsharpc.*?(\d+\.\d+\.\d+)"],
+        # Scripting/Dynamic languages  
+        "ruby": [r"ruby (\d+\.\d+\.\d+)", r"ruby.*?(\d+\.\d+\.\d+)"],
+        "julia": [r"julia version (\d+\.\d+\.\d+)", r"julia.*?(\d+\.\d+\.\d+)"],
+        "elixir": [r"Elixir (\d+\.\d+\.\d+)", r"elixir.*?(\d+\.\d+\.\d+)"],
+        "erlc": [r"Erlang.*?(\d+(?:\.\d+)*)", r"erlc.*?(\d+(?:\.\d+)*)"],
+        # Assembly and low-level
+        "nasm": [r"NASM version (\d+\.\d+(?:\.\d+)?)", r"nasm.*?(\d+\.\d+(?:\.\d+)?)"],
+        "gas": [r"GNU assembler.*?(\d+\.\d+(?:\.\d+)?)", r"as.*?(\d+\.\d+(?:\.\d+)?)"],
+        "yasm": [r"yasm (\d+\.\d+\.\d+)", r"yasm.*?(\d+\.\d+\.\d+)"],
+        # Modern systems languages
+        "carbon": [r"Carbon.*?(\d+\.\d+(?:\.\d+)?)", r"carbon.*?(\d+\.\d+(?:\.\d+)?)"],
+        "mojo": [r"mojo (\d+\.\d+(?:\.\d+)?)", r"mojo.*?(\d+\.\d+(?:\.\d+)?)"],
+        "odin": [r"odin version (\d+\.\d+(?:\.\d+)?)", r"odin.*?(\d+\.\d+(?:\.\d+)?)"],
+        "gnatmake": [r"GNATMAKE.*?(\d+\.\d+(?:\.\d+)?)", r"gnat.*?(\d+\.\d+(?:\.\d+)?)"],
+        "gnucobol": [r"gnucobol.*?(\d+\.\d+(?:\.\d+)?)", r"cobol.*?(\d+\.\d+(?:\.\d+)?)"],
     }
 
     @classmethod
