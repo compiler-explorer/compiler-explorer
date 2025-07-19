@@ -210,7 +210,7 @@ class PropertiesFileEditor:
 
         return insertion_point
 
-    def find_insertion_point_for_compiler(self, compiler_id: str, group_name: str = None) -> int:
+    def find_insertion_point_for_compiler(self, compiler_id: str, group_name: Optional[str] = None) -> int:
         """Find the best place to insert a new compiler section."""
         # If we have a group, try to insert at the end of that group's compilers
         if group_name:
@@ -374,7 +374,7 @@ class PropertiesFileEditor:
         # Insert the new property
         self.lines.insert(insertion_point, f"{prop_key}={value}")
 
-    def create_group_section(self, group_name: str, compilers_list: List[str] = None):
+    def create_group_section(self, group_name: str, compilers_list: Optional[List[str]] = None):
         """Create a new group section."""
         if self.group_exists(group_name):
             return  # Already exists

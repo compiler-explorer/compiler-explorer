@@ -241,7 +241,7 @@ def cli(
 
         # Suggest appropriate group if not already set
         if not detected_info.group:
-            if not verify_only:
+            if not verify_only and config_mgr is not None:
                 # Normal mode - create config manager and suggest group
                 suggested_group = config_mgr.suggest_appropriate_group(detected_info)
                 if suggested_group:
@@ -257,7 +257,7 @@ def cli(
         force_custom_id_name = False
 
         # Check for existing compiler by path early (before prompts)
-        if not verify_only:
+        if not verify_only and config_mgr is not None:
             existing_compiler_id = config_mgr.check_existing_compiler_by_path(compiler_path, detected_info.language)
             if existing_compiler_id:
                 file_path = config_mgr.get_properties_path(detected_info.language)
@@ -280,9 +280,10 @@ def cli(
                 # Set flag to force custom ID and name prompts
                 force_custom_id_name = True
                 # Suggest the group from the existing duplicate compiler
-                suggested_group = config_mgr.suggest_appropriate_group(detected_info, existing_compiler_id)
-                if suggested_group and not detected_info.group:
-                    detected_info.group = suggested_group
+                if config_mgr is not None:
+                    suggested_group = config_mgr.suggest_appropriate_group(detected_info, existing_compiler_id)
+                    if suggested_group and not detected_info.group:
+                        detected_info.group = suggested_group
 
         # If verify-only mode, display info and exit
         if verify_only:
@@ -424,7 +425,8 @@ def cli(
             if options:
                 detected_info.options = format_compiler_options(options)
 
-        # Ensure unique ID
+        # Ensure unique ID (config_mgr should not be None at this point)
+        assert config_mgr is not None, "config_mgr should not be None in non-verify mode"
         original_id = detected_info.id
         detected_info.id = config_mgr.ensure_compiler_id_unique(detected_info.id, detected_info.language)
         if detected_info.id != original_id:

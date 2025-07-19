@@ -929,11 +929,11 @@ class ConfigManager:
             )
 
             if result.returncode != 0:
-                return False, f"Discovery command failed: {result.stderr}"
+                return False, f"Discovery command failed: {result.stderr}", None
 
             # Read and parse the discovery JSON
             if not os.path.exists(discovery_file):
-                return False, f"Discovery file not created: {discovery_file}"
+                return False, f"Discovery file not created: {discovery_file}", None
 
             with open(discovery_file, "r") as f:
                 discovery_data = json.load(f)
