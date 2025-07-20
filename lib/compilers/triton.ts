@@ -88,15 +88,7 @@ export class TritonCompiler extends BaseCompiler {
 
     override optionsForFilter(filters: ParseFiltersAndOutputOptions, outputFilename: string): string[] {
         // See etc/scripts/triton_wrapper.py for the options
-        return [
-            '-I',
-            this.compilerWrapperPath,
-            '--backend',
-            this.group == 'triton_cuda' ? 'cuda' : 'hip',
-            '--output_file',
-            outputFilename,
-            '--input_file',
-        ];
+        return ['-I', this.compilerWrapperPath, '--output_file', outputFilename];
     }
 
     override getArgumentParserClass() {

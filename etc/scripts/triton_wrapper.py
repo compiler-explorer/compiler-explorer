@@ -49,6 +49,7 @@ def patch_triton(output_dir: Path, backend: str, arch: Union[int, str], warp_siz
         except ImportError:
             # For Triton v2.3.x, we don't have GPUTarget
             return (backend, arch)
+
     mockGPUDriver = MagicMock(
         get_current_target=get_current_target,
         get_benchmarker=lambda: MagicMock(return_value=[0.0]),
@@ -134,12 +135,38 @@ def main(
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Triton wrapper")
-    parser.add_argument("--output_file", type=Path)
-    parser.add_argument("--input_file", type=Path)
-    parser.add_argument("--opt_pipeline_file", type=Path)
-    parser.add_argument("--backend", type=str, default="cuda", choices=["cuda", "hip"])
-    parser.add_argument("--arch", type=str, default=None)
-    parser.add_argument("--warp_size", type=int, default=32)
+    parser.add_argument(
+        "input_file",
+        type=Path,
+        help="Path to the input Python file",
+    )
+    parser.add_argument(
+        "--output_file",
+        type=Path,
+        required=True,
+        help="Path to the output file",
+    )
+    parser.add_argument(
+        "--opt_pipeline_file",
+        type=Path,
+        help="Path to the output opt pipeline file",
+    )
+    parser.add_argument(
+        "--backend",
+        type=str,
+        default="cuda",
+        choices=["cuda", "hip"],
+    )
+    parser.add_argument(
+        "--arch",
+        type=str,
+        default=None,  # Default value set later based on backend
+    )
+    parser.add_argument(
+        "--warp_size",
+        type=int,
+        default=32,
+    )
 
     args = parser.parse_args()
 
