@@ -308,11 +308,12 @@ export class MlirPassDumpParser {
             // If we only have before passes (no after passes), diff between consecutive before passes
             // This happened in Triton since it sets enableIRPrinting(printAfterOnlyOnFailure=false)
             if (passes.length === 0) {
-                for (let i = 0; i < beforePasses.length; i++) {
+                for (let i = 0; i < beforePasses.length - 1; i++) {
+                    const isLast = i === beforePasses.length - 1;
                     const passName = extractPassName(beforePasses[i].header);
-                    const before = i !== 0 ? beforePasses[i - 1].lines : beforePasses[i].lines;
-                    const after = beforePasses[i].lines;
-                    const irChanged = i !== 0 ? this.isIrChanged(before, after) : false;
+                    const before = beforePasses[i].lines;
+                    const after = isLast ? beforePasses[i].lines : beforePasses[i + 1].lines;
+                    const irChanged = isLast ? false : this.isIrChanged(before, after);
                     const pass: Pass = {
                         name: passName,
                         machine: false,
