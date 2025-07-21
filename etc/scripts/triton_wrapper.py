@@ -28,14 +28,16 @@ def patch_triton(output_dir: Path, backend: str, arch: Union[int, str], warp_siz
     2.3.0, 2.3.1, 3.0.0, 3.1.0, 3.2.0, 3.3.0, 3.3.1.
     """
 
-    # For Triton v3.1.0 and below, we don't have TRITON_DUMP_DIR
+    # The environment variable `TRITON_DUMP_DIR` used to specify the output directory
+    # is introduced in Triton v3.2.0 at
+    # https://github.com/triton-lang/triton/commit/ca469d7b6b6def316b5f5ee6ad2bd19dcb840bd8.
+    # For older versions of Triton, we need to patch the `default_cache_dir` function.
     triton.runtime.cache.default_cache_dir = MagicMock(return_value=output_dir)
 
-    # Usually, Triton will compile the kernel and run it when we call
-    # `kernel[grid](args)`. However, we want to dump the compiled kernel
-    # without actually running it.
-    # `CompiledKernel` represents a handle to a compiled kernel, ready to be
-    # launched. We patch it to be a no-op.
+    # Usually, Triton compiles and run a kernel when we call `kernel[grid](args)`.
+    # However, we want to dump the compiled kernel without actually running it.
+    # The class `CompiledKernel` represents a handle to a compiled kernel,
+    # ready to be launched. We patch it to be a no-op.
     triton.compiler.compiler.CompiledKernel = MagicMock()
 
     # We mock a GPU driver to avoid the need to initialize CUDA/ROCm.
@@ -53,12 +55,15 @@ def patch_triton(output_dir: Path, backend: str, arch: Union[int, str], warp_siz
     mockGPUDriver = MagicMock(
         get_current_target=get_current_target,
         get_benchmarker=lambda: MagicMock(return_value=[0.0]),
-        # This is needed for Triton v2.3.x, which doesn't support AMD, so we just assume it's CUDA
+        # This is needed for Triton v2.3.x, which doesn't support AMD,
+        # so we just assume it's CUDA
         binary_ext="cubin",
     )
 
-    # For Triton v2.3.x, there is no `triton.runtime.driver.set_active`,
-    # so manually set the driver to the mocked one.
+    # Set the active driver to the mocked one.
+    # `DriverConfig` and `triton.runtime.driver.set_active` is introduced in Triton v3.0.0 at
+    # https://github.com/triton-lang/triton/commit/b844d519bc5e86edf00fe6b3c6c2d1badcd509a4
+    # For older versions of Triton, we directly assign to the `_obj` field of `LazyProxy`.
     try:
         from triton.runtime.driver import DriverConfig
 
