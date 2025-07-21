@@ -52,7 +52,6 @@ export class TritonCompiler extends BaseCompiler {
         return 'triton';
     }
 
-    group: string;
     parserMap: Record<string, IAsmParser>;
     mlirPassDumpParser: MlirPassDumpParser;
 
@@ -61,7 +60,6 @@ export class TritonCompiler extends BaseCompiler {
 
         this.compilerWrapperPath =
             this.compilerProps('compilerWrapper', '') || resolvePathFromAppRoot('etc', 'scripts', 'triton_wrapper.py');
-        this.group = compilerInfo.group;
 
         // Enable the Opt Pipeline view
         this.compiler.optPipeline = {};

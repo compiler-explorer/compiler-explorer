@@ -3,7 +3,6 @@ import importlib.util
 import inspect
 import json
 import os
-import shutil
 from pathlib import Path
 from typing import Dict, Optional, Union
 from unittest.mock import MagicMock
@@ -106,8 +105,12 @@ class MockCacheManager(triton.runtime.cache.CacheManager):
         self.groups[filename] = group
 
 
-def patch_triton(
-    output_file: Path, backend: str, arch: Union[int, str], warp_size: int
+def setup_triton(
+    output_file: Path,
+    opt_pipeline_file: Path,
+    backend: str,
+    arch: Union[int, str],
+    warp_size: int,
 ):
     """
     Patch Triton to dump the compiled kernels to output dir without actually running them.
@@ -125,8 +128,15 @@ def patch_triton(
     """
 
     os.environ["TRITON_ALWAYS_COMPILE"] = "1"
-    os.environ["TRITON_CACHE_MANAGER"] = "__main__:MockCacheManager"
-    MockCacheManager.output_file = output_file
+    if opt_pipeline_file:
+        os.environ["MLIR_ENABLE_DUMP"] = "1"
+        # Supported in Triton v3.3.0 and later since
+        # https://github.com/triton-lang/triton/commit/3d7d9e33e7e4cba17dc366d207af2c657bd4fbd1
+        os.environ["MLIR_DUMP_PATH"] = str(opt_pipeline_file)
+    else:
+        # Disable dumping other files w/ opt_pipeline_file since they race with each other
+        os.environ["TRITON_CACHE_MANAGER"] = "__main__:MockCacheManager"
+        MockCacheManager.output_file = output_file
 
     # Usually, Triton compiles and run a kernel when we call `kernel[grid](args)`.
     # However, we want to dump the compiled kernel without actually running it.
@@ -180,15 +190,7 @@ def main(
     arch: Union[int, str],
     warp_size: int,
 ):
-    output_dir = output_file.parent.absolute()
-
-    # Setup triton
-    if opt_pipeline_file:
-        os.environ["MLIR_ENABLE_DUMP"] = "1"
-        # Supported in Triton v3.3.0 and later since
-        # https://github.com/triton-lang/triton/commit/3d7d9e33e7e4cba17dc366d207af2c657bd4fbd1
-        os.environ["MLIR_DUMP_PATH"] = str(opt_pipeline_file)
-    patch_triton(output_file, backend, arch, warp_size)
+    setup_triton(output_file, opt_pipeline_file, backend, arch, warp_size)
 
     # Run the script by importing it as a module
     spec = importlib.util.spec_from_file_location("example", input_file)
