@@ -64,18 +64,28 @@ class MockCacheManager(triton.runtime.cache.CacheManager):
 
         # Write intermediate files to the output file, so that we can see them in the Device View.
         self.stage += 1
-        if not binary:
-            if suffix == ".json":
-                path = MockCacheManager.output_file.parent / filename
-                with open(path, "w") as fout:
-                    json.dump(json.loads(data), fout, indent=2)
-            else:
-                path = (
-                    MockCacheManager.output_file.parent
-                    / f"{name} [stage {self.stage}]{suffix}"
-                )
+        if suffix == ".json":
+            path = MockCacheManager.output_file.parent / filename
+            with open(path, "w") as fout:
+                json.dump(json.loads(data), fout, indent=2)
+        else:
+            path = (
+                MockCacheManager.output_file.parent
+                / f"{name} [stage {self.stage}]{suffix}"
+            )
+            if not binary:
                 with open(path, "w") as fout:
                     fout.write(data)
+            elif suffix == ".cubin":
+                try:
+                    # The try-catch is needed because `disasm` was broken in Triton v3.0.0 and v3.1.0. See
+                    # https://github.com/triton-lang/triton/commit/f424f656b3528c47d8c48126cdccafca29e536ae
+                    from triton.tools import disasm
+
+                    with open(path.with_suffix(".sass"), "w") as fout:
+                        fout.write(disasm.get_sass(data))
+                except Exception:
+                    pass
 
         # Write the file to the "cache"
         self.files[filename] = data
