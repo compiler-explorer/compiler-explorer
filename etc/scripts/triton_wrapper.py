@@ -177,6 +177,8 @@ def main(
     # Setup triton
     if opt_pipeline_file:
         os.environ["MLIR_ENABLE_DUMP"] = "1"
+        # Supported in Triton v3.3.0 and later since
+        # https://github.com/triton-lang/triton/commit/3d7d9e33e7e4cba17dc366d207af2c657bd4fbd1
         os.environ["MLIR_DUMP_PATH"] = str(opt_pipeline_file)
     patch_triton(output_file, backend, arch, warp_size)
 
