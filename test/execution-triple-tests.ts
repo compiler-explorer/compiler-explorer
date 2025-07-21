@@ -75,4 +75,26 @@ describe('Execution triple utils', () => {
         expect(info?.instructionSet).toEqual('avr');
         expect(info?.os).toEqual('linux');
     });
+    it('recognizes nvidia cuda architecture', () => {
+        const info = BinaryInfoLinux.parseFileInfo(
+            'ELF 64-bit LSB executable, NVIDIA CUDA architecture, version 1 (SYSV), statically linked, with debug_info, not stripped',
+        );
+        expect(info?.instructionSet).toEqual('ptx');
+        expect(info?.os).toEqual('linux');
+    });
+    it('handles trailing punctuation in architecture strings', () => {
+        // Test the general trailing punctuation cleaning for various architectures
+        const testCases = [
+            {input: 'ELF 64-bit LSB executable, nvidia cuda architecture,, version 1 (SYSV)', expected: 'ptx'},
+            {input: 'ELF 64-bit LSB executable, x86-64., version 1 (SYSV)', expected: 'amd64'},
+            {input: 'ELF 64-bit LSB executable, aarch64;, version 1 (SYSV)', expected: 'aarch64'},
+            {input: 'ELF 64-bit LSB executable, mips,;., version 1 (SYSV)', expected: 'mips'},
+        ];
+
+        testCases.forEach(({input, expected}) => {
+            const info = BinaryInfoLinux.parseFileInfo(input);
+            expect(info?.instructionSet).toEqual(expected);
+            expect(info?.os).toEqual('linux');
+        });
+    });
 });

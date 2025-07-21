@@ -41,7 +41,10 @@ export type BinaryInfo = {
 
 export class BinaryInfoLinux {
     static getInstructionSetForArchText(value: string): InstructionSet {
-        switch (value) {
+        // Clean up the architecture string by removing trailing punctuation
+        const cleanValue = value.replace(/[,;.]+$/, '').trim();
+
+        switch (cleanValue) {
             case 'x86-64': {
                 return 'amd64';
             }
@@ -80,6 +83,13 @@ export class BinaryInfoLinux {
             }
             case 'loongarch': {
                 return 'loongarch';
+            }
+            case 'nvidia cuda architecture': {
+                // Handle CUDA binaries as reported by the `file` command.
+                // This string appears when analyzing CUDA binaries compiled with nvcc/nvc++.
+                // Maps to PTX (Parallel Thread Execution) instruction set.
+                // See: https://github.com/compiler-explorer/compiler-explorer/issues/7936
+                return 'ptx';
             }
             default: {
                 logger.error(`Unknown architecture text: ${value}`);
