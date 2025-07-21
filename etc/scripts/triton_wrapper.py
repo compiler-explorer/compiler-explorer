@@ -1,10 +1,11 @@
 import argparse
 import importlib.util
 import inspect
+import json
 import os
 import shutil
 from pathlib import Path
-from typing import Union
+from typing import Dict, Optional, Union
 from unittest.mock import MagicMock
 
 import torch
@@ -12,7 +13,84 @@ import triton
 from torch._subclasses.fake_tensor import FakeTensorMode
 
 
-def patch_triton(output_dir: Path, backend: str, arch: Union[int, str], warp_size: int):
+class MockCacheManager(triton.runtime.cache.CacheManager):
+    """
+    A mock cache manager that dumps the intermediate files to a given output path.
+
+    There are various ways to dump the intermediate files:
+    1. The most obvious way is to use the `TRITON_KERNEL_DUMP` & ``TRITON_DUMP_DIR`
+       environment variables. e.g.,
+            os.environ["TRITON_KERNEL_DUMP"] = "1"
+            os.environ["TRITON_DUMP_DIR"] = str(output_dir)
+        However, `TRITON_DUMP_DIR` is introduced in Triton v3.2.0 at
+        https://github.com/triton-lang/triton/commit/ca469d7b6b6def316b5f5ee6ad2bd19dcb840bd8,
+        and thus not available in older versions.
+
+    2. The second way is to patch the `default_cache_dir` function. e.g.,
+            triton.runtime.cache.default_cache_dir = MagicMock(return_value=output_dir)
+        This is a bit hacky, and less flexible in terms of controlling the file output.
+        (In fact, Triton dumps the compiled kernels to a folder with a random name.)
+
+    3. The current apporach is to mock a `CacheManager` class. This is the most flexible
+       approach, and works for all versions of Triton.
+    """
+
+    output_file: Path
+
+    def __init__(self, key, override=False, dump=False):
+        self.dump = dump
+        # filename -> data
+        self.files = {}
+        # filename -> group dict
+        self.groups = {}
+        # current stage for a given kernel
+        self.stage = 0
+
+    def get_file(self, filename) -> Optional[str]:
+        return self.files.get(filename, None)
+
+    def put(self, data, filename, binary=True) -> str:
+        name = Path(filename).stem
+        suffix = Path(filename).suffix
+        binary = isinstance(data, bytes)
+        if not binary:
+            data = str(data)
+
+        # Write the final file to the output file, so that we can view it in the default assembly view.
+        if suffix in (".ptx", ".amdgcn"):
+            with open(MockCacheManager.output_file, "a") as f:
+                f.write(data)
+                f.write("\n\n")
+
+        # Write intermediate files to the output file, so that we can see them in the Device View.
+        self.stage += 1
+        if not binary:
+            if suffix == ".json":
+                path = MockCacheManager.output_file.parent / filename
+                with open(path, "w") as fout:
+                    json.dump(json.loads(data), fout, indent=2)
+            else:
+                path = (
+                    MockCacheManager.output_file.parent
+                    / f"{name} [stage {self.stage}]{suffix}"
+                )
+                with open(path, "w") as fout:
+                    fout.write(data)
+
+        # Write the file to the "cache"
+        self.files[filename] = data
+        return filename
+
+    def get_group(self, filename: str) -> Optional[Dict[str, str]]:
+        self.groups.get(filename, None)
+
+    def put_group(self, filename: str, group: Dict[str, str]):
+        self.groups[filename] = group
+
+
+def patch_triton(
+    output_file: Path, backend: str, arch: Union[int, str], warp_size: int
+):
     """
     Patch Triton to dump the compiled kernels to output dir without actually running them.
 
@@ -28,11 +106,9 @@ def patch_triton(output_dir: Path, backend: str, arch: Union[int, str], warp_siz
     2.3.0, 2.3.1, 3.0.0, 3.1.0, 3.2.0, 3.3.0, 3.3.1.
     """
 
-    # The environment variable `TRITON_DUMP_DIR` used to specify the output directory
-    # is introduced in Triton v3.2.0 at
-    # https://github.com/triton-lang/triton/commit/ca469d7b6b6def316b5f5ee6ad2bd19dcb840bd8.
-    # For older versions of Triton, we need to patch the `default_cache_dir` function.
-    triton.runtime.cache.default_cache_dir = MagicMock(return_value=output_dir)
+    os.environ["TRITON_ALWAYS_COMPILE"] = "1"
+    os.environ["TRITON_CACHE_MANAGER"] = "__main__:MockCacheManager"
+    MockCacheManager.output_file = output_file
 
     # Usually, Triton compiles and run a kernel when we call `kernel[grid](args)`.
     # However, we want to dump the compiled kernel without actually running it.
@@ -55,9 +131,6 @@ def patch_triton(output_dir: Path, backend: str, arch: Union[int, str], warp_siz
     mockGPUDriver = MagicMock(
         get_current_target=get_current_target,
         get_benchmarker=lambda: MagicMock(return_value=[0.0]),
-        # This is needed for Triton v2.3.x, which doesn't support AMD,
-        # so we just assume it's CUDA
-        binary_ext="cubin",
     )
 
     # Set the active driver to the mocked one.
@@ -95,10 +168,7 @@ def main(
     if opt_pipeline_file:
         os.environ["MLIR_ENABLE_DUMP"] = "1"
         os.environ["MLIR_DUMP_PATH"] = str(opt_pipeline_file)
-    os.environ["TRITON_ALWAYS_COMPILE"] = "1"
-    os.environ["TRITON_KERNEL_DUMP"] = "1"
-    os.environ["TRITON_DUMP_DIR"] = str(output_dir)
-    patch_triton(output_dir, backend, arch, warp_size)
+    patch_triton(output_file, backend, arch, warp_size)
 
     # Run the script by importing it as a module
     spec = importlib.util.spec_from_file_location("example", input_file)
@@ -109,33 +179,6 @@ def main(
         # Also set the data_ptr to 0 to avoid PyTorch warning and make alignment check happy
         torch._subclasses.FakeTensor.data_ptr = MagicMock(return_value=0)
         spec.loader.exec_module(module)
-    jit_functions = {
-        name: fn
-        for name, fn in inspect.getmembers(module)
-        if isinstance(fn, (triton.JITFunction, triton.runtime.autotuner.Autotuner))
-    }
-
-    # Prepare output folder
-    # Since Triton dumps the compiled kernels to a folder with a random name,
-    # we need to copy the files to the output folder.
-    bin_files = {}
-    asm_files = {}
-    for file in output_dir.rglob("*/*"):
-        if file.stem in jit_functions:
-            shutil.copy(file, output_dir / file.name)
-            if file.suffix in (".ptx", ".amdgcn"):
-                asm_files[file.stem] = file
-            elif file.suffix in (".hsaco", ".cubin"):
-                bin_files[file.stem] = file
-
-    # Write the output
-    # Compiler Explorer expects the output to be a single file, so we need to
-    # concatenate all the files into a single one.
-    with open(output_file, "w") as fout:
-        for name, file in asm_files.items():
-            with open(file, "r") as fin:
-                fout.write(fin.read())
-            fout.write("\n\n")
 
 
 if __name__ == "__main__":

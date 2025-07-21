@@ -83,6 +83,7 @@ export class TritonCompiler extends BaseCompiler {
             '.source': mlirAsmParser,
             '.amdgcn': amdgpuAsmParser,
             '.llir': mlirAsmParser,
+            '.json': sassAsmParser,
         };
     }
 
@@ -123,19 +124,16 @@ export class TritonCompiler extends BaseCompiler {
                 // Parse the assembly with line numbers
                 let device;
                 if (ext === '.llir') {
-                    device = await this.postProcessAsm(
-                        this.llvmIr.process(data, {
-                            filterDebugInfo: false,
-                            filterIRMetadata: false,
-                            filterAttributes: false,
-                            filterComments: false,
-                            noDiscardValueNames: false,
-                            demangle: false,
-                        }),
-                        filters,
-                    );
+                    device = await this.llvmIr.process(data, {
+                        filterDebugInfo: false,
+                        filterIRMetadata: false,
+                        filterAttributes: false,
+                        filterComments: false,
+                        noDiscardValueNames: false,
+                        demangle: false,
+                    });
                 } else {
-                    device = await this.postProcessAsm(parser.process(data, filters), filters);
+                    device = await parser.process(data, filters);
                 }
 
                 Object.assign(devices, {[filename]: device});
