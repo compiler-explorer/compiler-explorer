@@ -79,6 +79,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 - **Result Delivery**: Uses WebSocket-based communication via existing `EventsWsSender` infrastructure
 - **Message Production**: Queue messages are produced by external Lambda functions, not by the main Compiler Explorer server
 - **Shared Parsing**: Common request parsing logic is shared between web handlers and SQS workers for consistency
+- **Remote Compiler Support**: Workers automatically detect and proxy requests to remote compilers using HTTP, maintaining compatibility with existing remote compiler infrastructure
 
 ## Testing Guidelines
 - Use Vitest for unit tests (compatible with Jest syntax)
