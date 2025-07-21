@@ -221,7 +221,7 @@ if __name__ == "__main__":
     # Set some sane defaults for the arch
     if args.arch is None:
         if args.backend == "cuda":
-            args.arch = 89
+            args.arch = 90
         elif args.backend == "hip":
             args.arch = "gfx942"
 
