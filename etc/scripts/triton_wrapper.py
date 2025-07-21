@@ -26,12 +26,20 @@ class MockCacheManager(triton.runtime.cache.CacheManager):
         https://github.com/triton-lang/triton/commit/ca469d7b6b6def316b5f5ee6ad2bd19dcb840bd8,
         and thus not available in older versions.
 
-    2. The second way is to patch the `default_cache_dir` function. e.g.,
+    2. The second attempt is to patch the `default_cache_dir` function. e.g.,
             triton.runtime.cache.default_cache_dir = MagicMock(return_value=output_dir)
         This is a bit hacky, and less flexible in terms of controlling the file output.
         (In fact, Triton dumps the compiled kernels to a folder with a random name.)
 
-    3. The current apporach is to mock a `CacheManager` class. This is the most flexible
+    3. Another option is to use various hooks in Triton. e.g.,
+            triton.knobs.runtime.{jit_post_compile_hook,launch_enter_hook}
+            JITFunction.{compiled_hook,cache_hook}
+        This approach is taken by TritonParse(https://github.com/pytorch-labs/tritonparse),
+        but it does not support older versions of Triton prior to the following commits:
+            https://github.com/triton-lang/triton/commit/0e9267202532ed1709dcc12c636220cf239dc377,
+            https://github.com/triton-lang/triton/commit/850525276426fb9814399a8e0ee8fdf744229b02.
+
+    4. The current apporach is to mock a `CacheManager` class. This is the most flexible
        approach, and works for all versions of Triton.
     """
 
