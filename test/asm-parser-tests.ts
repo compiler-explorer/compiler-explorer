@@ -43,6 +43,17 @@ describe('AsmParser tests', () => {
     });
 });
 
+describe('AsmParser comment filtering', () => {
+    const parser = new AsmParser();
+    it('should keep label lines starting with @ when filtering comments', () => {
+        const input = '@cube@4:\n    ret';
+        const result = parser.processAsm(input, {commentOnly: true});
+        const lines = result.asm.map(line => line.text);
+        expect(lines[0]).toBe('@cube@4:');
+        expect(lines[1]).toBe('    ret');
+    });
+});
+
 describe('PTXAsmParser tests', () => {
     const parser = new PTXAsmParser();
 

@@ -255,20 +255,25 @@ a.navbar-brand img.logo.normal {
 
 #socialshare .share-twitter,
 .share-twitter {
-    background-color: #1da1f2;
-    color: white;
+    background-color: #4C566A !important; /* Cool neutral gray */
+    color: #ffffff !important;
+    text-decoration: none !important;
+
+    
 }
 
 #socialshare .share-bluesky,
 .share-bluesky {
-    background-color: #0a7aff;
-    color: white;
+    background-color: #5E81AC !important; /* Soft desaturated steel blue */
+    color: #ffffff !important;
+    text-decoration: none !important;
 }
 
 #socialshare .share-reddit,
 .share-reddit {
-    background-color: #ff4500;
-    color: white;
+    background-color: #BF616A !important; /* Soft muted crimson */
+    color: #ffffff !important;
+    text-decoration: none !important;
 }
 
 .share-disabled {

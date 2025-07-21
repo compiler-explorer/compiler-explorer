@@ -119,11 +119,24 @@ export class ZigCompiler extends BaseCompiler {
         // strip '.s' if we aren't executing
         const name = filters.execute ? desiredName : desiredName.slice(0, -2);
 
+        // '-fno-strip' doesn't work on versions 0.7.0 - 0.9.0
+        if (this.compiler.semver) {
+            const ver = asSafeVer(this.compiler.semver);
+            if (Semver.gt(ver, '0.9.0', true) || Semver.lt(ver, '0.7.0', true)) {
+                options.push('-fno-strip');
+            }
+            if (Semver.gte(ver, '0.11.0', true) && !filters.binary) {
+                // Ensures assembtly dump, not needed up to 0.14.1 but added just in case
+                // (as of Jul 2025 needed for trunk)
+                options.push('-fllvm');
+            }
+        }
+
         if (this.self_hosted_cli) {
             // Versions after 0.6.0 use a different command line interface.
             const outputDir = path.dirname(outputFilename);
             // -fno-strip: Do not strip debug info
-            options.push('--cache-dir', outputDir, '--name', name, '-fno-strip');
+            options.push('--cache-dir', outputDir, '--name', name);
 
             if (filters.binary) {
                 options.push('-femit-bin=' + desiredName);

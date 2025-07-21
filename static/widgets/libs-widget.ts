@@ -306,10 +306,10 @@ export class LibsWidget {
         this.setFavorites(faves);
     }
 
-    newFavoriteLibDiv(libId: string, versionId: string, lib: Library, version: LibraryVersion): JQuery<Node> {
+    newFavoriteLibDiv(libId: string, versionId: string, lib: Library, version: LibraryVersion): JQuery<HTMLElement> {
         const template = $('#lib-favorite-tpl');
 
-        const libDiv = $(template.children()[0].cloneNode(true));
+        const libDiv = $(template.children().eq(0).clone());
 
         const quickSelectButton = libDiv.find('.lib-name-and-version');
         quickSelectButton.html(lib.name + ' ' + version.version);
@@ -334,7 +334,7 @@ export class LibsWidget {
                 if (lib) {
                     if (versionId in lib.versions) {
                         const version = lib.versions[versionId];
-                        const div: any = this.newFavoriteLibDiv(libId, versionId, lib, version);
+                        const div = this.newFavoriteLibDiv(libId, versionId, lib, version);
                         favoritesDiv.append(div);
                     }
                 }
@@ -354,10 +354,10 @@ export class LibsWidget {
         this.searchResults.html('');
     }
 
-    newSelectedLibDiv(libId: string, versionId: string, lib: Library, version: LibraryVersion): JQuery<Node> {
+    newSelectedLibDiv(libId: string, versionId: string, lib: Library, version: LibraryVersion): JQuery<HTMLElement> {
         const template = $('#lib-selected-tpl');
 
-        const libDiv = $(template.children()[0].cloneNode(true));
+        const libDiv = $(template.children().eq(0).clone());
 
         const detailsButton = libDiv.find('.lib-name-and-version');
         detailsButton.html(lib.name + ' ' + version.version);
@@ -379,7 +379,7 @@ export class LibsWidget {
         return libDiv;
     }
 
-    conjureUpExamples(result: JQuery<Node>, lib: Library) {
+    conjureUpExamples(result: JQuery<HTMLElement>, lib: Library) {
         const examples = result.find('.lib-examples');
         if (lib.examples && lib.examples.length > 0) {
             examples.append($('<b>Examples</b>'));
@@ -435,10 +435,10 @@ export class LibsWidget {
         $('#' + popupId).html(libInfoText);
     }
 
-    newSearchResult(libId: string, lib: Library): JQuery<Node> {
+    newSearchResult(libId: string, lib: Library): JQuery<HTMLElement> {
         const template = $('#lib-search-result-tpl');
 
-        const result = $($(template.children()[0].cloneNode(true)));
+        const result = $(template.children().eq(0).clone());
         result.find('.lib-name').html(lib.name || libId);
         if (!lib.description) {
             result.find('.lib-description').hide();
@@ -564,9 +564,7 @@ export class LibsWidget {
     }
 
     addSearchResult(libId: string, library: Library) {
-        // FIXME: Type mismatch.
-        // The any here stops TS from complaining
-        const result: any = this.newSearchResult(libId, library);
+        const result = this.newSearchResult(libId, library);
         this.searchResults.append(result);
     }
 
@@ -582,7 +580,7 @@ export class LibsWidget {
 
         const currentAvailableLibs = this.availableLibs[this.currentLangId][this.currentCompilerId];
         if (Object.keys(currentAvailableLibs).length === 0) {
-            const nolibsMessage: any = $($('#libs-dropdown').children()[0].cloneNode(true));
+            const nolibsMessage = $('#libs-dropdown').children().eq(0).clone();
             this.searchResults.append(nolibsMessage);
             return;
         }
@@ -609,7 +607,7 @@ export class LibsWidget {
             const lib = this.availableLibs[this.currentLangId][this.currentCompilerId][libId];
             const version = lib.versions[versionId];
 
-            const libDiv: any = this.newSelectedLibDiv(libId, versionId, lib, version);
+            const libDiv = this.newSelectedLibDiv(libId, versionId, lib, version);
             items.append(libDiv);
         }
     }
@@ -619,7 +617,7 @@ export class LibsWidget {
 
         const currentAvailableLibs = this.availableLibs[this.currentLangId][this.currentCompilerId];
         if (Object.keys(currentAvailableLibs).length === 0) {
-            const nolibsMessage: any = $($('#libs-dropdown').children()[0].cloneNode(true));
+            const nolibsMessage = $('#libs-dropdown').children().eq(0).clone();
             this.searchResults.append(nolibsMessage);
             return;
         }
@@ -629,7 +627,7 @@ export class LibsWidget {
 
             if ('autodetect' in library.versions) continue;
 
-            const card: any = this.newSearchResult(libId, library);
+            const card = this.newSearchResult(libId, library);
             this.searchResults.append(card);
         }
     }

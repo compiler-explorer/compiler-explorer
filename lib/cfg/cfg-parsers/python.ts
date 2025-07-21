@@ -22,11 +22,16 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
+import fs from 'node:fs/promises';
+
+import {CompilationResult} from '../../../types/compilation/compilation.interfaces.js';
 import {ResultLine} from '../../../types/resultline/resultline.interfaces.js';
 import {InstructionType} from '../instruction-sets/base.js';
 import {AssemblyLine, BaseCFGParser, CanonicalBB} from './base.js';
 
 export class PythonCFGParser extends BaseCFGParser {
+    BBid = 0;
+
     static override get key() {
         return 'python3';
     }
@@ -43,10 +48,8 @@ export class PythonCFGParser extends BaseCFGParser {
         return this.instructionSetInfo.getInstructionType(prevInst) !== InstructionType.notRetInst;
     }
 
-    override filterData(bytecode: ResultLine[]) {
-        // Filter out module prefix before first function,
-        // replace 'Disassembly of' with 'Function #<idx>'
-        const res: ResultLine[] = [];
+    override filterData(bytecode: ResultLine[]): ResultLine[] {
+        // Filter out module code before the first function
         let i = 0;
         while (
             i < bytecode.length &&
@@ -55,31 +58,59 @@ export class PythonCFGParser extends BaseCFGParser {
         ) {
             i++;
         }
+        return bytecode.slice(i).filter(x => x.text && x.text.trim() !== '');
+    }
+
+    override async processFuncNames(bytecode: AssemblyLine[], fullRes?: CompilationResult): Promise<AssemblyLine[]> {
+        // replace 'Disassembly of' with function name
+        const res: ResultLine[] = [];
+        let src: string | null = null;
 
         let funcIdx = 0;
-        for (let j = i; j < bytecode.length; j++) {
-            const line = bytecode[j];
-            if (!line.text) continue;
 
+        for (let i = 0; i < bytecode.length; i++) {
+            const line = bytecode[i];
+            let funcName: string | undefined = undefined;
             if (line.text.startsWith('Disassembly of')) {
-                line.text = `Function #${funcIdx++}`;
+                const srcLineStr = line.text.match(/line (\d+)/)?.[1];
+                const srcLineNum = srcLineStr ? Number.parseInt(srcLineStr) : null;
+                if (srcLineNum && fullRes && fullRes.inputFilename) {
+                    if (src === null) {
+                        src = await fs.readFile(fullRes.inputFilename, 'utf8');
+                        const srcLine = src.split('\n')[srcLineNum - 1];
+                        funcName = srcLine.match(/def (\w+)\(/)?.[1];
+                    }
+                }
+                if (funcName) line.text = funcName;
+                else line.text = `Function #${funcIdx++}`;
             }
             res.push(line);
         }
         return res;
     }
 
-    //      10 POP_JUMP_IF_FALSE        5 (to 22)   ===> captures "22"
+    // In python <= 3.12:
+    //      10 POP_JUMP_IF_FALSE        5 (to 22)   ===> captures line num "22"
+    // In python >= 3.13:
+    //         POP_JUMP_IF_FALSE        4 (to L1)   ===> captures label "L1"
     override extractJmpTargetName(inst: string) {
-        const candidateName = inst.match(/\(to (\d+)\)$/);
+        const candidateName = inst.match(/\(to (\w+)\)$/);
         return candidateName ? candidateName[1] : '';
     }
 
-    //'  6     >>   22 LOAD_FAST                0 (num):'   ==> '22'
-    //'  4          12 LOAD_FAST                0 (num):'   ==> '12'
-    //'        >>  140 FOR_ITER                98 (to 340)' ==> 140
+    //'  6   >>   22 LOAD_FAST                0 (num):'   ==> '22'
+    //'  4        12 LOAD_FAST                0 (num):'   ==> '12'
+    //'      >>  140 FOR_ITER                98 (to 340)' ==> 140
+    //'  5       L1: LOAD_FAST                0 (num)'    ==> 'L1'  (labels are present for python >= 3.13)
+    //'  3           LOAD_FAST_LOAD_FAST      0 (num, num)'  ===> '3'
+    //'              UNPACK_SEQUENCE          1'    ===>  Block #<id>
     override getBbId(firstInst: string): string {
-        return firstInst.match(/^\s*(\d+)?\s+>?>?\s+(\d+)/)?.[2] ?? '';
+        const label = firstInst.match(/(\w+):/)?.[1];
+        if (label) return label;
+        const bytecodeOffset = firstInst.match(/^\s*\d*?\s+>?>?\s+(\d+)/)?.[1];
+        if (bytecodeOffset) return bytecodeOffset;
+
+        return 'Block #' + this.BBid++;
     }
 
     override getBbFirstInstIdx(firstLine: number) {
@@ -91,10 +122,7 @@ export class PythonCFGParser extends BaseCFGParser {
     }
 
     override extractAltJmpTargetName(asmArr: AssemblyLine[], bbIdx: number, arrBB: CanonicalBB[]): string {
-        const nextBbStart = arrBB[bbIdx + 1]?.start;
-        if (!nextBbStart) return '';
-
-        const inst = asmArr[nextBbStart];
-        return this.getBbId(inst.text);
+        if (bbIdx >= arrBB.length) return '';
+        return arrBB[bbIdx + 1].nameId;
     }
 }

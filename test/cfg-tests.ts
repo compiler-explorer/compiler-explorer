@@ -41,7 +41,7 @@ async function DoCfgTest(cfgArg, filename, isLlvmIr = false, compilerInfo?: Comp
             version: cfgArg,
         });
     }
-    const structure = generateStructure(compilerInfo, contents.asm, isLlvmIr);
+    const structure = await generateStructure(compilerInfo, contents.asm, isLlvmIr);
     expect(structure).toEqual(contents.cfg);
 }
 
@@ -88,6 +88,22 @@ describe('Cfg test cases', () => {
         for (const filename of files.filter(x => x.includes('python'))) {
             it(filename, async () => {
                 await DoCfgTest('python', path.join(testcasespath, filename), false, pythonCompilerInfo);
+            });
+        }
+    });
+
+    describe('xtensa', () => {
+        // instructionSet is a real value, group/version/compilerType just need to be distinct from others
+        const xtensaCompilerInfo = makeFakeCompilerInfo({
+            instructionSet: 'xtensa',
+            group: 'xtensa',
+            version: 'xtensa',
+            compilerType: 'xtensa',
+        });
+
+        for (const filename of files.filter(x => x.includes('xtensa'))) {
+            it(filename, async () => {
+                await DoCfgTest('python', path.join(testcasespath, filename), false, xtensaCompilerInfo);
             });
         }
     });
