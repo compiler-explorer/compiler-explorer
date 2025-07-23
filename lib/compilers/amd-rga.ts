@@ -1,4 +1,4 @@
-// Copyright (c) 2022, Compiler Explorer Authors
+// Copyright (c) 2025, Compiler Explorer Authors
 // All rights reserved.
 //
 // Redistribution and use in source and binary forms, with or without
@@ -91,7 +91,7 @@ export class AMDRGACompiler extends BaseCompiler {
         // Pop the last argument assuming it's the HLSL input file
         const inputHlslFile = rgaArgs.pop()!;
 
-        // Determine which flag to use based on shader stage
+        // Determine which flag to use based on RGA shader mode.
         if (args.includes('-s') && args[args.indexOf('-s') + 1] === 'dxr') {
             rgaArgs.push('--hlsl');
         } else if (args.includes('-s') && args[args.indexOf('-s') + 1] === 'dx12') {
