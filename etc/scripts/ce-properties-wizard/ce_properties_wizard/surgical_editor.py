@@ -139,6 +139,11 @@ class PropertiesFileEditor:
         existing_groups = self.get_existing_groups_from_compilers_line()
         if group_name in existing_groups:
             return  # Already exists
+            
+        # Check if this group is referenced by any existing parent groups
+        # (e.g., vcpp_x64 might be referenced by group.vcpp.compilers=&vcpp_x86:&vcpp_x64:&vcpp_arm64)
+        if self._is_group_referenced_elsewhere(group_name):
+            return  # Already referenced by another group
 
         compilers_line_idx = self.find_compilers_line()
         if compilers_line_idx is None:
@@ -148,12 +153,34 @@ class PropertiesFileEditor:
 
         # Add to existing line
         line = self.lines[compilers_line_idx]
-        if line.endswith(":"):
+        if line.endswith("="):
+            # Empty compilers line, just append without colon
+            self.lines[compilers_line_idx] = f"{line}&{group_name}"
+        elif line.endswith(":"):
             # Line ends with colon, just append
             self.lines[compilers_line_idx] = f"{line}&{group_name}"
         else:
             # Add with colon separator
             self.lines[compilers_line_idx] = f"{line}:&{group_name}"
+            
+    def _is_group_referenced_elsewhere(self, group_name: str) -> bool:
+        """Check if a group is referenced by any other group's compilers list."""
+        for line in self.lines:
+            # Look for group.*.compilers= lines that reference this group
+            if ".compilers=" in line and not line.startswith(f"group.{group_name}.compilers="):
+                # Extract the value part after =
+                if "=" in line:
+                    value = line.split("=", 1)[1]
+                    # Check if this group is referenced (with & prefix)
+                    referenced_groups = []
+                    for part in value.split(":"):
+                        part = part.strip()
+                        if part.startswith("&"):
+                            referenced_groups.append(part[1:])  # Remove & prefix
+                    
+                    if group_name in referenced_groups:
+                        return True
+        return False
 
     def group_exists(self, group_name: str) -> bool:
         """Check if a group already exists in the file."""
@@ -435,7 +462,10 @@ class PropertiesFileEditor:
 
         # Add compiler properties in order
         props_to_add = []
-        props_to_add.append(f"compiler.{compiler.id}.exe={compiler.exe}")
+        
+        # Normalize exe path for Windows (convert backslashes to forward slashes)
+        normalized_exe_path = compiler.exe.replace("\\", "/")
+        props_to_add.append(f"compiler.{compiler.id}.exe={normalized_exe_path}")
 
         # Add semver if available, name if no semver or force_name is True
         if compiler.semver:
@@ -466,6 +496,12 @@ class PropertiesFileEditor:
         # Add execution wrapper for compilers that need it
         if compiler.execution_wrapper:
             props_to_add.append(f"compiler.{compiler.id}.executionWrapper={compiler.execution_wrapper}")
+
+        # Add MSVC-specific include and library paths
+        if compiler.include_path:
+            props_to_add.append(f"compiler.{compiler.id}.includePath={compiler.include_path}")
+        if compiler.lib_path:
+            props_to_add.append(f"compiler.{compiler.id}.libPath={compiler.lib_path}")
 
         # Insert all properties
         for prop in props_to_add:

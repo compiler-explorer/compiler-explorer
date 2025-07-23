@@ -92,6 +92,7 @@ def format_compiler_options(options_input: str) -> str:
     help="Run discovery validation to verify the compiler is detected (default for local environment)",
 )
 @click.option("--env", default="local", help="Environment to target (local, amazon, etc.)")
+@click.option("--debug", is_flag=True, help="Enable debug output including subprocess commands")
 def cli(
     compiler_path: Optional[str],
     compiler_id: Optional[str],
@@ -107,6 +108,7 @@ def cli(
     reorganize: Optional[str],
     validate_discovery: bool,
     env: str,
+    debug: bool,
 ):
     """CE Properties Wizard - Add compilers to your Compiler Explorer installation.
 
@@ -135,9 +137,9 @@ def cli(
         try:
             # Find config directory
             if config_dir:
-                config_mgr = ConfigManager(Path(config_dir), env)
+                config_mgr = ConfigManager(Path(config_dir), env, debug=debug)
             else:
-                config_mgr = ConfigManager(find_ce_config_directory(), env)
+                config_mgr = ConfigManager(find_ce_config_directory(), env, debug=debug)
 
             print_info(f"Reorganizing {reorganize} properties file...")
 
@@ -183,12 +185,12 @@ def cli(
                 config_path = find_ce_config_directory()
             print_info(f"Using config directory: {config_path}")
             print_info(f"Targeting environment: {env}")
-            config_mgr = ConfigManager(config_path, env)
+            config_mgr = ConfigManager(config_path, env, debug=debug)
         else:
             config_mgr = None
 
         # Initialize detector
-        detector = CompilerDetector()
+        detector = CompilerDetector(debug=debug)
 
         # Get compiler path if not provided
         if not compiler_path:
@@ -248,7 +250,7 @@ def cli(
                     detected_info.group = suggested_group
             else:
                 # Verify-only mode - create a temporary config manager just for suggestion
-                temp_config_mgr = ConfigManager(find_ce_config_directory(), env)
+                temp_config_mgr = ConfigManager(find_ce_config_directory(), env, debug=debug)
                 suggested_group = temp_config_mgr.suggest_appropriate_group(detected_info)
                 if suggested_group:
                     detected_info.group = suggested_group
@@ -309,6 +311,22 @@ def cli(
         # Interactive prompts for missing information
         if not yes and not non_interactive:
             questions = []
+            
+            # Windows SDK path prompt for MSVC compilers if auto-detection failed
+            if detected_info.needs_sdk_prompt:
+                print_info("Windows SDK auto-detection failed. You can optionally specify the Windows SDK path.")
+                print_info("Example: Z:/compilers/windows-kits-10 (leave empty to skip)")
+                sdk_question = inquirer.Text(
+                    "windows_sdk_path",
+                    message="Windows SDK base path (optional)",
+                    default="",
+                    validate=lambda _, x: x == "" or os.path.isdir(x.replace("\\", "/"))
+                )
+                sdk_answers = inquirer.prompt([sdk_question])
+                if sdk_answers and sdk_answers["windows_sdk_path"].strip():
+                    # Apply the user-provided SDK path
+                    detected_info = detector.set_windows_sdk_path(detected_info, sdk_answers["windows_sdk_path"].strip())
+                    print_success(f"Windows SDK paths added from: {sdk_answers['windows_sdk_path']}")
 
             # Language selection if needed
             if not language and detected_info.language:
@@ -434,7 +452,8 @@ def cli(
 
         # Show configuration preview
         print_info("\nConfiguration preview:")
-        click.echo(f"  compiler.{detected_info.id}.exe={detected_info.exe}")
+        normalized_exe_path = detected_info.exe.replace("\\", "/")
+        click.echo(f"  compiler.{detected_info.id}.exe={normalized_exe_path}")
 
         # Check if semver will be available (either detected or extracted)
         semver_to_use = detected_info.semver
@@ -463,6 +482,10 @@ def cli(
             click.echo(f"  compiler.{detected_info.id}.runtime={detected_info.runtime}")
         if detected_info.execution_wrapper:
             click.echo(f"  compiler.{detected_info.id}.executionWrapper={detected_info.execution_wrapper}")
+        if detected_info.include_path:
+            click.echo(f"  compiler.{detected_info.id}.includePath={detected_info.include_path}")
+        if detected_info.lib_path:
+            click.echo(f"  compiler.{detected_info.id}.libPath={detected_info.lib_path}")
         if detected_info.group:
             click.echo(f"  Will add to group: {detected_info.group}")
 

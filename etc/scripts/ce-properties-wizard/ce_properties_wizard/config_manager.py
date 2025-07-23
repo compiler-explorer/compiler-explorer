@@ -49,12 +49,18 @@ def detect_instruction_set_from_target(target: Optional[str], exe_path: str) -> 
 class ConfigManager:
     """Manages reading and writing of compiler properties files."""
 
-    def __init__(self, config_dir: Path, env: str = "local"):
+    def __init__(self, config_dir: Path, env: str = "local", debug: bool = False):
         """Initialize with path to etc/config directory and environment."""
         self.config_dir = config_dir
         self.env = env
+        self.debug = debug
         if not self.config_dir.exists():
             raise ValueError(f"Config directory not found: {config_dir}")
+
+    def _debug_log(self, message: str):
+        """Log debug message if debug mode is enabled."""
+        if self.debug:
+            print(message)
 
     def get_properties_path(self, language: str) -> Path:
         """Get path to properties file for a language in the current environment."""
@@ -288,13 +294,19 @@ class ConfigManager:
 
         editor = PropertiesFileEditor(file_path)
 
+        # Use Path objects for robust cross-platform path comparison
+        from pathlib import Path
+        input_path = Path(compiler_exe)
+
         # Look for any compiler with the same exe path
         for line in editor.lines:
             if ".exe=" in line and line.startswith("compiler."):
                 match = re.match(r"^compiler\.([^.]+)\.exe=(.+)$", line)
                 if match:
                     compiler_id, existing_exe = match.groups()
-                    if existing_exe == compiler_exe:
+                    # Compare using Path objects which handle normalization automatically
+                    existing_path = Path(existing_exe)
+                    if existing_path == input_path:
                         return compiler_id
 
         return None
@@ -338,6 +350,11 @@ class ConfigManager:
             target_instruction_set = detect_instruction_set_from_target(compiler.target, compiler.exe)
         else:
             target_instruction_set = detect_instruction_set_from_target(None, compiler.exe)
+            
+        # Debug output
+        self._debug_log(f"DEBUG: Compiler type: {compiler.compiler_type}")
+        self._debug_log(f"DEBUG: Detected instruction set: {target_instruction_set}")
+        self._debug_log(f"DEBUG: Compiler path: {compiler.exe}")
 
         # Find existing groups and their properties
         existing_groups = {}
@@ -374,17 +391,35 @@ class ConfigManager:
         for group_name, group_info in existing_groups.items():
             score = 0
 
-            # Match compiler type (highest priority)
+            # Match instruction set (highest priority - architecture must match)
+            if target_instruction_set and group_info["instruction_set"] == target_instruction_set:
+                score += 200
+                self._debug_log(f"DEBUG: Group {group_name} instruction set match (+200): {group_info['instruction_set']} == {target_instruction_set}")
+
+            # Special architecture matching for MSVC (when instruction sets match)
+            if compiler.compiler_type == "win32-vc" and "cl.exe" in compiler.exe.lower():
+                if ("hostx64\\x64" in compiler.exe.lower() or "/hostx64/x64" in compiler.exe.lower()) and "x64" in group_name:
+                    score += 150
+                    self._debug_log(f"DEBUG: Group {group_name} MSVC x64 path match (+150)")
+                elif ("hostx86\\x86" in compiler.exe.lower() or "/hostx86/x86" in compiler.exe.lower()) and "x86" in group_name:
+                    score += 150
+                    self._debug_log(f"DEBUG: Group {group_name} MSVC x86 path match (+150)")
+                elif ("hostx64\\arm64" in compiler.exe.lower() or "/hostx64/arm64" in compiler.exe.lower()) and "arm64" in group_name:
+                    score += 150
+                    self._debug_log(f"DEBUG: Group {group_name} MSVC arm64 path match (+150)")
+
+            # Match compiler type (high priority)
             if group_info["compiler_type"] == compiler.compiler_type:
                 score += 100
+                self._debug_log(f"DEBUG: Group {group_name} compiler type match (+100): {group_info['compiler_type']} == {compiler.compiler_type}")
             elif group_info["compiler_categories"] == compiler.compiler_type:
                 score += 100
+                self._debug_log(f"DEBUG: Group {group_name} compiler categories match (+100): {group_info['compiler_categories']} == {compiler.compiler_type}")
             elif compiler.compiler_type and compiler.compiler_type.lower() in group_name.lower():
                 score += 80
-
-            # Match instruction set for cross-compilers (high priority)
-            if target_instruction_set and group_info["instruction_set"] == target_instruction_set:
-                score += 90
+                self._debug_log(f"DEBUG: Group {group_name} name contains compiler type (+80): {compiler.compiler_type} in {group_name}")
+                
+            self._debug_log(f"DEBUG: Group {group_name} total score: {score}")
 
             # Match target architecture in group name (medium priority)
             if compiler.target and compiler.is_cross_compiler:
@@ -514,6 +549,15 @@ class ConfigManager:
         elif group_name in ["icc", "icx"] or (compiler and compiler.compiler_type in ["icc", "icx"]):
             editor.add_group_property(group_name, "compilerType", compiler.compiler_type if compiler else group_name)
             editor.add_group_property(group_name, "compilerCategories", "intel")
+        elif group_name == "win32-vc" or (compiler and compiler.compiler_type == "win32-vc"):
+            # MSVC-specific properties
+            editor.add_group_property(group_name, "compilerType", "win32-vc")
+            editor.add_group_property(group_name, "compilerCategories", "msvc")
+            editor.add_group_property(group_name, "versionFlag", "/?")
+            editor.add_group_property(group_name, "versionRe", "^.*Microsoft \\(R\\).*$")
+            editor.add_group_property(group_name, "needsMulti", "false")
+            editor.add_group_property(group_name, "includeFlag", "/I")
+            editor.add_group_property(group_name, "options", "/EHsc /utf-8 /MD")
         elif compiler and compiler.compiler_type:
             # For other known compiler types
             editor.add_group_property(group_name, "compilerType", compiler.compiler_type)
@@ -916,7 +960,10 @@ class ConfigManager:
             ce_root = self.config_dir.parent.parent
 
             # Run npm run dev with discovery-only, including environment if not local
-            cmd = ["npm", "run", "dev", "--", "--language", language]
+            # On Windows, we might need to use npm.cmd instead of npm
+            import platform
+            npm_cmd = "npm.cmd" if platform.system() == "Windows" else "npm"
+            cmd = [npm_cmd, "run", "dev", "--", "--language", language]
             if self.env != "local":
                 cmd.extend(["--env", self.env])
             cmd.extend(["--discovery-only", discovery_file])
@@ -929,7 +976,11 @@ class ConfigManager:
             )
 
             if result.returncode != 0:
-                return False, f"Discovery command failed: {result.stderr}", None
+                error_msg = result.stderr.strip() or result.stdout.strip()
+                # On Windows, if npm fails due to PATH issues, make discovery optional
+                if platform.system() == "Windows" and ("Is a directory" in error_msg or "not found" in error_msg):
+                    return True, f"Discovery validation skipped on Windows (npm PATH issue): {error_msg}", None
+                return False, f"Discovery command failed: {error_msg}", None
 
             # Read and parse the discovery JSON
             if not os.path.exists(discovery_file):
@@ -993,6 +1044,10 @@ class ConfigManager:
         except json.JSONDecodeError as e:
             return False, f"Discovery JSON parse error: {str(e)}", None
         except Exception as e:
+            # On Windows, if subprocess fails due to npm not being found, make discovery optional
+            import platform
+            if platform.system() == "Windows" and ("The system cannot find the file specified" in str(e) or "WinError 2" in str(e)):
+                return True, f"Discovery validation skipped on Windows (npm not found): {str(e)}", None
             return False, f"Discovery validation error: {str(e)}", None
         finally:
             # Clean up temporary file
@@ -1016,7 +1071,9 @@ class ConfigManager:
 
         try:
             # propscheck.py takes --config-dir parameter and --check-local for local properties files
-            cmd = ["python3", str(propscheck_path), "--config-dir", str(self.config_dir)]
+            # Use the same Python interpreter that's running this script
+            import sys
+            cmd = [sys.executable, str(propscheck_path), "--config-dir", str(self.config_dir)]
             if self.env == "local":
                 cmd.append("--check-local")
             else:

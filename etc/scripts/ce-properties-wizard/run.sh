@@ -8,9 +8,40 @@ cd "$SCRIPT_DIR"
 
 # Check if poetry is installed
 if ! command -v poetry &> /dev/null; then
-    echo "Poetry is not installed. Please install it first:"
-    echo "  curl -sSL https://install.python-poetry.org | python3 -"
-    exit 1
+    echo "Poetry is not installed. Installing Poetry..."
+    
+    # Check if Python is available
+    PYTHON_CMD=""
+    for cmd in python3 python py; do
+        if command -v $cmd &> /dev/null; then
+            PYTHON_CMD=$cmd
+            break
+        fi
+    done
+    
+    if [ -z "$PYTHON_CMD" ]; then
+        echo "Python is not installed. Please install Python first."
+        exit 1
+    fi
+    
+    # Install Poetry
+    echo "Downloading and installing Poetry..."
+    if curl -sSL https://install.python-poetry.org | $PYTHON_CMD -; then
+        # Add Poetry to PATH for current session
+        export PATH="$HOME/.local/bin:$PATH"
+        
+        # Verify installation
+        if ! command -v poetry &> /dev/null; then
+            echo "Poetry installation failed. Please install manually from https://python-poetry.org/docs/#installation"
+            exit 1
+        fi
+        
+        echo "Poetry installed successfully!"
+    else
+        echo "Failed to install Poetry automatically."
+        echo "Please install manually from https://python-poetry.org/docs/#installation"
+        exit 1
+    fi
 fi
 
 # Install dependencies if needed

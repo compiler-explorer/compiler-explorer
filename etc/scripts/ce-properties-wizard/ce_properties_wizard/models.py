@@ -24,6 +24,9 @@ class CompilerInfo(BaseModel):
     java_home: Optional[str] = Field(None, description="JAVA_HOME path for Java-based compilers")
     runtime: Optional[str] = Field(None, description="Runtime executable path for Java-based compilers")
     execution_wrapper: Optional[str] = Field(None, description="Execution wrapper path for languages like Dart")
+    include_path: Optional[str] = Field(None, description="Include paths for MSVC compilers")
+    lib_path: Optional[str] = Field(None, description="Library paths for MSVC compilers")
+    needs_sdk_prompt: bool = Field(False, description="Whether to prompt user for Windows SDK path")
 
     @validator("id")
     def validate_id(cls, value):  # noqa: N805

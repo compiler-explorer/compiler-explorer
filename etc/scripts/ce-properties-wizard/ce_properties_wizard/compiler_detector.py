@@ -67,16 +67,16 @@ LANGUAGE_CONFIGS = {
     "c++": LanguageConfig(
         name="C++",
         properties_file="c++.local.properties",
-        compiler_types=["gcc", "clang", "icc", "icx", "msvc"],
+        compiler_types=["gcc", "clang", "icc", "icx", "win32-vc", "win32-mingw-gcc", "win32-mingw-clang"],
         extensions=[".cpp", ".cc", ".cxx", ".c++"],
-        keywords=["g++", "clang++", "icpc", "icx", "c++"],
+        keywords=["g++", "clang++", "icpc", "icx", "c++", "cl"],
     ),
     "c": LanguageConfig(
         name="C",
         properties_file="c.local.properties",
-        compiler_types=["gcc", "clang", "icc", "icx", "msvc"],
+        compiler_types=["gcc", "clang", "icc", "icx", "win32-vc", "win32-mingw-gcc", "win32-mingw-clang"],
         extensions=[".c"],
-        keywords=["gcc", "clang", "icc", "cc"],
+        keywords=["gcc", "clang", "icc", "cc", "cl"],
     ),
     "cuda": LanguageConfig(
         name="CUDA",
@@ -300,6 +300,14 @@ LANGUAGE_CONFIGS = {
 class CompilerDetector:
     """Handles compiler detection and language inference."""
 
+    def __init__(self, debug: bool = False):
+        """Initialize the detector.
+        
+        Args:
+            debug: Enable debug output for subprocess commands
+        """
+        self.debug = debug
+
     def detect_from_path(self, compiler_path: str) -> CompilerInfo:
         """Detect compiler information from executable path."""
         if not os.path.isfile(compiler_path):
@@ -335,6 +343,39 @@ class CompilerDetector:
         # Detect execution wrapper for specific compilers
         execution_wrapper = self._detect_execution_wrapper(compiler_type, compiler_path)
 
+        # Detect MSVC include and library paths
+        include_path, lib_path = self._detect_msvc_paths(compiler_type, compiler_path, language)
+        
+        # Check if this is an MSVC compiler that might need SDK prompting
+        # We need SDK prompting if it's MSVC but no Windows SDK paths were detected from existing compilers
+        needs_sdk_prompt = False
+        if compiler_type == "win32-vc":
+            # Quick check - do any existing compilers have Windows SDK paths?
+            try:
+                from .utils import find_ce_config_directory
+                from .config_manager import ConfigManager
+                
+                config_dir = find_ce_config_directory()
+                temp_config = ConfigManager(config_dir, "local", debug=self.debug)
+                properties_path = temp_config.get_properties_path(language)
+                
+                if properties_path.exists():
+                    properties = temp_config.read_properties_file(properties_path)
+                    has_sdk = False
+                    
+                    for key, value in properties.items():
+                        if key.endswith(".includePath") and isinstance(value, str):
+                            if "/include/" in value and "/um" in value:
+                                has_sdk = True
+                                break
+                                
+                    needs_sdk_prompt = not has_sdk
+                else:
+                    needs_sdk_prompt = True  # No properties file means no SDK paths
+                    
+            except Exception:
+                needs_sdk_prompt = True  # If we can't check, prompt to be safe
+
         return CompilerInfo(
             id=compiler_id,
             name=display_name,
@@ -349,6 +390,9 @@ class CompilerDetector:
             java_home=java_home,
             runtime=runtime,
             execution_wrapper=execution_wrapper,
+            include_path=include_path,
+            lib_path=lib_path,
+            needs_sdk_prompt=needs_sdk_prompt,
         )
 
     def _detect_language(self, compiler_path: str, compiler_name: str) -> str:
@@ -414,10 +458,35 @@ class CompilerDetector:
         # Try common version flags and subcommands
         version_flags = ["--version", "-v", "--help", "-V", "/help", "/?", "version"]
 
+        # Detect if compiler is on a network drive (common for shared compiler installations)
+        is_network_drive = compiler_path[1:2] == ":" and compiler_path[0].upper() >= "X"
+        
         for flag in version_flags:
-            result = SubprocessRunner.run_with_timeout([compiler_path, flag], timeout=5)
+            # Use longer timeout for --version on network drives (can take 15+ seconds)
+            if flag == "--version" and is_network_drive:
+                timeout_value = 20
+            elif is_network_drive:
+                timeout_value = 10
+            else:
+                timeout_value = 2
+                
+            # Try with appropriate timeout
+            if self.debug:
+                print(f"Running: {compiler_path} {flag} (timeout: {timeout_value}s)")
+            
+            result = SubprocessRunner.run_with_timeout([compiler_path, flag], timeout=timeout_value)
             if result is None:
+                if self.debug:
+                    print(f"  -> Command failed or timed out")
                 continue
+            
+            if self.debug:
+                print(f"  -> Command succeeded, return code: {result.returncode}")
+                if result.stdout:
+                    print(f"  -> stdout: {result.stdout[:200]}")
+                if result.stderr:
+                    print(f"  -> stderr: {result.stderr[:200]}")
+            
 
             output = (result.stdout + result.stderr).lower()
             full_output = result.stdout + result.stderr
@@ -430,11 +499,25 @@ class CompilerDetector:
             # Detect Clang (before GCC) since clang output may contain 'gnu'
             if "clang" in output:
                 version = VersionExtractor.extract_version("clang", full_output)
+                
+                # Check if this is MinGW Clang on Windows
+                if platform.system() == "Windows":
+                    # Check for MinGW indicators
+                    if ("mingw" in output or "windows-gnu" in output or 
+                        "mingw" in compiler_path.lower() or 
+                        any(indicator in compiler_path.lower() for indicator in ["mingw", "tdm-gcc", "winlibs"])):
+                        return "win32-mingw-clang", version
+                
                 return "clang", version
 
-            # Detect GCC
+            # Detect GCC (including MinGW on Windows)
             if "gcc" in output or "g++" in output or ("gnu" in output and "clang" not in output):
                 version = VersionExtractor.extract_version("gcc", full_output)
+                
+                # Check if this is MinGW based on version output
+                if "mingw" in output:
+                    return "win32-mingw-gcc", version
+                
                 return "gcc", version
 
             # Detect Intel Fortran first
@@ -456,7 +539,7 @@ class CompilerDetector:
             # Detect MSVC
             if "microsoft" in output or "msvc" in output:
                 version = VersionExtractor.extract_version("msvc", full_output)
-                return "msvc", version
+                return "win32-vc", version
 
             # Detect NVCC
             if "nvidia" in output or "nvcc" in output:
@@ -714,7 +797,10 @@ class CompilerDetector:
         """Generate a display name for the compiler."""
         type_display = {
             "gcc": "GCC",
+            "win32-mingw-gcc": "MinGW GCC",
             "clang": "Clang",
+            "win32-mingw-clang": "MinGW Clang",
+            "win32-vc": "MSVC",
             "icc": "ICC",
             "icx": "Intel ICX",
             "ifx": "Intel IFX",
@@ -841,3 +927,247 @@ class CompilerDetector:
             return str(dartaotruntime_path)
 
         return None
+
+    def _detect_msvc_paths(self, compiler_type: Optional[str], compiler_path: str, language: str) -> Tuple[Optional[str], Optional[str]]:
+        """Detect include and library paths for MSVC compilers.
+        
+        Args:
+            compiler_type: Type of compiler (should be "win32-vc" for MSVC)
+            compiler_path: Path to the compiler executable
+            
+        Returns:
+            Tuple of (include_path, lib_path) strings, or (None, None) if not MSVC
+        """
+        if compiler_type != "win32-vc":
+            return None, None
+            
+        # Convert Windows backslashes to forward slashes for consistency
+        normalized_path = compiler_path.replace("\\", "/")
+        
+        # Extract the base MSVC directory from the compiler path
+        # Example: Z:/compilers/msvc/14.40.33807-14.40.33811.0/bin/Hostx64/x64/cl.exe
+        # Should extract: Z:/compilers/msvc/14.40.33807-14.40.33811.0
+        
+        # Look for the pattern /bin/Host*/*/cl.exe and extract base directory
+        import re
+        match = re.search(r"^(.+)/bin/Host[^/]+/[^/]+/cl\.exe$", normalized_path, re.IGNORECASE)
+        if not match:
+            # Try alternative pattern for different MSVC layouts
+            match = re.search(r"^(.+)/bin/cl\.exe$", normalized_path, re.IGNORECASE)
+            
+        if not match:
+            self._debug_log(f"DEBUG: Could not extract MSVC base directory from path: {compiler_path}")
+            return None, None
+            
+        base_dir = match.group(1)
+        self._debug_log(f"DEBUG: Detected MSVC base directory: {base_dir}")
+        
+        # Detect architecture from the compiler path
+        arch = None
+        if "/hostx64/x64/" in normalized_path.lower():
+            arch = "x64"
+        elif "/hostx86/x86/" in normalized_path.lower():
+            arch = "x86"
+        elif "/hostx64/arm64/" in normalized_path.lower():
+            arch = "arm64"
+        elif "/hostx86/arm/" in normalized_path.lower():
+            arch = "arm"
+        else:
+            # Default to x64 if we can't detect
+            arch = "x64"
+            self._debug_log(f"DEBUG: Could not detect architecture from path, defaulting to x64")
+            
+        self._debug_log(f"DEBUG: Detected MSVC architecture: {arch}")
+        
+        # Build include path
+        include_path = f"{base_dir}/include"
+        
+        # Build library paths based on architecture
+        lib_paths = [
+            f"{base_dir}/lib",
+            f"{base_dir}/lib/{arch}",
+            f"{base_dir}/atlmfc/lib/{arch}",
+            f"{base_dir}/ifc/{arch}"
+        ]
+        
+        lib_path = ";".join(lib_paths)
+        
+        # Detect Windows SDK paths from existing compilers
+        sdk_include_paths, sdk_lib_paths = self._detect_windows_sdk_paths(language, arch)
+        
+        # Combine MSVC paths with Windows SDK paths
+        if sdk_include_paths:
+            include_path = f"{include_path};{sdk_include_paths}"
+            self._debug_log(f"DEBUG: Added Windows SDK include paths: {sdk_include_paths}")
+            
+        if sdk_lib_paths:
+            lib_path = f"{lib_path};{sdk_lib_paths}"
+            self._debug_log(f"DEBUG: Added Windows SDK library paths: {sdk_lib_paths}")
+        else:
+            # Store info that SDK detection failed for later interactive prompting
+            self._debug_log("DEBUG: Windows SDK auto-detection failed - will prompt user in interactive mode")
+        
+        self._debug_log(f"DEBUG: Final MSVC include path: {include_path}")
+        self._debug_log(f"DEBUG: Final MSVC library paths: {lib_path}")
+        
+        return include_path, lib_path
+
+    def _detect_windows_sdk_paths(self, language: str, arch: str) -> Tuple[Optional[str], Optional[str]]:
+        """Detect Windows SDK paths by scanning existing compiler configurations.
+        
+        Args:
+            language: Programming language (e.g., "c++")
+            arch: Target architecture (e.g., "x64", "x86", "arm64")
+            
+        Returns:
+            Tuple of (sdk_include_paths, sdk_lib_paths) strings, or (None, None) if not found
+        """
+        try:
+            from .utils import find_ce_config_directory
+            from .config_manager import ConfigManager
+            
+            # Create a temporary config manager to read existing properties
+            config_dir = find_ce_config_directory()
+            temp_config = ConfigManager(config_dir, "local", debug=self.debug)
+            properties_path = temp_config.get_properties_path(language)
+            
+            if not properties_path.exists():
+                self._debug_log(f"DEBUG: Properties file not found: {properties_path}")
+                return None, None
+                
+            properties = temp_config.read_properties_file(properties_path)
+            
+            # Scan all compiler includePath properties for Windows SDK patterns
+            sdk_base_path = None
+            sdk_version = None
+            
+            for key, value in properties.items():
+                if key.endswith(".includePath") and isinstance(value, str):
+                    self._debug_log(f"DEBUG: Scanning includePath: {key} = {value}")
+                    
+                    # Look for pattern ending with /include/<version>/um
+                    import re
+                    match = re.search(r"([^;]+)/include/([^/;]+)/um(?:;|$)", value)
+                    if match:
+                        sdk_base_path = match.group(1)
+                        sdk_version = match.group(2)
+                        self._debug_log(f"DEBUG: Found Windows SDK: base={sdk_base_path}, version={sdk_version}")
+                        break
+                        
+            if not sdk_base_path or not sdk_version:
+                self._debug_log("DEBUG: No Windows SDK path found in existing compilers")
+                return None, None
+                
+            # Generate Windows SDK include paths
+            sdk_include_dirs = [
+                f"{sdk_base_path}/include/{sdk_version}/cppwinrt",
+                f"{sdk_base_path}/include/{sdk_version}/shared",
+                f"{sdk_base_path}/include/{sdk_version}/ucrt",
+                f"{sdk_base_path}/include/{sdk_version}/um",
+                f"{sdk_base_path}/include/{sdk_version}/winrt"
+            ]
+            
+            sdk_include_paths = ";".join(sdk_include_dirs)
+            
+            # Generate Windows SDK library paths based on architecture
+            sdk_lib_dirs = [
+                f"{sdk_base_path}/lib/{sdk_version}/ucrt/{arch}",
+                f"{sdk_base_path}/lib/{sdk_version}/um/{arch}"
+            ]
+            
+            sdk_lib_paths = ";".join(sdk_lib_dirs)
+            
+            self._debug_log(f"DEBUG: Generated SDK include paths: {sdk_include_paths}")
+            self._debug_log(f"DEBUG: Generated SDK library paths: {sdk_lib_paths}")
+            
+            return sdk_include_paths, sdk_lib_paths
+            
+        except Exception as e:
+            self._debug_log(f"DEBUG: Error detecting Windows SDK paths: {e}")
+            return None, None
+
+    def set_windows_sdk_path(self, compiler_info: 'CompilerInfo', sdk_path: Optional[str]) -> 'CompilerInfo':
+        """Update MSVC compiler info with Windows SDK paths.
+        
+        Args:
+            compiler_info: CompilerInfo object for MSVC compiler
+            sdk_path: Optional Windows SDK base path (e.g., "Z:/compilers/windows-kits-10")
+            
+        Returns:
+            Updated CompilerInfo with SDK paths added
+        """
+        if compiler_info.compiler_type != "win32-vc" or not sdk_path:
+            return compiler_info
+            
+        # Extract architecture from the compiler path
+        normalized_path = compiler_info.exe.replace("\\", "/")
+        arch = "x64"  # default
+        if "/hostx64/x64/" in normalized_path.lower():
+            arch = "x64"
+        elif "/hostx86/x86/" in normalized_path.lower():
+            arch = "x86"
+        elif "/hostx64/arm64/" in normalized_path.lower():
+            arch = "arm64"
+        elif "/hostx86/arm/" in normalized_path.lower():
+            arch = "arm"
+            
+        # Find the SDK version by looking for the latest version directory
+        import os
+        from pathlib import Path
+        
+        sdk_base = Path(sdk_path.replace("\\", "/"))
+        sdk_version = None
+        
+        # Look for include directory with version subdirectories
+        include_dir = sdk_base / "include"
+        if include_dir.exists():
+            # Find the latest version directory (highest version number)
+            version_dirs = [d.name for d in include_dir.iterdir() if d.is_dir() and d.name.startswith("10.")]
+            if version_dirs:
+                sdk_version = sorted(version_dirs, reverse=True)[0]  # Get the latest version
+                self._debug_log(f"DEBUG: Found SDK version: {sdk_version}")
+                
+        if not sdk_version:
+            self._debug_log(f"DEBUG: No SDK version found in {include_dir}")
+            return compiler_info
+            
+        # Generate Windows SDK include paths
+        sdk_include_dirs = [
+            f"{sdk_path}/include/{sdk_version}/cppwinrt",
+            f"{sdk_path}/include/{sdk_version}/shared",
+            f"{sdk_path}/include/{sdk_version}/ucrt",
+            f"{sdk_path}/include/{sdk_version}/um",
+            f"{sdk_path}/include/{sdk_version}/winrt"
+        ]
+        
+        sdk_include_paths = ";".join(sdk_include_dirs)
+        
+        # Generate Windows SDK library paths based on architecture
+        sdk_lib_dirs = [
+            f"{sdk_path}/lib/{sdk_version}/ucrt/{arch}",
+            f"{sdk_path}/lib/{sdk_version}/um/{arch}"
+        ]
+        
+        sdk_lib_paths = ";".join(sdk_lib_dirs)
+        
+        # Combine with existing MSVC paths
+        if compiler_info.include_path:
+            compiler_info.include_path = f"{compiler_info.include_path};{sdk_include_paths}"
+        else:
+            compiler_info.include_path = sdk_include_paths
+            
+        if compiler_info.lib_path:
+            compiler_info.lib_path = f"{compiler_info.lib_path};{sdk_lib_paths}"
+        else:
+            compiler_info.lib_path = sdk_lib_paths
+            
+        self._debug_log(f"DEBUG: Added user-provided SDK paths from: {sdk_path}")
+        self._debug_log(f"DEBUG: SDK include paths: {sdk_include_paths}")
+        self._debug_log(f"DEBUG: SDK library paths: {sdk_lib_paths}")
+        
+        return compiler_info
+
+    def _debug_log(self, message: str):
+        """Log debug message if debug mode is enabled."""
+        if self.debug:
+            print(message)

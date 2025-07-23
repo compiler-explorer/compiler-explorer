@@ -91,13 +91,13 @@ class SubprocessRunner:
 
     @staticmethod
     def run_with_timeout(
-        cmd: List[str], timeout: int = 10, capture_output: bool = True, text: bool = True
+        cmd: List[str], timeout: Optional[int] = 10, capture_output: bool = True, text: bool = True
     ) -> Optional[subprocess.CompletedProcess]:
         """Run a subprocess command with timeout and error handling.
 
         Args:
             cmd: Command and arguments to execute
-            timeout: Timeout in seconds
+            timeout: Timeout in seconds (None for no timeout)
             capture_output: Whether to capture stdout/stderr
             text: Whether to return text output
 
@@ -105,7 +105,12 @@ class SubprocessRunner:
             CompletedProcess result if successful, None if failed
         """
         try:
-            return subprocess.run(cmd, capture_output=capture_output, text=text, timeout=timeout)
+            # If timeout is None, run without timeout
+            if timeout is None:
+                result = subprocess.run(cmd, capture_output=capture_output, text=text)
+            else:
+                result = subprocess.run(cmd, capture_output=capture_output, text=text, timeout=timeout)
+            return result
         except (subprocess.TimeoutExpired, subprocess.SubprocessError):
             return None
 
