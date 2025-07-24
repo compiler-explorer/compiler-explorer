@@ -24,8 +24,8 @@
 
 import path from 'node:path';
 
+import {createWriteStream} from 'node:fs';
 import fs from 'node:fs/promises';
-import { createWriteStream } from 'node:fs';
 
 import type {
     CompilationResult,
@@ -40,7 +40,6 @@ import * as utils from '../utils.js';
 
 // AMD RGA := AMD's Radeon GPU Analyzer (https://gpuopen.com/rga/)
 export class AMDRGACompiler extends BaseCompiler {
-
     static get key() {
         return 'amd_rga';
     }
@@ -73,7 +72,6 @@ export class AMDRGACompiler extends BaseCompiler {
     }
 
     async execRGA(filepath: string, args: string[], execOptions: ExecutionOptions): Promise<any> {
-        
         // Track the total time spent instead of relying on executeDirect's internal timing facility
         const startTime = process.hrtime.bigint();
 
@@ -109,7 +107,7 @@ export class AMDRGACompiler extends BaseCompiler {
             return rgaResult;
         }
 
-        // RGA doesn't emit the exact file requested. Append all files with the same extension 
+        // RGA doesn't emit the exact file requested. Append all files with the same extension
         // as outputIsaFile into a new file outputIsaFile in outputDir.
         const files = await fs.readdir(outputDir, {encoding: 'utf8'});
         const outputIsaFileExt = path.extname(outputIsaFile);
