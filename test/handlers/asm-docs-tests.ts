@@ -68,7 +68,7 @@ const TEST_MATRIX: Record<PropertyKey, [string, string, string, string][]> = {
             'mov',
             'Copy Register',
             'makes a copy of one register into another',
-            'https://ww1.microchip.com/downloads/en/DeviceDoc/AVR-InstructionSet-Manual-DS40002198.pdf',
+            'https://ww1.microchip.com/downloads/aemDocuments/documents/MCU08/ProductDocuments/ReferenceManuals/AVR-InstructionSet-Manual-DS40002198.pdf',
         ],
     ],
     java: [

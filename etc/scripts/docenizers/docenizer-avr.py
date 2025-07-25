@@ -9,12 +9,15 @@ import sys
 import urllib.request
 
 
-FILE = ("https://ww1.microchip.com/downloads/en/DeviceDoc/"
+FILE = ("https://ww1.microchip.com/downloads/aemDocuments/documents/MCU08/ProductDocuments/ReferenceManuals/"
         "AVR-InstructionSet-Manual-DS40002198.pdf")
 
-section_regex = re.compile(r"^(6\.\d{1,3}?)\s+?(?P<mnemonic>\w+?)\s+?(?:\((?P<mnemonic_2>\w+?)\)\s+?)?[-\u2013]\s+?(?P<name>.+?)\s*?$\s+?\1\.1\s+?Description\s+(?P<description>(?s:.+?))\s+?Operation:", re.MULTILINE)
-header_footer_regex = re.compile(r"\s+?\w+?-page \d{1,3}?\s+?Manual\s+?\u00a9 2021 Microchip Technology Inc.\s+?AVR\u00ae Instruction Set Manual\s+?Instruction Description\s*", re.MULTILINE)
-page_num_regex = re.compile(r"\b\w+?-page (\d{1,3})")
+section_regex = re.compile(r"^(6\.\d{1,3})\s+(?P<mnemonic>\w+)\s*(?:\((?P<mnemonic_2>\w+)\))?\s*[-\u2013]\s*(?P<name>.+?)\s*$\s*\1\.1\s+Description\s+(?P<description>(?s:.+?))\s+Operation:", re.MULTILINE)
+header_footer_regex = re.compile(
+    r"\s*DS40002198[A-Z] - \d{1,3}\s*Migration Guide\s*© \d{4} Microchip Technology Inc\.?(?: and its subsidiaries)?\s*AVR® Instruction Set Manual\s*Instruction Description\s*",
+    re.MULTILINE
+)
+page_num_regex = re.compile(r"\bDS40002198[A-Z] - (\d{1,3})")
 
 
 class Instruction:
@@ -62,14 +65,43 @@ def parse_docs(docs):
             instr = Instruction(match.group("mnemonic"))
             instr.name = match.group("name")
             instr.description = process_description(match.group("description"))
-            instr.page = page_num_regex.search(docs, match.start()).group(1)
+            search_start = max(0, match.start() - 2000)
+            search_text = docs[search_start:match.start()]
+            page_matches = list(page_num_regex.finditer(search_text))
+            if page_matches:
+                instr.page = int(page_matches[-1].group(1)) + 1
+            else:
+                # If page not found backwards, try searching forward a bit
+                search_end = min(len(docs), match.end() + 1000)
+                forward_text = docs[match.end():search_end]
+                page_match = page_num_regex.search(forward_text)
+                if page_match:
+                    # Add 1 to convert from document page number to PDF page number
+                    instr.page = int(page_match.group(1)) + 1
+                else:
+                    print(f"Warning: Could not find page number for {instr.mnemonic}, using default", file=sys.stderr)
+                    instr.page = 3
+            
             #print(40 * "-")
             #print(f"Mnemonic: {instr.mnemonic}\nName: {instr.name}")
             #print(f"Description: {instr.description}")
             #print(instr.description)
             instructions[instr.mnemonic] = instr
         else:
+            # If we already have this instruction, we might want to merge information
             instr = instructions[match.group("mnemonic")]
+            # Update with potentially better description if current one is longer/better
+            new_desc = process_description(match.group("description"))
+            if len(new_desc) > len(instr.description):
+                instr.description = new_desc
+                # Also update the page number to the more recent one
+                search_start = max(0, match.start() - 2000)
+                search_text = docs[search_start:match.start()]
+                page_matches = list(page_num_regex.finditer(search_text))
+                if page_matches:
+                    instr.page = int(page_matches[-1].group(1)) + 1
+        
+        # Handle secondary mnemonic (like STD for ST)
         if (
             match.group("mnemonic_2")
             # The manual lists some instruction set names in the place where we
@@ -88,13 +120,26 @@ def process_description(desc):
     # Remove leftovers from diagrams
     p = r"^(?:(?:\b\w+?\b\s*?){1,2}|.)$\n{2}"
     desc = re.sub(p, "", desc, flags=re.MULTILINE)
+    # Clean up problematic Unicode characters
+    desc = desc.replace('\ufffd', '')  # Remove replacement characters
+    desc = desc.replace('\u00a0', ' ')  # Replace non-breaking spaces with regular spaces
+    desc = desc.replace('\u2013', '-')  # Replace en-dash with regular dash
+    desc = desc.replace('\u2014', '-')  # Replace em-dash with regular dash
+    desc = desc.replace('\u201c', '"')  # Replace left double quote
+    desc = desc.replace('\u201d', '"')  # Replace right double quote
+    desc = desc.replace('\u2018', "'")  # Replace left single quote
+    desc = desc.replace('\u2019', "'")  # Replace right single quote
+    # Remove any remaining high Unicode characters that might cause display issues
+    desc = re.sub(r'[\u0080-\uffff]', '', desc)
+    # Escape double quotes for JavaScript/TypeScript string literals
+    desc = desc.replace('"', '\\"')
     return desc
 
 
 def write_script(filename, instructions):
     log_message(f"writing to {filename}...")
     with open(filename, "w") as script:
-        script.write("import {AssemblyInstructionInfo} from '../base.js';\n")
+        script.write("import type {AssemblyInstructionInfo} from '../../../types/assembly-docs.interfaces.js';\n")
         script.write("\n")
         script.write("export function getAsmOpcode(opcode: string | undefined): AssemblyInstructionInfo | undefined {\n")
         script.write("    if (!opcode) return;\n")
@@ -112,6 +157,7 @@ def write_script(filename, instructions):
             script.write(f"{16 * ' '}\"url\": \"{FILE}#page={inst.page}\",\n")
             script.write(12 * " " + "};\n\n")
         script.write("    }\n}")
+    log_message(f"wrote {len(instructions)} opcodes to asm-docs-avr.ts")
 
 
 def log_message(msg):
