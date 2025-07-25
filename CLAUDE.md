@@ -67,6 +67,20 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
   - This separation is enforced by pre-commit hooks (`npm run check-frontend-imports`)
   - Violations will cause build failures and prevent commits
 
+## Worker Mode Configuration
+- **Compilation Workers**: New feature for offloading compilation tasks to dedicated worker instances
+  - `compilequeue.is_worker=true`: Enables compilation worker mode (similar to execution workers)
+  - `compilequeue.queue_url`: SQS queue URL for compilation requests (both regular and CMake)
+  - `compilequeue.events_url`: WebSocket URL for sending compilation results
+  - `compilequeue.worker_threads=2`: Number of concurrent worker threads
+  - `compilequeue.poll_interval_ms=1000`: Interval between poll attempts after processing or errors (default: 1000ms). Note: SQS long polling means actual wait time is up to 20 seconds when queue is empty
+- **Implementation**: Located in `/lib/compilation/sqs-compilation-queue.ts` with shared parsing utilities in `/lib/compilation/compilation-request-parser.ts`
+- **Queue Architecture**: Uses single AWS SQS FIFO queue for reliable message delivery, messages contain isCMake flag to distinguish compilation types
+- **Result Delivery**: Uses WebSocket-based communication via existing `EventsWsSender` infrastructure
+- **Message Production**: Queue messages are produced by external Lambda functions, not by the main Compiler Explorer server
+- **Shared Parsing**: Common request parsing logic is shared between web handlers and SQS workers for consistency
+- **Remote Compiler Support**: Workers automatically detect and proxy requests to remote compilers using HTTP, maintaining compatibility with existing remote compiler infrastructure
+
 ## Testing Guidelines
 - Use Vitest for unit tests (compatible with Jest syntax)
 - Tests are in the `/test` directory, typically named like the source files they test
