@@ -23,27 +23,32 @@
 // POSSIBILITY OF SUCH DAMAGE.
 
 import _ from 'underscore';
+import {ItemConfig, SerializedLayoutState} from './components.interfaces.js';
+import {toSerializedLayoutState} from './components.js';
 import {localStorage} from './local.js';
 import {Sharing} from './sharing.js';
 
 const maxHistoryEntries = 30;
 export type HistorySource = {dt: number; source: string};
-export type HistoryEntry = {dt: number; sources: EditorSource[]; config: any};
+export type HistoryEntry = {dt: number; sources: EditorSource[]; config: SerializedLayoutState};
 export type EditorSource = {lang: string; source: string};
 
-function extractEditorSources(content: any[]): EditorSource[] {
+function extractEditorSources(content: ItemConfig[]): EditorSource[] {
     const sources: EditorSource[] = [];
     for (const component of content) {
-        if (component.content) {
+        if ('content' in component && component.content) {
             const subsources = extractEditorSources(component.content);
             if (subsources.length > 0) {
                 sources.push(...subsources);
             }
-        } else if (component.componentName === 'codeEditor') {
-            sources.push({
-                lang: component.componentState.lang,
-                source: component.componentState.source,
-            });
+        } else if ('componentName' in component && component.componentName === 'codeEditor') {
+            const state = component.componentState as any; // TODO(#7808): Use proper type guard
+            if (state.lang && state.source) {
+                sources.push({
+                    lang: state.lang,
+                    source: state.source,
+                });
+            }
         }
     }
     return sources;
@@ -72,7 +77,7 @@ function getSimilarSourcesIndex(completeHistory: HistoryEntry[], sourcesToCompar
 }
 
 function push(stringifiedConfig: string) {
-    const config = JSON.parse(stringifiedConfig);
+    const config = JSON.parse(stringifiedConfig) as SerializedLayoutState;
     const sources = extractEditorSources(config.content);
     if (sources.length > 0) {
         const completeHistory = list();
@@ -100,7 +105,11 @@ export function trackHistory(layout: any) {
     let lastState: string | null = null;
     const debouncedPush = _.debounce(push, 500);
     layout.on('stateChanged', () => {
-        const stringifiedConfig = JSON.stringify(Sharing.filterComponentState(layout.toConfig()));
+        const config = layout.toConfig();
+        const filtered = Sharing.filterComponentState(config);
+        // Convert to SerializedLayoutState before stringifying
+        const serialized = toSerializedLayoutState(filtered);
+        const stringifiedConfig = JSON.stringify(serialized);
         if (stringifiedConfig !== lastState) {
             lastState = stringifiedConfig;
             debouncedPush(stringifiedConfig);

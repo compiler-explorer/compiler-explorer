@@ -25,15 +25,29 @@
 import GoldenLayout from 'golden-layout';
 import lzstring from 'lz-string';
 import _ from 'underscore';
+import {CURRENT_LAYOUT_VERSION, GoldenLayoutConfig} from './components.interfaces.js';
 import * as Components from './components.js';
 
 import * as rison from './rison.js';
 
-export function convertOldState(state: any): any {
+// Legacy state format for version migration
+interface LegacyState {
+    compilers: Array<{
+        sourcez?: string;
+        source?: string;
+        options: unknown;
+        compiler: string;
+    }>;
+    filterAsm: {
+        colouriseAsm?: boolean;
+        [key: string]: unknown;
+    };
+}
+
+export function convertOldState(state: LegacyState): GoldenLayoutConfig {
     const sc = state.compilers[0];
     if (!sc) throw new Error('Unable to determine compiler from old state');
-    // TODO: Restrict type once Components has been tsfied
-    const content: any[] = [];
+    const content: unknown[] = [];
     let source;
     if (sc.sourcez) {
         source = lzstring.decompressFromBase64(sc.sourcez);
@@ -45,16 +59,87 @@ export function convertOldState(state: any): any {
         colouriseAsm: state.filterAsm.colouriseAsm,
     };
     const filters = _.clone(state.filterAsm);
-    delete filters.colouriseAsm;
+    if ('colouriseAsm' in filters) {
+        delete filters.colouriseAsm;
+    }
     // TODO(junlarsen): find the missing language field here
     // @ts-expect-error: this is missing the language field, which was never noticed because the import was untyped
     content.push(Components.getEditorWith(1, source, options));
+    // @ts-expect-error: legacy state conversion - filters may not match exact type
     content.push(Components.getCompilerWith(1, filters, sc.options, sc.compiler));
-    return {version: 4, content: [{type: 'row', content: content}]};
+    return {version: CURRENT_LAYOUT_VERSION, content: [{type: 'row', content: content}]} as GoldenLayoutConfig;
 }
 
-export function loadState(state: any): any {
-    if (!state || state.version === undefined) return false;
+/**
+ * Validation function that checks item structure and basic type safety.
+ * Returns an error message string if invalid, or null if valid.
+ */
+function validateItemConfig(item: any, depth = 0): string | null {
+    // Prevent infinite recursion with very deep layouts
+    if (depth > 50) {
+        return 'layout nesting too deep (max 50 levels)';
+    }
+    if (!item || typeof item !== 'object') {
+        return 'must be an object';
+    }
+    if (!item.type) {
+        return "missing 'type' property";
+    }
+
+    if (item.type === 'component') {
+        if (!item.componentName) {
+            return "missing 'componentName' property";
+        }
+        if (typeof item.componentName !== 'string') {
+            return "'componentName' must be a string";
+        }
+        if (!item.componentState) {
+            return "missing 'componentState' property";
+        }
+        if (typeof item.componentState !== 'object') {
+            return "'componentState' must be an object";
+        }
+        // TODO(#7808): Add component-specific state validation
+        // - Validate component names against known components
+        // - Validate component state structure matches expected types
+        // - Validate required properties are present
+        // - Validate property types (e.g. numbers vs strings)
+        return null;
+    }
+    if (item.type === 'row' || item.type === 'column' || item.type === 'stack') {
+        if (!Array.isArray(item.content)) {
+            return "layout items must have a 'content' array";
+        }
+        // Validate nested items
+        for (let i = 0; i < item.content.length; i++) {
+            const nestedError = validateItemConfig(item.content[i], depth + 1);
+            if (nestedError) {
+                return `nested item ${i}: ${nestedError}`;
+            }
+        }
+        return null;
+    }
+
+    return `unknown type '${item.type}'`;
+}
+
+/**
+ * Validates and loads a layout state configuration.
+ * Handles version migration and structural validation for layout configurations.
+ * @param state - The state object to validate (can be any format including legacy)
+ * @param shouldUnminify - Whether to unminify the config (true for URL sources, false for localStorage)
+ * @returns Validated GoldenLayoutConfig ready for use by GoldenLayout
+ * @throws Error if validation fails with detailed error message
+ */
+export function loadState(state: any, shouldUnminify: boolean): GoldenLayoutConfig {
+    if (!state || typeof state !== 'object') {
+        throw new Error('Invalid state: must be an object');
+    }
+    if (state.version === undefined) {
+        throw new Error('Invalid state: missing version information');
+    }
+
+    // Handle version migration
     switch (state.version) {
         case 1:
             state.filterAsm = {};
@@ -67,12 +152,35 @@ export function loadState(state: any): any {
         case 3:
             state = convertOldState(state);
             break; // no fall through
-        case 4:
-            state = GoldenLayout.unminifyConfig(state);
+        case CURRENT_LAYOUT_VERSION:
+            if (shouldUnminify) {
+                state = GoldenLayout.unminifyConfig(state);
+            }
             break;
         default:
             throw new Error("Invalid version '" + state.version + "'");
     }
+
+    // Validate structure after version migration
+    if (!Array.isArray(state.content)) {
+        throw new Error('Configuration content must be an array');
+    }
+
+    // Validate each item in content using the detailed validator
+    for (let i = 0; i < state.content.length; i++) {
+        const item = state.content[i];
+        const error = validateItemConfig(item);
+        if (error) {
+            const itemType = item?.type || 'unknown';
+            const componentName = item?.componentName || '';
+            const context = componentName
+                ? ` (type: '${itemType}', componentName: '${componentName}')`
+                : ` (type: '${itemType}')`;
+            throw new Error(`Invalid item ${i}${context}: ${error}`);
+        }
+    }
+
+    // Return validated config (no unsafe cast needed)
     return state;
 }
 
@@ -80,11 +188,11 @@ export function risonify(obj: rison.JSONValue): string {
     return rison.quote(rison.encode_object(obj));
 }
 
-export function unrisonify(text: string): any {
+export function unrisonify(text: string): unknown {
     return rison.decode_object(decodeURIComponent(text.replace(/\+/g, '%20')));
 }
 
-export function deserialiseState(stateText: string): any {
+export function deserialiseState(stateText: string): GoldenLayoutConfig {
     let state;
     let exception;
     try {
@@ -111,12 +219,13 @@ export function deserialiseState(stateText: string): any {
         }
     }
     if (exception) throw exception;
-    return loadState(state);
+    return loadState(state, true);
 }
 
-export function serialiseState(stateText: any): string {
-    const ctx = GoldenLayout.minifyConfig({content: stateText.content});
-    ctx.version = 4;
+export function serialiseState(config: GoldenLayoutConfig): string {
+    const ctx = GoldenLayout.minifyConfig({content: config.content});
+    // Always assign current version when serializing - we only serialize current states
+    ctx.version = CURRENT_LAYOUT_VERSION;
     const uncompressed = risonify(ctx);
     const compressed = risonify({z: lzstring.compressToBase64(uncompressed)});
     const MinimalSavings = 0.2; // at least this ratio smaller
