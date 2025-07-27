@@ -695,7 +695,7 @@ const definitions: Record<LanguageKey, LanguageDefinition> = {
     pascal: {
         name: 'Pascal',
         monaco: 'pascal',
-        extensions: ['.pas', '.dpr'],
+        extensions: ['.pas', '.dpr', '.inc'],
         alias: [],
         logoFilename: 'pascal.svg', // TODO: Find a better alternative
         logoFilenameDark: 'pascal-dark.svg',
