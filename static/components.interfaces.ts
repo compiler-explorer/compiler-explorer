@@ -45,6 +45,13 @@ import {MonacoPaneState, PaneState} from './panes/pane.interfaces.js';
  * We tried using just string literals, but that led to issues with Typescript type system. We also considered
  * duplicating each string literal as a type too; but ultimately went with the `typeof` approach as the best balance.
  */
+/**
+ * Current version of the serialized layout state format.
+ * CRITICAL: Only increment this when making breaking changes to the layout format.
+ * This must ONLY be used when creating new states or up-converting old states.
+ */
+export const CURRENT_LAYOUT_VERSION = 4 as const;
+
 export const COMPILER_COMPONENT_NAME = 'compiler' as const;
 export const EXECUTOR_COMPONENT_NAME = 'executor' as const;
 export const EDITOR_COMPONENT_NAME = 'codeEditor' as const;
@@ -421,6 +428,25 @@ export type ItemConfig = AnyComponentConfig | LayoutItem;
  */
 export interface GoldenLayoutConfig extends Omit<GoldenLayout.Config, 'content'> {
     content?: ItemConfig[];
+    /**
+     * Tracks whether there's a maximized item in the layout.
+     *
+     * IMPORTANT: Despite the name, this is NOT actually an item ID! It's a marker that works like this:
+     *
+     * 1. When maximizing: GoldenLayout adds the ID '__glMaximised' to the maximized item
+     * 2. When serializing: If any item is maximized, this is set to '__glMaximised'
+     * 3. When restoring: GoldenLayout finds the item with ID '__glMaximised' and maximizes it
+     * 4. When minimizing: The '__glMaximised' ID is removed from the item
+     *
+     * This can cause a bug: if a maximized item is closed without minimizing first, the layout
+     * will have maximisedItemId='__glMaximised' but no item with that ID, causing errors on restore.
+     * See https://github.com/compiler-explorer/compiler-explorer/issues/2056
+     *
+     * The value is always either '__glMaximised' (there is a maximized item) or null (there isn't).
+     * This property is added by GoldenLayout's toConfig() method but is not part of the official
+     * TypeScript interface.
+     */
+    maximisedItemId?: '__glMaximised' | null;
 }
 
 /**
@@ -441,7 +467,6 @@ export function isLayoutItem(item: ItemConfig): item is LayoutItem {
 
 /**
  * Helper type for partial component states during initialization
- * TODO(#7807): Use this for handling partial states during serialization/deserialization
  * TODO(#7808): Use this for graceful handling of incomplete/invalid configurations
  */
 export type PartialComponentState<K extends keyof ComponentStateMap> = Partial<ComponentStateMap[K]>;
@@ -453,8 +478,7 @@ export type PartialComponentState<K extends keyof ComponentStateMap> = Partial<C
  * serialized state that gets stored/shared, which goes through a different
  * processing pipeline than runtime configurations.
  *
- * TODO(#7807): Implement type-safe serialization/deserialization
- * Currently unused - implement for localStorage persistence and URL sharing.
+ * Used for type-safe localStorage persistence, URL sharing, and history tracking.
  */
 export interface SerializedLayoutState {
     version: number;
@@ -462,7 +486,7 @@ export interface SerializedLayoutState {
     settings?: GoldenLayout.Settings;
     dimensions?: GoldenLayout.Dimensions;
     labels?: GoldenLayout.Labels;
-    maximisedItemId?: string | null;
+    maximisedItemId?: '__glMaximised' | null;
 }
 
 /**

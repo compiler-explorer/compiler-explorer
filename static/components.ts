@@ -26,7 +26,6 @@ import GoldenLayout from 'golden-layout';
 
 import {ParseFiltersAndOutputOptions} from '../types/features/filters.interfaces.js';
 import {GccDumpViewState} from './panes/gccdump-view.interfaces.js';
-import {SentryCapture} from './sentry.js';
 
 import {ConfiguredOverrides} from '../types/compilation/compiler-overrides.interfaces.js';
 import {ConfiguredRuntimeTools} from '../types/execution/execution.interfaces.js';
@@ -38,6 +37,7 @@ import {
     CLANGIR_VIEW_COMPONENT_NAME,
     COMPILER_COMPONENT_NAME,
     CONFORMANCE_VIEW_COMPONENT_NAME,
+    CURRENT_LAYOUT_VERSION,
     ComponentConfig,
     ComponentStateMap,
     DEVICE_VIEW_COMPONENT_NAME,
@@ -55,7 +55,6 @@ import {
     HASKELL_STG_VIEW_COMPONENT_NAME,
     IR_VIEW_COMPONENT_NAME,
     ItemConfig,
-    LLVM_OPT_PIPELINE_VIEW_COMPONENT_NAME,
     LayoutItem,
     OPT_PIPELINE_VIEW_COMPONENT_NAME,
     OPT_VIEW_COMPONENT_NAME,
@@ -65,6 +64,7 @@ import {
     RUST_MACRO_EXP_VIEW_COMPONENT_NAME,
     RUST_MIR_VIEW_COMPONENT_NAME,
     STACK_USAGE_VIEW_COMPONENT_NAME,
+    SerializedLayoutState,
     TOOL_COMPONENT_NAME,
     TOOL_INPUT_VIEW_COMPONENT_NAME,
     TREE_COMPONENT_NAME,
@@ -973,117 +973,6 @@ export function createLayoutItem(
 }
 
 /**
- * Helper to convert from GoldenLayout's internal config to our typed config.
- *
- * This function validates that the configuration is valid and all component
- * states match their expected types. It provides helpful error messages
- * for invalid configurations.
- *
- * TODO(#7808): Enable this function for configuration validation
- * Currently unused but ready for implementation - see issue for details.
- *
- * @param config - Untyped config from GoldenLayout, localStorage, or URLs
- * @returns Typed config with validated component states
- * @throws Error if the configuration is invalid (should be caught and handled)
- */
-export function fromGoldenLayoutConfig(config: GoldenLayout.Config): GoldenLayoutConfig {
-    if (!config || typeof config !== 'object') {
-        throw new Error('Invalid configuration: must be an object');
-    }
-
-    // Validate the root structure
-    return {
-        ...config,
-        content: config.content ? validateItemConfigs(config.content) : undefined,
-    };
-}
-
-/**
- * Validates an array of item configurations (recursive)
- */
-function validateItemConfigs(items: any[]): ItemConfig[] {
-    if (!Array.isArray(items)) {
-        throw new Error('Configuration content must be an array');
-    }
-
-    return items.map((item, index) => validateItemConfig(item, index));
-}
-
-/**
- * Validates a single item configuration (component or layout item)
- */
-function validateItemConfig(item: any, index?: number): ItemConfig {
-    const location = index !== undefined ? `item ${index}` : 'item';
-
-    if (!item || typeof item !== 'object') {
-        throw new Error(`Invalid ${location}: must be an object`);
-    }
-
-    if (!item.type) {
-        throw new Error(`Invalid ${location}: missing 'type' property`);
-    }
-
-    if (item.type === 'component') {
-        return validateComponentConfig(item, location);
-    }
-    if (item.type === 'row' || item.type === 'column' || item.type === 'stack') {
-        return validateLayoutItem(item, location);
-    }
-    throw new Error(`Invalid ${location}: unknown type '${item.type}'`);
-}
-
-/**
- * Validates a component configuration
- */
-function validateComponentConfig(config: any, location: string): AnyComponentConfig {
-    if (!config.componentName) {
-        throw new Error(`Invalid ${location}: missing 'componentName' property`);
-    }
-
-    if (typeof config.componentName !== 'string') {
-        throw new Error(`Invalid ${location}: 'componentName' must be a string`);
-    }
-
-    // Validate that the component state matches the expected type for this component
-    if (!validateComponentState(config.componentName, config.componentState)) {
-        throw new Error(
-            `Invalid ${location}: invalid component state for component '${config.componentName}'. ` +
-                `State: ${JSON.stringify(config.componentState, null, 2)}`,
-        );
-    }
-
-    return {
-        type: 'component',
-        componentName: config.componentName,
-        componentState: config.componentState,
-        title: config.title,
-        isClosable: config.isClosable,
-        reorderEnabled: config.reorderEnabled,
-        width: config.width,
-        height: config.height,
-    };
-}
-
-/**
- * Validates a layout item (row, column, stack)
- */
-function validateLayoutItem(item: any, location: string): LayoutItem {
-    if (!item.content || !Array.isArray(item.content)) {
-        throw new Error(`Invalid ${location}: layout items must have a 'content' array`);
-    }
-
-    return {
-        type: item.type as 'row' | 'column' | 'stack',
-        content: validateItemConfigs(item.content),
-        isClosable: item.isClosable,
-        reorderEnabled: item.reorderEnabled,
-        width: item.width,
-        height: item.height,
-        activeItemIndex: item.activeItemIndex,
-    };
-}
-
-/**
  * Helper to convert to GoldenLayout's expected config format.
  * This direction is safe since we're going from typed to untyped.
  */
@@ -1110,80 +999,16 @@ export function createDragSource<K extends keyof ComponentStateMap>(
 }
 
 /**
- * Validation function for component states.
- * This ensures that component states match their expected types.
+ * Converts a GoldenLayoutConfig to SerializedLayoutState for storage.
+ * Always assigns the current version since this creates new serialized state.
  */
-function validateComponentState(componentName: string, state: any): boolean {
-    // Basic validation - state must be an object
-    if (typeof state !== 'object' || state === null) {
-        return false;
-    }
-
-    switch (componentName) {
-        case COMPILER_COMPONENT_NAME:
-            // Compiler states can have various combinations of properties
-            return (
-                (state.lang && state.source !== undefined) ||
-                (state.source !== undefined && state.compiler) ||
-                (state.lang && state.tree !== undefined)
-            );
-
-        case EXECUTOR_COMPONENT_NAME:
-            // Executor states require compilation panel booleans
-            return typeof state.compilationPanelShown === 'boolean' && typeof state.compilerOutShown === 'boolean';
-
-        case EDITOR_COMPONENT_NAME:
-            // Editor states are flexible but must have valid properties
-            return true;
-
-        case TREE_COMPONENT_NAME:
-            // Tree states are flexible but must have valid properties
-            return true;
-
-        case OUTPUT_COMPONENT_NAME:
-            // Output state needs specific numeric properties
-            return (
-                typeof state.tree === 'number' && typeof state.compiler === 'number' && typeof state.editor === 'number'
-            );
-
-        case TOOL_COMPONENT_NAME:
-            // Tool state needs specific properties
-            return (
-                typeof state.tree === 'number' &&
-                typeof state.toolId === 'string' &&
-                typeof state.id === 'number' &&
-                typeof state.editorid === 'number'
-            );
-
-        // View components have diverse state requirements but must be valid objects
-        case TOOL_INPUT_VIEW_COMPONENT_NAME:
-        case DIFF_VIEW_COMPONENT_NAME:
-        case OPT_VIEW_COMPONENT_NAME:
-        case STACK_USAGE_VIEW_COMPONENT_NAME:
-        case FLAGS_VIEW_COMPONENT_NAME:
-        case PP_VIEW_COMPONENT_NAME:
-        case AST_VIEW_COMPONENT_NAME:
-        case GCC_DUMP_VIEW_COMPONENT_NAME:
-        case CFG_VIEW_COMPONENT_NAME:
-        case CONFORMANCE_VIEW_COMPONENT_NAME:
-        case IR_VIEW_COMPONENT_NAME:
-        case CLANGIR_VIEW_COMPONENT_NAME:
-        case OPT_PIPELINE_VIEW_COMPONENT_NAME:
-        case LLVM_OPT_PIPELINE_VIEW_COMPONENT_NAME:
-        case RUST_MIR_VIEW_COMPONENT_NAME:
-        case HASKELL_CORE_VIEW_COMPONENT_NAME:
-        case HASKELL_STG_VIEW_COMPONENT_NAME:
-        case HASKELL_CMM_VIEW_COMPONENT_NAME:
-        case GNAT_DEBUG_TREE_VIEW_COMPONENT_NAME:
-        case GNAT_DEBUG_VIEW_COMPONENT_NAME:
-        case RUST_MACRO_EXP_VIEW_COMPONENT_NAME:
-        case RUST_HIR_VIEW_COMPONENT_NAME:
-        case DEVICE_VIEW_COMPONENT_NAME:
-            return true;
-
-        default:
-            // Unknown component name - this should not happen with proper typing
-            SentryCapture(componentName, `Unknown component name in validateComponentState: ${componentName}`);
-            return false;
-    }
+export function toSerializedLayoutState(config: GoldenLayoutConfig): SerializedLayoutState {
+    return {
+        version: CURRENT_LAYOUT_VERSION,
+        content: config.content || [],
+        settings: config.settings,
+        dimensions: config.dimensions,
+        labels: config.labels,
+        maximisedItemId: config.maximisedItemId || null,
+    };
 }

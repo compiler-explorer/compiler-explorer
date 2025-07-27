@@ -29,6 +29,7 @@ import $ from 'jquery';
 import _ from 'underscore';
 import {unwrap} from './assert.js';
 import * as BootstrapUtils from './bootstrap-utils.js';
+import * as Components from './components.js';
 import {sessionThenLocalStorage} from './local.js';
 import {options} from './options.js';
 import * as url from './url.js';
@@ -138,7 +139,9 @@ export class Sharing {
         });
 
         $(window).on('blur', async () => {
-            sessionThenLocalStorage.set('gl', JSON.stringify(this.layout.toConfig()));
+            const config = this.layout.toConfig();
+            const serialized = Components.toSerializedLayoutState(config);
+            sessionThenLocalStorage.set('gl', JSON.stringify(serialized));
             if (this.settings.keepMultipleTabs) {
                 try {
                     const link = await this.getLinkOfType(LinkType.Full);
