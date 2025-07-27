@@ -23,6 +23,7 @@
 // POSSIBILITY OF SUCH DAMAGE.
 
 export {AdaCompiler} from './ada.js';
+export {AMDRGACompiler} from './amd-rga.js';
 export {AnalysisTool} from './analysis-tool.js';
 export {AssemblyCompiler} from './assembly.js';
 export {AvrGcc6502Compiler} from './avrgcc6502.js';
