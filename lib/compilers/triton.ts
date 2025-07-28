@@ -23,26 +23,23 @@
 // POSSIBILITY OF SUCH DAMAGE.
 
 import * as fs from 'node:fs/promises';
-import type {CompilationInfo, CompilationResult} from '../../types/compilation/compilation.interfaces.js';
-import type {PreliminaryCompilerInfo} from '../../types/compiler.interfaces.js';
-import {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces.js';
-import {BaseCompiler} from '../base-compiler.js';
-import {CompilationEnvironment} from '../compilation-env.js';
-import {resolvePathFromAppRoot} from '../utils.js';
-
 import Path from 'node:path';
-
+import type {CompilationInfo, CompilationResult} from '../../types/compilation/compilation.interfaces.js';
 import type {
     OptPipelineBackendOptions,
     OptPipelineOutput,
 } from '../../types/compilation/opt-pipeline-output.interfaces.js';
+import type {PreliminaryCompilerInfo} from '../../types/compiler.interfaces.js';
+import {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces.js';
+import {BaseCompiler} from '../base-compiler.js';
+import {CompilationEnvironment} from '../compilation-env.js';
+import type {IAsmParser} from '../parsers/asm-parser.interfaces.js';
 import {AmdgpuAsmParser} from '../parsers/asm-parser-amdgpu.js';
 import {MlirAsmParser} from '../parsers/asm-parser-mlir.js';
 import {PTXAsmParser} from '../parsers/asm-parser-ptx.js';
 import {SassAsmParser} from '../parsers/asm-parser-sass.js';
-import type {IAsmParser} from '../parsers/asm-parser.interfaces.js';
 import {MlirPassDumpParser} from '../parsers/mlir-pass-dump-parser.js';
-import {parseOutput} from '../utils.js';
+import {parseOutput, resolvePathFromAppRoot} from '../utils.js';
 import {BaseParser} from './argument-parsers.js';
 
 export class TritonCompiler extends BaseCompiler {
