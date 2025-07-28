@@ -48,6 +48,7 @@ export type RemoteCompilationRequest = {
     lang: string;
     files: any[];
     isCMake?: boolean;
+    queueTimeMs?: number;
 };
 
 export class SqsCompilationQueueBase {
@@ -72,6 +73,7 @@ export class SqsCompilationWorkerMode extends SqsCompilationQueueBase {
                 QueueUrl: url,
                 MaxNumberOfMessages: 1,
                 WaitTimeSeconds: 20, // Long polling - wait up to 20 seconds for a message
+                MessageSystemAttributeNames: ['SentTimestamp'],
             });
         } catch (e) {
             logger.error(`Error retrieving compilation message from queue with URL: ${url}`);
@@ -114,6 +116,13 @@ export class SqsCompilationWorkerMode extends SqsCompilationQueueBase {
                         } else {
                             parsed.options = [];
                         }
+                    }
+
+                    // Calculate queue time from SentTimestamp
+                    const sentTimestamp = queued_message.Attributes?.SentTimestamp;
+                    if (sentTimestamp) {
+                        const queueTimeMs = Date.now() - Number.parseInt(sentTimestamp, 10);
+                        parsed.queueTimeMs = queueTimeMs;
                     }
 
                     return parsed as RemoteCompilationRequest;
@@ -242,10 +251,15 @@ async function executeRemoteCompilation(
                 inputFilename: '',
                 asm: [],
                 tools: [],
+                queueTime: msg.queueTimeMs,
             };
         }
 
         const result = await response.json();
+        // Add queue time to successful remote result
+        if (msg.queueTimeMs !== undefined) {
+            result.queueTime = msg.queueTimeMs;
+        }
         return result as CompilationResult;
     } catch (error: any) {
         if (error.name === 'AbortError') {
@@ -258,6 +272,7 @@ async function executeRemoteCompilation(
                 inputFilename: '',
                 asm: [],
                 tools: [],
+                queueTime: msg.queueTimeMs,
             };
         }
 
@@ -274,6 +289,7 @@ async function executeRemoteCompilation(
             inputFilename: '',
             asm: [],
             tools: [],
+            queueTime: msg.queueTimeMs,
         };
     }
 }
@@ -313,6 +329,7 @@ async function doOneCompilation(queue: SqsCompilationWorkerMode, compilationEnvi
                         inputFilename: '',
                         asm: [],
                         tools: [],
+                        queueTime: msg.queueTimeMs,
                     };
                 }
             } else {
@@ -334,6 +351,11 @@ async function doOneCompilation(queue: SqsCompilationWorkerMode, compilationEnvi
                 }
             }
 
+            // Add queue time to result if available
+            if (msg.queueTimeMs !== undefined) {
+                result.queueTime = msg.queueTimeMs;
+            }
+
             await sendCompilationResultViaWebsocket(compilationEnvironment, msg.guid, result);
 
             const endTime = Date.now();
@@ -352,7 +374,7 @@ async function doOneCompilation(queue: SqsCompilationWorkerMode, compilationEnvi
                 errorMessage = e;
             }
 
-            await sendCompilationResultViaWebsocket(compilationEnvironment, msg.guid, {
+            const errorResult: CompilationResult = {
                 code: -1,
                 stderr: [{text: errorMessage}],
                 stdout: [],
@@ -361,7 +383,14 @@ async function doOneCompilation(queue: SqsCompilationWorkerMode, compilationEnvi
                 inputFilename: '',
                 asm: [],
                 tools: [],
-            });
+            };
+
+            // Add queue time to error result if available
+            if (msg.queueTimeMs !== undefined) {
+                errorResult.queueTime = msg.queueTimeMs;
+            }
+
+            await sendCompilationResultViaWebsocket(compilationEnvironment, msg.guid, errorResult);
         }
     }
 }
