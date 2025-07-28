@@ -36,12 +36,13 @@ export class LLVMMcaTool extends BaseTool {
         return 'llvm-mca-tool';
     }
 
-    rewriteAsm(asm: string) {
+    public rewriteAsm(asm: string) {
         return asm
             .replaceAll(/.hword\s/gim, '.short ')
             .replaceAll(/offset flat:/gim, '')
             .replaceAll(/ptr\s%fs/gim, 'PTR fs')
-            .replaceAll(/^\s*\.(fnstart|eabi_attribute|fpu).*/gim, ''); // https://github.com/compiler-explorer/compiler-explorer/issues/1270
+            .replaceAll(/^\s*\.(fnstart|eabi_attribute|fpu).*/gim, '') // https://github.com/compiler-explorer/compiler-explorer/issues/1270
+            .replaceAll(/^\s*\.(loc|file).*/gim, ''); // Remove debug directives that can cause "unassigned file number" errors
     }
 
     writeAsmFile(data: string, destination: string) {
