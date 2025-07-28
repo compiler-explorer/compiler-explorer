@@ -22,24 +22,22 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
+import fs from 'node:fs';
 import https from 'node:https';
 import path from 'node:path';
-
-import fs from 'node:fs';
 import semverParser from 'semver';
 import _ from 'underscore';
 import urlJoin from 'url-join';
 
 import {splitArguments} from '../shared/common-utils.js';
+import {getRemoteId} from '../shared/remote-utils.js';
 import {CompilerInfo, Remote} from '../types/compiler.interfaces.js';
 import type {LanguageKey} from '../types/languages.interfaces.js';
 import type {Source} from '../types/source.interfaces.js';
 import type {ToolTypeKey} from '../types/tool.interfaces.js';
 import {AppArguments} from './app.interfaces.js';
-import {ClientOptionsSource} from './options-handler.interfaces.js';
-
-import {getRemoteId} from '../shared/remote-utils.js';
 import {logger} from './logger.js';
+import {ClientOptionsSource} from './options-handler.interfaces.js';
 import type {PropertyGetter, PropertyValue} from './properties.interfaces.js';
 import {CompilerProps} from './properties.js';
 import {BaseTool, getToolTypeByKey} from './tooling/index.js';

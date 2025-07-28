@@ -58,6 +58,14 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 - Comments should provide additional context or explain "why" something is done, not just restate "what" is being done.
 - Only add function header comments when they provide meaningful information beyond what the function name and signature convey.
 - Use British English spellings for things like "initialise" and "colour", but only in new code. It's a preference not a hard requirement
+- Use modern Typescript features like optional chaining when updating existing code or adding new code
+
+## Architecture Guidelines
+- **Frontend/Backend Separation**: Frontend code (`static/`) MUST NOT import from backend code (`lib/`)
+  - Frontend should use API calls to communicate with backend
+  - Shared types should be imported from `types/` directory instead
+  - This separation is enforced by pre-commit hooks (`npm run check-frontend-imports`)
+  - Violations will cause build failures and prevent commits
 
 ## Testing Guidelines
 - Use Vitest for unit tests (compatible with Jest syntax)
@@ -75,6 +83,13 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
   - Skip tests with `if (process.platform === 'win32') return;`
   - Write platform-specific assertions
   - Use path-agnostic checks
+
+### Test Execution with Expensive Test Skipping
+- The `SKIP_EXPENSIVE_TESTS=true` environment variable skips expensive tests (like filter tests)
+- Pre-commit hooks use `vitest related` to run only tests related to changed files
+- Use `npm run test-min` to run tests with expensive tests skipped
+- Use `npm run test` to run all tests including expensive ones
+- To mark tests as expensive, use: `describe.skipIf(process.env.SKIP_EXPENSIVE_TESTS === 'true')('Test suite', () => {...})`
 
 ## Compiler Testing Specifics
 - Mock filesystem operations when testing file I/O

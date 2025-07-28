@@ -39,7 +39,6 @@ import {BaseCompiler} from '../base-compiler.js';
 import type {BuildEnvDownloadInfo} from '../buildenvsetup/buildenv.interfaces.js';
 import {CompilationEnvironment} from '../compilation-env.js';
 import {changeExtension, parseRustOutput} from '../utils.js';
-
 import {RustParser} from './argument-parsers.js';
 
 export class RustCompiler extends BaseCompiler {
@@ -251,7 +250,7 @@ export class RustCompiler extends BaseCompiler {
         return opts;
     }
 
-    override getOptYamlPath(dirPath: string, outputFilebase: string): string {
+    override getOptFilePath(dirPath: string, outputFilebase: string): string {
         // Find a file in dirPath that ends with codegen.opt.yaml, and return it
         // A bit of a hack, but it works for now
         const files = readdirSync(dirPath);

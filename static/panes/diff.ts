@@ -22,15 +22,14 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
+import {Container} from 'golden-layout';
 import $ from 'jquery';
 import * as monaco from 'monaco-editor';
 import TomSelect from 'tom-select';
-
-import {Container} from 'golden-layout';
 import {CompilationResult} from '../../types/compilation/compilation.interfaces.js';
 import {CompilerInfo} from '../../types/compiler.interfaces.js';
+import {ResultLine} from '../../types/resultline/resultline.interfaces.js';
 import {Hub} from '../hub.js';
-import {ResultLine} from '../resultline/resultline.interfaces.js';
 import {DiffState, DiffType} from './diff.interfaces.js';
 import {MonacoPaneState} from './pane.interfaces.js';
 import {MonacoPane} from './pane.js';
@@ -91,7 +90,15 @@ class DiffStateObject {
 
     update(id: number | string, compiler: CompilerInfo, result: CompilationResult) {
         if (this.id !== id) return false;
-        this.compiler!.compiler = compiler;
+
+        // Handle the case where compiler hasn't been initialized yet
+        // In a race condition, we might receive results before the compiler is registered
+        if (!this.compiler) {
+            // Ignore the update - the result will be requested again when the compiler is registered
+            return false;
+        }
+
+        this.compiler.compiler = compiler;
         this.result = result;
         this.refresh();
 
@@ -103,7 +110,11 @@ class DiffStateObject {
         if (this.result) {
             switch (this.difftype) {
                 case DiffType.ASM:
-                    output = this.result.asm ? (this.result.asm as ResultLine[]) : [];
+                    output = this.result.asm
+                        ? (this.result.asm as ResultLine[])
+                        : this.result.result?.asm
+                          ? (this.result.result?.asm as ResultLine[])
+                          : [];
                     break;
                 case DiffType.CompilerStdOut:
                     output = this.result.stdout;

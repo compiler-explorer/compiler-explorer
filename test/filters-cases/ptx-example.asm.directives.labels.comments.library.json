@@ -1,0 +1,146 @@
+{
+  "asm": [
+    {
+      "labels": [],
+      "source": null,
+      "text": ".global .align 1 .b8 $str[13] = {104, 101, 108, 108, 111, 32, 119, 111, 114, 108, 100, 10};"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".visible .entry _Z6kernelv()"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "{"
+    },
+    {
+      "labels": [],
+      "source": {
+        "column": 5,
+        "file": "example.cu",
+        "line": 4,
+        "mainsource": true
+      },
+      "text": "\tmov.u64 \t%rd1, $str;"
+    },
+    {
+      "labels": [],
+      "source": {
+        "column": 5,
+        "file": "example.cu",
+        "line": 4,
+        "mainsource": true
+      },
+      "text": "\tcvta.global.u64 \t%rd2, %rd1;"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "\t{"
+    },
+    {
+      "labels": [],
+      "source": {
+        "column": 5,
+        "file": "example.cu",
+        "line": 4,
+        "mainsource": true
+      },
+      "text": "\t\tst.param.b64 \t[param0+0], %rd2;"
+    },
+    {
+      "labels": [],
+      "source": {
+        "column": 5,
+        "file": "example.cu",
+        "line": 4,
+        "mainsource": true
+      },
+      "text": "\t\tst.param.b64 \t[param1+0], 0;"
+    },
+    {
+      "labels": [],
+      "source": {
+        "column": 5,
+        "file": "example.cu",
+        "line": 4,
+        "mainsource": true
+      },
+      "text": "\t\tcall.uni (retval0),"
+    },
+    {
+      "labels": [],
+      "source": {
+        "column": 5,
+        "file": "example.cu",
+        "line": 4,
+        "mainsource": true
+      },
+      "text": "\t\tvprintf,"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "\t\t("
+    },
+    {
+      "labels": [],
+      "source": {
+        "column": 5,
+        "file": "example.cu",
+        "line": 4,
+        "mainsource": true
+      },
+      "text": "\t\tparam0,"
+    },
+    {
+      "labels": [],
+      "source": {
+        "column": 5,
+        "file": "example.cu",
+        "line": 4,
+        "mainsource": true
+      },
+      "text": "\t\tparam1"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "\t\t);"
+    },
+    {
+      "labels": [],
+      "source": {
+        "column": 5,
+        "file": "example.cu",
+        "line": 4,
+        "mainsource": true
+      },
+      "text": "\t\tld.param.b32 \t%r1, [retval0+0];"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "\t}"
+    },
+    {
+      "labels": [],
+      "source": {
+        "column": 1,
+        "file": "example.cu",
+        "line": 5,
+        "mainsource": true
+      },
+      "text": "\tret;"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "}"
+    }
+  ],
+  "labelDefinitions": {},
+  "languageId": "ptx"
+}

@@ -22,13 +22,13 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import path from 'node:path';
-
 import fs from 'node:fs/promises';
+import os from 'node:os';
+import path from 'node:path';
 
 import * as PromClient from 'prom-client';
 import _ from 'underscore';
-
+import {parseAllDocuments} from 'yaml';
 import {splitArguments, unique} from '../shared/common-utils.js';
 import {OptRemark} from '../static/panes/opt-view.interfaces.js';
 import {PPOptions} from '../static/panes/pp-view.interfaces.js';
@@ -39,6 +39,8 @@ import {
     BuildResult,
     BuildStep,
     BypassCache,
+    bypassCompilationCache,
+    bypassExecutionCache,
     CacheKey,
     CmakeCacheKey,
     CompilationCacheKey,
@@ -50,8 +52,6 @@ import {
     FiledataPair,
     GccDumpOptions,
     LibsAndOptions,
-    bypassCompilationCache,
-    bypassExecutionCache,
 } from '../types/compilation/compilation.interfaces.js';
 import {
     CompilerOverrideOption,
@@ -77,9 +77,9 @@ import type {Language} from '../types/languages.interfaces.js';
 import type {SelectedLibraryVersion} from '../types/libraries/libraries.interfaces.js';
 import type {ResultLine} from '../types/resultline/resultline.interfaces.js';
 import {type ToolResult, type ToolTypeKey} from '../types/tool.interfaces.js';
-
 import {moveArtifactsIntoResult} from './artifact-utils.js';
 import {assert, unwrap} from './assert.js';
+import {copyCopperSpicePlugins} from './binaries/copperspice-utils.js';
 import type {BuildEnvDownloadInfo} from './buildenvsetup/buildenv.interfaces.js';
 import {BuildEnvSetupBase, getBuildEnvTypeByKey} from './buildenvsetup/index.js';
 import {BaseCache} from './cache/base.js';
@@ -89,8 +89,8 @@ import {CompilerArguments} from './compiler-arguments.js';
 import {
     BaseParser,
     ClangCParser,
-    ClangParser,
     ClangirParser,
+    ClangParser,
     GCCCParser,
     GCCParser,
     ICCParser,
@@ -111,7 +111,6 @@ import {InstructionSets} from './instructionsets.js';
 import {languages} from './languages.js';
 import {LlvmAstParser} from './llvm-ast.js';
 import {LlvmIrParser} from './llvm-ir.js';
-import {processRawOptRemarks} from './llvm-opt-transformer.js';
 import {logger} from './logger.js';
 import {getObjdumperTypeByKey} from './objdumper/index.js';
 import {ClientOptionsType, OptionsHandlerLibrary, VersionInfo} from './options-handler.js';
@@ -122,7 +121,6 @@ import {LlvmPassDumpParser} from './parsers/llvm-pass-dump-parser.js';
 import type {PropertyGetter} from './properties.interfaces.js';
 import {HeaptrackWrapper} from './runtime-tools/heaptrack-wrapper.js';
 import {LibSegFaultHelper} from './runtime-tools/libsegfault-helper.js';
-import {SentryCapture} from './sentry.js';
 import * as StackUsage from './stack-usage-transformer.js';
 import * as temp from './temp.js';
 import {
@@ -140,7 +138,6 @@ import {
 } from './toolchain-utils.js';
 import type {ITool} from './tooling/base-tool.interface.js';
 import * as utils from './utils.js';
-import {resultLinesToText} from './utils.js';
 
 const compilationTimeHistogram = new PromClient.Histogram({
     name: 'ce_base_compiler_compilation_duration_seconds',
@@ -1420,7 +1417,7 @@ export class BaseCompiler {
         }
 
         if (produceCfg) {
-            result.cfg = cfg.generateStructure(
+            result.cfg = await cfg.generateStructure(
                 this.compiler,
                 ir.asm.map(line => ({text: line.text})),
                 true,
@@ -1511,7 +1508,7 @@ export class BaseCompiler {
 
         if (output.code) {
             return {
-                error: `Invocation failed: ${resultLinesToText(output.stderr)}${resultLinesToText(output.stdout)}}`,
+                error: `Invocation failed: ${utils.resultLinesToText(output.stderr)}${utils.resultLinesToText(output.stdout)}}`,
                 results: {},
                 compileTime: output.execTime || compileEnd - compileStart,
             };
@@ -1809,14 +1806,15 @@ export class BaseCompiler {
         asmResult: CompilationResult,
         outputFilename: string,
         filters: ParseFiltersAndOutputOptions,
+        produceOptRemarks = false,
     ) {
         try {
             const stat = await fs.stat(outputFilename);
             asmResult.asmSize = stat.size;
-        } catch (e) {
+        } catch {
             // Ignore errors
         }
-        return await this.postProcess(asmResult, outputFilename, filters);
+        return await this.postProcess(asmResult, outputFilename, filters, produceOptRemarks);
     }
 
     runToolsOfType(tools: ActiveTool[], type: ToolTypeKey, compilationInfo: CompilationInfo): Promise<ToolResult>[] {
@@ -1970,6 +1968,11 @@ export class BaseCompiler {
     }
 
     async afterBuild(key: CacheKey, dirPath: string, buildResult: BuildResult): Promise<BuildResult> {
+        if (os.platform() === 'linux' && buildResult.code === 0 && buildResult.executableFilename) {
+            const libraryPaths = this.getSharedLibraryPaths(key.libraries, dirPath);
+            await copyCopperSpicePlugins(dirPath, buildResult.executableFilename, key.libraries, libraryPaths);
+        }
+
         return buildResult;
     }
 
@@ -2357,7 +2360,7 @@ export class BaseCompiler {
         }
     }
 
-    getOptYamlPath(dirPath: string, outputFilebase: string): string {
+    getOptFilePath(dirPath: string, outputFilebase: string): string {
         return path.join(dirPath, `${outputFilebase}.opt.yaml`);
     }
 
@@ -2494,8 +2497,9 @@ export class BaseCompiler {
         }
 
         asmResult.tools = toolsResult;
+        this;
         if (this.compiler.supportsOptOutput && backendOptions.produceOptInfo) {
-            const optPath = this.getOptYamlPath(dirPath, this.outputFilebase);
+            const optPath = this.getOptFilePath(dirPath, this.outputFilebase);
             if (await utils.fileExists(optPath)) {
                 asmResult.optPath = optPath;
             }
@@ -2527,7 +2531,7 @@ export class BaseCompiler {
             return [{...asmResult, asm: '<Compilation failed>'}, [], []];
         }
 
-        return this.checkOutputFileAndDoPostProcess(asmResult, outputFilename, filters);
+        return this.checkOutputFileAndDoPostProcess(asmResult, outputFilename, filters, backendOptions.produceOptInfo);
     }
 
     doTempfolderCleanup(buildResult: BuildResult | CompilationResult) {
@@ -3127,7 +3131,7 @@ export class BaseCompiler {
                     this.compiler.instructionSet === 'llvm' ||
                     (options && isOutputLikelyLllvmIr(options)) ||
                     this.llvmIr.isLlvmIr(result.asm);
-                result.cfg = cfg.generateStructure(this.compiler, result.asm, isLlvmIr);
+                result.cfg = await cfg.generateStructure(this.compiler, result.asm, isLlvmIr, result);
             }
         }
 
@@ -3199,78 +3203,62 @@ export class BaseCompiler {
         return await demangler.process(result);
     }
 
-    processGccOptInfo(stderr: ResultLine[], compileFileName: string): {remarks: OptRemark[]; newStdErr: ResultLine[]} {
-        const remarks: OptRemark[] = [];
-        const nonRemarkStderr: ResultLine[] = [];
+    // LLVM opt-remark yaml processing is used by at least clang, flang, rustc and ldcc.
+    processRawOptRemarks(buffer: string, compileFileName = ''): OptRemark[] {
+        const output: OptRemark[] = [];
+        const remarksSet: Set<string> = new Set<string>();
+        const remarks: any = parseAllDocuments(buffer);
 
-        // example stderr lines:
-        // <source>:3:20: optimized: loop vectorized using 8 byte vectors
-        // <source>: 2: 6: note: vectorized 1 loops in function.
-        // <source>:11:13: missed: statement clobbers memory: somefunc (&i);
-        const remarkRegex = /^(.*?):\s*(\d+):\s*(\d+): (.*?): (.*)$/;
+        const displayOptInfo = (optInfo: OptRemark) => {
+            let displayString = optInfo.Args.reduce((acc, x) => {
+                let inc = '';
+                for (const [key, value] of Object.entries(x)) {
+                    if (key === 'DebugLoc') {
+                        if (value['Line'] !== 0) {
+                            inc += ' (' + value['Line'] + ':' + value['Column'] + ')';
+                        }
+                    } else {
+                        inc += value;
+                    }
+                }
+                return acc + inc;
+            }, '');
 
-        const mapOptType = (type: string, line: ResultLine): 'Missed' | 'Passed' | 'Analysis' => {
-            if (type === 'missed') return 'Missed';
-            if (type === 'optimized') return 'Passed';
-            if (type === 'note') return 'Analysis';
-
-            // Did we miss any types?
-            SentryCapture(line, `Unexpected opt type: ${type}`);
-            return 'Analysis';
+            displayString = displayString.replaceAll('\n', ' ').replaceAll('\r', ' ');
+            return displayString;
         };
 
-        for (const line of stderr) {
-            const match = line.text.match(remarkRegex);
-            if (match) {
-                const [_, file, lineNum, colNum, type, message] = match;
-                if (!file || (file !== '<source>' && !file.includes(compileFileName))) continue;
-                if (type === 'warning' || type === 'error') {
-                    nonRemarkStderr.push(line);
-                    continue;
-                }
+        for (const doc of remarks) {
+            if (doc.errors !== undefined && doc.errors.length > 0) {
+                logger.warn('YAMLParseError: ' + JSON.stringify(doc.errors[0]));
+                continue;
+            }
 
-                // convert to llvm-emitted OptRemark format, just because it was here first
-                remarks.push({
-                    DebugLoc: {
-                        File: file,
-                        // Could use line.tag for these too:
-                        Line: Number.parseInt(lineNum, 10),
-                        Column: Number.parseInt(colNum, 10),
-                    },
-                    optType: mapOptType(type, line),
-                    displayString: message,
-                    // TODO: make these optional?
-                    Function: '',
-                    Pass: '',
-                    Name: '',
-                    Args: [],
-                });
-            } else {
-                nonRemarkStderr.push(line);
+            const opt = doc.toJS();
+            if (!opt.DebugLoc || !opt.DebugLoc.File || !opt.DebugLoc.File.includes(compileFileName)) continue;
+
+            const strOpt = JSON.stringify(opt);
+            if (!remarksSet.has(strOpt)) {
+                remarksSet.add(strOpt);
+                opt.optType = doc.contents.tag.substring(1); // remove leading '!'
+                opt.displayString = displayOptInfo(opt);
+                output.push(opt as OptRemark);
             }
         }
-        // We omit remark lines from stderr to avoid it causing red squigglies in the source pane
-        return {remarks: remarks, newStdErr: nonRemarkStderr};
+
+        return output;
     }
 
-    async processOptOutput(compilationRes: CompilationResult) {
+    async processOptOutput(compilationRes: CompilationResult): Promise<OptRemark[]> {
         // The distinction between clang and gcc opt remarks is a bit ad-hoc. A cleaner way might have been
         // to override processOptOutput in ClangCompiler and GCCCompiler, but that would have required having
         // all llvm-based compilers inherit ClangCompiler and all gcc-based ones inherit GCCCompiler.
         // Might be a good idea to refactor this some day.
 
-        let remarks: OptRemark[] = [];
-        if (this.compiler.optArg && this.compiler.optArg === '-fopt-info-all') {
-            // gcc-like
-            ({remarks, newStdErr: compilationRes.stderr} = this.processGccOptInfo(
-                compilationRes.stderr,
-                this.compileFilename,
-            ));
-        } else if (compilationRes.optPath) {
-            // clang-like
-            const optRemarksRaw = await fs.readFile(compilationRes.optPath, 'utf8');
-            remarks = processRawOptRemarks(optRemarksRaw, this.compileFilename);
-        }
+        if (!compilationRes.optPath) return [];
+
+        const optRemarksRaw = await fs.readFile(compilationRes.optPath, 'utf8');
+        const remarks = this.processRawOptRemarks(optRemarksRaw, this.compileFilename);
 
         if (remarks.length > 0 && this.compiler.demangler) {
             const result = JSON.stringify(remarks, null, 4);
@@ -3470,10 +3458,15 @@ but nothing was dumped. Possible causes are:
         return source;
     }
 
-    async postProcess(result: CompilationResult, outputFilename: string, filters: ParseFiltersAndOutputOptions) {
+    async postProcess(
+        result: CompilationResult,
+        outputFilename: string,
+        filters: ParseFiltersAndOutputOptions,
+        produceOptRemarks = false,
+    ) {
         const postProcess = _.compact(this.compiler.postProcess);
         const maxSize = this.env.ceProps('max-asm-size', 64 * 1024 * 1024);
-        const optPromise = this.processOptOutput(result);
+        const optPromise = produceOptRemarks ? this.processOptOutput(result) : Promise.resolve([] as OptRemark[]);
         const stackUsagePromise = result.stackUsagePath
             ? this.processStackUsageOutput(result.stackUsagePath)
             : ([] as StackUsage.StackUsageInfo[]);

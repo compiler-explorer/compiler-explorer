@@ -172,7 +172,7 @@ export class SonarTool extends BaseTool {
                     title: 'reproducer',
                 };
             }
-        } catch (err) {
+        } catch {
             output = utils.splitLines(lines).map(l => ({text: l}));
         }
         return output;

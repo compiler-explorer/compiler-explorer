@@ -39,7 +39,7 @@ describe('Individual pane testing', () => {
 
     afterEach(() => {
         // Ensure no output in console
-        return cy.window().then(win => {
+        return cy.window().then(_win => {
             assertNoConsoleOutput();
         });
     });
@@ -104,7 +104,7 @@ describe('Known good state test', () => {
     });
 
     afterEach(() => {
-        return cy.window().then(win => {
+        return cy.window().then(_win => {
             assertNoConsoleOutput();
         });
     });

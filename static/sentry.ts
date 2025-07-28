@@ -22,13 +22,10 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import {parse} from '../shared/stacktrace.js';
-
-import {options} from './options.js';
-
 import * as Sentry from '@sentry/browser';
-
 import GoldenLayout from 'golden-layout';
+import {parse} from '../shared/stacktrace.js';
+import {options} from './options.js';
 import {SiteSettings} from './settings.js';
 import {serialiseState} from './url.js';
 
@@ -65,16 +62,57 @@ export function SetupSentry() {
             release: options.release,
             environment: options.sentryEnvironment,
             ignoreErrors: [
+                // NOTE: Monaco Editor patterns may not work reliably due to code minification
+                // Source mapping happens AFTER beforeSend/ignoreErrors processing
                 /this.error\(new CancellationError\(\)/,
                 /new StandardMouseEvent\(monaco-editor/,
                 /Object Not Found Matching Id:2/,
-                /i is null _doHitTestWithCaretPositionFromPoint/,
                 /Illegal value for lineNumber/,
                 'SlowRequest',
+                // Monaco Editor clipboard cancellation errors
+                'Canceled',
             ],
+            beforeSend(event, hint) {
+                // Filter Monaco Editor errors
+                //
+                // IMPORTANT: Frame-based filtering doesn't work reliably!
+                // In beforeSend hooks, frame.filename contains minified bundle paths like:
+                // "https://static.ce-cdn.net/vendor.v59.be68c0bf31258854d1b2.js"
+                //
+                // Source mapping happens AFTER beforeSend processing, which is why the
+                // final Sentry UI shows readable paths like:
+                // "./node_modules/monaco-editor/esm/vs/platform/clipboard/browser/clipboardService.js"
+                //
+                // For reliable filtering, use:
+                // 1. ignoreErrors patterns (processed before beforeSend)
+                // 2. Error message content (event.exception.values[0].value)
+                // 3. Error type (event.exception.values[0].type)
+                //
+                // DO NOT rely on frame.filename, frame.module, or frame.function for Monaco errors!
+
+                if (event.exception?.values?.[0]) {
+                    // Filter hit testing errors
+                    // See: https://github.com/microsoft/monaco-editor/issues/4527
+                    // Uses error message content since frame data is minified
+                    if (event.exception.values[0].value?.includes('_doHitTestWithCaretPositionFromPoint')) {
+                        return null; // Don't send to Sentry
+                    }
+                }
+                return event;
+            },
         });
         window.addEventListener('unhandledrejection', event => {
-            SentryCapture(event.reason, 'Unhandled Promise Rejection');
+            // Convert non-Error rejection reasons to Error objects
+            let reason = event.reason;
+            if (!(reason instanceof Error)) {
+                const errorMessage =
+                    typeof reason === 'string' ? reason : `Non-Error rejection: ${JSON.stringify(reason)}`;
+                reason = new Error(errorMessage);
+
+                // Preserve original reason for debugging
+                (reason as any).originalReason = event.reason;
+            }
+            SentryCapture(reason, 'Unhandled Promise Rejection');
         });
     }
 }

@@ -22,10 +22,9 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
+import fs from 'node:fs/promises';
 import path from 'node:path';
 import process from 'node:process';
-
-import fs from 'node:fs/promises';
 import * as Sentry from '@sentry/node';
 import _ from 'underscore';
 
@@ -182,7 +181,7 @@ export class GCCParser extends BaseParser {
             compiler.compiler.supportsVerboseAsm = true;
         }
         if (this.hasSupport(options, '-fopt-info')) {
-            compiler.compiler.optArg = '-fopt-info-all';
+            compiler.compiler.optArg = '-fopt-info-all=all.opt';
             compiler.compiler.supportsOptOutput = true;
         }
         // This check is not infallible, but takes care of Rust and Swift being picked up :)
@@ -871,9 +870,9 @@ export class RustParser extends BaseParser {
         let previousOption: false | string = false;
         const options: Record<string, Argument> = {};
 
-        const doubleOptionFinder = /^\s{4}(-\w, --\w*\s?[\w:=[\]]*)\s*(.*)/i;
-        const singleOptionFinder = /^\s{8}(--[\w-]*\s?[\w:=[\]|-]*)\s*(.*)/i;
-        const singleComplexOptionFinder = /^\s{4}(-\w*\s?[\w:=[\]]*)\s*(.*)/i;
+        const doubleOptionFinder = /^\s{4}(-\w, --\w*\s?[\w:=[\]<>]*)\s*(.*)/i;
+        const singleOptionFinder = /^\s{8}(--[\w-]*\s?[\w:=[\]|<>-]*)\s*(.*)/i;
+        const singleComplexOptionFinder = /^\s{4}(-\w*\s?[\w:=[\]<>]*)\s*(.*)/i;
 
         utils.eachLine(stdout, line => {
             let description = '';

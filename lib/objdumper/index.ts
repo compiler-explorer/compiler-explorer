@@ -26,7 +26,7 @@ import {makeKeyedTypeGetter} from '../keyed-type.js';
 
 import * as all from './_all.js';
 
-export {BaseObjdumper} from './base.js';
 export * from './_all.js';
+export {BaseObjdumper} from './base.js';
 
 export const getObjdumperTypeByKey = makeKeyedTypeGetter('objdumper', all);

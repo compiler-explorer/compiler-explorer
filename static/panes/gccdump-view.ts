@@ -23,25 +23,20 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import $ from 'jquery';
-import _ from 'underscore';
-
 import {Container} from 'golden-layout';
-import {Hub} from '../hub.js';
-
-import TomSelect from 'tom-select';
-import {Toggles} from '../widgets/toggles.js';
-
+import $ from 'jquery';
 import * as monaco from 'monaco-editor';
+import TomSelect from 'tom-select';
+import _ from 'underscore';
+import {CompilationResult} from '../../types/compilation/compilation.interfaces.js';
+import {CompilerInfo} from '../../types/compiler.interfaces.js';
+import {assert, unwrap} from '../assert.js';
+import {Hub} from '../hub.js';
 import * as monacoConfig from '../monaco-config.js';
+import {Toggles} from '../widgets/toggles.js';
+import {GccDumpFiltersState, GccDumpViewSelectedPass, GccDumpViewState} from './gccdump-view.interfaces.js';
 import {MonacoPaneState, PaneState} from './pane.interfaces.js';
 import {MonacoPane} from './pane.js';
-
-import {GccDumpFiltersState, GccDumpViewSelectedPass, GccDumpViewState} from './gccdump-view.interfaces.js';
-
-import {assert, unwrap} from '../assert.js';
-import {CompilationResult} from '../compilation/compilation.interfaces.js';
-import {CompilerInfo} from '../compiler.interfaces.js';
 
 export class GccDump extends MonacoPane<monaco.editor.IStandaloneCodeEditor, GccDumpViewState> {
     selectize: TomSelect;
@@ -234,7 +229,8 @@ export class GccDump extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Gcc
             const activeOption = Object.entries(this.selectize.options).find(
                 op => op[1].filename_suffix === this.selectedPass,
             );
-            const selectedPassId = activeOption![0];
+            if (!activeOption) return;
+            const selectedPassId = activeOption[0];
             const option = this.selectize.getOption(selectedPassId);
             // Workaround for a TomSelect glitch: onFocus sets the active option to the first one
             // on the first re-open, so this setActiveOption call needs to be delayed.
@@ -302,6 +298,12 @@ export class GccDump extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Gcc
 
     onPassSelect(passId: string) {
         const selectedPass = this.selectize.options[passId] as unknown as GccDumpViewSelectedPass;
+
+        if (!selectedPass) {
+            // Pass option not found - happens when user deletes selection via TomSelect
+            // and the change event fires with a passId that no longer exists in options
+            return;
+        }
 
         if (this.inhibitPassSelect !== true) {
             this.eventHub.emit('gccDumpPassSelected', this.compilerInfo.compilerId, selectedPass, true);

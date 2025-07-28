@@ -91,6 +91,8 @@ export class ApiHandler {
 
         this.handle.route('/libraries').get(this.handleAllLibraries.bind(this)).all(methodNotAllowed);
 
+        this.handle.route('/tools/:language').get(this.handleLangTools.bind(this)).all(methodNotAllowed);
+
         this.handle
             .route('/asm/:opcode')
             .get((req, res) => res.redirect(`amd64/${req.params.opcode}`))
@@ -247,10 +249,44 @@ export class ApiHandler {
         });
     }
 
+    getToolsAsArray(languageId: LanguageKey) {
+        const toolsForLanguageObj = unwrap(this.options).options.tools[languageId];
+        if (!toolsForLanguageObj) return [];
+
+        return Object.keys(toolsForLanguageObj).map(key => {
+            const tool = toolsForLanguageObj[key];
+            return {
+                id: key,
+                name: tool.name,
+                type: tool.type,
+                languageId: tool.languageId || languageId,
+                allowStdin: tool.stdinHint !== 'disabled',
+            };
+        });
+    }
+
     handleLangLibraries(req: express.Request, res: express.Response, next: express.NextFunction) {
         if (this.options) {
             if (req.params.language) {
                 res.send(this.getLibrariesAsArray(req.params.language as LanguageKey));
+            } else {
+                next({
+                    statusCode: 404,
+                    message: 'Language is required',
+                });
+            }
+        } else {
+            next({
+                statusCode: 500,
+                message: 'Internal error',
+            });
+        }
+    }
+
+    handleLangTools(req: express.Request, res: express.Response, next: express.NextFunction) {
+        if (this.options) {
+            if (req.params.language) {
+                res.send(this.getToolsAsArray(req.params.language as LanguageKey));
             } else {
                 next({
                     statusCode: 404,

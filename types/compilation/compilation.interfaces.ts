@@ -30,14 +30,13 @@ import type {PPOptions} from '../../static/panes/pp-view.interfaces.js';
 import {suCodeEntry} from '../../static/panes/stack-usage-view.interfaces.js';
 import {ParsedAsmResultLine} from '../asmresult/asmresult.interfaces.js';
 import {CompilerInfo} from '../compiler.interfaces.js';
+import {PossibleArguments} from '../compiler-arguments.interfaces.js';
 import {BasicExecutionResult, ConfiguredRuntimeTools} from '../execution/execution.interfaces.js';
 import {ParseFiltersAndOutputOptions} from '../features/filters.interfaces.js';
 import {InstructionSet} from '../instructionsets.js';
 import {SelectedLibraryVersion} from '../libraries/libraries.interfaces.js';
 import {ResultLine} from '../resultline/resultline.interfaces.js';
 import {Artifact, ToolResult} from '../tool.interfaces.js';
-
-import {PossibleArguments} from '../compiler-arguments.interfaces.js';
 import {CFGResult} from './cfg.interfaces.js';
 import {ClangirBackendOptions} from './clangir.interfaces.js';
 import {ConfiguredOverrides} from './compiler-overrides.interfaces.js';

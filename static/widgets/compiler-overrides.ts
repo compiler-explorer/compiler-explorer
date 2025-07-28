@@ -29,9 +29,9 @@ import {
     ConfiguredOverrides,
     EnvVarOverrides,
 } from '../../types/compilation/compiler-overrides.interfaces.js';
+import {CompilerInfo} from '../../types/compiler.interfaces.js';
 import {assert, unwrap} from '../assert.js';
 import * as BootstrapUtils from '../bootstrap-utils.js';
-import {CompilerInfo} from '../compiler.interfaces.js';
 import {localStorage} from '../local.js';
 import {options} from '../options.js';
 
