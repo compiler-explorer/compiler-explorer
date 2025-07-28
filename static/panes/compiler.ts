@@ -48,8 +48,8 @@ import * as colour from '../colour.js';
 import {CompilationStatus} from '../compiler-service.interfaces.js';
 import {CompilerService} from '../compiler-service.js';
 import {COMPILER_COMPONENT_NAME, ComponentConfig, NewToolSettings} from '../components.interfaces.js';
-import {createDragSource} from '../components.js';
 import * as Components from '../components.js';
+import {createDragSource} from '../components.js';
 import {Hub} from '../hub.js';
 import * as LibUtils from '../lib-utils.js';
 import * as monacoConfig from '../monaco-config.js';
@@ -68,7 +68,9 @@ import {GccDumpFiltersState, GccDumpViewSelectedPass} from './gccdump-view.inter
 import {MonacoPaneState} from './pane.interfaces.js';
 import {MonacoPane} from './pane.js';
 import {PPOptions} from './pp-view.interfaces.js';
+
 import IEditorMouseEvent = editor.IEditorMouseEvent;
+
 import fileSaver from 'file-saver';
 import {escapeHTML, splitArguments} from '../../shared/common-utils.js';
 import {ClangirBackendOptions} from '../../types/compilation/clangir.interfaces.js';
@@ -427,9 +429,9 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
         this.compilerPicker.destroy();
     }
 
-    onCompiler(compilerId: number, compiler: unknown, options: string, editorId: number, treeId: number): void {}
+    onCompiler(_compilerId: number, _compiler: unknown, _options: string, _editorId: number, _treeId: number): void {}
 
-    onCompileResult(compilerId: number, compiler: unknown, result: unknown): void {}
+    onCompileResult(_compilerId: number, _compiler: unknown, _result: unknown): void {}
 
     initPanerButtons(): void {
         const outputConfig = Components.getOutput(this.id, this.sourceEditorId ?? 0, this.sourceTreeId ?? 0);
@@ -984,7 +986,6 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
         }
 
         const target = label.target || label.name;
-        // biome-ignore lint/suspicious/noPrototypeBuiltins: biome recommends Object.hasOwn, but we target ES5 and it's not available
         if (!this.labelDefinitions.hasOwnProperty(target)) {
             return;
         }
@@ -1815,7 +1816,7 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
 
             const buttons = this.toolsMenu?.find('button');
             if (buttons)
-                $(buttons).each((idx, button) => {
+                $(buttons).each((_idx, button) => {
                     const toolButton = $(button);
                     const toolName = toolButton.data('toolname');
                     if (toolId === toolName) {
@@ -1833,7 +1834,7 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
 
             const buttons = this.toolsMenu?.find('button');
             if (buttons)
-                $(buttons).each((idx, button) => {
+                $(buttons).each((_idx, button) => {
                     const toolButton = $(button);
                     const toolName = toolButton.data('toolname');
                     if (toolId === toolName) {
@@ -2525,7 +2526,7 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
 
         const buttons = this.toolsMenu?.find('button');
         if (buttons)
-            $(buttons).each((idx, button) => {
+            $(buttons).each((_idx, button) => {
                 const toolButton = $(button);
                 const toolName = toolButton.data('toolname');
                 toolButton.prop(

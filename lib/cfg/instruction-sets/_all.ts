@@ -24,6 +24,6 @@
 
 export {ArmInstructionSetInfo} from './arm.js';
 export {BaseInstructionSetInfo} from './base.js';
-export {XtensaInstructionSetInfo} from './xtensa.js';
 export {LlvmIrInstructionSetInfo} from './llvm-ir.js';
 export {PythonInstructionSetInfo} from './python.js';
+export {XtensaInstructionSetInfo} from './xtensa.js';

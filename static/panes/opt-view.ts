@@ -26,17 +26,15 @@ import {Container} from 'golden-layout';
 import $ from 'jquery';
 import * as monaco from 'monaco-editor';
 import _ from 'underscore';
-
-import {OptRemark, OptState} from './opt-view.interfaces.js';
-import {MonacoPaneState} from './pane.interfaces.js';
-import {MonacoPane} from './pane.js';
-
 import {CompilationResult} from '../../types/compilation/compilation.interfaces.js';
 import {CompilerInfo} from '../../types/compiler.interfaces.js';
 import {unwrap} from '../assert.js';
 import {Hub} from '../hub.js';
 import {extendConfig} from '../monaco-config.js';
 import {Toggles} from '../widgets/toggles.js';
+import {OptRemark, OptState} from './opt-view.interfaces.js';
+import {MonacoPaneState} from './pane.interfaces.js';
+import {MonacoPane} from './pane.js';
 
 export class Opt extends MonacoPane<monaco.editor.IStandaloneCodeEditor, OptState> {
     // Note: bool | undef here instead of just bool because of an issue with field initialization order
@@ -197,7 +195,13 @@ export class Opt extends MonacoPane<monaco.editor.IStandaloneCodeEditor, OptStat
         });
     }
 
-    override onCompiler(id: number, compiler: CompilerInfo | null, options: string, editorId: number, treeId: number) {
+    override onCompiler(
+        id: number,
+        compiler: CompilerInfo | null,
+        _options: string,
+        _editorId: number,
+        _treeId: number,
+    ) {
         if (id === this.compilerInfo.compilerId) {
             this.compilerInfo.compilerName = compiler ? compiler.name : '';
             this.updateTitle();

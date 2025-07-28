@@ -22,9 +22,8 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import path from 'node:path';
-
 import fs from 'node:fs/promises';
+import path from 'node:path';
 import _ from 'underscore';
 
 import type {
@@ -71,7 +70,7 @@ export class FPCCompiler extends BaseCompiler {
         return this.asm.process(result.asm, filters);
     }
 
-    override async postProcess(result, outputFilename: string, filters: ParseFiltersAndOutputOptions) {
+    override async postProcess(result, _outputFilename: string, filters: ParseFiltersAndOutputOptions) {
         const userSourceFilename = result.inputFilename;
         const pasFilepath = path.join(result.dirPath, userSourceFilename);
         const asmDumpFilepath = pasFilepath.substring(0, pasFilepath.length - 3) + 's';
@@ -131,7 +130,7 @@ export class FPCCompiler extends BaseCompiler {
         return path.join(dirPath, `${baseFilename}.s`);
     }
 
-    override getExecutableFilename(dirPath: string, outputFilebase: string, key?: CacheKey | CompilationCacheKey) {
+    override getExecutableFilename(dirPath: string, _outputFilebase: string, key?: CacheKey | CompilationCacheKey) {
         const source = (key && (key as CacheKey).source) || '';
         if (key && pascalUtils.isProgram(source)) {
             return path.join(dirPath, pascalUtils.getProgName(source));
@@ -231,7 +230,12 @@ export class FPCCompiler extends BaseCompiler {
         return inputFilename;
     }
 
-    override async writeAllFiles(dirPath: string, source: string, files: any[], filters: ParseFiltersAndOutputOptions) {
+    override async writeAllFiles(
+        dirPath: string,
+        source: string,
+        files: any[],
+        _filters: ParseFiltersAndOutputOptions,
+    ) {
         const inputFilename = path.join(dirPath, this.getMainSourceFilename(source));
 
         if (source !== '' || !files) {

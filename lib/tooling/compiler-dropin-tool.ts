@@ -107,7 +107,7 @@ export class CompilerDropinTool extends BaseTool {
         compilationInfo: CompilationInfo,
         inputFilepath?: string,
         args?: string[],
-        stdin?: string,
+        _stdin?: string,
         supportedLibraries?: Record<string, OptionsHandlerLibrary>,
     ): Promise<ToolResult> {
         const sourcefile = inputFilepath;

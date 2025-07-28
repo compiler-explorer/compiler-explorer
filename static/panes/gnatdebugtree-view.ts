@@ -26,16 +26,14 @@ import {Container} from 'golden-layout';
 import $ from 'jquery';
 import * as monaco from 'monaco-editor';
 import _ from 'underscore';
-
-import {GnatDebugTreeState} from './gnatdebugtree-view.interfaces.js';
-import {MonacoPaneState} from './pane.interfaces.js';
-import {MonacoPane} from './pane.js';
-
 import {CompilationResult} from '../../types/compilation/compilation.interfaces.js';
 import {CompilerInfo} from '../../types/compiler.interfaces.js';
 import {unwrap} from '../assert.js';
 import {Hub} from '../hub.js';
 import {extendConfig} from '../monaco-config.js';
+import {GnatDebugTreeState} from './gnatdebugtree-view.interfaces.js';
+import {MonacoPaneState} from './pane.interfaces.js';
+import {MonacoPane} from './pane.js';
 
 export class GnatDebugTree extends MonacoPane<monaco.editor.IStandaloneCodeEditor, GnatDebugTreeState> {
     constructor(hub: Hub, container: Container, state: GnatDebugTreeState & MonacoPaneState) {
@@ -91,7 +89,7 @@ export class GnatDebugTree extends MonacoPane<monaco.editor.IStandaloneCodeEdito
     override onCompiler(
         compilerId: number,
         compiler: CompilerInfo | null,
-        options: string,
+        _options: string,
         editorId?: number,
         treeId?: number,
     ): void {

@@ -43,11 +43,11 @@ export class OptCompiler extends BaseCompiler {
         };
     }
 
-    override getCompilerResultLanguageId(filters?: ParseFiltersAndOutputOptions): string | undefined {
+    override getCompilerResultLanguageId(_filters?: ParseFiltersAndOutputOptions): string | undefined {
         return 'llvm-ir';
     }
 
-    override optionsForFilter(filters: ParseFiltersAndOutputOptions, outputFilename: string) {
+    override optionsForFilter(_filters: ParseFiltersAndOutputOptions, outputFilename: string) {
         return ['-o', this.filename(outputFilename), '-S'];
     }
 

@@ -57,12 +57,12 @@ export class FlangFC1Compiler extends BaseCompiler {
 
     override prepareArguments(
         userOptions: string[],
-        filters: ParseFiltersAndOutputOptions,
-        backendOptions: Record<string, any>,
+        _filters: ParseFiltersAndOutputOptions,
+        _backendOptions: Record<string, any>,
         inputFilename: string,
         outputFilename: string,
-        libraries: SelectedLibraryVersion[],
-        overrides: ConfiguredOverrides,
+        _libraries: SelectedLibraryVersion[],
+        _overrides: ConfiguredOverrides,
     ) {
         let options = ['-fc1'];
         userOptions = this.filterUserOptions(userOptions) || [];

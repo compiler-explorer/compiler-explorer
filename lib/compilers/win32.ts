@@ -105,8 +105,8 @@ export class Win32Compiler extends BaseCompiler {
 
     override getSharedLibraryPathsAsArguments(
         libraries: SelectedLibraryVersion[],
-        libDownloadPath: string | undefined,
-        toolchainPath: string | undefined,
+        _libDownloadPath: string | undefined,
+        _toolchainPath: string | undefined,
         dirPath: string,
     ): string[] {
         const libPathFlag = '/LIBPATH:';
@@ -120,8 +120,8 @@ export class Win32Compiler extends BaseCompiler {
         return _.flatten(
             libraries
                 .map(selectedLib => [selectedLib, this.findLibVersion(selectedLib)])
-                .filter(([selectedLib, foundVersion]) => !!foundVersion)
-                .map(([selectedLib, foundVersion]) => {
+                .filter(([_selectedLib, foundVersion]) => !!foundVersion)
+                .map(([_selectedLib, foundVersion]) => {
                     // Combine compiler libPath with library-specific paths
                     const compilerLibPaths = this.compiler.libPath || [];
                     const libraryPaths = this.getSharedLibraryPaths(libraries);
@@ -136,7 +136,7 @@ export class Win32Compiler extends BaseCompiler {
                         return `"${lib}.lib"`;
                     });
                 })
-                .map(([selectedLib, foundVersion]) => selectedLib),
+                .map(([selectedLib, _foundVersion]) => selectedLib),
         );
     }
 
@@ -240,7 +240,7 @@ export class Win32Compiler extends BaseCompiler {
         return [options, overrides];
     }
 
-    override optionsForFilter(filters: ParseFiltersAndOutputOptions, outputFilename: string, userOptions?: string[]) {
+    override optionsForFilter(filters: ParseFiltersAndOutputOptions, outputFilename: string, _userOptions?: string[]) {
         if (filters.binary) {
             const mapFilename = outputFilename + '.map';
             const mapFileReader = new MapFileReaderVS(mapFilename);

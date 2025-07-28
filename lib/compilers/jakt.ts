@@ -41,7 +41,7 @@ export class JaktCompiler extends BaseCompiler {
         this.outputFilebase = 'example';
     }
 
-    override getCompilerResultLanguageId(filters?: ParseFiltersAndOutputOptions): string | undefined {
+    override getCompilerResultLanguageId(_filters?: ParseFiltersAndOutputOptions): string | undefined {
         return 'cppp';
     }
 
@@ -70,7 +70,7 @@ export class JaktCompiler extends BaseCompiler {
         return objdumpResult;
     }
 
-    override optionsForFilter(filters: ParseFiltersAndOutputOptions, outputFilename: any) {
+    override optionsForFilter(_filters: ParseFiltersAndOutputOptions, outputFilename: any) {
         return ['--binary-dir', path.dirname(outputFilename)];
     }
 
@@ -85,16 +85,16 @@ export class JaktCompiler extends BaseCompiler {
     }
 
     // We have no dynamic linking in Jakt
-    override getSharedLibraryPathsAsArguments(libraries: SelectedLibraryVersion[], libDownloadPath?: string) {
+    override getSharedLibraryPathsAsArguments(_libraries: SelectedLibraryVersion[], _libDownloadPath?: string) {
         return [];
     }
 
     // We have no dynamic linking in Jakt
-    override getSharedLibraryLinks(libraries: SelectedLibraryVersion[]): string[] {
+    override getSharedLibraryLinks(_libraries: SelectedLibraryVersion[]): string[] {
         return [];
     }
 
-    override getOutputFilename(dirPath: string, outputFilebase: string, key?: any): string {
+    override getOutputFilename(dirPath: string, _outputFilebase: string, _key?: any): string {
         return path.join(dirPath, 'Root Module.cpp');
     }
 }

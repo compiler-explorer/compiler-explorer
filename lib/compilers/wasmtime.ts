@@ -34,7 +34,7 @@ export class WasmtimeCompiler extends BaseCompiler {
         return 'wasmtime';
     }
 
-    override optionsForFilter(filters: ParseFiltersAndOutputOptions, outputFilename: string, userOptions?: string[]) {
+    override optionsForFilter(filters: ParseFiltersAndOutputOptions, outputFilename: string, _userOptions?: string[]) {
         filters.binary = true;
         return ['-o', this.filename(outputFilename)];
     }

@@ -60,7 +60,7 @@ export const logger = winston.createLogger({
 export function makeLogStream(level: string, logger_: winston.Logger = logger): {write: (chunk: string) => void} {
     let buffer = '';
     return new Writable({
-        write: (chunk: string, encoding, callback: () => void) => {
+        write: (chunk: string, _encoding, callback: () => void) => {
             buffer += chunk;
             while (buffer.length > 0) {
                 const eol = buffer.indexOf('\n');
@@ -101,7 +101,7 @@ class MyPapertrailTransport extends TransportStream {
         this.transport = new Papertrail({
             host: opts.host,
             port: opts.port,
-            logFormat: (level: any, message: any) => message,
+            logFormat: (_level: any, message: any) => message,
             hostname: this.hostname,
             format: opts.format,
         });
@@ -157,7 +157,7 @@ function logToPapertrail(host: string, port: number, identifier: string, hostnam
 }
 
 class Blackhole extends TransportStream {
-    override log(info: any, callback: () => void) {
+    override log(_info: any, callback: () => void) {
         callback();
     }
 }

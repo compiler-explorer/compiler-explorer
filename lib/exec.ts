@@ -22,22 +22,18 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import buffer from 'buffer';
 import child_process from 'node:child_process';
+import fs from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
-import which from 'which';
-
 import {Stream} from 'node:stream';
-
-import fs from 'node:fs/promises';
+import buffer from 'buffer';
 import treeKill from 'tree-kill';
 import _ from 'underscore';
-
+import which from 'which';
+import {splitArguments} from '../shared/common-utils.js';
 import type {ExecutionOptions} from '../types/compilation/compilation.interfaces.js';
 import type {FilenameTransformFunc, UnprocessedExecResult} from '../types/execution/execution.interfaces.js';
-
-import {splitArguments} from '../shared/common-utils.js';
 import {assert, unwrap, unwrapString} from './assert.js';
 import {logger} from './logger.js';
 import {Graceful} from './node-graceful.js';

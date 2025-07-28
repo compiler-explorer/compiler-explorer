@@ -22,9 +22,8 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import path from 'node:path';
-
 import fs from 'node:fs/promises';
+import path from 'node:path';
 
 import {CompilationResult, ExecutionOptionsWithEnv} from '../../types/compilation/compilation.interfaces.js';
 import {PreliminaryCompilerInfo} from '../../types/compiler.interfaces.js';
@@ -77,7 +76,7 @@ export class MadPascalCompiler extends BaseCompiler {
         return filename;
     }
 
-    override getOutputFilename(dirPath: string, outputFilebase: string, key?: any): string {
+    override getOutputFilename(dirPath: string, outputFilebase: string, _key?: any): string {
         return this.getCompilerOutputFilename(dirPath, outputFilebase);
     }
 
@@ -87,8 +86,8 @@ export class MadPascalCompiler extends BaseCompiler {
 
     protected override optionsForFilter(
         filters: ParseFiltersAndOutputOptions,
-        outputFilename: string,
-        userOptions?: string[],
+        _outputFilename: string,
+        _userOptions?: string[],
     ): string[] {
         filters.demangle = false;
         return [];
@@ -159,12 +158,12 @@ export class MadPascalCompiler extends BaseCompiler {
     override async objdump(
         outputFilename: string,
         result: any,
-        maxSize: number,
-        intelAsm: boolean,
-        demangle: boolean,
-        staticReloc: boolean | undefined,
-        dynamicReloc: boolean,
-        filters: ParseFiltersAndOutputOptions,
+        _maxSize: number,
+        _intelAsm: boolean,
+        _demangle: boolean,
+        _staticReloc: boolean | undefined,
+        _dynamicReloc: boolean,
+        _filters: ParseFiltersAndOutputOptions,
     ) {
         const tmpDir = path.dirname(outputFilename);
         const listingFilename = this.getListingFilename(tmpDir, this.outputFilebase);
@@ -188,10 +187,10 @@ export class MadPascalCompiler extends BaseCompiler {
         inputFilename: string,
         libIncludes: string[],
         libOptions: string[],
-        libPaths: string[],
-        libLinks: string[],
+        _libPaths: string[],
+        _libLinks: string[],
         userOptions: string[],
-        staticLibLinks: string[],
+        _staticLibLinks: string[],
     ) {
         return options.concat([this.filename(inputFilename)], libIncludes, libOptions, userOptions);
     }

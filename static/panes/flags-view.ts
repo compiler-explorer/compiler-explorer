@@ -103,7 +103,7 @@ export class Flags extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Flags
     override onCompiler(
         compilerId: number,
         compiler: CompilerInfo | null,
-        options: string,
+        _options: string,
         editorId: number,
         treeId: number,
     ) {
@@ -115,7 +115,7 @@ export class Flags extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Flags
         }
     }
 
-    override onCompileResult(compilerId: number, compiler: CompilerInfo, result: CompilationResult) {}
+    override onCompileResult(_compilerId: number, _compiler: CompilerInfo, _result: CompilationResult) {}
 
     override close() {
         this.eventHub.unsubscribe();

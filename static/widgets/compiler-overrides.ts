@@ -369,7 +369,7 @@ export class CompilerOverridesWidget {
         this.updateButton();
     }
 
-    setCompiler(compilerId: string, languageId?: string) {
+    setCompiler(compilerId: string, _languageId?: string) {
         this.compiler = options.compilers.find(c => c.id === compilerId);
     }
 

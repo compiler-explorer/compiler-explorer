@@ -36,12 +36,12 @@ export class OdinCompiler extends BaseCompiler {
     override orderArguments(
         options: string[],
         inputFilename: string,
-        libIncludes: string[],
-        libOptions: string[],
-        libPaths: string[],
-        libLinks: string[],
+        _libIncludes: string[],
+        _libOptions: string[],
+        _libPaths: string[],
+        _libLinks: string[],
         userOptions: string[],
-        staticLibLinks: string[],
+        _staticLibLinks: string[],
     ) {
         return ['build', this.filename(inputFilename), '-file'].concat(options, userOptions);
     }
@@ -69,7 +69,7 @@ export class OdinCompiler extends BaseCompiler {
         return this.filename(path.dirname(inputFilename) + '/output.ll');
     }
 
-    override async postProcessAsm(result, filters?: ParseFiltersAndOutputOptions) {
+    override async postProcessAsm(result, _filters?: ParseFiltersAndOutputOptions) {
         // we dont need demangling
         return result;
     }

@@ -44,7 +44,7 @@ export class V8Compiler extends BaseCompiler {
         return this.filename(path.dirname(inputFilename) + '/code.asm');
     }
 
-    public override getOutputFilename(dirPath: string, outputFilebase: string, key?: any) {
+    public override getOutputFilename(dirPath: string, _outputFilebase: string, key?: any) {
         let filename;
         if (key?.backendOptions?.customOutputFilename) {
             filename = key.backendOptions.customOutputFilename;
@@ -58,7 +58,7 @@ export class V8Compiler extends BaseCompiler {
         return filename;
     }
 
-    override optionsForFilter(filters: ParseFiltersAndOutputOptions, outputFilename: string) {
+    override optionsForFilter(_filters: ParseFiltersAndOutputOptions, _outputFilename: string) {
         return [];
     }
 }

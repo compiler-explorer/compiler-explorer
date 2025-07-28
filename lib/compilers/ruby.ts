@@ -45,7 +45,7 @@ export class RubyCompiler extends BaseCompiler {
             this.compilerProps('disasmScript') || resolvePathFromAppRoot('etc', 'scripts', 'disasms', 'disasm.rb');
     }
 
-    override getCompilerResultLanguageId(filters?: ParseFiltersAndOutputOptions): string | undefined {
+    override getCompilerResultLanguageId(_filters?: ParseFiltersAndOutputOptions): string | undefined {
         return 'asmruby';
     }
 
@@ -84,7 +84,7 @@ export class RubyCompiler extends BaseCompiler {
         return {asm: bytecodeResult};
     }
 
-    override optionsForFilter(filters: ParseFiltersAndOutputOptions, outputFilename: string) {
+    override optionsForFilter(_filters: ParseFiltersAndOutputOptions, outputFilename: string) {
         return [
             this.disasmScriptPath,
             '--outputfile',

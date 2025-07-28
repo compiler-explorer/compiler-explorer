@@ -63,15 +63,15 @@ export class MLIRCompiler extends BaseCompiler {
         );
     }
 
-    override getCompilerResultLanguageId(filters?: ParseFiltersAndOutputOptions): string | undefined {
+    override getCompilerResultLanguageId(_filters?: ParseFiltersAndOutputOptions): string | undefined {
         return 'mlir';
     }
 
-    override getOutputFilename(dirPath: string, outputFilebase: string, key?: any): string {
+    override getOutputFilename(dirPath: string, _outputFilebase: string, _key?: any): string {
         return path.join(dirPath, 'example.out.mlir');
     }
 
-    override optionsForBackend(backendOptions: Record<string, any>, outputFilename: string): string[] {
+    override optionsForBackend(_backendOptions: Record<string, any>, outputFilename: string): string[] {
         return ['-o', outputFilename];
     }
 
@@ -80,9 +80,9 @@ export class MLIRCompiler extends BaseCompiler {
     }
 
     override optionsForFilter(
-        filters: ParseFiltersAndOutputOptions,
-        outputFilename: string,
-        userOptions?: string[],
+        _filters: ParseFiltersAndOutputOptions,
+        _outputFilename: string,
+        _userOptions?: string[],
     ): any[] {
         return [];
     }

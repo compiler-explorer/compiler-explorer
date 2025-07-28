@@ -32,8 +32,8 @@ import {LanguageKey} from '../../types/languages.interfaces.js';
 import {ResultLine} from '../../types/resultline/resultline.interfaces.js';
 import {assert, unwrap, unwrapString} from '../assert.js';
 import * as BootstrapUtils from '../bootstrap-utils.js';
-import {createDragSource} from '../components.js';
 import * as Components from '../components.js';
+import {createDragSource} from '../components.js';
 import {EventHub} from '../event-hub.js';
 import {Hub} from '../hub.js';
 import {LineColouring} from '../line-colouring.js';
@@ -275,7 +275,7 @@ export class Tree {
         }
     }
 
-    private onCompilerOpen(compilerId: number, unused: number, treeId: number | boolean) {
+    private onCompilerOpen(compilerId: number, _unused: number, treeId: number | boolean) {
         if (treeId === this.id) {
             this.ourCompilers[compilerId] = true;
             this.sendCompilerChangesToEditor(compilerId);
@@ -558,7 +558,7 @@ export class Tree {
 
             const dataTransfer = ev.originalEvent.dataTransfer;
             if (dataTransfer.items) {
-                [...dataTransfer.items].forEach(async (item, i) => {
+                [...dataTransfer.items].forEach(async (item, _i) => {
                     if (item.kind === 'file') {
                         const file = item.getAsFile();
                         if (file.name.endsWith('.zip')) {
@@ -569,7 +569,7 @@ export class Tree {
                     }
                 });
             } else {
-                [...dataTransfer.files].forEach(async (file, i) => {
+                [...dataTransfer.files].forEach(async (file, _i) => {
                     if (file.name.endsWith('.zip')) {
                         this.openZipFile(file);
                     } else {
@@ -692,7 +692,7 @@ export class Tree {
         });
     }
 
-    private onCompileResponse(compilerId: number, compiler, result) {
+    private onCompileResponse(compilerId: number, _compiler, result) {
         if (!this.ourCompilers[compilerId]) return;
 
         this.busyCompilers[compilerId] = false;

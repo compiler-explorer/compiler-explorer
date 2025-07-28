@@ -46,16 +46,16 @@ export class BuildEnvSetupCeConanRustDirect extends BuildEnvSetupCeConanDirect {
         this.extractAllToRoot = false;
     }
 
-    override async initialise(execCompilerCachedFunc: ExecCompilerCachedFunc) {
+    override async initialise(_execCompilerCachedFunc: ExecCompilerCachedFunc) {
         if (this.compilerArch) return;
         this.compilerSupportsX86 = true;
     }
 
-    override getLibcxx(key: CacheKey) {
+    override getLibcxx(_key: CacheKey) {
         return '';
     }
 
-    override getDestinationFilepath(downloadPath: string, zippedPath: string, libId: string): string {
+    override getDestinationFilepath(downloadPath: string, zippedPath: string, _libId: string): string {
         // libId is already included in rust packages
         return path.join(downloadPath, zippedPath);
     }
@@ -92,11 +92,11 @@ export class BuildEnvSetupCeConanRustDirect extends BuildEnvSetupCeConanDirect {
         return 'x86_64';
     }
 
-    override hasBinariesToLink(details: VersionInfo) {
+    override hasBinariesToLink(_details: VersionInfo) {
         return true;
     }
 
-    override shouldDownloadPackage(details: VersionInfo) {
+    override shouldDownloadPackage(_details: VersionInfo) {
         return true;
     }
 }

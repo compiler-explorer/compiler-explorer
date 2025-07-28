@@ -70,9 +70,9 @@ export class MadsAsmParser extends AsmParser {
         this.lineRe = /^[\d ]{6} (.*)/;
     }
 
-    override handleSource(context: ParsingContext, line: string) {}
+    override handleSource(_context: ParsingContext, _line: string) {}
 
-    override handleStabs(context: ParsingContext, line: string) {}
+    override handleStabs(_context: ParsingContext, _line: string) {}
 
     getAsmLineWithOpcodeReMatch(
         line: string,

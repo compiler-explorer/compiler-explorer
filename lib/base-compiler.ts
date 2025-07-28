@@ -22,14 +22,13 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
+import fs from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
 
-import fs from 'node:fs/promises';
-
 import * as PromClient from 'prom-client';
 import _ from 'underscore';
-
+import {parseAllDocuments} from 'yaml';
 import {splitArguments, unique} from '../shared/common-utils.js';
 import {OptRemark} from '../static/panes/opt-view.interfaces.js';
 import {PPOptions} from '../static/panes/pp-view.interfaces.js';
@@ -40,6 +39,8 @@ import {
     BuildResult,
     BuildStep,
     BypassCache,
+    bypassCompilationCache,
+    bypassExecutionCache,
     CacheKey,
     CmakeCacheKey,
     CompilationCacheKey,
@@ -51,8 +52,6 @@ import {
     FiledataPair,
     GccDumpOptions,
     LibsAndOptions,
-    bypassCompilationCache,
-    bypassExecutionCache,
 } from '../types/compilation/compilation.interfaces.js';
 import {
     CompilerOverrideOption,
@@ -78,8 +77,6 @@ import type {Language} from '../types/languages.interfaces.js';
 import type {SelectedLibraryVersion} from '../types/libraries/libraries.interfaces.js';
 import type {ResultLine} from '../types/resultline/resultline.interfaces.js';
 import {type ToolResult, type ToolTypeKey} from '../types/tool.interfaces.js';
-
-import {parseAllDocuments} from 'yaml';
 import {moveArtifactsIntoResult} from './artifact-utils.js';
 import {assert, unwrap} from './assert.js';
 import {copyCopperSpicePlugins} from './binaries/copperspice-utils.js';
@@ -92,8 +89,8 @@ import {CompilerArguments} from './compiler-arguments.js';
 import {
     BaseParser,
     ClangCParser,
-    ClangParser,
     ClangirParser,
+    ClangParser,
     GCCCParser,
     GCCParser,
     ICCParser,
@@ -336,7 +333,7 @@ export class BaseCompiler {
             if (!filterLibIds.has(libid)) return;
 
             const libcopy = Object.assign({}, lib);
-            libcopy.versions = _.omit(lib.versions, (version, versionid) => {
+            libcopy.versions = _.omit(lib.versions, (_version, versionid) => {
                 for (const filter of filterLibAndVersion) {
                     if (filter.id === libid) {
                         if (!filter.version) return false;
@@ -511,7 +508,7 @@ export class BaseCompiler {
         };
     }
 
-    getCompilerResultLanguageId(filters?: ParseFiltersAndOutputOptions): string | undefined {
+    getCompilerResultLanguageId(_filters?: ParseFiltersAndOutputOptions): string | undefined {
         return undefined;
     }
 
@@ -789,7 +786,7 @@ export class BaseCompiler {
     protected optionsForFilter(
         filters: ParseFiltersAndOutputOptions,
         outputFilename: string,
-        userOptions?: string[],
+        _userOptions?: string[],
     ): string[] {
         let options = ['-g', '-o', this.filename(outputFilename)];
         if (this.compiler.intelAsm && filters.intel && !filters.binary && !filters.binaryObject) {
@@ -807,7 +804,7 @@ export class BaseCompiler {
     findLibVersion(selectedLib: SelectedLibraryVersion): false | VersionInfo {
         if (!this.supportedLibraries) return false;
 
-        const foundLib = _.find(this.supportedLibraries, (o, libId) => libId === selectedLib.id);
+        const foundLib = _.find(this.supportedLibraries, (_o, libId) => libId === selectedLib.id);
         if (!foundLib) return false;
 
         const result: VersionInfo | undefined = _.find(
@@ -825,7 +822,7 @@ export class BaseCompiler {
         return copiedResult;
     }
 
-    protected optionsForDemangler(filters?: ParseFiltersAndOutputOptions): string[] {
+    protected optionsForDemangler(_filters?: ParseFiltersAndOutputOptions): string[] {
         return [...this.compiler.demanglerArgs];
     }
 
@@ -921,7 +918,7 @@ export class BaseCompiler {
         return sortedlinks;
     }
 
-    getStaticLibraryLinks(libraries: SelectedLibraryVersion[], libPaths: string[] = []): string[] {
+    getStaticLibraryLinks(libraries: SelectedLibraryVersion[], _libPaths: string[] = []): string[] {
         const linkFlag = this.compiler.linkFlag || '-l';
 
         return this.getSortedStaticLibraries(libraries)
@@ -1172,7 +1169,7 @@ export class BaseCompiler {
         return options;
     }
 
-    prepareOptRemarksArgs(options: string[], outputFilename: string): string[] {
+    prepareOptRemarksArgs(options: string[], _outputFilename: string): string[] {
         return options.concat(unwrap(this.compiler.optArg));
     }
 
@@ -1251,7 +1248,7 @@ export class BaseCompiler {
 
     protected fixIncompatibleOptions(
         options: string[],
-        userOptions: string[],
+        _userOptions: string[],
         overrides: ConfiguredOverrides,
     ): [string[], ConfiguredOverrides] {
         return [options, overrides];
@@ -1684,7 +1681,7 @@ export class BaseCompiler {
         return [{text: 'Internal error; unable to open output path'}];
     }
 
-    getIrOutputFilename(inputFilename: string, filters?: ParseFiltersAndOutputOptions): string {
+    getIrOutputFilename(inputFilename: string, _filters?: ParseFiltersAndOutputOptions): string {
         // filters are passed because rust needs to know whether a binary is being produced or not
         return utils.changeExtension(inputFilename, '.ll');
     }
@@ -1712,7 +1709,7 @@ export class BaseCompiler {
         return this.getOutputFilename(dirPath, outputFilebase, key);
     }
 
-    async processGnatDebugOutput(inputFilename: string, result: CompilationResult) {
+    async processGnatDebugOutput(_inputFilename: string, result: CompilationResult) {
         const contentDebugExpanded: ResultLine[] = [];
         const contentDebugTree: ResultLine[] = [];
         const keep_stdout: ResultLine[] = [];
@@ -1814,7 +1811,7 @@ export class BaseCompiler {
         try {
             const stat = await fs.stat(outputFilename);
             asmResult.asmSize = stat.size;
-        } catch (e) {
+        } catch (_e) {
             // Ignore errors
         }
         return await this.postProcess(asmResult, outputFilename, filters, produceOptRemarks);
@@ -1892,7 +1889,7 @@ export class BaseCompiler {
         dirPath: string,
         source: string,
         files: FiledataPair[],
-        filters: ParseFiltersAndOutputOptions,
+        _filters: ParseFiltersAndOutputOptions,
     ) {
         if (!source) throw new Error(`File ${this.compileFilename} has no content or file is missing`);
 
@@ -1912,7 +1909,7 @@ export class BaseCompiler {
         dirPath: string,
         source: string,
         files: FiledataPair[],
-        filters: ParseFiltersAndOutputOptions,
+        _filters: ParseFiltersAndOutputOptions,
     ) {
         if (!source) throw new Error('File CMakeLists.txt has no content or file is missing');
 
@@ -2648,7 +2645,7 @@ export class BaseCompiler {
         return libsAndOptions;
     }
 
-    getExtraCMakeArgs(key: ParsedRequest): string[] {
+    getExtraCMakeArgs(_key: ParsedRequest): string[] {
         return [];
     }
 

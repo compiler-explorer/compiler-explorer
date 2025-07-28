@@ -60,7 +60,7 @@ export class NvccCompiler extends BaseCompiler {
     // * lots of whitespace from nvcc
     // * would be nice to try and filter unused `.func`s from e.g. clang output
 
-    override optionsForFilter(filters: ParseFiltersAndOutputOptions, outputFilename: string, userOptions?: string[]) {
+    override optionsForFilter(filters: ParseFiltersAndOutputOptions, outputFilename: string, _userOptions?: string[]) {
         const opts = ['-o', this.filename(outputFilename), '-g', '-lineinfo', '--keep-device-functions'];
         if (!filters.execute) {
             opts.push('-c', '-keep', '-keep-dir', Path.dirname(outputFilename));
@@ -139,7 +139,7 @@ export class NvccCompiler extends BaseCompiler {
     override async extractDeviceCode(
         result: CompilationResult,
         filters: ParseFiltersAndOutputOptions,
-        compilationInfo: CompilationInfo,
+        _compilationInfo: CompilationInfo,
     ) {
         const {dirPath} = result;
         const {demangle} = filters;

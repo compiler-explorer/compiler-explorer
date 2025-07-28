@@ -27,8 +27,8 @@ import express from 'express';
 import type {AppArguments} from '../app.interfaces.js';
 import {logger} from '../logger.js';
 import {createRenderHandlers} from './rendering.js';
-import {setupBaseServerConfig, setupBasicRoutes, setupLoggingMiddleware} from './server-config.js';
 import {ServerDependencies, ServerOptions, WebServerResult} from './server.interfaces.js';
+import {setupBaseServerConfig, setupBasicRoutes, setupLoggingMiddleware} from './server-config.js';
 import {setupStaticMiddleware, setupWebPackDevMiddleware} from './static-assets.js';
 
 export {startListening} from './server-listening.js';

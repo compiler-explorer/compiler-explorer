@@ -1,8 +1,7 @@
 // Based on https://github.com/Nanonid/rison at e64af6c096fd30950ec32cfd48526ca6ee21649d (Jun 9, 2017)
 
-import {assert, unwrap} from './assert.js';
-
 import {isString} from '../shared/common-utils.js';
+import {assert, unwrap} from './assert.js';
 
 //////////////////////////////////////////////////
 //
@@ -147,7 +146,7 @@ class Encoders {
 
         if (id_ok.test(x)) return x;
 
-        x = x.replace(/(['!])/g, (a, b) => {
+        x = x.replace(/(['!])/g, (_a, b) => {
             if (string_table[b as keyof typeof string_table]) return '!' + b;
             return b;
         });

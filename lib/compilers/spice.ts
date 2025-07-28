@@ -110,7 +110,7 @@ export class SpiceCompiler extends BaseCompiler {
         return super.runExecutable(executable, executeParameters, homeDir);
     }
 
-    override getOutputFilename(dirPath: string, outputFilebase: string, key?: any): string {
+    override getOutputFilename(dirPath: string, _outputFilebase: string, _key?: any): string {
         return path.join(dirPath, 'example-assembly-code.s');
     }
 

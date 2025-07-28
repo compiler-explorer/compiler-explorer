@@ -22,9 +22,8 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import path from 'node:path';
-
 import fs from 'node:fs/promises';
+import path from 'node:path';
 import _ from 'underscore';
 
 import type {ParsedAsmResult, ParsedAsmResultLine} from '../../types/asmresult/asmresult.interfaces.js';
@@ -92,7 +91,7 @@ export class D8Compiler extends BaseCompiler implements SimpleOutputFilenameComp
     }
 
     override async runCompiler(
-        compiler: string,
+        _compiler: string,
         options: string[],
         inputFilename: string,
         execOptions: ExecutionOptionsWithEnv,
@@ -297,7 +296,7 @@ export class D8Compiler extends BaseCompiler implements SimpleOutputFilenameComp
         return useDefaultMinApi ? ['--min-api', '27'] : [''];
     }
 
-    override getIncludeArguments(libraries: SelectedLibraryVersion[], dirPath: string): string[] {
+    override getIncludeArguments(libraries: SelectedLibraryVersion[], _dirPath: string): string[] {
         this.libPaths = libraries.flatMap(selectedLib => {
             const foundVersion = this.findLibVersion(selectedLib);
             if (!foundVersion) return [];

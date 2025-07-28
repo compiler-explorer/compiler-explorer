@@ -153,7 +153,7 @@ export class BaseDemangler extends AsmRegex {
         return this.input.join('\n');
     }
 
-    protected getMetadata(symbol: string): {ident: RegExp; description: string}[] {
+    protected getMetadata(_symbol: string): {ident: RegExp; description: string}[] {
         return [];
     }
 

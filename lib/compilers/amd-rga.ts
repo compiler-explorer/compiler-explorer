@@ -22,10 +22,9 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import path from 'node:path';
-
 import {createWriteStream} from 'node:fs';
 import fs from 'node:fs/promises';
+import path from 'node:path';
 
 import type {
     CompilationResult,
@@ -49,7 +48,7 @@ export class AMDRGACompiler extends BaseCompiler {
         this.compiler.supportsIntel = false;
     }
 
-    override optionsForFilter(filters: ParseFiltersAndOutputOptions, outputFilename: any, userOptions?: any): any[] {
+    override optionsForFilter(_filters: ParseFiltersAndOutputOptions, outputFilename: any, _userOptions?: any): any[] {
         return [outputFilename];
     }
 

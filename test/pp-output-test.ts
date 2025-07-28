@@ -50,7 +50,7 @@ describe('Preprocessor Output Handling', () => {
             ceProps: properties.fakeProps({}),
             compilerProps: (() => {}) as unknown as any,
             getCompilerPropsForLanguage: () => {
-                return (prop, def) => def;
+                return (_prop, def) => def;
             },
         };
         const compiler = new BaseCompiler(compilerInfo as CompilerInfo, env as CompilationEnvironment);

@@ -42,7 +42,7 @@ import {StorageBase} from '../storage/index.js';
 
 import {CompileHandler} from './compile.js';
 
-function methodNotAllowed(req: express.Request, res: express.Response) {
+function methodNotAllowed(_req: express.Request, res: express.Response) {
     res.status(405).send('Method Not Allowed');
 }
 
@@ -133,7 +133,7 @@ export class ApiHandler {
         this.handle.route('/version').get(this.handleReleaseName.bind(this)).all(methodNotAllowed);
         this.handle.route('/releaseBuild').get(this.handleReleaseBuild.bind(this)).all(methodNotAllowed);
         // Let's not document this one, eh?
-        this.handle.route('/forceServerError').get((req, res) => {
+        this.handle.route('/forceServerError').get((req, _res) => {
             logger.error(`Forced server error from ${req.ip}`);
             throw new Error('Forced server error');
         });
@@ -324,7 +324,7 @@ export class ApiHandler {
         }
     }
 
-    handleAllLibraries(req: express.Request, res: express.Response, next: express.NextFunction) {
+    handleAllLibraries(_req: express.Request, res: express.Response, next: express.NextFunction) {
         if (this.options) {
             res.send(this.options.options.libs);
         } else {
@@ -344,11 +344,11 @@ export class ApiHandler {
         this.outputList(filteredCompilers, 'Compiler Name', req, res);
     }
 
-    handleReleaseName(req: express.Request, res: express.Response) {
+    handleReleaseName(_req: express.Request, res: express.Response) {
         res.send(this.release.gitReleaseName);
     }
 
-    handleReleaseBuild(req: express.Request, res: express.Response) {
+    handleReleaseBuild(_req: express.Request, res: express.Response) {
         res.send(this.release.releaseBuildNumber);
     }
 

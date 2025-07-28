@@ -34,7 +34,7 @@ export class ErlangAsmCompiler extends BaseCompiler {
         return 'erlangasm';
     }
 
-    override optionsForFilter(filters: ParseFiltersAndOutputOptions, outputFilename: string): string[] {
+    override optionsForFilter(_filters: ParseFiltersAndOutputOptions, outputFilename: string): string[] {
         return [
             '-noshell',
             '-eval',

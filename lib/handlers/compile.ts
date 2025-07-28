@@ -22,9 +22,8 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import path from 'node:path';
-
 import fs from 'node:fs/promises';
+import path from 'node:path';
 import * as Sentry from '@sentry/node';
 import express from 'express';
 import Server from 'http-proxy';
@@ -219,7 +218,7 @@ export class CompileHandler implements ICompileHandler {
                 let json = '<json stringify error>';
                 try {
                     json = JSON.stringify(bodyData);
-                } catch (e) {}
+                } catch (_e) {}
                 Sentry.captureMessage(`Unknown proxy bodyData: ${typeof bodyData} ${json}`);
                 proxyReq.write('Proxy error');
             }
@@ -424,7 +423,7 @@ export class CompileHandler implements ICompileHandler {
             execReqParams.stdin = textRequest.executeParametersStdin;
 
             filters = compiler.getDefaultFilters();
-            _.each(filters, (value, item) => {
+            _.each(filters, (_value, item) => {
                 filters[item] = textRequest[item as keyof CompileRequestTextBody] === 'true';
             });
 

@@ -26,15 +26,13 @@ import {Container} from 'golden-layout';
 import $ from 'jquery';
 import * as monaco from 'monaco-editor';
 import _ from 'underscore';
-
-import {HaskellCmmState} from './haskellcmm-view.interfaces.js';
-import {MonacoPaneState} from './pane.interfaces.js';
-import {MonacoPane} from './pane.js';
-
 import {CompilationResult} from '../../types/compilation/compilation.interfaces.js';
 import {CompilerInfo} from '../../types/compiler.interfaces.js';
 import {Hub} from '../hub.js';
 import {extendConfig} from '../monaco-config.js';
+import {HaskellCmmState} from './haskellcmm-view.interfaces.js';
+import {MonacoPaneState} from './pane.interfaces.js';
+import {MonacoPane} from './pane.js';
 
 export class HaskellCmm extends MonacoPane<monaco.editor.IStandaloneCodeEditor, HaskellCmmState> {
     constructor(hub: Hub, container: Container, state: HaskellCmmState & MonacoPaneState) {
@@ -90,7 +88,7 @@ export class HaskellCmm extends MonacoPane<monaco.editor.IStandaloneCodeEditor, 
     override onCompiler(
         compilerId: number,
         compiler: CompilerInfo | null,
-        options: string,
+        _options: string,
         editorId?: number,
         treeId?: number,
     ): void {

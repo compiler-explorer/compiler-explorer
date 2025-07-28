@@ -36,7 +36,7 @@ export function getStaticImage(filename: string, parent?: string) {
     return `${root}${filename}`;
 }
 
-export function updateAndCalcTopBarHeight(domRoot: JQuery, topBar: JQuery, hideable: JQuery): number {
+export function updateAndCalcTopBarHeight(_domRoot: JQuery, topBar: JQuery, hideable: JQuery): number {
     let topBarHeight = 0;
     if (!topBar.hasClass('d-none')) {
         hideable.show();
@@ -148,7 +148,7 @@ export function getNumericToolTip(value: string, digitSeparator?: string): strin
     const decoder = new TextDecoder('utf-8', {fatal: true});
     try {
         result += ' = ' + JSON.stringify(decoder.decode(Uint8Array.from(bytes)));
-    } catch (e) {
+    } catch (_e) {
         // ignore `TypeError` when the number is not valid UTF-8
     }
 

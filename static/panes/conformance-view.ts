@@ -33,8 +33,8 @@ import {unwrapString} from '../assert.js';
 import * as BootstrapUtils from '../bootstrap-utils.js';
 import {CompilationStatus} from '../compiler-service.interfaces.js';
 import {CompilerService} from '../compiler-service.js';
-import {createDragSource} from '../components.js';
 import * as Components from '../components.js';
+import {createDragSource} from '../components.js';
 import {SourceAndFiles} from '../download-service.js';
 import {Hub} from '../hub.js';
 import * as LibUtils from '../lib-utils.js';
@@ -291,11 +291,11 @@ export class Conformance extends Pane<ConformanceViewState> {
     }
 
     override onCompiler(
-        compilerId: number,
-        compiler: CompilerInfo,
-        options: string,
-        editorId: number,
-        treeId: number,
+        _compilerId: number,
+        _compiler: CompilerInfo,
+        _options: string,
+        _editorId: number,
+        _treeId: number,
     ): void {}
 
     setCompilationOptionsPopover(element: JQuery<HTMLElement> | null, content: string): void {
@@ -507,7 +507,7 @@ export class Conformance extends Pane<ConformanceViewState> {
                                 Object.keys(filteredLibraries[libKey].versions),
                             );
 
-                            lib.versions = _.pick(lib.versions, (version, versionkey) => {
+                            lib.versions = _.pick(lib.versions, (_version, versionkey) => {
                                 return versionsInCommon.includes(versionkey);
                             }) as Record<string, LibraryVersion>; // TODO(jeremy-rifkin)
                         } else {
@@ -585,5 +585,5 @@ export class Conformance extends Pane<ConformanceViewState> {
         return '';
     }
 
-    onCompileResult(compilerId: number, compiler: unknown, result: unknown): void {}
+    onCompileResult(_compilerId: number, _compiler: unknown, _result: unknown): void {}
 }

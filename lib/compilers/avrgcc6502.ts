@@ -62,7 +62,7 @@ export class AvrGcc6502Compiler extends BaseCompiler {
         return filename;
     }
 
-    protected override optionsForFilter(filters: ParseFiltersAndOutputOptions, outputFilename: string): string[] {
+    protected override optionsForFilter(_filters: ParseFiltersAndOutputOptions, _outputFilename: string): string[] {
         return [`-I${this.avrlibstdcpppath}`];
     }
 

@@ -48,7 +48,7 @@ export class HexagonAsmParser extends AsmParser {
         return inVLIWpacket;
     }
 
-    override hasOpcode(line: string, inNvccCode: boolean, inVLIWpacket: boolean) {
+    override hasOpcode(line: string, _inNvccCode: boolean, inVLIWpacket: boolean) {
         // Remove any leading label definition...
         const match = line.match(this.labelDef);
         if (match) {

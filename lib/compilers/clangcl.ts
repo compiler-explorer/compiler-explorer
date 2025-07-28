@@ -51,7 +51,7 @@ export class ClangCLCompiler extends Win32Compiler {
         inputFilename: string,
         options: string[],
         irOptions: LLVMIrBackendOptions,
-        produceCfg: boolean,
+        _produceCfg: boolean,
         filters: ParseFiltersAndOutputOptions,
     ) {
         // These options make Clang produce an IR

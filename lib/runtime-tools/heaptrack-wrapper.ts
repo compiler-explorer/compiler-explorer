@@ -22,9 +22,8 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import {WriteStream, createWriteStream} from 'node:fs';
-import {constants as fsConstants} from 'node:fs';
 import * as oldfs from 'node:fs';
+import {createWriteStream, constants as fsConstants, WriteStream} from 'node:fs';
 import * as fs from 'node:fs/promises';
 import * as net from 'node:net';
 import path from 'node:path';
@@ -112,7 +111,7 @@ export class HeaptrackWrapper extends BaseRuntimeTool {
         return this.execFunc(this.interpreter, [this.rawOutput], execOptions);
     }
 
-    private async finishPipesAndStreams(fd: number, file: WriteStream, socket: net.Socket): Promise<void> {
+    private async finishPipesAndStreams(_fd: number, file: WriteStream, socket: net.Socket): Promise<void> {
         socket.push(null);
         await new Promise(resolve => socket.end(() => resolve(true)));
 

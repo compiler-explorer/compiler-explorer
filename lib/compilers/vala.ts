@@ -44,7 +44,7 @@ export class ValaCompiler extends BaseCompiler {
         this.pkgconfigPath = this.compilerProps<string>(`compiler.${this.compiler.id}.pkgconfigpath`);
     }
 
-    override getCompilerResultLanguageId(filters?: ParseFiltersAndOutputOptions): string | undefined {
+    override getCompilerResultLanguageId(_filters?: ParseFiltersAndOutputOptions): string | undefined {
         return 'c';
     }
 
@@ -98,17 +98,17 @@ export class ValaCompiler extends BaseCompiler {
     }
 
     override getSharedLibraryPathsAsArguments(
-        libraries: SelectedLibraryVersion[],
-        libDownloadPath: string | undefined,
+        _libraries: SelectedLibraryVersion[],
+        _libDownloadPath: string | undefined,
     ) {
         return [];
     }
 
-    override getSharedLibraryLinks(libraries: SelectedLibraryVersion[]): string[] {
+    override getSharedLibraryLinks(_libraries: SelectedLibraryVersion[]): string[] {
         return [];
     }
 
-    override getOutputFilename(dirPath: string, outputFilebase: string, key?: any): string {
+    override getOutputFilename(dirPath: string, _outputFilebase: string, _key?: any): string {
         return path.join(dirPath, 'example.c');
     }
 }

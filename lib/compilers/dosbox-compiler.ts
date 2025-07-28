@@ -22,11 +22,8 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import path from 'node:path';
-
 import fs from 'node:fs/promises';
-import * as utils from '../utils.js';
-
+import path from 'node:path';
 import type {ExecutionOptionsWithEnv} from '../../types/compilation/compilation.interfaces.js';
 import type {PreliminaryCompilerInfo} from '../../types/compiler.interfaces.js';
 import {UnprocessedExecResult} from '../../types/execution/execution.interfaces.js';
@@ -35,6 +32,7 @@ import {CompilationEnvironment} from '../compilation-env.js';
 import * as exec from '../exec.js';
 import {logger} from '../logger.js';
 import {TurboCAsmParser} from '../parsers/asm-parser-turboc.js';
+import * as utils from '../utils.js';
 
 export class DosboxCompiler extends BaseCompiler {
     private readonly dosbox: string;
@@ -62,7 +60,7 @@ export class DosboxCompiler extends BaseCompiler {
         return Promise.all(filesToWrite);
     }
 
-    protected override async writeAllFiles(dirPath: string, source: string, files: any[], filters: object) {
+    protected override async writeAllFiles(dirPath: string, source: string, files: any[], _filters: object) {
         if (!source) throw new Error(`File ${this.compileFilename} has no content or file is missing`);
 
         const inputFilename = path.join(dirPath, this.compileFilename);
@@ -137,7 +135,7 @@ export class DosboxCompiler extends BaseCompiler {
         return result;
     }
 
-    public override async exec(filepath: string, args: string[], execOptions: any) {
+    public override async exec(_filepath: string, args: string[], execOptions: any) {
         if (!execOptions) {
             execOptions = this.getDefaultExecOptions();
         }

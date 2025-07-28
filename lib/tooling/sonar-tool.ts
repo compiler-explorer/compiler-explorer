@@ -172,7 +172,7 @@ export class SonarTool extends BaseTool {
                     title: 'reproducer',
                 };
             }
-        } catch (err) {
+        } catch (_err) {
             output = utils.splitLines(lines).map(l => ({text: l}));
         }
         return output;
@@ -211,7 +211,7 @@ export class SonarTool extends BaseTool {
         compilationInfo: CompilationInfo,
         inputFilePath?: string,
         args?: string[],
-        stdin?: string,
+        _stdin?: string,
         supportedLibraries?: Record<string, OptionsHandlerLibrary>,
     ): Promise<ToolResult> {
         if (inputFilePath == null) {

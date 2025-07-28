@@ -56,7 +56,9 @@ import {Compiler} from './compiler.js';
 import {EditorState} from './editor.interfaces.js';
 import {MonacoPaneState, PaneState} from './pane.interfaces.js';
 import {MonacoPane} from './pane.js';
+
 import IModelDeltaDecoration = editor.IModelDeltaDecoration;
+
 import {getStaticImage} from '../utils';
 
 const loadSave = new loadSaveLib.LoadSave();
@@ -166,7 +168,7 @@ export class Editor extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Edit
         // });
     }
 
-    override initializeCompilerInfo(state: PaneState) {
+    override initializeCompilerInfo(_state: PaneState) {
         this.compilerInfo = {
             compilerId: 0,
             compilerName: '',
@@ -700,7 +702,7 @@ export class Editor extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Edit
 
     b64UTFEncode(str: string): string {
         return Buffer.from(
-            encodeURIComponent(str).replace(/%([0-9A-F]{2})/g, (match, v) => {
+            encodeURIComponent(str).replace(/%([0-9A-F]{2})/g, (_match, v) => {
                 return String.fromCharCode(Number.parseInt(v, 16));
             }),
         ).toString('base64');
@@ -1186,13 +1188,13 @@ export class Editor extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Edit
                     });
                 }
             },
-            error: (xhr, e_status, error) => {
+            error: (xhr, _e_status, error) => {
                 // Hopefully we have not exploded!
                 if (xhr.responseText) {
                     try {
                         const res = JSON.parse(xhr.responseText);
                         error = res.answer || error;
-                    } catch (e) {
+                    } catch (_e) {
                         // continue regardless of error
                     }
                 }
@@ -1368,7 +1370,7 @@ export class Editor extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Edit
         }
     }
 
-    onTreeCompilerEditorExcludeChange(treeId: number, editorId: number, compilerId: number): void {
+    onTreeCompilerEditorExcludeChange(_treeId: number, editorId: number, compilerId: number): void {
         if (this.id === editorId) {
             this.onCompilerClose(compilerId);
         }
@@ -1958,7 +1960,7 @@ export class Editor extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Edit
         return this.getSelectizeRenderHtml(data, escapeHtml, 20, 20);
     }
 
-    onCompiler(compilerId: number, compiler: unknown, options: string, editorId: number, treeId: number): void {}
+    onCompiler(_compilerId: number, _compiler: unknown, _options: string, _editorId: number, _treeId: number): void {}
 
     updateLanguageTooltip() {
         // Dispose existing popover instance

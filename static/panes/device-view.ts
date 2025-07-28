@@ -147,7 +147,7 @@ export class DeviceAsm extends MonacoPane<monaco.editor.IStandaloneCodeEditor, D
             );
         }
 
-        function appendInfo(url: string): string {
+        function appendInfo(_url: string): string {
             return (
                 '<br><br>If the documentation for this opcode is wrong or broken in some way, ' +
                 'please feel free to <a href="' +
@@ -244,7 +244,7 @@ export class DeviceAsm extends MonacoPane<monaco.editor.IStandaloneCodeEditor, D
         this.onColours(this.compilerInfo.compilerId, this.lastColours, this.lastColourScheme);
     }
 
-    override onCompileResult(id: number, compiler: CompilerInfo, result: CompilationResult): void {
+    override onCompileResult(id: number, _compiler: CompilerInfo, result: CompilationResult): void {
         if (this.compilerInfo.compilerId !== id) return;
 
         if (result.devices) {
@@ -341,7 +341,7 @@ export class DeviceAsm extends MonacoPane<monaco.editor.IStandaloneCodeEditor, D
     override onCompiler(
         id: number,
         compiler: CompilerInfo | null,
-        options: string,
+        _options: string,
         editorId: number,
         treeId: number,
     ): void {

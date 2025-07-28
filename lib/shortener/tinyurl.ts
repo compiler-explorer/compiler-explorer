@@ -38,7 +38,7 @@ export class TinyUrlShortener extends BaseShortener {
             } else {
                 res.status(response.status).send('TinyURL error');
             }
-        } catch (error) {
+        } catch (_error) {
             res.status(500).send('TinyURL error');
         }
     }

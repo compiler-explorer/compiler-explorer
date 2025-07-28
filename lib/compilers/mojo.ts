@@ -48,7 +48,7 @@ export class MojoCompiler extends BaseCompiler {
         return outputPath;
     }
 
-    override optionsForFilter(filters: ParseFiltersAndOutputOptions, outputFilename: string, userOptions: string[]) {
+    override optionsForFilter(filters: ParseFiltersAndOutputOptions, outputFilename: string, _userOptions: string[]) {
         if (filters.binary) return ['build'];
         return ['build', '--emit=asm', '-o', outputFilename];
     }
@@ -57,7 +57,7 @@ export class MojoCompiler extends BaseCompiler {
         return [];
     }
 
-    override getExecutableFilename(dirPath: string, outputFilebase: string) {
+    override getExecutableFilename(dirPath: string, _outputFilebase: string) {
         const executablePath = path.join(dirPath, 'example');
         return executablePath;
     }
@@ -69,9 +69,9 @@ export class MojoCompiler extends BaseCompiler {
     override async generateIR(
         inputFilename: string,
         options: string[],
-        irOptions: any,
-        produceCfg: boolean,
-        filters: any,
+        _irOptions: any,
+        _produceCfg: boolean,
+        _filters: any,
     ) {
         // Remove -o/--emit and their values from options
         const filteredOptions: string[] = options.filter(

@@ -51,11 +51,11 @@ export class DartCompiler extends BaseCompiler {
     override prepareArguments(
         userOptions: string[],
         filters: ParseFiltersAndOutputOptions,
-        backendOptions: Record<string, any>,
+        _backendOptions: Record<string, any>,
         inputFilename: string,
         outputFilename: string,
         libraries: SelectedLibraryVersion[],
-        overrides: ConfiguredOverrides,
+        _overrides: ConfiguredOverrides,
     ) {
         let options = this.optionsForFilter(filters, outputFilename, userOptions);
 
@@ -70,7 +70,7 @@ export class DartCompiler extends BaseCompiler {
         return options.concat(libIncludes, libOptions, userOptions, [this.filename(inputFilename)]);
     }
 
-    override optionsForFilter(filters: ParseFiltersAndOutputOptions, outputFilename: string, userOptions?: string[]) {
+    override optionsForFilter(filters: ParseFiltersAndOutputOptions, outputFilename: string, _userOptions?: string[]) {
         // Dart includes way too much of the standard library (even for simple programs)
         // to show all of it without truncation
         filters.libraryCode = true;

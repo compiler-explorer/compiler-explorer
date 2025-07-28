@@ -42,7 +42,11 @@ export class PonyCompiler extends BaseCompiler {
         this.compiler.irArg = ['--pass', 'ir'];
     }
 
-    override optionsForFilter(filters: ParseFiltersAndOutputOptions, outputFilename: any, userOptions?: any): string[] {
+    override optionsForFilter(
+        filters: ParseFiltersAndOutputOptions,
+        outputFilename: any,
+        _userOptions?: any,
+    ): string[] {
         let options = ['-b', path.parse(outputFilename).name];
 
         if (!filters.binary) {
@@ -52,7 +56,7 @@ export class PonyCompiler extends BaseCompiler {
         return options;
     }
 
-    override preProcess(source: string, filters: any) {
+    override preProcess(source: string, _filters: any) {
         // I do not think you can make a Pony "library", so you must always have a main.
         // Looking at the stdlib, the main is used as a test harness.
         if (!this.stubRe.test(source)) {
@@ -65,7 +69,7 @@ export class PonyCompiler extends BaseCompiler {
         inputFilename: string,
         options: string[],
         irOptions: LLVMIrBackendOptions,
-        produceCfg: boolean,
+        _produceCfg: boolean,
         filters: ParseFiltersAndOutputOptions,
     ) {
         const newOptions = options

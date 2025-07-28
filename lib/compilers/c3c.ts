@@ -18,7 +18,7 @@ export class C3Compiler extends BaseCompiler {
         this.compiler.irArg = ['--emit-llvm'];
     }
 
-    override optionsForFilter(filters: ParseFiltersAndOutputOptions, outputFilename: string) {
+    override optionsForFilter(_filters: ParseFiltersAndOutputOptions, _outputFilename: string) {
         const options = ['compile-only', '-g', '-l', 'pthread', '--no-obj', '--emit-asm'];
         if (Semver.gte(asSafeVer(this.compiler.semver), '0.6.8', true)) {
             options.push('--llvm-out', '.', '--asm-out', '.');

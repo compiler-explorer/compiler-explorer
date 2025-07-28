@@ -119,10 +119,10 @@ export class BaseTool implements ITool {
 
     // mostly copy&paste from base-compiler.js
     findLibVersion(selectedLib: SelectedLibraryVersion, supportedLibraries: Record<string, OptionsHandlerLibrary>) {
-        const foundLib = _.find(supportedLibraries, (o, libId) => libId === selectedLib.id);
+        const foundLib = _.find(supportedLibraries, (_o, libId) => libId === selectedLib.id);
         if (!foundLib) return false;
 
-        return _.find(foundLib.versions, (o, versionId) => versionId === selectedLib.version);
+        return _.find(foundLib.versions, (_o, versionId) => versionId === selectedLib.version);
     }
 
     // mostly copy&paste from base-compiler.js
@@ -152,7 +152,7 @@ export class BaseTool implements ITool {
         });
     }
 
-    protected getToolExe(compilationInfo: CompilationInfo): string {
+    protected getToolExe(_compilationInfo: CompilationInfo): string {
         return this.tool.exe;
     }
 
@@ -161,7 +161,7 @@ export class BaseTool implements ITool {
         inputFilepath?: string,
         args?: string[],
         stdin?: string,
-        supportedLibraries?: Record<string, OptionsHandlerLibrary>,
+        _supportedLibraries?: Record<string, OptionsHandlerLibrary>,
         dontAppendInputFilepath?: boolean,
     ) {
         if (this.tool.name) {

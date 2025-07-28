@@ -25,10 +25,9 @@
 import fs from 'node:fs/promises';
 import express from 'express';
 import {afterEach, beforeEach, describe, expect, it, vi} from 'vitest';
-
-import {AppArguments} from '../../lib/app.interfaces.js';
 import {initialiseApplication} from '../../lib/app/main.js';
 import * as server from '../../lib/app/server.js';
+import {AppArguments} from '../../lib/app.interfaces.js';
 import * as aws from '../../lib/aws.js';
 import {CompilationEnvironment} from '../../lib/compilation-env.js';
 import {CompilationQueue} from '../../lib/compilation-queue.js';

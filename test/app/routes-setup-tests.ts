@@ -68,14 +68,14 @@ import type {StorageBase} from '../../lib/storage/base.js';
 function setupRoutesAndApiTest(
     router: Router,
     controllers: MockControllers,
-    clientOptionsHandler: ClientOptionsSource,
-    renderConfig: RenderConfigFunction,
-    renderGoldenLayout: RenderGoldenLayoutHandler,
-    storageHandler: StorageBase,
-    appArgs: AppArguments,
-    compileHandler: CompileHandler,
-    compilationEnvironment: CompilationEnvironment,
-    ceProps: PropertyGetter,
+    _clientOptionsHandler: ClientOptionsSource,
+    _renderConfig: RenderConfigFunction,
+    _renderGoldenLayout: RenderGoldenLayoutHandler,
+    _storageHandler: StorageBase,
+    _appArgs: AppArguments,
+    _compileHandler: CompileHandler,
+    _compilationEnvironment: CompilationEnvironment,
+    _ceProps: PropertyGetter,
 ) {
     // Set up controllers
     try {

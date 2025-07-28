@@ -154,7 +154,7 @@ export class ClangCompiler extends BaseCompiler {
         return options;
     }
 
-    override optionsForFilter(filters: ParseFiltersAndOutputOptions, outputFilename: string, userOptions?: string[]) {
+    override optionsForFilter(filters: ParseFiltersAndOutputOptions, outputFilename: string, _userOptions?: string[]) {
         const options = super.optionsForFilter(filters, outputFilename);
 
         return this.forceDwarf4UnlessOverridden(options);
@@ -324,7 +324,7 @@ export class ClangCudaCompiler extends ClangCompiler {
         this.asm = new PTXAsmParser();
     }
 
-    override getCompilerResultLanguageId(filters?: ParseFiltersAndOutputOptions): string | undefined {
+    override getCompilerResultLanguageId(_filters?: ParseFiltersAndOutputOptions): string | undefined {
         return 'ptx';
     }
 
@@ -433,9 +433,9 @@ export class ClangDxcCompiler extends ClangCompiler {
     }
 
     override optionsForFilter(
-        filters: ParseFiltersAndOutputOptions,
+        _filters: ParseFiltersAndOutputOptions,
         outputFilename: string,
-        userOptions?: string[],
+        _userOptions?: string[],
     ): string[] {
         return ['--driver-mode=dxc', '-Zi', '-Qembed_debug', '-Fc', this.filename(outputFilename)];
     }

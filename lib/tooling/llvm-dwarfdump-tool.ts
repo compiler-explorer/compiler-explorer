@@ -32,7 +32,7 @@ export class LLVMDWARFDumpTool extends BaseTool {
         return 'llvm-dwarfdump-tool';
     }
 
-    override async runTool(compilationInfo: CompilationInfo, inputFilepath?: string, args?: string[]) {
+    override async runTool(compilationInfo: CompilationInfo, _inputFilepath?: string, args?: string[]) {
         if (!compilationInfo.filters.binary && !compilationInfo.filters.binaryObject) {
             return this.createErrorResponse(
                 `${this.tool.name ?? 'llvm-dwarfdump'} requires an executable or binary object`,

@@ -22,9 +22,8 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import path from 'node:path';
-
 import fs from 'node:fs/promises';
+import path from 'node:path';
 
 import type {
     CompilationResult,
@@ -59,7 +58,7 @@ export class RGACompiler extends BaseCompiler {
         logger.debug(`RGA compiler ${this.compiler.id} configured to use DXC at ${this.dxcPath}`);
     }
 
-    override optionsForFilter(filters: ParseFiltersAndOutputOptions, outputFilename: any, userOptions?: any): any[] {
+    override optionsForFilter(_filters: ParseFiltersAndOutputOptions, outputFilename: any, _userOptions?: any): any[] {
         return [outputFilename];
     }
 
@@ -164,7 +163,7 @@ Please supply an ASIC from the following options:`,
 
         try {
             await fs.writeFile(path.join(outputDir, spvTemp), dxcResult.stdout);
-        } catch (e) {
+        } catch (_e) {
             const endTime = process.hrtime.bigint();
             return {
                 code: -1,

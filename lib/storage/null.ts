@@ -41,7 +41,7 @@ export class StorageNull extends StorageBase {
         };
     }
 
-    async expandId(id: string): Promise<ExpandedShortLink> {
+    async expandId(_id: string): Promise<ExpandedShortLink> {
         return {
             config: '{}',
         };

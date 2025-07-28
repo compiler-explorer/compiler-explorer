@@ -22,13 +22,10 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import {parse} from '../shared/stacktrace.js';
-
-import {options} from './options.js';
-
 import * as Sentry from '@sentry/browser';
-
 import GoldenLayout from 'golden-layout';
+import {parse} from '../shared/stacktrace.js';
+import {options} from './options.js';
 import {SiteSettings} from './settings.js';
 import {serialiseState} from './url.js';
 
@@ -75,7 +72,7 @@ export function SetupSentry() {
                 // Monaco Editor clipboard cancellation errors
                 'Canceled',
             ],
-            beforeSend(event, hint) {
+            beforeSend(event, _hint) {
                 // Filter Monaco Editor errors
                 //
                 // IMPORTANT: Frame-based filtering doesn't work reliably!

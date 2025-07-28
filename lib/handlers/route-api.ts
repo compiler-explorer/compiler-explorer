@@ -29,8 +29,8 @@ import express from 'express';
 import {isString} from '../../shared/common-utils.js';
 import {Language} from '../../types/languages.interfaces.js';
 import {assert, unwrap} from '../assert.js';
-import {ClientStateGoldenifier, ClientStateNormalizer} from '../clientstate-normalizer.js';
 import {ClientState} from '../clientstate.js';
+import {ClientStateGoldenifier, ClientStateNormalizer} from '../clientstate-normalizer.js';
 import {logger} from '../logger.js';
 import {SentryCapture} from '../sentry.js';
 import {ExpandedShortLink} from '../storage/base.js';
@@ -225,7 +225,7 @@ export class RouteAPI {
             });
     }
 
-    escapeLine(req: express.Request, line: string) {
+    escapeLine(_req: express.Request, line: string) {
         return line.replaceAll('&', '&amp;').replaceAll('<', '&lt;').replaceAll('>', '&gt;');
     }
 

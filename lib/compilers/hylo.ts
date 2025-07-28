@@ -8,9 +8,9 @@ export class HyloCompiler extends BaseCompiler {
     }
 
     override getSharedLibraryPathsAsArguments(
-        libraries: SelectedLibraryVersion[],
-        libDownloadPath?: string,
-        toolchainPath?: string,
+        _libraries: SelectedLibraryVersion[],
+        _libDownloadPath?: string,
+        _toolchainPath?: string,
     ) {
         return [];
     }
@@ -18,7 +18,7 @@ export class HyloCompiler extends BaseCompiler {
     override optionsForFilter(
         filters: ParseFiltersAndOutputOptions,
         outputFilename: string,
-        userOptions?: string[],
+        _userOptions?: string[],
     ): string[] {
         let options = ['-o', this.filename(outputFilename)];
         // Theres's no equivalent to non-intel asm.

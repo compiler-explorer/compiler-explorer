@@ -23,10 +23,8 @@
 // POSSIBILITY OF SUCH DAMAGE.
 
 import {BaseCompiler} from '../base-compiler.js';
-
-import {SolxParser} from './argument-parsers.js';
-
 import {resultLinesToText} from '../utils.js';
+import {SolxParser} from './argument-parsers.js';
 
 export class SolxCompiler extends BaseCompiler {
     static get key() {

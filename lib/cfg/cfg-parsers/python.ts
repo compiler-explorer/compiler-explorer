@@ -70,7 +70,7 @@ export class PythonCFGParser extends BaseCFGParser {
 
         for (let i = 0; i < bytecode.length; i++) {
             const line = bytecode[i];
-            let funcName: string | undefined = undefined;
+            let funcName: string | undefined;
             if (line.text.startsWith('Disassembly of')) {
                 const srcLineStr = line.text.match(/line (\d+)/)?.[1];
                 const srcLineNum = srcLineStr ? Number.parseInt(srcLineStr) : null;
@@ -121,7 +121,7 @@ export class PythonCFGParser extends BaseCFGParser {
         return this.getBbId(inst);
     }
 
-    override extractAltJmpTargetName(asmArr: AssemblyLine[], bbIdx: number, arrBB: CanonicalBB[]): string {
+    override extractAltJmpTargetName(_asmArr: AssemblyLine[], bbIdx: number, arrBB: CanonicalBB[]): string {
         if (bbIdx >= arrBB.length) return '';
         return arrBB[bbIdx + 1].nameId;
     }

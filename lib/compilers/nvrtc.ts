@@ -47,7 +47,7 @@ export class NvrtcCompiler extends BaseCompiler {
         this.asm = new PTXAsmParser(this.compilerProps);
     }
 
-    override optionsForFilter(filters: ParseFiltersAndOutputOptions, outputFilename: string, userOptions?: string[]) {
+    override optionsForFilter(filters: ParseFiltersAndOutputOptions, outputFilename: string, _userOptions?: string[]) {
         return ['-o', this.filename(outputFilename), '-lineinfo', filters.binary ? '-cubin' : '-ptx'];
     }
 

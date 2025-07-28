@@ -85,11 +85,11 @@ export class CoccinelleCCompiler extends BaseCompiler {
         await super.populatePossibleOverrides();
     }
 
-    override getSharedLibraryPathsAsArguments(libraries: SelectedLibraryVersion[], libDownloadPath?: string) {
+    override getSharedLibraryPathsAsArguments(_libraries: SelectedLibraryVersion[], _libDownloadPath?: string) {
         return [];
     }
 
-    override getSharedLibraryLinks(libraries: any[]): string[] {
+    override getSharedLibraryLinks(_libraries: any[]): string[] {
         return [];
     }
 
@@ -116,7 +116,7 @@ export class CoccinelleCCompiler extends BaseCompiler {
         return super.optionsForBackend(backendOptions, outputFilename);
     }
 
-    override optionsForFilter(filters: ParseFiltersAndOutputOptions, outputFilename: string, userOptions?: string[]) {
+    override optionsForFilter(_filters: ParseFiltersAndOutputOptions, outputFilename: string, _userOptions?: string[]) {
         // coccinelle_for_c
         return ['--sp-file', this.spatchBaseFilename, '-o', this.filename(outputFilename)];
     }
@@ -242,7 +242,7 @@ export class CoccinelleCCompiler extends BaseCompiler {
         };
     }
 
-    override getOutputFilename(dirPath: string, outputFilebase: string, key?: CacheKey): string {
+    override getOutputFilename(dirPath: string, outputFilebase: string, _key?: CacheKey): string {
         return path.join(dirPath, `${outputFilebase}${this.lang.extensions[0]}`);
     }
 

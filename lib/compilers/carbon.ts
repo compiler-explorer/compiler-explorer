@@ -22,16 +22,15 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
+import fs from 'node:fs/promises';
 import type {ParsedAsmResult} from '../../types/asmresult/asmresult.interfaces.js';
 import {CompilationResult, ExecutionOptionsWithEnv} from '../../types/compilation/compilation.interfaces.js';
 import type {PreliminaryCompilerInfo} from '../../types/compiler.interfaces.js';
 import type {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces.js';
 import type {ResultLine} from '../../types/resultline/resultline.interfaces.js';
+import {unwrap} from '../assert.js';
 import {BaseCompiler} from '../base-compiler.js';
 import {CompilationEnvironment} from '../compilation-env.js';
-
-import fs from 'node:fs/promises';
-import {unwrap} from '../assert.js';
 import {BaseParser} from './argument-parsers.js';
 
 export class CarbonCompiler extends BaseCompiler {
@@ -42,12 +41,12 @@ export class CarbonCompiler extends BaseCompiler {
     override orderArguments(
         options: string[],
         inputFilename: string,
-        libIncludes: string[],
-        libOptions: string[],
-        libPaths: string[],
-        libLinks: string[],
+        _libIncludes: string[],
+        _libOptions: string[],
+        _libPaths: string[],
+        _libLinks: string[],
         userOptions: string[],
-        staticLibLinks: string[],
+        _staticLibLinks: string[],
     ): string[] {
         return ['compile'].concat(
             options,
@@ -106,13 +105,13 @@ export class CarbonExplorerCompiler extends BaseCompiler {
         this.demanglerClass = null;
     }
 
-    override optionsForFilter(filters: ParseFiltersAndOutputOptions, outputFilename: string): string[] {
+    override optionsForFilter(_filters: ParseFiltersAndOutputOptions, outputFilename: string): string[] {
         return ['--color', `--trace_file=${outputFilename}`];
     }
 
     override async processAsm(
         result,
-        filters: ParseFiltersAndOutputOptions,
+        _filters: ParseFiltersAndOutputOptions,
         options: string[],
     ): Promise<ParsedAsmResult> {
         // Really should write a custom parser, but for now just don't filter anything.

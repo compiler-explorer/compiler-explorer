@@ -148,11 +148,11 @@ export class RustCompiler extends BaseCompiler {
         await super.populatePossibleOverrides();
     }
 
-    override getSharedLibraryPathsAsArguments(libraries: SelectedLibraryVersion[], libDownloadPath?: string) {
+    override getSharedLibraryPathsAsArguments(_libraries: SelectedLibraryVersion[], _libDownloadPath?: string) {
         return [];
     }
 
-    override getSharedLibraryLinks(libraries: SelectedLibraryVersion[]): string[] {
+    override getSharedLibraryLinks(_libraries: SelectedLibraryVersion[]): string[] {
         return [];
     }
 
@@ -250,7 +250,7 @@ export class RustCompiler extends BaseCompiler {
         return opts;
     }
 
-    override getOptFilePath(dirPath: string, outputFilebase: string): string {
+    override getOptFilePath(dirPath: string, _outputFilebase: string): string {
         // Find a file in dirPath that ends with codegen.opt.yaml, and return it
         // A bit of a hack, but it works for now
         const files = readdirSync(dirPath);

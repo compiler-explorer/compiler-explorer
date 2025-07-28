@@ -39,8 +39,8 @@ import type {ResultLine} from '../../types/resultline/resultline.interfaces.js';
 import {unwrap} from '../assert.js';
 import {BaseCompiler} from '../base-compiler.js';
 import {CompilationEnvironment} from '../compilation-env.js';
-import {asSafeVer} from '../utils.js';
 import * as utils from '../utils.js';
+import {asSafeVer} from '../utils.js';
 
 import {ISPCParser} from './argument-parsers.js';
 
@@ -59,7 +59,7 @@ export class ISPCCompiler extends BaseCompiler {
         this.executableLinker = this.compilerProps<string>(`compiler.${this.compiler.id}.executableLinker`);
     }
 
-    override couldSupportASTDump(version: string) {
+    override couldSupportASTDump(_version: string) {
         return Semver.gte(asSafeVer(this.compiler.semver), '1.18.0', true);
     }
 
@@ -127,10 +127,10 @@ export class ISPCCompiler extends BaseCompiler {
     }
 
     override getLibLinkInfo(
-        filters: ParseFiltersAndOutputOptions,
-        libraries: SelectedLibraryVersion[],
-        toolchainPath: string,
-        dirPath: string,
+        _filters: ParseFiltersAndOutputOptions,
+        _libraries: SelectedLibraryVersion[],
+        _toolchainPath: string,
+        _dirPath: string,
     ) {
         // Prevent any library linking flags from being passed to ispc during compilation.
         return {libLinks: [], libPathsAsFlags: [], staticLibLinks: []};

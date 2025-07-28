@@ -50,7 +50,7 @@ export interface IStatsNoter {
 }
 
 class NullStatsNoter implements IStatsNoter {
-    noteCompilation(compilerId: string, request: ParsedRequest, files: FiledataPair[], buildMethod: string): void {}
+    noteCompilation(_compilerId: string, _request: ParsedRequest, _files: FiledataPair[], _buildMethod: string): void {}
 }
 
 // A type for storing only compilation information deemed non-identifying; that is, no source or execution options.

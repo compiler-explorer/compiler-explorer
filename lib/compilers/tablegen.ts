@@ -9,7 +9,7 @@ export class TableGenCompiler extends BaseCompiler {
         return 'tablegen';
     }
 
-    override optionsForFilter(filters: ParseFiltersAndOutputOptions, outputFilename: string) {
+    override optionsForFilter(_filters: ParseFiltersAndOutputOptions, outputFilename: string) {
         const options: string[] = ['-o', outputFilename];
         if (this.compiler.includePath) {
             options.push(`-I${this.compiler.includePath}`);

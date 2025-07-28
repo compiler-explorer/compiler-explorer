@@ -60,7 +60,7 @@ export class CIRCTCompiler extends BaseCompiler {
         return path.join(dirPath, 'example.out.mlir');
     }
 
-    override optionsForBackend(backendOptions: Record<string, any>, outputFilename: string): string[] {
+    override optionsForBackend(_backendOptions: Record<string, any>, outputFilename: string): string[] {
         return ['-o', outputFilename];
     }
 

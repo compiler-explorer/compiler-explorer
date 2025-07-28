@@ -34,11 +34,10 @@ import {CompilerFinder} from '../lib/compiler-finder.js';
 import {ClientOptionsHandler, ClientOptionsType} from '../lib/options-handler.js';
 import * as properties from '../lib/properties.js';
 import {BaseTool} from '../lib/tooling/base-tool.js';
-import {CompilerInfo} from '../types/compiler.interfaces.js';
-import {LanguageKey} from '../types/languages.interfaces.js';
-
 import {getRemoteId} from '../shared/remote-utils.js';
 import {UrlTestCases} from '../shared/url-testcases.js';
+import {CompilerInfo} from '../types/compiler.interfaces.js';
+import {LanguageKey} from '../types/languages.interfaces.js';
 
 import {makeFakeCompilerInfo} from './utils.js';
 
@@ -185,7 +184,7 @@ describe('Options handler', () => {
             ceProps: properties.fakeProps({}),
             compilerProps: () => {},
             getCompilerPropsForLanguage: () => {
-                return (prop, def) => def;
+                return (_prop, def) => def;
             },
         } as unknown as CompilationEnvironment;
     });
@@ -497,7 +496,7 @@ describe('Options handler', () => {
             ceProps: properties.fakeProps({}),
             compilerProps: () => {},
             getCompilerPropsForLanguage: () => {
-                return (prop, def) => def;
+                return (_prop, def) => def;
             },
         } as unknown as CompilationEnvironment;
 

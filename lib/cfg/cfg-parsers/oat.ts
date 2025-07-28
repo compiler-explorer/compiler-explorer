@@ -28,7 +28,7 @@ import {EdgeColor} from '../../../types/compilation/cfg.interfaces.js';
 import {logger} from '../../logger.js';
 import {BaseInstructionSetInfo, InstructionType} from '../instruction-sets/base.js';
 
-import {AssemblyLine, BBRange, BaseCFGParser, CanonicalBB, Edge, Range} from './base.js';
+import {AssemblyLine, BaseCFGParser, BBRange, CanonicalBB, Edge, Range} from './base.js';
 
 // This currently only covers the default arm64 output. To support dex2oat's
 // other ISAs, we just need to make sure the correct isJmpInstruction() is being
@@ -195,7 +195,7 @@ export class OatCFGParser extends BaseCFGParser {
 
     // Identical to splitToCanonicalBasicBlock(), but with a different node
     // naming scheme.
-    splitToCanonicalBasicBlockOat(code: AssemblyLine[], basicBlock: BBRange): CanonicalBB[] {
+    splitToCanonicalBasicBlockOat(_code: AssemblyLine[], basicBlock: BBRange): CanonicalBB[] {
         const actionPos = basicBlock.actionPos;
         let actPosSz = actionPos.length;
         if (actionPos[actPosSz - 1] + 1 === basicBlock.end) {

@@ -22,9 +22,8 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import path from 'node:path';
-
 import fs from 'node:fs/promises';
+import path from 'node:path';
 
 import type {
     CompilationResult,
@@ -76,8 +75,8 @@ export class RacketCompiler extends BaseCompiler {
 
     override optionsForFilter(
         filters: ParseFiltersAndOutputOptions,
-        outputFilename: string,
-        userOptions?: string[],
+        _outputFilename: string,
+        _userOptions?: string[],
     ): string[] {
         // We currently always compile to bytecode first and then decompile.
         // Forcing `binary` on like this ensures `objdump` will be called for
@@ -95,7 +94,10 @@ export class RacketCompiler extends BaseCompiler {
         return true;
     }
 
-    override getSharedLibraryPathsAsArguments(libraries: SelectedLibraryVersion[], libDownloadPath?: string): string[] {
+    override getSharedLibraryPathsAsArguments(
+        _libraries: SelectedLibraryVersion[],
+        _libDownloadPath?: string,
+    ): string[] {
         return [];
     }
 
@@ -116,7 +118,7 @@ export class RacketCompiler extends BaseCompiler {
     }
 
     override async runCompiler(
-        compiler: string,
+        _compiler: string,
         options: string[],
         inputFilename: string,
         execOptions: ExecutionOptionsWithEnv,
@@ -143,7 +145,7 @@ export class RacketCompiler extends BaseCompiler {
         return this.transformToCompilationResult(makeResult, inputFilename);
     }
 
-    override getOutputFilename(dirPath: string, outputFilebase: string, key?: any): string {
+    override getOutputFilename(dirPath: string, _outputFilebase: string, _key?: any): string {
         return path.join(dirPath, 'compiled', `${this.compileFilename.replace('.', '_')}.zo`);
     }
 
@@ -151,11 +153,11 @@ export class RacketCompiler extends BaseCompiler {
         outputFilename: string,
         result: any,
         maxSize: number,
-        intelAsm: boolean,
-        demangle: boolean,
-        staticReloc: boolean | undefined,
-        dynamicReloc: boolean,
-        filters: ParseFiltersAndOutputOptions,
+        _intelAsm: boolean,
+        _demangle: boolean,
+        _staticReloc: boolean | undefined,
+        _dynamicReloc: boolean,
+        _filters: ParseFiltersAndOutputOptions,
     ): Promise<any> {
         // Decompile to assembly via `raco decompile` with `disassemble` package
         const execOptions: ExecutionOptions = {
@@ -175,7 +177,7 @@ export class RacketCompiler extends BaseCompiler {
         return result;
     }
 
-    override async processAsm(result: any, filters: ParseFiltersAndOutputOptions, options: string[]) {
+    override async processAsm(result: any, _filters: ParseFiltersAndOutputOptions, _options: string[]) {
         // TODO: Process and highlight decompiled output
         return {
             asm: [{text: result.asm}],
@@ -260,7 +262,7 @@ export class RacketCompiler extends BaseCompiler {
         output: CompilationResult,
         filters: ParseFiltersAndOutputOptions,
         optPipelineOptions: OptPipelineBackendOptions,
-        debugPatched?: boolean,
+        _debugPatched?: boolean,
     ) {
         return this.passDumpParser.process(output.stderr, filters, optPipelineOptions);
     }

@@ -634,7 +634,7 @@ export class Executor extends Pane<ExecutorState> {
     }
 
     handleCompileRequestAndResponse(
-        request: CompilationRequest,
+        _request: CompilationRequest,
         result: CompilationResult,
         cached: boolean,
         wasRealReply: boolean,
@@ -1311,7 +1311,13 @@ export class Executor extends Pane<ExecutorState> {
         return '';
     }
 
-    onCompileResult(compilerId: number, compiler: CompilerInfo, result: CompilationResult): void {}
+    onCompileResult(_compilerId: number, _compiler: CompilerInfo, _result: CompilationResult): void {}
 
-    onCompiler(compilerId: number, compiler: CompilerInfo, options: string, editorId: number, treeId: number): void {}
+    onCompiler(
+        _compilerId: number,
+        _compiler: CompilerInfo,
+        _options: string,
+        _editorId: number,
+        _treeId: number,
+    ): void {}
 }

@@ -32,7 +32,7 @@ export class GCCCompiler extends BaseCompiler {
         return 'gcc';
     }
 
-    override getOptFilePath(dirPath: string, outputFilebase: string): string {
+    override getOptFilePath(dirPath: string, _outputFilebase: string): string {
         return path.join(dirPath, 'all.opt');
     }
 

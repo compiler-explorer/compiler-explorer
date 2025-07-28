@@ -39,11 +39,11 @@ export class TurboCCompiler extends DosboxCompiler {
         return ['-B'];
     }
 
-    override getSharedLibraryPathsAsArguments(libraries: SelectedLibraryVersion[], libDownloadPath?: string) {
+    override getSharedLibraryPathsAsArguments(_libraries: SelectedLibraryVersion[], _libDownloadPath?: string) {
         return [];
     }
 
-    override getSharedLibraryPathsAsLdLibraryPaths(libraries: object[]) {
+    override getSharedLibraryPathsAsLdLibraryPaths(_libraries: object[]) {
         return [];
     }
 
@@ -67,7 +67,7 @@ export class TurboCCompiler extends DosboxCompiler {
         }
     }
 
-    override getOutputFilename(dirPath: string, outputFilebase: string, key?: object) {
+    override getOutputFilename(dirPath: string, _outputFilebase: string, _key?: object) {
         return path.join(dirPath, 'EXAMPLE.ASM');
     }
 

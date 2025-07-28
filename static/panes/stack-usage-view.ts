@@ -26,17 +26,15 @@ import {Container} from 'golden-layout';
 import $ from 'jquery';
 import * as monaco from 'monaco-editor';
 import _ from 'underscore';
-
-import {MonacoPaneState} from './pane.interfaces.js';
-import {MonacoPane} from './pane.js';
-import {StackUsageState, suCodeEntry} from './stack-usage-view.interfaces.js';
-
 import {CompilationResult} from '../../types/compilation/compilation.interfaces.js';
 import {CompilerInfo} from '../../types/compiler.interfaces.js';
 import {unwrap} from '../assert.js';
 import {Hub} from '../hub.js';
 import {extendConfig} from '../monaco-config.js';
 import {SentryCapture} from '../sentry.js';
+import {MonacoPaneState} from './pane.interfaces.js';
+import {MonacoPane} from './pane.js';
+import {StackUsageState, suCodeEntry} from './stack-usage-view.interfaces.js';
 
 type SuClass = 'None' | 'static' | 'dynamic' | 'dynamic,bounded';
 

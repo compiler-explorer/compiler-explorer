@@ -22,10 +22,9 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
+import fs from 'node:fs/promises';
 import path from 'node:path';
 import process from 'node:process';
-
-import fs from 'node:fs/promises';
 import * as Sentry from '@sentry/node';
 import _ from 'underscore';
 
@@ -40,7 +39,7 @@ import * as utils from '../utils.js';
 import {JuliaCompiler} from './julia.js';
 
 export class BaseParser {
-    static setCompilerSettingsFromOptions(compiler: BaseCompiler, options: Record<string, Argument>) {}
+    static setCompilerSettingsFromOptions(_compiler: BaseCompiler, _options: Record<string, Argument>) {}
 
     static hasSupport(options: Record<string, Argument>, forOption: string) {
         return _.keys(options).find(option => option.includes(forOption));
@@ -121,16 +120,16 @@ export class BaseParser {
         return text.replaceAll('  ', ' ');
     }
 
-    static async getPossibleTargets(compiler: BaseCompiler): Promise<string[]> {
+    static async getPossibleTargets(_compiler: BaseCompiler): Promise<string[]> {
         return [];
     }
 
-    static async getPossibleStdvers(compiler: BaseCompiler): Promise<CompilerOverrideOptions> {
+    static async getPossibleStdvers(_compiler: BaseCompiler): Promise<CompilerOverrideOptions> {
         return [];
     }
 
     // Currently used only for Rust
-    static async getPossibleEditions(compiler: BaseCompiler): Promise<string[]> {
+    static async getPossibleEditions(_compiler: BaseCompiler): Promise<string[]> {
         return [];
     }
 
@@ -1183,11 +1182,11 @@ export class SwiftParser extends ClangParser {
         return compiler;
     }
 
-    static override async getPossibleStdvers(compiler: BaseCompiler): Promise<CompilerOverrideOptions> {
+    static override async getPossibleStdvers(_compiler: BaseCompiler): Promise<CompilerOverrideOptions> {
         return [];
     }
 
-    static override async getPossibleTargets(compiler: BaseCompiler): Promise<string[]> {
+    static override async getPossibleTargets(_compiler: BaseCompiler): Promise<string[]> {
         return [];
     }
 }
@@ -1208,11 +1207,11 @@ export class TendraParser extends GCCParser {
         return options;
     }
 
-    static override async getPossibleStdvers(compiler: BaseCompiler): Promise<CompilerOverrideOptions> {
+    static override async getPossibleStdvers(_compiler: BaseCompiler): Promise<CompilerOverrideOptions> {
         return [];
     }
 
-    static override async getPossibleTargets(compiler: BaseCompiler): Promise<string[]> {
+    static override async getPossibleTargets(_compiler: BaseCompiler): Promise<string[]> {
         return [];
     }
 }
@@ -1280,7 +1279,7 @@ export class MadpascalParser extends GCCParser {
         return compiler;
     }
 
-    static override async getOptions(compiler: BaseCompiler, helpArg: string) {
+    static override async getOptions(compiler: BaseCompiler, _helpArg: string) {
         const optionFinder = /^(-[\w:<>]*) *(.*)/i;
         const result = await compiler.execCompilerCached(compiler.compiler.exe, []);
         const options = this.parseLines(result.stdout + result.stderr, optionFinder);
@@ -1288,11 +1287,11 @@ export class MadpascalParser extends GCCParser {
         return options;
     }
 
-    static override async getPossibleStdvers(compiler: BaseCompiler): Promise<CompilerOverrideOptions> {
+    static override async getPossibleStdvers(_compiler: BaseCompiler): Promise<CompilerOverrideOptions> {
         return [];
     }
 
-    static override async getPossibleTargets(compiler: BaseCompiler): Promise<string[]> {
+    static override async getPossibleTargets(_compiler: BaseCompiler): Promise<string[]> {
         return ['a8', 'c64', 'c4p', 'raw', 'neo'];
     }
 }

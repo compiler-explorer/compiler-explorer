@@ -22,9 +22,8 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import path from 'node:path';
-
 import fs from 'node:fs/promises';
+import path from 'node:path';
 import {CompilationResult, ExecutionOptionsWithEnv} from '../../types/compilation/compilation.interfaces.js';
 import {LLVMIrBackendOptions} from '../../types/compilation/ir.interfaces.js';
 import {PreliminaryCompilerInfo} from '../../types/compiler.interfaces.js';
@@ -83,9 +82,9 @@ export class SwayCompiler extends BaseCompiler {
 
     override async generateIR(
         inputFilename: string,
-        options: string[],
-        irOptions: LLVMIrBackendOptions,
-        produceCfg: boolean,
+        _options: string[],
+        _irOptions: LLVMIrBackendOptions,
+        _produceCfg: boolean,
         filters: ParseFiltersAndOutputOptions,
     ) {
         // We can use runCompiler since it already handles all the project setup
@@ -110,7 +109,7 @@ export class SwayCompiler extends BaseCompiler {
         };
     }
 
-    override optionsForFilter(filters: ParseFiltersAndOutputOptions, outputFilename: string): string[] {
+    override optionsForFilter(_filters: ParseFiltersAndOutputOptions, _outputFilename: string): string[] {
         // return an array of command line options for the compiler
         return [];
     }

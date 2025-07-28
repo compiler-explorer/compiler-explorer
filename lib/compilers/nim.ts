@@ -22,9 +22,8 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import path from 'node:path';
-
 import fs from 'node:fs/promises';
+import path from 'node:path';
 import _ from 'underscore';
 
 import {CompilationResult} from '../../types/compilation/compilation.interfaces.js';
@@ -53,7 +52,7 @@ export class NimCompiler extends BaseCompiler {
         return outputFilename + '.cache';
     }
 
-    override optionsForFilter(filters: ParseFiltersAndOutputOptions, outputFilename: string) {
+    override optionsForFilter(_filters: ParseFiltersAndOutputOptions, outputFilename: string) {
         return [
             '--debugger:native', // debugging info
             '-o:' + outputFilename, //output file, only for js mode

@@ -31,11 +31,12 @@ import {unwrap} from './assert.js';
 import * as BootstrapUtils from './bootstrap-utils.js';
 import {sessionThenLocalStorage} from './local.js';
 import {options} from './options.js';
-import * as url from './url.js';
-
 import {SentryCapture} from './sentry.js';
 import {Settings, SiteSettings} from './settings.js';
+import * as url from './url.js';
+
 import ClickEvent = JQuery.ClickEvent;
+
 import cloneDeep from 'lodash.clonedeep';
 
 enum LinkType {
@@ -234,7 +235,7 @@ export class Sharing {
                 this.displayTooltip(permalink, 'Link copied to clipboard');
                 e.clearSelection();
             });
-            this.clippyButton.on('error', e => {
+            this.clippyButton.on('error', _e => {
                 this.displayTooltip(permalink, 'Error copying to clipboard');
             });
         }
@@ -390,7 +391,7 @@ export class Sharing {
                 return;
             case LinkType.Embed: {
                 const options: Record<string, boolean> = {};
-                $('#sharelinkdialog input:checked').each((i, element) => {
+                $('#sharelinkdialog input:checked').each((_i, element) => {
                     options[$(element).data('option')] = true;
                 });
                 done(null, Sharing.getEmbeddedHtml(config, root, false, options), false);
@@ -457,7 +458,7 @@ export class Sharing {
         return location + path + url.serialiseState(config);
     }
 
-    private static storeCurrentConfig(config: any, extra: string): void {
+    private static storeCurrentConfig(_config: any, extra: string): void {
         window.history.pushState(null, '', extra);
     }
 

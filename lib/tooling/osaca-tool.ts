@@ -49,7 +49,7 @@ export class OSACATool extends BaseTool {
         return fs.writeFile(destination, filteredAsm);
     }
 
-    override async runTool(compilationInfo: CompilationInfo, inputFilepath?: string, args?: string[]) {
+    override async runTool(compilationInfo: CompilationInfo, _inputFilepath?: string, args?: string[]) {
         if (compilationInfo.filters.binary) {
             return this.createErrorResponse('<cannot run analysis on binary>');
         }

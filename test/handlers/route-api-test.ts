@@ -23,14 +23,12 @@
 // POSSIBILITY OF SUCH DAMAGE.
 
 import zlib from 'node:zlib';
-
-import {beforeAll, describe, expect, it} from 'vitest';
-
 import express from 'express';
 import request from 'supertest';
+import {beforeAll, describe, expect, it} from 'vitest';
 import {GoldenLayoutRootStruct} from '../../lib/clientstate-normalizer.js';
 import {HandlerConfig, ShortLinkMetaData} from '../../lib/handlers/handler.interfaces.js';
-import {RouteAPI, extractJsonFromBufferAndInflateIfRequired} from '../../lib/handlers/route-api.js';
+import {extractJsonFromBufferAndInflateIfRequired, RouteAPI} from '../../lib/handlers/route-api.js';
 
 function possibleCompression(buffer: Buffer): boolean {
     // code used in extractJsonFromBufferAndInflateIfRequired
@@ -109,9 +107,9 @@ describe('clientStateHandler', () => {
         app = express();
         const apiHandler = new RouteAPI(app, {
             renderGoldenLayout: (
-                config: GoldenLayoutRootStruct,
-                metadata: ShortLinkMetaData,
-                req: express.Request,
+                _config: GoldenLayoutRootStruct,
+                _metadata: ShortLinkMetaData,
+                _req: express.Request,
                 res: express.Response,
             ) => {
                 res.send('This is ok');

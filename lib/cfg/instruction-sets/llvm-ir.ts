@@ -31,11 +31,11 @@ export class LlvmIrInstructionSetInfo extends BaseInstructionSetInfo {
         return 'llvm';
     }
 
-    override isJmpInstruction(x: string): boolean {
+    override isJmpInstruction(_x: string): boolean {
         throw new Error('Not implemented');
     }
 
-    override getInstructionType(inst: string): InstructionType {
+    override getInstructionType(_inst: string): InstructionType {
         throw new Error('Not implemented');
     }
 }

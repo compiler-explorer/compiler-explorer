@@ -64,7 +64,7 @@ export class SPIRVCompiler extends BaseCompiler {
         inputFilename: string,
         outputFilename: string,
         libraries: SelectedLibraryVersion[],
-        overrides: ConfiguredOverrides,
+        _overrides: ConfiguredOverrides,
     ) {
         let options = this.optionsForFilter(filters, outputFilename);
         backendOptions = backendOptions || {};
@@ -106,7 +106,7 @@ export class SPIRVCompiler extends BaseCompiler {
         );
     }
 
-    override optionsForFilter(filters: ParseFiltersAndOutputOptions, outputFilename: string) {
+    override optionsForFilter(_filters: ParseFiltersAndOutputOptions, outputFilename: string) {
         const sourceDir = path.dirname(outputFilename);
         const bitcodeFilename = path.join(sourceDir, this.outputFilebase + '.bc');
         return ['-cc1', '-debug-info-kind=limited', '-dwarf-version=5', '-debugger-tuning=gdb', '-o', bitcodeFilename];
@@ -209,7 +209,7 @@ export class SPIRVCompiler extends BaseCompiler {
         inputFilename: string,
         options: string[],
         irOptions: LLVMIrBackendOptions,
-        produceCfg: boolean,
+        _produceCfg: boolean,
         filters: ParseFiltersAndOutputOptions,
     ) {
         const newOptions = options.filter(option => option !== '-fcolor-diagnostics').concat('-emit-llvm');

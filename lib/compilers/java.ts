@@ -22,9 +22,8 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import path from 'node:path';
-
 import fs from 'node:fs/promises';
+import path from 'node:path';
 import Semver from 'semver';
 import _ from 'underscore';
 
@@ -460,7 +459,7 @@ export class JavaCompiler extends BaseCompiler implements SimpleOutputFilenameCo
         return libString ? ['-cp', libString] : [''];
     }
 
-    override getIncludeArguments(libraries: SelectedLibraryVersion[], dirPath: string): string[] {
+    override getIncludeArguments(libraries: SelectedLibraryVersion[], _dirPath: string): string[] {
         this.libPaths = libraries.flatMap(selectedLib => {
             const foundVersion = this.findLibVersion(selectedLib);
             if (!foundVersion) return [];
