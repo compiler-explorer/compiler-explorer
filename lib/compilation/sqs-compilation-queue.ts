@@ -53,7 +53,7 @@ export type RemoteCompilationRequest = {
 
 export class SqsCompilationQueueBase {
     protected sqs: SQS;
-    protected queue_url: string;
+    protected readonly queue_url: string;
 
     constructor(props: PropertyGetter, awsProps: PropertyGetter) {
         const region = awsProps<string>('region', '');
