@@ -90,7 +90,8 @@ export class NimCompiler extends BaseCompiler {
         if (!extension) return null;
         const moduleName = path.basename(inputFilename);
         const resultName = '@m' + moduleName + extension;
-        return path.join(cacheDir, resultName);
+        // Ensure forward slashes are used consistently regardless of platform
+        return path.posix.join(cacheDir, resultName);
     }
 
     override async postProcess(
