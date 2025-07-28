@@ -121,7 +121,7 @@ function definition(): monaco.languages.IMonarchLanguage {
             '>>>=',
         ],
 
-        symbols: /[=><!~?:&|+\-*\/\^%]+/,
+        symbols: /[=><!~?:&|+\-*/^%]+/,
 
         escapes: /\\(?:[abfnrtv\\"']|x[0-9A-Fa-f]{1,4}|u[0-9A-Fa-f]{4}|U[0-9A-Fa-f]{8})/,
 
@@ -144,7 +144,7 @@ function definition(): monaco.languages.IMonarchLanguage {
                 {include: '@whitespace'},
 
                 // delimiters and operators
-                [/[{}()\[\]]/, '@brackets'],
+                [/[{}()[\]]/, '@brackets'],
                 [/[<>](?!@symbols)/, '@brackets'],
                 [
                     /@symbols/,

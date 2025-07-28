@@ -22,11 +22,8 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import path from 'node:path';
-
 import fs from 'node:fs/promises';
-import * as utils from '../utils.js';
-
+import path from 'node:path';
 import type {
     CompilationResult,
     ExecutionOptions,
@@ -41,6 +38,7 @@ import {CompilationEnvironment} from '../compilation-env.js';
 import {AssemblyName, DotnetExtraConfiguration} from '../execution/dotnet-execution-env.js';
 import {IExecutionEnvironment} from '../execution/execution-env.interfaces.js';
 import {DotNetAsmParser} from '../parsers/asm-parser-dotnet.js';
+import * as utils from '../utils.js';
 
 class DotNetCompiler extends BaseCompiler {
     private readonly sdkBaseDir: string;

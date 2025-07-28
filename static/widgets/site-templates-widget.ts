@@ -22,9 +22,8 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import $ from 'jquery';
-
 import GoldenLayout from 'golden-layout';
+import $ from 'jquery';
 import {escapeHTML} from '../../shared/common-utils.js';
 import {SiteTemplateConfiguration, UserSiteTemplate} from '../../types/features/site-templates.interfaces.js';
 import {assert, unwrap, unwrapString} from '../assert.js';

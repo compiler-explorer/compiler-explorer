@@ -23,25 +23,20 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import $ from 'jquery';
-import _ from 'underscore';
-
 import {Container} from 'golden-layout';
-import {Hub} from '../hub.js';
-
-import TomSelect from 'tom-select';
-import {Toggles} from '../widgets/toggles.js';
-
+import $ from 'jquery';
 import * as monaco from 'monaco-editor';
-import * as monacoConfig from '../monaco-config.js';
-import {MonacoPaneState, PaneState} from './pane.interfaces.js';
-import {MonacoPane} from './pane.js';
-
-import {GccDumpFiltersState, GccDumpViewSelectedPass, GccDumpViewState} from './gccdump-view.interfaces.js';
-
+import TomSelect from 'tom-select';
+import _ from 'underscore';
 import {CompilationResult} from '../../types/compilation/compilation.interfaces.js';
 import {CompilerInfo} from '../../types/compiler.interfaces.js';
 import {assert, unwrap} from '../assert.js';
+import {Hub} from '../hub.js';
+import * as monacoConfig from '../monaco-config.js';
+import {Toggles} from '../widgets/toggles.js';
+import {GccDumpFiltersState, GccDumpViewSelectedPass, GccDumpViewState} from './gccdump-view.interfaces.js';
+import {MonacoPaneState, PaneState} from './pane.interfaces.js';
+import {MonacoPane} from './pane.js';
 
 export class GccDump extends MonacoPane<monaco.editor.IStandaloneCodeEditor, GccDumpViewState> {
     selectize: TomSelect;

@@ -17,9 +17,8 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-import path from 'node:path';
-
 import fs from 'node:fs/promises';
+import path from 'node:path';
 import {beforeAll, describe, expect, it} from 'vitest';
 
 import {BaseCompiler} from '../lib/base-compiler.js';

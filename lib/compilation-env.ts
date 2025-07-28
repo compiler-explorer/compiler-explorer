@@ -41,7 +41,7 @@ import {FormattingService} from './formatting-service.js';
 import {logger} from './logger.js';
 import type {PropertyGetter} from './properties.interfaces.js';
 import {CompilerProps, PropFunc} from './properties.js';
-import {IStatsNoter, createStatsNoter} from './stats.js';
+import {createStatsNoter, IStatsNoter} from './stats.js';
 
 type FindCompiler = (langId: LanguageKey, compilerId: string) => BaseCompiler | undefined;
 

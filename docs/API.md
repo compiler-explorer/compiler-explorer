@@ -46,6 +46,19 @@ You can use the given include paths to supply in the userArguments for compilati
 You will need the library id's, and the version id's to supply to **compile** if you want to include libraries during
 compilation.
 
+### `GET /api/tools/<language-id>` - return a list of tools available for a language
+
+Returns a list of tools available for the provided language id. This request only returns data in JSON.
+
+The response contains an array of tool objects, each with:
+- `id`: Tool identifier
+- `name`: Human-readable tool name  
+- `type`: Tool type (e.g., "postprocessor")
+- `languageId`: Language the tool supports
+- `allowStdin`: Boolean indicating if the tool accepts stdin input
+
+You can use the tool id's in the `tools` array when making compilation requests.
+
 ### `GET /api/shortlinkinfo/<linkid>` - return information about a given link
 
 Returns information like Sourcecode, Compiler settings and libraries for a given link id. This request only returns data

@@ -198,7 +198,7 @@ function definition(): monaco.languages.IMonarchLanguage {
             block_comment: [
                 // Not / or *, definitely still in the block.
                 // This is not strictly necessary but improves efficiency.
-                [/[^\/*]+/, 'comment'],
+                [/[^/*]+/, 'comment'],
                 // /*, push block comment.
                 [/\/\*/, 'comment', '@push'],
                 // */, pop block comment.

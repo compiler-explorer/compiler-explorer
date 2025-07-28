@@ -23,9 +23,8 @@
 // POSSIBILITY OF SUCH DAMAGE.
 
 import {describe, expect, it} from 'vitest';
-
-import {PTXAsmParser} from '../lib/parsers/asm-parser-ptx.js';
 import {AsmParser} from '../lib/parsers/asm-parser.js';
+import {PTXAsmParser} from '../lib/parsers/asm-parser-ptx.js';
 
 describe('AsmParser tests', () => {
     const parser = new AsmParser();
@@ -40,6 +39,17 @@ describe('AsmParser tests', () => {
     });
     it('should identify llvm opcodes', () => {
         expect(parser.hasOpcode('  %i1 = phi i32 [ %i2, %.preheader ], [ 0, %bb ]')).toBe(true);
+    });
+});
+
+describe('AsmParser comment filtering', () => {
+    const parser = new AsmParser();
+    it('should keep label lines starting with @ when filtering comments', () => {
+        const input = '@cube@4:\n    ret';
+        const result = parser.processAsm(input, {commentOnly: true});
+        const lines = result.asm.map(line => line.text);
+        expect(lines[0]).toBe('@cube@4:');
+        expect(lines[1]).toBe('    ret');
     });
 });
 

@@ -56,7 +56,9 @@ import {Compiler} from './compiler.js';
 import {EditorState} from './editor.interfaces.js';
 import {MonacoPaneState, PaneState} from './pane.interfaces.js';
 import {MonacoPane} from './pane.js';
+
 import IModelDeltaDecoration = editor.IModelDeltaDecoration;
+
 import {getStaticImage} from '../utils';
 
 const loadSave = new loadSaveLib.LoadSave();
@@ -1192,7 +1194,7 @@ export class Editor extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Edit
                     try {
                         const res = JSON.parse(xhr.responseText);
                         error = res.answer || error;
-                    } catch (e) {
+                    } catch {
                         // continue regardless of error
                     }
                 }

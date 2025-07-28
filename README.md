@@ -42,7 +42,7 @@ Since then, it has become a public website serving over
 You can financially support [this project on Patreon](https://patreon.com/mattgodbolt),
 [GitHub](https://github.com/sponsors/mattgodbolt/),
 [Paypal](https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=KQWQZ7GPY2GZ6&item_name=Compiler+Explorer+development&currency_code=USD&source=url),
-or by buying cool gear on the [Compiler Explorer store](https://shop.spreadshirt.com/compiler-explorer/).
+or by buying cool gear on the [Compiler Explorer store](https://shop.compiler-explorer.com).
 
 ## Using Compiler Explorer
 
