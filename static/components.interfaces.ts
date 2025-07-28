@@ -470,7 +470,7 @@ export interface SerializedLayoutState {
  */
 export type DragSourceFactory<K extends keyof ComponentStateMap> = () => ComponentConfig<K>;
 
-export type InferComponentState<T> = T extends MonacoPane<infer E, infer S>
+export type InferComponentState<T> = T extends MonacoPane<infer _E, infer S>
     ? S & MonacoPaneState
     : T extends Pane<infer S>
       ? S & PaneState

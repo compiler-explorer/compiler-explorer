@@ -38,7 +38,7 @@ class LocalOnlyStorage implements Storage {
     get<T>(key: string, ifNotPresent: T): string | T {
         try {
             return window.localStorage.getItem(prefix + key) ?? ifNotPresent;
-        } catch (e) {
+        } catch {
             // Swallow up any security exceptions...
             return ifNotPresent;
         }
@@ -47,7 +47,7 @@ class LocalOnlyStorage implements Storage {
     remove(key: string) {
         try {
             window.localStorage.removeItem(prefix + key);
-        } catch (e) {
+        } catch {
             // Swallow up any security exceptions...
         }
     }
@@ -56,7 +56,7 @@ class LocalOnlyStorage implements Storage {
         try {
             window.localStorage.setItem(prefix + key, value);
             return true;
-        } catch (e) {
+        } catch {
             // Swallow up any security exceptions...
         }
         return false;
@@ -70,7 +70,7 @@ class SessionThenLocalStorage implements Storage {
         try {
             const sessionValue = window.sessionStorage.getItem(prefix + key);
             if (sessionValue !== null) return sessionValue;
-        } catch (e) {
+        } catch {
             // Swallow up any security exceptions...
         }
         return localStorage.get<T>(key, ifNotPresent);
@@ -84,7 +84,7 @@ class SessionThenLocalStorage implements Storage {
     private removeSession(key: string) {
         try {
             window.sessionStorage.removeItem(prefix + key);
-        } catch (e) {
+        } catch {
             // Swallow up any security exceptions...
         }
     }
@@ -93,7 +93,7 @@ class SessionThenLocalStorage implements Storage {
         try {
             window.sessionStorage.setItem(prefix + key, value);
             return true;
-        } catch (e) {
+        } catch {
             // Swallow up any security exceptions...
         }
         return false;

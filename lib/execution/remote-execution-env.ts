@@ -84,7 +84,7 @@ export class RemoteExecutionEnvironment implements IExecutionEnvironment {
             result.processExecutionResultTime = utils.deltaTimeNanoToMili(startTime, endTime) - result.execTime;
 
             return result;
-        } catch (e) {
+        } catch {
             waiter.close();
 
             return {

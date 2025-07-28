@@ -26,15 +26,13 @@ import {Container} from 'golden-layout';
 import $ from 'jquery';
 import * as monaco from 'monaco-editor';
 import _ from 'underscore';
-
-import {HaskellCoreState} from './haskellcore-view.interfaces.js';
-import {MonacoPaneState} from './pane.interfaces.js';
-import {MonacoPane} from './pane.js';
-
 import {CompilationResult} from '../../types/compilation/compilation.interfaces.js';
 import {CompilerInfo} from '../../types/compiler.interfaces.js';
 import {Hub} from '../hub.js';
 import {extendConfig} from '../monaco-config.js';
+import {HaskellCoreState} from './haskellcore-view.interfaces.js';
+import {MonacoPaneState} from './pane.interfaces.js';
+import {MonacoPane} from './pane.js';
 
 export class HaskellCore extends MonacoPane<monaco.editor.IStandaloneCodeEditor, HaskellCoreState> {
     constructor(hub: Hub, container: Container, state: HaskellCoreState & MonacoPaneState) {

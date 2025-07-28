@@ -23,11 +23,10 @@
 // POSSIBILITY OF SUCH DAMAGE.
 
 import {describe, expect, it} from 'vitest';
-
+import {AsmParser} from '../lib/parsers/asm-parser.js';
 import {AsmEWAVRParser} from '../lib/parsers/asm-parser-ewavr.js';
 import {SPIRVAsmParser} from '../lib/parsers/asm-parser-spirv.js';
 import {VcAsmParser} from '../lib/parsers/asm-parser-vc.js';
-import {AsmParser} from '../lib/parsers/asm-parser.js';
 import * as properties from '../lib/properties.js';
 
 // Helper functions to reduce test duplication

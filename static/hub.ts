@@ -43,8 +43,8 @@ import {
     HASKELL_CMM_VIEW_COMPONENT_NAME,
     HASKELL_CORE_VIEW_COMPONENT_NAME,
     HASKELL_STG_VIEW_COMPONENT_NAME,
-    IR_VIEW_COMPONENT_NAME,
     InferComponentState,
+    IR_VIEW_COMPONENT_NAME,
     LLVM_OPT_PIPELINE_VIEW_COMPONENT_NAME,
     OPT_PIPELINE_VIEW_COMPONENT_NAME,
     OPT_VIEW_COMPONENT_NAME,
@@ -86,8 +86,8 @@ import {RustHir as RustHirView} from './panes/rusthir-view.js';
 import {RustMacroExp as RustMacroExpView} from './panes/rustmacroexp-view.js';
 import {RustMir as RustMirView} from './panes/rustmir-view.js';
 import {StackUsage as StackUsageView} from './panes/stack-usage-view.js';
-import {ToolInputView} from './panes/tool-input-view.js';
 import {Tool} from './panes/tool.js';
+import {ToolInputView} from './panes/tool-input-view.js';
 import {Tree, TreeState} from './panes/tree.js';
 
 type GLC = GoldenLayout.Container;

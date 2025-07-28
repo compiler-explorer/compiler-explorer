@@ -56,7 +56,7 @@ function fail(fail_message: string, user_message: string | undefined, args: any[
     if (args.length > 0) {
         try {
             assert_line += ', ' + JSON.stringify(args);
-        } catch (e) {}
+        } catch {}
     }
 
     const diagnostic = get_diagnostic();

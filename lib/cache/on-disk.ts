@@ -22,11 +22,10 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import {Buffer} from 'buffer';
 import crypto from 'node:crypto';
-import path from 'node:path';
-
 import fs from 'node:fs';
+import path from 'node:path';
+import {Buffer} from 'buffer';
 import {LRUCache} from 'lru-cache';
 
 import type {GetResult} from '../../types/cache.interfaces.js';

@@ -39,7 +39,7 @@
     "commander": "^14.0.0",
     "compression": "^1.8.1",
     "copy-webpack-plugin": "^13.0.0",
-    "cross-env": "^7.0.3",
+    "cross-env": "^10.0.0",
     "enhanced-ms": "^4.1.0",
     "events": "^3.3.0",
     "express": "^5.1.0",
@@ -83,7 +83,7 @@
     "yaml": "^2.8.0"
   },
   "devDependencies": {
-    "@biomejs/biome": "^1.9.4",
+    "@biomejs/biome": "^2.1.2",
     "@sentry/types": "^9.42.1",
     "@smithy/util-stream": "^4.2.3",
     "@types/bootstrap": "^5.2.10",

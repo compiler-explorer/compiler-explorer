@@ -23,14 +23,6 @@
 // POSSIBILITY OF SUCH DAMAGE.
 
 import {describe, expect, it} from 'vitest';
-
-import {
-    createComponentConfig,
-    createLayoutItem,
-    fromGoldenLayoutConfig,
-    toGoldenLayoutConfig,
-} from '../../static/components.js';
-
 import {
     COMPILER_COMPONENT_NAME,
     DIFF_VIEW_COMPONENT_NAME,
@@ -41,6 +33,12 @@ import {
     TOOL_COMPONENT_NAME,
     TREE_COMPONENT_NAME,
 } from '../../static/components.interfaces.js';
+import {
+    createComponentConfig,
+    createLayoutItem,
+    fromGoldenLayoutConfig,
+    toGoldenLayoutConfig,
+} from '../../static/components.js';
 
 describe('Components validation', () => {
     describe('fromGoldenLayoutConfig', () => {

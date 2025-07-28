@@ -22,14 +22,13 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
+import fs from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
 
-import fs from 'node:fs/promises';
-
 import * as PromClient from 'prom-client';
 import _ from 'underscore';
-
+import {parseAllDocuments} from 'yaml';
 import {splitArguments, unique} from '../shared/common-utils.js';
 import {OptRemark} from '../static/panes/opt-view.interfaces.js';
 import {PPOptions} from '../static/panes/pp-view.interfaces.js';
@@ -40,6 +39,8 @@ import {
     BuildResult,
     BuildStep,
     BypassCache,
+    bypassCompilationCache,
+    bypassExecutionCache,
     CacheKey,
     CmakeCacheKey,
     CompilationCacheKey,
@@ -51,8 +52,6 @@ import {
     FiledataPair,
     GccDumpOptions,
     LibsAndOptions,
-    bypassCompilationCache,
-    bypassExecutionCache,
 } from '../types/compilation/compilation.interfaces.js';
 import {
     CompilerOverrideOption,
@@ -78,8 +77,6 @@ import type {Language} from '../types/languages.interfaces.js';
 import type {SelectedLibraryVersion} from '../types/libraries/libraries.interfaces.js';
 import type {ResultLine} from '../types/resultline/resultline.interfaces.js';
 import {type ToolResult, type ToolTypeKey} from '../types/tool.interfaces.js';
-
-import {parseAllDocuments} from 'yaml';
 import {moveArtifactsIntoResult} from './artifact-utils.js';
 import {assert, unwrap} from './assert.js';
 import {copyCopperSpicePlugins} from './binaries/copperspice-utils.js';
@@ -92,8 +89,8 @@ import {CompilerArguments} from './compiler-arguments.js';
 import {
     BaseParser,
     ClangCParser,
-    ClangParser,
     ClangirParser,
+    ClangParser,
     GCCCParser,
     GCCParser,
     ICCParser,
@@ -1814,7 +1811,7 @@ export class BaseCompiler {
         try {
             const stat = await fs.stat(outputFilename);
             asmResult.asmSize = stat.size;
-        } catch (e) {
+        } catch {
             // Ignore errors
         }
         return await this.postProcess(asmResult, outputFilename, filters, produceOptRemarks);

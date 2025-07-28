@@ -78,7 +78,7 @@ export function get_diagnostic() {
                         line: invoker_frame.lineNumber,
                         src: lines[invoker_frame.lineNumber - 1].trim(),
                     };
-                } catch (e: any) {}
+                } catch {}
             }
         }
     }
@@ -97,7 +97,7 @@ function fail(fail_message: string, user_message: string | undefined, args: any[
     if (args.length > 0) {
         try {
             assert_line += ', ' + JSON.stringify(args);
-        } catch (e) {}
+        } catch {}
     }
 
     const diagnostic = get_diagnostic();

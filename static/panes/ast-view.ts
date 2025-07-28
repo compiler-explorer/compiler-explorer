@@ -26,18 +26,16 @@ import {Container} from 'golden-layout';
 import $ from 'jquery';
 import * as monaco from 'monaco-editor';
 import _ from 'underscore';
-
-import * as colour from '../colour.js';
-import * as monacoConfig from '../monaco-config.js';
-import {AstState} from './ast-view.interfaces.js';
-import {MonacoPaneState} from './pane.interfaces.js';
-import {MonacoPane} from './pane.js';
-
 import {CompilationResult} from '../../types/compilation/compilation.interfaces.js';
 import {CompilerInfo} from '../../types/compiler.interfaces.js';
 import {ResultLine} from '../../types/resultline/resultline.interfaces.js';
 import {unwrap} from '../assert.js';
+import * as colour from '../colour.js';
 import {Hub} from '../hub.js';
+import * as monacoConfig from '../monaco-config.js';
+import {AstState} from './ast-view.interfaces.js';
+import {MonacoPaneState} from './pane.interfaces.js';
+import {MonacoPane} from './pane.js';
 
 type DecorationEntry = {
     linkedCode: any[];
