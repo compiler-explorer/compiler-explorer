@@ -25,7 +25,6 @@
 import {LLVMIrBackendOptions} from '../../types/compilation/ir.interfaces.js';
 import type {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces.js';
 import {unwrap} from '../assert.js';
-
 import {FlangParser} from './argument-parsers.js';
 import {FortranCompiler} from './fortran.js';
 

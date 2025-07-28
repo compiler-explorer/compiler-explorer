@@ -48,7 +48,7 @@ export function setupRealDark(hub: Hub) {
             $('#settings .theme').val('real-dark').trigger('change');
         }
     });
-    $('#true-dark .content .close').on('click', e => {
+    $('#true-dark .content .dark-close').on('click', e => {
         local.localStorage.set(localKey, 'hidden');
         toggleButton();
         toggleOverlay();

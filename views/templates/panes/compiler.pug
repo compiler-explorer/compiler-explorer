@@ -7,34 +7,30 @@ mixin newPaneButton(classId, text, title, icon)
   .top-bar.btn-toolbar.bg-light(role="toolbar")
     .btn-group.btn-group-sm(role="group" aria-label="Compiler picker")
       .input-group
-        .input-group-prepend
-          .input-group
-            select.compiler-picker
-            .input-group-append
-              button.btn.btn-sm.btn-light.input-group-text.picker-popout-button(data-trigger="click" style="cursor: pointer;" role="button" title="Compiler picker popout")
-                span
-                 i.fa-solid.fa-arrow-up-right-from-square
-            .input-group-append
-              button.btn.btn-sm.btn-light.input-group-text.prepend-options(data-trigger="click" style="cursor: pointer;" role="button" title="All compilation options")
-                span.status-icon
-        input.options.form-control(type="text" placeholder="Compiler options..." size="256" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false")
-        .input-group-append.populararguments(title="Popular arguments")
-          button.btn.btn-sm.btn-light.btn-outline-secondary.dropdown-toggle.dropdown-toggle-split.popular-arguments-btn(type="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false")
-            span.sr-only Popular arguments
-          div.dropdown-menu.dropdown-menu-right
+        select.compiler-picker
+        button.btn.btn-sm.btn-light.input-group-text.picker-popout-button(data-trigger="click" style="cursor: pointer;" role="button" title="Compiler picker popout")
+          span
+            i.fa-solid.fa-arrow-up-right-from-square
+        button.btn.btn-sm.btn-light.input-group-text.prepend-options(data-trigger="click" style="cursor: pointer;" role="button" title="All compilation options")
+          span.status-icon
+        input.options.form-control(type="text" placeholder="Compiler options..." size="256" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" aria-label="Compiler options")
+        .populararguments(title="Popular arguments")
+          button.btn.btn-sm.btn-light.btn-outline-secondary.dropdown-toggle.dropdown-toggle-split.popular-arguments-btn(type="button" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false")
+            span.visually-hidden Popular arguments
+          div.dropdown-menu.dropdown-menu-end
             button.dropdown-item.btn.btn-light.btn-sm
               .argmenuitem
                 span.argtitle Detailed Compiler Flags
                 span.argdescription Open a new window to edit verbose compiler flags
     include ../../font-size
     .btn-group.btn-group-sm.filters(role="group")
-      button.btn.btn-sm.btn-light.dropdown-toggle(type="button" title="Compiler output options" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" aria-label="Change how the compiler's output is generated")
+      button.btn.btn-sm.btn-light.dropdown-toggle(type="button" title="Compiler output options" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false" aria-label="Change how the compiler's output is generated")
         span.fas.fa-cog
         span.hideable Output...
       .dropdown-menu
         include ../../options-output
     .btn-group.btn-group-sm.filters(role="group")
-      button.btn.btn-sm.btn-light.dropdown-toggle(type="button" title="Compiler output filters" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" aria-label="Change how the compiler output is filtered")
+      button.btn.btn-sm.btn-light.dropdown-toggle(type="button" title="Compiler output filters" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false" aria-label="Change how the compiler output is filtered")
         span.fas.fa-filter
         span.hideable Filter...
       .dropdown-menu
@@ -48,10 +44,10 @@ mixin newPaneButton(classId, text, title, icon)
         span.fas.fa-wrench
         span.dp-text.hideable Overrides
     .btn-group.btn-group-sm(role="group")
-      button.btn.btn-sm.btn-light.dropdown-toggle.add-pane(type="button" title="Add a new pane" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" aria-label="Add new element for this compiler" data-cy="new-compiler-dropdown-btn")
+      button.btn.btn-sm.btn-light.dropdown-toggle.add-pane(type="button" title="Add a new pane" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false" aria-label="Add new element for this compiler" data-cy="new-compiler-dropdown-btn")
         span.fas.fa-plus
         span.hideable Add new...
-      .dropdown-menu.dropdown-menu-right.new-pane-dropdown(data-cy="new-compiler-pane-dropdown")
+      .dropdown-menu.dropdown-menu-end.new-pane-dropdown(data-cy="new-compiler-pane-dropdown")
         +newPaneButton("add-compiler", "Clone Compiler", "Clone this compiler window (click or drag)", "far fa-clone")
         +newPaneButton("create-executor", "Executor From This", "Create executor from this compiler", "fas fa-microchip")
         +newPaneButton("view-optimization", "Opt Remarks", "Show optimization remarks", "fas fa-weight")
@@ -73,22 +69,21 @@ mixin newPaneButton(classId, text, title, icon)
         +newPaneButton("view-gnatdebug", "GNAT Debug Expanded Code", "Show GNAT debug expanded code", "fas fa-tree")
         +newPaneButton("view-cfg", "Control Flow Graph", "Show assembly control flow graphs", "fas fa-exchange-alt")
     .btn-group.btn-group-sm(role="group")
-      button.btn.btn-sm.btn-light.dropdown-toggle.add-tool(type="button" title="Add tool" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" aria-label="Add tooling to this editor and compiler")
+      button.btn.btn-sm.btn-light.dropdown-toggle.add-tool(type="button" title="Add tool" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false" aria-label="Add tooling to this editor and compiler")
         span.fas.fa-screwdriver
         span.hideable Add tool...
-      .dropdown-menu.dropdown-menu-right.new-tool-dropdown
+      .dropdown-menu.dropdown-menu-end.new-tool-dropdown
   .monaco-placeholder
   .bottom-bar.bg-light
     if !embedded
       .btn-group.btn-group-sm
         .input-group
-          .input-group-prepend
-            button.btn.btn-sm.btn-light.clear-cache(title="Clear cache & recompile")
-              span.fas.fa-redo
-          button.btn.btn-sm.btn-light.output-btn(data-cy="new-output-pane-btn")
+          button.btn.btn-sm.btn-light.clear-cache(title="Clear cache & recompile" aria-label="Clear cache and recompile")
+            span.fas.fa-redo
+          button.btn.btn-sm.btn-light.output-btn(data-cy="new-output-pane-btn" aria-label="Show compiler output")
             span.fas.fa-receipt.status-text
             | &nbsp;Output
-            span.output-count
+            span.output-count(aria-live="polite")
               | &nbsp;(
               span.text-count
                 | 0
@@ -96,11 +91,11 @@ mixin newPaneButton(classId, text, title, icon)
               span.err-count
                 | 0
               | )
-      span.short-compiler-name.mr-1
-      button.btn.btn-sm.btn-light.full-compiler-name(data-trigger="click" style="cursor: pointer;" role="button")
+      span.short-compiler-name.me-1(aria-hidden="true")
+      button.btn.btn-sm.btn-light.full-compiler-name(data-trigger="click" style="cursor: pointer;" role="button" aria-label="Show compiler information")
         span.fas.fa-info
-      span.compile-info.mr-1(title="Compilation info")
-      button.btn.btn-sm.btn-light.full-timing-info(data-trigger="click" style="cursor: pointer;" role="button")
+      span.compile-info.me-1(title="Compilation info" aria-label="Compilation information")
+      button.btn.btn-sm.btn-light.full-timing-info(data-trigger="click" style="cursor: pointer;" role="button" aria-label="Show full timing information")
         span.fas.fa-chart-bar
-      button.btn.btn-sm.btn-light.compiler-license(data-trigger="click" style="cursor: pointer;" role="button")
+      button.btn.btn-sm.btn-light.compiler-license(data-trigger="click" style="cursor: pointer;" role="button" aria-label="View compiler license")
         span Compiler License

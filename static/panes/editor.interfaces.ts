@@ -22,7 +22,7 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import {Language, LanguageKey} from '../../types/languages.interfaces.js';
+import {LanguageKey} from '../../types/languages.interfaces.js';
 
 export type EditorState = {
     filename?: string;
@@ -31,9 +31,4 @@ export type EditorState = {
     };
     source?: string;
     lang: LanguageKey;
-};
-
-export type LanguageSelectData = Language & {
-    logoData?: string;
-    logoDataDark?: string;
 };

@@ -23,6 +23,7 @@
 // POSSIBILITY OF SUCH DAMAGE.
 
 import $ from 'jquery';
+import {CompilerInfo} from '../../types/compiler.interfaces.js';
 import {
     ConfiguredRuntimeTool,
     ConfiguredRuntimeTools,
@@ -32,7 +33,7 @@ import {
     RuntimeToolType,
 } from '../../types/execution/execution.interfaces.js';
 import {assert} from '../assert.js';
-import {CompilerInfo} from '../compiler.interfaces.js';
+import * as BootstrapUtils from '../bootstrap-utils.js';
 import {localStorage} from '../local.js';
 import {options} from '../options.js';
 
@@ -392,9 +393,8 @@ export class RuntimeToolsWidget {
 
         const lastOverrides = JSON.stringify(this.configured);
 
-        const popup = this.popupDomRoot.modal();
         // popup is shared, so clear the events first
-        popup.off('hidden.bs.modal').on('hidden.bs.modal', () => {
+        BootstrapUtils.setElementEventHandler(this.popupDomRoot, 'hidden.bs.modal', () => {
             this.configured = this.loadStateFromUI();
 
             const newOverrides = JSON.stringify(this.configured);
@@ -404,5 +404,7 @@ export class RuntimeToolsWidget {
                 this.onChangeCallback();
             }
         });
+
+        BootstrapUtils.showModal(this.popupDomRoot);
     }
 }

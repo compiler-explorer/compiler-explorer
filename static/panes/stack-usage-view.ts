@@ -31,9 +31,9 @@ import {MonacoPaneState} from './pane.interfaces.js';
 import {MonacoPane} from './pane.js';
 import {StackUsageState, suCodeEntry} from './stack-usage-view.interfaces.js';
 
+import {CompilationResult} from '../../types/compilation/compilation.interfaces.js';
+import {CompilerInfo} from '../../types/compiler.interfaces.js';
 import {unwrap} from '../assert.js';
-import {CompilationResult} from '../compilation/compilation.interfaces.js';
-import {CompilerInfo} from '../compiler.interfaces.js';
 import {Hub} from '../hub.js';
 import {extendConfig} from '../monaco-config.js';
 import {SentryCapture} from '../sentry.js';
@@ -87,9 +87,10 @@ export class StackUsage extends MonacoPane<monaco.editor.IStandaloneCodeEditor, 
 
     override onCompileResult(id: number, compiler: CompilerInfo, result: CompilationResult) {
         if (this.compilerInfo.compilerId !== id || !this.isCompilerSupported) return;
-        this.editor.setValue(unwrap(result.source));
+        const source = unwrap(result.source);
+        this.editor.setValue(source);
         if (result.stackUsageOutput) {
-            this.showStackUsageResults(result.stackUsageOutput);
+            this.showStackUsageResults(result.stackUsageOutput, source);
         }
 
         // TODO: This is inelegant again. Previously took advantage of fourth argument for the compileResult event.
@@ -121,7 +122,7 @@ export class StackUsage extends MonacoPane<monaco.editor.IStandaloneCodeEditor, 
         return '<Unimplemented>';
     }
 
-    showStackUsageResults(suEntries: suCodeEntry[], source?: string) {
+    showStackUsageResults(suEntries: suCodeEntry[], source: string) {
         const splitLines = (text: string): string[] => {
             if (!text) return [];
             const result = text.split(/\r?\n/);

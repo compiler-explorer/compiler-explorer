@@ -92,7 +92,7 @@ async function generateScreenshot(url: string, output_path: string, settings, wi
     }, settings);
     await page.goto(url);
     //await sleep(2000);
-    //await page.click(".modal.show button.btn.btn-outline-primary[data-dismiss=modal]");
+    //await page.click(".modal.show button.btn.btn-outline-primary[data-bs-dismiss=modal]");
     //await sleep(5000);
     //await page.click("#simplecook .btn.btn-primary.btn-sm.cook-do-consent");
     await page.evaluate(() => {
@@ -121,9 +121,9 @@ if (!fss.existsSync(output_dir)) {
     await fsp.mkdir(output_dir, {recursive: true});
 }
 const jobs: (() => void)[] = [];
-for (const {name, reference} of templates) {
+for (const {id, reference} of templates) {
     for (const [theme, colourScheme] of themes) {
-        const path = `${output_dir}/${name}.${theme}.png`;
+        const path = `${output_dir}/${id}.${theme}.png`;
         if (!fss.existsSync(path)) {
             jobs.push(() => generateScreenshot(
                 `${godbolt}/e#${reference}`,

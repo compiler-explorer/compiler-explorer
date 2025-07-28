@@ -43,7 +43,7 @@ import {StorageBase} from '../storage/index.js';
 import {CompileHandler} from './compile.js';
 
 function methodNotAllowed(req: express.Request, res: express.Response) {
-    res.status(405).send('Method Not Allowed').end();
+    res.status(405).send('Method Not Allowed');
 }
 
 export class ApiHandler {
@@ -75,7 +75,11 @@ export class ApiHandler {
                 'Access-Control-Allow-Headers': 'Origin, X-Requested-With, Content-Type, Accept',
                 'Cache-Control': cacheHeader,
             });
-            next();
+            if (req.method === 'OPTIONS') {
+                res.sendStatus(200);
+            } else {
+                next();
+            }
         });
         this.handle.route('/compilers').get(this.handleCompilers.bind(this)).all(methodNotAllowed);
 
@@ -86,6 +90,8 @@ export class ApiHandler {
         this.handle.route('/libraries/:language').get(this.handleLangLibraries.bind(this)).all(methodNotAllowed);
 
         this.handle.route('/libraries').get(this.handleAllLibraries.bind(this)).all(methodNotAllowed);
+
+        this.handle.route('/tools/:language').get(this.handleLangTools.bind(this)).all(methodNotAllowed);
 
         this.handle
             .route('/asm/:opcode')
@@ -126,6 +132,11 @@ export class ApiHandler {
 
         this.handle.route('/version').get(this.handleReleaseName.bind(this)).all(methodNotAllowed);
         this.handle.route('/releaseBuild').get(this.handleReleaseBuild.bind(this)).all(methodNotAllowed);
+        // Let's not document this one, eh?
+        this.handle.route('/forceServerError').get((req, res) => {
+            logger.error(`Forced server error from ${req.ip}`);
+            throw new Error('Forced server error');
+        });
     }
 
     shortlinkInfoHandler(req: express.Request, res: express.Response, next: express.NextFunction) {
@@ -238,10 +249,44 @@ export class ApiHandler {
         });
     }
 
+    getToolsAsArray(languageId: LanguageKey) {
+        const toolsForLanguageObj = unwrap(this.options).options.tools[languageId];
+        if (!toolsForLanguageObj) return [];
+
+        return Object.keys(toolsForLanguageObj).map(key => {
+            const tool = toolsForLanguageObj[key];
+            return {
+                id: key,
+                name: tool.name,
+                type: tool.type,
+                languageId: tool.languageId || languageId,
+                allowStdin: tool.stdinHint !== 'disabled',
+            };
+        });
+    }
+
     handleLangLibraries(req: express.Request, res: express.Response, next: express.NextFunction) {
         if (this.options) {
             if (req.params.language) {
                 res.send(this.getLibrariesAsArray(req.params.language as LanguageKey));
+            } else {
+                next({
+                    statusCode: 404,
+                    message: 'Language is required',
+                });
+            }
+        } else {
+            next({
+                statusCode: 500,
+                message: 'Internal error',
+            });
+        }
+    }
+
+    handleLangTools(req: express.Request, res: express.Response, next: express.NextFunction) {
+        if (this.options) {
+            if (req.params.language) {
+                res.send(this.getToolsAsArray(req.params.language as LanguageKey));
             } else {
                 next({
                     statusCode: 404,

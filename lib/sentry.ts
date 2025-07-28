@@ -29,13 +29,10 @@ import {parse} from '../shared/stacktrace.js';
 import {logger} from './logger.js';
 import {PropertyGetter} from './properties.interfaces.js';
 
-function shouldRedactRequestData(data: string) {
-    try {
-        const parsed = JSON.parse(data);
-        return !parsed['allowStoreCodeDebug'];
-    } catch (e) {
-        return true;
-    }
+function shouldRedactRequestData(data: unknown) {
+    if (data === undefined || data === null) return true;
+    if (Object.hasOwn(data, 'allowStoreCodeDebug')) return !data['allowStoreCodeDebug'];
+    return true;
 }
 
 export function SetupSentry(
@@ -54,9 +51,10 @@ export function SetupSentry(
         dsn: sentryDsn,
         release: releaseBuildNumber || gitReleaseName,
         environment: sentryEnv || defArgs.env[0],
+        sendDefaultPii: true, // equivalent to `{ip: true}` on older Sentry versions
         beforeSend(event) {
             if (event.request?.data && shouldRedactRequestData(event.request.data)) {
-                event.request.data = JSON.stringify({redacted: true});
+                event.request.data = {redacted: true};
             }
             return event;
         },

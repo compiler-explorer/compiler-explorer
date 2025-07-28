@@ -31,10 +31,12 @@ import {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfa
 import {unwrap} from '../assert.js';
 import {BaseCompiler} from '../base-compiler.js';
 import {CompilationEnvironment} from '../compilation-env.js';
+import {PTXAsmParser} from '../parsers/asm-parser-ptx.js';
 import {SassAsmParser} from '../parsers/asm-parser-sass.js';
 
 export class NvcppCompiler extends BaseCompiler {
     protected deviceAsmParser: SassAsmParser;
+    protected ptxParser: PTXAsmParser;
     protected cuobjdump: string | undefined;
 
     static get key() {
@@ -50,6 +52,7 @@ export class NvcppCompiler extends BaseCompiler {
         );
 
         this.deviceAsmParser = new SassAsmParser(this.compilerProps);
+        this.ptxParser = new PTXAsmParser(this.compilerProps);
 
         this.compiler.supportsDeviceAsmView = true;
     }
@@ -117,11 +120,12 @@ export class NvcppCompiler extends BaseCompiler {
                                 : await this.nvdisasm(path.join(dirPath, name), maxSize);
                         const archAndCode = name.split('.').slice(1, -1).join(', ') || '';
                         const nameAndArch = type + (archAndCode ? ` (${archAndCode.toLowerCase()})` : '');
+                        const parser = type === 'PTX' ? this.ptxParser : this.deviceAsmParser;
                         Object.assign(devices, {
                             [nameAndArch]: await this.postProcessAsm(
                                 {
                                     okToCache: demangle,
-                                    ...this.deviceAsmParser.process(asm, {...filters, binary: type === 'SASS'}),
+                                    ...parser.process(asm, {...filters, binary: type === 'SASS'}),
                                 },
                                 {...filters, binary: type === 'SASS'},
                             ),

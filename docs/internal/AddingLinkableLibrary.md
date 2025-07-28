@@ -35,11 +35,13 @@ unifex:
 
 3. Test building
 
-- Make sure you have a compiler installed, for example via `bin/ce_install install 'gcc 10.1.0'`
-- `bin/ce_install --dry-run --keep-staging --enable nightly build --buildfor g101 'unifex'`
+- You'll need a compatible conan installed (e.g. 1.59) and on the path
+- You'll need to hack a local setting for `g142` or whatever - the infra has `conan/switch-to-ce.sh` etc
+- Make sure you have a compiler installed, for example via `bin/ce_install install 'gcc 14.2.0'`
+- `bin/ce_install --debug --dry-run --keep-staging --enable nightly build --buildfor g142 'unifex'`
 - check one of the buildfolders that are created and see if there are .so's or .a's and otherwise check the
-  cecmakelog.txt and cemakelog_X.txt
-- Iterate over this to make it work
+  `cecmakelog.txt` and `cemakelog_X.txt` in the `/opt/compiler-explorer/staging/*/...`
+- Iterate over this to make it work. You can `cd` to a build dir and hack on the `./cebuild.sh` to iterate
 
 4. If a static link file has been produced:
 
@@ -66,3 +68,10 @@ libs.unifex.versions.trunk.path=/opt/compiler-explorer/libs/unifex/trunk/include
 
 - These new libraries won't show up on these pages until you do https://conan.compiler-explorer.com/reinitialize and
   then go to https://conan.compiler-explorer.com/libraries and hit refresh
+
+
+### Debugging on the library builder
+- `ce builder start`
+- `ce builder login`
+- `sudo docker run --rm -it --name test -v/home/ubuntu/.s3cfg:/root/.s3cfg:ro -v/opt:/opt:ro compilerexplorer/library-builder bash`
+- poke about

@@ -70,8 +70,12 @@ test-min: $(NODE_MODULES)  ## Runs the minimal tests
 .PHONY: check
 check: $(NODE_MODULES) lint test  ## Runs all checks required before committing (fixing trivial things automatically)
 
+.PHONY: check-frontend-imports
+check-frontend-imports: node-installed  ## Check that frontend doesn't import from backend
+	@$(NODE) ./etc/scripts/check-frontend-imports.js
+
 .PHONY: pre-commit
-pre-commit: $(NODE_MODULES) test-min lint
+pre-commit: $(NODE_MODULES) test-min lint check-frontend-imports
 
 .PHONY: clean
 clean:  ## Cleans up everything
@@ -84,7 +88,7 @@ prebuild: prereqs scripts
 
 .PHONY: run-only
 run-only: node-installed  ## Runs the site like it runs in production without building it
-	env NODE_ENV=production $(NODE) $(NODE_ARGS) ./out/dist/app.js --webpackContent ./out/webpack/static $(EXTRA_ARGS)
+	env NODE_ENV=production $(NODE) $(NODE_ARGS) ./out/dist/app.js --static ./out/webpack/static $(EXTRA_ARGS)
 
 .PHONY: run
 run:  ## Runs the site like it runs in production

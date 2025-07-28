@@ -22,8 +22,10 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
+import {Toast} from 'bootstrap';
 import $ from 'jquery';
 
+import * as BootstrapUtils from '../bootstrap-utils.js';
 import {AlertAskOptions, AlertEnterTextOptions, AlertNotifyOptions} from './alert.interfaces.js';
 
 export class Alert {
@@ -57,10 +59,10 @@ export class Alert {
         modal.toggleClass('error-alert', isError === true);
         modal.find('.modal-title').html(title);
         modal.find('.modal-body').html(body);
-        modal.modal();
+        BootstrapUtils.showModal(modal);
+
         if (onClose) {
-            modal.off('hidden.bs.modal');
-            modal.on('hidden.bs.modal', onClose);
+            BootstrapUtils.setElementEventHandler(modal, 'hidden.bs.modal', onClose);
         }
         return modal;
     }
@@ -83,10 +85,10 @@ export class Alert {
             modal.find('.modal-footer .no').removeClass('btn-link').addClass(askOptions.noClass);
         }
         if (askOptions.onClose) {
-            modal.off('hidden.bs.modal');
-            modal.on('hidden.bs.modal', askOptions.onClose);
+            BootstrapUtils.setElementEventHandler(modal, 'hidden.bs.modal', askOptions.onClose);
         }
-        modal.modal();
+
+        BootstrapUtils.showModal(modal);
         return modal;
     }
 
@@ -108,10 +110,8 @@ export class Alert {
         const newElement = $(`
             <div class="toast" tabindex="-1" role="alert" aria-live="assertive" aria-atomic="true">
                 <div class="toast-header ${alertClass}">
-                    <strong class="mr-auto">${this.prefixMessage}</strong>
-                    <button type="button" class="ml-2 mb-1 close" data-dismiss="toast" aria-label="Close">
-                        <span aria-hidden="true">&times;</span>
-                    </button>
+                    <strong class="me-auto">${this.prefixMessage}</strong>
+                    <button type="button" class="ms-2 mb-1 btn-close" data-bs-dismiss="toast" aria-label="Close"></button>
                 </div>
                 <div class="toast-body ${alertClass}">
                     <span id="msg">${body}</span>
@@ -119,21 +119,26 @@ export class Alert {
             </div>
         `);
         container.append(newElement);
-        newElement.toast({
+        const toastOptions = {
             autohide: autoDismiss,
             delay: dismissTime,
-        });
+        };
+
+        new Toast(newElement[0], toastOptions);
+
         if (group !== '') {
             if (collapseSimilar) {
                 // Only collapsing if a group has been specified
                 const old = container.find(`[data-group="${group}"]`);
-                old.toast('hide');
-                old.remove();
+                old.each((_, element) => {
+                    BootstrapUtils.hideToast(element);
+                    $(element).remove();
+                });
             }
             newElement.attr('data-group', group);
         }
         onBeforeShow(newElement);
-        newElement.toast('show');
+        BootstrapUtils.showToast(newElement);
     }
 
     /**
@@ -174,14 +179,13 @@ export class Alert {
             noButton.removeClass('btn-light').addClass(askOptions.noClass);
         }
         if (askOptions.onClose) {
-            modal.off('hidden.bs.modal');
-            modal.on('hidden.bs.modal', askOptions.onClose);
+            BootstrapUtils.setElementEventHandler(modal, 'hidden.bs.modal', askOptions.onClose);
         }
 
-        modal.on('shown.bs.modal', () => {
+        BootstrapUtils.setElementEventHandler(modal, 'shown.bs.modal', () => {
             answerEdit.trigger('focus');
         });
-        modal.modal();
+        BootstrapUtils.showModal(modal);
         return modal;
     }
 }

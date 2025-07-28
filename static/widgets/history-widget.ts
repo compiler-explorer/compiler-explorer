@@ -25,9 +25,10 @@
 import $ from 'jquery';
 import {editor} from 'monaco-editor';
 import {pluck} from 'underscore';
+import {unwrap} from '../assert.js';
+import * as BootstrapUtils from '../bootstrap-utils.js';
 import {EditorSource, HistoryEntry, sortedList} from '../history.js';
 import ITextModel = editor.ITextModel;
-import {unwrap} from '../assert.js';
 
 type Entry = {dt: number; name: string; load: () => void};
 
@@ -72,7 +73,9 @@ export class HistoryWidget {
                     name: `${dt.replace(/\s\(.*\)/, '')} (${languages})`,
                     load: () => {
                         this.onLoad(data);
-                        this.modal?.modal('hide');
+                        if (this.modal) {
+                            BootstrapUtils.hideModal(this.modal);
+                        }
                     },
                 };
             }),
@@ -140,7 +143,8 @@ export class HistoryWidget {
         this.onLoadCallback = onLoad;
 
         // It can't tell that we initialize modal on initializeIfNeeded, so it sticks to the possibility of it being null
-        unwrap(this.modal).on('shown.bs.modal', () => this.resizeLayout());
-        unwrap(this.modal).modal();
+        const modalElement = unwrap(this.modal)[0];
+        modalElement.addEventListener('shown.bs.modal', () => this.resizeLayout());
+        BootstrapUtils.showModal(modalElement);
     }
 }

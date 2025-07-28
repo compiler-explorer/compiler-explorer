@@ -31,7 +31,7 @@ import {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfa
 import {unwrap} from '../assert.js';
 import {BaseCompiler} from '../base-compiler.js';
 import {CompilationEnvironment} from '../compilation-env.js';
-import {SassAsmParser} from '../parsers/asm-parser-sass.js';
+import {PTXAsmParser} from '../parsers/asm-parser-ptx.js';
 import {asSafeVer} from '../utils.js';
 
 import {ClangParser} from './argument-parsers.js';
@@ -44,7 +44,7 @@ export class NvrtcCompiler extends BaseCompiler {
     constructor(info: PreliminaryCompilerInfo, env: CompilationEnvironment) {
         super(info, env);
 
-        this.asm = new SassAsmParser(this.compilerProps);
+        this.asm = new PTXAsmParser(this.compilerProps);
     }
 
     override optionsForFilter(filters: ParseFiltersAndOutputOptions, outputFilename: string, userOptions?: string[]) {

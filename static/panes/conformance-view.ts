@@ -28,14 +28,16 @@ import _ from 'underscore';
 import {escapeHTML, unique} from '../../shared/common-utils.js';
 import {CompilationResult} from '../../types/compilation/compilation.interfaces.js';
 import {CompilerInfo} from '../../types/compiler.interfaces.js';
+import {SelectedLibraryVersion} from '../../types/libraries/libraries.interfaces.js';
 import {unwrapString} from '../assert.js';
+import * as BootstrapUtils from '../bootstrap-utils.js';
 import {CompilationStatus} from '../compiler-service.interfaces.js';
 import {CompilerService} from '../compiler-service.js';
+import {createDragSource} from '../components.js';
 import * as Components from '../components.js';
 import {SourceAndFiles} from '../download-service.js';
 import {Hub} from '../hub.js';
 import * as LibUtils from '../lib-utils.js';
-import {SelectedLibraryVersion} from '../libraries/libraries.interfaces.js';
 import {Library, LibraryVersion} from '../options.interfaces.js';
 import {options} from '../options.js';
 import * as utils from '../utils.js';
@@ -100,7 +102,7 @@ export class Conformance extends Pane<ConformanceViewState> {
         // Dismiss the popover on escape.
         $(document).on('keyup.editable', e => {
             if (e.which === 27) {
-                this.libsButton.popover('hide');
+                BootstrapUtils.hidePopover(this.libsButton);
             }
         });
 
@@ -114,7 +116,7 @@ export class Conformance extends Pane<ConformanceViewState> {
                 elem.has(target as unknown as Element).length === 0 &&
                 target.closest('.popover').length === 0
             ) {
-                elem.popover('hide');
+                BootstrapUtils.hidePopover(elem);
             }
         });
     }
@@ -150,7 +152,7 @@ export class Conformance extends Pane<ConformanceViewState> {
         this.conformanceContentRoot = this.domRoot.find('.conformance-wrapper');
         this.selectorList = this.domRoot.find('.compiler-list');
         this.addCompilerButton = this.domRoot.find('.add-compiler');
-        this.selectorTemplate = $('#compiler-selector').find('.form-row');
+        this.selectorTemplate = $('#compiler-selector').find('.row');
         this.topBar = this.domRoot.find('.top-bar');
         this.libsButton = this.topBar.find('.show-libs');
         this.hideable = this.domRoot.find('.hideable');
@@ -225,15 +227,11 @@ export class Conformance extends Pane<ConformanceViewState> {
             .on('change', onOptionsChange)
             .on('keyup', onOptionsChange);
 
-        newSelector
-            .find('.close')
-            .not('.extract-compiler')
-            .not('.copy-compiler')
-            .on('click', () => {
-                this.removeCompilerPicker(newCompilerEntry);
-            });
+        newSelector.find('.close-compiler').on('click', () => {
+            this.removeCompilerPicker(newCompilerEntry);
+        });
 
-        newSelector.find('.close.copy-compiler').on('click', () => {
+        newSelector.find('.copy-compiler').on('click', () => {
             const config: AddCompilerPickerConfig = {
                 compilerId: newCompilerEntry.picker?.lastCompilerId ?? '',
                 options: newCompilerEntry.optionsField?.val() || '',
@@ -276,7 +274,7 @@ export class Conformance extends Pane<ConformanceViewState> {
         };
 
         // The .d.ts for GL lies. You can pass a function that returns the config as a second parameter
-        this.container.layoutManager.createDragSource(popCompilerButton, getCompilerConfig as any);
+        createDragSource(this.container.layoutManager, popCompilerButton, () => getCompilerConfig());
 
         popCompilerButton.on('click', () => {
             const insertPoint =
@@ -301,15 +299,19 @@ export class Conformance extends Pane<ConformanceViewState> {
     ): void {}
 
     setCompilationOptionsPopover(element: JQuery<HTMLElement> | null, content: string): void {
-        element?.popover('dispose');
-        element?.popover({
-            content: content || 'No options in use',
-            template:
-                '<div class="popover' +
-                (content ? ' compiler-options-popover' : '') +
-                '" role="tooltip"><div class="arrow"></div>' +
-                '<h3 class="popover-header"></h3><div class="popover-body"></div></div>',
-        });
+        if (element) {
+            const existingPopover = BootstrapUtils.getPopoverInstance(element);
+            if (existingPopover) existingPopover.dispose();
+
+            BootstrapUtils.initPopover(element, {
+                content: content || 'No options in use',
+                template:
+                    '<div class="popover' +
+                    (content ? ' compiler-options-popover' : '') +
+                    '" role="tooltip"><div class="arrow"></div>' +
+                    '<h3 class="popover-header"></h3><div class="popover-body"></div></div>',
+            });
+        }
     }
 
     removeCompilerPicker(compilerEntry: CompilerEntry): void {
@@ -324,7 +326,7 @@ export class Conformance extends Pane<ConformanceViewState> {
 
     copyCompilerPicker(config: AddCompilerPickerConfig): void {
         this.addCompilerPicker(config);
-        this.compileChild(this.compilerPickers.at(-1) as CompilerEntry);
+        this.compileChild(this.compilerPickers[this.compilerPickers.length - 1] as CompilerEntry);
         this.saveState();
     }
 

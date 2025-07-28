@@ -3,26 +3,23 @@
     .modal-content
       .modal-header
         h5.modal-title Share
-        button.close(type="button" data-dismiss="modal" aria-hidden="true" aria-label="Close")
-          span(aria-hidden="true")
-            | &times;
+        button.btn-close(type="button" data-bs-dismiss="modal" aria-hidden="true" aria-label="Close")
       .modal-body
         .card
           .card-body
             .container
+              label.form-label.visually-hidden(for="share-permalink") Share URL
               .input-group
-                input.form-control.permalink(type="text" placeholder="Loading" readonly size="1024")
-                .input-group-append
-                  button.btn.btn-outline-secondary.clippy(type="button" data-clipboard-target="#sharelinkdialog .permalink" title="Copy to clipboard")
-                    span.fa.fa-clipboard
-              #embedsettings.form-group(role="group")
-                .checkbox
-                  label
-                    input.readOnly(type="checkbox")
-                    | Read Only
-                .checkbox
-                  label
-                    input.hideEditorToolbars(type="checkbox")
-                    | Hide Editor Toolbars
+                input.form-control.permalink#share-permalink(type="text" placeholder="Loading" readonly size="1024" aria-describedby="share-permalink-help")
+                button.btn.btn-outline-secondary.clippy(type="button" data-clipboard-target="#sharelinkdialog .permalink" title="Copy to clipboard" aria-label="Copy to clipboard")
+                  span.fa.fa-clipboard
+              small.form-text.text-muted#share-permalink-help Use this URL to share your code with others
+              #embedsettings.mb-3(role="group")
+                .form-check
+                  input.form-check-input(type="checkbox" id="share-checkbox-readonly" data-option="readOnly")
+                  label.form-check-label(for="share-checkbox-readonly") Read Only
+                .form-check
+                  input.form-check-input(type="checkbox" id="share-checkbox-hideEditorToolbars" data-option="hideEditorToolbars")
+                  label.form-check-label(for="share-checkbox-hideEditorToolbars") Hide Editor Toolbars
               if sharingEnabled
                 .socialsharing.mt-2

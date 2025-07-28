@@ -244,7 +244,6 @@
       - any-glob-to-any-file:
           - 'lib/llvm-ast.ts'
           - 'lib/llvm-ir.ts'
-          - 'lib/llvm-opt-transformer.ts'
           - 'lib/compilers/llc.ts'
           - 'lib/compilers/llvm-mca.ts'
           - 'lib/objdumper/llvm.ts'
@@ -260,12 +259,26 @@
           - 'etc/config/modula2.*.properties'
           - 'static/modes/modula2-mode.ts'
 
+'lang-mojo':
+  - changed-files:
+      - any-glob-to-any-file:
+          - 'lib/compilers/mojo.ts'
+          - 'etc/config/mojo.*.properties'
+          - 'static/modes/mojo-mode.ts'
+
 'lang-nim':
   - changed-files:
       - any-glob-to-any-file:
           - 'lib/compilers/nim.ts'
           - 'etc/config/nim.*.properties'
           - 'static/modes/nim-mode.ts'
+
+'lang-nix':
+  - changed-files:
+      - any-glob-to-any-file:
+          - 'lib/compilers/nix.ts'
+          - 'etc/config/nix.*.properties'
+          - 'static/modes/nix-mode.ts'
 
 'lang-numba':
   - changed-files:
@@ -357,6 +370,7 @@
       - any-glob-to-any-file:
           - 'lib/compilers/solidity.ts'
           - 'lib/compilers/solidity-zksync.ts'
+          - 'lib/compilers/solx.ts'
           - 'etc/config/solidity.*.properties'
 
 'lang-spice':

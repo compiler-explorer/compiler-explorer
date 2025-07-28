@@ -36,8 +36,9 @@ import {
 import {CompilerInfo} from '../../types/compiler.interfaces.js';
 import {Language} from '../../types/languages.interfaces.js';
 import {ResultLine} from '../../types/resultline/resultline.interfaces.js';
-import {Artifact, ArtifactType} from '../../types/tool.interfaces.js';
 import {Filter as AnsiToHtml} from '../ansi-to-html.js';
+import {ArtifactHandler} from '../artifact-handler.js';
+import * as BootstrapUtils from '../bootstrap-utils.js';
 import {CompilationStatus as CompilerServiceCompilationStatus} from '../compiler-service.interfaces.js';
 import {CompilerService} from '../compiler-service.js';
 import {ICompilerShared} from '../compiler-shared.interfaces.js';
@@ -132,6 +133,7 @@ export class Executor extends Pane<ExecutorState> {
     private readonly infoByLang: Record<string, LangInfo | undefined>;
     private compiler: CompilerInfo | null;
     private compilerShared: ICompilerShared;
+    private artifactHandler: ArtifactHandler;
 
     constructor(hub: Hub, container: Container, state: PaneState & ExecutorState) {
         super(hub, container, state);
@@ -156,6 +158,7 @@ export class Executor extends Pane<ExecutorState> {
 
         this.alertSystem = new Alert();
         this.alertSystem.prefixMessage = 'Executor #' + this.id;
+        this.artifactHandler = new ArtifactHandler(this.alertSystem);
 
         this.normalAnsiToHtml = makeAnsiToHtml();
         this.errorAnsiToHtml = makeAnsiToHtml('var(--terminal-red)');
@@ -321,21 +324,38 @@ export class Executor extends Pane<ExecutorState> {
             });
             return;
         }
-        this.hub.compilerService.expandToFiles(this.source).then((sourceAndFiles: SourceAndFiles) => {
-            const request: CompilationRequest = {
-                source: sourceAndFiles.source || '',
-                compiler: this.compiler ? this.compiler.id : '',
-                options: options,
-                lang: this.currentLangId,
-                files: sourceAndFiles.files,
-            };
-            if (bypassCache) request.bypassCache = bypassCache;
-            if (!this.compiler) {
-                this.onCompileResponse(request, this.errorResult('<Please select a compiler>'), false);
-            } else {
-                this.sendCompile(request);
-            }
-        });
+        this.hub.compilerService
+            .expandToFiles(this.source)
+            .then((sourceAndFiles: SourceAndFiles) => {
+                const request: CompilationRequest = {
+                    source: sourceAndFiles.source || '',
+                    compiler: this.compiler ? this.compiler.id : '',
+                    options: options,
+                    lang: this.currentLangId,
+                    files: sourceAndFiles.files,
+                };
+                if (bypassCache) request.bypassCache = bypassCache;
+                if (!this.compiler) {
+                    this.onCompileResponse(request, this.errorResult('<Please select a compiler>'), false);
+                } else {
+                    this.sendCompile(request);
+                }
+            })
+            .catch(error => {
+                this.onCompileResponse(
+                    {
+                        source: this.source,
+                        compiler: this.compiler?.id || '',
+                        options: options,
+                        lang: this.currentLangId,
+                        files: [],
+                    },
+                    this.errorResult(
+                        'Failed to expand includes: ' + (error instanceof Error ? error.message : String(error)),
+                    ),
+                    false,
+                );
+            });
     }
 
     compileFromTree(options: CompilationRequestOptions, bypassCache?: BypassCache): void {
@@ -373,26 +393,37 @@ export class Executor extends Pane<ExecutorState> {
             );
         }
 
-        Promise.all(fetches).then(() => {
-            const treeState = tree.currentState();
-            const cmakeProject = tree.multifileService.isACMakeProject();
-            request.files.push(...moreFiles);
+        Promise.all(fetches)
+            .then(() => {
+                const treeState = tree.currentState();
+                const cmakeProject = tree.multifileService.isACMakeProject();
+                request.files.push(...moreFiles);
 
-            if (bypassCache) request.bypassCache = bypassCache;
-            if (!this.compiler) {
-                this.onCompileResponse(request, this.errorResult('<Please select a compiler>'), false);
-            } else if (cmakeProject && request.source === '') {
-                this.onCompileResponse(request, this.errorResult('<Please supply a CMakeLists.txt>'), false);
-            } else {
-                if (cmakeProject) {
-                    request.options.compilerOptions.cmakeArgs = treeState.cmakeArgs;
-                    request.options.compilerOptions.customOutputFilename = treeState.customOutputFilename;
-                    this.sendCMakeCompile(request);
+                if (bypassCache) request.bypassCache = bypassCache;
+                if (!this.compiler) {
+                    this.onCompileResponse(request, this.errorResult('<Please select a compiler>'), false);
+                } else if (cmakeProject && request.source === '') {
+                    this.onCompileResponse(request, this.errorResult('<Please supply a CMakeLists.txt>'), false);
                 } else {
-                    this.sendCompile(request);
+                    if (cmakeProject) {
+                        request.options.compilerOptions.cmakeArgs = treeState.cmakeArgs;
+                        request.options.compilerOptions.customOutputFilename = treeState.customOutputFilename;
+                        this.sendCMakeCompile(request);
+                    } else {
+                        this.sendCompile(request);
+                    }
                 }
-            }
-        });
+            })
+            .catch(error => {
+                this.onCompileResponse(
+                    request,
+                    this.errorResult(
+                        'Failed to expand includes in files: ' +
+                            (error instanceof Error ? error.message : String(error)),
+                    ),
+                    false,
+                );
+            });
     }
 
     sendCMakeCompile(request: CompilationRequest): void {
@@ -680,47 +711,7 @@ export class Executor extends Pane<ExecutorState> {
     }
 
     offerFilesIfPossible(result: CompilationResult) {
-        if (result.artifacts) {
-            for (const artifact of result.artifacts) {
-                if (artifact.type === ArtifactType.heaptracktxt) {
-                    this.offerViewInSpeedscope(artifact);
-                } else if (artifact.type === ArtifactType.timetrace) {
-                    this.offerViewInSpeedscope(artifact);
-                }
-            }
-        } else if (result.execResult) {
-            this.offerFilesIfPossible(result.execResult);
-        }
-    }
-
-    offerViewInSpeedscope(artifact: Artifact): void {
-        this.alertSystem.notify(
-            'Click ' +
-                '<a target="_blank" id="download_link" style="cursor:pointer;" click="javascript:;">here</a>' +
-                ' to view ' +
-                artifact.title +
-                ' in Speedscope',
-            {
-                group: artifact.type,
-                collapseSimilar: false,
-                dismissTime: 10000,
-                onBeforeShow: elem => {
-                    elem.find('#download_link').on('click', () => {
-                        const tmstr = Date.now();
-                        const live_url = 'https://static.ce-cdn.net/speedscope/index.html';
-                        const speedscope_url =
-                            live_url +
-                            '?' +
-                            tmstr +
-                            '#customFilename=' +
-                            artifact.name +
-                            '&b64data=' +
-                            artifact.content;
-                        window.open(speedscope_url);
-                    });
-                },
-            },
-        );
+        this.artifactHandler.handle(result);
     }
 
     onCompileResponse(request: CompilationRequest, result: CompilationResult, cached: boolean): void {
@@ -799,15 +790,19 @@ export class Executor extends Pane<ExecutorState> {
                 !target.is(this.prependOptions) &&
                 this.prependOptions.has(target as any).length === 0 &&
                 target.closest('.popover').length === 0
-            )
-                this.prependOptions.popover('hide');
+            ) {
+                const popover = BootstrapUtils.getPopoverInstance(this.prependOptions);
+                if (popover) popover.hide();
+            }
 
             if (
                 !target.is(this.fullCompilerName) &&
                 this.fullCompilerName.has(target as any).length === 0 &&
                 target.closest('.popover').length === 0
-            )
-                this.fullCompilerName.popover('hide');
+            ) {
+                const popover = BootstrapUtils.getPopoverInstance(this.fullCompilerName);
+                if (popover) popover.hide();
+            }
         });
 
         this.optionsField.val(this.options);
@@ -963,7 +958,8 @@ export class Executor extends Pane<ExecutorState> {
         // Dismiss the popover on escape.
         $(document).on('keyup.editable', e => {
             if (e.which === 27) {
-                this.libsButton.popover('hide');
+                const popover = BootstrapUtils.getPopoverInstance(this.libsButton);
+                if (popover) popover.hide();
             }
         });
 
@@ -997,7 +993,8 @@ export class Executor extends Pane<ExecutorState> {
             const elem = this.libsButton;
             const target = $(e.target);
             if (!target.is(elem) && elem.has(target as any).length === 0 && target.closest('.popover').length === 0) {
-                elem.popover('hide');
+                const popover = BootstrapUtils.getPopoverInstance(elem);
+                if (popover) popover.hide();
             }
         });
 
@@ -1186,8 +1183,12 @@ export class Executor extends Pane<ExecutorState> {
     }
 
     setCompilationOptionsPopover(content: string | null) {
-        this.prependOptions.popover('dispose');
-        this.prependOptions.popover({
+        // Dispose of existing popover
+        const existingPopover = BootstrapUtils.getPopoverInstance(this.prependOptions);
+        if (existingPopover) existingPopover.dispose();
+
+        // Initialize new popover
+        BootstrapUtils.initPopover(this.prependOptions, {
             content: content || 'No options in use',
             template:
                 '<div class="popover' +

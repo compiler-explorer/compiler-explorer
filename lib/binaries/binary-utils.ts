@@ -31,6 +31,7 @@ import {logger} from '../logger.js';
 export enum OSType {
     linux = 'linux',
     windows = 'win32',
+    osx = 'darwin',
 }
 
 export type BinaryInfo = {
@@ -58,6 +59,9 @@ export class BinaryInfoLinux {
             }
             case 'arm': {
                 return 'arm32';
+            }
+            case 'arm64': {
+                return 'aarch64';
             }
             case 'atmel avr 8-bit': {
                 return 'avr';
@@ -103,6 +107,7 @@ export class BinaryInfoLinux {
         const csv: string[] = output.split(', ').map(val => val.trim().toLowerCase());
         const isElf = csv[0].startsWith('elf');
         const isPE = csv[0].startsWith('pe32');
+        const isMachO = csv[0].startsWith('mach-o');
         if (isElf) {
             return {
                 os: OSType.linux,
@@ -117,6 +122,13 @@ export class BinaryInfoLinux {
             return {
                 os: OSType.windows,
                 instructionSet: BinaryInfoLinux.getInstructionSetForArchText(lastWord),
+            };
+        }
+        if (isMachO) {
+            const parts: string[] = output.split(' ').map(part => part.trim());
+            return {
+                os: OSType.osx,
+                instructionSet: BinaryInfoLinux.getInstructionSetForArchText(parts[3]),
             };
         }
 

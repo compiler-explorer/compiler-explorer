@@ -23,6 +23,7 @@
 // POSSIBILITY OF SUCH DAMAGE.
 
 export {AdaCompiler} from './ada.js';
+export {AMDRGACompiler} from './amd-rga.js';
 export {AnalysisTool} from './analysis-tool.js';
 export {AssemblyCompiler} from './assembly.js';
 export {AvrGcc6502Compiler} from './avrgcc6502.js';
@@ -103,11 +104,13 @@ export {LLVMMOSCompiler} from './llvm-mos.js';
 export {LLVMmcaTool} from './llvm-mca.js';
 export {MLIRCompiler} from './mlir.js';
 export {MadPascalCompiler} from './madpascal.js';
+export {MojoCompiler} from './mojo.js';
 export {MovfuscatorCompiler} from './movfuscator.js';
 export {MrustcCompiler} from './mrustc.js';
 export {Msp430Compiler} from './msp430.js';
 export {NasmCompiler} from './nasm.js';
 export {NimCompiler} from './nim.js';
+export {NixCompiler} from './nix.js';
 export {NumbaCompiler} from './numba.js';
 export {NvccCompiler} from './nvcc.js';
 export {NvcppCompiler} from './nvcpp.js';
@@ -127,6 +130,7 @@ export {QNXCompiler} from './qnx.js';
 export {R8Compiler} from './r8.js';
 export {RGACompiler} from './rga.js';
 export {RacketCompiler} from './racket.js';
+export {RakuCompiler} from './raku.js';
 export {RubyCompiler} from './ruby.js';
 export {RustCompiler} from './rust.js';
 export {RustcCgGCCCompiler} from './rustc-cg-gcc.js';
@@ -139,6 +143,7 @@ export {SlangCompiler} from './slang.js';
 export {SnowballCompiler} from './snowball.js';
 export {SolidityCompiler} from './solidity.js';
 export {SolidityZKsyncCompiler} from './solidity-zksync.js';
+export {SolxCompiler} from './solx.js';
 export {SpiceCompiler} from './spice.js';
 export {SwayCompiler} from './sway.js';
 export {SwiftCompiler} from './swift.js';
