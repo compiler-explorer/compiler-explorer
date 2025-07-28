@@ -60,7 +60,7 @@ export class SPIRVToolsCompiler extends BaseCompiler {
         this.disassemblerPath = this.compilerProps<string>('disassemblerPath');
     }
 
-    override optionsForFilter(_filters: ParseFiltersAndOutputOptions, outputFilename: string) {
+    override optionsForFilter(filters: ParseFiltersAndOutputOptions, outputFilename: string) {
         const sourceDir = path.dirname(outputFilename);
         const spvBinFilename = this.getPrimaryOutputFilename(sourceDir, this.outputFilebase);
         return ['-o', spvBinFilename];

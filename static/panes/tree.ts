@@ -275,7 +275,7 @@ export class Tree {
         }
     }
 
-    private onCompilerOpen(compilerId: number, _unused: number, treeId: number | boolean) {
+    private onCompilerOpen(compilerId: number, unused: number, treeId: number | boolean) {
         if (treeId === this.id) {
             this.ourCompilers[compilerId] = true;
             this.sendCompilerChangesToEditor(compilerId);
@@ -558,7 +558,7 @@ export class Tree {
 
             const dataTransfer = ev.originalEvent.dataTransfer;
             if (dataTransfer.items) {
-                [...dataTransfer.items].forEach(async (item, _i) => {
+                [...dataTransfer.items].forEach(async (item, i) => {
                     if (item.kind === 'file') {
                         const file = item.getAsFile();
                         if (file.name.endsWith('.zip')) {
@@ -569,7 +569,7 @@ export class Tree {
                     }
                 });
             } else {
-                [...dataTransfer.files].forEach(async (file, _i) => {
+                [...dataTransfer.files].forEach(async (file, i) => {
                     if (file.name.endsWith('.zip')) {
                         this.openZipFile(file);
                     } else {
@@ -692,7 +692,7 @@ export class Tree {
         });
     }
 
-    private onCompileResponse(compilerId: number, _compiler, result) {
+    private onCompileResponse(compilerId: number, compiler, result) {
         if (!this.ourCompilers[compilerId]) return;
 
         this.busyCompilers[compilerId] = false;

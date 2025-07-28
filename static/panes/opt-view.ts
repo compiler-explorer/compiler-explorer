@@ -195,13 +195,7 @@ export class Opt extends MonacoPane<monaco.editor.IStandaloneCodeEditor, OptStat
         });
     }
 
-    override onCompiler(
-        id: number,
-        compiler: CompilerInfo | null,
-        _options: string,
-        _editorId: number,
-        _treeId: number,
-    ) {
+    override onCompiler(id: number, compiler: CompilerInfo | null, options: string, editorId: number, treeId: number) {
         if (id === this.compilerInfo.compilerId) {
             this.compilerInfo.compilerName = compiler ? compiler.name : '';
             this.updateTitle();

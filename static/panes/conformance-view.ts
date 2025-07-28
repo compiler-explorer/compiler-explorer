@@ -291,11 +291,11 @@ export class Conformance extends Pane<ConformanceViewState> {
     }
 
     override onCompiler(
-        _compilerId: number,
-        _compiler: CompilerInfo,
-        _options: string,
-        _editorId: number,
-        _treeId: number,
+        compilerId: number,
+        compiler: CompilerInfo,
+        options: string,
+        editorId: number,
+        treeId: number,
     ): void {}
 
     setCompilationOptionsPopover(element: JQuery<HTMLElement> | null, content: string): void {
@@ -507,7 +507,7 @@ export class Conformance extends Pane<ConformanceViewState> {
                                 Object.keys(filteredLibraries[libKey].versions),
                             );
 
-                            lib.versions = _.pick(lib.versions, (_version, versionkey) => {
+                            lib.versions = _.pick(lib.versions, (version, versionkey) => {
                                 return versionsInCommon.includes(versionkey);
                             }) as Record<string, LibraryVersion>; // TODO(jeremy-rifkin)
                         } else {
@@ -585,5 +585,5 @@ export class Conformance extends Pane<ConformanceViewState> {
         return '';
     }
 
-    onCompileResult(_compilerId: number, _compiler: unknown, _result: unknown): void {}
+    onCompileResult(compilerId: number, compiler: unknown, result: unknown): void {}
 }

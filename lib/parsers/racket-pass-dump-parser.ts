@@ -52,7 +52,7 @@ export class RacketPassDumpParser {
     passHeader: RegExp;
     mainModule: RegExp;
 
-    constructor(_compilerProps: PropertyGetter) {
+    constructor(compilerProps: PropertyGetter) {
         // Filters that are always enabled
         this.filters = [];
         this.lineFilters = [];
@@ -243,7 +243,7 @@ export class RacketPassDumpParser {
         return finalOutput;
     }
 
-    breakdownOutput(ir: ResultLine[], _llvmOptPipelineOptions: OptPipelineBackendOptions) {
+    breakdownOutput(ir: ResultLine[], llvmOptPipelineOptions: OptPipelineBackendOptions) {
         const rawPasses = this.breakdownOutputIntoPassDumps(ir);
         const passDumpsByGroup = this.associatePassDumpsWithGroups(rawPasses);
         // Match before / after pass dumps and we're done

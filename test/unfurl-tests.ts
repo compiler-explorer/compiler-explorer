@@ -56,7 +56,7 @@ describe('Basic unfurls', () => {
 
     it('Too many editors to meta', async () => {
         const prom = new Promise<any>((resolve, reject) => {
-            config.renderGoldenLayout = (_config, metadata) => {
+            config.renderGoldenLayout = (config, metadata) => {
                 resolve({metadata});
             };
 
@@ -84,7 +84,7 @@ describe('Basic unfurls', () => {
 
     it('Just one editor', async () => {
         const prom = new Promise<any>((resolve, reject) => {
-            config.renderGoldenLayout = (_config, metadata) => {
+            config.renderGoldenLayout = (config, metadata) => {
                 resolve({metadata});
             };
 
@@ -113,7 +113,7 @@ describe('Basic unfurls', () => {
 
     it('Tree things', async () => {
         const prom = new Promise<any>((resolve, reject) => {
-            config.renderGoldenLayout = (_config, metadata) => {
+            config.renderGoldenLayout = (config, metadata) => {
                 resolve({metadata});
             };
 

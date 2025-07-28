@@ -62,14 +62,14 @@ const doFormatRequest = async (options: FormattingRequest) => {
  * @param isOneTrueStyle - Whether the CE format API backend has one true style
  */
 const getDocumentFormatter = (
-    _language: string,
+    language: string,
     formatter: string,
     isOneTrueStyle: boolean,
 ): monaco.languages.DocumentFormattingEditProvider => ({
     async provideDocumentFormattingEdits(
         model: monaco.editor.ITextModel,
-        _options: monaco.languages.FormattingOptions,
-        _token: monaco.CancellationToken,
+        options: monaco.languages.FormattingOptions,
+        token: monaco.CancellationToken,
     ): Promise<monaco.languages.TextEdit[]> {
         const settings = Settings.getStoredSettings();
         // If there is only one style, return __DefaultStyle.

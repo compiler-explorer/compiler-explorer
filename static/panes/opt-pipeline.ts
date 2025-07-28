@@ -265,7 +265,7 @@ export class OptPipeline extends MonacoPane<monaco.editor.IStandaloneDiffEditor,
         this.resize();
     }
 
-    resizeDragEnd(_e: MouseEvent) {
+    resizeDragEnd(e: MouseEvent) {
         document.documentElement.removeEventListener('mousemove', this.resizeDragMoveBind, false);
         document.documentElement.removeEventListener('mouseup', this.resizeDragEndBind, false);
     }
@@ -327,7 +327,7 @@ export class OptPipeline extends MonacoPane<monaco.editor.IStandaloneDiffEditor,
     override onCompiler(
         compilerId: number,
         compiler: CompilerInfo | null,
-        _options: string,
+        options: string,
         editorId: number,
         treeId: number,
     ): void {

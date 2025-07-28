@@ -49,7 +49,7 @@ export class SailCompiler extends BaseCompiler {
         console.assert(this.cCompiler !== undefined, 'cCompiler not set for Sail compiler');
     }
 
-    override optionsForFilter(_filters: ParseFiltersAndOutputOptions, _outputFilename: any) {
+    override optionsForFilter(filters: ParseFiltersAndOutputOptions, outputFilename: any) {
         // Target C backend (and override the default C options, -g etc.).
         return ['-c'];
     }
@@ -161,15 +161,15 @@ export class SailCompiler extends BaseCompiler {
         return fullResult;
     }
 
-    override getOutputFilename(dirPath: string, outputFilebase: string, _key?: any): string {
+    override getOutputFilename(dirPath: string, outputFilebase: string, key?: any): string {
         return path.join(dirPath, `${outputFilebase}.c`);
     }
 
     override getLibLinkInfo(
-        _filters: ParseFiltersAndOutputOptions,
-        _libraries: SelectedLibraryVersion[],
-        _toolchainPath: string,
-        _dirPath: string,
+        filters: ParseFiltersAndOutputOptions,
+        libraries: SelectedLibraryVersion[],
+        toolchainPath: string,
+        dirPath: string,
     ) {
         // Prevent any library linking flags from being passed to Sail during compilation.
         return {libLinks: [], libPathsAsFlags: [], staticLibLinks: []};

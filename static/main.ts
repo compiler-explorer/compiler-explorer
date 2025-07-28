@@ -137,7 +137,7 @@ function setupButtons(options: CompilerExplorerOptions, hub: Hub) {
     // I'd like for this to be the only function used, but it gets messy to pass the callback function around,
     // so we instead trigger a click here when we want it to open with this effect. Sorry!
     if (options.policies.privacy.enabled) {
-        $('#privacy').on('click', (_event, data) => {
+        $('#privacy').on('click', (event, data) => {
             const modal = alertSystem.alert(data?.title ? data.title : 'Privacy policy', policyDocuments.privacy.text);
             calcLocaleChangedDate(modal);
             // I can't remember why this check is here as it seems superfluous
@@ -237,7 +237,7 @@ function configFromEmbedded(embeddedUrl: string, defaultLangId: string) {
     let params;
     try {
         params = url.unrisonify(embeddedUrl);
-    } catch (_e) {
+    } catch {
         document.write(
             '<div style="padding: 10px; background: #fa564e; color: black;">' +
                 "An error was encountered while decoding the URL for this embed. Make sure the URL hasn't been " +
@@ -313,7 +313,7 @@ function findConfig(
             } else {
                 try {
                     config = url.deserialiseState(window.location.hash.substring(1));
-                } catch (_e) {
+                } catch {
                     // #3518 Alert the user that the url is invalid
                     const alertSystem = new Alert();
                     alertSystem.alert(

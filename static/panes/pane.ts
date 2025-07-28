@@ -113,13 +113,13 @@ export abstract class Pane<S> {
         this.settings = Settings.getStoredSettings();
     }
 
-    initializeStateDependentProperties(_state: S): void {}
+    initializeStateDependentProperties(state: S): void {}
 
     /** Optional overridable code for initializing necessary elements before rest of registers **/
-    registerDynamicElements(_state: S): void {}
+    registerDynamicElements(state: S): void {}
 
     /** Optionally overridable code for initializing pane buttons */
-    registerButtons(_state: S): void {}
+    registerButtons(state: S): void {}
 
     /** Optionally overridable code for initializing event callbacks */
     registerCallbacks(): void {}

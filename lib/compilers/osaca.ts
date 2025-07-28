@@ -41,7 +41,7 @@ export class OSACATool extends AnalysisTool {
         return ['-o', filename];
     }
 
-    override optionsForFilter(_filters: ParseFiltersAndOutputOptions, outputFilename: string) {
+    override optionsForFilter(filters: ParseFiltersAndOutputOptions, outputFilename: string) {
         return this.getOutputFilenameArgs(outputFilename);
     }
 

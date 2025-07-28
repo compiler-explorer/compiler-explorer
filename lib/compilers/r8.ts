@@ -51,7 +51,7 @@ export class R8Compiler extends D8Compiler implements SimpleOutputFilenameCompil
     }
 
     override async runCompiler(
-        _compiler: string,
+        compiler: string,
         options: string[],
         inputFilename: string,
         execOptions: ExecutionOptionsWithEnv,

@@ -79,7 +79,7 @@ export class MicrosoftAnalysisTool extends BaseTool {
     override async runTool(
         compilationInfo: Record<any, any>,
         inputFilepath?: string,
-        _args?: string[],
+        args?: string[],
         stdin?: string,
         supportedLibraries?: Record<string, OptionsHandlerLibrary>,
     ) {

@@ -149,7 +149,7 @@ export class Dex2OatCompiler extends BaseCompiler {
     }
 
     override async runCompiler(
-        _compiler: string,
+        compiler: string,
         options: string[],
         inputFilename: string,
         execOptions: ExecutionOptionsWithEnv,
@@ -315,7 +315,7 @@ export class Dex2OatCompiler extends BaseCompiler {
         const humanReadableFormatProfile = `${d8DirPath}/profile.prof.txt`;
         try {
             await fs.access(humanReadableFormatProfile);
-        } catch (_e) {
+        } catch {
             // No profile. This is expected.
             return null;
         }
@@ -759,8 +759,8 @@ export class Dex2OatCompiler extends BaseCompiler {
     override async generateOptPipeline(
         inputFilename: string,
         options: string[],
-        _filters: ParseFiltersAndOutputOptions,
-        _OptPipelineOptions: OptPipelineBackendOptions,
+        filters: ParseFiltersAndOutputOptions,
+        OptPipelineOptions: OptPipelineBackendOptions,
     ): Promise<OptPipelineOutput | undefined> {
         const dirPath = path.dirname(inputFilename);
         const execOptions = this.getDefaultExecOptions();

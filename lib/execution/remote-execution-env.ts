@@ -54,7 +54,7 @@ export class RemoteExecutionEnvironment implements IExecutionEnvironment {
         );
     }
 
-    async downloadExecutablePackage(_hash: string): Promise<void> {
+    async downloadExecutablePackage(hash: string): Promise<void> {
         throw new Error('Method not implemented.');
     }
 
@@ -84,7 +84,7 @@ export class RemoteExecutionEnvironment implements IExecutionEnvironment {
             result.processExecutionResultTime = utils.deltaTimeNanoToMili(startTime, endTime) - result.execTime;
 
             return result;
-        } catch (_e) {
+        } catch {
             waiter.close();
 
             return {
@@ -100,10 +100,10 @@ export class RemoteExecutionEnvironment implements IExecutionEnvironment {
     }
 
     async execBinary(
-        _executable: string,
-        _executeParameters: ExecutableExecutionOptions,
-        _homeDir: string,
-        _extraConfiguration?: any,
+        executable: string,
+        executeParameters: ExecutableExecutionOptions,
+        homeDir: string,
+        extraConfiguration?: any,
     ): Promise<BasicExecutionResult> {
         throw new Error('Method not implemented.');
     }

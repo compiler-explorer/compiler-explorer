@@ -246,7 +246,7 @@ export class Cfg extends Pane<CfgState> {
                 // pass, let the user select block contents and other text
             }
         });
-        this.graphContainer.addEventListener('mouseup', _e => {
+        this.graphContainer.addEventListener('mouseup', () => {
             this.dragging = false;
         });
         this.graphContainer.addEventListener('mousemove', e => {
@@ -313,7 +313,7 @@ export class Cfg extends Pane<CfgState> {
     override onCompiler(
         compilerId: number,
         compiler: CompilerInfo | null,
-        _options: string,
+        options: string,
         editorId: number,
         treeId: number,
     ): void {
@@ -327,7 +327,7 @@ export class Cfg extends Pane<CfgState> {
         }
     }
 
-    override onCompileResult(compilerId: number, _compiler: CompilerInfo, result: CompilationResult) {
+    override onCompileResult(compilerId: number, compiler: CompilerInfo, result: CompilationResult) {
         if (this.compilerInfo.compilerId !== compilerId) return;
         this.functionSelector.clear(true);
         this.functionSelector.clearOptions();

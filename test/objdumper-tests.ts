@@ -36,9 +36,9 @@ describe('Objdumper', () => {
 
             // Mock exec function
             const mockExec = async (
-                _filepath: string,
-                _args: string[],
-                _options: ExecutionOptions,
+                filepath: string,
+                args: string[],
+                options: ExecutionOptions,
             ): Promise<UnprocessedExecResult> => {
                 return {
                     code: 0,
@@ -69,9 +69,9 @@ describe('Objdumper', () => {
 
             // Mock exec function that fails
             const mockExec = async (
-                _filepath: string,
-                _args: string[],
-                _options: ExecutionOptions,
+                filepath: string,
+                args: string[],
+                options: ExecutionOptions,
             ): Promise<UnprocessedExecResult> => {
                 return {
                     code: 1,

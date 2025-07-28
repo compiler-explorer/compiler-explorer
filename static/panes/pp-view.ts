@@ -151,7 +151,7 @@ export class PP extends MonacoPane<monaco.editor.IStandaloneCodeEditor, PPViewSt
         }
     }
 
-    override onCompiler(id: number, compiler: CompilerInfo | null, _options: string, editorId: number, treeId: number) {
+    override onCompiler(id: number, compiler: CompilerInfo | null, options: string, editorId: number, treeId: number) {
         if (id === this.compilerInfo.compilerId) {
             this.compilerInfo.compilerName = compiler ? compiler.name : '';
             this.compilerInfo.editorId = editorId;

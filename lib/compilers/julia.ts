@@ -62,7 +62,7 @@ export class JuliaCompiler extends BaseCompiler {
         return [];
     }
 
-    override optionsForFilter(_filters: ParseFiltersAndOutputOptions, _outputFilename: string) {
+    override optionsForFilter(filters: ParseFiltersAndOutputOptions, outputFilename: string) {
         return [];
     }
 

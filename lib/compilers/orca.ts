@@ -66,7 +66,7 @@ export class ORCACompiler extends BaseCompiler {
         return [];
     }
 
-    override optionsForFilter(filters: ParseFiltersAndOutputOptions, outputFilename: string, _userOptions?: string[]) {
+    override optionsForFilter(filters: ParseFiltersAndOutputOptions, outputFilename: string, userOptions?: string[]) {
         let options: string[];
 
         if (filters.binary) {

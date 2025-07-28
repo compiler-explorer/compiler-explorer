@@ -215,7 +215,7 @@ export class Ast extends MonacoPane<monaco.editor.IStandaloneCodeEditor, AstStat
         }
     }
 
-    override onCompiler(id: number, compiler: CompilerInfo | null, _options: string, editorid: number, treeid: number) {
+    override onCompiler(id: number, compiler: CompilerInfo | null, options: string, editorid: number, treeid: number) {
         if (id === this.compilerInfo.compilerId) {
             this.compilerInfo.compilerName = compiler ? compiler.name : '';
             this.compilerInfo.editorId = editorid;

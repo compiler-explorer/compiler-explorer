@@ -281,7 +281,7 @@ export class LoadSave {
                 'Compiler Explorer ' + name + 'Code' + this.extension,
             );
             return true;
-        } catch (_e) {
+        } catch {
             this.alertSystem.notify('Error while saving your code. Use the clipboard instead.', {
                 group: 'savelocalerror',
                 alertClass: 'notification-error',

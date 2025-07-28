@@ -184,7 +184,7 @@ describe('Options handler', () => {
             ceProps: properties.fakeProps({}),
             compilerProps: () => {},
             getCompilerPropsForLanguage: () => {
-                return (_prop, def) => def;
+                return (prop, def) => def;
             },
         } as unknown as CompilationEnvironment;
     });
@@ -496,7 +496,7 @@ describe('Options handler', () => {
             ceProps: properties.fakeProps({}),
             compilerProps: () => {},
             getCompilerPropsForLanguage: () => {
-                return (_prop, def) => def;
+                return (prop, def) => def;
             },
         } as unknown as CompilationEnvironment;
 

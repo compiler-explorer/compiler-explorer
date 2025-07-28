@@ -111,7 +111,7 @@ export class HeaptrackWrapper extends BaseRuntimeTool {
         return this.execFunc(this.interpreter, [this.rawOutput], execOptions);
     }
 
-    private async finishPipesAndStreams(_fd: number, file: WriteStream, socket: net.Socket): Promise<void> {
+    private async finishPipesAndStreams(fd: number, file: WriteStream, socket: net.Socket): Promise<void> {
         socket.push(null);
         await new Promise(resolve => socket.end(() => resolve(true)));
 

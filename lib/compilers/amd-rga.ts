@@ -48,7 +48,7 @@ export class AMDRGACompiler extends BaseCompiler {
         this.compiler.supportsIntel = false;
     }
 
-    override optionsForFilter(_filters: ParseFiltersAndOutputOptions, outputFilename: any, _userOptions?: any): any[] {
+    override optionsForFilter(filters: ParseFiltersAndOutputOptions, outputFilename: any, userOptions?: any): any[] {
         return [outputFilename];
     }
 

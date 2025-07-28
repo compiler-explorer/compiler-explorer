@@ -43,23 +43,23 @@ export class CppFrontCompiler extends BaseCompiler {
         this.outputFilebase = 'example';
     }
 
-    override getCompilerResultLanguageId(_filters?: ParseFiltersAndOutputOptions): string | undefined {
+    override getCompilerResultLanguageId(filters?: ParseFiltersAndOutputOptions): string | undefined {
         return 'cppp';
     }
 
-    override optionsForFilter(_filters: ParseFiltersAndOutputOptions, _outputFilename: any) {
+    override optionsForFilter(filters: ParseFiltersAndOutputOptions, outputFilename: any) {
         return [];
     }
 
-    override getSharedLibraryPathsAsArguments(_libraries: SelectedLibraryVersion[], _libDownloadPath?: string) {
+    override getSharedLibraryPathsAsArguments(libraries: SelectedLibraryVersion[], libDownloadPath?: string) {
         return [];
     }
 
-    override getSharedLibraryLinks(_libraries: SelectedLibraryVersion[]): string[] {
+    override getSharedLibraryLinks(libraries: SelectedLibraryVersion[]): string[] {
         return [];
     }
 
-    override getOutputFilename(dirPath: string, outputFilebase: string, _key?: any): string {
+    override getOutputFilename(dirPath: string, outputFilebase: string, key?: any): string {
         return path.join(dirPath, `${outputFilebase}.cpp`);
     }
 }

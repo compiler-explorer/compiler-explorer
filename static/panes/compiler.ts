@@ -429,9 +429,9 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
         this.compilerPicker.destroy();
     }
 
-    onCompiler(_compilerId: number, _compiler: unknown, _options: string, _editorId: number, _treeId: number): void {}
+    onCompiler(compilerId: number, compiler: unknown, options: string, editorId: number, treeId: number): void {}
 
-    onCompileResult(_compilerId: number, _compiler: unknown, _result: unknown): void {}
+    onCompileResult(compilerId: number, compiler: unknown, result: unknown): void {}
 
     initPanerButtons(): void {
         const outputConfig = Components.getOutput(this.id, this.sourceEditorId ?? 0, this.sourceTreeId ?? 0);
@@ -1816,7 +1816,7 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
 
             const buttons = this.toolsMenu?.find('button');
             if (buttons)
-                $(buttons).each((_idx, button) => {
+                $(buttons).each((idx, button) => {
                     const toolButton = $(button);
                     const toolName = toolButton.data('toolname');
                     if (toolId === toolName) {
@@ -1834,7 +1834,7 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
 
             const buttons = this.toolsMenu?.find('button');
             if (buttons)
-                $(buttons).each((_idx, button) => {
+                $(buttons).each((idx, button) => {
                     const toolButton = $(button);
                     const toolName = toolButton.data('toolname');
                     if (toolId === toolName) {
@@ -2526,7 +2526,7 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
 
         const buttons = this.toolsMenu?.find('button');
         if (buttons)
-            $(buttons).each((_idx, button) => {
+            $(buttons).each((idx, button) => {
                 const toolButton = $(button);
                 const toolName = toolButton.data('toolname');
                 toolButton.prop(

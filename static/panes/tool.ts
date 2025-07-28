@@ -200,7 +200,7 @@ export class Tool extends MonacoPane<monaco.editor.IStandaloneCodeEditor, ToolSt
     }
 
     initArgs(state: ToolState & MonacoPaneState) {
-        const optionsChange = _.debounce((_e: any) => {
+        const optionsChange = _.debounce((e: any) => {
             this.onOptionsChange();
 
             this.eventHub.emit('toolSettingsChange', this.compilerInfo.compilerId);
@@ -398,7 +398,7 @@ export class Tool extends MonacoPane<monaco.editor.IStandaloneCodeEditor, ToolSt
     override onCompiler(
         compilerId: number,
         compiler: CompilerInfo | null,
-        _options: string,
+        options: string,
         editorId: number,
         treeId: number,
     ) {

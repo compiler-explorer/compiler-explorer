@@ -46,15 +46,11 @@ export class LLVMMOSCompiler extends ClangCompiler {
         this.toolchainPath = path.normalize(path.join(path.dirname(this.compiler.exe), '..'));
     }
 
-    override getExtraCMakeArgs(_key: ParsedRequest): string[] {
+    override getExtraCMakeArgs(key: ParsedRequest): string[] {
         return [`-DCMAKE_PREFIX_PATH=${this.toolchainPath}`];
     }
 
-    override fixFiltersBeforeCacheKey(
-        filters: ParseFiltersAndOutputOptions,
-        _options: string[],
-        _files: FiledataPair[],
-    ) {
+    override fixFiltersBeforeCacheKey(filters: ParseFiltersAndOutputOptions, options: string[], files: FiledataPair[]) {
         filters.binary = false;
     }
 

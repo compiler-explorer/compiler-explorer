@@ -66,9 +66,9 @@ export class HLSLCompiler extends BaseCompiler {
     }
 
     override optionsForFilter(
-        _filters: ParseFiltersAndOutputOptions,
+        filters: ParseFiltersAndOutputOptions,
         outputFilename: string,
-        _userOptions?: string[],
+        userOptions?: string[],
     ): string[] {
         return [
             '-Zi', // Embed debug information to get DXIL line associations

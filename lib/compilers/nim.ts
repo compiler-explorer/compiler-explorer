@@ -52,7 +52,7 @@ export class NimCompiler extends BaseCompiler {
         return outputFilename + '.cache';
     }
 
-    override optionsForFilter(_filters: ParseFiltersAndOutputOptions, outputFilename: string) {
+    override optionsForFilter(filters: ParseFiltersAndOutputOptions, outputFilename: string) {
         return [
             '--debugger:native', // debugging info
             '-o:' + outputFilename, //output file, only for js mode

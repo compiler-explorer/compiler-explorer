@@ -51,7 +51,7 @@ export class RustFmtFormatter extends BaseFormatter {
     /**
      * Rust format only has one style.
      */
-    override isValidStyle(_style: string): boolean {
+    override isValidStyle(style: string): boolean {
         return true;
     }
 }

@@ -58,7 +58,7 @@ export class RGACompiler extends BaseCompiler {
         logger.debug(`RGA compiler ${this.compiler.id} configured to use DXC at ${this.dxcPath}`);
     }
 
-    override optionsForFilter(_filters: ParseFiltersAndOutputOptions, outputFilename: any, _userOptions?: any): any[] {
+    override optionsForFilter(filters: ParseFiltersAndOutputOptions, outputFilename: any, userOptions?: any): any[] {
         return [outputFilename];
     }
 
@@ -163,7 +163,7 @@ Please supply an ASIC from the following options:`,
 
         try {
             await fs.writeFile(path.join(outputDir, spvTemp), dxcResult.stdout);
-        } catch (_e) {
+        } catch {
             const endTime = process.hrtime.bigint();
             return {
                 code: -1,

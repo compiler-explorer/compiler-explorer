@@ -76,7 +76,7 @@ export class Win32Demangler extends CppDemangler {
         }
     }
 
-    protected override processOutput(_translations: UnprocessedExecResult): ParsedAsmResult {
+    protected override processOutput(translations: UnprocessedExecResult): ParsedAsmResult {
         assert(false, "Win32Demangler.processOutput shouldn't be called");
     }
 

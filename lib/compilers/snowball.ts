@@ -53,11 +53,11 @@ export class SnowballCompiler extends BaseCompiler {
         this.linker = this.compilerProps<string>('linker');
     }
 
-    override getSharedLibraryPathsAsArguments(_libraries: SelectedLibraryVersion[], _libDownloadPath?: string) {
+    override getSharedLibraryPathsAsArguments(libraries: SelectedLibraryVersion[], libDownloadPath?: string) {
         return [];
     }
 
-    override getSharedLibraryLinks(_libraries: SelectedLibraryVersion[]): string[] {
+    override getSharedLibraryLinks(libraries: SelectedLibraryVersion[]): string[] {
         return [];
     }
 

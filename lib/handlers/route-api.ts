@@ -225,7 +225,7 @@ export class RouteAPI {
             });
     }
 
-    escapeLine(_req: express.Request, line: string) {
+    escapeLine(req: express.Request, line: string) {
         return line.replaceAll('&', '&amp;').replaceAll('<', '&lt;').replaceAll('>', '&gt;');
     }
 

@@ -65,7 +65,7 @@ export class SlangCompiler extends BaseCompiler {
         return this.getOutputFilename(dirPath, outputFilebase);
     }
 
-    override optionsForFilter(_filters: ParseFiltersAndOutputOptions, outputFilename: string, userOptions?: string[]) {
+    override optionsForFilter(filters: ParseFiltersAndOutputOptions, outputFilename: string, userOptions?: string[]) {
         const sourceDir = path.dirname(outputFilename);
         const target = this.getTarget(userOptions);
         const spvBinFilename = this.getPrimaryOutputFilename(sourceDir, this.outputFilebase, target);

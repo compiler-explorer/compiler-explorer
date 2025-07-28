@@ -168,7 +168,7 @@ export class Editor extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Edit
         // });
     }
 
-    override initializeCompilerInfo(_state: PaneState) {
+    override initializeCompilerInfo(state: PaneState) {
         this.compilerInfo = {
             compilerId: 0,
             compilerName: '',
@@ -702,7 +702,7 @@ export class Editor extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Edit
 
     b64UTFEncode(str: string): string {
         return Buffer.from(
-            encodeURIComponent(str).replace(/%([0-9A-F]{2})/g, (_match, v) => {
+            encodeURIComponent(str).replace(/%([0-9A-F]{2})/g, (match, v) => {
                 return String.fromCharCode(Number.parseInt(v, 16));
             }),
         ).toString('base64');
@@ -1188,13 +1188,13 @@ export class Editor extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Edit
                     });
                 }
             },
-            error: (xhr, _e_status, error) => {
+            error: (xhr, e_status, error) => {
                 // Hopefully we have not exploded!
                 if (xhr.responseText) {
                     try {
                         const res = JSON.parse(xhr.responseText);
                         error = res.answer || error;
-                    } catch (_e) {
+                    } catch {
                         // continue regardless of error
                     }
                 }
@@ -1370,7 +1370,7 @@ export class Editor extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Edit
         }
     }
 
-    onTreeCompilerEditorExcludeChange(_treeId: number, editorId: number, compilerId: number): void {
+    onTreeCompilerEditorExcludeChange(treeId: number, editorId: number, compilerId: number): void {
         if (this.id === editorId) {
             this.onCompilerClose(compilerId);
         }
@@ -1960,7 +1960,7 @@ export class Editor extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Edit
         return this.getSelectizeRenderHtml(data, escapeHtml, 20, 20);
     }
 
-    onCompiler(_compilerId: number, _compiler: unknown, _options: string, _editorId: number, _treeId: number): void {}
+    onCompiler(compilerId: number, compiler: unknown, options: string, editorId: number, treeId: number): void {}
 
     updateLanguageTooltip() {
         // Dispose existing popover instance

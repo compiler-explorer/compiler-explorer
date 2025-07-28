@@ -82,15 +82,15 @@ export class VCompiler extends BaseCompiler {
         }
     }
 
-    override getSharedLibraryPathsAsArguments(_libraries: SelectedLibraryVersion[], _libDownloadPath?: string) {
+    override getSharedLibraryPathsAsArguments(libraries: SelectedLibraryVersion[], libDownloadPath?: string) {
         return [];
     }
 
-    override getSharedLibraryLinks(_libraries: SelectedLibraryVersion[]): string[] {
+    override getSharedLibraryLinks(libraries: SelectedLibraryVersion[]): string[] {
         return [];
     }
 
-    override getOutputFilename(dirPath: string, _outputFilebase: string, _key?: any): string {
+    override getOutputFilename(dirPath: string, outputFilebase: string, key?: any): string {
         return path.join(dirPath, 'output' + this.outputFileExt);
     }
 

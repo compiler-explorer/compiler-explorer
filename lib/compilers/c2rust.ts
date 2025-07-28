@@ -41,7 +41,7 @@ export class C2RustCompiler extends BaseCompiler {
         this.asm = new NoOpParser();
     }
 
-    override optionsForFilter(_filters: ParseFiltersAndOutputOptions, _outputFilename: string) {
+    override optionsForFilter(filters: ParseFiltersAndOutputOptions, outputFilename: string) {
         return ['transpile'];
     }
 
@@ -49,7 +49,7 @@ export class C2RustCompiler extends BaseCompiler {
         return C2RustParser;
     }
 
-    override getCompilerResultLanguageId(_filters?: ParseFiltersAndOutputOptions): string | undefined {
+    override getCompilerResultLanguageId(filters?: ParseFiltersAndOutputOptions): string | undefined {
         return 'rust';
     }
 

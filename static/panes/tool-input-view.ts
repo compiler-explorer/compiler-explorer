@@ -118,14 +118,14 @@ export class ToolInputView extends MonacoPane<monaco.editor.IStandaloneCodeEdito
     }
 
     override onCompiler(
-        _compilerId: number,
-        _compiler: CompilerInfo | null,
-        _options: string,
-        _editorId: number,
-        _treeId: number,
+        compilerId: number,
+        compiler: CompilerInfo | null,
+        options: string,
+        editorId: number,
+        treeId: number,
     ) {}
 
-    override onCompileResult(_compilerId: number, _compiler: CompilerInfo, _result: CompilationResult) {}
+    override onCompileResult(compilerId: number, compiler: CompilerInfo, result: CompilationResult) {}
 
     override close() {
         this.eventHub.unsubscribe();

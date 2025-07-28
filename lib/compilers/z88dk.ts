@@ -137,10 +137,10 @@ export class z88dkCompiler extends BaseCompiler {
         outputFilename: string,
         result: any,
         maxSize: number,
-        _intelAsm: boolean,
-        _demangle: boolean,
-        _staticReloc: boolean,
-        _dynamicReloc: boolean,
+        intelAsm: boolean,
+        demangle: boolean,
+        staticReloc: boolean,
+        dynamicReloc: boolean,
         filters: ParseFiltersAndOutputOptions,
     ) {
         outputFilename = this.getObjdumpOutputFilename(outputFilename);

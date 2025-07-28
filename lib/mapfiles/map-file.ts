@@ -305,14 +305,14 @@ export class MapFileReader {
      * Try to match information about the address where a symbol is
      */
 
-    tryReadingNamedAddress(_line: string) {}
+    tryReadingNamedAddress(line: string) {}
 
     /**
      * Tries to match the given line to code segment information.
      *  Implementation specific, so this base function is empty
      */
 
-    tryReadingCodeSegmentInfo(_line: string) {}
+    tryReadingCodeSegmentInfo(line: string) {}
 
     tryReadingEntryPoint(line: string) {
         const matches = line.match(this.regexEntryPoint);
@@ -324,13 +324,13 @@ export class MapFileReader {
         }
     }
 
-    tryReadingPreferredAddress(_line: string) {}
+    tryReadingPreferredAddress(line: string) {}
 
-    tryReadingLineNumbers(_line: string): boolean {
+    tryReadingLineNumbers(line: string): boolean {
         return false;
     }
 
-    isStartOfLineNumbers(_line: string) {
+    isStartOfLineNumbers(line: string) {
         return false;
     }
 

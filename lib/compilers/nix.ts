@@ -72,12 +72,12 @@ export class NixCompiler extends BaseCompiler {
     override orderArguments(
         options: string[],
         inputFilename: string,
-        _libIncludes: string[],
-        _libOptions: string[],
-        _libPaths: string[],
-        _libLinks: string[],
+        libIncludes: string[],
+        libOptions: string[],
+        libPaths: string[],
+        libLinks: string[],
         userOptions: string[],
-        _staticLibLinks: string[],
+        staticLibLinks: string[],
     ): string[] {
         return ['eval', '--extra-experimental-features', 'nix-command', '--file', this.filename(inputFilename)]
             .concat(options, userOptions)

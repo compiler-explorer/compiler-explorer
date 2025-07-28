@@ -34,7 +34,7 @@ export class ErlangCompiler extends BaseCompiler {
         return 'erlang';
     }
 
-    override optionsForFilter(_filters: ParseFiltersAndOutputOptions, outputFilename: string): string[] {
+    override optionsForFilter(filters: ParseFiltersAndOutputOptions, outputFilename: string): string[] {
         return [
             '-noshell',
             '-eval',

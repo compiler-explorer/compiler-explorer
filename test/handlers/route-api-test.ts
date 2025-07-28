@@ -107,9 +107,9 @@ describe('clientStateHandler', () => {
         app = express();
         const apiHandler = new RouteAPI(app, {
             renderGoldenLayout: (
-                _config: GoldenLayoutRootStruct,
-                _metadata: ShortLinkMetaData,
-                _req: express.Request,
+                config: GoldenLayoutRootStruct,
+                metadata: ShortLinkMetaData,
+                req: express.Request,
                 res: express.Response,
             ) => {
                 res.send('This is ok');

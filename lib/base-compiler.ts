@@ -333,7 +333,7 @@ export class BaseCompiler {
             if (!filterLibIds.has(libid)) return;
 
             const libcopy = Object.assign({}, lib);
-            libcopy.versions = _.omit(lib.versions, (_version, versionid) => {
+            libcopy.versions = _.omit(lib.versions, (version, versionid) => {
                 for (const filter of filterLibAndVersion) {
                     if (filter.id === libid) {
                         if (!filter.version) return false;
@@ -508,7 +508,7 @@ export class BaseCompiler {
         };
     }
 
-    getCompilerResultLanguageId(_filters?: ParseFiltersAndOutputOptions): string | undefined {
+    getCompilerResultLanguageId(filters?: ParseFiltersAndOutputOptions): string | undefined {
         return undefined;
     }
 
@@ -786,7 +786,7 @@ export class BaseCompiler {
     protected optionsForFilter(
         filters: ParseFiltersAndOutputOptions,
         outputFilename: string,
-        _userOptions?: string[],
+        userOptions?: string[],
     ): string[] {
         let options = ['-g', '-o', this.filename(outputFilename)];
         if (this.compiler.intelAsm && filters.intel && !filters.binary && !filters.binaryObject) {
@@ -804,7 +804,7 @@ export class BaseCompiler {
     findLibVersion(selectedLib: SelectedLibraryVersion): false | VersionInfo {
         if (!this.supportedLibraries) return false;
 
-        const foundLib = _.find(this.supportedLibraries, (_o, libId) => libId === selectedLib.id);
+        const foundLib = _.find(this.supportedLibraries, (o, libId) => libId === selectedLib.id);
         if (!foundLib) return false;
 
         const result: VersionInfo | undefined = _.find(
@@ -822,7 +822,7 @@ export class BaseCompiler {
         return copiedResult;
     }
 
-    protected optionsForDemangler(_filters?: ParseFiltersAndOutputOptions): string[] {
+    protected optionsForDemangler(filters?: ParseFiltersAndOutputOptions): string[] {
         return [...this.compiler.demanglerArgs];
     }
 
@@ -918,7 +918,7 @@ export class BaseCompiler {
         return sortedlinks;
     }
 
-    getStaticLibraryLinks(libraries: SelectedLibraryVersion[], _libPaths: string[] = []): string[] {
+    getStaticLibraryLinks(libraries: SelectedLibraryVersion[], libPaths: string[] = []): string[] {
         const linkFlag = this.compiler.linkFlag || '-l';
 
         return this.getSortedStaticLibraries(libraries)
@@ -1169,7 +1169,7 @@ export class BaseCompiler {
         return options;
     }
 
-    prepareOptRemarksArgs(options: string[], _outputFilename: string): string[] {
+    prepareOptRemarksArgs(options: string[], outputFilename: string): string[] {
         return options.concat(unwrap(this.compiler.optArg));
     }
 
@@ -1248,7 +1248,7 @@ export class BaseCompiler {
 
     protected fixIncompatibleOptions(
         options: string[],
-        _userOptions: string[],
+        userOptions: string[],
         overrides: ConfiguredOverrides,
     ): [string[], ConfiguredOverrides] {
         return [options, overrides];
@@ -1681,7 +1681,7 @@ export class BaseCompiler {
         return [{text: 'Internal error; unable to open output path'}];
     }
 
-    getIrOutputFilename(inputFilename: string, _filters?: ParseFiltersAndOutputOptions): string {
+    getIrOutputFilename(inputFilename: string, filters?: ParseFiltersAndOutputOptions): string {
         // filters are passed because rust needs to know whether a binary is being produced or not
         return utils.changeExtension(inputFilename, '.ll');
     }
@@ -1709,7 +1709,7 @@ export class BaseCompiler {
         return this.getOutputFilename(dirPath, outputFilebase, key);
     }
 
-    async processGnatDebugOutput(_inputFilename: string, result: CompilationResult) {
+    async processGnatDebugOutput(inputFilename: string, result: CompilationResult) {
         const contentDebugExpanded: ResultLine[] = [];
         const contentDebugTree: ResultLine[] = [];
         const keep_stdout: ResultLine[] = [];
@@ -1811,7 +1811,7 @@ export class BaseCompiler {
         try {
             const stat = await fs.stat(outputFilename);
             asmResult.asmSize = stat.size;
-        } catch (_e) {
+        } catch {
             // Ignore errors
         }
         return await this.postProcess(asmResult, outputFilename, filters, produceOptRemarks);
@@ -1889,7 +1889,7 @@ export class BaseCompiler {
         dirPath: string,
         source: string,
         files: FiledataPair[],
-        _filters: ParseFiltersAndOutputOptions,
+        filters: ParseFiltersAndOutputOptions,
     ) {
         if (!source) throw new Error(`File ${this.compileFilename} has no content or file is missing`);
 
@@ -1909,7 +1909,7 @@ export class BaseCompiler {
         dirPath: string,
         source: string,
         files: FiledataPair[],
-        _filters: ParseFiltersAndOutputOptions,
+        filters: ParseFiltersAndOutputOptions,
     ) {
         if (!source) throw new Error('File CMakeLists.txt has no content or file is missing');
 
@@ -2645,7 +2645,7 @@ export class BaseCompiler {
         return libsAndOptions;
     }
 
-    getExtraCMakeArgs(_key: ParsedRequest): string[] {
+    getExtraCMakeArgs(key: ParsedRequest): string[] {
         return [];
     }
 

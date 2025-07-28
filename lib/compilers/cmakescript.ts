@@ -32,7 +32,7 @@ export class CMakeScriptCompiler extends BaseCompiler {
     }
 
     // Zero parameters are allowed by default.
-    override optionsForFilter(_filters: ParseFiltersAndOutputOptions, _outputFilename: string) {
+    override optionsForFilter(filters: ParseFiltersAndOutputOptions, outputFilename: string) {
         return [];
     }
 

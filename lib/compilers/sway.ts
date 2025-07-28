@@ -82,9 +82,9 @@ export class SwayCompiler extends BaseCompiler {
 
     override async generateIR(
         inputFilename: string,
-        _options: string[],
-        _irOptions: LLVMIrBackendOptions,
-        _produceCfg: boolean,
+        options: string[],
+        irOptions: LLVMIrBackendOptions,
+        produceCfg: boolean,
         filters: ParseFiltersAndOutputOptions,
     ) {
         // We can use runCompiler since it already handles all the project setup
@@ -109,7 +109,7 @@ export class SwayCompiler extends BaseCompiler {
         };
     }
 
-    override optionsForFilter(_filters: ParseFiltersAndOutputOptions, _outputFilename: string): string[] {
+    override optionsForFilter(filters: ParseFiltersAndOutputOptions, outputFilename: string): string[] {
         // return an array of command line options for the compiler
         return [];
     }

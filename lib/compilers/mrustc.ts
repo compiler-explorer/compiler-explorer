@@ -35,7 +35,7 @@ export class MrustcCompiler extends BaseCompiler {
         return 'mrustc';
     }
 
-    override optionsForFilter(_filters: ParseFiltersAndOutputOptions, outputFilename: string) {
+    override optionsForFilter(filters: ParseFiltersAndOutputOptions, outputFilename: string) {
         // mrustc always dumps the C code for <baseout> target in the <baseout>.c file.
         // In our case, the actual file in -o is not even created because we are
         // faking the last step (C compilation).
@@ -77,7 +77,7 @@ export class MrustcCompiler extends BaseCompiler {
         return MrustcParser;
     }
 
-    override getCompilerResultLanguageId(_filters?: ParseFiltersAndOutputOptions): string | undefined {
+    override getCompilerResultLanguageId(filters?: ParseFiltersAndOutputOptions): string | undefined {
         return 'c';
     }
 }

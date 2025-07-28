@@ -60,7 +60,7 @@ export class FakeCompiler {
         this.possibleArguments = new CompilerArguments('fake-for-test');
     }
 
-    initialise(_mtime: Date, _clientOptions: any, _isPrediscovered: boolean): Promise<BaseCompiler | null> {
+    initialise(mtime: Date, clientOptions: any, isPrediscovered: boolean): Promise<BaseCompiler | null> {
         throw new Error('Method not implemented.');
     }
 
@@ -85,10 +85,10 @@ export class FakeCompiler {
         options: string[],
         backendOptions: Record<string, any>,
         filters: ParseFiltersAndOutputOptions,
-        _bypassCache: BypassCache,
+        bypassCache: BypassCache,
         tools: ActiveTool[],
-        _executeParameters: ExecutionParams,
-        _libraries: SelectedLibraryVersion[],
+        executeParameters: ExecutionParams,
+        libraries: SelectedLibraryVersion[],
         files?: FiledataPair[],
     ) {
         const inputBody = {

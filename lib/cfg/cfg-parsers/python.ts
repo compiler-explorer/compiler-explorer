@@ -121,7 +121,7 @@ export class PythonCFGParser extends BaseCFGParser {
         return this.getBbId(inst);
     }
 
-    override extractAltJmpTargetName(_asmArr: AssemblyLine[], bbIdx: number, arrBB: CanonicalBB[]): string {
+    override extractAltJmpTargetName(asmArr: AssemblyLine[], bbIdx: number, arrBB: CanonicalBB[]): string {
         if (bbIdx >= arrBB.length) return '';
         return arrBB[bbIdx + 1].nameId;
     }

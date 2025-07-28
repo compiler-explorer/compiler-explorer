@@ -47,13 +47,13 @@ export class ToitCompiler extends BaseCompiler {
     override optionsForFilter(
         filters: ParseFiltersAndOutputOptions,
         outputFilename: string,
-        _userOptions?: string[],
+        userOptions?: string[],
     ): string[] {
         if (!filters.binary) return ['execute', outputFilename];
         return [outputFilename];
     }
 
-    override getSharedLibraryPathsAsArguments(_libraries: SelectedLibraryVersion[], _libDownloadPath?: string) {
+    override getSharedLibraryPathsAsArguments(libraries: SelectedLibraryVersion[], libDownloadPath?: string) {
         return [];
     }
     override getArgumentParserClass() {

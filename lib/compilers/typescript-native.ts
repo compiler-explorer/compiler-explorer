@@ -65,14 +65,14 @@ export class TypeScriptNativeCompiler extends BaseCompiler {
     }
 
     override optionsForFilter(
-        _filters: ParseFiltersAndOutputOptions,
-        _outputFilename: string,
-        _userOptions?: string[],
+        filters: ParseFiltersAndOutputOptions,
+        outputFilename: string,
+        userOptions?: string[],
     ): string[] {
         return [];
     }
 
-    override optionsForBackend(_backendOptions: Record<string, any>, outputFilename: string): string[] {
+    override optionsForBackend(backendOptions: Record<string, any>, outputFilename: string): string[] {
         const addOpts: string[] = [];
 
         addOpts.push(this.tscAsmOutput ? '--emit=asm' : '--emit=mlir');

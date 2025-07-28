@@ -76,7 +76,7 @@ export class MadPascalCompiler extends BaseCompiler {
         return filename;
     }
 
-    override getOutputFilename(dirPath: string, outputFilebase: string, _key?: any): string {
+    override getOutputFilename(dirPath: string, outputFilebase: string, key?: any): string {
         return this.getCompilerOutputFilename(dirPath, outputFilebase);
     }
 
@@ -86,8 +86,8 @@ export class MadPascalCompiler extends BaseCompiler {
 
     protected override optionsForFilter(
         filters: ParseFiltersAndOutputOptions,
-        _outputFilename: string,
-        _userOptions?: string[],
+        outputFilename: string,
+        userOptions?: string[],
     ): string[] {
         filters.demangle = false;
         return [];
@@ -158,12 +158,12 @@ export class MadPascalCompiler extends BaseCompiler {
     override async objdump(
         outputFilename: string,
         result: any,
-        _maxSize: number,
-        _intelAsm: boolean,
-        _demangle: boolean,
-        _staticReloc: boolean | undefined,
-        _dynamicReloc: boolean,
-        _filters: ParseFiltersAndOutputOptions,
+        maxSize: number,
+        intelAsm: boolean,
+        demangle: boolean,
+        staticReloc: boolean | undefined,
+        dynamicReloc: boolean,
+        filters: ParseFiltersAndOutputOptions,
     ) {
         const tmpDir = path.dirname(outputFilename);
         const listingFilename = this.getListingFilename(tmpDir, this.outputFilebase);
@@ -187,10 +187,10 @@ export class MadPascalCompiler extends BaseCompiler {
         inputFilename: string,
         libIncludes: string[],
         libOptions: string[],
-        _libPaths: string[],
-        _libLinks: string[],
+        libPaths: string[],
+        libLinks: string[],
         userOptions: string[],
-        _staticLibLinks: string[],
+        staticLibLinks: string[],
     ) {
         return options.concat([this.filename(inputFilename)], libIncludes, libOptions, userOptions);
     }

@@ -195,7 +195,7 @@ export class OatCFGParser extends BaseCFGParser {
 
     // Identical to splitToCanonicalBasicBlock(), but with a different node
     // naming scheme.
-    splitToCanonicalBasicBlockOat(_code: AssemblyLine[], basicBlock: BBRange): CanonicalBB[] {
+    splitToCanonicalBasicBlockOat(code: AssemblyLine[], basicBlock: BBRange): CanonicalBB[] {
         const actionPos = basicBlock.actionPos;
         let actPosSz = actionPos.length;
         if (actionPos[actPosSz - 1] + 1 === basicBlock.end) {

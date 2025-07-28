@@ -334,7 +334,7 @@ export class Ir extends MonacoPane<monaco.editor.IStandaloneCodeEditor, IrState>
     override onCompiler(
         compilerId: number,
         compiler: CompilerInfo | null,
-        _options: string,
+        options: string,
         editorId: number,
         treeId: number,
     ): void {

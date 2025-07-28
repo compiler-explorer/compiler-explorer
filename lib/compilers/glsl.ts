@@ -52,7 +52,7 @@ export class GLSLCompiler extends BaseCompiler {
         return path.join(dirPath, `${outputFilebase}.spv`);
     }
 
-    override optionsForFilter(_filters: ParseFiltersAndOutputOptions, outputFilename: string) {
+    override optionsForFilter(filters: ParseFiltersAndOutputOptions, outputFilename: string) {
         const sourceDir = path.dirname(outputFilename);
         const spvBinFilename = this.getPrimaryOutputFilename(sourceDir, this.outputFilebase);
         return ['-o', spvBinFilename, '-g']; // -g provides debug info

@@ -87,7 +87,7 @@ export class PascalWinCompiler extends BaseCompiler {
         return super.filename(fn);
     }
 
-    override async objdump(outputFilename: string, result, _maxSize: number, intelAsm: boolean) {
+    override async objdump(outputFilename: string, result, maxSize: number, intelAsm: boolean) {
         const dirPath = path.dirname(outputFilename);
         const execBinary = this.getExecutableFilename(dirPath);
         if (await utils.fileExists(execBinary)) {
@@ -120,12 +120,7 @@ export class PascalWinCompiler extends BaseCompiler {
         );
     }
 
-    override async writeAllFiles(
-        dirPath: string,
-        source: string,
-        files: any[],
-        _filters: ParseFiltersAndOutputOptions,
-    ) {
+    override async writeAllFiles(dirPath: string, source: string, files: any[], filters: ParseFiltersAndOutputOptions) {
         let inputFilename: string;
         if (pascalUtils.isProgram(source)) {
             inputFilename = path.join(dirPath, this.dprFilename);

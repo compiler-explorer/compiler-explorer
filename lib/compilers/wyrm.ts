@@ -82,7 +82,7 @@ export class WyrmCompiler extends BaseCompiler {
         };
     }
 
-    override getCompilerResultLanguageId(_filters?: ParseFiltersAndOutputOptions): string | undefined {
+    override getCompilerResultLanguageId(filters?: ParseFiltersAndOutputOptions): string | undefined {
         return 'llvm-ir';
     }
 }

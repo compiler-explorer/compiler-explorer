@@ -76,7 +76,7 @@ export class PythonCompiler extends BaseCompiler {
         return {asm: bytecodeResult};
     }
 
-    override optionsForFilter(_filters: ParseFiltersAndOutputOptions, outputFilename: string) {
+    override optionsForFilter(filters: ParseFiltersAndOutputOptions, outputFilename: string) {
         return ['-I', this.disasmScriptPath, '--outputfile', outputFilename, '--inputfile'];
     }
 

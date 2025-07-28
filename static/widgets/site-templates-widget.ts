@@ -73,7 +73,7 @@ class SiteTemplatesWidget {
     }
     async getTemplates() {
         if (this.templatesConfig === null) {
-            this.templatesConfig = await new Promise<SiteTemplateConfiguration>((resolve, _reject) => {
+            this.templatesConfig = await new Promise<SiteTemplateConfiguration>((resolve, reject) => {
                 $.getJSON(window.location.origin + window.httpRoot + 'api/siteTemplates', resolve);
             });
         }

@@ -142,7 +142,7 @@ function generateOutput(stack: string[], token: string, data: string | number, o
     return '';
 }
 
-function handleRgb(stack: string[], data: string, _options: AnsiToHtmlOptions) {
+function handleRgb(stack: string[], data: string, options: AnsiToHtmlOptions) {
     data = data.substring(2).slice(0, -1);
     const operation = +data.substring(0, 2);
 
@@ -208,7 +208,7 @@ function handleDisplay(stack: string[], code: string | number, options: AnsiToHt
     return 'Unknown code';
 }
 
-function handleUrl(_stack: string[], data: string, _options: AnsiToHtmlOptions): string {
+function handleUrl(stack: string[], data: string, options: AnsiToHtmlOptions): string {
     const [url, text] = data.split(/\x1b\\|\x07/);
     return `<a class="diagnostic-url" target="_blank" rel="noreferrer" href=${encodeURI(url)}>${escapeHTML(text)}</a>`;
 }
@@ -366,7 +366,7 @@ function tokenize(text: string, options: AnsiToHtmlOptions, callback: TokenizeCa
         return '';
     }
 
-    function ansiMess(_m: string, g1: string): string {
+    function ansiMess(m: string, g1: string): string {
         ansiMatch = true;
         if (g1.trim().length === 0) {
             g1 = '0';

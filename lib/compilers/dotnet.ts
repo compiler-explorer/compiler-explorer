@@ -145,7 +145,7 @@ class DotNetCompiler extends BaseCompiler {
 
     override async buildExecutable(
         compiler: string,
-        _options: string[],
+        options: string[],
         inputFilename: string,
         execOptions: ExecutionOptionsWithEnv,
     ) {
@@ -750,7 +750,7 @@ do()
         return compilerResult;
     }
 
-    override optionsForFilter(_filters: ParseFiltersAndOutputOptions) {
+    override optionsForFilter(filters: ParseFiltersAndOutputOptions) {
         return [];
     }
 

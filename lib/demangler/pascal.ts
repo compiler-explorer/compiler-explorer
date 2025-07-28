@@ -93,7 +93,7 @@ export class PascalDemangler extends BaseDemangler {
         return false;
     }
 
-    public composeReadableMethodSignature(_unitname: string, classname: string, methodname: string, params: string) {
+    public composeReadableMethodSignature(unitname: string, classname: string, methodname: string, params: string) {
         let signature = '';
 
         if (classname !== '') signature = classname.toLowerCase() + '.';

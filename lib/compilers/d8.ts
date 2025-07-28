@@ -91,7 +91,7 @@ export class D8Compiler extends BaseCompiler implements SimpleOutputFilenameComp
     }
 
     override async runCompiler(
-        _compiler: string,
+        compiler: string,
         options: string[],
         inputFilename: string,
         execOptions: ExecutionOptionsWithEnv,
@@ -296,7 +296,7 @@ export class D8Compiler extends BaseCompiler implements SimpleOutputFilenameComp
         return useDefaultMinApi ? ['--min-api', '27'] : [''];
     }
 
-    override getIncludeArguments(libraries: SelectedLibraryVersion[], _dirPath: string): string[] {
+    override getIncludeArguments(libraries: SelectedLibraryVersion[], dirPath: string): string[] {
         this.libPaths = libraries.flatMap(selectedLib => {
             const foundVersion = this.findLibVersion(selectedLib);
             if (!foundVersion) return [];

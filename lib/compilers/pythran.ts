@@ -42,7 +42,7 @@ export class PythranCompiler extends BaseCompiler {
     override optionsForFilter(
         filters: ParseFiltersAndOutputOptions,
         outputFilename: string,
-        _userOptions?: string[],
+        userOptions?: string[],
     ): string[] {
         let options = ['-o', this.filename(outputFilename)];
         if (!filters.binary && !filters.binaryObject) options = options.concat('-E');

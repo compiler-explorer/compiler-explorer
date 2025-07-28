@@ -63,7 +63,7 @@ export class GnuCobolCompiler extends BaseCompiler {
         return options;
     }
 
-    override getCompilerResultLanguageId(_filters?: ParseFiltersAndOutputOptions): string | undefined {
+    override getCompilerResultLanguageId(filters?: ParseFiltersAndOutputOptions): string | undefined {
         return 'asm';
     }
 
@@ -122,11 +122,11 @@ export class GnuCobolCompiler extends BaseCompiler {
         return path.join(dirPath, outputFilebase);
     }
 
-    override getSharedLibraryPathsAsArguments(_libraries: SelectedLibraryVersion[], _libDownloadPath?: string) {
+    override getSharedLibraryPathsAsArguments(libraries: SelectedLibraryVersion[], libDownloadPath?: string) {
         return [];
     }
 
-    override getSharedLibraryLinks(_libraries: SelectedLibraryVersion[]): string[] {
+    override getSharedLibraryLinks(libraries: SelectedLibraryVersion[]): string[] {
         return [];
     }
 

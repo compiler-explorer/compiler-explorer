@@ -88,7 +88,7 @@ export class RustMir extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Rus
     override onCompiler(
         compilerId: number,
         compiler: CompilerInfo | null,
-        _options: string,
+        options: string,
         editorId?: number,
         treeId?: number,
     ): void {

@@ -440,7 +440,7 @@ export class Diff extends MonacoPane<monaco.editor.IStandaloneDiffEditor, DiffSt
         }
     }
 
-    refreshDiffOptions(_id: number | string, compiler: CompilerInfo, result: CompilationResult) {
+    refreshDiffOptions(id: number | string, compiler: CompilerInfo, result: CompilationResult) {
         const lhsextraoptions: DiffOption[] = [];
         const rhsextraoptions: DiffOption[] = [];
 

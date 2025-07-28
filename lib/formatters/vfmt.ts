@@ -39,14 +39,14 @@ export class VFmtFormatter extends BaseFormatter {
      * This function does not use any options, because v fmt does not have any
      * options except the default provided ones (v fmt -w <file.v>).
      */
-    override async format(source: string, _options: FormatOptions): Promise<UnprocessedExecResult> {
+    override async format(source: string, options: FormatOptions): Promise<UnprocessedExecResult> {
         return await exec.execute(this.formatterInfo.exe, ['fmt', '-w'], {input: source});
     }
 
     /**
      * v fmt has no styling options
      */
-    override isValidStyle(_style: string): boolean {
+    override isValidStyle(style: string): boolean {
         return true;
     }
 }

@@ -36,7 +36,7 @@ export function setupMetricsServer(serverPort: number, hostname: string | undefi
     PromClient.collectDefaultMetrics();
     const metricsServer = express();
 
-    metricsServer.get('/metrics', (_req, res) => {
+    metricsServer.get('/metrics', (req, res) => {
         PromClient.register
             .metrics()
             .then(metrics => {

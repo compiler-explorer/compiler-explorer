@@ -224,7 +224,7 @@ export class Hub {
         );
         layout.eventHub.on(
             'languageChange',
-            function (this: Hub, _editorId: number, langId: LanguageKey) {
+            function (this: Hub, editorId: number, langId: LanguageKey) {
                 this.lastOpenedLangId = langId;
             },
             this,

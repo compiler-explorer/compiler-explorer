@@ -34,7 +34,7 @@ export class ElixirAsmCompiler extends BaseCompiler {
         return 'elixirasm';
     }
 
-    override optionsForFilter(_filters: ParseFiltersAndOutputOptions, outputFilename: string): string[] {
+    override optionsForFilter(filters: ParseFiltersAndOutputOptions, outputFilename: string): string[] {
         return [
             '--eval',
             '[input] = Code.required_files();' +

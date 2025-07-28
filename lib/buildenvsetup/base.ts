@@ -147,10 +147,10 @@ export class BuildEnvSetupBase {
     }
 
     async setup(
-        _key: CacheKey,
-        _dirPath: string,
-        _selectedLibraries: Record<string, VersionInfo>,
-        _binary: boolean,
+        key: CacheKey,
+        dirPath: string,
+        selectedLibraries: Record<string, VersionInfo>,
+        binary: boolean,
     ): Promise<BuildEnvDownloadInfo[]> {
         return [];
     }

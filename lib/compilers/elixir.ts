@@ -34,7 +34,7 @@ export class ElixirCompiler extends BaseCompiler {
         return 'elixir';
     }
 
-    override optionsForFilter(_filters: ParseFiltersAndOutputOptions, outputFilename: string): string[] {
+    override optionsForFilter(filters: ParseFiltersAndOutputOptions, outputFilename: string): string[] {
         return [
             '--eval',
             '[input] = Code.required_files();' +

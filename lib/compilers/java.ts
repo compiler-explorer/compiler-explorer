@@ -459,7 +459,7 @@ export class JavaCompiler extends BaseCompiler implements SimpleOutputFilenameCo
         return libString ? ['-cp', libString] : [''];
     }
 
-    override getIncludeArguments(libraries: SelectedLibraryVersion[], _dirPath: string): string[] {
+    override getIncludeArguments(libraries: SelectedLibraryVersion[], dirPath: string): string[] {
         this.libPaths = libraries.flatMap(selectedLib => {
             const foundVersion = this.findLibVersion(selectedLib);
             if (!foundVersion) return [];

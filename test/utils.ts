@@ -95,7 +95,7 @@ export function makeFakeParseFiltersAndOutputOptions(
 //
 //  a = null;
 //  shouldExist(a); /* throws should.exist assertion
-export function shouldExist<T>(value: T, _message?: string): value is Exclude<T, null | undefined> {
+export function shouldExist<T>(value: T, message?: string): value is Exclude<T, null | undefined> {
     // TODO: if the message is set we should have a proper message here; since the move to vitest we lost it.
     expect(value).toEqual(expect.anything());
     return true;

@@ -33,11 +33,11 @@ export class DartFormatFormatter extends BaseFormatter {
         return 'dartformat';
     }
 
-    override async format(source: string, _options: FormatOptions): Promise<UnprocessedExecResult> {
+    override async format(source: string, options: FormatOptions): Promise<UnprocessedExecResult> {
         return await exec.execute(this.formatterInfo.exe, ['format'], {input: source});
     }
 
-    override isValidStyle(_style: string): boolean {
+    override isValidStyle(style: string): boolean {
         // Dart supports only one style
         return true;
     }

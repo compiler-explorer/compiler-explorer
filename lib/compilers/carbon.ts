@@ -41,12 +41,12 @@ export class CarbonCompiler extends BaseCompiler {
     override orderArguments(
         options: string[],
         inputFilename: string,
-        _libIncludes: string[],
-        _libOptions: string[],
-        _libPaths: string[],
-        _libLinks: string[],
+        libIncludes: string[],
+        libOptions: string[],
+        libPaths: string[],
+        libLinks: string[],
         userOptions: string[],
-        _staticLibLinks: string[],
+        staticLibLinks: string[],
     ): string[] {
         return ['compile'].concat(
             options,
@@ -105,13 +105,13 @@ export class CarbonExplorerCompiler extends BaseCompiler {
         this.demanglerClass = null;
     }
 
-    override optionsForFilter(_filters: ParseFiltersAndOutputOptions, outputFilename: string): string[] {
+    override optionsForFilter(filters: ParseFiltersAndOutputOptions, outputFilename: string): string[] {
         return ['--color', `--trace_file=${outputFilename}`];
     }
 
     override async processAsm(
         result,
-        _filters: ParseFiltersAndOutputOptions,
+        filters: ParseFiltersAndOutputOptions,
         options: string[],
     ): Promise<ParsedAsmResult> {
         // Really should write a custom parser, but for now just don't filter anything.

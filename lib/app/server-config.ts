@@ -55,7 +55,7 @@ export function setupBaseServerConfig(
         .set('view engine', 'pug')
         .on('error', err => logger.error('Caught error in web handler; continuing:', err))
         .use(
-            responseTime((_req, _res, time) => {
+            responseTime((req, res, time) => {
                 if (options.sentrySlowRequestMs > 0 && time >= options.sentrySlowRequestMs) {
                     Sentry.withScope((scope: Sentry.Scope) => {
                         scope.setExtra('duration_ms', time);
@@ -65,14 +65,14 @@ export function setupBaseServerConfig(
             }),
         )
         .use(options.httpRoot, router)
-        .use((req, _res, next) => {
+        .use((req, res, next) => {
             next({status: 404, message: `page "${req.path}" could not be found`});
         });
 
     Sentry.setupExpressErrorHandler(webServer);
 
     // eslint-disable-next-line no-unused-vars
-    webServer.use((err: any, _req: Request, res: Response, _next: NextFunction) => {
+    webServer.use((err: any, req: Request, res: Response, _next: NextFunction) => {
         const status = err.status || err.statusCode || err.status_code || err.output?.statusCode || 500;
         const message = err.message || 'Internal Server Error';
         res.status(status);
@@ -198,16 +198,16 @@ export function setupBasicRoutes(
                 ),
             );
         })
-        .get('/robots.txt', cached, (_req, res) => {
+        .get('/robots.txt', cached, (req, res) => {
             res.end('User-agent: *\nSitemap: https://godbolt.org/sitemap.xml\nDisallow:');
         })
-        .get('/sitemap.xml', cached, (_req, res) => {
+        .get('/sitemap.xml', cached, (req, res) => {
             res.set('Content-Type', 'application/xml');
             res.render('sitemap');
         });
 
     router
-        .get('/client-options.js', cached, (_req, res) => {
+        .get('/client-options.js', cached, (req, res) => {
             res.set('Content-Type', 'application/javascript');
             res.end(`window.compilerExplorerOptions = ${clientOptionsHandler.getJSON()};`);
         })

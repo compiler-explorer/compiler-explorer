@@ -68,7 +68,7 @@ export class LDCCompiler extends BaseCompiler {
         return [];
     }
 
-    override getOutputFilename(dirPath: string, _outputFilebase: string, key?: any): string {
+    override getOutputFilename(dirPath: string, outputFilebase: string, key?: any): string {
         if (key?.filters?.binary) {
             return path.join(dirPath, 'output');
         }

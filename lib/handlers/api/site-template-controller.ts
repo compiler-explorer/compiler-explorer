@@ -37,7 +37,7 @@ export class SiteTemplateController implements HttpController {
         return router;
     }
 
-    public async getSiteTemplates(_req: express.Request, res: express.Response) {
+    public async getSiteTemplates(req: express.Request, res: express.Response) {
         const {meta, templates} = await getSiteTemplates();
         res.send({meta, templates} satisfies SiteTemplateConfiguration);
     }

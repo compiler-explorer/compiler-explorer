@@ -147,7 +147,7 @@ export class BaseCFGParser {
         return line.text.trim().indexOf('.') !== 0 || line.text.startsWith('.omp_');
     }
 
-    public async processFuncNames(code: AssemblyLine[], _fullRes?: CompilationResult): Promise<AssemblyLine[]> {
+    public async processFuncNames(code: AssemblyLine[], fullRes?: CompilationResult): Promise<AssemblyLine[]> {
         return code;
     }
 

@@ -56,13 +56,13 @@ export class AdaCompiler extends BaseCompiler {
         this.compiler.supportsGnatDebugViews = true;
     }
 
-    override getExecutableFilename(dirPath: string, _outputFilebase: string) {
+    override getExecutableFilename(dirPath: string, outputFilebase: string) {
         // The name here must match the value used in the pragma Source_File
         // in the user provided source.
         return path.join(dirPath, 'example');
     }
 
-    override getOutputFilename(dirPath: string, _outputFilebase: string, key?: any): string {
+    override getOutputFilename(dirPath: string, outputFilebase: string, key?: any): string {
         // The basename here must match the value used in the pragma Source_File
         // in the user provided source.
 
@@ -87,8 +87,8 @@ export class AdaCompiler extends BaseCompiler {
         backendOptions: Record<string, any>,
         inputFilename: string,
         outputFilename: string,
-        _libraries: SelectedLibraryVersion[],
-        _overrides: ConfiguredOverrides,
+        libraries: SelectedLibraryVersion[],
+        overrides: ConfiguredOverrides,
     ) {
         backendOptions = backendOptions || {};
 

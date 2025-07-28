@@ -47,7 +47,8 @@
       },
       "correctness": {
         "noUnsafeOptionalChaining": "off",
-        "noUnusedImports": "error"
+        "noUnusedImports": "error",
+        "noUnusedFunctionParameters": "off"
       },
       "performance": {
         "noAccumulatingSpread": "off",

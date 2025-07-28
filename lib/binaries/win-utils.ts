@@ -106,7 +106,7 @@ export async function copyNeededDlls(
             const infolder = path.join(dirPath, path.basename(dll));
             await fs.copyFile(dll, infolder);
         }
-    } catch (_e) {
+    } catch {
         logger.error(`Error while retreiving or copying dll dependencies of ${executableFilename}`);
     }
 }

@@ -81,7 +81,7 @@ export class NumbaCompiler extends BaseCompiler {
         return result;
     }
 
-    override optionsForFilter(_filters: ParseFiltersAndOutputOptions, outputFilename: string): string[] {
+    override optionsForFilter(filters: ParseFiltersAndOutputOptions, outputFilename: string): string[] {
         return ['-I', this.compilerWrapperPath, '--outputfile', outputFilename, '--inputfile'];
     }
 

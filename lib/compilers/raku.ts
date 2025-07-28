@@ -45,11 +45,11 @@ export class RakuCompiler extends BaseCompiler {
         return 'raku';
     }
 
-    override optionsForFilter(_filters: ParseFiltersAndOutputOptions, outputFilename: string) {
+    override optionsForFilter(filters: ParseFiltersAndOutputOptions, outputFilename: string) {
         return [this.disasmScriptPath, this.exepath, outputFilename];
     }
 
-    override async processAsm(result, _filters: ParseFiltersAndOutputOptions, _options: string[]) {
+    override async processAsm(result, filters: ParseFiltersAndOutputOptions, options: string[]) {
         const lineRe = /^ {5}annotation: ([^:]*):(\d+)$/;
         const frameHeadRe = /^ {2}Frame_(\d+) :$/;
 

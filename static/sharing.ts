@@ -391,7 +391,7 @@ export class Sharing {
                 return;
             case LinkType.Embed: {
                 const options: Record<string, boolean> = {};
-                $('#sharelinkdialog input:checked').each((_i, element) => {
+                $('#sharelinkdialog input:checked').each((i, element) => {
                     options[$(element).data('option')] = true;
                 });
                 done(null, Sharing.getEmbeddedHtml(config, root, false, options), false);
@@ -458,7 +458,7 @@ export class Sharing {
         return location + path + url.serialiseState(config);
     }
 
-    private static storeCurrentConfig(_config: any, extra: string): void {
+    private static storeCurrentConfig(config: any, extra: string): void {
         window.history.pushState(null, '', extra);
     }
 

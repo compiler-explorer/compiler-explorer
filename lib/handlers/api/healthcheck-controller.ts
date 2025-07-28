@@ -54,7 +54,7 @@ export class HealthcheckController implements HttpController {
      * @param req
      * @param res
      */
-    public async healthcheck(_req: express.Request, res: express.Response) {
+    public async healthcheck(req: express.Request, res: express.Response) {
         // Enqueue an empty job to ensure the queue is running. This check simply tests that the queue is being
         // processed by _something_.
         await this.compilationQueue.enqueue(async () => {}, {highPriority: true});

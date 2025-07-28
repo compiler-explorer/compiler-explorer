@@ -176,7 +176,7 @@ export class GolangCompiler extends BaseCompiler {
         });
 
         // Find unused pseudo-labels so they can be filtered out.
-        const unusedLabels = _.mapObject(labels, (_val, key) => !usedLabels[key]);
+        const unusedLabels = _.mapObject(labels, (val, key) => !usedLabels[key]);
 
         return lines
             .flat()

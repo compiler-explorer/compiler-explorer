@@ -59,7 +59,7 @@ export class ISPCCompiler extends BaseCompiler {
         this.executableLinker = this.compilerProps<string>(`compiler.${this.compiler.id}.executableLinker`);
     }
 
-    override couldSupportASTDump(_version: string) {
+    override couldSupportASTDump(version: string) {
         return Semver.gte(asSafeVer(this.compiler.semver), '1.18.0', true);
     }
 
@@ -127,10 +127,10 @@ export class ISPCCompiler extends BaseCompiler {
     }
 
     override getLibLinkInfo(
-        _filters: ParseFiltersAndOutputOptions,
-        _libraries: SelectedLibraryVersion[],
-        _toolchainPath: string,
-        _dirPath: string,
+        filters: ParseFiltersAndOutputOptions,
+        libraries: SelectedLibraryVersion[],
+        toolchainPath: string,
+        dirPath: string,
     ) {
         // Prevent any library linking flags from being passed to ispc during compilation.
         return {libLinks: [], libPathsAsFlags: [], staticLibLinks: []};

@@ -14,7 +14,7 @@ export class YLCCompiler extends BaseCompiler {
         return 'ylc';
     }
 
-    override optionsForFilter(_filters: ParseFiltersAndOutputOptions, outputFilename: string, _userOptions: string[]) {
+    override optionsForFilter(filters: ParseFiltersAndOutputOptions, outputFilename: string, userOptions: string[]) {
         return ['-o=' + this.filename(outputFilename)];
     }
 

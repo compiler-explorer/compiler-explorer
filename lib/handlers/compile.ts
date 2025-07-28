@@ -218,7 +218,7 @@ export class CompileHandler implements ICompileHandler {
                 let json = '<json stringify error>';
                 try {
                     json = JSON.stringify(bodyData);
-                } catch (_e) {}
+                } catch {}
                 Sentry.captureMessage(`Unknown proxy bodyData: ${typeof bodyData} ${json}`);
                 proxyReq.write('Proxy error');
             }
@@ -423,7 +423,7 @@ export class CompileHandler implements ICompileHandler {
             execReqParams.stdin = textRequest.executeParametersStdin;
 
             filters = compiler.getDefaultFilters();
-            _.each(filters, (_value, item) => {
+            _.each(filters, (value, item) => {
                 filters[item] = textRequest[item as keyof CompileRequestTextBody] === 'true';
             });
 

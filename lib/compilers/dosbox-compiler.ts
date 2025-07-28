@@ -60,7 +60,7 @@ export class DosboxCompiler extends BaseCompiler {
         return Promise.all(filesToWrite);
     }
 
-    protected override async writeAllFiles(dirPath: string, source: string, files: any[], _filters: object) {
+    protected override async writeAllFiles(dirPath: string, source: string, files: any[], filters: object) {
         if (!source) throw new Error(`File ${this.compileFilename} has no content or file is missing`);
 
         const inputFilename = path.join(dirPath, this.compileFilename);
@@ -135,7 +135,7 @@ export class DosboxCompiler extends BaseCompiler {
         return result;
     }
 
-    public override async exec(_filepath: string, args: string[], execOptions: any) {
+    public override async exec(filepath: string, args: string[], execOptions: any) {
         if (!execOptions) {
             execOptions = this.getDefaultExecOptions();
         }

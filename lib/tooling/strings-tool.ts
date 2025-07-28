@@ -32,7 +32,7 @@ export class StringsTool extends BaseTool {
         return 'strings-tool';
     }
 
-    override async runTool(compilationInfo: CompilationInfo, _inputFilepath?: string, args?: string[]) {
+    override async runTool(compilationInfo: CompilationInfo, inputFilepath?: string, args?: string[]) {
         if (!compilationInfo.filters.binary) {
             return this.createErrorResponse(`${this.tool.name ?? 'Strings'} requires an executable`);
         }

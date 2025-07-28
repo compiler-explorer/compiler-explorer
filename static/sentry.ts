@@ -72,7 +72,7 @@ export function SetupSentry() {
                 // Monaco Editor clipboard cancellation errors
                 'Canceled',
             ],
-            beforeSend(event, _hint) {
+            beforeSend(event, hint) {
                 // Filter Monaco Editor errors
                 //
                 // IMPORTANT: Frame-based filtering doesn't work reliably!

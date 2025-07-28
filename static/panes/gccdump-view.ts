@@ -323,7 +323,7 @@ export class GccDump extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Gcc
 
     // Called after result from new compilation received
     // if gccDumpOutput is false, cleans the select menu
-    updatePass(_filters: Toggles, selectize: TomSelect, gccDumpOutput) {
+    updatePass(filters: Toggles, selectize: TomSelect, gccDumpOutput) {
         const passes = gccDumpOutput ? gccDumpOutput.all : [];
 
         // we are changing selectize but don't want any callback to
@@ -403,7 +403,7 @@ export class GccDump extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Gcc
     override onCompiler(
         compilerId: number,
         compiler: CompilerInfo | null,
-        _options: unknown,
+        options: unknown,
         editorId: number,
         treeId: number,
     ) {

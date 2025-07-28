@@ -82,7 +82,7 @@ export class LlvmPassDumpParser {
     //label: RegExp;
     //instruction: RegExp;
 
-    constructor(_compilerProps: PropertyGetter) {
+    constructor(compilerProps: PropertyGetter) {
         //this.maxIrLines = 5000;
         //if (compilerProps) {
         //    this.maxIrLines = compilerProps('maxLinesOfAsm', this.maxIrLines);

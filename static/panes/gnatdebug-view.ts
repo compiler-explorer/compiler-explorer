@@ -89,7 +89,7 @@ export class GnatDebug extends MonacoPane<monaco.editor.IStandaloneCodeEditor, G
     override onCompiler(
         compilerId: number,
         compiler: CompilerInfo,
-        _options: string,
+        options: string,
         editorId?: number,
         treeId?: number,
     ): void {

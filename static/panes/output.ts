@@ -241,11 +241,11 @@ export class Output extends Pane<OutputState> {
     }
 
     override onCompiler(
-        _compilerId: number,
-        _compiler: CompilerInfo | null,
-        _options: string,
-        _editorId: number,
-        _treeId: number,
+        compilerId: number,
+        compiler: CompilerInfo | null,
+        options: string,
+        editorId: number,
+        treeId: number,
     ) {}
 
     programOutput(msg: string, color?: string) {
@@ -330,7 +330,7 @@ export class Output extends Pane<OutputState> {
         this.contentRoot.toggleClass('compiling', isCompiling);
     }
 
-    private onSelectAllButton(_unused: JQuery.ClickEvent) {
+    private onSelectAllButton(unused: JQuery.ClickEvent) {
         this.selectAll();
     }
 

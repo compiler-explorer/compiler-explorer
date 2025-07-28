@@ -47,7 +47,7 @@ export class HookCompiler extends BaseCompiler {
         return 'hook';
     }
 
-    override optionsForFilter(_filters: ParseFiltersAndOutputOptions): string[] {
+    override optionsForFilter(filters: ParseFiltersAndOutputOptions): string[] {
         return ['--dump'];
     }
 

@@ -56,7 +56,7 @@ export function registerQuickFixesForCompiler(
 
 function provide(
     model: monaco.editor.ITextModel,
-    _range: monaco.Range,
+    range: monaco.Range,
     context: monaco.languages.CodeActionContext,
 ): monaco.languages.CodeActionList {
     const item = _.find(registeredQuickFixes, (item: RegisteredQuickFixes): boolean => {

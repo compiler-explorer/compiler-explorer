@@ -61,7 +61,7 @@ export class AssemblyCompiler extends BaseCompiler {
         return BaseParser;
     }
 
-    override optionsForFilter(filters: ParseFiltersAndOutputOptions, _outputFilename: string, _userOptions?: string[]) {
+    override optionsForFilter(filters: ParseFiltersAndOutputOptions, outputFilename: string, userOptions?: string[]) {
         filters.binary = true;
         return [];
     }

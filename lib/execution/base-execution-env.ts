@@ -205,7 +205,7 @@ export class LocalExecutionEnvironment implements IExecutionEnvironment {
         executable: string,
         executeParameters: ExecutableExecutionOptions,
         homeDir: string,
-        _extraConfiguration?: any,
+        extraConfiguration?: any,
     ): Promise<BasicExecutionResult> {
         try {
             const execOptions: ExecutionOptions = {
