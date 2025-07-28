@@ -973,7 +973,7 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
 
         // Hide Claude Explain button if no API endpoint is configured
         if (!options.explainApiEndpoint) {
-            this.explainButton.parent().hide();
+            this.explainButton.hide();
         }
     }
 
