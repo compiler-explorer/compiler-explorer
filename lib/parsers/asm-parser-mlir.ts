@@ -32,7 +32,9 @@ export class MlirAsmParser extends AsmParser {
     protected locDefRegex: RegExp;
     protected locDefUnknownRegex: RegExp;
     protected locRefRegex: RegExp;
+    protected locRefRegexReplace: RegExp;
     protected inlineLocRegex: RegExp;
+    protected inlineLocRegexReplace: RegExp;
 
     constructor() {
         super();
@@ -45,9 +47,11 @@ export class MlirAsmParser extends AsmParser {
 
         // Match location references like loc(#loc1)
         this.locRefRegex = /loc\(#(\w+)\)/;
+        this.locRefRegexReplace = new RegExp(this.locRefRegex.source, 'g');
 
         // Match inline locations like loc("/path/to/file":line:column)
         this.inlineLocRegex = /loc\("([^"]+)":(\d+):(\d+)\)/;
+        this.inlineLocRegexReplace = new RegExp(this.inlineLocRegex.source, 'g');
     }
 
     override processAsm(asmResult: string, filters: ParseFiltersAndOutputOptions): ParsedAsmResult {
@@ -102,7 +106,7 @@ export class MlirAsmParser extends AsmParser {
                 const locId = locRefMatch[1];
                 source = locationMap.get(locId) || null;
                 // Remove location reference from the displayed text
-                processedLine = processedLine.replace(this.locRefRegex, '');
+                processedLine = processedLine.replace(this.locRefRegexReplace, '');
             } else {
                 // Check for inline locations like loc("/path/to/file":line:column)
                 const inlineLocMatch = line.match(this.inlineLocRegex);
@@ -119,7 +123,7 @@ export class MlirAsmParser extends AsmParser {
                     };
                 }
                 // Remove inline location from the displayed text
-                processedLine = processedLine.replace(this.inlineLocRegex, '');
+                processedLine = processedLine.replace(this.inlineLocRegexReplace, '');
             }
 
             // Add the line to the result
