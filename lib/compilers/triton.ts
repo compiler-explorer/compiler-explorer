@@ -82,7 +82,7 @@ export class TritonCompiler extends BaseCompiler {
         };
 
         if (compilerInfo.group == 'triton_amd') {
-            this.asm == amdgpuAsmParser;
+            this.asm = amdgpuAsmParser;
         } else if (compilerInfo.group == 'triton_nvidia') {
             this.asm = ptxAsmParser;
         }
