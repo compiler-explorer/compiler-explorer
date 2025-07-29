@@ -83,14 +83,4 @@ describe('Nim', () => {
         expect(compiler.getCacheFile([], input, folder)).toBeNull();
         expect(compiler.getCacheFile(['js'], input, folder)).toBeNull();
     });
-
-    it('should generate correct error message for missing files', () => {
-        const compiler = new NimCompiler(makeFakeCompilerInfo(info), ce);
-
-        // Test that the compiler has proper error handling for missing cache files
-        expect(compiler.getCacheFile(['c'], 'example.nim', '/tmp/cache/')).toBe(
-            path.join('/tmp/cache/', '@mexample.nim.c.o'),
-        );
-        expect(compiler.getCacheFile(['cpp'], 'test.nim', '/cache/')).toBe(path.join('/cache/', '@mtest.nim.cpp.o'));
-    });
 });

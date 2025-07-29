@@ -101,26 +101,12 @@ export class NimCompiler extends BaseCompiler {
         const options = result.compilationOptions;
         const cacheDir = this.cacheDir(outputFilename);
         try {
-            if (_.intersection(options!, ['js', 'check']).length > 0) filters.binary = false;
+            if (_.intersection(options!, ['js', 'check', '-c']).length > 0) filters.binary = false;
             else {
                 filters.binary = true;
                 const objFile = unwrap(this.getCacheFile(options!, result.inputFilename!, cacheDir));
                 if (await utils.fileExists(objFile)) {
-                    try {
-                        // First try rename (fastest), fall back to copy+delete if it fails
-                        await fs.rename(objFile, outputFilename);
-                    } catch (renameError) {
-                        // Rename can fail across filesystems, so copy and delete as fallback
-                        try {
-                            await fs.copyFile(objFile, outputFilename);
-                            await fs.unlink(objFile);
-                        } catch (copyError) {
-                            result.code = 1;
-                            result.stderr.push({
-                                text: `Failed to move output file: ${copyError instanceof Error ? copyError.message : String(copyError)}`,
-                            });
-                        }
-                    }
+                    await fs.rename(objFile, outputFilename);
                 } else {
                     result.code = 1;
                     result.stderr.push({text: 'Compiler did not generate a file'});
