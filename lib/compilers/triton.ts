@@ -80,6 +80,12 @@ export class TritonCompiler extends BaseCompiler {
             '.llir': mlirAsmParser,
             '.json': sassAsmParser,
         };
+
+        if (compilerInfo.group == 'triton_amd') {
+            this.asm == amdgpuAsmParser;
+        } else if (compilerInfo.group == 'triton_nvidia') {
+            this.asm = ptxAsmParser;
+        }
     }
 
     override optionsForFilter(filters: ParseFiltersAndOutputOptions, outputFilename: string): string[] {
