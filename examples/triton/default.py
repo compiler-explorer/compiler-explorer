@@ -1,17 +1,6 @@
-# Type your code here, or load an example from the Load/Save icon above.
-
 import torch
 import triton
 import triton.language as tl
-
-
-@triton.jit
-def store_kernel(ptr, val):
-    tl.store(ptr, val)
-
-
-x = torch.empty(1)
-store_kernel[(1,)](x, 1)
 
 
 @triton.jit
@@ -32,8 +21,8 @@ def add_kernel(
     tl.store(output_ptr + offsets, output, mask=mask)
 
 
-x = torch.empty(1024)
-y = torch.empty(1024)
+x = torch.rand(1024)
+y = torch.rand(1024)
 output = torch.empty(1024)
 n_elements = output.numel()
 add_kernel[(1,)](x, y, output, n_elements, BLOCK_SIZE=1024)
