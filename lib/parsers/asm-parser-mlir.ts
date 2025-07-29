@@ -46,11 +46,11 @@ export class MlirAsmParser extends AsmParser {
         this.locDefUnknownRegex = /^#(\w+)\s*=\s*loc\(unknown\)/;
 
         // Match location references like loc(#loc1)
-        this.locRefRegex = /loc\(#(\w+)\)/;
+        this.locRefRegex = / loc\(#(\w+)\)/;
         this.locRefRegexReplace = new RegExp(this.locRefRegex.source, 'g');
 
         // Match inline locations like loc("/path/to/file":line:column)
-        this.inlineLocRegex = /loc\("([^"]+)":(\d+):(\d+)\)/;
+        this.inlineLocRegex = / loc\("([^"]+)":(\d+):(\d+)\)/;
         this.inlineLocRegexReplace = new RegExp(this.inlineLocRegex.source, 'g');
     }
 

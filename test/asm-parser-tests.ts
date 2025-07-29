@@ -248,10 +248,10 @@ module {
 
             const funcLine = result.asm.find(line => line.text.includes('tt.func public @add_kernel('));
             expect(funcLine).toBeDefined();
-            expect(funcLine?.text?.includes('%arg0: !tt.ptr<f32> {tt.divisibility = 16 : i32}')).toBe(true);
-            expect(funcLine?.text?.includes('%arg1: !tt.ptr<f32> {tt.divisibility = 16 : i32}')).toBe(true);
-            expect(funcLine?.text?.includes('%arg2: !tt.ptr<f32> {tt.divisibility = 16 : i32}')).toBe(true);
-            expect(funcLine?.text?.includes('%arg3: i32 {tt.divisibility = 16 : i32}')).toBe(true);
+            expect(funcLine?.text?.includes('%arg0: !tt.ptr<f32> {tt.divisibility = 16 : i32}, ')).toBe(true);
+            expect(funcLine?.text?.includes('%arg1: !tt.ptr<f32> {tt.divisibility = 16 : i32}, ')).toBe(true);
+            expect(funcLine?.text?.includes('%arg2: !tt.ptr<f32> {tt.divisibility = 16 : i32}, ')).toBe(true);
+            expect(funcLine?.text?.includes('%arg3: i32 {tt.divisibility = 16 : i32})')).toBe(true);
 
             const constLine = result.asm.find(line => line.text.includes('arith.constant 1024'));
             expect(constLine).toBeDefined();
