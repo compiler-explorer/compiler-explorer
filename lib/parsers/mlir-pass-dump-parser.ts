@@ -63,8 +63,8 @@ type SplitPassDump = {
 };
 
 export class MlirPassDumpParser {
-    filtersWholeLine: RegExp[];
-    filetersInLine: RegExp[];
+    locationDefine: RegExp;
+    locationReference: RegExp;
     irDumpHeader: RegExp;
     functionDefine: RegExp;
     moduleDefine: RegExp;
@@ -72,21 +72,11 @@ export class MlirPassDumpParser {
     moduleEnd: RegExp;
 
     constructor(compilerProps: PropertyGetter) {
-        // Filters to remove lines that are not relevant to the IR
-        this.filtersWholeLine = [
-            // Location definitions: #loc0 = loc(...)
-            /^#loc\d* = loc\(.+\)$/,
-        ];
+        // Location definitions: #loc0 = loc(...)
+        this.locationDefine = /^#loc\d* = loc\(.+\)$/;
 
-        // Filters to remove parts of lines that are not relevant to the IR
-        this.filetersInLine = [
-            // Location references: loc(#loc0)
-            /loc\(#loc\d*\)/,
-            // Location references: loc("/app/example.py":19:0)
-            /loc\("\/.+":\d+:\d+\)/,
-            // Location references: loc(unknown)
-            /loc\(unknown\)/,
-        ];
+        // Location references: loc(#loc0), loc("/app/example.py":19:0), loc(unknown)
+        this.locationReference = /loc\([^)]*\)/g;
 
         // MLIR dump headers look like "// -----// IR Dump Before/After XYZ (xyz) ('operation-type' operation: @function_name) //----- //"
         this.irDumpHeader = /^\/\/ -----\/\/ (IR Dump (?:Before|After) .+) \/\/----- \/\/$/;
@@ -366,28 +356,12 @@ export class MlirPassDumpParser {
     }
 
     applyIrFilters(ir: ResultLine[]) {
-        return (
-            ir
-                // whole-line filters
-                .filter(line => this.filtersWholeLine.every(re => line.text.match(re) === null))
-                // intra-line filters
-                .map(_line => {
-                    let line = _line.text;
-
-                    while (true) {
-                        let newLine = line;
-                        for (const re of this.filetersInLine) {
-                            newLine = newLine.replace(re, '');
-                        }
-                        if (newLine === line) {
-                            break;
-                        }
-                        line = newLine;
-                    }
-                    _line.text = line;
-                    return _line;
-                })
-        );
+        return ir
+            .filter(line => line.text.match(this.locationDefine) === null)
+            .map(line => ({
+                ...line,
+                text: line.text.replace(this.locationReference, ''),
+            }));
     }
 
     process(output: ResultLine[], _: ParseFiltersAndOutputOptions, optPipelineOptions: OptPipelineBackendOptions) {
