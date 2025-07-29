@@ -80,6 +80,8 @@ export class PTXAsmParser extends AsmParser {
         this.functionCallEnd = /^\s*\)\s*;\s*$/;
 
         this.labelLine = /^\s*\$?[a-zA-Z_][a-zA-Z0-9_]*:.*$/;
+
+        this.hasOpcodeRe = /^\s*(@!?%\w+\s+)?(%[$.A-Z_a-z][\w$.]*\s*=\s*)?[A-Za-z]/;
     }
 
     override processAsm(asmResult: string, filters: ParseFiltersAndOutputOptions): ParsedAsmResult {
