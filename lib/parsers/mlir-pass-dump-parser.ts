@@ -76,7 +76,7 @@ export class MlirPassDumpParser {
         this.locationDefine = /^#loc\d* = loc\(.+\)$/;
 
         // Location references: loc(#loc0), loc("/app/example.py":19:0), loc(unknown)
-        this.locationReference = /loc\([^)]*\)/g;
+        this.locationReference = / loc\([^)]*\)/g;
 
         // MLIR dump headers look like "// -----// IR Dump Before/After XYZ (xyz) ('operation-type' operation: @function_name) //----- //"
         this.irDumpHeader = /^\/\/ -----\/\/ (IR Dump (?:Before|After) .+) \/\/----- \/\/$/;
