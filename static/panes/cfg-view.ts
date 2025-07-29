@@ -23,19 +23,11 @@
 // POSSIBILITY OF SUCH DAMAGE.
 
 import * as fileSaver from 'file-saver';
+import {Container} from 'golden-layout';
 import $ from 'jquery';
 import * as monaco from 'monaco-editor';
-import _ from 'underscore';
-import * as BootstrapUtils from '../bootstrap-utils.js';
-import {Pane} from './pane.js';
-
-import {Container} from 'golden-layout';
-import {Hub} from '../hub.js';
-import * as utils from '../utils.js';
-import {CfgState} from './cfg-view.interfaces.js';
-import {PaneState} from './pane.interfaces.js';
-
 import TomSelect from 'tom-select';
+import _ from 'underscore';
 import {escapeHTML} from '../../shared/common-utils.js';
 import {
     AnnotatedCfgDescriptor,
@@ -43,11 +35,18 @@ import {
     CFGResult,
     CfgDescriptor,
 } from '../../types/compilation/cfg.interfaces.js';
+import {CompilationResult} from '../../types/compilation/compilation.interfaces.js';
+import {CompilerInfo} from '../../types/compiler.interfaces.js';
 import {assert, unwrap} from '../assert.js';
-import {CompilationResult} from '../compilation/compilation.interfaces.js';
-import {CompilerInfo} from '../compiler.interfaces.js';
+import * as BootstrapUtils from '../bootstrap-utils.js';
 import {GraphLayoutCore} from '../graph-layout-core.js';
+import {Hub} from '../hub.js';
 import * as MonacoConfig from '../monaco-config.js';
+import * as utils from '../utils.js';
+import {Toggles} from '../widgets/toggles.js';
+import {CfgState} from './cfg-view.interfaces.js';
+import {PaneState} from './pane.interfaces.js';
+import {Pane} from './pane.js';
 
 const ColorTable = {
     red: '#FE5D5D',
@@ -107,6 +106,7 @@ export class Cfg extends Pane<CfgState> {
     graphContainer: HTMLElement;
     graphElement: HTMLElement;
     infoElement: HTMLElement;
+    centerParentsButton: JQuery<HTMLElement>;
     exportPNGButton: JQuery;
     estimatedPNGSize: Element;
     exportSVGButton: JQuery;
@@ -118,6 +118,8 @@ export class Cfg extends Pane<CfgState> {
     functionSelector: TomSelect;
     resetViewButton: JQuery;
     zoomOutButton: JQuery;
+    toggles: Toggles;
+
     results: CFGResult;
     state: CfgState & PaneState;
     layout: GraphLayoutCore;
@@ -201,10 +203,13 @@ export class Cfg extends Pane<CfgState> {
         this.graphContainer = this.domRoot.find('.graph-container')[0];
         this.graphElement = this.domRoot.find('.graph')[0];
         this.infoElement = this.domRoot.find('.cfg-info')[0];
+        this.centerParentsButton = this.domRoot.find('.center-parents');
         this.exportPNGButton = this.domRoot.find('.export-png').first();
         this.estimatedPNGSize = unwrap(this.exportPNGButton[0].querySelector('.estimated-export-size'));
         this.exportSVGButton = this.domRoot.find('.export-svg').first();
         this.setupFictitiousGraphContainer();
+
+        this.toggles = new Toggles(this.domRoot.find('.options'), state as unknown as Record<string, boolean>);
     }
 
     setupFictitiousGraphContainer() {
@@ -241,7 +246,7 @@ export class Cfg extends Pane<CfgState> {
                 // pass, let the user select block contents and other text
             }
         });
-        this.graphContainer.addEventListener('mouseup', e => {
+        this.graphContainer.addEventListener('mouseup', () => {
             this.dragging = false;
         });
         this.graphContainer.addEventListener('mousemove', e => {
@@ -271,6 +276,7 @@ export class Cfg extends Pane<CfgState> {
             }
             e.preventDefault();
         });
+        this.toggles.on('change', this.onToggleChange.bind(this));
         this.exportPNGButton.on('click', () => {
             this.exportPNG();
         });
@@ -288,6 +294,12 @@ export class Cfg extends Pane<CfgState> {
                 }
             }
         });
+    }
+
+    onToggleChange() {
+        this.state = this.getCurrentState();
+        this.updateState();
+        this.selectFunction(this.state.selectedFunction);
     }
 
     async exportPNG() {
@@ -519,7 +531,7 @@ export class Cfg extends Pane<CfgState> {
         const fn = this.results[name];
         this.bbMap = {};
         await this.createBasicBlocks(fn);
-        this.layout = new GraphLayoutCore(fn as AnnotatedCfgDescriptor);
+        this.layout = new GraphLayoutCore(fn as AnnotatedCfgDescriptor, !!this.state.centerparents);
         this.applyLayout();
         this.drawEdges();
         this.infoElement.innerHTML = `Layout time: ${Math.round(this.layout.layoutTime)}ms<br/>Basic blocks: ${
@@ -554,17 +566,20 @@ export class Cfg extends Pane<CfgState> {
     }
 
     birdsEyeView() {
-        if (this.layout.blocks.length > 0) {
-            const fullW = this.layout.getWidth();
-            const fullH = this.layout.getHeight();
-            const container_size = this.graphContainer.getBoundingClientRect();
-            const zoom = Math.min(container_size.width / fullW, container_size.height / fullH);
-            this.setZoom(zoom);
-            this.setPan({
-                x: container_size.width / 2 - (fullW * zoom) / 2,
-                y: container_size.height / 2 - (fullH * zoom) / 2,
-            });
+        if (!this.layout?.blocks?.length) {
+            // No layout loaded yet or empty layout - nothing to zoom to
+            return;
         }
+
+        const fullW = this.layout.getWidth();
+        const fullH = this.layout.getHeight();
+        const container_size = this.graphContainer.getBoundingClientRect();
+        const zoom = Math.min(container_size.width / fullW, container_size.height / fullH);
+        this.setZoom(zoom);
+        this.setPan({
+            x: container_size.width / 2 - (fullW * zoom) / 2,
+            y: container_size.height / 2 - (fullH * zoom) / 2,
+        });
     }
 
     setZoom(zoom: number, superficial?: boolean) {
@@ -667,7 +682,7 @@ export class Cfg extends Pane<CfgState> {
                 if (blob) {
                     resolve(blob);
                 } else {
-                    reject(blob);
+                    reject(new Error('Failed to create blob from canvas'));
                 }
             }, 'image/png');
         });
@@ -692,6 +707,7 @@ export class Cfg extends Pane<CfgState> {
             treeid: this.compilerInfo.treeId,
             selectedFunction: this.state.selectedFunction,
             isircfg: this.state.isircfg,
+            centerparents: this.toggles.get().centerparents,
         };
         this.paneRenaming.addState(state);
         return state;

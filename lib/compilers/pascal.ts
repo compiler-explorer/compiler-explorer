@@ -22,9 +22,8 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import path from 'node:path';
-
 import fs from 'node:fs/promises';
+import path from 'node:path';
 import _ from 'underscore';
 
 import type {
@@ -40,7 +39,7 @@ import {CompilationEnvironment} from '../compilation-env.js';
 import * as utils from '../utils.js';
 
 import {PascalParser} from './argument-parsers.js';
-import {PascalUtils} from './pascal-utils.js';
+import * as pascalUtils from './pascal-utils.js';
 
 export class FPCCompiler extends BaseCompiler {
     static get key() {
@@ -50,7 +49,6 @@ export class FPCCompiler extends BaseCompiler {
     dprFilename: string;
     supportsOptOutput: boolean;
     nasmPath: string;
-    pasUtils: PascalUtils;
     demangler: any | null = null;
 
     constructor(info: PreliminaryCompilerInfo, env: CompilationEnvironment) {
@@ -60,7 +58,6 @@ export class FPCCompiler extends BaseCompiler {
         this.dprFilename = 'prog.dpr';
         this.supportsOptOutput = false;
         this.nasmPath = this.compilerProps<string>('nasmpath');
-        this.pasUtils = new PascalUtils();
     }
 
     override getSharedLibraryPathsAsArguments() {
@@ -135,8 +132,8 @@ export class FPCCompiler extends BaseCompiler {
 
     override getExecutableFilename(dirPath: string, outputFilebase: string, key?: CacheKey | CompilationCacheKey) {
         const source = (key && (key as CacheKey).source) || '';
-        if (key && this.pasUtils.isProgram(source)) {
-            return path.join(dirPath, this.pasUtils.getProgName(source));
+        if (key && pascalUtils.isProgram(source)) {
+            return path.join(dirPath, pascalUtils.getProgName(source));
         }
 
         return path.join(dirPath, 'prog');
@@ -218,11 +215,11 @@ export class FPCCompiler extends BaseCompiler {
     }
 
     getMainSourceFilename(source: string) {
-        let inputFilename;
-        if (this.pasUtils.isProgram(source)) {
-            inputFilename = this.pasUtils.getProgName(source) + '.dpr';
+        let inputFilename: string;
+        if (pascalUtils.isProgram(source)) {
+            inputFilename = pascalUtils.getProgName(source) + '.dpr';
         } else {
-            const unitName = this.pasUtils.getUnitname(source);
+            const unitName = pascalUtils.getUnitname(source);
             if (unitName) {
                 inputFilename = unitName + '.pas';
             } else {

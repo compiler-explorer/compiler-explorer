@@ -24,19 +24,18 @@
 
 import * as Sentry from '@sentry/node';
 import compression from 'compression';
-import express from 'express';
 import type {NextFunction, Request, Response, Router} from 'express';
+import express from 'express';
 import morgan from 'morgan';
 import sanitize from 'sanitize-filename';
-import sFavicon from 'serve-favicon';
 
+import {cached, csp} from '../handlers/middleware.js';
 import {logger, makeLogStream} from '../logger.js';
 import {ClientOptionsSource} from '../options-handler.interfaces.js';
 import {PropertyGetter} from '../properties.interfaces.js';
 import * as utils from '../utils.js';
-import {ServerOptions} from './server.interfaces.js';
-import {RenderConfigFunction} from './server.interfaces.js';
-import {LegacyGoogleUrlHandler, isMobileViewer} from './url-handlers.js';
+import {RenderConfigFunction, ServerOptions} from './server.interfaces.js';
+import {isMobileViewer, LegacyGoogleUrlHandler} from './url-handlers.js';
 
 /**
  * Setup base server configuration
@@ -118,23 +117,34 @@ export function setupLoggingMiddleware(isDevMode: boolean, router: Router): void
         morgan(morganFormat, {
             stream: makeLogStream('info'),
             // Skip for non errors (2xx, 3xx)
-            skip: (req: Request, res: Response) => res.statusCode >= 400,
+            skip: (req: Request, res: Response) => res.statusCode >= 400 || isFaviconRequest(req),
         }),
     );
     router.use(
         morgan(morganFormat, {
             stream: makeLogStream('warn'),
             // Skip for non user errors (4xx)
-            skip: (req: Request, res: Response) => res.statusCode < 400 || res.statusCode >= 500,
+            skip: (req: Request, res: Response) =>
+                res.statusCode < 400 || res.statusCode >= 500 || isFaviconRequest(req),
         }),
     );
     router.use(
         morgan(morganFormat, {
             stream: makeLogStream('error'),
             // Skip for non server errors (5xx)
-            skip: (req: Request, res: Response) => res.statusCode < 500,
+            skip: (req: Request, res: Response) => res.statusCode < 500 || isFaviconRequest(req),
         }),
     );
+}
+
+function isFaviconRequest(req: Request): boolean {
+    return [
+        'favicon.ico',
+        'favicon-beta.ico',
+        'favicon-dev.ico',
+        'favicon-staging.ico',
+        'favicon-suspend.ico',
+    ].includes(req.path);
 }
 
 /**
@@ -144,7 +154,6 @@ export function setupLoggingMiddleware(isDevMode: boolean, router: Router): void
  * @param embeddedHandler - Handler for embedded mode
  * @param ceProps - Compiler Explorer properties
  * @param awsProps - AWS properties
- * @param faviconFilename - Favicon filename
  * @param options - Server options
  * @param clientOptionsHandler - Client options handler
  */
@@ -154,7 +163,6 @@ export function setupBasicRoutes(
     embeddedHandler: express.Handler,
     ceProps: PropertyGetter,
     awsProps: PropertyGetter,
-    faviconFilename: string,
     options: ServerOptions,
     clientOptionsHandler: ClientOptionsSource,
 ): void {
@@ -198,14 +206,6 @@ export function setupBasicRoutes(
             res.render('sitemap');
         });
 
-    // Try to add favicon support, but don't fail if it's not available (useful for tests)
-    try {
-        router.use(sFavicon(utils.resolvePathFromAppRoot('static/favicons', faviconFilename)));
-    } catch (err: unknown) {
-        const error = err as Error;
-        logger.warn(`Could not set up favicon: ${error.message}`);
-    }
-
     router
         .get('/client-options.js', cached, (req, res) => {
             res.set('Content-Type', 'application/javascript');
@@ -225,21 +225,4 @@ export function setupBasicRoutes(
         })
         .use(express.json({limit: ceProps('bodyParserLimit', options.maxUploadSize)}))
         .get('/g/:id', legacyGoogleUrlHandler.handle.bind(legacyGoogleUrlHandler));
-}
-
-/**
- * Middleware for content security policy
- */
-function csp(req: Request, res: Response, next: NextFunction) {
-    // TODO: Consider if CSP should be re-enabled
-    // res.setHeader('Content-Security-Policy', `default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self' data:; connect-src 'self'; frame-src 'self';`);
-    next();
-}
-
-/**
- * Middleware for browser caching control
- */
-function cached(req: Request, res: Response, next: NextFunction) {
-    res.setHeader('Cache-Control', 'public, max-age=60');
-    next();
 }

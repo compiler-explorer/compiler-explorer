@@ -38,9 +38,7 @@ import * as exec from '../lib/exec.js';
 import * as properties from '../lib/properties.js';
 import {SymbolStore} from '../lib/symbol-store.js';
 import * as utils from '../lib/utils.js';
-import {processAsm} from './utils.js';
-
-import {makeFakeCompilerInfo, resolvePathFromTestRoot} from './utils.js';
+import {makeFakeCompilerInfo, processAsm, resolvePathFromTestRoot} from './utils.js';
 
 const cppfiltpath = 'c++filt';
 
@@ -112,6 +110,22 @@ describe('Basic demangling', () => {
         ]);
     });
 
+    it('One quoted label and some asm', () => {
+        const result = {asm: [{text: '"_Z6squarei":'}, {text: '  ret'}]};
+
+        const demangler = new DummyCppDemangler(cppfiltpath, new DummyCompiler(), ['-n']);
+
+        return Promise.all([
+            demangler
+                .process(result)
+                .then(output => {
+                    expect(output.asm[0].text).toEqual('"square(int)":');
+                    expect(output.asm[1].text).toEqual('  ret');
+                })
+                .catch(catchCppfiltNonexistence),
+        ]);
+    });
+
     it('One label and use of a label', () => {
         const result = {asm: [{text: '_Z6squarei:'}, {text: '  mov eax, $_Z6squarei'}]};
 
@@ -123,6 +137,22 @@ describe('Basic demangling', () => {
                 .then(output => {
                     expect(output.asm[0].text).toEqual('square(int):');
                     expect(output.asm[1].text).toEqual('  mov eax, $square(int)');
+                })
+                .catch(catchCppfiltNonexistence),
+        ]);
+    });
+
+    it('One quoted label and use of a label', () => {
+        const result = {asm: [{text: '"_Z6squarei":'}, {text: '  mov eax, $"_Z6squarei"'}]};
+
+        const demangler = new DummyCppDemangler(cppfiltpath, new DummyCompiler(), ['-n']);
+
+        return Promise.all([
+            demangler
+                .process(result)
+                .then(output => {
+                    expect(output.asm[0].text).toEqual('"square(int)":');
+                    expect(output.asm[1].text).toEqual('  mov eax, $"square(int)"');
                 })
                 .catch(catchCppfiltNonexistence),
         ]);
@@ -160,15 +190,9 @@ describe('Basic demangling', () => {
             demangler
                 .process(result)
                 .then(output => {
-                    if (process.platform === 'win32') {
-                        expect(output.asm[0].text).toEqual(
-                            'jmp     qword ptr [rip + core::fmt::num::imp::<impl core::fmt::Display for usize>::fmt@GOTPCREL]',
-                        );
-                    } else {
-                        expect(output.asm[0].text).toEqual(
-                            'jmp     qword ptr [rip + core::fmt::num::imp::<impl core::fmt::Display for usize>::fmt::h7bbbd896a38dccca@GOTPCREL]',
-                        );
-                    }
+                    expect(output.asm[0].text).toEqual(
+                        'jmp     qword ptr [rip + core::fmt::num::imp::<impl core::fmt::Display for usize>::fmt::h7bbbd896a38dccca@GOTPCREL]',
+                    );
                 })
                 .catch(catchCppfiltNonexistence),
         ]);

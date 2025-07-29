@@ -34,6 +34,7 @@ import type {ParseFiltersAndOutputOptions} from '../../types/features/filters.in
 import {unwrap} from '../assert.js';
 import {BaseCompiler} from '../base-compiler.js';
 import {CompilationEnvironment} from '../compilation-env.js';
+import {PTXAsmParser} from '../parsers/asm-parser-ptx.js';
 import {SassAsmParser} from '../parsers/asm-parser-sass.js';
 import {asSafeVer} from '../utils.js';
 
@@ -45,12 +46,14 @@ export class NvccCompiler extends BaseCompiler {
     }
 
     deviceAsmParser: SassAsmParser;
+    ptxParser: PTXAsmParser;
 
     constructor(info: PreliminaryCompilerInfo, env: CompilationEnvironment) {
         super(info, env);
         this.compiler.supportsOptOutput = true;
         this.compiler.supportsDeviceAsmView = true;
         this.deviceAsmParser = new SassAsmParser(this.compilerProps);
+        this.ptxParser = new PTXAsmParser(this.compilerProps);
     }
 
     // TODO: (for all of CUDA)
@@ -155,11 +158,12 @@ export class NvccCompiler extends BaseCompiler {
                                 : await this.nvdisasm(Path.join(dirPath, name), {dirPath}, maxSize);
                         const archAndCode = name.split('.').slice(1, -1).join(', ') || '';
                         const nameAndArch = type + (archAndCode ? ` (${archAndCode.toLowerCase()})` : '');
+                        const parser = type === 'PTX' ? this.ptxParser : this.deviceAsmParser;
                         Object.assign(devices, {
                             [nameAndArch]: await this.postProcessAsm(
                                 {
                                     okToCache: demangle,
-                                    ...this.deviceAsmParser.process(asm, {...filters, binary: type === 'SASS'}),
+                                    ...parser.process(asm, {...filters, binary: type === 'SASS'}),
                                 },
                                 {...filters, binary: type === 'SASS'},
                             ),

@@ -29,13 +29,25 @@ import {fileURLToPath} from 'node:url';
 import {afterEach, expect, onTestFinished} from 'vitest';
 import * as temp from '../lib/temp.js';
 
+// Check if expensive tests should be skipped (e.g., during pre-commit hooks)
+export const skipExpensiveTests = process.env.SKIP_EXPENSIVE_TESTS === 'true';
+
 import {CompilationEnvironment} from '../lib/compilation-env.js';
 import {CompilationQueue} from '../lib/compilation-queue.js';
+import {AsmParser} from '../lib/parsers/asm-parser.js';
 import {CC65AsmParser} from '../lib/parsers/asm-parser-cc65.js';
 import {AsmEWAVRParser} from '../lib/parsers/asm-parser-ewavr.js';
+import {PTXAsmParser} from '../lib/parsers/asm-parser-ptx.js';
 import {SassAsmParser} from '../lib/parsers/asm-parser-sass.js';
 import {VcAsmParser} from '../lib/parsers/asm-parser-vc.js';
-import {AsmParser} from '../lib/parsers/asm-parser.js';
+
+// Test helper class that extends AsmParser to allow setting protected properties for testing
+class AsmParserForTest extends AsmParser {
+    setBinaryHideFuncReForTest(regex: RegExp | null) {
+        this.binaryHideFuncRe = regex;
+    }
+}
+
 import {CompilerProps, fakeProps} from '../lib/properties.js';
 import {CompilerInfo} from '../types/compiler.interfaces.js';
 import {ParseFiltersAndOutputOptions} from '../types/features/filters.interfaces.js';
@@ -109,12 +121,15 @@ export function processAsm(filename: string, filters: ParseFiltersAndOutputOptio
     let parser: AsmParser;
     if (file.includes('Microsoft')) parser = new VcAsmParser();
     else if (filename.includes('sass-')) parser = new SassAsmParser();
+    else if (filename.includes('ptx-')) parser = new PTXAsmParser();
     else if (filename.includes('cc65-')) parser = new CC65AsmParser(fakeProps({}));
     else if (filename.includes('ewarm-')) parser = new AsmEWAVRParser(fakeProps({}));
     else {
-        parser = new AsmParser();
-        parser.binaryHideFuncRe =
-            /^(__.*|_(init|start|fini)|(de)?register_tm_clones|call_gmon_start|frame_dummy|\.plt.*|_dl_relocate_static_pie)$/;
+        const testParser = new AsmParserForTest();
+        testParser.setBinaryHideFuncReForTest(
+            /^(__.*|_(init|start|fini)|(de)?register_tm_clones|call_gmon_start|frame_dummy|\.plt.*|_dl_relocate_static_pie)$/,
+        );
+        parser = testParser;
     }
     return parser.process(file, filters);
 }

@@ -27,6 +27,7 @@ import fs from 'node:fs/promises';
 // import {CompilationInfo} from '../../types/compilation/compilation.interfaces.js';
 import {CompilationInfo} from '../../types/compilation/compilation.interfaces.js';
 import {InstructionSets} from '../instructionsets.js';
+import * as utils from '../utils.js';
 
 import {BaseTool} from './base-tool.js';
 
@@ -100,8 +101,31 @@ export class LLVMMcaTool extends BaseTool {
         // ones above).
         const newArgs: string[] = prependArgs.concat(args || []);
 
+        if (!compilationInfo.asm) {
+            return this.createErrorResponse('<no assembly output available>');
+        }
+
         const rewrittenOutputFilename = compilationInfo.outputFilename + '.mca';
-        await this.writeAsmFile(compilationInfo.asm as string, rewrittenOutputFilename);
-        return super.runTool(compilationInfo, rewrittenOutputFilename, newArgs);
+        await this.writeAsmFile(utils.normalizeAsmToString(compilationInfo.asm), rewrittenOutputFilename);
+        let res = await super.runTool(compilationInfo, rewrittenOutputFilename, newArgs);
+
+        if (res.code !== 0) {
+            if (res.stderr[0]?.text.includes('unable to get target')) {
+                // The compiler's set of `--target` values is strictly larger than llvm-mca's -mtriple values.
+                // Fallback: let llvm-mca use the autodetected architecture, with generic cpu.
+                const newArgs2 = newArgs.filter(arg => !arg.startsWith('-mtriple='));
+                res = await super.runTool(compilationInfo, rewrittenOutputFilename, newArgs2);
+
+                res.stdout = [
+                    {
+                        text:
+                            `Warning: llvm-mca was unable to use the target '${target}' specified by the compiler. ` +
+                            'Falling back to using the autodetected architecture with -mcpu=generic.\n\n',
+                    },
+                    ...res.stdout,
+                ];
+            }
+        }
+        return res;
     }
 }

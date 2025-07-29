@@ -26,13 +26,12 @@ import {EventEmitter} from 'golden-layout';
 import $ from 'jquery';
 import {LRUCache} from 'lru-cache';
 import _ from 'underscore';
-
-import {options} from './options.js';
-
 import {ResultLine} from '../types/resultline/resultline.interfaces.js';
+import {options} from './options.js';
 
 import jqXHR = JQuery.jqXHR;
 import ErrorTextStatus = JQuery.Ajax.ErrorTextStatus;
+
 import {CompilationResult, FiledataPair} from '../types/compilation/compilation.interfaces.js';
 import {CompilerInfo} from '../types/compiler.interfaces.js';
 import {CompilationStatus} from './compiler-service.interfaces.js';
@@ -201,10 +200,10 @@ export class CompilerService {
                     break;
             }
         }
-        reject({
-            request: request,
-            error: error,
-        });
+        const requestError = new Error(error);
+        // Attach request context to the error for debugging
+        (requestError as any).request = request;
+        reject(requestError);
     }
 
     private getBaseUrl() {

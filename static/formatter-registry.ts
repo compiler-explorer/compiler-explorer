@@ -102,6 +102,6 @@ const register = (lang: string, formatter: string, isOneTrueStyle: boolean) => {
 register('cppp', 'clangformat', false);
 register('nc', 'clangformat', false);
 register('go', 'gofmt', true);
-register('rust', 'rustfmt', true);
+register('rustp', 'rustfmt', true);
 register('dart', 'dartformat', true);
 register('v', 'vfmt', true);

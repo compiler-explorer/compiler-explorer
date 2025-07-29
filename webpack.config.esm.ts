@@ -38,21 +38,23 @@ import {WebpackManifestPlugin} from 'webpack-manifest-plugin';
 const __dirname = path.resolve(path.dirname(fileURLToPath(import.meta.url)));
 const isDev = process.env.NODE_ENV !== 'production';
 
-function log(message: string) {}
+function log(message: string) {
+    console.log('webpack: ', message);
+}
 
 log(`compiling for ${isDev ? 'development' : 'production'}.`);
 // Memory limits us in most cases, so restrict parallelism to keep us in a sane amount of RAM
 const parallelism = Math.floor(os.totalmem() / (4 * 1024 * 1024 * 1024)) + 1;
 log(`Limiting parallelism to ${parallelism}`);
 
-const distPath = path.resolve(__dirname, 'out', 'dist');
+const manifestPath = path.resolve(__dirname, 'out', 'dist');
 const staticPath = path.resolve(__dirname, 'out', 'webpack', 'static');
 const hasGit = fs.existsSync(path.resolve(__dirname, '.git'));
 
 // Hack alert: due to a variety of issues, sometimes we need to change
 // the name here. Mostly it's things like webpack changes that affect
 // how minification is done, even though that's supposed not to matter.
-const webpackJsHack = '.v58.';
+const webpackJsHack = '.v60.';
 const plugins: Webpack.WebpackPluginInstance[] = [
     new MonacoEditorWebpackPlugin({
         languages: [
@@ -83,14 +85,14 @@ const plugins: Webpack.WebpackPluginInstance[] = [
         filename: isDev ? '[name].css' : `[name]${webpackJsHack}[contenthash].css`,
     }),
     new WebpackManifestPlugin({
-        fileName: path.resolve(distPath, 'manifest.json'),
+        fileName: path.resolve(manifestPath, 'manifest.json'),
         publicPath: '',
     }),
     new Webpack.DefinePlugin({
         'window.PRODUCTION': JSON.stringify(!isDev),
     }),
     new CopyWebpackPlugin({
-        patterns: [{from: './static/favicons', to: path.resolve(distPath, 'static', 'favicons')}],
+        patterns: [{from: './public', to: staticPath}],
     }),
 ];
 
@@ -198,4 +200,4 @@ export default {
         ],
     },
     plugins: plugins,
-};
+} satisfies Webpack.Configuration;

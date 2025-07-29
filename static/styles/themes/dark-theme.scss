@@ -574,19 +574,23 @@ textarea.form-control {
 }
 
 .share-reddit {
-    background-color: #ff4500 !important;
-    color: white !important;
+    background-color: #BF616A !important; /* Soft muted crimson */
+    color: #ffffff !important;
+    text-decoration: none !important;
 }
 
 .share-twitter {
-    background-color: #1da1f2 !important;
-    color: white !important;
+    background-color: #4C566A !important; /* Cool neutral gray */
+    color: #ffffff !important;
+    text-decoration: none !important;
 }
 
 .share-bluesky {
-    background-color: #0a7aff !important;
-    color: white !important;
+    background-color: #5E81AC !important; /* Soft desaturated steel blue */
+    color: #ffffff !important;
+    text-decoration: none !important;
 }
+
 
 #simplecook {
     background-color: #474747 !important;
@@ -646,18 +650,19 @@ textarea.form-control {
     .ts-control {
         border: none;
         color: #f2f2f2 !important;
-        background: #444 !important;
+        background-color: #444 !important;
         text-shadow: none !important;
-
-        &:after {
-            border-color: #728690 transparent transparent transparent;
-        }
 
         &.disabled {
             color: #f2f2f2 !important;
             background-color: #383838 !important;
         }
     }
+}
+
+/* Override arrow specifically with the same selector as TomSelect uses */
+.ts-wrapper:not(.form-control, .form-select).single .ts-control {
+    background-image: dropdown-arrow-svg(#aaa) !important;
 }
 
 #compiler-picker-modal {

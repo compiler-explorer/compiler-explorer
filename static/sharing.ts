@@ -31,13 +31,13 @@ import {unwrap} from './assert.js';
 import * as BootstrapUtils from './bootstrap-utils.js';
 import {sessionThenLocalStorage} from './local.js';
 import {options} from './options.js';
-import * as url from './url.js';
-
 import {SentryCapture} from './sentry.js';
 import {Settings, SiteSettings} from './settings.js';
+import * as url from './url.js';
+
 import ClickEvent = JQuery.ClickEvent;
 
-const cloneDeep = require('lodash.clonedeep');
+import cloneDeep from 'lodash.clonedeep';
 
 enum LinkType {
     Short = 0,
@@ -235,7 +235,7 @@ export class Sharing {
                 this.displayTooltip(permalink, 'Link copied to clipboard');
                 e.clearSelection();
             });
-            this.clippyButton.on('error', e => {
+            this.clippyButton.on('error', _e => {
                 this.displayTooltip(permalink, 'Error copying to clipboard');
             });
         }
@@ -294,7 +294,13 @@ export class Sharing {
                 if (error || !newUrl) {
                     this.displayTooltip(this.shareTooltipTarget, 'Oops, something went wrong');
                     SentryCapture(error, 'Getting short link failed');
-                    reject();
+                    reject(
+                        new Error(
+                            error
+                                ? `Getting short link failed: ${error}`
+                                : 'Getting short link failed: no URL returned',
+                        ),
+                    );
                 } else {
                     if (updateState) {
                         Sharing.storeCurrentConfig(config, extra);

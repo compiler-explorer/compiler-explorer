@@ -91,10 +91,10 @@ function definition(): monaco.languages.IMonarchLanguage {
 
                 [/~?[A-Za-z0-9_.\-+]+(\/[A-Za-z0-9_.\-+]+)+/, 'string.unquoted.path'],
                 [/<[A-Za-z0-9_.\-+]+(\/[A-Za-z0-9_.\-+]+)*>/, 'string.unquoted.spath'],
-                [/[A-Za-z][A-Za-z0-9+\-.]*:[A-Za-z0-9%\/\?:@&=+\$,\-_.!~\*']+/, 'string.unquoted.url'],
+                [/[A-Za-z][A-Za-z0-9+\-.]*:[A-Za-z0-9%/?:@&=+$,\-_.!~*']+/, 'string.unquoted.url'],
 
                 [
-                    /[a-zA-Z_][\w'\-]*/,
+                    /[a-zA-Z_][\w'-]*/,
                     {
                         cases: {
                             '@keywords': 'keyword',
@@ -106,22 +106,22 @@ function definition(): monaco.languages.IMonarchLanguage {
                     },
                 ],
 
-                [/[=><!~?:&|+\-*\/]+/, 'operator'],
+                [/[=><!~?:&|+\-*/]+/, 'operator'],
                 [/[;,.]/, 'delimiter'],
-                [/[{}()\[\]]/, '@brackets'],
+                [/[{}()[\]]/, '@brackets'],
             ],
 
             whitespace: [[/[ \t\r\n]+/, 'white']],
 
             string_double: [
-                [/[^\\"\$]+/, 'string'],
+                [/[^\\"$]+/, 'string'],
                 [/\$\{/, {token: 'delimiter.bracket', next: '@interpolationInString'}],
                 [/\\./, 'string.escape'],
                 [/"/, {token: 'string.quote', next: '@pop'}],
             ],
 
             string_long: [
-                [/[^\\'\$]+/, 'string'],
+                [/[^\\'$]+/, 'string'],
                 [/\$\{/, {token: 'delimiter.bracket', next: '@interpolationInString'}],
                 [/\\./, 'string.escape'],
                 [/''/, {token: 'string.quote', next: '@pop'}],

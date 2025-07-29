@@ -22,9 +22,8 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import {WriteStream, createWriteStream} from 'node:fs';
-import {constants as fsConstants} from 'node:fs';
 import * as oldfs from 'node:fs';
+import {createWriteStream, constants as fsConstants, WriteStream} from 'node:fs';
 import * as fs from 'node:fs/promises';
 import * as net from 'node:net';
 import path from 'node:path';
@@ -43,7 +42,7 @@ import {PropertyGetter} from '../properties.interfaces.js';
 
 import {BaseRuntimeTool} from './base-runtime-tool.js';
 
-const O_NONBLOCK = 2048;
+const O_NONBLOCK = fsConstants.O_NONBLOCK;
 
 export class HeaptrackWrapper extends BaseRuntimeTool {
     private rawOutput: string;
@@ -112,7 +111,7 @@ export class HeaptrackWrapper extends BaseRuntimeTool {
         return this.execFunc(this.interpreter, [this.rawOutput], execOptions);
     }
 
-    private async finishPipesAndStreams(fd: number, file: WriteStream, socket: net.Socket) {
+    private async finishPipesAndStreams(fd: number, file: WriteStream, socket: net.Socket): Promise<void> {
         socket.push(null);
         await new Promise(resolve => socket.end(() => resolve(true)));
 
@@ -120,6 +119,7 @@ export class HeaptrackWrapper extends BaseRuntimeTool {
 
         file.write(Buffer.from([0]));
 
+        // Don't manually close fd - the socket owns it and closes it during cleanup
         if (socket.resetAndDestroy) socket.resetAndDestroy();
         socket.unref();
 
@@ -129,8 +129,6 @@ export class HeaptrackWrapper extends BaseRuntimeTool {
                 resolve(true);
             });
         });
-
-        return new Promise(resolve => oldfs.close(fd, () => resolve(true)));
     }
 
     private async interpretAndSave(execOptions: ExecutionOptions, result: UnprocessedExecResult) {

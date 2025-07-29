@@ -65,9 +65,8 @@ function createMockWebServer(): express.Express {
 import express from 'express';
 import systemdSocket from 'systemd-socket';
 import {afterEach, beforeEach, describe, expect, it, vi} from 'vitest';
-
-import type {AppArguments} from '../../lib/app.interfaces.js';
 import {startListening} from '../../lib/app/server.js'; // TODO
+import type {AppArguments} from '../../lib/app.interfaces.js';
 import * as logger from '../../lib/logger.js';
 
 // Mock systemd-socket

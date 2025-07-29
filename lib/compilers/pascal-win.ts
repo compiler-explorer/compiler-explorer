@@ -22,9 +22,8 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import path from 'node:path';
-
 import fs from 'node:fs/promises';
+import path from 'node:path';
 
 import type {ExecutionOptions, ExecutionOptionsWithEnv} from '../../types/compilation/compilation.interfaces.js';
 import type {PreliminaryCompilerInfo} from '../../types/compiler.interfaces.js';
@@ -36,7 +35,7 @@ import {MapFileReaderDelphi} from '../mapfiles/map-file-delphi.js';
 import {PELabelReconstructor} from '../pe32-support.js';
 import * as utils from '../utils.js';
 
-import {PascalUtils} from './pascal-utils.js';
+import * as pascalUtils from './pascal-utils.js';
 
 export class PascalWinCompiler extends BaseCompiler {
     static get key() {
@@ -45,7 +44,6 @@ export class PascalWinCompiler extends BaseCompiler {
 
     mapFilename: string | null;
     dprFilename: string;
-    pasUtils: PascalUtils;
 
     constructor(info: PreliminaryCompilerInfo, env: CompilationEnvironment) {
         super(info, env);
@@ -54,7 +52,6 @@ export class PascalWinCompiler extends BaseCompiler {
         this.mapFilename = null;
         this.compileFilename = 'output.pas';
         this.dprFilename = 'prog.dpr';
-        this.pasUtils = new PascalUtils();
     }
 
     override getSharedLibraryPathsAsArguments() {
@@ -117,18 +114,18 @@ export class PascalWinCompiler extends BaseCompiler {
         await fs.writeFile(
             filename,
             'program prog;\n' +
-            'uses ' + unitName + " in '" + unitPath + "';\n" +
+            'uses ' + unitName + ' in \'' + unitPath + '\';\n' +
             'begin\n' +
             'end.\n',
         );
     }
 
     override async writeAllFiles(dirPath: string, source: string, files: any[], filters: ParseFiltersAndOutputOptions) {
-        let inputFilename;
-        if (this.pasUtils.isProgram(source)) {
+        let inputFilename: string;
+        if (pascalUtils.isProgram(source)) {
             inputFilename = path.join(dirPath, this.dprFilename);
         } else {
-            const unitName = this.pasUtils.getUnitname(source);
+            const unitName = pascalUtils.getUnitname(source);
             if (unitName) {
                 inputFilename = path.join(dirPath, unitName + '.pas');
             } else {

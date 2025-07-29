@@ -49,7 +49,7 @@ export function setupTempDir(tmpDir: string | undefined, isWsl: boolean): void {
             const driveLetter = windowsTemp.substring(0, 1).toLowerCase();
             const directoryPath = windowsTemp.substring(2).trim();
             process.env.TEMP = path.join('/mnt', driveLetter, directoryPath);
-        } catch (e) {
+        } catch {
             logger.warn('Unable to invoke cmd.exe to get windows %TEMP% path.');
         }
     }

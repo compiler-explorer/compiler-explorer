@@ -4,7 +4,7 @@ on: [push, pull_request]
 
 jobs:
   test:
-    runs-on: windows-2019
+    runs-on: windows-2022
 
     steps:
       - name: Ask Git to use LF line endings

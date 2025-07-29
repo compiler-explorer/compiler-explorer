@@ -58,8 +58,6 @@ function createMockAppArgs(overrides: Partial<AppArguments> = {}): AppArguments 
 }
 
 import {afterEach, beforeEach, describe, expect, it, vi} from 'vitest';
-
-import type {AppArguments} from '../../lib/app.interfaces.js';
 import {
     createPropertyHierarchy,
     filterLanguages,
@@ -67,9 +65,10 @@ import {
     measureEventLoopLag,
     setupEventLoopLagMonitoring,
 } from '../../lib/app/config.js';
+import type {AppArguments} from '../../lib/app.interfaces.js';
 import * as logger from '../../lib/logger.js';
-import * as props from '../../lib/properties.js';
 import type {CompilerProps} from '../../lib/properties.js';
+import * as props from '../../lib/properties.js';
 import type {Language, LanguageKey} from '../../types/languages.interfaces.js';
 
 // Mock modules
@@ -204,8 +203,8 @@ describe('Config Module', () => {
             monaco: id,
             formatter: null,
             supportsExecute: null,
-            logoUrl: null,
-            logoUrlDark: null,
+            logoFilename: null,
+            logoFilenameDark: null,
             example: '',
             previewFilter: null,
             monacoDisassembly: null,
@@ -358,7 +357,7 @@ describe('Config Module', () => {
             expect(result).toHaveProperty('extraBodyClass', 'test-class');
             expect(result).toHaveProperty('storageSolution', 'local');
             expect(result).toHaveProperty('httpRoot', '/ce/');
-            expect(result).toHaveProperty('staticRoot', '/ce/static/');
+            expect(result).toHaveProperty('staticRoot', '/ce/');
         });
 
         it('should enable property debugging when propDebug is true', () => {
