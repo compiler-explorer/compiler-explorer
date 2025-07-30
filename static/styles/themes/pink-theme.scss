@@ -9,15 +9,13 @@ $base: #fac6fa;
 $dark: #e3a5e3;
 $darker: #e787e7;
 
-// Export as CSS custom properties for use in explorer.scss
-:root {
-    --lighter: #{$lighter};
-    --base: #{$base};
-    --dark: #{$dark};
-    --darker: #{$darker};
-}
-
 html[data-theme='pink'] {
+// Export as CSS custom properties for use in explorer.scss
+--lighter: #{$lighter};
+--base: #{$base};
+--dark: #{$dark};
+--darker: #{$darker};
+
 ::-webkit-scrollbar {
     background: color.adjust(#1e1e1e, $lightness: 10%);
 }
