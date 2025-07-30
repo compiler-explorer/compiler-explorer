@@ -1,6 +1,5 @@
 @use 'sass:color';
 @use 'ansi-dark';
-@import '~golden-layout/src/css/goldenlayout-dark-theme';
 
 ::-webkit-scrollbar {
     background: color.scale(#1e1e1e, $lightness: 10%);
