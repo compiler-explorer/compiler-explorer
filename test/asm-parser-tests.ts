@@ -209,6 +209,28 @@ vprintf,
             expect(lines[7]).toBe('}');
         });
     });
+
+    describe('Directive filter', () => {
+        it('should remove directives when directive filter is enabled', () => {
+            const input = `
+ 	.file	1 "/tmp/compiler-explorer-compilerk2brih/example.py"
+    .section	.debug_abbrev
+    {
+	.b8 1
+	}
+    .section	.debug_info
+    {
+    .b32 70
+    .b32 .debug_abbrev
+    }
+    .section	.debug_macinfo	{	}
+`;
+            const result = parser.processAsm(input, {directives: true});
+            const lines = result.asm.map(line => line.text);
+            expect(lines.length).toBe(1);
+            expect(lines[0]).toBe('');
+        });
+    });
 });
 
 describe('MlirAsmParser tests', () => {
