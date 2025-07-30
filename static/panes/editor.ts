@@ -30,6 +30,7 @@ import {editor} from 'monaco-editor';
 import * as monacoVim from 'monaco-vim';
 import TomSelect from 'tom-select';
 import _ from 'underscore';
+import {postJSONWithSentryHandling} from '../api/api.js';
 import * as BootstrapUtils from '../bootstrap-utils.js';
 import * as colour from '../colour.js';
 import * as Components from '../components.js';
@@ -1164,48 +1165,52 @@ export class Editor extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Edit
             return;
         }
 
-        $.ajax({
-            type: 'POST',
-            url: window.location.origin + this.httpRoot + 'api/format/' + lang?.formatter,
-            dataType: 'json', // Expected
-            contentType: 'application/json', // Sent
-            data: JSON.stringify({
-                source: previousSource,
-                base: this.settings.formatBase,
-            }),
-            success: result => {
-                if (result.exit === 0) {
-                    if (this.doesMatchEditor(previousSource)) {
-                        this.updateSource(result.answer);
+        (async () => {
+            try {
+                const response = await postJSONWithSentryHandling(
+                    window.location.origin + this.httpRoot + 'api/format/' + lang?.formatter,
+                    {
+                        source: previousSource,
+                        base: this.settings.formatBase,
+                    },
+                    'code formatting',
+                );
+
+                if (response.ok) {
+                    const result = await response.json();
+                    if (result.exit === 0) {
+                        if (this.doesMatchEditor(previousSource)) {
+                            this.updateSource(result.answer);
+                        } else {
+                            this.confirmOverwrite(this.updateSource.bind(this, result.answer));
+                        }
                     } else {
-                        this.confirmOverwrite(this.updateSource.bind(this, result.answer));
+                        // Ops, the formatter itself failed!
+                        this.alertSystem.notify('We encountered an error formatting your code: ' + result.answer, {
+                            group: 'formatting',
+                            alertClass: 'notification-error',
+                        });
                     }
                 } else {
-                    // Ops, the formatter itself failed!
-                    this.alertSystem.notify('We encountered an error formatting your code: ' + result.answer, {
+                    let error = `HTTP ${response.status}: ${response.statusText}`;
+                    try {
+                        const errorData = await response.json();
+                        error = errorData.answer || error;
+                    } catch {
+                        // continue regardless of error
+                    }
+                    this.alertSystem.notify('We ran into some issues while formatting your code: ' + error, {
                         group: 'formatting',
                         alertClass: 'notification-error',
                     });
                 }
-            },
-            error: (xhr, e_status, error) => {
-                // Hopefully we have not exploded!
-                if (xhr.responseText) {
-                    try {
-                        const res = JSON.parse(xhr.responseText);
-                        error = res.answer || error;
-                    } catch {
-                        // continue regardless of error
-                    }
-                }
-                error = error || 'Unknown error';
-                this.alertSystem.notify('We ran into some issues while formatting your code: ' + error, {
+            } catch {
+                this.alertSystem.notify('We ran into some issues while formatting your code: Network error', {
                     group: 'formatting',
                     alertClass: 'notification-error',
                 });
-            },
-            cache: true,
-        });
+            }
+        })();
     }
 
     override resize(): void {

@@ -23,19 +23,15 @@
 // POSSIBILITY OF SUCH DAMAGE.
 
 import {EventEmitter} from 'golden-layout';
-import $ from 'jquery';
 import {LRUCache} from 'lru-cache';
 import _ from 'underscore';
-import {ResultLine} from '../types/resultline/resultline.interfaces.js';
-import {options} from './options.js';
-
-import jqXHR = JQuery.jqXHR;
-import ErrorTextStatus = JQuery.Ajax.ErrorTextStatus;
-
 import {CompilationResult, FiledataPair} from '../types/compilation/compilation.interfaces.js';
 import {CompilerInfo} from '../types/compiler.interfaces.js';
+import {ResultLine} from '../types/resultline/resultline.interfaces.js';
+import {postJSONWithSentryHandling} from './api/api.js';
 import {CompilationStatus} from './compiler-service.interfaces.js';
 import {IncludeDownloads, SourceAndFiles} from './download-service.js';
+import {options} from './options.js';
 import {SentryCapture} from './sentry.js';
 import {SiteSettings} from './settings.js';
 
@@ -166,44 +162,10 @@ export class CompilerService {
         return this.findCompilerInList(compilers, compilerId);
     }
 
-    private static handleRequestError(
-        request: any,
-        reject: (reason?: any) => void,
-        xhr: jqXHR,
-        textStatus: ErrorTextStatus,
-        errorThrown: string,
-    ) {
-        let error = errorThrown;
-        if (!error) {
-            switch (textStatus) {
-                case 'timeout':
-                    error = 'Request timed out';
-                    break;
-                case 'abort':
-                    error = 'Request was aborted';
-                    break;
-                case 'error':
-                    switch (xhr.status) {
-                        case 500:
-                            error = 'Request failed: internal server error';
-                            break;
-                        case 504:
-                            error = 'Request failed: gateway timeout';
-                            break;
-                        default:
-                            error = 'Request failed: HTTP error code ' + xhr.status;
-                            break;
-                    }
-                    break;
-                default:
-                    error = 'Error sending request';
-                    break;
-            }
-        }
-        const requestError = new Error(error);
-        // Attach request context to the error for debugging
+    private static createRequestError(error: unknown, request: any): Error {
+        const requestError = error instanceof Error ? error : new Error(String(error));
         (requestError as any).request = request;
-        reject(requestError);
+        return requestError;
     }
 
     private getBaseUrl() {
@@ -223,91 +185,103 @@ export class CompilerService {
                 };
             }
         }
-        return new Promise((resolve, reject) => {
+
+        try {
             const compilerId = encodeURIComponent(request.compiler);
-            $.ajax({
-                type: 'POST',
-                url: `${this.getBaseUrl()}api/compiler/${compilerId}/compile`,
-                dataType: 'json',
-                contentType: 'application/json',
-                data: jsonRequest,
-                success: result => {
-                    if (result?.okToCache && options.doCache) {
-                        this.cache.set(jsonRequest, result);
-                    }
-                    resolve({
-                        request: request,
-                        result: result,
-                        localCacheHit: false,
-                    });
-                },
-                error: (jqXHR, textStatus, errorThrown) => {
-                    CompilerService.handleRequestError(request, reject, jqXHR, textStatus, errorThrown);
-                },
-            });
-        });
+            const response = await postJSONWithSentryHandling(
+                `${this.getBaseUrl()}api/compiler/${compilerId}/compile`,
+                request,
+                'compilation request',
+            );
+
+            if (response.ok) {
+                const result = await response.json();
+                if (result?.okToCache && options.doCache) {
+                    this.cache.set(jsonRequest, result);
+                }
+                return {
+                    request: request,
+                    result: result,
+                    localCacheHit: false,
+                };
+            } else {
+                const error = new Error(`HTTP ${response.status}: ${response.statusText}`);
+                (error as any).request = request;
+                throw error;
+            }
+        } catch (error) {
+            throw CompilerService.createRequestError(error, request);
+        }
     }
 
-    public submitCMake(request: Record<string, any>) {
+    public async submitCMake(request: Record<string, any>) {
         request.allowStoreCodeDebug = this.allowStoreCodeDebug;
         const jsonRequest = JSON.stringify(request);
         if (options.doCache && !request.bypassCache) {
             const cachedResult = this.cache.get(jsonRequest);
             if (cachedResult) {
-                return Promise.resolve({
+                return {
                     request: request,
                     result: cachedResult,
                     localCacheHit: true,
-                });
+                };
             }
         }
-        return new Promise((resolve, reject) => {
+
+        try {
             const compilerId = encodeURIComponent(request.compiler);
-            $.ajax({
-                type: 'POST',
-                url: `${this.getBaseUrl()}api/compiler/${compilerId}/cmake`,
-                dataType: 'json',
-                contentType: 'application/json',
-                data: jsonRequest,
-                success: result => {
-                    if (result?.okToCache && options.doCache) {
-                        this.cache.set(jsonRequest, result);
-                    }
-                    resolve({
-                        request: request,
-                        result: result,
-                        localCacheHit: false,
-                    });
-                },
-                error: (jqXHR, textStatus, errorThrown) => {
-                    CompilerService.handleRequestError(request, reject, jqXHR, textStatus, errorThrown);
-                },
-            });
-        });
+            const response = await postJSONWithSentryHandling(
+                `${this.getBaseUrl()}api/compiler/${compilerId}/cmake`,
+                request,
+                'cmake request',
+            );
+
+            if (response.ok) {
+                const result = await response.json();
+                if (result?.okToCache && options.doCache) {
+                    this.cache.set(jsonRequest, result);
+                }
+                return {
+                    request: request,
+                    result: result,
+                    localCacheHit: false,
+                };
+            } else {
+                const error = new Error(`HTTP ${response.status}: ${response.statusText}`);
+                (error as any).request = request;
+                throw error;
+            }
+        } catch (error) {
+            throw CompilerService.createRequestError(error, request);
+        }
     }
 
-    public requestPopularArguments(compilerId: string, usedOptions: string) {
-        return new Promise((resolve, reject) => {
-            $.ajax({
-                type: 'POST',
-                url: `${this.getBaseUrl()}api/popularArguments/${compilerId}`,
-                dataType: 'json',
-                data: JSON.stringify({
+    public async requestPopularArguments(compilerId: string, usedOptions: string) {
+        try {
+            const response = await postJSONWithSentryHandling(
+                `${this.getBaseUrl()}api/popularArguments/${compilerId}`,
+                {
                     usedOptions: usedOptions,
                     presplit: false,
-                }),
-                success: result => {
-                    resolve({
-                        request: compilerId,
-                        result: result,
-                        localCacheHit: false,
-                    });
                 },
-                error: (jqXHR, textStatus, errorThrown) => {
-                    CompilerService.handleRequestError(compilerId, reject, jqXHR, textStatus, errorThrown);
-                },
-            });
-        });
+                'popular arguments request',
+            );
+
+            if (response.ok) {
+                const result = await response.json();
+                return {
+                    request: compilerId,
+                    result: result,
+                    localCacheHit: false,
+                };
+            } else {
+                const error = new Error(`HTTP ${response.status}: ${response.statusText}`);
+                (error as any).request = compilerId;
+                throw error;
+            }
+        } catch (error) {
+            throw CompilerService.createRequestError(error, compilerId);
+        }
     }
 
     public async expandToFiles(source: string): Promise<SourceAndFiles> {

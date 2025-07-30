@@ -27,6 +27,7 @@ import ClipboardJS from 'clipboard';
 import GoldenLayout from 'golden-layout';
 import $ from 'jquery';
 import _ from 'underscore';
+import {postJSONWithSentryHandling} from './api/api.js';
 import {unwrap} from './assert.js';
 import * as BootstrapUtils from './bootstrap-utils.js';
 import {sessionThenLocalStorage} from './local.js';
@@ -403,27 +404,29 @@ export class Sharing {
         }
     }
 
-    private static getShortLink(config: any, root: string, done: CallableFunction): void {
+    private static async getShortLink(config: any, root: string, done: CallableFunction): Promise<void> {
         const useExternalShortener = options.urlShortenService !== 'default';
-        const data = JSON.stringify({
+        const data = {
             config: useExternalShortener ? url.serialiseState(config) : config,
-        });
-        $.ajax({
-            type: 'POST',
-            url: window.location.origin + root + 'api/shortener',
-            dataType: 'json', // Expected
-            contentType: 'application/json', // Sent
-            data: data,
-            success: (result: any) => {
+        };
+
+        try {
+            const response = await postJSONWithSentryHandling(
+                window.location.origin + root + 'api/shortener',
+                data,
+                'shortener request',
+            );
+
+            if (response.ok) {
+                const result = await response.json();
                 const pushState = useExternalShortener ? null : result.url;
                 done(null, result.url, pushState, true);
-            },
-            error: err => {
-                // Notify the user that we ran into trouble?
-                done(err.statusText, null, false);
-            },
-            cache: true,
-        });
+            } else {
+                done(`HTTP ${response.status}: ${response.statusText}`, null, false);
+            }
+        } catch {
+            done('Network error', null, false);
+        }
     }
 
     private static getEmbeddedHtml(

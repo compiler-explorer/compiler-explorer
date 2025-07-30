@@ -26,6 +26,7 @@ import GoldenLayout from 'golden-layout';
 import $ from 'jquery';
 import {escapeHTML} from '../../shared/common-utils.js';
 import {SiteTemplateConfiguration, UserSiteTemplate} from '../../types/features/site-templates.interfaces.js';
+import {getWithSentryHandling} from '../api/api.js';
 import {assert, unwrap, unwrapString} from '../assert.js';
 import * as BootstrapUtils from '../bootstrap-utils.js';
 import {localStorage} from '../local.js';
@@ -33,6 +34,11 @@ import {Settings} from '../settings.js';
 import * as url from '../url.js';
 import {getStaticImage} from '../utils';
 import {Alert} from './alert.js';
+
+const noTemplates: SiteTemplateConfiguration = {
+    meta: {screenshot_dimensions: {width: 0, height: 0}},
+    templates: [],
+};
 
 class SiteTemplatesWidget {
     private readonly modal: JQuery;
@@ -71,13 +77,23 @@ class SiteTemplatesWidget {
             },
         });
     }
-    async getTemplates() {
+    async getTemplates(): Promise<SiteTemplateConfiguration> {
         if (this.templatesConfig === null) {
-            this.templatesConfig = await new Promise<SiteTemplateConfiguration>((resolve, reject) => {
-                $.getJSON(window.location.origin + window.httpRoot + 'api/siteTemplates', resolve);
-            });
+            try {
+                const response = await getWithSentryHandling(
+                    window.location.origin + window.httpRoot + 'api/siteTemplates',
+                    'site templates',
+                );
+                if (response.ok) {
+                    this.templatesConfig = await response.json();
+                } else {
+                    this.templatesConfig = noTemplates;
+                }
+            } catch {
+                this.templatesConfig = noTemplates;
+            }
         }
-        return this.templatesConfig;
+        return this.templatesConfig!;
     }
     getCurrentTheme() {
         const theme = Settings.getStoredSettings()['theme'];
@@ -101,8 +117,12 @@ class SiteTemplatesWidget {
     }
     async setDefaultPreview() {
         const templatesConfig = await this.getTemplates(); // by the time this is called it will be cached
-        const first = templatesConfig.templates[0].id; // preview the first entry
-        this.img.src = this.getAsset(first) ?? this.getDefaultAsset();
+        if (templatesConfig.templates.length > 0) {
+            const first = templatesConfig.templates[0].id; // preview the first entry
+            this.img.src = this.getAsset(first) ?? this.getDefaultAsset();
+        } else {
+            this.img.src = this.getDefaultAsset();
+        }
     }
     populateUserTemplates() {
         const userTemplates: Record<string, UserSiteTemplate> = JSON.parse(localStorage.get('userSiteTemplates', '{}'));

@@ -22,6 +22,7 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
+import {getWithSentryHandling, postJSONWithSentryHandling} from './api/api.js';
 // Setup sentry before anything else so we can capture errors
 import {SentryCapture, SetupSentry, setSentryLayout} from './sentry.js';
 
@@ -191,50 +192,41 @@ function setupButtons(options: CompilerExplorerOptions, hub: Hub) {
         alertSystem.alert('Changelog', changelogDocument.text);
     });
 
-    $.get(window.location.origin + window.httpRoot + 'bits/icons.html')
-        .done(data => {
-            $('#ces .ces-icons').html(data);
-        })
-        .fail(err => {
-            // Filter out network-level failures that aren't actionable bugs
-            // readyState 0 with status 0 typically indicates network issues, ad blockers, or aborted requests
-            if (err.readyState === 0 && err.status === 0) {
-                console.debug('Icons request failed due to network/browser policy:', err.statusText);
-                return;
+    (async () => {
+        try {
+            const response = await getWithSentryHandling(
+                window.location.origin + window.httpRoot + 'bits/icons.html',
+                'loading icons',
+            );
+            if (response.ok) {
+                const data = await response.text();
+                $('#ces .ces-icons').html(data);
             }
+        } catch {
+            // Network error - silently ignored
+        }
+    })();
 
-            // Only capture server errors or other potentially actionable failures
-            if (err.status >= 400) {
-                SentryCapture(err, '$.get failed loading icons');
-            }
-        });
-
-    $('#ces').on('click', () => {
-        $.get(window.location.origin + window.httpRoot + 'bits/sponsors.html')
-            .done(data => {
+    $('#ces').on('click', async () => {
+        try {
+            const response = await getWithSentryHandling(
+                window.location.origin + window.httpRoot + 'bits/sponsors.html',
+                'loading sponsors',
+            );
+            if (response.ok) {
+                const data = await response.text();
                 alertSystem.alert('Compiler Explorer Sponsors', data);
-            })
-            .fail(err => {
-                // Filter out network-level failures that aren't actionable bugs
-                if (err.readyState === 0 && err.status === 0) {
-                    console.debug('Sponsors request failed due to network/browser policy:', err.statusText);
-                    return;
-                }
-
-                // Only capture server errors for Sentry - silently fail for network issues
-                if (err.status >= 400) {
-                    SentryCapture(err, '$.get failed loading sponsors');
-                }
-
+            } else if (response.status >= 400) {
                 // Still show user-facing error for actual server problems
-                if (err.status >= 400) {
-                    const result = err.responseText || JSON.stringify(err);
-                    alertSystem.alert(
-                        'Compiler Explorer Sponsors',
-                        '<div>Unable to fetch sponsors:</div><div>' + result + '</div>',
-                    );
-                }
-            });
+                const result = await response.text().catch(() => `HTTP ${response.status}: ${response.statusText}`);
+                alertSystem.alert(
+                    'Compiler Explorer Sponsors',
+                    '<div>Unable to fetch sponsors:</div><div>' + result + '</div>',
+                );
+            }
+        } catch {
+            // Network error - silently ignored
+        }
     });
 
     $('#ui-history').on('click', () => {
@@ -764,7 +756,12 @@ function start() {
                 .map((_, value) => value.dataset.statsid)
                 .get()
                 .join(',');
-            $.post(options.pageloadUrl + '?icons=' + encodeURIComponent(visibleIcons));
+            // Fire and forget analytics POST - no need to await or handle errors
+            postJSONWithSentryHandling(
+                options.pageloadUrl + '?icons=' + encodeURIComponent(visibleIcons),
+                {},
+                'pageload analytics',
+            ).catch(() => {});
         }, 5000);
     }
 
