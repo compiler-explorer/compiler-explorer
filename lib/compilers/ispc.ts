@@ -39,8 +39,8 @@ import type {ResultLine} from '../../types/resultline/resultline.interfaces.js';
 import {unwrap} from '../assert.js';
 import {BaseCompiler} from '../base-compiler.js';
 import {CompilationEnvironment} from '../compilation-env.js';
-import {asSafeVer} from '../utils.js';
 import * as utils from '../utils.js';
+import {asSafeVer} from '../utils.js';
 
 import {ISPCParser} from './argument-parsers.js';
 

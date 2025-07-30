@@ -23,9 +23,8 @@
 // POSSIBILITY OF SUCH DAMAGE.
 
 import {describe, expect, it} from 'vitest';
-
-import {PTXAsmParser} from '../lib/parsers/asm-parser-ptx.js';
 import {AsmParser} from '../lib/parsers/asm-parser.js';
+import {PTXAsmParser} from '../lib/parsers/asm-parser-ptx.js';
 
 describe('AsmParser tests', () => {
     const parser = new AsmParser();

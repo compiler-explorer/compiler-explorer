@@ -506,7 +506,7 @@ export class LibsWidget {
             html: true,
             title: 'Build info for ' + getCompilerName(this.currentCompilerId),
             content: () => {
-                const nowts = Math.round(+new Date() / 1000);
+                const nowts = Math.round(Date.now() / 1000);
                 const popupId = `build-info-content-${nowts}`;
                 const option = versions.find('option:selected');
                 const semver = option.html();

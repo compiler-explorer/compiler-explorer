@@ -22,13 +22,12 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import {Buffer} from 'buffer';
 import crypto from 'node:crypto';
+import fs from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
 import {fileURLToPath} from 'node:url';
-
-import fs from 'node:fs/promises';
+import {Buffer} from 'buffer';
 import {ComponentConfig, ItemConfigType} from 'golden-layout';
 import semverParser from 'semver';
 import _ from 'underscore';
@@ -628,7 +627,7 @@ export function resultLinesToText(lines: ResultLine[]): string {
 export async function tryReadTextFile(filename: string): Promise<string | undefined> {
     try {
         return await fs.readFile(filename, 'utf8');
-    } catch (e) {
+    } catch {
         return undefined;
     }
 }

@@ -22,13 +22,10 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import {parse} from '../shared/stacktrace.js';
-
-import {options} from './options.js';
-
 import * as Sentry from '@sentry/browser';
-
 import GoldenLayout from 'golden-layout';
+import {parse} from '../shared/stacktrace.js';
+import {options} from './options.js';
 import {SiteSettings} from './settings.js';
 import {serialiseState} from './url.js';
 
@@ -69,7 +66,13 @@ export function SetupSentry() {
                 // Source mapping happens AFTER beforeSend/ignoreErrors processing
                 /this.error\(new CancellationError\(\)/,
                 /new StandardMouseEvent\(monaco-editor/,
-                /Object Not Found Matching Id:2/,
+                // CEFSharp bot errors - these come from automated scanners, particularly Microsoft Outlook's
+                // SafeLink feature that scans URLs in emails. The error format "Object Not Found Matching Id:X,
+                // MethodName:Y, ParamCount:Z" is specific to CEFSharp (.NET Chromium wrapper).
+                // Analysis of 76,000+ events shows 100% come from Windows + Chrome (CEFSharp's signature).
+                // This pattern was previously seen with Id:2 (PR #7103).
+                // See: https://github.com/DataDog/browser-sdk/issues/2715
+                /Object Not Found Matching Id:\d+/,
                 /Illegal value for lineNumber/,
                 'SlowRequest',
                 // Monaco Editor clipboard cancellation errors

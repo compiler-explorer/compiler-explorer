@@ -26,7 +26,7 @@ import {makeKeyedTypeGetter} from '../keyed-type.js';
 
 import * as all from './_all.js';
 
-export {BaseDemangler} from './base.js';
 export * from './_all.js';
+export {BaseDemangler} from './base.js';
 
 export const getDemanglerTypeByKey = makeKeyedTypeGetter('demangler', all);

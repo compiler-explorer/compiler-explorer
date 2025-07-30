@@ -1,10 +1,8 @@
 import path from 'node:path';
-
-import type {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces.js';
-import {BaseCompiler} from '../base-compiler.js';
-
 import {ParsedAsmResult} from '../../types/asmresult/asmresult.interfaces.js';
 import {PreliminaryCompilerInfo} from '../../types/compiler.interfaces.js';
+import type {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces.js';
+import {BaseCompiler} from '../base-compiler.js';
 import {CompilationEnvironment} from '../compilation-env.js';
 import {IAsmParser} from '../parsers/asm-parser.interfaces.js';
 import {AsmRegex} from '../parsers/asmregex.js';

@@ -24,8 +24,8 @@
 
 import * as Sentry from '@sentry/node';
 import compression from 'compression';
-import express from 'express';
 import type {NextFunction, Request, Response, Router} from 'express';
+import express from 'express';
 import morgan from 'morgan';
 import sanitize from 'sanitize-filename';
 
@@ -34,9 +34,8 @@ import {logger, makeLogStream} from '../logger.js';
 import {ClientOptionsSource} from '../options-handler.interfaces.js';
 import {PropertyGetter} from '../properties.interfaces.js';
 import * as utils from '../utils.js';
-import {ServerOptions} from './server.interfaces.js';
-import {RenderConfigFunction} from './server.interfaces.js';
-import {LegacyGoogleUrlHandler, isMobileViewer} from './url-handlers.js';
+import {RenderConfigFunction, ServerOptions} from './server.interfaces.js';
+import {isMobileViewer, LegacyGoogleUrlHandler} from './url-handlers.js';
 
 /**
  * Setup base server configuration

@@ -22,9 +22,8 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import path from 'node:path';
-
 import fs from 'node:fs/promises';
+import path from 'node:path';
 
 import {ExecutionOptionsWithEnv} from '../../types/compilation/compilation.interfaces.js';
 import {BaseCompiler} from '../base-compiler.js';
@@ -107,7 +106,7 @@ export async function copyNeededDlls(
             const infolder = path.join(dirPath, path.basename(dll));
             await fs.copyFile(dll, infolder);
         }
-    } catch (e) {
+    } catch {
         logger.error(`Error while retreiving or copying dll dependencies of ${executableFilename}`);
     }
 }

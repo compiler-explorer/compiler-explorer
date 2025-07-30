@@ -30,8 +30,8 @@ import {Language} from '../../types/languages.interfaces.js';
 import {SourceApiEntry} from '../../types/source.interfaces.js';
 import {unwrap, unwrapString} from '../assert.js';
 import * as BootstrapUtils from '../bootstrap-utils.js';
-import {HistorySource} from '../history.js';
 import * as history from '../history.js';
+import {HistorySource} from '../history.js';
 import {localStorage} from '../local.js';
 import {Alert} from './alert.js';
 
@@ -281,7 +281,7 @@ export class LoadSave {
                 'Compiler Explorer ' + name + 'Code' + this.extension,
             );
             return true;
-        } catch (e) {
+        } catch {
             this.alertSystem.notify('Error while saving your code. Use the clipboard instead.', {
                 group: 'savelocalerror',
                 alertClass: 'notification-error',

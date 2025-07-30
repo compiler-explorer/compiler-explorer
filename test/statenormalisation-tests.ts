@@ -25,9 +25,8 @@
 import fs from 'node:fs';
 
 import {describe, expect, it} from 'vitest';
-
-import {ClientStateGoldenifier, ClientStateNormalizer} from '../lib/clientstate-normalizer.js';
 import {ClientState} from '../lib/clientstate.js';
+import {ClientStateGoldenifier, ClientStateNormalizer} from '../lib/clientstate-normalizer.js';
 
 describe('Normalizing clientstate', () => {
     it('Should translate 2 compilers GL layout to clientstate', () => {

@@ -48,8 +48,8 @@ import * as colour from '../colour.js';
 import {CompilationStatus} from '../compiler-service.interfaces.js';
 import {CompilerService} from '../compiler-service.js';
 import {COMPILER_COMPONENT_NAME, ComponentConfig, NewToolSettings} from '../components.interfaces.js';
-import {createDragSource} from '../components.js';
 import * as Components from '../components.js';
+import {createDragSource} from '../components.js';
 import {Hub} from '../hub.js';
 import * as LibUtils from '../lib-utils.js';
 import * as monacoConfig from '../monaco-config.js';
@@ -68,7 +68,9 @@ import {GccDumpFiltersState, GccDumpViewSelectedPass} from './gccdump-view.inter
 import {MonacoPaneState} from './pane.interfaces.js';
 import {MonacoPane} from './pane.js';
 import {PPOptions} from './pp-view.interfaces.js';
+
 import IEditorMouseEvent = editor.IEditorMouseEvent;
+
 import fileSaver from 'file-saver';
 import {escapeHTML, splitArguments} from '../../shared/common-utils.js';
 import {ClangirBackendOptions} from '../../types/compilation/clangir.interfaces.js';
@@ -984,7 +986,6 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
         }
 
         const target = label.target || label.name;
-        // biome-ignore lint/suspicious/noPrototypeBuiltins: biome recommends Object.hasOwn, but we target ES5 and it's not available
         if (!this.labelDefinitions.hasOwnProperty(target)) {
             return;
         }

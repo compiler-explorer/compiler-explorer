@@ -26,6 +26,9 @@ import {beforeAll, describe, expect, it} from 'vitest';
 
 import {CompilationEnvironment} from '../lib/compilation-env.js';
 import {AnalysisTool, LLVMmcaTool} from '../lib/compilers/index.js';
+import {ToolEnv} from '../lib/tooling/base-tool.interface.js';
+import {LLVMMcaTool as LLVMMcaTooling} from '../lib/tooling/llvm-mca-tool.js';
+import {ToolInfo} from '../types/tool.interfaces.js';
 
 import {
     makeCompilationEnvironment,
@@ -99,5 +102,18 @@ describe('LLVM-mca tool definition', () => {
             disabledFilters: 'labels,directives,debugCalls' as any,
         });
         expect(new AnalysisTool(info, ce).getInfo().disabledFilters).toEqual(['labels', 'directives', 'debugCalls']);
+    });
+
+    it('should remove .loc and .file directives from assembly', () => {
+        const mcaTool = new LLVMMcaTooling({} as ToolInfo, {} as ToolEnv);
+
+        const asmWithDebugInfo = '.file "test.c"\n.loc 1 1 12\nmovl $2, %eax\n.file 0 "/path" "test.c"\nret\n';
+        const result = mcaTool.rewriteAsm(asmWithDebugInfo);
+
+        // Verify that .loc and .file directives are removed
+        expect(result).not.toContain('.loc');
+        expect(result).not.toContain('.file');
+        expect(result).toContain('movl $2, %eax');
+        expect(result).toContain('ret');
     });
 });
