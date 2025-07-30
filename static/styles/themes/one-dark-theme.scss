@@ -23,6 +23,7 @@ $darker: #1e1f22;
     --darker: #{$darker};
 }
 
+html[data-theme='one-dark'] {
 ::-webkit-scrollbar {
     background: $lighter;
 }
@@ -802,3 +803,5 @@ textarea.form-control {
         filter: invert(100%);
     }
 }
+
+} // End html[data-theme='one-dark']

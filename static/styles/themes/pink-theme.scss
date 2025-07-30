@@ -17,6 +17,7 @@ $darker: #e787e7;
     --darker: #{$darker};
 }
 
+html[data-theme='pink'] {
 ::-webkit-scrollbar {
     background: color.adjust(#1e1e1e, $lightness: 10%);
 }
@@ -734,3 +735,5 @@ textarea.form-control {
         }
     }
 }
+
+} // End html[data-theme='pink']
