@@ -13,6 +13,16 @@ $base: #282c34;
 $dark: #21252b;
 $darker: #1e1f22;
 
+// Export as CSS custom properties for use in explorer.scss
+:root {
+    --light: #{$light};
+    --lighter: #{$lighter};
+    --lightest: #{$lightest};
+    --base: #{$base};
+    --dark: #{$dark};
+    --darker: #{$darker};
+}
+
 ::-webkit-scrollbar {
     background: $lighter;
 }

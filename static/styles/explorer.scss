@@ -1170,7 +1170,7 @@ html[data-theme='dark'] {
 
 html[data-theme='pink'] {
     @import 'themes/pink-theme';
-    background-color: $lighter !important;
+    background-color: var(--lighter) !important;
     .theme-light-only {
         display: inline;
     }
@@ -1178,7 +1178,7 @@ html[data-theme='pink'] {
 
 html[data-theme='one-dark'] {
     @import 'themes/one-dark-theme';
-    background-color: $light !important;
+    background-color: var(--light) !important;
     .theme-dark-only {
         display: inline;
     }
