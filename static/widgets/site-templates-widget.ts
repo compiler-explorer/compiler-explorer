@@ -26,9 +26,9 @@ import GoldenLayout from 'golden-layout';
 import $ from 'jquery';
 import {escapeHTML} from '../../shared/common-utils.js';
 import {SiteTemplateConfiguration, UserSiteTemplate} from '../../types/features/site-templates.interfaces.js';
-import {getWithSentryHandling} from '../api/api.js';
 import {assert, unwrap, unwrapString} from '../assert.js';
 import * as BootstrapUtils from '../bootstrap-utils.js';
+import * as HttpUtils from '../http-utils.js';
 import {localStorage} from '../local.js';
 import {Settings} from '../settings.js';
 import * as url from '../url.js';
@@ -80,7 +80,7 @@ class SiteTemplatesWidget {
     async getTemplates(): Promise<SiteTemplateConfiguration> {
         if (this.templatesConfig === null) {
             try {
-                const response = await getWithSentryHandling(
+                const response = await HttpUtils.get(
                     window.location.origin + window.httpRoot + 'api/siteTemplates',
                     'site templates',
                 );

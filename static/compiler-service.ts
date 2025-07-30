@@ -28,9 +28,9 @@ import _ from 'underscore';
 import {CompilationResult, FiledataPair} from '../types/compilation/compilation.interfaces.js';
 import {CompilerInfo} from '../types/compiler.interfaces.js';
 import {ResultLine} from '../types/resultline/resultline.interfaces.js';
-import {postJSONWithSentryHandling} from './api/api.js';
 import {CompilationStatus} from './compiler-service.interfaces.js';
 import {IncludeDownloads, SourceAndFiles} from './download-service.js';
+import * as HttpUtils from './http-utils.js';
 import {options} from './options.js';
 import {SentryCapture} from './sentry.js';
 import {SiteSettings} from './settings.js';
@@ -188,7 +188,7 @@ export class CompilerService {
 
         try {
             const compilerId = encodeURIComponent(request.compiler);
-            const response = await postJSONWithSentryHandling(
+            const response = await HttpUtils.postJSON(
                 `${this.getBaseUrl()}api/compiler/${compilerId}/compile`,
                 request,
                 'compilation request',
@@ -230,7 +230,7 @@ export class CompilerService {
 
         try {
             const compilerId = encodeURIComponent(request.compiler);
-            const response = await postJSONWithSentryHandling(
+            const response = await HttpUtils.postJSON(
                 `${this.getBaseUrl()}api/compiler/${compilerId}/cmake`,
                 request,
                 'cmake request',
@@ -258,7 +258,7 @@ export class CompilerService {
 
     public async requestPopularArguments(compilerId: string, usedOptions: string) {
         try {
-            const response = await postJSONWithSentryHandling(
+            const response = await HttpUtils.postJSON(
                 `${this.getBaseUrl()}api/popularArguments/${compilerId}`,
                 {
                     usedOptions: usedOptions,

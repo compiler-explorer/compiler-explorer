@@ -22,7 +22,7 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import {getWithSentryHandling, postJSONWithSentryHandling} from './api/api.js';
+import * as HttpUtils from './http-utils.js';
 // Setup sentry before anything else so we can capture errors
 import {SentryCapture, SetupSentry, setSentryLayout} from './sentry.js';
 
@@ -194,7 +194,7 @@ function setupButtons(options: CompilerExplorerOptions, hub: Hub) {
 
     (async () => {
         try {
-            const response = await getWithSentryHandling(
+            const response = await HttpUtils.get(
                 window.location.origin + window.httpRoot + 'bits/icons.html',
                 'loading icons',
             );
@@ -209,7 +209,7 @@ function setupButtons(options: CompilerExplorerOptions, hub: Hub) {
 
     $('#ces').on('click', async () => {
         try {
-            const response = await getWithSentryHandling(
+            const response = await HttpUtils.get(
                 window.location.origin + window.httpRoot + 'bits/sponsors.html',
                 'loading sponsors',
             );
@@ -757,7 +757,7 @@ function start() {
                 .get()
                 .join(',');
             // Fire and forget analytics POST - no need to await or handle errors
-            postJSONWithSentryHandling(
+            HttpUtils.postJSON(
                 options.pageloadUrl + '?icons=' + encodeURIComponent(visibleIcons),
                 {},
                 'pageload analytics',

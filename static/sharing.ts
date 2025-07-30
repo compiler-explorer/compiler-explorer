@@ -27,9 +27,9 @@ import ClipboardJS from 'clipboard';
 import GoldenLayout from 'golden-layout';
 import $ from 'jquery';
 import _ from 'underscore';
-import {postJSONWithSentryHandling} from './api/api.js';
 import {unwrap} from './assert.js';
 import * as BootstrapUtils from './bootstrap-utils.js';
+import * as HttpUtils from './http-utils.js';
 import {sessionThenLocalStorage} from './local.js';
 import {options} from './options.js';
 import {SentryCapture} from './sentry.js';
@@ -411,7 +411,7 @@ export class Sharing {
         };
 
         try {
-            const response = await postJSONWithSentryHandling(
+            const response = await HttpUtils.postJSON(
                 window.location.origin + root + 'api/shortener',
                 data,
                 'shortener request',

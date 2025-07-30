@@ -28,7 +28,6 @@ import {
     AssemblyDocumentationRequest,
     AssemblyDocumentationResponse,
 } from '../../types/features/assembly-documentation.interfaces.js';
-import {SentryCapture} from '../sentry.js';
 import {FormattingRequest, FormattingResponse} from './formatting.interfaces.js';
 
 /** Type wrapper allowing .json() to resolve to a concrete type */
@@ -60,74 +59,3 @@ export const getFormattedCode = async (options: FormattingRequest) =>
         },
         body: JSON.stringify(_.pick(options, 'source', 'base', 'tabWidth', 'useSpaces')),
     });
-
-/** Check if a fetch error should be reported to Sentry */
-export function shouldCaptureFetchError(error: any): boolean {
-    // Filter out network-level failures that aren't actionable bugs
-    if (error instanceof TypeError && error.message.includes('fetch')) {
-        // Network errors from fetch() are typically TypeError with "fetch" in message
-        return false;
-    }
-
-    // Filter out AbortError from cancelled requests
-    if (error.name === 'AbortError') {
-        return false;
-    }
-
-    return true;
-}
-
-/** Fetch with automatic Sentry error filtering and retry logic */
-export async function fetchWithSentryHandling(
-    url: string,
-    options: RequestInit = {},
-    context?: string,
-): Promise<Response> {
-    try {
-        const response = await fetch(url, {
-            credentials: 'include',
-            ...options,
-            headers: {
-                Accept: 'application/json',
-                ...options.headers,
-            },
-        });
-
-        // Only capture server errors (4xx/5xx) not network issues
-        if (!response.ok && response.status >= 400) {
-            const error = new Error(`HTTP ${response.status}: ${response.statusText}`);
-            (error as any).response = response;
-            SentryCapture(error, context || 'fetch request failed');
-        }
-
-        return response;
-    } catch (error) {
-        // Only capture if it's not a network-level failure
-        if (shouldCaptureFetchError(error)) {
-            SentryCapture(error, context || 'fetch request error');
-        } else {
-            console.debug('Network request failed:', error, context);
-        }
-        throw error;
-    }
-}
-
-/** GET request with Sentry error handling */
-export async function getWithSentryHandling(url: string, context?: string): Promise<Response> {
-    return fetchWithSentryHandling(url, {method: 'GET'}, context);
-}
-
-/** POST JSON request with Sentry error handling */
-export async function postJSONWithSentryHandling(url: string, data: any, context?: string): Promise<Response> {
-    return fetchWithSentryHandling(
-        url,
-        {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify(data),
-        },
-        context,
-    );
-}

@@ -30,11 +30,11 @@ import {editor} from 'monaco-editor';
 import * as monacoVim from 'monaco-vim';
 import TomSelect from 'tom-select';
 import _ from 'underscore';
-import {postJSONWithSentryHandling} from '../api/api.js';
 import * as BootstrapUtils from '../bootstrap-utils.js';
 import * as colour from '../colour.js';
 import * as Components from '../components.js';
 import {createDragSource} from '../components.js';
+import * as HttpUtils from '../http-utils.js';
 import * as monacoConfig from '../monaco-config.js';
 import {options} from '../options.js';
 import * as quickFixesHandler from '../quick-fixes-handler.js';
@@ -1167,7 +1167,7 @@ export class Editor extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Edit
 
         (async () => {
             try {
-                const response = await postJSONWithSentryHandling(
+                const response = await HttpUtils.postJSON(
                     window.location.origin + this.httpRoot + 'api/format/' + lang?.formatter,
                     {
                         source: previousSource,
