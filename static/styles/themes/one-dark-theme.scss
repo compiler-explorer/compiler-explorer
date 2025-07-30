@@ -301,7 +301,7 @@ textarea.form-control {
 }
 
 .form-control:disabled {
-    background-color: darken(#474747, 10%);
+    background-color: color.scale(#474747, $lightness: -10%);
 }
 
 .graph-container {

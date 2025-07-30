@@ -13,7 +13,7 @@ $color2: #eeeeee; // Appears 2 times
 $color3: #333; // Appears 2 times
 
 $color4: #cccccc; // Appears 1 time
-$color5: darken($dark, 5%); // Appears 1 time
+$color5: color.scale($dark, $lightness: -5%); // Appears 1 time
 $color6: #999999; // Appears 1 time
 $color7: $dark; // Appears 1 time
 $color8: #452500; // Appears 1 time

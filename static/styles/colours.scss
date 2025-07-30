@@ -269,7 +269,7 @@
 /* Gray shades */
 /*@for $i from 0 through 4 {
     .pink- hashtag {$i} {
-        background: darken(#fae1fa, (($i + 1) * 2) / 100 * 100);
+        background: color.scale(#fae1fa, $lightness: -(($i + 1) * 2%));
     }
 }*/
 .pink-0 {
