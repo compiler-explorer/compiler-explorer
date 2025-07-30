@@ -1,11 +1,13 @@
+@use 'sass:color';
+@use 'ansi-dark';
 @import '~golden-layout/src/css/goldenlayout-dark-theme';
 
 ::-webkit-scrollbar {
-    background: lighten(#1e1e1e, 10%);
+    background: color.scale(#1e1e1e, $lightness: 10%);
 }
 
 ::-webkit-scrollbar-thumb {
-    background: lighten(#1e1e1e, 20%);
+    background: color.scale(#1e1e1e, $lightness: 20%);
 }
 
 a {
@@ -253,7 +255,7 @@ textarea.form-control {
 }
 
 .form-control:disabled {
-    background-color: darken(#474747, 10%);
+    background-color: color.scale(#474747, $lightness: -10%);
 }
 
 .graph-container {
@@ -539,7 +541,7 @@ textarea.form-control {
     border: none !important;
     background: #444444 !important;
     &:hover {
-        background: darken(#444444, 5%) !important;
+        background: color.scale(#444444, $lightness: -5%) !important;
     }
 }
 
@@ -723,5 +725,3 @@ textarea.form-control {
         filter: invert(100%);
     }
 }
-
-@import 'ansi-dark';
