@@ -57,6 +57,19 @@ describe('AsmParser comment filtering', () => {
 describe('PTXAsmParser tests', () => {
     const parser = new PTXAsmParser();
 
+    describe('Identifying opcodes', () => {
+        it('should identify regular PTX opcodes', () => {
+            expect(parser.hasOpcode('  mov.u32 	%r25, %ctaid.x;')).toBe(true);
+            expect(parser.hasOpcode('  ld.global.v4.b32 { %r1, %r2, %r3, %r4 }, [ %rd1 + 0 ];')).toBe(true);
+            expect(parser.hasOpcode('  mul.wide.s32 	%rd10, %r31, 4;')).toBe(true);
+        });
+        it('should identify PTX opcodes with predicate', () => {
+            expect(parser.hasOpcode('  @%p1 ld.global.v4.b32 { %r1, %r2, %r3, %r4 }, [ %rd1 + 0 ];')).toBe(true);
+            expect(parser.hasOpcode('  @!%p1 bra LBB6_2;')).toBe(true);
+            expect(parser.hasOpcode('  @%r789 bra LBB6_2;')).toBe(true);
+        });
+    });
+
     describe('Nested brace indentation', () => {
         it('should indent content inside callseq blocks', () => {
             const input = `{ // callseq 0, 0
