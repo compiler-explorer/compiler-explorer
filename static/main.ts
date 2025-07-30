@@ -221,13 +221,9 @@ function setupButtons(options: CompilerExplorerOptions, hub: Hub) {
                     return;
                 }
 
-                // Only capture server errors for Sentry - silently fail for network issues
                 if (err.status >= 400) {
+                    // Capture server errors for Sentry, and show to the user
                     SentryCapture(err, '$.get failed loading sponsors');
-                }
-
-                // Still show user-facing error for actual server problems
-                if (err.status >= 400) {
                     const result = err.responseText || JSON.stringify(err);
                     alertSystem.alert(
                         'Compiler Explorer Sponsors',
