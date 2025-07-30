@@ -1,6 +1,7 @@
 // based on pink-theme.scss
 @use 'sass:color';
-@import 'custom-golden-layout-themes/one-dark';
+@use 'custom-golden-layout-themes/one-dark';
+@use 'ansi-dark';
 
 $logo-primary: #67c52a;
 $logo-secondary: #999999;
@@ -791,5 +792,3 @@ textarea.form-control {
         filter: invert(100%);
     }
 }
-
-@import 'ansi-dark';

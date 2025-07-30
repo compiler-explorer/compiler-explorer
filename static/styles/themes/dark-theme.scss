@@ -1,4 +1,5 @@
 @use 'sass:color';
+@use 'ansi-dark';
 @import '~golden-layout/src/css/goldenlayout-dark-theme';
 
 ::-webkit-scrollbar {
@@ -724,5 +725,3 @@ textarea.form-control {
         filter: invert(100%);
     }
 }
-
-@import 'ansi-dark';
