@@ -174,7 +174,12 @@ export default {
                         },
                     },
                     'css-loader',
-                    'sass-loader',
+                    {
+                        loader: 'sass-loader',
+                    },
+                    {
+                        loader: path.resolve(__dirname, 'etc/webpack/replace-golden-layout-imports.cjs'),
+                    },
                 ],
             },
             {
