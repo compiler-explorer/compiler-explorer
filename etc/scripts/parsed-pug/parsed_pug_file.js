@@ -9,7 +9,7 @@ const path = require('path');
 // just update the hash here.
 const expectedHashes = {
     cookies: '08712179739d3679',
-    privacy: '927087b3a3494681',
+    privacy: '037b6e16585b1135',
 };
 
 function _execGit(command) {
