@@ -181,6 +181,19 @@ def setup_triton(
     except ImportError:
         pass
 
+    # Triton used to depends on the ld.lld binary, and search for the following paths:
+    #   - TRITON_HIP_LLD_PATH (see https://github.com/triton-lang/triton/pull/3917)
+    #   - third_party/amd/backend/llvm/bin/ld.lld (see https://github.com/triton-lang/triton/pull/3662)
+    #   - /opt/rocm/llvm/bin/ld.lld
+    #   - /usr/bin/ld.lld (see https://github.com/triton-lang/triton/pull/3197)
+    # However, none of them are available in the production environment, which causes
+    #     Exception: ROCm linker /opt/rocm/llvm/bin/ld.lld not found. Set 'TRITON_HIP_LLD_PATH' to its path.
+    # Since the linker is only used to generate the binary .hsaco file (from the .amdgcn assembly),
+    # we don't really need it. We can just mock it to be a no-op.
+    # Note: Triton no longer depends on the ld.lld binary after v3.4.0 (exclusive) with commit:
+    #     https://github.com/triton-lang/triton/pull/7548
+    os.environ["TRITON_HIP_LLD_PATH"] = "/bin/true"
+
 
 def main(
     input_file: Path,
