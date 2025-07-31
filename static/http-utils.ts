@@ -46,53 +46,78 @@ export interface FetchResult<T = unknown> {
     isHttpError: boolean;
 }
 
+interface SafeFetchOptions extends Omit<RequestInit, 'body'> {
+    parseAs?: 'json' | 'text' | 'response';
+    body?: BodyInit | Record<string, any> | null;
+}
+
 // Simple type-safe overloads
 export function safeFetch(
     url: string,
-    options: {parseAs: 'text'} & RequestInit,
+    options: {parseAs: 'text'} & SafeFetchOptions,
     context?: string,
 ): Promise<FetchResult<string>>;
 export function safeFetch(
     url: string,
-    options: {parseAs: 'json'} & RequestInit,
+    options: {parseAs: 'json'} & SafeFetchOptions,
     context?: string,
 ): Promise<FetchResult<unknown>>;
 export function safeFetch(
     url: string,
-    options: {parseAs: 'response'} & RequestInit,
+    options: {parseAs: 'response'} & SafeFetchOptions,
     context?: string,
 ): Promise<FetchResult<Response>>;
 export function safeFetch<T>(
     url: string,
-    options: {parseAs: 'json'} & RequestInit,
+    options: {parseAs: 'json'} & SafeFetchOptions,
     context?: string,
 ): Promise<FetchResult<T>>;
 export function safeFetch<ParseAs extends string, T>(
     url: string,
-    options: {parseAs: ParseAs} & RequestInit,
+    options: {parseAs: ParseAs} & SafeFetchOptions,
     context?: string,
 ): Promise<FetchResult<T>>;
 export function safeFetch<T = string>(
     url: string,
-    options?: RequestInit & {parseAs?: 'json' | 'text' | 'response'},
+    options?: SafeFetchOptions,
     context?: string,
 ): Promise<FetchResult<T>>;
 
-export async function safeFetch(
-    url: string,
-    options?: RequestInit & {parseAs?: 'json' | 'text' | 'response'},
-    context?: string,
-): Promise<FetchResult<any>> {
+export async function safeFetch(url: string, options?: SafeFetchOptions, context?: string): Promise<FetchResult<any>> {
     const {parseAs, ...fetchOptions} = options || {};
+
+    // Auto-stringify object bodies and set Content-Type
+    let processedBody = fetchOptions.body;
+    const headers: HeadersInit = {...fetchOptions.headers};
+
+    if (
+        processedBody &&
+        typeof processedBody === 'object' &&
+        !(processedBody instanceof FormData) &&
+        !(processedBody instanceof URLSearchParams) &&
+        !(processedBody instanceof ReadableStream) &&
+        !(processedBody instanceof ArrayBuffer) &&
+        !(processedBody instanceof Blob)
+    ) {
+        processedBody = JSON.stringify(processedBody);
+        if (!headers['Content-Type'] && !headers['content-type']) {
+            headers['Content-Type'] = 'application/json';
+        }
+    }
+
+    // Smart Accept header based on parseAs
+    if (parseAs === 'json' && !headers['Accept'] && !headers['accept']) {
+        headers['Accept'] = 'application/json';
+    } else if (parseAs === 'text' && !headers['Accept'] && !headers['accept']) {
+        headers['Accept'] = 'text/plain';
+    }
 
     try {
         const response = await globalThis.fetch(url, {
             credentials: 'include',
-            headers: {
-                Accept: 'application/json',
-                ...fetchOptions.headers,
-            },
+            headers,
             ...fetchOptions,
+            body: processedBody,
         });
 
         if (response.ok) {

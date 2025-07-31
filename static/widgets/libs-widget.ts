@@ -76,7 +76,12 @@ class LibraryAnnotations {
         if (!Object.keys(this.all).includes(libver)) {
             const {data, error} = await safeFetch<LibraryAnnotationDetail[]>(
                 `https://conan.compiler-explorer.com/annotations/${libver}`,
-                {parseAs: 'json'},
+                {
+                    parseAs: 'json',
+                    headers: {
+                        Accept: 'application/json',
+                    },
+                },
                 `library annotations for ${libver}`,
             );
             if (error) {

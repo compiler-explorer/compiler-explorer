@@ -191,8 +191,7 @@ export class CompilerService {
             `${this.getBaseUrl()}api/compiler/${compilerId}/compile`,
             {
                 method: 'POST',
-                headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify(request),
+                body: request,
                 parseAs: 'json',
             },
             'compilation request',
@@ -233,8 +232,7 @@ export class CompilerService {
             `${this.getBaseUrl()}api/compiler/${compilerId}/cmake`,
             {
                 method: 'POST',
-                headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify(request),
+                body: request,
                 parseAs: 'json',
             },
             'cmake request',
@@ -261,11 +259,10 @@ export class CompilerService {
             `${this.getBaseUrl()}api/popularArguments/${compilerId}`,
             {
                 method: 'POST',
-                headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify({
+                body: {
                     usedOptions: usedOptions,
                     presplit: false,
-                }),
+                },
                 parseAs: 'json',
             },
             'popular arguments request',

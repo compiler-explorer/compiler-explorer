@@ -24,3 +24,14 @@
 
 globalThis.__webpack_public_path__ = '';
 document.body.innerHTML = '<div id="config" httpRoot="/test/" staticRoot="/test/static/" extraOptions="{}"></div>';
+
+// Set window properties that would normally be set by options.ts
+(globalThis as any).window = {
+    ...(globalThis as any).window,
+    httpRoot: '/test/',
+    staticRoot: '/test/static/',
+    location: {
+        origin: 'http://localhost:3000',
+        ...(globalThis as any).window?.location,
+    },
+};

@@ -313,7 +313,8 @@ describe('safeFetch HTTP Utility', () => {
             expect(result.data).toBe('test');
             expect(fetch).toHaveBeenCalledWith('https://example.com/test', {
                 credentials: 'include',
-                headers: {Accept: 'application/json'},
+                headers: {},
+                body: undefined,
             });
         });
 
