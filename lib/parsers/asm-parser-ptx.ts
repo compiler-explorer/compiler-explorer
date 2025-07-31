@@ -80,6 +80,8 @@ export class PTXAsmParser extends AsmParser {
         this.functionCallEnd = /^\s*\)\s*;\s*$/;
 
         this.labelLine = /^\s*\$?[a-zA-Z_][a-zA-Z0-9_]*:.*$/;
+
+        this.hasOpcodeRe = /^\s*(@!?%\w+\s+)?(%[$.A-Z_a-z][\w$.]*\s*=\s*)?[A-Za-z]/;
     }
 
     override processAsm(asmResult: string, filters: ParseFiltersAndOutputOptions): ParsedAsmResult {
@@ -100,6 +102,8 @@ export class PTXAsmParser extends AsmParser {
         let inFunctionCall = false;
         let callBaseIndent = '';
         let braceDepth = 0;
+        let lineNumber = 0;
+        let openBraceLineNumber = 0;
 
         for (let line of asmLines) {
             const newSource = this.processSourceLine(line, files);
@@ -181,8 +185,14 @@ export class PTXAsmParser extends AsmParser {
 
             if (this.functionStart.test(line)) {
                 braceDepth++;
+                openBraceLineNumber = lineNumber;
             } else if (this.functionEnd.test(line)) {
                 braceDepth--;
+                // Remove paired braces with no content
+                if (openBraceLineNumber + 1 === lineNumber) {
+                    asm.pop();
+                    continue;
+                }
             }
 
             if (filters.trim) {
@@ -194,6 +204,7 @@ export class PTXAsmParser extends AsmParser {
                 source: this.hasOpcode(line) ? currentSource : null,
                 labels: [],
             });
+            lineNumber++;
         }
 
         const endTime = process.hrtime.bigint();

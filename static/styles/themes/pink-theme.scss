@@ -1,4 +1,5 @@
-@import 'custom-golden-layout-themes/pink';
+@use 'sass:color';
+@use 'custom-golden-layout-themes/pink';
 
 $logo-primary: #67c52a;
 $logo-secondary: #3c3c3f;
@@ -8,12 +9,19 @@ $base: #fac6fa;
 $dark: #e3a5e3;
 $darker: #e787e7;
 
+html[data-theme='pink'] {
+// Export as CSS custom properties for use in explorer.scss
+--lighter: #{$lighter};
+--base: #{$base};
+--dark: #{$dark};
+--darker: #{$darker};
+
 ::-webkit-scrollbar {
-    background: lighten(#1e1e1e, 10%);
+    background: color.adjust(#1e1e1e, $lightness: 10%);
 }
 
 ::-webkit-scrollbar-thumb {
-    background: lighten(#1e1e1e, 20%);
+    background: color.adjust(#1e1e1e, $lightness: 20%);
 }
 
 a {
@@ -136,7 +144,7 @@ textarea.form-control {
         //color: #fff !important;
 
         &:hover {
-            background-color: darken($darker, 5%) !important;
+            background-color: color.adjust($darker, $lightness: -5%) !important;
         }
     }
 
@@ -146,7 +154,7 @@ textarea.form-control {
 
     &:disabled,
     &:disabled:hover {
-        background-color: lighten($base, 5%) !important;
+        background-color: color.adjust($base, $lightness: 5%) !important;
         //color: #fff !important;
     }
 }
@@ -185,7 +193,7 @@ textarea.form-control {
 
 .currentCursorPosition {
     color: white;
-    background-color: opacify($dark, 0.8);
+    background-color: color.adjust($dark, $alpha: 0.8);
 }
 
 .form-select {
@@ -253,7 +261,7 @@ textarea.form-control {
 }
 
 .form-control:disabled {
-    background-color: darken(#474747, 10%);
+    background-color: color.adjust(#474747, $lightness: -10%);
 }
 
 .graph-container {
@@ -308,7 +316,7 @@ textarea.form-control {
 }
 
 .linked-code-decoration-line {
-    background: lighten($base, 5%) !important;
+    background: color.adjust($base, $lightness: 5%) !important;
 }
 
 .linked-code-decoration-margin {
@@ -543,7 +551,7 @@ textarea.form-control {
     border-color: $dark !important;
     background-color: $dark !important;
     &:hover {
-        background-color: darken($dark, 5%) !important;
+        background-color: color.adjust($dark, $lightness: -5%) !important;
     }
 }
 
@@ -557,6 +565,7 @@ textarea.form-control {
 
 .rainbow-decoration {
     -webkit-background-clip: text;
+    background-clip: text;
     -webkit-text-fill-color: transparent;
     background-image: linear-gradient(
         60deg,
@@ -724,3 +733,5 @@ textarea.form-control {
         }
     }
 }
+
+} // End html[data-theme='pink']

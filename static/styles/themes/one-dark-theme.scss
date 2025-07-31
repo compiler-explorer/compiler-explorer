@@ -1,5 +1,7 @@
 // based on pink-theme.scss
-@import 'custom-golden-layout-themes/one-dark';
+@use 'sass:color';
+@use 'custom-golden-layout-themes/one-dark';
+@use 'ansi-dark';
 
 $logo-primary: #67c52a;
 $logo-secondary: #999999;
@@ -11,12 +13,21 @@ $base: #282c34;
 $dark: #21252b;
 $darker: #1e1f22;
 
+html[data-theme='one-dark'] {
+// Export as CSS custom properties for use in explorer.scss
+--light: #{$light};
+--lighter: #{$lighter};
+--lightest: #{$lightest};
+--base: #{$base};
+--dark: #{$dark};
+--darker: #{$darker};
+
 ::-webkit-scrollbar {
     background: $lighter;
 }
 
 ::-webkit-scrollbar-thumb {
-    background: lighten($lighter, 10%);
+    background: color.adjust($lighter, $lightness: 10%);
 }
 
 a {
@@ -153,7 +164,7 @@ textarea.form-control {
 
     &:disabled,
     &:disabled:hover {
-        background-color: lighten($light, 5%) !important;
+        background-color: color.adjust($light, $lightness: 5%) !important;
         color: #7c8895 !important;
     }
 }
@@ -179,7 +190,7 @@ textarea.form-control {
 
         &:disabled,
         &:disabled:hover {
-            background-color: lighten($light, 5%) !important;
+            background-color: color.adjust($light, $lightness: 5%) !important;
             color: #7c8895 !important;
         }
     }
@@ -231,7 +242,7 @@ textarea.form-control {
 
 .currentCursorPosition {
     color: #eee;
-    background-color: opacify($dark, 0.8);
+    background-color: color.adjust($dark, $alpha: 0.8);
 }
 
 .form-select {
@@ -300,7 +311,7 @@ textarea.form-control {
 }
 
 .form-control:disabled {
-    background-color: darken(#474747, 10%);
+    background-color: color.scale(#474747, $lightness: -10%);
 }
 
 .graph-container {
@@ -359,7 +370,7 @@ textarea.form-control {
 }
 
 .linked-code-decoration-line {
-    background: lighten($lighter, 5%) !important;
+    background: color.adjust($lighter, $lightness: 5%) !important;
 }
 
 .linked-code-decoration-margin {
@@ -578,8 +589,8 @@ textarea.form-control {
 
 .popover .arrow::after,
 .popover .arrow::before {
-    border-left-color: lighten($light, 2%) !important;
-    border-right-color: lighten($light, 2%) !important;
+    border-left-color: color.adjust($light, $lightness: 2%) !important;
+    border-right-color: color.adjust($light, $lightness: 2%) !important;
 }
 
 .popover {
@@ -609,6 +620,7 @@ textarea.form-control {
 
 .rainbow-decoration {
     -webkit-background-clip: text;
+    background-clip: text;
     -webkit-text-fill-color: transparent;
     background-image: linear-gradient(
         60deg,
@@ -676,7 +688,7 @@ textarea.form-control {
         color: #eee;
 
         &:hover {
-            background-color: lighten($base, 5%) !important;
+            background-color: color.adjust($base, $lightness: 5%) !important;
         }
     }
 }
@@ -790,4 +802,4 @@ textarea.form-control {
     }
 }
 
-@import 'ansi-dark';
+} // End html[data-theme='one-dark']

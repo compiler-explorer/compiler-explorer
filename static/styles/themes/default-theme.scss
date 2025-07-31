@@ -1,4 +1,6 @@
-@import '~golden-layout/src/css/goldenlayout-light-theme';
+@use 'sass:color';
+
+html[data-theme='default'] {
 
 /*
  * replace low res golden-layout icons with svg recreations to improve high DPI displays
@@ -117,6 +119,7 @@ a.navbar-brand img.logo.normal {
 
 .rainbow-decoration {
     -webkit-background-clip: text;
+    background-clip: text;
     -webkit-text-fill-color: transparent;
     background-image: linear-gradient(
         60deg,
@@ -259,7 +262,7 @@ a.navbar-brand img.logo.normal {
     color: #ffffff !important;
     text-decoration: none !important;
 
-    
+
 }
 
 #socialshare .share-bluesky,
@@ -399,7 +402,7 @@ div.argmenuitem span.argdescription {
 
 .currentCursorPosition {
     color: #15a3b9;
-    background-color: darken(rgba(248, 249, 250, 0.85), 3%);
+    background-color: color.adjust(rgba(248, 249, 250, 0.85), $lightness: -3%);
     border: 1px solid #d2d3d4;
 }
 
@@ -418,7 +421,7 @@ div.argmenuitem span.argdescription {
             }
             &:hover,
             &.active {
-                background: lighten(#f5f5f5, 5%);
+                background: color.adjust(#f5f5f5, $lightness: 5%);
             }
             &.changed {
                 color: #148624;
@@ -449,7 +452,7 @@ div.argmenuitem span.argdescription {
     .compilers-col .group-wrapper .group {
         .label {
             // taking the color tom-select uses, but I find that a little low-contrast
-            background: darken(#f6f6f6, 3%);
+            background: color.adjust(#f6f6f6, $lightness: -3%);
         }
         .compiler {
             &:hover {
@@ -490,3 +493,5 @@ div.argmenuitem span.argdescription {
         }
     }
 }
+
+} // End html[data-theme='default']
