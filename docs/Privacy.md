@@ -2,7 +2,7 @@
 
 _This is a summary of our Privacy policy, not a legal document, and might be incomplete._
 
-_For the full Privacy policy, see `static/policies/privacy.html`, or visit https://godbolt.org/#privacy_
+_For the full Privacy policy, see `static/generated/privacy.pug`, or visit https://godbolt.org/#privacy_
 
 The main Compiler Explorer site (at https://godbolt.org/) has a cookie and privacy policy, and it's expected that any
 changes to the code are in compliance with those policies. It's worth taking a look at them if you're touching any area
@@ -24,11 +24,16 @@ short links). All this makes perfect sense and would probably be done anyway, as
 We anonymise IP addresses so there's no exact mapping back to an individual using an IP. Not that it's trivial to map an
 IP to a user anyway.
 
-We shouldn't store data forever: our web logs are set to delete after a few months.
+We shouldn't store data forever: our web logs are set to delete after one month. Amazon infrastructure logs 
+(separate from our web logs) also contain full IP addresses and are kept for one month.
 
 Short URLs do turn up in the web logs: from the short URL of course one can easily extract the source code embedded in
 that short URL. Users are notified of this in the privacy policy. The ultimate recourse for users concerned about this
 is to not use the main Compiler Explorer but instead run their own local service, which is relatively straightforward.
+
+We also integrate with third-party services with user consent: Claude Explain sends code to Anthropic for analysis, and
+we use Sentry for error reporting (which keeps IP and browser info for 90 days). Users can control whether their code
+is stored for diagnostic purposes through a setting that defaults to enabled but can be disabled.
 
 ### Admins
 
