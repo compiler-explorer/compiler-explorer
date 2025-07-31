@@ -25,6 +25,7 @@
 import $ from 'jquery';
 import {unwrapString} from '../assert.js';
 import * as BootstrapUtils from '../bootstrap-utils.js';
+import {safeFetch} from '../http-utils.js';
 import {localStorage} from '../local.js';
 import {Library, LibraryVersion} from '../options.interfaces.js';
 import {options} from '../options.js';
@@ -73,8 +74,15 @@ class LibraryAnnotations {
     private async get(library: string, version: string): Promise<LibraryAnnotationDetail[]> {
         const libver = `${library}/${version}`;
         if (!Object.keys(this.all).includes(libver)) {
-            const response = await fetch(`https://conan.compiler-explorer.com/annotations/${libver}`);
-            this.all[libver] = (await response.json()) as LibraryAnnotationDetail[];
+            const {data, error} = await safeFetch<LibraryAnnotationDetail[]>(
+                `https://conan.compiler-explorer.com/annotations/${libver}`,
+                {parseAs: 'json'},
+                `library annotations for ${libver}`,
+            );
+            if (error) {
+                throw new Error(`Failed to fetch library annotations: ${error.message}`);
+            }
+            this.all[libver] = data || [];
         }
         return this.all[libver];
     }

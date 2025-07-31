@@ -1147,7 +1147,10 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
             id: 'dumpAsm',
             label: 'Developer: Dump asm',
             run: () => {
-                console.log(this.assembly);
+                // Developer debug output - only in development mode
+                if (process.env.NODE_ENV === 'development') {
+                    console.log(this.assembly);
+                }
             },
         });
     }
@@ -1459,7 +1462,7 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
                 } else if (e) {
                     message = e.error || e.code || e.message;
                     if (e.stack) {
-                        console.log(e);
+                        SentryCapture(e, 'compiler service error');
                     }
                 }
                 onCompilerResponse(request, this.errorResult('<Compilation failed: ' + message + '>'), false);
@@ -3325,15 +3328,18 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
             throw new Error(cached.data as string);
         }
 
-        const response = await getAssemblyDocumentation({opcode, instructionSet});
-        const body = await response.json();
-        if (response.status === 200) {
+        const {data: body, error} = await getAssemblyDocumentation({opcode, instructionSet});
+        if (error) {
+            OpcodeCache.set(cacheName, {found: false, data: error.message});
+            throw error;
+        }
+        if (body) {
             OpcodeCache.set(cacheName, {found: true, data: body});
             return body;
         }
-        const error = (body as any).error;
-        OpcodeCache.set(cacheName, {found: false, data: error});
-        throw new Error(error);
+        const fallbackError = 'No assembly documentation found';
+        OpcodeCache.set(cacheName, {found: false, data: fallbackError});
+        throw new Error(fallbackError);
     }
 
     override onDidChangeCursorSelection(e) {

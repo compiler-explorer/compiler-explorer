@@ -48,8 +48,8 @@ export function setSentryLayout(l: GoldenLayout) {
                 event.extra = {};
             }
             event.extra['full_url'] = window.location.origin + window.httpRoot + '#' + serialiseState(config);
-        } catch (e) {
-            console.log('Error adding full_url to Sentry event', e);
+        } catch (_e) {
+            // Silently fail - we don't want to interfere with Sentry reporting itself
         }
         return event;
     });
