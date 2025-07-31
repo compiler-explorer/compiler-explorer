@@ -19,17 +19,12 @@ export default function replaceGoldenLayoutImports(source) {
     const goldenLayoutImportRegex = /@import\s+['"]~golden-layout\/src\/css\/([^'"]+)['"];?\s*/g;
     
     return source.replace(goldenLayoutImportRegex, (match, cssFileName) => {
-        try {
-            // Ensure .css extension
-            const fileName = cssFileName.endsWith('.css') ? cssFileName : `${cssFileName}.css`;
-            const cssContent = readGoldenLayoutCSS(fileName);
-            const themeName = fileName.replace(/^goldenlayout-/, '').replace(/\.css$/, '');
-            
-            return `/* Golden Layout ${themeName} - Inlined */\n${cssContent}\n/* End Golden Layout ${themeName} */`;
-        } catch (error) {
-            console.warn(`Failed to inline golden-layout CSS '${cssFileName}':`, error.message);
-            return match; // Keep original import if loading fails
-        }
+        // Ensure .css extension
+        const fileName = cssFileName.endsWith('.css') ? cssFileName : `${cssFileName}.css`;
+        const cssContent = readGoldenLayoutCSS(fileName);
+        const themeName = fileName.replace(/^goldenlayout-/, '').replace(/\.css$/, '');
+        
+        return `/* Golden Layout ${themeName} - Inlined */\n${cssContent}\n/* End Golden Layout ${themeName} */`;
     });
 };
 
