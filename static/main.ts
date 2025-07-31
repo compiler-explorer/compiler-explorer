@@ -606,6 +606,7 @@ function start() {
         [layout, hub, themer, settings] = initializeLayout(config, root);
     } catch (e) {
         SentryCapture(e, 'goldenlayout/hub setup');
+        console.log('Exception processing state, resetting layout to default', e);
 
         if (document.URL.includes('/z/')) {
             document.location = document.URL.replace('/z/', '/resetlayout/');

@@ -1147,10 +1147,7 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
             id: 'dumpAsm',
             label: 'Developer: Dump asm',
             run: () => {
-                // Developer debug output - only in development mode
-                if (process.env.NODE_ENV === 'development') {
-                    console.log(this.assembly);
-                }
+                console.log(this.assembly);
             },
         });
     }
@@ -1462,7 +1459,7 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
                 } else if (e) {
                     message = e.error || e.code || e.message;
                     if (e.stack) {
-                        SentryCapture(e, 'compiler service error');
+                        console.log(e);
                     }
                 }
                 onCompilerResponse(request, this.errorResult('<Compilation failed: ' + message + '>'), false);
