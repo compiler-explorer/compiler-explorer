@@ -12,24 +12,22 @@ module.exports = function replaceGoldenLayoutImports(source) {
         return source;
     }
 
-    // Replace the specific import statements
-    let processedSource = source;
+    // Replace any golden-layout CSS import with actual content
+    const goldenLayoutImportRegex = /@import\s+['"]~golden-layout\/src\/css\/([^'"]+)['"];?\s*/g;
     
-    // Replace light theme import
-    const lightImportRegex = /@import\s+['"]~golden-layout\/src\/css\/goldenlayout-light-theme['"];?\s*/g;
-    if (lightImportRegex.test(source)) {
-        const lightCSS = readGoldenLayoutCSS('goldenlayout-light-theme.css');
-        processedSource = processedSource.replace(lightImportRegex, `/* Golden Layout Light Theme - Inlined */\n${lightCSS}\n/* End Golden Layout Light Theme */`);
-    }
-
-    // Replace dark theme import  
-    const darkImportRegex = /@import\s+['"]~golden-layout\/src\/css\/goldenlayout-dark-theme['"];?\s*/g;
-    if (darkImportRegex.test(source)) {
-        const darkCSS = readGoldenLayoutCSS('goldenlayout-dark-theme.css');
-        processedSource = processedSource.replace(darkImportRegex, `/* Golden Layout Dark Theme - Inlined */\n${darkCSS}\n/* End Golden Layout Dark Theme */`);
-    }
-
-    return processedSource;
+    return source.replace(goldenLayoutImportRegex, (match, cssFileName) => {
+        try {
+            // Ensure .css extension
+            const fileName = cssFileName.endsWith('.css') ? cssFileName : `${cssFileName}.css`;
+            const cssContent = readGoldenLayoutCSS(fileName);
+            const themeName = fileName.replace(/^goldenlayout-/, '').replace(/\.css$/, '');
+            
+            return `/* Golden Layout ${themeName} - Inlined */\n${cssContent}\n/* End Golden Layout ${themeName} */`;
+        } catch (error) {
+            console.warn(`Failed to inline golden-layout CSS '${cssFileName}':`, error.message);
+            return match; // Keep original import if loading fails
+        }
+    });
 };
 
 function readGoldenLayoutCSS(filename) {
