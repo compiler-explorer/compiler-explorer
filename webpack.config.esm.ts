@@ -178,7 +178,7 @@ export default {
                         loader: 'sass-loader',
                     },
                     {
-                        loader: path.resolve(__dirname, 'etc/webpack/replace-golden-layout-imports.cjs'),
+                        loader: path.resolve(__dirname, 'etc/webpack/replace-golden-layout-imports.js'),
                     },
                 ],
             },
@@ -189,7 +189,7 @@ export default {
             },
             {
                 test: /\.pug$/,
-                loader: './etc/scripts/parsed-pug/parsed_pug_file.js',
+                loader: path.resolve(__dirname, 'etc/webpack/parsed-pug-loader.js'),
                 options: {
                     useGit: hasGit,
                 },
