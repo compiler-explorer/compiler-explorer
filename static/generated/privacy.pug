@@ -30,8 +30,10 @@ html(lang="en")
     ul
       li Your source code is usually deleted within minutes, or up to 1 week if we need it for debugging (unless you opt out).
       li Short shared links are kept indefinitely. In emergencies these can be deleted on request.
-      li Web logs contain semi-anonymised IP addresses for up to 1 month.
-      li Amazon logs contain full IP addresses for up to 1 month.
+      li Web logs contain semi-anonymised IP addresses for up to 32 days.
+      li Amazon logs contain full IP addresses for up to 32 days.
+      li Compilation analytics (which compilers and settings are used) are kept for up to 1 year to help us improve the service.
+      li Lambda and API logs are kept for 7-14 days.
       li Error reports hold IP and browser info for up to 90 days.
       li Cached compilation results are stored in memory and on disk, but can't be traced back to your original code.
 
@@ -110,12 +112,14 @@ html(lang="en")
       | then we can potentially retrieve your code from our logs.
 
     p
-      | Compilation logs are separate analytics logs that record which compilers and settings people use,
-      | but don't contain any code or other sensitive information.
+      | Compilation logs are separate analytics logs that record which compilers and settings people use.
+      | These analytics help us understand usage patterns and plan improvements. We store a fingerprint (hash) of your
+      | source code along with compiler options, filters, and libraries used, but we can't reverse this to see your
+      | actual code. These analytics are kept for up to 1 year.
 
     p
       | Amazon infrastructure logs: We use Amazon's servers to run Compiler Explorer. Their logs (which help us
-      | debug issues and block attacks) contain full IP addresses and are kept for up to one month, then permanently
+      | debug issues and block attacks) contain full IP addresses and are kept for up to 32 days, then permanently
       | deleted.
 
     p
