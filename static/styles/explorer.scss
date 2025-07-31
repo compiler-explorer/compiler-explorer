@@ -1,3 +1,8 @@
+@use 'themes/default-theme';
+@use 'themes/dark-theme';
+@use 'themes/pink-theme';
+@use 'themes/one-dark-theme';
+
 @import '~@fortawesome/fontawesome-free/css/all.min.css';
 
 // SCSS function to generate TomSelect dropdown arrow SVG with custom color
@@ -1154,14 +1159,14 @@ span.badge.rounded-pill {
 }
 
 html[data-theme='default'] {
-    @import 'themes/default-theme';
+    @import '~golden-layout/src/css/goldenlayout-light-theme';
     .theme-light-only {
         display: inline;
     }
 }
 
 html[data-theme='dark'] {
-    @import 'themes/dark-theme';
+    @import '~golden-layout/src/css/goldenlayout-dark-theme';
     background-color: #333 !important;
     .theme-dark-only {
         display: inline;
@@ -1169,16 +1174,14 @@ html[data-theme='dark'] {
 }
 
 html[data-theme='pink'] {
-    @import 'themes/pink-theme';
-    background-color: $lighter !important;
+    background-color: var(--lighter) !important;
     .theme-light-only {
         display: inline;
     }
 }
 
 html[data-theme='one-dark'] {
-    @import 'themes/one-dark-theme';
-    background-color: $light !important;
+    background-color: var(--light) !important;
     .theme-dark-only {
         display: inline;
     }

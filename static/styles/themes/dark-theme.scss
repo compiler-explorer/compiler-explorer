@@ -1,6 +1,7 @@
 @use 'sass:color';
 @use 'ansi-dark';
-@import '~golden-layout/src/css/goldenlayout-dark-theme';
+
+html[data-theme='dark'] {
 
 ::-webkit-scrollbar {
     background: color.scale(#1e1e1e, $lightness: 10%);
@@ -725,3 +726,5 @@ textarea.form-control {
         filter: invert(100%);
     }
 }
+
+} // End html[data-theme='dark']

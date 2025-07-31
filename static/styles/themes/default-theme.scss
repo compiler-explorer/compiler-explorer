@@ -1,5 +1,6 @@
 @use 'sass:color';
-@import '~golden-layout/src/css/goldenlayout-light-theme';
+
+html[data-theme='default'] {
 
 /*
  * replace low res golden-layout icons with svg recreations to improve high DPI displays
@@ -492,3 +493,5 @@ div.argmenuitem span.argdescription {
         }
     }
 }
+
+} // End html[data-theme='default']
