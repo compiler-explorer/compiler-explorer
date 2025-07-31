@@ -29,7 +29,10 @@ export default function replaceGoldenLayoutImports(source) {
 };
 
 function readGoldenLayoutCSS(filename) {
-    const cssPath = path.resolve(__dirname, '..', '..', 'node_modules', 'golden-layout', 'src', 'css', filename);
+    // Use import.meta.resolve to find the golden-layout package location robustly
+    const packageJsonPath = import.meta.resolve('golden-layout/package.json');
+    const packageDir = path.dirname(fileURLToPath(packageJsonPath));
+    const cssPath = path.join(packageDir, 'src', 'css', filename);
     
     if (!fs.existsSync(cssPath)) {
         throw new Error(`Golden Layout CSS file not found: ${cssPath}`);
