@@ -1170,11 +1170,10 @@ export class Editor extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Edit
                 window.location.origin + this.httpRoot + 'api/format/' + lang?.formatter,
                 {
                     method: 'POST',
-                    headers: {'Content-Type': 'application/json'},
-                    body: JSON.stringify({
+                    body: {
                         source: previousSource,
                         base: this.settings.formatBase,
-                    }),
+                    },
                     parseAs: 'json',
                 },
                 'code formatting',

@@ -41,7 +41,6 @@ const request = async <R>(uri: string, options?: RequestInit): Promise<FetchResu
             credentials: 'include',
             headers: {
                 ...options?.headers,
-                Accept: 'application/json',
             },
         },
         `CE API ${uri}`,

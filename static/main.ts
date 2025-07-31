@@ -751,8 +751,7 @@ function start() {
                 options.pageloadUrl + '?icons=' + encodeURIComponent(visibleIcons),
                 {
                     method: 'POST',
-                    headers: {'Content-Type': 'application/json'},
-                    body: JSON.stringify({}),
+                    body: {},
                     parseAs: 'json',
                 },
                 'pageload analytics',

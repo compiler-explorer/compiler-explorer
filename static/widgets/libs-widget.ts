@@ -78,9 +78,6 @@ class LibraryAnnotations {
                 `https://conan.compiler-explorer.com/annotations/${libver}`,
                 {
                     parseAs: 'json',
-                    headers: {
-                        Accept: 'application/json',
-                    },
                 },
                 `library annotations for ${libver}`,
             );
