@@ -99,11 +99,7 @@ describe('CompilerService HTTP Headers', () => {
                 allowStoreCodeDebug: true,
             };
 
-            try {
-                await compilerService.submit(request);
-            } catch (error) {
-                // Expected to fail due to missing Accept header
-            }
+            await compilerService.submit(request);
 
             // Verify the request was made with correct headers
             expect(fetch).toHaveBeenCalledTimes(1);
@@ -134,11 +130,7 @@ describe('CompilerService HTTP Headers', () => {
                 allowStoreCodeDebug: true,
             };
 
-            try {
-                await compilerService.submitCMake(request);
-            } catch (error) {
-                // Expected to fail due to missing Accept header
-            }
+            await compilerService.submitCMake(request);
 
             // Verify the request was made with correct headers
             expect(fetch).toHaveBeenCalledTimes(1);
@@ -156,11 +148,7 @@ describe('CompilerService HTTP Headers', () => {
                 headers: {'Content-Type': 'application/json'},
             });
 
-            try {
-                await compilerService.requestPopularArguments('test-compiler', '-O2');
-            } catch (error) {
-                // Expected to fail due to missing Accept header
-            }
+            await compilerService.requestPopularArguments('test-compiler', '-O2');
 
             // Verify the request was made with correct headers
             expect(fetch).toHaveBeenCalledTimes(1);
