@@ -186,30 +186,25 @@ export class CompilerService {
             }
         }
 
-        try {
-            const compilerId = encodeURIComponent(request.compiler);
-            const response = await HttpUtils.postJSON(
-                `${this.getBaseUrl()}api/compiler/${compilerId}/compile`,
-                request,
-                'compilation request',
-            );
+        const compilerId = encodeURIComponent(request.compiler);
+        const result = await HttpUtils.postJSONAndParseResponse(
+            `${this.getBaseUrl()}api/compiler/${compilerId}/compile`,
+            request,
+            'compilation request',
+        );
 
-            if (response.ok) {
-                const result = await response.json();
-                if (result?.okToCache && options.doCache) {
-                    this.cache.set(jsonRequest, result);
-                }
-                return {
-                    request: request,
-                    result: result,
-                    localCacheHit: false,
-                };
-            } else {
-                const error = new Error(`HTTP ${response.status}: ${response.statusText}`);
-                (error as any).request = request;
-                throw error;
+        if (result) {
+            if (result?.okToCache && options.doCache) {
+                this.cache.set(jsonRequest, result);
             }
-        } catch (error) {
+            return {
+                request: request,
+                result: result,
+                localCacheHit: false,
+            };
+        } else {
+            // HTTP error or network error occurred
+            const error = new Error('Compilation request failed');
             throw CompilerService.createRequestError(error, request);
         }
     }
@@ -228,58 +223,48 @@ export class CompilerService {
             }
         }
 
-        try {
-            const compilerId = encodeURIComponent(request.compiler);
-            const response = await HttpUtils.postJSON(
-                `${this.getBaseUrl()}api/compiler/${compilerId}/cmake`,
-                request,
-                'cmake request',
-            );
+        const compilerId = encodeURIComponent(request.compiler);
+        const result = await HttpUtils.postJSONAndParseResponse(
+            `${this.getBaseUrl()}api/compiler/${compilerId}/cmake`,
+            request,
+            'cmake request',
+        );
 
-            if (response.ok) {
-                const result = await response.json();
-                if (result?.okToCache && options.doCache) {
-                    this.cache.set(jsonRequest, result);
-                }
-                return {
-                    request: request,
-                    result: result,
-                    localCacheHit: false,
-                };
-            } else {
-                const error = new Error(`HTTP ${response.status}: ${response.statusText}`);
-                (error as any).request = request;
-                throw error;
+        if (result) {
+            if (result?.okToCache && options.doCache) {
+                this.cache.set(jsonRequest, result);
             }
-        } catch (error) {
+            return {
+                request: request,
+                result: result,
+                localCacheHit: false,
+            };
+        } else {
+            // HTTP error or network error occurred
+            const error = new Error('CMake request failed');
             throw CompilerService.createRequestError(error, request);
         }
     }
 
     public async requestPopularArguments(compilerId: string, usedOptions: string) {
-        try {
-            const response = await HttpUtils.postJSON(
-                `${this.getBaseUrl()}api/popularArguments/${compilerId}`,
-                {
-                    usedOptions: usedOptions,
-                    presplit: false,
-                },
-                'popular arguments request',
-            );
+        const result = await HttpUtils.postJSONAndParseResponse(
+            `${this.getBaseUrl()}api/popularArguments/${compilerId}`,
+            {
+                usedOptions: usedOptions,
+                presplit: false,
+            },
+            'popular arguments request',
+        );
 
-            if (response.ok) {
-                const result = await response.json();
-                return {
-                    request: compilerId,
-                    result: result,
-                    localCacheHit: false,
-                };
-            } else {
-                const error = new Error(`HTTP ${response.status}: ${response.statusText}`);
-                (error as any).request = compilerId;
-                throw error;
-            }
-        } catch (error) {
+        if (result) {
+            return {
+                request: compilerId,
+                result: result,
+                localCacheHit: false,
+            };
+        } else {
+            // HTTP error or network error occurred
+            const error = new Error('Popular arguments request failed');
             throw CompilerService.createRequestError(error, compilerId);
         }
     }

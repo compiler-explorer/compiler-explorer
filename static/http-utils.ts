@@ -25,13 +25,18 @@
 import {SentryCapture} from './sentry.js';
 
 /**
- * HTTP utilities with intelligent Sentry error filtering.
+ * HTTP utilities with intelligent Sentry error filtering and response processing.
  *
  * These utilities distinguish between:
  * - Network errors: DNS failures, connection timeouts, CORS blocks, ad blockers
  *   → Filtered out (not actionable application bugs)
  * - HTTP errors: 4xx/5xx status codes from server responses
  *   → Captured in Sentry (actionable bugs to investigate)
+ *
+ * Common patterns are simplified with high-level utilities:
+ * - getJSON/getText: fetch + parsing + error handling in one call
+ * - executeHttpRequest: generic wrapper with error notifications
+ * - handleResponseError: standardized error message extraction
  */
 
 /**
@@ -112,4 +117,93 @@ export async function postJSON(url: string, data: any, context?: string): Promis
         },
         context,
     );
+}
+
+/**
+ * Extract error message from HTTP response, with fallback to status text.
+ * Handles both text and JSON error responses gracefully.
+ */
+export async function handleResponseError(response: Response): Promise<string> {
+    try {
+        const text = await response.text();
+        if (text) {
+            return text;
+        }
+    } catch {
+        // Failed to read response body, fall back to status
+    }
+    return `HTTP ${response.status}: ${response.statusText}`;
+}
+
+/**
+ * GET request that returns parsed JSON, with simplified error handling.
+ * Returns null on any error (network or HTTP), errors are already logged/captured.
+ */
+export async function getJSON<T = any>(url: string, context?: string): Promise<T | null> {
+    try {
+        const response = await get(url, context);
+        if (response.ok) {
+            return await response.json();
+        }
+    } catch {
+        // Error already handled by underlying get() call
+    }
+    return null;
+}
+
+/**
+ * GET request that returns text content, with simplified error handling.
+ * Returns null on any error (network or HTTP), errors are already logged/captured.
+ */
+export async function getText(url: string, context?: string): Promise<string | null> {
+    try {
+        const response = await get(url, context);
+        if (response.ok) {
+            return await response.text();
+        }
+    } catch {
+        // Error already handled by underlying get() call
+    }
+    return null;
+}
+
+/**
+ * POST JSON request that returns parsed JSON, with simplified error handling.
+ * Returns null on any error (network or HTTP), errors are already logged/captured.
+ */
+export async function postJSONAndParseResponse<T = any>(url: string, data: any, context?: string): Promise<T | null> {
+    try {
+        const response = await postJSON(url, data, context);
+        if (response.ok) {
+            return await response.json();
+        }
+    } catch {
+        // Error already handled by underlying postJSON() call
+    }
+    return null;
+}
+
+/**
+ * Execute an HTTP request with user notification on HTTP errors (not network errors).
+ * Useful for operations where users should be informed of server problems.
+ */
+export async function executeHttpRequest<T>(
+    httpCall: () => Promise<Response>,
+    onSuccess: (response: Response) => Promise<T>,
+    onHttpError?: (response: Response, errorMessage: string) => void,
+    context?: string,
+): Promise<T | null> {
+    try {
+        const response = await httpCall();
+        if (response.ok) {
+            return await onSuccess(response);
+        } else if (response.status >= 400 && onHttpError) {
+            const errorMessage = await handleResponseError(response);
+            onHttpError(response, errorMessage);
+        }
+    } catch {
+        // Network errors are already logged by underlying HTTP calls
+        // No user notification needed for network issues
+    }
+    return null;
 }

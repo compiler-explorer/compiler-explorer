@@ -410,21 +410,16 @@ export class Sharing {
             config: useExternalShortener ? url.serialiseState(config) : config,
         };
 
-        try {
-            const response = await HttpUtils.postJSON(
-                window.location.origin + root + 'api/shortener',
-                data,
-                'shortener request',
-            );
+        const result = await HttpUtils.postJSONAndParseResponse(
+            window.location.origin + root + 'api/shortener',
+            data,
+            'shortener request',
+        );
 
-            if (response.ok) {
-                const result = await response.json();
-                const pushState = useExternalShortener ? null : result.url;
-                done(null, result.url, pushState, true);
-            } else {
-                done(`HTTP ${response.status}: ${response.statusText}`, null, false);
-            }
-        } catch {
+        if (result) {
+            const pushState = useExternalShortener ? null : result.url;
+            done(null, result.url, pushState, true);
+        } else {
             done('Network error', null, false);
         }
     }

@@ -192,41 +192,27 @@ function setupButtons(options: CompilerExplorerOptions, hub: Hub) {
         alertSystem.alert('Changelog', changelogDocument.text);
     });
 
-    (async () => {
-        try {
-            const response = await HttpUtils.get(
-                window.location.origin + window.httpRoot + 'bits/icons.html',
-                'loading icons',
-            );
-            if (response.ok) {
-                const data = await response.text();
-                $('#ces .ces-icons').html(data);
-            }
-        } catch {
-            // Network error - silently ignored
+    // Load icons silently on startup
+    HttpUtils.getText(window.location.origin + window.httpRoot + 'bits/icons.html', 'loading icons').then(data => {
+        if (data) {
+            $('#ces .ces-icons').html(data);
         }
-    })();
+    });
 
-    $('#ces').on('click', async () => {
-        try {
-            const response = await HttpUtils.get(
-                window.location.origin + window.httpRoot + 'bits/sponsors.html',
-                'loading sponsors',
-            );
-            if (response.ok) {
+    $('#ces').on('click', () => {
+        HttpUtils.executeHttpRequest(
+            () => HttpUtils.get(window.location.origin + window.httpRoot + 'bits/sponsors.html', 'loading sponsors'),
+            async response => {
                 const data = await response.text();
                 alertSystem.alert('Compiler Explorer Sponsors', data);
-            } else if (response.status >= 400) {
-                // Still show user-facing error for actual server problems
-                const result = await response.text().catch(() => `HTTP ${response.status}: ${response.statusText}`);
+            },
+            (_response, errorMessage) => {
                 alertSystem.alert(
                     'Compiler Explorer Sponsors',
-                    '<div>Unable to fetch sponsors:</div><div>' + result + '</div>',
+                    '<div>Unable to fetch sponsors:</div><div>' + errorMessage + '</div>',
                 );
-            }
-        } catch {
-            // Network error - silently ignored
-        }
+            },
+        );
     });
 
     $('#ui-history').on('click', () => {

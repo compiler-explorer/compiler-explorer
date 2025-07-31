@@ -1165,52 +1165,39 @@ export class Editor extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Edit
             return;
         }
 
-        (async () => {
-            try {
-                const response = await HttpUtils.postJSON(
+        HttpUtils.executeHttpRequest(
+            () =>
+                HttpUtils.postJSON(
                     window.location.origin + this.httpRoot + 'api/format/' + lang?.formatter,
                     {
                         source: previousSource,
                         base: this.settings.formatBase,
                     },
                     'code formatting',
-                );
-
-                if (response.ok) {
-                    const result = await response.json();
-                    if (result.exit === 0) {
-                        if (this.doesMatchEditor(previousSource)) {
-                            this.updateSource(result.answer);
-                        } else {
-                            this.confirmOverwrite(this.updateSource.bind(this, result.answer));
-                        }
+                ),
+            async response => {
+                const result = await response.json();
+                if (result.exit === 0) {
+                    if (this.doesMatchEditor(previousSource)) {
+                        this.updateSource(result.answer);
                     } else {
-                        // Ops, the formatter itself failed!
-                        this.alertSystem.notify('We encountered an error formatting your code: ' + result.answer, {
-                            group: 'formatting',
-                            alertClass: 'notification-error',
-                        });
+                        this.confirmOverwrite(this.updateSource.bind(this, result.answer));
                     }
                 } else {
-                    let error = `HTTP ${response.status}: ${response.statusText}`;
-                    try {
-                        const errorData = await response.json();
-                        error = errorData.answer || error;
-                    } catch {
-                        // continue regardless of error
-                    }
-                    this.alertSystem.notify('We ran into some issues while formatting your code: ' + error, {
+                    // Formatter itself failed!
+                    this.alertSystem.notify('We encountered an error formatting your code: ' + result.answer, {
                         group: 'formatting',
                         alertClass: 'notification-error',
                     });
                 }
-            } catch {
-                this.alertSystem.notify('We ran into some issues while formatting your code: Network error', {
+            },
+            (_response, errorMessage) => {
+                this.alertSystem.notify('We ran into some issues while formatting your code: ' + errorMessage, {
                     group: 'formatting',
                     alertClass: 'notification-error',
                 });
-            }
-        })();
+            },
+        );
     }
 
     override resize(): void {

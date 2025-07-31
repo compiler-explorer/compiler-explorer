@@ -79,21 +79,16 @@ class SiteTemplatesWidget {
     }
     async getTemplates(): Promise<SiteTemplateConfiguration> {
         if (this.templatesConfig === null) {
-            try {
-                const response = await HttpUtils.get(
-                    window.location.origin + window.httpRoot + 'api/siteTemplates',
-                    'site templates',
-                );
-                if (response.ok) {
-                    this.templatesConfig = await response.json();
-                } else {
-                    this.templatesConfig = noTemplates;
-                }
-            } catch {
-                this.templatesConfig = noTemplates;
+            this.templatesConfig = noTemplates;
+            const result = await HttpUtils.getJSON<SiteTemplateConfiguration>(
+                window.location.origin + window.httpRoot + 'api/siteTemplates',
+                'site templates',
+            );
+            if (result) {
+                this.templatesConfig = result;
             }
         }
-        return this.templatesConfig!;
+        return this.templatesConfig;
     }
     getCurrentTheme() {
         const theme = Settings.getStoredSettings()['theme'];
