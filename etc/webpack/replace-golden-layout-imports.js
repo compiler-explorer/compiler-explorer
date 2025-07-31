@@ -3,10 +3,13 @@
  * This runs before sass-loader to replace the imports with raw CSS content
  */
 
-const fs = require('fs');
-const path = require('path');
+import fs from 'fs';
+import path from 'path';
+import {fileURLToPath} from 'url';
 
-module.exports = function replaceGoldenLayoutImports(source) {
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
+
+export default function replaceGoldenLayoutImports(source) {
     // Only process if it contains golden-layout imports
     if (!source.includes('@import') || !source.includes('golden-layout')) {
         return source;
