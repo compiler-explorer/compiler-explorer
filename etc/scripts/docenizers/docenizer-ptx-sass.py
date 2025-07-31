@@ -73,7 +73,7 @@ def main():
         (soup.find('a', class_='reference internal', href='#special-registers').parent.find_all('a'),
         'Special Registers: ')]:
         for link in links:
-            if anchor_text_sep in link.string:
+            if link.string and anchor_text_sep in link.string:
                 topic, instructions0 = link.string.split(anchor_text_sep)
                 instructions: list[str] = instructions0.replace(' / ', ', ').split(', ')
                 href: str = link.get('href')
@@ -100,19 +100,23 @@ def main():
             raise AssertionError
         article.p.decompose()  # remove the instruction name
         return Doc(title.rstrip(''), txt, str(article))
-    
+
     symbol_to_doc: list[tuple[str, str, str, list[tuple[str, str]]]] = []
     for symbol, fullname_fragments in symbol_to_fullname_frag:
         docs = [get_doc(fragment) for _, fragment in fullname_fragments]
         symbol_to_doc.append((symbol, *combine_docs(docs, fullname_fragments), fullname_fragments))
-        
+
     # get SASS docs
     tables = pd.read_html('https://docs.nvidia.com/cuda/cuda-binary-utilities/index.html', match='Opcode')
-    sass_docs = sorted(dict(pd.concat(tables).dropna().itertuples(index=False)).items())
+    sass_docs = sorted(
+        (opcode, description)
+        for (opcode, description) in pd.concat(tables).dropna().drop_duplicates().itertuples(index=False)
+        if opcode != description
+    )
 
     with open( args.outputfolder + '/asm-docs-ptx.ts', 'w') as f:
         f.write("""
-    import {AssemblyInstructionInfo} from '../base.js';
+    import type {AssemblyInstructionInfo} from '../../../types/assembly-docs.interfaces.js';
 
     export function getAsmOpcode(opcode: string | undefined): AssemblyInstructionInfo | undefined {
         if (!opcode) return;
@@ -133,7 +137,7 @@ def main():
     """)
     with open(args.outputfolder + '/asm-docs-sass.ts', 'w') as f:
         f.write("""
-    import {AssemblyInstructionInfo} from '../base.js';
+    import type {AssemblyInstructionInfo} from '../../../types/assembly-docs.interfaces.js';
 
     export function getAsmOpcode(opcode: string | undefined): AssemblyInstructionInfo | undefined {
         if (!opcode) return;
@@ -141,15 +145,16 @@ def main():
     """.lstrip())
         # SASS
         for name, description in sass_docs:
+            url = f"https://docs.nvidia.com/cuda/cuda-binary-utilities/index.html#instruction-set-reference"
             f.write(f'        case "{name}":\n')
             f.write('            return {}'.format(json.dumps({
                 "tooltip": description,
                 "html": description +
-                        f'<br><br>For more information, visit <a href="https://docs.nvidia.com/cuda/cuda-binary-utilities/index.html#id14" target="_blank" rel="noopener noreferrer">'
+                        f'<br><br>For more information, visit <a href="{url}" target="_blank" rel="noopener noreferrer">'
                         'CUDA Binary Utilities' +
                         ' documentation <sup><small class="fas fa-external-link-alt opens-new-window"' +
                         ' title="Opens in a new window"></small></sup></a>.',
-                "url": "https://docs.nvidia.com/cuda/cuda-binary-utilities/index.html#id14"
+                "url": url
             }, indent=16, separators=(',', ': '), sort_keys=True))[:-1] + '            };\n\n')
 
         f.write("""
