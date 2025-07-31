@@ -22,7 +22,7 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import * as HttpUtils from './http-utils.js';
+import {safeFetch} from './http-utils.js';
 // Setup sentry before anything else so we can capture errors
 import {SentryCapture, SetupSentry, setSentryLayout} from './sentry.js';
 
@@ -193,26 +193,30 @@ function setupButtons(options: CompilerExplorerOptions, hub: Hub) {
     });
 
     // Load icons silently on startup
-    HttpUtils.getText(window.location.origin + window.httpRoot + 'bits/icons.html', 'loading icons').then(data => {
+    (async () => {
+        const {data} = await safeFetch(
+            window.location.origin + window.httpRoot + 'bits/icons.html',
+            {parseAs: 'text'},
+            'loading icons',
+        );
         if (data) {
             $('#ces .ces-icons').html(data);
         }
-    });
+    })();
 
-    $('#ces').on('click', () => {
-        HttpUtils.executeHttpRequest(
-            () => HttpUtils.get(window.location.origin + window.httpRoot + 'bits/sponsors.html', 'loading sponsors'),
-            async response => {
-                const data = await response.text();
-                alertSystem.alert('Compiler Explorer Sponsors', data);
-            },
-            (_response, errorMessage) => {
-                alertSystem.alert(
-                    'Compiler Explorer Sponsors',
-                    '<div>Unable to fetch sponsors:</div><div>' + errorMessage + '</div>',
-                );
-            },
-        );
+    $('#ces').on('click', async () => {
+        const {data, error} = await safeFetch(window.location.origin + window.httpRoot + 'bits/sponsors.html', {
+            parseAs: 'text',
+        });
+
+        if (data) {
+            alertSystem.alert('Compiler Explorer Sponsors', data);
+        } else {
+            alertSystem.alert(
+                'Compiler Explorer Sponsors',
+                '<div>Unable to fetch sponsors:</div><div>' + (error?.message || 'Unknown error') + '</div>',
+            );
+        }
     });
 
     $('#ui-history').on('click', () => {
@@ -743,9 +747,14 @@ function start() {
                 .get()
                 .join(',');
             // Fire and forget analytics POST - no need to await or handle errors
-            HttpUtils.postJSON(
+            safeFetch(
                 options.pageloadUrl + '?icons=' + encodeURIComponent(visibleIcons),
-                {},
+                {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({}),
+                    parseAs: 'json',
+                },
                 'pageload analytics',
             ).catch(() => {});
         }, 5000);

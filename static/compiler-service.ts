@@ -30,7 +30,7 @@ import {CompilerInfo} from '../types/compiler.interfaces.js';
 import {ResultLine} from '../types/resultline/resultline.interfaces.js';
 import {CompilationStatus} from './compiler-service.interfaces.js';
 import {IncludeDownloads, SourceAndFiles} from './download-service.js';
-import * as HttpUtils from './http-utils.js';
+import {safeFetch} from './http-utils.js';
 import {options} from './options.js';
 import {SentryCapture} from './sentry.js';
 import {SiteSettings} from './settings.js';
@@ -187,9 +187,14 @@ export class CompilerService {
         }
 
         const compilerId = encodeURIComponent(request.compiler);
-        const result = await HttpUtils.postJSONAndParseResponse(
+        const {data: result} = await safeFetch<'json', CompilationResult>(
             `${this.getBaseUrl()}api/compiler/${compilerId}/compile`,
-            request,
+            {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify(request),
+                parseAs: 'json',
+            },
             'compilation request',
         );
 
@@ -224,9 +229,14 @@ export class CompilerService {
         }
 
         const compilerId = encodeURIComponent(request.compiler);
-        const result = await HttpUtils.postJSONAndParseResponse(
+        const {data: result} = await safeFetch<'json', CompilationResult>(
             `${this.getBaseUrl()}api/compiler/${compilerId}/cmake`,
-            request,
+            {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify(request),
+                parseAs: 'json',
+            },
             'cmake request',
         );
 
@@ -247,11 +257,16 @@ export class CompilerService {
     }
 
     public async requestPopularArguments(compilerId: string, usedOptions: string) {
-        const result = await HttpUtils.postJSONAndParseResponse(
+        const {data: result} = await safeFetch(
             `${this.getBaseUrl()}api/popularArguments/${compilerId}`,
             {
-                usedOptions: usedOptions,
-                presplit: false,
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({
+                    usedOptions: usedOptions,
+                    presplit: false,
+                }),
+                parseAs: 'json',
             },
             'popular arguments request',
         );

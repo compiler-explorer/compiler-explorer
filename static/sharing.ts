@@ -29,7 +29,7 @@ import $ from 'jquery';
 import _ from 'underscore';
 import {unwrap} from './assert.js';
 import * as BootstrapUtils from './bootstrap-utils.js';
-import * as HttpUtils from './http-utils.js';
+import {safeFetch} from './http-utils.js';
 import {sessionThenLocalStorage} from './local.js';
 import {options} from './options.js';
 import {SentryCapture} from './sentry.js';
@@ -410,9 +410,14 @@ export class Sharing {
             config: useExternalShortener ? url.serialiseState(config) : config,
         };
 
-        const result = await HttpUtils.postJSONAndParseResponse(
+        const {data: result, error} = await safeFetch<'json', {url: string}>(
             window.location.origin + root + 'api/shortener',
-            data,
+            {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify(data),
+                parseAs: 'json',
+            },
             'shortener request',
         );
 
@@ -420,7 +425,7 @@ export class Sharing {
             const pushState = useExternalShortener ? null : result.url;
             done(null, result.url, pushState, true);
         } else {
-            done('Network error', null, false);
+            done(error?.message || 'Network error', null, false);
         }
     }
 

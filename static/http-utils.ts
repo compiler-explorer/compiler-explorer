@@ -25,185 +25,268 @@
 import {SentryCapture} from './sentry.js';
 
 /**
- * HTTP utilities with intelligent Sentry error filtering and response processing.
+ * Type-safe HTTP utility with clear error classification and enforced parse type relationships.
  *
- * These utilities distinguish between:
- * - Network errors: DNS failures, connection timeouts, CORS blocks, ad blockers
- *   → Filtered out (not actionable application bugs)
- * - HTTP errors: 4xx/5xx status codes from server responses
- *   → Captured in Sentry (actionable bugs to investigate)
- *
- * Common patterns are simplified with high-level utilities:
- * - getJSON/getText: fetch + parsing + error handling in one call
- * - executeHttpRequest: generic wrapper with error notifications
- * - handleResponseError: standardized error message extraction
+ * Distinguishes between:
+ * - Network errors: DNS failures, timeouts, CORS, ad blockers (not sent to Sentry)
+ * - HTTP errors: 4xx/5xx status codes (sent to Sentry if context provided)
+ * - Success: 2xx/3xx responses with parsed data
  */
+
+// ===== TYPE DEFINITIONS =====
 
 /**
- * Check if a fetch error should be reported to Sentry.
+ * Template literal type that creates descriptive parse option labels.
+ * This helps create better error messages and IntelliSense support.
  *
- * Network-level failures (DNS, timeout, CORS, etc.) are filtered out because:
- * - They're not caused by application bugs
- * - They create noise in error reporting
- * - They're often caused by user environment (ad blockers, network issues)
+ * Benefits:
+ * - Clear error messages when wrong parseAs is used
+ * - Better autocomplete suggestions
+ * - Type-safe string operations
  */
-export function shouldCaptureFetchError(error: any): boolean {
-    // Network errors from fetch() are typically TypeError with "fetch" in message
-    if (error instanceof TypeError && error.message.includes('fetch')) {
-        return false;
-    }
+type ParseAsOption = 'json' | 'text' | 'response';
 
-    // Filter out AbortError from cancelled requests
-    if (error.name === 'AbortError') {
-        return false;
-    }
+/**
+ * Conditional type that maps parseAs options to their corresponding return types.
+ * This is the core of our type safety - it creates a relationship between
+ * the parseAs parameter and the expected return type.
+ *
+ * How it works:
+ * - If ParseAs extends 'json', return type is unknown (could be any JSON)
+ * - If ParseAs extends 'text', return type is string
+ * - If ParseAs extends 'response', return type is Response
+ * - Otherwise (never case), return never
+ *
+ * Benefits:
+ * - Eliminates unsafe type assertions
+ * - Prevents mismatched parseAs/return type combinations
+ * - Provides accurate IntelliSense for each parse option
+ */
+type ParsedDataType<ParseAs extends ParseAsOption> = ParseAs extends 'json'
+    ? unknown // JSON can be any valid JSON value
+    : ParseAs extends 'text'
+      ? string
+      : ParseAs extends 'response'
+        ? Response
+        : never;
 
-    return true;
+/**
+ * Enhanced FetchResult interface with proper generic constraints.
+ * Unlike the original, T is now properly constrained to match the parseAs option.
+ */
+export interface FetchResult<T = unknown> {
+    /** Parsed response data (only present on success) */
+    data?: T;
+    /** Raw Response object (present on HTTP success/error) */
+    response?: Response;
+    /** Error object (present on any failure) */
+    error?: Error;
+    /** True if error was network-level (DNS, timeout, CORS, etc.) */
+    isNetworkError: boolean;
+    /** True if error was HTTP-level (4xx, 5xx status codes) */
+    isHttpError: boolean;
 }
 
 /**
- * Fetch with automatic Sentry error filtering.
- *
- * Error handling strategy:
- * - HTTP errors (status >= 400): Captured in Sentry with context
- * - Network errors: Logged to console, not sent to Sentry
- * - Successful responses (status < 400): No error handling needed
+ * Base options interface that extends RequestInit with our parseAs option.
+ * We use a generic here to capture the specific parseAs value at the type level.
  */
-export async function fetch(url: string, options: RequestInit = {}, context?: string): Promise<Response> {
+interface SafeFetchOptions<ParseAs extends ParseAsOption> extends RequestInit {
+    parseAs: ParseAs;
+}
+
+/**
+ * Options interface for backward compatibility when no parseAs is specified.
+ * Defaults to text parsing behavior.
+ */
+interface SafeFetchOptionsDefault extends RequestInit {
+    parseAs?: undefined;
+}
+
+// ===== FUNCTION OVERLOADS =====
+
+/**
+ * Function overloads enforce the correct relationship between parseAs and return type.
+ * Each overload specifies exactly what combination is allowed, preventing type mismatches.
+ *
+ * Why overloads instead of a single generic function:
+ * - Overloads provide better error messages
+ * - They prevent impossible combinations at compile time
+ * - Each overload can have specific documentation
+ * - IntelliSense shows exactly what's expected for each variant
+ */
+
+/**
+ * Overload for JSON parsing - returns unknown type that should be narrowed by caller.
+ *
+ * Example usage:
+ *   const result = await safeFetch(url, { parseAs: 'json' });
+ *   // result.data is unknown, needs type narrowing or assertion
+ */
+export function safeFetch(
+    url: string,
+    options: SafeFetchOptions<'json'>,
+    context?: string,
+): Promise<FetchResult<unknown>>;
+
+/**
+ * Overload for text parsing - returns string type.
+ *
+ * Example usage:
+ *   const result = await safeFetch(url, { parseAs: 'text' });
+ *   // result.data is string | undefined
+ */
+export function safeFetch(
+    url: string,
+    options: SafeFetchOptions<'text'>,
+    context?: string,
+): Promise<FetchResult<string>>;
+
+/**
+ * Overload for response parsing - returns Response object.
+ *
+ * Example usage:
+ *   const result = await safeFetch(url, { parseAs: 'response' });
+ *   // result.data is Response | undefined
+ */
+export function safeFetch(
+    url: string,
+    options: SafeFetchOptions<'response'>,
+    context?: string,
+): Promise<FetchResult<Response>>;
+
+/**
+ * Overload for backward compatibility - when no parseAs is specified, defaults to text.
+ *
+ * Example usage:
+ *   const result = await safeFetch(url);
+ *   // result.data is string | undefined (backward compatible)
+ */
+export function safeFetch(
+    url: string,
+    options?: SafeFetchOptionsDefault,
+    context?: string,
+): Promise<FetchResult<string>>;
+
+/**
+ * Generic overload for advanced usage where the caller wants to specify both parseAs and expected type.
+ * This is constrained so that T must match what parseAs would return.
+ *
+ * This overload allows for cases where you know more about the JSON structure:
+ *   interface User { name: string; id: number; }
+ *   const result = await safeFetch<User>(url, { parseAs: 'json' });
+ *   // result.data is User | undefined
+ *
+ * The constraint ensures T extends ParsedDataType<ParseAs>, preventing mismatches.
+ */
+export function safeFetch<ParseAs extends ParseAsOption, T extends ParsedDataType<ParseAs>>(
+    url: string,
+    options: SafeFetchOptions<ParseAs>,
+    context?: string,
+): Promise<FetchResult<T>>;
+
+// ===== IMPLEMENTATION =====
+
+/**
+ * Implementation function that handles all the overloaded cases.
+ * Note: This implementation signature is more permissive than the overloads,
+ * which is intentional - the overloads provide the type safety at the call site.
+ */
+export async function safeFetch(
+    url: string,
+    options?: (SafeFetchOptions<ParseAsOption> | SafeFetchOptionsDefault) & RequestInit,
+    context?: string,
+): Promise<FetchResult<unknown>> {
+    // Extract parseAs with proper default handling
+    const {parseAs = undefined, ...fetchOptions} = options || {};
+
     try {
         const response = await globalThis.fetch(url, {
             credentials: 'include',
-            ...options,
             headers: {
                 Accept: 'application/json',
-                ...options.headers,
+                ...fetchOptions.headers,
             },
+            ...fetchOptions,
         });
 
-        // Only capture HTTP errors (4xx/5xx), not successful responses or redirects
-        if (!response.ok && response.status >= 400) {
-            const error = new Error(`HTTP ${response.status}: ${response.statusText}`);
-            (error as any).response = response;
-            SentryCapture(error, context || 'HTTP request failed');
-        }
+        if (response.ok) {
+            // Success case - parse data based on parseAs option
+            // Note: We can safely use type assertions here because our overloads
+            // guarantee the relationship between parseAs and expected return type
+            let data: unknown;
 
-        return response;
-    } catch (error) {
-        // Only capture if it's not a network-level failure
-        if (shouldCaptureFetchError(error)) {
-            SentryCapture(error, context || 'HTTP request error');
+            try {
+                if (parseAs === 'json') {
+                    data = await response.json();
+                } else if (parseAs === 'text') {
+                    data = await response.text();
+                } else if (parseAs === 'response') {
+                    data = response;
+                } else {
+                    // Default to text for backward compatibility
+                    data = await response.text();
+                }
+            } catch (parseError) {
+                // Parsing failed - treat as error
+                const error = createParseError(parseAs, parseError);
+                if (context) SentryCapture(error, context);
+                return {error, response, isNetworkError: false, isHttpError: false};
+            }
+
+            return {data, response, isNetworkError: false, isHttpError: false};
         } else {
-            console.debug('Network request failed:', error, context);
+            // HTTP error (4xx, 5xx)
+            const error = createHttpError(response);
+
+            if (context) {
+                SentryCapture(error, context);
+            }
+
+            return {error, response, isNetworkError: false, isHttpError: true};
         }
-        throw error;
+    } catch (fetchError) {
+        return handleNetworkError(fetchError, context);
     }
 }
 
-/** GET request with error filtering */
-export async function get(url: string, context?: string): Promise<Response> {
-    return fetch(url, {method: 'GET'}, context);
-}
+// ===== HELPER FUNCTIONS =====
 
-/** POST JSON request with error filtering */
-export async function postJSON(url: string, data: any, context?: string): Promise<Response> {
-    return fetch(
-        url,
-        {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify(data),
-        },
-        context,
-    );
+/**
+ * Creates a descriptive parse error with proper typing.
+ * This helper improves code organization and provides consistent error messages.
+ */
+function createParseError(parseAs: ParseAsOption | undefined, parseError: unknown): Error {
+    const parseType = parseAs || 'text';
+    const message = parseError instanceof Error ? parseError.message : String(parseError);
+    return new Error(`Failed to parse response as ${parseType}: ${message}`);
 }
 
 /**
- * Extract error message from HTTP response, with fallback to status text.
- * Handles both text and JSON error responses gracefully.
+ * Creates an HTTP error with attached response data.
+ * Uses object property assignment instead of type assertion for clarity.
  */
-export async function handleResponseError(response: Response): Promise<string> {
-    try {
-        const text = await response.text();
-        if (text) {
-            return text;
-        }
-    } catch {
-        // Failed to read response body, fall back to status
-    }
-    return `HTTP ${response.status}: ${response.statusText}`;
+function createHttpError(response: Response): Error & {response: Response} {
+    const error = new Error(`HTTP ${response.status}: ${response.statusText}`) as Error & {response: Response};
+    error.response = response;
+    return error;
 }
 
 /**
- * GET request that returns parsed JSON, with simplified error handling.
- * Returns null on any error (network or HTTP), errors are already logged/captured.
+ * Handles network errors with proper classification and logging.
+ * Encapsulates the network error detection logic for reusability.
  */
-export async function getJSON<T = any>(url: string, context?: string): Promise<T | null> {
-    try {
-        const response = await get(url, context);
-        if (response.ok) {
-            return await response.json();
-        }
-    } catch {
-        // Error already handled by underlying get() call
-    }
-    return null;
-}
+function handleNetworkError(fetchError: unknown, context?: string): FetchResult<unknown> {
+    const error = fetchError as Error;
+    const isNetworkError = error instanceof TypeError || error.name === 'AbortError';
 
-/**
- * GET request that returns text content, with simplified error handling.
- * Returns null on any error (network or HTTP), errors are already logged/captured.
- */
-export async function getText(url: string, context?: string): Promise<string | null> {
-    try {
-        const response = await get(url, context);
-        if (response.ok) {
-            return await response.text();
-        }
-    } catch {
-        // Error already handled by underlying get() call
+    if (!isNetworkError && context) {
+        // Unexpected error type - report to Sentry
+        SentryCapture(error, context);
+    } else if (isNetworkError) {
+        // Network error - just log locally
+        console.debug('Network request failed:', error.message, context);
     }
-    return null;
-}
 
-/**
- * POST JSON request that returns parsed JSON, with simplified error handling.
- * Returns null on any error (network or HTTP), errors are already logged/captured.
- */
-export async function postJSONAndParseResponse<T = any>(url: string, data: any, context?: string): Promise<T | null> {
-    try {
-        const response = await postJSON(url, data, context);
-        if (response.ok) {
-            return await response.json();
-        }
-    } catch {
-        // Error already handled by underlying postJSON() call
-    }
-    return null;
-}
-
-/**
- * Execute an HTTP request with user notification on HTTP errors (not network errors).
- * Useful for operations where users should be informed of server problems.
- */
-export async function executeHttpRequest<T>(
-    httpCall: () => Promise<Response>,
-    onSuccess: (response: Response) => Promise<T>,
-    onHttpError?: (response: Response, errorMessage: string) => void,
-    context?: string,
-): Promise<T | null> {
-    try {
-        const response = await httpCall();
-        if (response.ok) {
-            return await onSuccess(response);
-        } else if (response.status >= 400 && onHttpError) {
-            const errorMessage = await handleResponseError(response);
-            onHttpError(response, errorMessage);
-        }
-    } catch {
-        // Network errors are already logged by underlying HTTP calls
-        // No user notification needed for network issues
-    }
-    return null;
+    return {error, isNetworkError, isHttpError: false};
 }

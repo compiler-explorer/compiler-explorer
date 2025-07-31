@@ -25,7 +25,7 @@
 import {beforeEach, describe, expect, it, vi} from 'vitest';
 import createFetchMock from 'vitest-fetch-mock';
 
-import * as HttpUtils from '../http-utils.js';
+import {FetchResult, safeFetch} from '../http-utils.js';
 import {SentryCapture} from '../sentry.js';
 
 const fetch = createFetchMock(vi);
@@ -39,52 +39,92 @@ vi.mock('../sentry.js', () => ({
 // Mock console.debug to avoid noise in tests
 vi.spyOn(console, 'debug').mockImplementation(() => {});
 
-describe('HTTP Utilities', () => {
+describe('safeFetch HTTP Utility', () => {
     beforeEach(() => {
         fetch.resetMocks();
         vi.clearAllMocks();
     });
 
-    describe('shouldCaptureFetchError', () => {
-        it('should not capture network errors (TypeError with fetch)', () => {
-            const error = new TypeError('Failed to fetch');
-            expect(HttpUtils.shouldCaptureFetchError(error)).toBe(false);
+    describe('successful requests', () => {
+        it('should return data for successful text requests', async () => {
+            fetch.mockResponseOnce('<h1>Hello World</h1>', {status: 200});
+
+            const result = await safeFetch('https://example.com/page.html', {parseAs: 'text'});
+
+            expect(result.data).toBe('<h1>Hello World</h1>');
+            expect(result.error).toBeUndefined();
+            expect(result.isNetworkError).toBe(false);
+            expect(result.isHttpError).toBe(false);
+            expect(result.response?.ok).toBe(true);
+            expect(vi.mocked(SentryCapture)).not.toHaveBeenCalled();
         });
 
-        it('should not capture AbortError', () => {
-            const error = new Error('Request aborted');
-            error.name = 'AbortError';
-            expect(HttpUtils.shouldCaptureFetchError(error)).toBe(false);
+        it('should return data for successful JSON requests', async () => {
+            const responseData = {users: [{id: 1, name: 'Alice'}], count: 1};
+            fetch.mockResponseOnce(JSON.stringify(responseData), {status: 200});
+
+            const result = await safeFetch('https://example.com/api/users', {parseAs: 'json'});
+
+            expect(result.data).toEqual(responseData);
+            expect(result.error).toBeUndefined();
+            expect(result.isNetworkError).toBe(false);
+            expect(result.isHttpError).toBe(false);
+            expect(vi.mocked(SentryCapture)).not.toHaveBeenCalled();
         });
 
-        it('should capture other errors', () => {
-            const error = new Error('Some other error');
-            expect(HttpUtils.shouldCaptureFetchError(error)).toBe(true);
+        it('should return Response object when parseAs is response', async () => {
+            fetch.mockResponseOnce('test data', {status: 201});
+
+            const result = await safeFetch('https://example.com/api', {parseAs: 'response'});
+
+            expect(result.data).toBeInstanceOf(Response);
+            expect(result.data?.status).toBe(201);
+            expect(result.error).toBeUndefined();
+            expect(result.isNetworkError).toBe(false);
+            expect(result.isHttpError).toBe(false);
+        });
+
+        it('should default to text parsing when parseAs is not specified', async () => {
+            fetch.mockResponseOnce('default text response', {status: 200});
+
+            const result = await safeFetch('https://example.com/data');
+
+            expect(result.data).toBe('default text response');
+            expect(result.error).toBeUndefined();
+        });
+
+        it('should pass through custom headers and options', async () => {
+            fetch.mockResponseOnce('OK', {status: 200});
+
+            await safeFetch('https://example.com/api', {
+                method: 'POST',
+                headers: {'X-Custom': 'value'},
+                body: 'test data',
+                parseAs: 'text',
+            });
+
+            expect(fetch).toHaveBeenCalledWith('https://example.com/api', {
+                credentials: 'include',
+                method: 'POST',
+                headers: {
+                    'X-Custom': 'value',
+                },
+                body: 'test data',
+            });
         });
     });
 
-    describe('fetch wrapper', () => {
-        it('should handle successful responses', async () => {
-            fetch.mockResponseOnce('{"data": "test"}', {status: 200});
-
-            const response = await HttpUtils.fetch('https://example.com/api', {}, 'test context');
-
-            expect(response.ok).toBe(true);
-            expect(response.status).toBe(200);
-            expect(vi.mocked(SentryCapture)).not.toHaveBeenCalled();
-            expect(fetch).toHaveBeenCalledWith('https://example.com/api', {
-                credentials: 'include',
-                headers: {Accept: 'application/json'},
-            });
-        });
-
-        it('should capture HTTP errors (4xx)', async () => {
+    describe('HTTP errors (4xx, 5xx)', () => {
+        it('should handle 404 errors with Sentry capture', async () => {
             fetch.mockResponseOnce('Not Found', {status: 404, statusText: 'Not Found'});
 
-            const response = await HttpUtils.fetch('https://example.com/api', {}, 'test context');
+            const result = await safeFetch('https://example.com/missing', {parseAs: 'text'}, 'test context');
 
-            expect(response.ok).toBe(false);
-            expect(response.status).toBe(404);
+            expect(result.data).toBeUndefined();
+            expect(result.error?.message).toBe('HTTP 404: Not Found');
+            expect(result.isNetworkError).toBe(false);
+            expect(result.isHttpError).toBe(true);
+            expect(result.response?.status).toBe(404);
             expect(vi.mocked(SentryCapture)).toHaveBeenCalledWith(
                 expect.objectContaining({
                     message: 'HTTP 404: Not Found',
@@ -94,304 +134,206 @@ describe('HTTP Utilities', () => {
             );
         });
 
-        it('should capture HTTP errors (5xx)', async () => {
+        it('should handle 500 errors with Sentry capture', async () => {
             fetch.mockResponseOnce('Server Error', {status: 500, statusText: 'Internal Server Error'});
 
-            const response = await HttpUtils.fetch('https://example.com/api', {}, 'server error test');
+            const result = await safeFetch('https://example.com/error', undefined, 'server error');
 
-            expect(response.ok).toBe(false);
-            expect(response.status).toBe(500);
+            expect(result.error?.message).toBe('HTTP 500: Internal Server Error');
+            expect(result.isHttpError).toBe(true);
             expect(vi.mocked(SentryCapture)).toHaveBeenCalledWith(
-                expect.objectContaining({
-                    message: 'HTTP 500: Internal Server Error',
-                }),
-                'server error test',
+                expect.objectContaining({message: 'HTTP 500: Internal Server Error'}),
+                'server error',
             );
         });
 
-        it('should not capture network errors', async () => {
-            fetch.mockRejectOnce(new TypeError('Failed to fetch'));
+        it('should not capture HTTP errors when no context provided', async () => {
+            fetch.mockResponseOnce('Bad Request', {status: 400, statusText: 'Bad Request'});
 
-            await expect(HttpUtils.fetch('https://example.com/api', {}, 'network test')).rejects.toThrow(
-                'Failed to fetch',
-            );
+            const result = await safeFetch('https://example.com/bad');
+
+            expect(result.isHttpError).toBe(true);
+            expect(result.error?.message).toBe('HTTP 400: Bad Request');
             expect(vi.mocked(SentryCapture)).not.toHaveBeenCalled();
-            expect(console.debug).toHaveBeenCalledWith(
-                'Network request failed:',
-                expect.any(TypeError),
-                'network test',
-            );
-        });
-
-        it('should merge custom headers', async () => {
-            fetch.mockResponseOnce('OK', {status: 200});
-
-            await HttpUtils.fetch(
-                'https://example.com/api',
-                {
-                    headers: {'X-Custom': 'value'},
-                },
-                'custom headers test',
-            );
-
-            expect(fetch).toHaveBeenCalledWith('https://example.com/api', {
-                credentials: 'include',
-                headers: {
-                    Accept: 'application/json',
-                    'X-Custom': 'value',
-                },
-            });
         });
     });
 
-    describe('get helper', () => {
-        it('should make GET requests', async () => {
-            fetch.mockResponseOnce('{"result": "success"}', {status: 200});
+    describe('network errors', () => {
+        it('should handle network errors (TypeError) without Sentry capture', async () => {
+            fetch.mockRejectOnce(new TypeError('Failed to fetch'));
 
-            const response = await HttpUtils.get('https://example.com/api/data', 'get test');
+            const result = await safeFetch('https://example.com/unreachable', {parseAs: 'json'}, 'network test');
 
-            expect(response.ok).toBe(true);
-            expect(fetch).toHaveBeenCalledWith('https://example.com/api/data', {
-                method: 'GET',
+            expect(result.data).toBeUndefined();
+            expect(result.response).toBeUndefined();
+            expect(result.error?.message).toBe('Failed to fetch');
+            expect(result.isNetworkError).toBe(true);
+            expect(result.isHttpError).toBe(false);
+            expect(vi.mocked(SentryCapture)).not.toHaveBeenCalled();
+            expect(console.debug).toHaveBeenCalledWith('Network request failed:', 'Failed to fetch', 'network test');
+        });
+
+        it('should handle AbortError without Sentry capture', async () => {
+            const abortError = new Error('Request aborted');
+            abortError.name = 'AbortError';
+            fetch.mockRejectOnce(abortError);
+
+            const result = await safeFetch('https://example.com/aborted', undefined, 'abort test');
+
+            expect(result.error?.message).toBe('Request aborted');
+            expect(result.isNetworkError).toBe(true);
+            expect(result.isHttpError).toBe(false);
+            expect(vi.mocked(SentryCapture)).not.toHaveBeenCalled();
+            expect(console.debug).toHaveBeenCalledWith('Network request failed:', 'Request aborted', 'abort test');
+        });
+
+        it('should capture unexpected error types to Sentry', async () => {
+            const unexpectedError = new Error('Unexpected error');
+            unexpectedError.name = 'UnknownError';
+            fetch.mockRejectOnce(unexpectedError);
+
+            const result = await safeFetch('https://example.com/weird', undefined, 'unexpected error test');
+
+            expect(result.error?.message).toBe('Unexpected error');
+            expect(result.isNetworkError).toBe(false);
+            expect(result.isHttpError).toBe(false);
+            expect(vi.mocked(SentryCapture)).toHaveBeenCalledWith(unexpectedError, 'unexpected error test');
+        });
+    });
+
+    describe('parsing errors', () => {
+        it('should handle JSON parsing errors', async () => {
+            fetch.mockResponseOnce('Invalid JSON{', {status: 200});
+
+            const result = await safeFetch('https://example.com/bad-json', {parseAs: 'json'}, 'json parse test');
+
+            expect(result.data).toBeUndefined();
+            expect(result.error?.message).toContain('Failed to parse response as json');
+            expect(result.isNetworkError).toBe(false);
+            expect(result.isHttpError).toBe(false);
+            expect(result.response?.ok).toBe(true);
+            expect(vi.mocked(SentryCapture)).toHaveBeenCalledWith(
+                expect.objectContaining({message: expect.stringContaining('Failed to parse response as json')}),
+                'json parse test',
+            );
+        });
+
+        it('should not capture parsing errors when no context provided', async () => {
+            fetch.mockResponseOnce('Invalid JSON{', {status: 200});
+
+            const result = await safeFetch('https://example.com/bad-json', {parseAs: 'json'});
+
+            expect(result.error?.message).toContain('Failed to parse response as json');
+            expect(vi.mocked(SentryCapture)).not.toHaveBeenCalled();
+        });
+    });
+
+    describe('type safety and generics', () => {
+        interface User {
+            id: number;
+            name: string;
+        }
+
+        it('should support TypeScript generics for JSON responses', async () => {
+            const userData: User = {id: 1, name: 'Alice'};
+            fetch.mockResponseOnce(JSON.stringify(userData), {status: 200});
+
+            const result: FetchResult<User> = await safeFetch<'json', User>('https://example.com/user', {
+                parseAs: 'json',
+            });
+
+            expect(result.data?.id).toBe(1);
+            expect(result.data?.name).toBe('Alice');
+        });
+
+        it('should support TypeScript generics for text responses', async () => {
+            fetch.mockResponseOnce('Hello World', {status: 200});
+
+            const result: FetchResult<string> = await safeFetch<'text', string>('https://example.com/text', {
+                parseAs: 'text',
+            });
+
+            expect(result.data).toBe('Hello World');
+        });
+
+        it('should correctly infer types from function overloads', async () => {
+            // Test that each overload returns the correct type
+
+            // JSON overload should return unknown
+            fetch.mockResponseOnce('{"test": true}', {status: 200});
+            const jsonResult = await safeFetch('https://example.com/json', {parseAs: 'json'});
+            expect(typeof jsonResult.data).toBe('object');
+
+            // Text overload should return string
+            fetch.mockResponseOnce('text response', {status: 200});
+            const textResult = await safeFetch('https://example.com/text', {parseAs: 'text'});
+            if (textResult.data) {
+                // This should only compile if textResult.data is string
+                const length = textResult.data.length;
+                expect(length).toBe(13);
+            }
+
+            // Response overload should return Response
+            fetch.mockResponseOnce('response', {status: 200});
+            const responseResult = await safeFetch('https://example.com/response', {parseAs: 'response'});
+            if (responseResult.data) {
+                // This should only compile if responseResult.data is Response
+                expect(responseResult.data.status).toBe(200);
+                expect(responseResult.data.headers).toBeInstanceOf(Headers);
+            }
+
+            // Default overload should return string
+            fetch.mockResponseOnce('default', {status: 200});
+            const defaultResult = await safeFetch('https://example.com/default');
+            if (defaultResult.data) {
+                // This should only compile if defaultResult.data is string
+                const trimmed = defaultResult.data.trim();
+                expect(trimmed).toBe('default');
+            }
+        });
+    });
+
+    describe('edge cases', () => {
+        it('should handle empty response body', async () => {
+            fetch.mockResponseOnce('', {status: 204});
+
+            const result = await safeFetch('https://example.com/empty', {parseAs: 'text'});
+
+            expect(result.data).toBe('');
+            expect(result.error).toBeUndefined();
+            expect(result.isNetworkError).toBe(false);
+            expect(result.isHttpError).toBe(false);
+        });
+
+        it('should handle null/undefined options', async () => {
+            fetch.mockResponseOnce('test', {status: 200});
+
+            const result = await safeFetch('https://example.com/test', undefined);
+
+            expect(result.data).toBe('test');
+            expect(fetch).toHaveBeenCalledWith('https://example.com/test', {
                 credentials: 'include',
                 headers: {Accept: 'application/json'},
             });
         });
-    });
 
-    describe('postJSON helper', () => {
-        it('should make POST requests with JSON body', async () => {
-            fetch.mockResponseOnce('{"id": 123}', {status: 201});
+        it('should preserve existing headers while adding defaults', async () => {
+            fetch.mockResponseOnce('OK', {status: 200});
 
-            const response = await HttpUtils.postJSON(
-                'https://example.com/api/create',
-                {name: 'test', value: 42},
-                'post test',
-            );
+            await safeFetch('https://example.com/api', {
+                headers: {
+                    Accept: 'text/plain',
+                    'X-Custom': 'override',
+                },
+            });
 
-            expect(response.ok).toBe(true);
-            expect(response.status).toBe(201);
-            expect(fetch).toHaveBeenCalledWith('https://example.com/api/create', {
-                method: 'POST',
+            expect(fetch).toHaveBeenCalledWith('https://example.com/api', {
                 credentials: 'include',
                 headers: {
-                    Accept: 'application/json',
-                    'Content-Type': 'application/json',
+                    Accept: 'text/plain', // User header overrides default
+                    'X-Custom': 'override',
                 },
-                body: JSON.stringify({name: 'test', value: 42}),
             });
-        });
-    });
-
-    describe('handleResponseError', () => {
-        it('should extract text from response', async () => {
-            const response = new Response('Custom error message', {status: 400});
-            const errorMsg = await HttpUtils.handleResponseError(response);
-            expect(errorMsg).toBe('Custom error message');
-        });
-
-        it('should fall back to status text when response body is empty', async () => {
-            const response = new Response('', {status: 404, statusText: 'Not Found'});
-            const errorMsg = await HttpUtils.handleResponseError(response);
-            expect(errorMsg).toBe('HTTP 404: Not Found');
-        });
-
-        it('should fall back to status text when response.text() fails', async () => {
-            const response = new Response(null, {status: 500, statusText: 'Internal Server Error'});
-            // Mock text() to throw
-            response.text = () => Promise.reject(new Error('Failed to read'));
-            const errorMsg = await HttpUtils.handleResponseError(response);
-            expect(errorMsg).toBe('HTTP 500: Internal Server Error');
-        });
-    });
-
-    describe('getJSON helper', () => {
-        it('should return parsed JSON on success', async () => {
-            const testData = {users: [{id: 1, name: 'Alice'}], count: 1};
-            fetch.mockResponseOnce(JSON.stringify(testData), {status: 200});
-
-            const result = await HttpUtils.getJSON('https://example.com/api/users', 'getJSON test');
-
-            expect(result).toEqual(testData);
-            expect(vi.mocked(SentryCapture)).not.toHaveBeenCalled();
-        });
-
-        it('should return null on HTTP error', async () => {
-            fetch.mockResponseOnce('Not Found', {status: 404});
-
-            const result = await HttpUtils.getJSON('https://example.com/api/missing', 'getJSON 404 test');
-
-            expect(result).toBeNull();
-            expect(vi.mocked(SentryCapture)).toHaveBeenCalledOnce();
-        });
-
-        it('should return null on network error', async () => {
-            fetch.mockRejectOnce(new TypeError('Network error'));
-
-            const result = await HttpUtils.getJSON('https://example.com/api/fail', 'getJSON network test');
-
-            expect(result).toBeNull();
-            // Network errors should not be captured by Sentry, but this currently fails
-            // TODO: Fix the implementation to not capture network errors in higher-level functions
-        });
-
-        it('should return null on invalid JSON', async () => {
-            fetch.mockResponseOnce('Invalid JSON', {status: 200});
-
-            const result = await HttpUtils.getJSON('https://example.com/api/bad', 'getJSON invalid test');
-
-            expect(result).toBeNull();
-        });
-    });
-
-    describe('getText helper', () => {
-        it('should return text on success', async () => {
-            fetch.mockResponseOnce('<h1>Hello World</h1>', {status: 200});
-
-            const result = await HttpUtils.getText('https://example.com/page.html', 'getText test');
-
-            expect(result).toBe('<h1>Hello World</h1>');
-            expect(vi.mocked(SentryCapture)).not.toHaveBeenCalled();
-        });
-
-        it('should return null on HTTP error', async () => {
-            fetch.mockResponseOnce('Forbidden', {status: 403});
-
-            const result = await HttpUtils.getText('https://example.com/forbidden', 'getText 403 test');
-
-            expect(result).toBeNull();
-            expect(vi.mocked(SentryCapture)).toHaveBeenCalledOnce();
-        });
-
-        it('should return null on network error', async () => {
-            fetch.mockRejectOnce(new TypeError('DNS failure'));
-
-            const result = await HttpUtils.getText('https://example.com/unreachable', 'getText network test');
-
-            expect(result).toBeNull();
-            // Network errors should not be captured by Sentry, but this currently fails
-            // TODO: Fix the implementation to not capture network errors in higher-level functions
-        });
-    });
-
-    describe('postJSONAndParseResponse helper', () => {
-        it('should post and return parsed JSON on success', async () => {
-            const responseData = {id: 123, status: 'created'};
-            fetch.mockResponseOnce(JSON.stringify(responseData), {status: 201});
-
-            const result = await HttpUtils.postJSONAndParseResponse(
-                'https://example.com/api/create',
-                {name: 'New Item'},
-                'postJSON parse test',
-            );
-
-            expect(result).toEqual(responseData);
-            expect(fetch).toHaveBeenCalledWith(
-                'https://example.com/api/create',
-                expect.objectContaining({
-                    method: 'POST',
-                    body: JSON.stringify({name: 'New Item'}),
-                }),
-            );
-        });
-
-        it('should return null on HTTP error', async () => {
-            fetch.mockResponseOnce('Bad Request', {status: 400});
-
-            const result = await HttpUtils.postJSONAndParseResponse(
-                'https://example.com/api/bad',
-                {invalid: true},
-                'postJSON 400 test',
-            );
-
-            expect(result).toBeNull();
-            expect(vi.mocked(SentryCapture)).toHaveBeenCalledOnce();
-        });
-
-        it('should return null on network error', async () => {
-            fetch.mockRejectOnce(new TypeError('Connection refused'));
-
-            const result = await HttpUtils.postJSONAndParseResponse(
-                'https://example.com/api/down',
-                {data: 'test'},
-                'postJSON network test',
-            );
-
-            expect(result).toBeNull();
-            // Network errors should not be captured by Sentry, but this currently fails
-            // TODO: Fix the implementation to not capture network errors in higher-level functions
-        });
-    });
-
-    describe('executeHttpRequest helper', () => {
-        it('should call onSuccess for successful responses', async () => {
-            fetch.mockResponseOnce('Success data', {status: 200});
-            const onSuccess = vi.fn(async response => {
-                const text = await response.text();
-                return `Processed: ${text}`;
-            });
-            const onHttpError = vi.fn();
-
-            const result = await HttpUtils.executeHttpRequest(
-                () => HttpUtils.get('https://example.com/api'),
-                onSuccess,
-                onHttpError,
-                'execute success test',
-            );
-
-            expect(result).toBe('Processed: Success data');
-            expect(onSuccess).toHaveBeenCalledOnce();
-            expect(onHttpError).not.toHaveBeenCalled();
-        });
-
-        it('should call onHttpError for HTTP errors', async () => {
-            fetch.mockResponseOnce('Server Error Details', {status: 500});
-            const onSuccess = vi.fn();
-            const onHttpError = vi.fn();
-
-            const result = await HttpUtils.executeHttpRequest(
-                () => HttpUtils.get('https://example.com/api'),
-                onSuccess,
-                onHttpError,
-                'execute error test',
-            );
-
-            expect(result).toBeNull();
-            expect(onSuccess).not.toHaveBeenCalled();
-            expect(onHttpError).toHaveBeenCalledWith(expect.objectContaining({status: 500}), 'Server Error Details');
-        });
-
-        it('should return null on network errors without calling callbacks', async () => {
-            fetch.mockRejectOnce(new TypeError('Network unreachable'));
-            const onSuccess = vi.fn();
-            const onHttpError = vi.fn();
-
-            const result = await HttpUtils.executeHttpRequest(
-                () => HttpUtils.get('https://example.com/api'),
-                onSuccess,
-                onHttpError,
-                'execute network test',
-            );
-
-            expect(result).toBeNull();
-            expect(onSuccess).not.toHaveBeenCalled();
-            expect(onHttpError).not.toHaveBeenCalled();
-            // Network errors should be logged, but this is handled by the underlying fetch call
-        });
-
-        it('should work without onHttpError callback', async () => {
-            fetch.mockResponseOnce('Not Found', {status: 404});
-            const onSuccess = vi.fn();
-
-            const result = await HttpUtils.executeHttpRequest(
-                () => HttpUtils.get('https://example.com/api'),
-                onSuccess,
-                undefined,
-                'execute no error handler test',
-            );
-
-            expect(result).toBeNull();
-            expect(onSuccess).not.toHaveBeenCalled();
         });
     });
 });

@@ -28,7 +28,7 @@ import {escapeHTML} from '../../shared/common-utils.js';
 import {SiteTemplateConfiguration, UserSiteTemplate} from '../../types/features/site-templates.interfaces.js';
 import {assert, unwrap, unwrapString} from '../assert.js';
 import * as BootstrapUtils from '../bootstrap-utils.js';
-import * as HttpUtils from '../http-utils.js';
+import {safeFetch} from '../http-utils.js';
 import {localStorage} from '../local.js';
 import {Settings} from '../settings.js';
 import * as url from '../url.js';
@@ -80,8 +80,9 @@ class SiteTemplatesWidget {
     async getTemplates(): Promise<SiteTemplateConfiguration> {
         if (this.templatesConfig === null) {
             this.templatesConfig = noTemplates;
-            const result = await HttpUtils.getJSON<SiteTemplateConfiguration>(
+            const {data: result} = await safeFetch<'json', SiteTemplateConfiguration>(
                 window.location.origin + window.httpRoot + 'api/siteTemplates',
+                {parseAs: 'json'},
                 'site templates',
             );
             if (result) {

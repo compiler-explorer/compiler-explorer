@@ -34,7 +34,7 @@ import * as BootstrapUtils from '../bootstrap-utils.js';
 import * as colour from '../colour.js';
 import * as Components from '../components.js';
 import {createDragSource} from '../components.js';
-import * as HttpUtils from '../http-utils.js';
+import {safeFetch} from '../http-utils.js';
 import * as monacoConfig from '../monaco-config.js';
 import {options} from '../options.js';
 import * as quickFixesHandler from '../quick-fixes-handler.js';
@@ -1165,18 +1165,22 @@ export class Editor extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Edit
             return;
         }
 
-        HttpUtils.executeHttpRequest(
-            () =>
-                HttpUtils.postJSON(
-                    window.location.origin + this.httpRoot + 'api/format/' + lang?.formatter,
-                    {
+        (async () => {
+            const {data: result, error} = await safeFetch<'json', {exit: number; answer: string}>(
+                window.location.origin + this.httpRoot + 'api/format/' + lang?.formatter,
+                {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({
                         source: previousSource,
                         base: this.settings.formatBase,
-                    },
-                    'code formatting',
-                ),
-            async response => {
-                const result = await response.json();
+                    }),
+                    parseAs: 'json',
+                },
+                'code formatting',
+            );
+
+            if (result) {
                 if (result.exit === 0) {
                     if (this.doesMatchEditor(previousSource)) {
                         this.updateSource(result.answer);
@@ -1190,14 +1194,13 @@ export class Editor extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Edit
                         alertClass: 'notification-error',
                     });
                 }
-            },
-            (_response, errorMessage) => {
-                this.alertSystem.notify('We ran into some issues while formatting your code: ' + errorMessage, {
+            } else if (error) {
+                this.alertSystem.notify('We ran into some issues while formatting your code: ' + error.message, {
                     group: 'formatting',
                     alertClass: 'notification-error',
                 });
-            },
-        );
+            }
+        })();
     }
 
     override resize(): void {
