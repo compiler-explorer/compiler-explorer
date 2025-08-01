@@ -29,7 +29,11 @@ html(lang="en")
 
     ul
       li Your source code is usually deleted within minutes, or up to 1 week if we need it for debugging (unless you opt out).
-      li Short shared links are kept indefinitely. In emergencies these can be deleted on request.
+      li
+        | Short shared links are kept indefinitely. In exceptional circumstances (such as accidental exposure of sensitive information),
+        | we may be able to delete links. Contact 
+        a(href="mailto:privacy@compiler-explorer.com") privacy@compiler-explorer.com
+        |  to discuss.
       li Web logs contain semi-anonymised IP addresses for up to 32 days.
       li Amazon logs contain full IP addresses for up to 32 days.
       li Compilation analytics (which compilers and settings are used) are kept for up to 1 year to help us improve the service.
@@ -82,14 +86,14 @@ html(lang="en")
 
     p
       | Part of this cache lives in memory and disappears when we restart our servers. Part of it is stored on shared disk. In
-      | exceptional cases, Compiler Explorer administrators might be able to see these cached compilation results, but
-      | there's no way for us to trace them back to the original source code.
+      | exceptional cases, the small team of trusted Compiler Explorer administrators might be able to see these cached compilation
+      | results, but there's no way for us to trace them back to the original source code.
 
     h3 Shared links
 
     p
       | If you choose to share your code using the "Share" dropdown, then the user interface state including the source code
-      | is stored. For a "Full" link, this information is encoded into the URL as a URL hash (e.g.
+      | is stored. For a "Full" link, this information is encoded into the URL after the # symbol (e.g.
       | #[code https://godbolt.org/#ui_state_and_code]). For short URLs, the interface state is stored on
       | Compiler Explorer's servers, and a shortened name uniquely
       | referring to this data is returned. The shortened name comes from a secure hash of the state, and without
@@ -105,7 +109,8 @@ html(lang="en")
     h3 Application, web and error logs
 
     p
-      | Web access logs contain semi-anonymised IP addresses (we remove parts of the IP address to make them less identifying) but no other personal information.
+      | Web access logs contain semi-anonymised IP addresses (we remove parts of the IP address to make them less identifying) but
+      | no other personal information.
       | When you visit a long Compiler Explorer URL (the ones with #[code #] in them), your code
       | stays in your browser and isn't logged. If you visit a short URL we created (like #[code godbolt.org/z/abc123]),
       | then we can potentially retrieve your code from our logs.
@@ -114,7 +119,8 @@ html(lang="en")
       | Compilation logs are separate analytics logs that record which compilers and settings people use.
       | These analytics help us understand usage patterns and plan improvements. We store a fingerprint (hash) of your
       | source code along with compiler options, filters, and libraries used, but we can't reverse this to see your
-      | actual code. These analytics are kept for up to 1 year.
+      | actual code. These analytics are kept for up to 1 year. We may share aggregate statistics about compiler usage publicly,
+      | but these never include individual usage patterns or any way to identify specific users.
 
     p
       | Amazon infrastructure logs: We use Amazon's servers to run Compiler Explorer. Their logs (which help us
@@ -127,6 +133,9 @@ html(lang="en")
       a(href="https://sentry.io/" target="_blank") Sentry
       |
       | to help us fix it. This keeps your IP address and browser information for up to 90 days.
+
+    p
+      | If we need to share data with new third-party services in the future, we'll update this privacy policy accordingly.
 
     h3 Executing your code
 
@@ -182,8 +191,8 @@ html(lang="en")
     h3 Compiler Explorer and the GDPR
 
     p
-      | We comply with the EU's General Data Protection Regulation (GDPR) because we don't store personal information 
-      | long-term. IP addresses are semi-anonymised and deleted within one month, and your source code is processed 
+      | We comply with the EU's General Data Protection Regulation (GDPR) because we don't store personal information
+      | long-term. IP addresses are semi-anonymised and deleted within one month, and your source code is processed
       | temporarily and then deleted.
 
     h4 Name and contact details of the controller
