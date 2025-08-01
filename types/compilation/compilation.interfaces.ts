@@ -72,6 +72,7 @@ export type LibsAndOptions = {
 export type GccDumpFlags = {
     gimpleFe: boolean;
     address: boolean;
+    alias: boolean;
     slim: boolean;
     raw: boolean;
     details: boolean;
