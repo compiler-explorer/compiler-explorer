@@ -3,7 +3,54 @@
 This document explains how to add a new compiler to Compiler Explorer ("CE" from here on), first for a local instance,
 and then how to submit PRs to get it into the main CE site.
 
-## Configuration
+## Quick method: Using ce-properties-wizard
+
+The easiest way to add a compiler to your local Compiler Explorer instance is to use the `ce-properties-wizard` tool. This interactive command-line tool automatically detects compiler information and updates your configuration files.
+
+### Basic usage
+
+From the Compiler Explorer root directory:
+
+```bash
+# Interactive mode - guides you through the process
+etc/scripts/ce-properties-wizard/run.sh
+
+# Path-first mode - provide compiler path directly
+etc/scripts/ce-properties-wizard/run.sh /usr/bin/g++-13
+
+# Fully automated mode - accepts all defaults
+etc/scripts/ce-properties-wizard/run.sh /usr/bin/g++-13 --yes
+```
+
+### Examples
+
+Add a custom GCC installation:
+```bash
+etc/scripts/ce-properties-wizard/run.sh /opt/gcc-14.2.0/bin/g++
+```
+
+Add a cross-compiler:
+```bash
+etc/scripts/ce-properties-wizard/run.sh /usr/bin/arm-linux-gnueabihf-g++ \
+  --name "ARM GCC 11.2" \
+  --group arm-gcc \
+  --yes
+```
+
+The wizard will:
+- Automatically detect the compiler type, version, and language
+- Generate appropriate compiler IDs and display names
+- Add the compiler to the correct properties file
+- Suggest appropriate groups for organization
+- Validate the configuration with `propscheck.py`
+
+For more options and examples, see the [ce-properties-wizard README](../etc/scripts/ce-properties-wizard/README.md).
+
+## Manual configuration
+
+If you need more control or want to understand how the configuration works, read on for the manual approach.
+
+### Configuration
 
 Compiler configuration is done through the `etc/config/c++.*.properties` files (for C++, other languages follow the
 obvious pattern, replace as needed for your case).
@@ -84,9 +131,9 @@ forward if that group is redefined in a higher-priority configuration file (e.g.
 The `compilerType` option is special: it refers to the Javascript class in `lib/compilers/*.ts` which handles running
 and handling output for this compiler type.
 
-## Adding a new compiler locally
+## Adding a new compiler manually
 
-It should be pretty straightforward to add a compiler of your own. Create a `etc/config/c++.local.properties` file and
+If the wizard doesn't work for your use case or you need fine-grained control, you can manually add a compiler. Create a `etc/config/c++.local.properties` file and
 override the `compilers` list to include your own compiler, and its configuration.
 
 Once you've done that, running `make` should pick up the configuration and during startup you should see your compiler
