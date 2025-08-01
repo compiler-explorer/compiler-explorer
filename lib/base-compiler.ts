@@ -715,6 +715,9 @@ export class BaseCompiler {
         if (gccDumpOptions.dumpFlags.address !== false) {
             flags += '-address';
         }
+        if (gccDumpOptions.dumpFlags.alias !== false) {
+            flags += '-alias';
+        }
         if (gccDumpOptions.dumpFlags.slim !== false) {
             flags += '-slim';
         }

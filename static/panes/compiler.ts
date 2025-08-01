@@ -2173,6 +2173,7 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
             this.dumpFlags = {
                 gimpleFe: dumpOpts.gimpleFeOption,
                 address: dumpOpts.addressOption,
+                alias: dumpOpts.aliasOption,
                 slim: dumpOpts.slimOption,
                 raw: dumpOpts.rawOption,
                 details: dumpOpts.detailsOption,
