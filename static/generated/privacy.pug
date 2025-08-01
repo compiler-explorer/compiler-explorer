@@ -17,12 +17,35 @@ html(lang="en")
       | Thanks for your interest in what Compiler Explorer does with your data. Data protection is really
       | important to the Compiler Explorer team, and we want to be very clear about what we do with your data.
 
+    h3 The short version
+
+    ul
+      li We compile your code then delete it from our servers.
+      li Short shared links store your code indefinitely if you choose to create them.
+      li We keep some logs to help run the service.
+      li We only share data with third parties with your explicit consent.
+
+    h3 How long we keep things
+
+    ul
+      li Your source code is usually deleted within minutes, or up to 1 week if we need it for debugging (unless you opt out).
+      li
+        | Short shared links are kept indefinitely. In exceptional circumstances (such as accidental exposure of sensitive information),
+        | we may be able to delete links. Contact 
+        a(href="mailto:privacy@compiler-explorer.com") privacy@compiler-explorer.com
+        |  to discuss.
+      li Web logs contain semi-anonymised IP addresses for up to 32 days.
+      li Amazon logs contain full IP addresses for up to 32 days.
+      li Compilation analytics (which compilers and settings are used) are kept for up to 1 year to help us improve the service.
+      li Error reports hold IP and browser info for up to 90 days.
+      li Cached compilation results are stored in memory and on disk, but can't be traced back to your original code.
+
     h3 Who we are
 
     p
       | Compiler Explorer was created by and is primarily administrated by
       |
-      a(href="mailto:matt@godbolt.org") Matt Godbolt
+      a(href="https://xania.org" target="_blank" rel="noreferrer noopener") Matt Godbolt
       | , along with a number of volunteers (including, but not limited to those listed in our "
       a(href="https://github.com/compiler-explorer/compiler-explorer/blob/main/AUTHORS.md"
         target="_blank" rel="noreferrer noopener") Authors
@@ -35,36 +58,42 @@ html(lang="en")
       |
       | if you wish to help.
 
-    h3 Your data
+    h3 What happens when you compile code
 
     p
-      | In order to process compilation and execution requests, your browser sends the source code you typed in the editor
-      | window along with your chosen compiler and options to the Compiler Explorer servers. There, the source code is
-      | written to disk and your chosen compiler is invoked on it. If your request was to have your code executed, the
-      | resulting executable is run. The outputs from compilation and execution are processed and sent back to your web
-      | browser, where they're shown. Shortly after this process completes, your source code is deleted from disk. If, in
-      | processing your query, an issue with Compiler Explorer is found, your code may be kept for up to a week in order to
-      | help debug and diagnose the problem. Only the Compiler Explorer team will have access to your code, and only for the
-      | purposes of debugging the site: we will never share your code with anyone.
+      | When you compile, your browser sends your source code and compiler settings to our servers. We write your code
+      | to a temporary file, run the compiler on it, and send the results back to your browser.
 
     p
-      | The source code and options are also subject to a one-way hash, which is used to cache the results to speed up
-      | subsequent compilations of the same code. The cache is in-memory and on-disk. It's impossible to reconstruct the
-      | source code from the hash, but the resulting assembly code or binary output (the compilation result) is stored as
-      | plain text. There's no way to enumerate the in-memory cache contents. In exceptional cases, administrator members of
-      | the Compiler Explorer team may be able to enumerate the disk caches and retrieve the compilation output, but with no
-      | way to trace it back to the source code.
+      | Your code is deleted within minutes. As soon as compilation finishes, we clean up the temporary files.
 
     p
-      | In short: your source code is stored in plaintext for the minimum time feasible to be able to process your request.
-      | After that, it is discarded and is inaccessible. In very rare cases your code may be kept for a little longer (at
-      | most a week) to help debug issues in Compiler Explorer.
+      | Exception for debugging: If something goes wrong with Compiler Explorer itself (not your code, but our
+      | system), we might keep your code for up to a week to help us fix the problem. This only happens if you have the
+      | "Allow my source code to be temporarily stored for diagnostic purposes" setting enabled (which it is by default).
+      | You can disable this in Settings if you prefer. Only the Compiler Explorer team can access this, and we'll never
+      | share your code with anyone else.
 
-    h4 Short links
+    h3 How we speed things up (caching)
+
+    p
+      | To make repeated compilations faster, we cache the results.
+
+    p
+      | We create a unique fingerprint from your code and settings using a secure hash. We cannot reconstruct
+      | your original code from this fingerprint. However, we do store the compilation results (the assembly or executable
+      | output) as plain text, linked to that fingerprint.
+
+    p
+      | Part of this cache lives in memory and disappears when we restart our servers. Part of it is stored on shared disk. In
+      | exceptional cases, the small team of trusted Compiler Explorer administrators might be able to see these cached compilation
+      | results, but there's no way for us to trace them back to the original source code.
+
+    h3 Shared links
 
     p
       | If you choose to share your code using the "Share" dropdown, then the user interface state including the source code
-      | is stored. For a "Full" link, this information is encoded into the URL as a URL hash (e.g.
+      | is stored. For a "Full" link, this information is encoded into the URL after the # symbol (e.g.
       | #[code https://godbolt.org/#ui_state_and_code]). For short URLs, the interface state is stored on
       | Compiler Explorer's servers, and a shortened name uniquely
       | referring to this data is returned. The shortened name comes from a secure hash of the state, and without
@@ -73,38 +102,42 @@ html(lang="en")
       | Links of this form look like #[code https://godbolt.org/z/SHORTNAME].
 
     p
-      | Prior to storing data itself, Compiler Explorer used an external URL shortening service (
-      a(href="https://goo.gl/" target="_blank") goo.gl
-      | ) and the resulting short URL was rewritten as #[code https://godbolt.org/g/SHORTURLPART].
-      | The storage for the user experience state in this case remains with the short URL provider,
-      | not Compiler Explorer.
+      | Before September 2018, Compiler Explorer used Google's goo.gl service for short links.
+      | We switched to our own system in 2018, but when Google shut down goo.gl in 2025, we migrated any remaining old
+      | links to ensure they keep working.
 
-    h4 Application, web and error logs
+    h3 Application, web and error logs
 
     p
-      | Compiler Explorer keeps application logs, which contain semi-anonymised IP addresses, but no other personally
-      | identifying information. When a long URL is clicked, the hash part of the URL is not sent to the server, so the user
-      | state (including the source code) is NOT exposed in the web log. If a user clicks a short URL, then the short form
-      | #[em is] exposed in the web log (as #[code https://godbolt.org/g/SHORTURLPART]) and from this the source code can be
-      | retrieved. As such, if you create a short URL of your code, your source
-      | code and other user state can in principle be retrieved from the web log of Compiler Explorer.
+      | Web access logs contain semi-anonymised IP addresses (we remove parts of the IP address to make them less identifying) but
+      | no other personal information.
+      | When you visit a long Compiler Explorer URL (the ones with #[code #] in them), your code
+      | stays in your browser and isn't logged. If you visit a short URL we created (like #[code godbolt.org/z/abc123]),
+      | then we can potentially retrieve your code from our logs.
 
     p
-      | Compiler Explorer keeps a separate compile request log for Analytics purposes without identifying information.
-      | This log only contains the settings which were used - minus code and options that may contain sensitive data.
+      | Compilation logs are separate analytics logs that record which compilers and settings people use.
+      | These analytics help us understand usage patterns and plan improvements. We store a fingerprint (hash) of your
+      | source code along with compiler options, filters, and libraries used, but we can't reverse this to see your
+      | actual code. These analytics are kept for up to 1 year. We may share aggregate statistics about compiler usage publicly,
+      | but these never include individual usage patterns or any way to identify specific users.
 
     p
-      | Compiler Explorer uses Amazon's web serving, load balancing and edge caching systems. In order to debug and diagnose
-      | Compiler Explorer, to help track down and block Denial of Service attacks, and to gather statistics about Compiler
-      | Explorer's performance and usage, the logs from these systems are archived. These logs contain the full IP addresses
-      | of requests. They are kept for no more than one month, after which they are permanently deleted.
+      | Amazon infrastructure logs: We use Amazon's servers to run Compiler Explorer. Their logs (which help us
+      | debug issues and block attacks) contain full IP addresses and are kept for up to 32 days, then permanently
+      | deleted.
 
     p
-      | If your web browser experiences an error, we use a third party reporting system (
+      | For error reporting: If something goes wrong in your browser, we use
+      |
       a(href="https://sentry.io/" target="_blank") Sentry
-      | ). This keeps information, including your IP address and web browser user agent, for no more than 90 days.
+      |
+      | to help us fix it. This keeps your IP address and browser information for up to 90 days.
 
-    h4 Executing your code
+    p
+      | If we need to share data with new third-party services in the future, we'll update this privacy policy accordingly.
+
+    h3 Executing your code
 
     p
       | For certain configurations, we may support executing the results of your compilation on the Compiler Explorer
@@ -112,37 +145,57 @@ html(lang="en")
       | both the Compiler Explorer site and other concurrently-processed requests from information leakage due to rogue
       | executions.
 
-    h4 Cookies
+    h3 Claude Explain
+
+    p
+      | The "Claude Explain" view sends your code and data to Anthropic, the makers of Claude. We always ask for consent
+      | before sending your code, and Anthropic does not use anything we send them for training. For the purposes of
+      | Anthropic's own Privacy Policy, we use them as a "data processor", and so our own privacy policy applies to the
+      | data.
+
+    h3 Cookies
 
     p
       | Compiler Explorer uses small pieces of information stored on your computer: Cookies and Browser Local
-      | Storage (and Session Storage). Local storage is used to remember the user's settings, source code and user interface configuration, so
-      | that it's available when the user visits the Compiler Explorer site again. This information is not transmitted to
-      | Compiler Explorer, except as described above in order to fulfil the user's requests. There is a
+      | Storage (and Session Storage). Local storage remembers your settings, source code and user interface configuration
+      | so it's available when you visit again. This information is not transmitted to
+      | Compiler Explorer, except as described above in order to fulfil your requests. There is a
       |
       a(href="#cookies" rel="noreferrer noopener") separate document
       |
       | covering more on this.
 
-    h3 Your choices
+    h3 Your rights and choices
 
     p
-      | Compiler Explorer is an open source project. If you are concerned about any of the data protection measures outlined
-      | above, or about what happens to your source code, you are encouraged to run your own local instance of Compiler
-      | Explorer. Instructions on how to do this are on the
+      | You decide if and when to create shared links. In case of an emergency you can request
+      | deletion by contacting us.
+
+    p
+      | For Claude Explain, we always ask for your explicit consent before sending any code to Anthropic.
+
+    p
+      | Compiler Explorer is open source. If you prefer complete control over your data,
+      | you can run your own instance. Instructions are on our
       |
       a(href="https://github.com/compiler-explorer/compiler-explorer"
         target="_blank" rel="noreferrer noopener") GitHub project page
       | .
 
+    p
+      | If you have questions about your data or want to request deletion of a shared link, contact us at
+      |
+      a(href="mailto:privacy@compiler-explorer.com") privacy@compiler-explorer.com
+      | .
+
     h3 Compiler Explorer and the GDPR
 
     p
-      | The Compiler Explorer team believes the Compiler Explorer site is compliant with the EU's General Data Protection
-      | Regulation (GDPR). Specifically, we store no personally identifying information, we anonymise the little data that
-      | we do have and we do not permanently store any user data.
+      | We comply with the EU's General Data Protection Regulation (GDPR) because we don't store personal information
+      | long-term. IP addresses are semi-anonymised and deleted within one month, and your source code is processed
+      | temporarily and then deleted.
 
-    h4 Name and Address of the controller
+    h4 Name and contact details of the controller
 
     p
       | The Controller for the purposes of the General Data Protection Regulation (GDPR), other data protection laws
@@ -151,9 +204,6 @@ html(lang="en")
     div
       | Matt Godbolt
       br
-      | 2626 Orrington Ave
+      | Compiler Explorer LLC
       br
-      | Evanston IL 60201 USA
-      br
-      | +1 312 792-7931<br>
-      a(href="mailto:matt@godbolt.org") matt@godbolt.org
+      a(href="mailto:privacy@compiler-explorer.com") privacy@compiler-explorer.com
