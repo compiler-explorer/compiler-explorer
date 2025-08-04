@@ -36,6 +36,14 @@ import {SentryCapture} from '../sentry.js';
 import * as utils from '../utils.js';
 import {FontScale} from '../widgets/fontscale.js';
 import {AvailableOptions, ClaudeExplainResponse, ExplainRequest, ExplainViewState} from './explain-view.interfaces.js';
+import {
+    buildExplainRequest,
+    checkForNoAiDirective,
+    ExplainContext,
+    generateCacheKey,
+    ValidationErrorCode,
+    validateExplainPreconditions,
+} from './explain-view-utils.js';
 import {Pane} from './pane.js';
 
 enum StatusIconState {
@@ -339,7 +347,7 @@ export class ExplainView extends Pane<ExplainViewState> {
             return;
         }
 
-        if (result.source && this.checkForNoAiDirective(result.source)) {
+        if (result.source && checkForNoAiDirective(result.source)) {
             this.showNoAiDirective();
             return;
         }
@@ -429,24 +437,6 @@ export class ExplainView extends Pane<ExplainViewState> {
         this.statsElement.text(stats.join(' | '));
     }
 
-    private generateCacheKey(payload: ExplainRequest): string {
-        // Create a cache key from the request payload.
-        return JSON.stringify({
-            language: payload.language,
-            compiler: payload.compiler,
-            code: payload.code,
-            compilationOptions: payload.compilationOptions ?? [],
-            instructionSet: payload.instructionSet,
-            asm: payload.asm,
-            audience: payload.audience,
-            explanation: payload.explanation,
-        });
-    }
-
-    private checkForNoAiDirective(sourceCode: string): boolean {
-        return /no-ai/i.test(sourceCode);
-    }
-
     private displayCachedResult(cachedResult: ClaudeExplainResponse): void {
         this.hideLoading();
         this.showSuccess();
@@ -472,44 +462,16 @@ export class ExplainView extends Pane<ExplainViewState> {
         return response.json() as Promise<ClaudeExplainResponse>;
     }
 
-    private validateFetchPreconditions(): void {
-        if (!this.lastResult || !ExplainView.consentGiven || !this.compiler) {
-            throw new Error('Missing required data: compilation result, consent, or compiler info');
-        }
-
-        if (ExplainView.availableOptions === null) {
-            throw new Error('Explain options not available');
-        }
-
-        if (!this.explainApiEndpoint) {
-            throw new Error('Claude Explain API endpoint not configured');
-        }
-
-        if (this.lastResult.source && this.checkForNoAiDirective(this.lastResult.source)) {
-            throw new Error('no-ai directive found in source code');
-        }
-    }
-
-    private buildExplainRequest(bypassCache: boolean): ExplainRequest {
-        if (!this.compiler || !this.lastResult) {
-            throw new Error('Missing compiler or compilation result');
-        }
-
+    private getExplainContext(): ExplainContext {
         return {
-            language: this.compiler.lang,
-            compiler: this.compiler.name,
-            code: this.lastResult.source ?? '',
-            compilationOptions: this.lastResult.compilationOptions ?? [],
-            instructionSet: this.lastResult.instructionSet ?? 'amd64',
-            asm: Array.isArray(this.lastResult.asm) ? this.lastResult.asm : [],
-            audience: this.selectedAudience,
-            explanation: this.selectedExplanation,
-            ...(bypassCache && {bypassCache: true}),
+            lastResult: this.lastResult,
+            compiler: this.compiler,
+            selectedAudience: this.selectedAudience,
+            selectedExplanation: this.selectedExplanation,
+            explainApiEndpoint: this.explainApiEndpoint,
+            consentGiven: ExplainView.consentGiven,
+            availableOptions: ExplainView.availableOptions,
         };
-    }
-
-    private checkAndReturnCachedResult(cacheKey: string): ClaudeExplainResponse | null {
-        return this.cache.get(cacheKey) ?? null;
     }
 
     private processExplanationResponse(data: ClaudeExplainResponse, cacheKey: string): void {
@@ -532,20 +494,24 @@ export class ExplainView extends Pane<ExplainViewState> {
     }
 
     private async fetchExplanation(bypassCache = false): Promise<void> {
-        try {
-            this.validateFetchPreconditions();
-        } catch (error) {
-            if (error instanceof Error && error.message === 'no-ai directive found in source code') {
-                this.hideLoading();
-                this.noAiElement.removeClass('d-none');
-                this.contentElement.text('');
-                return;
+        const context = this.getExplainContext();
+        const validationResult = validateExplainPreconditions(context);
+
+        if (!validationResult.success) {
+            switch (validationResult.errorCode) {
+                case ValidationErrorCode.NO_AI_DIRECTIVE_FOUND:
+                    this.hideLoading();
+                    this.noAiElement.removeClass('d-none');
+                    this.contentElement.text('');
+                    break;
+                case ValidationErrorCode.MISSING_REQUIRED_DATA:
+                    // Silent return - this is expected during normal UI flow (before compilation, before consent, etc.)
+                    break;
+                default:
+                    // Show all other validation errors to help with debugging
+                    this.contentElement.text(`Error: ${validationResult.message}`);
+                    break;
             }
-            if (error instanceof Error && error.message === 'Claude Explain API endpoint not configured') {
-                this.contentElement.text('Error: Claude Explain API endpoint not configured');
-                return;
-            }
-            // For other validation errors, just return silently
             return;
         }
 
@@ -553,12 +519,12 @@ export class ExplainView extends Pane<ExplainViewState> {
         this.showLoading();
 
         try {
-            const payload = this.buildExplainRequest(bypassCache);
-            const cacheKey = this.generateCacheKey(payload);
+            const payload = buildExplainRequest(context, bypassCache);
+            const cacheKey = generateCacheKey(payload);
 
             // Check cache first unless bypassing
             if (!bypassCache) {
-                const cachedResult = this.checkAndReturnCachedResult(cacheKey);
+                const cachedResult = this.cache.get(cacheKey);
                 if (cachedResult) {
                     this.displayCachedResult(cachedResult);
                     return;
