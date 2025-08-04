@@ -111,6 +111,9 @@ export class ExplainView extends Pane<ExplainViewState> {
     private selectedExplanation: string;
     private isInitializing = true;
 
+    // Store compilation results that arrive before initialization completes
+    private pendingCompilationResult: CompilationResult | null = null;
+
     constructor(hub: Hub, container: Container, state: ExplainViewState) {
         super(hub, container, state);
 
@@ -183,11 +186,20 @@ export class ExplainView extends Pane<ExplainViewState> {
 
     private async initializeOptions(): Promise<void> {
         try {
-            const options = await this.fetchAvailableOptions();
-            this.populateSelectOptions(options);
+            this.populateSelectOptions(await this.fetchAvailableOptions());
+            this.isInitializing = false;
+
+            // Process any compilation results that arrived while we were initializing.
+            if (this.pendingCompilationResult) {
+                this.handleCompilationResult(this.pendingCompilationResult);
+                this.pendingCompilationResult = null;
+            }
         } catch (error) {
+            this.isInitializing = false;
             console.error('Failed to initialize options:', error);
             this.showExplainUnavailable();
+            // Even if initialization failed, clear any pending results
+            this.pendingCompilationResult = null;
         }
     }
 
@@ -224,7 +236,6 @@ export class ExplainView extends Pane<ExplainViewState> {
             // During initialisation: trust saved state completely, no validation
             this.audienceSelect.val(this.selectedAudience);
             this.explanationSelect.val(this.selectedExplanation);
-            this.isInitializing = false; // Now user interactions can begin
         } else {
             // After initialisation: validate user changes normally
             const validAudienceValue = options.audience.some(opt => opt.value === this.selectedAudience)
@@ -322,9 +333,9 @@ export class ExplainView extends Pane<ExplainViewState> {
     }
 
     private handleCompilationResult(result: CompilationResult): void {
-        // If options failed to load, explain is unavailable
-        if (ExplainView.availableOptions === null) {
-            // Don't override the error message already shown
+        if (this.isInitializing) {
+            // Store for processing after initialization completes
+            this.pendingCompilationResult = result;
             return;
         }
 
