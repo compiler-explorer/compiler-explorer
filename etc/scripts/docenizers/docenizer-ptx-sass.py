@@ -110,7 +110,7 @@ def main():
     tables = pd.read_html('https://docs.nvidia.com/cuda/cuda-binary-utilities/index.html', match='Opcode')
     sass_docs = sorted(
         (opcode, description)
-        for (opcode, description) in pd.concat(tables).dropna().drop_duplicates().itertuples(index=False)
+        for (opcode, description) in pd.concat(tables).dropna().drop_duplicates(["Opcode"], keep="last").itertuples(index=False)
         if opcode != description
     )
 
