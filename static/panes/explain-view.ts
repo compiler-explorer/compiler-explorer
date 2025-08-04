@@ -92,20 +92,6 @@ export class ExplainView extends Pane<ExplainViewState> {
     private static availableOptions: AvailableOptions | null = null;
     private static optionsFetchPromise: Promise<AvailableOptions> | null = null;
 
-    // Static fallback options for when API fetch fails
-    private static readonly fallbackOptions: AvailableOptions = {
-        audience: [
-            {value: 'beginner', description: 'For beginners learning assembly language'},
-            {value: 'intermediate', description: 'For users familiar with basic assembly concepts'},
-            {value: 'expert', description: 'For advanced users'},
-        ],
-        explanation: [
-            {value: 'assembly', description: 'Explains the assembly instructions'},
-            {value: 'source', description: 'Explains how source code maps to assembly'},
-            {value: 'optimization', description: 'Explains compiler optimizations'},
-        ],
-    };
-
     // Instance variables for selected options
     private selectedAudience: string;
     private selectedExplanation: string;
@@ -189,8 +175,33 @@ export class ExplainView extends Pane<ExplainViewState> {
             this.populateSelectOptions(options);
         } catch (error) {
             console.error('Failed to initialize options:', error);
-            // Controls will remain with "Loading..." option
+            this.showExplainUnavailable();
         }
+    }
+
+    private showExplainUnavailable(): void {
+        // Show error in dropdowns
+        this.populateSelect(this.audienceSelect, [
+            {
+                value: '',
+                description: 'Service unavailable',
+            },
+        ]);
+        this.populateSelect(this.explanationSelect, [
+            {
+                value: '',
+                description: 'Service unavailable',
+            },
+        ]);
+
+        // Disable the dropdowns
+        this.audienceSelect.prop('disabled', true);
+        this.explanationSelect.prop('disabled', true);
+
+        // Show error message in content area
+        this.contentElement.html(
+            '<div class="alert alert-warning">Claude Explain is currently unavailable due to a service error. Please try again later.</div>',
+        );
     }
 
     private populateSelect(selectElement: JQuery, optionsList: Array<{value: string; description: string}>): void {
@@ -289,10 +300,9 @@ export class ExplainView extends Pane<ExplainViewState> {
                 ExplainView.availableOptions = options;
                 return options;
             } catch (error) {
-                // If fetch fails, provide fallback options
+                // If fetch fails, propagate the error
                 console.error('Failed to fetch available options:', error);
-                ExplainView.availableOptions = ExplainView.fallbackOptions;
-                return ExplainView.fallbackOptions;
+                throw error;
             } finally {
                 // Clear the promise once done
                 ExplainView.optionsFetchPromise = null;
@@ -344,6 +354,12 @@ export class ExplainView extends Pane<ExplainViewState> {
     }
 
     private handleCompilationResult(result: CompilationResult): void {
+        // If options failed to load, explain is unavailable
+        if (ExplainView.availableOptions === null) {
+            // Don't override the error message already shown
+            return;
+        }
+
         if (result.code !== 0) {
             this.contentElement.text('Cannot explain: Compilation failed');
             return;
@@ -454,8 +470,8 @@ export class ExplainView extends Pane<ExplainViewState> {
             compilationOptions: payload.compilationOptions?.sort() ?? [],
             instructionSet: payload.instructionSet,
             asm: payload.asm,
-            audience: payload.audience ?? 'beginner',
-            explanation: payload.explanation ?? 'assembly',
+            audience: payload.audience,
+            explanation: payload.explanation,
         };
         return JSON.stringify(sortedPayload);
     }
@@ -492,6 +508,11 @@ export class ExplainView extends Pane<ExplainViewState> {
 
     private async fetchExplanation(bypassCache = false): Promise<void> {
         if (!this.lastResult || !ExplainView.consentGiven || !this.compiler) return;
+
+        // If options failed to load, explain is unavailable
+        if (ExplainView.availableOptions === null) {
+            return;
+        }
 
         if (!this.explainApiEndpoint) {
             this.contentElement.text('Error: Claude Explain API endpoint not configured');
