@@ -472,22 +472,80 @@ export class ExplainView extends Pane<ExplainViewState> {
         return response.json() as Promise<ClaudeExplainResponse>;
     }
 
-    private async fetchExplanation(bypassCache = false): Promise<void> {
-        if (!this.lastResult || !ExplainView.consentGiven || !this.compiler) return;
+    private validateFetchPreconditions(): void {
+        if (!this.lastResult || !ExplainView.consentGiven || !this.compiler) {
+            throw new Error('Missing required data: compilation result, consent, or compiler info');
+        }
 
         if (ExplainView.availableOptions === null) {
-            return;
+            throw new Error('Explain options not available');
         }
 
         if (!this.explainApiEndpoint) {
-            this.contentElement.text('Error: Claude Explain API endpoint not configured');
-            return;
+            throw new Error('Claude Explain API endpoint not configured');
         }
 
         if (this.lastResult.source && this.checkForNoAiDirective(this.lastResult.source)) {
-            this.hideLoading();
-            this.noAiElement.removeClass('d-none');
-            this.contentElement.text('');
+            throw new Error('no-ai directive found in source code');
+        }
+    }
+
+    private buildExplainRequest(bypassCache: boolean): ExplainRequest {
+        if (!this.compiler || !this.lastResult) {
+            throw new Error('Missing compiler or compilation result');
+        }
+
+        return {
+            language: this.compiler.lang,
+            compiler: this.compiler.name,
+            code: this.lastResult.source ?? '',
+            compilationOptions: this.lastResult.compilationOptions ?? [],
+            instructionSet: this.lastResult.instructionSet ?? 'amd64',
+            asm: Array.isArray(this.lastResult.asm) ? this.lastResult.asm : [],
+            audience: this.selectedAudience,
+            explanation: this.selectedExplanation,
+            ...(bypassCache && {bypassCache: true}),
+        };
+    }
+
+    private checkAndReturnCachedResult(cacheKey: string): ClaudeExplainResponse | null {
+        return this.cache.get(cacheKey) ?? null;
+    }
+
+    private processExplanationResponse(data: ClaudeExplainResponse, cacheKey: string): void {
+        this.hideLoading();
+
+        if (data.status === 'error') {
+            this.showError();
+            this.contentElement.text(`Error: ${data.message || 'Unknown error'}`);
+            return;
+        }
+
+        this.showSuccess();
+        this.cache.set(cacheKey, data);
+        this.renderMarkdown(data.explanation);
+        this.showBottomBar();
+
+        if (data.usage) {
+            this.updateStatsInBottomBar(data, false, data.cached);
+        }
+    }
+
+    private async fetchExplanation(bypassCache = false): Promise<void> {
+        try {
+            this.validateFetchPreconditions();
+        } catch (error) {
+            if (error instanceof Error && error.message === 'no-ai directive found in source code') {
+                this.hideLoading();
+                this.noAiElement.removeClass('d-none');
+                this.contentElement.text('');
+                return;
+            }
+            if (error instanceof Error && error.message === 'Claude Explain API endpoint not configured') {
+                this.contentElement.text('Error: Claude Explain API endpoint not configured');
+                return;
+            }
+            // For other validation errors, just return silently
             return;
         }
 
@@ -495,23 +553,12 @@ export class ExplainView extends Pane<ExplainViewState> {
         this.showLoading();
 
         try {
-            const payload: ExplainRequest = {
-                language: this.compiler.lang,
-                compiler: this.compiler.name,
-                code: this.lastResult.source ?? '',
-                compilationOptions: this.lastResult.compilationOptions ?? [],
-                instructionSet: this.lastResult.instructionSet ?? 'amd64',
-                asm: Array.isArray(this.lastResult.asm) ? this.lastResult.asm : [],
-                audience: this.selectedAudience,
-                explanation: this.selectedExplanation,
-                ...(bypassCache && {bypassCache: true}),
-            };
-
+            const payload = this.buildExplainRequest(bypassCache);
             const cacheKey = this.generateCacheKey(payload);
 
             // Check cache first unless bypassing
             if (!bypassCache) {
-                const cachedResult = this.cache.get(cacheKey);
+                const cachedResult = this.checkAndReturnCachedResult(cacheKey);
                 if (cachedResult) {
                     this.displayCachedResult(cachedResult);
                     return;
@@ -519,23 +566,7 @@ export class ExplainView extends Pane<ExplainViewState> {
             }
 
             const data = await this.fetchFromAPI(payload);
-            this.hideLoading();
-
-            if (data.status === 'error') {
-                this.showError();
-                this.contentElement.text(`Error: ${data.message || 'Unknown error'}`);
-                return;
-            }
-
-            this.showSuccess();
-
-            this.cache.set(cacheKey, data);
-
-            this.renderMarkdown(data.explanation);
-            this.showBottomBar();
-            if (data.usage) {
-                this.updateStatsInBottomBar(data, false, data.cached);
-            }
+            this.processExplanationResponse(data, cacheKey);
         } catch (error) {
             this.handleFetchError(error);
         }

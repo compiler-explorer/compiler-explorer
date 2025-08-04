@@ -22,6 +22,7 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
+import {ParsedAsmResultLine} from '../../types/asmresult/asmresult.interfaces.js';
 import {PaneState} from './pane.interfaces.js';
 
 export interface ExplainViewState extends PaneState {
@@ -45,7 +46,7 @@ export interface ExplainRequest {
     code: string;
     compilationOptions: string[];
     instructionSet: string;
-    asm: any[];
+    asm: ParsedAsmResultLine[];
     audience?: string;
     explanation?: string;
     bypassCache?: boolean;
