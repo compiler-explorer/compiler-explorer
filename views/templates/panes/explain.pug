@@ -1,27 +1,31 @@
 #explain
   .explain-container.d-flex.flex-column.h-100
     .top-bar.btn-toolbar.options-toolbar.bg-light.flex-shrink-0(role="toolbar")
-      include ../../font-size
-      .ai-disclaimer.text-muted.badge.bg-warning.mx-2(
-          title="LLM-generated explanations may contain errors or inaccuracies, and can state things with more \
-confidence than they deserve. \
-Please check before acting on information derived from this view."
-        )
-        i.fas.fa-info-circle.me-1
-        | LLMs can be inaccurate
-        i.fas.fa-info-circle.ms-1
-      .input-group
-        select.explain-audience.form-select.form-select-sm(style="width: auto;" aria-label="Select audience level")
-          option(value="loading") Loading...
-        button.btn.btn-sm.btn-outline-secondary.explain-audience-info(type="button" title="Audience level" tabindex="0")
-          i.fas.fa-info-circle
-      .input-group
-        select.explain-type.form-select.form-select-sm(style="width: auto;" aria-label="Select explanation type")
-          option(value="loading") Loading...
-        button.btn.btn-sm.btn-outline-secondary.explain-type-info(type="button" title="Explanation focus" tabindex="0")
-          i.fas.fa-info-circle
-      .status.ms-auto
-        i.status-icon.fas.d-none
+      .btn-group(role="group" aria-label="Explain options")
+        include ../../font-size
+        .ai-disclaimer.text-muted.badge.bg-warning.mx-2(
+            title="LLM-generated explanations may contain errors or inaccuracies, and can state things with more \
+  confidence than they deserve. \
+  Please check before acting on information derived from this view."
+          )
+          i.fas.fa-triangle-exclamation.me-1
+          | LLMs can be inaccurate
+        .input-group
+          select.explain-audience.form-select.form-select-sm(style="width: auto;" aria-label="Select audience level")
+            option(value="loading") Loading...
+          button.btn.btn-sm.btn-outline-secondary.explain-audience-info(type="button" title="Audience level" tabindex="0")
+            i.fas.fa-info-circle
+        .input-group
+          select.explain-type.form-select.form-select-sm(style="width: auto;" aria-label="Select explanation type")
+            option(value="loading") Loading...
+          button.btn.btn-sm.btn-outline-secondary.explain-type-info(type="button" title="Explanation focus" tabindex="0")
+            i.fas.fa-info-circle
+      .btn-group(role="group" aria-label="Status").ms-auto
+        .status.my-auto
+          i.status-icon.fas.d-none
+        .text-muted.badge.bg-info.d-flex.align-items-center.user-select-none(title="Claude Explain is a beta feature and is subject to change or removal at any time.")
+          i.fas.fa-info-circle.me-1
+          | Beta
     .explain-consent.explain-box.d-none.flex-shrink-0
       h4 Consent Request
       p
