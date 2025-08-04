@@ -22,11 +22,14 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
+import {marked} from 'marked';
+import {capitaliseFirst} from '../../shared/common-utils.js';
 import {CompilationResult} from '../../types/compilation/compilation.interfaces.js';
 import {CompilerInfo} from '../../types/compiler.interfaces.js';
-import {AvailableOptions, ExplainRequest} from './explain-view.interfaces.js';
+import {AvailableOptions, ClaudeExplainResponse, ExplainRequest} from './explain-view.interfaces.js';
 
 // Anything to do with the explain view that doesn't need any direct UI access, so we can test it easily.
+// Includes validation, request building, caching, formatting, and other pure functions.
 
 export interface ExplainContext {
     lastResult: CompilationResult | null;
@@ -132,4 +135,91 @@ export function generateCacheKey(payload: ExplainRequest): string {
         audience: payload.audience,
         explanation: payload.explanation,
     });
+}
+
+/**
+ * Formats markdown text to HTML using marked with consistent options.
+ * Returns the HTML string ready for display.
+ */
+export function formatMarkdown(markdown: string): string {
+    const markedOptions = {
+        gfm: true, // GitHub Flavored Markdown
+        breaks: true, // Convert line breaks to <br>
+    };
+
+    // marked.parse() is synchronous and returns a string, but TypeScript types suggest it could be Promise<string>
+    // The cast is safe because we're using the default synchronous implementation
+    return marked.parse(markdown, markedOptions) as string;
+}
+
+/**
+ * Formats statistics text from Claude API response data.
+ * Returns an array of formatted stats strings.
+ */
+export function formatStatsText(
+    data: ClaudeExplainResponse,
+    clientCacheHit: boolean,
+    serverCacheHit: boolean,
+): string[] {
+    if (!data.usage) return [];
+
+    const stats: string[] = [clientCacheHit ? 'Cached (client)' : serverCacheHit ? 'Cached (server)' : 'Fresh'];
+
+    if (data.model) {
+        stats.push(`Model: ${data.model}`);
+    }
+    if (data.usage.totalTokens) {
+        stats.push(`Tokens: ${data.usage.totalTokens}`);
+    }
+    if (data.cost?.totalCost !== undefined) {
+        stats.push(`Cost: $${data.cost.totalCost.toFixed(6)}`);
+    }
+
+    return stats;
+}
+
+/**
+ * Creates HTML content for popover tooltips from an array of options.
+ * Each option becomes a formatted div with bold value and description.
+ */
+export function createPopoverContent(optionsList: Array<{value: string; description: string}>): string {
+    return optionsList
+        .map(
+            option =>
+                `<div class='mb-2'><strong>${capitaliseFirst(option.value)}:</strong> ${option.description}</div>`,
+        )
+        .join('');
+}
+
+/**
+ * Formats an error for display, handling both Error objects and other types.
+ * Returns a user-friendly error message string.
+ */
+export function formatErrorMessage(error: unknown): string {
+    let errorMessage: string;
+
+    if (error instanceof Error) {
+        errorMessage = error.message;
+    } else if (typeof error === 'string') {
+        errorMessage = error;
+    } else if (typeof error === 'object' && error !== null) {
+        // Try to extract useful information from object errors
+        const errorObj = error as Record<string, unknown>;
+        if ('message' in errorObj && typeof errorObj.message === 'string') {
+            errorMessage = errorObj.message;
+        } else if ('error' in errorObj && typeof errorObj.error === 'string') {
+            errorMessage = errorObj.error;
+        } else {
+            // Fall back to JSON.stringify for better debugging
+            try {
+                errorMessage = JSON.stringify(error);
+            } catch {
+                errorMessage = String(error);
+            }
+        }
+    } else {
+        errorMessage = String(error);
+    }
+
+    return `Error: ${errorMessage}`;
 }

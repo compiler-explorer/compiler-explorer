@@ -25,7 +25,6 @@
 import {Container} from 'golden-layout';
 import $ from 'jquery';
 import {LRUCache} from 'lru-cache';
-import {marked} from 'marked';
 import {capitaliseFirst} from '../../shared/common-utils.js';
 import {CompilationResult} from '../../types/compilation/compilation.interfaces.js';
 import {CompilerInfo} from '../../types/compiler.interfaces.js';
@@ -39,7 +38,11 @@ import {AvailableOptions, ClaudeExplainResponse, ExplainRequest, ExplainViewStat
 import {
     buildExplainRequest,
     checkForNoAiDirective,
+    createPopoverContent,
     ExplainContext,
+    formatErrorMessage,
+    formatMarkdown,
+    formatStatsText,
     generateCacheKey,
     ValidationErrorCode,
     validateExplainPreconditions,
@@ -239,18 +242,9 @@ export class ExplainView extends Pane<ExplainViewState> {
         }
     }
 
-    private createPopoverContent(optionsList: Array<{value: string; description: string}>): string {
-        return optionsList
-            .map(
-                option =>
-                    `<div class='mb-2'><strong>${capitaliseFirst(option.value)}:</strong> ${option.description}</div>`,
-            )
-            .join('');
-    }
-
     private updatePopoverContent(options: AvailableOptions): void {
-        const audienceContent = this.createPopoverContent(options.audience);
-        const explanationContent = this.createPopoverContent(options.explanation);
+        const audienceContent = createPopoverContent(options.audience);
+        const explanationContent = createPopoverContent(options.explanation);
 
         initPopover(this.audienceInfoButton, {
             content: audienceContent,
@@ -407,21 +401,10 @@ export class ExplainView extends Pane<ExplainViewState> {
         clientCacheHit: boolean,
         serverCacheHit: boolean,
     ): void {
-        if (!data.usage) return;
-
-        const stats: string[] = [clientCacheHit ? 'Cached (client)' : serverCacheHit ? 'Cached (server)' : 'Fresh'];
-
-        if (data.model) {
-            stats.push(`Model: ${data.model}`);
+        const stats = formatStatsText(data, clientCacheHit, serverCacheHit);
+        if (stats.length > 0) {
+            this.statsElement.text(stats.join(' | '));
         }
-        if (data.usage.totalTokens) {
-            stats.push(`Tokens: ${data.usage.totalTokens}`);
-        }
-        if (data.cost?.totalCost) {
-            stats.push(`Cost: $${data.cost.totalCost.toFixed(6)}`);
-        }
-
-        this.statsElement.text(stats.join(' | '));
     }
 
     private displayCachedResult(cachedResult: ClaudeExplainResponse): void {
@@ -528,21 +511,12 @@ export class ExplainView extends Pane<ExplainViewState> {
     private handleFetchError(error: unknown): void {
         this.hideLoading();
         this.showError();
-        const errorMessage = error instanceof Error ? error.message : String(error);
-        this.contentElement.text(`Error: ${errorMessage}`);
+        this.contentElement.text(formatErrorMessage(error));
         SentryCapture(error);
     }
 
     private renderMarkdown(markdown: string): void {
-        const markedOptions = {
-            gfm: true, // GitHub Flavored Markdown
-            breaks: true, // Convert line breaks to <br>
-        };
-
-        // Render markdown to HTML
-        // marked.parse() is synchronous and returns a string, but TypeScript types suggest it could be Promise<string>
-        // The cast is safe because we're using the default synchronous implementation
-        this.contentElement.html(marked.parse(markdown, markedOptions) as string);
+        this.contentElement.html(formatMarkdown(markdown));
     }
 
     override resize(): void {

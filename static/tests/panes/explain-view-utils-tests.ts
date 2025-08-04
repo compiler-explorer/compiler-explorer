@@ -26,18 +26,22 @@ import {beforeEach, describe, expect, it} from 'vitest';
 
 import {CompilationResult} from '../../../types/compilation/compilation.interfaces.js';
 import {CompilerInfo} from '../../../types/compiler.interfaces.js';
-import {ExplainRequest} from '../../panes/explain-view.interfaces.js';
+import {ClaudeExplainResponse, ExplainRequest} from '../../panes/explain-view.interfaces.js';
 import {
     buildExplainRequest,
     checkForNoAiDirective,
+    createPopoverContent,
     ExplainContext,
+    formatErrorMessage,
+    formatMarkdown,
+    formatStatsText,
     generateCacheKey,
     ValidationErrorCode,
     validateExplainPreconditions,
 } from '../../panes/explain-view-utils.js';
 
-// Test utilities for creating mock objects - NO MOCKING NEEDED!
-function createMockCompilerInfo(overrides: Partial<CompilerInfo> = {}): CompilerInfo {
+// Test utilities for creating fake objects for testing
+function createFakeCompilerInfo(overrides: Partial<CompilerInfo> = {}): CompilerInfo {
     return {
         id: 'gcc',
         exe: '/usr/bin/gcc',
@@ -69,7 +73,7 @@ function createMockCompilerInfo(overrides: Partial<CompilerInfo> = {}): Compiler
     } as CompilerInfo;
 }
 
-function createMockCompilationResult(overrides: Partial<CompilationResult> = {}): CompilationResult {
+function createFakeCompilationResult(overrides: Partial<CompilationResult> = {}): CompilationResult {
     return {
         code: 0,
         timedOut: false,
@@ -87,7 +91,7 @@ function createMockCompilationResult(overrides: Partial<CompilationResult> = {})
     };
 }
 
-function createMockAvailableOptions() {
+function createFakeAvailableOptions() {
     return {
         audience: [
             {value: 'beginner', description: 'New to programming'},
@@ -102,27 +106,27 @@ function createMockAvailableOptions() {
 }
 
 describe('ExplainView Utils - Pure Functions', () => {
-    let mockContext: ExplainContext;
-    let mockCompiler: CompilerInfo;
-    let mockResult: CompilationResult;
+    let testContext: ExplainContext;
+    let fakeCompiler: CompilerInfo;
+    let fakeResult: CompilationResult;
 
     beforeEach(() => {
-        mockCompiler = createMockCompilerInfo();
-        mockResult = createMockCompilationResult();
-        mockContext = {
-            lastResult: mockResult,
-            compiler: mockCompiler,
+        fakeCompiler = createFakeCompilerInfo();
+        fakeResult = createFakeCompilationResult();
+        testContext = {
+            lastResult: fakeResult,
+            compiler: fakeCompiler,
             selectedAudience: 'beginner',
             selectedExplanation: 'assembly',
             explainApiEndpoint: 'https://api.example.com/explain',
             consentGiven: true,
-            availableOptions: createMockAvailableOptions(),
+            availableOptions: createFakeAvailableOptions(),
         };
     });
 
     // Helper function to test validation failures
     function expectValidationFailure(expectedErrorCode: ValidationErrorCode, expectedMessage: string) {
-        const result = validateExplainPreconditions(mockContext);
+        const result = validateExplainPreconditions(testContext);
         expect(result.success).toBe(false);
         if (!result.success) {
             expect(result.errorCode).toBe(expectedErrorCode);
@@ -132,12 +136,12 @@ describe('ExplainView Utils - Pure Functions', () => {
 
     describe('validateExplainPreconditions()', () => {
         it('should pass with valid context', () => {
-            const result = validateExplainPreconditions(mockContext);
+            const result = validateExplainPreconditions(testContext);
             expect(result.success).toBe(true);
         });
 
         it('should return error when lastResult is missing', () => {
-            mockContext.lastResult = null;
+            testContext.lastResult = null;
             expectValidationFailure(
                 ValidationErrorCode.MISSING_REQUIRED_DATA,
                 'Missing required data: compilation result, consent, or compiler info',
@@ -145,7 +149,7 @@ describe('ExplainView Utils - Pure Functions', () => {
         });
 
         it('should return error when consent is not given', () => {
-            mockContext.consentGiven = false;
+            testContext.consentGiven = false;
             expectValidationFailure(
                 ValidationErrorCode.MISSING_REQUIRED_DATA,
                 'Missing required data: compilation result, consent, or compiler info',
@@ -153,7 +157,7 @@ describe('ExplainView Utils - Pure Functions', () => {
         });
 
         it('should return error when compiler is missing', () => {
-            mockContext.compiler = null;
+            testContext.compiler = null;
             expectValidationFailure(
                 ValidationErrorCode.MISSING_REQUIRED_DATA,
                 'Missing required data: compilation result, consent, or compiler info',
@@ -161,12 +165,12 @@ describe('ExplainView Utils - Pure Functions', () => {
         });
 
         it('should return error when options are not available', () => {
-            mockContext.availableOptions = null;
+            testContext.availableOptions = null;
             expectValidationFailure(ValidationErrorCode.OPTIONS_NOT_AVAILABLE, 'Explain options not available');
         });
 
         it('should return error when API endpoint is not configured', () => {
-            mockContext.explainApiEndpoint = '';
+            testContext.explainApiEndpoint = '';
             expectValidationFailure(
                 ValidationErrorCode.API_ENDPOINT_NOT_CONFIGURED,
                 'Claude Explain API endpoint not configured',
@@ -174,14 +178,14 @@ describe('ExplainView Utils - Pure Functions', () => {
         });
 
         it('should return error when no-ai directive is found', () => {
-            mockContext.lastResult!.source = 'int main() { /* no-ai */ return 0; }';
+            testContext.lastResult!.source = 'int main() { /* no-ai */ return 0; }';
             expectValidationFailure(ValidationErrorCode.NO_AI_DIRECTIVE_FOUND, 'no-ai directive found in source code');
         });
     });
 
     describe('buildExplainRequest()', () => {
         it('should build complete payload with all fields', () => {
-            const request = buildExplainRequest(mockContext, false);
+            const request = buildExplainRequest(testContext, false);
 
             expect(request).toEqual({
                 language: 'c++',
@@ -199,14 +203,14 @@ describe('ExplainView Utils - Pure Functions', () => {
         });
 
         it('should handle missing optional fields with defaults', () => {
-            mockContext.lastResult = createMockCompilationResult({
+            testContext.lastResult = createFakeCompilationResult({
                 source: undefined,
                 compilationOptions: undefined,
                 instructionSet: undefined,
                 asm: undefined,
             });
 
-            const request = buildExplainRequest(mockContext, false);
+            const request = buildExplainRequest(testContext, false);
 
             expect(request).toEqual({
                 language: 'c++',
@@ -221,24 +225,24 @@ describe('ExplainView Utils - Pure Functions', () => {
         });
 
         it('should include bypassCache flag when true', () => {
-            const request = buildExplainRequest(mockContext, true);
+            const request = buildExplainRequest(testContext, true);
             expect(request.bypassCache).toBe(true);
         });
 
         it('should handle non-array asm field', () => {
-            mockContext.lastResult!.asm = 'some string content';
-            const request = buildExplainRequest(mockContext, false);
+            testContext.lastResult!.asm = 'some string content';
+            const request = buildExplainRequest(testContext, false);
             expect(request.asm).toEqual([]);
         });
 
         it('should throw when compiler is missing', () => {
-            mockContext.compiler = null;
-            expect(() => buildExplainRequest(mockContext, false)).toThrow('Missing compiler or compilation result');
+            testContext.compiler = null;
+            expect(() => buildExplainRequest(testContext, false)).toThrow('Missing compiler or compilation result');
         });
 
         it('should throw when lastResult is missing', () => {
-            mockContext.lastResult = null;
-            expect(() => buildExplainRequest(mockContext, false)).toThrow('Missing compiler or compilation result');
+            testContext.lastResult = null;
+            expect(() => buildExplainRequest(testContext, false)).toThrow('Missing compiler or compilation result');
         });
     });
 
@@ -315,6 +319,209 @@ describe('ExplainView Utils - Pure Functions', () => {
         it('should handle empty compilation options', () => {
             const payloadWithEmptyOptions = {...testPayload, compilationOptions: []};
             expect(() => generateCacheKey(payloadWithEmptyOptions)).not.toThrow();
+        });
+    });
+
+    describe('formatMarkdown()', () => {
+        it('should convert basic markdown to HTML', () => {
+            const markdown = '# Hello\n\nThis is **bold** text.';
+            const html = formatMarkdown(markdown);
+
+            expect(html).toContain('<h1>Hello</h1>');
+            expect(html).toContain('<strong>bold</strong>');
+        });
+
+        it('should handle GitHub flavored markdown', () => {
+            const markdown = '```cpp\nint main() {}\n```';
+            const html = formatMarkdown(markdown);
+
+            expect(html).toContain('<code class="language-cpp">');
+            expect(html).toContain('int main() {}');
+        });
+
+        it('should convert line breaks to <br> tags', () => {
+            const markdown = 'Line 1\nLine 2';
+            const html = formatMarkdown(markdown);
+
+            expect(html).toContain('<br>');
+        });
+
+        it('should handle empty input', () => {
+            expect(formatMarkdown('')).toBe('');
+        });
+    });
+
+    describe('formatStatsText()', () => {
+        let fakeResponse: ClaudeExplainResponse;
+
+        beforeEach(() => {
+            fakeResponse = {
+                status: 'success',
+                explanation: 'Test explanation',
+                cached: false,
+                usage: {
+                    inputTokens: 100,
+                    outputTokens: 50,
+                    totalTokens: 150,
+                },
+                model: 'claude-3-sonnet',
+                cost: {
+                    inputCost: 0.001,
+                    outputCost: 0.002,
+                    totalCost: 0.003,
+                },
+            };
+        });
+
+        it('should format complete stats with client cache hit', () => {
+            const stats = formatStatsText(fakeResponse, true, false);
+
+            expect(stats).toEqual(['Cached (client)', 'Model: claude-3-sonnet', 'Tokens: 150', 'Cost: $0.003000']);
+        });
+
+        it('should format complete stats with server cache hit', () => {
+            const stats = formatStatsText(fakeResponse, false, true);
+
+            expect(stats).toEqual(['Cached (server)', 'Model: claude-3-sonnet', 'Tokens: 150', 'Cost: $0.003000']);
+        });
+
+        it('should format complete stats with fresh response', () => {
+            const stats = formatStatsText(fakeResponse, false, false);
+
+            expect(stats).toEqual(['Fresh', 'Model: claude-3-sonnet', 'Tokens: 150', 'Cost: $0.003000']);
+        });
+
+        it('should handle missing optional fields', () => {
+            const minimalResponse: ClaudeExplainResponse = {
+                status: 'success',
+                explanation: 'Test explanation',
+                cached: false,
+                usage: {
+                    inputTokens: 100,
+                    outputTokens: 50,
+                    totalTokens: 150,
+                },
+            };
+
+            const stats = formatStatsText(minimalResponse, false, false);
+
+            expect(stats).toEqual(['Fresh', 'Tokens: 150']);
+        });
+
+        it('should return empty array when usage is missing', () => {
+            const noUsageResponse: ClaudeExplainResponse = {
+                status: 'success',
+                explanation: 'Test explanation',
+                cached: false,
+                model: 'claude-3-sonnet',
+            };
+            const stats = formatStatsText(noUsageResponse, false, false);
+
+            expect(stats).toEqual([]);
+        });
+
+        it('should handle zero cost correctly', () => {
+            const zeroCostResponse: ClaudeExplainResponse = {
+                status: 'success',
+                explanation: 'Test explanation',
+                cached: false,
+                usage: {
+                    inputTokens: 100,
+                    outputTokens: 50,
+                    totalTokens: 150,
+                },
+                cost: {
+                    inputCost: 0,
+                    outputCost: 0,
+                    totalCost: 0,
+                },
+            };
+
+            const stats = formatStatsText(zeroCostResponse, false, false);
+
+            expect(stats).toEqual(['Fresh', 'Tokens: 150', 'Cost: $0.000000']);
+        });
+    });
+
+    describe('createPopoverContent()', () => {
+        it('should create HTML content for options list', () => {
+            const options = [
+                {value: 'beginner', description: 'New to programming'},
+                {value: 'expert', description: 'Experienced programmer'},
+            ];
+
+            const html = createPopoverContent(options);
+
+            expect(html).toContain("<div class='mb-2'><strong>Beginner:</strong> New to programming</div>");
+            expect(html).toContain("<div class='mb-2'><strong>Expert:</strong> Experienced programmer</div>");
+        });
+
+        it('should handle empty options list', () => {
+            const html = createPopoverContent([]);
+            expect(html).toBe('');
+        });
+
+        it('should capitalize first letter of option values', () => {
+            const options = [{value: 'assembly', description: 'Explain assembly code'}];
+            const html = createPopoverContent(options);
+
+            expect(html).toContain('<strong>Assembly:</strong>');
+        });
+
+        it('should handle special characters in descriptions', () => {
+            const options = [{value: 'test', description: 'Description with "quotes" & symbols'}];
+            const html = createPopoverContent(options);
+
+            expect(html).toContain('Description with "quotes" & symbols');
+        });
+    });
+
+    describe('formatErrorMessage()', () => {
+        it('should format Error object with message', () => {
+            const error = new Error('Something went wrong');
+            const formatted = formatErrorMessage(error);
+
+            expect(formatted).toBe('Error: Something went wrong');
+        });
+
+        it('should format string error', () => {
+            const error = 'Network timeout';
+            const formatted = formatErrorMessage(error);
+
+            expect(formatted).toBe('Error: Network timeout');
+        });
+
+        it('should format number error', () => {
+            const error = 404;
+            const formatted = formatErrorMessage(error);
+
+            expect(formatted).toBe('Error: 404');
+        });
+
+        it('should format null/undefined errors', () => {
+            expect(formatErrorMessage(null)).toBe('Error: null');
+            expect(formatErrorMessage(undefined)).toBe('Error: undefined');
+        });
+
+        it('should format object error with message property', () => {
+            const error = {code: 500, message: 'Internal server error'};
+            const formatted = formatErrorMessage(error);
+
+            expect(formatted).toBe('Error: Internal server error');
+        });
+
+        it('should format object error with error property', () => {
+            const error = {status: 'failed', error: 'Network timeout'};
+            const formatted = formatErrorMessage(error);
+
+            expect(formatted).toBe('Error: Network timeout');
+        });
+
+        it('should format generic object error as JSON', () => {
+            const error = {code: 500, details: 'Something went wrong'};
+            const formatted = formatErrorMessage(error);
+
+            expect(formatted).toBe('Error: {"code":500,"details":"Something went wrong"}');
         });
     });
 });
