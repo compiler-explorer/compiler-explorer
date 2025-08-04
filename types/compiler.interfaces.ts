@@ -161,3 +161,9 @@ export type CompilerInfo = {
 export type PreliminaryCompilerInfo = Omit<CompilerInfo, 'version' | 'fullVersion' | 'baseName' | 'disabledFilters'> & {
     version?: string;
 };
+
+// Compiler version information for a compiler that supports multiple versions (e.g. manyclangs)
+export type CompilerMultiVersionInfo = {
+    version: string;
+    description: string;
+};

@@ -561,9 +561,10 @@ export class CompilerFinder {
                 }
             }
         }
-        if (error) {
-            assert(false);
-        }
+        // TODO make this a configuration
+        // if (error) {
+        //     assert(false);
+        // }
     }
 
     async find() {

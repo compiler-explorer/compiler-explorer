@@ -140,6 +140,7 @@ export {SailCompiler} from './sail.js';
 export {ScalaCompiler} from './scala.js';
 export {SdccCompiler} from './sdcc.js';
 export {SlangCompiler} from './slang.js';
+export {ManyClangsCompiler} from './manyclangs.js';
 export {SnowballCompiler} from './snowball.js';
 export {SolidityCompiler} from './solidity.js';
 export {SolidityZKsyncCompiler} from './solidity-zksync.js';

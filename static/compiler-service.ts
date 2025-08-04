@@ -33,7 +33,7 @@ import jqXHR = JQuery.jqXHR;
 import ErrorTextStatus = JQuery.Ajax.ErrorTextStatus;
 
 import {CompilationResult, FiledataPair} from '../types/compilation/compilation.interfaces.js';
-import {CompilerInfo} from '../types/compiler.interfaces.js';
+import {CompilerInfo, CompilerMultiVersionInfo} from '../types/compiler.interfaces.js';
 import {CompilationStatus} from './compiler-service.interfaces.js';
 import {IncludeDownloads, SourceAndFiles} from './download-service.js';
 import {SentryCapture} from './sentry.js';
@@ -149,9 +149,20 @@ export class CompilerService {
     }
 
     private findCompilerInList(compilers: Record<string, CompilerInfo>, compilerId: string) {
-        if (compilerId in compilers) {
-            return compilers[compilerId];
+        let version: string | undefined;
+        if (compilerId.includes('@')) { // Perhaps a colon for URL niceness?
+            const parts = compilerId.split('@');
+            compilerId = parts[0];
+            version = parts[1];
         }
+        if (compilerId in compilers) {
+            const res = compilers[compilerId];
+            if (version) {// TODO util functions if we're going to do this.
+                return {...res, id: `${compilerId}@${version}` };
+            }
+            return res;
+        }
+        // TODO handle here too
         for (const id in compilers) {
             if (compilers[id].alias.includes(compilerId)) {
                 return compilers[id];
@@ -301,6 +312,28 @@ export class CompilerService {
                         request: compilerId,
                         result: result,
                         localCacheHit: false,
+                    });
+                },
+                error: (jqXHR, textStatus, errorThrown) => {
+                    CompilerService.handleRequestError(compilerId, reject, jqXHR, textStatus, errorThrown);
+                },
+            });
+        });
+    }
+
+    public queryVersions(compilerId: string, query: string): Promise<{request: string; result: CompilerMultiVersionInfo[]}> {
+        return new Promise((resolve, reject) => {
+            $.ajax({
+                type: 'GET',
+                url: `${this.getBaseUrl()}api/compiler/${compilerId}/versions`,
+                dataType: 'json',
+                data: {
+                    query: query,
+                },
+                success: result => {
+                    resolve({
+                        request: compilerId,
+                        result: result,
                     });
                 },
                 error: (jqXHR, textStatus, errorThrown) => {

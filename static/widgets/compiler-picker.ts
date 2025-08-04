@@ -32,6 +32,7 @@ import {EventHub} from '../event-hub.js';
 import {Hub} from '../hub.js';
 import {localStorage} from '../local.js';
 import {CompilerPickerPopup} from './compiler-picker-popup.js';
+import {CompilerMultiVersionInfo} from '../../types/compiler.interfaces.js';
 
 type Favourites = {
     [compilerId: string]: boolean;
@@ -41,18 +42,23 @@ export class CompilerPicker {
     static readonly favoriteGroupName = '__favorites__';
     static readonly favoriteStoreKey = 'favCompilerIds';
     static nextSelectorId = 1;
-    domNode: HTMLSelectElement;
+    selectElement: HTMLSelectElement;
+    selectElementVersion: HTMLSelectElement;
     eventHub: EventHub;
     id: number;
     compilerService: CompilerService;
     onCompilerChange: (x: string) => void;
     tomSelect: TomSelect | null;
+    tomSelectVersion: TomSelect | null;
     lastLangId: string;
     lastCompilerId: string;
+    lastCompilerVersion: string;
     compilerIsVisible: (ci: CompilerInfo) => boolean;
     popup: CompilerPickerPopup;
     toolbarPopoutButton: JQuery<HTMLElement>;
     popupTooltip: JQuery<HTMLElement>;
+    versionContainer: JQuery<HTMLElement>;
+
     constructor(
         domRoot: JQuery,
         hub: Hub,
@@ -67,16 +73,23 @@ export class CompilerPicker {
         if (!(compilerPicker instanceof HTMLSelectElement)) {
             throw new Error('.compiler-picker is not an HTMLSelectElement');
         }
+        this.selectElement = compilerPicker;
+        const compilerPickerVersion = domRoot.find('.compiler-picker-version')[0];
+        if (!(compilerPickerVersion instanceof HTMLSelectElement)) {
+            throw new Error('.compiler-picker-version is not an HTMLSelectElement');
+        }
+        this.selectElementVersion = compilerPickerVersion;
+        this.versionContainer = domRoot.find('.compiler-picker-group');
         this.toolbarPopoutButton = domRoot.find('.picker-popout-button');
         domRoot.find('.picker-popout-button').on('click', () => {
             unwrap(this.tomSelect).close();
             this.popup.show();
         });
-        this.domNode = compilerPicker;
         this.compilerService = hub.compilerService;
         this.onCompilerChange = onCompilerChange;
         this.eventHub.on('compilerFavoriteChange', this.onCompilerFavoriteChange, this);
         this.tomSelect = null;
+        this.tomSelectVersion = null;
         if (compilerIsVisible) {
             this.compilerIsVisible = compilerIsVisible;
         } else {
@@ -92,16 +105,27 @@ export class CompilerPicker {
         this.eventHub.unsubscribe();
         if (this.tomSelect) this.tomSelect.destroy();
         this.tomSelect = null;
+        if (this.tomSelectVersion) this.tomSelectVersion.destroy();
+        this.tomSelectVersion = null;
+    }
+
+    private showOrHideVersionSelector() {
+        if (!this.tomSelectVersion) return;
+        // TODO how to work out:
+        this.versionContainer.toggle(this.lastCompilerId === 'manyclangs');
     }
 
     private initialize(langId: string, compilerId: string) {
         this.lastLangId = langId;
-        this.lastCompilerId = compilerId;
+        const splat = compilerId.split('@', 2);
+        this.lastCompilerId = splat[0];
+        this.lastCompilerVersion = splat[1] || '';
+        this.showOrHideVersionSelector();
 
         const groups = this.getGroups(langId);
         const options = this.getOptions(langId, compilerId);
 
-        this.tomSelect = new TomSelect(this.domNode, {
+        this.tomSelect = new TomSelect(this.selectElement, {
             sortField: CompilerService.getSelectizerOrder(),
             valueField: 'id',
             labelField: 'name',
@@ -124,6 +148,7 @@ export class CompilerPicker {
                     const compilerId = val;
                     this.onCompilerChange(compilerId);
                     this.lastCompilerId = compilerId;
+                    this.showOrHideVersionSelector();
                 }
             },
             duplicates: true,
@@ -143,7 +168,7 @@ export class CompilerPicker {
                         '</div>'
                     );
                 },
-                item: (data, escapeHtml) => `<div title="${escapeHtml(data.name)}">${escapeHtml(data.name)}</div>`,
+                item: (data, escapeHtml) => `<div title='${escapeHtml(data.name)}'>${escapeHtml(data.name)}</div>`,
             },
         });
 
@@ -153,9 +178,9 @@ export class CompilerPicker {
             dropdown.style.maxHeight = `${window.innerHeight - dropdown.getBoundingClientRect().top - 10}px`;
 
             this.popupTooltip = $(`
-            <div class="compiler-picker-dropdown-popout-wrapper">
-                <div class="compiler-picker-dropdown-popout">
-                    <i class="fa-solid fa-arrow-up-right-from-square"></i> Pop Out
+            <div class='compiler-picker-dropdown-popout-wrapper'>
+                <div class='compiler-picker-dropdown-popout'>
+                    <i class='fa-solid fa-arrow-up-right-from-square'></i> Pop Out
                 </div>
             </div>
             `);
@@ -210,6 +235,35 @@ export class CompilerPicker {
         });
 
         this.popup.setLang(groups, options, langId);
+
+        // TODO support this in the execution and conformances panes too
+        this.tomSelectVersion = new TomSelect(
+            this.selectElementVersion,
+            {
+                valueField: 'version',
+                labelField: 'description',
+                searchField: ['description'],
+                placeholder: '🔍 Version...',
+                dropdownParent: 'body',
+                closeAfterSelect: true,
+                plugins: ['dropdown_input'],
+                maxOptions: 100,
+                load: (query: string, callback: (results?: CompilerMultiVersionInfo[]) => void) => {
+                    this.compilerService.queryVersions(this.lastCompilerId, query)
+                        .then((result: { result: CompilerMultiVersionInfo[] }) => {
+                            console.log(result);
+                            callback(result.result);
+                        }).catch(() => {
+                        callback();
+                    });
+                },
+                onChange: (val: string) => {
+                    console.log(`TODO: something with ${val}`);
+                    this.lastCompilerVersion = val; // TODO is this ok?
+                    this.onCompilerChange(this.lastCompilerId + "@" + this.lastCompilerVersion);
+                },
+                // TODO render; make this look nice
+            });
     }
 
     getOptions(langId: string, compilerId: string): (CompilerInfo & {$groups: string[]})[] {
@@ -237,12 +291,14 @@ export class CompilerPicker {
 
     update(langId: string, compilerId: string) {
         this.tomSelect?.destroy();
+        this.tomSelectVersion?.destroy();
         this.initialize(langId, compilerId);
     }
 
     onCompilerFavoriteChange(id: number) {
         if (this.id !== id) {
             // Rebuild the rest of compiler pickers so they can properly show the new fav status
+            // TODO need to handle '@' here, or just keep the compilerId with the @
             this.update(this.lastLangId, this.lastCompilerId);
         }
     }

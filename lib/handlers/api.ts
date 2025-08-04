@@ -106,6 +106,10 @@ export class ApiHandler {
             .post(textParser, compileHandler.handle.bind(compileHandler))
             .all(methodNotAllowed);
         this.handle
+            .route('/compiler/:compiler/versions')
+            .get(compileHandler.handleVersions.bind(compileHandler))
+            .all(methodNotAllowed);
+        this.handle
             .route('/compiler/:compiler/cmake')
             .post(compileHandler.handleCmake.bind(compileHandler))
             .all(methodNotAllowed);

@@ -64,7 +64,7 @@ import type {
     OptPipelineBackendOptions,
     OptPipelineOutput,
 } from '../types/compilation/opt-pipeline-output.interfaces.js';
-import type {CompilerInfo, PreliminaryCompilerInfo} from '../types/compiler.interfaces.js';
+import type {CompilerInfo, CompilerMultiVersionInfo, PreliminaryCompilerInfo} from '../types/compiler.interfaces.js';
 import {
     BasicExecutionResult,
     ExecutableExecutionOptions,
@@ -482,7 +482,8 @@ export class BaseCompiler {
             });
         }
 
-        if (options.createAndUseTempDir) fs.rm(options.customCwd!, {recursive: true, force: true}).catch(() => {});
+        if (options.createAndUseTempDir) fs.rm(options.customCwd!, {recursive: true, force: true}).catch(() => {
+        });
 
         return result;
     }
@@ -622,6 +623,18 @@ export class BaseCompiler {
 
     postProcessObjdumpOutput(output: string) {
         return output;
+    }
+
+    supportsMultipleVersions() {
+        return false;
+    }
+
+    async queryVersions(query: string): Promise<CompilerMultiVersionInfo[]> {
+        return [];
+    }
+
+    specialiseForVersion(version: string) : BaseCompiler | undefined {
+        return undefined;
     }
 
     async objdump(
@@ -2064,7 +2077,8 @@ export class BaseCompiler {
         } catch (err) {
             logger.error('Caught an error trying to put to cache: ', {err});
         } finally {
-            fs.rm(packDir, {recursive: true, force: true}).catch(() => {});
+            fs.rm(packDir, {recursive: true, force: true}).catch(() => {
+            });
         }
     }
 
@@ -2430,12 +2444,12 @@ export class BaseCompiler {
             makePp ? this.generatePP(inputFilename, options, backendOptions.producePp) : undefined,
             makeIr
                 ? this.generateIR(
-                      inputFilename,
-                      options,
-                      backendOptions.produceIr,
-                      backendOptions.produceCfg?.ir,
-                      filters,
-                  )
+                    inputFilename,
+                    options,
+                    backendOptions.produceIr,
+                    backendOptions.produceCfg?.ir,
+                    filters,
+                )
                 : undefined,
             makeClangir ? this.generateClangir(inputFilename, options, backendOptions.produceClangir) : undefined,
             makeOptPipeline
@@ -2459,11 +2473,11 @@ export class BaseCompiler {
 
         const gccDumpResult = makeGccDump
             ? await this.processGccDumpOutput(
-                  backendOptions.produceGccDump,
-                  asmResult,
-                  !!this.compiler.removeEmptyGccDump,
-                  outputFilename,
-              )
+                backendOptions.produceGccDump,
+                asmResult,
+                !!this.compiler.removeEmptyGccDump,
+                outputFilename,
+            )
             : null;
         const rustMirResult = makeRustMir ? await this.processRustMirOutput(outputFilename, asmResult) : undefined;
 
@@ -2536,7 +2550,8 @@ export class BaseCompiler {
 
     doTempfolderCleanup(buildResult: BuildResult | CompilationResult) {
         if (buildResult.dirPath && !this.delayCleanupTemp) {
-            fs.rm(buildResult.dirPath, {recursive: true, force: true}).catch(() => {});
+            fs.rm(buildResult.dirPath, {recursive: true, force: true}).catch(() => {
+            });
         }
         buildResult.dirPath = undefined;
     }
@@ -3473,38 +3488,38 @@ but nothing was dumped. Possible causes are:
         const asmPromise =
             (filters.binary || filters.binaryObject) && this.supportsObjdump()
                 ? this.objdump(
-                      outputFilename,
-                      result,
-                      maxSize,
-                      !!filters.intel,
-                      !!filters.demangle,
-                      filters.binaryObject,
-                      false,
-                      filters,
-                  )
+                    outputFilename,
+                    result,
+                    maxSize,
+                    !!filters.intel,
+                    !!filters.demangle,
+                    filters.binaryObject,
+                    false,
+                    filters,
+                )
                 : (async () => {
-                      if (result.validatorTool && result.code === 0) {
-                          // A validator tool is unique because if successful, there will be no asm output
-                          result.asm = '<Validator was successful>';
-                          return result;
-                      }
-                      if (result.asmSize === undefined) {
-                          result.asm = '<No output file>';
-                          return result;
-                      }
-                      if (result.asmSize >= maxSize) {
-                          result.asm =
-                              '<No output: generated assembly was too large' +
-                              ` (${result.asmSize} > ${maxSize} bytes)>`;
-                          return result;
-                      }
-                      if (postProcess.length > 0) {
-                          return await this.execPostProcess(result, postProcess, outputFilename, maxSize);
-                      }
-                      const contents = await fs.readFile(outputFilename);
-                      result.asm = contents.toString();
-                      return result;
-                  })();
+                    if (result.validatorTool && result.code === 0) {
+                        // A validator tool is unique because if successful, there will be no asm output
+                        result.asm = '<Validator was successful>';
+                        return result;
+                    }
+                    if (result.asmSize === undefined) {
+                        result.asm = '<No output file>';
+                        return result;
+                    }
+                    if (result.asmSize >= maxSize) {
+                        result.asm =
+                            '<No output: generated assembly was too large' +
+                            ` (${result.asmSize} > ${maxSize} bytes)>`;
+                        return result;
+                    }
+                    if (postProcess.length > 0) {
+                        return await this.execPostProcess(result, postProcess, outputFilename, maxSize);
+                    }
+                    const contents = await fs.readFile(outputFilename);
+                    result.asm = contents.toString();
+                    return result;
+                })();
         return Promise.all([asmPromise, optPromise, stackUsagePromise]);
     }
 
@@ -3621,7 +3636,7 @@ but nothing was dumped. Possible causes are:
                 name: RuntimeToolType.heaptrack,
                 description:
                     'Heaptrack gets loaded into your code and collects the heap allocations, ' +
-                    "we'll display them in a flamegraph.",
+                    'we\'ll display them in a flamegraph.',
                 possibleOptions: [
                     {
                         name: 'graph',

@@ -218,7 +218,8 @@ export class CompileHandler implements ICompileHandler {
                 let json = '<json stringify error>';
                 try {
                     json = JSON.stringify(bodyData);
-                } catch {}
+                } catch {
+                }
                 Sentry.captureMessage(`Unknown proxy bodyData: ${typeof bodyData} ${json}`);
                 proxyReq.write('Proxy error');
             }
@@ -333,27 +334,44 @@ export class CompileHandler implements ICompileHandler {
     findCompiler(langId: LanguageKey, compilerId: string): BaseCompiler | undefined {
         if (!compilerId) return;
 
-        const langCompilers: Record<string, BaseCompiler> | undefined = this.compilersById[langId];
-        if (langCompilers) {
-            if (langCompilers[compilerId]) {
-                return langCompilers[compilerId];
-            }
-            const compiler = _.find(langCompilers, (compiler: BaseCompiler) => {
-                return this.compilerAliasMatch(compiler, compilerId);
-            });
-
-            if (compiler) return compiler;
+        let version: string | undefined;
+        // If the compilerId is a versioned compiler, we need to split it
+        // to get the actual compiler ID and version.
+        // e.g. "gcc@11.2.0" -> "gcc" and "11.2.0"
+        // If the compilerId is not versioned, we just use it as is.
+        // This is to support both versioned and non-versioned compilers
+        if (compilerId.includes('@')) {
+            const parts = compilerId.split('@', 2);
+            compilerId = parts[0];
+            version = parts[1];
         }
 
-        // If the lang is bad, try to find it in every language
+        // TODO simplify this catastrophe; and test too.
+        const langCompilers: Record<string, BaseCompiler> | undefined = this.compilersById[langId];
         let response: BaseCompiler | undefined;
-        _.each(this.compilersById, (compilerInLang: Record<string, BaseCompiler>) => {
-            if (!response) {
-                response = _.find(compilerInLang, (compiler: BaseCompiler) => {
-                    return this.compilerIdOrAliasMatch(compiler, compilerId);
+        if (langCompilers) {
+            if (langCompilers[compilerId]) {
+                response = langCompilers[compilerId];
+            } else {
+                response = _.find(langCompilers, (compiler: BaseCompiler) => {
+                    return this.compilerAliasMatch(compiler, compilerId);
                 });
             }
-        });
+        } else {
+            // If the lang is bad, try to find it in every language
+            _.each(this.compilersById, (compilerInLang: Record<string, BaseCompiler>) => {
+                if (!response) {
+                    response = _.find(compilerInLang, (compiler: BaseCompiler) => {
+                        return this.compilerIdOrAliasMatch(compiler, compilerId);
+                    });
+                }
+            });
+        }
+
+        if (response && version) {
+            if (!response.supportsMultipleVersions()) return undefined;
+            return response.specialiseForVersion(version);
+        }
 
         return response;
     }
@@ -569,6 +587,29 @@ export class CompileHandler implements ICompileHandler {
         }
     }
 
+    handleVersions(req: express.Request, res: express.Response, next: express.NextFunction) {
+        const compiler = this.compilerFor(req);
+        if (!compiler) {
+            res.sendStatus(404);
+            return;
+        }
+
+        // TODO document in the API.
+        if (compiler.supportsMultipleVersions()) {
+            const query = req.query.query as string || '';
+            compiler
+                .queryVersions(query)
+                .then(versions => {
+                    res.send(versions);
+                })
+                .catch(e => {
+                    return this.handleApiError(e, res, next);
+                });
+        } else {
+            res.status(501).send('This compiler does not support version retrieval');
+        }
+    }
+
     handle(req: express.Request, res: express.Response, next: express.NextFunction) {
         const compiler = this.compilerFor(req);
         if (!compiler) {
@@ -646,13 +687,13 @@ export class CompileHandler implements ICompileHandler {
                                 if (!_.isEmpty(result.execResult.stdout)) {
                                     res.write(
                                         '# Standard out:\n' +
-                                            textify(result.execResult.stdout, backendOptions.filterAnsi),
+                                        textify(result.execResult.stdout, backendOptions.filterAnsi),
                                     );
                                 }
                                 if (!_.isEmpty(result.execResult.stderr)) {
                                     res.write(
                                         '\n# Standard error:\n' +
-                                            textify(result.execResult.stderr, backendOptions.filterAnsi),
+                                        textify(result.execResult.stderr, backendOptions.filterAnsi),
                                     );
                                 }
                             }
