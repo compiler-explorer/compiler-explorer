@@ -53,7 +53,7 @@ export interface ExplainRequest {
 }
 
 export interface ClaudeExplainResponse {
-    status: string;
+    status: 'success' | 'error';
     explanation: string;
     message?: string;
     model?: string;
