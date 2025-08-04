@@ -4,24 +4,28 @@ Claude Explain is a feature in Compiler Explorer that uses Claude AI to provide 
 
 ## How It Works
 
-1. After compilation, users can click the "Claude Explain" button (robot icon) in the compiler pane toolbar.
-2. A dedicated Explain pane opens, prompting users to consent to sending their code and compilation output to the Claude Explain API.
-3. Users can customize their explanation by selecting:
-   - **Audience Level**: Beginner, Intermediate, or Expert
-   - **Explanation Type**: Assembly-focused, Source-to-assembly mapping, or Optimization-focused
-4. The system checks for `no-ai` directive in the source code. If found, the explanation feature is disabled with a clear message.
+1. After compilation, users can click the "Claude Explain" button in the compiler pane toolbar.
+2. A dedicated Explain pane opens, showing "Waiting for compilation..." until the first compilation result arrives.
+3. After compilation completes:
+   - If compilation failed, the pane shows "Cannot explain: Compilation failed"
+   - If the source contains a `no-ai` directive, a special message is displayed
+   - Otherwise, users are prompted to consent to sending their code and compilation output to the Claude Explain API
+4. Users can customize their explanation by selecting their audience level and explanation type.
 5. Once consent is given (persisted for the browser session), the code, compiler information, and assembly output are sent to the API.
 6. Claude analyzes the relationship between the source code and generated assembly, then provides a tailored explanation.
-7. The explanation is displayed in markdown format with syntax highlighting in the explain pane.
-8. Subsequent compilations automatically update the explanation if the explain pane is open.
-9. Responses are cached both client-side and server-side to avoid redundant API calls.
+7. The API response is displayed in markdown format with syntax highlighting in the explain pane.
+8. Responses are cached both client-side and server-side to avoid redundant API calls:
+   - Client-side: LRU cache with 200KB limit, persisted for the browser session
+   - Server-side: Cached responses indicated by `cached: true` in the API response
+   - Users can bypass caches using the reload button in the bottom bar
+9. Subsequent compilations automatically update the explanation if the explain pane is open.
 
 ## Configuration
 
 The Claude Explain feature requires minimal configuration:
 
 ```ini
-# In compiler-explorer.defaults.properties
+# In compiler-explorer.defaults.properties or other config files
 explainApiEndpoint=https://api.compiler-explorer.com/explain
 ```
 
@@ -33,9 +37,10 @@ When using Claude Explain:
 
 - Your source code and compilation output are sent to an external API.
 - Data is only sent after explicit user consent.
-- Consent is remembered for your browser session.
+- Consent is remembered for your browser session (stored in a static variable, not cookies or localStorage).
 - The API is provided by Anthropic, the makers of Claude.
 - Anthropic does not use the data sent to them for training their models.
+- Users are required to give explicit consent before any data is sent to the API.
 - Compiler Explorer's privacy policy has been updated to include Claude Explain usage.
 - If your source code contains `no-ai` (case-insensitive), it will not be sent to the API, and a special message will be displayed.
 
@@ -50,7 +55,7 @@ The feature consists of:
      - Display a consent prompt with clear information about what data is sent
      - Dynamically fetch available audience levels and explanation types from the API
      - Make API requests to the Claude Explain endpoint
-     - Cache responses using an LRU cache (200KB limit) to reduce API costs
+     - Cache responses using an LRU cache (200KB limit, shared across all explain views in the session) to reduce API costs
      - Present the explanation with markdown rendering and syntax highlighting
      - Handle error states and loading indicators
      - Show usage statistics (tokens, cost, model) in a bottom bar
@@ -64,11 +69,12 @@ The feature consists of:
    - A button is added to the compiler pane toolbar
    - The button disables when an explain view is already open for that compiler
    - Proper event handling for view lifecycle
+   - The button is hidden if no API endpoint is configured
 
 4. **Testing**:
-   - Simple frontend Cypress tests have been written
-   - Tests require the `explainApiEndpoint` to be configured in the test environment
-   - Once enabled, tests verify the explain pane opens correctly when the button is clicked
+   - Frontend Cypress tests have been written
+   - Tests verify the explain pane opens correctly when the button is clicked
+   - Test is included in the standard pane opening test suite
 
 ## UI Features
 
@@ -85,12 +91,14 @@ The explain pane provides:
   - **Explanation Type selector**: Focus on Assembly, Source-to-assembly mapping, or Optimizations
   - **Info buttons**: Click the info icon next to each selector to see descriptions of each option
 - Bottom status bar showing:
-  - AI model used (e.g., claude-3-opus-20240229)
+  - AI model used
   - Token usage (input/output/total)
   - Estimated cost (input/output/total)
   - Cache status indicator (client cache, server cache, or fresh generation)
   - Reload button to bypass all caches
+- Beta feature badge indicating this is subject to change
 - Session-persistent consent (you only need to consent once per browser session)
+- Proper state persistence for audience and explanation selections across pane reopening
 
 ## API Integration
 
@@ -197,12 +205,18 @@ The explain feature uses multi-level caching to reduce API costs and improve res
 
 ### Cache Status Display
 - The bottom bar shows cache status:
-  - 🔄 "Cached (client)" - Served from browser cache
-  - 🔄 "Cached (server)" - Served from API server cache
-  - ✨ "Fresh" - Newly generated explanation
+  - "Cached (client)" - Served from browser cache
+  - "Cached (server)" - Served from API server cache
+  - "Fresh" - Newly generated explanation
+
+### Cache Key Generation
+- Cache keys are generated from a sorted hash of the request payload
+- Includes: language, compiler, code, compilation options, instruction set, asm, audience, and explanation type
+- Ensures consistent caching across identical requests
 
 ## Limitations
 
 - Claude may not be able to explain every compiler optimization or assembly pattern.
 - Large assemblies may be truncated before being sent to the API.
 - The feature requires an internet connection to access the external API.
+- Only one explain view can be open per compiler at a time.

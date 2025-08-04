@@ -2,9 +2,9 @@
 @use 'themes/dark-theme';
 @use 'themes/pink-theme';
 @use 'themes/one-dark-theme';
+@use 'markdown.scss';
 
 @import '~@fortawesome/fontawesome-free/css/all.min.css';
-@import './markdown.scss';
 
 // SCSS function to generate TomSelect dropdown arrow SVG with custom color
 // Based on the SVG from tom-select.bootstrap5.css line 575 in selector:

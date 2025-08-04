@@ -363,7 +363,6 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
         this.options = state.options || (options.compileOptions[this.currentLangId ?? ''] ?? '');
 
         this.deviceViewOpen = !!state.deviceViewOpen;
-        // explainViewOpen doesn't need to be persisted - views close on reload
         this.flagsViewOpen = state.flagsViewOpen || false;
         this.wantOptInfo = state.wantOptInfo;
         this.selection = state.selection;
