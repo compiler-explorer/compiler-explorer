@@ -111,14 +111,12 @@ export class ExplainView extends Pane<ExplainViewState> {
     constructor(hub: Hub, container: Container, state: ExplainViewState) {
         super(hub, container, state);
 
-        // Initialize properties
         this.explainApiEndpoint = options.explainApiEndpoint ?? '';
         this.cache = new LRUCache({
             maxSize: 200 * 1024,
             sizeCalculation: n => JSON.stringify(n).length,
         });
 
-        // Setup UI elements
         this.statusIcon = this.domRoot.find('.status-icon');
         this.consentElement = this.domRoot.find('.explain-consent');
         this.noAiElement = this.domRoot.find('.explain-no-ai');
@@ -271,14 +269,13 @@ export class ExplainView extends Pane<ExplainViewState> {
     private async fetchAvailableOptions(): Promise<AvailableOptions> {
         // If we already have options cached, return them
         if (ExplainView.availableOptions) return ExplainView.availableOptions;
-
         // If we're already fetching, wait for that promise
         if (ExplainView.optionsFetchPromise) return ExplainView.optionsFetchPromise;
 
-        // Create the fetch promise
+        // Else, go fetch the options
         ExplainView.optionsFetchPromise = (async () => {
             try {
-                const response = await window.fetch(this.explainApiEndpoint, {
+                const response = await fetch(this.explainApiEndpoint, {
                     method: 'GET',
                     headers: {'Content-Type': 'application/json'},
                 });
@@ -290,12 +287,7 @@ export class ExplainView extends Pane<ExplainViewState> {
                 const options = (await response.json()) as AvailableOptions;
                 ExplainView.availableOptions = options;
                 return options;
-            } catch (error) {
-                // If fetch fails, propagate the error
-                console.error('Failed to fetch available options:', error);
-                throw error;
             } finally {
-                // Clear the promise once done
                 ExplainView.optionsFetchPromise = null;
             }
         })();
@@ -304,8 +296,8 @@ export class ExplainView extends Pane<ExplainViewState> {
     }
 
     override initializeStateDependentProperties(state: ExplainViewState): void {
-        this.selectedAudience = state.audience ?? 'beginner';
-        this.selectedExplanation = state.explanation ?? 'assembly';
+        this.selectedAudience = state.audience ?? defaultAudienceType;
+        this.selectedExplanation = state.explanation ?? defaultExplanationType;
     }
 
     override getCurrentState(): ExplainViewState {
@@ -410,19 +402,14 @@ export class ExplainView extends Pane<ExplainViewState> {
         this.bottomBarElement.removeClass('d-none');
     }
 
-    private updateStatsInBottomBar(data: ClaudeExplainResponse, clientCacheHit = false, serverCacheHit = false): void {
+    private updateStatsInBottomBar(
+        data: ClaudeExplainResponse,
+        clientCacheHit: boolean,
+        serverCacheHit: boolean,
+    ): void {
         if (!data.usage) return;
 
-        const stats: string[] = [];
-
-        // Display cache status with appropriate icon
-        if (clientCacheHit) {
-            stats.push('Cached (client)');
-        } else if (serverCacheHit) {
-            stats.push('Cached (server)');
-        } else {
-            stats.push('Fresh');
-        }
+        const stats: string[] = [clientCacheHit ? 'Cached (client)' : serverCacheHit ? 'Cached (server)' : 'Fresh'];
 
         if (data.model) {
             stats.push(`Model: ${data.model}`);
