@@ -17,7 +17,7 @@ export function assertNoConsoleOutput() {
  */
 export function clearAllIntercepts() {
     // Clear any existing intercepts by visiting a clean page and resetting
-    cy.window().then((win: any) => {
+    cy.window().then((win: Cypress.AUTWindow) => {
         // Reset any cached state
         win.compilerExplorerOptions = {};
     });
@@ -38,7 +38,7 @@ export function setMonacoEditorContent(content: string, editorIndex = 0) {
     // Trigger a paste event with our content
     cy.get('.monaco-editor textarea')
         .eq(editorIndex)
-        .then(($element: any) => {
+        .then(($element: JQuery<HTMLTextAreaElement>) => {
             const el = $element[0];
 
             // Create and dispatch a paste event with our data
@@ -56,7 +56,7 @@ export function setMonacoEditorContent(content: string, editorIndex = 0) {
         });
 
     // Wait for compilation to complete after content change (if compiler exists)
-    cy.get('body').then(($body: any) => {
+    cy.get('body').then(($body: JQuery<HTMLElement>) => {
         if ($body.find('.compiler-wrapper').length > 0) {
             cy.get('.compiler-wrapper').should('not.have.class', 'compiling');
         }
