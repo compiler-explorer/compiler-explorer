@@ -727,4 +727,20 @@ textarea.form-control {
     }
 }
 
+.explain-box {
+    background-color: #333;
+    border-color: #555;
+    color: #eee;
+}
+
+.explain-bottom-bar {
+    background-color: #2d2d2d !important;
+    color: #eee;
+}
+
+.ai-disclaimer.bg-warning {
+    background-color: #664d03 !important;
+    color: #ffda6a !important;
+}
+
 } // End html[data-theme='dark']

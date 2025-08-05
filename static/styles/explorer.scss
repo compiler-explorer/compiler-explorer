@@ -59,79 +59,18 @@ body {
     margin-right: auto;
     margin-left: auto;
     max-width: 50em;
-
-    // Dark theme override
-    [data-theme="dark"] & {
-        background-color: #333;
-        border-color: #555;
-        color: #eee;
-    }
-
-    // Pink theme adjustment
-    [data-theme="pink"] & {
-        background-color: #fde5fd;
-        border-color: #e3a5e3;
-    }
-
-    // One dark theme
-    [data-theme="onedark"] & {
-        background-color: #282c34;
-        border-color: #4b5263;
-        color: #abb2bf;
-    }
 }
 
 
 
 .explain-bottom-bar {
     min-height: 2.5rem;
-
-    // Dark theme
-    [data-theme="dark"] & {
-        background-color: #2d2d2d !important;
-        color: #eee;
-    }
-
-    // Pink theme
-    [data-theme="pink"] & {
-        background-color: #e3a5e3 !important;
-    }
-
-    // One dark theme
-    [data-theme="onedark"] & {
-        background-color: #21252b !important;
-        color: #abb2bf;
-    }
 }
 
 .ai-disclaimer {
     display: flex;
     align-items: center;
     user-select: none;
-
-    // Dark theme - make warning badge more visible
-    [data-theme="dark"] & {
-        &.bg-warning {
-            background-color: #664d03 !important;
-            color: #ffda6a !important;
-        }
-    }
-
-    // Pink theme
-    [data-theme="pink"] & {
-        &.bg-warning {
-            background-color: #e787e7 !important;
-            color: #3c3c3f !important;
-        }
-    }
-
-    // One dark theme
-    [data-theme="onedark"] & {
-        &.bg-warning {
-            background-color: #5c4b1a !important;
-            color: #e5c07b !important;
-        }
-    }
 }
 
 .navbar-godbolt {

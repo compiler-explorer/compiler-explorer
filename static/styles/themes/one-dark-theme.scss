@@ -802,4 +802,20 @@ textarea.form-control {
     }
 }
 
+.explain-box {
+    background-color: #282c34;
+    border-color: #4b5263;
+    color: #abb2bf;
+}
+
+.explain-bottom-bar {
+    background-color: $dark !important;
+    color: #abb2bf;
+}
+
+.ai-disclaimer.bg-warning {
+    background-color: #664d03 !important;
+    color: #ffda6a !important;
+}
+
 } // End html[data-theme='one-dark']
