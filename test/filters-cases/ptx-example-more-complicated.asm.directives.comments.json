@@ -117,7 +117,12 @@
     },
     {
       "labels": [],
-      "source": null,
+      "source": {
+        "column": 5,
+        "file": "example.cu",
+        "line": 8,
+        "mainsource": true
+      },
       "text": "\t@%p1 bra \t$L__BB0_49;"
     },
     {
@@ -162,7 +167,12 @@
     },
     {
       "labels": [],
-      "source": null,
+      "source": {
+        "column": 9,
+        "file": "example.cu",
+        "line": 9,
+        "mainsource": true
+      },
       "text": "\t@%p2 bra \t$L__BB0_28;"
     },
     {
@@ -212,7 +222,12 @@
     },
     {
       "labels": [],
-      "source": null,
+      "source": {
+        "column": 9,
+        "file": "example.cu",
+        "line": 9,
+        "mainsource": true
+      },
       "text": "\t@%p3 bra \t$L__BB0_5;"
     },
     {
@@ -322,7 +337,12 @@
     },
     {
       "labels": [],
-      "source": null,
+      "source": {
+        "column": 9,
+        "file": "example.cu",
+        "line": 11,
+        "mainsource": true
+      },
       "text": "\t@%p7 bra \t$L__BB0_7;"
     },
     {
@@ -362,7 +382,12 @@
     },
     {
       "labels": [],
-      "source": null,
+      "source": {
+        "column": 9,
+        "file": "example.cu",
+        "line": 12,
+        "mainsource": true
+      },
       "text": "\t@%p8 bra \t$L__BB0_10;"
     },
     {
@@ -377,7 +402,12 @@
     },
     {
       "labels": [],
-      "source": null,
+      "source": {
+        "column": 9,
+        "file": "example.cu",
+        "line": 12,
+        "mainsource": true
+      },
       "text": "\t@%p9 bra \t$L__BB0_11;"
     },
     {
@@ -442,7 +472,12 @@
     },
     {
       "labels": [],
-      "source": null,
+      "source": {
+        "column": 9,
+        "file": "example.cu",
+        "line": 9,
+        "mainsource": true
+      },
       "text": "\t@%p3 bra \t$L__BB0_13;"
     },
     {
@@ -562,7 +597,12 @@
     },
     {
       "labels": [],
-      "source": null,
+      "source": {
+        "column": 9,
+        "file": "example.cu",
+        "line": 11,
+        "mainsource": true
+      },
       "text": "\t@%p14 bra \t$L__BB0_15;"
     },
     {
@@ -662,7 +702,12 @@
     },
     {
       "labels": [],
-      "source": null,
+      "source": {
+        "column": 9,
+        "file": "example.cu",
+        "line": 11,
+        "mainsource": true
+      },
       "text": "\t@%p18 bra \t$L__BB0_17;"
     },
     {
@@ -702,7 +747,12 @@
     },
     {
       "labels": [],
-      "source": null,
+      "source": {
+        "column": 9,
+        "file": "example.cu",
+        "line": 12,
+        "mainsource": true
+      },
       "text": "\t@%p19 bra \t$L__BB0_20;"
     },
     {
@@ -717,7 +767,12 @@
     },
     {
       "labels": [],
-      "source": null,
+      "source": {
+        "column": 9,
+        "file": "example.cu",
+        "line": 12,
+        "mainsource": true
+      },
       "text": "\t@%p20 bra \t$L__BB0_21;"
     },
     {
@@ -872,7 +927,12 @@
     },
     {
       "labels": [],
-      "source": null,
+      "source": {
+        "column": 9,
+        "file": "example.cu",
+        "line": 11,
+        "mainsource": true
+      },
       "text": "\t@%p24 bra \t$L__BB0_23;"
     },
     {
@@ -902,7 +962,12 @@
     },
     {
       "labels": [],
-      "source": null,
+      "source": {
+        "column": 9,
+        "file": "example.cu",
+        "line": 12,
+        "mainsource": true
+      },
       "text": "\t@%p19 bra \t$L__BB0_26;"
     },
     {
@@ -917,7 +982,12 @@
     },
     {
       "labels": [],
-      "source": null,
+      "source": {
+        "column": 9,
+        "file": "example.cu",
+        "line": 12,
+        "mainsource": true
+      },
       "text": "\t@%p26 bra \t$L__BB0_27;"
     },
     {
@@ -1022,7 +1092,12 @@
     },
     {
       "labels": [],
-      "source": null,
+      "source": {
+        "column": 5,
+        "file": "example.cu",
+        "line": 8,
+        "mainsource": true
+      },
       "text": "\t@%p27 bra \t$L__BB0_3;"
     },
     {
@@ -1042,7 +1117,12 @@
     },
     {
       "labels": [],
-      "source": null,
+      "source": {
+        "column": 9,
+        "file": "example.cu",
+        "line": 9,
+        "mainsource": true
+      },
       "text": "\t@%p28 bra \t$L__BB0_49;"
     },
     {
@@ -1082,7 +1162,12 @@
     },
     {
       "labels": [],
-      "source": null,
+      "source": {
+        "column": 9,
+        "file": "example.cu",
+        "line": 9,
+        "mainsource": true
+      },
       "text": "\t@%p29 bra \t$L__BB0_33;"
     },
     {
@@ -1097,7 +1182,12 @@
     },
     {
       "labels": [],
-      "source": null,
+      "source": {
+        "column": 9,
+        "file": "example.cu",
+        "line": 9,
+        "mainsource": true
+      },
       "text": "\t@%p30 bra \t$L__BB0_34;"
     },
     {
@@ -1242,7 +1332,12 @@
     },
     {
       "labels": [],
-      "source": null,
+      "source": {
+        "column": 9,
+        "file": "example.cu",
+        "line": 11,
+        "mainsource": true
+      },
       "text": "\t@%p34 bra \t$L__BB0_36;"
     },
     {
@@ -1282,7 +1377,12 @@
     },
     {
       "labels": [],
-      "source": null,
+      "source": {
+        "column": 9,
+        "file": "example.cu",
+        "line": 12,
+        "mainsource": true
+      },
       "text": "\t@%p35 bra \t$L__BB0_42;"
     },
     {
@@ -1297,7 +1397,12 @@
     },
     {
       "labels": [],
-      "source": null,
+      "source": {
+        "column": 9,
+        "file": "example.cu",
+        "line": 12,
+        "mainsource": true
+      },
       "text": "\t@%p39 bra \t$L__BB0_40;"
     },
     {
@@ -1312,7 +1417,12 @@
     },
     {
       "labels": [],
-      "source": null,
+      "source": {
+        "column": 9,
+        "file": "example.cu",
+        "line": 12,
+        "mainsource": true
+      },
       "text": "\t@%p40 bra \t$L__BB0_41;"
     },
     {
@@ -1327,7 +1437,12 @@
     },
     {
       "labels": [],
-      "source": null,
+      "source": {
+        "column": 9,
+        "file": "example.cu",
+        "line": 12,
+        "mainsource": true
+      },
       "text": "\t@%p41 bra \t$L__BB0_40;"
     },
     {
@@ -1377,7 +1492,12 @@
     },
     {
       "labels": [],
-      "source": null,
+      "source": {
+        "column": 9,
+        "file": "example.cu",
+        "line": 13,
+        "mainsource": true
+      },
       "text": "\t@%p42 bra \t$L__BB0_48;"
     },
     {
@@ -1432,7 +1552,12 @@
     },
     {
       "labels": [],
-      "source": null,
+      "source": {
+        "column": 9,
+        "file": "example.cu",
+        "line": 12,
+        "mainsource": true
+      },
       "text": "\t@%p36 bra \t$L__BB0_47;"
     },
     {
@@ -1447,7 +1572,12 @@
     },
     {
       "labels": [],
-      "source": null,
+      "source": {
+        "column": 9,
+        "file": "example.cu",
+        "line": 12,
+        "mainsource": true
+      },
       "text": "\t@%p37 bra \t$L__BB0_46;"
     },
     {
@@ -1462,7 +1592,12 @@
     },
     {
       "labels": [],
-      "source": null,
+      "source": {
+        "column": 9,
+        "file": "example.cu",
+        "line": 12,
+        "mainsource": true
+      },
       "text": "\t@%p38 bra \t$L__BB0_48;"
     },
     {
@@ -1592,7 +1727,12 @@
     },
     {
       "labels": [],
-      "source": null,
+      "source": {
+        "column": 5,
+        "file": "example.cu",
+        "line": 8,
+        "mainsource": true
+      },
       "text": "\t@%p43 bra \t$L__BB0_30;"
     },
     {

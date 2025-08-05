@@ -25,7 +25,7 @@
 import {Container} from 'golden-layout';
 import $ from 'jquery';
 import {LRUCache} from 'lru-cache';
-import {marked} from 'marked';
+import {capitaliseFirst} from '../../shared/common-utils.js';
 import {CompilationResult} from '../../types/compilation/compilation.interfaces.js';
 import {CompilerInfo} from '../../types/compiler.interfaces.js';
 import {initPopover} from '../bootstrap-utils.js';
@@ -35,23 +35,69 @@ import {SentryCapture} from '../sentry.js';
 import * as utils from '../utils.js';
 import {FontScale} from '../widgets/fontscale.js';
 import {AvailableOptions, ClaudeExplainResponse, ExplainRequest, ExplainViewState} from './explain-view.interfaces.js';
+import {
+    buildExplainRequest,
+    checkForNoAiDirective,
+    createPopoverContent,
+    ExplainContext,
+    formatErrorMessage,
+    formatMarkdown,
+    formatStatsText,
+    generateCacheKey,
+    ValidationErrorCode,
+    validateExplainPreconditions,
+} from './explain-view-utils.js';
 import {Pane} from './pane.js';
+
+enum StatusIconState {
+    Loading = 'loading',
+    Success = 'success',
+    Error = 'error',
+    Hidden = 'hidden',
+}
+
+const defaultAudienceType = 'beginner';
+const defaultExplanationType = 'assembly';
+
+const statusIconConfigs = {
+    [StatusIconState.Loading]: {
+        classes: 'status-icon fas fa-spinner fa-spin',
+        color: '',
+        ariaLabel: 'Generating explanation...',
+    },
+    [StatusIconState.Success]: {
+        classes: 'status-icon fas fa-check-circle',
+        color: '#4CAF50',
+        ariaLabel: 'Explanation generated successfully',
+    },
+    [StatusIconState.Error]: {
+        classes: 'status-icon fas fa-times-circle',
+        color: '#FF6645',
+        ariaLabel: 'Error generating explanation',
+    },
+    [StatusIconState.Hidden]: {
+        classes: 'status-icon fas d-none',
+        color: '',
+        ariaLabel: '',
+    },
+} as const;
 
 export class ExplainView extends Pane<ExplainViewState> {
     private lastResult: CompilationResult | null = null;
     private compiler: CompilerInfo | null = null;
-    private statusIcon: JQuery;
-    private consentElement: JQuery;
-    private noAiElement: JQuery;
-    private contentElement: JQuery;
-    private bottomBarElement: JQuery;
-    private statsElement: JQuery;
-    private audienceSelect: JQuery;
-    private explanationSelect: JQuery;
-    private audienceInfoButton: JQuery;
-    private explanationInfoButton: JQuery;
-    private explainApiEndpoint: string;
-    private fontScale: FontScale;
+    private readonly statusIcon: JQuery;
+    private readonly consentElement: JQuery;
+    private readonly noAiElement: JQuery;
+    private readonly contentElement: JQuery;
+    private readonly bottomBarElement: JQuery;
+    private readonly statsElement: JQuery;
+    private readonly audienceSelect: JQuery;
+    private readonly explanationSelect: JQuery;
+    private readonly audienceInfoButton: JQuery;
+    private readonly explanationInfoButton: JQuery;
+    private readonly explainApiEndpoint: string;
+    private readonly fontScale: FontScale;
+    private readonly cache: LRUCache<string, ClaudeExplainResponse>;
 
     // Use a static variable to persist consent across all instances during the session
     private static consentGiven = false;
@@ -60,26 +106,22 @@ export class ExplainView extends Pane<ExplainViewState> {
     private static availableOptions: AvailableOptions | null = null;
     private static optionsFetchPromise: Promise<AvailableOptions> | null = null;
 
-    // Static cache for explanations (shared across all instances)
-    private static cache: LRUCache<string, ClaudeExplainResponse> | null = null;
-
     // Instance variables for selected options
     private selectedAudience: string;
     private selectedExplanation: string;
     private isInitializing = true;
 
+    // Store compilation results that arrive before initialization completes
+    private pendingCompilationResult: CompilationResult | null = null;
+
     constructor(hub: Hub, container: Container, state: ExplainViewState) {
         super(hub, container, state);
-        // API endpoint from global options
-        this.explainApiEndpoint = options.explainApiEndpoint || '';
 
-        // Initialize static cache only once (shared across all instances)
-        if (!ExplainView.cache) {
-            ExplainView.cache = new LRUCache({
-                maxSize: 200 * 1024,
-                sizeCalculation: n => JSON.stringify(n).length,
-            });
-        }
+        this.explainApiEndpoint = options.explainApiEndpoint ?? '';
+        this.cache = new LRUCache({
+            maxSize: 200 * 1024,
+            sizeCalculation: n => JSON.stringify(n).length,
+        });
 
         this.statusIcon = this.domRoot.find('.status-icon');
         this.consentElement = this.domRoot.find('.explain-consent');
@@ -95,43 +137,47 @@ export class ExplainView extends Pane<ExplainViewState> {
         this.fontScale = new FontScale(this.domRoot, state, '.explain-content');
         this.fontScale.on('change', this.updateState.bind(this));
 
-        this.consentElement.find('.consent-btn').on('click', () => {
-            ExplainView.consentGiven = true;
-            this.consentElement.addClass('d-none');
-            this.fetchExplanation();
-        });
+        this.attachEventListeners();
+        void this.initializeOptions();
 
-        // Wire up reload button to bypass cache
-        this.bottomBarElement.find('.explain-reload').on('click', () => {
-            this.fetchExplanation(true);
-        });
-
-        // Wire up select controls
-        this.audienceSelect.on('change', () => {
-            this.selectedAudience = this.audienceSelect.val() as string;
-            this.updateState();
-            if (ExplainView.consentGiven && this.lastResult) {
-                this.fetchExplanation();
-            }
-        });
-
-        this.explanationSelect.on('change', () => {
-            this.selectedExplanation = this.explanationSelect.val() as string;
-            this.updateState();
-            if (ExplainView.consentGiven && this.lastResult) {
-                this.fetchExplanation();
-            }
-        });
-
-        // Initialize UI controls
-        this.initializeOptions();
-
-        // Set initial content to avoid showing template content
         this.contentElement.text('Waiting for compilation...');
         this.isAwaitingInitialResults = true;
-
-        // Emit explain view opened event
         this.eventHub.emit('explainViewOpened', this.compilerInfo.compilerId);
+    }
+
+    private handleConsentClick(): void {
+        ExplainView.consentGiven = true;
+        this.consentElement.addClass('d-none');
+        void this.fetchExplanation();
+    }
+
+    private handleReloadClick(): void {
+        void this.fetchExplanation(true);
+    }
+
+    private handleAudienceChange(): void {
+        this.selectedAudience = this.audienceSelect.val() as string;
+        this.updateState();
+        this.refreshExplanationIfReady();
+    }
+
+    private handleExplanationChange(): void {
+        this.selectedExplanation = this.explanationSelect.val() as string;
+        this.updateState();
+        this.refreshExplanationIfReady();
+    }
+
+    private refreshExplanationIfReady(): void {
+        if (ExplainView.consentGiven && this.lastResult) {
+            void this.fetchExplanation();
+        }
+    }
+
+    private attachEventListeners(): void {
+        this.consentElement.find('.consent-btn').on('click', this.handleConsentClick.bind(this));
+        this.bottomBarElement.find('.explain-reload').on('click', this.handleReloadClick.bind(this));
+        this.audienceSelect.on('change', this.handleAudienceChange.bind(this));
+        this.explanationSelect.on('change', this.handleExplanationChange.bind(this));
     }
 
     override getInitialHTML(): string {
@@ -140,51 +186,64 @@ export class ExplainView extends Pane<ExplainViewState> {
 
     private async initializeOptions(): Promise<void> {
         try {
-            const options = await this.fetchAvailableOptions();
-            this.populateSelectOptions(options);
+            this.populateSelectOptions(await this.fetchAvailableOptions());
+            this.isInitializing = false;
+
+            // Process any compilation results that arrived while we were initializing.
+            if (this.pendingCompilationResult) {
+                this.handleCompilationResult(this.pendingCompilationResult);
+                this.pendingCompilationResult = null;
+            }
         } catch (error) {
+            this.isInitializing = false;
             console.error('Failed to initialize options:', error);
-            // Controls will remain with "Loading..." option
+            this.showExplainUnavailable();
+            // Even if initialization failed, clear any pending results
+            this.pendingCompilationResult = null;
         }
     }
 
+    private showExplainUnavailable(): void {
+        const emptyOptions = [{value: '', description: 'Service unavailable'}];
+        this.populateSelect(this.audienceSelect, emptyOptions);
+        this.populateSelect(this.explanationSelect, emptyOptions);
+
+        this.audienceSelect.prop('disabled', true);
+        this.explanationSelect.prop('disabled', true);
+
+        this.contentElement.html(
+            '<div class="alert alert-warning">Claude Explain is currently unavailable due to a service error. Please try again later.</div>',
+        );
+    }
+
+    private populateSelect(selectElement: JQuery, optionsList: Array<{value: string; description: string}>): void {
+        selectElement.empty();
+        optionsList.forEach(option => {
+            const optionElement = $('<option></option>')
+                .attr('value', option.value)
+                .text(capitaliseFirst(option.value))
+                .attr('title', option.description);
+            selectElement.append(optionElement);
+        });
+    }
+
     private populateSelectOptions(options: AvailableOptions): void {
-        // Populate audience select
-        this.audienceSelect.empty();
-        options.audience.forEach(option => {
-            const optionElement = $('<option></option>')
-                .attr('value', option.value)
-                .text(option.value.charAt(0).toUpperCase() + option.value.slice(1))
-                .attr('title', option.description);
-            this.audienceSelect.append(optionElement);
-        });
-
-        // Populate explanation type select
-        this.explanationSelect.empty();
-        options.explanation.forEach(option => {
-            const optionElement = $('<option></option>')
-                .attr('value', option.value)
-                .text(option.value.charAt(0).toUpperCase() + option.value.slice(1))
-                .attr('title', option.description);
-            this.explanationSelect.append(optionElement);
-        });
-
-        // Update popover content with the loaded options
+        this.populateSelect(this.audienceSelect, options.audience);
+        this.populateSelect(this.explanationSelect, options.explanation);
         this.updatePopoverContent(options);
 
         if (this.isInitializing) {
-            // During initialization: trust saved state completely, no validation
+            // During initialisation: trust saved state completely, no validation
             this.audienceSelect.val(this.selectedAudience);
             this.explanationSelect.val(this.selectedExplanation);
-            this.isInitializing = false; // Now user interactions can begin
         } else {
-            // During runtime: validate user changes normally
+            // After initialisation: validate user changes normally
             const validAudienceValue = options.audience.some(opt => opt.value === this.selectedAudience)
                 ? this.selectedAudience
-                : 'beginner';
+                : defaultAudienceType;
             const validExplanationValue = options.explanation.some(opt => opt.value === this.selectedExplanation)
                 ? this.selectedExplanation
-                : 'assembly';
+                : defaultExplanationType;
 
             this.selectedAudience = validAudienceValue;
             this.selectedExplanation = validExplanationValue;
@@ -195,30 +254,15 @@ export class ExplainView extends Pane<ExplainViewState> {
     }
 
     private updatePopoverContent(options: AvailableOptions): void {
-        // Generate HTML content for audience popover
-        const audienceContent = options.audience
-            .map(
-                option =>
-                    `<div class="mb-2"><strong>${option.value.charAt(0).toUpperCase() + option.value.slice(1)}:</strong> ${option.description}</div>`,
-            )
-            .join('');
+        const audienceContent = createPopoverContent(options.audience);
+        const explanationContent = createPopoverContent(options.explanation);
 
-        // Generate HTML content for explanation popover
-        const explanationContent = options.explanation
-            .map(
-                option =>
-                    `<div class="mb-2"><strong>${option.value.charAt(0).toUpperCase() + option.value.slice(1)}:</strong> ${option.description}</div>`,
-            )
-            .join('');
-
-        // Initialize Bootstrap popovers with the content
         initPopover(this.audienceInfoButton, {
             content: audienceContent,
             html: true,
             placement: 'bottom',
             trigger: 'focus',
         });
-
         initPopover(this.explanationInfoButton, {
             content: explanationContent,
             html: true,
@@ -229,19 +273,14 @@ export class ExplainView extends Pane<ExplainViewState> {
 
     private async fetchAvailableOptions(): Promise<AvailableOptions> {
         // If we already have options cached, return them
-        if (ExplainView.availableOptions) {
-            return ExplainView.availableOptions;
-        }
-
+        if (ExplainView.availableOptions) return ExplainView.availableOptions;
         // If we're already fetching, wait for that promise
-        if (ExplainView.optionsFetchPromise) {
-            return ExplainView.optionsFetchPromise;
-        }
+        if (ExplainView.optionsFetchPromise) return ExplainView.optionsFetchPromise;
 
-        // Create the fetch promise
+        // Else, go fetch the options
         ExplainView.optionsFetchPromise = (async () => {
             try {
-                const response = await window.fetch(this.explainApiEndpoint, {
+                const response = await fetch(this.explainApiEndpoint, {
                     method: 'GET',
                     headers: {'Content-Type': 'application/json'},
                 });
@@ -253,25 +292,7 @@ export class ExplainView extends Pane<ExplainViewState> {
                 const options = (await response.json()) as AvailableOptions;
                 ExplainView.availableOptions = options;
                 return options;
-            } catch (error) {
-                // If fetch fails, provide fallback options
-                console.error('Failed to fetch available options:', error);
-                const fallbackOptions: AvailableOptions = {
-                    audience: [
-                        {value: 'beginner', description: 'For beginners learning assembly language'},
-                        {value: 'intermediate', description: 'For users familiar with basic assembly concepts'},
-                        {value: 'expert', description: 'For advanced users'},
-                    ],
-                    explanation: [
-                        {value: 'assembly', description: 'Explains the assembly instructions'},
-                        {value: 'source', description: 'Explains how source code maps to assembly'},
-                        {value: 'optimization', description: 'Explains compiler optimizations'},
-                    ],
-                };
-                ExplainView.availableOptions = fallbackOptions;
-                return fallbackOptions;
             } finally {
-                // Clear the promise once done
                 ExplainView.optionsFetchPromise = null;
             }
         })();
@@ -280,17 +301,8 @@ export class ExplainView extends Pane<ExplainViewState> {
     }
 
     override initializeStateDependentProperties(state: ExplainViewState): void {
-        // Set defaults first
-        this.selectedAudience = 'beginner';
-        this.selectedExplanation = 'assembly';
-
-        // Then override with saved state if it exists
-        if (state.audience) {
-            this.selectedAudience = state.audience;
-        }
-        if (state.explanation) {
-            this.selectedExplanation = state.explanation;
-        }
+        this.selectedAudience = state.audience ?? defaultAudienceType;
+        this.selectedExplanation = state.explanation ?? defaultExplanationType;
     }
 
     override getCurrentState(): ExplainViewState {
@@ -315,135 +327,172 @@ export class ExplainView extends Pane<ExplainViewState> {
         this.updateTitle();
     }
 
-    override onCompileResult(id: number, compiler: CompilerInfo, result: CompilationResult): void {
-        try {
-            if (id !== this.compilerInfo.compilerId) return;
-            this.compiler = compiler;
+    private hideSpecialUIElements(): void {
+        this.consentElement.addClass('d-none');
+        this.noAiElement.addClass('d-none');
+    }
 
-            this.lastResult = result;
+    private handleCompilationResult(result: CompilationResult): void {
+        if (this.isInitializing) {
+            // Store for processing after initialization completes
+            this.pendingCompilationResult = result;
+            return;
+        }
 
-            // Mark that we've received our first result
-            this.isAwaitingInitialResults = false;
+        if (result.code !== 0) {
+            this.contentElement.text('Cannot explain: Compilation failed');
+            return;
+        }
 
-            // Hide all special UI elements first
-            this.consentElement.addClass('d-none');
-            this.noAiElement.addClass('d-none');
+        if (result.source && checkForNoAiDirective(result.source)) {
+            this.showNoAiDirective();
+            return;
+        }
 
-            if (result.code !== 0) {
-                // If compilation failed, show error message
-                this.contentElement.text('Cannot explain: Compilation failed');
-            } else if (result.source && this.checkForNoAiDirective(result.source)) {
-                // Check for no-ai directive
-                this.noAiElement.removeClass('d-none');
-                this.contentElement.text('');
-            } else if (ExplainView.consentGiven) {
-                // Consent already given, fetch explanation automatically
-                this.fetchExplanation();
-            } else {
-                // Show consent UI
-                this.consentElement.removeClass('d-none');
-                this.contentElement.text('Claude needs your consent to explain this code.');
-            }
-        } catch (e: any) {
-            this.contentElement.text('javascript error: ' + e.message);
-            SentryCapture(e);
+        if (ExplainView.consentGiven) {
+            void this.fetchExplanation();
+        } else {
+            this.showConsentUI();
         }
     }
 
-    private showLoading(): void {
+    private showNoAiDirective(): void {
+        this.noAiElement.removeClass('d-none');
+        this.contentElement.text('');
+    }
+
+    private showConsentUI(): void {
+        this.consentElement.removeClass('d-none');
+        this.contentElement.text('Claude needs your consent to explain this code.');
+    }
+
+    override onCompileResult(id: number, compiler: CompilerInfo, result: CompilationResult): void {
+        if (id !== this.compilerInfo.compilerId) return;
+
+        this.compiler = compiler;
+        this.lastResult = result;
+        this.isAwaitingInitialResults = false;
+
+        this.hideSpecialUIElements();
+        this.handleCompilationResult(result);
+    }
+
+    private setStatusIcon(state: StatusIconState): void {
+        const config = statusIconConfigs[state];
         this.statusIcon
             .removeClass()
-            .addClass('status-icon fas fa-spinner fa-spin')
-            .css('color', '')
-            .attr('aria-label', 'Generating explanation...');
+            .addClass(config.classes)
+            .css('color', config.color)
+            .attr('aria-label', config.ariaLabel);
+    }
+
+    private showLoading(): void {
+        this.setStatusIcon(StatusIconState.Loading);
         this.contentElement.text('Generating explanation...');
     }
 
     private hideLoading(): void {
-        this.statusIcon.removeClass().addClass('status-icon fas d-none');
+        this.setStatusIcon(StatusIconState.Hidden);
     }
 
     private showSuccess(): void {
-        this.statusIcon
-            .removeClass()
-            .addClass('status-icon fas fa-check-circle')
-            .css('color', '#4CAF50')
-            .attr('aria-label', 'Explanation generated successfully');
+        this.setStatusIcon(StatusIconState.Success);
     }
 
     private showError(): void {
-        this.statusIcon
-            .removeClass()
-            .addClass('status-icon fas fa-times-circle')
-            .css('color', '#FF6645')
-            .attr('aria-label', 'Error generating explanation');
+        this.setStatusIcon(StatusIconState.Error);
     }
 
     private showBottomBar(): void {
         this.bottomBarElement.removeClass('d-none');
     }
 
-    private updateStatsInBottomBar(data: ClaudeExplainResponse, clientCacheHit = false, serverCacheHit = false): void {
-        if (!data.usage) return;
-
-        const stats: string[] = [];
-
-        // Display cache status with appropriate icon
-        if (clientCacheHit) {
-            stats.push('🔄 Cached (client)');
-        } else if (serverCacheHit) {
-            stats.push('🔄 Cached (server)');
-        } else {
-            stats.push('✨ Fresh');
+    private updateStatsInBottomBar(
+        data: ClaudeExplainResponse,
+        clientCacheHit: boolean,
+        serverCacheHit: boolean,
+    ): void {
+        const stats = formatStatsText(data, clientCacheHit, serverCacheHit);
+        if (stats.length > 0) {
+            this.statsElement.text(stats.join(' | '));
         }
-
-        if (data.model) {
-            stats.push(`Model: ${data.model}`);
-        }
-        if (data.usage.totalTokens) {
-            stats.push(`Tokens: ${data.usage.totalTokens}`);
-        }
-        if (data.cost?.totalCost) {
-            stats.push(`Cost: $${data.cost.totalCost.toFixed(6)}`);
-        }
-
-        this.statsElement.text(stats.join(' | '));
     }
 
-    private generateCacheKey(payload: ExplainRequest): string {
-        // Create a cache key from the request payload
-        // Sort the payload properties to ensure consistent key generation
-        const sortedPayload = {
-            language: payload.language,
-            compiler: payload.compiler,
-            code: payload.code,
-            compilationOptions: payload.compilationOptions?.sort() || [],
-            instructionSet: payload.instructionSet,
-            asm: payload.asm,
-            audience: payload.audience || 'beginner',
-            explanation: payload.explanation || 'assembly',
+    private displayCachedResult(cachedResult: ClaudeExplainResponse): void {
+        this.hideLoading();
+        this.showSuccess();
+        this.renderMarkdown(cachedResult.explanation);
+        this.showBottomBar();
+
+        if (cachedResult.usage) {
+            this.updateStatsInBottomBar(cachedResult, true, false);
+        }
+    }
+
+    private async fetchFromAPI(payload: ExplainRequest): Promise<ClaudeExplainResponse> {
+        const response = await window.fetch(this.explainApiEndpoint, {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify(payload),
+        });
+
+        if (!response.ok) {
+            throw new Error(`Server returned ${response.status} ${response.statusText}`);
+        }
+
+        return response.json() as Promise<ClaudeExplainResponse>;
+    }
+
+    private getExplainContext(): ExplainContext {
+        return {
+            lastResult: this.lastResult,
+            compiler: this.compiler,
+            selectedAudience: this.selectedAudience,
+            selectedExplanation: this.selectedExplanation,
+            explainApiEndpoint: this.explainApiEndpoint,
+            consentGiven: ExplainView.consentGiven,
+            availableOptions: ExplainView.availableOptions,
         };
-        return JSON.stringify(sortedPayload);
     }
 
-    private checkForNoAiDirective(sourceCode: string): boolean {
-        // Check for no-ai directive (case insensitive)
-        return /no-ai/i.test(sourceCode);
-    }
+    private processExplanationResponse(data: ClaudeExplainResponse, cacheKey: string): void {
+        this.hideLoading();
 
-    private async fetchExplanation(bypassCache = false): Promise<void> {
-        if (!this.lastResult || !ExplainView.consentGiven || !this.compiler) return;
-
-        if (!this.explainApiEndpoint) {
-            this.contentElement.text('Error: Claude Explain API endpoint not configured');
+        if (data.status === 'error') {
+            this.showError();
+            this.contentElement.text(`Error: ${data.message || 'Unknown error'}`);
             return;
         }
 
-        // Check for no-ai directive in source code
-        if (this.lastResult.source && this.checkForNoAiDirective(this.lastResult.source)) {
-            this.hideLoading();
-            this.noAiElement.removeClass('d-none');
-            this.contentElement.text('');
+        this.showSuccess();
+        this.cache.set(cacheKey, data);
+        this.renderMarkdown(data.explanation);
+        this.showBottomBar();
+
+        if (data.usage) {
+            this.updateStatsInBottomBar(data, false, data.cached);
+        }
+    }
+
+    private async fetchExplanation(bypassCache = false): Promise<void> {
+        const context = this.getExplainContext();
+        const validationResult = validateExplainPreconditions(context);
+
+        if (!validationResult.success) {
+            switch (validationResult.errorCode) {
+                case ValidationErrorCode.NO_AI_DIRECTIVE_FOUND:
+                    this.hideLoading();
+                    this.noAiElement.removeClass('d-none');
+                    this.contentElement.text('');
+                    break;
+                case ValidationErrorCode.MISSING_REQUIRED_DATA:
+                    // Silent return - this is expected during normal UI flow (before compilation, before consent, etc.)
+                    break;
+                default:
+                    // Show all other validation errors to help with debugging
+                    this.contentElement.text(`Error: ${validationResult.message}`);
+                    break;
+            }
             return;
         }
 
@@ -451,95 +500,34 @@ export class ExplainView extends Pane<ExplainViewState> {
         this.showLoading();
 
         try {
-            const payload: ExplainRequest = {
-                language: this.compiler.lang,
-                compiler: this.compiler.name,
-                code: this.lastResult.source || '',
-                compilationOptions: this.lastResult.compilationOptions || [],
-                instructionSet: this.lastResult.instructionSet || 'amd64',
-                asm: Array.isArray(this.lastResult.asm) ? this.lastResult.asm : [],
-                audience: this.selectedAudience,
-                explanation: this.selectedExplanation,
-            };
-
-            // Add bypassCache flag if requested
-            if (bypassCache) {
-                payload.bypassCache = true;
-            }
-
-            const cacheKey = this.generateCacheKey(payload);
+            const payload = buildExplainRequest(context, bypassCache);
+            const cacheKey = generateCacheKey(payload);
 
             // Check cache first unless bypassing
             if (!bypassCache) {
-                const cachedResult = ExplainView.cache?.get(cacheKey);
+                const cachedResult = this.cache.get(cacheKey);
                 if (cachedResult) {
-                    this.hideLoading();
-                    this.showSuccess();
-                    // Render the cached explanation
-                    this.renderMarkdown(cachedResult.explanation);
-
-                    // Show bottom bar with reload button
-                    this.showBottomBar();
-                    // Show stats if available
-                    if (cachedResult.usage) {
-                        this.updateStatsInBottomBar(cachedResult, true, false);
-                    }
+                    this.displayCachedResult(cachedResult);
                     return;
                 }
             }
 
-            const response = await window.fetch(this.explainApiEndpoint, {
-                method: 'POST',
-                headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify(payload),
-            });
-
-            if (!response.ok) {
-                throw new Error(`Server returned ${response.status} ${response.statusText}`);
-            }
-
-            const data = (await response.json()) as ClaudeExplainResponse;
-            this.hideLoading();
-
-            if (data.status === 'error') {
-                this.showError();
-                this.contentElement.text(`Error: ${data.message || 'Unknown error'}`);
-                return;
-            }
-
-            this.showSuccess();
-
-            // Cache the successful response
-            ExplainView.cache?.set(cacheKey, data);
-
-            // Render the markdown explanation
-            this.renderMarkdown(data.explanation);
-
-            // Show bottom bar with reload button
-            this.showBottomBar();
-            // Show stats if available
-            if (data.usage) {
-                // Pass server cache status from response
-                this.updateStatsInBottomBar(data, false, data.cached);
-            }
+            const data = await this.fetchFromAPI(payload);
+            this.processExplanationResponse(data, cacheKey);
         } catch (error) {
-            this.hideLoading();
-            this.showError();
-            this.contentElement.text(`Error: ${error instanceof Error ? error.message : String(error)}`);
-            SentryCapture(error);
+            this.handleFetchError(error);
         }
     }
 
-    private renderMarkdown(markdown: string): void {
-        const markedOptions = {
-            gfm: true, // GitHub Flavored Markdown
-            breaks: true, // Convert line breaks to <br>
-        };
+    private handleFetchError(error: unknown): void {
+        this.hideLoading();
+        this.showError();
+        this.contentElement.text(formatErrorMessage(error));
+        SentryCapture(error);
+    }
 
-        // Render markdown to HTML
-        // marked.parse() is synchronous and returns a string, but TypeScript types suggest it could be Promise<string>
-        // The cast is safe because we're using the default synchronous implementation
-        this.contentElement.html(marked.parse(markdown, markedOptions) as string);
+    private renderMarkdown(markdown: string): void {
+        this.contentElement.html(formatMarkdown(markdown));
     }
 
     override resize(): void {

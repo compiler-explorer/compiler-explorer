@@ -100,7 +100,7 @@ export class NimCompiler extends BaseCompiler {
         const options = result.compilationOptions;
         const cacheDir = this.cacheDir(outputFilename);
         try {
-            if (_.intersection(options!, ['js', 'check']).length > 0) filters.binary = false;
+            if (_.intersection(options!, ['js', 'check', '-c']).length > 0) filters.binary = false;
             else {
                 filters.binary = true;
                 const objFile = unwrap(this.getCacheFile(options!, result.inputFilename!, cacheDir));

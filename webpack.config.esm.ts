@@ -54,7 +54,7 @@ const hasGit = fs.existsSync(path.resolve(__dirname, '.git'));
 // Hack alert: due to a variety of issues, sometimes we need to change
 // the name here. Mostly it's things like webpack changes that affect
 // how minification is done, even though that's supposed not to matter.
-const webpackJsHack = '.v60.';
+const webpackJsHack = '.v61.';
 const plugins: Webpack.WebpackPluginInstance[] = [
     new MonacoEditorWebpackPlugin({
         languages: [
@@ -174,7 +174,17 @@ export default {
                         },
                     },
                     'css-loader',
-                    'sass-loader',
+                    {
+                        loader: 'sass-loader',
+                        options: {
+                            sassOptions: {
+                                fatalDeprecations: ['import'],
+                            },
+                        },
+                    },
+                    {
+                        loader: path.resolve(__dirname, 'etc/webpack/replace-golden-layout-imports.js'),
+                    },
                 ],
             },
             {
@@ -184,7 +194,7 @@ export default {
             },
             {
                 test: /\.pug$/,
-                loader: './etc/scripts/parsed-pug/parsed_pug_file.js',
+                loader: path.resolve(__dirname, 'etc/webpack/parsed-pug-loader.js'),
                 options: {
                     useGit: hasGit,
                 },

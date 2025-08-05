@@ -196,7 +196,17 @@ function setupButtons(options: CompilerExplorerOptions, hub: Hub) {
             $('#ces .ces-icons').html(data);
         })
         .fail(err => {
-            SentryCapture(err, '$.get failed');
+            // Filter out network-level failures that aren't actionable bugs
+            // readyState 0 with status 0 typically indicates network issues, ad blockers, or aborted requests
+            if (err.readyState === 0 && err.status === 0) {
+                console.debug('Icons request failed due to network/browser policy:', err.statusText);
+                return;
+            }
+
+            // Only capture server errors or other potentially actionable failures
+            if (err.status >= 400) {
+                SentryCapture(err, '$.get failed loading icons');
+            }
         });
 
     $('#ces').on('click', () => {
@@ -205,11 +215,21 @@ function setupButtons(options: CompilerExplorerOptions, hub: Hub) {
                 alertSystem.alert('Compiler Explorer Sponsors', data);
             })
             .fail(err => {
-                const result = err.responseText || JSON.stringify(err);
-                alertSystem.alert(
-                    'Compiler Explorer Sponsors',
-                    '<div>Unable to fetch sponsors:</div><div>' + result + '</div>',
-                );
+                // Filter out network-level failures that aren't actionable bugs
+                if (err.readyState === 0 && err.status === 0) {
+                    console.debug('Sponsors request failed due to network/browser policy:', err.statusText);
+                    return;
+                }
+
+                if (err.status >= 400) {
+                    // Capture server errors for Sentry, and show to the user
+                    SentryCapture(err, '$.get failed loading sponsors');
+                    const result = err.responseText || JSON.stringify(err);
+                    alertSystem.alert(
+                        'Compiler Explorer Sponsors',
+                        '<div>Unable to fetch sponsors:</div><div>' + result + '</div>',
+                    );
+                }
             });
     });
 

@@ -1,5 +1,10 @@
+@use 'themes/default-theme';
+@use 'themes/dark-theme';
+@use 'themes/pink-theme';
+@use 'themes/one-dark-theme';
+@use 'markdown.scss';
+
 @import '~@fortawesome/fontawesome-free/css/all.min.css';
-@import './markdown.scss';
 
 // SCSS function to generate TomSelect dropdown arrow SVG with custom color
 // Based on the SVG from tom-select.bootstrap5.css line 575 in selector:
@@ -54,79 +59,18 @@ body {
     margin-right: auto;
     margin-left: auto;
     max-width: 50em;
-    
-    // Dark theme override
-    [data-theme="dark"] & {
-        background-color: #333;
-        border-color: #555;
-        color: #eee;
-    }
-    
-    // Pink theme adjustment
-    [data-theme="pink"] & {
-        background-color: #fde5fd;
-        border-color: #e3a5e3;
-    }
-    
-    // One dark theme
-    [data-theme="onedark"] & {
-        background-color: #282c34;
-        border-color: #4b5263;
-        color: #abb2bf;
-    }
 }
 
 
 
 .explain-bottom-bar {
     min-height: 2.5rem;
-    
-    // Dark theme
-    [data-theme="dark"] & {
-        background-color: #2d2d2d !important;
-        color: #eee;
-    }
-    
-    // Pink theme
-    [data-theme="pink"] & {
-        background-color: #e3a5e3 !important;
-    }
-    
-    // One dark theme
-    [data-theme="onedark"] & {
-        background-color: #21252b !important;
-        color: #abb2bf;
-    }
 }
 
 .ai-disclaimer {
     display: flex;
     align-items: center;
     user-select: none;
-    
-    // Dark theme - make warning badge more visible
-    [data-theme="dark"] & {
-        &.bg-warning {
-            background-color: #664d03 !important;
-            color: #ffda6a !important;
-        }
-    }
-    
-    // Pink theme
-    [data-theme="pink"] & {
-        &.bg-warning {
-            background-color: #e787e7 !important;
-            color: #3c3c3f !important;
-        }
-    }
-    
-    // One dark theme
-    [data-theme="onedark"] & {
-        &.bg-warning {
-            background-color: #5c4b1a !important;
-            color: #e5c07b !important;
-        }
-    }
 }
 
 .navbar-godbolt {
@@ -1248,14 +1192,14 @@ span.badge.rounded-pill {
 }
 
 html[data-theme='default'] {
-    @import 'themes/default-theme';
+    @import '~golden-layout/src/css/goldenlayout-light-theme';
     .theme-light-only {
         display: inline;
     }
 }
 
 html[data-theme='dark'] {
-    @import 'themes/dark-theme';
+    @import '~golden-layout/src/css/goldenlayout-dark-theme';
     background-color: #333 !important;
     .theme-dark-only {
         display: inline;
@@ -1263,16 +1207,14 @@ html[data-theme='dark'] {
 }
 
 html[data-theme='pink'] {
-    @import 'themes/pink-theme';
-    background-color: $lighter !important;
+    background-color: var(--lighter) !important;
     .theme-light-only {
         display: inline;
     }
 }
 
 html[data-theme='one-dark'] {
-    @import 'themes/one-dark-theme';
-    background-color: $light !important;
+    background-color: var(--light) !important;
     .theme-dark-only {
         display: inline;
     }
