@@ -52,6 +52,10 @@ The explain button appears automatically when configured.
 - Session-persistent consent and user preferences
 - Reload button to bypass all caches
 
+**Testing**:
+- Comprehensive Cypress E2E tests covering UI interactions, consent flow, API mocking, caching behavior, and error handling
+- Tests verify explain pane functionality, theme persistence, and proper handling of compilation states
+
 ## API Integration
 
 **GET /** - Fetch available options:

@@ -97,14 +97,15 @@ export class ExplainView extends Pane<ExplainViewState> {
     private readonly explanationInfoButton: JQuery;
     private readonly explainApiEndpoint: string;
     private readonly fontScale: FontScale;
-    private readonly cache: LRUCache<string, ClaudeExplainResponse>;
-
     // Use a static variable to persist consent across all instances during the session
     private static consentGiven = false;
 
     // Static cache for available options (shared across all instances)
     private static availableOptions: AvailableOptions | null = null;
     private static optionsFetchPromise: Promise<AvailableOptions> | null = null;
+
+    // Static explanation cache shared across all instances (200KB limit)
+    private static cache: LRUCache<string, ClaudeExplainResponse> | null = null;
 
     // Instance variables for selected options
     private selectedAudience: string;
@@ -118,10 +119,14 @@ export class ExplainView extends Pane<ExplainViewState> {
         super(hub, container, state);
 
         this.explainApiEndpoint = options.explainApiEndpoint ?? '';
-        this.cache = new LRUCache({
-            maxSize: 200 * 1024,
-            sizeCalculation: n => JSON.stringify(n).length,
-        });
+
+        // Initialize static cache if not already done
+        if (!ExplainView.cache) {
+            ExplainView.cache = new LRUCache({
+                maxSize: 200 * 1024,
+                sizeCalculation: n => JSON.stringify(n).length,
+            });
+        }
 
         this.statusIcon = this.domRoot.find('.status-icon');
         this.consentElement = this.domRoot.find('.explain-consent');
@@ -465,7 +470,7 @@ export class ExplainView extends Pane<ExplainViewState> {
         }
 
         this.showSuccess();
-        this.cache.set(cacheKey, data);
+        ExplainView.cache!.set(cacheKey, data);
         this.renderMarkdown(data.explanation);
         this.showBottomBar();
 
@@ -505,7 +510,7 @@ export class ExplainView extends Pane<ExplainViewState> {
 
             // Check cache first unless bypassing
             if (!bypassCache) {
-                const cachedResult = this.cache.get(cacheKey);
+                const cachedResult = ExplainView.cache!.get(cacheKey);
                 if (cachedResult) {
                     this.displayCachedResult(cachedResult);
                     return;
