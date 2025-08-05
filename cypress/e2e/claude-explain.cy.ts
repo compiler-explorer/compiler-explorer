@@ -272,7 +272,7 @@ describe('Claude Explain feature', () => {
 
             // Verify stats are shown
             cy.get('.explain-stats:visible').should('be.visible');
-            cy.get('.explain-stats:visible').should('contain', '✨ Fresh');
+            cy.get('.explain-stats:visible').should('contain', 'Fresh');
             cy.get('.explain-stats:visible').should('contain', 'Model: claude-3-haiku');
             cy.get('.explain-stats:visible').should('contain', 'Tokens: 370');
             cy.get('.explain-stats:visible').should('contain', 'Cost: $0.001450');
@@ -448,7 +448,7 @@ describe('Claude Explain feature', () => {
             giveConsentAndWait();
 
             // Verify fresh status (use :visible to avoid template elements)
-            cy.get('.explain-stats:visible').should('contain', '✨ Fresh');
+            cy.get('.explain-stats:visible').should('contain', 'Fresh');
 
             // Close and reopen pane (should use client cache)
             cy.get('.lm_close_tab').last().click();
@@ -463,7 +463,7 @@ describe('Claude Explain feature', () => {
 
             // Should use cached explanation data
             cy.get('.explain-content:visible').should('contain', 'This is a cached explanation');
-            cy.get('.explain-stats:visible').should('contain', '🔄 Cached (client)');
+            cy.get('.explain-stats:visible').should('contain', 'Cached (client)');
         });
 
         it('should bypass cache when reload button is clicked', () => {
