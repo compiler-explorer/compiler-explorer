@@ -397,7 +397,7 @@ describe('Claude Explain feature', () => {
             }).as('getOptions');
 
             let explainCallCount = 0;
-            cy.intercept('POST', 'http://test.localhost/fake-api/explain', (req: any) => {
+            cy.intercept('POST', 'http://test.localhost/fake-api/explain', (req: Cypress.Interception) => {
                 explainCallCount++;
                 req.reply({
                     status: 'success',
@@ -470,7 +470,7 @@ describe('Claude Explain feature', () => {
             mockClaudeExplainAPIWithOptions();
 
             let callCount = 0;
-            cy.intercept('POST', 'http://test.localhost/fake-api/explain', (req: any) => {
+            cy.intercept('POST', 'http://test.localhost/fake-api/explain', (req: Cypress.Interception) => {
                 callCount++;
                 const isBypassCache = req.body.bypassCache === true;
                 req.reply({
@@ -512,7 +512,7 @@ describe('Claude Explain feature', () => {
             mockClaudeExplainAPIWithOptions();
 
             let explainCount = 0;
-            cy.intercept('POST', 'http://test.localhost/fake-api/explain', (req: any) => {
+            cy.intercept('POST', 'http://test.localhost/fake-api/explain', (req: Cypress.Interception) => {
                 explainCount++;
                 req.reply({
                     status: 'success',
@@ -576,7 +576,7 @@ describe('Claude Explain feature', () => {
             cy.wait('@explainRequest');
 
             // Get the current URL (which includes state)
-            cy.url().then((url: any) => {
+            cy.url().then((url: string) => {
                 // Clear intercepts from previous test
                 cy.state('routes', []);
                 cy.state('aliases', {});
