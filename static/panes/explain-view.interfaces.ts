@@ -1,4 +1,4 @@
-// Copyright (c) 2022, Compiler Explorer Authors
+// Copyright (c) 2025, Compiler Explorer Authors
 // All rights reserved.
 //
 // Redistribution and use in source and binary forms, with or without
@@ -22,39 +22,50 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-// Extra information used to serialize the state
-export interface GccDumpViewSelectedPass {
-    // FIXME(dkm): this type needs to be refactored.
-    // In particular, see in gccdump-view.ts:{constructor, getCurrentState}
-    // There is a mix of 'selectedPass' being a filename_prefix and a
-    // GccDumpViewSelectedPass object.
-    filename_suffix: string | null;
-    name: string | null;
-    command_prefix: string | null;
-    selectedPass: string | null;
+import {ParsedAsmResultLine} from '../../types/asmresult/asmresult.interfaces.js';
+import {PaneState} from './pane.interfaces.js';
+
+export interface ExplainViewState extends PaneState {
+    audience?: string;
+    explanation?: string;
 }
 
-// This should reflect the corresponding UI widget in gccdump.pug
-// Each optionButton should have a matching boolean here.
-export type GccDumpFiltersState = {
-    treeDump: boolean;
-    rtlDump: boolean;
-    ipaDump: boolean;
+export interface ExplanationOption {
+    value: string;
+    description: string;
+}
 
-    rawOption: boolean;
-    slimOption: boolean;
-    allOption: boolean;
+export interface AvailableOptions {
+    audience: ExplanationOption[];
+    explanation: ExplanationOption[];
+}
 
-    gimpleFeOption: boolean;
-    addressOption: boolean;
-    aliasOption: boolean;
-    blocksOption: boolean;
-    linenoOption: boolean;
-    detailsOption: boolean;
-    statsOption: boolean;
-    uidOption: boolean;
-    vopsOption: boolean;
-};
+export interface ExplainRequest {
+    language: string;
+    compiler: string;
+    code: string;
+    compilationOptions: string[];
+    instructionSet: string;
+    asm: ParsedAsmResultLine[];
+    audience?: string;
+    explanation?: string;
+    bypassCache?: boolean;
+}
 
-// state = selected pass + all option flags
-export type GccDumpViewState = GccDumpFiltersState & GccDumpViewSelectedPass;
+export interface ClaudeExplainResponse {
+    status: 'success' | 'error';
+    explanation: string;
+    message?: string;
+    model?: string;
+    usage?: {
+        inputTokens: number;
+        outputTokens: number;
+        totalTokens: number;
+    };
+    cost?: {
+        inputCost: number;
+        outputCost: number;
+        totalCost: number;
+    };
+    cached: boolean;
+}

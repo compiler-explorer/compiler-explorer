@@ -2,6 +2,7 @@
 @use 'themes/dark-theme';
 @use 'themes/pink-theme';
 @use 'themes/one-dark-theme';
+@use 'markdown.scss';
 
 @import '~@fortawesome/fontawesome-free/css/all.min.css';
 
@@ -38,6 +39,38 @@
 
 body {
     overflow: hidden;
+}
+
+// Styles for Claude Explain component
+.explain-container {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+}
+
+.explain-box {
+    padding: 15px;
+    background-color: #f8f9fa;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    margin: 15px;
+    margin-right: auto;
+    margin-left: auto;
+    max-width: 50em;
+}
+
+
+
+.explain-bottom-bar {
+    min-height: 2.5rem;
+}
+
+.ai-disclaimer {
+    display: flex;
+    align-items: center;
+    user-select: none;
 }
 
 .navbar-godbolt {

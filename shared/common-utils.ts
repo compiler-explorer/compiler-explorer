@@ -209,3 +209,8 @@ class ArgumentParser {
 export function splitArguments(str = ''): string[] {
     return new ArgumentParser(str).exec();
 }
+
+export function capitaliseFirst(str: string): string {
+    if (str.length === 0) return str;
+    return str.charAt(0).toUpperCase() + str.slice(1);
+}
