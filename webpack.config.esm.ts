@@ -176,6 +176,11 @@ export default {
                     'css-loader',
                     {
                         loader: 'sass-loader',
+                        options: {
+                            sassOptions: {
+                                fatalDeprecations: ['import'],
+                            },
+                        },
                     },
                     {
                         loader: path.resolve(__dirname, 'etc/webpack/replace-golden-layout-imports.js'),

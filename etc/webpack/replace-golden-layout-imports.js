@@ -9,30 +9,44 @@ import {fileURLToPath} from 'url';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
+const GOLDEN_LAYOUT_PREFIX = '~golden-layout/';
+
 export default function replaceGoldenLayoutImports(source) {
     // Only process if it contains golden-layout imports
     if (!source.includes('@import') || !source.includes('golden-layout')) {
         return source;
     }
 
-    // Replace any golden-layout CSS import with actual content
-    const goldenLayoutImportRegex = /@import\s+['"]~golden-layout\/src\/css\/([^'"]+)['"];?\s*/g;
+    // Find all golden-layout @import statements and replace them
+    const importRegex = /@import\s+['"]([^'"]+)['"];?\s*/g;
     
-    return source.replace(goldenLayoutImportRegex, (match, cssFileName) => {
-        // Ensure .css extension
-        const fileName = cssFileName.endsWith('.css') ? cssFileName : `${cssFileName}.css`;
-        const cssContent = readGoldenLayoutCSS(fileName);
-        const themeName = fileName.replace(/^goldenlayout-/, '').replace(/\.css$/, '');
+    return source.replace(importRegex, (match, importPath) => {
+        if (importPath.startsWith(GOLDEN_LAYOUT_PREFIX)) {
+            return replaceGoldenLayoutImport(importPath);
+        }
         
-        return `/* Golden Layout ${themeName} - Inlined */\n${cssContent}\n/* End Golden Layout ${themeName} */`;
+        // Return other imports unchanged
+        return match;
     });
 };
 
-function readGoldenLayoutCSS(filename) {
+function replaceGoldenLayoutImport(importPath) {
+    const goldenLayoutPath = importPath.substring(GOLDEN_LAYOUT_PREFIX.length);
+    const cssContent = readGoldenLayoutCSS(goldenLayoutPath);
+    const fileName = goldenLayoutPath.split('/').pop();
+    const themeName = fileName.replace(/^goldenlayout-/, '').replace(/\.css$/, '');
+    
+    return `/* Golden Layout ${themeName} - Inlined */\n${cssContent}\n/* End Golden Layout ${themeName} */`;
+}
+
+function readGoldenLayoutCSS(relativePath) {
     // Use import.meta.resolve to find the golden-layout package location robustly
     const packageJsonPath = import.meta.resolve('golden-layout/package.json');
     const packageDir = path.dirname(fileURLToPath(packageJsonPath));
-    const cssPath = path.join(packageDir, 'src', 'css', filename);
+    
+    // Ensure .css extension if not present
+    const finalPath = relativePath.endsWith('.css') ? relativePath : `${relativePath}.css`;
+    const cssPath = path.join(packageDir, finalPath);
     
     if (!fs.existsSync(cssPath)) {
         throw new Error(`Golden Layout CSS file not found: ${cssPath}`);
