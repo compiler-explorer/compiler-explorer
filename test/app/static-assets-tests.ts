@@ -31,6 +31,7 @@ vi.mock('../../lib/logger.js', () => ({
         error: vi.fn(),
     },
 }));
+
 import {logger} from '../../lib/logger.js';
 
 describe('Static assets', () => {

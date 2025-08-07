@@ -22,9 +22,8 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import path from 'node:path';
-
 import fs from 'node:fs';
+import path from 'node:path';
 
 import type {Language, LanguageKey} from '../types/languages.interfaces.js';
 
@@ -357,7 +356,7 @@ const definitions: Record<LanguageKey, LanguageDefinition> = {
     cuda: {
         name: 'CUDA C++',
         monaco: 'cuda',
-        extensions: ['.cu'],
+        extensions: ['.cu', '.cuh'],
         alias: ['nvcc'],
         logoFilename: 'cuda.svg',
         logoFilenameDark: 'cuda-dark.svg',
@@ -494,7 +493,7 @@ const definitions: Record<LanguageKey, LanguageDefinition> = {
         monaco: 'hylo',
         extensions: ['.hylo'],
         alias: [],
-        logoFilename: 'hylo.svg',
+        logoFilename: 'hylo.png',
         logoFilenameDark: null,
         formatter: null,
         previewFilter: null,
@@ -608,7 +607,7 @@ const definitions: Record<LanguageKey, LanguageDefinition> = {
         monaco: 'nim',
         extensions: ['.nim'],
         alias: [],
-        logoFilename: 'nim.svg',
+        logoFilename: 'nim.png',
         logoFilenameDark: null,
         formatter: null,
         previewFilter: null,
@@ -695,7 +694,7 @@ const definitions: Record<LanguageKey, LanguageDefinition> = {
     pascal: {
         name: 'Pascal',
         monaco: 'pascal',
-        extensions: ['.pas', '.dpr'],
+        extensions: ['.pas', '.dpr', '.inc'],
         alias: [],
         logoFilename: 'pascal.svg', // TODO: Find a better alternative
         logoFilenameDark: 'pascal-dark.svg',
@@ -895,6 +894,17 @@ const definitions: Record<LanguageKey, LanguageDefinition> = {
         previewFilter: null,
         monacoDisassembly: null,
     },
+    triton: {
+        name: 'Triton',
+        monaco: 'python',
+        extensions: ['.py'],
+        alias: [],
+        logoFilename: 'triton.png',
+        logoFilenameDark: null,
+        formatter: null,
+        previewFilter: null,
+        monacoDisassembly: null,
+    },
     typescript: {
         name: 'TypeScript Native',
         monaco: 'typescript',
@@ -1027,7 +1037,7 @@ export const languages = Object.fromEntries(
         let example: string;
         try {
             example = fs.readFileSync(path.join('examples', key, 'default' + lang.extensions[0]), 'utf8');
-        } catch (error) {
+        } catch {
             example = 'Oops, something went wrong and we could not get the default code for this language.';
         }
 

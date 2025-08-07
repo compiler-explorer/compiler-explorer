@@ -34,12 +34,12 @@ export const skipExpensiveTests = process.env.SKIP_EXPENSIVE_TESTS === 'true';
 
 import {CompilationEnvironment} from '../lib/compilation-env.js';
 import {CompilationQueue} from '../lib/compilation-queue.js';
+import {AsmParser} from '../lib/parsers/asm-parser.js';
 import {CC65AsmParser} from '../lib/parsers/asm-parser-cc65.js';
 import {AsmEWAVRParser} from '../lib/parsers/asm-parser-ewavr.js';
 import {PTXAsmParser} from '../lib/parsers/asm-parser-ptx.js';
 import {SassAsmParser} from '../lib/parsers/asm-parser-sass.js';
 import {VcAsmParser} from '../lib/parsers/asm-parser-vc.js';
-import {AsmParser} from '../lib/parsers/asm-parser.js';
 
 // Test helper class that extends AsmParser to allow setting protected properties for testing
 class AsmParserForTest extends AsmParser {
@@ -47,6 +47,7 @@ class AsmParserForTest extends AsmParser {
         this.binaryHideFuncRe = regex;
     }
 }
+
 import {CompilerProps, fakeProps} from '../lib/properties.js';
 import {CompilerInfo} from '../types/compiler.interfaces.js';
 import {ParseFiltersAndOutputOptions} from '../types/features/filters.interfaces.js';

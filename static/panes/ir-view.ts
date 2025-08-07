@@ -25,30 +25,27 @@
 import {Container} from 'golden-layout';
 import $ from 'jquery';
 import * as monaco from 'monaco-editor';
+import {editor} from 'monaco-editor';
 import _ from 'underscore';
 
-import {editor} from 'monaco-editor';
 import IEditorMouseEvent = editor.IEditorMouseEvent;
-
-import {IrState} from './ir-view.interfaces.js';
-import {MonacoPaneState} from './pane.interfaces.js';
-import {MonacoPane} from './pane.js';
-
-import {applyColours} from '../colour.js';
-import {extendConfig} from '../monaco-config.js';
-
-import {unwrap} from '../assert.js';
-import {createDragSource} from '../components.js';
-import * as Components from '../components.js';
-import {Hub} from '../hub.js';
-import {Toggles} from '../widgets/toggles.js';
 
 import {CompilationResult} from '../../types/compilation/compilation.interfaces.js';
 import {LLVMIrBackendOptions} from '../../types/compilation/ir.interfaces.js';
 import {CompilerInfo} from '../../types/compiler.interfaces.js';
+import {unwrap} from '../assert.js';
+import {applyColours} from '../colour.js';
+import * as Components from '../components.js';
+import {createDragSource} from '../components.js';
+import {Hub} from '../hub.js';
+import {extendConfig} from '../monaco-config.js';
 import {SentryCapture} from '../sentry.js';
 import {Alert} from '../widgets/alert.js';
+import {Toggles} from '../widgets/toggles.js';
 import {Compiler} from './compiler.js';
+import {IrState} from './ir-view.interfaces.js';
+import {MonacoPaneState} from './pane.interfaces.js';
+import {MonacoPane} from './pane.js';
 
 export class Ir extends MonacoPane<monaco.editor.IStandaloneCodeEditor, IrState> {
     private linkedFadeTimeoutId: NodeJS.Timeout | null = null;

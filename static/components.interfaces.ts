@@ -32,7 +32,8 @@ import {ClangirState} from './panes/clangir-view.interfaces.js';
 import {GccDumpViewState} from './panes/gccdump-view.interfaces.js';
 import {IrState} from './panes/ir-view.interfaces.js';
 import {OptPipelineViewState} from './panes/opt-pipeline.interfaces.js';
-import {MonacoPaneState} from './panes/pane.interfaces.js';
+import {MonacoPane, Pane} from './panes/pane';
+import {MonacoPaneState, PaneState} from './panes/pane.interfaces.js';
 
 /**
  * Component name constants with 'as const' assertions.
@@ -75,6 +76,7 @@ export const GNAT_DEBUG_VIEW_COMPONENT_NAME = 'gnatdebug' as const;
 export const RUST_MACRO_EXP_VIEW_COMPONENT_NAME = 'rustmacroexp' as const;
 export const RUST_HIR_VIEW_COMPONENT_NAME = 'rusthir' as const;
 export const DEVICE_VIEW_COMPONENT_NAME = 'device' as const;
+export const EXPLAIN_VIEW_COMPONENT_NAME = 'explain' as const;
 
 export type StateWithLanguage = {lang: string};
 // TODO(#7808): Normalize state types to reduce duplication (see #4490)
@@ -337,6 +339,13 @@ export type PopulatedDeviceViewState = StateWithId & {
     treeid: number;
 };
 
+export type EmptyExplainViewState = EmptyState;
+export type PopulatedExplainViewState = StateWithId & {
+    compilerName: string;
+    editorid: number;
+    treeid: number;
+};
+
 /**
  * Mapping of component names to their expected state types. This provides compile-time type safety for component
  * states. Components can have either empty (default) or populated states.
@@ -371,6 +380,7 @@ export interface ComponentStateMap {
     [RUST_MACRO_EXP_VIEW_COMPONENT_NAME]: EmptyRustMacroExpViewState | PopulatedRustMacroExpViewState;
     [RUST_HIR_VIEW_COMPONENT_NAME]: EmptyRustHirViewState | PopulatedRustHirViewState;
     [DEVICE_VIEW_COMPONENT_NAME]: EmptyDeviceViewState | PopulatedDeviceViewState;
+    [EXPLAIN_VIEW_COMPONENT_NAME]: EmptyExplainViewState | PopulatedExplainViewState;
 }
 
 /**
@@ -468,3 +478,9 @@ export interface SerializedLayoutState {
  * Type for drag source factory functions
  */
 export type DragSourceFactory<K extends keyof ComponentStateMap> = () => ComponentConfig<K>;
+
+export type InferComponentState<T> = T extends MonacoPane<infer _E, infer S>
+    ? S & MonacoPaneState
+    : T extends Pane<infer S>
+      ? S & PaneState
+      : never;

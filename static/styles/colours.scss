@@ -1,3 +1,5 @@
+@use 'sass:color';
+
 /* These colours from Cynthia Brewer's excellent page at
  * http://colorbrewer2.org/
  */
@@ -267,25 +269,25 @@
 /* Gray shades */
 /*@for $i from 0 through 4 {
     .pink- hashtag {$i} {
-        background: darken(#fae1fa, (($i + 1) * 2) / 100 * 100);
+        background: color.scale(#fae1fa, $lightness: -(($i + 1) * 2%));
     }
 }*/
 .pink-0 {
-    background: adjust-color(#f9d8f9, $alpha: -0.35);
+    background: color.adjust(#f9d8f9, $alpha: -0.35);
 }
 
 .pink-1 {
-    background: adjust-color(#f7d0f7, $alpha: -0.35);
+    background: color.adjust(#f7d0f7, $alpha: -0.35);
 }
 
 .pink-2 {
-    background: adjust-color(#f6c7f6, $alpha: -0.35);
+    background: color.adjust(#f6c7f6, $alpha: -0.35);
 }
 
 .pink-3 {
-    background: adjust-color(#f4bef4, $alpha: -0.35);
+    background: color.adjust(#f4bef4, $alpha: -0.35);
 }
 
 .pink-4 {
-    background: adjust-color(#f3b5f3, $alpha: -0.35);
+    background: color.adjust(#f3b5f3, $alpha: -0.35);
 }

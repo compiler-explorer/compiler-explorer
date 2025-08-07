@@ -26,17 +26,15 @@ import {Container} from 'golden-layout';
 import $ from 'jquery';
 import * as monaco from 'monaco-editor';
 import _ from 'underscore';
-
-import {ClangirState} from './clangir-view.interfaces.js';
-import {MonacoPaneState} from './pane.interfaces.js';
-import {MonacoPane} from './pane.js';
-
 import {ClangirBackendOptions} from '../../types/compilation/clangir.interfaces.js';
 import {CompilationResult} from '../../types/compilation/compilation.interfaces.js';
 import {CompilerInfo} from '../../types/compiler.interfaces.js';
 import {Hub} from '../hub.js';
 import {extendConfig} from '../monaco-config.js';
 import {Toggles} from '../widgets/toggles.js';
+import {ClangirState} from './clangir-view.interfaces.js';
+import {MonacoPaneState} from './pane.interfaces.js';
+import {MonacoPane} from './pane.js';
 
 export class Clangir extends MonacoPane<monaco.editor.IStandaloneCodeEditor, ClangirState> {
     private options: Toggles;

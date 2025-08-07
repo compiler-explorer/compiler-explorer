@@ -26,15 +26,13 @@ import {Container} from 'golden-layout';
 import $ from 'jquery';
 import * as monaco from 'monaco-editor';
 import _ from 'underscore';
-
-import {MonacoPaneState} from './pane.interfaces.js';
-import {MonacoPane} from './pane.js';
-import {RustHirState} from './rusthir-view.interfaces.js';
-
 import {CompilationResult} from '../../types/compilation/compilation.interfaces.js';
 import {CompilerInfo} from '../../types/compiler.interfaces.js';
 import {Hub} from '../hub.js';
 import {extendConfig} from '../monaco-config.js';
+import {MonacoPaneState} from './pane.interfaces.js';
+import {MonacoPane} from './pane.js';
+import {RustHirState} from './rusthir-view.interfaces.js';
 
 export class RustHir extends MonacoPane<monaco.editor.IStandaloneCodeEditor, RustHirState> {
     constructor(hub: Hub, container: Container, state: RustHirState & MonacoPaneState) {

@@ -26,9 +26,8 @@ import * as Sentry from '@sentry/node';
 import type {NextFunction, Request, Response, Router} from 'express';
 import type {Express} from 'express-serve-static-core';
 import {afterEach, beforeEach, describe, expect, it, vi} from 'vitest';
-
-import {setupBaseServerConfig} from '../../lib/app/server-config.js';
 import {ServerOptions} from '../../lib/app/server.interfaces.js';
+import {setupBaseServerConfig} from '../../lib/app/server-config.js';
 import * as logger from '../../lib/logger.js';
 
 vi.mock('@sentry/node', () => {
@@ -57,7 +56,7 @@ vi.mock('../../lib/utils.js', async () => {
     return {
         ...actual,
         resolvePathFromAppRoot: vi.fn(),
-        anonymizeIp: vi.fn(ip => 'anonymized-ip'),
+        anonymizeIp: vi.fn(_ip => 'anonymized-ip'),
     };
 });
 

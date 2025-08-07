@@ -22,12 +22,11 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
+import fs from 'node:fs';
 import http from 'node:http';
 import https from 'node:https';
 import path from 'node:path';
 import {promisify} from 'node:util';
-
-import fs from 'node:fs';
 import _ from 'underscore';
 import urljoin from 'url-join';
 
@@ -213,6 +212,7 @@ export class CompilerFinder {
         const group = props('group', '');
 
         const demanglerProp = props('demangler', '');
+        // biome-ignore lint/suspicious/noTemplateCurlyInString: This is an intentional placeholder replaced at runtime
         const demangler = demanglerProp ? path.normalize(demanglerProp.replace('${ceToolsPath}', ceToolsPath)) : '';
 
         const isSemVer = props('isSemVer', false);
@@ -297,13 +297,16 @@ export class CompilerFinder {
             libPath: props('libPath', '')
                 .split(path.delimiter)
                 .filter(p => p !== '')
+                // biome-ignore lint/suspicious/noTemplateCurlyInString: This is an intentional placeholder replaced at runtime
                 .map(x => path.normalize(x.replace('${exePath}', exePath))),
             ldPath: props('ldPath', '')
                 .split('|')
+                // biome-ignore lint/suspicious/noTemplateCurlyInString: This is an intentional placeholder replaced at runtime
                 .map(x => path.normalize(x.replace('${exePath}', exePath))),
             extraPath: props('extraPath', '')
                 .split(path.delimiter)
                 .filter(p => p !== '')
+                // biome-ignore lint/suspicious/noTemplateCurlyInString: This is an intentional placeholder replaced at runtime
                 .map(x => path.normalize(x.replace('${exePath}', exePath))),
             envVars: envVars,
             notification: props('notification', ''),

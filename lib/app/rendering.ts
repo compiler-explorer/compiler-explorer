@@ -26,8 +26,8 @@ import express, {Request, Response} from 'express';
 import _ from 'underscore';
 
 import {AppArguments} from '../app.interfaces.js';
-import {GoldenLayoutRootStruct} from '../clientstate-normalizer.js';
 import * as normalizer from '../clientstate-normalizer.js';
+import {GoldenLayoutRootStruct} from '../clientstate-normalizer.js';
 import type {ShortLinkMetaData} from '../handlers/handler.interfaces.js';
 import * as utils from '../utils.js';
 import {

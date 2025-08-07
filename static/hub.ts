@@ -23,8 +23,6 @@
 // POSSIBILITY OF SUCH DAMAGE.
 
 import GoldenLayout, {ContentItem} from 'golden-layout';
-type GLC = GoldenLayout.Container;
-
 import _ from 'underscore';
 import {LanguageKey} from '../types/languages.interfaces.js';
 import {CompilerService} from './compiler-service.js';
@@ -38,6 +36,7 @@ import {
     DIFF_VIEW_COMPONENT_NAME,
     EDITOR_COMPONENT_NAME,
     EXECUTOR_COMPONENT_NAME,
+    EXPLAIN_VIEW_COMPONENT_NAME,
     FLAGS_VIEW_COMPONENT_NAME,
     GCC_DUMP_VIEW_COMPONENT_NAME,
     GNAT_DEBUG_TREE_VIEW_COMPONENT_NAME,
@@ -45,6 +44,7 @@ import {
     HASKELL_CMM_VIEW_COMPONENT_NAME,
     HASKELL_CORE_VIEW_COMPONENT_NAME,
     HASKELL_STG_VIEW_COMPONENT_NAME,
+    InferComponentState,
     IR_VIEW_COMPONENT_NAME,
     LLVM_OPT_PIPELINE_VIEW_COMPONENT_NAME,
     OPT_PIPELINE_VIEW_COMPONENT_NAME,
@@ -71,6 +71,7 @@ import {DeviceAsm as DeviceView} from './panes/device-view.js';
 import {Diff} from './panes/diff.js';
 import {Editor} from './panes/editor.js';
 import {Executor} from './panes/executor.js';
+import {ExplainView} from './panes/explain-view.js';
 import {Flags as FlagsView} from './panes/flags-view.js';
 import {GccDump as GCCDumpView} from './panes/gccdump-view.js';
 import {GnatDebug as GnatDebugView} from './panes/gnatdebug-view.js';
@@ -87,9 +88,11 @@ import {RustHir as RustHirView} from './panes/rusthir-view.js';
 import {RustMacroExp as RustMacroExpView} from './panes/rustmacroexp-view.js';
 import {RustMir as RustMirView} from './panes/rustmir-view.js';
 import {StackUsage as StackUsageView} from './panes/stack-usage-view.js';
-import {ToolInputView} from './panes/tool-input-view.js';
 import {Tool} from './panes/tool.js';
-import {Tree} from './panes/tree.js';
+import {ToolInputView} from './panes/tool-input-view.js';
+import {Tree, TreeState} from './panes/tree.js';
+
+type GLC = GoldenLayout.Container;
 
 type EventDescriptorMap = {
     [E in keyof EventMap]: [E, ...Parameters<EventMap[E]>];
@@ -164,6 +167,7 @@ export class Hub {
         layout.registerComponent(CONFORMANCE_VIEW_COMPONENT_NAME, (c: GLC, s: any) =>
             this.conformanceViewFactory(c, s),
         );
+        layout.registerComponent(EXPLAIN_VIEW_COMPONENT_NAME, (c: GLC, s: any) => this.explainViewFactory(c, s));
 
         layout.eventHub.on(
             'editorOpen',
@@ -429,7 +433,7 @@ export class Hub {
 
     // Component Factories
 
-    private codeEditorFactory(container: GoldenLayout.Container, state: any): void {
+    private codeEditorFactory(container: GoldenLayout.Container, state: InferComponentState<Editor>): Editor {
         // Ensure editors are closable: some older versions had 'isClosable' false.
         // NB there doesn't seem to be a better way to do this than reach into the config and rely on the fact nothing
         // has used it yet.
@@ -439,159 +443,149 @@ export class Hub {
         });
         const editor = new Editor(this, state, container);
         this.editors.push(editor);
+        return editor;
     }
 
-    private treeFactory(container: GoldenLayout.Container, state: ConstructorParameters<typeof Tree>[2]): Tree {
+    private treeFactory(container: GoldenLayout.Container, state: TreeState): Tree {
         const tree = new Tree(this, container, state);
         this.trees.push(tree);
         return tree;
     }
 
-    public compilerFactory(container: GoldenLayout.Container, state: any): any /* typeof Compiler */ {
+    public compilerFactory(container: GoldenLayout.Container, state: InferComponentState<Compiler>): Compiler {
         return new Compiler(this, container, state);
     }
 
-    public executorFactory(container: GoldenLayout.Container, state: any): any /*typeof Executor */ {
+    public executorFactory(container: GoldenLayout.Container, state: InferComponentState<Executor>): Executor {
         return new Executor(this, container, state);
     }
 
-    public outputFactory(container: GoldenLayout.Container, state: ConstructorParameters<typeof Output>[2]): Output {
+    public outputFactory(container: GoldenLayout.Container, state: InferComponentState<Output>): Output {
         return new Output(this, container, state);
     }
 
-    public toolFactory(container: GoldenLayout.Container, state: any): any /* typeof Tool */ {
+    public toolFactory(container: GoldenLayout.Container, state: InferComponentState<Tool>): Tool {
         return new Tool(this, container, state);
     }
 
-    public diffFactory(container: GoldenLayout.Container, state: any): any /* typeof Diff */ {
+    public diffFactory(container: GoldenLayout.Container, state: InferComponentState<Diff>): Diff {
         return new Diff(this, container, state);
     }
 
     public toolInputViewFactory(
         container: GoldenLayout.Container,
-        state: ConstructorParameters<typeof ToolInputView>[2],
+        state: InferComponentState<ToolInputView>,
     ): ToolInputView {
         return new ToolInputView(this, container, state);
     }
 
-    public optViewFactory(container: GoldenLayout.Container, state: ConstructorParameters<typeof OptView>[2]): OptView {
+    public optViewFactory(container: GoldenLayout.Container, state: InferComponentState<OptView>): OptView {
         return new OptView(this, container, state);
     }
 
     public stackUsageViewFactory(
         container: GoldenLayout.Container,
-        state: ConstructorParameters<typeof StackUsageView>[2],
+        state: InferComponentState<StackUsageView>,
     ): StackUsageView {
         return new StackUsageView(this, container, state);
     }
 
-    public flagsViewFactory(
-        container: GoldenLayout.Container,
-        state: ConstructorParameters<typeof FlagsView>[2],
-    ): FlagsView {
+    public flagsViewFactory(container: GoldenLayout.Container, state: InferComponentState<FlagsView>): FlagsView {
         return new FlagsView(this, container, state);
     }
 
     public ppViewFactory(
         container: GoldenLayout.Container,
-        state: ConstructorParameters<typeof PreProcessorView>[2],
+        state: InferComponentState<PreProcessorView>,
     ): PreProcessorView {
         return new PreProcessorView(this, container, state);
     }
 
-    public astViewFactory(container: GoldenLayout.Container, state: ConstructorParameters<typeof AstView>[2]): AstView {
+    public astViewFactory(container: GoldenLayout.Container, state: InferComponentState<AstView>): AstView {
         return new AstView(this, container, state);
     }
 
-    public irViewFactory(container: GoldenLayout.Container, state: ConstructorParameters<typeof IrView>[2]): IrView {
+    public irViewFactory(container: GoldenLayout.Container, state: InferComponentState<IrView>): IrView {
         return new IrView(this, container, state);
     }
 
-    public clangirViewFactory(
-        container: GoldenLayout.Container,
-        state: ConstructorParameters<typeof ClangirView>[2],
-    ): ClangirView {
+    public clangirViewFactory(container: GoldenLayout.Container, state: InferComponentState<ClangirView>): ClangirView {
         return new ClangirView(this, container, state);
     }
 
-    public optPipelineFactory(
-        container: GoldenLayout.Container,
-        state: ConstructorParameters<typeof OptPipeline>[2],
-    ): OptPipeline {
+    public optPipelineFactory(container: GoldenLayout.Container, state: InferComponentState<OptPipeline>): OptPipeline {
         return new OptPipeline(this, container, state);
     }
 
-    public deviceViewFactory(
-        container: GoldenLayout.Container,
-        state: ConstructorParameters<typeof DeviceView>[2],
-    ): DeviceView {
+    public deviceViewFactory(container: GoldenLayout.Container, state: InferComponentState<DeviceView>): DeviceView {
         return new DeviceView(this, container, state);
     }
 
     public gnatDebugTreeViewFactory(
         container: GoldenLayout.Container,
-        state: ConstructorParameters<typeof GnatDebugTreeView>[2],
+        state: InferComponentState<GnatDebugTreeView>,
     ): GnatDebugTreeView {
         return new GnatDebugTreeView(this, container, state);
     }
 
     public gnatDebugViewFactory(
         container: GoldenLayout.Container,
-        state: ConstructorParameters<typeof GnatDebugView>[2],
+        state: InferComponentState<GnatDebugView>,
     ): GnatDebugView {
         return new GnatDebugView(this, container, state);
     }
 
-    public rustMirViewFactory(
-        container: GoldenLayout.Container,
-        state: ConstructorParameters<typeof RustMirView>[2],
-    ): RustMirView {
+    public rustMirViewFactory(container: GoldenLayout.Container, state: InferComponentState<RustMirView>): RustMirView {
         return new RustMirView(this, container, state);
     }
 
     public rustMacroExpViewFactory(
         container: GoldenLayout.Container,
-        state: ConstructorParameters<typeof RustMacroExpView>[2],
+        state: InferComponentState<RustMacroExpView>,
     ): RustMacroExpView {
         return new RustMacroExpView(this, container, state);
     }
 
-    public rustHirViewFactory(
-        container: GoldenLayout.Container,
-        state: ConstructorParameters<typeof RustHirView>[2],
-    ): RustHirView {
+    public rustHirViewFactory(container: GoldenLayout.Container, state: InferComponentState<RustHirView>): RustHirView {
         return new RustHirView(this, container, state);
     }
 
     public haskellCoreViewFactory(
         container: GoldenLayout.Container,
-        state: ConstructorParameters<typeof HaskellCoreView>[2],
+        state: InferComponentState<HaskellCoreView>,
     ): HaskellCoreView {
         return new HaskellCoreView(this, container, state);
     }
 
     public haskellStgViewFactory(
         container: GoldenLayout.Container,
-        state: ConstructorParameters<typeof HaskellStgView>[2],
+        state: InferComponentState<HaskellStgView>,
     ): HaskellStgView {
         return new HaskellStgView(this, container, state);
     }
     public haskellCmmViewFactory(
         container: GoldenLayout.Container,
-        state: ConstructorParameters<typeof HaskellCmmView>[2],
+        state: InferComponentState<HaskellCmmView>,
     ): HaskellCmmView {
         return new HaskellCmmView(this, container, state);
     }
 
-    public gccDumpViewFactory(container: GoldenLayout.Container, state: any): any /* typeof GccDumpView */ {
+    public gccDumpViewFactory(container: GoldenLayout.Container, state: InferComponentState<GCCDumpView>): GCCDumpView {
         return new GCCDumpView(this, container, state);
     }
 
-    public cfgViewFactory(container: GoldenLayout.Container, state: ConstructorParameters<typeof CfgView>[2]): CfgView {
+    public cfgViewFactory(container: GoldenLayout.Container, state: InferComponentState<CfgView>): CfgView {
         return new CfgView(this, container, state);
     }
 
-    public conformanceViewFactory(container: GoldenLayout.Container, state: any): any /* typeof ConformanceView */ {
+    public conformanceViewFactory(
+        container: GoldenLayout.Container,
+        state: InferComponentState<ConformanceView>,
+    ): ConformanceView {
         return new ConformanceView(this, container, state);
+    }
+
+    public explainViewFactory(container: GoldenLayout.Container, state: any): ExplainView {
+        return new ExplainView(this, container, state);
     }
 }

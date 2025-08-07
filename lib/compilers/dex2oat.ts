@@ -22,9 +22,8 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import path from 'node:path';
-
 import fs from 'node:fs/promises';
+import path from 'node:path';
 import _ from 'underscore';
 
 import type {ParsedAsmResult, ParsedAsmResultLine} from '../../types/asmresult/asmresult.interfaces.js';
@@ -316,7 +315,7 @@ export class Dex2OatCompiler extends BaseCompiler {
         const humanReadableFormatProfile = `${d8DirPath}/profile.prof.txt`;
         try {
             await fs.access(humanReadableFormatProfile);
-        } catch (e) {
+        } catch {
             // No profile. This is expected.
             return null;
         }

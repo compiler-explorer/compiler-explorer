@@ -23,17 +23,13 @@
 // POSSIBILITY OF SUCH DAMAGE.
 
 import GoldenLayout from 'golden-layout';
-
-import {ParseFiltersAndOutputOptions} from '../types/features/filters.interfaces.js';
-import {GccDumpViewState} from './panes/gccdump-view.interfaces.js';
-import {SentryCapture} from './sentry.js';
-
 import {ConfiguredOverrides} from '../types/compilation/compiler-overrides.interfaces.js';
 import {ConfiguredRuntimeTools} from '../types/execution/execution.interfaces.js';
+import {ParseFiltersAndOutputOptions} from '../types/features/filters.interfaces.js';
 import {LanguageKey} from '../types/languages.interfaces.js';
 import {
-    AST_VIEW_COMPONENT_NAME,
     AnyComponentConfig,
+    AST_VIEW_COMPONENT_NAME,
     CFG_VIEW_COMPONENT_NAME,
     CLANGIR_VIEW_COMPONENT_NAME,
     COMPILER_COMPONENT_NAME,
@@ -45,6 +41,7 @@ import {
     DragSourceFactory,
     EDITOR_COMPONENT_NAME,
     EXECUTOR_COMPONENT_NAME,
+    EXPLAIN_VIEW_COMPONENT_NAME,
     FLAGS_VIEW_COMPONENT_NAME,
     GCC_DUMP_VIEW_COMPONENT_NAME,
     GNAT_DEBUG_TREE_VIEW_COMPONENT_NAME,
@@ -55,8 +52,8 @@ import {
     HASKELL_STG_VIEW_COMPONENT_NAME,
     IR_VIEW_COMPONENT_NAME,
     ItemConfig,
-    LLVM_OPT_PIPELINE_VIEW_COMPONENT_NAME,
     LayoutItem,
+    LLVM_OPT_PIPELINE_VIEW_COMPONENT_NAME,
     OPT_PIPELINE_VIEW_COMPONENT_NAME,
     OPT_VIEW_COMPONENT_NAME,
     OUTPUT_COMPONENT_NAME,
@@ -69,6 +66,8 @@ import {
     TOOL_INPUT_VIEW_COMPONENT_NAME,
     TREE_COMPONENT_NAME,
 } from './components.interfaces.js';
+import {GccDumpViewState} from './panes/gccdump-view.interfaces.js';
+import {SentryCapture} from './sentry.js';
 
 /** Get an empty compiler component. */
 export function getCompiler(editorId: number, lang: string): ComponentConfig<typeof COMPILER_COMPONENT_NAME> {
@@ -939,6 +938,26 @@ export function getDeviceViewWith(
             treeid: treeid,
         },
     };
+}
+
+/** Get an empty explain view component. */
+export function getExplainView(): ComponentConfig<typeof EXPLAIN_VIEW_COMPONENT_NAME> {
+    return createComponentConfig(EXPLAIN_VIEW_COMPONENT_NAME, {});
+}
+
+/** Get an explain view with the given configuration. */
+export function getExplainViewWith(
+    id: number,
+    compilerName: string,
+    editorid: number,
+    treeid: number,
+): ComponentConfig<typeof EXPLAIN_VIEW_COMPONENT_NAME> {
+    return createComponentConfig(EXPLAIN_VIEW_COMPONENT_NAME, {
+        id,
+        compilerName,
+        editorid,
+        treeid,
+    });
 }
 
 /**

@@ -22,10 +22,9 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
+import fs from 'node:fs/promises';
 import path from 'node:path';
 import process from 'node:process';
-
-import fs from 'node:fs/promises';
 import * as Sentry from '@sentry/node';
 import _ from 'underscore';
 

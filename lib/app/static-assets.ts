@@ -24,8 +24,8 @@
 
 import fs from 'node:fs/promises';
 import path from 'node:path';
-import express from 'express';
 import type {Router} from 'express';
+import express from 'express';
 import urljoin from 'url-join';
 
 import {ElementType} from '../../shared/common-utils.js';
@@ -43,7 +43,7 @@ export function createDefaultPugRequireHandler(
     manifest?: Record<string, string>,
 ): PugRequireHandler {
     return (path: string) => {
-        if (manifest && Object.prototype.hasOwnProperty.call(manifest, path)) {
+        if (manifest && Object.hasOwn(manifest, path)) {
             return urljoin(staticRoot, manifest[path]);
         }
         if (manifest) {

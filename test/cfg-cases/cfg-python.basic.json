@@ -1,0 +1,197 @@
+{
+    "asm": [
+        {
+            "text": "  0           0 RESUME                   0",
+            "source": {
+                "line": 0,
+                "file": null
+            }
+        },
+        {
+            "text": "",
+            "source": {
+                "line": null,
+                "file": null
+            }
+        },
+        {
+            "text": "  1           2 LOAD_CONST               0 (<code object square at 0x55a2b8e95ff0, file \"example.py\", line 1>)",
+            "source": {
+                "line": 1,
+                "file": null
+            }
+        },
+        {
+            "text": "              4 MAKE_FUNCTION            0",
+            "source": {
+                "line": 1,
+                "file": null
+            }
+        },
+        {
+            "text": "              6 STORE_NAME               0 (square)",
+            "source": {
+                "line": 1,
+                "file": null
+            }
+        },
+        {
+            "text": "              8 RETURN_CONST             1 (None)",
+            "source": {
+                "line": 1,
+                "file": null
+            }
+        },
+        {
+            "text": "",
+            "source": {
+                "line": null,
+                "file": null
+            }
+        },
+        {
+            "text": "Disassembly of <code object square at 0x55a2b8e95ff0, file \"example.py\", line 1>:",
+            "source": {
+                "line": null,
+                "file": null
+            }
+        },
+        {
+            "text": "  1           0 RESUME                   0",
+            "source": {
+                "line": 1,
+                "file": null
+            }
+        },
+        {
+            "text": "",
+            "source": {
+                "line": null,
+                "file": null
+            }
+        },
+        {
+            "text": "  3           2 LOAD_FAST                0 (num)",
+            "source": {
+                "line": 3,
+                "file": null
+            }
+        },
+        {
+            "text": "              4 LOAD_CONST               1 (5)",
+            "source": {
+                "line": 3,
+                "file": null
+            }
+        },
+        {
+            "text": "              6 COMPARE_OP              68 (>)",
+            "source": {
+                "line": 3,
+                "file": null
+            }
+        },
+        {
+            "text": "             10 POP_JUMP_IF_FALSE        5 (to 22)",
+            "source": {
+                "line": 3,
+                "file": null
+            }
+        },
+        {
+            "text": "",
+            "source": {
+                "line": null,
+                "file": null
+            }
+        },
+        {
+            "text": "  4          12 LOAD_FAST                0 (num)",
+            "source": {
+                "line": 4,
+                "file": null
+            }
+        },
+        {
+            "text": "             14 LOAD_FAST                0 (num)",
+            "source": {
+                "line": 4,
+                "file": null
+            }
+        },
+        {
+            "text": "             16 BINARY_OP                5 (*)",
+            "source": {
+                "line": 4,
+                "file": null
+            }
+        },
+        {
+            "text": "             20 RETURN_VALUE",
+            "source": {
+                "line": 4,
+                "file": null
+            }
+        },
+        {
+            "text": "",
+            "source": {
+                "line": null,
+                "file": null
+            }
+        },
+        {
+            "text": "  6     >>   22 LOAD_FAST                0 (num)",
+            "source": {
+                "line": 6,
+                "file": null
+            }
+        },
+        {
+            "text": "             24 RETURN_VALUE",
+            "source": {
+                "line": 6,
+                "file": null
+            }
+        },
+        {
+            "text": "",
+            "source": {
+                "line": null,
+                "file": null
+            }
+        }
+    ],
+    "cfg": {
+        "Function #0": {
+            "nodes": [
+                {
+                    "id": "Function #0",
+                    "label": "Function #0:\n  1           0 RESUME                   0\n  3           2 LOAD_FAST                0 (num)\n              4 LOAD_CONST               1 (5)\n              6 COMPARE_OP              68 (>)\n             10 POP_JUMP_IF_FALSE        5 (to 22)"
+                },
+                {
+                    "id": "12",
+                    "label": "12:\n  4          12 LOAD_FAST                0 (num)\n             14 LOAD_FAST                0 (num)\n             16 BINARY_OP                5 (*)\n             20 RETURN_VALUE"
+                },
+                {
+                    "id": "22",
+                    "label": "22:\n  6     >>   22 LOAD_FAST                0 (num)\n             24 RETURN_VALUE"
+                }
+            ],
+            "edges": [
+                {
+                    "from": "Function #0",
+                    "to": "22",
+                    "arrows": "to",
+                    "color": "green"
+                },
+                {
+                    "from": "Function #0",
+                    "to": "12",
+                    "arrows": "to",
+                    "color": "red"
+                }
+            ]
+        }
+    }
+}

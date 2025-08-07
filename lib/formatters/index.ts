@@ -29,8 +29,8 @@ import * as all from './_all.js';
 import type {FormatterInfo} from './base.interfaces.js';
 import {BaseFormatter} from './base.js';
 
-export {BaseFormatter} from './base.js';
 export * from './_all.js';
+export {BaseFormatter} from './base.js';
 
 type FormatterClass = {
     new (opts: FormatterInfo): BaseFormatter;
