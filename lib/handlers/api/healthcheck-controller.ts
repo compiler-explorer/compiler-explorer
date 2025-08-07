@@ -39,7 +39,6 @@ export class HealthcheckController implements HttpController {
         private readonly healthCheckFilePath: string | null,
         private readonly compileHandler: ICompileHandler,
         private readonly isExecutionWorker: boolean,
-        _isCompilationWorker = false,
     ) {}
 
     createRouter(): express.Router {

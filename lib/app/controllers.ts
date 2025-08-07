@@ -76,7 +76,6 @@ export function setupControllersAndHandlers(
         healthCheckFilePath,
         compileHandler,
         isExecutionWorker,
-        isCompilationWorker,
     );
 
     return {

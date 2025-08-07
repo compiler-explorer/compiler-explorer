@@ -97,7 +97,7 @@ export async function initialiseApplication(options: ApplicationOptions): Promis
 
     logVersionInfo(appArgs);
 
-    const initialCompilers = await discoverCompilers(appArgs, compilerFinder, isExecutionWorker || isCompilationWorker);
+    const initialCompilers = await discoverCompilers(appArgs, compilerFinder, isExecutionWorker);
 
     const serverOptions = {
         staticPath: appArgs.staticPath || path.join(distPath, 'static'),
