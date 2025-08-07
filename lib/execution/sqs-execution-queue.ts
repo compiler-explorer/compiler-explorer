@@ -33,7 +33,7 @@ import {getHash} from '../utils.js';
 
 import {LocalExecutionEnvironment} from './_all.js';
 import {BaseExecutionTriple} from './base-execution-triple.js';
-import {EventsWsSender} from './events-websocket.js';
+import {PersistentEventsSender} from './events-websocket.js';
 import {getExecutionTriplesForCurrentHost} from './execution-triple.js';
 
 export type RemoteExecutionMessage = {
@@ -131,20 +131,22 @@ export class SqsWorkerMode extends SqsExecuteQueueBase {
 }
 
 async function sendResultViaWebsocket(
-    compilationEnvironment: CompilationEnvironment,
+    persistentSender: PersistentEventsSender,
     guid: string,
     result: BasicExecutionResult,
 ) {
     try {
-        const sender = new EventsWsSender(compilationEnvironment.ceProps);
-        await sender.send(guid, result);
-        await sender.close();
+        await persistentSender.send(guid, result);
     } catch (error) {
-        logger.error(error);
+        logger.error('WebSocket send error:', error);
     }
 }
 
-async function doOneExecution(queue: SqsWorkerMode, compilationEnvironment: CompilationEnvironment) {
+async function doOneExecution(
+    queue: SqsWorkerMode,
+    compilationEnvironment: CompilationEnvironment,
+    persistentSender: PersistentEventsSender,
+) {
     const msg = await queue.pop();
     if (msg?.guid) {
         try {
@@ -152,12 +154,12 @@ async function doOneExecution(queue: SqsWorkerMode, compilationEnvironment: Comp
             await executor.downloadExecutablePackage(msg.hash);
             const result = await executor.execute(msg.params);
 
-            await sendResultViaWebsocket(compilationEnvironment, msg.guid, result);
+            await sendResultViaWebsocket(persistentSender, msg.guid, result);
         } catch (e) {
             // todo: e is undefined somehow?
             logger.error(e);
 
-            await sendResultViaWebsocket(compilationEnvironment, msg.guid, {
+            await sendResultViaWebsocket(persistentSender, msg.guid, {
                 code: -1,
                 stderr: [{text: 'Internal error when remotely executing'}],
                 stdout: [],
@@ -177,18 +179,31 @@ export function startExecutionWorkerThread(
 ) {
     const queue = new SqsWorkerMode(ceProps, awsProps);
 
+    // Create persistent WebSocket sender
+    const persistentSender = new PersistentEventsSender(compilationEnvironment.ceProps);
+
+    // Handle graceful shutdown
+    const shutdown = async () => {
+        logger.info('Shutting down execution worker - closing persistent WebSocket connection');
+        await persistentSender.close();
+        process.exit(0);
+    };
+
+    process.on('SIGINT', shutdown);
+    process.on('SIGTERM', shutdown);
+
     // allow 2 executions at the same time
     // Note: With WaitTimeSeconds=20, the receiveMessage call will wait up to 20 seconds
     // for a message to arrive. The 100ms timeout only applies between successful message
     // processing, providing immediate response when messages are available.
 
     const doExecutionWork1 = async () => {
-        await doOneExecution(queue, compilationEnvironment);
+        await doOneExecution(queue, compilationEnvironment, persistentSender);
         setTimeout(doExecutionWork1, 100);
     };
 
     const doExecutionWork2 = async () => {
-        await doOneExecution(queue, compilationEnvironment);
+        await doOneExecution(queue, compilationEnvironment, persistentSender);
         setTimeout(doExecutionWork2, 100);
     };
 
