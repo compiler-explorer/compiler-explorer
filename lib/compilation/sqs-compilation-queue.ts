@@ -26,7 +26,7 @@ import {SQS} from '@aws-sdk/client-sqs';
 
 import {CompilationResult} from '../../types/compilation/compilation.interfaces.js';
 import {CompilationEnvironment} from '../compilation-env.js';
-import {EventsWsSender} from '../execution/events-websocket.js';
+import {PersistentEventsSender} from '../execution/events-websocket.js';
 import {logger} from '../logger.js';
 import {PropertyGetter} from '../properties.interfaces.js';
 import {SentryCapture} from '../sentry.js';
@@ -141,27 +141,11 @@ export class SqsCompilationWorkerMode extends SqsCompilationQueueBase {
 }
 
 async function sendCompilationResultViaWebsocket(
-    compilationEnvironment: CompilationEnvironment,
+    persistentSender: PersistentEventsSender,
     guid: string,
     result: CompilationResult,
 ) {
     try {
-        const execqueueEventsUrl = compilationEnvironment.ceProps('execqueue.events_url', '');
-        const compilequeueEventsUrl = compilationEnvironment.ceProps('compilequeue.events_url', '');
-        const eventsUrl = compilequeueEventsUrl || execqueueEventsUrl;
-
-        if (!eventsUrl) {
-            throw new Error('No events URL configured - need either compilequeue.events_url or execqueue.events_url');
-        }
-
-        const compilationEventsProps = (key: string, defaultValue?: any) => {
-            if (key === 'execqueue.events_url') {
-                return eventsUrl;
-            }
-            return compilationEnvironment.ceProps(key, defaultValue);
-        };
-
-        const sender = new EventsWsSender(compilationEventsProps);
         const basicResult = {
             ...result,
             okToCache: result.okToCache ?? false,
@@ -169,14 +153,17 @@ async function sendCompilationResultViaWebsocket(
             execTime: 0,
         };
 
-        await sender.send(guid, basicResult);
-        await sender.close();
+        await persistentSender.send(guid, basicResult);
     } catch (error) {
         logger.error('WebSocket send error:', error);
     }
 }
 
-async function doOneCompilation(queue: SqsCompilationWorkerMode, compilationEnvironment: CompilationEnvironment) {
+async function doOneCompilation(
+    queue: SqsCompilationWorkerMode,
+    compilationEnvironment: CompilationEnvironment,
+    persistentSender: PersistentEventsSender,
+) {
     const msg = await queue.pop();
 
     if (msg?.guid) {
@@ -216,7 +203,7 @@ async function doOneCompilation(queue: SqsCompilationWorkerMode, compilationEnvi
                 result.queueTime = msg.queueTimeMs;
             }
 
-            await sendCompilationResultViaWebsocket(compilationEnvironment, msg.guid, result);
+            await sendCompilationResultViaWebsocket(persistentSender, msg.guid, result);
 
             const endTime = Date.now();
             const duration = endTime - startTime;
@@ -250,7 +237,7 @@ async function doOneCompilation(queue: SqsCompilationWorkerMode, compilationEnvi
                 errorResult.queueTime = msg.queueTimeMs;
             }
 
-            await sendCompilationResultViaWebsocket(compilationEnvironment, msg.guid, errorResult);
+            await sendCompilationResultViaWebsocket(persistentSender, msg.guid, errorResult);
         }
     }
 }
@@ -264,12 +251,40 @@ export function startCompilationWorkerThread(
     const numThreads = ceProps<number>('compilequeue.worker_threads', 2);
     const pollIntervalMs = ceProps<number>('compilequeue.poll_interval_ms', 50);
 
+    // Create persistent WebSocket sender
+    const execqueueEventsUrl = compilationEnvironment.ceProps('execqueue.events_url', '');
+    const compilequeueEventsUrl = compilationEnvironment.ceProps('compilequeue.events_url', '');
+    const eventsUrl = compilequeueEventsUrl || execqueueEventsUrl;
+
+    if (!eventsUrl) {
+        throw new Error('No events URL configured - need either compilequeue.events_url or execqueue.events_url');
+    }
+
+    const compilationEventsProps = (key: string, defaultValue?: any) => {
+        if (key === 'execqueue.events_url') {
+            return eventsUrl;
+        }
+        return compilationEnvironment.ceProps(key, defaultValue);
+    };
+
+    const persistentSender = new PersistentEventsSender(compilationEventsProps);
+
+    // Handle graceful shutdown
+    const shutdown = async () => {
+        logger.info('Shutting down compilation worker - closing persistent WebSocket connection');
+        await persistentSender.close();
+        process.exit(0);
+    };
+
+    process.on('SIGINT', shutdown);
+    process.on('SIGTERM', shutdown);
+
     logger.info(`Starting ${numThreads} compilation worker threads with ${pollIntervalMs}ms poll interval`);
 
     for (let i = 0; i < numThreads; i++) {
         const doCompilationWork = async () => {
             try {
-                await doOneCompilation(queue, compilationEnvironment);
+                await doOneCompilation(queue, compilationEnvironment, persistentSender);
             } catch (error) {
                 logger.error('Error in compilation worker thread:', error);
                 SentryCapture(error, 'compilation worker thread error');
