@@ -25,10 +25,8 @@
 import {SQS} from '@aws-sdk/client-sqs';
 
 import {CompilationResult} from '../../types/compilation/compilation.interfaces.js';
-import {BaseCompiler} from '../base-compiler.js';
 import {CompilationEnvironment} from '../compilation-env.js';
 import {EventsWsSender} from '../execution/events-websocket.js';
-import {ParsedRequest} from '../handlers/compile.js';
 import {logger} from '../logger.js';
 import {PropertyGetter} from '../properties.interfaces.js';
 import {SentryCapture} from '../sentry.js';
@@ -178,122 +176,6 @@ async function sendCompilationResultViaWebsocket(
     }
 }
 
-async function executeRemoteCompilation(
-    compiler: BaseCompiler,
-    msg: RemoteCompilationRequest,
-    parsedRequest: ParsedRequest,
-): Promise<CompilationResult> {
-    const remote = compiler.getRemote();
-    if (!remote || !remote.target) {
-        throw new Error(`Remote configuration missing for compiler ${compiler.getInfo().id}`);
-    }
-
-    const compilationType = msg.isCMake ? 'cmake' : 'compile';
-    const endpoint = msg.isCMake ? remote.cmakePath || '/api/compiler/cmake' : remote.path || '/api/compiler/compile';
-    const url = new URL(endpoint, remote.target);
-
-    logger.info(`Forwarding ${compilationType} request for ${msg.compilerId} to remote: ${url.href}`);
-
-    const requestBody = {
-        source: parsedRequest.source,
-        options: {
-            userArguments: parsedRequest.options.join(' '),
-            compilerOptions: parsedRequest.backendOptions,
-            filters: parsedRequest.filters,
-            tools: parsedRequest.tools,
-            libraries: parsedRequest.libraries,
-            executeParameters: parsedRequest.executeParameters,
-        },
-        lang: msg.lang,
-        files: msg.files || [],
-        bypassCache: parsedRequest.bypassCache,
-    };
-
-    try {
-        const controller = new AbortController();
-        const timeout = setTimeout(() => controller.abort(), 35000); // 35 second timeout
-
-        const response = await fetch(url.href, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                Accept: 'application/json',
-            },
-            body: JSON.stringify(requestBody),
-            signal: controller.signal,
-        });
-
-        clearTimeout(timeout);
-
-        if (!response.ok) {
-            const errorText = await response.text();
-            let errorMessage = `Remote compilation failed with status ${response.status}`;
-            try {
-                // Try to parse error response as JSON
-                const errorJson = JSON.parse(errorText);
-                if (errorJson.error) {
-                    errorMessage = errorJson.error;
-                } else if (errorJson.message) {
-                    errorMessage = errorJson.message;
-                }
-            } catch {
-                // If not JSON, use the text as-is
-                errorMessage = errorText || errorMessage;
-            }
-
-            // Return error as CompilationResult instead of throwing
-            return {
-                code: response.status,
-                stderr: [{text: errorMessage}],
-                stdout: [],
-                okToCache: false,
-                timedOut: false,
-                inputFilename: '',
-                asm: [],
-                tools: [],
-                queueTime: msg.queueTimeMs,
-            };
-        }
-
-        const result = await response.json();
-        // Add queue time to successful remote result
-        if (msg.queueTimeMs !== undefined) {
-            result.queueTime = msg.queueTimeMs;
-        }
-        return result as CompilationResult;
-    } catch (error: any) {
-        if (error.name === 'AbortError') {
-            return {
-                code: -1,
-                stderr: [{text: `Remote compilation timeout after 35 seconds for ${msg.compilerId}`}],
-                stdout: [],
-                okToCache: false,
-                timedOut: true,
-                inputFilename: '',
-                asm: [],
-                tools: [],
-                queueTime: msg.queueTimeMs,
-            };
-        }
-
-        // Network errors, connection refused, etc.
-        const errorMessage = error.message || 'Unknown remote compilation error';
-        logger.error(`Remote compilation error for ${msg.compilerId}:`, error);
-
-        return {
-            code: -1,
-            stderr: [{text: `Remote compilation error: ${errorMessage}`}],
-            stdout: [],
-            okToCache: false,
-            timedOut: false,
-            inputFilename: '',
-            asm: [],
-            tools: [],
-            queueTime: msg.queueTimeMs,
-        };
-    }
-}
-
 async function doOneCompilation(queue: SqsCompilationWorkerMode, compilationEnvironment: CompilationEnvironment) {
     const msg = await queue.pop();
 
@@ -312,43 +194,21 @@ async function doOneCompilation(queue: SqsCompilationWorkerMode, compilationEnvi
 
             let result: CompilationResult;
 
-            // Check if this is a remote compiler
-            if (compiler.getRemote()) {
-                logger.debug(`Using remote compilation for ${msg.compilerId}`);
-                try {
-                    result = await executeRemoteCompilation(compiler, msg, parsedRequest);
-                } catch (remoteError: any) {
-                    // executeRemoteCompilation should normally not throw, but handle it just in case
-                    logger.error('Unexpected error in executeRemoteCompilation:', remoteError);
-                    result = {
-                        code: -1,
-                        stderr: [{text: `Internal error: ${remoteError.message || remoteError}`}],
-                        stdout: [],
-                        okToCache: false,
-                        timedOut: false,
-                        inputFilename: '',
-                        asm: [],
-                        tools: [],
-                        queueTime: msg.queueTimeMs,
-                    };
-                }
+            // Local compilation only
+            if (msg.isCMake) {
+                result = await compiler.cmake(msg.files || [], parsedRequest, parsedRequest.bypassCache);
             } else {
-                // Local compilation
-                if (msg.isCMake) {
-                    result = await compiler.cmake(msg.files || [], parsedRequest, parsedRequest.bypassCache);
-                } else {
-                    result = await compiler.compile(
-                        parsedRequest.source,
-                        parsedRequest.options,
-                        parsedRequest.backendOptions,
-                        parsedRequest.filters,
-                        parsedRequest.bypassCache,
-                        parsedRequest.tools,
-                        parsedRequest.executeParameters,
-                        parsedRequest.libraries,
-                        msg.files || [],
-                    );
-                }
+                result = await compiler.compile(
+                    parsedRequest.source,
+                    parsedRequest.options,
+                    parsedRequest.backendOptions,
+                    parsedRequest.filters,
+                    parsedRequest.bypassCache,
+                    parsedRequest.tools,
+                    parsedRequest.executeParameters,
+                    parsedRequest.libraries,
+                    msg.files || [],
+                );
             }
 
             // Add queue time to result if available
