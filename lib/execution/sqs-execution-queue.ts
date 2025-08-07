@@ -134,9 +134,12 @@ async function sendResultViaWebsocket(
     persistentSender: PersistentEventsSender,
     guid: string,
     result: BasicExecutionResult,
+    totalTimeMs?: number,
 ) {
     try {
         await persistentSender.send(guid, result);
+        const timingInfo = totalTimeMs !== undefined ? ` (total time: ${totalTimeMs}ms)` : '';
+        logger.info(`Successfully sent execution result for ${guid} via WebSocket${timingInfo}`);
     } catch (error) {
         logger.error('WebSocket send error:', error);
     }
@@ -149,25 +152,37 @@ async function doOneExecution(
 ) {
     const msg = await queue.pop();
     if (msg?.guid) {
+        const startTime = Date.now();
         try {
             const executor = new LocalExecutionEnvironment(compilationEnvironment);
             await executor.downloadExecutablePackage(msg.hash);
             const result = await executor.execute(msg.params);
 
-            await sendResultViaWebsocket(persistentSender, msg.guid, result);
+            const endTime = Date.now();
+            const duration = endTime - startTime;
+
+            await sendResultViaWebsocket(persistentSender, msg.guid, result, duration);
         } catch (e) {
             // todo: e is undefined somehow?
             logger.error(e);
 
-            await sendResultViaWebsocket(persistentSender, msg.guid, {
-                code: -1,
-                stderr: [{text: 'Internal error when remotely executing'}],
-                stdout: [],
-                okToCache: false,
-                timedOut: false,
-                filenameTransform: f => f,
-                execTime: 0,
-            });
+            const endTime = Date.now();
+            const duration = endTime - startTime;
+
+            await sendResultViaWebsocket(
+                persistentSender,
+                msg.guid,
+                {
+                    code: -1,
+                    stderr: [{text: 'Internal error when remotely executing'}],
+                    stdout: [],
+                    okToCache: false,
+                    timedOut: false,
+                    filenameTransform: f => f,
+                    execTime: 0,
+                },
+                duration,
+            );
         }
     }
 }

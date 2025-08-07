@@ -144,6 +144,7 @@ async function sendCompilationResultViaWebsocket(
     persistentSender: PersistentEventsSender,
     guid: string,
     result: CompilationResult,
+    totalTimeMs: number,
 ) {
     try {
         const basicResult = {
@@ -154,6 +155,7 @@ async function sendCompilationResultViaWebsocket(
         };
 
         await persistentSender.send(guid, basicResult);
+        logger.info(`Successfully sent compilation result for ${guid} via WebSocket (total time: ${totalTimeMs}ms)`);
     } catch (error) {
         logger.error('WebSocket send error:', error);
     }
@@ -203,10 +205,11 @@ async function doOneCompilation(
                 result.queueTime = msg.queueTimeMs;
             }
 
-            await sendCompilationResultViaWebsocket(persistentSender, msg.guid, result);
-
             const endTime = Date.now();
             const duration = endTime - startTime;
+
+            await sendCompilationResultViaWebsocket(persistentSender, msg.guid, result, duration);
+
             logger.info(`Completed ${compilationType} request ${msg.guid} in ${duration}ms`);
         } catch (e: any) {
             const endTime = Date.now();
@@ -237,7 +240,7 @@ async function doOneCompilation(
                 errorResult.queueTime = msg.queueTimeMs;
             }
 
-            await sendCompilationResultViaWebsocket(persistentSender, msg.guid, errorResult);
+            await sendCompilationResultViaWebsocket(persistentSender, msg.guid, errorResult, duration);
         }
     }
 }
