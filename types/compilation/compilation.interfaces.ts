@@ -226,6 +226,7 @@ export type CompilationResult = {
     processExecutionResultTime?: number;
     objdumpTime?: number;
     parsingTime?: number;
+    queueTime?: number;
 
     source?: string; // todo: this is a crazy hack, we should get rid of it
 
