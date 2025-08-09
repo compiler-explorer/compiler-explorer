@@ -22,9 +22,8 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import path from 'node:path';
-
 import fs from 'node:fs/promises';
+import path from 'node:path';
 import _ from 'underscore';
 
 import {CompilationResult} from '../../types/compilation/compilation.interfaces.js';
@@ -101,7 +100,7 @@ export class NimCompiler extends BaseCompiler {
         const options = result.compilationOptions;
         const cacheDir = this.cacheDir(outputFilename);
         try {
-            if (_.intersection(options!, ['js', 'check']).length > 0) filters.binary = false;
+            if (_.intersection(options!, ['js', 'check', '-c']).length > 0) filters.binary = false;
             else {
                 filters.binary = true;
                 const objFile = unwrap(this.getCacheFile(options!, result.inputFilename!, cacheDir));

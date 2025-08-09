@@ -36,6 +36,7 @@ import {
     DIFF_VIEW_COMPONENT_NAME,
     EDITOR_COMPONENT_NAME,
     EXECUTOR_COMPONENT_NAME,
+    EXPLAIN_VIEW_COMPONENT_NAME,
     FLAGS_VIEW_COMPONENT_NAME,
     GCC_DUMP_VIEW_COMPONENT_NAME,
     GNAT_DEBUG_TREE_VIEW_COMPONENT_NAME,
@@ -43,8 +44,8 @@ import {
     HASKELL_CMM_VIEW_COMPONENT_NAME,
     HASKELL_CORE_VIEW_COMPONENT_NAME,
     HASKELL_STG_VIEW_COMPONENT_NAME,
-    IR_VIEW_COMPONENT_NAME,
     InferComponentState,
+    IR_VIEW_COMPONENT_NAME,
     LLVM_OPT_PIPELINE_VIEW_COMPONENT_NAME,
     OPT_PIPELINE_VIEW_COMPONENT_NAME,
     OPT_VIEW_COMPONENT_NAME,
@@ -70,6 +71,7 @@ import {DeviceAsm as DeviceView} from './panes/device-view.js';
 import {Diff} from './panes/diff.js';
 import {Editor} from './panes/editor.js';
 import {Executor} from './panes/executor.js';
+import {ExplainView} from './panes/explain-view.js';
 import {Flags as FlagsView} from './panes/flags-view.js';
 import {GccDump as GCCDumpView} from './panes/gccdump-view.js';
 import {GnatDebug as GnatDebugView} from './panes/gnatdebug-view.js';
@@ -86,8 +88,8 @@ import {RustHir as RustHirView} from './panes/rusthir-view.js';
 import {RustMacroExp as RustMacroExpView} from './panes/rustmacroexp-view.js';
 import {RustMir as RustMirView} from './panes/rustmir-view.js';
 import {StackUsage as StackUsageView} from './panes/stack-usage-view.js';
-import {ToolInputView} from './panes/tool-input-view.js';
 import {Tool} from './panes/tool.js';
+import {ToolInputView} from './panes/tool-input-view.js';
 import {Tree, TreeState} from './panes/tree.js';
 
 type GLC = GoldenLayout.Container;
@@ -165,6 +167,7 @@ export class Hub {
         layout.registerComponent(CONFORMANCE_VIEW_COMPONENT_NAME, (c: GLC, s: any) =>
             this.conformanceViewFactory(c, s),
         );
+        layout.registerComponent(EXPLAIN_VIEW_COMPONENT_NAME, (c: GLC, s: any) => this.explainViewFactory(c, s));
 
         layout.eventHub.on(
             'editorOpen',
@@ -580,5 +583,9 @@ export class Hub {
         state: InferComponentState<ConformanceView>,
     ): ConformanceView {
         return new ConformanceView(this, container, state);
+    }
+
+    public explainViewFactory(container: GoldenLayout.Container, state: any): ExplainView {
+        return new ExplainView(this, container, state);
     }
 }

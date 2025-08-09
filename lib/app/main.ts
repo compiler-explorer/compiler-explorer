@@ -26,13 +26,6 @@ import fs from 'node:fs/promises';
 import path from 'node:path';
 
 import type {AppArguments} from '../app.interfaces.js';
-import {initializeCompilationEnvironment} from './compilation-env.js';
-import {setupCompilerChangeHandling} from './compiler-changes.js';
-import {discoverCompilers} from './compiler-discovery.js';
-import {setupControllersAndHandlers} from './controllers.js';
-import {setupRoutesAndApi} from './routes-setup.js';
-import {setupTempDir} from './temp-dir.js';
-
 import * as aws from '../aws.js';
 import {CompilerFinder} from '../compiler-finder.js';
 import {startWineInit} from '../exec.js';
@@ -47,8 +40,14 @@ import {SetupSentry} from '../sentry.js';
 import {sources} from '../sources/index.js';
 import {loadSponsorsFromString} from '../sponsors.js';
 import {getStorageTypeByKey} from '../storage/index.js';
+import {initializeCompilationEnvironment} from './compilation-env.js';
+import {setupCompilerChangeHandling} from './compiler-changes.js';
+import {discoverCompilers} from './compiler-discovery.js';
+import {setupControllersAndHandlers} from './controllers.js';
 import {ApplicationOptions, ApplicationResult} from './main.interfaces.js';
+import {setupRoutesAndApi} from './routes-setup.js';
 import {setupWebServer, startListening} from './server.js';
+import {setupTempDir} from './temp-dir.js';
 
 /**
  * Initialize the Compiler Explorer application

@@ -23,9 +23,8 @@
 // POSSIBILITY OF SUCH DAMAGE.
 
 import {beforeEach, describe, expect, it} from 'vitest';
-
-import {VcAsmParser} from '../lib/parsers/asm-parser-vc.js';
 import {AsmParser} from '../lib/parsers/asm-parser.js';
+import {VcAsmParser} from '../lib/parsers/asm-parser-vc.js';
 
 // Test helper class that extends VcAsmParser to expose protected properties for testing
 class VcAsmParserForTest extends VcAsmParser {

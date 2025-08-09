@@ -1,9 +1,8 @@
 import $ from 'jquery';
 
 import {Hub} from './hub.js';
-import {Settings} from './settings.js';
-
 import * as local from './local.js';
+import {Settings} from './settings.js';
 
 const localKey = 'aprilfools2024';
 
@@ -48,7 +47,7 @@ export function setupRealDark(hub: Hub) {
             $('#settings .theme').val('real-dark').trigger('change');
         }
     });
-    $('#true-dark .content .dark-close').on('click', e => {
+    $('#true-dark .content .dark-close').on('click', _e => {
         local.localStorage.set(localKey, 'hidden');
         toggleButton();
         toggleOverlay();

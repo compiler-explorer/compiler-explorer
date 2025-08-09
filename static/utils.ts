@@ -148,7 +148,7 @@ export function getNumericToolTip(value: string, digitSeparator?: string): strin
     const decoder = new TextDecoder('utf-8', {fatal: true});
     try {
         result += ' = ' + JSON.stringify(decoder.decode(Uint8Array.from(bytes)));
-    } catch (e) {
+    } catch {
         // ignore `TypeError` when the number is not valid UTF-8
     }
 

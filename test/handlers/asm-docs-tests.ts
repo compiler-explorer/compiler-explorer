@@ -103,7 +103,14 @@ const TEST_MATRIX: Record<PropertyKey, [string, string, string, string][]> = {
             'https://www.ibm.com/docs/en/aix/7.3?topic=set-addc-add-carrying-instruction',
         ],
     ],
-    sass: [['FADD', 'FP32 Add', 'FP32 Add', 'https://docs.nvidia.com/cuda/cuda-binary-utilities/index.html#id14']],
+    sass: [
+        [
+            'FADD',
+            'FP32 Add',
+            'FP32 Add',
+            'https://docs.nvidia.com/cuda/cuda-binary-utilities/index.html#instruction-set-reference',
+        ],
+    ],
     wdc65c816: [
         [
             'jsl',

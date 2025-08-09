@@ -40,11 +40,17 @@ export class PythonCFGParser extends BaseCFGParser {
         return x.startsWith('Disassembly of');
     }
 
-    override isBasicBlockEnd(inst: string, prevInst: string) {
+    private isJmpTarget(inst: string) {
         if (inst.includes('>>'))
-            // jmp target
+            // for python <= 3.12
             return true;
+        // for python 3.13: 'label' lines look like `  8   L4:  LOAD_GLOBAL   1 (print + NULL)`
+        return inst.match(/^\s*\d+\s*L\d+:/);
+    }
+
+    override isBasicBlockEnd(inst: string, prevInst: string) {
         // Probably applicable to non-python CFGs too:
+        if (this.isJmpTarget(inst)) return true;
         return this.instructionSetInfo.getInstructionType(prevInst) !== InstructionType.notRetInst;
     }
 
@@ -70,7 +76,7 @@ export class PythonCFGParser extends BaseCFGParser {
 
         for (let i = 0; i < bytecode.length; i++) {
             const line = bytecode[i];
-            let funcName: string | undefined = undefined;
+            let funcName: string | undefined;
             if (line.text.startsWith('Disassembly of')) {
                 const srcLineStr = line.text.match(/line (\d+)/)?.[1];
                 const srcLineNum = srcLineStr ? Number.parseInt(srcLineStr) : null;
