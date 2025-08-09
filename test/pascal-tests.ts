@@ -44,7 +44,7 @@ describe('Pascal', () => {
     beforeAll(() => {
         const ce = makeCompilationEnvironment({languages});
         const info = {
-            exe: null,
+            exe: 'pascal-compiler',
             remote: true,
             lang: languages.pascal.id,
         };
@@ -498,7 +498,7 @@ describe('Pascal', () => {
         beforeAll(() => {
             const ce = makeCompilationEnvironment({languages});
             const info = {
-                exe: null,
+                exe: 'pascal.exe',
                 remote: true,
                 lang: languages.pascal.id,
             };
