@@ -184,8 +184,9 @@ export class AsmParser extends AsmRegex implements IAsmParser {
             }
         } else {
             // A used label.
-            context.prevLabel = match[1];
-            labelDefinitions[match[1]] = asmLength + 1;
+            const labelName = match[1].startsWith('"') && match[1].endsWith('"') ? match[1].slice(1, -1) : match[1];
+            context.prevLabel = labelName;
+            labelDefinitions[labelName] = asmLength + 1;
 
             if (!this.parsingState.inNvccDef && !this.parsingState.inNvccCode && filters.libraryCode) {
                 context.prevLabelIsUserFunction = this.isUserFunctionByLookingAhead(
@@ -323,9 +324,9 @@ export class AsmParser extends AsmRegex implements IAsmParser {
         this.labelProcessor = new LabelProcessor();
         this.parsingState = new ParsingState({}, null, '', false, false, []);
 
-        this.labelFindNonMips = /[.A-Z_a-z][\w$.]*|"[.A-Z_a-z][\w$.]*"/g;
+        this.labelFindNonMips = /[.A-Z_a-z][\w$.]*|"[^"]+"/g;
         // MIPS labels can start with a $ sign, but other assemblers use $ to mean literal.
-        this.labelFindMips = /[$.A-Z_a-z][\w$.]*|"[$.A-Z_a-z][\w$.]*"/g;
+        this.labelFindMips = /[$.A-Z_a-z][\w$.]*|"[^"]+"/g;
         this.mipsLabelDefinition = /^\$[\w$.]+:/;
         this.dataDefn =
             /^\s*\.(ascii|asciz|base64|[1248]?byte|dc(?:\.[abdlswx])?|dcb(?:\.[bdlswx])?|ds(?:\.[bdlpswx])?|double|dword|fill|float|half|hword|int|long|octa|quad|short|single|skip|space|string(?:8|16|32|64)?|value|word|xword|zero)/;
@@ -333,7 +334,7 @@ export class AsmParser extends AsmRegex implements IAsmParser {
         // Opcode expression here matches LLVM-style opcodes of the form `%blah = opcode`
         this.hasOpcodeRe = /^\s*(%[$.A-Z_a-z][\w$.]*\s*=\s*)?[A-Za-z]/;
         this.instructionRe = /^\s*[A-Za-z]+/;
-        this.identifierFindRe = /([$.@A-Z_a-z]\w*)(?:@\w+)*/g;
+        this.identifierFindRe = /([$.@A-Z_a-z]\w*)(?:@\w+)*|"([^"]+)"/g;
         this.hasNvccOpcodeRe = /^\s*[@A-Za-z|]/;
         this.definesFunction = /^\s*\.(type.*,\s*[#%@]function|proc\s+[.A-Z_a-z][\w$.]*:.*)$/;
         this.definesGlobal = /^\s*\.(?:globa?l|GLB|export)\s*([.A-Z_a-z][\w$.]*|"[.A-Z_a-z][\w$.]*")/;

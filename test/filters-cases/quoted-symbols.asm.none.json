@@ -1,0 +1,197 @@
+{
+  "asm": [
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .file   \"example.cpp\""
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .text"
+    },
+    {
+      "labels": [
+        {
+          "name": "main",
+          "range": {
+            "endCol": 21,
+            "startCol": 17
+          }
+        }
+      ],
+      "source": null,
+      "text": "        .globl  main"
+    },
+    {
+      "labels": [
+        {
+          "name": "main",
+          "range": {
+            "endCol": 21,
+            "startCol": 17
+          }
+        }
+      ],
+      "source": null,
+      "text": "        .type   main, @function"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "main:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        pushq   %rbp"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        movq    %rsp, %rbp"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        subq    $16, %rbp"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        movl    $5, -4(%rbp)"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        movl    -4(%rbp), %edi"
+    },
+    {
+      "labels": [
+        {
+          "name": "square(int)",
+          "range": {
+            "endCol": 29,
+            "startCol": 18
+          }
+        }
+      ],
+      "source": null,
+      "text": "        call    \"square(int)\""
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        movl    %eax, -8(%rbp)"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        movl    -8(%rbp), %eax"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        addq    $16, %rsp"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        popq    %rbp"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        ret"
+    },
+    {
+      "labels": [
+        {
+          "name": "main",
+          "range": {
+            "endCol": 21,
+            "startCol": 17
+          }
+        },
+        {
+          "name": "main",
+          "range": {
+            "endCol": 29,
+            "startCol": 25
+          }
+        }
+      ],
+      "source": null,
+      "text": "        .size   main, .-main"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ""
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "\"square(int)\":"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        pushq   %rbp"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        movq    %rsp, %rbp"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        movl    %edi, -4(%rbp)"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        movl    -4(%rbp), %eax"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        imull   %eax, %eax"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        popq    %rbp"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        ret"
+    },
+    {
+      "labels": [
+        {
+          "name": "square(int)",
+          "range": {
+            "endCol": 29,
+            "startCol": 18
+          }
+        },
+        {
+          "name": "square(int)",
+          "range": {
+            "endCol": 46,
+            "startCol": 35
+          }
+        }
+      ],
+      "source": null,
+      "text": "        .size   \"square(int)\", .-\"square(int)\""
+    }
+  ],
+  "labelDefinitions": {
+    "main": 5,
+    "square(int)": 19
+  }
+}

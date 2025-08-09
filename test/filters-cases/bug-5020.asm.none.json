@@ -42299,15 +42299,7 @@
       "text": ".LASF105:"
     },
     {
-      "labels": [
-        {
-          "name": "main",
-          "range": {
-            "endCol": 44,
-            "startCol": 40
-          }
-        }
-      ],
+      "labels": [],
       "source": null,
       "text": "        .string \"_M_init_functor<const main()::<lambda()>&>\""
     },
@@ -42317,15 +42309,7 @@
       "text": ".LASF195:"
     },
     {
-      "labels": [
-        {
-          "name": "std",
-          "range": {
-            "endCol": 37,
-            "startCol": 34
-          }
-        }
-      ],
+      "labels": [],
       "source": null,
       "text": "        .string \"_M_access<const std::type_info*>\""
     },
@@ -42455,15 +42439,7 @@
       "text": ".LASF140:"
     },
     {
-      "labels": [
-        {
-          "name": "main",
-          "range": {
-            "endCol": 42,
-            "startCol": 38
-          }
-        }
-      ],
+      "labels": [],
       "source": null,
       "text": "        .string \"__invoke_impl<void, main()::<lambda()>&>\""
     },
@@ -42513,15 +42489,7 @@
       "text": ".LASF107:"
     },
     {
-      "labels": [
-        {
-          "name": "main",
-          "range": {
-            "endCol": 44,
-            "startCol": 40
-          }
-        }
-      ],
+      "labels": [],
       "source": null,
       "text": "        .string \"_M_not_empty_function<main()::<lambda()> >\""
     },
@@ -42631,15 +42599,7 @@
       "text": ".LASF64:"
     },
     {
-      "labels": [
-        {
-          "name": "std",
-          "range": {
-            "endCol": 30,
-            "startCol": 27
-          }
-        }
-      ],
+      "labels": [],
       "source": null,
       "text": "        .string \"operator std::integral_constant<bool, true>::value_type\""
     },
@@ -42709,15 +42669,7 @@
       "text": ".LASF136:"
     },
     {
-      "labels": [
-        {
-          "name": "main",
-          "range": {
-            "endCol": 48,
-            "startCol": 44
-          }
-        }
-      ],
+      "labels": [],
       "source": null,
       "text": "        .string \"_Function_handler<void(), main()::<lambda()> >\""
     },
@@ -42807,15 +42759,7 @@
       "text": ".LASF83:"
     },
     {
-      "labels": [
-        {
-          "name": "main",
-          "range": {
-            "endCol": 32,
-            "startCol": 28
-          }
-        }
-      ],
+      "labels": [],
       "source": null,
       "text": "        .string \"_M_access<main()::<lambda()>*>\""
     },
@@ -42825,15 +42769,7 @@
       "text": ".LASF100:"
     },
     {
-      "labels": [
-        {
-          "name": "main",
-          "range": {
-            "endCol": 36,
-            "startCol": 32
-          }
-        }
-      ],
+      "labels": [],
       "source": null,
       "text": "        .string \"_Base_manager<main()::<lambda()> >\""
     },
@@ -42953,15 +42889,7 @@
       "text": ".LASF263:"
     },
     {
-      "labels": [
-        {
-          "name": "std",
-          "range": {
-            "endCol": 21,
-            "startCol": 18
-          }
-        }
-      ],
+      "labels": [],
       "source": null,
       "text": "        .string \"std::_Function_base::~_Function_base() [base object destructor]\""
     },
@@ -43251,15 +43179,7 @@
       "text": ".LASF260:"
     },
     {
-      "labels": [
-        {
-          "name": "std",
-          "range": {
-            "endCol": 21,
-            "startCol": 18
-          }
-        }
-      ],
+      "labels": [],
       "source": null,
       "text": "        .string \"std::__throw_bad_function_call()\""
     },
@@ -43589,15 +43509,7 @@
       "text": ".LASF59:"
     },
     {
-      "labels": [
-        {
-          "name": "std",
-          "range": {
-            "endCol": 30,
-            "startCol": 27
-          }
-        }
-      ],
+      "labels": [],
       "source": null,
       "text": "        .string \"operator std::integral_constant<bool, false>::value_type\""
     },
@@ -43677,15 +43589,7 @@
       "text": ".LASF104:"
     },
     {
-      "labels": [
-        {
-          "name": "main",
-          "range": {
-            "endCol": 32,
-            "startCol": 28
-          }
-        }
-      ],
+      "labels": [],
       "source": null,
       "text": "        .string \"_M_create<main()::<lambda()> >\""
     },
@@ -43705,15 +43609,7 @@
       "text": ".LASF237:"
     },
     {
-      "labels": [
-        {
-          "name": "main",
-          "range": {
-            "endCol": 39,
-            "startCol": 35
-          }
-        }
-      ],
+      "labels": [],
       "source": null,
       "text": "        .string \"__invoke_r<void, main()::<lambda()>&>\""
     },
@@ -43793,15 +43689,7 @@
       "text": ".LASF82:"
     },
     {
-      "labels": [
-        {
-          "name": "main",
-          "range": {
-            "endCol": 32,
-            "startCol": 28
-          }
-        }
-      ],
+      "labels": [],
       "source": null,
       "text": "        .string \"_M_access<main()::<lambda()> >\""
     },
@@ -43861,15 +43749,7 @@
       "text": ".LASF103:"
     },
     {
-      "labels": [
-        {
-          "name": "main",
-          "range": {
-            "endCol": 38,
-            "startCol": 34
-          }
-        }
-      ],
+      "labels": [],
       "source": null,
       "text": "        .string \"_M_create<const main()::<lambda()>&>\""
     },
@@ -43947,15 +43827,7 @@
       "text": ".LASF250:"
     },
     {
-      "labels": [
-        {
-          "name": "std",
-          "range": {
-            "endCol": 87,
-            "startCol": 84
-          }
-        }
-      ],
+      "labels": [],
       "source": null,
       "text": "        .string \"GNU C++17 12.2.0 -masm=intel -mtune=generic -march=x86-64 -g -O2 -std=c++17\""
     },
@@ -44155,15 +44027,7 @@
       "text": ".LASF106:"
     },
     {
-      "labels": [
-        {
-          "name": "main",
-          "range": {
-            "endCol": 38,
-            "startCol": 34
-          }
-        }
-      ],
+      "labels": [],
       "source": null,
       "text": "        .string \"_M_init_functor<main()::<lambda()> >\""
     },
@@ -44753,15 +44617,7 @@
       "text": ".LASF131:"
     },
     {
-      "labels": [
-        {
-          "name": "main",
-          "range": {
-            "endCol": 31,
-            "startCol": 27
-          }
-        }
-      ],
+      "labels": [],
       "source": null,
       "text": "        .string \"function<main()::<lambda()> >\""
     },

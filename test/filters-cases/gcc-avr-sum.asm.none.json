@@ -216,13 +216,6 @@
         {
           "name": "_Z12testFunctionPii",
           "range": {
-            "endCol": 37,
-            "startCol": 18
-          }
-        },
-        {
-          "name": "_Z12testFunctionPii",
-          "range": {
             "endCol": 72,
             "startCol": 53
           }

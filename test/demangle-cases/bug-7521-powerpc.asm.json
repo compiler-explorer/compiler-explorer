@@ -124,12 +124,11 @@
     {
       "labels": [
         {
-          "name": "some_namespace::function()@toc@ha",
+          "name": "some_namespace::function()",
           "range": {
-            "endCol": 54,
+            "endCol": 47,
             "startCol": 21,
           },
-          "target": "some_namespace::function()",
         },
       ],
       "source": null,
@@ -138,12 +137,11 @@
     {
       "labels": [
         {
-          "name": "some_namespace::function()@toc@l",
+          "name": "some_namespace::function()",
           "range": {
-            "endCol": 52,
+            "endCol": 46,
             "startCol": 20,
           },
-          "target": "some_namespace::function()",
         },
       ],
       "source": null,

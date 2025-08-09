@@ -83,12 +83,11 @@
     {
       "labels": [
         {
-          "name": "_ZN7example29doesnt_work_with_mangled_name17hf9824bdcef81f607E@GOTPCREL",
+          "name": "_ZN7example29doesnt_work_with_mangled_name17hf9824bdcef81f607E",
           "range": {
-            "endCol": 105,
+            "endCol": 96,
             "startCol": 34
-          },
-          "target": "_ZN7example29doesnt_work_with_mangled_name17hf9824bdcef81f607E"
+          }
         }
       ],
       "source": null,
@@ -107,12 +106,11 @@
     {
       "labels": [
         {
-          "name": "works_with_no_mangling@GOTPCREL",
+          "name": "works_with_no_mangling",
           "range": {
-            "endCol": 65,
+            "endCol": 56,
             "startCol": 34
-          },
-          "target": "works_with_no_mangling"
+          }
         }
       ],
       "source": null,

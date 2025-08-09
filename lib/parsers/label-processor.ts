@@ -99,18 +99,23 @@ export class LabelProcessor {
         const params = instruction.replace(context.instructionRe, '');
 
         const removedCol = instruction.length - params.length + 1;
-        params.replace(context.identifierFindRe, (symbol, target, index) => {
-            const startCol = removedCol + index;
+        params.replace(context.identifierFindRe, (match, group1, group2, offset) => {
+            // group1: normal identifier like _Z12testFunctionPii
+            // group2: quoted content like square(int) from "square(int)"
+            const symbol = group1 || group2;
+            const isQuoted = !!group2;
+            const startCol = removedCol + offset + (isQuoted ? 1 : 0); // Skip opening quote if quoted
+            const endCol = startCol + symbol.length;
             const label: AsmResultLabel = {
                 name: symbol,
                 range: {
                     startCol: startCol,
-                    endCol: startCol + symbol.length,
+                    endCol: endCol,
                 },
             };
-            if (target !== symbol) label.target = target;
+            if (group1 && group1 !== symbol) label.target = group1;
             labelsInLine.push(label);
-            return symbol;
+            return match;
         });
 
         return labelsInLine;

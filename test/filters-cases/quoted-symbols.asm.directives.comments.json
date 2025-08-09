@@ -1,0 +1,121 @@
+{
+  "asm": [
+    {
+      "labels": [],
+      "source": null,
+      "text": "main:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        pushq   %rbp"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        movq    %rsp, %rbp"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        subq    $16, %rbp"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        movl    $5, -4(%rbp)"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        movl    -4(%rbp), %edi"
+    },
+    {
+      "labels": [
+        {
+          "name": "square(int)",
+          "range": {
+            "endCol": 29,
+            "startCol": 18
+          }
+        }
+      ],
+      "source": null,
+      "text": "        call    \"square(int)\""
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        movl    %eax, -8(%rbp)"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        movl    -8(%rbp), %eax"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        addq    $16, %rsp"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        popq    %rbp"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        ret"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ""
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "\"square(int)\":"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        pushq   %rbp"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        movq    %rsp, %rbp"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        movl    %edi, -4(%rbp)"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        movl    -4(%rbp), %eax"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        imull   %eax, %eax"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        popq    %rbp"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        ret"
+    }
+  ],
+  "labelDefinitions": {
+    "main": 1,
+    "square(int)": 14
+  }
+}

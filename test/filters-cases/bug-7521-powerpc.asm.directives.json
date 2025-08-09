@@ -116,12 +116,11 @@
     {
       "labels": [
         {
-          "name": "_ZN14some_namespace8functionEv@toc@ha",
+          "name": "_ZN14some_namespace8functionEv",
           "range": {
-            "endCol": 58,
+            "endCol": 51,
             "startCol": 21
-          },
-          "target": "_ZN14some_namespace8functionEv"
+          }
         }
       ],
       "source": null,
@@ -130,12 +129,11 @@
     {
       "labels": [
         {
-          "name": "_ZN14some_namespace8functionEv@toc@l",
+          "name": "_ZN14some_namespace8functionEv",
           "range": {
-            "endCol": 56,
+            "endCol": 50,
             "startCol": 20
-          },
-          "target": "_ZN14some_namespace8functionEv"
+          }
         }
       ],
       "source": null,
