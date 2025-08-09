@@ -1060,11 +1060,11 @@ export class ZigCxxParser extends ClangParser {
     }
 
     static override getHiddenHelpOptions(): string[] {
-        return ['c++', '-mllvm', '--help-list-hidden', '-x', 'c++', '/dev/null', '-S', '-o', './output.s'];
+        return ['c++', '-mllvm', '--help-list-hidden', '-x', 'c++', '/dev/null', '-S', '-o', '/tmp/output.s'];
     }
 
     static override getStdVersHelpOptions(): string[] {
-        return ['c++', '-std=c++9999999', '-x', 'c++', '/dev/null', '-S', '-o', './output.s'];
+        return ['c++', '-std=c++9999999', '-x', 'c++', '/dev/null', '-S', '-o', '/tmp/output.s'];
     }
 
     static override getTargetsHelpOptions(): string[] {
@@ -1187,7 +1187,7 @@ export class GolangParser extends GCCParser {
         const examplesRoot = props.get<string>('builtin', 'sourcePath', './examples/');
         const exampleFilepath = path.resolve(path.join(examplesRoot, 'go/default.go'));
         const results = await Promise.all([
-            this.getOptions(compiler, 'build -o ./output.s "-gcflags=-S --help" ' + exampleFilepath),
+            this.getOptions(compiler, 'build -o /tmp/output.s "-gcflags=-S --help" ' + exampleFilepath),
         ]);
         const options = Object.assign({}, ...results);
         await this.setCompilerSettingsFromOptions(compiler, options);
