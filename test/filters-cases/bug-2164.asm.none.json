@@ -81,15 +81,7 @@
       "text": "        .eabi_attribute 14, 0"
     },
     {
-      "labels": [
-        {
-          "name": "example",
-          "range": {
-            "endCol": 25,
-            "startCol": 18
-          }
-        }
-      ],
+      "labels": [],
       "source": null,
       "text": "        .file   \"example.3a1fbbbh-cgu.0\""
     },
@@ -939,15 +931,7 @@
       "text": ".Linfo_string3:"
     },
     {
-      "labels": [
-        {
-          "name": "example",
-          "range": {
-            "endCol": 25,
-            "startCol": 18
-          }
-        }
-      ],
+      "labels": [],
       "source": null,
       "text": "        .asciz  \"example\""
     },
@@ -957,15 +941,7 @@
       "text": ".Linfo_string4:"
     },
     {
-      "labels": [
-        {
-          "name": "example",
-          "range": {
-            "endCol": 25,
-            "startCol": 18
-          }
-        }
-      ],
+      "labels": [],
       "source": null,
       "text": "        .asciz  \"example::abort\""
     },
@@ -1048,15 +1024,7 @@
       "text": "        .long   38"
     },
     {
-      "labels": [
-        {
-          "name": "example",
-          "range": {
-            "endCol": 25,
-            "startCol": 18
-          }
-        }
-      ],
+      "labels": [],
       "source": null,
       "text": "        .asciz  \"example\""
     },

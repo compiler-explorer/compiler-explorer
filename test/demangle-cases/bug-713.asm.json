@@ -7589,15 +7589,7 @@
       "text": ".LASF21:",
     },
     {
-      "labels": [
-        {
-          "name": "caller1()",
-          "range": {
-            "endCol": 27,
-            "startCol": 18,
-          },
-        },
-      ],
+      "labels": [],
       "source": null,
       "text": "        .string "caller1()"",
     },
@@ -7777,15 +7769,7 @@
       "text": ".LASF7:",
     },
     {
-      "labels": [
-        {
-          "name": "Normal::~Normal() [deleting destructor]",
-          "range": {
-            "endCol": 57,
-            "startCol": 18,
-          },
-        },
-      ],
+      "labels": [],
       "source": null,
       "text": "        .string "Normal::~Normal() [deleting destructor]"",
     },
@@ -7795,15 +7779,7 @@
       "text": ".LASF19:",
     },
     {
-      "labels": [
-        {
-          "name": "caller2(Normal*)",
-          "range": {
-            "endCol": 34,
-            "startCol": 18,
-          },
-        },
-      ],
+      "labels": [],
       "source": null,
       "text": "        .string "caller2(Normal*)"",
     },
@@ -7833,15 +7809,7 @@
       "text": ".LASF8:",
     },
     {
-      "labels": [
-        {
-          "name": "Normal::~Normal() [base object destructor]",
-          "range": {
-            "endCol": 60,
-            "startCol": 18,
-          },
-        },
-      ],
+      "labels": [],
       "source": null,
       "text": "        .string "Normal::~Normal() [base object destructor]"",
     },

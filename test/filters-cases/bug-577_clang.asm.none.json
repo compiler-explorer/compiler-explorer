@@ -269,15 +269,7 @@
       "text": ".Linfo_string3:"
     },
     {
-      "labels": [
-        {
-          "name": "_Z6squarei",
-          "range": {
-            "endCol": 28,
-            "startCol": 18
-          }
-        }
-      ],
+      "labels": [],
       "source": null,
       "text": "        .asciz  \"_Z6squarei\"            # string offset=154"
     },
