@@ -24,7 +24,6 @@
 
 import fs from 'node:fs/promises';
 import path from 'node:path';
-import process from 'node:process';
 import * as Sentry from '@sentry/node';
 import _ from 'underscore';
 
@@ -39,7 +38,7 @@ import * as utils from '../utils.js';
 import {JuliaCompiler} from './julia.js';
 
 export class BaseParser {
-    static setCompilerSettingsFromOptions(compiler: BaseCompiler, options: Record<string, Argument>) {}
+    static async setCompilerSettingsFromOptions(compiler: BaseCompiler, options: Record<string, Argument>) {}
 
     static hasSupport(options: Record<string, Argument>, forOption: string) {
         return _.keys(options).find(option => option.includes(forOption));
@@ -47,21 +46,6 @@ export class BaseParser {
 
     static hasSupportStartsWith(options: Record<string, Argument>, forOption: string) {
         return _.keys(options).find(option => option.startsWith(forOption));
-    }
-
-    static getExamplesRoot(): string {
-        return props.get<string>('builtin', 'sourcePath', './examples/');
-    }
-
-    static getDefaultExampleFilename() {
-        return 'c++/default.cpp';
-    }
-
-    static getExampleFilepath(): string {
-        let filename = path.join(this.getExamplesRoot(), this.getDefaultExampleFilename());
-        if (!path.isAbsolute(filename)) filename = path.join(process.cwd(), filename);
-
-        return filename;
     }
 
     static parseLines(stdout: string, optionWithDescRegex: RegExp, optionWithoutDescRegex?: RegExp) {
@@ -244,7 +228,7 @@ export class GCCParser extends BaseParser {
     static override async getOptions(compiler: BaseCompiler, helpArg: string) {
         const optionFinder1 = /^ *(--?[\d#+,<=>[\]a-z|-]* ?[\d+,<=>[\]a-z|-]*) {2,}(.*)/i;
         const optionFinder2 = /^ *(--?[\d#+,<=>[\]a-z|-]* ?[\d+,<=>[\]a-z|-]*)/i;
-        const result = await compiler.execCompilerCached(compiler.compiler.exe, helpArg.split(' '));
+        const result = await compiler.execCompilerCached(compiler.compiler.exe, splitArguments(' '));
         const options =
             result.code === 0 ? this.parseLines(result.stdout + result.stderr, optionFinder1, optionFinder2) : {};
         compiler.possibleArguments.populateOptions(options);
@@ -323,12 +307,12 @@ export class ClangParser extends BaseParser {
         return ['--help'];
     }
 
-    static getHiddenHelpOptions(exampleFile: string): string[] {
-        return ['-mllvm', '--help-list-hidden', exampleFile, '-c'];
+    static getHiddenHelpOptions(): string[] {
+        return ['-mllvm', '--help-list-hidden', '-x', 'c++', '/dev/null', '-c'];
     }
 
-    static getStdVersHelpOptions(exampleFile: string): string[] {
-        return ['-std=c++9999999', exampleFile, '-c'];
+    static getStdVersHelpOptions(): string[] {
+        return ['-std=c++9999999', '-x', 'c++', '/dev/null', '-c'];
     }
 
     static getTargetsHelpOptions(): string[] {
@@ -339,10 +323,8 @@ export class ClangParser extends BaseParser {
         try {
             const options = await this.getOptions(compiler, this.getMainHelpOptions().join(' '));
 
-            const filename = this.getExampleFilepath();
-
             this.mllvmOptions = new Set(
-                _.keys(await this.getOptions(compiler, this.getHiddenHelpOptions(filename).join(' '), false, true)),
+                _.keys(await this.getOptions(compiler, this.getHiddenHelpOptions().join(' '), false, true)),
             );
             await this.setCompilerSettingsFromOptions(compiler, options);
         } catch (error) {
@@ -403,10 +385,7 @@ export class ClangParser extends BaseParser {
     static override async getPossibleStdvers(compiler: BaseCompiler): Promise<CompilerOverrideOptions> {
         let possible: CompilerOverrideOptions = [];
 
-        // clang doesn't have a --help option to get the std versions, we'll have to compile with a fictional stdversion to coax a response
-        const filename = this.getExampleFilepath();
-
-        const result = await compiler.execCompilerCached(compiler.compiler.exe, this.getStdVersHelpOptions(filename), {
+        const result = await compiler.execCompilerCached(compiler.compiler.exe, this.getStdVersHelpOptions(), {
             ...compiler.getDefaultExecOptions(),
             createAndUseTempDir: true,
         });
@@ -445,7 +424,7 @@ export class ClangParser extends BaseParser {
         const optionFinderWithoutDesc = /^ {2}?(--?[\d#+,<=>[\]a-z|-]*\s?[\d+,<=>[\]a-z|-]*)/i;
         const execOptions = {...compiler.getDefaultExecOptions()};
         if (isolate) execOptions.createAndUseTempDir = true;
-        const result = await compiler.execCompilerCached(compiler.compiler.exe, helpArg.split(' '), execOptions);
+        const result = await compiler.execCompilerCached(compiler.compiler.exe, splitArguments(helpArg), execOptions);
         const options =
             result.code === 0
                 ? this.parseLines(result.stdout + result.stderr, optionFinderWithDesc, optionFinderWithoutDesc)
@@ -479,19 +458,11 @@ export class GCCCParser extends GCCParser {
     static override getLanguageSpecificHelpFlags(): string[] {
         return ['-fsyntax-only', '--help=c'];
     }
-
-    static override getDefaultExampleFilename() {
-        return 'c/default.c';
-    }
 }
 
 export class ClangCParser extends ClangParser {
-    static override getDefaultExampleFilename() {
-        return 'c/default.c';
-    }
-
-    static override getStdVersHelpOptions(exampleFile: string): string[] {
-        return ['-std=c9999999', exampleFile, '-c'];
+    static override getStdVersHelpOptions(): string[] {
+        return ['-std=c9999999', '-x', 'c', '/dev/null', '-c'];
     }
 }
 
@@ -499,7 +470,7 @@ export class CircleParser extends ClangParser {
     static override async getOptions(compiler: BaseCompiler, helpArg: string) {
         const optionFinder1 = /^ +(--?[\w#,.<=>[\]|-]*) {2,}- (.*)/i;
         const optionFinder2 = /^ +(--?[\w#,.<=>[\]|-]*)/i;
-        const result = await compiler.execCompilerCached(compiler.compiler.exe, helpArg.split(' '));
+        const result = await compiler.execCompilerCached(compiler.compiler.exe, splitArguments(' '));
         const options = result.code === 0 ? this.parseLines(result.stdout, optionFinder1, optionFinder2) : {};
         compiler.possibleArguments.populateOptions(options);
         return options;
@@ -573,7 +544,7 @@ export class LDCParser extends BaseParser {
 
     static override async getOptions(compiler: BaseCompiler, helpArg: string, populate = true) {
         const optionFinder = /^\s*(--?[\d+,<=>[\]a-z|-]*)\s*(.*)/i;
-        const result = await compiler.execCompilerCached(compiler.compiler.exe, helpArg.split(' '));
+        const result = await compiler.execCompilerCached(compiler.compiler.exe, splitArguments(helpArg));
         const options = result.code === 0 ? this.parseLines(result.stdout + result.stderr, optionFinder) : {};
         if (populate) {
             compiler.possibleArguments.populateOptions(options);
@@ -917,7 +888,7 @@ export class RustParser extends BaseParser {
     }
 
     static override async getOptions(compiler: BaseCompiler, helpArg: string) {
-        const result = await compiler.execCompilerCached(compiler.compiler.exe, helpArg.split(' '));
+        const result = await compiler.execCompilerCached(compiler.compiler.exe, splitArguments(helpArg));
         let options = {};
         if (result.code === 0) {
             if (helpArg === '-C help') {
@@ -1088,12 +1059,12 @@ export class ZigCxxParser extends ClangParser {
         return ['c++', '--help'];
     }
 
-    static override getHiddenHelpOptions(exampleFile: string): string[] {
-        return ['c++', '-mllvm', '--help-list-hidden', exampleFile, '-S', '-o', '/tmp/output.s'];
+    static override getHiddenHelpOptions(): string[] {
+        return ['c++', '-mllvm', '--help-list-hidden', '-x', 'c++', '/dev/null', '-S', '-o', './output.s'];
     }
 
-    static override getStdVersHelpOptions(exampleFile: string): string[] {
-        return ['c++', '-std=c++9999999', exampleFile, '-S', '-o', '/tmp/output.s'];
+    static override getStdVersHelpOptions(): string[] {
+        return ['c++', '-std=c++9999999', '-x', 'c++', '/dev/null', '-S', '-o', './output.s'];
     }
 
     static override getTargetsHelpOptions(): string[] {
@@ -1102,20 +1073,12 @@ export class ZigCxxParser extends ClangParser {
 }
 
 export class GccFortranParser extends GCCParser {
-    static override getDefaultExampleFilename() {
-        return 'fortran/default.f90';
-    }
-
     static override getLanguageSpecificHelpFlags(): string[] {
         return ['-fsyntax-only', '--help=fortran'];
     }
 }
 
 export class FlangParser extends ClangParser {
-    static override getDefaultExampleFilename() {
-        return 'fortran/default.f90';
-    }
-
     static override async setCompilerSettingsFromOptions(compiler: BaseCompiler, options: Record<string, Argument>) {
         await super.setCompilerSettingsFromOptions(compiler, options);
 
@@ -1166,7 +1129,7 @@ export class GHCParser extends GCCParser {
     static override async getOptions(compiler: BaseCompiler, helpArg: string) {
         const optionFinder1 = /^ {4}(-[\w[\]]+)\s+(.*)/i;
         const optionFinder2 = /^ {4}(-[\w[\]]+)/;
-        const result = await compiler.execCompilerCached(compiler.compiler.exe, helpArg.split(' '));
+        const result = await compiler.execCompilerCached(compiler.compiler.exe, splitArguments(helpArg));
         const options = result.code === 0 ? this.parseLines(result.stdout, optionFinder1, optionFinder2) : {};
 
         compiler.possibleArguments.populateOptions(options);
@@ -1201,7 +1164,7 @@ export class TendraParser extends GCCParser {
 
     static override async getOptions(compiler: BaseCompiler, helpArg: string) {
         const optionFinder = /^ *(-[\d#+,<=>[\]a-z|-]* ?[\d+,<=>[\]a-z|-]*) : +(.*)/i;
-        const result = await compiler.execCompilerCached(compiler.compiler.exe, helpArg.split(' '));
+        const result = await compiler.execCompilerCached(compiler.compiler.exe, splitArguments(helpArg));
         const options = this.parseLines(result.stdout + result.stderr, optionFinder);
         compiler.possibleArguments.populateOptions(options);
         return options;
@@ -1217,13 +1180,14 @@ export class TendraParser extends GCCParser {
 }
 
 export class GolangParser extends GCCParser {
-    static override getDefaultExampleFilename() {
-        return 'go/default.go';
-    }
-
     static override async parse(compiler: BaseCompiler) {
+        // NB this file _must_ be visible to the jail, if you're using one. This may bite on a local install when your
+        // example path may not match paths available in the jail (e.g. `/infra/.deploy/examples`)
+        // TODO: find a way to invoke GoLang without needing a real example Go file.
+        const examplesRoot = props.get<string>('builtin', 'sourcePath', './examples/');
+        const exampleFilepath = path.resolve(path.join(examplesRoot, 'go/default.go'));
         const results = await Promise.all([
-            this.getOptions(compiler, 'build -o ./output.s "-gcflags=-S --help" ' + this.getExampleFilepath()),
+            this.getOptions(compiler, 'build -o ./output.s "-gcflags=-S --help" ' + exampleFilepath),
         ]);
         const options = Object.assign({}, ...results);
         await this.setCompilerSettingsFromOptions(compiler, options);
