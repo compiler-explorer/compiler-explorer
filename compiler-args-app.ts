@@ -113,7 +113,7 @@ class CompilerArgsApp {
         return await parser.getPossibleEditions();
     }
 
-    getParser():BaseParser {
+    getParser(): BaseParser {
         if (compilerParsers[this.parserName as keyof typeof compilerParsers]) {
             return new (compilerParsers[this.parserName as keyof typeof compilerParsers])(this.compiler);
         }
