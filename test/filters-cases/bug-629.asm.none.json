@@ -739,15 +739,7 @@
       "text": "        .uleb128 0x2"
     },
     {
-      "labels": [
-        {
-          "name": "y",
-          "range": {
-            "endCol": 19,
-            "startCol": 18
-          }
-        }
-      ],
+      "labels": [],
       "source": null,
       "text": "        .string \"y\""
     },
@@ -815,15 +807,7 @@
       "text": "        .uleb128 0x2"
     },
     {
-      "labels": [
-        {
-          "name": "d",
-          "range": {
-            "endCol": 19,
-            "startCol": 18
-          }
-        }
-      ],
+      "labels": [],
       "source": null,
       "text": "        .string \"d\""
     },
@@ -871,15 +855,7 @@
       "text": "        .uleb128 0x2"
     },
     {
-      "labels": [
-        {
-          "name": "f",
-          "range": {
-            "endCol": 19,
-            "startCol": 18
-          }
-        }
-      ],
+      "labels": [],
       "source": null,
       "text": "        .string \"f\""
     },
@@ -955,15 +931,7 @@
       "text": "        .uleb128 0x2"
     },
     {
-      "labels": [
-        {
-          "name": "v",
-          "range": {
-            "endCol": 19,
-            "startCol": 18
-          }
-        }
-      ],
+      "labels": [],
       "source": null,
       "text": "        .string \"v\""
     },
@@ -1039,15 +1007,7 @@
       "text": "        .uleb128 0x2"
     },
     {
-      "labels": [
-        {
-          "name": "dd",
-          "range": {
-            "endCol": 20,
-            "startCol": 18
-          }
-        }
-      ],
+      "labels": [],
       "source": null,
       "text": "        .string \"dd\""
     },
@@ -1123,15 +1083,7 @@
       "text": "        .uleb128 0x2"
     },
     {
-      "labels": [
-        {
-          "name": "yuu",
-          "range": {
-            "endCol": 21,
-            "startCol": 18
-          }
-        }
-      ],
+      "labels": [],
       "source": null,
       "text": "        .string \"yuu\""
     },
@@ -1179,15 +1131,7 @@
       "text": "        .uleb128 0x2"
     },
     {
-      "labels": [
-        {
-          "name": "jj",
-          "range": {
-            "endCol": 20,
-            "startCol": 18
-          }
-        }
-      ],
+      "labels": [],
       "source": null,
       "text": "        .string \"jj\""
     },
@@ -1263,15 +1207,7 @@
       "text": "        .uleb128 0x2"
     },
     {
-      "labels": [
-        {
-          "name": "q",
-          "range": {
-            "endCol": 19,
-            "startCol": 18
-          }
-        }
-      ],
+      "labels": [],
       "source": null,
       "text": "        .string \"q\""
     },

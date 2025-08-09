@@ -7597,15 +7597,7 @@
       "text": "        .4byte      .L167-.L2"
     },
     {
-      "labels": [
-        {
-          "name": "main",
-          "range": {
-            "endCol": 28,
-            "startCol": 24
-          }
-        }
-      ],
+      "labels": [],
       "source": null,
       "text": "        .byte         \"main\""
     },
@@ -8715,15 +8707,7 @@
       "text": "        .wrcm.nelem \"functions\""
     },
     {
-      "labels": [
-        {
-          "name": "main",
-          "range": {
-            "endCol": 26,
-            "startCol": 22
-          }
-        }
-      ],
+      "labels": [],
       "source": null,
       "text": "        .wrcm.nelem \"main\""
     },
