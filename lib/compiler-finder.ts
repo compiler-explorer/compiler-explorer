@@ -562,7 +562,7 @@ export class CompilerFinder {
             }
         }
         if (error) {
-            //assert(false);
+            assert(false);
         }
     }
 
