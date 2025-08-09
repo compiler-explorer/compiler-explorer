@@ -133,10 +133,6 @@ export class CoccinelleCCompiler extends BaseCompiler {
         return super.getIrOutputFilename(inputFilename, filters);
     }
 
-    override getArgumentParserClass() {
-        return super.getArgumentParserClass();
-    }
-
     override isCfgCompiler() {
         return false;
     }

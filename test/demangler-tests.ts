@@ -52,7 +52,7 @@ class DummyCompiler extends BaseCompiler {
         } as unknown as CompilationEnvironment;
 
         // using c++ as the compiler needs at least one language
-        const compiler = makeFakeCompilerInfo({lang: 'c++'});
+        const compiler = makeFakeCompilerInfo({lang: 'c++', exe: 'gcc'});
 
         super(compiler, env);
     }

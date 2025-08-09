@@ -129,6 +129,7 @@ describe('Compiler execution', () => {
         supportsExecute: true,
         supportsBinary: true,
         options: '--hello-abc -I"/opt/some thing 1.0/include" -march="magic 8bit"',
+        exe: 'compiler-exe',
     });
     const win32CompilerInfo = makeFakeCompilerInfo({
         remote: {
@@ -142,6 +143,7 @@ describe('Compiler execution', () => {
         supportsExecute: true,
         supportsBinary: true,
         options: '/std=c++17 /I"C:/program files (x86)/Company name/Compiler 1.2.3/include" /D "MAGIC=magic 8bit"',
+        exe: 'compiler.exe',
     });
     const noExecuteSupportCompilerInfo = makeFakeCompilerInfo({
         remote: {
@@ -153,6 +155,7 @@ describe('Compiler execution', () => {
         lang: 'c++',
         ldPath: [],
         libPath: [],
+        exe: 'g++',
     });
     const someOptionsCompilerInfo = makeFakeCompilerInfo({
         remote: {
@@ -167,6 +170,7 @@ describe('Compiler execution', () => {
         supportsExecute: true,
         supportsBinary: true,
         options: '--hello-abc -I"/opt/some thing 1.0/include"',
+        exe: 'clang++',
     });
 
     beforeAll(() => {
@@ -681,6 +685,7 @@ describe('getDefaultExecOptions', () => {
         ldPath: [],
         libPath: [],
         extraPath: ['/tmp/p1', '/tmp/p2'],
+        exe: 'g++',
     });
 
     beforeAll(() => {

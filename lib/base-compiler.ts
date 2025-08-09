@@ -217,6 +217,7 @@ export class BaseCompiler {
         labelNames: [],
     });
     protected executionEnvironmentClass: any;
+    protected readonly argParser: BaseParser;
 
     constructor(compilerInfo: PreliminaryCompilerInfo & {disabledFilters?: string[]}, env: CompilationEnvironment) {
         // Information about our compiler
@@ -306,6 +307,7 @@ export class BaseCompiler {
         }
 
         this.packager = new Packager();
+        this.argParser = new (this.getArgumentParserClass())(this);
     }
 
     copyAndFilterLibraries(allLibraries: Record<string, OptionsHandlerLibrary>, filter: string[]) {
@@ -3598,8 +3600,7 @@ but nothing was dumped. Possible causes are:
 
     async getTargetsAsOverrideValues(): Promise<CompilerOverrideOption[]> {
         if (!this.buildenvsetup || !this.buildenvsetup.getCompilerArch()) {
-            const parserCls = this.getArgumentParserClass();
-            const targets = await parserCls.getPossibleTargets(this);
+            const targets = await this.argParser.getPossibleTargets();
 
             return targets.map(target => {
                 return {
@@ -3612,8 +3613,7 @@ but nothing was dumped. Possible causes are:
     }
 
     async getPossibleStdversAsOverrideValues(): Promise<CompilerOverrideOption[]> {
-        const parser = this.getArgumentParserClass();
-        return await parser.getPossibleStdvers(this);
+        return await this.argParser.getPossibleStdvers();
     }
 
     async populatePossibleRuntimeTools() {
@@ -3794,7 +3794,7 @@ but nothing was dumped. Possible causes are:
             }
             return this;
         }
-        const initResult = await this.getArgumentParserClass().parse(this);
+        const initResult = await this.argParser.parse();
         this.possibleArguments.possibleArguments = {};
 
         await this.populatePossibleOverrides();

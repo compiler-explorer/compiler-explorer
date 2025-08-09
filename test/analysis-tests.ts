@@ -100,6 +100,7 @@ describe('LLVM-mca tool definition', () => {
             },
             lang: 'analysis',
             disabledFilters: 'labels,directives,debugCalls' as any,
+            exe: 'clang',
         });
         expect(new AnalysisTool(info, ce).getInfo().disabledFilters).toEqual(['labels', 'directives', 'debugCalls']);
     });

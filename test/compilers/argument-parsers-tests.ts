@@ -49,13 +49,18 @@ function makeCompiler(stdout?: string, stderr?: string, code?: number) {
 describe('option parser', () => {
     it('should do nothing for the base parser', async () => {
         const compiler = makeCompiler();
-        await expect(BaseParser.parse(compiler)).resolves.toEqual(compiler);
+        const parser = new BaseParser(compiler);
+        await expect(parser.parse()).resolves.toEqual(compiler);
     });
     it('should handle empty options', async () => {
-        await expect(BaseParser.getOptions(makeCompiler(), '')).resolves.toEqual({});
+        const compiler = makeCompiler();
+        const parser = new BaseParser(compiler);
+        await expect(parser.getOptions('')).resolves.toEqual({});
     });
     it('should parse single-dash options', async () => {
-        await expect(BaseParser.getOptions(makeCompiler('-foo\n'), '')).resolves.toEqual({
+        const compiler = makeCompiler('-foo\n');
+        const parser = new BaseParser(compiler);
+        await expect(parser.getOptions('')).resolves.toEqual({
             '-foo': {
                 description: '',
                 timesused: 0,
@@ -63,7 +68,9 @@ describe('option parser', () => {
         });
     });
     it('should parse double-dash options', async () => {
-        await expect(BaseParser.getOptions(makeCompiler('--foo\n'), '')).resolves.toEqual({
+        const compiler = makeCompiler('--foo\n');
+        const parser = new BaseParser(compiler);
+        await expect(parser.getOptions('')).resolves.toEqual({
             '--foo': {
                 description: '',
                 timesused: 0,
@@ -71,7 +78,9 @@ describe('option parser', () => {
         });
     });
     it('should parse stderr options', async () => {
-        await expect(BaseParser.getOptions(makeCompiler('', '--bar=monkey\n'), '')).resolves.toEqual({
+        const compiler = makeCompiler('', '--bar=monkey\n');
+        const parser = new BaseParser(compiler);
+        await expect(parser.getOptions('')).resolves.toEqual({
             '--bar=monkey': {
                 description: '',
                 timesused: 0,
@@ -79,46 +88,56 @@ describe('option parser', () => {
         });
     });
     it('handles non-option text', async () => {
-        await expect(BaseParser.getOptions(makeCompiler('-foo=123\nthis is a fish\n-badger=123'), '')).resolves.toEqual(
-            {
-                '-foo=123': {description: 'this is a fish', timesused: 0},
-                '-badger=123': {description: '', timesused: 0},
-            },
-        );
+        const compiler = makeCompiler('-foo=123\nthis is a fish\n-badger=123');
+        const parser = new BaseParser(compiler);
+        await expect(parser.getOptions('')).resolves.toEqual({
+            '-foo=123': {description: 'this is a fish', timesused: 0},
+            '-badger=123': {description: '', timesused: 0},
+        });
     });
     it('should ignore if errors occur', async () => {
-        await expect(BaseParser.getOptions(makeCompiler('--foo\n', '--bar\n', 1), '')).resolves.toEqual({});
+        const compiler = makeCompiler('--foo\n', '--bar\n', 1);
+        const parser = new BaseParser(compiler);
+        await expect(parser.getOptions('')).resolves.toEqual({});
     });
 });
 
 describe('gcc parser', () => {
     it('should handle empty options', async () => {
-        const result = await GCCParser.parse(makeCompiler());
+        const compiler = makeCompiler();
+        const parser = new GCCParser(compiler);
+        const result = await parser.parse();
         expect(result.compiler).not.toHaveProperty('supportsGccDump');
         expect(result.compiler.options).toEqual('');
     });
     it('should handle options', async () => {
-        const result = await GCCParser.parse(makeCompiler('-masm=intel\n-fdiagnostics-color=[blah]\n-fdump-tree-all'));
+        const compiler = makeCompiler('-masm=intel\n-fdiagnostics-color=[blah]\n-fdump-tree-all');
+        const parser = new GCCParser(compiler);
+        const result = await parser.parse();
         expect(result.compiler.supportsGccDump).toBe(true);
         expect(result.compiler.supportsIntel).toBe(true);
         expect(result.compiler.intelAsm).toEqual('-masm=intel');
         expect(result.compiler.options).toEqual('-fdiagnostics-color=always');
     });
     it('should handle undefined options', async () => {
-        const result = await GCCParser.parse(makeCompiler('-fdiagnostics-color=[blah]'));
+        const compiler = makeCompiler('-fdiagnostics-color=[blah]');
+        const parser = new GCCParser(compiler);
+        const result = await parser.parse();
         expect(result.compiler.options).toEqual('-fdiagnostics-color=always');
     });
 });
 
 describe('clang parser', () => {
     it('should handle empty options', async () => {
-        const result = await ClangParser.parse(makeCompiler());
+        const compiler = makeCompiler();
+        const parser = new ClangParser(compiler);
+        const result = await parser.parse();
         expect(result.compiler.options).toEqual('');
     });
     it('should handle options', async () => {
-        const result = await ClangParser.parse(
-            makeCompiler('  -fno-crash-diagnostics\n  -fsave-optimization-record\n  -fcolor-diagnostics'),
-        );
+        const compiler = makeCompiler('  -fno-crash-diagnostics\n  -fsave-optimization-record\n  -fcolor-diagnostics');
+        const parser = new ClangParser(compiler);
+        const result = await parser.parse();
         expect(result.compiler.supportsOptOutput).toBe(true);
         expect(result.compiler.optArg).toEqual('-fsave-optimization-record');
         expect(result.compiler.options).toContain('-fcolor-diagnostics');
@@ -129,7 +148,9 @@ describe('clang parser', () => {
 
 describe('pascal parser', () => {
     it('should handle empty options', async () => {
-        const result = await PascalParser.parse(makeCompiler());
+        const compiler = makeCompiler();
+        const parser = new PascalParser(compiler);
+        const result = await parser.parse();
         expect(result.compiler.options).toEqual('');
     });
 });
@@ -144,7 +165,8 @@ describe('popular compiler arguments', () => {
     });
 
     it('should return 5 arguments', async () => {
-        const result = await ClangParser.parse(compiler);
+        const parser = new ClangParser(compiler);
+        const result = await parser.parse();
         expect(result.possibleArguments.getPopularArguments()).toEqual({
             '-O<number>': {description: 'Optimization level', timesused: 0},
             '-fcolor-diagnostics': {description: '', timesused: 0},
@@ -155,7 +177,8 @@ describe('popular compiler arguments', () => {
     });
 
     it('should return arguments except the ones excluded', async () => {
-        const result = await ClangParser.parse(compiler);
+        const parser = new ClangParser(compiler);
+        const result = await parser.parse();
         expect(result.possibleArguments.getPopularArguments(['-O3', '--hello'])).toEqual({
             '-fcolor-diagnostics': {description: '', timesused: 0},
             '-fsave-optimization-record': {description: '', timesused: 0},
@@ -166,7 +189,8 @@ describe('popular compiler arguments', () => {
     });
 
     it('should be able to exclude special params with assignments', async () => {
-        const result = await ClangParser.parse(compiler);
+        const parser = new ClangParser(compiler);
+        const result = await parser.parse();
         expect(result.possibleArguments.getPopularArguments(['-std=c++14', '-g', '--hello'])).toEqual({
             '-O<number>': {description: 'Optimization level', timesused: 0},
             '-fcolor-diagnostics': {description: '', timesused: 0},
@@ -188,7 +212,9 @@ describe('VC argument parser', () => {
             '   /something:<else> Something Else',
             '   /etc Etcetera',
         ];
-        const stdvers = VCParser.extractPossibleStdvers(lines);
+        const compiler = makeCompiler();
+        const parser = new VCParser(compiler);
+        const stdvers = parser.extractPossibleStdvers(lines);
         expect(stdvers).toEqual([
             {
                 name: 'c++14: ISO/IEC 14882:2014 (default)',
@@ -221,7 +247,9 @@ describe('ICC argument parser', () => {
             '            gnu++98 conforms to 1998 ISO C++ standard plus GNU extensions',
             '-etc',
         ];
-        const stdvers = ICCParser.extractPossibleStdvers(lines);
+        const compiler = makeCompiler();
+        const parser = new ICCParser(compiler);
+        const stdvers = parser.extractPossibleStdvers(lines);
         expect(stdvers).toEqual([
             {
                 name: 'c99: conforms to ISO/IEC 9899:1999 standard for C programs',
@@ -255,7 +283,9 @@ describe('TableGen argument parser', () => {
             '      --gen-x86-mnemonic-tables          - Generate X86...',
             '  --no-warn-on-unused-template-args   - Disable...',
         ];
-        const actions = TableGenParser.extractPossibleActions(lines);
+        const compiler = makeCompiler();
+        const parser = new TableGenParser(compiler);
+        const actions = parser.extractPossibleActions(lines);
         expect(actions).toEqual([
             {name: 'gen-attrs: Generate attributes', value: '--gen-attrs'},
             {name: 'print-detailed-records: Print full details...', value: '--print-detailed-records'},
@@ -278,7 +308,8 @@ describe('Rust editions parser', () => {
             '                        stable edition is 2024.',
         ];
         const compiler = makeCompiler(lines.join('\n'));
-        const editions = await RustParser.getPossibleEditions(compiler);
+        const parser = new RustParser(compiler);
+        const editions = await parser.getPossibleEditions();
         expect(editions).toEqual(['2015', '2018', '2021', '2024', 'future']);
     });
 
@@ -294,7 +325,8 @@ describe('Rust editions parser', () => {
             '                        compiling code.',
         ];
         const compiler = makeCompiler(lines.join('\n'));
-        const editions = await RustParser.getPossibleEditions(compiler);
+        const parser = new RustParser(compiler);
+        const editions = await parser.getPossibleEditions();
         expect(editions).toEqual(['2015', '2018']);
     });
 });
@@ -312,9 +344,10 @@ describe('Rust help message parser', () => {
             '    -W, --warn OPT      Set lint warnings',
         ];
         const compiler = makeCompiler(lines.join('\n'));
-        await RustParser.parse(compiler);
+        const parser = new RustParser(compiler);
+        await parser.parse();
         expect(compiler.compiler.supportsTarget).toBe(true);
-        await expect(RustParser.getOptions(compiler, '--help')).resolves.toEqual({
+        await expect(parser.getOptions('--help')).resolves.toEqual({
             '-l [KIND[:MODIFIERS]=]NAME[:RENAME]': {
                 description:
                     'Link the generated crate(s) to the specified native library NAME. The optional KIND can be one of',
@@ -344,9 +377,10 @@ describe('Rust help message parser', () => {
             '    -W, --warn <LINT>   Set lint warnings',
         ];
         const compiler = makeCompiler(lines.join('\n'));
-        await RustParser.parse(compiler);
+        const parser = new RustParser(compiler);
+        await parser.parse();
         expect(compiler.compiler.supportsTarget).toBe(true);
-        await expect(RustParser.getOptions(compiler, '--help')).resolves.toEqual({
+        await expect(parser.getOptions('--help')).resolves.toEqual({
             '-l [<KIND>[:<MODIFIERS>]=]<NAME>[:<RENAME>]': {
                 description:
                     'Link the generated crate(s) to the specified native library NAME. The optional KIND can be one of',
