@@ -344,7 +344,7 @@ export class ClangParser extends BaseParser {
             this.mllvmOptions = new Set(
                 _.keys(await this.getOptions(compiler, this.getHiddenHelpOptions(filename).join(' '), false, true)),
             );
-            this.setCompilerSettingsFromOptions(compiler, options);
+            await this.setCompilerSettingsFromOptions(compiler, options);
         } catch (error) {
             const err = `Error while trying to generate llvm backend arguments for ${compiler.compiler.id}: ${error}`;
             logger.error(err);
@@ -457,7 +457,7 @@ export class ClangParser extends BaseParser {
 
 export class ClangirParser extends ClangParser {
     static override async setCompilerSettingsFromOptions(compiler: BaseCompiler, options: Record<string, Argument>) {
-        ClangParser.setCompilerSettingsFromOptions(compiler, options);
+        await ClangParser.setCompilerSettingsFromOptions(compiler, options);
 
         compiler.compiler.optPipeline = {
             arg: [],
@@ -567,7 +567,7 @@ export class LDCParser extends BaseParser {
 
     static override async parse(compiler: BaseCompiler) {
         const options = await this.getOptions(compiler, '--help-hidden');
-        this.setCompilerSettingsFromOptions(compiler, options);
+        await this.setCompilerSettingsFromOptions(compiler, options);
         return compiler;
     }
 
@@ -1117,7 +1117,7 @@ export class FlangParser extends ClangParser {
     }
 
     static override async setCompilerSettingsFromOptions(compiler: BaseCompiler, options: Record<string, Argument>) {
-        super.setCompilerSettingsFromOptions(compiler, options);
+        await super.setCompilerSettingsFromOptions(compiler, options);
 
         // flang does not allow -emit-llvm to be used as it is with clang
         // as -Xflang -emit-llvm. Instead you just give -emit-llvm to flang
@@ -1178,7 +1178,7 @@ export class SwiftParser extends ClangParser {
     static override async parse(compiler: BaseCompiler) {
         const results = await Promise.all([this.getOptions(compiler, '--help')]);
         const options = Object.assign({}, ...results);
-        this.setCompilerSettingsFromOptions(compiler, options);
+        await this.setCompilerSettingsFromOptions(compiler, options);
         return compiler;
     }
 
