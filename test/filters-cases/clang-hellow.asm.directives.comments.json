@@ -295,15 +295,7 @@
       "text": "        .long   139                     # DIE offset"
     },
     {
-      "labels": [
-        {
-          "name": "main",
-          "range": {
-            "endCol": 23,
-            "startCol": 19
-          }
-        }
-      ],
+      "labels": [],
       "source": null,
       "text": "        .asciz   \"main\"                 # External Name"
     },

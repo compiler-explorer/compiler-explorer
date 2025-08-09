@@ -23455,15 +23455,7 @@
       "text": ".Linfo_string277:"
     },
     {
-      "labels": [
-        {
-          "name": "_Z3fooRKSt17basic_string_viewIcSt11char_traitsIcEE",
-          "range": {
-            "endCol": 68,
-            "startCol": 18
-          }
-        }
-      ],
+      "labels": [],
       "source": null,
       "text": "        .asciz  \"_Z3fooRKSt17basic_string_viewIcSt11char_traitsIcEE\" # string offset=6257"
     },

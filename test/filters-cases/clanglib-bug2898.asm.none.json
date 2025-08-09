@@ -52878,15 +52878,7 @@
       "text": ".Linfo_string597:"
     },
     {
-      "labels": [
-        {
-          "name": "_Z3cvtN3eve7logicalINS_10avx_abi_v04wideIsNS_5fixedILl8EEEEEEE",
-          "range": {
-            "endCol": 80,
-            "startCol": 18
-          }
-        }
-      ],
+      "labels": [],
       "source": null,
       "text": "        .asciz  \"_Z3cvtN3eve7logicalINS_10avx_abi_v04wideIsNS_5fixedILl8EEEEEEE\" # string offset=10275"
     },
