@@ -228,7 +228,7 @@ export class GCCParser extends BaseParser {
     static override async getOptions(compiler: BaseCompiler, helpArg: string) {
         const optionFinder1 = /^ *(--?[\d#+,<=>[\]a-z|-]* ?[\d+,<=>[\]a-z|-]*) {2,}(.*)/i;
         const optionFinder2 = /^ *(--?[\d#+,<=>[\]a-z|-]* ?[\d+,<=>[\]a-z|-]*)/i;
-        const result = await compiler.execCompilerCached(compiler.compiler.exe, splitArguments(' '));
+        const result = await compiler.execCompilerCached(compiler.compiler.exe, splitArguments(helpArg));
         const options =
             result.code === 0 ? this.parseLines(result.stdout + result.stderr, optionFinder1, optionFinder2) : {};
         compiler.possibleArguments.populateOptions(options);
@@ -470,7 +470,7 @@ export class CircleParser extends ClangParser {
     static override async getOptions(compiler: BaseCompiler, helpArg: string) {
         const optionFinder1 = /^ +(--?[\w#,.<=>[\]|-]*) {2,}- (.*)/i;
         const optionFinder2 = /^ +(--?[\w#,.<=>[\]|-]*)/i;
-        const result = await compiler.execCompilerCached(compiler.compiler.exe, splitArguments(' '));
+        const result = await compiler.execCompilerCached(compiler.compiler.exe, splitArguments(helpArg));
         const options = result.code === 0 ? this.parseLines(result.stdout, optionFinder1, optionFinder2) : {};
         compiler.possibleArguments.populateOptions(options);
         return options;
