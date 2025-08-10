@@ -142,15 +142,7 @@
       "text": ".Lfunc_begin0:"
     },
     {
-      "labels": [
-        {
-          "name": "example",
-          "range": {
-            "endCol": 38,
-            "startCol": 31
-          }
-        }
-      ],
+      "labels": [],
       "source": null,
       "text": "        .file   1 \"/home/ce/./example.rs\""
     },
@@ -903,15 +895,7 @@
       "text": ".Linfo_string1:"
     },
     {
-      "labels": [
-        {
-          "name": "example",
-          "range": {
-            "endCol": 27,
-            "startCol": 20
-          }
-        }
-      ],
+      "labels": [],
       "source": null,
       "text": "        .asciz  \"./example.rs\""
     },

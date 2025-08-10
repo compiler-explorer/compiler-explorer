@@ -62,7 +62,15 @@
       "text": "        mov     qword ptr [rsp + 24], 0"
     },
     {
-      "labels": [],
+      "labels": [
+        {
+          "name": ".L.str",
+          "range": {
+            "endCol": 52,
+            "startCol": 46
+          }
+        }
+      ],
       "source": {
         "column": 55,
         "file": "/opt/compiler-explorer/libs/ctre/master/include/ctre/evaluation.hpp",
@@ -325,7 +333,15 @@
       "text": "        xor     esi, esi"
     },
     {
-      "labels": [],
+      "labels": [
+        {
+          "name": ".L.str",
+          "range": {
+            "endCol": 35,
+            "startCol": 29
+          }
+        }
+      ],
       "source": {
         "column": 9,
         "file": "/opt/compiler-explorer/libs/ctre/master/include/ctre/evaluation.hpp",
@@ -339,7 +355,15 @@
       "text": "        #DEBUG_VALUE: match:sv <- [DW_OP_LLVM_fragment 64 64] $rdx"
     },
     {
-      "labels": [],
+      "labels": [
+        {
+          "name": ".L.str",
+          "range": {
+            "endCol": 35,
+            "startCol": 29
+          }
+        }
+      ],
       "source": {
         "column": 9,
         "file": "/opt/compiler-explorer/libs/ctre/master/include/ctre/evaluation.hpp",
@@ -353,7 +377,15 @@
       "text": "        #DEBUG_VALUE: evaluate<ctre::regex_results<const char *>, const char *, const char *, ctre::star<ctre::any>, ctre::assert_end, ctre::end_mark, ctre::accept>:current <- $rcx"
     },
     {
-      "labels": [],
+      "labels": [
+        {
+          "name": ".L.str",
+          "range": {
+            "endCol": 35,
+            "startCol": 29
+          }
+        }
+      ],
       "source": {
         "column": 9,
         "file": "/opt/compiler-explorer/libs/ctre/master/include/ctre/evaluation.hpp",

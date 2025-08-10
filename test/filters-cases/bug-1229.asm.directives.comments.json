@@ -47,7 +47,15 @@
       "text": ".Ltmp4:"
     },
     {
-      "labels": [],
+      "labels": [
+        {
+          "name": ".L.str",
+          "range": {
+            "endCol": 52,
+            "startCol": 46
+          }
+        }
+      ],
       "source": {
         "column": 55,
         "file": "/opt/compiler-explorer/libs/ctre/master/include/ctre/evaluation.hpp",
@@ -220,7 +228,15 @@
       "text": "        xor     esi, esi"
     },
     {
-      "labels": [],
+      "labels": [
+        {
+          "name": ".L.str",
+          "range": {
+            "endCol": 35,
+            "startCol": 29
+          }
+        }
+      ],
       "source": {
         "column": 9,
         "file": "/opt/compiler-explorer/libs/ctre/master/include/ctre/evaluation.hpp",
@@ -234,7 +250,15 @@
       "text": ".Ltmp8:"
     },
     {
-      "labels": [],
+      "labels": [
+        {
+          "name": ".L.str",
+          "range": {
+            "endCol": 35,
+            "startCol": 29
+          }
+        }
+      ],
       "source": {
         "column": 9,
         "file": "/opt/compiler-explorer/libs/ctre/master/include/ctre/evaluation.hpp",
@@ -248,7 +272,15 @@
       "text": ".Ltmp9:"
     },
     {
-      "labels": [],
+      "labels": [
+        {
+          "name": ".L.str",
+          "range": {
+            "endCol": 35,
+            "startCol": 29
+          }
+        }
+      ],
       "source": {
         "column": 9,
         "file": "/opt/compiler-explorer/libs/ctre/master/include/ctre/evaluation.hpp",

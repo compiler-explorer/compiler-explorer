@@ -123,7 +123,15 @@
       "text": "        .loc    1 4 5 prologue_end              # example.c:4:5"
     },
     {
-      "labels": [],
+      "labels": [
+        {
+          "name": ".L.str",
+          "range": {
+            "endCol": 35,
+            "startCol": 29
+          }
+        }
+      ],
       "source": {
         "column": 5,
         "file": null,
@@ -230,7 +238,15 @@
       "text": "                                        # -- End function"
     },
     {
-      "labels": [],
+      "labels": [
+        {
+          "name": ".L.str",
+          "range": {
+            "endCol": 23,
+            "startCol": 17
+          }
+        }
+      ],
       "source": null,
       "text": "        .type   .L.str,@object                  # @.str"
     },
@@ -250,7 +266,15 @@
       "text": "        .asciz  \"hello world\""
     },
     {
-      "labels": [],
+      "labels": [
+        {
+          "name": ".L.str",
+          "range": {
+            "endCol": 23,
+            "startCol": 17
+          }
+        }
+      ],
       "source": null,
       "text": "        .size   .L.str, 12"
     },
@@ -910,7 +934,15 @@
       "text": "        .byte   3"
     },
     {
-      "labels": [],
+      "labels": [
+        {
+          "name": ".L.str",
+          "range": {
+            "endCol": 23,
+            "startCol": 17
+          }
+        }
+      ],
       "source": null,
       "text": "        .quad   .L.str"
     },

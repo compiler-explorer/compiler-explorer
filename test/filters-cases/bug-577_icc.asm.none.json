@@ -559,7 +559,15 @@
       "text": "//      DW_AT_low_pc:"
     },
     {
-      "labels": [],
+      "labels": [
+        {
+          "name": "..LN0",
+          "range": {
+            "endCol": 21,
+            "startCol": 16
+          }
+        }
+      ],
       "source": null,
       "text": "        .8byte ..LN0"
     },
@@ -569,7 +577,22 @@
       "text": "//      DW_AT_high_pc:"
     },
     {
-      "labels": [],
+      "labels": [
+        {
+          "name": "..LN_Z6squarei.13",
+          "range": {
+            "endCol": 33,
+            "startCol": 16
+          }
+        },
+        {
+          "name": "..LN0",
+          "range": {
+            "endCol": 39,
+            "startCol": 34
+          }
+        }
+      ],
       "source": null,
       "text": "        .8byte ..LN_Z6squarei.13-..LN0"
     },
@@ -752,7 +775,15 @@
       "text": "//      DW_AT_low_pc:"
     },
     {
-      "labels": [],
+      "labels": [
+        {
+          "name": "..L3",
+          "range": {
+            "endCol": 20,
+            "startCol": 16
+          }
+        }
+      ],
       "source": null,
       "text": "        .8byte ..L3"
     },
@@ -762,7 +793,22 @@
       "text": "//      DW_AT_high_pc:"
     },
     {
-      "labels": [],
+      "labels": [
+        {
+          "name": "..LN_Z6squarei.13",
+          "range": {
+            "endCol": 33,
+            "startCol": 16
+          }
+        },
+        {
+          "name": "..L3",
+          "range": {
+            "endCol": 38,
+            "startCol": 34
+          }
+        }
+      ],
       "source": null,
       "text": "        .8byte ..LN_Z6squarei.13-..L3"
     },

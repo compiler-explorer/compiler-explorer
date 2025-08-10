@@ -131,7 +131,15 @@
       "text": "\"main\":"
     },
     {
-      "labels": [],
+      "labels": [
+        {
+          "name": "\"_Z8functionib.constprop.1\"",
+          "range": {
+            "endCol": 44,
+            "startCol": 17
+          }
+        }
+      ],
       "source": {
         "column": 20,
         "file": "example.cpp",
@@ -151,7 +159,15 @@
       "text": "        mov     edx, eax  # _1,"
     },
     {
-      "labels": [],
+      "labels": [
+        {
+          "name": "\"_Z8functionib.constprop.0\"",
+          "range": {
+            "endCol": 44,
+            "startCol": 17
+          }
+        }
+      ],
       "source": {
         "column": 44,
         "file": "example.cpp",

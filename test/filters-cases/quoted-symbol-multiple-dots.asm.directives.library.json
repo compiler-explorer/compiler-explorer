@@ -255,7 +255,15 @@
       "text": "# /app/example.cpp:11:     return function(argc, false) + function(argc, true);"
     },
     {
-      "labels": [],
+      "labels": [
+        {
+          "name": "\"_Z8functionib.constprop.1\"",
+          "range": {
+            "endCol": 44,
+            "startCol": 17
+          }
+        }
+      ],
       "source": {
         "column": 20,
         "file": null,
@@ -283,7 +291,15 @@
       "text": "# /app/example.cpp:11:     return function(argc, false) + function(argc, true);"
     },
     {
-      "labels": [],
+      "labels": [
+        {
+          "name": "\"_Z8functionib.constprop.0\"",
+          "range": {
+            "endCol": 44,
+            "startCol": 17
+          }
+        }
+      ],
       "source": {
         "column": 44,
         "file": null,

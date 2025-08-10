@@ -32,7 +32,15 @@
       "text": "        mov     rbp, rsp"
     },
     {
-      "labels": [],
+      "labels": [
+        {
+          "name": ".L.str",
+          "range": {
+            "endCol": 35,
+            "startCol": 29
+          }
+        }
+      ],
       "source": {
         "column": 5,
         "file": null,

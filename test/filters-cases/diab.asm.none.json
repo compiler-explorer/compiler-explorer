@@ -4251,12 +4251,28 @@
       "text": "        .sdata2"
     },
     {
-      "labels": [],
+      "labels": [
+        {
+          "name": "FLOAT_TEMP.161",
+          "range": {
+            "endCol": 37,
+            "startCol": 23
+          }
+        }
+      ],
       "source": null,
       "text": "        .type         FLOAT_TEMP.161,@object"
     },
     {
-      "labels": [],
+      "labels": [
+        {
+          "name": "FLOAT_TEMP.161",
+          "range": {
+            "endCol": 37,
+            "startCol": 23
+          }
+        }
+      ],
       "source": null,
       "text": "        .size         FLOAT_TEMP.161,8"
     },
@@ -4276,12 +4292,28 @@
       "text": "        .double   +1.0000000000000000000"
     },
     {
-      "labels": [],
+      "labels": [
+        {
+          "name": "FLOAT_TEMP.162",
+          "range": {
+            "endCol": 37,
+            "startCol": 23
+          }
+        }
+      ],
       "source": null,
       "text": "        .type         FLOAT_TEMP.162,@object"
     },
     {
-      "labels": [],
+      "labels": [
+        {
+          "name": "FLOAT_TEMP.162",
+          "range": {
+            "endCol": 37,
+            "startCol": 23
+          }
+        }
+      ],
       "source": null,
       "text": "        .size         FLOAT_TEMP.162,8"
     },
@@ -4301,12 +4333,28 @@
       "text": "        .double   +2.0000000000000000000"
     },
     {
-      "labels": [],
+      "labels": [
+        {
+          "name": "FLOAT_TEMP.163",
+          "range": {
+            "endCol": 37,
+            "startCol": 23
+          }
+        }
+      ],
       "source": null,
       "text": "        .type         FLOAT_TEMP.163,@object"
     },
     {
-      "labels": [],
+      "labels": [
+        {
+          "name": "FLOAT_TEMP.163",
+          "range": {
+            "endCol": 37,
+            "startCol": 23
+          }
+        }
+      ],
       "source": null,
       "text": "        .size         FLOAT_TEMP.163,8"
     },
@@ -4326,12 +4374,28 @@
       "text": "        .double   +3.0000000000000000000"
     },
     {
-      "labels": [],
+      "labels": [
+        {
+          "name": "FLOAT_TEMP.164",
+          "range": {
+            "endCol": 37,
+            "startCol": 23
+          }
+        }
+      ],
       "source": null,
       "text": "        .type         FLOAT_TEMP.164,@object"
     },
     {
-      "labels": [],
+      "labels": [
+        {
+          "name": "FLOAT_TEMP.164",
+          "range": {
+            "endCol": 37,
+            "startCol": 23
+          }
+        }
+      ],
       "source": null,
       "text": "        .size         FLOAT_TEMP.164,8"
     },
@@ -4351,12 +4415,28 @@
       "text": "        .double   +4.0000000000000000000"
     },
     {
-      "labels": [],
+      "labels": [
+        {
+          "name": "FLOAT_TEMP.165",
+          "range": {
+            "endCol": 37,
+            "startCol": 23
+          }
+        }
+      ],
       "source": null,
       "text": "        .type         FLOAT_TEMP.165,@object"
     },
     {
-      "labels": [],
+      "labels": [
+        {
+          "name": "FLOAT_TEMP.165",
+          "range": {
+            "endCol": 37,
+            "startCol": 23
+          }
+        }
+      ],
       "source": null,
       "text": "        .size         FLOAT_TEMP.165,8"
     },
