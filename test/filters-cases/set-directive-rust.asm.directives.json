@@ -44,6 +44,26 @@
       "text": ""
     },
     {
+      "labels": [
+        {
+          "name": "_ZN7example15second_function17h4a2f85ffbcd4ec12E",
+          "range": {
+            "endCol": 54,
+            "startCol": 6
+          }
+        },
+        {
+          "name": "_ZN7example14first_function17h65b92e135846244bE",
+          "range": {
+            "endCol": 103,
+            "startCol": 56
+          }
+        }
+      ],
+      "source": null,
+      "text": ".set _ZN7example15second_function17h4a2f85ffbcd4ec12E, _ZN7example14first_function17h65b92e135846244bE"
+    },
+    {
       "labels": [],
       "source": null,
       "text": ".Lcu_begin0:"
@@ -115,6 +135,7 @@
     }
   ],
   "labelDefinitions": {
-    "_ZN7example14first_function17h65b92e135846244bE": 2
+    "_ZN7example14first_function17h65b92e135846244bE": 2,
+    "_ZN7example15second_function17h4a2f85ffbcd4ec12E": 8
   }
 }

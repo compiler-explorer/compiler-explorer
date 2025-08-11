@@ -156,12 +156,27 @@
       "text": "        .size   Normal::~Normal() [base object destructor], .-Normal::~Normal() [base object destructor]",
     },
     {
-      "labels": [],
+      "labels": [
+        {
+          "name": "Normal::~Normal() [complete object destructor]",
+          "range": {
+            "endCol": 63,
+            "startCol": 17,
+          },
+        },
+      ],
       "source": null,
       "text": "        .weak   Normal::~Normal() [complete object destructor]",
     },
     {
       "labels": [
+        {
+          "name": "Normal::~Normal() [complete object destructor]",
+          "range": {
+            "endCol": 63,
+            "startCol": 17,
+          },
+        },
         {
           "name": "Normal::~Normal() [base object destructor]",
           "range": {
@@ -1220,7 +1235,15 @@
       "text": "        .quad   typeinfo for Normal",
     },
     {
-      "labels": [],
+      "labels": [
+        {
+          "name": "Normal::~Normal() [complete object destructor]",
+          "range": {
+            "endCol": 63,
+            "startCol": 17,
+          },
+        },
+      ],
       "source": null,
       "text": "        .quad   Normal::~Normal() [complete object destructor]",
     },
@@ -7925,6 +7948,7 @@
     ".Letext0": 173,
     ".Ltext0": 3,
     "Normal::~Normal() [base object destructor]": 9,
+    "Normal::~Normal() [complete object destructor]": 25,
     "Normal::~Normal() [deleting destructor]": 31,
     "caller1()": 62,
     "caller2(Normal*)": 93,

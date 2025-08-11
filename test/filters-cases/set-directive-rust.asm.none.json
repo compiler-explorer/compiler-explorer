@@ -142,17 +142,40 @@
       "text": ""
     },
     {
-      "labels": [],
+      "labels": [
+        {
+          "name": "_ZN7example15second_function17h4a2f85ffbcd4ec12E",
+          "range": {
+            "endCol": 65,
+            "startCol": 17
+          }
+        }
+      ],
       "source": null,
       "text": "        .globl  _ZN7example15second_function17h4a2f85ffbcd4ec12E"
     },
     {
-      "labels": [],
+      "labels": [
+        {
+          "name": "_ZN7example15second_function17h4a2f85ffbcd4ec12E",
+          "range": {
+            "endCol": 65,
+            "startCol": 17
+          }
+        }
+      ],
       "source": null,
       "text": "        .type   _ZN7example15second_function17h4a2f85ffbcd4ec12E,@function"
     },
     {
       "labels": [
+        {
+          "name": "_ZN7example15second_function17h4a2f85ffbcd4ec12E",
+          "range": {
+            "endCol": 54,
+            "startCol": 6
+          }
+        },
         {
           "name": "_ZN7example14first_function17h65b92e135846244bE",
           "range": {
@@ -1044,15 +1067,7 @@
       "text": ".Linfo_string4:"
     },
     {
-      "labels": [
-        {
-          "name": "_ZN7example14first_function17h65b92e135846244bE",
-          "range": {
-            "endCol": 65,
-            "startCol": 18
-          }
-        }
-      ],
+      "labels": [],
       "source": null,
       "text": "        .asciz  \"_ZN7example14first_function17h65b92e135846244bE\""
     },
@@ -1123,6 +1138,7 @@
     ".Linfo_string7": 171,
     ".Lline_table_start0": 176,
     ".Lsec_end0": 144,
-    "_ZN7example14first_function17h65b92e135846244bE": 8
+    "_ZN7example14first_function17h65b92e135846244bE": 8,
+    "_ZN7example15second_function17h4a2f85ffbcd4ec12E": 22
   }
 }
