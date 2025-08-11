@@ -124,15 +124,7 @@
       "text": ""
     },
     {
-      "labels": [
-        {
-          "name": "_square",
-          "range": {
-            "endCol": 55,
-            "startCol": 48
-          }
-        }
-      ],
+      "labels": [],
       "source": null,
       "text": "        .dbg    func, \"square\", \"00\", extern, \"_square\""
     },

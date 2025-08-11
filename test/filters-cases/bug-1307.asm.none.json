@@ -49195,15 +49195,7 @@
       "text": ".LASF730:"
     },
     {
-      "labels": [
-        {
-          "name": "_Z8testfuncf",
-          "range": {
-            "endCol": 30,
-            "startCol": 18
-          }
-        }
-      ],
+      "labels": [],
       "source": null,
       "text": "        .string \"_Z8testfuncf\""
     },

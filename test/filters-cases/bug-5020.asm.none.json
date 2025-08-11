@@ -5660,15 +5660,7 @@
       "text": "        .uleb128 0x4d"
     },
     {
-      "labels": [
-        {
-          "name": "std",
-          "range": {
-            "endCol": 21,
-            "startCol": 18
-          }
-        }
-      ],
+      "labels": [],
       "source": null,
       "text": "        .string \"std\""
     },
@@ -42953,15 +42945,7 @@
       "text": ".LASF263:"
     },
     {
-      "labels": [
-        {
-          "name": "std",
-          "range": {
-            "endCol": 21,
-            "startCol": 18
-          }
-        }
-      ],
+      "labels": [],
       "source": null,
       "text": "        .string \"std::_Function_base::~_Function_base() [base object destructor]\""
     },
@@ -43251,15 +43235,7 @@
       "text": ".LASF260:"
     },
     {
-      "labels": [
-        {
-          "name": "std",
-          "range": {
-            "endCol": 21,
-            "startCol": 18
-          }
-        }
-      ],
+      "labels": [],
       "source": null,
       "text": "        .string \"std::__throw_bad_function_call()\""
     },
@@ -43879,15 +43855,7 @@
       "text": ".LASF236:"
     },
     {
-      "labels": [
-        {
-          "name": "main",
-          "range": {
-            "endCol": 22,
-            "startCol": 18
-          }
-        }
-      ],
+      "labels": [],
       "source": null,
       "text": "        .string \"main\""
     },

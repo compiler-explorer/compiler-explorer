@@ -24,7 +24,7 @@
 
 import {describe, expect, it} from 'vitest';
 
-import {addDigitSeparator, escapeHTML, splitArguments} from '../shared/common-utils.js';
+import {addDigitSeparator, capitaliseFirst, escapeHTML, splitArguments} from '../shared/common-utils.js';
 
 describe('HTML Escape Test Cases', () => {
     it('should prevent basic injection', () => {
@@ -165,5 +165,31 @@ describe('argument splitting', () => {
 
     it('should handle multiple escapes in quotes', () => {
         expect(splitArguments('"hello \\"world\\" \\\\"')).toEqual(['hello "world" \\']);
+    });
+});
+
+describe('capitalise first', () => {
+    it('should capitalise normal strings', () => {
+        expect(capitaliseFirst('hello')).toEqual('Hello');
+        expect(capitaliseFirst('world')).toEqual('World');
+    });
+
+    it('should handle empty strings', () => {
+        expect(capitaliseFirst('')).toEqual('');
+    });
+
+    it('should handle single characters', () => {
+        expect(capitaliseFirst('a')).toEqual('A');
+        expect(capitaliseFirst('z')).toEqual('Z');
+    });
+
+    it('should handle already capitalised strings', () => {
+        expect(capitaliseFirst('Hello')).toEqual('Hello');
+        expect(capitaliseFirst('WORLD')).toEqual('WORLD');
+    });
+
+    it('should handle non-alphabetic first characters', () => {
+        expect(capitaliseFirst('123abc')).toEqual('123abc');
+        expect(capitaliseFirst('!hello')).toEqual('!hello');
     });
 });

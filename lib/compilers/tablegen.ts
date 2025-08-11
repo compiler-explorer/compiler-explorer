@@ -26,7 +26,7 @@ export class TableGenCompiler extends BaseCompiler {
     }
 
     override async populatePossibleOverrides() {
-        const possibleActions = await TableGenParser.getPossibleActions(this);
+        const possibleActions = await this.argParser.getPossibleActions();
         if (possibleActions.length > 0) {
             this.compiler.possibleOverrides?.push({
                 name: CompilerOverrideType.action,

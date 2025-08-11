@@ -23,6 +23,8 @@ $color10: #e06c75; // Appears 2 time
 
 // ".lm_dragging" is applied to BODY tag during Drag and is also directly applied to the root of the object being dragged
 
+html[data-theme='one-dark'] {
+
 // Entire GoldenLayout Container, if a background is set, it is visible as color of "pane header" and "splitters" (if these latest has opacity very low)
 .lm_goldenlayout {
     background: $color0;
@@ -245,3 +247,5 @@ $color10: #e06c75; // Appears 2 time
         }
     }
 }
+
+} // End html[data-theme='one-dark']

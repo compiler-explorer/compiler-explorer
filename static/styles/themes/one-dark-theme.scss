@@ -13,6 +13,15 @@ $base: #282c34;
 $dark: #21252b;
 $darker: #1e1f22;
 
+html[data-theme='one-dark'] {
+// Export as CSS custom properties for use in explorer.scss
+--light: #{$light};
+--lighter: #{$lighter};
+--lightest: #{$lightest};
+--base: #{$base};
+--dark: #{$dark};
+--darker: #{$darker};
+
 ::-webkit-scrollbar {
     background: $lighter;
 }
@@ -233,7 +242,7 @@ textarea.form-control {
 
 .currentCursorPosition {
     color: #eee;
-    background-color: opacify($dark, 0.8);
+    background-color: color.adjust($dark, $alpha: 0.8);
 }
 
 .form-select {
@@ -792,3 +801,21 @@ textarea.form-control {
         filter: invert(100%);
     }
 }
+
+.explain-box {
+    background-color: #282c34;
+    border-color: #4b5263;
+    color: #abb2bf;
+}
+
+.explain-bottom-bar {
+    background-color: $dark !important;
+    color: #abb2bf;
+}
+
+.ai-disclaimer.bg-warning {
+    background-color: #664d03 !important;
+    color: #ffda6a !important;
+}
+
+} // End html[data-theme='one-dark']
