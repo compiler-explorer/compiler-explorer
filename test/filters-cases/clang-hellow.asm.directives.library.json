@@ -92,7 +92,15 @@
       "text": ".Ltmp6:"
     },
     {
-      "labels": [],
+      "labels": [
+        {
+          "name": ".L.str",
+          "range": {
+            "endCol": 24,
+            "startCol": 18
+          }
+        }
+      ],
       "source": {
         "column": 1,
         "file": null,

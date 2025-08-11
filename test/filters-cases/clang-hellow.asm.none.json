@@ -238,7 +238,15 @@
       "text": ".Ltmp6:"
     },
     {
-      "labels": [],
+      "labels": [
+        {
+          "name": ".L.str",
+          "range": {
+            "endCol": 24,
+            "startCol": 18
+          }
+        }
+      ],
       "source": {
         "column": 1,
         "file": null,
@@ -377,7 +385,15 @@
       "text": ".Leh_func_end0:"
     },
     {
-      "labels": [],
+      "labels": [
+        {
+          "name": ".L.str",
+          "range": {
+            "endCol": 23,
+            "startCol": 17
+          }
+        }
+      ],
       "source": null,
       "text": "        .type   .L.str,@object          # @.str"
     },
@@ -397,7 +413,15 @@
       "text": "        .asciz   \"Hello world\""
     },
     {
-      "labels": [],
+      "labels": [
+        {
+          "name": ".L.str",
+          "range": {
+            "endCol": 23,
+            "startCol": 17
+          }
+        }
+      ],
       "source": null,
       "text": "        .size   .L.str, 12"
     },

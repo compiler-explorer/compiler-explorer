@@ -104,12 +104,30 @@
       "text": "        std 4, 120(31)"
     },
     {
-      "labels": [],
+      "labels": [
+        {
+          "name": ".L.str@toc@ha",
+          "range": {
+            "endCol": 34,
+            "startCol": 21
+          },
+          "target": ".L.str"
+        }
+      ],
       "source": null,
       "text": "        addis 3, 2, .L.str@toc@ha"
     },
     {
-      "labels": [],
+      "labels": [
+        {
+          "name": ".L.str@toc@l",
+          "range": {
+            "endCol": 32,
+            "startCol": 20
+          },
+          "target": ".L.str"
+        }
+      ],
       "source": null,
       "text": "        addi 3, 3, .L.str@toc@l"
     },
