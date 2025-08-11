@@ -50,6 +50,7 @@ export {CleanCompiler} from './clean.js';
 export {CLSPVCompiler} from './clspv.js';
 export {CMakeScriptCompiler} from './cmakescript.js';
 export {CoccinelleCCompiler, CoccinelleCPlusPlusCompiler} from './coccinelle.js';
+export {CodonCompiler} from './codon.js';
 export {CompCertCompiler} from './compcert.js';
 export {CppFrontCompiler} from './cppfront.js';
 export {CprocCompiler} from './cproc.js';
