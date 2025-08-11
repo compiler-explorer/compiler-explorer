@@ -78,6 +78,8 @@ node --import tsx compiler-args-app.ts \
 - `golang` - Go
 - `zig` - Zig
 
+New parser types have to be added manually to the `compilerParsers` type list in `compiler-args-app.ts`
+
 ## Output Interpretation
 
 The tool provides several types of information:
@@ -141,6 +143,7 @@ When adding support for a new compiler:
 1. First run with an existing similar parser to see what works
 2. Examine the raw help output to understand the format
 3. Create a custom parser if needed in `lib/compilers/argument-parsers.ts`
+4. Add the custom parser to the `compilerParsers` type list in `compiler-args-app.ts`
 
 ### 5. Environment Considerations
 - The tool uses the current environment variables and working directory
