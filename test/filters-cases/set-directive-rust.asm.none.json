@@ -1,0 +1,1144 @@
+{
+  "asm": [
+    {
+      "labels": [],
+      "source": null,
+      "text": "; https://rust.godbolt.org/z/nc9nd35W3"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .intel_syntax noprefix"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .file   \"example.79c311dc4783170-cgu.0\""
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .section        .text._ZN7example14first_function17h65b92e135846244bE,\"ax\",@progbits"
+    },
+    {
+      "labels": [
+        {
+          "name": "_ZN7example14first_function17h65b92e135846244bE",
+          "range": {
+            "endCol": 64,
+            "startCol": 17
+          }
+        }
+      ],
+      "source": null,
+      "text": "        .globl  _ZN7example14first_function17h65b92e135846244bE"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .p2align        4"
+    },
+    {
+      "labels": [
+        {
+          "name": "_ZN7example14first_function17h65b92e135846244bE",
+          "range": {
+            "endCol": 64,
+            "startCol": 17
+          }
+        }
+      ],
+      "source": null,
+      "text": "        .type   _ZN7example14first_function17h65b92e135846244bE,@function"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "_ZN7example14first_function17h65b92e135846244bE:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".Lfunc_begin0:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .cfi_startproc"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .file   1 \"/app\" \"example.rs\""
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .loc    1 3 5 prologue_end"
+    },
+    {
+      "labels": [],
+      "source": {
+        "column": 5,
+        "file": null,
+        "line": 3
+      },
+      "text": "        lea     rax, [rdi + 1]"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .loc    1 4 2"
+    },
+    {
+      "labels": [],
+      "source": {
+        "column": 2,
+        "file": null,
+        "line": 4
+      },
+      "text": "        ret"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".Lfunc_end0:"
+    },
+    {
+      "labels": [
+        {
+          "name": "_ZN7example14first_function17h65b92e135846244bE",
+          "range": {
+            "endCol": 64,
+            "startCol": 17
+          }
+        },
+        {
+          "name": ".Lfunc_end0",
+          "range": {
+            "endCol": 77,
+            "startCol": 66
+          }
+        },
+        {
+          "name": "_ZN7example14first_function17h65b92e135846244bE",
+          "range": {
+            "endCol": 125,
+            "startCol": 78
+          }
+        }
+      ],
+      "source": null,
+      "text": "        .size   _ZN7example14first_function17h65b92e135846244bE, .Lfunc_end0-_ZN7example14first_function17h65b92e135846244bE"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .cfi_endproc"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ""
+    },
+    {
+      "labels": [
+        {
+          "name": "_ZN7example15second_function17h4a2f85ffbcd4ec12E",
+          "range": {
+            "endCol": 65,
+            "startCol": 17
+          }
+        }
+      ],
+      "source": null,
+      "text": "        .globl  _ZN7example15second_function17h4a2f85ffbcd4ec12E"
+    },
+    {
+      "labels": [
+        {
+          "name": "_ZN7example15second_function17h4a2f85ffbcd4ec12E",
+          "range": {
+            "endCol": 65,
+            "startCol": 17
+          }
+        }
+      ],
+      "source": null,
+      "text": "        .type   _ZN7example15second_function17h4a2f85ffbcd4ec12E,@function"
+    },
+    {
+      "labels": [
+        {
+          "name": "_ZN7example15second_function17h4a2f85ffbcd4ec12E",
+          "range": {
+            "endCol": 54,
+            "startCol": 6
+          }
+        },
+        {
+          "name": "_ZN7example14first_function17h65b92e135846244bE",
+          "range": {
+            "endCol": 103,
+            "startCol": 56
+          }
+        }
+      ],
+      "source": null,
+      "text": ".set _ZN7example15second_function17h4a2f85ffbcd4ec12E, _ZN7example14first_function17h65b92e135846244bE"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .section        .debug_abbrev,\"\",@progbits"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .byte   1"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .byte   17"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .byte   1"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .byte   37"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .byte   14"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .byte   19"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .byte   5"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .byte   3"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .byte   14"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .byte   16"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .byte   23"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .byte   27"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .byte   14"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .byte   17"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .byte   1"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .byte   18"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .byte   6"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .byte   0"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .byte   0"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .byte   2"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .byte   57"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .byte   1"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .byte   3"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .byte   14"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .byte   0"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .byte   0"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .byte   3"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .byte   46"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .byte   1"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .byte   17"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .byte   1"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .byte   18"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .byte   6"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .byte   64"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .byte   24"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .byte   110"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .byte   14"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .byte   3"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .byte   14"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .byte   58"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .byte   11"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .byte   59"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .byte   11"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .byte   73"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .byte   19"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .byte   63"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .byte   25"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .byte   0"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .byte   0"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .byte   4"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .byte   5"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .byte   0"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .byte   2"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .byte   24"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .byte   3"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .byte   14"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .byte   58"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .byte   11"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .byte   59"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .byte   11"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .byte   73"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .byte   19"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .byte   0"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .byte   0"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .byte   5"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .byte   36"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .byte   0"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .byte   3"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .byte   14"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .byte   62"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .byte   11"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .byte   11"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .byte   11"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .byte   0"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .byte   0"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .byte   0"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .section        .debug_info,\"\",@progbits"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".Lcu_begin0:"
+    },
+    {
+      "labels": [
+        {
+          "name": ".Ldebug_info_end0",
+          "range": {
+            "endCol": 34,
+            "startCol": 17
+          }
+        },
+        {
+          "name": ".Ldebug_info_start0",
+          "range": {
+            "endCol": 54,
+            "startCol": 35
+          }
+        }
+      ],
+      "source": null,
+      "text": "        .long   .Ldebug_info_end0-.Ldebug_info_start0"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".Ldebug_info_start0:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .short  4"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .long   .debug_abbrev"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .byte   8"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .byte   1"
+    },
+    {
+      "labels": [
+        {
+          "name": ".Linfo_string0",
+          "range": {
+            "endCol": 31,
+            "startCol": 17
+          }
+        }
+      ],
+      "source": null,
+      "text": "        .long   .Linfo_string0"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .short  28"
+    },
+    {
+      "labels": [
+        {
+          "name": ".Linfo_string1",
+          "range": {
+            "endCol": 31,
+            "startCol": 17
+          }
+        }
+      ],
+      "source": null,
+      "text": "        .long   .Linfo_string1"
+    },
+    {
+      "labels": [
+        {
+          "name": ".Lline_table_start0",
+          "range": {
+            "endCol": 36,
+            "startCol": 17
+          }
+        }
+      ],
+      "source": null,
+      "text": "        .long   .Lline_table_start0"
+    },
+    {
+      "labels": [
+        {
+          "name": ".Linfo_string2",
+          "range": {
+            "endCol": 31,
+            "startCol": 17
+          }
+        }
+      ],
+      "source": null,
+      "text": "        .long   .Linfo_string2"
+    },
+    {
+      "labels": [
+        {
+          "name": ".Lfunc_begin0",
+          "range": {
+            "endCol": 30,
+            "startCol": 17
+          }
+        }
+      ],
+      "source": null,
+      "text": "        .quad   .Lfunc_begin0"
+    },
+    {
+      "labels": [
+        {
+          "name": ".Lfunc_end0",
+          "range": {
+            "endCol": 28,
+            "startCol": 17
+          }
+        },
+        {
+          "name": ".Lfunc_begin0",
+          "range": {
+            "endCol": 42,
+            "startCol": 29
+          }
+        }
+      ],
+      "source": null,
+      "text": "        .long   .Lfunc_end0-.Lfunc_begin0"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .byte   2"
+    },
+    {
+      "labels": [
+        {
+          "name": ".Linfo_string3",
+          "range": {
+            "endCol": 31,
+            "startCol": 17
+          }
+        }
+      ],
+      "source": null,
+      "text": "        .long   .Linfo_string3"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .byte   3"
+    },
+    {
+      "labels": [
+        {
+          "name": ".Lfunc_begin0",
+          "range": {
+            "endCol": 30,
+            "startCol": 17
+          }
+        }
+      ],
+      "source": null,
+      "text": "        .quad   .Lfunc_begin0"
+    },
+    {
+      "labels": [
+        {
+          "name": ".Lfunc_end0",
+          "range": {
+            "endCol": 28,
+            "startCol": 17
+          }
+        },
+        {
+          "name": ".Lfunc_begin0",
+          "range": {
+            "endCol": 42,
+            "startCol": 29
+          }
+        }
+      ],
+      "source": null,
+      "text": "        .long   .Lfunc_end0-.Lfunc_begin0"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .byte   1"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .byte   87"
+    },
+    {
+      "labels": [
+        {
+          "name": ".Linfo_string4",
+          "range": {
+            "endCol": 31,
+            "startCol": 17
+          }
+        }
+      ],
+      "source": null,
+      "text": "        .long   .Linfo_string4"
+    },
+    {
+      "labels": [
+        {
+          "name": ".Linfo_string5",
+          "range": {
+            "endCol": 31,
+            "startCol": 17
+          }
+        }
+      ],
+      "source": null,
+      "text": "        .long   .Linfo_string5"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .byte   1"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .byte   2"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .long   91"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ""
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .byte   4"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .byte   1"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .byte   85"
+    },
+    {
+      "labels": [
+        {
+          "name": ".Linfo_string7",
+          "range": {
+            "endCol": 31,
+            "startCol": 17
+          }
+        }
+      ],
+      "source": null,
+      "text": "        .long   .Linfo_string7"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .byte   1"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .byte   2"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .long   91"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .byte   0"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .byte   0"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .byte   5"
+    },
+    {
+      "labels": [
+        {
+          "name": ".Linfo_string6",
+          "range": {
+            "endCol": 31,
+            "startCol": 17
+          }
+        }
+      ],
+      "source": null,
+      "text": "        .long   .Linfo_string6"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .byte   7"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .byte   8"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .byte   0"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".Ldebug_info_end0:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .section        .text._ZN7example14first_function17h65b92e135846244bE,\"ax\",@progbits"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".Lsec_end0:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .section        .debug_aranges,\"\",@progbits"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .long   44"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .short  2"
+    },
+    {
+      "labels": [
+        {
+          "name": ".Lcu_begin0",
+          "range": {
+            "endCol": 28,
+            "startCol": 17
+          }
+        }
+      ],
+      "source": null,
+      "text": "        .long   .Lcu_begin0"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .byte   8"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .byte   0"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .zero   4,255"
+    },
+    {
+      "labels": [
+        {
+          "name": ".Lfunc_begin0",
+          "range": {
+            "endCol": 30,
+            "startCol": 17
+          }
+        }
+      ],
+      "source": null,
+      "text": "        .quad   .Lfunc_begin0"
+    },
+    {
+      "labels": [
+        {
+          "name": ".Lsec_end0",
+          "range": {
+            "endCol": 27,
+            "startCol": 17
+          }
+        },
+        {
+          "name": ".Lfunc_begin0",
+          "range": {
+            "endCol": 41,
+            "startCol": 28
+          }
+        }
+      ],
+      "source": null,
+      "text": "        .quad   .Lsec_end0-.Lfunc_begin0"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .quad   0"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .quad   0"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .section        .debug_str,\"MS\",@progbits,1"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".Linfo_string0:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .asciz  \"clang LLVM (rustc version 1.89.0 (29483883e 2025-08-04))\""
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".Linfo_string1:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .asciz  \"/app/example.rs/@/example.79c311dc4783170-cgu.0\""
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".Linfo_string2:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .asciz  \"/app\""
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".Linfo_string3:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .asciz  \"example\""
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".Linfo_string4:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .asciz  \"_ZN7example14first_function17h65b92e135846244bE\""
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".Linfo_string5:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .asciz  \"first_function\""
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".Linfo_string6:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .asciz  \"u64\""
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".Linfo_string7:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .asciz  \"n\""
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .ident  \"rustc version 1.89.0 (29483883e 2025-08-04)\""
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .section        \".note.GNU-stack\",\"\",@progbits"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .section        .debug_line,\"\",@progbits"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".Lline_table_start0:"
+    }
+  ],
+  "labelDefinitions": {
+    ".Lcu_begin0": 101,
+    ".Ldebug_info_end0": 142,
+    ".Ldebug_info_start0": 103,
+    ".Lfunc_begin0": 9,
+    ".Lfunc_end0": 16,
+    ".Linfo_string0": 157,
+    ".Linfo_string1": 159,
+    ".Linfo_string2": 161,
+    ".Linfo_string3": 163,
+    ".Linfo_string4": 165,
+    ".Linfo_string5": 167,
+    ".Linfo_string6": 169,
+    ".Linfo_string7": 171,
+    ".Lline_table_start0": 176,
+    ".Lsec_end0": 144,
+    "_ZN7example14first_function17h65b92e135846244bE": 8,
+    "_ZN7example15second_function17h4a2f85ffbcd4ec12E": 22
+  }
+}

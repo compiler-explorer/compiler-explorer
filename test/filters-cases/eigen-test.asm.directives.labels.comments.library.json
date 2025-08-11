@@ -1,6 +1,58 @@
 {
   "asm": [
     {
+      "labels": [
+        {
+          "name": "_ZNSt9exceptionC1Ev",
+          "range": {
+            "endCol": 36,
+            "startCol": 17
+          }
+        }
+      ],
+      "source": null,
+      "text": "        .set    _ZNSt9exceptionC1Ev,_ZNSt9exceptionC2Ev"
+    },
+    {
+      "labels": [
+        {
+          "name": "_ZNSt9bad_allocC1Ev",
+          "range": {
+            "endCol": 36,
+            "startCol": 17
+          }
+        }
+      ],
+      "source": null,
+      "text": "        .set    _ZNSt9bad_allocC1Ev,_ZNSt9bad_allocC2Ev"
+    },
+    {
+      "labels": [
+        {
+          "name": "_ZN5Eigen8internal11noncopyableC1Ev",
+          "range": {
+            "endCol": 52,
+            "startCol": 17
+          }
+        }
+      ],
+      "source": null,
+      "text": "        .set    _ZN5Eigen8internal11noncopyableC1Ev,_ZN5Eigen8internal11noncopyableC2Ev"
+    },
+    {
+      "labels": [
+        {
+          "name": "_ZN5Eigen8internal11noncopyableD1Ev",
+          "range": {
+            "endCol": 52,
+            "startCol": 17
+          }
+        }
+      ],
+      "source": null,
+      "text": "        .set    _ZN5Eigen8internal11noncopyableD1Ev,_ZN5Eigen8internal11noncopyableD2Ev"
+    },
+    {
       "labels": [],
       "source": null,
       "text": ".LC0:"
@@ -29,6 +81,45 @@
       "labels": [],
       "source": null,
       "text": "        .string \"\""
+    },
+    {
+      "labels": [
+        {
+          "name": "_ZN5Eigen8IOFormatC1EiiRKNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEES8_S8_S8_S8_S8_",
+          "range": {
+            "endCol": 109,
+            "startCol": 17
+          }
+        }
+      ],
+      "source": null,
+      "text": "        .set    _ZN5Eigen8IOFormatC1EiiRKNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEES8_S8_S8_S8_S8_,_ZN5Eigen8IOFormatC2EiiRKNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEES8_S8_S8_S8_S8_"
+    },
+    {
+      "labels": [
+        {
+          "name": "_ZN5Eigen15PlainObjectBaseINS_6MatrixIdLin1ELin1ELi0ELin1ELin1EEEED1Ev",
+          "range": {
+            "endCol": 87,
+            "startCol": 17
+          }
+        }
+      ],
+      "source": null,
+      "text": "        .set    _ZN5Eigen15PlainObjectBaseINS_6MatrixIdLin1ELin1ELi0ELin1ELin1EEEED1Ev,_ZN5Eigen15PlainObjectBaseINS_6MatrixIdLin1ELin1ELi0ELin1ELin1EEEED2Ev"
+    },
+    {
+      "labels": [
+        {
+          "name": "_ZN5Eigen6MatrixIdLin1ELin1ELi0ELin1ELin1EED1Ev",
+          "range": {
+            "endCol": 64,
+            "startCol": 17
+          }
+        }
+      ],
+      "source": null,
+      "text": "        .set    _ZN5Eigen6MatrixIdLin1ELin1ELi0ELin1ELin1EED1Ev,_ZN5Eigen6MatrixIdLin1ELin1ELi0ELin1ELin1EED2Ev"
     },
     {
       "labels": [],
@@ -135,7 +226,15 @@
       "text": "        mov     rdi, rax"
     },
     {
-      "labels": [],
+      "labels": [
+        {
+          "name": "_ZN5Eigen6MatrixIdLin1ELin1ELi0ELin1ELin1EEC1IiiEERKT_RKT0_",
+          "range": {
+            "endCol": 76,
+            "startCol": 17
+          }
+        }
+      ],
       "source": {
         "column": 17,
         "file": null,
@@ -636,7 +735,15 @@
       "text": "        mov     rdi, rax"
     },
     {
-      "labels": [],
+      "labels": [
+        {
+          "name": "_ZN5Eigen6MatrixIdLin1ELin1ELi0ELin1ELin1EED1Ev",
+          "range": {
+            "endCol": 64,
+            "startCol": 17
+          }
+        }
+      ],
       "source": {
         "column": 17,
         "file": null,
@@ -698,7 +805,15 @@
       "text": "        mov     rdi, rax"
     },
     {
-      "labels": [],
+      "labels": [
+        {
+          "name": "_ZN5Eigen6MatrixIdLin1ELin1ELi0ELin1ELin1EED1Ev",
+          "range": {
+            "endCol": 64,
+            "startCol": 17
+          }
+        }
+      ],
       "source": {
         "column": 17,
         "file": null,
@@ -775,6 +890,84 @@
       "text": "        ret"
     },
     {
+      "labels": [
+        {
+          "name": "_ZNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEE12_Alloc_hiderD1Ev",
+          "range": {
+            "endCol": 88,
+            "startCol": 17
+          }
+        }
+      ],
+      "source": null,
+      "text": "        .set    _ZNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEE12_Alloc_hiderD1Ev,_ZNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEE12_Alloc_hiderD2Ev"
+    },
+    {
+      "labels": [
+        {
+          "name": "_ZNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEED1Ev",
+          "range": {
+            "endCol": 74,
+            "startCol": 17
+          }
+        }
+      ],
+      "source": null,
+      "text": "        .set    _ZNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEED1Ev,_ZNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEED2Ev"
+    },
+    {
+      "labels": [
+        {
+          "name": "_ZNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEC1IS3_EEPKcRKS3_",
+          "range": {
+            "endCol": 86,
+            "startCol": 17
+          }
+        }
+      ],
+      "source": null,
+      "text": "        .set    _ZNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEC1IS3_EEPKcRKS3_,_ZNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEC2IS3_EEPKcRKS3_"
+    },
+    {
+      "labels": [
+        {
+          "name": "_ZNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEC1ERKS4_",
+          "range": {
+            "endCol": 78,
+            "startCol": 17
+          }
+        }
+      ],
+      "source": null,
+      "text": "        .set    _ZNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEC1ERKS4_,_ZNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEC2ERKS4_"
+    },
+    {
+      "labels": [
+        {
+          "name": "_ZN5Eigen6MatrixIdLin1ELin1ELi0ELin1ELin1EEC1IiiEERKT_RKT0_",
+          "range": {
+            "endCol": 76,
+            "startCol": 17
+          }
+        }
+      ],
+      "source": null,
+      "text": "        .set    _ZN5Eigen6MatrixIdLin1ELin1ELi0ELin1ELin1EEC1IiiEERKT_RKT0_,_ZN5Eigen6MatrixIdLin1ELin1ELi0ELin1ELin1EEC2IiiEERKT_RKT0_"
+    },
+    {
+      "labels": [
+        {
+          "name": "_ZN5Eigen12DenseStorageIdLin1ELin1ELin1ELi0EED1Ev",
+          "range": {
+            "endCol": 66,
+            "startCol": 17
+          }
+        }
+      ],
+      "source": null,
+      "text": "        .set    _ZN5Eigen12DenseStorageIdLin1ELin1ELin1ELi0EED1Ev,_ZN5Eigen12DenseStorageIdLin1ELin1ELin1ELi0EED2Ev"
+    },
+    {
       "labels": [],
       "source": null,
       "text": ".LC6:"
@@ -795,6 +988,19 @@
       "text": "        .string \"row >= 0 && row < rows() && col >= 0 && col < cols()\""
     },
     {
+      "labels": [
+        {
+          "name": "_ZN5Eigen8IOFormatD1Ev",
+          "range": {
+            "endCol": 39,
+            "startCol": 17
+          }
+        }
+      ],
+      "source": null,
+      "text": "        .set    _ZN5Eigen8IOFormatD1Ev,_ZN5Eigen8IOFormatD2Ev"
+    },
+    {
       "labels": [],
       "source": null,
       "text": ".LC8:"
@@ -813,6 +1019,110 @@
       "labels": [],
       "source": null,
       "text": "        .string \" \""
+    },
+    {
+      "labels": [
+        {
+          "name": "_ZNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEE12_Alloc_hiderC1EPcRKS3_",
+          "range": {
+            "endCol": 94,
+            "startCol": 17
+          }
+        }
+      ],
+      "source": null,
+      "text": "        .set    _ZNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEE12_Alloc_hiderC1EPcRKS3_,_ZNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEE12_Alloc_hiderC2EPcRKS3_"
+    },
+    {
+      "labels": [
+        {
+          "name": "_ZNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEE12_Alloc_hiderC1EPcOS3_",
+          "range": {
+            "endCol": 93,
+            "startCol": 17
+          }
+        }
+      ],
+      "source": null,
+      "text": "        .set    _ZNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEE12_Alloc_hiderC1EPcOS3_,_ZNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEE12_Alloc_hiderC2EPcOS3_"
+    },
+    {
+      "labels": [
+        {
+          "name": "_ZN5Eigen15PlainObjectBaseINS_6MatrixIdLin1ELin1ELi0ELin1ELin1EEEEC1Ev",
+          "range": {
+            "endCol": 87,
+            "startCol": 17
+          }
+        }
+      ],
+      "source": null,
+      "text": "        .set    _ZN5Eigen15PlainObjectBaseINS_6MatrixIdLin1ELin1ELi0ELin1ELin1EEEEC1Ev,_ZN5Eigen15PlainObjectBaseINS_6MatrixIdLin1ELin1ELi0ELin1ELin1EEEEC2Ev"
+    },
+    {
+      "labels": [
+        {
+          "name": "_ZN5Eigen8internal14evaluator_baseINS_6MatrixIdLin1ELin1ELi0ELin1ELin1EEEED1Ev",
+          "range": {
+            "endCol": 95,
+            "startCol": 17
+          }
+        }
+      ],
+      "source": null,
+      "text": "        .set    _ZN5Eigen8internal14evaluator_baseINS_6MatrixIdLin1ELin1ELi0ELin1ELin1EEEED1Ev,_ZN5Eigen8internal14evaluator_baseINS_6MatrixIdLin1ELin1ELi0ELin1ELin1EEEED2Ev"
+    },
+    {
+      "labels": [
+        {
+          "name": "_ZN5Eigen8internal9evaluatorINS_15PlainObjectBaseINS_6MatrixIdLin1ELin1ELi0ELin1ELin1EEEEEED1Ev",
+          "range": {
+            "endCol": 112,
+            "startCol": 17
+          }
+        }
+      ],
+      "source": null,
+      "text": "        .set    _ZN5Eigen8internal9evaluatorINS_15PlainObjectBaseINS_6MatrixIdLin1ELin1ELi0ELin1ELin1EEEEEED1Ev,_ZN5Eigen8internal9evaluatorINS_15PlainObjectBaseINS_6MatrixIdLin1ELin1ELi0ELin1ELin1EEEEEED2Ev"
+    },
+    {
+      "labels": [
+        {
+          "name": "_ZN5Eigen8internal9evaluatorINS_6MatrixIdLin1ELin1ELi0ELin1ELin1EEEED1Ev",
+          "range": {
+            "endCol": 89,
+            "startCol": 17
+          }
+        }
+      ],
+      "source": null,
+      "text": "        .set    _ZN5Eigen8internal9evaluatorINS_6MatrixIdLin1ELin1ELi0ELin1ELin1EEEED1Ev,_ZN5Eigen8internal9evaluatorINS_6MatrixIdLin1ELin1ELi0ELin1ELin1EEEED2Ev"
+    },
+    {
+      "labels": [
+        {
+          "name": "_ZN5Eigen10MatrixBaseINS_6MatrixIdLin1ELin1ELi0ELin1ELin1EEEEC1Ev",
+          "range": {
+            "endCol": 82,
+            "startCol": 17
+          }
+        }
+      ],
+      "source": null,
+      "text": "        .set    _ZN5Eigen10MatrixBaseINS_6MatrixIdLin1ELin1ELi0ELin1ELin1EEEEC1Ev,_ZN5Eigen10MatrixBaseINS_6MatrixIdLin1ELin1ELi0ELin1ELin1EEEEC2Ev"
+    },
+    {
+      "labels": [
+        {
+          "name": "_ZN5Eigen12DenseStorageIdLin1ELin1ELin1ELi0EEC1Ev",
+          "range": {
+            "endCol": 66,
+            "startCol": 17
+          }
+        }
+      ],
+      "source": null,
+      "text": "        .set    _ZN5Eigen12DenseStorageIdLin1ELin1ELin1ELi0EEC1Ev,_ZN5Eigen12DenseStorageIdLin1ELin1ELin1ELi0EEC2Ev"
     },
     {
       "labels": [],
@@ -850,6 +1160,19 @@
       "text": "        .string \"leTime==Dynamic && MaxRowsAtCompileTime!=Dynamic) || (rows<=MaxRowsAtCompileTime)) && (!(ColsAtCompileTime==Dynamic && MaxColsAtCompileTime!=Dynamic) || (cols<=MaxColsAtCompileTime)) && rows>=0 && cols>=0 && \\\"Invalid sizes when resizing a matrix or array.\\\"\""
     },
     {
+      "labels": [
+        {
+          "name": "_ZN5Eigen8internal9evaluatorINS_6MatrixIdLin1ELin1ELi0ELin1ELin1EEEEC1ERKS3_",
+          "range": {
+            "endCol": 93,
+            "startCol": 17
+          }
+        }
+      ],
+      "source": null,
+      "text": "        .set    _ZN5Eigen8internal9evaluatorINS_6MatrixIdLin1ELin1ELi0ELin1ELin1EEEEC1ERKS3_,_ZN5Eigen8internal9evaluatorINS_6MatrixIdLin1ELin1ELi0ELin1ELin1EEEEC2ERKS3_"
+    },
+    {
       "labels": [],
       "source": null,
       "text": ".LC12:"
@@ -868,6 +1191,58 @@
       "labels": [],
       "source": null,
       "text": "        .string \"basic_string::_M_create\""
+    },
+    {
+      "labels": [
+        {
+          "name": "_ZN5Eigen9DenseBaseINS_6MatrixIdLin1ELin1ELi0ELin1ELin1EEEEC1Ev",
+          "range": {
+            "endCol": 80,
+            "startCol": 17
+          }
+        }
+      ],
+      "source": null,
+      "text": "        .set    _ZN5Eigen9DenseBaseINS_6MatrixIdLin1ELin1ELi0ELin1ELin1EEEEC1Ev,_ZN5Eigen9DenseBaseINS_6MatrixIdLin1ELin1ELi0ELin1ELin1EEEEC2Ev"
+    },
+    {
+      "labels": [
+        {
+          "name": "_ZN5Eigen8internal14evaluator_baseINS_6MatrixIdLin1ELin1ELi0ELin1ELin1EEEEC1Ev",
+          "range": {
+            "endCol": 95,
+            "startCol": 17
+          }
+        }
+      ],
+      "source": null,
+      "text": "        .set    _ZN5Eigen8internal14evaluator_baseINS_6MatrixIdLin1ELin1ELi0ELin1ELin1EEEEC1Ev,_ZN5Eigen8internal14evaluator_baseINS_6MatrixIdLin1ELin1ELi0ELin1ELin1EEEEC2Ev"
+    },
+    {
+      "labels": [
+        {
+          "name": "_ZN5Eigen8internal9evaluatorINS_15PlainObjectBaseINS_6MatrixIdLin1ELin1ELi0ELin1ELin1EEEEEEC1ERKS5_",
+          "range": {
+            "endCol": 116,
+            "startCol": 17
+          }
+        }
+      ],
+      "source": null,
+      "text": "        .set    _ZN5Eigen8internal9evaluatorINS_15PlainObjectBaseINS_6MatrixIdLin1ELin1ELi0ELin1ELin1EEEEEEC1ERKS5_,_ZN5Eigen8internal9evaluatorINS_15PlainObjectBaseINS_6MatrixIdLin1ELin1ELi0ELin1ELin1EEEEEEC2ERKS5_"
+    },
+    {
+      "labels": [
+        {
+          "name": "_ZN5Eigen8internal19variable_if_dynamicIlLin1EEC1El",
+          "range": {
+            "endCol": 68,
+            "startCol": 17
+          }
+        }
+      ],
+      "source": null,
+      "text": "        .set    _ZN5Eigen8internal19variable_if_dynamicIlLin1EEC1El,_ZN5Eigen8internal19variable_if_dynamicIlLin1EEC2El"
     },
     {
       "labels": [],
@@ -1210,27 +1585,54 @@
     }
   ],
   "labelDefinitions": {
-    ".L328": 122,
-    ".L54": 82,
-    ".LC0": 1,
-    ".LC1": 3,
-    ".LC10": 95,
-    ".LC11": 97,
-    ".LC12": 102,
-    ".LC13": 104,
-    ".LC2": 5,
-    ".LC3": 140,
-    ".LC4": 143,
-    ".LC5": 146,
-    ".LC6": 87,
-    ".LC7": 89,
-    ".LC8": 91,
-    ".LC9": 93,
-    "_GLOBAL__sub_I_main": 126,
-    "_Z41__static_initialization_and_destruction_0ii": 106,
-    "_ZZN5Eigen15DenseCoeffsBaseINS_6MatrixIdLin1ELin1ELi0ELin1ELin1EEELi1EEclEllE19__PRETTY_FUNCTION__": 138,
-    "_ZZN5Eigen15PlainObjectBaseINS_6MatrixIdLin1ELin1ELi0ELin1ELin1EEEE6resizeEllE19__PRETTY_FUNCTION__": 134,
-    "_ZZN5Eigen8internal14aligned_mallocEmE19__PRETTY_FUNCTION__": 136,
-    "main": 7
+    ".L328": 149,
+    ".L54": 89,
+    ".LC0": 5,
+    ".LC1": 7,
+    ".LC10": 117,
+    ".LC11": 119,
+    ".LC12": 125,
+    ".LC13": 127,
+    ".LC2": 9,
+    ".LC3": 167,
+    ".LC4": 170,
+    ".LC5": 173,
+    ".LC6": 100,
+    ".LC7": 102,
+    ".LC8": 105,
+    ".LC9": 107,
+    "_GLOBAL__sub_I_main": 153,
+    "_Z41__static_initialization_and_destruction_0ii": 133,
+    "_ZN5Eigen10MatrixBaseINS_6MatrixIdLin1ELin1ELi0ELin1ELin1EEEEC1Ev": 115,
+    "_ZN5Eigen12DenseStorageIdLin1ELin1ELin1ELi0EEC1Ev": 116,
+    "_ZN5Eigen12DenseStorageIdLin1ELin1ELin1ELi0EED1Ev": 99,
+    "_ZN5Eigen15PlainObjectBaseINS_6MatrixIdLin1ELin1ELi0ELin1ELin1EEEEC1Ev": 111,
+    "_ZN5Eigen15PlainObjectBaseINS_6MatrixIdLin1ELin1ELi0ELin1ELin1EEEED1Ev": 12,
+    "_ZN5Eigen6MatrixIdLin1ELin1ELi0ELin1ELin1EEC1IiiEERKT_RKT0_": 98,
+    "_ZN5Eigen6MatrixIdLin1ELin1ELi0ELin1ELin1EED1Ev": 13,
+    "_ZN5Eigen8IOFormatC1EiiRKNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEES8_S8_S8_S8_S8_": 11,
+    "_ZN5Eigen8IOFormatD1Ev": 104,
+    "_ZN5Eigen8internal11noncopyableC1Ev": 3,
+    "_ZN5Eigen8internal11noncopyableD1Ev": 4,
+    "_ZN5Eigen8internal14evaluator_baseINS_6MatrixIdLin1ELin1ELi0ELin1ELin1EEEEC1Ev": 130,
+    "_ZN5Eigen8internal14evaluator_baseINS_6MatrixIdLin1ELin1ELi0ELin1ELin1EEEED1Ev": 112,
+    "_ZN5Eigen8internal19variable_if_dynamicIlLin1EEC1El": 132,
+    "_ZN5Eigen8internal9evaluatorINS_15PlainObjectBaseINS_6MatrixIdLin1ELin1ELi0ELin1ELin1EEEEEEC1ERKS5_": 131,
+    "_ZN5Eigen8internal9evaluatorINS_15PlainObjectBaseINS_6MatrixIdLin1ELin1ELi0ELin1ELin1EEEEEED1Ev": 113,
+    "_ZN5Eigen8internal9evaluatorINS_6MatrixIdLin1ELin1ELi0ELin1ELin1EEEEC1ERKS3_": 124,
+    "_ZN5Eigen8internal9evaluatorINS_6MatrixIdLin1ELin1ELi0ELin1ELin1EEEED1Ev": 114,
+    "_ZN5Eigen9DenseBaseINS_6MatrixIdLin1ELin1ELi0ELin1ELin1EEEEC1Ev": 129,
+    "_ZNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEE12_Alloc_hiderC1EPcOS3_": 110,
+    "_ZNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEE12_Alloc_hiderC1EPcRKS3_": 109,
+    "_ZNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEE12_Alloc_hiderD1Ev": 94,
+    "_ZNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEC1ERKS4_": 97,
+    "_ZNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEC1IS3_EEPKcRKS3_": 96,
+    "_ZNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEED1Ev": 95,
+    "_ZNSt9bad_allocC1Ev": 2,
+    "_ZNSt9exceptionC1Ev": 1,
+    "_ZZN5Eigen15DenseCoeffsBaseINS_6MatrixIdLin1ELin1ELi0ELin1ELin1EEELi1EEclEllE19__PRETTY_FUNCTION__": 165,
+    "_ZZN5Eigen15PlainObjectBaseINS_6MatrixIdLin1ELin1ELi0ELin1ELin1EEEE6resizeEllE19__PRETTY_FUNCTION__": 161,
+    "_ZZN5Eigen8internal14aligned_mallocEmE19__PRETTY_FUNCTION__": 163,
+    "main": 14
   }
 }
