@@ -91,6 +91,13 @@ class CompilerArgsApp {
             execCompilerCached: async (command: string, args: string[]) => {
                 return executeDirect(command, args, {}, fn => fn);
             },
+            getDefaultExecOptions: () => {
+                return {
+                    env: process.env,
+                    cwd: process.cwd(),
+                    timeout: 10000,
+                };
+            }
         };
 
         if (this.parserName === 'juliawrapper') {
@@ -151,6 +158,11 @@ class CompilerArgsApp {
         console.log(await this.getPossibleTargets());
         console.log('Editions:');
         console.log(await this.getPossibleEditions());
+
+        console.log('supportsOptOutput:', !!this.compiler.compiler.supportsOptOutput);
+        console.log('supportsStackUsageOutput', !!this.compiler.compiler.supportsStackUsageOutput);
+        console.log('optPipeline:', this.compiler.compiler.optPipeline);
+        console.log('supportsGccDump', !!this.compiler.compiler.supportsGccDump);
     }
 }
 
