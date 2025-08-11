@@ -41,7 +41,21 @@ program
     .requiredOption('--parser <type>', 'Compiler parser type')
     .requiredOption('--exe <path>', 'Path to compiler executable')
     .option('--padding <number>', 'Padding for output formatting', '40')
-    .option('--debug', 'Enable debug output');
+    .option('--debug', 'Enable debug output')
+    .allowUnknownOption(false)
+    .configureOutput({
+        writeErr: (str) => {
+            if (str.includes('too many arguments')) {
+                console.error('Error: Unexpected arguments provided.');
+                console.error('This tool only accepts the following options: --parser, --exe, --padding, --debug');
+                console.error('\nExample usage:');
+                console.error('  node --import tsx compiler-args-app.ts --parser gcc --exe /path/to/gcc');
+                console.error('\nNote: Do not use shell redirections like "2>&1" directly - they will be interpreted as arguments');
+                process.exit(1);
+            }
+            process.stderr.write(str);
+        }
+    });
 
 program.parse();
 const opts = program.opts();
