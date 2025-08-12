@@ -1,0 +1,136 @@
+{
+  "asm": [
+    {
+      "labels": [],
+      "source": null,
+      "text": "_ZN7example14first_function17h65b92e135846244bE:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".Lfunc_begin0:"
+    },
+    {
+      "labels": [],
+      "source": {
+        "column": 5,
+        "file": null,
+        "line": 3
+      },
+      "text": "        lea     rax, [rdi + 1]"
+    },
+    {
+      "labels": [],
+      "source": {
+        "column": 2,
+        "file": null,
+        "line": 4
+      },
+      "text": "        ret"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".Lfunc_end0:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ""
+    },
+    {
+      "labels": [
+        {
+          "name": "_ZN7example15second_function17h4a2f85ffbcd4ec12E",
+          "range": {
+            "endCol": 54,
+            "startCol": 6
+          }
+        },
+        {
+          "name": "_ZN7example14first_function17h65b92e135846244bE",
+          "range": {
+            "endCol": 103,
+            "startCol": 56
+          }
+        }
+      ],
+      "source": null,
+      "text": ".set _ZN7example15second_function17h4a2f85ffbcd4ec12E, _ZN7example14first_function17h65b92e135846244bE"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".Lcu_begin0:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".Ldebug_info_start0:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ""
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".Ldebug_info_end0:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".Lsec_end0:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".Linfo_string0:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".Linfo_string1:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".Linfo_string2:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".Linfo_string3:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".Linfo_string4:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".Linfo_string5:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".Linfo_string6:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".Linfo_string7:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".Lline_table_start0:"
+    }
+  ],
+  "labelDefinitions": {
+    "_ZN7example14first_function17h65b92e135846244bE": 1,
+    "_ZN7example15second_function17h4a2f85ffbcd4ec12E": 7
+  }
+}

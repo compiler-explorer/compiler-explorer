@@ -562,7 +562,9 @@ export class CompilerFinder {
             }
         }
         if (error) {
-            assert(false);
+            logger.error(
+                'Note there are orphaned compiler properties, please fix them unless you are doing this on purpose',
+            );
         }
     }
 

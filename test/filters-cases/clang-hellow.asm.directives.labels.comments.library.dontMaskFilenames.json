@@ -24,7 +24,15 @@
       "text": "        movq    %rsp, %rbp"
     },
     {
-      "labels": [],
+      "labels": [
+        {
+          "name": ".L.str",
+          "range": {
+            "endCol": 24,
+            "startCol": 18
+          }
+        }
+      ],
       "source": {
         "column": 1,
         "file": "/home/mgodbolt/dev/compiler-explorer/<stdin>",
@@ -165,15 +173,7 @@
       "text": "        .long   139                     # DIE offset"
     },
     {
-      "labels": [
-        {
-          "name": "main",
-          "range": {
-            "endCol": 23,
-            "startCol": 19
-          }
-        }
-      ],
+      "labels": [],
       "source": null,
       "text": "        .asciz   \"main\"                 # External Name"
     },

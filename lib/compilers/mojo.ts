@@ -27,6 +27,7 @@ import path from 'node:path';
 import type {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces.js';
 import {BaseCompiler} from '../base-compiler.js';
 import {changeExtension} from '../utils.js';
+import {MojoParser} from './argument-parsers.js';
 
 export class MojoCompiler extends BaseCompiler {
     static get key() {
@@ -94,5 +95,9 @@ export class MojoCompiler extends BaseCompiler {
         }
         const irText = await fs.readFile(llPath, 'utf8');
         return {asm: irText.split('\n').map(text => ({text}))};
+    }
+
+    override getArgumentParserClass() {
+        return MojoParser;
     }
 }

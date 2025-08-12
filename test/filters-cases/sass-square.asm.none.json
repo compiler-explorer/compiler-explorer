@@ -16,12 +16,28 @@
       "text": ""
     },
     {
-      "labels": [],
+      "labels": [
+        {
+          "name": ".text._Z6squarePii",
+          "range": {
+            "endCol": 43,
+            "startCol": 25
+          }
+        }
+      ],
       "source": null,
       "text": "//--------------------- .text._Z6squarePii        --------------------------"
     },
     {
-      "labels": [],
+      "labels": [
+        {
+          "name": ".text._Z6squarePii",
+          "range": {
+            "endCol": 43,
+            "startCol": 25
+          }
+        }
+      ],
       "source": null,
       "text": "        .section        .text._Z6squarePii,\"ax\",@progbits"
     },

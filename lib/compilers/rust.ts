@@ -117,7 +117,7 @@ export class RustCompiler extends BaseCompiler {
     }
 
     override async populatePossibleOverrides() {
-        const possibleEditions = await RustParser.getPossibleEditions(this);
+        const possibleEditions = await this.argParser.getPossibleEditions();
         if (possibleEditions.length > 0) {
             let defaultEdition: undefined | string;
             if (!this.compiler.semver || this.isNightly()) {

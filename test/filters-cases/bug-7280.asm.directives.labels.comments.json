@@ -6,15 +6,7 @@
       "text": ".LC0:"
     },
     {
-      "labels": [
-        {
-          "name": "a",
-          "range": {
-            "endCol": 19,
-            "startCol": 18
-          }
-        }
-      ],
+      "labels": [],
       "source": null,
       "text": "        .string \"a\""
     },

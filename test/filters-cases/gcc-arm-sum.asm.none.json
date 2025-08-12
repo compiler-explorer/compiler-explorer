@@ -1554,15 +1554,7 @@
       "text": ".LASF5:"
     },
     {
-      "labels": [
-        {
-          "name": "_Z12testFunctionPii",
-          "range": {
-            "endCol": 37,
-            "startCol": 18
-          }
-        }
-      ],
+      "labels": [],
       "source": null,
       "text": "        .string \"_Z12testFunctionPii\""
     },
