@@ -122,17 +122,37 @@ export function parseCompilationRequest(requestData: CompilationRequestData, com
 
 /**
  * Convert SQS message format to CompilationRequestData format
- * SQS messages have a flattened structure that needs to be mapped
+ * SQS messages have a nested options structure that needs to be extracted
  */
 export function sqsMessageToCompilationRequestData(msg: any): CompilationRequestData {
+    // Validate options format
+    if (Array.isArray(msg.options)) {
+        throw new Error('Invalid SQS message format: options should not be an array');
+    }
+
+    // Extract from the nested structure (used for both CMake and regular compilation)
+    if (msg.options && typeof msg.options === 'object') {
+        return {
+            source: msg.source,
+            userArguments: msg.options.userArguments, // Already processed to array by defensive parsing
+            compilerOptions: msg.options.compilerOptions || {},
+            executeParameters: msg.options.executeParameters,
+            filters: msg.options.filters,
+            tools: msg.options.tools,
+            libraries: msg.options.libraries,
+            bypassCache: msg.bypassCache,
+        };
+    }
+
+    // Fallback if options is missing entirely
     return {
         source: msg.source,
-        userArguments: msg.options, // After defensive parsing, this should be an array
-        compilerOptions: msg.backendOptions,
-        executeParameters: msg.executeParameters,
-        filters: msg.filters,
-        tools: msg.tools,
-        libraries: msg.libraries,
+        userArguments: [],
+        compilerOptions: {},
+        executeParameters: undefined,
+        filters: undefined,
+        tools: undefined,
+        libraries: undefined,
         bypassCache: msg.bypassCache,
     };
 }

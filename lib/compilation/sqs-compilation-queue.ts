@@ -119,11 +119,15 @@ export class SqsCompilationWorkerMode extends SqsCompilationQueueBase {
                         throw parseError;
                     }
 
-                    if (parsed.options && typeof parsed.options === 'object' && !Array.isArray(parsed.options)) {
+                    // Validate and process options
+                    if (Array.isArray(parsed.options)) {
+                        throw new Error('Invalid message format: options should not be an array');
+                    }
+
+                    if (parsed.options && typeof parsed.options === 'object') {
+                        // Process userArguments if it's a string
                         if (parsed.options.userArguments && typeof parsed.options.userArguments === 'string') {
-                            parsed.options = parsed.options.userArguments.split(' ').filter(Boolean);
-                        } else {
-                            parsed.options = [];
+                            parsed.options.userArguments = parsed.options.userArguments.split(' ').filter(Boolean);
                         }
                     }
 
