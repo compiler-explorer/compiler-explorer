@@ -162,7 +162,7 @@ async function sendCompilationResultViaWebsocket(
             ...result,
             okToCache: result.okToCache ?? false,
             filenameTransform: (f: string) => f,
-            execTime: 0,
+            execTime: result.execTime !== undefined ? result.execTime : totalTimeMs,
         };
 
         await persistentSender.send(guid, basicResult);
