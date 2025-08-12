@@ -54,13 +54,24 @@ export class SqsCompilationQueueBase {
     protected readonly queue_url: string;
 
     constructor(props: PropertyGetter, awsProps: PropertyGetter) {
-        const region = awsProps<string>('region', '');
-        this.sqs = new SQS({region: region});
         this.queue_url = props<string>('compilequeue.queue_url', '');
 
-        if (this.queue_url === '') {
-            throw new Error('compilequeue.queue_url is required for worker mode');
+        if (!this.queue_url) {
+            throw new Error(
+                'Configuration error: compilequeue.queue_url is required when compilequeue.is_worker=true. ' +
+                    'Please set the SQS queue URL in your configuration.',
+            );
         }
+
+        const region = awsProps<string>('region', '');
+        if (!region) {
+            throw new Error(
+                'Configuration error: AWS region is required when compilequeue.is_worker=true. ' +
+                    'Please set the AWS region in your configuration.',
+            );
+        }
+
+        this.sqs = new SQS({region: region});
     }
 }
 
