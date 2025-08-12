@@ -462,10 +462,6 @@ export class AsmParser extends AsmRegex implements IAsmParser {
         };
     }
 
-    labelFindFor(asmLines: string[]) {
-        return this.labelProcessor.getLabelFind(asmLines, this.createLabelContext());
-    }
-
     findUsedLabels(asmLines: string[], filterDirectives?: boolean): Set<string> {
         return this.labelProcessor.findUsedLabels(asmLines, filterDirectives || false, this.createLabelContext());
     }

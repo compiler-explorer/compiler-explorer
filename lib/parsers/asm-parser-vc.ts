@@ -100,10 +100,6 @@ export class VcAsmParser extends AsmParser {
         return this.hasOpcodeRe.test(line);
     }
 
-    override labelFindFor() {
-        return this.labelFind;
-    }
-
     override processAsm(asm: string, filters: ParseFiltersAndOutputOptions): ParsedAsmResult {
         if (filters.binary || filters.binaryObject) {
             return this.asmBinaryParser.processAsm(asm, filters);

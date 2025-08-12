@@ -92,10 +92,6 @@ export class AsmEWAVRParser extends AsmParser {
         return this.hasOpcodeRe.test(line);
     }
 
-    override labelFindFor() {
-        return this.labelDef;
-    }
-
     override processAsm(asm: string, filters: ParseFiltersAndOutputOptions): ParsedAsmResult {
         // NOTE: EWAVR assembly seems to be closest to visual studio
         const getFilenameFromComment = (line: string) => {
