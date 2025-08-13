@@ -198,6 +198,29 @@ describe('Basic demangling', () => {
         ]);
     });
 
+    it('AArch64 branch with dotted symbol', () => {
+        const result = {
+            asm: [
+                {
+                    text: 'b       _ZN4core3fmt3num3imp52_$LT$impl$u20$core..fmt..Display$u20$for$u20$i32$GT$3fmt17h0feee90717706137E',
+                },
+            ],
+        };
+
+        const demangler = new DummyCppDemangler(cppfiltpath, new DummyCompiler(), ['-n']);
+
+        return Promise.all([
+            demangler
+                .process(result)
+                .then(output => {
+                    expect(output.asm[0].text).toEqual(
+                        'b       core::fmt::num::imp::<impl core::fmt::Display for i32>::fmt::h0feee90717706137',
+                    );
+                })
+                .catch(catchCppfiltNonexistence),
+        ]);
+    });
+
     it('Two destructors', () => {
         const result = {
             asm: [
@@ -251,7 +274,14 @@ describe('Basic demangling', () => {
     });
 
     it('Should also support ARM branch instructions', () => {
-        const result = {asm: [{text: '   bl _ZN3FooC1Ev'}]};
+        const result = {
+            asm: [
+                {text: '   bl _ZN3FooC1Ev'},
+                {
+                    text: 'b       _ZN4core3fmt3num3imp52_$LT$impl$u20$core..fmt..Display$u20$for$u20$i32$GT$3fmt17h0feee90717706137E',
+                },
+            ],
+        };
 
         const demangler = new DummyCppDemangler(cppfiltpath, new DummyCompiler(), ['-n']);
 
@@ -260,7 +290,12 @@ describe('Basic demangling', () => {
         demangler.collectLabels();
 
         const output = demangler.othersymbols.listSymbols();
-        expect(output).toEqual(['_ZN3FooC1Ev']);
+        expect(output.sort()).toEqual(
+            [
+                '_ZN3FooC1Ev',
+                '_ZN4core3fmt3num3imp52_$LT$impl$u20$core..fmt..Display$u20$for$u20$i32$GT$3fmt17h0feee90717706137E',
+            ].sort(),
+        );
     });
 
     it('Should NOT handle undecorated labels', () => {
