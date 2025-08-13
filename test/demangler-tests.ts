@@ -38,9 +38,7 @@ import * as exec from '../lib/exec.js';
 import * as properties from '../lib/properties.js';
 import {SymbolStore} from '../lib/symbol-store.js';
 import * as utils from '../lib/utils.js';
-import {processAsm} from './utils.js';
-
-import {makeFakeCompilerInfo, resolvePathFromTestRoot} from './utils.js';
+import {makeFakeCompilerInfo, processAsm, resolvePathFromTestRoot} from './utils.js';
 
 const cppfiltpath = 'c++filt';
 
@@ -54,7 +52,7 @@ class DummyCompiler extends BaseCompiler {
         } as unknown as CompilationEnvironment;
 
         // using c++ as the compiler needs at least one language
-        const compiler = makeFakeCompilerInfo({lang: 'c++'});
+        const compiler = makeFakeCompilerInfo({lang: 'c++', exe: 'gcc'});
 
         super(compiler, env);
     }

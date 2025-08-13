@@ -23,8 +23,7 @@
 // POSSIBILITY OF SUCH DAMAGE.
 
 import {describe, expect, it, vi} from 'vitest';
-import {getFaviconFilename} from '../../lib/app/server.js';
-import {createDefaultPugRequireHandler} from '../../lib/app/static-assets.js';
+import {createDefaultPugRequireHandler, getFaviconFilename} from '../../lib/app/static-assets.js';
 
 // Mock the logger
 vi.mock('../../lib/logger.js', () => ({
@@ -32,6 +31,7 @@ vi.mock('../../lib/logger.js', () => ({
         error: vi.fn(),
     },
 }));
+
 import {logger} from '../../lib/logger.js';
 
 describe('Static assets', () => {

@@ -57,7 +57,7 @@ export const builtin: Source = {
         }
         try {
             return {file: await fsp.readFile(example.path, 'utf8')};
-        } catch (err: unknown) {
+        } catch {
             return {file: 'Could not read file'};
         }
     },

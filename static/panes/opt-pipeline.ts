@@ -29,16 +29,6 @@ import * as monaco from 'monaco-editor';
 import scrollIntoView from 'scroll-into-view-if-needed';
 import TomSelect from 'tom-select';
 import _ from 'underscore';
-
-import {OptPipelineViewState} from './opt-pipeline.interfaces.js';
-import {MonacoPaneState} from './pane.interfaces.js';
-import {MonacoPane} from './pane.js';
-
-import {Hub} from '../hub.js';
-import {extendConfig} from '../monaco-config.js';
-import * as utils from '../utils.js';
-import {Toggles} from '../widgets/toggles.js';
-
 import {escapeHTML} from '../../shared/common-utils.js';
 import {CompilationResult} from '../../types/compilation/compilation.interfaces.js';
 import {
@@ -48,6 +38,13 @@ import {
 } from '../../types/compilation/opt-pipeline-output.interfaces.js';
 import {CompilerInfo} from '../../types/compiler.interfaces.js';
 import {unwrap, unwrapString} from '../assert.js';
+import {Hub} from '../hub.js';
+import {extendConfig} from '../monaco-config.js';
+import * as utils from '../utils.js';
+import {Toggles} from '../widgets/toggles.js';
+import {OptPipelineViewState} from './opt-pipeline.interfaces.js';
+import {MonacoPaneState} from './pane.interfaces.js';
+import {MonacoPane} from './pane.js';
 
 const MIN_SIDEBAR_WIDTH = 100;
 

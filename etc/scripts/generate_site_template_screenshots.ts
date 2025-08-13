@@ -121,9 +121,9 @@ if (!fss.existsSync(output_dir)) {
     await fsp.mkdir(output_dir, {recursive: true});
 }
 const jobs: (() => void)[] = [];
-for (const {name, reference} of templates) {
+for (const {id, reference} of templates) {
     for (const [theme, colourScheme] of themes) {
-        const path = `${output_dir}/${name}.${theme}.png`;
+        const path = `${output_dir}/${id}.${theme}.png`;
         if (!fss.existsSync(path)) {
             jobs.push(() => generateScreenshot(
                 `${godbolt}/e#${reference}`,

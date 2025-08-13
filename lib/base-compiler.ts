@@ -22,14 +22,13 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
+import fs from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
 
-import fs from 'node:fs/promises';
-
 import * as PromClient from 'prom-client';
 import _ from 'underscore';
-
+import {parseAllDocuments} from 'yaml';
 import {splitArguments, unique} from '../shared/common-utils.js';
 import {OptRemark} from '../static/panes/opt-view.interfaces.js';
 import {PPOptions} from '../static/panes/pp-view.interfaces.js';
@@ -40,6 +39,8 @@ import {
     BuildResult,
     BuildStep,
     BypassCache,
+    bypassCompilationCache,
+    bypassExecutionCache,
     CacheKey,
     CmakeCacheKey,
     CompilationCacheKey,
@@ -51,8 +52,6 @@ import {
     FiledataPair,
     GccDumpOptions,
     LibsAndOptions,
-    bypassCompilationCache,
-    bypassExecutionCache,
 } from '../types/compilation/compilation.interfaces.js';
 import {
     CompilerOverrideOption,
@@ -78,7 +77,6 @@ import type {Language} from '../types/languages.interfaces.js';
 import type {SelectedLibraryVersion} from '../types/libraries/libraries.interfaces.js';
 import type {ResultLine} from '../types/resultline/resultline.interfaces.js';
 import {type ToolResult, type ToolTypeKey} from '../types/tool.interfaces.js';
-
 import {moveArtifactsIntoResult} from './artifact-utils.js';
 import {assert, unwrap} from './assert.js';
 import {copyCopperSpicePlugins} from './binaries/copperspice-utils.js';
@@ -91,8 +89,8 @@ import {CompilerArguments} from './compiler-arguments.js';
 import {
     BaseParser,
     ClangCParser,
-    ClangParser,
     ClangirParser,
+    ClangParser,
     GCCCParser,
     GCCParser,
     ICCParser,
@@ -123,7 +121,6 @@ import {LlvmPassDumpParser} from './parsers/llvm-pass-dump-parser.js';
 import type {PropertyGetter} from './properties.interfaces.js';
 import {HeaptrackWrapper} from './runtime-tools/heaptrack-wrapper.js';
 import {LibSegFaultHelper} from './runtime-tools/libsegfault-helper.js';
-import {SentryCapture} from './sentry.js';
 import * as StackUsage from './stack-usage-transformer.js';
 import * as temp from './temp.js';
 import {
@@ -220,6 +217,7 @@ export class BaseCompiler {
         labelNames: [],
     });
     protected executionEnvironmentClass: any;
+    protected readonly argParser: BaseParser;
 
     constructor(compilerInfo: PreliminaryCompilerInfo & {disabledFilters?: string[]}, env: CompilationEnvironment) {
         // Information about our compiler
@@ -309,6 +307,7 @@ export class BaseCompiler {
         }
 
         this.packager = new Packager();
+        this.argParser = new (this.getArgumentParserClass())(this);
     }
 
     copyAndFilterLibraries(allLibraries: Record<string, OptionsHandlerLibrary>, filter: string[]) {
@@ -717,6 +716,9 @@ export class BaseCompiler {
         }
         if (gccDumpOptions.dumpFlags.address !== false) {
             flags += '-address';
+        }
+        if (gccDumpOptions.dumpFlags.alias !== false) {
+            flags += '-alias';
         }
         if (gccDumpOptions.dumpFlags.slim !== false) {
             flags += '-slim';
@@ -1420,7 +1422,7 @@ export class BaseCompiler {
         }
 
         if (produceCfg) {
-            result.cfg = cfg.generateStructure(
+            result.cfg = await cfg.generateStructure(
                 this.compiler,
                 ir.asm.map(line => ({text: line.text})),
                 true,
@@ -1814,7 +1816,7 @@ export class BaseCompiler {
         try {
             const stat = await fs.stat(outputFilename);
             asmResult.asmSize = stat.size;
-        } catch (e) {
+        } catch {
             // Ignore errors
         }
         return await this.postProcess(asmResult, outputFilename, filters, produceOptRemarks);
@@ -3134,7 +3136,7 @@ export class BaseCompiler {
                     this.compiler.instructionSet === 'llvm' ||
                     (options && isOutputLikelyLllvmIr(options)) ||
                     this.llvmIr.isLlvmIr(result.asm);
-                result.cfg = cfg.generateStructure(this.compiler, result.asm, isLlvmIr);
+                result.cfg = await cfg.generateStructure(this.compiler, result.asm, isLlvmIr, result);
             }
         }
 
@@ -3206,10 +3208,50 @@ export class BaseCompiler {
         return await demangler.process(result);
     }
 
+    // LLVM opt-remark yaml processing is used by at least clang, flang, rustc and ldcc.
     processRawOptRemarks(buffer: string, compileFileName = ''): OptRemark[] {
-        // Shouldn't get here.
-        SentryCapture('', `Unexpected processRawOptRemarks call for compiler: ${this.compiler.name}`);
-        return [];
+        const output: OptRemark[] = [];
+        const remarksSet: Set<string> = new Set<string>();
+        const remarks: any = parseAllDocuments(buffer);
+
+        const displayOptInfo = (optInfo: OptRemark) => {
+            let displayString = optInfo.Args.reduce((acc, x) => {
+                let inc = '';
+                for (const [key, value] of Object.entries(x)) {
+                    if (key === 'DebugLoc') {
+                        if (value['Line'] !== 0) {
+                            inc += ' (' + value['Line'] + ':' + value['Column'] + ')';
+                        }
+                    } else {
+                        inc += value;
+                    }
+                }
+                return acc + inc;
+            }, '');
+
+            displayString = displayString.replaceAll('\n', ' ').replaceAll('\r', ' ');
+            return displayString;
+        };
+
+        for (const doc of remarks) {
+            if (doc.errors !== undefined && doc.errors.length > 0) {
+                logger.warn('YAMLParseError: ' + JSON.stringify(doc.errors[0]));
+                continue;
+            }
+
+            const opt = doc.toJS();
+            if (!opt.DebugLoc || !opt.DebugLoc.File || !opt.DebugLoc.File.includes(compileFileName)) continue;
+
+            const strOpt = JSON.stringify(opt);
+            if (!remarksSet.has(strOpt)) {
+                remarksSet.add(strOpt);
+                opt.optType = doc.contents.tag.substring(1); // remove leading '!'
+                opt.displayString = displayOptInfo(opt);
+                output.push(opt as OptRemark);
+            }
+        }
+
+        return output;
     }
 
     async processOptOutput(compilationRes: CompilationResult): Promise<OptRemark[]> {
@@ -3558,8 +3600,7 @@ but nothing was dumped. Possible causes are:
 
     async getTargetsAsOverrideValues(): Promise<CompilerOverrideOption[]> {
         if (!this.buildenvsetup || !this.buildenvsetup.getCompilerArch()) {
-            const parserCls = this.getArgumentParserClass();
-            const targets = await parserCls.getPossibleTargets(this);
+            const targets = await this.argParser.getPossibleTargets();
 
             return targets.map(target => {
                 return {
@@ -3572,8 +3613,7 @@ but nothing was dumped. Possible causes are:
     }
 
     async getPossibleStdversAsOverrideValues(): Promise<CompilerOverrideOption[]> {
-        const parser = this.getArgumentParserClass();
-        return await parser.getPossibleStdvers(this);
+        return await this.argParser.getPossibleStdvers();
     }
 
     async populatePossibleRuntimeTools() {
@@ -3754,7 +3794,7 @@ but nothing was dumped. Possible causes are:
             }
             return this;
         }
-        const initResult = await this.getArgumentParserClass().parse(this);
+        const initResult = await this.argParser.parse();
         this.possibleArguments.possibleArguments = {};
 
         await this.populatePossibleOverrides();

@@ -25,14 +25,13 @@
 import fs from 'node:fs/promises';
 import process from 'node:process';
 import {afterEach, beforeEach, describe, expect, it, vi} from 'vitest';
-
-import {AppArguments} from '../../lib/app.interfaces.js';
 import {
     discoverCompilers,
     findAndValidateCompilers,
     handleDiscoveryOnlyMode,
     loadPrediscoveredCompilers,
 } from '../../lib/app/compiler-discovery.js';
+import {AppArguments} from '../../lib/app.interfaces.js';
 import {CompilerFinder} from '../../lib/compiler-finder.js';
 import {logger} from '../../lib/logger.js';
 import {LanguageKey} from '../../types/languages.interfaces.js';

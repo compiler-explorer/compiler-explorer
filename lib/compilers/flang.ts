@@ -25,10 +25,7 @@
 import {LLVMIrBackendOptions} from '../../types/compilation/ir.interfaces.js';
 import type {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces.js';
 import {unwrap} from '../assert.js';
-
-import {OptRemark} from '../../static/panes/opt-view.interfaces.js';
 import {FlangParser} from './argument-parsers.js';
-import {processYamlOptRemarks} from './clang.js';
 import {FortranCompiler} from './fortran.js';
 
 export class FlangCompiler extends FortranCompiler {
@@ -51,10 +48,6 @@ export class FlangCompiler extends FortranCompiler {
             options = options.concat('-S');
         }
         return options;
-    }
-
-    override processRawOptRemarks(buffer: string, compileFileName?: string): OptRemark[] {
-        return processYamlOptRemarks(buffer, compileFileName);
     }
 
     override async generateIR(

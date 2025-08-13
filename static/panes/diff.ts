@@ -22,11 +22,10 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
+import {Container} from 'golden-layout';
 import $ from 'jquery';
 import * as monaco from 'monaco-editor';
 import TomSelect from 'tom-select';
-
-import {Container} from 'golden-layout';
 import {CompilationResult} from '../../types/compilation/compilation.interfaces.js';
 import {CompilerInfo} from '../../types/compiler.interfaces.js';
 import {ResultLine} from '../../types/resultline/resultline.interfaces.js';
@@ -111,7 +110,11 @@ class DiffStateObject {
         if (this.result) {
             switch (this.difftype) {
                 case DiffType.ASM:
-                    output = this.result.asm ? (this.result.asm as ResultLine[]) : [];
+                    output = this.result.asm
+                        ? (this.result.asm as ResultLine[])
+                        : this.result.result?.asm
+                          ? (this.result.result?.asm as ResultLine[])
+                          : [];
                     break;
                 case DiffType.CompilerStdOut:
                     output = this.result.stdout;

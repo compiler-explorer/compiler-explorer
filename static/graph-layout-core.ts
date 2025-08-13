@@ -22,11 +22,9 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import {AnnotatedCfgDescriptor, AnnotatedNodeDescriptor, EdgeColor} from '../types/compilation/cfg.interfaces.js';
-
 import IntervalTree from '@flatten-js/interval-tree';
 import cloneDeep from 'lodash.clonedeep';
-
+import {AnnotatedCfgDescriptor, AnnotatedNodeDescriptor, EdgeColor} from '../types/compilation/cfg.interfaces.js';
 import {zip} from './utils.js';
 
 // Much of the algorithm is inspired from

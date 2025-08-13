@@ -1,3 +1,5 @@
+@use 'sass:color';
+
 // based on https://github.com/golden-layout/golden-layout/blob/v1.5.9/src/less/goldenlayout-dark-theme.less
 
 $lighter: #fae1fa;
@@ -11,7 +13,7 @@ $color2: #eeeeee; // Appears 2 times
 $color3: #333; // Appears 2 times
 
 $color4: #cccccc; // Appears 1 time
-$color5: darken($dark, 5%); // Appears 1 time
+$color5: color.scale($dark, $lightness: -5%); // Appears 1 time
 $color6: #999999; // Appears 1 time
 $color7: $dark; // Appears 1 time
 $color8: #452500; // Appears 1 time
@@ -19,6 +21,8 @@ $color9: #555555; // Appears 1 time
 $color10: #ffffff; // Appears 2 time
 
 // ".lm_dragging" is applied to BODY tag during Drag and is also directly applied to the root of the object being dragged
+
+html[data-theme='pink'] {
 
 // Entire GoldenLayout Container, if a background is set, it is visible as color of "pane header" and "splitters" (if these latest has opacity very low)
 .lm_goldenlayout {
@@ -225,3 +229,5 @@ $color10: #ffffff; // Appears 2 time
         }
     }
 }
+
+} // End html[data-theme='pink']

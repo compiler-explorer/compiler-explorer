@@ -27,6 +27,7 @@ import $ from 'jquery';
 import {editor} from 'monaco-editor';
 import {options} from '../options.js';
 import {Settings} from '../settings.js';
+
 import IEditor = editor.IEditor;
 
 import {FontScaleState} from './fontscale.interfaces.js';

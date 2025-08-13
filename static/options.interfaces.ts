@@ -84,4 +84,5 @@ export type Options = {
     supportsExecute: boolean;
     supportsLibraryCodeFilter: boolean;
     cvCompilerCountMax: number;
+    explainApiEndpoint: string;
 };

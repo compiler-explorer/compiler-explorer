@@ -1,0 +1,172 @@
+{
+  "asm": [
+    {
+      "labels": [],
+      "source": null,
+      "text": "main:                                   # @main"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".Lfunc_begin0:"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": null,
+        "line": 3
+      },
+      "text": "        push    rbp"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": null,
+        "line": 3
+      },
+      "text": "        mov     rbp, rsp"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".Ltmp0:"
+    },
+    {
+      "labels": [
+        {
+          "name": ".L.str",
+          "range": {
+            "endCol": 35,
+            "startCol": 29
+          }
+        }
+      ],
+      "source": {
+        "column": 5,
+        "file": null,
+        "line": 4
+      },
+      "text": "        lea     rdi, [rip + .L.str]"
+    },
+    {
+      "labels": [],
+      "source": {
+        "column": 5,
+        "file": null,
+        "line": 4
+      },
+      "text": "        call    puts@PLT"
+    },
+    {
+      "labels": [],
+      "source": {
+        "column": 1,
+        "file": null,
+        "line": 5
+      },
+      "text": "        xor     eax, eax"
+    },
+    {
+      "labels": [],
+      "source": {
+        "column": 1,
+        "file": null,
+        "line": 5
+      },
+      "text": "        pop     rbp"
+    },
+    {
+      "labels": [],
+      "source": {
+        "column": 1,
+        "file": null,
+        "line": 5
+      },
+      "text": "        ret"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".Ltmp1:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".Lfunc_end0:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".L.str:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .asciz  \"hello world\""
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ""
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".Lcu_begin0:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".Ldebug_info_start0:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".Ldebug_info_end0:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".Linfo_string0:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".Linfo_string1:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".Linfo_string2:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".Linfo_string3:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".Linfo_string4:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".Linfo_string5:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".Linfo_string6:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".Lline_table_start0:"
+    }
+  ],
+  "labelDefinitions": {
+    ".L.str": 13,
+    "main": 1
+  }
+}

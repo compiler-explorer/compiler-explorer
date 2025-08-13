@@ -27,56 +27,52 @@ import {SentryCapture, SetupSentry, setSentryLayout} from './sentry.js';
 
 SetupSentry();
 
+// Then configure the options so that window.staticRoot/httpRoot are set
+import './options.js';
+
 import 'whatwg-fetch';
 import '@popperjs/core';
 import 'bootstrap';
 
-import $ from 'jquery';
-import _ from 'underscore';
-
 import clipboard from 'clipboard';
 import GoldenLayout from 'golden-layout';
+import $ from 'jquery';
 import JsCookie from 'js-cookie';
+import _ from 'underscore';
 
 // We re-assign this
 let jsCookie = JsCookie;
 
+import * as utils from '../shared/common-utils.js';
+import {ParseFiltersAndOutputOptions} from '../types/features/filters.interfaces.js';
+import {LanguageKey} from '../types/languages.interfaces.js';
 import {unwrap} from './assert.js';
+import * as BootstrapUtils from './bootstrap-utils.js';
+import {ComponentConfig, ComponentStateMap, GoldenLayoutConfig} from './components.interfaces.js';
 import * as Components from './components.js';
+import {createDragSource, createLayoutItem, toGoldenLayoutConfig} from './components.js';
+import changelogDocument from './generated/changelog.pug';
+import cookiesDocument from './generated/cookies.pug';
+import privacyDocument from './generated/privacy.pug';
+import {CompilerExplorerOptions} from './global.js';
 import * as History from './history.js';
 import {Hub} from './hub.js';
+import {localStorage, sessionThenLocalStorage} from './local.js';
 import * as motd from './motd.js';
 import {options} from './options.js';
 import {Presentation} from './presentation.js';
+import {Printerinator} from './print-view.js';
+import {setupRealDark, takeUsersOutOfRealDark} from './real-dark.js';
 import {Settings, SiteSettings} from './settings.js';
 import {Sharing} from './sharing.js';
 import {Themer} from './themes.js';
 import * as url from './url.js';
+import {formatISODate, updateAndCalcTopBarHeight} from './utils.js';
 import {Alert} from './widgets/alert.js';
 import {HistoryWidget} from './widgets/history-widget.js';
 import {SimpleCook} from './widgets/simplecook.js';
 import {setupSiteTemplateWidgetButton} from './widgets/site-templates-widget.js';
 
-import {Language, LanguageKey} from '../types/languages.interfaces.js';
-import {ComponentConfig, ComponentStateMap, GoldenLayoutConfig} from './components.interfaces.js';
-import {createDragSource, createLayoutItem, toGoldenLayoutConfig} from './components.js';
-import {CompilerExplorerOptions} from './global.js';
-
-import * as utils from '../shared/common-utils.js';
-import {ParseFiltersAndOutputOptions} from '../types/features/filters.interfaces.js';
-import * as BootstrapUtils from './bootstrap-utils.js';
-import {localStorage, sessionThenLocalStorage} from './local.js';
-import {Printerinator} from './print-view.js';
-import {setupRealDark, takeUsersOutOfRealDark} from './real-dark.js';
-import {formatISODate, updateAndCalcTopBarHeight} from './utils.js';
-
-const logos = require.context('../views/resources/logos', false, /\.(png|svg)$/);
-const siteTemplateScreenshots = require.context('../views/resources/template_screenshots', false, /\.png$/);
-import changelogDocument from './generated/changelog.pug';
-import cookiesDocument from './generated/cookies.pug';
-import privacyDocument from './generated/privacy.pug';
-
-//css
 import 'bootstrap/dist/css/bootstrap.min.css';
 import 'golden-layout/src/css/goldenlayout-base.css';
 import 'tom-select/dist/css/tom-select.bootstrap5.css';
@@ -200,7 +196,17 @@ function setupButtons(options: CompilerExplorerOptions, hub: Hub) {
             $('#ces .ces-icons').html(data);
         })
         .fail(err => {
-            SentryCapture(err, '$.get failed');
+            // Filter out network-level failures that aren't actionable bugs
+            // readyState 0 with status 0 typically indicates network issues, ad blockers, or aborted requests
+            if (err.readyState === 0 && err.status === 0) {
+                console.debug('Icons request failed due to network/browser policy:', err.statusText);
+                return;
+            }
+
+            // Only capture server errors or other potentially actionable failures
+            if (err.status >= 400) {
+                SentryCapture(err, '$.get failed loading icons');
+            }
         });
 
     $('#ces').on('click', () => {
@@ -209,11 +215,21 @@ function setupButtons(options: CompilerExplorerOptions, hub: Hub) {
                 alertSystem.alert('Compiler Explorer Sponsors', data);
             })
             .fail(err => {
-                const result = err.responseText || JSON.stringify(err);
-                alertSystem.alert(
-                    'Compiler Explorer Sponsors',
-                    '<div>Unable to fetch sponsors:</div><div>' + result + '</div>',
-                );
+                // Filter out network-level failures that aren't actionable bugs
+                if (err.readyState === 0 && err.status === 0) {
+                    console.debug('Sponsors request failed due to network/browser policy:', err.statusText);
+                    return;
+                }
+
+                if (err.status >= 400) {
+                    // Capture server errors for Sentry, and show to the user
+                    SentryCapture(err, '$.get failed loading sponsors');
+                    const result = err.responseText || JSON.stringify(err);
+                    alertSystem.alert(
+                        'Compiler Explorer Sponsors',
+                        '<div>Unable to fetch sponsors:</div><div>' + result + '</div>',
+                    );
+                }
             });
     });
 
@@ -241,7 +257,7 @@ function configFromEmbedded(embeddedUrl: string, defaultLangId: string) {
     let params;
     try {
         params = url.unrisonify(embeddedUrl);
-    } catch (e) {
+    } catch {
         document.write(
             '<div style="padding: 10px; background: #fa564e; color: black;">' +
                 "An error was encountered while decoding the URL for this embed. Make sure the URL hasn't been " +
@@ -317,7 +333,7 @@ function findConfig(
             } else {
                 try {
                     config = url.deserialiseState(window.location.hash.substring(1));
-                } catch (e) {
+                } catch {
                     // #3518 Alert the user that the url is invalid
                     const alertSystem = new Alert();
                     alertSystem.alert(
@@ -473,21 +489,6 @@ function removeOrphanedMaximisedItemFromConfig(config) {
     }
 }
 
-function setupLanguageLogos(languages: Partial<Record<LanguageKey, Language>>) {
-    for (const lang of Object.values(languages)) {
-        try {
-            if (lang.logoUrl !== null) {
-                lang.logoData = logos('./' + lang.logoUrl);
-                if (lang.logoUrlDark !== null) {
-                    lang.logoDataDark = logos('./' + lang.logoUrlDark);
-                }
-            }
-        } catch (ignored) {
-            lang.logoData = '';
-        }
-    }
-}
-
 function earlyGetDefaultLangSetting() {
     return Settings.getStoredSettings().defaultLanguage;
 }
@@ -551,7 +552,7 @@ function start() {
     initializeResetLayoutLink();
 
     const hostnameParts = window.location.hostname.split('.');
-    let subLangId: LanguageKey | undefined = undefined;
+    let subLangId: LanguageKey | undefined;
     // Only set the subdomain lang id if it makes sense to do so
     if (hostnameParts.length > 0) {
         const subdomainPart = hostnameParts[0];
@@ -564,8 +565,6 @@ function start() {
     }
 
     const defaultLangId = getDefaultLangId(subLangId, options);
-
-    setupLanguageLogos(options.languages);
 
     // Cookie domains are matched as a RE against the window location. This allows a flexible
     // way that works across multiple domains (e.g. godbolt.org and compiler-explorer.com).
@@ -779,7 +778,7 @@ function start() {
     }
 
     History.trackHistory(layout);
-    setupSiteTemplateWidgetButton(siteTemplateScreenshots, layout);
+    setupSiteTemplateWidgetButton(layout);
     if (!options.embedded) new Sharing(layout);
     new Printerinator(hub, themer);
 }

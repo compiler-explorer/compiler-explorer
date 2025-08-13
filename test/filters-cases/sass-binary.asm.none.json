@@ -16,12 +16,28 @@
       "text": ""
     },
     {
-      "labels": [],
+      "labels": [
+        {
+          "name": ".text._Z3p10Pdi",
+          "range": {
+            "endCol": 40,
+            "startCol": 25
+          }
+        }
+      ],
       "source": null,
       "text": "//--------------------- .text._Z3p10Pdi           --------------------------"
     },
     {
-      "labels": [],
+      "labels": [
+        {
+          "name": ".text._Z3p10Pdi",
+          "range": {
+            "endCol": 40,
+            "startCol": 25
+          }
+        }
+      ],
       "source": null,
       "text": "        .section        .text._Z3p10Pdi,\"ax\",@progbits"
     },

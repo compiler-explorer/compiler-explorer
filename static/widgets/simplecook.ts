@@ -23,6 +23,7 @@
 // POSSIBILITY OF SUCH DAMAGE.
 
 import $ from 'jquery';
+
 type SimpleCookieCallback = () => void;
 
 export class SimpleCook {

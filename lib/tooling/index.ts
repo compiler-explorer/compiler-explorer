@@ -26,7 +26,7 @@ import {makeKeyedTypeGetter} from '../keyed-type.js';
 
 import * as all from './_all.js';
 
-export {BaseTool} from './base-tool.js';
 export * from './_all.js';
+export {BaseTool} from './base-tool.js';
 
 export const getToolTypeByKey = makeKeyedTypeGetter('tool', all);

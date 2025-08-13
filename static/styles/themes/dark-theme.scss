@@ -1,11 +1,14 @@
-@import '~golden-layout/src/css/goldenlayout-dark-theme';
+@use 'sass:color';
+@use 'ansi-dark';
+
+html[data-theme='dark'] {
 
 ::-webkit-scrollbar {
-    background: lighten(#1e1e1e, 10%);
+    background: color.scale(#1e1e1e, $lightness: 10%);
 }
 
 ::-webkit-scrollbar-thumb {
-    background: lighten(#1e1e1e, 20%);
+    background: color.scale(#1e1e1e, $lightness: 20%);
 }
 
 a {
@@ -253,7 +256,7 @@ textarea.form-control {
 }
 
 .form-control:disabled {
-    background-color: darken(#474747, 10%);
+    background-color: color.scale(#474747, $lightness: -10%);
 }
 
 .graph-container {
@@ -539,7 +542,7 @@ textarea.form-control {
     border: none !important;
     background: #444444 !important;
     &:hover {
-        background: darken(#444444, 5%) !important;
+        background: color.scale(#444444, $lightness: -5%) !important;
     }
 }
 
@@ -574,19 +577,23 @@ textarea.form-control {
 }
 
 .share-reddit {
-    background-color: #ff4500 !important;
-    color: white !important;
+    background-color: #BF616A !important; /* Soft muted crimson */
+    color: #ffffff !important;
+    text-decoration: none !important;
 }
 
 .share-twitter {
-    background-color: #1da1f2 !important;
-    color: white !important;
+    background-color: #4C566A !important; /* Cool neutral gray */
+    color: #ffffff !important;
+    text-decoration: none !important;
 }
 
 .share-bluesky {
-    background-color: #0a7aff !important;
-    color: white !important;
+    background-color: #5E81AC !important; /* Soft desaturated steel blue */
+    color: #ffffff !important;
+    text-decoration: none !important;
 }
+
 
 #simplecook {
     background-color: #474747 !important;
@@ -720,4 +727,20 @@ textarea.form-control {
     }
 }
 
-@import 'ansi-dark';
+.explain-box {
+    background-color: #333;
+    border-color: #555;
+    color: #eee;
+}
+
+.explain-bottom-bar {
+    background-color: #2d2d2d !important;
+    color: #eee;
+}
+
+.ai-disclaimer.bg-warning {
+    background-color: #664d03 !important;
+    color: #ffda6a !important;
+}
+
+} // End html[data-theme='dark']

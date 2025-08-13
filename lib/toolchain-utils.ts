@@ -22,9 +22,8 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import path from 'node:path';
-
 import fs from 'node:fs';
+import path from 'node:path';
 
 import {splitArguments} from '../shared/common-utils.js';
 import {CompilerOverrideOptions} from '../types/compilation/compiler-overrides.interfaces.js';

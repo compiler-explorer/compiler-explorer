@@ -24,9 +24,9 @@
 
 import express, {type NextFunction, type Request, type Response} from 'express';
 import {afterEach, beforeEach, describe, expect, it, vi} from 'vitest';
-
 import {createRenderHandlers} from '../../lib/app/rendering.js';
 import {PugRequireHandler, ServerDependencies, ServerOptions} from '../../lib/app/server.interfaces.js';
+import {AppArguments} from '../../lib/app.interfaces.js';
 
 // Mock dependencies
 vi.mock('../../lib/app/url-handlers.js', () => ({
@@ -74,6 +74,31 @@ describe('Rendering Module', () => {
         let mockPugRequireHandler: PugRequireHandler;
         let mockOptions: ServerOptions;
         let mockDependencies: ServerDependencies;
+        const mockAppArgs: AppArguments = {
+            rootDir: '/test/root',
+            env: ['test'],
+            port: 10240,
+            gitReleaseName: 'test-release',
+            releaseBuildNumber: '123',
+            wantedLanguages: ['c++'],
+            doCache: true,
+            fetchCompilersFromRemote: true,
+            ensureNoCompilerClash: false,
+            prediscovered: undefined,
+            discoveryOnly: undefined,
+            staticPath: undefined,
+            metricsPort: undefined,
+            useLocalProps: true,
+            propDebug: false,
+            tmpDir: undefined,
+            isWsl: false,
+            devMode: false,
+            loggingOptions: {
+                debug: false,
+                suppressConsoleLog: false,
+                paperTrailIdentifier: 'test',
+            },
+        };
 
         beforeEach(() => {
             mockPugRequireHandler = vi.fn((file: string) => `/static/${file}`);
@@ -108,7 +133,12 @@ describe('Rendering Module', () => {
         });
 
         it('should create renderConfig function that correctly merges options', () => {
-            const {renderConfig} = createRenderHandlers(mockPugRequireHandler, mockOptions, mockDependencies);
+            const {renderConfig} = createRenderHandlers(
+                mockPugRequireHandler,
+                mockOptions,
+                mockDependencies,
+                mockAppArgs,
+            );
 
             const result = renderConfig({userOption: 'value'});
 
@@ -130,7 +160,12 @@ describe('Rendering Module', () => {
         });
 
         it('should set extraBodyClass to "embedded" when embedded is true', () => {
-            const {renderConfig} = createRenderHandlers(mockPugRequireHandler, mockOptions, mockDependencies);
+            const {renderConfig} = createRenderHandlers(
+                mockPugRequireHandler,
+                mockOptions,
+                mockDependencies,
+                mockAppArgs,
+            );
 
             const result = renderConfig({embedded: true});
 
@@ -138,7 +173,12 @@ describe('Rendering Module', () => {
         });
 
         it('should filter URL options to only allow whitelisted properties', () => {
-            const {renderConfig} = createRenderHandlers(mockPugRequireHandler, mockOptions, mockDependencies);
+            const {renderConfig} = createRenderHandlers(
+                mockPugRequireHandler,
+                mockOptions,
+                mockDependencies,
+                mockAppArgs,
+            );
 
             const urlOptions = {
                 readOnly: 'true',
@@ -166,7 +206,12 @@ describe('Rendering Module', () => {
         it('should generate slides for mobile viewer', () => {
             // Skip complex mock setup due to TypeScript issues
             // Just verify we can call it without error
-            const {renderConfig} = createRenderHandlers(mockPugRequireHandler, mockOptions, mockDependencies);
+            const {renderConfig} = createRenderHandlers(
+                mockPugRequireHandler,
+                mockOptions,
+                mockDependencies,
+                mockAppArgs,
+            );
 
             // This test is simplified to avoid complex mocking issues
             expect(renderConfig).toBeDefined();
@@ -174,7 +219,12 @@ describe('Rendering Module', () => {
         });
 
         it('should create renderGoldenLayout function that renders correct template', () => {
-            const {renderGoldenLayout} = createRenderHandlers(mockPugRequireHandler, mockOptions, mockDependencies);
+            const {renderGoldenLayout} = createRenderHandlers(
+                mockPugRequireHandler,
+                mockOptions,
+                mockDependencies,
+                mockAppArgs,
+            );
 
             const mockConfig = {};
             const mockMetadata = {};
@@ -219,7 +269,12 @@ describe('Rendering Module', () => {
         });
 
         it('should create embeddedHandler function that renders embed template', () => {
-            const {embeddedHandler} = createRenderHandlers(mockPugRequireHandler, mockOptions, mockDependencies);
+            const {embeddedHandler} = createRenderHandlers(
+                mockPugRequireHandler,
+                mockOptions,
+                mockDependencies,
+                mockAppArgs,
+            );
 
             const mockReq = {
                 query: {foo: 'bar'},

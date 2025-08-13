@@ -5154,15 +5154,7 @@
       "text": ".LASF52:"
     },
     {
-      "labels": [
-        {
-          "name": "main",
-          "range": {
-            "endCol": 22,
-            "startCol": 18
-          }
-        }
-      ],
+      "labels": [],
       "source": null,
       "text": "        .string \"main\""
     },

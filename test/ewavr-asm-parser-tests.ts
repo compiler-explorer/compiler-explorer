@@ -163,11 +163,6 @@ describe('AsmEWAVRParser', () => {
             expect(usedLabels.has('HIGH')).toBe(true); // Ensure HIGH is included
             expect(usedLabels.has('LOW')).toBe(true); // Ensure LOW is included
             // Verify we found the expected labels rather than checking exact count
-
-            // The labelFindFor regex is still for definitions (with colons)
-            const labelFindRegex = parser.labelFindFor();
-            expect(labelFindRegex.test('_data:')).toBe(true); // Matches definitions
-            expect(labelFindRegex.test('_data')).toBe(false); // Doesn't match usage
         });
 
         it('should handle EWAVR segment syntax and register operations', () => {

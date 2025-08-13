@@ -24,8 +24,6 @@
 
 import fs from 'node:fs';
 import path from 'node:path';
-import {parseAllDocuments} from 'yaml';
-import {logger} from '../logger.js';
 
 import _ from 'underscore';
 
@@ -53,52 +51,6 @@ import {StackUsageInfo} from '../stack-usage-transformer.js';
 import * as utils from '../utils.js';
 
 const offloadRegexp = /^#\s+__CLANG_OFFLOAD_BUNDLE__(__START__|__END__)\s+(.*)$/gm;
-
-// Exported to be reused in rustc-nightly
-export function processYamlOptRemarks(buffer: string, compileFileName = ''): OptRemark[] {
-    const output: OptRemark[] = [];
-    const remarksSet: Set<string> = new Set<string>();
-    const remarks: any = parseAllDocuments(buffer);
-
-    const DisplayOptInfo = (optInfo: OptRemark) => {
-        let displayString = optInfo.Args.reduce((acc, x) => {
-            let inc = '';
-            for (const [key, value] of Object.entries(x)) {
-                if (key === 'DebugLoc') {
-                    if (value['Line'] !== 0) {
-                        inc += ' (' + value['Line'] + ':' + value['Column'] + ')';
-                    }
-                } else {
-                    inc += value;
-                }
-            }
-            return acc + inc;
-        }, '');
-
-        displayString = displayString.replaceAll('\n', ' ').replaceAll('\r', ' ');
-        return displayString;
-    };
-
-    for (const doc of remarks) {
-        if (doc.errors !== undefined && doc.errors.length > 0) {
-            logger.warn('YAMLParseError: ' + JSON.stringify(doc.errors[0]));
-            continue;
-        }
-
-        const opt = doc.toJS();
-        if (!opt.DebugLoc || !opt.DebugLoc.File || !opt.DebugLoc.File.includes(compileFileName)) continue;
-
-        const strOpt = JSON.stringify(opt);
-        if (!remarksSet.has(strOpt)) {
-            remarksSet.add(strOpt);
-            opt.optType = doc.contents.tag.substring(1); // remove leading '!'
-            opt.displayString = DisplayOptInfo(opt);
-            output.push(opt as OptRemark);
-        }
-    }
-
-    return output;
-}
 
 export class ClangCompiler extends BaseCompiler {
     protected asanSymbolizerPath?: string;
@@ -358,10 +310,6 @@ export class ClangCompiler extends BaseCompiler {
         return this.llvmIr.isLlvmIr(deviceAsm)
             ? this.llvmIr.process(deviceAsm, filters)
             : this.asm.process(deviceAsm, filters);
-    }
-
-    override processRawOptRemarks(buffer: string, compileFileName = ''): OptRemark[] {
-        return processYamlOptRemarks(buffer, compileFileName);
     }
 }
 

@@ -36,12 +36,13 @@ export class LLVMMcaTool extends BaseTool {
         return 'llvm-mca-tool';
     }
 
-    rewriteAsm(asm: string) {
+    public rewriteAsm(asm: string) {
         return asm
             .replaceAll(/.hword\s/gim, '.short ')
             .replaceAll(/offset flat:/gim, '')
             .replaceAll(/ptr\s%fs/gim, 'PTR fs')
-            .replaceAll(/^\s*\.(fnstart|eabi_attribute|fpu).*/gim, ''); // https://github.com/compiler-explorer/compiler-explorer/issues/1270
+            .replaceAll(/^\s*\.(fnstart|eabi_attribute|fpu).*/gim, '') // https://github.com/compiler-explorer/compiler-explorer/issues/1270
+            .replaceAll(/^\s*\.(loc|file).*/gim, ''); // Remove debug directives that can cause "unassigned file number" errors
     }
 
     writeAsmFile(data: string, destination: string) {
@@ -107,6 +108,25 @@ export class LLVMMcaTool extends BaseTool {
 
         const rewrittenOutputFilename = compilationInfo.outputFilename + '.mca';
         await this.writeAsmFile(utils.normalizeAsmToString(compilationInfo.asm), rewrittenOutputFilename);
-        return super.runTool(compilationInfo, rewrittenOutputFilename, newArgs);
+        let res = await super.runTool(compilationInfo, rewrittenOutputFilename, newArgs);
+
+        if (res.code !== 0) {
+            if (res.stderr[0]?.text.includes('unable to get target')) {
+                // The compiler's set of `--target` values is strictly larger than llvm-mca's -mtriple values.
+                // Fallback: let llvm-mca use the autodetected architecture, with generic cpu.
+                const newArgs2 = newArgs.filter(arg => !arg.startsWith('-mtriple='));
+                res = await super.runTool(compilationInfo, rewrittenOutputFilename, newArgs2);
+
+                res.stdout = [
+                    {
+                        text:
+                            `Warning: llvm-mca was unable to use the target '${target}' specified by the compiler. ` +
+                            'Falling back to using the autodetected architecture with -mcpu=generic.\n\n',
+                    },
+                    ...res.stdout,
+                ];
+            }
+        }
+        return res;
     }
 }

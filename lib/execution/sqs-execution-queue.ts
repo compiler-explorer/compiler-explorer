@@ -94,6 +94,7 @@ export class SqsWorkerMode extends SqsExecuteQueueBase {
             return await this.sqs.receiveMessage({
                 QueueUrl: url,
                 MaxNumberOfMessages: 1,
+                WaitTimeSeconds: 20, // Long polling - wait up to 20 seconds for a message
             });
         } catch (e) {
             logger.error(`Error retreiving message from queue with URL: ${url}`);
@@ -177,6 +178,9 @@ export function startExecutionWorkerThread(
     const queue = new SqsWorkerMode(ceProps, awsProps);
 
     // allow 2 executions at the same time
+    // Note: With WaitTimeSeconds=20, the receiveMessage call will wait up to 20 seconds
+    // for a message to arrive. The 100ms timeout only applies between successful message
+    // processing, providing immediate response when messages are available.
 
     const doExecutionWork1 = async () => {
         await doOneExecution(queue, compilationEnvironment);

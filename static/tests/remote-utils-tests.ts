@@ -22,9 +22,8 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import {getRemoteId} from '../../shared/remote-utils.js';
-
 import {describe, expect, it} from 'vitest';
+import {getRemoteId} from '../../shared/remote-utils.js';
 import {UrlTestCases} from '../../shared/url-testcases.js';
 
 describe('Remote ID Tests', () => {

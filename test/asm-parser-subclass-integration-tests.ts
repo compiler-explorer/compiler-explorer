@@ -23,11 +23,10 @@
 // POSSIBILITY OF SUCH DAMAGE.
 
 import {describe, expect, it} from 'vitest';
-
+import {AsmParser} from '../lib/parsers/asm-parser.js';
 import {AsmEWAVRParser} from '../lib/parsers/asm-parser-ewavr.js';
 import {SPIRVAsmParser} from '../lib/parsers/asm-parser-spirv.js';
 import {VcAsmParser} from '../lib/parsers/asm-parser-vc.js';
-import {AsmParser} from '../lib/parsers/asm-parser.js';
 import * as properties from '../lib/properties.js';
 
 // Helper functions to reduce test duplication
@@ -51,17 +50,7 @@ function processAsmWithParser<T extends AsmParser>(
 }
 
 describe('AsmParser subclass compatibility', () => {
-    describe('labelFindFor method behavior', () => {
-        it('should use VcAsmParser labelFindFor override to find specific VC labels', () => {
-            const asmLines = ['_start:', 'mov eax, OFFSET _data', 'call _function', 'jmp _start'];
-            const usedLabels = initializeParserAndFindLabels(VcAsmParser, [], asmLines);
-
-            // VC-specific label detection should find these labels
-            expect(usedLabels.has('_data')).toBe(true);
-            expect(usedLabels.has('_function')).toBe(true);
-            expect(usedLabels.has('_start')).toBe(true);
-        });
-
+    describe('findUsedLabels method behavior', () => {
         it('should show EWAVR label finding now works correctly after refactoring', () => {
             const asmLines = [
                 '_data:     .word 0x1234',
@@ -79,10 +68,6 @@ describe('AsmParser subclass compatibility', () => {
             expect(usedLabels.has('_main')).toBe(true);
             expect(usedLabels.has('HIGH')).toBe(true);
             expect(usedLabels.has('LOW')).toBe(true);
-            // Verify that specific expected labels are found rather than checking exact count
-
-            // The refactoring fixed the issue where EWAVR's labelFindFor returned definition regex
-            // Now it uses the base class identifierFindRe for finding label references
         });
 
         it('should show base class finds all identifier-like tokens as potential labels', () => {
@@ -97,9 +82,6 @@ describe('AsmParser subclass compatibility', () => {
             expect(usedLabels.has('value')).toBe(true); // Actual label reference
             expect(usedLabels.has('jmp')).toBe(true); // Instruction (not a label)
             expect(usedLabels.has('_start')).toBe(true); // Actual label reference
-
-            // This over-matching is why subclasses override labelFindFor
-            // to be more specific about what constitutes a label in their syntax
         });
     });
 
