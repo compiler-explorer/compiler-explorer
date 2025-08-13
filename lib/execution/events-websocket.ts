@@ -23,7 +23,7 @@
 // POSSIBILITY OF SUCH DAMAGE.
 
 import {WebSocket} from 'ws';
-
+import {CompilationResult} from '../../types/compilation/compilation.interfaces.js';
 import {BasicExecutionResult} from '../../types/execution/execution.interfaces.js';
 import {logger} from '../logger.js';
 import {PropertyGetter} from '../properties.interfaces.js';
@@ -59,7 +59,7 @@ export class EventsWsBase {
 }
 
 export class EventsWsSender extends EventsWsBase {
-    async send(guid: string, result: BasicExecutionResult): Promise<void> {
+    async send(guid: string, result: CompilationResult): Promise<void> {
         this.connect();
         return new Promise(resolve => {
             this.ws!.on('open', async () => {
@@ -78,7 +78,7 @@ export class EventsWsSender extends EventsWsBase {
 export class PersistentEventsSender extends EventsWsBase {
     private messageQueue: Array<{
         guid: string;
-        result: BasicExecutionResult;
+        result: CompilationResult;
         resolve: () => void;
         reject: (error: any) => void;
     }> = [];
@@ -200,7 +200,7 @@ export class PersistentEventsSender extends EventsWsBase {
         }
     }
 
-    async send(guid: string, result: BasicExecutionResult): Promise<void> {
+    async send(guid: string, result: CompilationResult): Promise<void> {
         return new Promise((resolve, reject) => {
             if (this.isConnected && this.ws?.readyState === WebSocket.OPEN) {
                 try {

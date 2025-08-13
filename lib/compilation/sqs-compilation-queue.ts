@@ -165,7 +165,6 @@ async function sendCompilationResultViaWebsocket(
         const basicResult = {
             ...result,
             okToCache: result.okToCache ?? false,
-            filenameTransform: (f: string) => f,
             execTime: result.execTime !== undefined ? result.execTime : totalTimeMs,
         };
 
