@@ -169,6 +169,20 @@ async function sendCompilationResultViaWebsocket(
             execTime: result.execTime !== undefined ? result.execTime : totalTimeMs,
         };
 
+        // Check if result is large and has s3Key available
+        const resultSize = JSON.stringify(basicResult).length;
+        const SIZE_THRESHOLD = 31 * 1024; // 31KiB threshold
+
+        if (result.s3Key && resultSize > SIZE_THRESHOLD) {
+            // TODO: Store large result in S3 when not already cached there
+            // For now, send full result but log the issue
+            logger.warn(
+                `Large compilation result (${resultSize} bytes) for ${guid} with s3Key ${result.s3Key} - TODO: implement S3 storage`,
+            );
+        }
+
+        // TODO: Handle execution results in execResult field similarly
+
         await persistentSender.send(guid, basicResult);
         logger.info(`Successfully sent compilation result for ${guid} via WebSocket (total time: ${totalTimeMs}ms)`);
     } catch (error) {

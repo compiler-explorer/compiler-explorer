@@ -233,6 +233,8 @@ export type CompilationResult = {
     instructionSet?: InstructionSet;
 
     popularArguments?: PossibleArguments;
+
+    s3Key?: string; // Cache key hash for S3 storage reference
 };
 
 export type ExecutionOptions = {

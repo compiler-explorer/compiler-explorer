@@ -2727,6 +2727,7 @@ export class BaseCompiler {
             : await this.loadPackageWithExecutable(cacheKey, executablePackageHash, dirPath);
         if (fullResult) {
             fullResult.retreivedFromCache = true;
+            fullResult.s3Key = BaseCache.hash(cacheKey);
 
             delete fullResult.inputFilename;
             delete fullResult.dirPath;
@@ -2902,6 +2903,7 @@ export class BaseCompiler {
         if (fullResult.result) delete fullResult.result.dirPath;
 
         this.cleanupResult(fullResult);
+        fullResult.s3Key = BaseCache.hash(cacheKey);
 
         return fullResult;
     }
@@ -2994,6 +2996,7 @@ export class BaseCompiler {
                 const cacheRetrieveTimeEnd = process.hrtime.bigint();
                 result.retreivedFromCacheTime = utils.deltaTimeNanoToMili(cacheRetrieveTimeStart, cacheRetrieveTimeEnd);
                 result.retreivedFromCache = true;
+                result.s3Key = BaseCache.hash(key);
                 if (doExecute) {
                     const queueTime = performance.now();
                     result.execResult = await this.env.enqueue(
@@ -3171,6 +3174,7 @@ export class BaseCompiler {
         }
 
         this.cleanupResult(result);
+        result.s3Key = BaseCache.hash(key);
 
         return result;
     }

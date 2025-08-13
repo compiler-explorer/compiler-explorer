@@ -551,6 +551,7 @@ export class CompileHandler implements ICompileHandler {
                 .then(result => {
                     if (result.didExecute || result.execResult?.didExecute)
                         this.cmakeExecuteCounter.inc({language: compiler.lang.id});
+                    delete result.s3Key; // Remove s3Key before sending to user
                     res.send(result);
                 })
                 .catch(e => {
@@ -622,6 +623,7 @@ export class CompileHandler implements ICompileHandler {
                     if (result.didExecute || result.execResult?.didExecute)
                         this.executeCounter.inc({language: compiler.lang.id});
                     if (req.accepts(['text', 'json']) === 'json') {
+                        delete result.s3Key; // Remove s3Key before sending to user
                         res.send(result);
                     } else {
                         res.set('Content-Type', 'text/plain');
