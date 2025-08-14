@@ -141,6 +141,8 @@ export class Cfg extends Pane<CfgState> {
                 editorid: state.editorid,
                 treeid: state.treeid,
                 selectedFunction: (state as any).selectedFn,
+                centerparents: state.centerparents,
+                narrowtreelayout: state.narrowtreelayout,
             };
         }
         super(hub, container, state);
