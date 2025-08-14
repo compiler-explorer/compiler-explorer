@@ -158,18 +158,23 @@ type SegmentInfo = {
 
 const EDGE_SPACING = 10;
 
-function calculateTreePacking(left: BoundingBox, right: BoundingBox) {
+function calculateTreePacking(left: BoundingBox, right: BoundingBox, narrowLayout: boolean) {
+    if (!narrowLayout) {
+        return 0;
+    }
     const offsets: number[] = [];
     for (const [leftRow, rightRow] of zip(left.rows, right.rows)) {
+        const leftBound = leftRow.end;
+        const rightBound = rightRow.start;
         let offset = 0;
-        offset -= left.width - leftRow.end;
-        offset -= rightRow.start;
+        offset -= left.width - leftBound;
+        offset -= rightBound;
         offsets.push(offset);
     }
     return offsets.length === 0 ? 0 : Math.min(...offsets);
 }
 
-function combineRowBounds(left: RowBound[], right: RowBound[], rightOffset: number) {
+function combineRowBounds(left: RowBound[], right: RowBound[]) {
     for (const [leftBound, rightBound] of zip(left, right)) {
         leftBound.start = Math.min(leftBound.start, rightBound.start);
         leftBound.end = Math.max(leftBound.end, rightBound.end);
@@ -193,7 +198,7 @@ export class GraphLayoutCore {
     constructor(
         cfg: AnnotatedCfgDescriptor,
         readonly centerParents: boolean,
-        readonly compactTrees: boolean,
+        readonly narrowLayout: boolean,
     ) {
         this.populate_graph(cfg);
 
@@ -394,11 +399,11 @@ export class GraphLayoutCore {
             // Place subtrees and update bounding box
             for (const i of block.treeEdges) {
                 const child = this.blocks[i];
-                const offset = this.compactTrees ? calculateTreePacking(boundingBox, child.boundingBox) : 0;
+                const offset = calculateTreePacking(boundingBox, child.boundingBox, this.narrowLayout);
                 this.adjustSubtree(i, 1, boundingBox.width + offset);
                 boundingBox.width += child.boundingBox.width + offset;
                 boundingBox.height = Math.max(boundingBox.height, child.boundingBox.height);
-                combineRowBounds(boundingBox.rows, child.boundingBox.rows, 0);
+                combineRowBounds(boundingBox.rows, child.boundingBox.rows);
             }
             // Position parent
             boundingBox.height++;

@@ -534,7 +534,7 @@ export class Cfg extends Pane<CfgState> {
         this.layout = new GraphLayoutCore(
             fn as AnnotatedCfgDescriptor,
             !!this.state.centerparents,
-            !!this.state.compacttrees,
+            !!this.state.narrowtreelayout,
         );
         this.applyLayout();
         this.drawEdges();
@@ -712,7 +712,7 @@ export class Cfg extends Pane<CfgState> {
             selectedFunction: this.state.selectedFunction,
             isircfg: this.state.isircfg,
             centerparents: this.toggles.get().centerparents,
-            compacttrees: this.toggles.get().compacttrees,
+            narrowtreelayout: this.toggles.get().narrowtreelayout,
         };
         this.paneRenaming.addState(state);
         return state;
