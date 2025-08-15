@@ -171,7 +171,7 @@ function calculateTreePacking(left: BoundingBox, right: BoundingBox, narrowLayou
         offset -= rightBound;
         offsets.push(offset);
     }
-    return offsets.length === 0 ? 0 : Math.min(...offsets);
+    return offsets.length === 0 ? 0 : offsets.reduce((a, b) => Math.min(a, b));
 }
 
 function combineRowBounds(left: RowBound[], right: RowBound[]) {
@@ -180,7 +180,9 @@ function combineRowBounds(left: RowBound[], right: RowBound[]) {
         leftBound.end = Math.max(leftBound.end, rightBound.end);
     }
     if (left.length < right.length) {
-        left.push(...right.slice(left.length).map(bound => cloneDeep(bound)));
+        return [...left, ...right.slice(left.length).map(bound => cloneDeep(bound))];
+    } else {
+        return left;
     }
 }
 
@@ -403,7 +405,7 @@ export class GraphLayoutCore {
                 this.adjustSubtree(i, 1, boundingBox.width + offset);
                 boundingBox.width += child.boundingBox.width + offset;
                 boundingBox.height = Math.max(boundingBox.height, child.boundingBox.height);
-                combineRowBounds(boundingBox.rows, child.boundingBox.rows);
+                boundingBox.rows = combineRowBounds(boundingBox.rows, child.boundingBox.rows);
             }
             // Position parent
             boundingBox.height++;
