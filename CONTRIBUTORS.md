@@ -162,3 +162,4 @@ From oldest to newest contributor, we would like to thank:
 - [Adrien Bertrand](https://github.com/adriweb)
 - [Roberto Parolin](https://github.com/rparolin)
 - [Alfredo Correa](https://github.com/correaa)
+- [Oscar Amoros Huguet](https://github.com/morousg)
