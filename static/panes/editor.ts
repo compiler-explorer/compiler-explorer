@@ -341,8 +341,6 @@ export class Editor extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Edit
         this.container.layoutManager.on('initialised', () => {
             // Once initialized, let everyone know what text we have.
             this.maybeEmitChange();
-            // And maybe ask for a compilation (Will hit the cache most of the time)
-            this.requestCompilation();
         });
 
         this.eventHub.on('treeCompilerEditorIncludeChange', this.onTreeCompilerEditorIncludeChange, this);
@@ -901,19 +899,6 @@ export class Editor extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Edit
         }
     }
 
-    requestCompilation(): void {
-        this.eventHub.emit('requestCompilation', this.id, false);
-        if (this.settings.formatOnCompile) {
-            this.runFormatDocumentAction();
-        }
-
-        this.hub.trees.forEach(tree => {
-            if (tree.multifileService.isEditorPartOfProject(this.id)) {
-                this.eventHub.emit('requestCompilation', this.id, tree.id);
-            }
-        });
-    }
-
     override registerEditorActions(): void {
         this.editor.addAction({
             id: 'compile',
@@ -923,9 +908,7 @@ export class Editor extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Edit
             contextMenuGroupId: 'navigation',
             contextMenuOrder: 1.5,
             run: () => {
-                // This change request is mostly superfluous
                 this.maybeEmitChange();
-                this.requestCompilation();
             },
         });
 
@@ -1831,7 +1814,6 @@ export class Editor extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Edit
                         this.setFilename(filename);
                         this.updateState();
                         this.maybeEmitChange(true);
-                        this.requestCompilation();
                     },
                     this.getSource(),
                     this.currentLanguage,
@@ -1863,7 +1845,6 @@ export class Editor extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Edit
                 this.decorations = {};
                 if (!firstTime) {
                     this.maybeEmitChange(true);
-                    this.requestCompilation();
                 }
             }
             this.waitingForLanguage = false;
