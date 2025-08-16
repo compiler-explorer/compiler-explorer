@@ -189,7 +189,6 @@ describe('CompilerDropInTool', () => {
 
     it('More toolchain magic', () => {
         const options = [
-            '-gdwarf-4',
             '-g',
             '-o',
             'output.s',
@@ -213,7 +212,6 @@ describe('CompilerDropInTool', () => {
     it('Should be able to swap toolchain', () => {
         const exe = '/opt/compiler-explorer/clang-16.0.0/bin/clang++';
         const options = [
-            '-gdwarf-4',
             '-g',
             '-o',
             'output.s',
@@ -231,7 +229,6 @@ describe('CompilerDropInTool', () => {
 
         const replacedOptions = replaceToolchainArg(options, '/opt/compiler-explorer/gcc-11.1.0');
         expect(replacedOptions).toEqual([
-            '-gdwarf-4',
             '-g',
             '-o',
             'output.s',

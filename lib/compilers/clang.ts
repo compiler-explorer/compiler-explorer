@@ -144,22 +144,6 @@ export class ClangCompiler extends BaseCompiler {
         return super.runExecutable(executable, executeParameters, homeDir);
     }
 
-    forceDwarf4UnlessOverridden(options: string[]) {
-        const hasOverride = _.any(options, (option: string) => {
-            return option.includes('-gdwarf-') || option.includes('-fdebug-default-version=');
-        });
-
-        if (!hasOverride) return ['-gdwarf-4'].concat(options);
-
-        return options;
-    }
-
-    override optionsForFilter(filters: ParseFiltersAndOutputOptions, outputFilename: string, userOptions?: string[]) {
-        const options = super.optionsForFilter(filters, outputFilename);
-
-        return this.forceDwarf4UnlessOverridden(options);
-    }
-
     // Clang cross-compile with -stdlib=libc++ is currently (up to at least 18.1.0) broken:
     // https://github.com/llvm/llvm-project/issues/57104
     //
