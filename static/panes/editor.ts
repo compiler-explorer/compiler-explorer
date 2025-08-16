@@ -263,6 +263,9 @@ export class Editor extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Edit
         const source = this.getSource();
         if (!force && source === this.lastChangeEmitted) return;
 
+        if (this.settings.formatOnCompile) {
+            this.runFormatDocumentAction();
+        }
         this.updateExtraDecorations();
 
         this.lastChangeEmitted = source ?? null;
