@@ -23,7 +23,9 @@
 // POSSIBILITY OF SUCH DAMAGE.
 
 import IntervalTree from '@flatten-js/interval-tree';
+import cloneDeep from 'lodash.clonedeep';
 import {AnnotatedCfgDescriptor, AnnotatedNodeDescriptor, EdgeColor} from '../types/compilation/cfg.interfaces.js';
+import {zip} from './utils.js';
 
 // Much of the algorithm is inspired from
 // https://cutter.re/docs/api/widgets/classGraphGridLayout.html
@@ -75,9 +77,17 @@ type Edge = {
     path: EdgeSegment[];
 };
 
+type RowBound = {
+    start: number;
+    end: number;
+};
+
 type BoundingBox = {
-    rows: number;
-    cols: number;
+    // full bounding box
+    width: number;
+    height: number;
+    // more exact tree shape
+    rows: RowBound[];
 };
 
 type Block = {
@@ -148,6 +158,34 @@ type SegmentInfo = {
 
 const EDGE_SPACING = 10;
 
+function calculateTreePacking(left: BoundingBox, right: BoundingBox, narrowLayout: boolean) {
+    if (!narrowLayout) {
+        return 0;
+    }
+    const offsets: number[] = [];
+    for (const [leftRow, rightRow] of zip(left.rows, right.rows)) {
+        const leftBound = leftRow.end;
+        const rightBound = rightRow.start;
+        let offset = 0;
+        offset -= left.width - leftBound;
+        offset -= rightBound;
+        offsets.push(offset);
+    }
+    return offsets.length === 0 ? 0 : offsets.reduce((a, b) => Math.min(a, b));
+}
+
+function combineRowBounds(left: RowBound[], right: RowBound[]) {
+    for (const [leftBound, rightBound] of zip(left, right)) {
+        leftBound.start = Math.min(leftBound.start, rightBound.start);
+        leftBound.end = Math.max(leftBound.end, rightBound.end);
+    }
+    if (left.length < right.length) {
+        return [...left, ...right.slice(left.length).map(bound => cloneDeep(bound))];
+    } else {
+        return left;
+    }
+}
+
 export class GraphLayoutCore {
     // We use an adjacency list here
     blocks: Block[] = [];
@@ -162,6 +200,7 @@ export class GraphLayoutCore {
     constructor(
         cfg: AnnotatedCfgDescriptor,
         readonly centerParents: boolean,
+        readonly narrowLayout: boolean,
     ) {
         this.populate_graph(cfg);
 
@@ -183,7 +222,7 @@ export class GraphLayoutCore {
                 treeParent: null,
                 row: 0,
                 col: 0,
-                boundingBox: {rows: 0, cols: 0},
+                boundingBox: {width: 0, height: 0, rows: []},
                 coordinates: {x: 0, y: 0},
                 incidentEdgeCount: 0,
             };
@@ -317,6 +356,10 @@ export class GraphLayoutCore {
         const block = this.blocks[root];
         block.row += rowShift;
         block.col += columnShift;
+        for (const rowBound of block.boundingBox.rows) {
+            rowBound.start += columnShift;
+            rowBound.end += columnShift;
+        }
         for (const j of block.treeEdges) {
             this.adjustSubtree(j, rowShift, columnShift);
         }
@@ -330,8 +373,9 @@ export class GraphLayoutCore {
             block.row = 0;
             block.col = 0;
             block.boundingBox = {
-                rows: 1,
-                cols: 2,
+                width: 2,
+                height: 1,
+                rows: [{start: 0, end: 2}],
             };
         } else if (block.treeEdges.length === 1) {
             const childIndex = block.treeEdges[0];
@@ -339,35 +383,43 @@ export class GraphLayoutCore {
             block.row = 0;
             block.col = child.col;
             block.boundingBox = {
-                rows: 1 + child.boundingBox.rows,
-                cols: child.boundingBox.cols,
+                width: child.boundingBox.width,
+                height: child.boundingBox.height + 1,
+                rows: [
+                    {start: child.col, end: child.col + 2},
+                    ...child.boundingBox.rows.map(bound => cloneDeep(bound)),
+                ],
             };
             this.adjustSubtree(childIndex, 1, 0);
         } else {
             // If the node has more than two children we'll just center between the two direct children
-            const boundingBox = {
-                rows: 0,
-                cols: 0,
+            const boundingBox: BoundingBox = {
+                width: 0,
+                height: 0,
+                rows: [],
             };
-            // Compute bounding box of all the subtrees and adjust
+            // Place subtrees and update bounding box
             for (const i of block.treeEdges) {
                 const child = this.blocks[i];
-                this.adjustSubtree(i, 1, boundingBox.cols);
-                boundingBox.rows += child.boundingBox.rows;
-                boundingBox.cols += child.boundingBox.cols;
+                const offset = calculateTreePacking(boundingBox, child.boundingBox, this.narrowLayout);
+                this.adjustSubtree(i, 1, boundingBox.width + offset);
+                boundingBox.width += child.boundingBox.width + offset;
+                boundingBox.height = Math.max(boundingBox.height, child.boundingBox.height);
+                boundingBox.rows = combineRowBounds(boundingBox.rows, child.boundingBox.rows);
             }
             // Position parent
-            boundingBox.rows++;
+            boundingBox.height++;
             block.boundingBox = boundingBox;
             block.row = 0;
             if (this.centerParents) {
                 // center of bounding box
-                block.col = Math.floor(Math.max(boundingBox.cols - 2, 0) / 2);
+                block.col = Math.floor(Math.max(boundingBox.width - 2, 0) / 2);
             } else {
                 // center between immediate children
                 const [left, right] = [this.blocks[block.treeEdges[0]], this.blocks[block.treeEdges[1]]];
                 block.col = Math.floor((left.col + right.col) / 2);
             }
+            block.boundingBox.rows.unshift({start: block.col, end: block.col + 2});
         }
     }
 
@@ -382,7 +434,7 @@ export class GraphLayoutCore {
         let offset = 0;
         for (const [i, tree] of trees) {
             this.adjustSubtree(i, 0, offset);
-            offset += tree.boundingBox.cols;
+            offset += tree.boundingBox.width;
         }
     }
 
