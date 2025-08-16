@@ -735,7 +735,7 @@ describe('Target hints', () => {
         const compiler = new ClangCompiler(noExecuteSupportCompilerInfo, ce);
 
         const args =
-            '-gdwarf-4 -g -o output.s -mllvm --x86-asm-syntax=intel -S --gcc-toolchain=/opt/compiler-explorer/gcc-13.2.0 -fcolor-diagnostics -fno-crash-diagnostics --target=riscv64 example.cpp -isystem/opt/compiler-explorer/libs/abseil';
+            '-g -o output.s -mllvm --x86-asm-syntax=intel -S --gcc-toolchain=/opt/compiler-explorer/gcc-13.2.0 -fcolor-diagnostics -fno-crash-diagnostics --target=riscv64 example.cpp -isystem/opt/compiler-explorer/libs/abseil';
         const argArray = splitArguments(args);
         const hint = compiler.getTargetHintFromCompilerArgs(argArray);
         expect(hint).toBe('riscv64');
