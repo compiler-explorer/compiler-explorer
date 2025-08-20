@@ -738,7 +738,7 @@ export class Editor extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Edit
 
     updateOpenInCppInsights(): void {
         if (options.thirdPartyIntegrationEnabled) {
-            let cppStd = 'cpp2a';
+            let cppStd = 'cpp17';
 
             const compilers = this.getCompilerStates();
             compilers.forEach(compiler => {
@@ -756,9 +756,23 @@ export class Editor extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Edit
                     cppStd = 'cpp17';
                 } else if (
                     compiler.options.indexOf('-std=c++2a') !== -1 ||
-                    compiler.options.indexOf('-std=gnu++2a') !== -1
+                    compiler.options.indexOf('-std=c++20') !== -1 ||
+                    compiler.options.indexOf('-std=gnu++2a') !== -1 ||
+                    compiler.options.indexOf('-std=gnu++20') !== -1
                 ) {
-                    cppStd = 'cpp2a';
+                    cppStd = 'cpp20';
+                } else if (
+                    compiler.options.indexOf('-std=c++2b') !== -1 ||
+                    compiler.options.indexOf('-std=c++23') !== -1 ||
+                    compiler.options.indexOf('-std=gnu++2b') !== -1 ||
+                    compiler.options.indexOf('-std=gnu++23') !== -1
+                ) {
+                    cppStd = 'cpp23';
+                } else if (
+                    compiler.options.indexOf('-std=c++2c') !== -1 ||
+                    compiler.options.indexOf('-std=gnu++2c') !== -1
+                ) {
+                    cppStd = 'cpp2c';
                 } else if (compiler.options.indexOf('-std=c++98') !== -1) {
                     cppStd = 'cpp98';
                 }
