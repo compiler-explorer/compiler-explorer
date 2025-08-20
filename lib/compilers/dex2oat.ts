@@ -112,8 +112,8 @@ export class Dex2OatCompiler extends BaseCompiler {
 
         // ART version codes in CE are in the format of AABB, where AA is the
         // API level and BB is the number of months since the initial release.
-        this.versionPrefixRegex = /^(java|kotlin)-dex2oat-(\d\d)\d+$/;
-        this.latestVersionRegex = /^(java|kotlin)-dex2oat-latest$/;
+        this.versionPrefixRegex = /^(android-)?(java|kotlin)-dex2oat-(\d\d)\d+$/;
+        this.latestVersionRegex = /^(android-)?(java|kotlin)-dex2oat-(latest|default|local)$/;
 
         // User-provided arguments (with a default behavior if not provided).
         this.insnSetArgRegex = /^--instruction-set=.*$/;
