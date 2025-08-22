@@ -43,6 +43,22 @@ import * as utils from '../utils.js';
 
 import {D8Compiler} from './d8.js';
 
+const BOOTCLASSPATH_JARS = [
+    'bootjars/core-oj.jar',
+    'bootjars/core-libart.jar',
+    'bootjars/okhttp.jar',
+    'bootjars/bouncycastle.jar',
+    'bootjars/apache-xml.jar',
+] as const;
+
+const BOOTCLASSPATH_LOCATIONS = [
+    '/apex/com.android.art/javalib/core-oj.jar',
+    '/apex/com.android.art/javalib/core-libart.jar',
+    '/apex/com.android.art/javalib/okhttp.jar',
+    '/apex/com.android.art/javalib/bouncycastle.jar',
+    '/apex/com.android.art/javalib/apache-xml.jar',
+] as const;
+
 export class Dex2OatCompiler extends BaseCompiler {
     static get key() {
         return 'dex2oat';
@@ -112,8 +128,8 @@ export class Dex2OatCompiler extends BaseCompiler {
 
         // ART version codes in CE are in the format of AABB, where AA is the
         // API level and BB is the number of months since the initial release.
-        this.versionPrefixRegex = /^(java|kotlin)-dex2oat-(\d\d)\d+$/;
-        this.latestVersionRegex = /^(java|kotlin)-dex2oat-latest$/;
+        this.versionPrefixRegex = /^(android-)?(java|kotlin)-dex2oat-(\d\d)\d+$/;
+        this.latestVersionRegex = /^(android-)?(java|kotlin)-dex2oat-(latest|default|local)$/;
 
         // User-provided arguments (with a default behavior if not provided).
         this.insnSetArgRegex = /^--instruction-set=.*$/;
@@ -235,14 +251,6 @@ export class Dex2OatCompiler extends BaseCompiler {
             };
         }
 
-        const bootclassjars = [
-            'bootjars/core-oj.jar',
-            'bootjars/core-libart.jar',
-            'bootjars/okhttp.jar',
-            'bootjars/bouncycastle.jar',
-            'bootjars/apache-xml.jar',
-        ];
-
         let isLatest = false;
         let versionPrefix = 0;
         let match;
@@ -261,13 +269,9 @@ export class Dex2OatCompiler extends BaseCompiler {
             '--copy-dex-files=always',
             ...(versionPrefix >= 34 || isLatest ? ['--runtime-arg', '-Xgc:CMC'] : []),
             '--runtime-arg',
-            '-Xbootclasspath:' + bootclassjars.map(f => path.join(this.artArtifactDir, f)).join(':'),
+            '-Xbootclasspath:' + BOOTCLASSPATH_JARS.map(f => path.join(this.artArtifactDir, f)).join(':'),
             '--runtime-arg',
-            '-Xbootclasspath-locations:/apex/com.android.art/javalib/core-oj.jar' +
-                ':/apex/com.android.art/javalib/core-libart.jar' +
-                ':/apex/com.android.art/javalib/okhttp.jar' +
-                ':/apex/com.android.art/javalib/bouncycastle.jar' +
-                ':/apex/com.android.art/javalib/apache-xml.jar',
+            '-Xbootclasspath-locations:' + BOOTCLASSPATH_LOCATIONS.join(':'),
             `--boot-image=${this.artArtifactDir}/app/system/framework/boot.art`,
             `--oat-file=${d8DirPath}/classes.odex`,
             `--app-image-file=${d8DirPath}/classes.art`,
@@ -329,6 +333,8 @@ export class Dex2OatCompiler extends BaseCompiler {
                 `--create-profile-from=${humanReadableFormatProfile}`,
                 `--apk=${d8DirPath}/${dexFile}`,
                 '--dex-location=/system/framework/classes.dex',
+                ...BOOTCLASSPATH_JARS.map(f => `--apk=${path.join(this.artArtifactDir, f)}`),
+                ...BOOTCLASSPATH_LOCATIONS.map(f => `--dex-location=${f}`),
                 `--reference-profile-file=${binaryFormatProfile}`,
                 '--output-profile-type=app',
             ],
