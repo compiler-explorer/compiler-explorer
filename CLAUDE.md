@@ -23,14 +23,6 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
   4. Run `npm run test` to verify functionality (or at least `npm run test-min`)
   5. ONLY THEN commit changes with plain `git commit` (NO FLAGS!)
 - Bypassing these checks will lead to broken builds, failed tests, and PRs that cannot be merged
-- ALWAYS use HEREDOC syntax for complex shell commands, especially those containing quotes, newlines, or special characters:
-  ```bash
-  gh pr create --title "Title" --body "$(cat <<'EOF'
-  PR body content with "quotes" and special chars like $variables
-  that would otherwise need escaping
-  EOF
-  )"
-  ```
 
 ## Style Guidelines
 - TypeScript: Strict typing, no implicit any, no unused locals

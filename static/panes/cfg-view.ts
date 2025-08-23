@@ -141,6 +141,8 @@ export class Cfg extends Pane<CfgState> {
                 editorid: state.editorid,
                 treeid: state.treeid,
                 selectedFunction: (state as any).selectedFn,
+                centerparents: state.centerparents,
+                narrowtreelayout: state.narrowtreelayout,
             };
         }
         super(hub, container, state);
@@ -531,7 +533,11 @@ export class Cfg extends Pane<CfgState> {
         const fn = this.results[name];
         this.bbMap = {};
         await this.createBasicBlocks(fn);
-        this.layout = new GraphLayoutCore(fn as AnnotatedCfgDescriptor, !!this.state.centerparents);
+        this.layout = new GraphLayoutCore(
+            fn as AnnotatedCfgDescriptor,
+            !!this.state.centerparents,
+            !!this.state.narrowtreelayout,
+        );
         this.applyLayout();
         this.drawEdges();
         this.infoElement.innerHTML = `Layout time: ${Math.round(this.layout.layoutTime)}ms<br/>Basic blocks: ${
@@ -708,6 +714,7 @@ export class Cfg extends Pane<CfgState> {
             selectedFunction: this.state.selectedFunction,
             isircfg: this.state.isircfg,
             centerparents: this.toggles.get().centerparents,
+            narrowtreelayout: this.toggles.get().narrowtreelayout,
         };
         this.paneRenaming.addState(state);
         return state;
