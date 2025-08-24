@@ -16,7 +16,15 @@
       "text": "        .section        \".text._ZN95_$LT$example..Bla$LT$$u27$a$GT$$u20$as$u20$core..convert..Into$LT$alloc..string..String$GT$$GT$4into17h38301ffbb2e8fb47E\",\"ax\",@progbits"
     },
     {
-      "labels": [],
+      "labels": [
+        {
+          "name": "_ZN95_$LT$example..Bla$LT$$u27$a$GT$$u20$as$u20$core..convert..Into$LT$alloc..string..String$GT$$GT$4into17h38301ffbb2e8fb47E",
+          "range": {
+            "endCol": 142,
+            "startCol": 17
+          }
+        }
+      ],
       "source": null,
       "text": "        .globl  _ZN95_$LT$example..Bla$LT$$u27$a$GT$$u20$as$u20$core..convert..Into$LT$alloc..string..String$GT$$GT$4into17h38301ffbb2e8fb47E"
     },
@@ -26,7 +34,15 @@
       "text": "        .p2align        4, 0x90"
     },
     {
-      "labels": [],
+      "labels": [
+        {
+          "name": "_ZN95_$LT$example..Bla$LT$$u27$a$GT$$u20$as$u20$core..convert..Into$LT$alloc..string..String$GT$$GT$4into17h38301ffbb2e8fb47E",
+          "range": {
+            "endCol": 142,
+            "startCol": 17
+          }
+        }
+      ],
       "source": null,
       "text": "        .type   _ZN95_$LT$example..Bla$LT$$u27$a$GT$$u20$as$u20$core..convert..Into$LT$alloc..string..String$GT$$GT$4into17h38301ffbb2e8fb47E,@function"
     },
@@ -73,10 +89,24 @@
     {
       "labels": [
         {
+          "name": "_ZN95_$LT$example..Bla$LT$$u27$a$GT$$u20$as$u20$core..convert..Into$LT$alloc..string..String$GT$$GT$4into17h38301ffbb2e8fb47E",
+          "range": {
+            "endCol": 142,
+            "startCol": 17
+          }
+        },
+        {
           "name": ".Lfunc_end0",
           "range": {
             "endCol": 155,
             "startCol": 144
+          }
+        },
+        {
+          "name": "_ZN95_$LT$example..Bla$LT$$u27$a$GT$$u20$as$u20$core..convert..Into$LT$alloc..string..String$GT$$GT$4into17h38301ffbb2e8fb47E",
+          "range": {
+            "endCol": 281,
+            "startCol": 156
           }
         }
       ],

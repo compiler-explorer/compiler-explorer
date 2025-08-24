@@ -350,7 +350,7 @@ export class AsmParser extends AsmRegex implements IAsmParser {
         // Opcode expression here matches LLVM-style opcodes of the form `%blah = opcode`
         this.hasOpcodeRe = /^\s*(%[$.A-Z_a-z][\w$.]*\s*=\s*)?[A-Za-z]/;
         this.instructionRe = /^\s*[A-Za-z]+/;
-        this.identifierFindRe = /((?!\$\.)[$.@A-Z_a-z"][\w.]*"?)(?:@\w+)*/g;
+        this.identifierFindRe = /((?!\$\.)[$.@A-Z_a-z"][\w$.]*"?)(?:@\w+)*/g;
         this.hasNvccOpcodeRe = /^\s*[@A-Za-z|]/;
         this.definesFunction = /^\s*\.(type.*,\s*[#%@]function|proc\s+[.A-Z_a-z][\w$.]*:.*)$/;
         this.definesGlobal = /^\s*\.(?:globa?l|GLB|export)\s*([.A-Z_a-z][\w$.]*|"[.A-Z_a-z][\w$.]*")/;
