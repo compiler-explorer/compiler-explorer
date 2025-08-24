@@ -656,7 +656,7 @@ export class BaseCompiler {
         if (this.externalparser) {
             const objResult = await this.externalparser.objdumpAndParseAssembly(result.dirPath, args, filters);
             if (objResult.parsingTime !== undefined) {
-                objResult.objdumpTime = Number.parseInt(result.execTime) - Number.parseInt(result.parsingTime);
+                objResult.objdumpTime = (objResult.execTime ?? 0) - (objResult.parsingTime ?? 0);
                 delete objResult.execTime;
             }
 
@@ -2885,8 +2885,8 @@ export class BaseCompiler {
 
         const optOutput = undefined;
         const stackUsageOutput = undefined;
-        await this.afterCompilation(
-            fullResult.result,
+        await this.afterCmakeCompilation(
+            fullResult,
             false,
             cacheKey,
             executeOptions,
@@ -3088,6 +3088,7 @@ export class BaseCompiler {
         stackUsageOutput: StackUsage.StackUsageInfo[] | undefined,
         bypassCache: BypassCache,
         customBuildPath?: string,
+        delayCaching?: boolean,
     ) {
         // Start the execution as soon as we can, but only await it at the end.
         const execPromise =
@@ -3161,7 +3162,7 @@ export class BaseCompiler {
             ];
         }
 
-        if (result.okToCache) {
+        if (result.okToCache && !delayCaching) {
             await this.env.cachePut(key, result, undefined);
         }
 
@@ -3177,6 +3178,48 @@ export class BaseCompiler {
         result.s3Key = BaseCache.hash(key);
 
         return result;
+    }
+
+    async afterCmakeCompilation(
+        fullResult: CompilationResult,
+        doExecute: boolean,
+        key: CacheKey,
+        executeOptions: ExecutableExecutionOptions,
+        tools: ActiveTool[],
+        backendOptions: Record<string, any>,
+        filters: ParseFiltersAndOutputOptions,
+        options: string[],
+        optOutput: OptRemark[] | undefined,
+        stackUsageOutput: StackUsage.StackUsageInfo[] | undefined,
+        bypassCache: BypassCache,
+        customBuildPath?: string,
+    ) {
+        // Process the inner result using existing afterCompilation logic, but skip caching
+        const processedResult = await this.afterCompilation(
+            fullResult.result,
+            doExecute,
+            key,
+            executeOptions,
+            tools,
+            backendOptions,
+            filters,
+            options,
+            optOutput,
+            stackUsageOutput,
+            bypassCache,
+            customBuildPath,
+            true, // delayCaching = true
+        );
+
+        // Recombine the processed result back into fullResult
+        fullResult.result = processedResult;
+
+        // Cache the complete fullResult (including buildsteps) instead of just the inner result
+        if (fullResult.result?.okToCache) {
+            await this.env.cachePut(key, fullResult, undefined);
+        }
+
+        return fullResult;
     }
 
     cleanupResult(result: CompilationResult) {
