@@ -76,6 +76,7 @@ export interface CompilerExplorerOptions {
     local: boolean;
     version: boolean;
     devMode: boolean;
+    instanceColor?: string;
 }
 
 /**
@@ -115,7 +116,8 @@ export function parseCommandLine(argv: string[]): CompilerExplorerOptions {
             '--dev-mode',
             'Run in dev mode (default if NODE_ENV is not production)',
             process.env.NODE_ENV !== 'production',
-        );
+        )
+        .option('--instance-color <color>', 'Instance color (blue or green) for deployment differentiation');
 
     program.parse(argv);
     return program.opts() as CompilerExplorerOptions;
@@ -195,6 +197,7 @@ export function convertOptionsToAppArguments(
         tmpDir: options.tmpDir,
         isWsl: isWsl,
         devMode: options.devMode,
+        instanceColor: options.instanceColor,
         loggingOptions: {
             debug: options.debug || false,
             logHost: options.logHost,
