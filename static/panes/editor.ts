@@ -926,6 +926,10 @@ export class Editor extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Edit
             contextMenuOrder: 1.5,
             run: () => {
                 this.maybeEmitChange();
+                // If compileOnChange is disabled, we need to request compilation manually.
+                if (!this.settings.compileOnChange) {
+                    this.eventHub.emit('requestCompilation', this.id, false);
+                }
             },
         });
 
