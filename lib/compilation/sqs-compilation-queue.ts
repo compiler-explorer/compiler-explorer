@@ -53,8 +53,20 @@ export class SqsCompilationQueueBase {
     protected sqs: SQS;
     protected readonly queue_url: string;
 
-    constructor(props: PropertyGetter, awsProps: PropertyGetter) {
-        this.queue_url = props<string>('compilequeue.queue_url', '');
+    constructor(props: PropertyGetter, awsProps: PropertyGetter, appArgs?: {instanceColor?: string}) {
+        let queue_url = props<string>('compilequeue.queue_url', '');
+
+        // If instance color is provided, modify the queue URL to include the color
+        if (appArgs?.instanceColor && queue_url) {
+            // Replace the queue name with color suffix
+            // e.g., "staging-compilation-queue.fifo" becomes "staging-compilation-queue-blue.fifo"
+            queue_url = queue_url.replace(
+                '-compilation-queue.fifo',
+                `-compilation-queue-${appArgs.instanceColor}.fifo`,
+            );
+        }
+
+        this.queue_url = queue_url;
 
         if (!this.queue_url) {
             throw new Error(
@@ -277,8 +289,9 @@ export function startCompilationWorkerThread(
     ceProps: PropertyGetter,
     awsProps: PropertyGetter,
     compilationEnvironment: CompilationEnvironment,
+    appArgs?: {instanceColor?: string},
 ) {
-    const queue = new SqsCompilationWorkerMode(ceProps, awsProps);
+    const queue = new SqsCompilationWorkerMode(ceProps, awsProps, appArgs);
     const numThreads = ceProps<number>('compilequeue.worker_threads', 2);
     const pollIntervalMs = ceProps<number>('compilequeue.poll_interval_ms', 50);
 

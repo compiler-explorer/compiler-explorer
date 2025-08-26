@@ -166,7 +166,7 @@ export async function initialiseApplication(options: ApplicationOptions): Promis
     }
 
     if (isCompilationWorker) {
-        startCompilationWorkerThread(ceProps, awsProps, compilationEnvironment);
+        startCompilationWorkerThread(ceProps, awsProps, compilationEnvironment, appArgs);
     }
 
     startListening(webServer, appArgs);

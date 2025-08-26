@@ -45,4 +45,5 @@ export type AppArguments = {
     loggingOptions: LoggingOptions;
     isWsl: boolean;
     devMode: boolean;
+    instanceColor?: string;
 };
