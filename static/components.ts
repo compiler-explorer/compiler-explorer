@@ -533,6 +533,7 @@ export function getCfgViewWith(
             editorid,
             treeid,
             isircfg,
+            narrowtreelayout: true,
         },
     };
 }

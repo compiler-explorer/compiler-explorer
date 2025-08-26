@@ -263,6 +263,9 @@ export class Editor extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Edit
         const source = this.getSource();
         if (!force && source === this.lastChangeEmitted) return;
 
+        if (this.settings.formatOnCompile) {
+            this.runFormatDocumentAction();
+        }
         this.updateExtraDecorations();
 
         this.lastChangeEmitted = source ?? null;
@@ -341,8 +344,6 @@ export class Editor extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Edit
         this.container.layoutManager.on('initialised', () => {
             // Once initialized, let everyone know what text we have.
             this.maybeEmitChange();
-            // And maybe ask for a compilation (Will hit the cache most of the time)
-            this.requestCompilation();
         });
 
         this.eventHub.on('treeCompilerEditorIncludeChange', this.onTreeCompilerEditorIncludeChange, this);
@@ -737,7 +738,7 @@ export class Editor extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Edit
 
     updateOpenInCppInsights(): void {
         if (options.thirdPartyIntegrationEnabled) {
-            let cppStd = 'cpp2a';
+            let cppStd = 'cpp17';
 
             const compilers = this.getCompilerStates();
             compilers.forEach(compiler => {
@@ -755,9 +756,23 @@ export class Editor extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Edit
                     cppStd = 'cpp17';
                 } else if (
                     compiler.options.indexOf('-std=c++2a') !== -1 ||
-                    compiler.options.indexOf('-std=gnu++2a') !== -1
+                    compiler.options.indexOf('-std=c++20') !== -1 ||
+                    compiler.options.indexOf('-std=gnu++2a') !== -1 ||
+                    compiler.options.indexOf('-std=gnu++20') !== -1
                 ) {
-                    cppStd = 'cpp2a';
+                    cppStd = 'cpp20';
+                } else if (
+                    compiler.options.indexOf('-std=c++2b') !== -1 ||
+                    compiler.options.indexOf('-std=c++23') !== -1 ||
+                    compiler.options.indexOf('-std=gnu++2b') !== -1 ||
+                    compiler.options.indexOf('-std=gnu++23') !== -1
+                ) {
+                    cppStd = 'cpp23';
+                } else if (
+                    compiler.options.indexOf('-std=c++2c') !== -1 ||
+                    compiler.options.indexOf('-std=gnu++2c') !== -1
+                ) {
+                    cppStd = 'cpp2c';
                 } else if (compiler.options.indexOf('-std=c++98') !== -1) {
                     cppStd = 'cpp98';
                 }
@@ -901,19 +916,6 @@ export class Editor extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Edit
         }
     }
 
-    requestCompilation(): void {
-        this.eventHub.emit('requestCompilation', this.id, false);
-        if (this.settings.formatOnCompile) {
-            this.runFormatDocumentAction();
-        }
-
-        this.hub.trees.forEach(tree => {
-            if (tree.multifileService.isEditorPartOfProject(this.id)) {
-                this.eventHub.emit('requestCompilation', this.id, tree.id);
-            }
-        });
-    }
-
     override registerEditorActions(): void {
         this.editor.addAction({
             id: 'compile',
@@ -923,9 +925,11 @@ export class Editor extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Edit
             contextMenuGroupId: 'navigation',
             contextMenuOrder: 1.5,
             run: () => {
-                // This change request is mostly superfluous
                 this.maybeEmitChange();
-                this.requestCompilation();
+                // If compileOnChange is disabled, we need to request compilation manually.
+                if (!this.settings.compileOnChange) {
+                    this.eventHub.emit('requestCompilation', this.id, false);
+                }
             },
         });
 
@@ -1831,7 +1835,6 @@ export class Editor extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Edit
                         this.setFilename(filename);
                         this.updateState();
                         this.maybeEmitChange(true);
-                        this.requestCompilation();
                     },
                     this.getSource(),
                     this.currentLanguage,
@@ -1863,7 +1866,6 @@ export class Editor extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Edit
                 this.decorations = {};
                 if (!firstTime) {
                     this.maybeEmitChange(true);
-                    this.requestCompilation();
                 }
             }
             this.waitingForLanguage = false;

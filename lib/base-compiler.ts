@@ -3787,7 +3787,7 @@ but nothing was dumped. Possible causes are:
         this.initialiseLibraries(clientOptions);
 
         if (isPrediscovered) {
-            logger.info(`${compiler} ${version} is ready`);
+            logger.debug(`${compiler} ${version} is ready`);
             if (this.compiler.cachedPossibleArguments) {
                 this.possibleArguments.populateOptions(this.compiler.cachedPossibleArguments);
                 delete this.compiler.cachedPossibleArguments;
@@ -3800,7 +3800,7 @@ but nothing was dumped. Possible causes are:
         await this.populatePossibleOverrides();
         await this.populatePossibleRuntimeTools();
 
-        logger.info(`${compiler} ${version} is ready`);
+        logger.debug(`${compiler} ${version} is ready`);
         return initResult;
     }
 
