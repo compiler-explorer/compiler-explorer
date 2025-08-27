@@ -71,6 +71,10 @@ function setupClaudeExplainEnvironment() {
     );
 
     // Set up configuration
+    cy.window().then(win => {
+        // TODO remove this when we make claude explain generally available.
+        win.localStorage.setItem('claudeExplainTest', 'enbaled');
+    });
     cy.visit('/', {
         onBeforeLoad: (win: any) => {
             stubConsoleOutput(win);
