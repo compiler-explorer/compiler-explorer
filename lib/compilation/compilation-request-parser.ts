@@ -33,7 +33,6 @@ import {
 import {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces.js';
 import {SelectedLibraryVersion} from '../../types/libraries/libraries.interfaces.js';
 import {BaseCompiler} from '../base-compiler.js';
-import {ParsedRequest} from '../handlers/compile.js';
 
 /**
  * Core compilation request data that can come from various sources (JSON requests, SQS messages, etc.)
@@ -100,50 +99,5 @@ export function parseFilters(
     return {
         ...compiler.getDefaultFilters(),
         ...requestFilters,
-    };
-}
-
-/**
- * Full parsing function for SQS-style requests
- * Used by SQS workers to ensure consistent parsing with web handlers
- */
-export function parseCompilationRequest(msg: any, compiler: BaseCompiler): ParsedRequest {
-    if (Array.isArray(msg.options)) {
-        throw new Error('Invalid SQS message format: options should not be an array');
-    }
-
-    let requestData: CompilationRequestData = {
-        source: msg.source,
-        userArguments: [],
-        compilerOptions: {},
-        executeParameters: undefined,
-        filters: undefined,
-        tools: undefined,
-        libraries: undefined,
-        bypassCache: msg.bypassCache,
-    };
-
-    if (msg.options && typeof msg.options === 'object') {
-        requestData = {
-            source: msg.source,
-            userArguments: msg.options.userArguments,
-            compilerOptions: msg.options.compilerOptions || {},
-            executeParameters: msg.options.executeParameters,
-            filters: msg.options.filters,
-            tools: msg.options.tools,
-            libraries: msg.options.libraries,
-            bypassCache: msg.bypassCache,
-        };
-    }
-
-    return {
-        source: requestData.source,
-        options: parseUserArguments(requestData.userArguments),
-        backendOptions: requestData.compilerOptions || {},
-        filters: parseFilters(compiler, requestData.filters),
-        bypassCache: requestData.bypassCache || BypassCache.None,
-        tools: parseTools(requestData.tools),
-        executeParameters: parseExecutionParameters(requestData.executeParameters),
-        libraries: requestData.libraries || [],
     };
 }

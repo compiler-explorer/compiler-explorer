@@ -384,13 +384,13 @@ export class CompileHandler implements ICompileHandler {
         return compiler;
     }
 
-    checkRequestRequirements(req: express.Request): CompileRequestJsonBody {
-        if (req.body.options === undefined) throw new Error('Missing options property');
-        if (req.body.source === undefined) throw new Error('Missing source property');
-        return req.body;
+    static checkRequestRequirements(body: any): CompileRequestJsonBody {
+        if (body.options === undefined) throw new Error('Missing options property');
+        if (body.source === undefined) throw new Error('Missing source property');
+        return body;
     }
 
-    parseRequest(req: express.Request, compiler: BaseCompiler): ParsedRequest {
+    static parseRequestReusable(isJson: boolean, query: any, body: any, compiler: BaseCompiler): ParsedRequest {
         let source: string;
         let options: string;
         let backendOptions: Record<string, any> = {};
@@ -400,9 +400,9 @@ export class CompileHandler implements ICompileHandler {
         const execReqParams: UnparsedExecutionParams = {};
         let libraries: any[] = [];
         // IF YOU MODIFY ANYTHING HERE PLEASE UPDATE THE DOCUMENTATION!
-        if (req.is('json')) {
+        if (isJson) {
             // JSON-style request
-            const jsonRequest = this.checkRequestRequirements(req);
+            const jsonRequest = CompileHandler.checkRequestRequirements(body);
             const requestOptions = jsonRequest.options;
             source = jsonRequest.source;
             if (jsonRequest.bypassCache) bypassCache = jsonRequest.bypassCache;
@@ -415,8 +415,8 @@ export class CompileHandler implements ICompileHandler {
             filters = {...compiler.getDefaultFilters(), ...requestOptions.filters};
             inputTools = requestOptions.tools || [];
             libraries = requestOptions.libraries || [];
-        } else if (req.body?.compiler) {
-            const textRequest = req.body as CompileRequestTextBody;
+        } else if (body?.compiler) {
+            const textRequest = body as CompileRequestTextBody;
             source = textRequest.source;
             if (textRequest.bypassCache) bypassCache = textRequest.bypassCache;
             options = textRequest.userArguments;
@@ -432,8 +432,7 @@ export class CompileHandler implements ICompileHandler {
             backendOptions.skipAsm = textRequest.skipAsm === 'true';
         } else {
             // API-style
-            source = req.body;
-            const query = req.query as CompileRequestQueryArgs;
+            source = body || '';
             options = query.options || '';
             // By default we get the default filters.
             filters = compiler.getDefaultFilters();
@@ -454,6 +453,7 @@ export class CompileHandler implements ICompileHandler {
             // Ask for asm not to be returned
             backendOptions.skipAsm = query.skipAsm === 'true';
             backendOptions.skipPopArgs = query.skipPopArgs === 'true';
+            backendOptions.filterAnsi = query.filterAnsi === 'true';
         }
         // Use shared parsing utilities for consistency with SQS workers
         const executeParameters = parseExecutionParameters(execReqParams);
@@ -473,6 +473,14 @@ export class CompileHandler implements ICompileHandler {
             executeParameters,
             libraries,
         };
+    }
+
+    parseRequest(req: express.Request, compiler: BaseCompiler): ParsedRequest {
+        const isJson = !!req.is('json');
+        const query = req.query as CompileRequestQueryArgs;
+        const body = req.body;
+
+        return CompileHandler.parseRequestReusable(isJson, query, body, compiler);
     }
 
     handlePopularArguments(req: express.Request, res: express.Response) {

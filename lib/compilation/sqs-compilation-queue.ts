@@ -27,10 +27,10 @@ import {SQS} from '@aws-sdk/client-sqs';
 import {CompilationResult} from '../../types/compilation/compilation.interfaces.js';
 import {CompilationEnvironment} from '../compilation-env.js';
 import {PersistentEventsSender} from '../execution/events-websocket.js';
+import {CompileHandler} from '../handlers/compile.js';
 import {logger} from '../logger.js';
 import {PropertyGetter} from '../properties.interfaces.js';
 import {SentryCapture} from '../sentry.js';
-import {parseCompilationRequest} from './compilation-request-parser.js';
 
 export type RemoteCompilationRequest = {
     guid: string;
@@ -47,6 +47,8 @@ export type RemoteCompilationRequest = {
     files: any[];
     isCMake?: boolean;
     queueTimeMs?: number;
+    headers: Record<string, string>;
+    queryStringParameters: Record<string, string>;
 };
 
 export class SqsCompilationQueueBase {
@@ -131,18 +133,6 @@ export class SqsCompilationWorkerMode extends SqsCompilationQueueBase {
                         throw parseError;
                     }
 
-                    // Validate and process options
-                    if (Array.isArray(parsed.options)) {
-                        throw new Error('Invalid message format: options should not be an array');
-                    }
-
-                    if (parsed.options && typeof parsed.options === 'object') {
-                        // Process userArguments if it's a string
-                        if (parsed.options.userArguments && typeof parsed.options.userArguments === 'string') {
-                            parsed.options.userArguments = parsed.options.userArguments.split(' ').filter(Boolean);
-                        }
-                    }
-
                     // Calculate queue time from SentTimestamp
                     const sentTimestamp = queued_message.Attributes?.SentTimestamp;
                     if (sentTimestamp) {
@@ -218,7 +208,15 @@ async function doOneCompilation(
                 throw new Error(`Compiler with ID ${msg.compilerId} not found for language ${msg.lang}`);
             }
 
-            const parsedRequest = parseCompilationRequest(msg, compiler);
+            const isJson = msg.headers['content-type'] === 'application/json';
+            const query = msg.queryStringParameters;
+
+            const parsedRequest = CompileHandler.parseRequestReusable(
+                isJson,
+                query,
+                isJson ? msg : msg.source,
+                compiler,
+            );
 
             let result: CompilationResult;
 
