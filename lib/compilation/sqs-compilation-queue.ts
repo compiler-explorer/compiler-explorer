@@ -30,7 +30,7 @@ import {PersistentEventsSender} from '../execution/events-websocket.js';
 import {logger} from '../logger.js';
 import {PropertyGetter} from '../properties.interfaces.js';
 import {SentryCapture} from '../sentry.js';
-import {parseCompilationRequest, sqsMessageToCompilationRequestData} from './compilation-request-parser.js';
+import {parseCompilationRequest} from './compilation-request-parser.js';
 
 export type RemoteCompilationRequest = {
     guid: string;
@@ -218,8 +218,7 @@ async function doOneCompilation(
                 throw new Error(`Compiler with ID ${msg.compilerId} not found for language ${msg.lang}`);
             }
 
-            const requestData = sqsMessageToCompilationRequestData(msg);
-            const parsedRequest = parseCompilationRequest(requestData, compiler);
+            const parsedRequest = parseCompilationRequest(msg, compiler);
 
             let result: CompilationResult;
 

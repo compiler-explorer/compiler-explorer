@@ -107,34 +107,26 @@ export function parseFilters(
  * Full parsing function for SQS-style requests
  * Used by SQS workers to ensure consistent parsing with web handlers
  */
-export function parseCompilationRequest(requestData: CompilationRequestData, compiler: BaseCompiler): ParsedRequest {
-    return {
-        source: requestData.source,
-        options: parseUserArguments(requestData.userArguments),
-        backendOptions: requestData.compilerOptions || {},
-        filters: parseFilters(compiler, requestData.filters),
-        bypassCache: requestData.bypassCache || BypassCache.None,
-        tools: parseTools(requestData.tools),
-        executeParameters: parseExecutionParameters(requestData.executeParameters),
-        libraries: requestData.libraries || [],
-    };
-}
-
-/**
- * Convert SQS message format to CompilationRequestData format
- * SQS messages have a nested options structure that needs to be extracted
- */
-export function sqsMessageToCompilationRequestData(msg: any): CompilationRequestData {
-    // Validate options format
+export function parseCompilationRequest(msg: any, compiler: BaseCompiler): ParsedRequest {
     if (Array.isArray(msg.options)) {
         throw new Error('Invalid SQS message format: options should not be an array');
     }
 
-    // Extract from the nested structure (used for both CMake and regular compilation)
+    let requestData: CompilationRequestData = {
+        source: msg.source,
+        userArguments: [],
+        compilerOptions: {},
+        executeParameters: undefined,
+        filters: undefined,
+        tools: undefined,
+        libraries: undefined,
+        bypassCache: msg.bypassCache,
+    };
+
     if (msg.options && typeof msg.options === 'object') {
-        return {
+        requestData = {
             source: msg.source,
-            userArguments: msg.options.userArguments, // Already processed to array by defensive parsing
+            userArguments: msg.options.userArguments,
             compilerOptions: msg.options.compilerOptions || {},
             executeParameters: msg.options.executeParameters,
             filters: msg.options.filters,
@@ -144,15 +136,14 @@ export function sqsMessageToCompilationRequestData(msg: any): CompilationRequest
         };
     }
 
-    // Fallback if options is missing entirely
     return {
-        source: msg.source,
-        userArguments: [],
-        compilerOptions: {},
-        executeParameters: undefined,
-        filters: undefined,
-        tools: undefined,
-        libraries: undefined,
-        bypassCache: msg.bypassCache,
+        source: requestData.source,
+        options: parseUserArguments(requestData.userArguments),
+        backendOptions: requestData.compilerOptions || {},
+        filters: parseFilters(compiler, requestData.filters),
+        bypassCache: requestData.bypassCache || BypassCache.None,
+        tools: parseTools(requestData.tools),
+        executeParameters: parseExecutionParameters(requestData.executeParameters),
+        libraries: requestData.libraries || [],
     };
 }
