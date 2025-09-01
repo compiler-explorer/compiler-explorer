@@ -226,7 +226,10 @@ def process_file(file: str, args: Namespace):
                 libs_str = libs_match.group(1)
                 libs = [lib.strip() for lib in libs_str.split(':') if lib.strip()]
                 listed_libs_ids.update([Line(line.number, lib) for lib in libs])
-                if (args.check_libs_sorted or not args.no_sort_libs) and libs != sorted(libs):
+                # Check for unsorted libs (handle cases where args may not have our new attributes)
+                check_sorted = getattr(args, 'check_libs_sorted', False)
+                no_sort = getattr(args, 'no_sort_libs', False)
+                if (check_sorted or not no_sort) and libs != sorted(libs):
                     unsorted_libs.add(Line(line.number, line.text))
 
     if len(seen_compilers_exe) > 0:
@@ -323,7 +326,9 @@ def process_folder(folder: str, args):
             filepath = join(folder, f)
 
             # Sort libraries (default behavior unless disabled)
-            if not args.no_sort_libs and not args.check_libs_sorted:
+            no_sort = getattr(args, 'no_sort_libs', False)
+            check_sorted = getattr(args, 'check_libs_sorted', False)
+            if not no_sort and not check_sorted:
                 sort_libs_in_file(filepath)
 
             results.append((f, process_file(filepath, args)))
