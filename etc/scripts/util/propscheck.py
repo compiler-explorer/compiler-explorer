@@ -32,6 +32,8 @@ from argparse import Namespace
 parser = argparse.ArgumentParser(description='Checks for incorrect/suspicious properties.')
 parser.add_argument ('--check-suspicious-in-default-prop', required=False, action="store_true")
 parser.add_argument ('--config-dir', required=False, default="./etc/config")
+parser.add_argument ('--no-sort-libs', required=False, action="store_true", help="Skip automatically sorting unsorted library lists")
+parser.add_argument ('--check-libs-sorted', required=False, action="store_true", help="Check if library lists are sorted alphabetically (implies --no-sort-libs)")
 
 
 PROP_RE = re.compile(r'([^# ]*)=(.*)#*')
@@ -126,6 +128,8 @@ def process_file(file: str, args: Namespace):
     listed_libs_versions = set()
     seen_libs_versions = set()
 
+    unsorted_libs = set()
+
     empty_separators = set()
 
     seen_lines = set()
@@ -215,7 +219,15 @@ def process_file(file: str, args: Namespace):
             match_and_update(line, ALIAS_LIST_RE, seen_compilers_exe)
             match_and_update(line, FORMATTERS_LIST_RE, listed_formatters)
             match_and_update(line, TOOLS_LIST_RE, listed_tools)
-            match_and_update(line, LIBS_LIST_RE, listed_libs_ids)
+
+            # Handle libs with sorting check
+            libs_match = LIBS_LIST_RE.match(line.text)
+            if libs_match:
+                libs_str = libs_match.group(1)
+                libs = [lib.strip() for lib in libs_str.split(':') if lib.strip()]
+                listed_libs_ids.update([Line(line.number, lib) for lib in libs])
+                if (args.check_libs_sorted or not args.no_sort_libs) and libs != sorted(libs):
+                    unsorted_libs.add(Line(line.number, line.text))
 
     if len(seen_compilers_exe) > 0:
         bad_compilers_exe = listed_compilers.symmetric_difference(seen_compilers_exe)
@@ -247,6 +259,7 @@ def process_file(file: str, args: Namespace):
         "bad_tools_exe": bad_tools_exe - disabled,
         "bad_tools_id": bad_tools_id - disabled,
         "bad_default": bad_default,
+        "unsorted_libs": unsorted_libs,
         "empty_separators": empty_separators,
         "duplicate_lines": duplicate_lines,
         "duplicated_compiler_references": duplicated_compiler_references,
@@ -255,12 +268,66 @@ def process_file(file: str, args: Namespace):
         "typo_compilers": seen_typo_compilers - disabled,
     }
 
+def sort_libs_in_file(filepath: str) -> bool:
+    """
+    Sort library lists in a properties file.
+    Returns True if any changes were made.
+    """
+    try:
+        with open(filepath, 'r', encoding='utf-8') as f:
+            lines = f.readlines()
+    except Exception as e:
+        print(f"Error reading {filepath}: {e}", file=sys.stderr)
+        return False
+    modified = False
+    modified_lines = []
+
+    for line in lines:
+        stripped = line.strip()
+        match = LIBS_LIST_RE.match(stripped)
+        if match:
+            libs_str = match.group(1)
+            if libs_str and libs_str.strip():
+                libs = [lib.strip() for lib in libs_str.split(':') if lib.strip()]
+                sorted_libs = sorted(libs)
+
+                if libs != sorted_libs:
+                    indent = line[:len(line) - len(line.lstrip())]
+                    new_line = f"{indent}libs={':'.join(sorted_libs)}\n"
+                    modified_lines.append(new_line)
+                    modified = True
+                else:
+                    modified_lines.append(line)
+            else:
+                modified_lines.append(line)
+        else:
+            modified_lines.append(line)
+
+    if modified:
+        try:
+            with open(filepath, 'w', encoding='utf-8') as f:
+                f.writelines(modified_lines)
+            print(f"Sorted libraries in {filepath}")
+        except Exception as e:
+            print(f"Error writing {filepath}: {e}", file=sys.stderr)
+            return False
+
+    return modified
+
 def process_folder(folder: str, args):
-    return [(f, process_file(join(folder, f), args))
-            for f in listdir(folder)
-            if isfile(join(folder, f))
-            and not f.endswith('.local.properties')
-            and f.endswith('.properties')]
+    results = []
+    for f in listdir(folder):
+        if (isfile(join(folder, f)) and
+            not f.endswith('.local.properties') and
+            f.endswith('.properties')):
+            filepath = join(folder, f)
+
+            # Sort libraries (default behavior unless disabled)
+            if not args.no_sort_libs and not args.check_libs_sorted:
+                sort_libs_in_file(filepath)
+
+            results.append((f, process_file(filepath, args)))
+    return results
 
 def problems_found(file_result):
     return any(len(file_result[r]) > 0 for r in file_result if r != "filename")
