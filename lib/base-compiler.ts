@@ -52,6 +52,8 @@ import {
     FiledataPair,
     GccDumpOptions,
     LibsAndOptions,
+    TEMP_STORAGE_TTL_SECONDS,
+    WEBSOCKET_SIZE_THRESHOLD,
 } from '../types/compilation/compilation.interfaces.js';
 import {
     CompilerOverrideOption,
@@ -218,6 +220,7 @@ export class BaseCompiler {
     });
     protected executionEnvironmentClass: any;
     protected readonly argParser: BaseParser;
+    protected readonly isCompilationWorker: boolean;
 
     constructor(compilerInfo: PreliminaryCompilerInfo & {disabledFilters?: string[]}, env: CompilationEnvironment) {
         // Information about our compiler
@@ -235,6 +238,7 @@ export class BaseCompiler {
 
         this.alwaysResetLdPath = this.env.ceProps('alwaysResetLdPath');
         this.delayCleanupTemp = this.env.ceProps('delayCleanupTemp', false);
+        this.isCompilationWorker = this.env.ceProps('compilequeue.is_worker', false);
         this.stubRe = new RegExp(this.compilerProps('stubRe', ''));
         this.stubText = this.compilerProps('stubText', '');
         this.compilerWrapper = this.compilerProps('compiler-wrapper');
@@ -2905,6 +2909,19 @@ export class BaseCompiler {
         this.cleanupResult(fullResult);
         fullResult.s3Key = BaseCache.hash(cacheKey);
 
+        // In worker mode, store large non-cacheable results with short TTL
+        if (this.isCompilationWorker && !fullResult.result?.okToCache && fullResult) {
+            // Check if result is large enough to require S3 storage
+            const resultSize = JSON.stringify(fullResult).length;
+
+            if (resultSize > WEBSOCKET_SIZE_THRESHOLD) {
+                // Store with short TTL for temporary retrieval
+                await this.env.cachePutWithTTL(cacheKey, fullResult, TEMP_STORAGE_TTL_SECONDS, undefined);
+                // Ensure s3Key is set even for non-cacheable results
+                fullResult.s3Key = BaseCache.hash(cacheKey);
+            }
+        }
+
         return fullResult;
     }
 
@@ -3176,6 +3193,19 @@ export class BaseCompiler {
 
         this.cleanupResult(result);
         result.s3Key = BaseCache.hash(key);
+
+        // In worker mode, store large non-cacheable results with short TTL
+        if (this.isCompilationWorker && !result.okToCache && !delayCaching) {
+            // Check if result is large enough to require S3 storage
+            const resultSize = JSON.stringify(result).length;
+
+            if (resultSize > WEBSOCKET_SIZE_THRESHOLD) {
+                // Store with short TTL for temporary retrieval
+                await this.env.cachePutWithTTL(key, result, TEMP_STORAGE_TTL_SECONDS, undefined);
+                // Ensure s3Key is set even for non-cacheable results
+                result.s3Key = BaseCache.hash(key);
+            }
+        }
 
         return result;
     }

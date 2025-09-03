@@ -24,7 +24,7 @@
 
 import {SQS} from '@aws-sdk/client-sqs';
 
-import {CompilationResult} from '../../types/compilation/compilation.interfaces.js';
+import {CompilationResult, WEBSOCKET_SIZE_THRESHOLD} from '../../types/compilation/compilation.interfaces.js';
 import {CompilationEnvironment} from '../compilation-env.js';
 import {PersistentEventsSender} from '../execution/events-websocket.js';
 import {CompileHandler} from '../handlers/compile.js';
@@ -171,10 +171,9 @@ async function sendCompilationResultViaWebsocket(
         };
 
         const resultSize = JSON.stringify(basicResult).length;
-        const SIZE_THRESHOLD = 31 * 1024;
 
         let webResult;
-        if (result.s3Key && resultSize > SIZE_THRESHOLD) {
+        if (result.s3Key && resultSize > WEBSOCKET_SIZE_THRESHOLD) {
             webResult = {
                 s3Key: result.s3Key,
                 okToCache: result.okToCache ?? false,

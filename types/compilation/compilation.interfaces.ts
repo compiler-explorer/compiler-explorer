@@ -319,3 +319,13 @@ export type FiledataPair = {
 };
 
 export type BufferOkFunc = (buffer: Buffer) => boolean;
+
+// Maximum safe WebSocket message size for AWS API Gateway and ALB
+// AWS API Gateway has a 32 KiB frame size limit for WebSocket messages
+// We use 31 KiB as a conservative threshold to account for protocol overhead
+export const WEBSOCKET_SIZE_THRESHOLD = 31 * 1024;
+
+// TTL for temporary S3 storage of large compilation results in worker mode
+// CloudFront has a 30-second timeout for HTTP requests, so we use 30 seconds
+// to ensure the data is available for retrieval before CloudFront times out
+export const TEMP_STORAGE_TTL_SECONDS = 30;
