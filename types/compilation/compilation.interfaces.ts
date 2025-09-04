@@ -326,6 +326,6 @@ export type BufferOkFunc = (buffer: Buffer) => boolean;
 export const WEBSOCKET_SIZE_THRESHOLD = 31 * 1024;
 
 // TTL for temporary S3 storage of large compilation results in worker mode
-// CloudFront has a 30-second timeout for HTTP requests, so we use 30 seconds
-// to ensure the data is available for retrieval before CloudFront times out
-export const TEMP_STORAGE_TTL_SECONDS = 30;
+// Set to 1 day to provide sufficient time for retrieval while ensuring
+// temporary data doesn't persist indefinitely
+export const TEMP_STORAGE_TTL_DAYS = 1;

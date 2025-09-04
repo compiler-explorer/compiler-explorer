@@ -52,7 +52,7 @@ import {
     FiledataPair,
     GccDumpOptions,
     LibsAndOptions,
-    TEMP_STORAGE_TTL_SECONDS,
+    TEMP_STORAGE_TTL_DAYS,
     WEBSOCKET_SIZE_THRESHOLD,
 } from '../types/compilation/compilation.interfaces.js';
 import {
@@ -2915,10 +2915,10 @@ export class BaseCompiler {
             const resultSize = JSON.stringify(fullResult).length;
 
             if (resultSize > WEBSOCKET_SIZE_THRESHOLD) {
-                // Store with short TTL for temporary retrieval
-                await this.env.cachePutWithTTL(cacheKey, fullResult, TEMP_STORAGE_TTL_SECONDS, undefined);
-                // Ensure s3Key is set even for non-cacheable results
-                fullResult.s3Key = BaseCache.hash(cacheKey);
+                // Store with 1-day TTL for temporary retrieval in temp/ subdirectory
+                await this.env.tempCachePutWithTTL(cacheKey, fullResult, TEMP_STORAGE_TTL_DAYS, undefined);
+                // Set s3Key with temp/ prefix to reflect storage location
+                fullResult.s3Key = `temp/${BaseCache.hash(cacheKey)}`;
             }
         }
 
@@ -3200,10 +3200,10 @@ export class BaseCompiler {
             const resultSize = JSON.stringify(result).length;
 
             if (resultSize > WEBSOCKET_SIZE_THRESHOLD) {
-                // Store with short TTL for temporary retrieval
-                await this.env.cachePutWithTTL(key, result, TEMP_STORAGE_TTL_SECONDS, undefined);
-                // Ensure s3Key is set even for non-cacheable results
-                result.s3Key = BaseCache.hash(key);
+                // Store with 1-day TTL for temporary retrieval in temp/ subdirectory
+                await this.env.tempCachePutWithTTL(key, result, TEMP_STORAGE_TTL_DAYS, undefined);
+                // Set s3Key with temp/ prefix to reflect storage location
+                result.s3Key = `temp/${BaseCache.hash(key)}`;
             }
         }
 

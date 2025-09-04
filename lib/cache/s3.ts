@@ -83,8 +83,8 @@ export class S3Cache extends BaseCache {
         }
     }
 
-    async putWithTTL(key: string, value: Buffer, ttlSeconds: number, creator?: string): Promise<void> {
-        const expiresDate = new Date(Date.now() + ttlSeconds * 1000);
+    async putWithTTL(key: string, value: Buffer, ttlDays: number, creator?: string): Promise<void> {
+        const expiresDate = new Date(Date.now() + ttlDays * 24 * 60 * 60 * 1000);
         const options: S3HandlerOptions = {
             metadata: creator ? {CreatedBy: creator} : {},
             redundancy: StorageClass.REDUCED_REDUNDANCY,
@@ -92,6 +92,27 @@ export class S3Cache extends BaseCache {
         };
         try {
             await this.s3.put(key, value, this.path, options);
+        } catch (e) {
+            this.onError(e, 'write');
+        }
+    }
+
+    async putWithTTLAndPath(
+        key: string,
+        value: Buffer,
+        ttlDays: number,
+        pathPrefix: string,
+        creator?: string,
+    ): Promise<void> {
+        const expiresDate = new Date(Date.now() + ttlDays * 24 * 60 * 60 * 1000);
+        const options: S3HandlerOptions = {
+            metadata: creator ? {CreatedBy: creator} : {},
+            redundancy: StorageClass.REDUCED_REDUNDANCY,
+            expires: expiresDate,
+        };
+        try {
+            const customPath = `${this.path}/${pathPrefix}`;
+            await this.s3.put(key, value, customPath, options);
         } catch (e) {
             this.onError(e, 'write');
         }

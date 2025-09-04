@@ -169,13 +169,26 @@ export class CompilationEnvironment {
         return this.compilerCache.put(key, JSON.stringify(result), creator);
     }
 
-    async cachePutWithTTL(object: CacheableValue, result: object, ttlSeconds: number, creator: string | undefined) {
+    async cachePutWithTTL(object: CacheableValue, result: object, ttlDays: number, creator: string | undefined) {
         const key = BaseCache.hash(object);
         const jsonData = JSON.stringify(result);
 
         // Check if cache is S3Cache to use TTL functionality
         if (this.cache instanceof S3Cache) {
-            return this.cache.putWithTTL(key, Buffer.from(jsonData), ttlSeconds, creator);
+            return this.cache.putWithTTL(key, Buffer.from(jsonData), ttlDays, creator);
+        } else {
+            // Fallback to regular put for non-S3 caches
+            return this.cache.put(key, jsonData, creator);
+        }
+    }
+
+    async tempCachePutWithTTL(object: CacheableValue, result: object, ttlDays: number, creator: string | undefined) {
+        const key = BaseCache.hash(object);
+        const jsonData = JSON.stringify(result);
+
+        // Check if cache is S3Cache to use TTL functionality with temp path
+        if (this.cache instanceof S3Cache) {
+            return this.cache.putWithTTLAndPath(key, Buffer.from(jsonData), ttlDays, 'temp', creator);
         } else {
             // Fallback to regular put for non-S3 caches
             return this.cache.put(key, jsonData, creator);
