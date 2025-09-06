@@ -47,6 +47,7 @@ import {LanguageKey} from '../../types/languages.interfaces.js';
 import {SelectedLibraryVersion} from '../../types/libraries/libraries.interfaces.js';
 import {ResultLine} from '../../types/resultline/resultline.interfaces.js';
 import {BaseCompiler} from '../base-compiler.js';
+import {parseExecutionParameters, parseTools, parseUserArguments} from '../compilation/compilation-request-parser.js';
 import {CompilationEnvironment} from '../compilation-env.js';
 import {getCompilerTypeByKey} from '../compilers/index.js';
 import {logger} from '../logger.js';
@@ -383,13 +384,13 @@ export class CompileHandler implements ICompileHandler {
         return compiler;
     }
 
-    checkRequestRequirements(req: express.Request): CompileRequestJsonBody {
-        if (req.body.options === undefined) throw new Error('Missing options property');
-        if (req.body.source === undefined) throw new Error('Missing source property');
-        return req.body;
+    static checkRequestRequirements(body: any): CompileRequestJsonBody {
+        if (body.options === undefined) throw new Error('Missing options property');
+        if (body.source === undefined) throw new Error('Missing source property');
+        return body;
     }
 
-    parseRequest(req: express.Request, compiler: BaseCompiler): ParsedRequest {
+    static parseRequestReusable(isJson: boolean, query: any, body: any, compiler: BaseCompiler): ParsedRequest {
         let source: string;
         let options: string;
         let backendOptions: Record<string, any> = {};
@@ -399,9 +400,9 @@ export class CompileHandler implements ICompileHandler {
         const execReqParams: UnparsedExecutionParams = {};
         let libraries: any[] = [];
         // IF YOU MODIFY ANYTHING HERE PLEASE UPDATE THE DOCUMENTATION!
-        if (req.is('json')) {
+        if (isJson) {
             // JSON-style request
-            const jsonRequest = this.checkRequestRequirements(req);
+            const jsonRequest = CompileHandler.checkRequestRequirements(body);
             const requestOptions = jsonRequest.options;
             source = jsonRequest.source;
             if (jsonRequest.bypassCache) bypassCache = jsonRequest.bypassCache;
@@ -414,8 +415,8 @@ export class CompileHandler implements ICompileHandler {
             filters = {...compiler.getDefaultFilters(), ...requestOptions.filters};
             inputTools = requestOptions.tools || [];
             libraries = requestOptions.libraries || [];
-        } else if (req.body?.compiler) {
-            const textRequest = req.body as CompileRequestTextBody;
+        } else if (body?.compiler) {
+            const textRequest = body as CompileRequestTextBody;
             source = textRequest.source;
             if (textRequest.bypassCache) bypassCache = textRequest.bypassCache;
             options = textRequest.userArguments;
@@ -431,8 +432,7 @@ export class CompileHandler implements ICompileHandler {
             backendOptions.skipAsm = textRequest.skipAsm === 'true';
         } else {
             // API-style
-            source = req.body;
-            const query = req.query as CompileRequestQueryArgs;
+            source = body || '';
             options = query.options || '';
             // By default we get the default filters.
             filters = compiler.getDefaultFilters();
@@ -453,18 +453,11 @@ export class CompileHandler implements ICompileHandler {
             // Ask for asm not to be returned
             backendOptions.skipAsm = query.skipAsm === 'true';
             backendOptions.skipPopArgs = query.skipPopArgs === 'true';
+            backendOptions.filterAnsi = query.filterAnsi === 'true';
         }
-        const executeParameters: ExecutionParams = {
-            args: Array.isArray(execReqParams.args) ? execReqParams.args || '' : splitArguments(execReqParams.args),
-            stdin: execReqParams.stdin || '',
-            runtimeTools: execReqParams.runtimeTools || [],
-        };
-
-        const tools: ActiveTool[] = inputTools.map(tool => {
-            // expand tools.args to an array using utils.splitArguments if it was a string
-            if (typeof tool.args === 'string') tool.args = splitArguments(tool.args);
-            return tool as ActiveTool;
-        });
+        // Use shared parsing utilities for consistency with SQS workers
+        const executeParameters = parseExecutionParameters(execReqParams);
+        const tools = parseTools(inputTools);
 
         // Backwards compatibility: bypassCache used to be a boolean.
         // Convert a boolean input to an enum's underlying numeric value
@@ -472,7 +465,7 @@ export class CompileHandler implements ICompileHandler {
 
         return {
             source,
-            options: splitArguments(options),
+            options: parseUserArguments(options), // Use shared utility for consistency
             backendOptions,
             filters,
             bypassCache,
@@ -480,6 +473,14 @@ export class CompileHandler implements ICompileHandler {
             executeParameters,
             libraries,
         };
+    }
+
+    parseRequest(req: express.Request, compiler: BaseCompiler): ParsedRequest {
+        const isJson = !!req.is('json');
+        const query = req.query as CompileRequestQueryArgs;
+        const body = req.body;
+
+        return CompileHandler.parseRequestReusable(isJson, query, body, compiler);
     }
 
     handlePopularArguments(req: express.Request, res: express.Response) {
@@ -558,6 +559,7 @@ export class CompileHandler implements ICompileHandler {
                 .then(result => {
                     if (result.didExecute || result.execResult?.didExecute)
                         this.cmakeExecuteCounter.inc({language: compiler.lang.id});
+                    delete result.s3Key; // Remove s3Key before sending to user
                     res.send(result);
                 })
                 .catch(e => {
@@ -629,6 +631,7 @@ export class CompileHandler implements ICompileHandler {
                     if (result.didExecute || result.execResult?.didExecute)
                         this.executeCounter.inc({language: compiler.lang.id});
                     if (req.accepts(['text', 'json']) === 'json') {
+                        delete result.s3Key; // Remove s3Key before sending to user
                         res.send(result);
                     } else {
                         res.set('Content-Type', 'text/plain');

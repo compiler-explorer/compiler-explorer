@@ -27,4 +27,5 @@ import {StorageClass} from '@aws-sdk/client-s3';
 export type S3HandlerOptions = {
     redundancy?: StorageClass;
     metadata?: Record<string, string>;
+    expires?: Date;
 };

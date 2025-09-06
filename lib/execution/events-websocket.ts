@@ -23,7 +23,7 @@
 // POSSIBILITY OF SUCH DAMAGE.
 
 import {WebSocket} from 'ws';
-
+import {CompilationResult} from '../../types/compilation/compilation.interfaces.js';
 import {BasicExecutionResult} from '../../types/execution/execution.interfaces.js';
 import {logger} from '../logger.js';
 import {PropertyGetter} from '../properties.interfaces.js';
@@ -59,7 +59,7 @@ export class EventsWsBase {
 }
 
 export class EventsWsSender extends EventsWsBase {
-    async send(guid: string, result: BasicExecutionResult): Promise<void> {
+    async send(guid: string, result: CompilationResult): Promise<void> {
         this.connect();
         return new Promise(resolve => {
             this.ws!.on('open', async () => {
@@ -72,6 +72,171 @@ export class EventsWsSender extends EventsWsBase {
                 resolve();
             });
         });
+    }
+}
+
+export class PersistentEventsSender extends EventsWsBase {
+    private messageQueue: Array<{
+        guid: string;
+        result: CompilationResult;
+        resolve: () => void;
+        reject: (error: any) => void;
+    }> = [];
+    private isConnected = false;
+    private isConnecting = false;
+    private reconnectAttempts = 0;
+    private maxReconnectAttempts = 5;
+    private reconnectDelay = 1000; // Start with 1 second
+    private heartbeatInterval: NodeJS.Timeout | undefined;
+    private heartbeatIntervalMs = 30000; // 30 seconds
+
+    constructor(props: PropertyGetter) {
+        super(props);
+        this.connect();
+    }
+
+    protected override connect(): void {
+        if (this.isConnecting || this.isConnected) {
+            return;
+        }
+
+        this.isConnecting = true;
+        this.ws = new WebSocket(this.events_url);
+
+        this.ws.on('open', () => {
+            this.isConnected = true;
+            this.isConnecting = false;
+            this.reconnectAttempts = 0;
+            this.reconnectDelay = 1000;
+            logger.info(`Persistent WebSocket connection established to ${this.events_url}`);
+
+            this.startHeartbeat();
+            this.processQueuedMessages();
+        });
+
+        this.ws.on('error', (error: any) => {
+            this.got_error = true;
+            this.isConnected = false;
+            this.isConnecting = false;
+            logger.error(`Persistent WebSocket error for URL ${this.events_url}:`, error);
+            this.scheduleReconnect();
+        });
+
+        this.ws.on('close', () => {
+            this.isConnected = false;
+            this.isConnecting = false;
+            this.stopHeartbeat();
+
+            if (!this.expectClose) {
+                logger.warn(`Persistent WebSocket connection closed unexpectedly for ${this.events_url}`);
+                this.scheduleReconnect();
+            }
+        });
+
+        this.ws.on('pong', () => {});
+    }
+
+    private startHeartbeat(): void {
+        this.heartbeatInterval = setInterval(() => {
+            if (this.ws?.readyState === WebSocket.OPEN) {
+                this.ws.ping();
+            }
+        }, this.heartbeatIntervalMs);
+    }
+
+    private stopHeartbeat(): void {
+        if (this.heartbeatInterval) {
+            clearInterval(this.heartbeatInterval);
+            this.heartbeatInterval = undefined;
+        }
+    }
+
+    private scheduleReconnect(): void {
+        if (this.expectClose || this.reconnectAttempts >= this.maxReconnectAttempts) {
+            logger.error(`Max reconnection attempts (${this.maxReconnectAttempts}) reached for ${this.events_url}`);
+            this.rejectQueuedMessages(new Error('WebSocket connection failed permanently'));
+            return;
+        }
+
+        const delay = this.reconnectDelay * 2 ** this.reconnectAttempts; // Exponential backoff
+        this.reconnectAttempts++;
+
+        logger.info(
+            `Scheduling reconnect attempt ${this.reconnectAttempts}/${this.maxReconnectAttempts} in ${delay}ms`,
+        );
+
+        setTimeout(() => {
+            if (!this.expectClose) {
+                this.connect();
+            }
+        }, delay);
+    }
+
+    private processQueuedMessages(): void {
+        while (this.messageQueue.length > 0 && this.isConnected) {
+            const message = this.messageQueue.shift();
+            if (message && this.ws?.readyState === WebSocket.OPEN) {
+                try {
+                    this.ws.send(
+                        JSON.stringify({
+                            guid: message.guid,
+                            ...message.result,
+                        }),
+                    );
+                    message.resolve();
+                } catch (error) {
+                    message.reject(error);
+                }
+            }
+        }
+    }
+
+    private rejectQueuedMessages(error: Error): void {
+        while (this.messageQueue.length > 0) {
+            const message = this.messageQueue.shift();
+            if (message) {
+                message.reject(error);
+            }
+        }
+    }
+
+    async send(guid: string, result: CompilationResult): Promise<void> {
+        return new Promise((resolve, reject) => {
+            if (this.isConnected && this.ws?.readyState === WebSocket.OPEN) {
+                try {
+                    this.ws.send(
+                        JSON.stringify({
+                            guid: guid,
+                            ...result,
+                        }),
+                    );
+                    resolve();
+                } catch (error) {
+                    reject(error);
+                }
+            } else {
+                // Queue the message for when connection is available
+                this.messageQueue.push({guid, result, resolve, reject});
+
+                // Ensure we're trying to connect
+                if (!this.isConnecting && !this.isConnected) {
+                    this.connect();
+                }
+            }
+        });
+    }
+
+    override async close(): Promise<void> {
+        this.expectClose = true;
+        this.stopHeartbeat();
+
+        // Reject any queued messages
+        this.rejectQueuedMessages(new Error('WebSocket connection closing'));
+
+        if (this.ws) {
+            this.ws.close();
+            this.ws = undefined;
+        }
     }
 }
 

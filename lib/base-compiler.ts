@@ -52,6 +52,8 @@ import {
     FiledataPair,
     GccDumpOptions,
     LibsAndOptions,
+    TEMP_STORAGE_TTL_DAYS,
+    WEBSOCKET_SIZE_THRESHOLD,
 } from '../types/compilation/compilation.interfaces.js';
 import {
     CompilerOverrideOption,
@@ -218,6 +220,7 @@ export class BaseCompiler {
     });
     protected executionEnvironmentClass: any;
     protected readonly argParser: BaseParser;
+    protected readonly isCompilationWorker: boolean;
 
     constructor(compilerInfo: PreliminaryCompilerInfo & {disabledFilters?: string[]}, env: CompilationEnvironment) {
         // Information about our compiler
@@ -235,6 +238,7 @@ export class BaseCompiler {
 
         this.alwaysResetLdPath = this.env.ceProps('alwaysResetLdPath');
         this.delayCleanupTemp = this.env.ceProps('delayCleanupTemp', false);
+        this.isCompilationWorker = this.env.ceProps('compilequeue.is_worker', false);
         this.stubRe = new RegExp(this.compilerProps('stubRe', ''));
         this.stubText = this.compilerProps('stubText', '');
         this.compilerWrapper = this.compilerProps('compiler-wrapper');
@@ -656,7 +660,7 @@ export class BaseCompiler {
         if (this.externalparser) {
             const objResult = await this.externalparser.objdumpAndParseAssembly(result.dirPath, args, filters);
             if (objResult.parsingTime !== undefined) {
-                objResult.objdumpTime = Number.parseInt(result.execTime) - Number.parseInt(result.parsingTime);
+                objResult.objdumpTime = (objResult.execTime ?? 0) - (objResult.parsingTime ?? 0);
                 delete objResult.execTime;
             }
 
@@ -2727,6 +2731,7 @@ export class BaseCompiler {
             : await this.loadPackageWithExecutable(cacheKey, executablePackageHash, dirPath);
         if (fullResult) {
             fullResult.retreivedFromCache = true;
+            fullResult.s3Key = BaseCache.hash(cacheKey);
 
             delete fullResult.inputFilename;
             delete fullResult.dirPath;
@@ -2884,8 +2889,8 @@ export class BaseCompiler {
 
         const optOutput = undefined;
         const stackUsageOutput = undefined;
-        await this.afterCompilation(
-            fullResult.result,
+        await this.afterCmakeCompilation(
+            fullResult,
             false,
             cacheKey,
             executeOptions,
@@ -2902,6 +2907,20 @@ export class BaseCompiler {
         if (fullResult.result) delete fullResult.result.dirPath;
 
         this.cleanupResult(fullResult);
+        fullResult.s3Key = BaseCache.hash(cacheKey);
+
+        // In worker mode, store large non-cacheable results with short TTL
+        if (this.isCompilationWorker && !fullResult.result?.okToCache && fullResult) {
+            // Check if result is large enough to require S3 storage
+            const resultSize = JSON.stringify(fullResult).length;
+
+            if (resultSize > WEBSOCKET_SIZE_THRESHOLD) {
+                // Store with 1-day TTL for temporary retrieval in temp/ subdirectory
+                await this.env.tempCachePutWithTTL(cacheKey, fullResult, TEMP_STORAGE_TTL_DAYS, undefined);
+                // Set s3Key with temp/ prefix to reflect storage location
+                fullResult.s3Key = `temp/${BaseCache.hash(cacheKey)}`;
+            }
+        }
 
         return fullResult;
     }
@@ -2994,6 +3013,7 @@ export class BaseCompiler {
                 const cacheRetrieveTimeEnd = process.hrtime.bigint();
                 result.retreivedFromCacheTime = utils.deltaTimeNanoToMili(cacheRetrieveTimeStart, cacheRetrieveTimeEnd);
                 result.retreivedFromCache = true;
+                result.s3Key = BaseCache.hash(key);
                 if (doExecute) {
                     const queueTime = performance.now();
                     result.execResult = await this.env.enqueue(
@@ -3085,6 +3105,7 @@ export class BaseCompiler {
         stackUsageOutput: StackUsage.StackUsageInfo[] | undefined,
         bypassCache: BypassCache,
         customBuildPath?: string,
+        delayCaching?: boolean,
     ) {
         // Start the execution as soon as we can, but only await it at the end.
         const execPromise =
@@ -3158,7 +3179,7 @@ export class BaseCompiler {
             ];
         }
 
-        if (result.okToCache) {
+        if (result.okToCache && !delayCaching) {
             await this.env.cachePut(key, result, undefined);
         }
 
@@ -3171,8 +3192,64 @@ export class BaseCompiler {
         }
 
         this.cleanupResult(result);
+        result.s3Key = BaseCache.hash(key);
+
+        // In worker mode, store large non-cacheable results with short TTL
+        if (this.isCompilationWorker && !result.okToCache && !delayCaching) {
+            // Check if result is large enough to require S3 storage
+            const resultSize = JSON.stringify(result).length;
+
+            if (resultSize > WEBSOCKET_SIZE_THRESHOLD) {
+                // Store with 1-day TTL for temporary retrieval in temp/ subdirectory
+                await this.env.tempCachePutWithTTL(key, result, TEMP_STORAGE_TTL_DAYS, undefined);
+                // Set s3Key with temp/ prefix to reflect storage location
+                result.s3Key = `temp/${BaseCache.hash(key)}`;
+            }
+        }
 
         return result;
+    }
+
+    async afterCmakeCompilation(
+        fullResult: CompilationResult,
+        doExecute: boolean,
+        key: CacheKey,
+        executeOptions: ExecutableExecutionOptions,
+        tools: ActiveTool[],
+        backendOptions: Record<string, any>,
+        filters: ParseFiltersAndOutputOptions,
+        options: string[],
+        optOutput: OptRemark[] | undefined,
+        stackUsageOutput: StackUsage.StackUsageInfo[] | undefined,
+        bypassCache: BypassCache,
+        customBuildPath?: string,
+    ) {
+        // Process the inner result using existing afterCompilation logic, but skip caching
+        const processedResult = await this.afterCompilation(
+            fullResult.result,
+            doExecute,
+            key,
+            executeOptions,
+            tools,
+            backendOptions,
+            filters,
+            options,
+            optOutput,
+            stackUsageOutput,
+            bypassCache,
+            customBuildPath,
+            true, // delayCaching = true
+        );
+
+        // Recombine the processed result back into fullResult
+        fullResult.result = processedResult;
+
+        // Cache the complete fullResult (including buildsteps) instead of just the inner result
+        if (fullResult.result?.okToCache) {
+            await this.env.cachePut(key, fullResult, undefined);
+        }
+
+        return fullResult;
     }
 
     cleanupResult(result: CompilationResult) {
