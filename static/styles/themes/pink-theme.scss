@@ -161,7 +161,7 @@ textarea.form-control {
 
 .card {
     background-color: $lighter !important;
-    color: #212529 !important;
+    color: hsl(210, 11%, 15%) !important;
     border-color: $dark;
 }
 
@@ -194,6 +194,37 @@ textarea.form-control {
 .currentCursorPosition {
     color: white;
     background-color: color.adjust($dark, $alpha: 0.8);
+}
+
+.opt-pipeline-body {
+    scrollbar-color: #e75480 #f0c0e0; // thumb color, track color
+    .passes-column {
+        color: #212529;
+        .passes-list div {
+            &.firstMachinePass {
+                &:before {
+                    background: white;
+                }
+            }
+            &:hover,
+            &.active {
+                background: color.adjust(#f5f5f5, $lightness: 5%);
+            }
+            &.changed {
+                color: #148624;
+            }
+        }
+    }
+    .passes-column-resizer {
+        background-color: #f4f4f4;
+        transition: background-color 200ms ease;
+        &:hover {
+            background-color: #bbbbbb;
+        }
+    }
+    .monaco-placeholder {
+        border-left: 1px solid #d2d3d4;
+    }
 }
 
 .form-select {
@@ -732,6 +763,20 @@ textarea.form-control {
             color: rgb(20, 21, 22);
         }
     }
+}
+
+.explain-box {
+    background-color: #fde5fd;
+    border-color: #e3a5e3;
+}
+
+.explain-bottom-bar {
+    background-color: #e3a5e3 !important;
+}
+
+.ai-disclaimer.bg-warning {
+    background-color: #e787e7 !important;
+    color: #3c3c3f !important;
 }
 
 } // End html[data-theme='pink']

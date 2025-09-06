@@ -217,6 +217,7 @@ export class BaseCompiler {
         labelNames: [],
     });
     protected executionEnvironmentClass: any;
+    protected readonly argParser: BaseParser;
 
     constructor(compilerInfo: PreliminaryCompilerInfo & {disabledFilters?: string[]}, env: CompilationEnvironment) {
         // Information about our compiler
@@ -306,6 +307,7 @@ export class BaseCompiler {
         }
 
         this.packager = new Packager();
+        this.argParser = new (this.getArgumentParserClass())(this);
     }
 
     copyAndFilterLibraries(allLibraries: Record<string, OptionsHandlerLibrary>, filter: string[]) {
@@ -714,6 +716,9 @@ export class BaseCompiler {
         }
         if (gccDumpOptions.dumpFlags.address !== false) {
             flags += '-address';
+        }
+        if (gccDumpOptions.dumpFlags.alias !== false) {
+            flags += '-alias';
         }
         if (gccDumpOptions.dumpFlags.slim !== false) {
             flags += '-slim';
@@ -3595,8 +3600,7 @@ but nothing was dumped. Possible causes are:
 
     async getTargetsAsOverrideValues(): Promise<CompilerOverrideOption[]> {
         if (!this.buildenvsetup || !this.buildenvsetup.getCompilerArch()) {
-            const parserCls = this.getArgumentParserClass();
-            const targets = await parserCls.getPossibleTargets(this);
+            const targets = await this.argParser.getPossibleTargets();
 
             return targets.map(target => {
                 return {
@@ -3609,8 +3613,7 @@ but nothing was dumped. Possible causes are:
     }
 
     async getPossibleStdversAsOverrideValues(): Promise<CompilerOverrideOption[]> {
-        const parser = this.getArgumentParserClass();
-        return await parser.getPossibleStdvers(this);
+        return await this.argParser.getPossibleStdvers();
     }
 
     async populatePossibleRuntimeTools() {
@@ -3784,20 +3787,20 @@ but nothing was dumped. Possible causes are:
         this.initialiseLibraries(clientOptions);
 
         if (isPrediscovered) {
-            logger.info(`${compiler} ${version} is ready`);
+            logger.debug(`${compiler} ${version} is ready`);
             if (this.compiler.cachedPossibleArguments) {
                 this.possibleArguments.populateOptions(this.compiler.cachedPossibleArguments);
                 delete this.compiler.cachedPossibleArguments;
             }
             return this;
         }
-        const initResult = await this.getArgumentParserClass().parse(this);
+        const initResult = await this.argParser.parse();
         this.possibleArguments.possibleArguments = {};
 
         await this.populatePossibleOverrides();
         await this.populatePossibleRuntimeTools();
 
-        logger.info(`${compiler} ${version} is ready`);
+        logger.debug(`${compiler} ${version} is ready`);
         return initResult;
     }
 

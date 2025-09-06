@@ -120,6 +120,7 @@ export type ClientOptionsType = {
     };
     motdUrl: string;
     pageloadUrl: string;
+    explainApiEndpoint: string;
 };
 
 /***
@@ -220,6 +221,7 @@ export class ClientOptionsHandler implements ClientOptionsSource {
                 },
             },
             motdUrl: ceProps('motdUrl', ''),
+            explainApiEndpoint: ceProps('explainApiEndpoint', ''),
             pageloadUrl: ceProps('pageloadUrl', ''),
         };
         // Will be immediately replaced with actual values

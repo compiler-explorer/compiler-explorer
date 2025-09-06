@@ -1,0 +1,63 @@
+{
+  "asm": [
+    {
+      "labels": [],
+      "source": null,
+      "text": "_ZN7example14first_function17h65b92e135846244bE:"
+    },
+    {
+      "labels": [],
+      "source": {
+        "column": 5,
+        "file": "example.rs",
+        "line": 3,
+        "mainsource": true
+      },
+      "text": "        lea     rax, [rdi + 1]"
+    },
+    {
+      "labels": [],
+      "source": {
+        "column": 2,
+        "file": "example.rs",
+        "line": 4,
+        "mainsource": true
+      },
+      "text": "        ret"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ""
+    },
+    {
+      "labels": [
+        {
+          "name": "_ZN7example15second_function17h4a2f85ffbcd4ec12E",
+          "range": {
+            "endCol": 54,
+            "startCol": 6
+          }
+        },
+        {
+          "name": "_ZN7example14first_function17h65b92e135846244bE",
+          "range": {
+            "endCol": 103,
+            "startCol": 56
+          }
+        }
+      ],
+      "source": null,
+      "text": ".set _ZN7example15second_function17h4a2f85ffbcd4ec12E, _ZN7example14first_function17h65b92e135846244bE"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ""
+    }
+  ],
+  "labelDefinitions": {
+    "_ZN7example14first_function17h65b92e135846244bE": 1,
+    "_ZN7example15second_function17h4a2f85ffbcd4ec12E": 5
+  }
+}

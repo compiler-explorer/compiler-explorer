@@ -8,8 +8,12 @@
         span.hideable Layout Options
       .dropdown-menu.options
         .button-checkbox
-          button.dropdown-item.btn.btn-sm.btn-light.center-parents(type="button" title="Center Parents" data-bind="centerparents" aria-pressed="false" aria-label="Center Parents")
+          button.dropdown-item.btn.btn-sm.btn-light(type="button" title="Center Parents" data-bind="centerparents" aria-pressed="false" aria-label="Center Parents")
             span Center Parents
+          input.d-none(type="checkbox" checked=false)
+        .button-checkbox
+          button.dropdown-item.btn.btn-sm.btn-light(type="button" title="Narrow Tree Layout" data-bind="narrowtreelayout" aria-pressed="false" aria-label="Narrow Tree Layout")
+            span Narrow Tree Layout
           input.d-none(type="checkbox" checked=false)
     .btn-group.btn-group-sm(role="group" aria-label="CFG Export")
       button.btn.btn-sm.btn-light.dropdown-toggle(type="button" title="LLVM Opt Pass Options" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false" aria-label="Set output options")

@@ -1,0 +1,190 @@
+{
+  "asm": [
+    {
+      "labels": [],
+      "source": null,
+      "text": "\"_Z8functionib.constprop.0\":"
+    },
+    {
+      "labels": [],
+      "source": {
+        "column": 22,
+        "file": null,
+        "line": 3
+      },
+      "text": "        imul    edi, edi        # _2, num"
+    },
+    {
+      "labels": [],
+      "source": {
+        "column": 1,
+        "file": null,
+        "line": 8
+      },
+      "text": "        mov     eax, edi  #, _2"
+    },
+    {
+      "labels": [],
+      "source": {
+        "column": 1,
+        "file": null,
+        "line": 8
+      },
+      "text": "        ret"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "\"_Z8functionib.constprop.1\":"
+    },
+    {
+      "labels": [],
+      "source": {
+        "column": 22,
+        "file": null,
+        "line": 6
+      },
+      "text": "        lea     eax, [rdi+rdi]    # _3,"
+    },
+    {
+      "labels": [],
+      "source": {
+        "column": 1,
+        "file": null,
+        "line": 8
+      },
+      "text": "        ret"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "\"_Z8functionib\":"
+    },
+    {
+      "labels": [],
+      "source": {
+        "column": 22,
+        "file": null,
+        "line": 3
+      },
+      "text": "        mov     eax, edi  # tmp103, num"
+    },
+    {
+      "labels": [],
+      "source": {
+        "column": 22,
+        "file": null,
+        "line": 3
+      },
+      "text": "        imul    eax, edi        # tmp103, num"
+    },
+    {
+      "labels": [],
+      "source": {
+        "column": 22,
+        "file": null,
+        "line": 3
+      },
+      "text": "        add     edi, edi  # tmp102"
+    },
+    {
+      "labels": [],
+      "source": {
+        "column": 22,
+        "file": null,
+        "line": 3
+      },
+      "text": "        test    sil, sil        # b"
+    },
+    {
+      "labels": [],
+      "source": {
+        "column": 22,
+        "file": null,
+        "line": 3
+      },
+      "text": "        cmove   eax, edi      # tmp102,, <retval>"
+    },
+    {
+      "labels": [],
+      "source": {
+        "column": 1,
+        "file": null,
+        "line": 8
+      },
+      "text": "        ret"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "\"main\":"
+    },
+    {
+      "labels": [
+        {
+          "name": "\"_Z8functionib.constprop.1\"",
+          "range": {
+            "endCol": 44,
+            "startCol": 17
+          }
+        }
+      ],
+      "source": {
+        "column": 20,
+        "file": null,
+        "line": 11
+      },
+      "text": "        call    \"_Z8functionib.constprop.1\"     #"
+    },
+    {
+      "labels": [],
+      "source": {
+        "column": 20,
+        "file": null,
+        "line": 11
+      },
+      "text": "        mov     edx, eax  # _1,"
+    },
+    {
+      "labels": [
+        {
+          "name": "\"_Z8functionib.constprop.0\"",
+          "range": {
+            "endCol": 44,
+            "startCol": 17
+          }
+        }
+      ],
+      "source": {
+        "column": 44,
+        "file": null,
+        "line": 11
+      },
+      "text": "        call    \"_Z8functionib.constprop.0\"     #"
+    },
+    {
+      "labels": [],
+      "source": {
+        "column": 55,
+        "file": null,
+        "line": 11
+      },
+      "text": "        add     eax, edx  # _5, _1"
+    },
+    {
+      "labels": [],
+      "source": {
+        "column": 1,
+        "file": null,
+        "line": 12
+      },
+      "text": "        ret"
+    }
+  ],
+  "labelDefinitions": {
+    "\"_Z8functionib\"": 8,
+    "\"_Z8functionib.constprop.0\"": 1,
+    "\"_Z8functionib.constprop.1\"": 5,
+    "\"main\"": 15
+  }
+}

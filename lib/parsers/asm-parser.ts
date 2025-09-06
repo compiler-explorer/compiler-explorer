@@ -75,6 +75,7 @@ export class AsmParser extends AsmRegex implements IAsmParser {
     protected definesAlias: RegExp;
     protected indentedLabelDef: RegExp;
     protected assignmentDef: RegExp;
+    protected setDef: RegExp;
     protected directive: RegExp;
     protected startAppBlock: RegExp;
     protected endAppBlock: RegExp;
@@ -143,7 +144,12 @@ export class AsmParser extends AsmRegex implements IAsmParser {
                 return false;
             }
             // .inst generates an opcode, so does not count as a directive, nor does an alias definition that's used.
-            if (this.directive.test(line) && !this.instOpcodeRe.test(line) && !this.definesAlias.test(line)) {
+            if (
+                this.directive.test(line) &&
+                !this.instOpcodeRe.test(line) &&
+                !this.definesAlias.test(line) &&
+                !this.setDef.test(line)
+            ) {
                 return true;
             }
         }
@@ -162,6 +168,11 @@ export class AsmParser extends AsmRegex implements IAsmParser {
     ): {match: RegExpMatchArray | null; skipLine: boolean} {
         let match = line.match(this.labelDef);
         if (!match) match = line.match(this.assignmentDef);
+        let isSetDef = false;
+        if (!match) {
+            match = line.match(this.setDef);
+            isSetDef = !!match;
+        }
         if (!match) {
             match = line.match(this.cudaBeginDef);
             if (match) {
@@ -184,8 +195,14 @@ export class AsmParser extends AsmRegex implements IAsmParser {
             }
         } else {
             // A used label.
-            context.prevLabel = match[1];
             labelDefinitions[match[1]] = asmLength + 1;
+
+            if (isSetDef) {
+                // `.set` does not start a new function
+                return {match: null, skipLine: false};
+            }
+
+            context.prevLabel = match[1];
 
             if (!this.parsingState.inNvccDef && !this.parsingState.inNvccCode && filters.libraryCode) {
                 context.prevLabelIsUserFunction = this.isUserFunctionByLookingAhead(
@@ -333,7 +350,7 @@ export class AsmParser extends AsmRegex implements IAsmParser {
         // Opcode expression here matches LLVM-style opcodes of the form `%blah = opcode`
         this.hasOpcodeRe = /^\s*(%[$.A-Z_a-z][\w$.]*\s*=\s*)?[A-Za-z]/;
         this.instructionRe = /^\s*[A-Za-z]+/;
-        this.identifierFindRe = /([$.@A-Z_a-z]\w*)(?:@\w+)*/g;
+        this.identifierFindRe = /((?!\$\.)[$.@A-Z_a-z"][\w$.]*"?)(?:@\w+)*/g;
         this.hasNvccOpcodeRe = /^\s*[@A-Za-z|]/;
         this.definesFunction = /^\s*\.(type.*,\s*[#%@]function|proc\s+[.A-Z_a-z][\w$.]*:.*)$/;
         this.definesGlobal = /^\s*\.(?:globa?l|GLB|export)\s*([.A-Z_a-z][\w$.]*|"[.A-Z_a-z][\w$.]*")/;
@@ -341,6 +358,9 @@ export class AsmParser extends AsmRegex implements IAsmParser {
         this.definesAlias = /^\s*\.set\s*((?:[.A-Z_a-z][\w$.]*|"[.A-Z_a-z][\w$.]*")\s*),\s*\.\s*(\+\s*0)?$/;
         this.indentedLabelDef = /^\s*([$.A-Z_a-z][\w$.]*|"[$.A-Z_a-z][\w$.]*"):/;
         this.assignmentDef = /^\s*([$.A-Z_a-z][\w$.]*)\s*=\s*(.*)/;
+        // ".set label, label" where "label" is `this.labelFindNonMips`
+        this.setDef =
+            /^\s*\.set\s+([.A-Z_a-z][\w$.]*|"[.A-Z_a-z][\w$.]*"),\s*(?:[.A-Z_a-z][\w$.]*|"[.A-Z_a-z][\w$.]*")\s*$/;
         this.directive = /^\s*\..*$/;
         // These four regexes when phrased as /\s*#APP.*/ etc exhibit costly polynomial backtracking. Instead use ^$ and
         // test with regex.test(line.trim()), more robust anyway
@@ -410,6 +430,7 @@ export class AsmParser extends AsmRegex implements IAsmParser {
         if (this.instOpcodeRe.test(line)) return true;
         // Detect assignment, that's not an opcode...
         if (this.assignmentDef.test(line)) return false;
+        if (this.setDef.test(line)) return false;
         if (inNvccCode) {
             return this.hasNvccOpcodeRe.test(line);
         }
@@ -439,10 +460,6 @@ export class AsmParser extends AsmRegex implements IAsmParser {
             labelFindMips: this.labelFindMips,
             fixLabelIndentation: this.fixLabelIndentation.bind(this),
         };
-    }
-
-    labelFindFor(asmLines: string[]) {
-        return this.labelProcessor.getLabelFind(asmLines, this.createLabelContext());
     }
 
     findUsedLabels(asmLines: string[], filterDirectives?: boolean): Set<string> {

@@ -40,13 +40,13 @@ const languages = {
 };
 
 const androidJavaInfo = {
-    exe: null,
+    exe: 'java',
     remote: true,
     lang: languages.androidJava.id,
 } as unknown as CompilerInfo;
 
 const androidKotlinInfo = {
-    exe: null,
+    exe: 'kotlin',
     remote: true,
     lang: languages.androidKotlin.id,
 } as unknown as CompilerInfo;

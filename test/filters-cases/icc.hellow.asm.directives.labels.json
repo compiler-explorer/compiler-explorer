@@ -117,7 +117,15 @@
       "text": "        stmxcsr   (%rsp)                                        #2.12"
     },
     {
-      "labels": [],
+      "labels": [
+        {
+          "name": ".L_2__STRING.0",
+          "range": {
+            "endCol": 34,
+            "startCol": 20
+          }
+        }
+      ],
       "source": {
         "file": null,
         "line": 3
@@ -177,7 +185,15 @@
       "text": "..B1.2:                         # Preds ..B1.6"
     },
     {
-      "labels": [],
+      "labels": [
+        {
+          "name": ".L_2__STRING.1",
+          "range": {
+            "endCol": 34,
+            "startCol": 20
+          }
+        }
+      ],
       "source": {
         "file": null,
         "line": 4

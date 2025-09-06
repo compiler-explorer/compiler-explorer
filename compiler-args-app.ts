@@ -29,6 +29,7 @@ import {CompilerArguments} from './lib/compiler-arguments.js';
 import * as Parsers from './lib/compilers/argument-parsers.js';
 import {executeDirect} from './lib/exec.js';
 import {logger} from './lib/logger.js';
+import {BaseParser} from './lib/compilers/argument-parsers.js';
 
 const program = new Command();
 program
@@ -40,7 +41,21 @@ program
     .requiredOption('--parser <type>', 'Compiler parser type')
     .requiredOption('--exe <path>', 'Path to compiler executable')
     .option('--padding <number>', 'Padding for output formatting', '40')
-    .option('--debug', 'Enable debug output');
+    .option('--debug', 'Enable debug output')
+    .allowUnknownOption(false)
+    .configureOutput({
+        writeErr: (str) => {
+            if (str.includes('too many arguments')) {
+                console.error('Error: Unexpected arguments provided.');
+                console.error('This tool only accepts the following options: --parser, --exe, --padding, --debug');
+                console.error('\nExample usage:');
+                console.error('  node --import tsx compiler-args-app.ts --parser gcc --exe /path/to/gcc');
+                console.error('\nNote: Do not use shell redirections like "2>&1" directly - they will be interpreted as arguments');
+                process.exit(1);
+            }
+            process.stderr.write(str);
+        }
+    });
 
 program.parse();
 const opts = program.opts();
@@ -90,6 +105,13 @@ class CompilerArgsApp {
             execCompilerCached: async (command: string, args: string[]) => {
                 return executeDirect(command, args, {}, fn => fn);
             },
+            getDefaultExecOptions: () => {
+                return {
+                    env: process.env,
+                    cwd: process.cwd(),
+                    timeout: 10000,
+                };
+            }
         };
 
         if (this.parserName === 'juliawrapper') {
@@ -99,22 +121,22 @@ class CompilerArgsApp {
 
     async getPossibleStdvers() {
         const parser = this.getParser();
-        return await parser.getPossibleStdvers(this.compiler);
+        return await parser.getPossibleStdvers();
     }
 
     async getPossibleTargets() {
         const parser = this.getParser();
-        return await parser.getPossibleTargets(this.compiler);
+        return await parser.getPossibleTargets();
     }
 
     async getPossibleEditions() {
         const parser = this.getParser();
-        return await parser.getPossibleEditions(this.compiler);
+        return await parser.getPossibleEditions();
     }
 
-    getParser() {
+    getParser(): BaseParser {
         if (compilerParsers[this.parserName as keyof typeof compilerParsers]) {
-            return compilerParsers[this.parserName as keyof typeof compilerParsers];
+            return new (compilerParsers[this.parserName as keyof typeof compilerParsers])(this.compiler);
         }
         console.error('Unknown parser type');
         process.exit(1);
@@ -122,7 +144,7 @@ class CompilerArgsApp {
 
     async doTheParsing() {
         const parser = this.getParser();
-        await parser.parse(this.compiler);
+        await parser.parse();
         const options = this.compiler.possibleArguments.possibleArguments;
         if (parser.hasSupportStartsWith(options, '--target=')) {
             console.log('supportsTargetIs');
@@ -150,6 +172,11 @@ class CompilerArgsApp {
         console.log(await this.getPossibleTargets());
         console.log('Editions:');
         console.log(await this.getPossibleEditions());
+
+        console.log('supportsOptOutput:', !!this.compiler.compiler.supportsOptOutput);
+        console.log('supportsStackUsageOutput', !!this.compiler.compiler.supportsStackUsageOutput);
+        console.log('optPipeline:', this.compiler.compiler.optPipeline);
+        console.log('supportsGccDump', !!this.compiler.compiler.supportsGccDump);
     }
 }
 

@@ -41,6 +41,7 @@ import {
     DragSourceFactory,
     EDITOR_COMPONENT_NAME,
     EXECUTOR_COMPONENT_NAME,
+    EXPLAIN_VIEW_COMPONENT_NAME,
     FLAGS_VIEW_COMPONENT_NAME,
     GCC_DUMP_VIEW_COMPONENT_NAME,
     GNAT_DEBUG_TREE_VIEW_COMPONENT_NAME,
@@ -532,6 +533,7 @@ export function getCfgViewWith(
             editorid,
             treeid,
             isircfg,
+            narrowtreelayout: true,
         },
     };
 }
@@ -937,6 +939,26 @@ export function getDeviceViewWith(
             treeid: treeid,
         },
     };
+}
+
+/** Get an empty explain view component. */
+export function getExplainView(): ComponentConfig<typeof EXPLAIN_VIEW_COMPONENT_NAME> {
+    return createComponentConfig(EXPLAIN_VIEW_COMPONENT_NAME, {});
+}
+
+/** Get an explain view with the given configuration. */
+export function getExplainViewWith(
+    id: number,
+    compilerName: string,
+    editorid: number,
+    treeid: number,
+): ComponentConfig<typeof EXPLAIN_VIEW_COMPONENT_NAME> {
+    return createComponentConfig(EXPLAIN_VIEW_COMPONENT_NAME, {
+        id,
+        compilerName,
+        editorid,
+        treeid,
+    });
 }
 
 /**

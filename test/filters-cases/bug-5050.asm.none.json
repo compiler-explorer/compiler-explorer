@@ -14816,15 +14816,7 @@
       "text": ".Linfo_string126:"
     },
     {
-      "labels": [
-        {
-          "name": "_Z1fSt7variantIJPiPlPcEE",
-          "range": {
-            "endCol": 42,
-            "startCol": 18
-          }
-        }
-      ],
+      "labels": [],
       "source": null,
       "text": "        .asciz  \"_Z1fSt7variantIJPiPlPcEE\"      # string offset=4068"
     },

@@ -172,7 +172,15 @@
       "text": "..LN8:"
     },
     {
-      "labels": [],
+      "labels": [
+        {
+          "name": ".L_2__STRING.0",
+          "range": {
+            "endCol": 34,
+            "startCol": 20
+          }
+        }
+      ],
       "source": {
         "file": null,
         "line": 3
@@ -262,7 +270,15 @@
       "text": "..LN14:"
     },
     {
-      "labels": [],
+      "labels": [
+        {
+          "name": ".L_2__STRING.1",
+          "range": {
+            "endCol": 34,
+            "startCol": 20
+          }
+        }
+      ],
       "source": {
         "file": null,
         "line": 4

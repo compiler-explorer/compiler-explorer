@@ -2808,15 +2808,7 @@
       "text": ".LASF1:"
     },
     {
-      "labels": [
-        {
-          "name": "_Z3bazv",
-          "range": {
-            "endCol": 25,
-            "startCol": 18
-          }
-        }
-      ],
+      "labels": [],
       "source": null,
       "text": "        .string \"_Z3bazv\""
     },
@@ -2826,15 +2818,7 @@
       "text": ".LASF2:"
     },
     {
-      "labels": [
-        {
-          "name": "_Z3foov",
-          "range": {
-            "endCol": 25,
-            "startCol": 18
-          }
-        }
-      ],
+      "labels": [],
       "source": null,
       "text": "        .string \"_Z3foov\""
     },
@@ -2884,15 +2868,7 @@
       "text": ".LASF11:"
     },
     {
-      "labels": [
-        {
-          "name": "_Z3barv",
-          "range": {
-            "endCol": 25,
-            "startCol": 18
-          }
-        }
-      ],
+      "labels": [],
       "source": null,
       "text": "        .string \"_Z3barv\""
     },
