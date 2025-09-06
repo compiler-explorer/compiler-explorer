@@ -176,17 +176,6 @@ class DiffStateObject {
     }
 }
 
-function getItemDisplayTitle(item) {
-    if (typeof item.id === 'string') {
-        const p = item.id.indexOf('_exec');
-        if (p !== -1) {
-            return 'Executor #' + item.id.substr(0, p);
-        }
-    }
-
-    return 'Compiler #' + item.id;
-}
-
 type CompilerEntry = {
     id: number | string;
     name: string;
@@ -232,7 +221,6 @@ export class Diff extends MonacoPane<monaco.editor.IStandaloneDiffEditor, DiffSt
             if (!(picker instanceof HTMLSelectElement)) {
                 throw new Error('.difftype-picker is not an HTMLSelectElement');
             }
-
             const diffableOptions = this.getDiffableOptions(picker);
 
             const instance = new TomSelect(picker, {
@@ -285,13 +273,14 @@ export class Diff extends MonacoPane<monaco.editor.IStandaloneDiffEditor, DiffSt
                 render: <any>{
                     option: (item, escapeHtml) => {
                         const origin = item.editorId !== false ? 'Editor #' + item.editorId : 'Tree #' + item.treeId;
+                        const editor = hub.getEditorById(item.editorId);
+                        const name = editor !== undefined ? editor.getPaneName() : origin;
                         return (
                             '<div>' +
-                            `<span class="compiler">${escapeHtml(item.compiler.name)}</span>` +
-                            `<span class="options">${escapeHtml(item.options)}</span>` +
+                            `<span class="paneName">${escapeHtml(name)}</span>` +
                             '<ul class="meta">' +
-                            `<li class="editor">${escapeHtml(origin)}</li>` +
-                            `<li class="compilerId">${escapeHtml(getItemDisplayTitle(item))}</li>` +
+                            `<li class="compiler">Compiler: ${escapeHtml(item.compiler.name)}</li>` +
+                            `<li class="options">Options: ${escapeHtml(item.options)}</li>` +
                             '</ul>' +
                             '</div>'
                         );
@@ -299,6 +288,20 @@ export class Diff extends MonacoPane<monaco.editor.IStandaloneDiffEditor, DiffSt
                 },
                 dropdownParent: 'body',
                 plugins: ['input_autogrow'],
+                onFocus: () => {
+                    instance.clear();
+                    instance.clearOptions();
+
+                    Object.entries(this.compilers).forEach(([_, entry]) => {
+                        const editor = this.hub.getEditorById(entry.id as number);
+                        if (editor !== undefined) {
+                            entry.name = editor.getPaneName();
+                        }
+                        instance.addOption(entry);
+                    });
+
+                    instance.refreshOptions();
+                },
                 onChange: value => {
                     if (!((value as string) in this.compilers)) return;
                     const compiler = this.compilers[value as string];
@@ -493,7 +496,8 @@ export class Diff extends MonacoPane<monaco.editor.IStandaloneDiffEditor, DiffSt
     ) {
         if (!compiler) return;
         options = options || '';
-        const name = compiler.name + ' ' + options;
+        const editor = this.hub.getEditorById(id as number);
+        const name = editor !== undefined ? editor.getPaneName() : compiler.name + ' ' + options;
         this.compilers[id] = {
             id: id,
             name: name,
