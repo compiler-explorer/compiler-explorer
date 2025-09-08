@@ -50,6 +50,7 @@ export interface ApiControllers {
  * @param compilationQueue - The compilation queue instance
  * @param healthCheckFilePath - Optional path to health check file
  * @param isExecutionWorker - Whether the server is running as an execution worker
+ * @param isCompilationWorker - Whether the server is running as a compilation worker
  * @param formDataHandler - Handler for form data
  * @returns Object containing all initialized controllers
  */
@@ -59,6 +60,7 @@ export function setupControllersAndHandlers(
     compilationQueue: CompilationQueue,
     healthCheckFilePath: string | null,
     isExecutionWorker: boolean,
+    isCompilationWorker: boolean,
     formDataHandler: express.Handler,
 ): ApiControllers {
     // Initialize API controllers

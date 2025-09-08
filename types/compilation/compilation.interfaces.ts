@@ -226,12 +226,15 @@ export type CompilationResult = {
     processExecutionResultTime?: number;
     objdumpTime?: number;
     parsingTime?: number;
+    queueTime?: number;
 
     source?: string; // todo: this is a crazy hack, we should get rid of it
 
     instructionSet?: InstructionSet;
 
     popularArguments?: PossibleArguments;
+
+    s3Key?: string; // Cache key hash for S3 storage reference
 };
 
 export type ExecutionOptions = {
@@ -316,3 +319,13 @@ export type FiledataPair = {
 };
 
 export type BufferOkFunc = (buffer: Buffer) => boolean;
+
+// Maximum safe WebSocket message size for AWS API Gateway and ALB
+// AWS API Gateway has a 32 KiB frame size limit for WebSocket messages
+// We use 31 KiB as a conservative threshold to account for protocol overhead
+export const WEBSOCKET_SIZE_THRESHOLD = 31 * 1024;
+
+// TTL for temporary S3 storage of large compilation results in worker mode
+// Set to 1 day to provide sufficient time for retrieval while ensuring
+// temporary data doesn't persist indefinitely
+export const TEMP_STORAGE_TTL_DAYS = 1;
