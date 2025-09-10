@@ -201,8 +201,8 @@ export function startExecutionWorkerThread(
 ): () => boolean {
     const queue = new SqsWorkerMode(ceProps, awsProps);
 
-    // Create persistent WebSocket sender
-    const persistentSender = new PersistentEventsSender(compilationEnvironment.ceProps);
+    // Create persistent WebSocket sender (execution workers don't require acknowledgments)
+    const persistentSender = new PersistentEventsSender(compilationEnvironment.ceProps, false);
 
     // Handle graceful shutdown
     const shutdown = async () => {
