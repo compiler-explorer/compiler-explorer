@@ -150,6 +150,13 @@ async function doOneExecution(
     compilationEnvironment: CompilationEnvironment,
     persistentSender: PersistentEventsSender,
 ) {
+    if (!persistentSender.isReadyForNewMessages()) {
+        logger.debug(
+            `Skipping execution message pull - WebSocket not ready or has ${persistentSender.getPendingAckCount()} pending acknowledgments`,
+        );
+        return;
+    }
+
     const msg = await queue.pop();
     if (msg?.guid) {
         const startTime = Date.now();
@@ -191,7 +198,7 @@ export function startExecutionWorkerThread(
     ceProps: PropertyGetter,
     awsProps: PropertyGetter,
     compilationEnvironment: CompilationEnvironment,
-) {
+): () => boolean {
     const queue = new SqsWorkerMode(ceProps, awsProps);
 
     // Create persistent WebSocket sender
@@ -224,4 +231,6 @@ export function startExecutionWorkerThread(
 
     setTimeout(doExecutionWork1, 1500);
     setTimeout(doExecutionWork2, 1530);
+
+    return () => !persistentSender.hasFailedPermanently();
 }

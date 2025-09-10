@@ -195,6 +195,13 @@ async function doOneCompilation(
     compilationEnvironment: CompilationEnvironment,
     persistentSender: PersistentEventsSender,
 ) {
+    if (!persistentSender.isReadyForNewMessages()) {
+        logger.debug(
+            `Skipping message pull - WebSocket not ready or has ${persistentSender.getPendingAckCount()} pending acknowledgments`,
+        );
+        return;
+    }
+
     const msg = await queue.pop();
 
     if (msg?.guid) {
@@ -286,7 +293,7 @@ export function startCompilationWorkerThread(
     awsProps: PropertyGetter,
     compilationEnvironment: CompilationEnvironment,
     appArgs?: {instanceColor?: string},
-) {
+): () => boolean {
     const queue = new SqsCompilationWorkerMode(ceProps, awsProps, appArgs);
     const numThreads = ceProps<number>('compilequeue.worker_threads', 2);
     const pollIntervalMs = ceProps<number>('compilequeue.poll_interval_ms', 50);
@@ -333,4 +340,6 @@ export function startCompilationWorkerThread(
         };
         setTimeout(doCompilationWork, 1500 + i * 30);
     }
+
+    return () => !persistentSender.hasFailedPermanently();
 }

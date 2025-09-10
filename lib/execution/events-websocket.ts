@@ -87,12 +87,37 @@ export class PersistentEventsSender extends EventsWsBase {
     private reconnectAttempts = 0;
     private maxReconnectAttempts = 5;
     private reconnectDelay = 1000; // Start with 1 second
+    private hasPermanentlyFailed = false;
     private heartbeatInterval: NodeJS.Timeout | undefined;
     private heartbeatIntervalMs = 30000; // 30 seconds
+    private pendingAcks = new Map<
+        string,
+        {
+            timeout: NodeJS.Timeout;
+            retryCount: number;
+            resolve: () => void;
+            reject: (error: any) => void;
+            messageData: any;
+        }
+    >();
+    private maxRetries = 3;
+    private ackTimeoutMs = 3000;
 
     constructor(props: PropertyGetter) {
         super(props);
         this.connect();
+    }
+
+    isReadyForNewMessages(): boolean {
+        return this.isConnected && this.ws?.readyState === WebSocket.OPEN && this.pendingAcks.size === 0;
+    }
+
+    getPendingAckCount(): number {
+        return this.pendingAcks.size;
+    }
+
+    hasFailedPermanently(): boolean {
+        return this.hasPermanentlyFailed;
     }
 
     protected override connect(): void {
@@ -112,6 +137,7 @@ export class PersistentEventsSender extends EventsWsBase {
 
             this.startHeartbeat();
             this.processQueuedMessages();
+            this.retryPendingAcknowledgments();
         });
 
         this.ws.on('error', (error: any) => {
@@ -129,7 +155,19 @@ export class PersistentEventsSender extends EventsWsBase {
 
             if (!this.expectClose) {
                 logger.warn(`Persistent WebSocket connection closed unexpectedly for ${this.events_url}`);
+                this.pauseAckTimeouts();
                 this.scheduleReconnect();
+            }
+        });
+
+        this.ws.on('message', (data: any) => {
+            try {
+                const message = JSON.parse(data.toString());
+                if (message.type === 'ack' && message.guid) {
+                    this.handleAcknowledgment(message.guid);
+                }
+            } catch (error) {
+                logger.warn('Failed to parse WebSocket message:', error);
             }
         });
 
@@ -153,7 +191,10 @@ export class PersistentEventsSender extends EventsWsBase {
 
     private scheduleReconnect(): void {
         if (this.expectClose || this.reconnectAttempts >= this.maxReconnectAttempts) {
-            logger.error(`Max reconnection attempts (${this.maxReconnectAttempts}) reached for ${this.events_url}`);
+            logger.error(
+                `Max websocket reconnection attempts (${this.maxReconnectAttempts}) reached for ${this.events_url}`,
+            );
+            this.hasPermanentlyFailed = true;
             this.rejectQueuedMessages(new Error('WebSocket connection failed permanently'));
             return;
         }
@@ -162,7 +203,7 @@ export class PersistentEventsSender extends EventsWsBase {
         this.reconnectAttempts++;
 
         logger.info(
-            `Scheduling reconnect attempt ${this.reconnectAttempts}/${this.maxReconnectAttempts} in ${delay}ms`,
+            `Scheduling websocket reconnect attempt ${this.reconnectAttempts}/${this.maxReconnectAttempts} in ${delay}ms`,
         );
 
         setTimeout(() => {
@@ -200,19 +241,149 @@ export class PersistentEventsSender extends EventsWsBase {
         }
     }
 
+    private handleAcknowledgment(guid: string): void {
+        const pending = this.pendingAcks.get(guid);
+        if (pending) {
+            clearTimeout(pending.timeout);
+            this.pendingAcks.delete(guid);
+            pending.resolve();
+            logger.debug(`Received acknowledgment for ${guid}`);
+        }
+    }
+
+    private setupAckTimeout(guid: string, messageData: any, resolve: () => void, reject: (error: any) => void): void {
+        const timeout = setTimeout(() => {
+            const pending = this.pendingAcks.get(guid);
+            if (pending) {
+                pending.retryCount++;
+                if (pending.retryCount < this.maxRetries) {
+                    logger.warn(`No acknowledgment for ${guid}, retry ${pending.retryCount}/${this.maxRetries}`);
+                    this.sendWithRetry(guid, messageData, pending.retryCount, resolve, reject);
+                } else {
+                    logger.error(`Max retries (${this.maxRetries}) reached for ${guid}, giving up`);
+                    this.pendingAcks.delete(guid);
+                    reject(new Error(`Failed to receive acknowledgment after ${this.maxRetries} retries`));
+                }
+            }
+        }, this.ackTimeoutMs);
+
+        this.pendingAcks.set(guid, {
+            timeout,
+            retryCount: 0,
+            resolve,
+            reject,
+            messageData,
+        });
+    }
+
+    private sendWithRetry(
+        guid: string,
+        messageData: any,
+        retryCount: number,
+        resolve: () => void,
+        reject: (error: any) => void,
+    ): void {
+        if (!this.isConnected || this.ws?.readyState !== WebSocket.OPEN) {
+            reject(new Error('WebSocket not connected'));
+            return;
+        }
+
+        try {
+            this.ws.send(JSON.stringify(messageData));
+
+            const timeout = setTimeout(() => {
+                const pending = this.pendingAcks.get(guid);
+                if (pending) {
+                    if (retryCount < this.maxRetries) {
+                        logger.warn(`No acknowledgment for ${guid}, retry ${retryCount + 1}/${this.maxRetries}`);
+                        this.sendWithRetry(guid, messageData, retryCount + 1, resolve, reject);
+                    } else {
+                        logger.error(`Max retries (${this.maxRetries}) reached for ${guid}, giving up`);
+                        this.pendingAcks.delete(guid);
+                        reject(new Error(`Failed to receive acknowledgment after ${this.maxRetries} retries`));
+                    }
+                }
+            }, this.ackTimeoutMs);
+
+            this.pendingAcks.set(guid, {
+                timeout,
+                retryCount,
+                resolve,
+                reject,
+                messageData,
+            });
+        } catch (error) {
+            reject(error);
+        }
+    }
+
+    private pauseAckTimeouts(): void {
+        for (const [, pending] of this.pendingAcks.entries()) {
+            clearTimeout(pending.timeout);
+        }
+    }
+
+    private retryPendingAcknowledgments(): void {
+        for (const [guid, pending] of this.pendingAcks.entries()) {
+            logger.info(`Retrying pending acknowledgment for ${guid} after reconnection`);
+            try {
+                if (this.ws?.readyState === WebSocket.OPEN) {
+                    this.ws.send(JSON.stringify(pending.messageData));
+
+                    // Reset timeout for this message
+                    const timeout = setTimeout(() => {
+                        const stillPending = this.pendingAcks.get(guid);
+                        if (stillPending) {
+                            if (stillPending.retryCount < this.maxRetries) {
+                                logger.warn(
+                                    `No acknowledgment for ${guid} after reconnection, retry ${stillPending.retryCount + 1}/${this.maxRetries}`,
+                                );
+                                this.sendWithRetry(
+                                    guid,
+                                    pending.messageData,
+                                    stillPending.retryCount + 1,
+                                    pending.resolve,
+                                    pending.reject,
+                                );
+                            } else {
+                                logger.error(
+                                    `Max retries (${this.maxRetries}) reached for ${guid} after reconnection, giving up`,
+                                );
+                                this.pendingAcks.delete(guid);
+                                pending.reject(
+                                    new Error(`Failed to receive acknowledgment after ${this.maxRetries} retries`),
+                                );
+                            }
+                        }
+                    }, this.ackTimeoutMs);
+
+                    pending.timeout = timeout;
+                }
+            } catch (error) {
+                logger.error(`Failed to retry pending acknowledgment for ${guid}:`, error);
+                this.pendingAcks.delete(guid);
+                pending.reject(error);
+            }
+        }
+    }
+
     async send(guid: string, result: CompilationResult): Promise<void> {
         return new Promise((resolve, reject) => {
             if (this.isConnected && this.ws?.readyState === WebSocket.OPEN) {
+                const messageData = {
+                    guid: guid,
+                    ...result,
+                };
+                this.setupAckTimeout(guid, messageData, resolve, reject);
                 try {
-                    this.ws.send(
-                        JSON.stringify({
-                            guid: guid,
-                            ...result,
-                        }),
-                    );
-                    resolve();
+                    this.ws.send(JSON.stringify(messageData));
                 } catch (error) {
-                    reject(error);
+                    // Don't immediately fail - let the acknowledgment timeout handle retries
+                    // A failed send means we won't get an acknowledgment, so the timeout will trigger retries
+                    logger.warn(
+                        `Initial send failed for ${guid}, letting acknowledgment timeout handle retries:`,
+                        error,
+                    );
                 }
             } else {
                 // Queue the message for when connection is available
@@ -229,6 +400,13 @@ export class PersistentEventsSender extends EventsWsBase {
     override async close(): Promise<void> {
         this.expectClose = true;
         this.stopHeartbeat();
+
+        // Only clear pending acknowledgments if this is an intentional close
+        for (const [, pending] of this.pendingAcks.entries()) {
+            clearTimeout(pending.timeout);
+            pending.reject(new Error('WebSocket connection closing'));
+        }
+        this.pendingAcks.clear();
 
         // Reject any queued messages
         this.rejectQueuedMessages(new Error('WebSocket connection closing'));
