@@ -135,8 +135,8 @@ export async function executeDirect(
         });
 
     const streams = {
-        stderr: '',
-        stdout: '',
+        stderr: [] as Buffer[],
+        stdout: [] as Buffer[],
         truncated: false,
     };
     let timeout: NodeJS.Timeout | undefined;
@@ -146,24 +146,24 @@ export async function executeDirect(
             okToCache = false;
             timedOut = true;
             kill();
-            streams.stderr += '\nKilled - processing time exceeded\n';
+            streams.stderr.push(Buffer.from('\nKilled - processing time exceeded\n', 'utf8'));
         }, timeoutMs);
 
     function setupStream(stream: Stream, name: 'stdout' | 'stderr') {
         if (stream === undefined) return;
-        stream.on('data', data => {
+        stream.on('data', (data: Buffer) => {
             if (streams.truncated) return;
             const newLength = streams[name].length + data.length;
             if (maxOutput > 0 && newLength > maxOutput) {
                 const truncatedMsg = '\n[Truncated]';
                 const spaceLeft = Math.max(maxOutput - streams[name].length - truncatedMsg.length, 0);
-                streams[name] = streams[name] + data.slice(0, spaceLeft);
-                streams[name] += truncatedMsg.slice(0, maxOutput - streams[name].length);
+                streams[name].push(Buffer.from(data.slice(0, spaceLeft)));
+                streams[name].push(Buffer.from(truncatedMsg.slice(0, maxOutput - streams[name].length)));
                 streams.truncated = true;
                 kill();
                 return;
             }
-            streams[name] += data;
+            streams[name].push(Buffer.from(data));
         });
         setupOnError(stream, name);
     }
@@ -191,8 +191,8 @@ export async function executeDirect(
                 okToCache,
                 timedOut,
                 filenameTransform: filenameTransform || (x => x),
-                stdout: streams.stdout,
-                stderr: streams.stderr,
+                stdout: Buffer.concat(streams.stdout).toString('utf8'),
+                stderr: Buffer.concat(streams.stderr).toString('utf8'),
                 truncated: streams.truncated,
                 execTime: utils.deltaTimeNanoToMili(startTime, endTime),
             };
