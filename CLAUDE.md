@@ -79,6 +79,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 - **Shared Parsing**: Common request parsing logic is shared between web handlers and SQS workers for consistency
 - **Remote Compiler Support**: Workers automatically detect and proxy requests to remote compilers using HTTP, maintaining compatibility with existing remote compiler infrastructure
 - **S3 Storage Integration**: Compilation results include an `s3Key` property containing the cache key hash for S3 storage reference. Large results (>31KiB) can be stored in S3 and referenced by this key. The s3Key is removed from API responses before sending to users.
+- **Metrics & Statistics**: SQS workers track separate Prometheus metrics (`ce_sqs_compilations_total`, `ce_sqs_executions_total`, `ce_sqs_cmake_compilations_total`, `ce_sqs_cmake_executions_total`) and record compilation statistics via `statsNoter.noteCompilation` for Grafana monitoring, mirroring the regular API route behavior.
 
 ## Testing Guidelines
 - Use Vitest for unit tests (compatible with Jest syntax)
