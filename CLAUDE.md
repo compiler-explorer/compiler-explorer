@@ -69,6 +69,11 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
   - `--instance-color <color>`: Optional command-line parameter to differentiate deployment instances. When specified (blue or green), modifies the queue URL by appending the color to the queue name (e.g., `staging-compilation-queue-blue.fifo`)
 - **Implementation**: Located in `/lib/compilation/sqs-compilation-queue.ts` with shared parsing utilities in `/lib/compilation/compilation-request-parser.ts`
 - **Queue Architecture**: Uses single AWS SQS FIFO queue for reliable message delivery, messages contain isCMake flag to distinguish compilation types
+- **S3 Overflow Support**: Large compilation requests exceeding SQS message size limits (256KB) are automatically stored in S3
+  - Messages exceeding the limit are stored in S3 bucket `compiler-explorer-sqs-overflow`
+  - SQS receives a lightweight reference message with type `s3-overflow` containing S3 location
+  - Workers automatically detect overflow messages and fetch the full request from S3
+  - S3 objects are automatically deleted after 1 day via lifecycle policy
 - **Result Delivery**: Uses WebSocket-based communication via `PersistentEventsSender` for improved performance with persistent connections
 - **Message Production**: Queue messages are produced by external Lambda functions, not by the main Compiler Explorer server
 - **Shared Parsing**: Common request parsing logic is shared between web handlers and SQS workers for consistency
