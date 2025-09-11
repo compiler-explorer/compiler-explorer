@@ -23,14 +23,20 @@
 // POSSIBILITY OF SUCH DAMAGE.
 
 import {SQS} from '@aws-sdk/client-sqs';
+import {Counter} from 'prom-client';
 
-import {CompilationResult, WEBSOCKET_SIZE_THRESHOLD} from '../../types/compilation/compilation.interfaces.js';
+import {
+    CompilationResult,
+    FiledataPair,
+    WEBSOCKET_SIZE_THRESHOLD,
+} from '../../types/compilation/compilation.interfaces.js';
 import {CompilationEnvironment} from '../compilation-env.js';
 import {PersistentEventsSender} from '../execution/events-websocket.js';
 import {CompileHandler} from '../handlers/compile.js';
 import {logger} from '../logger.js';
 import {PropertyGetter} from '../properties.interfaces.js';
 import {SentryCapture} from '../sentry.js';
+import {KnownBuildMethod} from '../stats.js';
 
 export type RemoteCompilationRequest = {
     guid: string;
@@ -157,6 +163,31 @@ export class SqsCompilationWorkerMode extends SqsCompilationQueueBase {
     }
 }
 
+// Create Prometheus metrics for tracking compilation statistics
+const sqsCompileCounter = new Counter({
+    name: 'ce_sqs_compilations_total',
+    help: 'Number of SQS compilations',
+    labelNames: ['language'],
+});
+
+const sqsExecuteCounter = new Counter({
+    name: 'ce_sqs_executions_total',
+    help: 'Number of SQS executions',
+    labelNames: ['language'],
+});
+
+const sqsCmakeCounter = new Counter({
+    name: 'ce_sqs_cmake_compilations_total',
+    help: 'Number of SQS CMake compilations',
+    labelNames: ['language'],
+});
+
+const sqsCmakeExecuteCounter = new Counter({
+    name: 'ce_sqs_cmake_executions_total',
+    help: 'Number of SQS executions after CMake',
+    labelNames: ['language'],
+});
+
 async function sendCompilationResultViaWebsocket(
     persistentSender: PersistentEventsSender,
     guid: string,
@@ -225,11 +256,30 @@ async function doOneCompilation(
             );
 
             let result: CompilationResult;
+            const files = (msg.files || []) as FiledataPair[];
 
-            // Local compilation only
+            // Track metrics and statistics
             if (msg.isCMake) {
-                result = await compiler.cmake(msg.files || [], parsedRequest, parsedRequest.bypassCache);
+                sqsCmakeCounter.inc({language: compiler.lang.id});
+                compilationEnvironment.statsNoter.noteCompilation(
+                    compiler.getInfo().id,
+                    parsedRequest,
+                    files,
+                    KnownBuildMethod.CMake,
+                );
+                result = await compiler.cmake(files, parsedRequest, parsedRequest.bypassCache);
+                // Check if execution occurred after CMake
+                if (result.didExecute || result.execResult?.didExecute) {
+                    sqsCmakeExecuteCounter.inc({language: compiler.lang.id});
+                }
             } else {
+                sqsCompileCounter.inc({language: compiler.lang.id});
+                compilationEnvironment.statsNoter.noteCompilation(
+                    compiler.getInfo().id,
+                    parsedRequest,
+                    files,
+                    KnownBuildMethod.Compile,
+                );
                 result = await compiler.compile(
                     parsedRequest.source,
                     parsedRequest.options,
@@ -239,8 +289,12 @@ async function doOneCompilation(
                     parsedRequest.tools,
                     parsedRequest.executeParameters,
                     parsedRequest.libraries,
-                    msg.files || [],
+                    files,
                 );
+                // Check if execution occurred after compilation
+                if (result.didExecute || result.execResult?.didExecute) {
+                    sqsExecuteCounter.inc({language: compiler.lang.id});
+                }
             }
 
             // Add queue time to result if available
