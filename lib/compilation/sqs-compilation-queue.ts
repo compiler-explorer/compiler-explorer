@@ -57,6 +57,30 @@ export type RemoteCompilationRequest = {
     queryStringParameters: Record<string, string>;
 };
 
+const sqsCompileCounter = new Counter({
+    name: 'ce_sqs_compilations_total',
+    help: 'Number of SQS compilations',
+    labelNames: ['language'],
+});
+
+const sqsExecuteCounter = new Counter({
+    name: 'ce_sqs_executions_total',
+    help: 'Number of SQS executions',
+    labelNames: ['language'],
+});
+
+const sqsCmakeCounter = new Counter({
+    name: 'ce_sqs_cmake_compilations_total',
+    help: 'Number of SQS CMake compilations',
+    labelNames: ['language'],
+});
+
+const sqsCmakeExecuteCounter = new Counter({
+    name: 'ce_sqs_cmake_executions_total',
+    help: 'Number of SQS executions after CMake',
+    labelNames: ['language'],
+});
+
 export class SqsCompilationQueueBase {
     protected sqs: SQS;
     protected readonly queue_url: string;
@@ -163,31 +187,6 @@ export class SqsCompilationWorkerMode extends SqsCompilationQueueBase {
     }
 }
 
-// Create Prometheus metrics for tracking compilation statistics
-const sqsCompileCounter = new Counter({
-    name: 'ce_sqs_compilations_total',
-    help: 'Number of SQS compilations',
-    labelNames: ['language'],
-});
-
-const sqsExecuteCounter = new Counter({
-    name: 'ce_sqs_executions_total',
-    help: 'Number of SQS executions',
-    labelNames: ['language'],
-});
-
-const sqsCmakeCounter = new Counter({
-    name: 'ce_sqs_cmake_compilations_total',
-    help: 'Number of SQS CMake compilations',
-    labelNames: ['language'],
-});
-
-const sqsCmakeExecuteCounter = new Counter({
-    name: 'ce_sqs_cmake_executions_total',
-    help: 'Number of SQS executions after CMake',
-    labelNames: ['language'],
-});
-
 async function sendCompilationResultViaWebsocket(
     persistentSender: PersistentEventsSender,
     guid: string,
@@ -258,7 +257,6 @@ async function doOneCompilation(
             let result: CompilationResult;
             const files = (msg.files || []) as FiledataPair[];
 
-            // Track metrics and statistics
             if (msg.isCMake) {
                 sqsCmakeCounter.inc({language: compiler.lang.id});
                 compilationEnvironment.statsNoter.noteCompilation(
@@ -267,8 +265,9 @@ async function doOneCompilation(
                     files,
                     KnownBuildMethod.CMake,
                 );
+
                 result = await compiler.cmake(files, parsedRequest, parsedRequest.bypassCache);
-                // Check if execution occurred after CMake
+
                 if (result.didExecute || result.execResult?.didExecute) {
                     sqsCmakeExecuteCounter.inc({language: compiler.lang.id});
                 }
@@ -280,6 +279,7 @@ async function doOneCompilation(
                     files,
                     KnownBuildMethod.Compile,
                 );
+
                 result = await compiler.compile(
                     parsedRequest.source,
                     parsedRequest.options,
@@ -291,13 +291,12 @@ async function doOneCompilation(
                     parsedRequest.libraries,
                     files,
                 );
-                // Check if execution occurred after compilation
+
                 if (result.didExecute || result.execResult?.didExecute) {
                     sqsExecuteCounter.inc({language: compiler.lang.id});
                 }
             }
 
-            // Add queue time to result if available
             if (msg.queueTimeMs !== undefined) {
                 result.queueTime = msg.queueTimeMs;
             }
@@ -332,7 +331,6 @@ async function doOneCompilation(
                 tools: [],
             };
 
-            // Add queue time to error result if available
             if (msg.queueTimeMs !== undefined) {
                 errorResult.queueTime = msg.queueTimeMs;
             }
