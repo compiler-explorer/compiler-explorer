@@ -147,7 +147,7 @@ export class BaseTool implements ITool {
         supportedLibraries: Record<string, OptionsHandlerLibrary>,
         dirPath?: string,
     ): string[] {
-        const includeFlag = '-isystem';
+        const includeFlag = '-I';
 
         return libraries.flatMap(selectedLib => {
             const foundVersion = this.findLibVersion(selectedLib, supportedLibraries);
