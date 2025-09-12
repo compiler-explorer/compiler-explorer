@@ -2598,7 +2598,9 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
                     (button.prop('disabled') ? ' [LOCKED]' : ''),
             );
         };
-        const isIntelFilterDisabled = !this.compiler.supportsIntel && !filters.binary && !filters.binaryObject;
+        const shouldShowIntelFilter = this.compiler.supportsIntel || filters.binary || filters.binaryObject;
+        this.filterIntelButton.toggle(shouldShowIntelFilter);
+        const isIntelFilterDisabled = !shouldShowIntelFilter;
         this.filterIntelButton.prop('disabled', isIntelFilterDisabled);
         formatFilterTitle(this.filterIntelButton, this.filterIntelTitle);
 

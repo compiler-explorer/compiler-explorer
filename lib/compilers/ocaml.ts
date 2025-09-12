@@ -41,6 +41,9 @@ export class OCamlCompiler extends BaseCompiler {
         // with this override and optionsForFilter override, that pecularity..
         // ..is bypassed entirely.
         this.outputFilebase = 'example';
+
+        // OCaml produces AT&T syntax assembly, not Intel syntax
+        this.compiler.supportsIntel = false;
     }
 
     override getSharedLibraryPathsAsArguments() {
