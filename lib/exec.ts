@@ -153,12 +153,13 @@ export async function executeDirect(
         if (stream === undefined) return;
         stream.on('data', (data: Buffer) => {
             if (streams.truncated) return;
-            const newLength = streams[name].length + data.length;
+            const currentLength = Buffer.concat(streams[name]).toString('utf8').length;
+            const newLength = currentLength + data.length;
             if (maxOutput > 0 && newLength > maxOutput) {
                 const truncatedMsg = '\n[Truncated]';
-                const spaceLeft = Math.max(maxOutput - streams[name].length - truncatedMsg.length, 0);
-                streams[name].push(Buffer.from(data.slice(0, spaceLeft)));
-                streams[name].push(Buffer.from(truncatedMsg.slice(0, maxOutput - streams[name].length)));
+                const spaceLeft = Math.max(maxOutput - currentLength - truncatedMsg.length, 0);
+                streams[name].push(Buffer.from(data).subarray(0, spaceLeft));
+                streams[name].push(Buffer.from(truncatedMsg));
                 streams.truncated = true;
                 kill();
                 return;
