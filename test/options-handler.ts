@@ -528,6 +528,7 @@ describe('Options handler', () => {
                     id: 'faketool',
                     type: 'independent',
                     addOptionsToToolArgs: true,
+                    sandboxType: 'none',
                     tool: {
                         args: undefined,
                         compilerLanguage: 'fake',
@@ -549,6 +550,7 @@ describe('Options handler', () => {
                     id: 'someothertool',
                     type: 'independent',
                     addOptionsToToolArgs: true,
+                    sandboxType: 'none',
                     tool: {
                         args: undefined,
                         compilerLanguage: 'fake',

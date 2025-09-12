@@ -22,6 +22,7 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
+import path from 'node:path';
 import {splitArguments} from '../../shared/common-utils.js';
 import {CompilationInfo} from '../../types/compilation/compilation.interfaces.js';
 import {ToolInfo} from '../../types/tool.interfaces.js';
@@ -50,7 +51,9 @@ export class BrontoRefactorTool extends BaseTool {
     ) {
         const sourcefile = inputFilepath;
         const options = compilationInfo.options;
-        const includeflags = super.getIncludeArguments(compilationInfo.libraries, supportedLibraries || {});
+        const pathDir = inputFilepath ? path.dirname(inputFilepath) : undefined;
+
+        const includeflags = super.getIncludeArguments(compilationInfo.libraries, supportedLibraries || {}, pathDir);
         const libOptions = super.getLibraryOptions(compilationInfo.libraries, supportedLibraries || {});
 
         let compileFlags = ['compiler-explorer']

@@ -35,8 +35,8 @@ import {ToolInfo, ToolResult} from '../../types/tool.interfaces.js';
 import * as exec from '../exec.js';
 import {logger} from '../logger.js';
 import {OptionsHandlerLibrary} from '../options-handler.js';
+import {propsFor} from '../properties.js';
 import {parseOutput} from '../utils.js';
-
 import {ITool, ToolEnv} from './base-tool.interface.js';
 
 const toolCounter = new PromClient.Counter({
@@ -51,6 +51,7 @@ export class BaseTool implements ITool {
     protected addOptionsToToolArgs = true;
     public readonly id: string;
     public readonly type: string;
+    public readonly sandboxType: string;
 
     constructor(toolInfo: ToolInfo, env: ToolEnv) {
         this.tool = toolInfo;
@@ -58,6 +59,9 @@ export class BaseTool implements ITool {
         this.addOptionsToToolArgs = true;
         this.id = toolInfo.id;
         this.type = toolInfo.type || 'independent';
+
+        const execProps = propsFor('execution');
+        this.sandboxType = execProps('sandboxType', 'none');
     }
 
     getUniqueFilePrefix() {
@@ -125,16 +129,34 @@ export class BaseTool implements ITool {
         return _.find(foundLib.versions, (o, versionId) => versionId === selectedLib.version);
     }
 
-    // mostly copy&paste from base-compiler.js
+    protected replacePathsIfNeededForSandbox(args: string[], physicalPath: string): string[] {
+        if (this.sandboxType !== 'nsjail' || !physicalPath) return args;
+
+        return args.map(arg => {
+            if (arg && arg.length > 1) {
+                return arg.replace(physicalPath, '/app');
+            } else {
+                return '';
+            }
+        });
+    }
+
+    // mostly copy&paste from base-compiler.js, but has diverged a lot :(
     getIncludeArguments(
         libraries: SelectedLibraryVersion[],
         supportedLibraries: Record<string, OptionsHandlerLibrary>,
+        dirPath?: string,
     ): string[] {
         const includeFlag = '-I';
 
         return libraries.flatMap(selectedLib => {
             const foundVersion = this.findLibVersion(selectedLib, supportedLibraries);
             if (!foundVersion) return [];
+
+            if (foundVersion.packagedheaders && dirPath) {
+                const includePath = path.join(dirPath, selectedLib.id, 'include');
+                return [includeFlag + includePath];
+            }
 
             return foundVersion.path.map(path => includeFlag + path);
         });
