@@ -108,7 +108,7 @@
     "cheerio": "^1.1.2",
     "css-loader": "^7.1.2",
     "css-minimizer-webpack-plugin": "^7.0.2",
-    "cypress": "^14.5.4",
+    "cypress": "^15.2.0",
     "file-loader": "^6.2.0",
     "happy-dom": "^18.0.1",
     "husky": "^9.1.7",
