@@ -22,6 +22,7 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
+import path from 'node:path';
 import {splitArguments} from '../../shared/common-utils.js';
 import {CompilationInfo} from '../../types/compilation/compilation.interfaces.js';
 import {ToolInfo, ToolResult} from '../../types/tool.interfaces.js';
@@ -111,8 +112,9 @@ export class CompilerDropinTool extends BaseTool {
         supportedLibraries?: Record<string, OptionsHandlerLibrary>,
     ): Promise<ToolResult> {
         const sourcefile = inputFilepath;
+        const pathDir = inputFilepath ? path.dirname(inputFilepath) : undefined;
 
-        const includeflags = this.getIncludeArguments(compilationInfo.libraries, supportedLibraries || {});
+        const includeflags = this.getIncludeArguments(compilationInfo.libraries, supportedLibraries || {}, pathDir);
         const libOptions = this.getLibraryOptions(compilationInfo.libraries, supportedLibraries || {});
 
         const compileFlags = this.getOrderedArguments(compilationInfo, includeflags, libOptions, args, sourcefile);

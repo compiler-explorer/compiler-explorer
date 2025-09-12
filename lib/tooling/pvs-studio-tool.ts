@@ -62,7 +62,7 @@ export class PvsStudioTool extends BaseTool {
         // Collecting the flags of compilation
         let compileFlags = splitArguments(compilationInfo.compiler.options);
 
-        const includeflags = super.getIncludeArguments(compilationInfo.libraries, compilationInfo.compiler);
+        const includeflags = super.getIncludeArguments(compilationInfo.libraries, compilationInfo.compiler, sourceDir);
         compileFlags = compileFlags.concat(includeflags);
 
         const libOptions = super.getLibraryOptions(compilationInfo.libraries, compilationInfo.compiler);
