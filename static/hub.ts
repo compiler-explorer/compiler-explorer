@@ -421,12 +421,16 @@ export class Hub {
                 if (container.tab.header.tabs.length === 1 && container.tab.header.closeButton) {
                     container.tab.header.closeButton.element.show();
                 }
-                container.tab.header.tabs.forEach(tab => tab.closeElement.show());
+                container.tab.header.tabs.forEach(tab => {
+                    tab.closeElement.show();
+                });
             } else {
                 if (container.tab.header.tabs.length === 1 && container.tab.header.closeButton) {
                     container.tab.header.closeButton.element.hide();
                 }
-                container.tab.header.tabs.forEach(tab => tab.closeElement.hide());
+                container.tab.header.tabs.forEach(tab => {
+                    tab.closeElement.hide();
+                });
             }
         }
     }

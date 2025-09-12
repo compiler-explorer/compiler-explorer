@@ -111,9 +111,9 @@ export class Sharing {
         this.shareFull = $('#shareFull');
         this.shareEmbed = $('#shareEmbed');
 
-        [this.shareShort, this.shareFull, this.shareEmbed].forEach(el =>
-            el.on('click', e => BootstrapUtils.showModal(this.shareLinkDialog, e.currentTarget)),
-        );
+        [this.shareShort, this.shareFull, this.shareEmbed].forEach(el => {
+            el.on('click', e => BootstrapUtils.showModal(this.shareLinkDialog, e.currentTarget));
+        });
         this.settings = Settings.getStoredSettings();
 
         this.clippyButton = null;
@@ -477,7 +477,9 @@ export class Sharing {
             if (component.componentState) {
                 Object.keys(component.componentState)
                     .filter(e => keysToRemove.includes(e))
-                    .forEach(key => delete component.componentState[key]);
+                    .forEach(key => {
+                        delete component.componentState[key];
+                    });
             }
         }
 

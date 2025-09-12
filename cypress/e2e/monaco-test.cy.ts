@@ -24,6 +24,7 @@
 
 import {setMonacoEditorContent} from '../support/utils';
 
+// TODO: all these tests ought to be able to use `should(have.text, ...)`.
 describe('Monaco Editor Utilities', () => {
     beforeEach(() => {
         cy.visit('/');
@@ -33,8 +34,7 @@ describe('Monaco Editor Utilities', () => {
         const simpleCode = 'int main() { return 42; }';
         setMonacoEditorContent(simpleCode);
 
-        // Verify the content was set (basic check)
-        cy.get('.monaco-editor').should('contain.text', 'main');
+        cy.get('.monaco-editor .view-lines').first().should('contain.text', 'main');
     });
 
     it('should set complex multi-line code content', () => {
@@ -43,26 +43,23 @@ describe('Monaco Editor Utilities', () => {
 
 int main() {
     std::vector<int> nums = {1, 2, 3, 4, 5};
-    
+
     for (int num : nums) {
         std::cout << num << std::endl;
     }
-    
+
     return 0;
 }`;
         setMonacoEditorContent(complexCode);
 
-        // Verify the content was set (basic check)
-        cy.get('.monaco-editor').should('contain.text', 'iostream');
-        cy.get('.monaco-editor').should('contain.text', 'vector');
+        cy.get('.monaco-editor .view-lines').first().should('contain.text', 'iostream');
+        cy.get('.monaco-editor .view-lines').first().should('contain.text', 'vector');
     });
 
     it('should handle special characters and quotes', () => {
-        const codeWithSpecialChars = `const char* message = "Hello, \"World\"!";
-int result = (x > 0) ? x : -x;`;
+        const codeWithSpecialChars = `const char* message = "Hello, \\"World\\"!";`;
         setMonacoEditorContent(codeWithSpecialChars);
 
-        // Verify the content was set (basic check)
-        cy.get('.monaco-editor').should('contain.text', 'Hello');
+        cy.get('.monaco-editor .view-lines').first().should('contain.text', 'Hello');
     });
 });

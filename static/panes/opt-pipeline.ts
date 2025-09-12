@@ -413,7 +413,7 @@ export class OptPipeline extends MonacoPane<monaco.editor.IStandaloneDiffEditor,
             const target = e.target;
             this.passesList.find('.active').removeClass('active');
             $(target).addClass('active');
-            this.displayPass(Number.parseInt(unwrap(target.getAttribute('data-i'))));
+            this.displayPass(Number.parseInt(unwrap(target.getAttribute('data-i')), 10));
         });
         // try to select a pass
         if (this.state.selectedIndex >= passes.length) {
@@ -484,7 +484,7 @@ export class OptPipeline extends MonacoPane<monaco.editor.IStandaloneDiffEditor,
                         scrollMode: 'if-needed',
                         block: 'nearest',
                     });
-                    this.displayPass(Number.parseInt(unwrap(prev.getAttribute('data-i'))));
+                    this.displayPass(Number.parseInt(unwrap(prev.getAttribute('data-i')), 10));
                 }
             }
             if (e.key === 'ArrowDown') {
@@ -498,7 +498,7 @@ export class OptPipeline extends MonacoPane<monaco.editor.IStandaloneDiffEditor,
                         scrollMode: 'if-needed',
                         block: 'nearest',
                     });
-                    this.displayPass(Number.parseInt(unwrap(next.getAttribute('data-i'))));
+                    this.displayPass(Number.parseInt(unwrap(next.getAttribute('data-i')), 10));
                 }
             }
         }

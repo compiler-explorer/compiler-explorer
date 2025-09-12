@@ -93,11 +93,11 @@ export class DartAsmParser extends AsmParser {
                 if (dontMaskFilenames) {
                     source = {
                         file: utils.maskRootdir(match[1]),
-                        line: Number.parseInt(match.groups.line),
+                        line: Number.parseInt(match.groups.line, 10),
                         mainsource: true,
                     };
                 } else {
-                    source = {file: null, line: Number.parseInt(match.groups.line), mainsource: true};
+                    source = {file: null, line: Number.parseInt(match.groups.line, 10), mainsource: true};
                 }
                 continue;
             }
