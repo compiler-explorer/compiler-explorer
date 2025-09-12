@@ -79,12 +79,12 @@ export class SourceLineHandler {
         const match = line.match(this.sourceTag);
         if (!match) return null;
 
-        const file = utils.maskRootdir(context.files[Number.parseInt(match[1])]);
-        const sourceLine = Number.parseInt(match[2]);
+        const file = utils.maskRootdir(context.files[Number.parseInt(match[1], 10)]);
+        const sourceLine = Number.parseInt(match[2], 10);
 
         if (!file) return null;
 
-        return this.createSource(file, sourceLine, context, Number.parseInt(match[3]));
+        return this.createSource(file, sourceLine, context, Number.parseInt(match[3], 10));
     }
 
     handleD2Tag(line: string): AsmResultSource | null {
@@ -93,7 +93,7 @@ export class SourceLineHandler {
 
         return {
             file: null,
-            line: Number.parseInt(match[1]),
+            line: Number.parseInt(match[1], 10),
         };
     }
 
@@ -101,10 +101,10 @@ export class SourceLineHandler {
         const match = line.match(this.sourceCVTag);
         if (!match) return null;
 
-        const sourceLine = Number.parseInt(match[3]);
-        const file = utils.maskRootdir(context.files[Number.parseInt(match[2])]);
+        const sourceLine = Number.parseInt(match[3], 10);
+        const file = utils.maskRootdir(context.files[Number.parseInt(match[2], 10)]);
 
-        return this.createSource(file, sourceLine, context, Number.parseInt(match[4]));
+        return this.createSource(file, sourceLine, context, Number.parseInt(match[4], 10));
     }
 
     handle6502Debug(line: string, context: SourceHandlerContext): AsmResultSource | null {
@@ -116,7 +116,7 @@ export class SourceLineHandler {
         if (!match) return null;
 
         const file = utils.maskRootdir(match[1]);
-        const sourceLine = Number.parseInt(match[2]);
+        const sourceLine = Number.parseInt(match[2], 10);
 
         return this.createSource(file, sourceLine, context);
     }
@@ -126,9 +126,9 @@ export class SourceLineHandler {
         if (!match) return undefined;
 
         // cf http://www.math.utah.edu/docs/info/stabs_11.html#SEC48
-        switch (Number.parseInt(match[1])) {
+        switch (Number.parseInt(match[1], 10)) {
             case STAB_N_SLINE:
-                return {file: null, line: Number.parseInt(match[2])};
+                return {file: null, line: Number.parseInt(match[2], 10)};
             case STAB_N_SO:
             case STAB_N_SOL:
                 return null;

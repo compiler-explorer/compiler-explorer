@@ -256,7 +256,7 @@ export class Dex2OatCompiler extends BaseCompiler {
         let match;
         if (this.versionPrefixRegex.test(this.compiler.id)) {
             match = this.compiler.id.match(this.versionPrefixRegex);
-            versionPrefix = Number.parseInt(match![2]);
+            versionPrefix = Number.parseInt(match![2], 10);
         } else if (this.latestVersionRegex.test(this.compiler.id)) {
             isLatest = true;
         }
@@ -572,7 +572,7 @@ export class Dex2OatCompiler extends BaseCompiler {
                 dexPc = -1;
             } else if (this.smaliLineNumberRegex.test(l)) {
                 // Line numbers are given in decimal.
-                lineNumber = Number.parseInt(l.match(this.smaliLineNumberRegex)![1]);
+                lineNumber = Number.parseInt(l.match(this.smaliLineNumberRegex)![1], 10);
                 dexPcsToLines[methodSignature][dexPc] = lineNumber;
             } else if (this.smaliDexPcRegex.test(l)) {
                 // Dex PCs are given in hex.
@@ -736,7 +736,7 @@ export class Dex2OatCompiler extends BaseCompiler {
                 inCode = false;
             } else if (this.methodSizeRegex.test(l)) {
                 match = l.match(this.methodSizeRegex);
-                methodsToSizes[currentMethod] = Number.parseInt(match![2]);
+                methodsToSizes[currentMethod] = Number.parseInt(match![2], 10);
                 currentCodeOffset = Number.parseInt(match![1], 16);
                 inCode = true;
             } else if (inCode && this.insnRegex.test(l)) {

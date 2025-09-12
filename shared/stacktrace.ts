@@ -75,7 +75,7 @@ export function parse(err: Error) {
 
                 const lineMatch = line.match(/at (?:(.+?)\s+\()?(?:(.+?):(\d+)(?::(\d+))?|([^)]+))\)?/);
                 if (!lineMatch) {
-                    return;
+                    return undefined;
                 }
 
                 let object: string | undefined;
@@ -127,7 +127,7 @@ export function parse(err: Error) {
         .map((line): StackFrame | undefined => {
             const lineMatch = line.match(/(.*)@(.*):(\d+):(\d+)/);
             if (!lineMatch) {
-                return;
+                return undefined;
             }
 
             let object: string | undefined;

@@ -26,7 +26,6 @@ import {Buffer} from 'buffer';
 import $ from 'jquery';
 import * as monaco from 'monaco-editor';
 import {editor} from 'monaco-editor';
-// @ts-ignore
 import * as monacoVim from 'monaco-vim';
 import TomSelect from 'tom-select';
 import _ from 'underscore';
@@ -720,7 +719,7 @@ export class Editor extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Edit
         const states: any[] = [];
 
         for (const compilerIdStr of Object.keys(this.ourCompilers)) {
-            const compilerId = Number.parseInt(compilerIdStr);
+            const compilerId = Number.parseInt(compilerIdStr, 10);
 
             const glCompiler: Compiler | undefined = _.find(
                 this.container.layoutManager.root.getComponentsByName('compiler'),
@@ -1242,7 +1241,7 @@ export class Editor extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Edit
             //     enabled: this.settings.colouriseBrackets,
             //     independentColorPoolPerBracketType: true,
             // },
-            // @ts-ignore once the bug is fixed we can remove this suppression
+            // @ts-expect-error once the bug is fixed we can remove this suppression
             'bracketPairColorization.enabled': this.settings.colouriseBrackets,
             useVim: this.settings.useVim,
             quickSuggestions: this.settings.showQuickSuggestions,
@@ -1469,17 +1468,17 @@ export class Editor extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Edit
         const editorModel = this.editor.getModel();
         const widgets = _.compact(
             output.map(obj => {
-                if (!obj.tag) return;
+                if (!obj.tag) return undefined;
 
                 const trees = this.hub.trees;
                 if (trees && trees.length > 0) {
                     if (obj.tag.file) {
                         if (this.id !== trees[0].multifileService.getEditorIdByFilename(obj.tag.file)) {
-                            return;
+                            return undefined;
                         }
                     } else {
                         if (this.id !== trees[0].multifileService.getMainSourceEditorId()) {
-                            return;
+                            return undefined;
                         }
                     }
                 }

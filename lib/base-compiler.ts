@@ -3143,7 +3143,7 @@ export class BaseCompiler {
                     if (res.languageId) result.languageId = res.languageId;
                     if (result.objdumpTime) {
                         const dumpAndParseTime =
-                            Number.parseInt(result.objdumpTime) + Number.parseInt(result.parsingTime);
+                            Number.parseInt(result.objdumpTime, 10) + Number.parseInt(result.parsingTime, 10);
                         BaseCompiler.objdumpAndParseCounter.inc(dumpAndParseTime);
                     }
                 } else {

@@ -50,7 +50,7 @@ export class ClippyTool extends BaseTool {
     ) {
         assert(inputFilepath);
         const clippyArgs = [...(args || []), ...(compilationInfo.compilationOptions || [])];
-        const idxOutput = clippyArgs.findIndex(arg => arg === '-o');
+        const idxOutput = clippyArgs.indexOf('-o');
         if (idxOutput !== -1 && idxOutput + 1 < clippyArgs.length) {
             clippyArgs[idxOutput + 1] = path.join(
                 path.dirname(inputFilepath),

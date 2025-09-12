@@ -115,7 +115,7 @@ export class VcAsmParser extends AsmParser {
         const getLineNumberFromComment = (line: string) => {
             const matches = line.match(this.lineNumberComment);
             if (matches) {
-                return Number.parseInt(matches[1]);
+                return Number.parseInt(matches[1], 10);
             }
             return null;
         };

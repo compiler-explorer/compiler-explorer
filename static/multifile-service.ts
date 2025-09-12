@@ -23,7 +23,6 @@
 // POSSIBILITY OF SUCH DAMAGE.
 
 import JSZip from 'jszip';
-// @ts-ignore
 import path from 'path-browserify';
 import _ from 'underscore';
 import {FiledataPair} from '../types/compilation/compilation.interfaces.js';

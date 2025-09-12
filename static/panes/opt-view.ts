@@ -170,7 +170,9 @@ export class Opt extends MonacoPane<monaco.editor.IStandaloneCodeEditor, OptStat
 
         this.editor?.changeViewZones(accessor => {
             const maxWidth = width ?? this.editor.getLayoutInfo().contentWidth;
-            this.optRemarkViewZoneIds.forEach(id => accessor.removeZone(id));
+            this.optRemarkViewZoneIds.forEach(id => {
+                accessor.removeZone(id);
+            });
             this.optRemarkViewZoneIds = remarksToDisplay.map(({displayString, optType, DebugLoc}) => {
                 const domNode = document.createElement('div');
                 domNode.classList.add('view-line', 'opt-line', optType.toLowerCase());

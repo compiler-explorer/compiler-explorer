@@ -103,7 +103,7 @@ export class LineColouring {
         let colourIdx = 0;
 
         for (const editorIdStr of _.keys(this.colouredSourceLinesByEditor)) {
-            const editorId = Number.parseInt(editorIdStr);
+            const editorId = Number.parseInt(editorIdStr, 10);
 
             const lines = this.getUniqueLinesForEditor(editorId);
             for (const line of lines) {
@@ -116,7 +116,7 @@ export class LineColouring {
         const editorIds = _.keys(this.linesAndColourByEditor);
 
         for (const compilerIdStr of compilerIds) {
-            const compilerId = Number.parseInt(compilerIdStr);
+            const compilerId = Number.parseInt(compilerIdStr, 10);
             for (const editorId of _.keys(this.colouredSourceLinesByEditor)) {
                 for (const info of this.colouredSourceLinesByEditor[editorId]) {
                     if (info.compilerId === compilerId && info.colourIdx >= 0) {

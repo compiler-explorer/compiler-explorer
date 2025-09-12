@@ -244,9 +244,9 @@ export class PTXAsmParser extends AsmParser {
     private processSourceLine(line: string, files: Record<number, string>): AsmResultSource | null {
         const locMatch = line.match(this.sourceTag);
         if (locMatch) {
-            const fileNum = Number.parseInt(locMatch[1]);
-            const lineNum = Number.parseInt(locMatch[2]);
-            const columnNum = Number.parseInt(locMatch[3]);
+            const fileNum = Number.parseInt(locMatch[1], 10);
+            const lineNum = Number.parseInt(locMatch[2], 10);
+            const columnNum = Number.parseInt(locMatch[3], 10);
 
             const file = files[fileNum];
             if (file) {

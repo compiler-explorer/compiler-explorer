@@ -175,8 +175,8 @@ function applyParse_SourceWithLine(lineObj: ResultLine, filteredLine: string, in
     if (match) {
         const message = match[4].trim();
         lineObj.tag = {
-            line: Number.parseInt(match[1]),
-            column: Number.parseInt(match[3] || '0'),
+            line: Number.parseInt(match[1], 10),
+            column: Number.parseInt(match[3] || '0', 10),
             text: message,
             severity: parseSeverity(message),
             file: inputFilename ? path.basename(inputFilename) : undefined,
@@ -190,8 +190,8 @@ function applyParse_FileWithLine(lineObj: ResultLine, filteredLine: string) {
         const message = match[5].trim();
         lineObj.tag = {
             file: match[1],
-            line: Number.parseInt(match[2]),
-            column: Number.parseInt(match[4] || '0'),
+            line: Number.parseInt(match[2], 10),
+            column: Number.parseInt(match[4] || '0', 10),
             text: message,
             severity: parseSeverity(message),
         };
@@ -204,7 +204,7 @@ function applyParse_AtFileLine(lineObj: ResultLine, filteredLine: string) {
         if (match[1].startsWith('/app/')) {
             lineObj.tag = {
                 file: match[1].replace(/^\/app\//, ''),
-                line: Number.parseInt(match[2]),
+                line: Number.parseInt(match[2], 10),
                 column: 0,
                 text: filteredLine,
                 severity: 3,
@@ -212,7 +212,7 @@ function applyParse_AtFileLine(lineObj: ResultLine, filteredLine: string) {
         } else if (!match[1].startsWith('/')) {
             lineObj.tag = {
                 file: match[1],
-                line: Number.parseInt(match[2]),
+                line: Number.parseInt(match[2], 10),
                 column: 0,
                 text: filteredLine,
                 severity: 3,
@@ -277,9 +277,9 @@ export function parseRustOutput(lines: string, inputFilename?: string, pathPrefi
                 title: `Add import for \`${path}\``,
                 edits: [
                     {
-                        line: Number.parseInt(line),
+                        line: Number.parseInt(line, 10),
                         column: 1,
-                        endline: Number.parseInt(line),
+                        endline: Number.parseInt(line, 10),
                         endcolumn: 1,
                         text: `${indentation}use ${path};\n`,
                     },
@@ -299,8 +299,8 @@ export function parseRustOutput(lines: string, inputFilename?: string, pathPrefi
             const match = filteredLine.match(re);
 
             if (match) {
-                const line = Number.parseInt(match[1]);
-                const column = Number.parseInt(match[3] || '0');
+                const line = Number.parseInt(match[1], 10);
+                const column = Number.parseInt(match[3] || '0', 10);
 
                 currentDiagnostic = result.pop();
                 if (currentDiagnostic !== undefined) {
@@ -456,7 +456,7 @@ export function squashHorizontalWhitespace(line: string, atStart = true): string
 export function toProperty(prop: string): boolean | number | string {
     if (prop === 'true' || prop === 'yes') return true;
     if (prop === 'false' || prop === 'no') return false;
-    if (/^-?(0|[1-9]\d*)$/.test(prop)) return Number.parseInt(prop);
+    if (/^-?(0|[1-9]\d*)$/.test(prop)) return Number.parseInt(prop, 10);
     if (/^-?\d*\.\d+$/.test(prop)) return Number.parseFloat(prop);
     return prop;
 }

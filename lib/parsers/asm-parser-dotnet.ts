@@ -156,12 +156,12 @@ export class DotNetAsmParser implements IAsmParser {
 
         for (const i in result.labelDef) {
             const label = result.labelDef[i];
-            labelDefinitions.push([label.name, Number.parseInt(i)]);
+            labelDefinitions.push([label.name, Number.parseInt(i, 10)]);
         }
 
         for (const i in result.methodDef) {
             const method = result.methodDef[i];
-            labelDefinitions.push([method, Number.parseInt(i)]);
+            labelDefinitions.push([method, Number.parseInt(i, 10)]);
         }
 
         for (const line in asmLines) {

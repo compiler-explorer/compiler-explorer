@@ -67,7 +67,7 @@ export class RakuCompiler extends BaseCompiler {
                 lastLineNo = null;
                 sourceLoc = {line: null, file: null};
             } else if (matchLine) {
-                const lineno = Number.parseInt(matchLine[2]);
+                const lineno = Number.parseInt(matchLine[2], 10);
                 sourceLoc = {line: lineno, file: null};
                 lastLineNo = lineno;
             } else if (line) {

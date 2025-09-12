@@ -271,7 +271,7 @@ export class D8Compiler extends BaseCompiler implements SimpleOutputFilenameComp
         let lineNumber;
         for (const l of asm.split(/\n/)) {
             if (this.lineNumberRegex.test(l)) {
-                lineNumber = Number.parseInt(l.match(this.lineNumberRegex)[1]);
+                lineNumber = Number.parseInt(l.match(this.lineNumberRegex)[1], 10);
                 segments.push({text: l, source: null});
             } else if (this.methodEndRegex.test(l)) {
                 lineNumber = null;

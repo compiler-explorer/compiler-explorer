@@ -172,7 +172,7 @@ export class OdinCompiler extends BaseCompiler {
         for (const line of asmLines) {
             const match = line.match(fileFind);
             if (match) {
-                const lineNum = Number.parseInt(match[1]);
+                const lineNum = Number.parseInt(match[1], 10);
                 if (match[4] && !line.includes('.cv_file')) {
                     // Clang-style file directive '.file X "dir" "filename"'
                     if (match[4].startsWith('/')) {

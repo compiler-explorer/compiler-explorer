@@ -35,7 +35,7 @@ export class SPIRVAsmParser extends AsmParser {
         for (const line of asmLines) {
             const match = line.match(opString);
             if (match) {
-                const lineNum = Number.parseInt(match[1]);
+                const lineNum = Number.parseInt(match[1], 10);
                 files[lineNum] = match[2];
             }
         }
@@ -141,7 +141,7 @@ export class SPIRVAsmParser extends AsmParser {
 
             let match = line.match(opConstant);
             if (match) {
-                constantIdToValue[match[1]] = Number.parseInt(match[2]);
+                constantIdToValue[match[1]] = Number.parseInt(match[2], 10);
             }
             match = line.match(opDebugSoruce);
             if (match) {
@@ -154,7 +154,7 @@ export class SPIRVAsmParser extends AsmParser {
             if (match) {
                 const opStringId = idToOpString[match[1]];
                 source = {
-                    file: utils.maskRootdir(opStrings[Number.parseInt(opStringId)]),
+                    file: utils.maskRootdir(opStrings[Number.parseInt(opStringId, 10)]),
                     line: constantIdToValue[match[1]],
                     mainsource: true,
                 };
@@ -164,11 +164,11 @@ export class SPIRVAsmParser extends AsmParser {
             match = line.match(sourceTag);
             if (match) {
                 source = {
-                    file: utils.maskRootdir(opStrings[Number.parseInt(match[1])]),
-                    line: Number.parseInt(match[2]),
+                    file: utils.maskRootdir(opStrings[Number.parseInt(match[1], 10)]),
+                    line: Number.parseInt(match[2], 10),
                     mainsource: true,
                 };
-                const sourceCol = Number.parseInt(match[3]);
+                const sourceCol = Number.parseInt(match[3], 10);
                 if (!Number.isNaN(sourceCol) && sourceCol !== 0) {
                     source.column = sourceCol;
                 }

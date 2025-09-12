@@ -165,7 +165,7 @@ class Slider extends BaseSetting {
     }
 
     override getUi(): number {
-        return Number.parseInt(this.val()?.toString() ?? '0');
+        return Number.parseInt(this.val()?.toString() ?? '0', 10);
     }
 
     private updateDisplay() {
@@ -189,7 +189,7 @@ class Numeric extends BaseSetting {
     }
 
     override getUi(): number {
-        return this.clampValue(Number.parseInt(this.val()?.toString() ?? '0'));
+        return this.clampValue(Number.parseInt(this.val()?.toString() ?? '0', 10));
     }
 
     override putUi(value: number) {
@@ -377,7 +377,7 @@ export class Settings {
         ).elem;
         defaultFontScaleSelector.on('change', e => {
             assert(e.target instanceof HTMLSelectElement);
-            this.eventHub.emit('broadcastFontScale', Number.parseInt(e.target.value));
+            this.eventHub.emit('broadcastFontScale', Number.parseInt(e.target.value, 10));
         });
 
         const formats: FormatBase[] = ['Google', 'LLVM', 'Mozilla', 'Chromium', 'WebKit', 'Microsoft', 'GNU'];

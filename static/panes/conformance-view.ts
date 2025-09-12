@@ -489,38 +489,37 @@ export class Conformance extends Pane<ConformanceViewState> {
 
         let libraries: Record<string, Library | false> = {};
         let first = true;
-        compilers.map(compiler => {
-            if (compiler) {
-                const filteredLibraries = LibUtils.getSupportedLibraries(compiler.libsArr, langId, compiler.remote);
+        for (const compiler of compilers) {
+            if (!compiler) continue;
+            const filteredLibraries = LibUtils.getSupportedLibraries(compiler.libsArr, langId, compiler.remote);
 
-                if (first) {
-                    libraries = _.extend({}, filteredLibraries);
-                    first = false;
-                } else {
-                    const libsInCommon = _.intersection(_.keys(libraries), _.keys(filteredLibraries));
+            if (first) {
+                libraries = _.extend({}, filteredLibraries);
+                first = false;
+            } else {
+                const libsInCommon = _.intersection(_.keys(libraries), _.keys(filteredLibraries));
 
-                    for (const libKey in libraries) {
-                        const lib = libraries[libKey];
-                        if (lib && libsInCommon.includes(libKey)) {
-                            const versionsInCommon = _.intersection(
-                                Object.keys(lib.versions),
-                                Object.keys(filteredLibraries[libKey].versions),
-                            );
+                for (const libKey in libraries) {
+                    const lib = libraries[libKey];
+                    if (lib && libsInCommon.includes(libKey)) {
+                        const versionsInCommon = _.intersection(
+                            Object.keys(lib.versions),
+                            Object.keys(filteredLibraries[libKey].versions),
+                        );
 
-                            lib.versions = _.pick(lib.versions, (version, versionkey) => {
-                                return versionsInCommon.includes(versionkey);
-                            }) as Record<string, LibraryVersion>; // TODO(jeremy-rifkin)
-                        } else {
-                            libraries[libKey] = false;
-                        }
+                        lib.versions = _.pick(lib.versions, (version, versionkey) => {
+                            return versionsInCommon.includes(versionkey);
+                        }) as Record<string, LibraryVersion>; // TODO(jeremy-rifkin)
+                    } else {
+                        libraries[libKey] = false;
                     }
-
-                    libraries = _.omit(libraries, lib => {
-                        return !lib || _.isEmpty(lib.versions);
-                    }) as Record<string, Library>; // TODO(jeremy-rifkin)
                 }
+
+                libraries = _.omit(libraries, lib => {
+                    return !lib || _.isEmpty(lib.versions);
+                }) as Record<string, Library>; // TODO(jeremy-rifkin)
             }
-        });
+        }
 
         return libraries as CompilerLibs; // TODO(jeremy-rifkin)
     }

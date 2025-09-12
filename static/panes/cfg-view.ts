@@ -649,7 +649,7 @@ export class Cfg extends Pane<CfgState> {
                 const left = span_box.left - block_bounding_box.left;
                 doc += `<text ${attrs({
                     x: block.coordinates.x + left,
-                    y: block.coordinates.y + top + span_box.height / 2 + Number.parseInt(block_style.paddingTop),
+                    y: block.coordinates.y + top + span_box.height / 2 + Number.parseInt(block_style.paddingTop, 10),
                     class: 'code',
                     fill: span_style.color,
                 })}>${escapeHTML(text)}</text>`;
