@@ -271,9 +271,56 @@ def print_issue(name, result):
         print(f"{name}:\n  {sep.join(sorted([str(issue) for issue in result]))}")
 
 
-def find_orphans(args: Namespace):
+def check_cross_file_duplicates(folder: str):
+    """Check for compiler IDs that are defined in multiple Amazon files"""
+    from collections import defaultdict
+
+    compiler_id_locations = defaultdict(list)
+
+    for filename in listdir(folder):
+        if not filename.endswith('.properties') or filename.endswith('.local.properties'):
+            continue
+        if 'amazon' not in filename.lower():
+            continue
+
+        filepath = join(folder, filename)
+        with open(filepath, 'r') as f:
+            seen_compilers = set()
+
+            for line_num, text in enumerate(f, start=1):
+                text = text.strip()
+                if not text or text.startswith('#'):
+                    continue
+
+                # Check for compiler IDs only
+                compiler_match = COMPILER_ID_RE.match(text)
+                if compiler_match:
+                    compiler_id = compiler_match.group(1)
+                    if compiler_id not in seen_compilers:
+                        seen_compilers.add(compiler_id)
+                        compiler_id_locations[compiler_id].append((filename, line_num))
+
+    duplicate_compiler_ids = {id: locs for id, locs in compiler_id_locations.items() if len(locs) > 1}
+
+    return duplicate_compiler_ids
+
+def find_orphans_and_duplicates(args: Namespace):
     folder = args.config_dir
     result = sorted([(f, r) for (f, r) in process_folder(folder, args) if problems_found(r)], key=lambda x: x[0])
+
+    duplicate_compiler_ids = check_cross_file_duplicates(folder)
+
+    has_cross_file_issues = False
+    if duplicate_compiler_ids:
+        has_cross_file_issues = True
+        print("Found duplicate Compiler IDs across Amazon property files:")
+        print("################")
+        for compiler_id, locations in sorted(duplicate_compiler_ids.items()):
+            print(f"  {compiler_id}:")
+            for filename, line_num in sorted(locations):
+                print(f"    - {filename}:Line {line_num}")
+        print("")
+
     if result:
         print(f"Found {len(result)} property file(s) with issues:")
         for (filename, issues) in result:
@@ -285,12 +332,13 @@ def find_orphans(args: Namespace):
         print("To suppress this warning on IDs that are temporally disabled, "
               "add one or more comments to each listed file:")
         print("# Disabled: id1 id2 ...")
-    else:
+    elif not has_cross_file_issues:
         print("No configuration mismatches found")
-    return result
+
+    return result or has_cross_file_issues
 
 
 if __name__ == '__main__':
     args = parser.parse_args()
-    if find_orphans(args):
+    if find_orphans_and_duplicates(args):
         sys.exit(1)
