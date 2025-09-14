@@ -1679,13 +1679,6 @@ export function getAsmOpcode(opcode: string | undefined): AssemblyInstructionInf
                 "url": "https://www.felixcloutier.com/x86/LZCNT.html"
             };
 
-        case "LZCNT":
-            return {
-                "html": "<p>Counts the number of leading most significant zero bits in a source operand (second operand) returning the result into a destination (first operand).</p><p>LZCNT differs from BSR. For example, LZCNT will produce the operand size when the input operand is zero. It should be noted that on processors that do not support LZCNT, the instruction byte encoding is executed as BSR.</p><p>In 64-bit mode 64-bit operand size requires REX.W=1.</p>",
-                "tooltip": "Counts the number of leading most significant zero bits in a source operand (second operand) returning the result into a destination (first operand).",
-                "url": "https://www.felixcloutier.com/x86/LZCNT.html"
-            };
-
         case "MASKMOVDQU":
         case "VMASKMOVDQU":
             return {
