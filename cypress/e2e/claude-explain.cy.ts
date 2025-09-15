@@ -73,8 +73,6 @@ function setupClaudeExplainEnvironment() {
     // Set up configuration
     cy.visit('/', {
         onBeforeLoad: (win: any) => {
-            // TODO remove this when we make claude explain generally available.
-            win.localStorage.setItem('claudeExplainTest', 'enabled');
             stubConsoleOutput(win);
             win.compilerExplorerOptions = win.compilerExplorerOptions || {};
             win.compilerExplorerOptions.explainApiEndpoint = 'http://test.localhost/fake-api/explain';
