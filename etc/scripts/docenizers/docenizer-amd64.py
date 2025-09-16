@@ -10,6 +10,9 @@ import urllib
 from urllib import request
 from urllib import parse
 
+sys.path.append(os.path.join(os.path.dirname(__file__), 'manual'))
+from manual.manual_amd64 import manual_instructions_amd64
+
 try:
     from bs4 import BeautifulSoup
 except ImportError:
@@ -368,6 +371,16 @@ export function getAsmOpcode(opcode: string | undefined): AssemblyInstructionInf
                 "html": inst.body,
                 "url": get_url_for_instruction(inst)
             }, indent=16, separators=(',', ': '), sort_keys=True))[:-1] + '            };\n\n')
+        
+        for inst in manual_instructions_amd64:
+            for name in sorted(inst["names"]):
+                f.write(f'        case "{name}":\n')
+            f.write('            return {}'.format(json.dumps({
+                "tooltip": inst["tooltip"],
+                "html": inst["html"],
+                "url": inst["url"]
+            }, indent=16, separators=(',', ': '), sort_keys=True))[:-1] + '            };\n\n')     
+
         f.write("""
     }
 }
