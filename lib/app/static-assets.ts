@@ -29,6 +29,7 @@ import express from 'express';
 import urljoin from 'url-join';
 
 import {ElementType} from '../../shared/common-utils.js';
+import {unwrap} from '../assert.js';
 import {logger} from '../logger.js';
 import {PugRequireHandler, ServerOptions} from './server.interfaces.js';
 
@@ -71,7 +72,7 @@ export async function setupWebPackDevMiddleware(options: ServerOptions, router: 
 
     type WebpackConfiguration = ElementType<Parameters<typeof webpack>[0]>;
 
-    const webpackCompiler = webpack([webpackConfig as WebpackConfiguration]);
+    const webpackCompiler = unwrap(webpack([webpackConfig as WebpackConfiguration]));
     router.use(
         webpackDevMiddleware(webpackCompiler, {
             publicPath: '/',

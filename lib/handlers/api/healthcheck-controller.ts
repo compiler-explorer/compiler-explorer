@@ -34,12 +34,23 @@ import {ICompileHandler} from '../compile.interfaces.js';
 import {HttpController} from './controller.interfaces.js';
 
 export class HealthcheckController implements HttpController {
+    private compilationWorkerHealthCheck: () => boolean = () => true; // Default dummy function
+    private executionWorkerHealthCheck: () => boolean = () => true; // Default dummy function
+
     public constructor(
         private readonly compilationQueue: CompilationQueue,
         private readonly healthCheckFilePath: string | null,
         private readonly compileHandler: ICompileHandler,
         private readonly isExecutionWorker: boolean,
     ) {}
+
+    public setCompilationWorkerHealthCheck(healthCheck: () => boolean): void {
+        this.compilationWorkerHealthCheck = healthCheck;
+    }
+
+    public setExecutionWorkerHealthCheck(healthCheck: () => boolean): void {
+        this.executionWorkerHealthCheck = healthCheck;
+    }
 
     createRouter(): express.Router {
         const router = express.Router();
@@ -62,6 +73,18 @@ export class HealthcheckController implements HttpController {
         // If this is a worker, we don't require that the server has languages configured.
         if (!this.isExecutionWorker && !this.compileHandler.hasLanguages()) {
             logger.error('*** HEALTH CHECK FAILURE: no languages/compilers detected');
+            res.status(500).send();
+            return;
+        }
+
+        if (!this.compilationWorkerHealthCheck()) {
+            logger.error('*** HEALTH CHECK FAILURE: compilation worker has failed permanently');
+            res.status(500).send();
+            return;
+        }
+
+        if (!this.executionWorkerHealthCheck()) {
+            logger.error('*** HEALTH CHECK FAILURE: execution worker has failed permanently');
             res.status(500).send();
             return;
         }

@@ -29,7 +29,6 @@ import {LEVEL, MESSAGE} from 'triple-beam';
 import winston from 'winston';
 import LokiTransport from 'winston-loki';
 
-// @ts-ignore
 import {Papertrail} from 'winston-papertrail';
 import TransportStream, {TransportStreamOptions} from 'winston-transport';
 /**

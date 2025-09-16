@@ -52,6 +52,7 @@ import * as Components from '../components.js';
 import {createDragSource} from '../components.js';
 import {Hub} from '../hub.js';
 import * as LibUtils from '../lib-utils.js';
+import {localStorage} from '../local.js';
 import * as monacoConfig from '../monaco-config.js';
 import {LanguageLibs} from '../options.interfaces.js';
 import {options} from '../options.js';
@@ -971,7 +972,8 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
         this.initToolButtons();
 
         // Hide Claude Explain button if no API endpoint is configured
-        if (!options.explainApiEndpoint) {
+        // Or, temporarily, unless the user has manually opted in. TODO fix up the hack in UI tests too when we turn on.
+        if (!options.explainApiEndpoint || localStorage.get('claudeExplainTest', '') !== 'enabled') {
             this.explainButton.hide();
         }
     }

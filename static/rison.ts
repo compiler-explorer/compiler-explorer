@@ -131,7 +131,9 @@ class Encoders {
                     if (b) {
                         a[a.length] = ',';
                     }
-                    k = Number.isNaN(Number.parseInt(i)) ? Encoders.string(i) : Encoders.number(Number.parseInt(i));
+                    k = Number.isNaN(Number.parseInt(i, 10))
+                        ? Encoders.string(i)
+                        : Encoders.number(Number.parseInt(i, 10));
                     a.push(k, ':', v);
                     b = true;
                 }

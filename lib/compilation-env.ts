@@ -36,6 +36,7 @@ import {BaseCompiler} from './base-compiler.js';
 import type {Cache} from './cache/base.interfaces.js';
 import {BaseCache} from './cache/base.js';
 import {createCacheFromConfig} from './cache/from-config.js';
+import {S3Cache} from './cache/s3.js';
 import {CompilationQueue, EnqueueOptions, Job} from './compilation-queue.js';
 import {FormattingService} from './formatting-service.js';
 import {logger} from './logger.js';
@@ -166,6 +167,32 @@ export class CompilationEnvironment {
             logger.info(`Cache put ${JSON.stringify(object)} hash ${key}`);
         }
         return this.compilerCache.put(key, JSON.stringify(result), creator);
+    }
+
+    async cachePutWithTTL(object: CacheableValue, result: object, ttlDays: number, creator: string | undefined) {
+        const key = BaseCache.hash(object);
+        const jsonData = JSON.stringify(result);
+
+        // Check if cache is S3Cache to use TTL functionality
+        if (this.cache instanceof S3Cache) {
+            return this.cache.putWithTTL(key, Buffer.from(jsonData), ttlDays, creator);
+        } else {
+            // Fallback to regular put for non-S3 caches
+            return this.cache.put(key, jsonData, creator);
+        }
+    }
+
+    async tempCachePutWithTTL(object: CacheableValue, result: object, ttlDays: number, creator: string | undefined) {
+        const key = BaseCache.hash(object);
+        const jsonData = JSON.stringify(result);
+
+        // Check if cache is S3Cache to use TTL functionality with temp path
+        if (this.cache instanceof S3Cache) {
+            return this.cache.putWithTTLAndPath(key, Buffer.from(jsonData), ttlDays, 'temp', creator);
+        } else {
+            // Fallback to regular put for non-S3 caches
+            return this.cache.put(key, jsonData, creator);
+        }
     }
 
     getExecutableHash(object: CacheableValue): string {

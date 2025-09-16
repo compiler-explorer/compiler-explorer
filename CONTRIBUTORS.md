@@ -164,3 +164,4 @@ From oldest to newest contributor, we would like to thank:
 - [Alfredo Correa](https://github.com/correaa)
 - [Oscar Amoros Huguet](https://github.com/morousg)
 - [Florian Freitag](https://github.com/flofriday)
+- [Trevor Gross](https://github.com/tgross35)

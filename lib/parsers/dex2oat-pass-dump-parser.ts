@@ -170,7 +170,7 @@ export class Dex2OatPassDumpParser {
             for (const instruction of methodsToInstructions[methodName]) {
                 if (this.dexPcRegex.test(instruction)) {
                     match = instruction.match(this.dexPcRegex);
-                    dexPc = Number.parseInt(match![1]);
+                    dexPc = Number.parseInt(match![1], 10);
                     remove.push(instruction);
                 } else if (this.offsetRegex.test(instruction)) {
                     match = instruction.match(this.offsetRegex);

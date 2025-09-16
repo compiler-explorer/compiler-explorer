@@ -107,6 +107,10 @@ function initializeChartDataFromResult(compileResult: CompilationResult, totalTi
         }
     }
 
+    if (compileResult.queueTime) {
+        pushTimingInfo(data, 'Time in Queue', compileResult.queueTime);
+    }
+
     if (compileResult.didExecute) {
         if (compileResult.execResult?.execTime) {
             pushTimingInfo(data, 'Execution', compileResult.execResult.execTime);

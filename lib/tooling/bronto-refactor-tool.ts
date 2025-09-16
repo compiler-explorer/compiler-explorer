@@ -22,6 +22,7 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
+import path from 'node:path';
 import {splitArguments} from '../../shared/common-utils.js';
 import {CompilationInfo} from '../../types/compilation/compilation.interfaces.js';
 import {ToolInfo} from '../../types/tool.interfaces.js';
@@ -44,18 +45,21 @@ export class BrontoRefactorTool extends BaseTool {
     override async runTool(
         compilationInfo: CompilationInfo,
         inputFilepath: string,
-        _args?: string[],
+        args: string[],
         _stdin?: string,
         supportedLibraries?: Record<string, OptionsHandlerLibrary>,
     ) {
         const sourcefile = inputFilepath;
         const options = compilationInfo.options;
-        const includeflags = super.getIncludeArguments(compilationInfo.libraries, supportedLibraries || {});
+        const pathDir = inputFilepath ? path.dirname(inputFilepath) : undefined;
+
+        const includeflags = super.getIncludeArguments(compilationInfo.libraries, supportedLibraries || {}, pathDir);
         const libOptions = super.getLibraryOptions(compilationInfo.libraries, supportedLibraries || {});
 
-        let compileFlags = ['compiler-explorer', sourcefile, '--clang-path', compilationInfo.compiler.exe, '--'].concat(
-            splitArguments(compilationInfo.compiler.options),
-        );
+        let compileFlags = ['compiler-explorer']
+            .concat(args)
+            .concat([sourcefile, '--clang-path', compilationInfo.compiler.exe, '--'])
+            .concat(splitArguments(compilationInfo.compiler.options));
         compileFlags = compileFlags.concat(includeflags);
         compileFlags = compileFlags.concat(libOptions);
 

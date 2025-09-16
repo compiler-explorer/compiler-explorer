@@ -54,7 +54,7 @@ export function startListening(webServer: express.Express, appArgs: AppArguments
 function setupSystemdSocketListening(webServer: express.Express, ss: {fd: number}): void {
     // ms (5 min default)
     const idleTimeout = process.env.IDLE_TIMEOUT;
-    const timeout = (idleTimeout === undefined ? 300 : Number.parseInt(idleTimeout)) * 1000;
+    const timeout = (idleTimeout === undefined ? 300 : Number.parseInt(idleTimeout, 10)) * 1000;
     if (idleTimeout) {
         setupIdleTimeout(webServer, timeout);
         logger.info(`  IDLE_TIMEOUT: ${idleTimeout}`);

@@ -79,7 +79,7 @@ export class PythonCFGParser extends BaseCFGParser {
             let funcName: string | undefined;
             if (line.text.startsWith('Disassembly of')) {
                 const srcLineStr = line.text.match(/line (\d+)/)?.[1];
-                const srcLineNum = srcLineStr ? Number.parseInt(srcLineStr) : null;
+                const srcLineNum = srcLineStr ? Number.parseInt(srcLineStr, 10) : null;
                 if (srcLineNum && fullRes && fullRes.inputFilename) {
                     if (src === null) {
                         src = await fs.readFile(fullRes.inputFilename, 'utf8');

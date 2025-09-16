@@ -145,7 +145,7 @@ export class CarbonExplorerCompiler extends BaseCompiler {
             // Hook to parse out the "result: 123" line at the end of the interpreted execution run.
             const re = /^result: (\d+)$/;
             const match = re.exec(this.lastLine(result.asm as ResultLine[]));
-            const code = match ? Number.parseInt(match[1]) : -1;
+            const code = match ? Number.parseInt(match[1], 10) : -1;
             result.execResult = {
                 stdout: result.stdout,
                 stderr: [],

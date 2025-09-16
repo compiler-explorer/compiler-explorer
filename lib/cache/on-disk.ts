@@ -70,7 +70,7 @@ export class OnDiskCache extends BaseCache {
                 if (stat.size === 0 || fullPath.endsWith('.tmp')) {
                     logger.info(`Removing old temporary or broken empty file ${fullPath}`);
                     fs.unlink(fullPath, () => {});
-                    return;
+                    return undefined;
                 }
                 return {
                     key: name,
@@ -85,10 +85,10 @@ export class OnDiskCache extends BaseCache {
 
         // Sort oldest first
 
-        // @ts-ignore filter(Boolean) should have sufficed but doesn't
+        // @ts-expect-error filter(Boolean) should have sufficed but doesn't
         info.sort((x, y) => x.sort - y.sort);
         for (const i of info) {
-            // @ts-ignore
+            // @ts-expect-error
             this.cache.set(i.key, i.data);
         }
     }

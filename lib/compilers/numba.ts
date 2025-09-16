@@ -57,7 +57,8 @@ export class NumbaCompiler extends BaseCompiler {
             if (!match) continue;
             item.text = item.text.slice(0, match.index);
             const inNvccCode = false;
-            if (this.asm.hasOpcode(item.text, inNvccCode)) item.source = {line: Number.parseInt(match[1]), file: null};
+            if (this.asm.hasOpcode(item.text, inNvccCode))
+                item.source = {line: Number.parseInt(match[1], 10), file: null};
         }
         return processed;
     }
