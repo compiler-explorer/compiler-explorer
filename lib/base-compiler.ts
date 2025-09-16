@@ -3324,6 +3324,11 @@ export class BaseCompiler {
                 remarksSet.add(strOpt);
                 opt.optType = doc.contents.tag.substring(1); // remove leading '!'
                 opt.displayString = displayOptInfo(opt);
+
+                if (opt.optType.startsWith('Missed')) opt.optType = 'Missed';
+                else if (opt.optType.startsWith('Passed')) opt.optType = 'Passed';
+                else opt.optType = 'Analysis'; // Catch all
+
                 output.push(opt as OptRemark);
             }
         }
