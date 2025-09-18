@@ -22,6 +22,7 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
+import fsSync from 'node:fs';
 import fs from 'node:fs/promises';
 import path from 'node:path';
 
@@ -36,6 +37,16 @@ import {BaseTool} from './base-tool.js';
 export class ClangTidyTool extends BaseTool {
     static get key() {
         return 'clang-tidy-tool';
+    }
+
+    override getToolExe(compilationInfo: CompilationInfo): string {
+        const exe = path.format({dir: path.dirname(compilationInfo.compiler.exe), base: 'clang-tidy'});
+        try {
+            fsSync.accessSync(exe);
+            return exe;
+        } catch {
+            return this.tool.exe;
+        }
     }
 
     constructor(toolInfo: ToolInfo, env: ToolEnv) {
