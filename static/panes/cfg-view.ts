@@ -624,6 +624,13 @@ export class Cfg extends Pane<CfgState> {
         })} />`;
         // just grab the edges/arrows directly
         doc += this.svg.innerHTML;
+
+        if (!this.layout) {
+            // empty function, or no function selected
+            doc += '</svg>';
+            this.setZoom(this.zoom, true);
+            return doc;
+        }
         // the blocks we'll have to copy over
         for (const block of this.layout.blocks) {
             const block_elem = this.bbMap[block.data.id];
