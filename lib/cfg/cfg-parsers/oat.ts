@@ -68,7 +68,7 @@ export class OatCFGParser extends BaseCFGParser {
 
     // Uses the same general flow as the overridden function, but accounts for
     // empty spaces between functions.
-    override splitToFunctions(asmArr: AssemblyLine[]) {
+    override splitToFunctions(asmArr: AssemblyLine[]): Range[] {
         if (asmArr.length === 0) return [];
         const result: Range[] = [];
         let first = 0;

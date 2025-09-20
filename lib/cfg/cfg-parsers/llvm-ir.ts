@@ -55,7 +55,7 @@ export class LlvmIrCfgParser extends BaseCFGParser {
         return asmArr;
     }
 
-    override splitToFunctions(asmArr: AssemblyLine[]) {
+    override splitToFunctions(asmArr: AssemblyLine[]): Range[] {
         if (asmArr.length === 0) return [];
         const result: Range[] = [];
         let i = 0;

@@ -79,7 +79,7 @@ export class BaseCFGParser {
         return this.filterTextSection(assembly).map(_.clone).filter(isCode);
     }
 
-    public splitToFunctions(asmArr: AssemblyLine[]) {
+    public splitToFunctions(asmArr: AssemblyLine[]): Range[] {
         if (asmArr.length === 0) return [];
         const result: Range[] = [];
         let first = 1;
