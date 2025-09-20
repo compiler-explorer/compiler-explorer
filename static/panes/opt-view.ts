@@ -77,7 +77,7 @@ export class Opt extends MonacoPane<monaco.editor.IStandaloneCodeEditor, OptStat
     override registerButtons(state: OptState) {
         super.registerButtons(state);
         this.filters = new Toggles(this.domRoot.find('.filters'), state as unknown as Record<string, boolean>);
-        this.filters.on('change', this.showOptRemarks.bind(this));
+        this.filters.on('change', () => this.showOptRemarks());
 
         this.toggleWrapButton = new Toggles(this.domRoot.find('.options'), state as unknown as Record<string, boolean>);
         this.toggleWrapButton.on('change', this.onToggleWrapChange.bind(this));
