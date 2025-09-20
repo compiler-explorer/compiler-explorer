@@ -30,7 +30,7 @@ export class GccCFGParser extends BaseCFGParser {
     }
 
     override filterData(assembly: AssemblyLine[]) {
-        const isInstruction = (x: string) => x !== '' && !x.startsWith('#') && !x.match(/^\s+\./);
+        const isInstruction = (x: string) => !x.startsWith('#') && !x.match(/^\s+\./) && !x.match(/^\s*$/);
         const isFunctionName = (x: string) => x.endsWith(':') && x.includes('(') && x.includes(')');
         const res: AssemblyLine[] = [];
         // preserve only labels that contain actual instructions, and not just comments/directives
@@ -39,6 +39,7 @@ export class GccCFGParser extends BaseCFGParser {
         for (const line of assembly) {
             if (isFunctionName(line.text)) {
                 res.push(line);
+                curLabel = line;
                 sawInstInLabel = false;
                 continue;
             }
