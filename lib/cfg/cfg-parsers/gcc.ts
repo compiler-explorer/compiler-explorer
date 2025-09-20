@@ -22,10 +22,6 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import _ from 'underscore';
-
-import type {ResultLine} from '../../../types/resultline/resultline.interfaces.js';
-
 import {AssemblyLine, BaseCFGParser} from './base.js';
 
 export class GccCFGParser extends BaseCFGParser {
@@ -33,11 +29,36 @@ export class GccCFGParser extends BaseCFGParser {
         return 'gcc';
     }
 
-    override filterData(assembly: ResultLine[]) {
-        const jmpLabelRegex = /\.L\d+:/;
-        const isCode = (x: AssemblyLine) =>
-            x?.text && (x.source !== null || jmpLabelRegex.test(x.text) || this.isFunctionName(x));
-        return this.filterTextSection(assembly).map(_.clone).filter(isCode);
+    override filterData(assembly: AssemblyLine[]) {
+        const isInstruction = (x: string) => !x.startsWith('#') && !x.match(/^\s+\./) && !x.match(/^\s*$/);
+        const isFunctionName = (x: string) => x.endsWith(':') && x.includes('(') && x.includes(')');
+        const res: AssemblyLine[] = [];
+        // preserve only labels that contain actual instructions, and not just comments/directives
+        let sawInstInLabel = false;
+        let curLabel: AssemblyLine | null = null;
+        for (const line of assembly) {
+            if (isFunctionName(line.text)) {
+                res.push(line);
+                curLabel = line;
+                sawInstInLabel = false;
+                continue;
+            }
+            if (line.text.trim().endsWith(':')) {
+                // A label
+                curLabel = line;
+                sawInstInLabel = false;
+                continue;
+            }
+            if (isInstruction(line.text)) {
+                if (!sawInstInLabel) {
+                    // First actual instruction in this label
+                    res.push(curLabel!);
+                    sawInstInLabel = true;
+                }
+                res.push(line);
+            }
+        }
+        return res;
     }
 
     override extractJmpTargetName(inst: string) {
