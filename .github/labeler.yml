@@ -98,6 +98,12 @@
           - 'etc/config/clean.*.properties'
           - 'static/modes/clean-mode.ts'
 
+'lang-clojure':
+  - changed-files:
+      - any-glob-to-any-file:
+          - 'lib/compilers/clojure.ts'
+          - 'etc/config/clojure.*.properties'
+
 'lang-cobol':
   - changed-files:
       - any-glob-to-any-file:
