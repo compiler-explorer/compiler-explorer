@@ -162,16 +162,12 @@
             border-bottom-color: #30363d;
         }
 
-        pre, code {
+        pre {
             background-color: #161b22;
-            border-color: #30363d;
-        }
-
-        code {
-            background-color: rgba(240, 246, 252, 0.15);
         }
 
         pre code {
+            border-color: #30363d;
             background-color: transparent;
         }
 
