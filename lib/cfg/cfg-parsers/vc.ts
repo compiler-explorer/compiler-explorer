@@ -25,7 +25,8 @@
 import _ from 'underscore';
 
 
-import {AssemblyLine, BaseCFGParser} from './base.js';
+import {AssemblyLine, BaseCFGParser, Range} from './base.js';
+import {InstructionType} from '../instruction-sets/base.js';
 
 export class VcCFGParser extends BaseCFGParser {
     static override get key() {
@@ -63,7 +64,39 @@ export class VcCFGParser extends BaseCFGParser {
         return newRes;
     }
 
-    override extractJmpTargetName(inst: string) {
-        return inst.match(/$L.*/) + ':';
+    override splitToFunctions(asmArr: AssemblyLine[]): Range[] {
+        if (asmArr.length === 0) return [];
+        const result: Range[] = [];
+        let first = 1;
+        const last = asmArr.length;
+        const fnRange: Range = {start: 0, end: 0};
+        do {
+            if (this.isFunctionEnd(asmArr[first].text)) {
+                fnRange.end = first+1;
+                result.push(_.clone(fnRange));
+                fnRange.start = first+1;
+            }
+            ++first;
+        } while (first < last);
+
+        fnRange.end = last;
+        if (fnRange.end > fnRange.start + 1) result.push(_.clone(fnRange));
+        return result;
     }
+
+    override isFunctionEnd(x: string) {
+        return x.endsWith('ENDP');
+    }
+    override isBasicBlockEnd(inst: string, prevInst: string) {
+        // Keep ENDP line in the same block as prevInst. Might drop it entirely.
+        if (this.isFunctionEnd(inst)) return false;
+        if (this.instructionSetInfo.getInstructionType(prevInst) !== InstructionType.notRetInst) 
+            return true;
+        return inst[0] === '$';
+    }
+
+    override extractJmpTargetName(inst: string) {
+        return inst.match(/\$.*/) + ':';
+    }
+    
 }
