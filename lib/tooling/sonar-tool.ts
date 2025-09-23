@@ -189,7 +189,11 @@ export class SonarTool extends BaseTool {
         // Collecting the flags of compilation
 
         let compileFlags: string[] = splitArguments(compilationInfo.compiler.options);
-        const includeflags = super.getIncludeArguments(compilationInfo.libraries, supportedLibraries || {});
+        const includeflags = super.getIncludeArguments(
+            compilationInfo.libraries,
+            supportedLibraries || {},
+            inputFilePath ? path.dirname(inputFilePath) : undefined,
+        );
         compileFlags = compileFlags.concat(includeflags);
         const libOptions = super.getLibraryOptions(compilationInfo.libraries, supportedLibraries || {});
         compileFlags = compileFlags.concat(libOptions);

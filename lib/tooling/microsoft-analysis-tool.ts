@@ -86,7 +86,11 @@ export class MicrosoftAnalysisTool extends BaseTool {
         const sourcefile = inputFilepath;
         const options = compilationInfo.options;
         const libOptions = super.getLibraryOptions(compilationInfo.libraries, unwrap(supportedLibraries));
-        const includeflags = super.getIncludeArguments(compilationInfo.libraries, unwrap(supportedLibraries));
+        const includeflags = super.getIncludeArguments(
+            compilationInfo.libraries,
+            unwrap(supportedLibraries),
+            inputFilepath ? path.dirname(inputFilepath) : undefined,
+        );
 
         let compileFlags = splitArguments(compilationInfo.compiler.options);
         compileFlags = compileFlags.concat(includeflags, libOptions);

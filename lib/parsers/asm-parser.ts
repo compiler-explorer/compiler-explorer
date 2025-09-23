@@ -350,7 +350,7 @@ export class AsmParser extends AsmRegex implements IAsmParser {
         // Opcode expression here matches LLVM-style opcodes of the form `%blah = opcode`
         this.hasOpcodeRe = /^\s*(%[$.A-Z_a-z][\w$.]*\s*=\s*)?[A-Za-z]/;
         this.instructionRe = /^\s*[A-Za-z]+/;
-        this.identifierFindRe = /((?!\$\.)[$.@A-Z_a-z"][\w.]*"?)(?:@\w+)*/g;
+        this.identifierFindRe = /((?!\$\.)[$.@A-Z_a-z"][\w$.]*"?)(?:@\w+)*/g;
         this.hasNvccOpcodeRe = /^\s*[@A-Za-z|]/;
         this.definesFunction = /^\s*\.(type.*,\s*[#%@]function|proc\s+[.A-Z_a-z][\w$.]*:.*)$/;
         this.definesGlobal = /^\s*\.(?:globa?l|GLB|export)\s*([.A-Z_a-z][\w$.]*|"[.A-Z_a-z][\w$.]*")/;
@@ -472,7 +472,7 @@ export class AsmParser extends AsmRegex implements IAsmParser {
             const match = line.match(this.fileFind);
             if (!match) continue;
 
-            const lineNum = Number.parseInt(match[1]);
+            const lineNum = Number.parseInt(match[1], 10);
             if (match[4] && !line.includes('.cv_file')) {
                 // Clang-style file directive '.file X "dir" "filename"'
                 if (match[4].startsWith('/')) {
@@ -644,11 +644,11 @@ export class AsmParser extends AsmRegex implements IAsmParser {
                 if (dontMaskFilenames) {
                     source = {
                         file: utils.maskRootdir(match[1]),
-                        line: Number.parseInt(match.groups.line),
+                        line: Number.parseInt(match.groups.line, 10),
                         mainsource: true,
                     };
                 } else {
-                    source = {file: null, line: Number.parseInt(match.groups.line), mainsource: true};
+                    source = {file: null, line: Number.parseInt(match.groups.line, 10), mainsource: true};
                 }
                 continue;
             }

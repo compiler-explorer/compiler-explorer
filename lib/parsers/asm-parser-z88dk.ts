@@ -61,7 +61,7 @@ export class AsmParserZ88dk extends AsmParser {
         const handleSource = (line: string) => {
             const match = line.match(this.sourceTag);
             if (match) {
-                const sourceLine = Number.parseInt(match[1]);
+                const sourceLine = Number.parseInt(match[1], 10);
                 const file = utils.maskRootdir(match[2]);
                 if (file) {
                     if (dontMaskFilenames) {
@@ -76,7 +76,7 @@ export class AsmParserZ88dk extends AsmParser {
                             line: sourceLine,
                         };
                     }
-                    const sourceCol = Number.parseInt(match[3]);
+                    const sourceCol = Number.parseInt(match[3], 10);
                     if (!Number.isNaN(sourceCol) && sourceCol !== 0) {
                         source.column = sourceCol;
                     }

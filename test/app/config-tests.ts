@@ -215,7 +215,9 @@ describe('Config Module', () => {
 
         beforeEach(() => {
             // Reset and recreate test languages before each test
-            Object.keys(mockLanguages).forEach(key => delete mockLanguages[key as LanguageKey]);
+            Object.keys(mockLanguages).forEach(key => {
+                delete mockLanguages[key as LanguageKey];
+            });
 
             mockLanguages['c++'] = createMockLanguage('c++', 'C++', ['cpp']);
             mockLanguages.c = createMockLanguage('c', 'C', ['c99', 'c11']);

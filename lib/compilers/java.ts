@@ -358,7 +358,7 @@ export class JavaCompiler extends BaseCompiler implements SimpleOutputFilenameCo
                 //   default: <code>
                 const match = codeLineCandidate.match(/\s+([\d-]+|default): (.*)/);
                 if (match) {
-                    const instrOffset = Number.parseInt(match[1]);
+                    const instrOffset = Number.parseInt(match[1], 10);
                     method.instructions.push({
                         instrOffset: instrOffset,
                         // Should an instruction ever not be followed by a line number table,
@@ -393,7 +393,7 @@ export class JavaCompiler extends BaseCompiler implements SimpleOutputFilenameCo
                     lastIndex = lineRegex.lastIndex;
                     const [, sourceLineS, instructionS] = m;
                     logger.verbose('Found source mapping: ', sourceLineS, 'to instruction', instructionS);
-                    const instrOffset = Number.parseInt(instructionS);
+                    const instrOffset = Number.parseInt(instructionS, 10);
 
                     // Some instructions don't receive an explicit line number.
                     // They are all assigned to the previous explicit line number,
@@ -406,7 +406,7 @@ export class JavaCompiler extends BaseCompiler implements SimpleOutputFilenameCo
                             // TODO: Triage for #2986
                             logger.error(
                                 'Skipping over instruction even though currentSourceLine == -1',
-                                JSON.stringify(method.instructions.slice(0, currentInstr + 10)),
+                                method.instructions.slice(0, currentInstr + 10),
                             );
                         } else {
                             // instructions without explicit line number get assigned the last explicit/same line number
@@ -415,7 +415,7 @@ export class JavaCompiler extends BaseCompiler implements SimpleOutputFilenameCo
                         currentInstr++;
                     }
 
-                    const sourceLine = Number.parseInt(sourceLineS);
+                    const sourceLine = Number.parseInt(sourceLineS, 10);
                     currentSourceLine = sourceLine;
                     if (method.instructions[currentInstr]) {
                         method.instructions[currentInstr].sourceLine = currentSourceLine;

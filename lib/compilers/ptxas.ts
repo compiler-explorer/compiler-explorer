@@ -66,7 +66,7 @@ export class PtxAssembler extends BaseCompiler {
                     lineObj.text = `<source>:${match[1]} ${match[2].trim()}`;
                     lineObj.tag = {
                         severity: 0,
-                        line: Number.parseInt(match[1]),
+                        line: Number.parseInt(match[1], 10),
                         column: 0,
                         text: match[2].trim(),
                     };

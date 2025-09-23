@@ -50,12 +50,12 @@ function decodeSelectizeValue(value: string): DiffTypeAndExtra {
     const opts = value.split(':');
     if (opts.length > 1) {
         return {
-            difftype: Number.parseInt(opts[0]),
+            difftype: Number.parseInt(opts[0], 10),
             extraoption: opts[1],
         };
     }
     return {
-        difftype: Number.parseInt(value),
+        difftype: Number.parseInt(value, 10),
         extraoption: '',
     };
 }
@@ -432,7 +432,7 @@ export class Diff extends MonacoPane<monaco.editor.IStandaloneDiffEditor, DiffSt
         if (typeof id === 'string') {
             const p = id.indexOf('_exec');
             if (p !== -1) {
-                const execId = Number.parseInt(id.substr(0, p));
+                const execId = Number.parseInt(id.substr(0, p), 10);
                 this.eventHub.emit('resendExecution', execId);
             }
         } else {

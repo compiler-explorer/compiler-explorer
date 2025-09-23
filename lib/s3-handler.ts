@@ -77,6 +77,7 @@ export class S3Bucket {
             Body: value,
             StorageClass: options.redundancy || 'STANDARD',
             Metadata: options.metadata || {},
+            Expires: options.expires,
         });
     }
 }

@@ -162,4 +162,7 @@ From oldest to newest contributor, we would like to thank:
 - [Adrien Bertrand](https://github.com/adriweb)
 - [Roberto Parolin](https://github.com/rparolin)
 - [Alfredo Correa](https://github.com/correaa)
+- [Florian Freitag](https://github.com/flofriday)
+- [Trevor Gross](https://github.com/tgross35)
 - [Alex Trotta](https://github.com/Ahajha)
+

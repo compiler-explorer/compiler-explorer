@@ -32,7 +32,7 @@ import {OnDiskCache} from './on-disk.js';
 import {S3Cache} from './s3.js';
 
 function paramInt(config: string, param: string): number {
-    const result = Number.parseInt(param);
+    const result = Number.parseInt(param, 10);
     if (Number.isNaN(result)) throw new Error(`Bad params: ${config}`);
     return result;
 }

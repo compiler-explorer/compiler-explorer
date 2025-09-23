@@ -24,7 +24,6 @@
 
 import * as monaco from 'monaco-editor';
 
-// @ts-ignore  "Could not find a declaration file"
 import * as swift from 'monaco-editor/esm/vs/basic-languages/swift/swift';
 
 function definition(): monaco.languages.IMonarchLanguage {
