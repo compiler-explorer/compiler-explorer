@@ -209,11 +209,14 @@ export class BaseCFGParser {
         const generateName = (name: string, suffix: number) => {
             const pos = name.indexOf('@');
             if (pos === -1) return `${name}@${suffix}`;
-
             return name.substring(0, pos + 1) + suffix;
         };
         const bb = arrBB[bbIdx];
-        return hasName(asmArr, bb) ? asmArr[bb.end].text : generateName(bb.nameId, bb.end);
+        if (hasName(asmArr, bb))
+            return asmArr[bb.end].text;
+        const newBbName = generateName(bb.nameId, bb.end);
+        arrBB[bbIdx+1].nameId = newBbName;
+        return newBbName;
     }
 
     protected splitToCanonicalBasicBlock(basicBlock: BBRange): CanonicalBB[] {
