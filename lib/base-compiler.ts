@@ -210,7 +210,7 @@ export class BaseCompiler {
     protected cmakeBaseEnv: Record<string, string>;
     protected buildenvsetup: null | any;
     protected externalparser: null | ExternalParserBase;
-    protected supportedLibraries?: Record<string, OptionsHandlerLibrary>;n
+    protected supportedLibraries?: Record<string, OptionsHandlerLibrary>;
     protected packager: Packager;
     protected defaultRpathFlag = '-Wl,-rpath,';
     private static objdumpAndParseCounter = new PromClient.Counter({

@@ -24,7 +24,6 @@
 
 import _ from 'underscore';
 
-
 import {AssemblyLine, BaseCFGParser, Range} from './base.js';
 
 export class VcCFGParser extends BaseCFGParser {
@@ -42,12 +41,16 @@ export class VcCFGParser extends BaseCFGParser {
                 newText = line.text.substring(0, pos).trimEnd();
             }
             return {...line, text: newText};
-        }
+        };
         const noCommentLines = assembly.map(removeComment).filter(line => line.text.length > 0);
-        const isFuncStart = (line: string) => { return line.endsWith(' PROC'); };
-        const isFuncEnd = (line: string) => { return line.endsWith(' ENDP'); };
+        const isFuncStart = (line: string) => {
+            return line.endsWith(' PROC');
+        };
+        const isFuncEnd = (line: string) => {
+            return line.endsWith(' ENDP');
+        };
 
-        let newRes: AssemblyLine[] = [];
+        const newRes: AssemblyLine[] = [];
         let inFunction = false;
         for (const line of noCommentLines) {
             if (isFuncStart(line.text)) {
@@ -71,9 +74,9 @@ export class VcCFGParser extends BaseCFGParser {
         const fnRange: Range = {start: 0, end: 0};
         do {
             if (this.isFunctionEnd(asmArr[cur].text)) {
-                fnRange.end = cur+1;
+                fnRange.end = cur + 1;
                 result.push(_.clone(fnRange));
-                fnRange.start = cur+1;
+                fnRange.start = cur + 1;
             }
             ++cur;
         } while (cur < last);
@@ -95,7 +98,7 @@ export class VcCFGParser extends BaseCFGParser {
     override extractJmpTargetName(inst: string) {
         return inst.match(/\$.*/) + ':';
     }
-    
+
     override getLabelSeparator() {
         // `@` is used natively by MSVC labels, so we use `#` instead
         return '#';
