@@ -67,12 +67,9 @@ export async function generateStructure(
     // dex2oat is a special case because it can output different instruction
     // sets. Create an OAT parser instead of searching by ISA.
     let parser: BaseCFGParser;
-    if (compilerGroup?.includes('dex2oat'))
-        parser = new OatCFGParser(instructionSet);
-    else if (compilerGroup?.startsWith('vc'))
-        parser = new (getParserByKey('vc'))(instructionSet)
-    else
-        parser = new (getParserByKey(compilerGroup))(instructionSet);
+    if (compilerGroup?.includes('dex2oat')) parser = new OatCFGParser(instructionSet);
+    else if (compilerGroup?.startsWith('vc')) parser = new (getParserByKey('vc'))(instructionSet);
+    else parser = new (getParserByKey(compilerGroup))(instructionSet);
 
     let code = parser.filterData(asmArr);
     code = await parser.processFuncNames(code, fullRes);

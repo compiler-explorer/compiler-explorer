@@ -212,10 +212,9 @@ export class BaseCFGParser {
             return name.substring(0, pos + 1) + suffix;
         };
         const bb = arrBB[bbIdx];
-        if (hasName(asmArr, bb))
-            return asmArr[bb.end].text;
+        if (hasName(asmArr, bb)) return asmArr[bb.end].text;
         const newBbName = generateName(bb.nameId, bb.end);
-        arrBB[bbIdx+1].nameId = newBbName;
+        arrBB[bbIdx + 1].nameId = newBbName;
         return newBbName;
     }
 
@@ -241,7 +240,11 @@ export class BaseCFGParser {
         if (actPosSz === 1)
             return [
                 {nameId: basicBlock.nameId, start: basicBlock.start, end: actionPos[0] + 1},
-                {nameId: basicBlock.nameId + this.getLabelSeparator() + (actionPos[0] + 1), start: actionPos[0] + 1, end: basicBlock.end},
+                {
+                    nameId: basicBlock.nameId + this.getLabelSeparator() + (actionPos[0] + 1),
+                    start: actionPos[0] + 1,
+                    end: basicBlock.end,
+                },
             ];
 
         let cur = 0;
@@ -258,7 +261,11 @@ export class BaseCFGParser {
             result.push(_.clone(tmp));
         }
 
-        tmp = {nameId: blockName + this.getLabelSeparator() + (actionPos[first] + 1), start: actionPos[first] + 1, end: basicBlock.end};
+        tmp = {
+            nameId: blockName + this.getLabelSeparator() + (actionPos[first] + 1),
+            start: actionPos[first] + 1,
+            end: basicBlock.end,
+        };
         result.push(_.clone(tmp));
 
         return result;
