@@ -70,9 +70,14 @@ describe('Cfg test cases', () => {
     });
 
     describe('msvc', () => {
+        const msvcCompilerInfo = makeFakeCompilerInfo({
+            group: 'vc',
+            version: 'vc2022',
+            compilerType: 'vc',
+        });
         for (const filename of files.filter(x => x.includes('msvc'))) {
             it(filename, async () => {
-                await DoCfgTest('msvc', path.join(testcasespath, filename));
+                await DoCfgTest('vc', path.join(testcasespath, filename), false, msvcCompilerInfo);
             });
         }
     });
