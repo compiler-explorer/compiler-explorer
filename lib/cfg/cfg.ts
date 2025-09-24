@@ -25,7 +25,7 @@
 import {CompilationResult} from '../../types/compilation/compilation.interfaces.js';
 import type {CompilerInfo} from '../../types/compiler.interfaces.js';
 
-import {AssemblyLine, Edge, getParserByKey, Node} from './cfg-parsers/index.js';
+import {AssemblyLine, BaseCFGParser, Edge, getParserByKey, Node} from './cfg-parsers/index.js';
 import {OatCFGParser} from './cfg-parsers/oat.js';
 import {getInstructionSetByKey} from './instruction-sets/index.js';
 
@@ -66,9 +66,10 @@ export async function generateStructure(
 
     // dex2oat is a special case because it can output different instruction
     // sets. Create an OAT parser instead of searching by ISA.
-    const parser = compilerGroup?.includes('dex2oat')
-        ? new OatCFGParser(instructionSet)
-        : new (getParserByKey(compilerGroup))(instructionSet);
+    let parser: BaseCFGParser;
+    if (compilerGroup?.includes('dex2oat')) parser = new OatCFGParser(instructionSet);
+    else if (compilerGroup?.startsWith('vc')) parser = new (getParserByKey('vc'))(instructionSet);
+    else parser = new (getParserByKey(compilerGroup))(instructionSet);
 
     let code = parser.filterData(asmArr);
     code = await parser.processFuncNames(code, fullRes);

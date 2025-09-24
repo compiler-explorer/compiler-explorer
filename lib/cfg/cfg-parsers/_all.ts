@@ -28,3 +28,4 @@ export {GccCFGParser} from './gcc.js';
 export {LlvmIrCfgParser} from './llvm-ir.js';
 export {OatCFGParser} from './oat.js';
 export {PythonCFGParser} from './python.js';
+export {VcCFGParser} from './vc.js';

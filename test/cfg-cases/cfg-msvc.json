@@ -1,0 +1,426 @@
+{
+    "asm": [
+        {
+            "text": "int do_some_work(int) PROC",
+            "source": null
+        },
+        {
+            "text": "        mov     DWORD PTR [rsp+8], ecx",
+            "source": {
+                "file": null,
+                "line": 4
+            }
+        },
+        {
+            "text": "        cmp     DWORD PTR x$[rsp], 6",
+            "source": {
+                "file": null,
+                "line": 5
+            }
+        },
+        {
+            "text": "        jle     SHORT $LN2@do_some_wo",
+            "source": {
+                "file": null,
+                "line": 5
+            }
+        },
+        {
+            "text": "        jmp     SHORT $LN3@do_some_wo",
+            "source": {
+                "file": null,
+                "line": 6
+            }
+        },
+        {
+            "text": "        jmp     SHORT $endlabel$5",
+            "source": {
+                "file": null,
+                "line": 6
+            }
+        },
+        {
+            "text": "$LN2@do_some_wo:",
+            "source": null
+        },
+        {
+            "text": "        mov     eax, DWORD PTR x$[rsp]",
+            "source": {
+                "file": null,
+                "line": 7
+            }
+        },
+        {
+            "text": "        add     eax, 8",
+            "source": {
+                "file": null,
+                "line": 7
+            }
+        },
+        {
+            "text": "        jmp     SHORT $LN1@do_some_wo",
+            "source": {
+                "file": null,
+                "line": 7
+            }
+        },
+        {
+            "text": "$LN3@do_some_wo:",
+            "source": null
+        },
+        {
+            "text": "$endlabel$5:",
+            "source": null
+        },
+        {
+            "text": "        mov     eax, DWORD PTR x$[rsp]",
+            "source": {
+                "file": null,
+                "line": 9
+            }
+        },
+        {
+            "text": "$LN1@do_some_wo:",
+            "source": null
+        },
+        {
+            "text": "        ret     0",
+            "source": {
+                "file": null,
+                "line": 10
+            }
+        },
+        {
+            "text": "int do_some_work(int) ENDP",
+            "source": null
+        },
+        {
+            "text": "void process_items(std::vector<int,std::allocator<int> > const &) PROC",
+            "source": null
+        },
+        {
+            "text": "$LN6:",
+            "source": null
+        },
+        {
+            "text": "        mov     QWORD PTR [rsp+8], rcx",
+            "source": {
+                "file": null,
+                "line": 12
+            }
+        },
+        {
+            "text": "        sub     rsp, 56",
+            "source": {
+                "file": null,
+                "line": 12
+            }
+        },
+        {
+            "text": "        mov     rcx, QWORD PTR vec$[rsp]",
+            "source": {
+                "file": null,
+                "line": 13
+            }
+        },
+        {
+            "text": "        call    unsigned __int64 std::vector<int,std::allocator<int> >::size(void)const",
+            "source": {
+                "file": null,
+                "line": 13
+            }
+        },
+        {
+            "text": "        mov     QWORD PTR sz$[rsp], rax",
+            "source": {
+                "file": null,
+                "line": 13
+            }
+        },
+        {
+            "text": "        mov     QWORD PTR i$1[rsp], 0",
+            "source": {
+                "file": null,
+                "line": 14
+            }
+        },
+        {
+            "text": "        jmp     SHORT $LN4@process_it",
+            "source": {
+                "file": null,
+                "line": 14
+            }
+        },
+        {
+            "text": "$LN2@process_it:",
+            "source": null
+        },
+        {
+            "text": "        mov     rax, QWORD PTR i$1[rsp]",
+            "source": {
+                "file": null,
+                "line": 14
+            }
+        },
+        {
+            "text": "        inc     rax",
+            "source": {
+                "file": null,
+                "line": 14
+            }
+        },
+        {
+            "text": "        mov     QWORD PTR i$1[rsp], rax",
+            "source": {
+                "file": null,
+                "line": 14
+            }
+        },
+        {
+            "text": "$LN4@process_it:",
+            "source": null
+        },
+        {
+            "text": "        mov     rax, QWORD PTR sz$[rsp]",
+            "source": {
+                "file": null,
+                "line": 14
+            }
+        },
+        {
+            "text": "        cmp     QWORD PTR i$1[rsp], rax",
+            "source": {
+                "file": null,
+                "line": 14
+            }
+        },
+        {
+            "text": "        jae     SHORT $LN3@process_it",
+            "source": {
+                "file": null,
+                "line": 14
+            }
+        },
+        {
+            "text": "        mov     rdx, QWORD PTR i$1[rsp]",
+            "source": {
+                "file": null,
+                "line": 15
+            }
+        },
+        {
+            "text": "        mov     rcx, QWORD PTR vec$[rsp]",
+            "source": {
+                "file": null,
+                "line": 15
+            }
+        },
+        {
+            "text": "        call    int const & std::vector<int,std::allocator<int> >::operator[](unsigned __int64)const",
+            "source": {
+                "file": null,
+                "line": 15
+            }
+        },
+        {
+            "text": "        mov     ecx, DWORD PTR [rax]",
+            "source": {
+                "file": null,
+                "line": 15
+            }
+        },
+        {
+            "text": "        call    int do_some_work(int)",
+            "source": {
+                "file": null,
+                "line": 15
+            }
+        },
+        {
+            "text": "        npad    1",
+            "source": {
+                "file": null,
+                "line": 15
+            }
+        },
+        {
+            "text": "        jmp     SHORT $LN2@process_it",
+            "source": {
+                "file": null,
+                "line": 16
+            }
+        },
+        {
+            "text": "$LN3@process_it:",
+            "source": null
+        },
+        {
+            "text": "        add     rsp, 56",
+            "source": {
+                "file": null,
+                "line": 17
+            }
+        },
+        {
+            "text": "        ret     0",
+            "source": {
+                "file": null,
+                "line": 17
+            }
+        },
+        {
+            "text": "void process_items(std::vector<int,std::allocator<int> > const &) ENDP",
+            "source": null
+        }
+    ],
+    "cfg": {
+        "int do_some_work(int) PROC": {
+            "nodes": [
+                {
+                    "id": "int do_some_work(int) PROC",
+                    "label": "int do_some_work(int) PROC:\n        mov     DWORD PTR [rsp+8], ecx\n        cmp     DWORD PTR x$[rsp], 6\n        jle     SHORT $LN2@do_some_wo"
+                },
+                {
+                    "id": "int do_some_work(int) PROC#4",
+                    "label": "int do_some_work(int) PROC#4:\n        jmp     SHORT $LN3@do_some_wo"
+                },
+                {
+                    "id": "int do_some_work(int) PROC#5",
+                    "label": "int do_some_work(int) PROC#5:\n        jmp     SHORT $endlabel$5"
+                },
+                {
+                    "id": "$LN2@do_some_wo:",
+                    "label": "$LN2@do_some_wo:\n        mov     eax, DWORD PTR x$[rsp]\n        add     eax, 8\n        jmp     SHORT $LN1@do_some_wo"
+                },
+                {
+                    "id": "$LN3@do_some_wo:",
+                    "label": "$LN3@do_some_wo:\n"
+                },
+                {
+                    "id": "$endlabel$5:",
+                    "label": "$endlabel$5:\n        mov     eax, DWORD PTR x$[rsp]"
+                },
+                {
+                    "id": "$LN1@do_some_wo:",
+                    "label": "$LN1@do_some_wo:\n        ret     0\nint do_some_work(int) ENDP"
+                }
+            ],
+            "edges": [
+                {
+                    "from": "int do_some_work(int) PROC",
+                    "to": "$LN2@do_some_wo:",
+                    "arrows": "to",
+                    "color": "green"
+                },
+                {
+                    "from": "int do_some_work(int) PROC",
+                    "to": "int do_some_work(int) PROC#4",
+                    "arrows": "to",
+                    "color": "red"
+                },
+                {
+                    "from": "int do_some_work(int) PROC#4",
+                    "to": "$LN3@do_some_wo:",
+                    "arrows": "to",
+                    "color": "blue"
+                },
+                {
+                    "from": "int do_some_work(int) PROC#5",
+                    "to": "$endlabel$5:",
+                    "arrows": "to",
+                    "color": "blue"
+                },
+                {
+                    "from": "$LN2@do_some_wo:",
+                    "to": "$LN1@do_some_wo:",
+                    "arrows": "to",
+                    "color": "blue"
+                },
+                {
+                    "from": "$LN3@do_some_wo:",
+                    "to": "$endlabel$5:",
+                    "arrows": "to",
+                    "color": "grey"
+                },
+                {
+                    "from": "$endlabel$5:",
+                    "to": "$LN1@do_some_wo:",
+                    "arrows": "to",
+                    "color": "grey"
+                },
+                {
+                    "from": "$LN1@do_some_wo:",
+                    "to": "void process_items(std::vector<int,std::allocator<int> > const &) PROC",
+                    "arrows": "to",
+                    "color": "grey"
+                }
+            ]
+        },
+        "void process_items(std::vector<int,std::allocator<int> > const &) PROC": {
+            "nodes": [
+                {
+                    "id": "void process_items(std::vector<int,std::allocator<int> > const &) PROC",
+                    "label": "void process_items(std::vector<int,std::allocator<int> > const &) PROC\n"
+                },
+                {
+                    "id": "$LN6:",
+                    "label": "$LN6:\n        mov     QWORD PTR [rsp+8], rcx\n        sub     rsp, 56\n        mov     rcx, QWORD PTR vec$[rsp]\n        call    unsigned __int64 std::vector<int,std::allocator<int> >::size(void)const\n        mov     QWORD PTR sz$[rsp], rax\n        mov     QWORD PTR i$1[rsp], 0\n        jmp     SHORT $LN4@process_it"
+                },
+                {
+                    "id": "$LN2@process_it:",
+                    "label": "$LN2@process_it:\n        mov     rax, QWORD PTR i$1[rsp]\n        inc     rax\n        mov     QWORD PTR i$1[rsp], rax"
+                },
+                {
+                    "id": "$LN4@process_it:",
+                    "label": "$LN4@process_it:\n        mov     rax, QWORD PTR sz$[rsp]\n        cmp     QWORD PTR i$1[rsp], rax\n        jae     SHORT $LN3@process_it"
+                },
+                {
+                    "id": "$LN4@process_it:#33",
+                    "label": "$LN4@process_it:#33\n        mov     rdx, QWORD PTR i$1[rsp]\n        mov     rcx, QWORD PTR vec$[rsp]\n        call    int const & std::vector<int,std::allocator<int> >::operator[](unsigned __int64)const\n        mov     ecx, DWORD PTR [rax]\n        call    int do_some_work(int)\n        npad    1\n        jmp     SHORT $LN2@process_it"
+                },
+                {
+                    "id": "$LN3@process_it:",
+                    "label": "$LN3@process_it:\n        add     rsp, 56\n        ret     0\nvoid process_items(std::vector<int,std::allocator<int> > const &) ENDP"
+                }
+            ],
+            "edges": [
+                {
+                    "from": "void process_items(std::vector<int,std::allocator<int> > const &) PROC",
+                    "to": "$LN6:",
+                    "arrows": "to",
+                    "color": "grey"
+                },
+                {
+                    "from": "$LN6:",
+                    "to": "$LN4@process_it:",
+                    "arrows": "to",
+                    "color": "blue"
+                },
+                {
+                    "from": "$LN2@process_it:",
+                    "to": "$LN4@process_it:",
+                    "arrows": "to",
+                    "color": "grey"
+                },
+                {
+                    "from": "$LN4@process_it:",
+                    "to": "$LN3@process_it:",
+                    "arrows": "to",
+                    "color": "green"
+                },
+                {
+                    "from": "$LN4@process_it:",
+                    "to": "$LN4@process_it:#33",
+                    "arrows": "to",
+                    "color": "red"
+                },
+                {
+                    "from": "$LN4@process_it:#33",
+                    "to": "$LN2@process_it:",
+                    "arrows": "to",
+                    "color": "blue"
+                }
+            ]
+        }
+    }
+}
