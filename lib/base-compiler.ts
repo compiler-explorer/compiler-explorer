@@ -1293,6 +1293,9 @@ export class BaseCompiler {
             compilerOptions.splice(compilerOptions.indexOf('-o'), 2);
         }
 
+        // Avoid the warning/error "argument unused during compilation: '-S'"
+        compilerOptions = compilerOptions.filter(option => option !== '-S');
+
         const ppOptions = _.extend(
             {
                 'filter-headers': false,
