@@ -207,8 +207,8 @@ export class BaseCFGParser {
         };
 
         const generateName = (name: string, suffix: number) => {
-            const pos = name.indexOf('@');
-            if (pos === -1) return `${name}@${suffix}`;
+            const pos = name.indexOf(this.getLabelSeparator());
+            if (pos === -1) return `${name + this.getLabelSeparator() + suffix}`;
             return name.substring(0, pos + 1) + suffix;
         };
         const bb = arrBB[bbIdx];
@@ -217,6 +217,10 @@ export class BaseCFGParser {
         const newBbName = generateName(bb.nameId, bb.end);
         arrBB[bbIdx+1].nameId = newBbName;
         return newBbName;
+    }
+
+    protected getLabelSeparator() {
+        return '@';
     }
 
     protected splitToCanonicalBasicBlock(basicBlock: BBRange): CanonicalBB[] {
@@ -237,7 +241,7 @@ export class BaseCFGParser {
         if (actPosSz === 1)
             return [
                 {nameId: basicBlock.nameId, start: basicBlock.start, end: actionPos[0] + 1},
-                {nameId: basicBlock.nameId + '@' + (actionPos[0] + 1), start: actionPos[0] + 1, end: basicBlock.end},
+                {nameId: basicBlock.nameId + this.getLabelSeparator() + (actionPos[0] + 1), start: actionPos[0] + 1, end: basicBlock.end},
             ];
 
         let first = 0;
@@ -247,14 +251,14 @@ export class BaseCFGParser {
         const result: CanonicalBB[] = [];
         result.push(_.clone(tmp));
         while (first !== last - 1) {
-            tmp.nameId = blockName + '@' + (actionPos[first] + 1);
+            tmp.nameId = blockName + this.getLabelSeparator() + (actionPos[first] + 1);
             tmp.start = actionPos[first] + 1;
             ++first;
             tmp.end = actionPos[first] + 1;
             result.push(_.clone(tmp));
         }
 
-        tmp = {nameId: blockName + '@' + (actionPos[first] + 1), start: actionPos[first] + 1, end: basicBlock.end};
+        tmp = {nameId: blockName + this.getLabelSeparator() + (actionPos[first] + 1), start: actionPos[first] + 1, end: basicBlock.end};
         result.push(_.clone(tmp));
 
         return result;

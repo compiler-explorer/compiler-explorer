@@ -26,7 +26,6 @@ import _ from 'underscore';
 
 
 import {AssemblyLine, BaseCFGParser, Range} from './base.js';
-import {InstructionType} from '../instruction-sets/base.js';
 
 export class VcCFGParser extends BaseCFGParser {
     static override get key() {
@@ -67,17 +66,17 @@ export class VcCFGParser extends BaseCFGParser {
     override splitToFunctions(asmArr: AssemblyLine[]): Range[] {
         if (asmArr.length === 0) return [];
         const result: Range[] = [];
-        let first = 1;
+        let cur = 1;
         const last = asmArr.length;
         const fnRange: Range = {start: 0, end: 0};
         do {
-            if (this.isFunctionEnd(asmArr[first].text)) {
-                fnRange.end = first+1;
+            if (this.isFunctionEnd(asmArr[cur].text)) {
+                fnRange.end = cur+1;
                 result.push(_.clone(fnRange));
-                fnRange.start = first+1;
+                fnRange.start = cur+1;
             }
-            ++first;
-        } while (first < last);
+            ++cur;
+        } while (cur < last);
 
         fnRange.end = last;
         if (fnRange.end > fnRange.start + 1) result.push(_.clone(fnRange));
@@ -90,8 +89,6 @@ export class VcCFGParser extends BaseCFGParser {
     override isBasicBlockEnd(inst: string, prevInst: string) {
         // Keep ENDP line in the same block as prevInst. Might drop it entirely.
         if (this.isFunctionEnd(inst)) return false;
-        if (this.instructionSetInfo.getInstructionType(prevInst) !== InstructionType.notRetInst) 
-            return true;
         return inst[0] === '$';
     }
 
@@ -99,4 +96,8 @@ export class VcCFGParser extends BaseCFGParser {
         return inst.match(/\$.*/) + ':';
     }
     
+    override getLabelSeparator() {
+        // `@` is used natively by MSVC labels, so we use `#` instead
+        return '#';
+    }
 }
