@@ -10,6 +10,10 @@
 /asm-docs*
 /etc/scripts/asm-docs*
 
+# Python virtual environments and uv
+/etc/scripts/docenizers/.venv
+/etc/scripts/docenizers/.uv
+
 # user local customizations
 /etc/**/*.local.*
 /lib/storage/data
