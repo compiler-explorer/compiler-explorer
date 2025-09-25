@@ -18,12 +18,12 @@ target-version = "py312"
 
 [tool.ruff.lint]
 select = [
-    "E", # pycodestyle errors,
+    "E", # pycodestyle errors
     "W", # pycodestyle warnings
     "F", # pyflake
     "I", # isort
     "UP", # pyupgrade
 ]
 ignore = [
-    "E501" # line length
+    "E501", # line length
 ]
