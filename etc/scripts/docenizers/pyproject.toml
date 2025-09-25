@@ -25,5 +25,5 @@ select = [
     "UP", # pyupgrade
 ]
 ignore = [
-    "E501" # line length
+    "E501", # line length
 ]
