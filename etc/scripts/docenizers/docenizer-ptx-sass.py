@@ -92,6 +92,19 @@ def main():
     # Find all sections with instruction documentation structure
     all_sections = soup.find_all(['section', 'div'], id=lambda x: x and '-instructions-' in x)
 
+    # Helper to check if a section is a valid instruction section
+    def is_valid_instruction_section(section_id):
+        if '-' not in section_id:
+            return False
+        last_part = section_id.rsplit('-', 1)[-1]
+        # Skip non-instruction sections and composite instructions
+        if last_part in ['restrictions', 'mechanisms', 'smem', 'notes'] or '-' in last_part:
+            return False
+        # Also skip sections that end with "mechanisms-mbarrier" etc
+        if 'mechanisms' in section_id or 'restrictions' in section_id:
+            return False
+        return True
+
     # Build priority map based on section hierarchy
     instruction_priority = {}
 
@@ -106,20 +119,10 @@ def main():
         if not any(r in rubric_texts for r in ['Syntax', 'Description', 'Semantics', 'Examples']):
             continue
 
-        # Extract instruction name from section ID (last segment after final dash)
-        if '-' not in section_id:
+        if not is_valid_instruction_section(section_id):
             continue
 
         instruction_name = section_id.rsplit('-', 1)[-1]
-
-        # Skip non-instruction sections (e.g., "restrictions", "mechanisms", "smem")
-        # These are documentation sections, not individual instructions
-        if instruction_name in ['restrictions', 'mechanisms', 'smem', 'notes']:
-            continue
-
-        # Skip if instruction name contains hyphen (likely a composite like "vshl-vshr")
-        if '-' in instruction_name:
-            continue
 
         # Determine priority based on section type
         priority = 0
@@ -162,6 +165,9 @@ def main():
     # Also check for instruction variants with dots (e.g., add.s32)
     for section in all_sections:
         section_id = section.get('id', '')
+
+        if not is_valid_instruction_section(section_id):
+            continue
 
         # Look for code elements that might be instruction variants
         codes = section.find_all('code')
@@ -218,13 +224,23 @@ def main():
         if not desc_rubric:
             raise ValueError(f"No Description rubric found for {fragment}")
 
-        next_elem = desc_rubric.find_next_sibling('p')
-        if not next_elem or 'rubric' in next_elem.get('class', []) or not next_elem.get_text(strip=True):
-            raise ValueError(f"No description paragraph found after Description rubric for {fragment}")
+        # Description can be in either a <p> or <dl> element
+        next_elem = desc_rubric.find_next_sibling(['p', 'dl'])
+        if not next_elem:
+            raise ValueError(f"No description element found after Description rubric for {fragment}")
+
+        # If it's a <p>, check it's not another rubric
+        if next_elem.name == 'p' and 'rubric' in next_elem.get('class', []):
+            raise ValueError(f"No description content found after Description rubric for {fragment}")
+
+        if not next_elem.get_text(strip=True):
+            raise ValueError(f"Empty description after Description rubric for {fragment}")
 
         html = str(next_elem)
 
-        # For tooltip: prefer short description, otherwise use truncated detailed description
+        # Tooltip text: Use short description if available, otherwise truncate detailed description.
+        # This fallback is necessary because some PTX instructions don't have short summaries -
+        # they jump straight to Syntax or have descriptions > 100 chars (e.g., mad, mov, set).
         if short_desc:
             txt = short_desc
         else:
@@ -237,16 +253,12 @@ def main():
     for symbol, fullname_fragments in symbol_to_fullname_frag:
         docs = []
         for fullname, fragment in fullname_fragments:
-            try:
-                docs.append(get_doc(fragment))
-            except ValueError as e:
-                # Log the error and skip this fragment
-                print(f"WARNING: Failed to parse documentation for {fragment}: {e}")
-                # Don't add a fallback doc - let the issue be visible
+            docs.append(get_doc(fragment))
 
         if docs:
             symbol_to_doc.append((symbol, *combine_docs(docs, fullname_fragments), fullname_fragments))
-        # No else clause - if we can't parse docs, we don't add the instruction at all
+        else:
+            raise ValueError(f"No documentation could be parsed for instruction: {symbol}")
 
     # get SASS docs
     tables = pd.read_html('https://docs.nvidia.com/cuda/cuda-binary-utilities/index.html', match='Opcode')

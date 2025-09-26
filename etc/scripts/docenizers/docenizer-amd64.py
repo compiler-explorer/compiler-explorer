@@ -184,9 +184,7 @@ def parse(filename, f):
         return None
 
     # Combine all instruction tables (some files have multiple tables)
-    table = []
-    for tbl in tables:
-        table.extend(read_table(tbl))
+    table = [row for tbl in tables for row in read_table(tbl)]
 
     names = set()
 
