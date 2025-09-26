@@ -103,9 +103,13 @@ export class JavaCompiler extends BaseCompiler implements SimpleOutputFilenameCo
         };
     }
 
+    async readfiles(dirPath: string) {
+        return fs.readdir(dirPath);
+    }
+
     override async objdump(outputFilename: string, result: any, maxSize: number) {
         const dirPath = path.dirname(outputFilename);
-        const files = await fs.readdir(dirPath);
+        const files = await this.readfiles(dirPath);
         logger.verbose('Class files: ', files);
         const results = await Promise.all(
             files

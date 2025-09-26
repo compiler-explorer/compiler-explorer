@@ -22,6 +22,7 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
+import fs from 'node:fs/promises';
 import path from 'node:path';
 import type {PreliminaryCompilerInfo} from '../../types/compiler.interfaces.js';
 import type {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces.js';
@@ -50,13 +51,6 @@ export class ClojureCompiler extends JavaCompiler {
         return execOptions;
     }
 
-    override filterUserOptions(userOptions: string[]) {
-        const oneArgForbiddenList = new Set([]);
-
-        // filter options with one argument
-        return super.filterUserOptionsWithArg(userOptions, oneArgForbiddenList);
-    }
-
     override optionsForFilter(filters: ParseFiltersAndOutputOptions) {
         // Forcibly enable javap
         filters.binary = true;
@@ -73,5 +67,9 @@ export class ClojureCompiler extends JavaCompiler {
             'classes',
             `${path.basename(this.compileFilename, this.lang.extensions[0])}__init.class`,
         );
+    }
+
+    override async readfiles(dirPath: string) {
+        return fs.readdir(dirPath, {recursive: true});
     }
 }
