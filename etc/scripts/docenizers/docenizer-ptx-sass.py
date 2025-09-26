@@ -112,6 +112,15 @@ def main():
 
         instruction_name = section_id.rsplit('-', 1)[-1]
 
+        # Skip non-instruction sections (e.g., "restrictions", "mechanisms", "smem")
+        # These are documentation sections, not individual instructions
+        if instruction_name in ['restrictions', 'mechanisms', 'smem', 'notes']:
+            continue
+
+        # Skip if instruction name contains hyphen (likely a composite like "vshl-vshr")
+        if '-' in instruction_name:
+            continue
+
         # Determine priority based on section type
         priority = 0
         if 'integer-arithmetic-instructions' in section_id:
@@ -181,11 +190,10 @@ def main():
         sys.exit(1)
 
     def get_doc(fragment: str) -> Doc:
-        # Find the section without copying it (copying is very slow for large HTML)
+        # Find the section
         article = soup.find(id=fragment)
         if not article:
-            # Return minimal doc if fragment not found
-            return Doc(fragment, f"Documentation for {fragment}", f"<p>{fragment}</p>")
+            raise ValueError(f"Documentation section not found for fragment: {fragment}")
 
         # Get the title from the first header we find
         title = fragment.replace('-', ' ').title()  # Default to formatted fragment id
@@ -199,53 +207,29 @@ def main():
         short_desc = None
         instruction_rubric = article.find('p', class_='rubric')  # First rubric is usually instruction name
         if instruction_rubric:
-            # Look for the next paragraph after instruction name
             next_p = instruction_rubric.find_next_sibling('p')
             if next_p and 'rubric' not in next_p.get('class', []):
-                # This is likely the short description
                 short_desc_text = next_p.get_text(strip=True)
                 if short_desc_text and len(short_desc_text) < 100:  # Short descriptions are typically brief
                     short_desc = short_desc_text
 
-        # Find Description rubric to locate the detailed description structurally
+        # Get description from Description rubric (all PTX instructions have this)
         desc_rubric = article.find('p', class_='rubric', string='Description')
+        if not desc_rubric:
+            raise ValueError(f"No Description rubric found for {fragment}")
 
-        html = None
-        txt = None
+        next_elem = desc_rubric.find_next_sibling('p')
+        if not next_elem or 'rubric' in next_elem.get('class', []) or not next_elem.get_text(strip=True):
+            raise ValueError(f"No description paragraph found after Description rubric for {fragment}")
 
-        if desc_rubric:
-            # The actual description is in the paragraph following the Description rubric
-            next_elem = desc_rubric.find_next_sibling('p')
-            if next_elem and next_elem.get_text(strip=True):
-                # Skip if this is another rubric
-                if 'rubric' not in next_elem.get('class', []):
-                    html = str(next_elem)
-                    # Use short description for tooltip if available, otherwise use detailed description
-                    txt = short_desc if short_desc else next_elem.get_text(strip=True)
-                    # Truncate for tooltip if too long
-                    if len(txt) > 200:
-                        txt = txt[:200] + "..."
+        html = str(next_elem)
 
-        # Fallback: look for any non-rubric paragraph with meaningful content
-        if not html:
-            for p in article.find_all('p'):
-                # Skip rubric paragraphs
-                if 'rubric' in p.get('class', []):
-                    continue
-                p_text = p.get_text(strip=True)
-                # Look for paragraphs with actual content
-                if p_text and len(p_text) > 10:
-                    html = str(p)
-                    # Still prefer short description for tooltip if we found one
-                    txt = short_desc if short_desc else p_text[:200]
-                    if not short_desc and len(p_text) > 200:
-                        txt += "..."
-                    break
-
-        # Last resort - use title
-        if not html:
-            html = f'<p>{title}</p>'
-            txt = short_desc if short_desc else title
+        # For tooltip: prefer short description, otherwise use truncated detailed description
+        if short_desc:
+            txt = short_desc
+        else:
+            detailed_desc = next_elem.get_text(strip=True)
+            txt = detailed_desc[:200] + "..." if len(detailed_desc) > 200 else detailed_desc
 
         return Doc(title, txt, html)
 
@@ -255,16 +239,14 @@ def main():
         for fullname, fragment in fullname_fragments:
             try:
                 docs.append(get_doc(fragment))
-            except Exception:
-                # If we can't parse the doc, create a minimal one
-                docs.append(Doc(fullname, f"Documentation for {fullname}", f"<p>{fullname}</p>"))
+            except ValueError as e:
+                # Log the error and skip this fragment
+                print(f"WARNING: Failed to parse documentation for {fragment}: {e}")
+                # Don't add a fallback doc - let the issue be visible
 
         if docs:
             symbol_to_doc.append((symbol, *combine_docs(docs, fullname_fragments), fullname_fragments))
-        else:
-            # If no docs could be parsed, still add the instruction with minimal info
-            symbol_to_doc.append((symbol, f"PTX instruction {symbol}",
-                                 f"<p>Documentation for {symbol}</p>", fullname_fragments))
+        # No else clause - if we can't parse docs, we don't add the instruction at all
 
     # get SASS docs
     tables = pd.read_html('https://docs.nvidia.com/cuda/cuda-binary-utilities/index.html', match='Opcode')
