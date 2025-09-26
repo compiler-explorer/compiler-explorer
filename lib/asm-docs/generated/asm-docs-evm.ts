@@ -124,8 +124,8 @@ export function getAsmOpcode(opcode: string | undefined): AssemblyInstructionInf
 
         case "ISZERO":
             return {
-                "html": "Simple not operator\nInput: <code>a</code>\nOutput: <code>a == 0</code>",
-                "tooltip": "Simple not operator",
+                "html": "Is-zero comparison\nInput: <code>a</code>\nOutput: <code>a == 0</code>",
+                "tooltip": "Is-zero comparison",
                 "url": "https://www.evm.codes/#15"
             };
 
@@ -929,22 +929,22 @@ export function getAsmOpcode(opcode: string | undefined): AssemblyInstructionInf
 
         case "SLOADBYTES":
             return {
-                "html": "\nInput: -\nOutput: -",
-                "tooltip": "",
+                "html": "Conditionally alter the program counter to relative offset\nInput: <code>condition</code>\nOutput: -",
+                "tooltip": "Conditionally alter the program counter to relative offset",
                 "url": "https://www.evm.codes/#e1"
             };
 
         case "SSTOREBYTES":
             return {
-                "html": "\nInput: -\nOutput: -",
-                "tooltip": "",
+                "html": "Alter the program counter to a relative offset in jump table\nInput: <code>case</code>\nOutput: -",
+                "tooltip": "Alter the program counter to a relative offset in jump table",
                 "url": "https://www.evm.codes/#e2"
             };
 
         case "SSIZE":
             return {
-                "html": "\nInput: -\nOutput: -",
-                "tooltip": "",
+                "html": "Call into a function\nInput: -\nOutput: -",
+                "tooltip": "Call into a function",
                 "url": "https://www.evm.codes/#e3"
             };
 
