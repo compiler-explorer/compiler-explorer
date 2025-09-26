@@ -30,6 +30,7 @@ import type {
     CacheKey,
     CompilationCacheKey,
     ExecutionOptionsWithEnv,
+    FiledataPair,
 } from '../../types/compilation/compilation.interfaces.js';
 import type {PreliminaryCompilerInfo} from '../../types/compiler.interfaces.js';
 import type {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces.js';
@@ -230,7 +231,7 @@ export class FPCCompiler extends BaseCompiler {
         return inputFilename;
     }
 
-    override async writeAllFiles(dirPath: string, source: string, files: any[], filters: ParseFiltersAndOutputOptions) {
+    override async writeAllFiles(dirPath: string, source: string, files: FiledataPair[]) {
         const inputFilename = path.join(dirPath, this.getMainSourceFilename(source));
 
         if (source !== '' || !files) {

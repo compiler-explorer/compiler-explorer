@@ -32,6 +32,7 @@ import {PascalWinCompiler} from '../lib/compilers/pascal-win.js';
 import {PascalDemangler} from '../lib/demangler/index.js';
 import * as utils from '../lib/utils.js';
 
+import {FiledataPair} from '../types/compilation/compilation.interfaces.js';
 import {makeCompilationEnvironment} from './utils.js';
 
 const languages = {
@@ -39,7 +40,7 @@ const languages = {
 };
 
 describe('Pascal', () => {
-    let compiler;
+    let compiler: FPCCompiler;
 
     beforeAll(() => {
         const ce = makeCompilationEnvironment({languages});
@@ -355,7 +356,7 @@ describe('Pascal', () => {
 
     describe('Pascal ASM line number injection', () => {
         beforeAll(() => {
-            compiler.demanglerClass = PascalDemangler;
+            // compiler.demanglerClass = PascalDemangler;
             compiler.demangler = new PascalDemangler('demangler-exe', compiler);
         });
 
@@ -421,7 +422,7 @@ describe('Pascal', () => {
     });
 
     describe('Multifile writing behaviour', () => {
-        let compiler;
+        let compiler: FPCCompiler;
 
         beforeAll(() => {
             const ce = makeCompilationEnvironment({languages});
@@ -436,11 +437,10 @@ describe('Pascal', () => {
 
         it('Original behaviour (old unitname)', async () => {
             const dirPath = await compiler.newTempDir();
-            const filters = {};
-            const files = [];
+            const files: FiledataPair[] = [];
             const source = await fs.readFile('examples/pascal/default.pas', 'utf-8');
 
-            const writeSummary = await compiler.writeAllFiles(dirPath, source, files, filters);
+            const writeSummary = await compiler.writeAllFiles(dirPath, source, files);
 
             expect(writeSummary.inputFilename).toEqual(path.join(dirPath, 'output.pas'));
             await expect(utils.fileExists(path.join(dirPath, 'output.pas'))).resolves.toBe(true);
@@ -449,11 +449,10 @@ describe('Pascal', () => {
 
         it('Original behaviour (just a unit file)', async () => {
             const dirPath = await compiler.newTempDir();
-            const filters = {};
-            const files = [];
+            const files: FiledataPair[] = [];
             const source = await fs.readFile('test/pascal/example.pas', 'utf-8');
 
-            const writeSummary = await compiler.writeAllFiles(dirPath, source, files, filters);
+            const writeSummary = await compiler.writeAllFiles(dirPath, source, files);
 
             expect(writeSummary.inputFilename).toEqual(path.join(dirPath, 'example.pas'));
             await expect(utils.fileExists(path.join(dirPath, 'example.pas'))).resolves.toBe(true);
@@ -462,11 +461,10 @@ describe('Pascal', () => {
 
         it('Writing program instead of a unit', async () => {
             const dirPath = await compiler.newTempDir();
-            const filters = {};
-            const files = [];
+            const files: FiledataPair[] = [];
             const source = await fs.readFile('test/pascal/prog.dpr', 'utf-8');
 
-            const writeSummary = await compiler.writeAllFiles(dirPath, source, files, filters);
+            const writeSummary = await compiler.writeAllFiles(dirPath, source, files);
 
             expect(writeSummary.inputFilename).toEqual(path.join(dirPath, 'prog.dpr'));
             await expect(utils.fileExists(path.join(dirPath, 'example.pas'))).resolves.toBe(false);
@@ -475,7 +473,6 @@ describe('Pascal', () => {
 
         it('Writing program with a unit', async () => {
             const dirPath = await compiler.newTempDir();
-            const filters = {};
             const files = [
                 {
                     filename: 'example.pas',
@@ -484,7 +481,7 @@ describe('Pascal', () => {
             ];
             const source = await fs.readFile('test/pascal/prog.dpr', 'utf-8');
 
-            const writeSummary = await compiler.writeAllFiles(dirPath, source, files, filters);
+            const writeSummary = await compiler.writeAllFiles(dirPath, source, files);
 
             expect(writeSummary.inputFilename).toEqual(path.join(dirPath, 'prog.dpr'));
             await expect(utils.fileExists(path.join(dirPath, 'example.pas'))).resolves.toBe(true);
@@ -493,7 +490,7 @@ describe('Pascal', () => {
     });
 
     describe('Multifile writing behaviour Pascal-WIN', () => {
-        let compiler;
+        let compiler: PascalWinCompiler;
 
         beforeAll(() => {
             const ce = makeCompilationEnvironment({languages});
@@ -508,11 +505,10 @@ describe('Pascal', () => {
 
         it('Original behaviour (old unitname)', async () => {
             const dirPath = await compiler.newTempDir();
-            const filters = {};
-            const files = [];
+            const files: FiledataPair[] = [];
             const source = await fs.readFile('examples/pascal/default.pas', 'utf-8');
 
-            const writeSummary = await compiler.writeAllFiles(dirPath, source, files, filters);
+            const writeSummary = await compiler.writeAllFiles(dirPath, source, files);
 
             expect(writeSummary.inputFilename).toEqual(path.join(dirPath, 'output.pas'));
             await expect(utils.fileExists(path.join(dirPath, 'output.pas'))).resolves.toBe(true);
@@ -521,11 +517,10 @@ describe('Pascal', () => {
 
         it('Original behaviour (just a unit file)', async () => {
             const dirPath = await compiler.newTempDir();
-            const filters = {};
-            const files = [];
+            const files: FiledataPair[] = [];
             const source = await fs.readFile('test/pascal/example.pas', 'utf-8');
 
-            const writeSummary = await compiler.writeAllFiles(dirPath, source, files, filters);
+            const writeSummary = await compiler.writeAllFiles(dirPath, source, files);
 
             expect(writeSummary.inputFilename).toEqual(path.join(dirPath, 'example.pas'));
             await expect(utils.fileExists(path.join(dirPath, 'example.pas'))).resolves.toBe(true);
@@ -534,11 +529,10 @@ describe('Pascal', () => {
 
         it('Writing program instead of a unit', async () => {
             const dirPath = await compiler.newTempDir();
-            const filters = {};
-            const files = [];
+            const files: FiledataPair[] = [];
             const source = await fs.readFile('test/pascal/prog.dpr', 'utf-8');
 
-            const writeSummary = await compiler.writeAllFiles(dirPath, source, files, filters);
+            const writeSummary = await compiler.writeAllFiles(dirPath, source, files);
 
             expect(writeSummary.inputFilename).toEqual(path.join(dirPath, 'prog.dpr'));
             await expect(utils.fileExists(path.join(dirPath, 'example.pas'))).resolves.toBe(false);
@@ -547,7 +541,6 @@ describe('Pascal', () => {
 
         it('Writing program with a unit', async () => {
             const dirPath = await compiler.newTempDir();
-            const filters = {};
             const files = [
                 {
                     filename: 'example.pas',
@@ -556,7 +549,7 @@ describe('Pascal', () => {
             ];
             const source = await fs.readFile('test/pascal/prog.dpr', 'utf-8');
 
-            const writeSummary = await compiler.writeAllFiles(dirPath, source, files, filters);
+            const writeSummary = await compiler.writeAllFiles(dirPath, source, files);
 
             expect(writeSummary.inputFilename).toEqual(path.join(dirPath, 'prog.dpr'));
             await expect(utils.fileExists(path.join(dirPath, 'example.pas'))).resolves.toBe(true);

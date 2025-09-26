@@ -44,7 +44,7 @@ export class NumbaCompiler extends BaseCompiler {
             this.compilerProps('compilerWrapper', '') || resolvePathFromAppRoot('etc', 'scripts', 'numba_wrapper.py');
     }
 
-    override async processAsm(result, filters, options) {
+    override async processAsm(result, filters, options: string[]) {
         const processed = await super.processAsm(result, filters, options);
         // Numba's function-end labels survive standard filtering.
         if (filters.labels) {

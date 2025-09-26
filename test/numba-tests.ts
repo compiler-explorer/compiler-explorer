@@ -55,7 +55,7 @@ describe('Numba', () => {
         binaryObject: false,
         debugCalls: false,
     };
-    const options = [];
+    const options: string[] = [];
 
     beforeAll(() => {
         ce = makeCompilationEnvironment({languages});

@@ -24,7 +24,7 @@
 
 import fs from 'node:fs/promises';
 import path from 'node:path';
-import type {ExecutionOptionsWithEnv} from '../../types/compilation/compilation.interfaces.js';
+import type {ExecutionOptionsWithEnv, FiledataPair} from '../../types/compilation/compilation.interfaces.js';
 import type {PreliminaryCompilerInfo} from '../../types/compiler.interfaces.js';
 import {UnprocessedExecResult} from '../../types/execution/execution.interfaces.js';
 import {BaseCompiler} from '../base-compiler.js';
@@ -60,7 +60,7 @@ export class DosboxCompiler extends BaseCompiler {
         return Promise.all(filesToWrite);
     }
 
-    protected override async writeAllFiles(dirPath: string, source: string, files: any[], filters: object) {
+    protected override async writeAllFiles(dirPath: string, source: string, files: FiledataPair[]) {
         if (!source) throw new Error(`File ${this.compileFilename} has no content or file is missing`);
 
         const inputFilename = path.join(dirPath, this.compileFilename);

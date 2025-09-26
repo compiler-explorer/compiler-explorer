@@ -36,7 +36,7 @@ import * as props from '../lib/properties.js';
 import {splitArguments} from '../shared/common-utils.js';
 import {CompilerOverrideType, ConfiguredOverrides} from '../types/compilation/compiler-overrides.interfaces.js';
 import {CompilerInfo} from '../types/compiler.interfaces.js';
-
+import {SelectedLibraryVersion} from '../types/libraries/libraries.interfaces.js';
 import {
     makeCompilationEnvironment,
     makeFakeCompilerInfo,
@@ -195,12 +195,12 @@ describe('Compiler execution', () => {
     // }
 
     it('basecompiler should handle spaces in options correctly', () => {
-        const userOptions = [];
+        const userOptions: string[] = [];
         const filters = makeFakeParseFiltersAndOutputOptions({});
         const backendOptions = {};
         const inputFilename = 'example.cpp';
         const outputFilename = 'example.s';
-        const libraries = [];
+        const libraries: SelectedLibraryVersion[] = [];
 
         const args = compiler.prepareArguments(
             userOptions,
@@ -224,12 +224,12 @@ describe('Compiler execution', () => {
     });
 
     it('win32 compiler should handle spaces in options correctly', () => {
-        const userOptions = [];
+        const userOptions: string[] = [];
         const filters = makeFakeParseFiltersAndOutputOptions({});
         const backendOptions = {};
         const inputFilename = 'example.cpp';
         const outputFilename = 'example.s';
-        const libraries = [];
+        const libraries: SelectedLibraryVersion[] = [];
 
         const win32args = win32compiler.prepareArguments(
             userOptions,

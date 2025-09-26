@@ -32,7 +32,7 @@ import * as properties from '../lib/properties.js';
 
 describe('Live site checks', () => {
     let ceProps;
-    let compilerProps;
+    let compilerProps: properties.CompilerProps;
 
     beforeAll(() => {
         properties.initialize('etc/config/', ['amazon']);
