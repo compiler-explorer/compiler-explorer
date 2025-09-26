@@ -105,11 +105,31 @@ def main():
             return False
         return True
 
-    # Build priority map based on section hierarchy
-    instruction_priority = {}
+    # Define section preference order (most preferred first)
+    SECTION_PREFERENCE = [
+        'integer-arithmetic-instructions',
+        'floating-point-instructions',
+        'half-precision-floating-point-instructions',
+        'extended-precision-arithmetic-instructions',
+        'comparison-and-selection-instructions',
+        'logical-instructions',
+        'data-movement-and-conversion-instructions',
+        'texture-instructions',
+        'surface-instructions',
+    ]
+
+    # Track which instructions we've already documented
+    seen_instructions = {}
+
+    # First, group sections by their preference order
+    sections_by_preference = {pref: [] for pref in SECTION_PREFERENCE}
+    sections_other = []
 
     for section in all_sections:
         section_id = section.get('id', '')
+
+        if not is_valid_instruction_section(section_id):
+            continue
 
         # Check if this section has the standard instruction documentation structure
         rubrics = section.find_all('p', class_='rubric')
@@ -119,68 +139,82 @@ def main():
         if not any(r in rubric_texts for r in ['Syntax', 'Description', 'Semantics', 'Examples']):
             continue
 
-        if not is_valid_instruction_section(section_id):
+        # Categorize by preference
+        categorized = False
+        for pref in SECTION_PREFERENCE:
+            if pref in section_id:
+                sections_by_preference[pref].append(section)
+                categorized = True
+                break
+        if not categorized:
+            sections_other.append(section)
+
+    # Process sections in preference order
+    for pref in SECTION_PREFERENCE:
+        for section in sections_by_preference[pref]:
+            section_id = section.get('id', '')
+
+            # Get actual instruction name from first code element
+            first_code = section.find('code')
+            if not first_code:
+                continue
+
+            fullname = first_code.get_text(strip=True).lstrip('.').lstrip('%')
+            # Extract base instruction name (before first dot or space)
+            base_instruction = fullname.split('.')[0].split()[0]
+
+            # Only add if we haven't seen this base instruction before
+            if base_instruction not in seen_instructions:
+                seen_instructions[base_instruction] = (fullname, section_id)
+                symbol_to_fullname_frag0[base_instruction].append((fullname, section_id))
+
+    # Process remaining sections
+    for section in sections_other:
+        section_id = section.get('id', '')
+        first_code = section.find('code')
+        if not first_code:
             continue
 
-        instruction_name = section_id.rsplit('-', 1)[-1]
+        fullname = first_code.get_text(strip=True).lstrip('.').lstrip('%')
+        base_instruction = fullname.split('.')[0].split()[0]
 
-        # Determine priority based on section type
-        priority = 0
-        if 'integer-arithmetic-instructions' in section_id:
-            priority = 10
-        elif 'floating-point-instructions' in section_id:
-            priority = 9
-        elif 'half-precision-floating-point-instructions' in section_id:
-            priority = 8
-        elif 'extended-precision-arithmetic-instructions' in section_id:
-            priority = 7
-        elif 'comparison-and-selection-instructions' in section_id:
-            priority = 6
-        elif 'logical-instructions' in section_id:
-            priority = 5
-        elif 'data-movement-and-conversion-instructions' in section_id:
-            priority = 4
-        elif 'texture-instructions' in section_id:
-            priority = 3
-        elif 'surface-instructions' in section_id:
-            priority = 2
-        else:
-            priority = 1
+        if base_instruction not in seen_instructions:
+            seen_instructions[base_instruction] = (fullname, section_id)
+            symbol_to_fullname_frag0[base_instruction].append((fullname, section_id))
 
-        # Find the first code element in this section for fullname
-        first_code = section.find('code')
-        if first_code:
-            fullname = first_code.get_text(strip=True).lstrip('.').lstrip('%')
-        else:
-            fullname = instruction_name
-
-        # Store or update if higher priority
-        if instruction_name not in instruction_priority or instruction_priority[instruction_name][1] < priority:
-            instruction_priority[instruction_name] = ((fullname, section_id), priority)
-
-    # Build the final mapping from the priority-filtered results
-    for instruction_name, ((fullname, section_id), _) in instruction_priority.items():
-        symbol_to_fullname_frag0[instruction_name].append((fullname, section_id))
-
-    # Also check for instruction variants with dots (e.g., add.s32)
+    # Collect instruction variants (e.g., add.s32, add.f32)
     for section in all_sections:
         section_id = section.get('id', '')
 
         if not is_valid_instruction_section(section_id):
             continue
 
-        # Look for code elements that might be instruction variants
-        codes = section.find_all('code')
-        for code in codes[:5]:  # Check first few codes only
-            text = code.get_text(strip=True)
-            if '.' in text and len(text) < 40:
-                base = text.split('.')[0].lstrip('%@')
-                if base and base.isalpha() and len(base) < 20:
-                    # Check if this base is already in our instruction map
-                    if base in instruction_priority:
-                        fullname = text.lstrip('.').lstrip('%')
-                        # Add variant
-                        symbol_to_fullname_frag0[base].append((fullname, section_id))
+        # Check structure
+        rubrics = section.find_all('p', class_='rubric')
+        rubric_texts = [r.get_text(strip=True) for r in rubrics]
+        if not any(r in rubric_texts for r in ['Syntax', 'Description', 'Semantics', 'Examples']):
+            continue
+
+        # Look for instruction variants in syntax section
+        syntax_rubric = section.find('p', class_='rubric', string='Syntax')
+        if syntax_rubric:
+            # Find the syntax block (usually next sibling)
+            next_elem = syntax_rubric.find_next_sibling()
+            if next_elem:
+                # Look for code elements that are instruction variants
+                codes = next_elem.find_all('code') if next_elem.name == 'div' else section.find_all('code')[:10]
+                for code in codes:
+                    text = code.get_text(strip=True).lstrip('.').lstrip('%')
+                    # Check if this looks like an instruction (not an operand)
+                    if text and not text.startswith(('d,', 'a,', 'b,', 'c,')) and len(text) < 40:
+                        parts = text.split()
+                        if parts:  # Has content
+                            instruction = parts[0]
+                            if '.' in instruction:  # It's a variant
+                                base = instruction.split('.')[0]
+                                # Only add variants for instructions we're documenting
+                                if base in seen_instructions and (instruction, section_id) not in symbol_to_fullname_frag0[base]:
+                                    symbol_to_fullname_frag0[base].append((instruction, section_id))
 
     # Remove duplicates and sort
     symbol_to_fullname_frag: list[tuple[str, list[tuple[str, str]]]] = sorted(
