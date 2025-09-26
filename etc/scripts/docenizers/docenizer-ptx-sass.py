@@ -1,12 +1,19 @@
 import argparse
 import collections
 import json
+import sys
 from collections import defaultdict
 from dataclasses import dataclass
+from pathlib import Path
 
 import pandas as pd
 import requests
 from bs4 import BeautifulSoup
+
+# Constants for documentation structure
+DOC_RUBRIC_TYPES = ['Syntax', 'Description', 'Semantics', 'Examples']
+PTX_DOCS_BASE_URL = 'https://docs.nvidia.com/cuda/parallel-thread-execution/index.html'
+CUDA_BINARY_UTILS_URL = 'https://docs.nvidia.com/cuda/cuda-binary-utilities/index.html'
 
 parser = argparse.ArgumentParser(description='Docenizes HTML version of the official cuda PTX/SASS documentation')
 parser.add_argument('-i', '--inputfolder', type=str,
@@ -22,6 +29,13 @@ class Doc:
     title: str
     text: str
     html: str
+
+
+def truncate_text(text: str, max_length: int) -> str:
+    """Truncate text to max_length characters, adding ellipsis if truncated."""
+    if len(text) > max_length:
+        return f"{text[:max_length]}..."
+    return text
 
 
 
@@ -46,9 +60,7 @@ def combine_docs(docs: list[Doc], fullname_fragments) -> tuple[str, str]:
 
     # If no short description, use the first one
     if not tooltip_txt and docs:
-        tooltip_txt = docs[0].text[:200]
-        if len(docs[0].text) > 200:
-            tooltip_txt += "..."
+        tooltip_txt = truncate_text(docs[0].text, 200)
 
     if not tooltip_txt:
         tooltip_txt = "PTX instruction"
@@ -62,18 +74,18 @@ def combine_docs(docs: list[Doc], fullname_fragments) -> tuple[str, str]:
             seen_html.add(doc.html)
 
     # Also add the links
-    links = ['<a href="https://docs.nvidia.com/cuda/parallel-thread-execution/index.html#' +
-             f'{fragment}" target="_blank" rel="noopener noreferrer">{fullname_plus_annotation(fullname, fragment)}' +
-             ' <sup><small class="fas fa-external-link-alt opens-new-window"' +
-             ' title="Opens in a new window"></small></sup></a>'
+    links = [f'<a href="{PTX_DOCS_BASE_URL}#{fragment}" target="_blank" rel="noopener noreferrer">'
+             f'{fullname_plus_annotation(fullname, fragment)}'
+             f' <sup><small class="fas fa-external-link-alt opens-new-window"'
+             f' title="Opens in a new window"></small></sup></a>'
              for fullname, fragment in fullname_fragments]
 
     # Put the actual documentation first, then the links
     combined_html = ''
     if html_parts:
-        combined_html = '\n'.join(html_parts) + '\n'
+        combined_html = f"{'\n'.join(html_parts)}\n"
 
-    combined_html += 'For more information, visit ' + ', '.join(links) + '.'
+    combined_html += f'For more information, visit {", ".join(links)}.'
 
     return tooltip_txt, combined_html
 
@@ -83,7 +95,7 @@ def main():
     print(f"Called with: {args}")
 
     # get PTX docs
-    r = requests.get('https://docs.nvidia.com/cuda/parallel-thread-execution/index.html', timeout=30)
+    r = requests.get(PTX_DOCS_BASE_URL, timeout=30)
     r.encoding = 'utf-8'
     soup = BeautifulSoup(r.text, 'html.parser')
 
@@ -136,7 +148,7 @@ def main():
         rubric_texts = [r.get_text(strip=True) for r in rubrics]
 
         # Only process sections with proper instruction documentation structure
-        if not any(r in rubric_texts for r in ['Syntax', 'Description', 'Semantics', 'Examples']):
+        if not any(r in rubric_texts for r in DOC_RUBRIC_TYPES):
             continue
 
         # Categorize by preference
@@ -192,7 +204,7 @@ def main():
         # Check structure
         rubrics = section.find_all('p', class_='rubric')
         rubric_texts = [r.get_text(strip=True) for r in rubrics]
-        if not any(r in rubric_texts for r in ['Syntax', 'Description', 'Semantics', 'Examples']):
+        if not any(r in rubric_texts for r in DOC_RUBRIC_TYPES):
             continue
 
         # Look for instruction variants in syntax section
@@ -226,7 +238,6 @@ def main():
         print("ERROR: No PTX instructions found in documentation!")
         print("The website structure may have changed.")
         print("Please update the docenizer-ptx-sass.py script to handle the new format.")
-        import sys
         sys.exit(1)
 
     def get_doc(fragment: str) -> Doc:
@@ -279,7 +290,7 @@ def main():
             txt = short_desc
         else:
             detailed_desc = next_elem.get_text(strip=True)
-            txt = detailed_desc[:200] + "..." if len(detailed_desc) > 200 else detailed_desc
+            txt = truncate_text(detailed_desc, 200)
 
         return Doc(title, txt, html)
 
@@ -295,14 +306,15 @@ def main():
             raise ValueError(f"No documentation could be parsed for instruction: {symbol}")
 
     # get SASS docs
-    tables = pd.read_html('https://docs.nvidia.com/cuda/cuda-binary-utilities/index.html', match='Opcode')
+    tables = pd.read_html(CUDA_BINARY_UTILS_URL, match='Opcode')
     sass_docs = sorted(
         (opcode, description)
         for (opcode, description) in pd.concat(tables).dropna().drop_duplicates(["Opcode"], keep="last").itertuples(index=False)
         if opcode != description
     )
 
-    with open( args.outputfolder + '/asm-docs-ptx.ts', 'w') as f:
+    output_dir = Path(args.outputfolder)
+    with (output_dir / 'asm-docs-ptx.ts').open('w') as f:
         f.write("""
     import type {AssemblyInstructionInfo} from '../../../types/assembly-docs.interfaces.js';
 
@@ -317,13 +329,13 @@ def main():
                 "tooltip": tooltip.replace('\n', '\n\n'),
                 "html": body,
                 # there can be multiple doc links for a single instruction
-                "url": "https://docs.nvidia.com/cuda/parallel-thread-execution/index.html#" + fullname_fragments[0][1]
+                "url": f"{PTX_DOCS_BASE_URL}#{fullname_fragments[0][1]}"
             }, indent=16, separators=(',', ': '), sort_keys=True))[:-1] + '            };\n\n')
         f.write("""
         }
     }
     """)
-    with open(args.outputfolder + '/asm-docs-sass.ts', 'w') as f:
+    with (output_dir / 'asm-docs-sass.ts').open('w') as f:
         f.write("""
     import type {AssemblyInstructionInfo} from '../../../types/assembly-docs.interfaces.js';
 
@@ -333,15 +345,14 @@ def main():
     """.lstrip())
         # SASS
         for name, description in sass_docs:
-            url = "https://docs.nvidia.com/cuda/cuda-binary-utilities/index.html#instruction-set-reference"
+            url = f"{CUDA_BINARY_UTILS_URL}#instruction-set-reference"
             f.write(f'        case "{name}":\n')
             f.write('            return {}'.format(json.dumps({
                 "tooltip": description,
-                "html": description +
-                        f'<br><br>For more information, visit <a href="{url}" target="_blank" rel="noopener noreferrer">'
-                        'CUDA Binary Utilities' +
-                        ' documentation <sup><small class="fas fa-external-link-alt opens-new-window"' +
-                        ' title="Opens in a new window"></small></sup></a>.',
+                "html": f'{description}<br><br>For more information, visit <a href="{url}" target="_blank" rel="noopener noreferrer">'
+                        f'CUDA Binary Utilities'
+                        f' documentation <sup><small class="fas fa-external-link-alt opens-new-window"'
+                        f' title="Opens in a new window"></small></sup></a>.',
                 "url": url
             }, indent=16, separators=(',', ': '), sort_keys=True))[:-1] + '            };\n\n')
 
