@@ -1,18 +1,12 @@
+import argparse
 import collections
 import json
-import os.path
-import argparse
 from collections import defaultdict
+from dataclasses import dataclass
 
 import pandas as pd
 import requests
 from bs4 import BeautifulSoup
-from dataclasses import dataclass
-
-try:
-    import lxml  # for pandas.read_html
-except ImportError:
-    raise
 
 parser = argparse.ArgumentParser(description='Docenizes HTML version of the official cuda PTX/SASS documentation')
 parser.add_argument('-i', '--inputfolder', type=str,
@@ -42,15 +36,11 @@ def fullname_plus_annotation(fullname: str, fragment: str) -> str:
 
 
 def combine_docs(docs: list[Doc], fullname_fragments) -> tuple[str, str]:
-    # For tooltip, prefer "Add two values." if available, otherwise shortest meaningful description
+    # For tooltip, prefer the shortest meaningful description
     tooltip_txt = None
     for doc in docs:
         if doc.text and len(doc.text) > 10 and len(doc.text) < 200:
-            # Check for the exact expected text first
-            if doc.text == "Add two values.":
-                tooltip_txt = doc.text
-                break
-            # Otherwise prefer short, descriptive text
+            # Prefer short, descriptive text
             if not tooltip_txt or len(doc.text) < len(tooltip_txt):
                 tooltip_txt = doc.text
 
@@ -81,24 +71,7 @@ def combine_docs(docs: list[Doc], fullname_fragments) -> tuple[str, str]:
     # Put the actual documentation first, then the links
     combined_html = ''
     if html_parts:
-        # Look for the "Performs addition" paragraph first
-        performs_addition = None
-        other_parts = []
-        for part in html_parts:
-            if 'Performs addition and writes the resulting value' in part:
-                performs_addition = part
-            else:
-                other_parts.append(part)
-
-        # Put "Performs addition" first if we have it
-        if performs_addition:
-            combined_html = performs_addition
-            if other_parts:
-                combined_html += '\n' + '\n'.join(other_parts)
-        else:
-            combined_html = '\n'.join(html_parts)
-
-        combined_html += '\n'
+        combined_html = '\n'.join(html_parts) + '\n'
 
     combined_html += 'For more information, visit ' + ', '.join(links) + '.'
 
@@ -116,63 +89,88 @@ def main():
 
     symbol_to_fullname_frag0: defaultdict[str, list[tuple[str, str]]] = collections.defaultdict(list)
 
-    # Regular expression to match instruction names
-    import re
-    instruction_pattern = re.compile(r'^([a-z]+)(?:\.([a-z0-9]+(?:\.[a-z0-9]+)*))?$')
+    # Find all sections with instruction documentation structure
+    all_sections = soup.find_all(['section', 'div'], id=lambda x: x and '-instructions-' in x)
 
-    # Find all code blocks once to avoid quadratic complexity
-    all_codes = soup.find_all('code')
+    # Build priority map based on section hierarchy
+    instruction_priority = {}
 
-    # Map each code block to its closest parent section with an ID
-    code_to_section = {}
-    for code in all_codes:
-        # Find the closest parent with an id attribute
-        for parent in code.find_parents():
-            if parent.get('id'):
-                code_to_section[code] = (parent.get('id'), parent.name)
-                break
+    for section in all_sections:
+        section_id = section.get('id', '')
 
-    # Process each code block once
-    for code, (section_id, section_name) in code_to_section.items():
-        # Skip if parent is a table
-        if section_name == 'table':
+        # Check if this section has the standard instruction documentation structure
+        rubrics = section.find_all('p', class_='rubric')
+        rubric_texts = [r.get_text(strip=True) for r in rubrics]
+
+        # Only process sections with proper instruction documentation structure
+        if not any(r in rubric_texts for r in ['Syntax', 'Description', 'Semantics', 'Examples']):
             continue
 
-        text = code.get_text(strip=True)
-        match = instruction_pattern.match(text)
-        if match and len(text) < 40:  # Reasonable length for an instruction
-            base_instr = match.group(1)
-            # Filter out common non-instruction words
-            if base_instr not in ['the', 'for', 'and', 'or', 'if', 'else', 'while',
-                                 'struct', 'union', 'enum', 'return', 'goto', 'break',
-                                 'continue', 'do', 'switch', 'case', 'default', 'typedef',
-                                 'static', 'extern', 'const', 'volatile', 'inline']:
-                # Use the full instruction as the fullname, base as the symbol
-                instr_fullname = text.lstrip('.').lstrip('%')
-                # Special handling for common instructions - prefer instruction sections
-                if base_instr in ['add', 'sub', 'mul', 'div', 'mov', 'ld', 'st']:
-                    # Only add if this is an instruction section or we don't have one yet
-                    existing = [x[1] for x in symbol_to_fullname_frag0[base_instr]]
-                    if not existing or 'instruction' in section_id.lower():
-                        # If we already have entries and this is an instruction section, clear old ones
-                        if existing and 'instruction' in section_id.lower() and not any('instruction' in x.lower() for x in existing):
-                            symbol_to_fullname_frag0[base_instr] = []
-                        symbol_to_fullname_frag0[base_instr].append((instr_fullname, section_id))
-                else:
-                    symbol_to_fullname_frag0[base_instr].append((instr_fullname, section_id))
+        # Extract instruction name from section ID (last segment after final dash)
+        if '-' not in section_id:
+            continue
 
-    # For common base instructions without variants, add explicit integer arithmetic mappings
-    for base_instr in ['add', 'sub', 'mul', 'div']:
-        if base_instr in symbol_to_fullname_frag0:
-            # Check if we have the integer arithmetic section
-            int_section = f'integer-arithmetic-instructions-{base_instr}'
-            if soup.find(id=int_section):
-                # Add this section explicitly
-                symbol_to_fullname_frag0[base_instr].append((base_instr, int_section))
+        instruction_name = section_id.rsplit('-', 1)[-1]
+
+        # Determine priority based on section type
+        priority = 0
+        if 'integer-arithmetic-instructions' in section_id:
+            priority = 10
+        elif 'floating-point-instructions' in section_id:
+            priority = 9
+        elif 'half-precision-floating-point-instructions' in section_id:
+            priority = 8
+        elif 'extended-precision-arithmetic-instructions' in section_id:
+            priority = 7
+        elif 'comparison-and-selection-instructions' in section_id:
+            priority = 6
+        elif 'logical-instructions' in section_id:
+            priority = 5
+        elif 'data-movement-and-conversion-instructions' in section_id:
+            priority = 4
+        elif 'texture-instructions' in section_id:
+            priority = 3
+        elif 'surface-instructions' in section_id:
+            priority = 2
+        else:
+            priority = 1
+
+        # Find the first code element in this section for fullname
+        first_code = section.find('code')
+        if first_code:
+            fullname = first_code.get_text(strip=True).lstrip('.').lstrip('%')
+        else:
+            fullname = instruction_name
+
+        # Store or update if higher priority
+        if instruction_name not in instruction_priority or instruction_priority[instruction_name][1] < priority:
+            instruction_priority[instruction_name] = ((fullname, section_id), priority)
+
+    # Build the final mapping from the priority-filtered results
+    for instruction_name, ((fullname, section_id), _) in instruction_priority.items():
+        symbol_to_fullname_frag0[instruction_name].append((fullname, section_id))
+
+    # Also check for instruction variants with dots (e.g., add.s32)
+    for section in all_sections:
+        section_id = section.get('id', '')
+
+        # Look for code elements that might be instruction variants
+        codes = section.find_all('code')
+        for code in codes[:5]:  # Check first few codes only
+            text = code.get_text(strip=True)
+            if '.' in text and len(text) < 40:
+                base = text.split('.')[0].lstrip('%@')
+                if base and base.isalpha() and len(base) < 20:
+                    # Check if this base is already in our instruction map
+                    if base in instruction_priority:
+                        fullname = text.lstrip('.').lstrip('%')
+                        # Add variant
+                        symbol_to_fullname_frag0[base].append((fullname, section_id))
 
     # Remove duplicates and sort
     symbol_to_fullname_frag: list[tuple[str, list[tuple[str, str]]]] = sorted(
-        (instr, sorted(set(fullname_frags))) for instr, fullname_frags in symbol_to_fullname_frag0.items())
+        (instr, sorted(set(fullname_frags))) for instr, fullname_frags in symbol_to_fullname_frag0.items()
+        if fullname_frags)  # Only include if we have fragments
 
     # Fail loudly if no instructions were found
     if not symbol_to_fullname_frag:
@@ -197,53 +195,57 @@ def main():
                 title = h.get_text(strip=True)
                 break
 
-        # Look for both short description and detailed description
+        # First, try to find the short description that appears between instruction name and Syntax
+        short_desc = None
+        instruction_rubric = article.find('p', class_='rubric')  # First rubric is usually instruction name
+        if instruction_rubric:
+            # Look for the next paragraph after instruction name
+            next_p = instruction_rubric.find_next_sibling('p')
+            if next_p and 'rubric' not in next_p.get('class', []):
+                # This is likely the short description
+                short_desc_text = next_p.get_text(strip=True)
+                if short_desc_text and len(short_desc_text) < 100:  # Short descriptions are typically brief
+                    short_desc = short_desc_text
+
+        # Find Description rubric to locate the detailed description structurally
+        desc_rubric = article.find('p', class_='rubric', string='Description')
+
         html = None
         txt = None
-        short_desc = None
 
-        # Find a short description for tooltip
-        for p in article.find_all('p'):
-            p_text = p.get_text(strip=True)
-            # Skip rubric paragraphs and empty ones
-            if p_text and 'rubric' not in p.get('class', []):
-                # Short descriptions like "Add two values."
-                if len(p_text) < 100 and p_text.endswith('.') and not short_desc:
-                    short_desc = p_text
-
-        # Find the Description section for HTML
-        desc_header = None
-        for elem in article.find_all(['p', 'div']):
-            if elem.get_text(strip=True) == 'Description':
-                desc_header = elem
-                break
-
-        if desc_header:
-            # Get the next <p> tag after Description for HTML
-            next_elem = desc_header.find_next_sibling('p')
+        if desc_rubric:
+            # The actual description is in the paragraph following the Description rubric
+            next_elem = desc_rubric.find_next_sibling('p')
             if next_elem and next_elem.get_text(strip=True):
-                html = str(next_elem)
-                # Use short description for tooltip if we have it, otherwise use this
-                txt = short_desc if short_desc else next_elem.get_text(strip=True)[:500]
-                if not short_desc and len(next_elem.get_text(strip=True)) > 500:
-                    txt += "..."
+                # Skip if this is another rubric
+                if 'rubric' not in next_elem.get('class', []):
+                    html = str(next_elem)
+                    # Use short description for tooltip if available, otherwise use detailed description
+                    txt = short_desc if short_desc else next_elem.get_text(strip=True)
+                    # Truncate for tooltip if too long
+                    if len(txt) > 200:
+                        txt = txt[:200] + "..."
 
-        # Fallback if no Description section
+        # Fallback: look for any non-rubric paragraph with meaningful content
         if not html:
             for p in article.find_all('p'):
+                # Skip rubric paragraphs
+                if 'rubric' in p.get('class', []):
+                    continue
                 p_text = p.get_text(strip=True)
-                # Skip rubric paragraphs and very short ones
-                if p_text and len(p_text) > 10 and 'rubric' not in p.get('class', []):
+                # Look for paragraphs with actual content
+                if p_text and len(p_text) > 10:
                     html = str(p)
-                    txt = p_text[:500]
-                    if len(p_text) > 500:
+                    # Still prefer short description for tooltip if we found one
+                    txt = short_desc if short_desc else p_text[:200]
+                    if not short_desc and len(p_text) > 200:
                         txt += "..."
                     break
 
         # Last resort - use title
         if not html:
             html = f'<p>{title}</p>'
-            txt = title
+            txt = short_desc if short_desc else title
 
         return Doc(title, txt, html)
 
@@ -253,7 +255,7 @@ def main():
         for fullname, fragment in fullname_fragments:
             try:
                 docs.append(get_doc(fragment))
-            except Exception as e:
+            except Exception:
                 # If we can't parse the doc, create a minimal one
                 docs.append(Doc(fullname, f"Documentation for {fullname}", f"<p>{fullname}</p>"))
 
@@ -303,7 +305,7 @@ def main():
     """.lstrip())
         # SASS
         for name, description in sass_docs:
-            url = f"https://docs.nvidia.com/cuda/cuda-binary-utilities/index.html#instruction-set-reference"
+            url = "https://docs.nvidia.com/cuda/cuda-binary-utilities/index.html#instruction-set-reference"
             f.write(f'        case "{name}":\n')
             f.write('            return {}'.format(json.dumps({
                 "tooltip": description,
