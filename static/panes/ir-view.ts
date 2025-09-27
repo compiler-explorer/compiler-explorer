@@ -112,9 +112,9 @@ export class Ir extends MonacoPane<monaco.editor.IStandaloneCodeEditor, IrState>
     override registerButtons(state: IrState) {
         super.registerButtons(state);
         this.options = new Toggles(this.domRoot.find('.options'), state as unknown as Record<string, boolean>);
-        this.options.on('change', this.onOptionsChange.bind(this));
+        this.options.on('change', () => this.onOptionsChange());
         this.filters = new Toggles(this.domRoot.find('.filters'), state as unknown as Record<string, boolean>);
-        this.filters.on('change', this.onOptionsChange.bind(this));
+        this.filters.on('change', () => this.onOptionsChange());
 
         this.cfgButton = this.domRoot.find('.cfg');
         const createCfgView = () => {

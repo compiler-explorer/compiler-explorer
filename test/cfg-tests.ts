@@ -33,7 +33,7 @@ import {generateStructure} from '../lib/cfg/cfg.js';
 import {CompilerInfo} from '../types/compiler.interfaces.js';
 import {makeFakeCompilerInfo, resolvePathFromTestRoot} from './utils.js';
 
-async function DoCfgTest(cfgArg, filename, isLlvmIr = false, compilerInfo?: CompilerInfo) {
+async function DoCfgTest(cfgArg: string, filename: string, isLlvmIr = false, compilerInfo?: CompilerInfo) {
     const contents = JSON.parse(await fs.readFile(filename, 'utf8'));
     if (!compilerInfo) {
         compilerInfo = makeFakeCompilerInfo({
@@ -65,6 +65,19 @@ describe('Cfg test cases', () => {
         for (const filename of files.filter(x => x.includes('clang'))) {
             it(filename, async () => {
                 await DoCfgTest('clang', path.join(testcasespath, filename));
+            });
+        }
+    });
+
+    describe('msvc', () => {
+        const msvcCompilerInfo = makeFakeCompilerInfo({
+            group: 'vc',
+            version: 'vc2022',
+            compilerType: 'vc',
+        });
+        for (const filename of files.filter(x => x.includes('msvc'))) {
+            it(filename, async () => {
+                await DoCfgTest('vc', path.join(testcasespath, filename), false, msvcCompilerInfo);
             });
         }
     });

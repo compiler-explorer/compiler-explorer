@@ -77,7 +77,7 @@ export class Clangir extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Cla
     override registerButtons(state: ClangirState): void {
         super.registerButtons(state);
         this.options = new Toggles(this.domRoot.find('.options'), state as unknown as Record<string, boolean>);
-        this.options.on('change', this.onOptionsChange.bind(this));
+        this.options.on('change', () => this.onOptionsChange());
     }
 
     override registerCallbacks(): void {

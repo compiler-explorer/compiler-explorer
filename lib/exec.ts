@@ -151,9 +151,9 @@ export async function executeDirect(
 
     function setupStream(stream: Stream, name: 'stdout' | 'stderr') {
         if (stream === undefined) return;
+        let currentLength = 0;
         stream.on('data', (data: Buffer) => {
             if (streams.truncated) return;
-            const currentLength = Buffer.concat(streams[name]).toString('utf8').length;
             const newLength = currentLength + data.length;
             if (maxOutput > 0 && newLength > maxOutput) {
                 const truncatedMsg = '\n[Truncated]';
@@ -165,6 +165,7 @@ export async function executeDirect(
                 return;
             }
             streams[name].push(Buffer.from(data));
+            currentLength = newLength;
         });
         setupOnError(stream, name);
     }

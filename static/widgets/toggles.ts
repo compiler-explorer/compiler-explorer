@@ -119,4 +119,15 @@ export class Toggles extends EventEmitter {
             }
         }
     }
+
+    override emit(type: string, oldState: Record<string, boolean>, newState: Record<string, boolean>): boolean {
+        return super.emit(type, oldState, newState);
+    }
+
+    override on(
+        type: string,
+        listener: (oldState: Record<string, boolean>, newState: Record<string, boolean>) => void,
+    ): this {
+        return super.on(type, listener);
+    }
 }

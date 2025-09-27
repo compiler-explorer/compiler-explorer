@@ -79,19 +79,19 @@ export class BaseCFGParser {
         return this.filterTextSection(assembly).map(_.clone).filter(isCode);
     }
 
-    public splitToFunctions(asmArr: AssemblyLine[]) {
+    public splitToFunctions(asmArr: AssemblyLine[]): Range[] {
         if (asmArr.length === 0) return [];
         const result: Range[] = [];
-        let first = 1;
+        let cur = 1;
         const last = asmArr.length;
         const fnRange: Range = {start: 0, end: 0};
-        while (first !== last) {
-            if (this.isFunctionEnd(asmArr[first].text)) {
-                fnRange.end = first;
+        while (cur !== last) {
+            if (this.isFunctionEnd(asmArr[cur].text)) {
+                fnRange.end = cur;
                 if (fnRange.end > fnRange.start + 1) result.push(_.clone(fnRange));
-                fnRange.start = first;
+                fnRange.start = cur;
             }
-            ++first;
+            ++cur;
         }
 
         fnRange.end = last;
@@ -109,13 +109,13 @@ export class BaseCFGParser {
     }
 
     protected splitToBasicBlocks(asmArr: AssemblyLine[], range: Range) {
-        let first = range.start;
+        let cur = range.start;
         const last = range.end;
-        if (first === last) return [];
-        const functionName = asmArr[first].text;
-        ++first;
+        if (cur === last) return [];
+        const functionName = asmArr[cur].text;
+        ++cur;
 
-        let rangeBb: BBRange = {nameId: functionName, start: first, end: 0, actionPos: []};
+        let rangeBb: BBRange = {nameId: functionName, start: cur, end: 0, actionPos: []};
         const result: BBRange[] = [];
 
         const newRangeWith = (oldRange: BBRange, nameId: string, start: number) => ({
@@ -125,17 +125,17 @@ export class BaseCFGParser {
             end: oldRange.end,
         });
 
-        while (first < last) {
-            const inst = asmArr[first].text;
-            const prevInst = asmArr[first - 1] ? asmArr[first - 1].text : '';
+        while (cur < last) {
+            const inst = asmArr[cur].text;
+            const prevInst = asmArr[cur - 1] ? asmArr[cur - 1].text : '';
             if (this.isBasicBlockEnd(inst, prevInst)) {
-                rangeBb.end = first;
+                rangeBb.end = cur;
                 result.push(_.clone(rangeBb));
-                rangeBb = newRangeWith(rangeBb, this.getBbId(inst), this.getBbFirstInstIdx(first));
+                rangeBb = newRangeWith(rangeBb, this.getBbId(inst), this.getBbFirstInstIdx(cur));
             } else if (this.instructionSetInfo.isJmpInstruction(inst)) {
-                rangeBb.actionPos.push(first);
+                rangeBb.actionPos.push(cur);
             }
-            ++first;
+            ++cur;
         }
 
         rangeBb.end = last;
@@ -207,13 +207,19 @@ export class BaseCFGParser {
         };
 
         const generateName = (name: string, suffix: number) => {
-            const pos = name.indexOf('@');
-            if (pos === -1) return `${name}@${suffix}`;
-
+            const pos = name.indexOf(this.getLabelSeparator());
+            if (pos === -1) return `${name + this.getLabelSeparator() + suffix}`;
             return name.substring(0, pos + 1) + suffix;
         };
         const bb = arrBB[bbIdx];
-        return hasName(asmArr, bb) ? asmArr[bb.end].text : generateName(bb.nameId, bb.end);
+        if (hasName(asmArr, bb)) return asmArr[bb.end].text;
+        const newBbName = generateName(bb.nameId, bb.end);
+        arrBB[bbIdx + 1].nameId = newBbName;
+        return newBbName;
+    }
+
+    protected getLabelSeparator() {
+        return '@';
     }
 
     protected splitToCanonicalBasicBlock(basicBlock: BBRange): CanonicalBB[] {
@@ -234,24 +240,32 @@ export class BaseCFGParser {
         if (actPosSz === 1)
             return [
                 {nameId: basicBlock.nameId, start: basicBlock.start, end: actionPos[0] + 1},
-                {nameId: basicBlock.nameId + '@' + (actionPos[0] + 1), start: actionPos[0] + 1, end: basicBlock.end},
+                {
+                    nameId: basicBlock.nameId + this.getLabelSeparator() + (actionPos[0] + 1),
+                    start: actionPos[0] + 1,
+                    end: basicBlock.end,
+                },
             ];
 
-        let first = 0;
+        let cur = 0;
         const last = actPosSz;
         const blockName = basicBlock.nameId;
-        let tmp: CanonicalBB = {nameId: blockName, start: basicBlock.start, end: actionPos[first] + 1};
+        let tmp: CanonicalBB = {nameId: blockName, start: basicBlock.start, end: actionPos[cur] + 1};
         const result: CanonicalBB[] = [];
         result.push(_.clone(tmp));
-        while (first !== last - 1) {
-            tmp.nameId = blockName + '@' + (actionPos[first] + 1);
-            tmp.start = actionPos[first] + 1;
-            ++first;
-            tmp.end = actionPos[first] + 1;
+        while (cur !== last - 1) {
+            tmp.nameId = blockName + this.getLabelSeparator() + (actionPos[cur] + 1);
+            tmp.start = actionPos[cur] + 1;
+            ++cur;
+            tmp.end = actionPos[cur] + 1;
             result.push(_.clone(tmp));
         }
 
-        tmp = {nameId: blockName + '@' + (actionPos[first] + 1), start: actionPos[first] + 1, end: basicBlock.end};
+        tmp = {
+            nameId: blockName + this.getLabelSeparator() + (actionPos[cur] + 1),
+            start: actionPos[cur] + 1,
+            end: basicBlock.end,
+        };
         result.push(_.clone(tmp));
 
         return result;
@@ -323,9 +337,11 @@ export class BaseCFGParser {
     }
 
     public generateFunctionCfg(code: AssemblyLine[], fn: Range) {
+        // Split fn to basic blocks by compiler-given labels
         const basicBlocks = this.splitToBasicBlocks(code, fn);
         let arrOfCanonicalBasicBlock: CanonicalBB[] = [];
         for (const bb of basicBlocks) {
+            // Split further, considering jump targets start new blocks
             const tmp = this.splitToCanonicalBasicBlock(bb);
             arrOfCanonicalBasicBlock = arrOfCanonicalBasicBlock.concat(tmp);
         }
