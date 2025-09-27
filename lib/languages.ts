@@ -236,7 +236,6 @@ const definitions: Record<LanguageKey, LanguageDefinition> = {
         formatter: null,
         previewFilter: null,
         monacoDisassembly: null,
-        digitSeparator: '_',
     },
     cmake: {
         name: 'CMake',
