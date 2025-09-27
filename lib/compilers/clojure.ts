@@ -24,13 +24,18 @@
 
 import fs from 'node:fs/promises';
 import path from 'node:path';
+import _ from 'underscore';
+import type {CompilationResult, ExecutionOptionsWithEnv} from '../../types/compilation/compilation.interfaces.js';
 import type {PreliminaryCompilerInfo} from '../../types/compiler.interfaces.js';
 import type {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces.js';
 import {CompilationEnvironment} from '../compilation-env.js';
+import * as utils from '../utils.js';
 import {ClojureParser} from './argument-parsers.js';
 import {JavaCompiler} from './java.js';
 
 export class ClojureCompiler extends JavaCompiler {
+    public compilerWrapperPath: string;
+
     static override get key() {
         return 'clojure';
     }
@@ -40,6 +45,9 @@ export class ClojureCompiler extends JavaCompiler {
     constructor(compilerInfo: PreliminaryCompilerInfo, env: CompilationEnvironment) {
         super(compilerInfo, env);
         this.javaHome = this.compilerProps<string>(`compiler.${this.compiler.id}.java_home`);
+        this.compilerWrapperPath =
+            this.compilerProps('compilerWrapper', '') ||
+            utils.resolvePathFromAppRoot('etc', 'scripts', 'clojure_wrapper.clj');
     }
 
     override getDefaultExecOptions() {
@@ -69,7 +77,53 @@ export class ClojureCompiler extends JavaCompiler {
         );
     }
 
-    override async readfiles(dirPath: string) {
+    override async readfiles(dirPath: string): Promise<string[]> {
         return fs.readdir(dirPath, {recursive: true});
+    }
+
+    async getClojureClasspathArgument(
+        dirPath: string,
+        compiler: string,
+        execOptions: ExecutionOptionsWithEnv,
+    ): Promise<string[]> {
+        const pathOption = ['-Spath'];
+        const output = await this.exec(compiler, pathOption, execOptions);
+        const cp = dirPath + ':' + output.stdout.trim();
+        return ['-Scp', cp];
+    }
+
+    override async runCompiler(
+        compiler: string,
+        options: string[],
+        inputFilename: string,
+        execOptions: ExecutionOptionsWithEnv,
+        filters?: ParseFiltersAndOutputOptions,
+    ): Promise<CompilationResult> {
+        if (!execOptions) {
+            execOptions = this.getDefaultExecOptions();
+        }
+        if (!execOptions.customCwd) {
+            execOptions.customCwd = path.dirname(inputFilename);
+        }
+
+        // The items in 'options' before the source file are user inputs.
+        const sourceFileOptionIndex = options.findIndex(option => {
+            return option.endsWith('.clj');
+        });
+        const userOptions = options.slice(0, sourceFileOptionIndex);
+        const classpathArgument = await this.getClojureClasspathArgument(execOptions.customCwd, compiler, execOptions);
+        const wrapperInvokeArgument = ['-M', this.compilerWrapperPath];
+        const clojureOptions = _.compact([
+            ...classpathArgument,
+            ...wrapperInvokeArgument,
+            ...userOptions,
+            inputFilename,
+        ]);
+        const result = await this.exec(compiler, clojureOptions, execOptions);
+        return {
+            ...this.transformToCompilationResult(result, inputFilename),
+            languageId: this.getCompilerResultLanguageId(filters),
+            instructionSet: this.getInstructionSetFromCompilerArgs(options),
+        };
     }
 }

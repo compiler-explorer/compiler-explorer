@@ -103,7 +103,7 @@ export class JavaCompiler extends BaseCompiler implements SimpleOutputFilenameCo
         };
     }
 
-    async readfiles(dirPath: string) {
+    async readfiles(dirPath: string): Promise<string[]> {
         return fs.readdir(dirPath);
     }
 
