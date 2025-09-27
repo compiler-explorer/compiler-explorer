@@ -47,8 +47,8 @@ describe('CompilerDropInTool', () => {
             },
             options: [],
         };
-        const includeflags = [];
-        const args = [];
+        const includeflags: string[] = [];
+        const args: string[] = [];
         const sourcefile = 'example.cpp';
 
         const orderedArgs = tool.getOrderedArguments(compilationInfo, includeflags, [], args, sourcefile);
@@ -68,8 +68,8 @@ describe('CompilerDropInTool', () => {
             },
             options: [],
         };
-        const includeflags = [];
-        const args = [];
+        const includeflags: string[] = [];
+        const args: string[] = [];
         const sourcefile = 'example.cpp';
 
         const orderedArgs = tool.getOrderedArguments(compilationInfo, includeflags, [], args, sourcefile);
@@ -89,8 +89,8 @@ describe('CompilerDropInTool', () => {
             },
             options: [],
         };
-        const includeflags = [];
-        const args = [];
+        const includeflags: string[] = [];
+        const args: string[] = [];
         const sourcefile = 'example.cpp';
 
         const orderedArgs = tool.getOrderedArguments(compilationInfo, includeflags, [], args, sourcefile);
@@ -111,8 +111,8 @@ describe('CompilerDropInTool', () => {
             },
             options: [],
         };
-        const includeflags = [];
-        const args = [];
+        const includeflags: string[] = [];
+        const args: string[] = [];
         const sourcefile = 'example.cpp';
 
         const orderedArgs = tool.getOrderedArguments(compilationInfo, includeflags, [], args, sourcefile);
@@ -135,7 +135,7 @@ describe('CompilerDropInTool', () => {
             },
             options: [],
         };
-        const includeflags = [];
+        const includeflags: string[] = [];
         const args = ['/MD', '/STD:c++latest', '/Ox'];
         const sourcefile = 'example.cpp';
 
@@ -154,8 +154,8 @@ describe('CompilerDropInTool', () => {
             },
             options: [],
         };
-        const includeflags = [];
-        const args = [];
+        const includeflags: string[] = [];
+        const args: string[] = [];
         const sourcefile = 'example.cpp';
 
         const orderedArgs = tool.getOrderedArguments(compilationInfo, includeflags, [], args, sourcefile);
@@ -173,8 +173,8 @@ describe('CompilerDropInTool', () => {
             },
             options: [],
         };
-        const includeflags = [];
-        const args = [];
+        const includeflags: string[] = [];
+        const args: string[] = [];
         const sourcefile = 'example.cpp';
         const libOptions = ['-DMYLIBDEF', '-pthread'];
 

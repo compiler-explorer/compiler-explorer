@@ -43,10 +43,10 @@ export type OptPipelineOutput = {
 };
 
 export type OptPipelineBackendOptions = {
-    filterDebugInfo: boolean;
-    filterIRMetadata: boolean;
-    fullModule: boolean;
-    noDiscardValueNames: boolean;
-    demangle: boolean;
-    libraryFunctions: boolean;
+    filterDebugInfo?: boolean;
+    filterIRMetadata?: boolean;
+    fullModule?: boolean;
+    noDiscardValueNames?: boolean;
+    demangle?: boolean;
+    libraryFunctions?: boolean;
 };

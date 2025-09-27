@@ -26,17 +26,18 @@ import {beforeAll, describe, expect, it} from 'vitest';
 
 import {LlvmPassDumpParser} from '../lib/parsers/llvm-pass-dump-parser.js';
 import * as properties from '../lib/properties.js';
+import {ResultLine} from '../types/resultline/resultline.interfaces.js';
 
 const languages = {
     'c++': {id: 'c++'},
 };
 
-function deepCopy(obj) {
+function deepCopy(obj: ResultLine[]): ResultLine[] {
     return JSON.parse(JSON.stringify(obj));
 }
 
 describe('llvm-pass-dump-parser filter', () => {
-    let llvmPassDumpParser;
+    let llvmPassDumpParser: LlvmPassDumpParser;
 
     beforeAll(() => {
         const fakeProps = new properties.CompilerProps(languages, properties.fakeProps({}));
@@ -44,7 +45,7 @@ describe('llvm-pass-dump-parser filter', () => {
         llvmPassDumpParser = new LlvmPassDumpParser(compilerProps);
     });
     // biome-ignore format: keep as-is for readability
-    const rawFuncIR = [
+    const rawFuncIR: ResultLine[] = [
         {text: '  # Machine code for function f(S1&, S2 const&): NoPHIs, TracksLiveness, TiedOpsRewritten'},
         {text: 'define dso_local void @f(S1&, S2 const&)(%struct.S1* noundef nonnull align 8 dereferenceable(16) %s1, %struct.S2* noundef nonnull align 8 dereferenceable(16) %s2) #0 !dbg !7 {',},
         {text: 'entry:'},
@@ -122,7 +123,7 @@ describe('llvm-pass-dump-parser filter', () => {
 });
 
 describe('llvm-pass-dump-parser Old style IR Dump header', () => {
-    let llvmPassDumpParser;
+    let llvmPassDumpParser: LlvmPassDumpParser;
 
     beforeAll(() => {
         const fakeProps = new properties.CompilerProps(languages, properties.fakeProps({}));
@@ -144,9 +145,7 @@ describe('llvm-pass-dump-parser Old style IR Dump header', () => {
     ];
 
     it('should recognize dump', () => {
-        const options = {filterDebugInfo: false};
-
-        const brokenDown = llvmPassDumpParser.breakdownOutputIntoPassDumps(deepCopy(rawFuncIR), options);
+        const brokenDown = llvmPassDumpParser.breakdownOutputIntoPassDumps(deepCopy(rawFuncIR));
 
         expect(brokenDown).toEqual([
             {
@@ -170,7 +169,7 @@ describe('llvm-pass-dump-parser Old style IR Dump header', () => {
 });
 
 describe('llvm-pass-dump-parser New style IR Dump header', () => {
-    let llvmPassDumpParser;
+    let llvmPassDumpParser: LlvmPassDumpParser;
 
     beforeAll(() => {
         const fakeProps = new properties.CompilerProps(languages, properties.fakeProps({}));
@@ -192,9 +191,7 @@ describe('llvm-pass-dump-parser New style IR Dump header', () => {
     ];
 
     it('should recognize dump', () => {
-        const options = {filterDebugInfo: false};
-
-        const brokenDown = llvmPassDumpParser.breakdownOutputIntoPassDumps(deepCopy(rawFuncIR), options);
+        const brokenDown = llvmPassDumpParser.breakdownOutputIntoPassDumps(deepCopy(rawFuncIR));
 
         expect(brokenDown).toEqual([
             {

@@ -98,6 +98,7 @@
     "@types/node-targz": "^0.2.4",
     "@types/request": "^2.48.13",
     "@types/response-time": "^2.3.9",
+    "@types/supertest": "^6.0.3",
     "@types/temp": "^0.9.4",
     "@types/underscore": "^1.13.0",
     "@types/webpack-env": "^1.18.8",

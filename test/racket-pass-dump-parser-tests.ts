@@ -26,17 +26,18 @@ import {beforeAll, describe, expect, it} from 'vitest';
 
 import {RacketPassDumpParser} from '../lib/parsers/racket-pass-dump-parser.js';
 import * as properties from '../lib/properties.js';
+import {ResultLine} from '../types/resultline/resultline.interfaces.js';
 
 const languages = {
     racket: {id: 'racket'},
 };
 
-function deepCopy(obj) {
+function deepCopy(obj: ResultLine[]): ResultLine[] {
     return JSON.parse(JSON.stringify(obj));
 }
 
 describe('racket-pass-dump-parser', () => {
-    let racketPassDumpParser;
+    let racketPassDumpParser: RacketPassDumpParser;
 
     beforeAll(() => {
         const fakeProps = new properties.CompilerProps(languages, properties.fakeProps({}));
@@ -45,7 +46,7 @@ describe('racket-pass-dump-parser', () => {
     });
 
     it('should recognize step', () => {
-        const output = [
+        const output: ResultLine[] = [
             {text: ';; compile-linklet: phase: 0'},
             {text: ';; compile-linklet: module: example'},
             {text: ';; compile-linklet: name: module'},
@@ -58,7 +59,7 @@ describe('racket-pass-dump-parser', () => {
             {text: '  (void))'},
         ];
 
-        const brokenDown = racketPassDumpParser.breakdownOutputIntoPassDumps(deepCopy(output), {});
+        const brokenDown = racketPassDumpParser.breakdownOutputIntoPassDumps(deepCopy(output));
 
         expect(brokenDown).toEqual([
             {
@@ -71,7 +72,7 @@ describe('racket-pass-dump-parser', () => {
     });
 
     it('should recognize pass', () => {
-        const output = [
+        const output: ResultLine[] = [
             {text: ';; compile-linklet: module: (phases configure-runtime)'},
             {text: ';; compile-linklet: name: decl'},
             {text: ';; compile-linklet: passes: all'},
@@ -95,7 +96,7 @@ describe('racket-pass-dump-parser', () => {
             {text: "        '#<void>)])])"},
         ];
 
-        const brokenDown = racketPassDumpParser.breakdownOutputIntoPassDumps(deepCopy(output), {});
+        const brokenDown = racketPassDumpParser.breakdownOutputIntoPassDumps(deepCopy(output));
 
         expect(brokenDown).toEqual([
             {
