@@ -24,6 +24,7 @@
 
 import fs from 'node:fs/promises';
 import path from 'node:path';
+import process from 'node:process';
 import * as Sentry from '@sentry/node';
 import express from 'express';
 import Server from 'http-proxy';
@@ -46,6 +47,7 @@ import {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfa
 import {LanguageKey} from '../../types/languages.interfaces.js';
 import {SelectedLibraryVersion} from '../../types/libraries/libraries.interfaces.js';
 import {ResultLine} from '../../types/resultline/resultline.interfaces.js';
+import {AppArguments} from '../app.interfaces.js';
 import {BaseCompiler} from '../base-compiler.js';
 import {parseExecutionParameters, parseTools, parseUserArguments} from '../compilation/compilation-request-parser.js';
 import {CompilationEnvironment} from '../compilation-env.js';
@@ -129,6 +131,7 @@ export class CompileHandler implements ICompileHandler {
     private readonly textBanner: string;
     private readonly proxy: Server;
     private readonly awsProps: PropertyGetter;
+    private readonly appArgs: AppArguments | undefined;
     private clientOptions: ClientOptionsType | null = null;
     private readonly compileCounter = new Counter({
         name: 'ce_compilations_total',
@@ -151,11 +154,12 @@ export class CompileHandler implements ICompileHandler {
         labelNames: ['language'],
     });
 
-    constructor(compilationEnvironment: CompilationEnvironment, awsProps: PropertyGetter) {
+    constructor(compilationEnvironment: CompilationEnvironment, awsProps: PropertyGetter, appArgs?: AppArguments) {
         this.compilerEnv = compilationEnvironment;
         this.textBanner = this.compilerEnv.ceProps<string>('textBanner');
         this.proxy = Server.createProxyServer({});
         this.awsProps = awsProps;
+        this.appArgs = appArgs;
         initialise(this.compilerEnv);
 
         // Mostly cribbed from
@@ -295,7 +299,8 @@ export class CompileHandler implements ICompileHandler {
         const compilersById: Partial<Record<LanguageKey, Record<string, BaseCompiler>>> = {};
         try {
             this.clientOptions = clientOptions;
-            logger.info('Creating compilers: ' + compilers.length);
+            const totalCompilers = compilers.length;
+            logger.info('Creating compilers: ' + totalCompilers);
             let compilersCreated = 0;
             const createdCompilers = remove(await Promise.all(compilers.map(c => this.create(c))), null);
             for (const compiler of createdCompilers) {
@@ -304,6 +309,17 @@ export class CompileHandler implements ICompileHandler {
                 compilersById[langId][compiler.getInfo().id] = compiler;
                 compilersCreated++;
             }
+
+            const failedCount = totalCompilers - compilersCreated;
+            if (failedCount > 0) {
+                logger.error(`Failed to create ${failedCount} out of ${totalCompilers} compilers`);
+
+                if (this.appArgs?.exitOnCompilerFailure) {
+                    logger.error('Exiting due to compiler creation failures (exitOnCompilerFailure=true)');
+                    process.exit(1);
+                }
+            }
+
             logger.info('Compilers created: ' + compilersCreated);
             if (this.awsProps) {
                 logger.info('Fetching possible arguments from storage');
