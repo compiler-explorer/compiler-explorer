@@ -465,6 +465,12 @@ export class BaseCompiler {
         const hash = BaseCache.hash(key);
 
         let result = await this.env.compilerCacheGet(key);
+        if (result) {
+            if (exec.hasNsjailPermissionsIssue(result.stderr)) {
+                logger.info(`Throwing out faulty cached result with nsjail permissions issue for ${compiler}`);
+                result = undefined;
+            }
+        }
 
         if (!result && this.env.willBeInCacheSoon(hash)) {
             result = await this.env.enqueue(async () => {

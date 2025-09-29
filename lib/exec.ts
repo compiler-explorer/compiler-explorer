@@ -353,7 +353,7 @@ export function getExecuteCEWrapperOptions(command: string, args: string[], opti
     return getCeWrapperOptions('execute', command, args, options);
 }
 
-function hasNsjailPermissionsIssue(stderr: string): boolean {
+export function hasNsjailPermissionsIssue(stderr: string): boolean {
     return stderr.includes(c_nsjail_permissions_error);
 }
 
