@@ -353,8 +353,8 @@ export function getExecuteCEWrapperOptions(command: string, args: string[], opti
     return getCeWrapperOptions('execute', command, args, options);
 }
 
-export function hasNsjailPermissionsIssue(stderr: string): boolean {
-    return stderr.includes(c_nsjail_permissions_error);
+export function hasNsjailPermissionsIssue(result: UnprocessedExecResult): boolean {
+    return result.stderr.includes(c_nsjail_permissions_error) || (result.stderr === '' && result.code === 255);
 }
 
 async function sandboxNsjail(
@@ -370,7 +370,7 @@ async function sandboxNsjail(
         nsOpts.options,
         nsOpts.filenameTransform,
     );
-    if (hasNsjailPermissionsIssue(result.stderr)) result.okToCache = false;
+    if (hasNsjailPermissionsIssue(result)) result.okToCache = false;
     return result;
 }
 
@@ -386,7 +386,7 @@ async function executeNsjail(
         nsOpts.options,
         nsOpts.filenameTransform,
     );
-    if (hasNsjailPermissionsIssue(result.stderr)) result.okToCache = false;
+    if (hasNsjailPermissionsIssue(result)) result.okToCache = false;
     return result;
 }
 

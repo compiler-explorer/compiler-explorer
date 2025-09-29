@@ -466,7 +466,7 @@ export class BaseCompiler {
 
         let result = await this.env.compilerCacheGet(key);
         if (result) {
-            if (exec.hasNsjailPermissionsIssue(result.stderr) || result.code == 255) {
+            if (exec.hasNsjailPermissionsIssue(result)) {
                 logger.info(`Throwing out faulty cached result with nsjail permissions issue for ${compiler}`);
                 result = undefined;
             }
