@@ -466,6 +466,12 @@ export class BaseCompiler {
 
         let result = await this.env.compilerCacheGet(key);
         if (result) {
+            if (
+                compiler === '/opt/compiler-explorer/gcc-15.2.0/bin/g++' ||
+                compiler === '/opt/compiler-explorer/gcc-15.2.0/bin/gcc'
+            ) {
+                logger.info(`cached result for gcc-15.2.0 with ${args.join(' ')} :`, result);
+            }
             if (exec.hasNsjailPermissionsIssue(result.stderr)) {
                 logger.info(`Throwing out faulty cached result with nsjail permissions issue for ${compiler}`);
                 result = undefined;
