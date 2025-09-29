@@ -35,17 +35,17 @@ const languages = {
     'c++': {id: 'c++'},
 };
 
-function mockAstOutput(astLines) {
+function mockAstOutput(astLines: string[]) {
     return {stdout: astLines.map(l => ({text: l}))};
 }
 
 describe('llvm-ast', () => {
     let compilerProps;
     let astParser;
-    let astDump;
+    let astDump: string[];
     let compilerOutput;
-    let astDumpWithCTime;
-    let astDumpNestedDecl1346;
+    let astDumpWithCTime: string[];
+    let astDumpNestedDecl1346: string[];
 
     beforeAll(() => {
         const fakeProps = new properties.CompilerProps(languages, properties.fakeProps({}));
@@ -155,7 +155,7 @@ describe('llvm-ast bug-3849b', () => {
 describe('llvm-ast bug-5889', () => {
     let compilerProps;
     let astParser;
-    let astDump;
+    let astDump: string[];
     let compilerOutput;
 
     beforeAll(() => {

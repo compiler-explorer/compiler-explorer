@@ -117,7 +117,7 @@ if __name__ == '__main__':
     with open(args.outputpath, "w") as output:
         
         output.write("""
-import {AssemblyInstructionInfo} from '../base.js';
+import type {AssemblyInstructionInfo} from '../../../types/assembly-docs.interfaces.js';
 
 export function getAsmOpcode(opcode: string | undefined): AssemblyInstructionInfo | undefined {
     if (!opcode) return;

@@ -32,7 +32,7 @@ import {parseAllDocuments} from 'yaml';
 import {splitArguments, unique} from '../shared/common-utils.js';
 import {OptRemark} from '../static/panes/opt-view.interfaces.js';
 import {PPOptions} from '../static/panes/pp-view.interfaces.js';
-import {ParsedAsmResultLine} from '../types/asmresult/asmresult.interfaces.js';
+import {ParsedAsmResult, ParsedAsmResultLine} from '../types/asmresult/asmresult.interfaces.js';
 import {ClangirBackendOptions} from '../types/compilation/clangir.interfaces.js';
 import {
     ActiveTool,
@@ -1897,12 +1897,7 @@ export class BaseCompiler {
         return Promise.all(filesToWrite);
     }
 
-    protected async writeAllFiles(
-        dirPath: string,
-        source: string,
-        files: FiledataPair[],
-        filters: ParseFiltersAndOutputOptions,
-    ) {
+    protected async writeAllFiles(dirPath: string, source: string, files: FiledataPair[]) {
         if (!source) throw new Error(`File ${this.compileFilename} has no content or file is missing`);
 
         const inputFilename = path.join(dirPath, this.compileFilename);
@@ -1938,7 +1933,7 @@ export class BaseCompiler {
     }
 
     async buildExecutableInFolder(key: CacheKey, dirPath: string): Promise<BuildResult> {
-        const writeSummary = await this.writeAllFiles(dirPath, key.source, key.files, key.filters);
+        const writeSummary = await this.writeAllFiles(dirPath, key.source, key.files);
         const downloads = await this.setupBuildEnvironment(key, dirPath, true);
 
         const inputFilename = writeSummary.inputFilename;
@@ -3057,7 +3052,7 @@ export class BaseCompiler {
 
                     let writeSummary;
                     try {
-                        writeSummary = await this.writeAllFiles(dirPath, source, files, filters);
+                        writeSummary = await this.writeAllFiles(dirPath, source, files);
                     } catch (e) {
                         return this.handleUserError(e, dirPath);
                     }
@@ -3281,7 +3276,7 @@ export class BaseCompiler {
         return this.asm.process(result.asm, filters);
     }
 
-    async postProcessAsm(result, filters?: ParseFiltersAndOutputOptions) {
+    async postProcessAsm(result, filters?: ParseFiltersAndOutputOptions): Promise<ParsedAsmResult> {
         if (!result.okToCache || !this.demanglerClass || !result.asm) return result;
         const demangler = new this.demanglerClass(this.compiler.demangler, this, this.optionsForDemangler(filters));
 

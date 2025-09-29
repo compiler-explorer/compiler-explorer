@@ -211,7 +211,7 @@ def docenizer():
     print("Writing {} instructions".format(len(instructions)))
     with open(args.outputpath, 'w') as f:
         f.write("""
-import {AssemblyInstructionInfo} from '../base.js';
+import type {AssemblyInstructionInfo} from '../../../types/assembly-docs.interfaces.js';
 
 export function getAsmOpcode(opcode: string | undefined): AssemblyInstructionInfo | undefined {
     if (!opcode) return;

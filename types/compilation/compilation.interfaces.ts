@@ -302,7 +302,7 @@ export type SingleFileCacheKey = {
     filters?: any;
     tools: any[];
     libraries: SelectedLibraryVersion[];
-    files: any[];
+    files: FiledataPair[];
 };
 
 export type CmakeCacheKey = Omit<SingleFileCacheKey, 'tools'> & {

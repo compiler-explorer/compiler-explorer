@@ -82,16 +82,16 @@ export class BaseCFGParser {
     public splitToFunctions(asmArr: AssemblyLine[]): Range[] {
         if (asmArr.length === 0) return [];
         const result: Range[] = [];
-        let first = 1;
+        let cur = 1;
         const last = asmArr.length;
         const fnRange: Range = {start: 0, end: 0};
-        while (first !== last) {
-            if (this.isFunctionEnd(asmArr[first].text)) {
-                fnRange.end = first;
+        while (cur !== last) {
+            if (this.isFunctionEnd(asmArr[cur].text)) {
+                fnRange.end = cur;
                 if (fnRange.end > fnRange.start + 1) result.push(_.clone(fnRange));
-                fnRange.start = first;
+                fnRange.start = cur;
             }
-            ++first;
+            ++cur;
         }
 
         fnRange.end = last;
@@ -207,13 +207,19 @@ export class BaseCFGParser {
         };
 
         const generateName = (name: string, suffix: number) => {
-            const pos = name.indexOf('@');
-            if (pos === -1) return `${name}@${suffix}`;
-
+            const pos = name.indexOf(this.getLabelSeparator());
+            if (pos === -1) return `${name + this.getLabelSeparator() + suffix}`;
             return name.substring(0, pos + 1) + suffix;
         };
         const bb = arrBB[bbIdx];
-        return hasName(asmArr, bb) ? asmArr[bb.end].text : generateName(bb.nameId, bb.end);
+        if (hasName(asmArr, bb)) return asmArr[bb.end].text;
+        const newBbName = generateName(bb.nameId, bb.end);
+        arrBB[bbIdx + 1].nameId = newBbName;
+        return newBbName;
+    }
+
+    protected getLabelSeparator() {
+        return '@';
     }
 
     protected splitToCanonicalBasicBlock(basicBlock: BBRange): CanonicalBB[] {
@@ -234,7 +240,11 @@ export class BaseCFGParser {
         if (actPosSz === 1)
             return [
                 {nameId: basicBlock.nameId, start: basicBlock.start, end: actionPos[0] + 1},
-                {nameId: basicBlock.nameId + '@' + (actionPos[0] + 1), start: actionPos[0] + 1, end: basicBlock.end},
+                {
+                    nameId: basicBlock.nameId + this.getLabelSeparator() + (actionPos[0] + 1),
+                    start: actionPos[0] + 1,
+                    end: basicBlock.end,
+                },
             ];
 
         let cur = 0;
@@ -244,14 +254,18 @@ export class BaseCFGParser {
         const result: CanonicalBB[] = [];
         result.push(_.clone(tmp));
         while (cur !== last - 1) {
-            tmp.nameId = blockName + '@' + (actionPos[cur] + 1);
+            tmp.nameId = blockName + this.getLabelSeparator() + (actionPos[cur] + 1);
             tmp.start = actionPos[cur] + 1;
             ++cur;
             tmp.end = actionPos[cur] + 1;
             result.push(_.clone(tmp));
         }
 
-        tmp = {nameId: blockName + '@' + (actionPos[cur] + 1), start: actionPos[cur] + 1, end: basicBlock.end};
+        tmp = {
+            nameId: blockName + this.getLabelSeparator() + (actionPos[cur] + 1),
+            start: actionPos[cur] + 1,
+            end: basicBlock.end,
+        };
         result.push(_.clone(tmp));
 
         return result;

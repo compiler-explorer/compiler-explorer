@@ -52,20 +52,6 @@ import type {AssemblyInstructionInfo} from '../../../types/assembly-docs.interfa
                 "url": "https://docs.nvidia.com/cuda/cuda-binary-utilities/index.html#instruction-set-reference"
             };
 
-        case "BFE":
-            return {
-                "html": "Bit Field Extract<br><br>For more information, visit <a href=\"https://docs.nvidia.com/cuda/cuda-binary-utilities/index.html#instruction-set-reference\" target=\"_blank\" rel=\"noopener noreferrer\">CUDA Binary Utilities documentation <sup><small class=\"fas fa-external-link-alt opens-new-window\" title=\"Opens in a new window\"></small></sup></a>.",
-                "tooltip": "Bit Field Extract",
-                "url": "https://docs.nvidia.com/cuda/cuda-binary-utilities/index.html#instruction-set-reference"
-            };
-
-        case "BFI":
-            return {
-                "html": "Bit Field Insert<br><br>For more information, visit <a href=\"https://docs.nvidia.com/cuda/cuda-binary-utilities/index.html#instruction-set-reference\" target=\"_blank\" rel=\"noopener noreferrer\">CUDA Binary Utilities documentation <sup><small class=\"fas fa-external-link-alt opens-new-window\" title=\"Opens in a new window\"></small></sup></a>.",
-                "tooltip": "Bit Field Insert",
-                "url": "https://docs.nvidia.com/cuda/cuda-binary-utilities/index.html#instruction-set-reference"
-            };
-
         case "BGMMA":
             return {
                 "html": "Bit Matrix Multiply and Accumulate Across Warps<br><br>For more information, visit <a href=\"https://docs.nvidia.com/cuda/cuda-binary-utilities/index.html#instruction-set-reference\" target=\"_blank\" rel=\"noopener noreferrer\">CUDA Binary Utilities documentation <sup><small class=\"fas fa-external-link-alt opens-new-window\" title=\"Opens in a new window\"></small></sup></a>.",
@@ -122,13 +108,6 @@ import type {AssemblyInstructionInfo} from '../../../types/assembly-docs.interfa
                 "url": "https://docs.nvidia.com/cuda/cuda-binary-utilities/index.html#instruction-set-reference"
             };
 
-        case "BRK":
-            return {
-                "html": "Break<br><br>For more information, visit <a href=\"https://docs.nvidia.com/cuda/cuda-binary-utilities/index.html#instruction-set-reference\" target=\"_blank\" rel=\"noopener noreferrer\">CUDA Binary Utilities documentation <sup><small class=\"fas fa-external-link-alt opens-new-window\" title=\"Opens in a new window\"></small></sup></a>.",
-                "tooltip": "Break",
-                "url": "https://docs.nvidia.com/cuda/cuda-binary-utilities/index.html#instruction-set-reference"
-            };
-
         case "BRX":
             return {
                 "html": "Relative Branch Indirect<br><br>For more information, visit <a href=\"https://docs.nvidia.com/cuda/cuda-binary-utilities/index.html#instruction-set-reference\" target=\"_blank\" rel=\"noopener noreferrer\">CUDA Binary Utilities documentation <sup><small class=\"fas fa-external-link-alt opens-new-window\" title=\"Opens in a new window\"></small></sup></a>.",
@@ -154,13 +133,6 @@ import type {AssemblyInstructionInfo} from '../../../types/assembly-docs.interfa
             return {
                 "html": "Synchronize Threads on a Convergence Barrier<br><br>For more information, visit <a href=\"https://docs.nvidia.com/cuda/cuda-binary-utilities/index.html#instruction-set-reference\" target=\"_blank\" rel=\"noopener noreferrer\">CUDA Binary Utilities documentation <sup><small class=\"fas fa-external-link-alt opens-new-window\" title=\"Opens in a new window\"></small></sup></a>.",
                 "tooltip": "Synchronize Threads on a Convergence Barrier",
-                "url": "https://docs.nvidia.com/cuda/cuda-binary-utilities/index.html#instruction-set-reference"
-            };
-
-        case "CAL":
-            return {
-                "html": "Relative Call<br><br>For more information, visit <a href=\"https://docs.nvidia.com/cuda/cuda-binary-utilities/index.html#instruction-set-reference\" target=\"_blank\" rel=\"noopener noreferrer\">CUDA Binary Utilities documentation <sup><small class=\"fas fa-external-link-alt opens-new-window\" title=\"Opens in a new window\"></small></sup></a>.",
-                "tooltip": "Relative Call",
                 "url": "https://docs.nvidia.com/cuda/cuda-binary-utilities/index.html#instruction-set-reference"
             };
 
@@ -199,13 +171,6 @@ import type {AssemblyInstructionInfo} from '../../../types/assembly-docs.interfa
                 "url": "https://docs.nvidia.com/cuda/cuda-binary-utilities/index.html#instruction-set-reference"
             };
 
-        case "CONT":
-            return {
-                "html": "Continue<br><br>For more information, visit <a href=\"https://docs.nvidia.com/cuda/cuda-binary-utilities/index.html#instruction-set-reference\" target=\"_blank\" rel=\"noopener noreferrer\">CUDA Binary Utilities documentation <sup><small class=\"fas fa-external-link-alt opens-new-window\" title=\"Opens in a new window\"></small></sup></a>.",
-                "tooltip": "Continue",
-                "url": "https://docs.nvidia.com/cuda/cuda-binary-utilities/index.html#instruction-set-reference"
-            };
-
         case "CREDUX":
             return {
                 "html": "Coupled Reduction of a Vector Register into a Uniform Register<br><br>For more information, visit <a href=\"https://docs.nvidia.com/cuda/cuda-binary-utilities/index.html#instruction-set-reference\" target=\"_blank\" rel=\"noopener noreferrer\">CUDA Binary Utilities documentation <sup><small class=\"fas fa-external-link-alt opens-new-window\" title=\"Opens in a new window\"></small></sup></a>.",
@@ -224,20 +189,6 @@ import type {AssemblyInstructionInfo} from '../../../types/assembly-docs.interfa
             return {
                 "html": "Load a Value from Constant Memory into a Uniform Register<br><br>For more information, visit <a href=\"https://docs.nvidia.com/cuda/cuda-binary-utilities/index.html#instruction-set-reference\" target=\"_blank\" rel=\"noopener noreferrer\">CUDA Binary Utilities documentation <sup><small class=\"fas fa-external-link-alt opens-new-window\" title=\"Opens in a new window\"></small></sup></a>.",
                 "tooltip": "Load a Value from Constant Memory into a Uniform Register",
-                "url": "https://docs.nvidia.com/cuda/cuda-binary-utilities/index.html#instruction-set-reference"
-            };
-
-        case "CSET":
-            return {
-                "html": "Test Condition Code And Set<br><br>For more information, visit <a href=\"https://docs.nvidia.com/cuda/cuda-binary-utilities/index.html#instruction-set-reference\" target=\"_blank\" rel=\"noopener noreferrer\">CUDA Binary Utilities documentation <sup><small class=\"fas fa-external-link-alt opens-new-window\" title=\"Opens in a new window\"></small></sup></a>.",
-                "tooltip": "Test Condition Code And Set",
-                "url": "https://docs.nvidia.com/cuda/cuda-binary-utilities/index.html#instruction-set-reference"
-            };
-
-        case "CSETP":
-            return {
-                "html": "Test Condition Code and Set Predicate<br><br>For more information, visit <a href=\"https://docs.nvidia.com/cuda/cuda-binary-utilities/index.html#instruction-set-reference\" target=\"_blank\" rel=\"noopener noreferrer\">CUDA Binary Utilities documentation <sup><small class=\"fas fa-external-link-alt opens-new-window\" title=\"Opens in a new window\"></small></sup></a>.",
-                "tooltip": "Test Condition Code and Set Predicate",
                 "url": "https://docs.nvidia.com/cuda/cuda-binary-utilities/index.html#instruction-set-reference"
             };
 
@@ -269,24 +220,10 @@ import type {AssemblyInstructionInfo} from '../../../types/assembly-docs.interfa
                 "url": "https://docs.nvidia.com/cuda/cuda-binary-utilities/index.html#instruction-set-reference"
             };
 
-        case "DMNMX":
-            return {
-                "html": "FP64 Minimum/Maximum<br><br>For more information, visit <a href=\"https://docs.nvidia.com/cuda/cuda-binary-utilities/index.html#instruction-set-reference\" target=\"_blank\" rel=\"noopener noreferrer\">CUDA Binary Utilities documentation <sup><small class=\"fas fa-external-link-alt opens-new-window\" title=\"Opens in a new window\"></small></sup></a>.",
-                "tooltip": "FP64 Minimum/Maximum",
-                "url": "https://docs.nvidia.com/cuda/cuda-binary-utilities/index.html#instruction-set-reference"
-            };
-
         case "DMUL":
             return {
                 "html": "FP64 Multiply<br><br>For more information, visit <a href=\"https://docs.nvidia.com/cuda/cuda-binary-utilities/index.html#instruction-set-reference\" target=\"_blank\" rel=\"noopener noreferrer\">CUDA Binary Utilities documentation <sup><small class=\"fas fa-external-link-alt opens-new-window\" title=\"Opens in a new window\"></small></sup></a>.",
                 "tooltip": "FP64 Multiply",
-                "url": "https://docs.nvidia.com/cuda/cuda-binary-utilities/index.html#instruction-set-reference"
-            };
-
-        case "DSET":
-            return {
-                "html": "FP64 Compare And Set<br><br>For more information, visit <a href=\"https://docs.nvidia.com/cuda/cuda-binary-utilities/index.html#instruction-set-reference\" target=\"_blank\" rel=\"noopener noreferrer\">CUDA Binary Utilities documentation <sup><small class=\"fas fa-external-link-alt opens-new-window\" title=\"Opens in a new window\"></small></sup></a>.",
-                "tooltip": "FP64 Compare And Set",
                 "url": "https://docs.nvidia.com/cuda/cuda-binary-utilities/index.html#instruction-set-reference"
             };
 
@@ -371,13 +308,6 @@ import type {AssemblyInstructionInfo} from '../../../types/assembly-docs.interfa
             return {
                 "html": "Floating-point Range Check<br><br>For more information, visit <a href=\"https://docs.nvidia.com/cuda/cuda-binary-utilities/index.html#instruction-set-reference\" target=\"_blank\" rel=\"noopener noreferrer\">CUDA Binary Utilities documentation <sup><small class=\"fas fa-external-link-alt opens-new-window\" title=\"Opens in a new window\"></small></sup></a>.",
                 "tooltip": "Floating-point Range Check",
-                "url": "https://docs.nvidia.com/cuda/cuda-binary-utilities/index.html#instruction-set-reference"
-            };
-
-        case "FCMP":
-            return {
-                "html": "FP32 Compare to Zero and Select Source<br><br>For more information, visit <a href=\"https://docs.nvidia.com/cuda/cuda-binary-utilities/index.html#instruction-set-reference\" target=\"_blank\" rel=\"noopener noreferrer\">CUDA Binary Utilities documentation <sup><small class=\"fas fa-external-link-alt opens-new-window\" title=\"Opens in a new window\"></small></sup></a>.",
-                "tooltip": "FP32 Compare to Zero and Select Source",
                 "url": "https://docs.nvidia.com/cuda/cuda-binary-utilities/index.html#instruction-set-reference"
             };
 
@@ -640,13 +570,6 @@ import type {AssemblyInstructionInfo} from '../../../types/assembly-docs.interfa
                 "url": "https://docs.nvidia.com/cuda/cuda-binary-utilities/index.html#instruction-set-reference"
             };
 
-        case "ICMP":
-            return {
-                "html": "Integer Compare to Zero and Select Source<br><br>For more information, visit <a href=\"https://docs.nvidia.com/cuda/cuda-binary-utilities/index.html#instruction-set-reference\" target=\"_blank\" rel=\"noopener noreferrer\">CUDA Binary Utilities documentation <sup><small class=\"fas fa-external-link-alt opens-new-window\" title=\"Opens in a new window\"></small></sup></a>.",
-                "tooltip": "Integer Compare to Zero and Select Source",
-                "url": "https://docs.nvidia.com/cuda/cuda-binary-utilities/index.html#instruction-set-reference"
-            };
-
         case "IDP":
             return {
                 "html": "Integer Dot Product and Accumulate<br><br>For more information, visit <a href=\"https://docs.nvidia.com/cuda/cuda-binary-utilities/index.html#instruction-set-reference\" target=\"_blank\" rel=\"noopener noreferrer\">CUDA Binary Utilities documentation <sup><small class=\"fas fa-external-link-alt opens-new-window\" title=\"Opens in a new window\"></small></sup></a>.",
@@ -672,13 +595,6 @@ import type {AssemblyInstructionInfo} from '../../../types/assembly-docs.interfa
             return {
                 "html": "Integer Multiply And Add<br><br>For more information, visit <a href=\"https://docs.nvidia.com/cuda/cuda-binary-utilities/index.html#instruction-set-reference\" target=\"_blank\" rel=\"noopener noreferrer\">CUDA Binary Utilities documentation <sup><small class=\"fas fa-external-link-alt opens-new-window\" title=\"Opens in a new window\"></small></sup></a>.",
                 "tooltip": "Integer Multiply And Add",
-                "url": "https://docs.nvidia.com/cuda/cuda-binary-utilities/index.html#instruction-set-reference"
-            };
-
-        case "IMADSP":
-            return {
-                "html": "Extracted Integer Multiply And Add.<br><br>For more information, visit <a href=\"https://docs.nvidia.com/cuda/cuda-binary-utilities/index.html#instruction-set-reference\" target=\"_blank\" rel=\"noopener noreferrer\">CUDA Binary Utilities documentation <sup><small class=\"fas fa-external-link-alt opens-new-window\" title=\"Opens in a new window\"></small></sup></a>.",
-                "tooltip": "Extracted Integer Multiply And Add.",
                 "url": "https://docs.nvidia.com/cuda/cuda-binary-utilities/index.html#instruction-set-reference"
             };
 
@@ -724,24 +640,10 @@ import type {AssemblyInstructionInfo} from '../../../types/assembly-docs.interfa
                 "url": "https://docs.nvidia.com/cuda/cuda-binary-utilities/index.html#instruction-set-reference"
             };
 
-        case "ISET":
-            return {
-                "html": "Integer Compare And Set<br><br>For more information, visit <a href=\"https://docs.nvidia.com/cuda/cuda-binary-utilities/index.html#instruction-set-reference\" target=\"_blank\" rel=\"noopener noreferrer\">CUDA Binary Utilities documentation <sup><small class=\"fas fa-external-link-alt opens-new-window\" title=\"Opens in a new window\"></small></sup></a>.",
-                "tooltip": "Integer Compare And Set",
-                "url": "https://docs.nvidia.com/cuda/cuda-binary-utilities/index.html#instruction-set-reference"
-            };
-
         case "ISETP":
             return {
                 "html": "Integer Compare And Set Predicate<br><br>For more information, visit <a href=\"https://docs.nvidia.com/cuda/cuda-binary-utilities/index.html#instruction-set-reference\" target=\"_blank\" rel=\"noopener noreferrer\">CUDA Binary Utilities documentation <sup><small class=\"fas fa-external-link-alt opens-new-window\" title=\"Opens in a new window\"></small></sup></a>.",
                 "tooltip": "Integer Compare And Set Predicate",
-                "url": "https://docs.nvidia.com/cuda/cuda-binary-utilities/index.html#instruction-set-reference"
-            };
-
-        case "JCAL":
-            return {
-                "html": "Absolute Call<br><br>For more information, visit <a href=\"https://docs.nvidia.com/cuda/cuda-binary-utilities/index.html#instruction-set-reference\" target=\"_blank\" rel=\"noopener noreferrer\">CUDA Binary Utilities documentation <sup><small class=\"fas fa-external-link-alt opens-new-window\" title=\"Opens in a new window\"></small></sup></a>.",
-                "tooltip": "Absolute Call",
                 "url": "https://docs.nvidia.com/cuda/cuda-binary-utilities/index.html#instruction-set-reference"
             };
 
@@ -962,27 +864,6 @@ import type {AssemblyInstructionInfo} from '../../../types/assembly-docs.interfa
                 "url": "https://docs.nvidia.com/cuda/cuda-binary-utilities/index.html#instruction-set-reference"
             };
 
-        case "PBK":
-            return {
-                "html": "Pre-Break<br><br>For more information, visit <a href=\"https://docs.nvidia.com/cuda/cuda-binary-utilities/index.html#instruction-set-reference\" target=\"_blank\" rel=\"noopener noreferrer\">CUDA Binary Utilities documentation <sup><small class=\"fas fa-external-link-alt opens-new-window\" title=\"Opens in a new window\"></small></sup></a>.",
-                "tooltip": "Pre-Break",
-                "url": "https://docs.nvidia.com/cuda/cuda-binary-utilities/index.html#instruction-set-reference"
-            };
-
-        case "PCNT":
-            return {
-                "html": "Pre-continue<br><br>For more information, visit <a href=\"https://docs.nvidia.com/cuda/cuda-binary-utilities/index.html#instruction-set-reference\" target=\"_blank\" rel=\"noopener noreferrer\">CUDA Binary Utilities documentation <sup><small class=\"fas fa-external-link-alt opens-new-window\" title=\"Opens in a new window\"></small></sup></a>.",
-                "tooltip": "Pre-continue",
-                "url": "https://docs.nvidia.com/cuda/cuda-binary-utilities/index.html#instruction-set-reference"
-            };
-
-        case "PEXIT":
-            return {
-                "html": "Pre-Exit<br><br>For more information, visit <a href=\"https://docs.nvidia.com/cuda/cuda-binary-utilities/index.html#instruction-set-reference\" target=\"_blank\" rel=\"noopener noreferrer\">CUDA Binary Utilities documentation <sup><small class=\"fas fa-external-link-alt opens-new-window\" title=\"Opens in a new window\"></small></sup></a>.",
-                "tooltip": "Pre-Exit",
-                "url": "https://docs.nvidia.com/cuda/cuda-binary-utilities/index.html#instruction-set-reference"
-            };
-
         case "PLOP3":
             return {
                 "html": "Predicate Logic Operation<br><br>For more information, visit <a href=\"https://docs.nvidia.com/cuda/cuda-binary-utilities/index.html#instruction-set-reference\" target=\"_blank\" rel=\"noopener noreferrer\">CUDA Binary Utilities documentation <sup><small class=\"fas fa-external-link-alt opens-new-window\" title=\"Opens in a new window\"></small></sup></a>.",
@@ -1011,13 +892,6 @@ import type {AssemblyInstructionInfo} from '../../../types/assembly-docs.interfa
                 "url": "https://docs.nvidia.com/cuda/cuda-binary-utilities/index.html#instruction-set-reference"
             };
 
-        case "PRET":
-            return {
-                "html": "Pre-Return From Subroutine<br><br>For more information, visit <a href=\"https://docs.nvidia.com/cuda/cuda-binary-utilities/index.html#instruction-set-reference\" target=\"_blank\" rel=\"noopener noreferrer\">CUDA Binary Utilities documentation <sup><small class=\"fas fa-external-link-alt opens-new-window\" title=\"Opens in a new window\"></small></sup></a>.",
-                "tooltip": "Pre-Return From Subroutine",
-                "url": "https://docs.nvidia.com/cuda/cuda-binary-utilities/index.html#instruction-set-reference"
-            };
-
         case "PRMT":
             return {
                 "html": "Permute Register Pair<br><br>For more information, visit <a href=\"https://docs.nvidia.com/cuda/cuda-binary-utilities/index.html#instruction-set-reference\" target=\"_blank\" rel=\"noopener noreferrer\">CUDA Binary Utilities documentation <sup><small class=\"fas fa-external-link-alt opens-new-window\" title=\"Opens in a new window\"></small></sup></a>.",
@@ -1025,31 +899,10 @@ import type {AssemblyInstructionInfo} from '../../../types/assembly-docs.interfa
                 "url": "https://docs.nvidia.com/cuda/cuda-binary-utilities/index.html#instruction-set-reference"
             };
 
-        case "PSET":
-            return {
-                "html": "Combine Predicates and Set<br><br>For more information, visit <a href=\"https://docs.nvidia.com/cuda/cuda-binary-utilities/index.html#instruction-set-reference\" target=\"_blank\" rel=\"noopener noreferrer\">CUDA Binary Utilities documentation <sup><small class=\"fas fa-external-link-alt opens-new-window\" title=\"Opens in a new window\"></small></sup></a>.",
-                "tooltip": "Combine Predicates and Set",
-                "url": "https://docs.nvidia.com/cuda/cuda-binary-utilities/index.html#instruction-set-reference"
-            };
-
         case "PSETP":
             return {
                 "html": "Combine Predicates and Set Predicate<br><br>For more information, visit <a href=\"https://docs.nvidia.com/cuda/cuda-binary-utilities/index.html#instruction-set-reference\" target=\"_blank\" rel=\"noopener noreferrer\">CUDA Binary Utilities documentation <sup><small class=\"fas fa-external-link-alt opens-new-window\" title=\"Opens in a new window\"></small></sup></a>.",
                 "tooltip": "Combine Predicates and Set Predicate",
-                "url": "https://docs.nvidia.com/cuda/cuda-binary-utilities/index.html#instruction-set-reference"
-            };
-
-        case "QADD4":
-            return {
-                "html": "FP8 Add<br><br>For more information, visit <a href=\"https://docs.nvidia.com/cuda/cuda-binary-utilities/index.html#instruction-set-reference\" target=\"_blank\" rel=\"noopener noreferrer\">CUDA Binary Utilities documentation <sup><small class=\"fas fa-external-link-alt opens-new-window\" title=\"Opens in a new window\"></small></sup></a>.",
-                "tooltip": "FP8 Add",
-                "url": "https://docs.nvidia.com/cuda/cuda-binary-utilities/index.html#instruction-set-reference"
-            };
-
-        case "QFMA4":
-            return {
-                "html": "FP8 Multiply and Add<br><br>For more information, visit <a href=\"https://docs.nvidia.com/cuda/cuda-binary-utilities/index.html#instruction-set-reference\" target=\"_blank\" rel=\"noopener noreferrer\">CUDA Binary Utilities documentation <sup><small class=\"fas fa-external-link-alt opens-new-window\" title=\"Opens in a new window\"></small></sup></a>.",
-                "tooltip": "FP8 Multiply and Add",
                 "url": "https://docs.nvidia.com/cuda/cuda-binary-utilities/index.html#instruction-set-reference"
             };
 
@@ -1064,13 +917,6 @@ import type {AssemblyInstructionInfo} from '../../../types/assembly-docs.interfa
             return {
                 "html": "FP8 Matrix Multiply and Accumulate Across a Warp<br><br>For more information, visit <a href=\"https://docs.nvidia.com/cuda/cuda-binary-utilities/index.html#instruction-set-reference\" target=\"_blank\" rel=\"noopener noreferrer\">CUDA Binary Utilities documentation <sup><small class=\"fas fa-external-link-alt opens-new-window\" title=\"Opens in a new window\"></small></sup></a>.",
                 "tooltip": "FP8 Matrix Multiply and Accumulate Across a Warp",
-                "url": "https://docs.nvidia.com/cuda/cuda-binary-utilities/index.html#instruction-set-reference"
-            };
-
-        case "QMUL4":
-            return {
-                "html": "FP8 Multiply<br><br>For more information, visit <a href=\"https://docs.nvidia.com/cuda/cuda-binary-utilities/index.html#instruction-set-reference\" target=\"_blank\" rel=\"noopener noreferrer\">CUDA Binary Utilities documentation <sup><small class=\"fas fa-external-link-alt opens-new-window\" title=\"Opens in a new window\"></small></sup></a>.",
-                "tooltip": "FP8 Multiply",
                 "url": "https://docs.nvidia.com/cuda/cuda-binary-utilities/index.html#instruction-set-reference"
             };
 
@@ -1141,13 +987,6 @@ import type {AssemblyInstructionInfo} from '../../../types/assembly-docs.interfa
             return {
                 "html": "PC Register Move<br><br>For more information, visit <a href=\"https://docs.nvidia.com/cuda/cuda-binary-utilities/index.html#instruction-set-reference\" target=\"_blank\" rel=\"noopener noreferrer\">CUDA Binary Utilities documentation <sup><small class=\"fas fa-external-link-alt opens-new-window\" title=\"Opens in a new window\"></small></sup></a>.",
                 "tooltip": "PC Register Move",
-                "url": "https://docs.nvidia.com/cuda/cuda-binary-utilities/index.html#instruction-set-reference"
-            };
-
-        case "RRO":
-            return {
-                "html": "Range Reduction Operator FP<br><br>For more information, visit <a href=\"https://docs.nvidia.com/cuda/cuda-binary-utilities/index.html#instruction-set-reference\" target=\"_blank\" rel=\"noopener noreferrer\">CUDA Binary Utilities documentation <sup><small class=\"fas fa-external-link-alt opens-new-window\" title=\"Opens in a new window\"></small></sup></a>.",
-                "tooltip": "Range Reduction Operator FP",
                 "url": "https://docs.nvidia.com/cuda/cuda-binary-utilities/index.html#instruction-set-reference"
             };
 
@@ -1225,13 +1064,6 @@ import type {AssemblyInstructionInfo} from '../../../types/assembly-docs.interfa
             return {
                 "html": "Shift Right<br><br>For more information, visit <a href=\"https://docs.nvidia.com/cuda/cuda-binary-utilities/index.html#instruction-set-reference\" target=\"_blank\" rel=\"noopener noreferrer\">CUDA Binary Utilities documentation <sup><small class=\"fas fa-external-link-alt opens-new-window\" title=\"Opens in a new window\"></small></sup></a>.",
                 "tooltip": "Shift Right",
-                "url": "https://docs.nvidia.com/cuda/cuda-binary-utilities/index.html#instruction-set-reference"
-            };
-
-        case "SSY":
-            return {
-                "html": "Set Synchronization Point<br><br>For more information, visit <a href=\"https://docs.nvidia.com/cuda/cuda-binary-utilities/index.html#instruction-set-reference\" target=\"_blank\" rel=\"noopener noreferrer\">CUDA Binary Utilities documentation <sup><small class=\"fas fa-external-link-alt opens-new-window\" title=\"Opens in a new window\"></small></sup></a>.",
-                "tooltip": "Set Synchronization Point",
                 "url": "https://docs.nvidia.com/cuda/cuda-binary-utilities/index.html#instruction-set-reference"
             };
 
@@ -1319,13 +1151,6 @@ import type {AssemblyInstructionInfo} from '../../../types/assembly-docs.interfa
                 "url": "https://docs.nvidia.com/cuda/cuda-binary-utilities/index.html#instruction-set-reference"
             };
 
-        case "SYNC":
-            return {
-                "html": "Converge threads after conditional branch<br><br>For more information, visit <a href=\"https://docs.nvidia.com/cuda/cuda-binary-utilities/index.html#instruction-set-reference\" target=\"_blank\" rel=\"noopener noreferrer\">CUDA Binary Utilities documentation <sup><small class=\"fas fa-external-link-alt opens-new-window\" title=\"Opens in a new window\"></small></sup></a>.",
-                "tooltip": "Converge threads after conditional branch",
-                "url": "https://docs.nvidia.com/cuda/cuda-binary-utilities/index.html#instruction-set-reference"
-            };
-
         case "SYNCS":
             return {
                 "html": "Sync Unit<br><br>For more information, visit <a href=\"https://docs.nvidia.com/cuda/cuda-binary-utilities/index.html#instruction-set-reference\" target=\"_blank\" rel=\"noopener noreferrer\">CUDA Binary Utilities documentation <sup><small class=\"fas fa-external-link-alt opens-new-window\" title=\"Opens in a new window\"></small></sup></a>.",
@@ -1340,13 +1165,6 @@ import type {AssemblyInstructionInfo} from '../../../types/assembly-docs.interfa
                 "url": "https://docs.nvidia.com/cuda/cuda-binary-utilities/index.html#instruction-set-reference"
             };
 
-        case "TEXS":
-            return {
-                "html": "Texture Fetch with scalar/non-vec4 source/destinations<br><br>For more information, visit <a href=\"https://docs.nvidia.com/cuda/cuda-binary-utilities/index.html#instruction-set-reference\" target=\"_blank\" rel=\"noopener noreferrer\">CUDA Binary Utilities documentation <sup><small class=\"fas fa-external-link-alt opens-new-window\" title=\"Opens in a new window\"></small></sup></a>.",
-                "tooltip": "Texture Fetch with scalar/non-vec4 source/destinations",
-                "url": "https://docs.nvidia.com/cuda/cuda-binary-utilities/index.html#instruction-set-reference"
-            };
-
         case "TLD":
             return {
                 "html": "Texture Load<br><br>For more information, visit <a href=\"https://docs.nvidia.com/cuda/cuda-binary-utilities/index.html#instruction-set-reference\" target=\"_blank\" rel=\"noopener noreferrer\">CUDA Binary Utilities documentation <sup><small class=\"fas fa-external-link-alt opens-new-window\" title=\"Opens in a new window\"></small></sup></a>.",
@@ -1358,20 +1176,6 @@ import type {AssemblyInstructionInfo} from '../../../types/assembly-docs.interfa
             return {
                 "html": "Texture Load 4<br><br>For more information, visit <a href=\"https://docs.nvidia.com/cuda/cuda-binary-utilities/index.html#instruction-set-reference\" target=\"_blank\" rel=\"noopener noreferrer\">CUDA Binary Utilities documentation <sup><small class=\"fas fa-external-link-alt opens-new-window\" title=\"Opens in a new window\"></small></sup></a>.",
                 "tooltip": "Texture Load 4",
-                "url": "https://docs.nvidia.com/cuda/cuda-binary-utilities/index.html#instruction-set-reference"
-            };
-
-        case "TLD4S":
-            return {
-                "html": "Texture Load 4 with scalar/non-vec4 source/destinations<br><br>For more information, visit <a href=\"https://docs.nvidia.com/cuda/cuda-binary-utilities/index.html#instruction-set-reference\" target=\"_blank\" rel=\"noopener noreferrer\">CUDA Binary Utilities documentation <sup><small class=\"fas fa-external-link-alt opens-new-window\" title=\"Opens in a new window\"></small></sup></a>.",
-                "tooltip": "Texture Load 4 with scalar/non-vec4 source/destinations",
-                "url": "https://docs.nvidia.com/cuda/cuda-binary-utilities/index.html#instruction-set-reference"
-            };
-
-        case "TLDS":
-            return {
-                "html": "Texture Load with scalar/non-vec4 source/destinations<br><br>For more information, visit <a href=\"https://docs.nvidia.com/cuda/cuda-binary-utilities/index.html#instruction-set-reference\" target=\"_blank\" rel=\"noopener noreferrer\">CUDA Binary Utilities documentation <sup><small class=\"fas fa-external-link-alt opens-new-window\" title=\"Opens in a new window\"></small></sup></a>.",
-                "tooltip": "Texture Load with scalar/non-vec4 source/destinations",
                 "url": "https://docs.nvidia.com/cuda/cuda-binary-utilities/index.html#instruction-set-reference"
             };
 
@@ -1974,13 +1778,6 @@ import type {AssemblyInstructionInfo} from '../../../types/assembly-docs.interfa
             return {
                 "html": "Synchronize Threads in Warp<br><br>For more information, visit <a href=\"https://docs.nvidia.com/cuda/cuda-binary-utilities/index.html#instruction-set-reference\" target=\"_blank\" rel=\"noopener noreferrer\">CUDA Binary Utilities documentation <sup><small class=\"fas fa-external-link-alt opens-new-window\" title=\"Opens in a new window\"></small></sup></a>.",
                 "tooltip": "Synchronize Threads in Warp",
-                "url": "https://docs.nvidia.com/cuda/cuda-binary-utilities/index.html#instruction-set-reference"
-            };
-
-        case "XMAD":
-            return {
-                "html": "Integer Short Multiply Add<br><br>For more information, visit <a href=\"https://docs.nvidia.com/cuda/cuda-binary-utilities/index.html#instruction-set-reference\" target=\"_blank\" rel=\"noopener noreferrer\">CUDA Binary Utilities documentation <sup><small class=\"fas fa-external-link-alt opens-new-window\" title=\"Opens in a new window\"></small></sup></a>.",
-                "tooltip": "Integer Short Multiply Add",
                 "url": "https://docs.nvidia.com/cuda/cuda-binary-utilities/index.html#instruction-set-reference"
             };
 
