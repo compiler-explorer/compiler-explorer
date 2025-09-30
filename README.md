@@ -28,7 +28,7 @@ layout is configurable (thanks to [GoldenLayout](https://www.golden-layout.com/)
 
 Try out at [godbolt.org](https://godbolt.org), or [run your own local instance](#running-a-local-instance). An overview
 of what the site lets you achieve, why it's useful, and how to use it is
-[available here](docs/WhatIsCompilerExplorer.md).
+[available here](docs/WhatIsCompilerExplorer.md), or in [this talk](https://www.youtube.com/watch?v=_9sGKcvT-TA).
 
 **Compiler Explorer** follows a [Code of Conduct](CODE_OF_CONDUCT.md) which aims to foster an open and welcoming
 environment.
