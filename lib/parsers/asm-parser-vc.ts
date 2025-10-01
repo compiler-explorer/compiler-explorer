@@ -50,10 +50,12 @@ type ResultObject = {
 export class VcAsmParser extends AsmParser {
     private readonly asmBinaryParser: AsmParser;
     private readonly filenameComment = /^; File (.+)/;
-    protected miscDirective = /^\s*(include|INCLUDELIB|TITLE|\.|THUMB|ARM64|TTL|END$)/;
+    private readonly miscDirective = /^\s*(include|INCLUDELIB|TITLE|\.|THUMB|ARM64|TTL|DD|voltbl|_volmd|END$)/;
+    private readonly postfixComment = /; (.*)/;
+    private readonly stdDataDirective = /\s*@std@@.* DD /;
     private readonly localLabelDef = /^([$A-Z_a-z]+) =/;
     private readonly lineNumberComment = /^; Line (\d+)/;
-    protected beginSegment =
+    private readonly beginSegment =
         /^(CONST|_BSS|\.?[prx]?data(\$[A-Za-z]+)?|CRT(\$[A-Za-z]+)?|_TEXT|\.?text(\$[A-Za-z]+)?)\s+SEGMENT|\s*AREA/;
     protected endSegment = /^(CONST|_BSS|[prx]?data(\$[A-Za-z]+)?|CRT(\$[A-Za-z]+)?|_TEXT|text(\$[A-Za-z]+)?)\s+ENDS/;
     private readonly beginFunction = /^; Function compile flags: /;
@@ -241,25 +243,35 @@ export class VcAsmParser extends AsmParser {
 
             currentFunction = checkBeginFunction(line);
 
-            const functionName = line.match(this.definesFunction);
-            if (functionName) {
+            const functionLine = line.match(this.definesFunction);
+            if (functionLine) {
                 if (asmLines.length === 0) {
                     continue;
                 }
                 assert(currentFunction);
-                currentFunction.name = functionName[1];
+                const functionName = line.match(this.postfixComment); // Try to extract demangled name from line comment
+                if (functionName?.[1])
+                    currentFunction.name = functionName[1];
+                else 
+                    currentFunction.name = functionLine[1];
             }
 
             if (filters.commentOnly && this.commentOnly.test(line)) continue;
 
-            const shouldSkip =
+            const shouldSkipDirective =
                 filters.directives &&
-                (line.match(this.endSegment) ||
-                    line.match(this.definesGlobal) ||
-                    line.match(this.miscDirective) ||
-                    line.match(this.beginSegment));
+                (this.endSegment.test(line) ||
+                    this.definesGlobal.test(line) ||
+                    this.miscDirective.test(line) ||
+                    this.beginSegment.test(line));
 
-            if (shouldSkip) {
+            const shouldSkipLibraryCode = filters.libraryCode && currentFunction?.name?.trim().startsWith('std::');
+            // Filter out lines like 
+            // const std::bad_alloc::`RTTI Complete Object Locator' DD 01H  
+            const shouldSkipLibOrDirective = (filters.directives || filters.libraryCode) &&
+                this.stdDataDirective.test(line);
+
+            if (shouldSkipDirective || shouldSkipLibraryCode || shouldSkipLibOrDirective) {
                 continue;
             }
 
@@ -273,7 +285,7 @@ export class VcAsmParser extends AsmParser {
             };
             if (currentFunction === null) {
                 resultObject.prefix.push(textAndSource);
-            } else if (!shouldSkip) {
+            } else {
                 currentFunction.lines.push(textAndSource);
             }
 
