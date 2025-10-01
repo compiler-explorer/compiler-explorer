@@ -50,12 +50,12 @@ type ResultObject = {
 export class VcAsmParser extends AsmParser {
     private readonly asmBinaryParser: AsmParser;
     private readonly filenameComment = /^; File (.+)/;
-    private readonly miscDirective = /^\s*(include|INCLUDELIB|TITLE|\.|THUMB|ARM64|TTL|DD|voltbl|_volmd|END$)/;
+    protected miscDirective = /^\s*(include|INCLUDELIB|TITLE|\.|THUMB|ARM64|TTL|DD|voltbl|_volmd|END$)/;
     private readonly postfixComment = /; (.*)/;
     private readonly stdDataDirective = /\s*@std@@.* DD /;
     private readonly localLabelDef = /^([$A-Z_a-z]+) =/;
     private readonly lineNumberComment = /^; Line (\d+)/;
-    private readonly beginSegment =
+    protected beginSegment =
         /^(CONST|_BSS|\.?[prx]?data(\$[A-Za-z]+)?|CRT(\$[A-Za-z]+)?|_TEXT|\.?text(\$[A-Za-z]+)?)\s+SEGMENT|\s*AREA/;
     protected endSegment = /^(CONST|_BSS|[prx]?data(\$[A-Za-z]+)?|CRT(\$[A-Za-z]+)?|_TEXT|text(\$[A-Za-z]+)?)\s+ENDS/;
     private readonly beginFunction = /^; Function compile flags: /;
@@ -250,10 +250,8 @@ export class VcAsmParser extends AsmParser {
                 }
                 assert(currentFunction);
                 const functionName = line.match(this.postfixComment); // Try to extract demangled name from line comment
-                if (functionName?.[1])
-                    currentFunction.name = functionName[1];
-                else 
-                    currentFunction.name = functionLine[1];
+                if (functionName?.[1]) currentFunction.name = functionName[1];
+                else currentFunction.name = functionLine[1];
             }
 
             if (filters.commentOnly && this.commentOnly.test(line)) continue;
@@ -266,10 +264,10 @@ export class VcAsmParser extends AsmParser {
                     this.beginSegment.test(line));
 
             const shouldSkipLibraryCode = filters.libraryCode && currentFunction?.name?.trim().startsWith('std::');
-            // Filter out lines like 
-            // const std::bad_alloc::`RTTI Complete Object Locator' DD 01H  
-            const shouldSkipLibOrDirective = (filters.directives || filters.libraryCode) &&
-                this.stdDataDirective.test(line);
+            // Filter out lines like
+            // const std::bad_alloc::`RTTI Complete Object Locator' DD 01H
+            const shouldSkipLibOrDirective =
+                (filters.directives || filters.libraryCode) && this.stdDataDirective.test(line);
 
             if (shouldSkipDirective || shouldSkipLibraryCode || shouldSkipLibOrDirective) {
                 continue;
