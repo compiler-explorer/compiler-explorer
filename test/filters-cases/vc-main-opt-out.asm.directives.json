@@ -38,7 +38,7 @@
     },
     {
       "source": null,
-      "text": "; File c:\\\\source\\\\compiler-explorer\\\\test\\\\cases\\\\vc-main-opt-out-example.cpp"
+      "text": "; File c:\\source\\compiler-explorer\\test\\cases\\vc-main-opt-out-example.cpp"
     },
     {
       "source": null,
@@ -258,7 +258,7 @@
     },
     {
       "source": null,
-      "text": "; File std\\\\array"
+      "text": "; File std\\array"
     },
     {
       "source": null,
@@ -266,14 +266,14 @@
     },
     {
       "source": {
-        "file": "std\\\\array",
+        "file": "std\\array",
         "line": 187
       },
       "text": "        mov     QWORD PTR [rsp+16], rdx"
     },
     {
       "source": {
-        "file": "std\\\\array",
+        "file": "std\\array",
         "line": 187
       },
       "text": "        mov     QWORD PTR [rsp+8], rcx"
@@ -284,21 +284,21 @@
     },
     {
       "source": {
-        "file": "std\\\\array",
+        "file": "std\\array",
         "line": 197
       },
       "text": "        mov     rax, QWORD PTR this$[rsp]"
     },
     {
       "source": {
-        "file": "std\\\\array",
+        "file": "std\\array",
         "line": 197
       },
       "text": "        mov     rcx, QWORD PTR _Pos$[rsp]"
     },
     {
       "source": {
-        "file": "std\\\\array",
+        "file": "std\\array",
         "line": 197
       },
       "text": "        lea     rax, QWORD PTR [rax+rcx*4]"
@@ -309,7 +309,7 @@
     },
     {
       "source": {
-        "file": "std\\\\array",
+        "file": "std\\array",
         "line": 198
       },
       "text": "        ret     0"
