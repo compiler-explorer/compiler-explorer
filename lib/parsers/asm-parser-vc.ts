@@ -52,8 +52,8 @@ export class VcAsmParser extends AsmParser {
     private readonly filenameComment = /^; File (.+)/;
     protected miscDirective = /^\s*(include|INCLUDELIB|TITLE|\.|THUMB|ARM64|TTL|DD|voltbl|_volmd|END$)/;
     private readonly postfixComment = /; (.*)/;
-    private readonly stdDataDirective = /\s*@std@@.* DD /;
-    private readonly localLabelDef = /^([$A-Z_a-z]+) =/;
+    private readonly stdData = /^`?[?_0-9$A-Z_a-z']+@std@@.* DC?[BWDQT] /;
+    private readonly localLabelDef = /^([$A-Z_a-z]+) (?:=|EQU)/;
     private readonly lineNumberComment = /^; Line (\d+)/;
     protected beginSegment =
         /^(CONST|_BSS|\.?[prx]?data(\$[A-Za-z]+)?|CRT(\$[A-Za-z]+)?|_TEXT|\.?text(\$[A-Za-z]+)?)\s+SEGMENT|\s*AREA/;
@@ -67,12 +67,12 @@ export class VcAsmParser extends AsmParser {
         this.asmBinaryParser = new AsmParser(compilerProps);
         this.commentOnly = /^;/;
 
-        this.labelDef = /^\|?([$?@A-Z_a-z][\w$<>?@]*)\|?\s+(PROC|=|D[BDQW])/;
+        this.labelDef = /^\|?([$?@A-Z_a-z][\w$<>?@]*)\|?\s+(PROC|=|D[BWDQT])/;
         this.definesGlobal = /^\s*(PUBLIC|EXTRN|EXPORT)\s+/;
         this.definesFunction = /^\|?([$?@A-Z_a-z][\w$<>?@]*)\|?\s+PROC/;
         this.dataDefn = /^(\|?[$?@A-Z_a-z][\w$<>?@]*\|?)\sDC?[BDQW]\s|\s+DC?[BDQW]\s|\s+ORG/;
 
-        // these are set to an impossible regex, because VC doesn't have inline assembly
+        // these are set to an impossible regex. VC-x86 does have inline assembly, but no special treatment is needed
         this.startAppBlock = this.startAsmNesting = /a^/;
         this.endAppBlock = this.endAsmNesting = /a^/;
         // same, but for CUDA
@@ -266,8 +266,7 @@ export class VcAsmParser extends AsmParser {
             const shouldSkipLibraryCode = filters.libraryCode && currentFunction?.name?.trim().startsWith('std::');
             // Filter out lines like
             // const std::bad_alloc::`RTTI Complete Object Locator' DD 01H
-            const shouldSkipLibOrDirective =
-                (filters.directives || filters.libraryCode) && this.stdDataDirective.test(line);
+            const shouldSkipLibOrDirective = (filters.directives || filters.libraryCode) && this.stdData.test(line);
 
             if (shouldSkipDirective || shouldSkipLibraryCode || shouldSkipLibOrDirective) {
                 continue;
