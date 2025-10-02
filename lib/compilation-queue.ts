@@ -61,11 +61,7 @@ export class CompilationQueue {
     private readonly _staleAfterMs: number;
 
     constructor(concurrency: number, timeout: number, staleAfterMs: number) {
-        this._queue = new Queue({
-            concurrency,
-            timeout,
-            throwOnTimeout: true,
-        });
+        this._queue = new Queue({concurrency, timeout});
         this._staleAfterMs = staleAfterMs;
     }
 
@@ -112,7 +108,7 @@ export class CompilationQueue {
                     queueCompleted.inc();
                 }
             },
-            {priority: options?.highPriority ? 100 : 0, throwOnTimeout: true, timeout: undefined},
+            {priority: options?.highPriority ? 100 : 0, timeout: undefined},
         );
     }
 
