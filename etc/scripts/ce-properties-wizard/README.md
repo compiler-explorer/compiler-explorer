@@ -128,6 +128,7 @@ Get-ChildItem "C:\Compilers\*\bin\*.exe" | ForEach-Object {
 - `--reorganize LANGUAGE`: Reorganize an existing properties file for the specified language
 - `--validate-discovery`: Run discovery validation to verify the compiler is detected (default for local environment)
 - `--env ENV`: Environment to target (local, amazon, etc.) - defaults to 'local'
+- `--sdk-path`: Windows SDK base path for MSVC compilers (e.g., D:/efs/compilers/windows-kits-10)
 
 ## Supported Languages
 
@@ -171,6 +172,44 @@ The wizard attempts to detect compiler type by running version commands:
 - Python: `--version`
 
 If detection fails, you can manually specify the compiler type.
+
+## MSVC Auto-Configuration
+
+When adding MSVC compilers, the wizard automatically configures additional tools:
+
+### Demangler Configuration
+- **Automatic Detection**: Detects `undname.exe` from the MSVC installation path
+- **Architecture Matching**: Uses the same architecture as the compiler (x64, x86, arm64)
+- **Auto-Configuration**: Sets `demanglerType=win32` and `demangler=<path-to-undname.exe>`
+
+### Objdumper Configuration
+- **LLVM Detection**: Automatically detects `llvm-objdump.exe` if available in the MSVC installation
+- **Conditional Setup**: Only adds objdumper configuration when `llvm-objdump.exe` is found
+- **Auto-Configuration**: Sets `objdumperType=llvm` and `objdumper=<path-to-llvm-objdump.exe>`
+
+### Windows SDK Integration
+- **Interactive Prompt**: Prompts for Windows SDK path if auto-detection fails
+- **Command-Line Option**: Use `--sdk-path` to specify SDK path non-interactively
+- **Include/Library Paths**: Automatically configures MSVC include and library paths
+
+### Example MSVC Usage
+
+**Windows (Interactive):**
+```powershell
+.\run.ps1 "D:\efs\compilers\msvc-2022-ce\VC\Tools\MSVC\14.34.31933\bin\Hostx64\x64\cl.exe"
+```
+
+**Windows (Non-Interactive):**
+```powershell
+.\run.ps1 "D:\efs\compilers\msvc-2022-ce\VC\Tools\MSVC\14.34.31933\bin\Hostx64\x64\cl.exe" `
+  --sdk-path "D:\efs\compilers\windows-kits-10" `
+  --non-interactive
+```
+
+The wizard will automatically configure:
+- Demangler: `D:/efs/compilers/msvc-2022-ce/VC/Tools/MSVC/14.34.31933/bin/Hostx64/x64/undname.exe`
+- Objdumper: `D:/efs/compilers/msvc-2022-ce/VC/Tools/Llvm/x64/bin/llvm-objdump.exe` (if available)
+- Windows SDK include and library paths
 
 ## Configuration Files
 

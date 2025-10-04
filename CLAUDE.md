@@ -81,6 +81,19 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 - **S3 Storage Integration**: Compilation results include an `s3Key` property containing the cache key hash for S3 storage reference. Large results (>31KiB) can be stored in S3 and referenced by this key. The s3Key is removed from API responses before sending to users.
 - **Metrics & Statistics**: SQS workers track separate Prometheus metrics (`ce_sqs_compilations_total`, `ce_sqs_executions_total`, `ce_sqs_cmake_compilations_total`, `ce_sqs_cmake_executions_total`) and record compilation statistics via `statsNoter.noteCompilation` for Grafana monitoring, mirroring the regular API route behavior.
 
+## CE Properties Wizard
+- **Location**: `/etc/scripts/ce-properties-wizard/` - Interactive tool for adding compilers to local CE installations
+- **Usage**: Run via `./run.sh` (Linux/macOS) or `.\run.ps1` (Windows) with optional compiler path and flags
+- **Auto-Detection**: Automatically detects compiler type, language, version, and configuration from executable paths
+- **MSVC Auto-Configuration**: Enhanced support for Microsoft Visual C++ compilers:
+  - **Demangler**: Automatically detects and configures `undname.exe` with `demanglerType=win32`
+  - **Objdumper**: Auto-detects LLVM objdump (`llvm-objdump.exe`) and configures `objdumperType=llvm` when available
+  - **SDK Integration**: Supports Windows SDK path specification via `--sdk-path` for non-interactive use
+  - **Architecture Matching**: Correctly maps compiler architecture (x64, x86, arm64) to tool paths
+- **Group Management**: Automatically creates and manages compiler groups with appropriate properties
+- **Validation**: Integrates with `propscheck.py` and discovery validation to ensure configurations work
+- **Safe Operations**: Creates backups and preserves existing configurations, only adding new content
+
 ## Testing Guidelines
 - Use Vitest for unit tests (compatible with Jest syntax)
 - Tests are in the `/test` directory, typically named like the source files they test

@@ -121,6 +121,10 @@ def cli(
         ce-props-wizard --env amazon /usr/bin/g++   # Target amazon environment
         ce-props-wizard --list-types                 # List all supported compiler types
         ce-props-wizard /usr/bin/g++ --verify-only  # Just detect compiler info
+
+    MSVC Examples:
+        ce-props-wizard "D:/efs/compilers/msvc-2022/VC/Tools/MSVC/14.34.31933/bin/Hostx64/x64/cl.exe"
+        ce-props-wizard "C:/MSVC/cl.exe" --sdk-path "C:/WindowsKits/10" --non-interactive
     """
     # Handle --list-types flag
     if list_types:
