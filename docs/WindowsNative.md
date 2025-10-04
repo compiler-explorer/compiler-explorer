@@ -21,8 +21,9 @@ etc\scripts\ce-properties-wizard\run.ps1 <path-to-cl.exe>
 
 Alternatively, you can manually create a configuration file which points at your compilers and include directories. Copy
 [`docs\WindowsLocal.properties`](https://github.com/compiler-explorer/compiler-explorer/blob/main/docs/WindowsLocal.properties)
-to a new file, `etc\config\c++.local.properties`, and edit it, following the instructions in the comments. For a comprehensive explanation of the configuration system, see [Configuration.md](Configuration.md). If you have
-any questions, please ping me on discord.
+to a new file, `etc\config\c++.local.properties`, and edit it, following the instructions in the comments.
+
+For a comprehensive explanation of the configuration system, see [Configuration.md](Configuration.md).
 
 ## Actually Running the danged thing
 
