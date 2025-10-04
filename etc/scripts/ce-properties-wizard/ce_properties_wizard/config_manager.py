@@ -264,6 +264,32 @@ class ConfigManager:
 
         return None
 
+    def _get_msvc_undname_path(self, compiler_exe: str) -> Optional[str]:
+        """Extract the undname.exe path from MSVC compiler executable path."""
+        import re
+
+        # Convert Windows backslashes to forward slashes for consistency
+        normalized_path = compiler_exe.replace("\\", "/")
+
+        # Look for the pattern /bin/Host*/*/cl.exe and extract base directory
+        match = re.search(r"^(.+)/bin/(Host[^/]+/[^/]+)/cl\.exe$", normalized_path, re.IGNORECASE)
+        if match:
+            base_dir = match.group(1)
+            host_arch = match.group(2)
+            # Construct undname.exe path using the same architecture as cl.exe
+            undname_path = f"{base_dir}/bin/{host_arch}/undname.exe"
+            return undname_path
+
+        # Try alternative pattern for different MSVC layouts
+        match = re.search(r"^(.+)/bin/cl\.exe$", normalized_path, re.IGNORECASE)
+        if match:
+            base_dir = match.group(1)
+            # Default to x64 for simple layout
+            undname_path = f"{base_dir}/bin/undname.exe"
+            return undname_path
+
+        return None
+
     def ensure_compiler_id_unique(self, compiler_id: str, language: str) -> str:
         """Ensure compiler ID is unique, modifying if necessary."""
         existing_ids = self.get_existing_compiler_ids(language)
@@ -558,6 +584,14 @@ class ConfigManager:
             editor.add_group_property(group_name, "needsMulti", "false")
             editor.add_group_property(group_name, "includeFlag", "/I")
             editor.add_group_property(group_name, "options", "/EHsc /utf-8 /MD")
+
+            # Add demangler configuration for MSVC
+            editor.add_group_property(group_name, "demanglerType", "win32")
+            if compiler and compiler.exe:
+                # Extract MSVC base directory and construct undname.exe path
+                undname_path = self._get_msvc_undname_path(compiler.exe)
+                if undname_path:
+                    editor.add_group_property(group_name, "demangler", undname_path)
         elif compiler and compiler.compiler_type:
             # For other known compiler types
             editor.add_group_property(group_name, "compilerType", compiler.compiler_type)
@@ -620,6 +654,23 @@ class ConfigManager:
             elif group_name in ["icc", "icx"] or (compiler and compiler.compiler_type in ["icc", "icx"]):
                 properties[f"group.{group_name}.compilerType"] = compiler.compiler_type if compiler else group_name
                 properties[f"group.{group_name}.compilerCategories"] = "intel"
+            elif group_name == "win32-vc" or (compiler and compiler.compiler_type == "win32-vc"):
+                # MSVC-specific properties
+                properties[f"group.{group_name}.compilerType"] = "win32-vc"
+                properties[f"group.{group_name}.compilerCategories"] = "msvc"
+                properties[f"group.{group_name}.versionFlag"] = "/?"
+                properties[f"group.{group_name}.versionRe"] = "^.*Microsoft \\(R\\).*$"
+                properties[f"group.{group_name}.needsMulti"] = "false"
+                properties[f"group.{group_name}.includeFlag"] = "/I"
+                properties[f"group.{group_name}.options"] = "/EHsc /utf-8 /MD"
+
+                # Add demangler configuration for MSVC
+                properties[f"group.{group_name}.demanglerType"] = "win32"
+                if compiler and compiler.exe:
+                    # Extract MSVC base directory and construct undname.exe path
+                    undname_path = self._get_msvc_undname_path(compiler.exe)
+                    if undname_path:
+                        properties[f"group.{group_name}.demangler"] = undname_path
             elif compiler and compiler.compiler_type:
                 # For other known compiler types
                 properties[f"group.{group_name}.compilerType"] = compiler.compiler_type
@@ -931,6 +982,23 @@ class ConfigManager:
                         elif comp_type in ["icc", "icx"] or group_name in ["icc", "icx"]:
                             editor.add_group_property(group_name, "compilerType", comp_type or group_name)
                             editor.add_group_property(group_name, "compilerCategories", "intel")
+                        elif comp_type == "win32-vc" or group_name == "win32-vc":
+                            # MSVC-specific properties
+                            editor.add_group_property(group_name, "compilerType", "win32-vc")
+                            editor.add_group_property(group_name, "compilerCategories", "msvc")
+                            editor.add_group_property(group_name, "versionFlag", "/?")
+                            editor.add_group_property(group_name, "versionRe", "^.*Microsoft \\(R\\).*$")
+                            editor.add_group_property(group_name, "needsMulti", "false")
+                            editor.add_group_property(group_name, "includeFlag", "/I")
+                            editor.add_group_property(group_name, "options", "/EHsc /utf-8 /MD")
+
+                            # Add demangler configuration for MSVC
+                            editor.add_group_property(group_name, "demanglerType", "win32")
+                            if compiler_exe:
+                                # Extract MSVC base directory and construct undname.exe path
+                                undname_path = self._get_msvc_undname_path(compiler_exe)
+                                if undname_path:
+                                    editor.add_group_property(group_name, "demangler", undname_path)
                         elif comp_type:
                             editor.add_group_property(group_name, "compilerType", comp_type)
 
