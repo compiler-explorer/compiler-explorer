@@ -37,3 +37,5 @@ newrelic_agent.log
 # Claude local settings
 .claude/settings.local.json
 .aider*
+
+etc/scripts/ce-properties-wizard/ce_properties_wizard/__pycache__
