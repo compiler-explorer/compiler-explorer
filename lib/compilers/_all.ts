@@ -47,6 +47,7 @@ export {
 } from './clang.js';
 export {ClangCLCompiler} from './clangcl.js';
 export {CleanCompiler} from './clean.js';
+export {ClojureCompiler} from './clojure.js';
 export {CLSPVCompiler} from './clspv.js';
 export {CMakeScriptCompiler} from './cmakescript.js';
 export {CoccinelleCCompiler, CoccinelleCPlusPlusCompiler} from './coccinelle.js';
