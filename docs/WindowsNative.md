@@ -1,7 +1,5 @@
 # Running on Windows
 
-Contact: [Nicole Mazzuca](https://github.com/ubsan)
-
 ## Basic Setup
 
 The setup on Windows should be fairly trivial: the only prerequisite is node. If you haven't yet installed node yet, you
@@ -14,7 +12,14 @@ you want the Compiler Explorer (from here on, CE) to live:
 git clone https://github.com/compiler-explorer/compiler-explorer.git
 ```
 
-Then, we'll need to make a configuration file which points at your compilers and include directories. Copy
+For quick setup with MSVC compilers, you can use the CE Properties Wizard to automatically configure your compiler:
+
+```bat
+cd compiler-explorer
+etc\scripts\ce-properties-wizard\run.ps1 <path-to-cl.exe>
+```
+
+Alternatively, you can manually create a configuration file which points at your compilers and include directories. Copy
 [`docs\WindowsLocal.properties`](https://github.com/compiler-explorer/compiler-explorer/blob/main/docs/WindowsLocal.properties)
 to a new file, `etc\config\c++.local.properties`, and edit it, following the instructions in the comments. For a comprehensive explanation of the configuration system, see [Configuration.md](Configuration.md). If you have
 any questions, please ping me on discord.
