@@ -24,6 +24,7 @@
 
 import fs from 'node:fs';
 import path from 'node:path';
+
 import type {ParsedAsmResult} from '../../types/asmresult/asmresult.interfaces.js';
 import type {ActiveTool, CacheKey} from '../../types/compilation/compilation.interfaces.js';
 import type {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces.js';
@@ -63,6 +64,9 @@ export class ResolcCompiler extends BaseCompiler {
         super(...args);
 
         this.asm = new ResolcAsmParser(this.compilerProps);
+        this.compiler.supportsIrView = true;
+        // The arg producing LLVM IR (among other output) is already included.
+        this.compiler.irArg = [];
     }
 
     override getSharedLibraryPathsAsArguments(): string[] {
@@ -95,21 +99,25 @@ export class ResolcCompiler extends BaseCompiler {
     }
 
     override getOutputFilename(dirPath: string): string {
-        const artifactExtension = '.pvmasm';
-        const basenamePrefix = dirPath.replaceAll('/', '_');
-        const contractName = this.inputIs(InputKind.Solidity)
-            ? this.getSolidityContractName(dirPath)
-            : this.getYulContractName(dirPath);
-        const outputFilename = path.join(
-            dirPath,
-            `artifacts/${basenamePrefix}_${this.compileFilename}.${contractName}${artifactExtension}`,
-        );
+        return this.getOutputFilenameWithExtension(dirPath, '.pvmasm');
+    }
 
-        return outputFilename;
+    override getIrOutputFilename(inputFilename: string): string {
+        return this.getOutputFilenameWithExtension(path.dirname(inputFilename), '.unoptimized.ll');
     }
 
     override getObjdumpOutputFilename(defaultOutputFilename: string): string {
         return changeExtension(defaultOutputFilename, '.o');
+    }
+
+    private getOutputFilenameWithExtension(dirPath: string, extension: string): string {
+        const basenamePrefix = dirPath.replaceAll('/', '_');
+        const contractName = this.inputIs(InputKind.Solidity)
+            ? this.getSolidityContractName(dirPath)
+            : this.getYulContractName(dirPath);
+        const basename = `${basenamePrefix}_${this.compileFilename}.${contractName}${extension}`;
+
+        return path.join(dirPath, `artifacts/${basename}`);
     }
 
     override async doCompilation(
