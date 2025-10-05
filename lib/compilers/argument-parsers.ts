@@ -942,6 +942,13 @@ export class SolxParser extends RustParser {
     }
 }
 
+export class ResolcParser extends BaseParser {
+    override async parse() {
+        await this.getOptions('--help');
+        return this.compiler;
+    }
+}
+
 export class MrustcParser extends BaseParser {
     override async parse() {
         await this.getOptions('--help');
