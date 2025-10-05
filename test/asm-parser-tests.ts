@@ -26,6 +26,9 @@ import {describe, expect, it} from 'vitest';
 import {AsmParser} from '../lib/parsers/asm-parser.js';
 import {MlirAsmParser} from '../lib/parsers/asm-parser-mlir.js';
 import {PTXAsmParser} from '../lib/parsers/asm-parser-ptx.js';
+import {ResolcAsmParser} from '../lib/parsers/asm-parser-resolc.js';
+import type {ParsedAsmResult} from '../types/asmresult/asmresult.interfaces.js';
+import type {ParseFiltersAndOutputOptions} from '../types/features/filters.interfaces.js';
 
 describe('AsmParser tests', () => {
     const parser = new AsmParser();
@@ -291,5 +294,73 @@ module {
             const constLine = result.asm.find(line => line.text.includes('arith.constant 1024'));
             expect(constLine).toBeDefined();
         });
+    });
+});
+
+describe('ResolcAsmParser tests', () => {
+    const parser = new ResolcAsmParser();
+
+    it('should identify instruction info and source line numbers', () => {
+        const filters: Partial<ParseFiltersAndOutputOptions> = {binaryObject: true};
+        const riscv = `
+000000000000028c <.Lpcrel_hi4>:
+; .Lpcrel_hi4():
+     28c: 97 05 00 00  	auipc	a1, 0x0
+; artifacts/path_to_example.sol.Square.yul:1
+     2a8: 1d 71        	addi	sp, sp, -0x60
+     2aa: 86 ec        	sd	ra, 0x58(sp)
+; artifacts/path_to_example.sol.Square.yul:7
+     2ca: e7 80 00 00  	jalr	ra <.Lpcrel_hi4+0x3a>`;
+
+        const expected: ParsedAsmResult = {
+            asm: [
+                {
+                    text: '.Lpcrel_hi4:',
+                    source: null,
+                },
+                {
+                    address: 0x28c,
+                    text: ' auipc	a1, 0x0',
+                    source: null,
+                    opcodes: ['97', '05', '00', '00'],
+                },
+                {
+                    address: 0x2a8,
+                    text: ' addi	sp, sp, -0x60',
+                    source: {
+                        line: 1,
+                        file: null,
+                    },
+                    opcodes: ['1d', '71'],
+                },
+                {
+                    address: 0x2aa,
+                    text: ' sd	ra, 0x58(sp)',
+                    source: {
+                        line: 1,
+                        file: null,
+                    },
+                    opcodes: ['86', 'ec'],
+                },
+                {
+                    address: 0x2ca,
+                    text: ' jalr	ra <.Lpcrel_hi4+0x3a>',
+                    source: {
+                        line: 7,
+                        file: null,
+                    },
+                    opcodes: ['e7', '80', '00', '00'],
+                },
+            ],
+            labelDefinitions: {['.Lpcrel_hi4']: 1},
+        };
+
+        const result = parser.processAsm(riscv, filters);
+
+        expect(result.labelDefinitions).toEqual(expected.labelDefinitions);
+        expect(result.asm.length).toEqual(expected.asm.length);
+        for (let i = 0; i < result.asm.length; i++) {
+            expect(result.asm[i]).toMatchObject(expected.asm[i]);
+        }
     });
 });
