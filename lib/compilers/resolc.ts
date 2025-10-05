@@ -29,6 +29,7 @@ import type {ActiveTool, CacheKey} from '../../types/compilation/compilation.int
 import type {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces.js';
 import type {SelectedLibraryVersion} from '../../types/libraries/libraries.interfaces.js';
 import {BaseCompiler} from '../base-compiler.js';
+import {ResolcAsmParser} from '../parsers/asm-parser-resolc.js';
 import {changeExtension} from '../utils.js';
 import {type BaseParser, ResolcParser} from './argument-parsers.js';
 
@@ -56,6 +57,12 @@ export class ResolcCompiler extends BaseCompiler {
 
     static get key() {
         return 'resolc';
+    }
+
+    constructor(...args: ConstructorParameters<typeof BaseCompiler>) {
+        super(...args);
+
+        this.asm = new ResolcAsmParser(this.compilerProps);
     }
 
     override getSharedLibraryPathsAsArguments(): string[] {
