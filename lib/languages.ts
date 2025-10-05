@@ -972,6 +972,17 @@ const definitions: Record<LanguageKey, LanguageDefinition> = {
         previewFilter: null,
         monacoDisassembly: null,
     },
+    yul: {
+        name: 'Yul (Solidity IR)',
+        monaco: 'yul',
+        extensions: ['.yul'],
+        alias: [],
+        logoFilename: 'solidity.svg',
+        logoFilenameDark: null,
+        formatter: null,
+        previewFilter: null,
+        monacoDisassembly: null,
+    },
     zig: {
         name: 'Zig',
         monaco: 'zig',
