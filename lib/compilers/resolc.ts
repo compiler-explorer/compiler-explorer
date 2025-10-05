@@ -61,6 +61,9 @@ export class ResolcCompiler extends BaseCompiler {
         filters.binaryObject = this.outputKind === OutputKind.RiscV;
         // Keep the PolkaVM assembly header comments, such as the number of instructions and code size.
         filters.commentOnly = false;
+        // Skip library code since thousands of lines of RISC-V may be generated depending on
+        // the optimization level, causing truncation.
+        filters.libraryCode = true;
 
         const options = ['-g', '--overwrite', '--debug-output-dir', 'artifacts'];
 
@@ -107,6 +110,7 @@ export class ResolcCompiler extends BaseCompiler {
         filters?: ParseFiltersAndOutputOptions,
     ): Promise<ParsedAsmResult> {
         result = await super.postProcessAsm(result, filters);
+        result = this.removeOrphanedLabels(result, filters);
         this.maybeRemoveSourceMappings(result);
 
         const header =
@@ -114,6 +118,41 @@ export class ResolcCompiler extends BaseCompiler {
                 ? '; RISC-V (to see PolkaVM Assembly, use compiler option "--asm")'
                 : '// PolkaVM Assembly (to see RISC-V, remove compiler option "--asm")';
         result.asm.unshift({text: header});
+
+        return result;
+    }
+
+    /**
+     * Remove orphaned labels.
+     *
+     * Example before:
+     * ```
+     * memset:
+     * .LBB35_2:
+     * .LBB35_3:
+     * __entry:
+     *      addi	sp, sp, -0x10
+     * ```
+     * Example after:
+     * ```
+     * __entry:
+     *      addi	sp, sp, -0x10
+     * ```
+     */
+    private removeOrphanedLabels(result: ParsedAsmResult, filters?: ParseFiltersAndOutputOptions): ParsedAsmResult {
+        // Orphaned RISC-V labels may be produced by the AsmParser when library code is skipped.
+        if (this.outputKind !== OutputKind.RiscV || !filters?.libraryCode || !result.labelDefinitions) {
+            return result;
+        }
+
+        result.asm = result.asm.filter((currentLine, index) => {
+            const nextLine = result.asm[index + 1];
+            const currentIsLabel =
+                currentLine.text.endsWith(':') && result.labelDefinitions?.[currentLine.text.slice(0, -1)];
+            const nextIsLabel = nextLine?.text.endsWith(':') && result.labelDefinitions?.[nextLine.text.slice(0, -1)];
+            const isOrphaned = currentIsLabel && (nextIsLabel || !nextLine);
+            return !isOrphaned;
+        });
 
         return result;
     }
