@@ -24,7 +24,7 @@
 
 import fs from 'node:fs';
 import path from 'node:path';
-
+import {ParsedAsmResult} from '../../types/asmresult/asmresult.interfaces.js';
 import type {ActiveTool, CacheKey} from '../../types/compilation/compilation.interfaces.js';
 import type {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces.js';
 import type {SelectedLibraryVersion} from '../../types/libraries/libraries.interfaces.js';
@@ -100,6 +100,34 @@ export class ResolcCompiler extends BaseCompiler {
         this.outputKind = options.includes('--asm') ? OutputKind.PolkaVM : OutputKind.RiscV;
 
         return super.doCompilation(inputFilename, dirPath, key, options, filters, backendOptions, libraries, tools);
+    }
+
+    override async postProcessAsm(
+        result: ParsedAsmResult,
+        filters?: ParseFiltersAndOutputOptions,
+    ): Promise<ParsedAsmResult> {
+        result = await super.postProcessAsm(result, filters);
+        this.maybeRemoveSourceMappings(result);
+
+        const header =
+            this.outputKind === OutputKind.RiscV
+                ? '; RISC-V (to see PolkaVM Assembly, use compiler option "--asm")'
+                : '// PolkaVM Assembly (to see RISC-V, remove compiler option "--asm")';
+        result.asm.unshift({text: header});
+
+        return result;
+    }
+
+    /**
+     * Current source mappings from RISC-V only map to the Yul line numbers. When
+     * a Solidity source file is used, the mappings shown in CE are thus misleading.
+     */
+    private maybeRemoveSourceMappings(result: ParsedAsmResult): void {
+        if (this.outputKind === OutputKind.RiscV) {
+            for (const line of result.asm) {
+                line.source = null;
+            }
+        }
     }
 
     /**
