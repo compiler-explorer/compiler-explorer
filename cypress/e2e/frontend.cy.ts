@@ -15,6 +15,7 @@ const PANE_DATA_MAP = {
     core: {name: 'Core', selector: 'view-haskellCore'},
     stg: {name: 'STG', selector: 'view-haskellStg'},
     cmm: {name: 'Cmm', selector: 'view-haskellCmm'},
+    clojure_macro: {name: 'Clojure Macro', selector: 'view-clojuremacroexp'},
     dump: {name: 'Tree/RTL', selector: 'view-gccdump'},
     tree: {name: 'Tree', selector: 'view-gnatdebugtree'},
     debug: {name: 'Debug', selector: 'view-gnatdebug'},

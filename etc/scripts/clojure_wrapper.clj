@@ -21,6 +21,10 @@
             (println help-text)
             (System/exit 1))
 
+          (re-matches #"-?-gen-meta" arg)
+          (recur (assoc params :gen-meta true)
+                 positional (rest args))
+
           (re-matches #"-?-disable-locals-clearing" arg)
           (recur (assoc params :disable-locals-clearing true)
                  positional (rest args))
@@ -49,6 +53,13 @@
           (recur params (conj positional arg) (rest args))))
       [params positional])))
 
+(defn forms [input-file]
+  (with-open [rdr (-> input-file io/reader PushbackReader.)]
+    (loop [forms []]
+      (if-let [form (try (read rdr) (catch Exception e nil))]
+        (recur (conj forms form))
+        forms))))
+
 (defn read-namespace [input-file]
   (with-open [rdr (-> input-file io/reader PushbackReader.)]
     (loop []
@@ -75,6 +86,11 @@
       namespace (or namespace "sample")
       compile-filename (io/file working-dir (ns->filename namespace))
       compile-path (path-of-file compile-filename)]
+
+  (when (:gen-meta compiler-options)
+    (doseq [form (forms input-file)]
+      (prn (macroexpand form)))
+    (System/exit 0))
 
   (println "Available compiler options: --help --disable-locals-clearing --direct-linking --elide-meta \"[:doc :line]\"")
   (println "Binding *compiler-options* to" compiler-options)

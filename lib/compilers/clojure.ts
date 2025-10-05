@@ -28,6 +28,7 @@ import _ from 'underscore';
 import type {CompilationResult, ExecutionOptionsWithEnv} from '../../types/compilation/compilation.interfaces.js';
 import type {PreliminaryCompilerInfo} from '../../types/compiler.interfaces.js';
 import type {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces.js';
+import type {ResultLine} from '../../types/resultline/resultline.interfaces.js';
 import {CompilationEnvironment} from '../compilation-env.js';
 import * as utils from '../utils.js';
 import {ClojureParser} from './argument-parsers.js';
@@ -48,6 +49,7 @@ export class ClojureCompiler extends JavaCompiler {
         this.compilerWrapperPath =
             this.compilerProps('compilerWrapper', '') ||
             utils.resolvePathFromAppRoot('etc', 'scripts', 'clojure_wrapper.clj');
+        this.compiler.supportsClojureMacroExpView = true;
     }
 
     override getDefaultExecOptions() {
@@ -126,4 +128,14 @@ export class ClojureCompiler extends JavaCompiler {
             instructionSet: this.getInstructionSetFromCompilerArgs(options),
         };
     }
+
+    override async generateClojureMacroExpansion(inputFilename: string, options: string[]): Promise<ResultLine[]> {
+        const clojureOptions = ["--gen-meta", inputFilename];
+        const output = await this.runCompiler(this.compiler.exe, clojureOptions, inputFilename, this.getDefaultExecOptions());
+        if (output.code !== 0) {
+            return [{text: `Failed to run compiler to get Clojure Macro Expansion`}];
+        }
+        return output.stdout;
+    }
+
 }
