@@ -24,13 +24,23 @@
 
 import fs from 'node:fs';
 import path from 'node:path';
-import {ParsedAsmResult} from '../../types/asmresult/asmresult.interfaces.js';
+import type {ParsedAsmResult} from '../../types/asmresult/asmresult.interfaces.js';
 import type {ActiveTool, CacheKey} from '../../types/compilation/compilation.interfaces.js';
 import type {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces.js';
 import type {SelectedLibraryVersion} from '../../types/libraries/libraries.interfaces.js';
 import {BaseCompiler} from '../base-compiler.js';
 import {changeExtension} from '../utils.js';
 import {type BaseParser, ResolcParser} from './argument-parsers.js';
+
+/**
+ * The kind of input provided by the user.
+ * This is determined by the language chosen as Resolc
+ * supports both Solidity and Yul (Solidity IR).
+ */
+enum InputKind {
+    Solidity = 'solidity',
+    Yul = 'yul',
+}
 
 /**
  * The kind of output requested by the user.
@@ -56,7 +66,7 @@ export class ResolcCompiler extends BaseCompiler {
         return ResolcParser;
     }
 
-    override optionsForFilter(filters: ParseFiltersAndOutputOptions, _outputFilename: string): string[] {
+    override optionsForFilter(filters: ParseFiltersAndOutputOptions): string[] {
         // For RISC-V output the binary object will be passed to llvm objdump.
         filters.binaryObject = this.outputKind === OutputKind.RiscV;
         // Keep the PolkaVM assembly header comments, such as the number of instructions and code size.
@@ -66,6 +76,9 @@ export class ResolcCompiler extends BaseCompiler {
         filters.libraryCode = true;
 
         const options = ['-g', '--overwrite', '--debug-output-dir', 'artifacts'];
+        if (this.inputIs(InputKind.Yul)) {
+            options.push('--yul');
+        }
 
         return options;
     }
@@ -77,7 +90,9 @@ export class ResolcCompiler extends BaseCompiler {
     override getOutputFilename(dirPath: string): string {
         const artifactExtension = '.pvmasm';
         const basenamePrefix = dirPath.replaceAll('/', '_');
-        const contractName = this.getSolidityContractName(dirPath);
+        const contractName = this.inputIs(InputKind.Solidity)
+            ? this.getSolidityContractName(dirPath)
+            : this.getYulContractName(dirPath);
         const outputFilename = path.join(
             dirPath,
             `artifacts/${basenamePrefix}_${this.compileFilename}.${contractName}${artifactExtension}`,
@@ -162,11 +177,18 @@ export class ResolcCompiler extends BaseCompiler {
      * a Solidity source file is used, the mappings shown in CE are thus misleading.
      */
     private maybeRemoveSourceMappings(result: ParsedAsmResult): void {
-        if (this.outputKind === OutputKind.RiscV) {
+        if (this.inputIs(InputKind.Solidity) && this.outputKind === OutputKind.RiscV) {
             for (const line of result.asm) {
                 line.source = null;
             }
         }
+    }
+
+    /**
+     * Whether the provided input kind matches the language used.
+     */
+    private inputIs(kind: InputKind): boolean {
+        return this.lang.id === kind.valueOf();
     }
 
     /**
@@ -179,6 +201,19 @@ export class ResolcCompiler extends BaseCompiler {
      */
     private getSolidityContractName(dirPath: string): string {
         return this.getContractName(dirPath, 'contract');
+    }
+
+    /**
+     * Get the Yul component/object name used in the compile file.
+     *
+     * Example:
+     * ```
+     * object "Square" { ... } // Name = Square
+     * ```
+     */
+    private getYulContractName(dirPath: string): string {
+        const name = this.getContractName(dirPath, 'object');
+        return name.replaceAll('"', '');
     }
 
     private getContractName(dirPath: string, preceedingKeyword: string): string {
