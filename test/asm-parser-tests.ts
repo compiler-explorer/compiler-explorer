@@ -300,67 +300,158 @@ module {
 describe('ResolcRiscVAsmParser tests', () => {
     const parser = new ResolcRiscVAsmParser();
 
-    it('should identify instruction info and source line numbers', () => {
-        const filters: Partial<ParseFiltersAndOutputOptions> = {binaryObject: true};
-        const riscv = `
-000000000000028c <.Lpcrel_hi4>:
-; .Lpcrel_hi4():
-     28c: 97 05 00 00  	auipc	a1, 0x0
-; artifacts/path_to_example.sol.Square.yul:1
-     2a8: 1d 71        	addi	sp, sp, -0x60
-     2aa: 86 ec        	sd	ra, 0x58(sp)
-; artifacts/path_to_example.sol.Square.yul:7
-     2ca: e7 80 00 00  	jalr	ra <.Lpcrel_hi4+0x3a>`;
-
-        const expected: ParsedAsmResult = {
-            asm: [
-                {
-                    text: '.Lpcrel_hi4:',
-                    source: null,
-                },
-                {
-                    address: 0x28c,
-                    text: ' auipc	a1, 0x0',
-                    source: null,
-                    opcodes: ['97', '05', '00', '00'],
-                },
-                {
-                    address: 0x2a8,
-                    text: ' addi	sp, sp, -0x60',
-                    source: {
-                        line: 1,
-                        file: null,
-                    },
-                    opcodes: ['1d', '71'],
-                },
-                {
-                    address: 0x2aa,
-                    text: ' sd	ra, 0x58(sp)',
-                    source: {
-                        line: 1,
-                        file: null,
-                    },
-                    opcodes: ['86', 'ec'],
-                },
-                {
-                    address: 0x2ca,
-                    text: ' jalr	ra <.Lpcrel_hi4+0x3a>',
-                    source: {
-                        line: 7,
-                        file: null,
-                    },
-                    opcodes: ['e7', '80', '00', '00'],
-                },
-            ],
-            labelDefinitions: {['.Lpcrel_hi4']: 1},
-        };
-
-        const result = parser.processAsm(riscv, filters);
-
+    function expectParsedAsmResult(result: ParsedAsmResult, expected: ParsedAsmResult): void {
         expect(result.labelDefinitions).toEqual(expected.labelDefinitions);
         expect(result.asm.length).toEqual(expected.asm.length);
         for (let i = 0; i < result.asm.length; i++) {
             expect(result.asm[i]).toMatchObject(expected.asm[i]);
         }
+    }
+
+    it('should identify RISC-V instruction info and source line numbers', () => {
+        const filters: Partial<ParseFiltersAndOutputOptions> = {binaryObject: true};
+        const riscv = `
+000000000000027a <__entry>:
+; __entry():
+; path/to/example.sol.Square.yul:1
+     27a: 41 11        	addi	sp, sp, -0x10
+
+000000000000028c <.Lpcrel_hi4>:
+; .Lpcrel_hi4():
+     28c: 97 05 00 00  	auipc	a1, 0x0
+; path/to/example.sol.Square.yul:1
+     2a8: 1d 71        	addi	sp, sp, -0x60
+     2aa: 86 ec        	sd	ra, 0x58(sp)
+; path/to/example.sol.Square.yul:7
+     2ca: e7 80 00 00  	jalr	ra <.Lpcrel_hi4+0x3a>`;
+
+        const expected: ParsedAsmResult = {
+            asm: [
+                {
+                    text: '__entry:',
+                    source: null,
+                },
+                {
+                    text: ' addi	sp, sp, -0x10',
+                    address: 0x27a,
+                    opcodes: ['41', '11'],
+                    source: {
+                        line: 1,
+                        file: null,
+                    },
+                },
+                {
+                    text: '.Lpcrel_hi4:',
+                    source: null,
+                },
+                {
+                    text: ' auipc	a1, 0x0',
+                    address: 0x28c,
+                    opcodes: ['97', '05', '00', '00'],
+                    source: {
+                        line: 1,
+                        file: null,
+                    },
+                },
+                {
+                    text: ' addi	sp, sp, -0x60',
+                    address: 0x2a8,
+                    opcodes: ['1d', '71'],
+                    source: {
+                        line: 1,
+                        file: null,
+                    },
+                },
+                {
+                    text: ' sd	ra, 0x58(sp)',
+                    address: 0x2aa,
+                    opcodes: ['86', 'ec'],
+                    source: {
+                        line: 1,
+                        file: null,
+                    },
+                },
+                {
+                    text: ' jalr	ra <.Lpcrel_hi4+0x3a>',
+                    address: 0x2ca,
+                    opcodes: ['e7', '80', '00', '00'],
+                    source: {
+                        line: 7,
+                        file: null,
+                    },
+                },
+            ],
+            labelDefinitions: {
+                __entry: 1,
+                ['.Lpcrel_hi4']: 3,
+            },
+        };
+
+        const result = parser.processAsm(riscv, filters);
+        expectParsedAsmResult(result, expected);
+    });
+
+    // TODO:
+    // Move to a separate describe('PvmAsmParser') if/when we create that parser,
+    // and update the expected parsed fields. ResolcCompiler's PVM assembly output
+    // currently uses the same AsmParser as the RISC-V, thus the line text will be
+    // the entire line (no source mappings at this point).
+    it('should identify PVM instruction info', () => {
+        const filters: Partial<ParseFiltersAndOutputOptions> = {binaryObject: false};
+        const pvm = `
+<__entry>:
+      : @0 (gas: 6)
+     0: sp = sp + 0xfffffffffffffff0
+     3: u64 [sp + 0x8] = ra
+     6: u64 [sp] = s0
+     8: s0 = a0 & 0x1
+    11: ecalli 2 // 'call_data_size'
+    13: fallthrough
+      : @1 (gas: 2)`;
+
+        const expected: ParsedAsmResult = {
+            asm: [
+                {
+                    text: '<__entry>:',
+                    source: null,
+                },
+                {
+                    text: '      : @0 (gas: 6)',
+                    source: null,
+                },
+                {
+                    text: '     0: sp = sp + 0xfffffffffffffff0',
+                    source: null,
+                },
+                {
+                    text: '     3: u64 [sp + 0x8] = ra',
+                    source: null,
+                },
+                {
+                    text: '     6: u64 [sp] = s0',
+                    source: null,
+                },
+                {
+                    text: '     8: s0 = a0 & 0x1',
+                    source: null,
+                },
+                {
+                    text: "    11: ecalli 2 // 'call_data_size'",
+                    source: null,
+                },
+                {
+                    text: '    13: fallthrough',
+                    source: null,
+                },
+                {
+                    text: '      : @1 (gas: 2)',
+                    source: null,
+                },
+            ],
+            labelDefinitions: {},
+        };
+
+        const result = parser.processAsm(pvm, filters);
+        expectParsedAsmResult(result, expected);
     });
 });
