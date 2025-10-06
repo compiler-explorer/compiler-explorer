@@ -41,13 +41,13 @@ const languages = {
 const solidityInfo = {
     exe: 'resolc',
     lang: languages.solidity.id as LanguageKey,
-    name: 'resolc 0.3.0 (RISC-V 64-bits)',
+    name: 'resolc 0.4.0 (RISC-V 64-bits)',
 };
 
 const yulInfo = {
     exe: 'resolc',
     lang: languages.yul.id as LanguageKey,
-    name: 'resolc 0.3.0 (RISC-V 64-bits)',
+    name: 'resolc 0.4.0 (RISC-V 64-bits)',
 };
 
 describe('Resolc', () => {
