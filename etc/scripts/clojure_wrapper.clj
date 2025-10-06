@@ -1,6 +1,8 @@
 (ns clojure-wrapper
   (:require [clojure.java.io :as io]
-            [clojure.string :as str])
+            [clojure.pprint :as pp]
+            [clojure.string :as str]
+            [clojure.walk :as walk])
   (:import [java.io PushbackReader]))
 
 (def help-text
@@ -88,8 +90,11 @@
       compile-path (path-of-file compile-filename)]
 
   (when (:gen-meta compiler-options)
-    (doseq [form (forms input-file)]
-      (prn (macroexpand form)))
+    (binding [clojure.pprint/*print-pprint-dispatch* clojure.pprint/code-dispatch
+              clojure.pprint/*print-right-margin* 60
+              clojure.pprint/*print-miser-width* 20]
+      (doseq [form (forms input-file)]
+        (pp/pprint (walk/macroexpand-all form))))
     (System/exit 0))
 
   (println "Available compiler options: --help --disable-locals-clearing --direct-linking --elide-meta \"[:doc :line]\"")
