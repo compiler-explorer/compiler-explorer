@@ -654,7 +654,7 @@ export class BaseCompiler {
         }
 
         const objdumper = new this.objdumperClass();
-        const args = objdumper.getDefaultArgs(
+        const args = objdumper.getArgs(
             outputFilename,
             demangle,
             intelAsm,

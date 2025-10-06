@@ -64,7 +64,6 @@ export class VcAsmParser extends AsmParser {
 
     constructor(compilerProps?: PropertyGetter) {
         super(compilerProps);
-        this.asmBinaryParser = new AsmParser(compilerProps);
         this.commentOnly = /^;/;
 
         this.labelDef = /^\|?([$?@A-Z_a-z][\w$<>?@]*)\|?\s+(PROC|=|D[BWDQT])/;
@@ -102,9 +101,23 @@ export class VcAsmParser extends AsmParser {
         return this.hasOpcodeRe.test(line);
     }
 
+    override processBinaryAsm(asm: string, filters: ParseFiltersAndOutputOptions): ParsedAsmResult {
+        // TODO: actually implement
+        const result: ParsedAsmResultLine[] = [];
+        const asmLines = asm.split('\n');
+
+        for (const line of asmLines) {
+            result.push({text: line, source: null});
+        }
+        
+        return {
+            asm: result,
+        };
+    }
+
     override processAsm(asm: string, filters: ParseFiltersAndOutputOptions): ParsedAsmResult {
         if (filters.binary || filters.binaryObject) {
-            return this.asmBinaryParser.processAsm(asm, filters);
+            return this.processBinaryAsm(asm, filters);
         }
 
         const getFilenameFromComment = (line: string): string | null => {

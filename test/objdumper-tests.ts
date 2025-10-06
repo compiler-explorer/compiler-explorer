@@ -98,11 +98,11 @@ describe('Objdumper', () => {
         });
     });
 
-    describe('getDefaultArgs', () => {
+    describe('getArgs', () => {
         it('should generate correct arguments', () => {
             const objdumper = new DefaultObjdumper();
 
-            const args = objdumper.getDefaultArgs(
+            const args = objdumper.getArgs(
                 'test.o',
                 true, // demangle
                 true, // intelAsm
