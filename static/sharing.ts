@@ -120,7 +120,7 @@ export class SharingBase {
         }
     }
 
-    public static filterComponentState(config: any, keysToRemove: [string] = ['selection']): any {
+    public static filterComponentState(config: any): any {
         function filterComponentStateImpl(component: any) {
             if (component.content) {
                 for (let i = 0; i < component.content.length; i++) {
@@ -129,11 +129,7 @@ export class SharingBase {
             }
 
             if (component.componentState) {
-                Object.keys(component.componentState)
-                    .filter(e => keysToRemove.includes(e))
-                    .forEach(key => {
-                        delete component.componentState[key];
-                    });
+                delete component.componentState.selection;
             }
         }
 
