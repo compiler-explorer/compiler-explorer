@@ -24,11 +24,10 @@
 
 import fs from 'node:fs';
 import path from 'node:path';
-
 import type {ParsedAsmResult} from '../../types/asmresult/asmresult.interfaces.js';
-import type {ActiveTool, CacheKey} from '../../types/compilation/compilation.interfaces.js';
+import type {CompilerInfo} from '../../types/compiler.interfaces.js';
 import type {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces.js';
-import type {SelectedLibraryVersion} from '../../types/libraries/libraries.interfaces.js';
+import type {Language} from '../../types/languages.interfaces.js';
 import {BaseCompiler} from '../base-compiler.js';
 import {ResolcAsmParser} from '../parsers/asm-parser-resolc.js';
 import {changeExtension} from '../utils.js';
@@ -38,6 +37,9 @@ import {type BaseParser, ResolcParser} from './argument-parsers.js';
  * The kind of input provided by the user.
  * This is determined by the language chosen as Resolc
  * supports both Solidity and Yul (Solidity IR).
+ *
+ * @note
+ * The enum value must exactly match the {@link Language.id}.
  */
 enum InputKind {
     Solidity = 'solidity',
@@ -46,16 +48,17 @@ enum InputKind {
 
 /**
  * The kind of output requested by the user.
- * Defaults to RISC-V, but can be changed via compiler options.
+ * This is determined by the specific compiler chosen.
+ *
+ * @note
+ * The enum value must exist within the {@link CompilerInfo.name} (case insensitive).
  */
 enum OutputKind {
-    RiscV,
-    PolkaVM,
+    RiscV = 'risc-v',
+    PolkaVM = 'pvm',
 }
 
 export class ResolcCompiler extends BaseCompiler {
-    private outputKind = OutputKind.RiscV;
-
     static get key() {
         return 'resolc';
     }
@@ -65,7 +68,8 @@ export class ResolcCompiler extends BaseCompiler {
 
         this.asm = new ResolcAsmParser(this.compilerProps);
         this.compiler.supportsIrView = true;
-        // The arg producing LLVM IR (among other output) is already included.
+        // The arg producing LLVM IR (among other output) is already
+        // included in optionsForFilter(), but irArg needs to be set.
         this.compiler.irArg = [];
     }
 
@@ -78,8 +82,8 @@ export class ResolcCompiler extends BaseCompiler {
     }
 
     override optionsForFilter(filters: ParseFiltersAndOutputOptions): string[] {
-        // For RISC-V output the binary object will be passed to llvm objdump.
-        filters.binaryObject = this.outputKind === OutputKind.RiscV;
+        // For RISC-V output the binary object will be passed to the llvm objdumper.
+        filters.binaryObject = this.outputIs(OutputKind.RiscV);
         // Keep the PolkaVM assembly header comments, such as the number of instructions and code size.
         filters.commentOnly = false;
         // Skip library code since thousands of lines of RISC-V may be generated depending on
@@ -120,21 +124,6 @@ export class ResolcCompiler extends BaseCompiler {
         return path.join(dirPath, `artifacts/${basename}`);
     }
 
-    override async doCompilation(
-        inputFilename: string,
-        dirPath: string,
-        key: CacheKey,
-        options: string[],
-        filters: ParseFiltersAndOutputOptions,
-        backendOptions: Record<string, any>,
-        libraries: SelectedLibraryVersion[],
-        tools: ActiveTool[],
-    ) {
-        this.outputKind = options.includes('--asm') ? OutputKind.PolkaVM : OutputKind.RiscV;
-
-        return super.doCompilation(inputFilename, dirPath, key, options, filters, backendOptions, libraries, tools);
-    }
-
     override async postProcessAsm(
         result: ParsedAsmResult,
         filters?: ParseFiltersAndOutputOptions,
@@ -143,19 +132,14 @@ export class ResolcCompiler extends BaseCompiler {
         result = this.removeOrphanedLabels(result, filters);
         this.maybeRemoveSourceMappings(result);
 
-        const header =
-            this.outputKind === OutputKind.RiscV
-                ? '; RISC-V (to see PolkaVM Assembly, use compiler option "--asm")'
-                : '// PolkaVM Assembly (to see RISC-V, remove compiler option "--asm")';
-        result.asm.unshift({text: header});
-
         return result;
     }
 
     /**
      * Remove orphaned labels.
      *
-     * Example before:
+     * @example
+     * Before:
      * ```
      * memset:
      * .LBB35_2:
@@ -163,7 +147,8 @@ export class ResolcCompiler extends BaseCompiler {
      * __entry:
      *      addi	sp, sp, -0x10
      * ```
-     * Example after:
+     * @example
+     * After:
      * ```
      * __entry:
      *      addi	sp, sp, -0x10
@@ -171,7 +156,7 @@ export class ResolcCompiler extends BaseCompiler {
      */
     private removeOrphanedLabels(result: ParsedAsmResult, filters?: ParseFiltersAndOutputOptions): ParsedAsmResult {
         // Orphaned RISC-V labels may be produced by the AsmParser when library code is skipped.
-        if (this.outputKind !== OutputKind.RiscV || !filters?.libraryCode || !result.labelDefinitions) {
+        if (!this.outputIs(OutputKind.RiscV) || !filters?.libraryCode || !result.labelDefinitions) {
             return result;
         }
 
@@ -192,7 +177,7 @@ export class ResolcCompiler extends BaseCompiler {
      * a Solidity source file is used, the mappings shown in CE are thus misleading.
      */
     private maybeRemoveSourceMappings(result: ParsedAsmResult): void {
-        if (this.inputIs(InputKind.Solidity) && this.outputKind === OutputKind.RiscV) {
+        if (this.inputIs(InputKind.Solidity) && this.outputIs(OutputKind.RiscV)) {
             for (const line of result.asm) {
                 line.source = null;
             }
@@ -207,9 +192,16 @@ export class ResolcCompiler extends BaseCompiler {
     }
 
     /**
-     * Get the Solidity component/contract name used in the compile file.
+     * Whether the provided output kind matches the output requested.
+     */
+    private outputIs(kind: OutputKind): boolean {
+        return this.compiler.name.toLowerCase().includes(kind.valueOf());
+    }
+
+    /**
+     * Get the Solidity contract name used in the compile file.
      *
-     * Example:
+     * @example
      * ```solidity
      * contract Square { ... } // Name = Square
      * ```
@@ -219,9 +211,9 @@ export class ResolcCompiler extends BaseCompiler {
     }
 
     /**
-     * Get the Yul component/object name used in the compile file.
+     * Get the Yul contract name used in the compile file.
      *
-     * Example:
+     * @example
      * ```
      * object "Square" { ... } // Name = Square
      * ```

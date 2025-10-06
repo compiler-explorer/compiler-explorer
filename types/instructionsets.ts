@@ -49,6 +49,7 @@ export const InstructionSetsList = [
     'msp430',
     'powerpc',
     'ptx',
+    'pvm',
     'python',
     'riscv32',
     'riscv64',

@@ -41,11 +41,13 @@ const languages = {
 const solidityInfo = {
     exe: 'resolc',
     lang: languages.solidity.id as LanguageKey,
+    name: 'resolc 0.3.0 (RISC-V 64-bits)',
 };
 
 const yulInfo = {
     exe: 'resolc',
     lang: languages.yul.id as LanguageKey,
+    name: 'resolc 0.3.0 (RISC-V 64-bits)',
 };
 
 describe('Resolc', () => {
@@ -145,9 +147,6 @@ describe('Resolc', () => {
             const expected: ParsedAsmResult = {
                 asm: [
                     {
-                        text: '; RISC-V (to see PolkaVM Assembly, use compiler option "--asm")',
-                    },
-                    {
                         text: '__entry:',
                     },
                     {
@@ -209,9 +208,6 @@ describe('Resolc', () => {
 
             const expected: ParsedAsmResult = {
                 asm: [
-                    {
-                        text: '; RISC-V (to see PolkaVM Assembly, use compiler option "--asm")',
-                    },
                     {
                         text: '.Lpcrel_hi4:',
                         source: null,
