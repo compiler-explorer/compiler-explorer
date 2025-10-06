@@ -25,7 +25,7 @@
 import {PropertyGetter} from '../properties.interfaces.js';
 import {AsmParser} from './asm-parser.js';
 
-export class ResolcAsmParser extends AsmParser {
+export class ResolcRiscVAsmParser extends AsmParser {
     constructor(compilerProps?: PropertyGetter) {
         super(compilerProps);
 

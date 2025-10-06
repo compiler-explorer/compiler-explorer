@@ -26,7 +26,7 @@ import {describe, expect, it} from 'vitest';
 import {AsmParser} from '../lib/parsers/asm-parser.js';
 import {MlirAsmParser} from '../lib/parsers/asm-parser-mlir.js';
 import {PTXAsmParser} from '../lib/parsers/asm-parser-ptx.js';
-import {ResolcAsmParser} from '../lib/parsers/asm-parser-resolc.js';
+import {ResolcRiscVAsmParser} from '../lib/parsers/asm-parser-resolc-riscv.js';
 import type {ParsedAsmResult} from '../types/asmresult/asmresult.interfaces.js';
 import type {ParseFiltersAndOutputOptions} from '../types/features/filters.interfaces.js';
 
@@ -297,8 +297,8 @@ module {
     });
 });
 
-describe('ResolcAsmParser tests', () => {
-    const parser = new ResolcAsmParser();
+describe('ResolcRiscVAsmParser tests', () => {
+    const parser = new ResolcRiscVAsmParser();
 
     it('should identify instruction info and source line numbers', () => {
         const filters: Partial<ParseFiltersAndOutputOptions> = {binaryObject: true};

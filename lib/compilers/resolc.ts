@@ -30,7 +30,7 @@ import type {CompilerInfo} from '../../types/compiler.interfaces.js';
 import type {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces.js';
 import type {Language} from '../../types/languages.interfaces.js';
 import {BaseCompiler} from '../base-compiler.js';
-import {ResolcAsmParser} from '../parsers/asm-parser-resolc.js';
+import {ResolcRiscVAsmParser} from '../parsers/asm-parser-resolc-riscv.js';
 import {changeExtension} from '../utils.js';
 import {type BaseParser, ResolcParser} from './argument-parsers.js';
 
@@ -67,7 +67,7 @@ export class ResolcCompiler extends BaseCompiler {
     constructor(...args: ConstructorParameters<typeof BaseCompiler>) {
         super(...args);
 
-        this.asm = new ResolcAsmParser(this.compilerProps);
+        this.asm = new ResolcRiscVAsmParser(this.compilerProps);
         this.compiler.supportsIrView = true;
         // The arg producing LLVM IR (among other output) is already
         // included in optionsForFilter(), but irArg needs to be set.
