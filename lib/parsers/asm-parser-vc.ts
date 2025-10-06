@@ -48,7 +48,6 @@ type ResultObject = {
 };
 
 export class VcAsmParser extends AsmParser {
-    private readonly asmBinaryParser: AsmParser;
     private readonly filenameComment = /^; File (.+)/;
     protected miscDirective = /^\s*(include|INCLUDELIB|TITLE|\.|THUMB|ARM64|TTL|DD|voltbl|_volmd|END$)/;
     private readonly postfixComment = /; (.*)/;
@@ -109,7 +108,7 @@ export class VcAsmParser extends AsmParser {
         for (const line of asmLines) {
             result.push({text: line, source: null});
         }
-        
+
         return {
             asm: result,
         };
