@@ -24,7 +24,8 @@
 
 import fs from 'node:fs';
 import path from 'node:path';
-import type {ParsedAsmResult} from '../../types/asmresult/asmresult.interfaces.js';
+
+import type {ParsedAsmResult, ParsedAsmResultLine} from '../../types/asmresult/asmresult.interfaces.js';
 import type {CompilerInfo} from '../../types/compiler.interfaces.js';
 import type {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces.js';
 import type {Language} from '../../types/languages.interfaces.js';
@@ -160,11 +161,11 @@ export class ResolcCompiler extends BaseCompiler {
             return result;
         }
 
-        result.asm = result.asm.filter((currentLine, index) => {
-            const nextLine = result.asm[index + 1];
-            const currentIsLabel =
-                currentLine.text.endsWith(':') && result.labelDefinitions?.[currentLine.text.slice(0, -1)];
-            const nextIsLabel = nextLine?.text.endsWith(':') && result.labelDefinitions?.[nextLine.text.slice(0, -1)];
+        const {asm, labelDefinitions} = result;
+        result.asm = asm.filter((currentLine, index) => {
+            const nextLine = asm[index + 1];
+            const currentIsLabel = this.isLabel(currentLine, labelDefinitions);
+            const nextIsLabel = nextLine && this.isLabel(nextLine, labelDefinitions);
             const isOrphaned = currentIsLabel && (nextIsLabel || !nextLine);
             return !isOrphaned;
         });
@@ -177,11 +178,26 @@ export class ResolcCompiler extends BaseCompiler {
      * a Solidity source file is used, the mappings shown in CE are thus misleading.
      */
     private maybeRemoveSourceMappings(result: ParsedAsmResult): void {
-        if (this.inputIs(InputKind.Solidity) && this.outputIs(OutputKind.RiscV)) {
-            for (const line of result.asm) {
-                line.source = null;
+        const inputIsSolidity = this.inputIs(InputKind.Solidity);
+        const {asm, labelDefinitions} = result;
+
+        if (this.outputIs(OutputKind.RiscV)) {
+            for (const line of asm) {
+                if (inputIsSolidity) {
+                    line.source = null;
+                }
+                if (!this.isLabel(line, labelDefinitions)) {
+                    line.text = '\t' + line.text;
+                }
             }
         }
+    }
+
+    /**
+     * Whether the parsed asm result line represents a label.
+     */
+    private isLabel(line: ParsedAsmResultLine, labelDefinitions: ParsedAsmResult['labelDefinitions']): boolean {
+        return line.text.endsWith(':') && !!labelDefinitions?.[line.text.slice(0, -1)];
     }
 
     /**

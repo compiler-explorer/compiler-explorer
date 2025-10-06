@@ -150,10 +150,10 @@ describe('Resolc', () => {
                         text: '__entry:',
                     },
                     {
-                        text: ' addi	sp, sp, -0x10',
+                        text: '\t addi	sp, sp, -0x10',
                     },
                     {
-                        text: ' sd	ra, 0x8(sp)',
+                        text: '\t sd	ra, 0x8(sp)',
                     },
                 ],
             };
@@ -213,19 +213,19 @@ describe('Resolc', () => {
                         source: null,
                     },
                     {
-                        text: ' auipc	a1, 0x0',
+                        text: '\t auipc	a1, 0x0',
                         source: null,
                     },
                     {
-                        text: ' addi	sp, sp, -0x60',
+                        text: '\t addi	sp, sp, -0x60',
                         source: null,
                     },
                     {
-                        text: ' sd	ra, 0x58(sp)',
+                        text: '\t sd	ra, 0x58(sp)',
                         source: null,
                     },
                     {
-                        text: ' jalr	ra <.Lpcrel_hi4+0x3a>',
+                        text: '\t jalr	ra <.Lpcrel_hi4+0x3a>',
                         source: null,
                     },
                 ],
