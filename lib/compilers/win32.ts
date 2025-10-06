@@ -41,6 +41,7 @@ import {CompilationEnvironment} from '../compilation-env.js';
 import {MapFileReaderVS} from '../mapfiles/map-file-vs.js';
 import {VcAsmParser} from '../parsers/asm-parser-vc.js';
 import {PELabelReconstructor} from '../pe32-support.js';
+import {VcAsmParser} from '../parsers/asm-parser-vc.js';
 
 export class Win32Compiler extends BaseCompiler {
     static get key() {
@@ -250,20 +251,22 @@ export class Win32Compiler extends BaseCompiler {
 
             return [
                 '/nologo',
-                '/FA', // assembly listing with source and machine code
-                '/Fa' + this.filename(outputFilename.replace(/\.exe$/, '')), // assembly listing
-                '/Fo' + this.filename(outputFilename.replace(/\.exe$/, '') + '.obj'), // object file
+                '/FA',  // assembly listing with source and machine code
+                '/Fa' + this.filename(outputFilename.replace(/\.exe$/, '')),           // assembly listing
+                '/Fo' + this.filename(outputFilename.replace(/\.exe$/, '') + '.obj'),  // object file
                 '/Fm' + this.filename(mapFilename),
                 '/Fe' + this.filename(this.getExecutableFilename(path.dirname(outputFilename), 'output')),
-                '/Zi', // complete debugging information
+                '/Zi',  // complete debugging information
             ];
         }
         return [
             '/nologo',
             '/FA',
-            '/c', // compile only, do not link
+            '/c',  // compile only, do not link
             '/Fa' + this.filename(outputFilename),
             '/Fo' + this.filename(outputFilename + '.obj'),
+            '/Zi',
+            '/Fd' + this.filename(outputFilename + '.pdb'), // default pdb name for obj is vcXXX.pdb
             '/Zi',
             '/Fd' + this.filename(outputFilename + '.pdb'), // default pdb name for obj is vcXXX.pdb
         ];

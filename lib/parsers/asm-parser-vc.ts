@@ -108,7 +108,7 @@ export class VcAsmParser extends AsmParser {
         for (const line of asmLines) {
             result.push({text: line, source: null});
         }
-
+        
         return {
             asm: result,
         };

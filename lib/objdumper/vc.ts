@@ -45,11 +45,10 @@ export class VcObjdumper extends BaseObjdumper {
     ) {
         // Not setting /OUT, as CE wants the output on stdout
         const args = ['/LINENUMBERS', '/DISASM'];
-        // TODO: check if this actually does anything:
         if (filters?.directives) args.push('/DIRECTIVES');
 
         // if (staticReloc || dynamicReloc) args.push('/RELOCATIONS');
-
+        
         // TODO: handle demangling in post-process
         // TODO: disable intel-syntax checkbox as selected, dumpbin supports only that
         if (objdumperArguments) args.push(...objdumperArguments);
