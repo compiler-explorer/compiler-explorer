@@ -25,6 +25,7 @@
 import {describe, expect, it} from 'vitest';
 import {AsmParser} from '../lib/parsers/asm-parser.js';
 import {MlirAsmParser} from '../lib/parsers/asm-parser-mlir.js';
+import {PolkaVMAsmParser} from '../lib/parsers/asm-parser-polkavm.js';
 import {PTXAsmParser} from '../lib/parsers/asm-parser-ptx.js';
 import {ResolcRiscVAsmParser} from '../lib/parsers/asm-parser-resolc-riscv.js';
 import type {ParsedAsmResult} from '../types/asmresult/asmresult.interfaces.js';
@@ -390,15 +391,28 @@ describe('ResolcRiscVAsmParser tests', () => {
         const result = parser.processAsm(riscv, filters);
         expectParsedAsmResult(result, expected);
     });
+});
 
-    // TODO:
-    // Move to a separate describe('PvmAsmParser') if/when we create that parser,
-    // and update the expected parsed fields. ResolcCompiler's PVM assembly output
-    // currently uses the same AsmParser as the RISC-V, thus the line text will be
-    // the entire line (no source mappings at this point).
+describe('PolkaVMAsmParser tests', () => {
+    const parser = new PolkaVMAsmParser();
+
+    function expectParsedAsmResult(result: ParsedAsmResult, expected: ParsedAsmResult): void {
+        expect(result.labelDefinitions).toEqual(expected.labelDefinitions);
+        expect(result.asm.length).toEqual(expected.asm.length);
+        for (let i = 0; i < result.asm.length; i++) {
+            expect(result.asm[i]).toMatchObject(expected.asm[i]);
+        }
+    }
+
+    // Note: We currently have no source mappings from PVM.
     it('should identify PVM instruction info', () => {
-        const filters: Partial<ParseFiltersAndOutputOptions> = {binaryObject: false};
+        const filters: Partial<ParseFiltersAndOutputOptions> = {
+            binaryObject: false,
+            commentOnly: false,
+        };
         const pvm = `
+// Code size = 1078 bytes
+
 <__entry>:
       : @0 (gas: 6)
      0: sp = sp + 0xfffffffffffffff0
@@ -407,51 +421,60 @@ describe('ResolcRiscVAsmParser tests', () => {
      8: s0 = a0 & 0x1
     11: ecalli 2 // 'call_data_size'
     13: fallthrough
-      : @1 (gas: 2)`;
+      : @1 (gas: 2)
+    14: u32 [0x20000] = a0`;
 
         const expected: ParsedAsmResult = {
             asm: [
                 {
-                    text: '<__entry>:',
+                    text: '// Code size = 1078 bytes',
                     source: null,
                 },
                 {
-                    text: '      : @0 (gas: 6)',
+                    text: '__entry:',
                     source: null,
                 },
                 {
-                    text: '     0: sp = sp + 0xfffffffffffffff0',
+                    text: '        @0 (gas: 6)',
                     source: null,
                 },
                 {
-                    text: '     3: u64 [sp + 0x8] = ra',
+                    text: '        sp = sp + 0xfffffffffffffff0',
                     source: null,
                 },
                 {
-                    text: '     6: u64 [sp] = s0',
+                    text: '        u64 [sp + 0x8] = ra',
                     source: null,
                 },
                 {
-                    text: '     8: s0 = a0 & 0x1',
+                    text: '        u64 [sp] = s0',
                     source: null,
                 },
                 {
-                    text: "    11: ecalli 2 // 'call_data_size'",
+                    text: '        s0 = a0 & 0x1',
                     source: null,
                 },
                 {
-                    text: '    13: fallthrough',
+                    text: "        ecalli 2 // 'call_data_size'",
                     source: null,
                 },
                 {
-                    text: '      : @1 (gas: 2)',
+                    text: '        fallthrough',
+                    source: null,
+                },
+                {
+                    text: '        @1 (gas: 2)',
+                    source: null,
+                },
+                {
+                    text: '        u32 [0x20000] = a0',
                     source: null,
                 },
             ],
-            labelDefinitions: {},
+            labelDefinitions: {__entry: 2},
         };
 
-        const result = parser.processAsm(pvm, filters);
+        const result = parser.process(pvm, filters);
         expectParsedAsmResult(result, expected);
     });
 });

@@ -34,8 +34,8 @@ import type {LanguageKey} from '../types/languages.interfaces.js';
 import {makeCompilationEnvironment, makeFakeCompilerInfo} from './utils.js';
 
 const languages = {
-    solidity: {id: 'solidity'},
-    yul: {id: 'yul'},
+    solidity: {id: 'solidity' as LanguageKey},
+    yul: {id: 'yul' as LanguageKey},
 };
 
 describe('Resolc', () => {
@@ -58,7 +58,7 @@ describe('Resolc', () => {
     describe('From Solidity', () => {
         const compilerInfo = {
             exe: 'resolc',
-            lang: languages.solidity.id as LanguageKey,
+            lang: languages.solidity.id,
             name: 'resolc 0.4.0 (RISC-V 64-bits)',
         };
 
@@ -136,7 +136,7 @@ describe('Resolc', () => {
                         memset: 3,
                         ['.LBB35_2']: 4,
                         __entry: 5,
-                        __last: 6,
+                        __last: 8,
                     },
                 };
 
@@ -232,7 +232,7 @@ describe('Resolc', () => {
     describe('From Yul', () => {
         const compilerInfo = {
             exe: 'resolc',
-            lang: languages.yul.id as LanguageKey,
+            lang: languages.yul.id,
             name: 'resolc 0.4.0 (RISC-V 64-bits)',
         };
 

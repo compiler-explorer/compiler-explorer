@@ -30,6 +30,7 @@ import type {CompilerInfo} from '../../types/compiler.interfaces.js';
 import type {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces.js';
 import type {Language} from '../../types/languages.interfaces.js';
 import {BaseCompiler} from '../base-compiler.js';
+import {PolkaVMAsmParser} from '../parsers/asm-parser-polkavm.js';
 import {ResolcRiscVAsmParser} from '../parsers/asm-parser-resolc-riscv.js';
 import {changeExtension} from '../utils.js';
 import {type BaseParser, ResolcParser} from './argument-parsers.js';
@@ -55,8 +56,8 @@ enum InputKind {
  * The enum value must exist within the {@link CompilerInfo.name} (case insensitive).
  */
 enum OutputKind {
-    RiscV = 'risc-v',
     PolkaVM = 'pvm',
+    RiscV = 'risc-v',
 }
 
 export class ResolcCompiler extends BaseCompiler {
@@ -67,7 +68,10 @@ export class ResolcCompiler extends BaseCompiler {
     constructor(...args: ConstructorParameters<typeof BaseCompiler>) {
         super(...args);
 
-        this.asm = new ResolcRiscVAsmParser(this.compilerProps);
+        this.asm = this.outputIs(OutputKind.PolkaVM)
+            ? new PolkaVMAsmParser()
+            : new ResolcRiscVAsmParser(this.compilerProps);
+
         this.compiler.supportsIrView = true;
         // The arg producing LLVM IR (among other output) is already
         // included in optionsForFilter(), but irArg needs to be set.
