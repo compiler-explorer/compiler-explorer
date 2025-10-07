@@ -440,26 +440,32 @@ describe('PolkaVMAsmParser tests', () => {
                 },
                 {
                     text: '        sp = sp + 0xfffffffffffffff0',
+                    address: 0,
                     source: null,
                 },
                 {
                     text: '        u64 [sp + 0x8] = ra',
+                    address: 3,
                     source: null,
                 },
                 {
                     text: '        u64 [sp] = s0',
+                    address: 6,
                     source: null,
                 },
                 {
                     text: '        s0 = a0 & 0x1',
+                    address: 8,
                     source: null,
                 },
                 {
                     text: "        ecalli 2 // 'call_data_size'",
+                    address: 11,
                     source: null,
                 },
                 {
                     text: '        fallthrough',
+                    address: 13,
                     source: null,
                 },
                 {
@@ -468,6 +474,7 @@ describe('PolkaVMAsmParser tests', () => {
                 },
                 {
                     text: '        u32 [0x20000] = a0',
+                    address: 14,
                     source: null,
                 },
             ],

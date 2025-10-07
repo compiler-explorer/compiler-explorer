@@ -159,7 +159,7 @@ describe('Resolc', () => {
                 expect(result.asm).toMatchObject(expected.asm);
             });
 
-            it('should remove Solidity <--> RISC-V source mappings', async () => {
+            it('should remove invalid Solidity <--> RISC-V source mappings', async () => {
                 const compiler = makeCompiler(compilerInfo);
 
                 const parsedAsm: ParsedAsmResult = {
