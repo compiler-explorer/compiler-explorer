@@ -64,7 +64,11 @@ function formatEventRejection(evt: Event): string {
     let message = `Event rejection: type="${evt.type}", target="${targetName}"`;
 
     if ('detail' in evt && evt.detail !== undefined) {
-        message += `, detail=${JSON.stringify(evt.detail)}`;
+        try {
+            message += `, detail=${JSON.stringify(evt.detail)}`;
+        } catch {
+            message += ', detail=[Unserializable]';
+        }
     }
 
     return message;
