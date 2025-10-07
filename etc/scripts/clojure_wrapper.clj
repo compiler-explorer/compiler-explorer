@@ -86,38 +86,39 @@
 (defn path-of-file [file]
   (.getParent file))
 
+(defn print-macro-expanson [input-file macro-params]
+  (binding [clojure.pprint/*print-pprint-dispatch* clojure.pprint/code-dispatch
+            clojure.pprint/*print-right-margin* 60
+            clojure.pprint/*print-miser-width* 20
+            *print-meta* (:print-meta macro-params true)]
+    (doseq [form (forms input-file)]
+      (pp/pprint (walk/macroexpand-all form))
+      (println))))
+
+(defn compile-input [input-file compiler-options]
+  (let [working-dir (path-of-file input-file)
+        namespace (read-namespace input-file)
+        missing-namespace? (nil? namespace)
+        namespace (or namespace "sample")
+        compile-filename (io/file working-dir (ns->filename namespace))
+        compile-path (path-of-file compile-filename)]
+    (.mkdirs (io/file working-dir "classes"))
+    (when compile-path
+      (.mkdirs (io/file compile-path)))
+    (with-open [out (io/writer (io/output-stream compile-filename))]
+      (when missing-namespace?
+        (let [ns-form (str "(ns " namespace ")")]
+          (println "Injecting namespace form on first line:" ns-form)
+          (.write out ns-form)))
+      (io/copy input-file out))
+
+    (println "Available compiler options: --help --disable-locals-clearing --direct-linking --elide-meta \"[:doc :line]\"")
+    (println "Binding *compiler-options* to" compiler-options)
+    (binding [*compiler-options* compiler-options]
+      (compile (symbol namespace)))))
+
 (let [[compiler-options macro-params positional] (parse-command-line)
-      input-file (io/file (first positional))
-      working-dir (path-of-file input-file)
-      namespace (read-namespace input-file)
-      missing-namespace? (nil? namespace)
-      namespace (or namespace "sample")
-      compile-filename (io/file working-dir (ns->filename namespace))
-      compile-path (path-of-file compile-filename)]
-
-  (when (:macro-expand macro-params)
-    (binding [clojure.pprint/*print-pprint-dispatch* clojure.pprint/code-dispatch
-              clojure.pprint/*print-right-margin* 60
-              clojure.pprint/*print-miser-width* 20
-              *print-meta* (:print-meta macro-params true)]
-      (doseq [form (forms input-file)]
-        (pp/pprint (walk/macroexpand-all form))
-        (println)))
-    (System/exit 0))
-
-  (println "Available compiler options: --help --disable-locals-clearing --direct-linking --elide-meta \"[:doc :line]\"")
-  (println "Binding *compiler-options* to" compiler-options)
-
-  (.mkdirs (io/file working-dir "classes"))
-  (when compile-path
-    (.mkdirs (io/file compile-path)))
-  (with-open [out (io/writer (io/output-stream compile-filename))]
-    (when missing-namespace?
-      (let [ns-form (str "(ns " namespace ")")]
-        (println "Injecting namespace form on first line:" ns-form)
-        (.write out ns-form)))
-    (io/copy input-file out))
-
-  (binding [*compiler-options* compiler-options]
-    (compile (symbol namespace))))
-
+      input-file (io/file (first positional))]
+  (if (:macro-expand macro-params)
+    (print-macro-expanson input-file macro-params)
+    (compile-input input-file compiler-options)))
