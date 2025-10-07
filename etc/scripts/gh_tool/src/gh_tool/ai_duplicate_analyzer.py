@@ -66,12 +66,17 @@ Respond in JSON format:
     try:
         response = client.messages.create(
             model="claude-sonnet-4-20250514",
-            max_tokens=500,
+            max_tokens=2000,
             messages=[{"role": "user", "content": prompt}],
         )
 
         # Parse the response
         content = response.content[0].text.strip()
+
+        # Debug logging for empty responses
+        if not content:
+            click.echo(f"    Warning: Empty response from AI for group with {len(issues)} issues", err=True)
+            return {"is_duplicate": False, "confidence": 0.0, "reasoning": "Empty AI response"}
 
         # Try to extract JSON from the response
         import json
@@ -89,8 +94,12 @@ Respond in JSON format:
             "reasoning": result.get("reasoning", ""),
         }
 
+    except json.JSONDecodeError as e:
+        click.echo(f"    Warning: Invalid JSON from AI (group size: {len(issues)})", err=True)
+        click.echo(f"    First 200 chars of response: {content[:200] if content else '(empty)'}...", err=True)
+        return {"is_duplicate": False, "confidence": 0.0, "reasoning": f"JSON parse error: {e}"}
     except Exception as e:
-        click.echo(f"Warning: AI analysis failed: {e}", err=True)
+        click.echo(f"    Warning: AI analysis failed: {e}", err=True)
         # On error, assume it's not a duplicate to avoid false positives
         return {"is_duplicate": False, "confidence": 0.0, "reasoning": f"Error: {e}"}
 
@@ -115,7 +124,12 @@ def filter_groups_with_ai(groups: list[dict[str, Any]], min_confidence: float = 
 
     filtered_groups = []
     for idx, group in enumerate(groups, 1):
-        click.echo(f"  Analyzing group {idx}/{len(groups)}...", err=True)
+        num_issues = len(group["issues"])
+        click.echo(f"  Analyzing group {idx}/{len(groups)} ({num_issues} issues)...", err=True)
+
+        # Warn about very large groups
+        if num_issues > 20:
+            click.echo(f"    ⚠ Large group ({num_issues} issues) - this may be expensive", err=True)
 
         result = analyze_duplicate_group(group["issues"], client)
 
