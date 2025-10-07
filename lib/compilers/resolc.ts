@@ -29,6 +29,7 @@ import type {ParsedAsmResult, ParsedAsmResultLine} from '../../types/asmresult/a
 import type {CompilerInfo} from '../../types/compiler.interfaces.js';
 import type {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces.js';
 import type {Language} from '../../types/languages.interfaces.js';
+import {assert} from '../assert.js';
 import {BaseCompiler} from '../base-compiler.js';
 import {PolkaVMAsmParser} from '../parsers/asm-parser-polkavm.js';
 import {ResolcRiscVAsmParser} from '../parsers/asm-parser-resolc-riscv.js';
@@ -80,10 +81,10 @@ export class ResolcCompiler extends BaseCompiler {
             ? new PolkaVMAsmParser()
             : new ResolcRiscVAsmParser(this.compilerProps);
 
-        this.compiler.supportsIrView = true;
         // The arg producing LLVM IR (among other output) is already
         // included in optionsForFilter(), but irArg needs to be set.
         this.compiler.irArg = [];
+        this.compiler.supportsIrView = true;
     }
 
     override getSharedLibraryPathsAsArguments(): string[] {
@@ -162,7 +163,7 @@ export class ResolcCompiler extends BaseCompiler {
      * __entry:
      *      addi	sp, sp, -0x10
      * ```
-     * @example
+     *
      * After:
      * ```
      * __entry:
@@ -201,7 +202,7 @@ export class ResolcCompiler extends BaseCompiler {
                     line.source = null;
                 }
                 if (!this.isLabel(line, labelDefinitions)) {
-                    line.text = '\t' + line.text;
+                    line.text = '       ' + line.text;
                 }
             }
         }
@@ -211,7 +212,7 @@ export class ResolcCompiler extends BaseCompiler {
      * Whether the parsed asm result line represents a label.
      */
     private isLabel(line: ParsedAsmResultLine, labelDefinitions: ParsedAsmResult['labelDefinitions']): boolean {
-        return line.text.endsWith(':') && !!labelDefinitions?.[line.text.slice(0, -1)];
+        return line.text.endsWith(':') && !!labelDefinitions && line.text.slice(0, -1) in labelDefinitions;
     }
 
     /**
@@ -225,7 +226,7 @@ export class ResolcCompiler extends BaseCompiler {
      * Whether the provided output kind matches the output requested.
      */
     private outputIs(kind: OutputKind): boolean {
-        return this.compiler.name.toLowerCase().includes(kind.valueOf());
+        return this.compiler.name.toLowerCase().includes(kind.valueOf().toLowerCase());
     }
 
     /**
@@ -237,7 +238,9 @@ export class ResolcCompiler extends BaseCompiler {
      * ```
      */
     private getSolidityContractName(dirPath: string): string {
-        return this.getContractName(dirPath, 'contract');
+        const nameRe = /contract[\s\n]+(?<name>[\w$]+)[\s\n]*{/;
+
+        return this.getContractName(dirPath, nameRe);
     }
 
     /**
@@ -249,16 +252,16 @@ export class ResolcCompiler extends BaseCompiler {
      * ```
      */
     private getYulContractName(dirPath: string): string {
-        const name = this.getContractName(dirPath, 'object');
-        return name.replaceAll('"', '');
+        const nameRe = /object[\s\n]+"(?<name>[\w$.]+)"[\s\n]*{/;
+
+        return this.getContractName(dirPath, nameRe);
     }
 
-    private getContractName(dirPath: string, preceedingKeyword: string): string {
+    private getContractName(dirPath: string, nameRe: RegExp): string {
         const source = fs.readFileSync(`${dirPath}/${this.compileFilename}`, {encoding: 'utf8'});
-        const whitespace = /\s+/;
-        const sourceParts = source.split(whitespace);
-        const contractStart = sourceParts.indexOf(preceedingKeyword);
+        const match = source.match(nameRe);
+        assert(match?.groups?.name, 'Expected to find a contract name in the source file.');
 
-        return contractStart >= 0 ? sourceParts[contractStart + 1] : 'contract_not_found';
+        return match.groups.name;
     }
 }
