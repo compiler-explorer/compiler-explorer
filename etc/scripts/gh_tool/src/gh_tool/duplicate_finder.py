@@ -1,25 +1,37 @@
 """Find potential duplicate issues in the compiler-explorer repository using text similarity."""
 
 import json
+import re
 import subprocess
 import sys
-from datetime import datetime, timedelta, timezone
+from datetime import UTC, datetime, timedelta
 from difflib import SequenceMatcher
 from typing import Any
 
 import click
 
+# Compiled regex to strip [TAGS] from issue titles
+TAG_PATTERN = re.compile(r"\[.*?\]\s*")
 
-def fetch_issues(state: str = "open", limit: int = 1000, repo: str = "compiler-explorer/compiler-explorer") -> list[dict[str, Any]]:
+
+def fetch_issues(
+    state: str = "open", limit: int = 1000, repo: str = "compiler-explorer/compiler-explorer"
+) -> list[dict[str, Any]]:
     """Fetch issues from GitHub using gh CLI."""
     click.echo(f"Fetching {state} issues from {repo}...", err=True)
 
     cmd = [
-        "gh", "issue", "list",
-        "--repo", repo,
-        "--state", state,
-        "--limit", str(limit),
-        "--json", "number,title,createdAt,updatedAt,state,labels,comments"
+        "gh",
+        "issue",
+        "list",
+        "--repo",
+        repo,
+        "--state",
+        state,
+        "--limit",
+        str(limit),
+        "--json",
+        "number,title,createdAt,updatedAt,state,labels,comments",
     ]
 
     try:
@@ -36,8 +48,14 @@ def fetch_issues(state: str = "open", limit: int = 1000, repo: str = "compiler-e
 
 
 def calculate_similarity(title1: str, title2: str) -> float:
-    """Calculate similarity ratio between two titles using SequenceMatcher."""
-    return SequenceMatcher(None, title1.lower(), title2.lower()).ratio()
+    """Calculate similarity ratio between two titles using SequenceMatcher.
+
+    Strips [TAGS] before comparing to avoid false positives from shared prefixes
+    like [LIB REQUEST], [COMPILER REQUEST], etc.
+    """
+    clean_title1 = TAG_PATTERN.sub("", title1)
+    clean_title2 = TAG_PATTERN.sub("", title2)
+    return SequenceMatcher(None, clean_title1.lower(), clean_title2.lower()).ratio()
 
 
 def find_duplicates(
@@ -46,10 +64,9 @@ def find_duplicates(
     """Find potential duplicate issues based on title similarity."""
     # Filter issues by age if requested
     if min_age_days > 0:
-        cutoff_date = datetime.now(timezone.utc) - timedelta(days=min_age_days)
+        cutoff_date = datetime.now(UTC) - timedelta(days=min_age_days)
         issues = [
-            issue for issue in issues
-            if datetime.fromisoformat(issue["createdAt"].replace("Z", "+00:00")) < cutoff_date
+            issue for issue in issues if datetime.fromisoformat(issue["createdAt"].replace("Z", "+00:00")) < cutoff_date
         ]
         click.echo(f"Filtered to {len(issues)} issues older than {min_age_days} days", err=True)
 
@@ -60,9 +77,7 @@ def find_duplicates(
 
     click.echo(f"Comparing {len(issues)} issues ({total_comparisons:,} comparisons)...", err=True)
 
-    with click.progressbar(
-        length=total_comparisons, label="Finding duplicates", file=sys.stderr
-    ) as bar:
+    with click.progressbar(length=total_comparisons, label="Finding duplicates", file=sys.stderr) as bar:
         for i, issue1 in enumerate(issues):
             for j, issue2 in enumerate(issues[i + 1 :], start=i + 1):
                 bar.update(1)
@@ -100,17 +115,13 @@ def find_duplicates(
                     found_group["max_similarity"] = max(found_group["max_similarity"], dup["similarity"])
         else:
             # Create new group
-            groups.append({
-                "issues": [issue1, issue2],
-                "max_similarity": dup["similarity"]
-            })
+            groups.append({"issues": [issue1, issue2], "max_similarity": dup["similarity"]})
 
     return groups
 
 
 def format_issue(issue: dict[str, Any]) -> str:
     """Format issue for display."""
-    labels = ", ".join(l["name"] for l in issue["labels"]) if issue["labels"] else "no labels"
     created = issue["createdAt"][:10]
     state = issue["state"]
     comment_count = len(issue.get("comments", []))

@@ -1,8 +1,6 @@
 #!/usr/bin/env python3
 """CLI for GitHub automation tools for Compiler Explorer."""
 
-import sys
-
 import click
 
 from gh_tool.duplicate_finder import fetch_issues, find_duplicates, generate_report
