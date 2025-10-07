@@ -94,6 +94,8 @@ export class ResolcCompiler extends BaseCompiler {
         // Skip library code since thousands of lines of RISC-V may be generated depending on
         // the optimization level, causing truncation.
         filters.libraryCode = true;
+        // Disable Intel asm syntax option.
+        filters.intel = false;
 
         const options = ['-g', '--overwrite', '--debug-output-dir', 'artifacts'];
         if (this.inputIs(InputKind.Yul)) {
