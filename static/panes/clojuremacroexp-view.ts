@@ -30,9 +30,9 @@ import {CompilationResult} from '../../types/compilation/compilation.interfaces.
 import {CompilerInfo} from '../../types/compiler.interfaces.js';
 import {Hub} from '../hub.js';
 import {extendConfig} from '../monaco-config.js';
+import {ClojureMacroExpState} from './clojuremacroexp-view.interfaces.js';
 import {MonacoPaneState} from './pane.interfaces.js';
 import {MonacoPane} from './pane.js';
-import {ClojureMacroExpState} from './clojuremacroexp-view.interfaces.js';
 
 export class ClojureMacroExp extends MonacoPane<monaco.editor.IStandaloneCodeEditor, ClojureMacroExpState> {
     constructor(hub: Hub, container: Container, state: ClojureMacroExpState & MonacoPaneState) {

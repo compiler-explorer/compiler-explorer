@@ -909,10 +909,9 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
             insertPoint.addChild(createRustHirView());
         });
 
-        createDragSource(this.container.layoutManager, this.clojureMacroExpButton, () => createClojureMacroExpView()).on(
-            'dragStart',
-            hidePaneAdder,
-        );
+        createDragSource(this.container.layoutManager, this.clojureMacroExpButton, () =>
+            createClojureMacroExpView(),
+        ).on('dragStart', hidePaneAdder);
 
         this.clojureMacroExpButton.on('click', () => {
             const insertPoint =
