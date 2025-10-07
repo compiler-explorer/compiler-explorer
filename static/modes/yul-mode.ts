@@ -58,8 +58,6 @@ export function definition(): monaco.languages.IMonarchLanguage {
 
         symbols: /[:=]+/,
 
-        delimiters: /[.,:]/,
-
         escapes: /\\(?:['"\\nrt\n\r]|x[0-9A-Fa-f]{2}|u[0-9A-Fa-f]{4})/,
 
         tokenizer: {
@@ -82,6 +80,7 @@ export function definition(): monaco.languages.IMonarchLanguage {
 
                 // Delimiters and operators
                 [/[()[\]{}]/, '@brackets'],
+                [/[.,:]/, 'delimiter'],
 
                 [
                     /@symbols/,
