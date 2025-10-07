@@ -45,6 +45,8 @@ export class ClojureCompiler extends JavaCompiler {
 
     constructor(compilerInfo: PreliminaryCompilerInfo, env: CompilationEnvironment) {
         super(compilerInfo, env);
+        // Use invalid Clojure filename to avoid clashing with name determined by namespace
+        this.compileFilename = `example-source${this.lang.extensions[0]}`;
         this.javaHome = this.compilerProps<string>(`compiler.${this.compiler.id}.java_home`);
         this.compilerWrapperPath =
             this.compilerProps('compilerWrapper', '') ||
