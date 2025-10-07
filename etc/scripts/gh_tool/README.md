@@ -31,7 +31,7 @@ uv run gh_tool find-duplicates --help
 
 ### find-duplicates
 
-Finds potential duplicate issues in the compiler-explorer repository using text similarity (Damerau-Levenshtein algorithm via difflib.SequenceMatcher).
+Finds potential duplicate issues in the compiler-explorer repository using text similarity analysis (difflib.SequenceMatcher).
 
 **Usage:**
 
