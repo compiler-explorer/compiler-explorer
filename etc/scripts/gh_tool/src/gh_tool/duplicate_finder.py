@@ -141,7 +141,15 @@ def generate_report(groups: list[dict[str, Any]], output_file: str) -> None:
 
         for idx, group in enumerate(sorted(groups, key=lambda x: x["max_similarity"], reverse=True), 1):
             similarity_pct = int(group["max_similarity"] * 100)
-            output.append(f"## Group {idx} ({similarity_pct}% similar)\n")
+
+            # Add AI analysis if available
+            if "ai_analysis" in group:
+                ai = group["ai_analysis"]
+                confidence_pct = int(ai["confidence"] * 100)
+                output.append(f"## Group {idx} ({similarity_pct}% similar) - AI Confidence: {confidence_pct}%\n")
+                output.append(f"\n**AI Analysis:** {ai['reasoning']}\n")
+            else:
+                output.append(f"## Group {idx} ({similarity_pct}% similar)\n")
 
             for issue in sorted(group["issues"], key=lambda x: x["createdAt"]):
                 output.append(format_issue(issue) + "\n")

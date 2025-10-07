@@ -8,8 +8,10 @@ version = "0.0.1"
 description = "GitHub automation tool for Compiler Explorer"
 requires-python = ">=3.12"
 dependencies = [
+    "anthropic>=0.40.0",
     "click>=8.1.0",
     "pytest>=8.0.0",
+    "python-dotenv>=1.0.0",
     "ruff>=0.8.0",
 ]
 
