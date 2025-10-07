@@ -35,6 +35,7 @@ import {logger} from '../logger.js';
 import * as props from '../properties.js';
 import * as utils from '../utils.js';
 
+import {ClojureCompiler} from './clojure.js';
 import {JuliaCompiler} from './julia.js';
 
 export class BaseParser {
@@ -702,7 +703,21 @@ export class JavaParser extends BaseParser {
 }
 
 export class ClojureParser extends BaseParser {
+    // Get help line from wrapper not Clojure runtime
+    override async getOptions(helpArg: string) {
+        const clojureCompiler = this.compiler as ClojureCompiler;
+        const result = await this.compiler.execCompilerCached(this.compiler.compiler.exe, [
+            '-M', clojureCompiler.compilerWrapperPath,
+            helpArg,
+        ]);
+        const optionFinder = /^\s*(--.*) - (.*)$/i;
+        const options = result.code === 0 ? this.parseLines(result.stdout + result.stderr, optionFinder) : {};
+        this.compiler.possibleArguments.populateOptions(options);
+        return options;
+    }
+
     override async parse() {
+        await this.getOptions('--help');
         return this.compiler;
     }
 }
