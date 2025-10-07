@@ -82,7 +82,7 @@ describe('Resolc', () => {
             const defaultOutputFilename = 'test/resolc/artifacts/test_resolc_example.sol.Square.pvmasm';
             expect(compiler.getOutputFilename('test/resolc')).toEqual(defaultOutputFilename);
             expect(compiler.getIrOutputFilename('test/resolc/example.sol')).toEqual(
-                'test/resolc/artifacts/test_resolc_example.sol.Square.unoptimized.ll',
+                'test/resolc/artifacts/test_resolc_example.sol.Square.optimized.ll',
             );
             expect(compiler.getObjdumpOutputFilename(defaultOutputFilename)).toEqual(
                 'test/resolc/artifacts/test_resolc_example.sol.Square.o',
@@ -257,7 +257,7 @@ describe('Resolc', () => {
             const defaultOutputFilename = 'test/resolc/artifacts/test_resolc_example.yul.Square.pvmasm';
             expect(compiler.getOutputFilename('test/resolc')).toEqual(defaultOutputFilename);
             expect(compiler.getIrOutputFilename('test/resolc/example.sol')).toEqual(
-                'test/resolc/artifacts/test_resolc_example.yul.Square.unoptimized.ll',
+                'test/resolc/artifacts/test_resolc_example.yul.Square.optimized.ll',
             );
             expect(compiler.getObjdumpOutputFilename(defaultOutputFilename)).toEqual(
                 'test/resolc/artifacts/test_resolc_example.yul.Square.o',

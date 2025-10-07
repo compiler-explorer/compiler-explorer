@@ -112,7 +112,7 @@ export class ResolcCompiler extends BaseCompiler {
     }
 
     override getIrOutputFilename(inputFilename: string): string {
-        return this.getOutputFilenameWithExtension(path.dirname(inputFilename), '.unoptimized.ll');
+        return this.getOutputFilenameWithExtension(path.dirname(inputFilename), '.optimized.ll');
     }
 
     override getObjdumpOutputFilename(defaultOutputFilename: string): string {
