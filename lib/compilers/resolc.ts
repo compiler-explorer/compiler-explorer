@@ -65,6 +65,14 @@ export class ResolcCompiler extends BaseCompiler {
         return 'resolc';
     }
 
+    /**
+     * @note
+     * Needs to coincide with the [infrastructure configs](https://github.com/compiler-explorer/infra/blob/main/bin/yaml/solidity.yaml).
+     */
+    static get solcExe() {
+        return '/opt/compiler-explorer/solc-0.8.30/solc';
+    }
+
     constructor(...args: ConstructorParameters<typeof BaseCompiler>) {
         super(...args);
 
@@ -97,7 +105,7 @@ export class ResolcCompiler extends BaseCompiler {
         // Disable Intel asm syntax option.
         filters.intel = false;
 
-        const options = ['-g', '--overwrite', '--debug-output-dir', 'artifacts'];
+        const options = ['-g', '--solc', ResolcCompiler.solcExe, '--overwrite', '--debug-output-dir', 'artifacts'];
         if (this.inputIs(InputKind.Yul)) {
             options.push('--yul');
         }

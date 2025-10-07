@@ -40,6 +40,7 @@ const languages = {
 
 describe('Resolc', () => {
     let env: CompilationEnvironment;
+    const expectedSolcExe = '/opt/compiler-explorer/solc-0.8.30/solc';
 
     beforeAll(() => {
         env = makeCompilationEnvironment({languages});
@@ -52,6 +53,10 @@ describe('Resolc', () => {
     describe('Common', () => {
         it('should return correct key', () => {
             expect(ResolcCompiler.key).toEqual('resolc');
+        });
+
+        it('should return Solc executable dependency path', () => {
+            expect(ResolcCompiler.solcExe).toEqual(expectedSolcExe);
         });
     });
 
@@ -74,7 +79,14 @@ describe('Resolc', () => {
 
         it('should use debug options', () => {
             const compiler = makeCompiler(compilerInfo);
-            expect(compiler.optionsForFilter({})).toEqual(['-g', '--overwrite', '--debug-output-dir', 'artifacts']);
+            expect(compiler.optionsForFilter({})).toEqual([
+                '-g',
+                '--solc',
+                expectedSolcExe,
+                '--overwrite',
+                '--debug-output-dir',
+                'artifacts',
+            ]);
         });
 
         it('should generate output filenames', () => {
@@ -245,6 +257,8 @@ describe('Resolc', () => {
             const compiler = makeCompiler(compilerInfo);
             expect(compiler.optionsForFilter({})).toEqual([
                 '-g',
+                '--solc',
+                expectedSolcExe,
                 '--overwrite',
                 '--debug-output-dir',
                 'artifacts',
