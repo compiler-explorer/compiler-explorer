@@ -19,29 +19,29 @@
          args *command-line-args*]
     (if (seq args)
       (let [arg (first args)]
-        (cond
-          (re-matches #"-?-help" arg)
+        (condp = arg
+          "--help"
           (do
             (println help-text)
             (System/exit 1))
 
-          (re-matches #"-?-macro-expand" arg)
+          "--macro-expand"
           (recur params (assoc macro-params :macro-expand true)
                  positional (rest args))
 
-          (re-matches #"-?-omit-macro-meta" arg)
+          "--omit-macro-meta"
           (recur params (assoc macro-params :print-meta false)
                  positional (rest args))
 
-          (re-matches #"-?-disable-locals-clearing" arg)
+          "--disable-locals-clearing"
           (recur (assoc params :disable-locals-clearing true)
                  macro-params positional (rest args))
 
-          (re-matches #"-?-direct-linking" arg)
+          "--direct-linking"
           (recur (assoc params :direct-linking true)
                  macro-params positional (rest args))
 
-          (re-matches #"-?-elide-meta" arg)
+          "--elide-meta"
           (let [elisions (some-> args second read-string)]
             (when-not (and (sequential? elisions)
                            (every? keyword? elisions))
@@ -51,14 +51,12 @@
             (recur (assoc params :elide-meta elisions)
                    macro-params positional (drop 2 args)))
 
-          (re-matches #"-?-.*" arg)
-          (do
-            (println "Invaliid compiler parameter:" arg)
-            (println help-text)
-            (System/exit 1))
-
-          :else
-          (recur params macro-params (conj positional arg) (rest args))))
+          (if (re-matches #"-.*" arg)
+            (do
+              (println "Invaliid compiler parameter:" arg)
+              (println help-text)
+              (System/exit 1))
+            (recur params macro-params (conj positional arg) (rest args)))))
       [params macro-params positional])))
 
 (defn forms [input-file]

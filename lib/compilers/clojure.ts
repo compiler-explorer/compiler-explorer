@@ -63,6 +63,11 @@ export class ClojureCompiler extends JavaCompiler {
         return execOptions;
     }
 
+    override filterUserOptions(userOptions: string[]) {
+        // filter options without extra arguments
+        return userOptions.filter(option => option !== '--macro-expand');
+    }
+
     override optionsForFilter(filters: ParseFiltersAndOutputOptions) {
         // Forcibly enable javap
         filters.binary = true;
