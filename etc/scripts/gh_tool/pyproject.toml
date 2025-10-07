@@ -11,6 +11,11 @@ dependencies = [
     "click>=8.1.0",
 ]
 
+[project.optional-dependencies]
+test = [
+    "pytest>=8.0.0",
+]
+
 [project.scripts]
 gh_tool = "gh_tool.cli:main"
 

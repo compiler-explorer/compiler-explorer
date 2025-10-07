@@ -101,6 +101,13 @@ This directory is intended to house additional GitHub automation scripts such as
 
 ## Development
 
+Run tests:
+
+```bash
+uv sync --extra test
+uv run pytest test_duplicate_finder.py -v
+```
+
 Run linting:
 
 ```bash
