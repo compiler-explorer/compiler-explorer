@@ -3,7 +3,6 @@
 import json
 import subprocess
 import sys
-from collections import defaultdict
 from datetime import datetime, timedelta, timezone
 from difflib import SequenceMatcher
 from typing import Any
@@ -11,29 +10,29 @@ from typing import Any
 import click
 
 
-def fetch_issues(state: str = "open") -> list[dict[str, Any]]:
+def fetch_issues(state: str = "open", limit: int = 1000, repo: str = "compiler-explorer/compiler-explorer") -> list[dict[str, Any]]:
     """Fetch issues from GitHub using gh CLI."""
-    print(f"Fetching {state} issues from GitHub...", file=sys.stderr)
+    click.echo(f"Fetching {state} issues from {repo}...", err=True)
 
     cmd = [
         "gh", "issue", "list",
-        "--repo", "compiler-explorer/compiler-explorer",
+        "--repo", repo,
         "--state", state,
-        "--limit", "1000",
+        "--limit", str(limit),
         "--json", "number,title,createdAt,updatedAt,state,labels,comments"
     ]
 
     try:
         result = subprocess.run(cmd, capture_output=True, text=True, check=True)
         issues = json.loads(result.stdout)
-        print(f"Fetched {len(issues)} issues", file=sys.stderr)
+        click.echo(f"Fetched {len(issues)} issues", err=True)
         return issues
     except subprocess.CalledProcessError as e:
-        print(f"Error fetching issues: {e.stderr}", file=sys.stderr)
-        sys.exit(1)
+        click.echo(f"Error fetching issues: {e.stderr}", err=True)
+        raise click.Abort()
     except json.JSONDecodeError as e:
-        print(f"Error parsing JSON: {e}", file=sys.stderr)
-        sys.exit(1)
+        click.echo(f"Error parsing JSON: {e}", err=True)
+        raise click.Abort()
 
 
 def calculate_similarity(title1: str, title2: str) -> float:
@@ -52,14 +51,14 @@ def find_duplicates(
             issue for issue in issues
             if datetime.fromisoformat(issue["createdAt"].replace("Z", "+00:00")) < cutoff_date
         ]
-        print(f"Filtered to {len(issues)} issues older than {min_age_days} days", file=sys.stderr)
+        click.echo(f"Filtered to {len(issues)} issues older than {min_age_days} days", err=True)
 
     # Find similar pairs
-    duplicates = []
-    seen = set()
+    duplicates: list[dict[str, Any]] = []
+    seen: set[tuple[int, int]] = set()
     total_comparisons = len(issues) * (len(issues) - 1) // 2
 
-    print(f"Comparing {len(issues)} issues ({total_comparisons:,} comparisons)...", file=sys.stderr)
+    click.echo(f"Comparing {len(issues)} issues ({total_comparisons:,} comparisons)...", err=True)
 
     with click.progressbar(
         length=total_comparisons, label="Finding duplicates", file=sys.stderr
@@ -80,8 +79,7 @@ def find_duplicates(
                     seen.add(pair)
 
     # Group similar issues together
-    groups = []
-    used = set()
+    groups: list[dict[str, Any]] = []
 
     for dup in sorted(duplicates, key=lambda x: x["similarity"], reverse=True):
         issue1, issue2 = dup["issues"]
@@ -122,7 +120,7 @@ def format_issue(issue: dict[str, Any]) -> str:
 
 def generate_report(groups: list[dict[str, Any]], output_file: str) -> None:
     """Generate markdown report of duplicate groups."""
-    output = []
+    output: list[str] = []
     output.append("# Potential Duplicate Issues\n")
 
     if not groups:
@@ -143,4 +141,4 @@ def generate_report(groups: list[dict[str, Any]], output_file: str) -> None:
 
     with open(output_file, "w") as f:
         f.write(report)
-    print(f"Report saved to {output_file}", file=sys.stderr)
+    click.echo(f"Report saved to {output_file}", err=True)

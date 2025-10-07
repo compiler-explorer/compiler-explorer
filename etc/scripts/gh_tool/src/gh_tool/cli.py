@@ -19,7 +19,7 @@ def main():
 @click.option(
     "--threshold",
     default=0.6,
-    type=float,
+    type=click.FloatRange(0, 1),
     help="Similarity threshold between 0 and 1 (default: 0.6)",
 )
 @click.option(
@@ -34,7 +34,19 @@ def main():
     type=int,
     help="Only check issues older than N days (default: 0)",
 )
-def find_duplicates_cmd(output_file, threshold, state, min_age):
+@click.option(
+    "--limit",
+    default=1000,
+    type=int,
+    help="Maximum number of issues to fetch (default: 1000)",
+)
+@click.option(
+    "--repo",
+    default="compiler-explorer/compiler-explorer",
+    type=str,
+    help="GitHub repository in owner/repo format (default: compiler-explorer/compiler-explorer)",
+)
+def find_duplicates_cmd(output_file, threshold, state, min_age, limit, repo):
     """Find potential duplicate issues in the compiler-explorer repository.
 
     OUTPUT_FILE is the path where the markdown report will be saved.
@@ -53,14 +65,9 @@ def find_duplicates_cmd(output_file, threshold, state, min_age):
         # Check all issues (including closed)
         gh_tool find-duplicates /tmp/all.md --state all
     """
-    # Validate threshold
-    if not (0 <= threshold <= 1):
-        click.echo("Error: threshold must be between 0 and 1", err=True)
-        sys.exit(1)
-
     # Fetch issues
     click.echo(f"Fetching {state} issues...", err=True)
-    issues = fetch_issues(state)
+    issues = fetch_issues(state, limit, repo)
 
     # Find duplicates
     click.echo(f"Analyzing {len(issues)} issues with threshold {threshold}...", err=True)

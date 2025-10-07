@@ -47,6 +47,9 @@ uv run gh_tool find-duplicates /tmp/high-confidence.md --threshold 0.85
 
 # Combine options
 uv run gh_tool find-duplicates /tmp/report.md --threshold 0.7 --state all --min-age 30
+
+# Use with a different repository
+uv run gh_tool find-duplicates /tmp/other-repo.md --repo owner/repository
 ```
 
 **Arguments:**
@@ -60,6 +63,8 @@ uv run gh_tool find-duplicates /tmp/report.md --threshold 0.7 --state all --min-
   - Higher values = fewer, more confident matches
 - `--state {all,open,closed}` - Which issues to check (default: open)
 - `--min-age DAYS` - Only check issues older than N days (default: 0)
+- `--limit INTEGER` - Maximum number of issues to fetch (default: 1000)
+- `--repo TEXT` - GitHub repository in owner/repo format (default: compiler-explorer/compiler-explorer)
 
 **Example Output:**
 
@@ -105,7 +110,7 @@ Run tests:
 
 ```bash
 uv sync --extra test
-uv run pytest test_duplicate_finder.py -v
+uv run pytest -v
 ```
 
 Run linting:

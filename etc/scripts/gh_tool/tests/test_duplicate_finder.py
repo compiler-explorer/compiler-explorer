@@ -28,7 +28,7 @@ from pathlib import Path
 
 import pytest
 
-from src.gh_tool.duplicate_finder import calculate_similarity, find_duplicates, generate_report
+from gh_tool.duplicate_finder import calculate_similarity, find_duplicates, generate_report
 
 
 def make_issue(number, title, created_at=None, comments=None):
@@ -50,30 +50,26 @@ def make_issue(number, title, created_at=None, comments=None):
 
 
 class TestCalculateSimilarity:
-    def test_identical_strings(self):
-        assert calculate_similarity("Add GCC 13", "Add GCC 13") == 1.0
-
-    def test_case_insensitive(self):
-        similarity = calculate_similarity("Add GCC 13", "add gcc 13")
-        assert similarity == 1.0
-
-    def test_completely_different(self):
-        similarity = calculate_similarity("Add GCC 13", "Python bug")
-        assert similarity < 0.3
-
-    def test_similar_titles(self):
-        similarity = calculate_similarity(
-            "[LIB REQUEST] numpy",
-            "[LIB REQUEST] NumPy"
-        )
-        assert similarity > 0.9
-
-    def test_partial_similarity(self):
-        similarity = calculate_similarity(
-            "Add GCC 13 support",
-            "Add GCC 14 support"
-        )
-        assert 0.7 < similarity < 1.0
+    @pytest.mark.parametrize(
+        "title1,title2,expected_min,expected_max",
+        [
+            # Identical strings
+            ("Add GCC 13", "Add GCC 13", 1.0, 1.0),
+            # Case insensitive
+            ("Add GCC 13", "add gcc 13", 1.0, 1.0),
+            # Completely different
+            ("Add GCC 13", "Python bug", 0.0, 0.3),
+            # Similar titles with different case
+            ("[LIB REQUEST] numpy", "[LIB REQUEST] NumPy", 0.9, 1.0),
+            # Partial similarity
+            ("Add GCC 13 support", "Add GCC 14 support", 0.7, 1.0),
+            # Different request types
+            ("[COMPILER REQUEST] foo", "[LIB REQUEST] foo", 0.5, 0.8),
+        ],
+    )
+    def test_similarity_calculation(self, title1, title2, expected_min, expected_max):
+        similarity = calculate_similarity(title1, title2)
+        assert expected_min <= similarity <= expected_max
 
 
 class TestFindDuplicates:
