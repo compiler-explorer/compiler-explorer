@@ -77,6 +77,14 @@ Found 5 potential duplicate groups:
 - #6526 [COMPILER REQUEST]: Groovy (1 comments, created 2023-08-15)
 ```
 
+**Performance:**
+
+The duplicate detection algorithm uses O(n²) pairwise comparisons. For reference:
+- ~850 issues: ~362,000 comparisons (~1-2 minutes)
+- ~1,000 issues: ~500,000 comparisons (~2-3 minutes)
+
+A progress bar shows real-time progress during the comparison phase.
+
 **Requirements:**
 
 - `gh` CLI must be installed and authenticated

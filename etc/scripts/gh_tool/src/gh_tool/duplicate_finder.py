@@ -6,9 +6,12 @@ import sys
 from collections import defaultdict
 from datetime import datetime, timedelta, timezone
 from difflib import SequenceMatcher
+from typing import Any
+
+import click
 
 
-def fetch_issues(state="open"):
+def fetch_issues(state: str = "open") -> list[dict[str, Any]]:
     """Fetch issues from GitHub using gh CLI."""
     print(f"Fetching {state} issues from GitHub...", file=sys.stderr)
 
@@ -33,12 +36,14 @@ def fetch_issues(state="open"):
         sys.exit(1)
 
 
-def calculate_similarity(title1, title2):
+def calculate_similarity(title1: str, title2: str) -> float:
     """Calculate similarity ratio between two titles using SequenceMatcher."""
     return SequenceMatcher(None, title1.lower(), title2.lower()).ratio()
 
 
-def find_duplicates(issues, threshold=0.6, min_age_days=0):
+def find_duplicates(
+    issues: list[dict[str, Any]], threshold: float = 0.6, min_age_days: int = 0
+) -> list[dict[str, Any]]:
     """Find potential duplicate issues based on title similarity."""
     # Filter issues by age if requested
     if min_age_days > 0:
@@ -54,31 +59,25 @@ def find_duplicates(issues, threshold=0.6, min_age_days=0):
     seen = set()
     total_comparisons = len(issues) * (len(issues) - 1) // 2
 
-    comparisons_done = 0
     print(f"Comparing {len(issues)} issues ({total_comparisons:,} comparisons)...", file=sys.stderr)
 
-    for i, issue1 in enumerate(issues):
-        for j, issue2 in enumerate(issues[i+1:], start=i+1):
-            comparisons_done += 1
+    with click.progressbar(
+        length=total_comparisons, label="Finding duplicates", file=sys.stderr
+    ) as bar:
+        for i, issue1 in enumerate(issues):
+            for j, issue2 in enumerate(issues[i + 1 :], start=i + 1):
+                bar.update(1)
 
-            # Progress reporting every 10000 comparisons
-            if comparisons_done % 10000 == 0:
-                progress = (comparisons_done / total_comparisons) * 100
-                print(f"Progress: {comparisons_done:,}/{total_comparisons:,} ({progress:.1f}%)", file=sys.stderr)
+                # Skip if already grouped
+                pair = tuple(sorted([issue1["number"], issue2["number"]]))
+                if pair in seen:
+                    continue
 
-            # Skip if already grouped
-            pair = tuple(sorted([issue1["number"], issue2["number"]]))
-            if pair in seen:
-                continue
+                similarity = calculate_similarity(issue1["title"], issue2["title"])
 
-            similarity = calculate_similarity(issue1["title"], issue2["title"])
-
-            if similarity >= threshold:
-                duplicates.append({
-                    "similarity": similarity,
-                    "issues": [issue1, issue2]
-                })
-                seen.add(pair)
+                if similarity >= threshold:
+                    duplicates.append({"similarity": similarity, "issues": [issue1, issue2]})
+                    seen.add(pair)
 
     # Group similar issues together
     groups = []
@@ -111,7 +110,7 @@ def find_duplicates(issues, threshold=0.6, min_age_days=0):
     return groups
 
 
-def format_issue(issue):
+def format_issue(issue: dict[str, Any]) -> str:
     """Format issue for display."""
     labels = ", ".join(l["name"] for l in issue["labels"]) if issue["labels"] else "no labels"
     created = issue["createdAt"][:10]
@@ -121,7 +120,7 @@ def format_issue(issue):
     return f"- #{issue['number']} {issue['title']} ({comment_count} comments, {state}, created {created})"
 
 
-def generate_report(groups, output_file):
+def generate_report(groups: list[dict[str, Any]], output_file: str) -> None:
     """Generate markdown report of duplicate groups."""
     output = []
     output.append("# Potential Duplicate Issues\n")
@@ -145,5 +144,3 @@ def generate_report(groups, output_file):
     with open(output_file, "w") as f:
         f.write(report)
     print(f"Report saved to {output_file}", file=sys.stderr)
-
-

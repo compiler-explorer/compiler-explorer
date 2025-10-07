@@ -10,14 +10,7 @@ uv.lock
 .venv/
 *.egg-info/
 
-# Generated files
-*.json
-*.md
-!README.md
-
 # IDE
 .vscode/
 .idea/
-*.sw
-
-p
+*.swp
