@@ -23,7 +23,7 @@
 # POSSIBILITY OF SUCH DAMAGE.
 
 import tempfile
-from datetime import datetime, timedelta, timezone
+from datetime import UTC, datetime, timedelta
 from pathlib import Path
 
 import pytest
@@ -34,7 +34,7 @@ from gh_tool.duplicate_finder import calculate_similarity, find_duplicates, gene
 def make_issue(number, title, created_at=None, comments=None):
     """Helper to create test issue data."""
     if created_at is None:
-        created_at = datetime.now(timezone.utc).isoformat()
+        created_at = datetime.now(UTC).isoformat()
     if comments is None:
         comments = []
 
@@ -63,8 +63,8 @@ class TestCalculateSimilarity:
             ("[LIB REQUEST] numpy", "[LIB REQUEST] NumPy", 0.9, 1.0),
             # Partial similarity
             ("Add GCC 13 support", "Add GCC 14 support", 0.7, 1.0),
-            # Different request types
-            ("[COMPILER REQUEST] foo", "[LIB REQUEST] foo", 0.5, 0.8),
+            # Different request types but same content (tags stripped)
+            ("[COMPILER REQUEST] foo", "[LIB REQUEST] foo", 1.0, 1.0),
         ],
     )
     def test_similarity_calculation(self, title1, title2, expected_min, expected_max):
@@ -119,7 +119,7 @@ class TestFindDuplicates:
         assert max_group_size >= 2
 
     def test_age_filtering(self):
-        now = datetime.now(timezone.utc)
+        now = datetime.now(UTC)
         old_date = (now - timedelta(days=100)).isoformat()
         recent_date = (now - timedelta(days=5)).isoformat()
 
@@ -154,7 +154,7 @@ class TestFindDuplicates:
 
 class TestGenerateReport:
     def test_empty_report(self):
-        with tempfile.NamedTemporaryFile(mode='w', delete=False, suffix='.md') as f:
+        with tempfile.NamedTemporaryFile(mode="w", delete=False, suffix=".md") as f:
             output_file = f.name
 
         try:
@@ -175,7 +175,7 @@ class TestGenerateReport:
             }
         ]
 
-        with tempfile.NamedTemporaryFile(mode='w', delete=False, suffix='.md') as f:
+        with tempfile.NamedTemporaryFile(mode="w", delete=False, suffix=".md") as f:
             output_file = f.name
 
         try:
