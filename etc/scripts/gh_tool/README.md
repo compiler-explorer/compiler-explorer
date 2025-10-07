@@ -9,7 +9,7 @@ This project uses [`uv`](https://docs.astral.sh/uv/) for Python version and depe
 Install dependencies:
 
 ```bash
-cd /home/matthew/dev/ce/compiler-explorer/etc/scripts/gh_tool
+cd etc/scripts/gh_tool
 uv sync
 ```
 
@@ -18,7 +18,7 @@ uv sync
 Run from the gh_tool directory:
 
 ```bash
-cd /home/matthew/dev/ce/compiler-explorer/etc/scripts/gh_tool
+cd etc/scripts/gh_tool
 
 # Get help
 uv run gh_tool --help
