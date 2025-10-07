@@ -66,7 +66,7 @@ export class Win32VcCompiler extends Win32Compiler {
             // SDK structure: Z:\compilers\windows-kits-10\bin\rc.exe
             const includePathMatch = this.compiler.includePath.match(/([^;]+windows-kits-[^;]+)/i);
             if (includePathMatch) {
-                const sdkPath = includePathMatch[1].split(/[\/\\]include/i)[0];
+                const sdkPath = includePathMatch[1].split(/[/\\]include/i)[0];
                 const rcExe = path.join(sdkPath, 'bin', 'rc.exe').replace(/\\/g, '/');
                 const mtExe = path.join(sdkPath, 'bin', 'mt.exe').replace(/\\/g, '/');
                 args.push(`-DCMAKE_RC_COMPILER=${rcExe}`);

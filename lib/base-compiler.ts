@@ -2734,7 +2734,7 @@ export class BaseCompiler {
         const outputFilename = this.getExecutableFilename(path.join(dirPath, 'build'), this.outputFilebase, cacheKey);
 
         let fullResult: CompilationResult = bypassCompilationCache(bypassCache)
-            ? null
+            ? undefined
             : await this.loadPackageWithExecutable(cacheKey, executablePackageHash, dirPath);
         if (fullResult) {
             fullResult.retreivedFromCache = true;
@@ -2745,7 +2745,7 @@ export class BaseCompiler {
             fullResult.executableFilename = outputFilename;
         } else {
             const queueTime = performance.now();
-            fullResult = await this.env.enqueue(async () => {
+            const moreResult = await this.env.enqueue(async () => {
                 const start = performance.now();
                 compilationQueueTimeHistogram.observe((start - queueTime) / 1000);
 
@@ -2867,6 +2867,8 @@ export class BaseCompiler {
                 compilationTimeHistogram.observe((performance.now() - start) / 1000);
                 return result;
             });
+
+            if (moreResult) fullResult = moreResult;
         }
 
         if (fullResult.result) {
@@ -2889,12 +2891,15 @@ export class BaseCompiler {
                                     const subFiles = await fs.readdir(fullPath);
                                     logger.info(`  Contents of ${file}/:`, subFiles);
                                 }
-                            } catch (e) {
+                            } catch (_e) {
                                 // Ignore errors reading subdirectories
                             }
                         }
                     } catch (e) {
-                        logger.info(`Executable not found: ${outputFilename}. Could not list directory ${buildDir}:`, e);
+                        logger.info(
+                            `Executable not found: ${outputFilename}. Could not list directory ${buildDir}:`,
+                            e,
+                        );
                     }
                     fullResult.execResult = {
                         code: -1,
