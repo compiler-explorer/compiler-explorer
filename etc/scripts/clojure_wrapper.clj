@@ -9,10 +9,12 @@
   "Compiler options supported:
    --disable-locals-clearing - Eliminates instructions setting locals to null
    --direct-linking - Eliminates var indirection in fn invocation
-   --elide-meta \"[:doc :arglists ...]\" - Drops metadata keys from classfiles ")
+   --elide-meta \"[:doc :arglists ...]\" - Drops metadata keys from classfiles
+   --omit-macro-meta - Omit metadata from macro-expanded output")
 
 (defn parse-command-line []
   (loop [params {}
+         macro-params {}
          positional []
          args *command-line-args*]
     (if (seq args)
@@ -23,17 +25,21 @@
             (println help-text)
             (System/exit 1))
 
-          (re-matches #"-?-gen-meta" arg)
-          (recur (assoc params :gen-meta true)
+          (re-matches #"-?-macro-expand" arg)
+          (recur params (assoc macro-params :macro-expand true)
+                 positional (rest args))
+
+          (re-matches #"-?-omit-macro-meta" arg)
+          (recur params (assoc macro-params :print-meta false)
                  positional (rest args))
 
           (re-matches #"-?-disable-locals-clearing" arg)
           (recur (assoc params :disable-locals-clearing true)
-                 positional (rest args))
+                 macro-params positional (rest args))
 
           (re-matches #"-?-direct-linking" arg)
           (recur (assoc params :direct-linking true)
-                 positional (rest args))
+                 macro-params positional (rest args))
 
           (re-matches #"-?-elide-meta" arg)
           (let [elisions (some-> args second read-string)]
@@ -43,7 +49,7 @@
                        "Must be a string representing a vector of keywords, like \"[:keyword1 :keyword2]\"")
               (System/exit 1))
             (recur (assoc params :elide-meta elisions)
-                   positional (drop 2 args)))
+                   macro-params positional (drop 2 args)))
 
           (re-matches #"-?-.*" arg)
           (do
@@ -52,8 +58,8 @@
             (System/exit 1))
 
           :else
-          (recur params (conj positional arg) (rest args))))
-      [params positional])))
+          (recur params macro-params (conj positional arg) (rest args))))
+      [params macro-params positional])))
 
 (defn forms [input-file]
   (with-open [rdr (-> input-file io/reader PushbackReader.)]
@@ -80,7 +86,7 @@
 (defn path-of-file [file]
   (.getParent file))
 
-(let [[compiler-options positional] (parse-command-line)
+(let [[compiler-options macro-params positional] (parse-command-line)
       input-file (io/file (first positional))
       working-dir (path-of-file input-file)
       namespace (read-namespace input-file)
@@ -89,12 +95,14 @@
       compile-filename (io/file working-dir (ns->filename namespace))
       compile-path (path-of-file compile-filename)]
 
-  (when (:gen-meta compiler-options)
+  (when (:macro-expand macro-params)
     (binding [clojure.pprint/*print-pprint-dispatch* clojure.pprint/code-dispatch
               clojure.pprint/*print-right-margin* 60
-              clojure.pprint/*print-miser-width* 20]
+              clojure.pprint/*print-miser-width* 20
+              *print-meta* (:print-meta macro-params true)]
       (doseq [form (forms input-file)]
-        (pp/pprint (walk/macroexpand-all form))))
+        (pp/pprint (walk/macroexpand-all form))
+        (println)))
     (System/exit 0))
 
   (println "Available compiler options: --help --disable-locals-clearing --direct-linking --elide-meta \"[:doc :line]\"")

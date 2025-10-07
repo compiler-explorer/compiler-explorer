@@ -130,12 +130,21 @@ export class ClojureCompiler extends JavaCompiler {
     }
 
     override async generateClojureMacroExpansion(inputFilename: string, options: string[]): Promise<ResultLine[]> {
-        const clojureOptions = ["--gen-meta", inputFilename];
-        const output = await this.runCompiler(this.compiler.exe, clojureOptions, inputFilename, this.getDefaultExecOptions());
+        // The items in 'options' before the source file are user inputs.
+        const sourceFileOptionIndex = options.findIndex(option => {
+            return option.endsWith('.clj');
+        });
+        const userOptions = options.slice(0, sourceFileOptionIndex);
+        const clojureOptions = _.compact([...userOptions, '--macro-expand', inputFilename]);
+        const output = await this.runCompiler(
+            this.compiler.exe,
+            clojureOptions,
+            inputFilename,
+            this.getDefaultExecOptions(),
+        );
         if (output.code !== 0) {
             return [{text: `Failed to run compiler to get Clojure Macro Expansion`}];
         }
         return output.stdout;
     }
-
 }
