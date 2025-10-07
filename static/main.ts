@@ -781,6 +781,8 @@ function start() {
     setupSiteTemplateWidgetButton(layout);
     if (!options.embedded) new Sharing(layout);
     new Printerinator(hub, themer);
+
+    hub.layout.eventHub.emit('settingsChange', settings); // Ensure everyone knows the settings
 }
 
 $(start);
