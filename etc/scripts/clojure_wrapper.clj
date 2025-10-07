@@ -23,7 +23,7 @@
           "--help"
           (do
             (println help-text)
-            (System/exit 0))
+            (System/exit 1))
 
           "--macro-expand"
           (recur params (assoc macro-params :macro-expand true)

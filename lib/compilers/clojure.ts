@@ -65,8 +65,7 @@ export class ClojureCompiler extends JavaCompiler {
 
     override filterUserOptions(userOptions: string[]) {
         // filter options without extra arguments
-        const filterOut = ['--macro-expand', '--help'];
-        return userOptions.filter(option => !filterOut.includes(option));
+        return userOptions.filter(option => option !== '--macro-expand');
     }
 
     override optionsForFilter(filters: ParseFiltersAndOutputOptions) {
