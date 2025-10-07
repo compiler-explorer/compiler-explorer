@@ -9,10 +9,6 @@ description = "GitHub automation tool for Compiler Explorer"
 requires-python = ">=3.12"
 dependencies = [
     "click>=8.1.0",
-]
-
-[project.optional-dependencies]
-test = [
     "pytest>=8.0.0",
 ]
 
