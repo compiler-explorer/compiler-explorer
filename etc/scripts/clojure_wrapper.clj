@@ -16,48 +16,46 @@
   (loop [params {}
          macro-params {}
          positional []
+         ignored []
          args *command-line-args*]
-    (if (seq args)
-      (let [arg (first args)]
-        (condp = arg
-          "--help"
-          (do
-            (println help-text)
+    (if-let [arg (first args)]
+      (condp = arg
+        "--help"
+        (do
+          (println help-text)
+          (System/exit 1))
+
+        "--macro-expand"
+        (recur params (assoc macro-params :macro-expand true)
+               positional ignored (rest args))
+
+        "--omit-macro-meta"
+        (recur params (assoc macro-params :print-meta false)
+               positional ignored (rest args))
+
+        "--disable-locals-clearing"
+        (recur (assoc params :disable-locals-clearing true)
+               macro-params positional ignored (rest args))
+
+        "--direct-linking"
+        (recur (assoc params :direct-linking true)
+               macro-params positional ignored (rest args))
+
+        "--elide-meta"
+        (let [elisions (some-> args second read-string)]
+          (when-not (and (sequential? elisions)
+                         (every? keyword? elisions))
+            (println (str "Invalid elide-meta parameter: '" (second args) "'\n")
+                     "Must be a string representing a vector of keywords, like \"[:keyword1 :keyword2]\"")
             (System/exit 1))
+          (recur (assoc params :elide-meta elisions)
+                 macro-params positional ignored (drop 2 args)))
 
-          "--macro-expand"
-          (recur params (assoc macro-params :macro-expand true)
-                 positional (rest args))
-
-          "--omit-macro-meta"
-          (recur params (assoc macro-params :print-meta false)
-                 positional (rest args))
-
-          "--disable-locals-clearing"
-          (recur (assoc params :disable-locals-clearing true)
-                 macro-params positional (rest args))
-
-          "--direct-linking"
-          (recur (assoc params :direct-linking true)
-                 macro-params positional (rest args))
-
-          "--elide-meta"
-          (let [elisions (some-> args second read-string)]
-            (when-not (and (sequential? elisions)
-                           (every? keyword? elisions))
-              (println (str "Invalid elide-meta parameter: '" (second args) "'\n")
-                       "Must be a string representing a vector of keywords, like \"[:keyword1 :keyword2]\"")
-              (System/exit 1))
-            (recur (assoc params :elide-meta elisions)
-                   macro-params positional (drop 2 args)))
-
-          (if (re-matches #"-.*" arg)
-            (do
-              (println "Invaliid compiler parameter:" arg)
-              (println help-text)
-              (System/exit 1))
-            (recur params macro-params (conj positional arg) (rest args)))))
-      [params macro-params positional])))
+        (if (or (re-matches #"-.*" arg)
+                (not (re-matches #".*\.clj" arg)))
+          (recur params macro-params positional (conj ignored arg) (rest args))
+          (recur params macro-params (conj positional arg) ignored (rest args))))
+      [params macro-params positional ignored])))
 
 (defn forms [input-file]
   (with-open [rdr (-> input-file io/reader PushbackReader.)]
@@ -110,13 +108,22 @@
           (.write out ns-form)))
       (io/copy input-file out))
 
-    (println "Available compiler options: --help --disable-locals-clearing --direct-linking --elide-meta \"[:doc :line]\"")
+    ;; The parameters parsed by the wrapper are not documented elsewhere.
+    ;; Print them out in compiler output to make it possible for users to
+    ;; discover them.
+    (println help-text)
     (println "Binding *compiler-options* to" compiler-options)
     (binding [*compiler-options* compiler-options]
       (compile (symbol namespace)))))
 
-(let [[compiler-options macro-params positional] (parse-command-line)
+(let [[compiler-options macro-params positional ignored] (parse-command-line)
       input-file (io/file (first positional))]
   (if (:macro-expand macro-params)
     (print-macro-expanson input-file macro-params)
-    (compile-input input-file compiler-options)))
+    (let [count-ignored (count ignored)]
+      (doseq [param ignored]
+        (println (format "unrecognized option '%s' ignored" param)))
+      (when (pos-int? count-ignored)
+        (println (format "%d warning%s found" count-ignored
+                         (if (= 1 count-ignored) "" "s"))))
+      (compile-input input-file compiler-options))))
