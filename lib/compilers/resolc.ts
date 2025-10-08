@@ -98,11 +98,6 @@ export class ResolcCompiler extends BaseCompiler {
     override optionsForFilter(filters: ParseFiltersAndOutputOptions): string[] {
         // For RISC-V output the binary object will be passed to the llvm objdumper.
         filters.binaryObject = this.outputIs(OutputKind.RiscV);
-        // Keep the PolkaVM assembly header comments, such as the number of instructions and code size.
-        filters.commentOnly = false;
-        // Skip library code since thousands of lines of RISC-V may be generated depending on
-        // the optimization level, causing truncation.
-        filters.libraryCode = true;
         // Disable Intel asm syntax option.
         filters.intel = false;
 
