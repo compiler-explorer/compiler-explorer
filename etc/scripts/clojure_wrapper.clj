@@ -7,10 +7,10 @@
 
 (def help-text
   "Compiler options supported:
-   --disable-locals-clearing - Eliminates instructions setting locals to null
-   --direct-linking - Eliminates var indirection in fn invocation
-   --elide-meta \"[:doc :arglists ...]\" - Drops metadata keys from classfiles
-   --omit-macro-meta - Omit metadata from macro-expanded output")
+   -dl  --direct-linking - Eliminates var indirection in fn invocation
+   -dlc --disable-locals-clearing - Eliminates instructions setting locals to null
+   -em  --elide-meta \"[:doc :arglists ...]\" - Drops metadata keys from classfiles
+   -omm --omit-macro-meta - Omit metadata from macro-expanded output")
 
 (defn parse-command-line []
   (loop [params {}
@@ -19,7 +19,7 @@
          ignored []
          args *command-line-args*]
     (if-let [arg (first args)]
-      (condp = arg
+      (case arg
         "--help"
         (do
           (println help-text)
@@ -29,19 +29,19 @@
         (recur params (assoc macro-params :macro-expand true)
                positional ignored (rest args))
 
-        "--omit-macro-meta"
+        ("-omm" "--omit-macro-meta")
         (recur params (assoc macro-params :print-meta false)
                positional ignored (rest args))
 
-        "--disable-locals-clearing"
+        ("-dlc" "--disable-locals-clearing")
         (recur (assoc params :disable-locals-clearing true)
                macro-params positional ignored (rest args))
 
-        "--direct-linking"
+        ("-dl" "--direct-linking")
         (recur (assoc params :direct-linking true)
                macro-params positional ignored (rest args))
 
-        "--elide-meta"
+        ("-em" "--elide-meta")
         (let [elisions (some-> args second read-string)]
           (when-not (and (sequential? elisions)
                          (every? keyword? elisions))
