@@ -26,7 +26,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 
 import type {ParsedAsmResult, ParsedAsmResultLine} from '../../types/asmresult/asmresult.interfaces.js';
-import type {CompilerInfo} from '../../types/compiler.interfaces.js';
+import type {CompilationResult} from '../../types/compilation/compilation.interfaces.js';
 import type {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces.js';
 import type {Language} from '../../types/languages.interfaces.js';
 import {assert} from '../assert.js';
@@ -51,10 +51,6 @@ enum InputKind {
 
 /**
  * The kind of output requested by the user.
- * This is determined by the specific compiler chosen.
- *
- * @note
- * The enum value must exist within the {@link CompilerInfo.name} (case insensitive).
  */
 enum OutputKind {
     PolkaVM = 'pvm',
@@ -65,6 +61,8 @@ export class ResolcCompiler extends BaseCompiler {
     static get key() {
         return 'resolc';
     }
+
+    private readonly pvmAsmParser: PolkaVMAsmParser;
 
     /**
      * @note
@@ -77,9 +75,8 @@ export class ResolcCompiler extends BaseCompiler {
     constructor(...args: ConstructorParameters<typeof BaseCompiler>) {
         super(...args);
 
-        this.asm = this.outputIs(OutputKind.PolkaVM)
-            ? new PolkaVMAsmParser()
-            : new ResolcRiscVAsmParser(this.compilerProps);
+        this.asm = new ResolcRiscVAsmParser(this.compilerProps);
+        this.pvmAsmParser = new PolkaVMAsmParser();
 
         // The arg producing LLVM IR (among other output) is already
         // included in optionsForFilter(), but irArg needs to be set.
@@ -96,8 +93,7 @@ export class ResolcCompiler extends BaseCompiler {
     }
 
     override optionsForFilter(filters: ParseFiltersAndOutputOptions): string[] {
-        // For RISC-V output the binary object will be passed to the llvm objdumper.
-        filters.binaryObject = this.outputIs(OutputKind.RiscV);
+        filters.binaryObject = this.reinterpretBinaryObjectFilter(filters.binaryObject);
         // Disable Intel asm syntax option.
         filters.intel = false;
 
@@ -135,13 +131,23 @@ export class ResolcCompiler extends BaseCompiler {
         return path.join(dirPath, `artifacts/${basename}`);
     }
 
+    override async processAsm(
+        result: CompilationResult,
+        filters: ParseFiltersAndOutputOptions,
+    ): Promise<ParsedAsmResult> {
+        return this.outputIs(OutputKind.PolkaVM, filters)
+            ? this.pvmAsmParser.process(result.asm as string, filters)
+            : this.asm.process(result.asm as string, filters);
+    }
+
     override async postProcessAsm(
         result: ParsedAsmResult,
         filters?: ParseFiltersAndOutputOptions,
     ): Promise<ParsedAsmResult> {
         result = await super.postProcessAsm(result, filters);
         result = this.removeOrphanedLabels(result, filters);
-        this.maybeRemoveSourceMappings(result);
+        this.maybeRemoveSourceMappings(result, filters);
+        this.addOutputHeader(result, filters);
 
         return result;
     }
@@ -167,7 +173,7 @@ export class ResolcCompiler extends BaseCompiler {
      */
     private removeOrphanedLabels(result: ParsedAsmResult, filters?: ParseFiltersAndOutputOptions): ParsedAsmResult {
         // Orphaned RISC-V labels may be produced by the AsmParser when library code is skipped.
-        if (!this.outputIs(OutputKind.RiscV) || !filters?.libraryCode || !result.labelDefinitions) {
+        if (!this.outputIs(OutputKind.RiscV, filters) || !filters?.libraryCode || !result.labelDefinitions) {
             return result;
         }
 
@@ -187,11 +193,11 @@ export class ResolcCompiler extends BaseCompiler {
      * Current source mappings from RISC-V only map to the Yul line numbers. When
      * a Solidity source file is used, the mappings shown in CE are thus misleading.
      */
-    private maybeRemoveSourceMappings(result: ParsedAsmResult): void {
+    private maybeRemoveSourceMappings(result: ParsedAsmResult, filters?: ParseFiltersAndOutputOptions): void {
         const inputIsSolidity = this.inputIs(InputKind.Solidity);
         const {asm, labelDefinitions} = result;
 
-        if (this.outputIs(OutputKind.RiscV)) {
+        if (this.outputIs(OutputKind.RiscV, filters)) {
             for (const line of asm) {
                 if (inputIsSolidity) {
                     line.source = null;
@@ -220,8 +226,29 @@ export class ResolcCompiler extends BaseCompiler {
     /**
      * Whether the provided output kind matches the output requested.
      */
-    private outputIs(kind: OutputKind): boolean {
-        return this.compiler.name.toLowerCase().includes(kind.valueOf().toLowerCase());
+    private outputIs(kind: OutputKind, filters?: ParseFiltersAndOutputOptions): boolean {
+        switch (kind) {
+            case OutputKind.PolkaVM:
+                return !filters?.binaryObject;
+            case OutputKind.RiscV:
+                return !!filters?.binaryObject;
+            default:
+                throw new Error('Unexpected output kind.');
+        }
+    }
+
+    /**
+     * Reinterpret the user-provided binary object filter to show the PolkaVM
+     * assembly if selected, otherwise the RISC-V assembly.
+     *
+     * Users who select "Compile to binary object" should see the disassembled
+     * PVM plob and not RISC-V. However, to see the RISC-V output, the binary
+     * object filter needs to be reset to `true` in order to pass the binary
+     * object (which will exist after compilation) to the objdumper during
+     * post-processing of the compilation result.
+     */
+    private reinterpretBinaryObjectFilter(binaryObjectFilter?: boolean): boolean {
+        return !binaryObjectFilter;
     }
 
     /**
@@ -258,5 +285,24 @@ export class ResolcCompiler extends BaseCompiler {
         assert(match?.groups?.name, 'Expected to find a contract name in the source file.');
 
         return match.groups.name;
+    }
+
+    private addOutputHeader(result: ParsedAsmResult, filters?: ParseFiltersAndOutputOptions): void {
+        const pvmHeader =
+            '// PolkaVM Assembly:\n' +
+            '// --------------------------\n' +
+            '// To instead see the RISC-V assembly,\n' +
+            '// enable "Compile to binary object".\n' +
+            '// --------------------------';
+
+        const riscvHeader =
+            '; RISC-V (64 bits) Assembly:\n' +
+            '; --------------------------\n' +
+            '; To instead see the PolkaVM assembly,\n' +
+            '; disable "Compile to binary object".\n' +
+            '; --------------------------';
+
+        const header = this.outputIs(OutputKind.PolkaVM, filters) ? pvmHeader : riscvHeader;
+        result.asm.unshift(...header.split('\n').map(line => ({text: line})));
     }
 }

@@ -27,7 +27,7 @@ import {beforeAll, describe, expect, it} from 'vitest';
 import type {CompilationEnvironment} from '../lib/compilation-env.js';
 import {ResolcParser} from '../lib/compilers/argument-parsers.js';
 import {ResolcCompiler} from '../lib/compilers/index.js';
-import type {ParsedAsmResult} from '../types/asmresult/asmresult.interfaces.js';
+import type {ParsedAsmResult, ParsedAsmResultLine} from '../types/asmresult/asmresult.interfaces.js';
 import type {CompilerInfo} from '../types/compiler.interfaces.js';
 import type {ParseFiltersAndOutputOptions} from '../types/features/filters.interfaces.js';
 import type {LanguageKey} from '../types/languages.interfaces.js';
@@ -64,7 +64,6 @@ describe('Resolc', () => {
         const compilerInfo = {
             exe: 'resolc',
             lang: languages.solidity.id,
-            name: 'resolc 0.4.0 (RISC-V 64-bits)',
         };
 
         it('should instantiate successfully', () => {
@@ -106,6 +105,17 @@ describe('Resolc', () => {
                 binaryObject: true,
                 libraryCode: true,
             };
+
+            function getExpectedParsedOutputHeader(): ParsedAsmResultLine[] {
+                const header =
+                    '; RISC-V (64 bits) Assembly:\n' +
+                    '; --------------------------\n' +
+                    '; To instead see the PolkaVM assembly,\n' +
+                    '; disable "Compile to binary object".\n' +
+                    '; --------------------------';
+
+                return header.split('\n').map(line => ({text: line}));
+            }
 
             it('should remove orphaned labels', async () => {
                 const compiler = makeCompiler(compilerInfo);
@@ -154,6 +164,7 @@ describe('Resolc', () => {
 
                 const expected: ParsedAsmResult = {
                     asm: [
+                        ...getExpectedParsedOutputHeader(),
                         {
                             text: '__entry:',
                         },
@@ -211,6 +222,7 @@ describe('Resolc', () => {
 
                 const expected: ParsedAsmResult = {
                     asm: [
+                        ...getExpectedParsedOutputHeader(),
                         {
                             text: '.Lpcrel_hi4:',
                             source: null,
@@ -245,7 +257,6 @@ describe('Resolc', () => {
         const compilerInfo = {
             exe: 'resolc',
             lang: languages.yul.id,
-            name: 'resolc 0.4.0 (RISC-V 64-bits)',
         };
 
         it('should instantiate successfully', () => {

@@ -91,10 +91,6 @@ export class InstructionSets {
                 target: ['powerpc', 'ppc64', 'ppc'],
                 path: ['/powerpc-', '/powerpc64-', '/powerpc64le-'],
             },
-            pvm: {
-                target: [],
-                path: [],
-            },
             riscv64: {
                 target: ['rv64', 'riscv64'],
                 path: ['/riscv64-'],
