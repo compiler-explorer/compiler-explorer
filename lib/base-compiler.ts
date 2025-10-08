@@ -2079,7 +2079,6 @@ export class BaseCompiler {
         } catch (err) {
             logger.error('Caught an error trying to put to cache: ', {err});
         } finally {
-            logger.info(`storePackageWithExecutable: Removing pack directory ${packDir}`);
             fs.rm(packDir, {recursive: true, force: true}).catch(() => {});
         }
     }
@@ -2877,30 +2876,6 @@ export class BaseCompiler {
             if (doExecute && fullResult.result.code === 0) {
                 // Check if executable exists before trying to run it
                 if (!(await utils.fileExists(outputFilename))) {
-                    const buildDir = path.dirname(outputFilename);
-                    try {
-                        const files = await fs.readdir(buildDir);
-                        logger.info(`Executable not found: ${outputFilename}. Files in ${buildDir}:`, files);
-
-                        // List contents of subdirectories to help diagnose where the executable actually is
-                        for (const file of files) {
-                            const fullPath = path.join(buildDir, file);
-                            try {
-                                const stat = await fs.stat(fullPath);
-                                if (stat.isDirectory()) {
-                                    const subFiles = await fs.readdir(fullPath);
-                                    logger.info(`  Contents of ${file}/:`, subFiles);
-                                }
-                            } catch (_e) {
-                                // Ignore errors reading subdirectories
-                            }
-                        }
-                    } catch (e) {
-                        logger.info(
-                            `Executable not found: ${outputFilename}. Could not list directory ${buildDir}:`,
-                            e,
-                        );
-                    }
                     fullResult.execResult = {
                         code: -1,
                         okToCache: false,
