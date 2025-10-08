@@ -64,8 +64,13 @@ export class ClojureCompiler extends JavaCompiler {
     }
 
     override filterUserOptions(userOptions: string[]) {
-        // filter options without extra arguments
-        return userOptions.filter(option => option !== '--macro-expand');
+        return userOptions.filter(option => {
+            // Filter out anything that looks like a Clojure source file
+            // that would confuse the wrapper.
+            // Also, don't allow users to specify macro expansion mode used
+            // internally.
+            return !option.match(/^.*\.clj$/) && option !== '--macro-expand';
+        });
     }
 
     override optionsForFilter(filters: ParseFiltersAndOutputOptions) {
