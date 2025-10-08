@@ -94,7 +94,6 @@ export class ResolcCompiler extends BaseCompiler {
 
     override optionsForFilter(filters: ParseFiltersAndOutputOptions): string[] {
         filters.binaryObject = this.reinterpretBinaryObjectFilter(filters.binaryObject);
-        // Disable Intel asm syntax option.
         filters.intel = false;
 
         const options = ['-g', '--solc', ResolcCompiler.solcExe, '--overwrite', '--debug-output-dir', 'artifacts'];
