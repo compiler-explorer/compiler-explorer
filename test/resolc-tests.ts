@@ -128,8 +128,8 @@ describe('Resolc', () => {
                 const header =
                     '; RISC-V (64 bits) Assembly:\n' +
                     '; --------------------------\n' +
-                    '; To instead see the PolkaVM assembly,\n' +
-                    '; disable "Compile to binary object".\n' +
+                    '; To see the PolkaVM assembly instead,\n' +
+                    '; enable "Compile to binary object".\n' +
                     '; --------------------------';
 
                 return header.split('\n').map(line => ({text: line}));

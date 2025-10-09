@@ -301,15 +301,15 @@ export class ResolcCompiler extends BaseCompiler {
         const pvmHeader =
             '// PolkaVM Assembly:\n' +
             '// --------------------------\n' +
-            '// To instead see the RISC-V assembly,\n' +
-            '// enable "Compile to binary object".\n' +
+            '// To see the RISC-V assembly instead,\n' +
+            '// disable "Compile to binary object".\n' +
             '// --------------------------';
 
         const riscvHeader =
             '; RISC-V (64 bits) Assembly:\n' +
             '; --------------------------\n' +
-            '; To instead see the PolkaVM assembly,\n' +
-            '; disable "Compile to binary object".\n' +
+            '; To see the PolkaVM assembly instead,\n' +
+            '; enable "Compile to binary object".\n' +
             '; --------------------------';
 
         const header = this.outputIs(OutputKind.PolkaVM, filters) ? pvmHeader : riscvHeader;
