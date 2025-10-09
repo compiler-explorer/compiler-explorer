@@ -36,10 +36,25 @@ import {AsmRegex} from './asmregex.js';
  * There are currently no source mappings from PolkaVM.
  */
 export class PolkaVMAsmParser implements IAsmParser {
+    /**
+     * @example `    64: ra = 6, jump @42`
+     */
     protected instructionRe = /^\s+(?<address>\d+):\s+(?<disasm>.*)$/;
+    /**
+     * @example `<deploy>:`
+     */
     protected labelRe = /^<(?<label>[^\s\n]+)>:$/;
+    /**
+     * @example `// Stack size = 32768 bytes`
+     */
     protected headerCommentRe = /^\/\//;
+    /**
+     * @example `      // This is a comment`
+     */
     protected commentOnlyRe = /^\s*\/\//;
+    /**
+     * @example `      : @16 (gas: 5)`
+     */
     protected jumpTargetRe = /^\s*: (?<targetLine>@\d+.*)$/;
     protected maxAsmLines = 5000;
     protected indentation = '        ';

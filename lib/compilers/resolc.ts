@@ -254,8 +254,8 @@ export class ResolcCompiler extends BaseCompiler {
      * Users who select "Compile to binary object" should see the disassembled
      * PVM plob and not RISC-V. However, to see the RISC-V output, the binary
      * object filter needs to be reset to `true` in order to pass the binary
-     * object (which will exist after compilation) to the objdumper during
-     * post-processing of the compilation result.
+     * object (which will already exist after the first compilation) to the
+     * objdumper during post-processing of the compilation result.
      */
     private reinterpretBinaryObjectFilter(binaryObjectFilter?: boolean): boolean {
         return !binaryObjectFilter;
