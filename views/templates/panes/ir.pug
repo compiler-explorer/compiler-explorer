@@ -19,6 +19,7 @@ mixin optionButton(bind, isActive, text, title)
       .dropdown-menu
         +optionButton("demangle-symbols", true, "Demangle Symbols", "Demangle symbols")
         +optionButton("-fno-discard-value-names", true, "-fno-discard-value-names", "Keep value names instead of LLVM value numbers")
+        +optionButton("show-optimized", true, "Show Optimized", "Show the optimized LLVM IR output")
     .btn-group.btn-group-sm.filters(role="group")
       button.btn.btn-sm.btn-light.dropdown-toggle(type="button" title="LLVM Opt Pass Filters" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false" aria-label="Set output filters")
         span.fas.fa-filter

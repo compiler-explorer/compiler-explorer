@@ -40,6 +40,11 @@ import {AsmEWAVRParser} from '../lib/parsers/asm-parser-ewavr.js';
 import {PTXAsmParser} from '../lib/parsers/asm-parser-ptx.js';
 import {SassAsmParser} from '../lib/parsers/asm-parser-sass.js';
 import {VcAsmParser} from '../lib/parsers/asm-parser-vc.js';
+import {CompilerProps, fakeProps} from '../lib/properties.js';
+import {LLVMIrBackendOptions} from '../types/compilation/ir.interfaces.js';
+import {CompilerInfo} from '../types/compiler.interfaces.js';
+import {ParseFiltersAndOutputOptions} from '../types/features/filters.interfaces.js';
+import {Language} from '../types/languages.interfaces.js';
 
 // Test helper class that extends AsmParser to allow setting protected properties for testing
 class AsmParserForTest extends AsmParser {
@@ -47,11 +52,6 @@ class AsmParserForTest extends AsmParser {
         this.binaryHideFuncRe = regex;
     }
 }
-
-import {CompilerProps, fakeProps} from '../lib/properties.js';
-import {CompilerInfo} from '../types/compiler.interfaces.js';
-import {ParseFiltersAndOutputOptions} from '../types/features/filters.interfaces.js';
-import {Language} from '../types/languages.interfaces.js';
 
 function ensureTempCleanup() {
     // Sometimes we're called from inside a test, sometimes from outside. Handle both.
@@ -83,6 +83,10 @@ export function makeFakeParseFiltersAndOutputOptions(
     options: Partial<ParseFiltersAndOutputOptions>,
 ): ParseFiltersAndOutputOptions {
     return options as ParseFiltersAndOutputOptions;
+}
+
+export function makeFakeLlvmIrBackendOptions(options: Partial<LLVMIrBackendOptions>): LLVMIrBackendOptions {
+    return options as LLVMIrBackendOptions;
 }
 
 // This combines a should assert and a type guard

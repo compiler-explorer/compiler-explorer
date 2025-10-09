@@ -27,6 +27,7 @@ import path from 'node:path';
 
 import type {ParsedAsmResult, ParsedAsmResultLine} from '../../types/asmresult/asmresult.interfaces.js';
 import type {CompilationResult} from '../../types/compilation/compilation.interfaces.js';
+import type {LLVMIrBackendOptions} from '../../types/compilation/ir.interfaces.js';
 import type {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces.js';
 import type {Language} from '../../types/languages.interfaces.js';
 import {assert} from '../assert.js';
@@ -82,6 +83,7 @@ export class ResolcCompiler extends BaseCompiler {
         // included in optionsForFilter(), but irArg needs to be set.
         this.compiler.irArg = [];
         this.compiler.supportsIrView = true;
+        this.compiler.supportsIrViewOptToggleOption = true;
     }
 
     override getSharedLibraryPathsAsArguments(): string[] {
@@ -112,8 +114,17 @@ export class ResolcCompiler extends BaseCompiler {
         return this.getOutputFilenameWithExtension(dirPath, '.pvmasm');
     }
 
-    override getIrOutputFilename(inputFilename: string): string {
-        return this.getOutputFilenameWithExtension(path.dirname(inputFilename), '.optimized.ll');
+    override getIrOutputFilename(
+        inputFilename: string,
+        _filters?: ParseFiltersAndOutputOptions,
+        irOptions?: LLVMIrBackendOptions,
+    ): string {
+        const extension =
+            irOptions?.showOptimized && this.compiler.supportsIrViewOptToggleOption
+                ? '.optimized.ll'
+                : '.unoptimized.ll';
+
+        return this.getOutputFilenameWithExtension(path.dirname(inputFilename), extension);
     }
 
     override getObjdumpOutputFilename(defaultOutputFilename: string): string {

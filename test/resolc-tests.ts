@@ -31,7 +31,7 @@ import type {ParsedAsmResult, ParsedAsmResultLine} from '../types/asmresult/asmr
 import type {CompilerInfo} from '../types/compiler.interfaces.js';
 import type {ParseFiltersAndOutputOptions} from '../types/features/filters.interfaces.js';
 import type {LanguageKey} from '../types/languages.interfaces.js';
-import {makeCompilationEnvironment, makeFakeCompilerInfo} from './utils.js';
+import {makeCompilationEnvironment, makeFakeCompilerInfo, makeFakeLlvmIrBackendOptions} from './utils.js';
 
 const languages = {
     solidity: {id: 'solidity' as LanguageKey},
@@ -48,6 +48,29 @@ describe('Resolc', () => {
 
     function makeCompiler(compilerInfo: Partial<CompilerInfo>): ResolcCompiler {
         return new ResolcCompiler(makeFakeCompilerInfo(compilerInfo), env);
+    }
+
+    function expectCorrectOutputFilenames(
+        compiler: ResolcCompiler,
+        inputFilename: string,
+        expectedFilenameWithoutExtension: string,
+    ): void {
+        const defaultOutputFilename = `${expectedFilenameWithoutExtension}.pvmasm`;
+        expect(compiler.getOutputFilename('test/resolc')).toEqual(defaultOutputFilename);
+
+        let llvmIrBackendOptions = makeFakeLlvmIrBackendOptions({showOptimized: true});
+        expect(compiler.getIrOutputFilename(inputFilename, undefined, llvmIrBackendOptions)).toEqual(
+            `${expectedFilenameWithoutExtension}.optimized.ll`,
+        );
+
+        llvmIrBackendOptions = makeFakeLlvmIrBackendOptions({showOptimized: false});
+        expect(compiler.getIrOutputFilename(inputFilename, undefined, llvmIrBackendOptions)).toEqual(
+            `${expectedFilenameWithoutExtension}.unoptimized.ll`,
+        );
+
+        expect(compiler.getObjdumpOutputFilename(defaultOutputFilename)).toEqual(
+            `${expectedFilenameWithoutExtension}.o`,
+        );
     }
 
     describe('Common', () => {
@@ -90,14 +113,9 @@ describe('Resolc', () => {
 
         it('should generate output filenames', () => {
             const compiler = makeCompiler(compilerInfo);
-            const defaultOutputFilename = 'test/resolc/artifacts/test_resolc_example.sol.Square.pvmasm';
-            expect(compiler.getOutputFilename('test/resolc')).toEqual(defaultOutputFilename);
-            expect(compiler.getIrOutputFilename('test/resolc/example.sol')).toEqual(
-                'test/resolc/artifacts/test_resolc_example.sol.Square.optimized.ll',
-            );
-            expect(compiler.getObjdumpOutputFilename(defaultOutputFilename)).toEqual(
-                'test/resolc/artifacts/test_resolc_example.sol.Square.o',
-            );
+            const filenameWithoutExtension = 'test/resolc/artifacts/test_resolc_example.sol.Square';
+            const inputFilename = 'test/resolc/example.sol';
+            expectCorrectOutputFilenames(compiler, inputFilename, filenameWithoutExtension);
         });
 
         describe('To RISC-V', () => {
@@ -279,14 +297,9 @@ describe('Resolc', () => {
 
         it('should generate output filenames', () => {
             const compiler = makeCompiler(compilerInfo);
-            const defaultOutputFilename = 'test/resolc/artifacts/test_resolc_example.yul.Square.pvmasm';
-            expect(compiler.getOutputFilename('test/resolc')).toEqual(defaultOutputFilename);
-            expect(compiler.getIrOutputFilename('test/resolc/example.sol')).toEqual(
-                'test/resolc/artifacts/test_resolc_example.yul.Square.optimized.ll',
-            );
-            expect(compiler.getObjdumpOutputFilename(defaultOutputFilename)).toEqual(
-                'test/resolc/artifacts/test_resolc_example.yul.Square.o',
-            );
+            const filenameWithoutExtension = 'test/resolc/artifacts/test_resolc_example.yul.Square';
+            const inputFilename = 'test/resolc/example.yul';
+            expectCorrectOutputFilenames(compiler, inputFilename, filenameWithoutExtension);
         });
     });
 });
