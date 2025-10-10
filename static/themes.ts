@@ -118,7 +118,7 @@ editor.defineTheme('ce-dark', {
             fontStyle: 'bold',
         },
         {token: 'keyword.identifier.definition.herb', fontStyle: 'bold'},
-        {token: 'variable.predefined', foreground: '6f80aa'},
+        {token: 'variable.predefined', foreground: '949eb0'},
     ],
     colors: {},
 });
@@ -133,7 +133,7 @@ editor.defineTheme('ce-dark-plus', {
             fontStyle: 'bold',
         },
         {token: 'keyword.identifier.definition.herb', fontStyle: 'bold'},
-        {token: 'variable.predefined', foreground: '6f80aa'},
+        {token: 'variable.predefined', foreground: '949eb0'},
         {token: 'keyword.if.cpp', foreground: 'b66bb0'},
         {token: 'keyword.else.cpp', foreground: 'b66bb0'},
         {token: 'keyword.while.cpp', foreground: 'b66bb0'},
@@ -427,7 +427,7 @@ editor.defineTheme('ce-one-dark', {
             foreground: '61afef',
             fontStyle: 'bold',
         },
-        {token: 'variable.predefined', foreground: '6f80aa'},
+        {token: 'variable.predefined', foreground: '949eb0'},
         // General Identifiers
         {token: 'identifier.cpp', foreground: 'abb2bf'},
         // Annotations (includes items in attribute list)
