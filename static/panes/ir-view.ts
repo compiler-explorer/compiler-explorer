@@ -69,6 +69,7 @@ export class Ir extends MonacoPane<monaco.editor.IStandaloneCodeEditor, IrState>
         filterComments: true,
         noDiscardValueNames: true,
         demangle: true,
+        showOptimized: true,
     };
     private cfgButton: JQuery;
     private wrapButton: JQuery<HTMLElement>;
@@ -307,6 +308,7 @@ export class Ir extends MonacoPane<monaco.editor.IStandaloneCodeEditor, IrState>
             filterComments: filters['filter-comments'],
             noDiscardValueNames: options['-fno-discard-value-names'],
             demangle: options['demangle-symbols'],
+            showOptimized: options['show-optimized'],
         };
         let changed = false;
         for (const k in newOptions) {
@@ -346,6 +348,8 @@ export class Ir extends MonacoPane<monaco.editor.IStandaloneCodeEditor, IrState>
         if (compiler && !compiler.supportsIrView) {
             this.editor.setValue('<LLVM IR output is not supported for this compiler>');
         }
+
+        this.options.enableToggle('show-optimized', !!compiler?.supportsIrViewOptToggleOption);
     }
 
     showIrResults(result: any): void {

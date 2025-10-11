@@ -371,6 +371,7 @@
           - 'lib/compilers/solidity.ts'
           - 'lib/compilers/solidity-zksync.ts'
           - 'lib/compilers/solx.ts'
+          - 'lib/compilers/resolc.ts'
           - 'etc/config/solidity.*.properties'
 
 'lang-spice':
@@ -446,6 +447,13 @@
           - 'lib/compilers/wasmtime.ts'
           - 'etc/config/wasm.*.properties'
           - 'static/modes/wat-mode.ts'
+
+'lang-yul':
+  - changed-files:
+      - any-glob-to-any-file:
+          - 'lib/compilers/resolc.ts'
+          - 'etc/config/yul.*.properties'
+          - 'static/modes/yul-mode.ts'
 
 'lang-zig':
   - changed-files:

@@ -133,6 +133,7 @@ export {QNXCompiler} from './qnx.js';
 export {R8Compiler} from './r8.js';
 export {RacketCompiler} from './racket.js';
 export {RakuCompiler} from './raku.js';
+export {ResolcCompiler} from './resolc.js';
 export {RGACompiler} from './rga.js';
 export {RubyCompiler} from './ruby.js';
 export {RustCompiler} from './rust.js';
