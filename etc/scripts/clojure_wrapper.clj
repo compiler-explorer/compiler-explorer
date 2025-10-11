@@ -112,8 +112,11 @@
     ;; Print them out in compiler output to make it possible for users to
     ;; discover them.
     (println help-text)
-    (println "Binding *compiler-options* to" compiler-options)
-    (binding [*compiler-options* compiler-options]
+    (when (seq *compiler-options*)
+      (println "*compiler-options* set via environment:" *compiler-options*))
+    (when (seq compiler-options)
+      (println "*compiler-options* set via flags:" compiler-options))
+    (binding [*compiler-options* (merge *compiler-options* compiler-options)]
       (compile (symbol namespace)))))
 
 (let [[compiler-options macro-params positional ignored] (parse-command-line)
