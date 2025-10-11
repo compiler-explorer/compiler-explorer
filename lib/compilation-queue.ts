@@ -115,8 +115,9 @@ export class CompilationQueue {
     status(): {busy: boolean; pending: number; size: number} {
         const pending = this._queue.pending;
         const size = this._queue.size;
+        const running = this._running.size;
         return {
-            busy: pending > 0 || size > 0,
+            busy: pending > 0 || size > 0 || running > 0,
             pending,
             size,
         };
