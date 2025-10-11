@@ -28,23 +28,23 @@ import {
     AssemblyDocumentationRequest,
     AssemblyDocumentationResponse,
 } from '../../types/features/assembly-documentation.interfaces.js';
+import {FetchResult, safeFetch} from '../http-utils.js';
 import {FormattingRequest, FormattingResponse} from './formatting.interfaces.js';
 
-/** Type wrapper allowing .json() to resolve to a concrete type */
-interface TypedResponse<T> extends Response {
-    json(): Promise<T>;
-}
-
-/** Lightweight fetch() wrapper for CE API urls */
-const request = async <R>(uri: string, options?: RequestInit): Promise<TypedResponse<R>> =>
-    fetch(`${window.location.origin}${window.httpRoot}api${uri}`, {
-        ...options,
-        credentials: 'include',
-        headers: {
-            ...options?.headers,
-            Accept: 'application/json',
+/** CE API request helper using safeFetch for better error handling */
+const request = async <R>(uri: string, options?: RequestInit): Promise<FetchResult<R>> =>
+    safeFetch<R>(
+        `${window.location.origin}${window.httpRoot}api${uri}`,
+        {
+            ...options,
+            parseAs: 'json',
+            credentials: 'include',
+            headers: {
+                ...options?.headers,
+            },
         },
-    });
+        `CE API ${uri}`,
+    );
 
 /** GET /api/asm/:arch/:instruction */
 export const getAssemblyDocumentation = async (options: AssemblyDocumentationRequest) =>
