@@ -271,19 +271,22 @@ export class RustCompiler extends BaseCompiler {
         let options = ['-C', 'debuginfo=2', '-o', this.filename(outputFilename)];
 
         const userRequestedEmit = _.any(unwrap(userOptions), opt => opt.includes('--emit'));
+        const userRequestedCrateType = _.any(unwrap(userOptions), opt => opt.includes('--crate-type'));
+        const setCrateType = (options, type) =>
+            userRequestedCrateType ? options : options.concat(['--crate-type', type]);
         if (filters.binary) {
-            options = options.concat(['--crate-type', 'bin']);
+            options = setCrateType(options, 'bin');
             if (this.amd64linker) {
                 options = options.concat(`-Clinker=${this.amd64linker}`);
             }
         } else if (filters.binaryObject) {
-            options = options.concat(['--crate-type', 'lib']);
+            options = setCrateType(options, 'lib');
         } else {
             if (!userRequestedEmit) {
                 options = options.concat('--emit', 'asm');
             }
             if (filters.intel) options = options.concat('-Cllvm-args=--x86-asm-syntax=intel');
-            options = options.concat(['--crate-type', 'rlib']);
+            options = setCrateType(options, 'rlib');
         }
         return options;
     }
