@@ -9,7 +9,7 @@
   "Compiler options supported:
    -dl  --direct-linking - Eliminates var indirection in fn invocation
    -dlc --disable-locals-clearing - Eliminates instructions setting locals to null
-   -em  --elide-meta \"[:doc :arglists ...]\" - Drops metadata keys from classfiles
+   -em  --elide-meta [:doc,:arglists,:added,:file,...] - Drops metadata keys from classfiles
    -omm --omit-macro-meta - Omit metadata from macro-expanded output")
 
 (defn parse-command-line []
@@ -42,11 +42,11 @@
                macro-params positional ignored (rest args))
 
         ("-em" "--elide-meta")
-        (let [elisions (some-> args second read-string)]
+        (let [elisions (try (some-> args second read-string) (catch Exception _e))]
           (when-not (and (sequential? elisions)
                          (every? keyword? elisions))
             (println (str "Invalid elide-meta parameter: '" (second args) "'\n")
-                     "Must be a string representing a vector of keywords, like \"[:keyword1 :keyword2]\"")
+                     "-em flag must be followed by a vector of keywords, like '-em [:doc,:arglists]'")
             (System/exit 1))
           (recur (assoc params :elide-meta elisions)
                  macro-params positional ignored (drop 2 args)))
