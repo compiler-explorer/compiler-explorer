@@ -14,27 +14,30 @@
 
 (defn parse-command-line []
   (loop [params {}
-         macro-params {}
          positional []
          ignored []
          args *command-line-args*]
     (if-let [arg (first args)]
       (case arg
+        ("-h" "--help")
+        (recur (assoc params :help true)
+               positional ignored (rest args))
+
         "--macro-expand"
-        (recur params (assoc macro-params :macro-expand true)
+        (recur (assoc params :macro-expand true)
                positional ignored (rest args))
 
         ("-omm" "--omit-macro-meta")
-        (recur params (assoc macro-params :print-meta false)
+        (recur (assoc params :print-meta false)
                positional ignored (rest args))
 
         ("-dlc" "--disable-locals-clearing")
         (recur (assoc params :disable-locals-clearing true)
-               macro-params positional ignored (rest args))
+               positional ignored (rest args))
 
         ("-dl" "--direct-linking")
         (recur (assoc params :direct-linking true)
-               macro-params positional ignored (rest args))
+               positional ignored (rest args))
 
         ("-em" "--elide-meta")
         (let [elisions (try (some-> args second read-string) (catch Exception _e))]
@@ -44,13 +47,13 @@
                      "-em flag must be followed by a vector of keywords, like '-em [:doc,:arglists]'")
             (System/exit 1))
           (recur (assoc params :elide-meta elisions)
-                 macro-params positional ignored (drop 2 args)))
+                 positional ignored (drop 2 args)))
 
         (if (or (re-matches #"-.*" arg)
                 (not (re-matches #".*\.clj" arg)))
-          (recur params macro-params positional (conj ignored arg) (rest args))
-          (recur params macro-params (conj positional arg) ignored (rest args))))
-      [params macro-params positional ignored])))
+          (recur params positional (conj ignored arg) (rest args))
+          (recur params (conj positional arg) ignored (rest args))))
+      [params positional ignored])))
 
 (defn forms
   ([input-file]
@@ -109,10 +112,6 @@
           (.write out ns-form)))
       (io/copy input-file out))
 
-    ;; The parameters parsed by the wrapper are not documented elsewhere.
-    ;; Print them out in compiler output to make it possible for users to
-    ;; discover them.
-    (println help-text)
     (when (seq *compiler-options*)
       (println "*compiler-options* set via environment:" *compiler-options*))
     (when (seq compiler-options)
@@ -120,14 +119,20 @@
     (binding [*compiler-options* (merge *compiler-options* compiler-options)]
       (compile (symbol namespace)))))
 
-(let [[compiler-options macro-params positional ignored] (parse-command-line)
+(let [[params positional ignored] (parse-command-line)
       input-file (io/file (first positional))]
-  (if (:macro-expand macro-params)
-    (print-macro-expansion input-file macro-params)
-    (let [count-ignored (count ignored)]
+  (if (:macro-expand params)
+    (print-macro-expansion input-file params)
+    (let [count-ignored (count ignored)
+          compiler-options (select-keys params
+                                        [:disable-locals-clearing
+                                         :direct-linking
+                                         :elide-meta])]
       (doseq [param ignored]
         (println (format "unrecognized option '%s' ignored" param)))
       (when (pos-int? count-ignored)
         (println (format "%d warning%s found" count-ignored
                          (if (= 1 count-ignored) "" "s"))))
+      (when (:help params)
+        (println help-text))
       (compile-input input-file compiler-options))))
