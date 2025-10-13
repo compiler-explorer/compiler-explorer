@@ -85,10 +85,61 @@ const shareServices = {
     },
 };
 
-export class Sharing {
-    private layout: GoldenLayout;
-    private lastState: any;
+// Base class that handles state tracking and embedded link updates
+export class SharingBase {
+    protected layout: GoldenLayout;
+    protected lastState: string | null = null;
 
+    constructor(layout: GoldenLayout) {
+        this.layout = layout;
+        this.initCallbacks();
+    }
+
+    protected initCallbacks(): void {
+        this.layout.on('stateChanged', this.onStateChanged.bind(this));
+    }
+
+    protected onStateChanged(): void {
+        const config = SharingBase.filterComponentState(this.layout.toConfig());
+        this.ensureUrlIsNotOutdated(config);
+
+        // Update embedded links if present (works in both modes)
+        if (options.embedded) {
+            const strippedToLast = window.location.pathname.substring(0, window.location.pathname.lastIndexOf('/') + 1);
+            $('a.link').prop('href', strippedToLast + '#' + url.serialiseState(config));
+        }
+    }
+
+    protected ensureUrlIsNotOutdated(config: any): void {
+        const stringifiedConfig = JSON.stringify(config);
+        if (stringifiedConfig !== this.lastState) {
+            if (this.lastState != null && window.location.pathname !== window.httpRoot) {
+                window.history.replaceState(null, '', window.httpRoot);
+            }
+            this.lastState = stringifiedConfig;
+        }
+    }
+
+    public static filterComponentState(config: any): any {
+        function filterComponentStateImpl(component: any) {
+            if (component.content) {
+                for (let i = 0; i < component.content.length; i++) {
+                    filterComponentStateImpl(component.content[i]);
+                }
+            }
+
+            if (component.componentState) {
+                delete component.componentState.selection;
+            }
+        }
+
+        config = cloneDeep(config);
+        filterComponentStateImpl(config);
+        return config;
+    }
+}
+
+export class Sharing extends SharingBase {
     private readonly share: JQuery;
     private readonly shareTooltipTarget: JQuery;
     private readonly shareShort: JQuery;
@@ -100,9 +151,8 @@ export class Sharing {
     private clippyButton: ClipboardJS | null;
     private readonly shareLinkDialog: HTMLElement;
 
-    constructor(layout: any) {
-        this.layout = layout;
-        this.lastState = null;
+    constructor(layout: GoldenLayout) {
+        super(layout);
         this.shareLinkDialog = unwrap(document.getElementById('sharelinkdialog'), 'Share modal element not found');
 
         this.share = $('#share');
@@ -119,17 +169,16 @@ export class Sharing {
         this.clippyButton = null;
 
         this.initButtons();
-        this.initCallbacks();
+        this.initFullCallbacks();
     }
 
-    private initCallbacks(): void {
+    private initFullCallbacks(): void {
         this.layout.eventHub.on('displaySharingPopover', () => {
             this.openShareModalForType(LinkType.Short);
         });
         this.layout.eventHub.on('copyShortLinkToClip', () => {
             this.copyLinkTypeToClipboard(LinkType.Short);
         });
-        this.layout.on('stateChanged', this.onStateChanged.bind(this));
 
         this.shareLinkDialog.addEventListener('show.bs.modal', this.onOpenModalPane.bind(this));
         this.shareLinkDialog.addEventListener('hidden.bs.modal', this.onCloseModalPane.bind(this));
@@ -150,25 +199,6 @@ export class Sharing {
                 }
             }
         });
-    }
-
-    private onStateChanged(): void {
-        const config = Sharing.filterComponentState(this.layout.toConfig());
-        this.ensureUrlIsNotOutdated(config);
-        if (options.embedded) {
-            const strippedToLast = window.location.pathname.substring(0, window.location.pathname.lastIndexOf('/') + 1);
-            $('a.link').prop('href', strippedToLast + '#' + url.serialiseState(config));
-        }
-    }
-
-    private ensureUrlIsNotOutdated(config: any): void {
-        const stringifiedConfig = JSON.stringify(config);
-        if (stringifiedConfig !== this.lastState) {
-            if (this.lastState != null && window.location.pathname !== window.httpRoot) {
-                window.history.replaceState(null, '', window.httpRoot);
-            }
-            this.lastState = stringifiedConfig;
-        }
     }
 
     private static bindToLinkType(bind: string): LinkType {
@@ -466,28 +496,6 @@ export class Sharing {
         return (navigator.clipboard as Clipboard | undefined) !== undefined;
     }
 
-    public static filterComponentState(config: any, keysToRemove: [string] = ['selection']): any {
-        function filterComponentStateImpl(component: any) {
-            if (component.content) {
-                for (let i = 0; i < component.content.length; i++) {
-                    filterComponentStateImpl(component.content[i]);
-                }
-            }
-
-            if (component.componentState) {
-                Object.keys(component.componentState)
-                    .filter(e => keysToRemove.includes(e))
-                    .forEach(key => {
-                        delete component.componentState[key];
-                    });
-            }
-        }
-
-        config = cloneDeep(config);
-        filterComponentStateImpl(config);
-        return config;
-    }
-
     private static updateShares(container: JQuery, url: string): void {
         const baseTemplate = $('#share-item');
         _.each(shareServices, (service, serviceName) => {
@@ -506,5 +514,16 @@ export class Sharing {
                 .toggleClass('share-no-embeddable', !service.embedValid)
                 .appendTo(container);
         });
+    }
+}
+
+// Initialize sharing functionality based on whether we're in embedded mode or not
+export function initialiseSharing(layout: GoldenLayout, isEmbedded: boolean): void {
+    if (isEmbedded) {
+        // Just create the base class for state tracking and link updates
+        new SharingBase(layout);
+    } else {
+        // Create full Sharing with all features
+        new Sharing(layout);
     }
 }

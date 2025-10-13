@@ -246,6 +246,8 @@ describe('Compiler execution', () => {
             '/c',
             '/Faexample.s',
             '/Foexample.s.obj',
+            '/Zi',
+            '/Fdexample.s.pdb',
             '/std=c++17',
             '/IC:/program files (x86)/Company name/Compiler 1.2.3/include',
             '/D',

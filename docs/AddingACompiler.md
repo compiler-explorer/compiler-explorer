@@ -170,16 +170,19 @@ be able to see the MSVC compiler in the compiler list.
 
 ## Adding a new compiler to the live site
 
-On the main CE website, compilers are installed into a `/opt/compiler-explorer/` directory by a set of scripts in the
+On the main CE website, compilers are installed into `/opt/compiler-explorer/` using the `ce_install` tool from the
 sister GitHub repo: https://github.com/compiler-explorer/infra
 
-In the `update_compilers` directory in that repository are a set of scripts that download and install binaries and
-compilers. If you wish to test locally, and can create a `/opt/compiler-explorer` directory on your machine which is
-readable and writable by your current user, then you can run the scripts directly. The binaries and the free compilers
-can be installed - the commercial compilers live in the `install_nonfree_compilers.sh` and won't work.
+Compiler definitions are YAML-based configurations in the `bin/yaml/` directory of that repository (e.g., `cpp.yaml`,
+`rust.yaml`). For many compilers, adding a new version is as simple as adding the version number to the `targets:` list
+in the appropriate YAML file. See the infra repository's documentation at `docs/ce_install_yaml.md` and
+`docs/installing_compilers.md` for comprehensive details on the YAML configuration format and installation process.
 
-If your compiler fits nicely into the harness then it should be straightforward to add it there. Anything more complex:
-contact the CE authors for more help.
+If you wish to test locally, create a `/opt/compiler-explorer` directory readable and writable by your user, then run
+`./bin/ce_install install 'compilers/LANG/ARCH/COMPILER VERSION'` from the infra repository. Free compilers install
+normally; commercial compilers marked `non-free` in the YAML won't work without proper licensing.
+
+If your compiler fits the existing patterns it should be straightforward. Anything more complex: contact the CE authors.
 
 ## Putting it all together
 

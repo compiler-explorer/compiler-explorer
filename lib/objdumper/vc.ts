@@ -22,18 +22,39 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
+import {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces.js';
 import {BaseObjdumper} from './base.js';
 
-export class GoldenGateObjdumper extends BaseObjdumper {
+export class VcObjdumper extends BaseObjdumper {
     constructor() {
         super([], []);
     }
 
-    override getArgs(outputFilename: string) {
-        return [outputFilename];
+    static override get key() {
+        return 'vc';
     }
 
-    static override get key() {
-        return 'goldengate';
+    override getArgs(
+        outputFilename: string,
+        demangle?: boolean,
+        intelAsm?: boolean,
+        staticReloc?: boolean,
+        dynamicReloc?: boolean,
+        objdumperArguments?: string[],
+        filters?: ParseFiltersAndOutputOptions,
+    ) {
+        // Not setting /OUT, as CE wants the output on stdout
+        const args = ['/LINENUMBERS', '/DISASM'];
+        // TODO: check if this actually does anything:
+        if (filters?.directives) args.push('/DIRECTIVES');
+
+        // if (staticReloc || dynamicReloc) args.push('/RELOCATIONS');
+
+        // TODO: handle demangling in post-process
+        // TODO: disable intel-syntax checkbox as selected, dumpbin supports only that
+        if (objdumperArguments) args.push(...objdumperArguments);
+
+        args.push(`${outputFilename}.obj`);
+        return args;
     }
 }

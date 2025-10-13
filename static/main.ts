@@ -64,7 +64,7 @@ import {Presentation} from './presentation.js';
 import {Printerinator} from './print-view.js';
 import {setupRealDark, takeUsersOutOfRealDark} from './real-dark.js';
 import {Settings, SiteSettings} from './settings.js';
-import {Sharing} from './sharing.js';
+import {initialiseSharing} from './sharing.js';
 import {Themer} from './themes.js';
 import * as url from './url.js';
 import {formatISODate, updateAndCalcTopBarHeight} from './utils.js';
@@ -779,8 +779,10 @@ function start() {
 
     History.trackHistory(layout);
     setupSiteTemplateWidgetButton(layout);
-    if (!options.embedded) new Sharing(layout);
+    initialiseSharing(layout, !!options.embedded);
     new Printerinator(hub, themer);
+
+    hub.layout.eventHub.emit('settingsChange', settings); // Ensure everyone knows the settings
 }
 
 $(start);
