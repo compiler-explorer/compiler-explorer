@@ -31,7 +31,7 @@ import {Packager} from '../lib/packager.js';
 
 import {newTempDir} from './utils.js';
 
-async function writeTestFile(filepath) {
+async function writeTestFile(filepath: string) {
     return fs.writeFile(filepath, '#!/bin/sh\n\necho Hello, world!\n\n');
 }
 

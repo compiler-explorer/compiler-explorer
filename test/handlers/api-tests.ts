@@ -74,7 +74,7 @@ const compilers: CompilerInfo[] = [
 ];
 
 describe('API handling', () => {
-    let app;
+    let app: express.Express;
 
     beforeAll(() => {
         app = express();

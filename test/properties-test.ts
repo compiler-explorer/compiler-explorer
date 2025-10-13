@@ -24,6 +24,7 @@
 
 import {afterAll, beforeAll, describe, expect, it} from 'vitest';
 
+import {PropertyGetter} from '../lib/properties.interfaces.js';
 import * as properties from '../lib/properties.js';
 
 const languages = {
@@ -31,8 +32,8 @@ const languages = {
 };
 
 describe('Properties', () => {
-    let casesProps;
-    let overridingProps;
+    let casesProps: PropertyGetter;
+    let overridingProps: PropertyGetter;
     let compilerProps;
 
     beforeAll(() => {

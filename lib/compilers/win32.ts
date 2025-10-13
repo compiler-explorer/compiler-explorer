@@ -39,7 +39,7 @@ import {BaseCompiler} from '../base-compiler.js';
 import {copyNeededDlls} from '../binaries/win-utils.js';
 import {CompilationEnvironment} from '../compilation-env.js';
 import {MapFileReaderVS} from '../mapfiles/map-file-vs.js';
-import {AsmParser} from '../parsers/asm-parser.js';
+import {VcAsmParser} from '../parsers/asm-parser-vc.js';
 import {PELabelReconstructor} from '../pe32-support.js';
 
 export class Win32Compiler extends BaseCompiler {
@@ -47,12 +47,12 @@ export class Win32Compiler extends BaseCompiler {
         return 'win32';
     }
 
-    binaryAsmParser: AsmParser;
+    binaryAsmParser: VcAsmParser;
 
     constructor(compilerInfo: PreliminaryCompilerInfo, env: CompilationEnvironment) {
         super(compilerInfo, env);
 
-        this.binaryAsmParser = new AsmParser(this.compilerProps);
+        this.binaryAsmParser = new VcAsmParser();
     }
 
     private findExistingLibFile(libName: string, libPaths: string[]): string | null {
@@ -97,10 +97,6 @@ export class Win32Compiler extends BaseCompiler {
 
     override getExecutableFilename(dirPath: string, outputFilebase: string, key?: CacheKey) {
         return this.getOutputFilename(dirPath, outputFilebase, key) + '.exe';
-    }
-
-    override getObjdumpOutputFilename(defaultOutputFilename: string) {
-        return this.getExecutableFilename(path.dirname(defaultOutputFilename), 'output');
     }
 
     override getSharedLibraryPathsAsArguments(
@@ -254,19 +250,22 @@ export class Win32Compiler extends BaseCompiler {
 
             return [
                 '/nologo',
-                '/FA',
-                '/Fa' + this.filename(outputFilename.replace(/\.exe$/, '')),
-                '/Fo' + this.filename(outputFilename.replace(/\.exe$/, '') + '.obj'),
+                '/FA', // assembly listing with source and machine code
+                '/Fa' + this.filename(outputFilename.replace(/\.exe$/, '')), // assembly listing
+                '/Fo' + this.filename(outputFilename.replace(/\.exe$/, '') + '.obj'), // object file
                 '/Fm' + this.filename(mapFilename),
                 '/Fe' + this.filename(this.getExecutableFilename(path.dirname(outputFilename), 'output')),
+                '/Zi', // complete debugging information
             ];
         }
         return [
             '/nologo',
             '/FA',
-            '/c',
+            '/c', // compile only, do not link
             '/Fa' + this.filename(outputFilename),
             '/Fo' + this.filename(outputFilename + '.obj'),
+            '/Zi',
+            '/Fd' + this.filename(outputFilename + '.pdb'), // default pdb name for obj is vcXXX.pdb
         ];
     }
 

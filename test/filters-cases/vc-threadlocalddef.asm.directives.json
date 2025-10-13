@@ -42,31 +42,11 @@
     },
     {
       "source": null,
-      "text": "        DD      imagerel $LN3+43"
-    },
-    {
-      "source": null,
-      "text": "        DD      imagerel $unwind$?func@@YAHXZ"
-    },
-    {
-      "source": null,
       "text": "$pdata$main DD  imagerel $LN3"
     },
     {
       "source": null,
-      "text": "        DD      imagerel $LN3+31"
-    },
-    {
-      "source": null,
-      "text": "        DD      imagerel $unwind$main"
-    },
-    {
-      "source": null,
       "text": "$unwind$main DD 010401H"
-    },
-    {
-      "source": null,
-      "text": "        DD      06204H"
     },
     {
       "source": null,
@@ -75,10 +55,6 @@
     {
       "source": null,
       "text": "$unwind$?func@@YAHXZ DD 010401H"
-    },
-    {
-      "source": null,
-      "text": "        DD      04204H"
     },
     {
       "source": null,

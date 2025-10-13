@@ -1,0 +1,36 @@
+# This workflow automatically detects potential duplicate issues
+# using text similarity analysis with Damerau-Levenshtein distance.
+#
+# For more information, see: https://github.com/wow-actions/potential-duplicates
+
+name: Duplicate Issue Detection
+on:
+  issues:
+    types: [opened, edited]
+
+jobs:
+  detect-duplicates:
+    runs-on: ubuntu-latest
+    # Only run on issues, not pull requests
+    if: ${{ !github.event.issue.pull_request }}
+    steps:
+      - uses: wow-actions/potential-duplicates@v1
+        with:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          # Use 90% similarity threshold to reduce false positives from template matches
+          # Testing showed that 85% threshold produced too many template-based matches
+          # True duplicates typically have 90%+ similarity
+          threshold: 0.90
+          # Comment on the issue if duplicates are found
+          label: potential-duplicate
+          # Custom comment to link to potentially duplicate issues
+          comment: |
+            **Potential duplicate detected**
+
+            This issue appears to be similar to existing issues. Please review them before continuing:
+
+            {{#issues}}
+            - [#{{number}}]({{html_url}}) ({{accuracy}}% similar)
+            {{/issues}}
+
+            If this is not a duplicate, please clarify how it differs from the above issues.

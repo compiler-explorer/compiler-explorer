@@ -26,17 +26,17 @@ import fs from 'node:fs';
 
 import {beforeAll, describe, expect, it} from 'vitest';
 
+import {CompilationEnvironment} from '../lib/compilation-env.js';
 import {GolangCompiler} from '../lib/compilers/golang.js';
 import * as utils from '../lib/utils.js';
 import {LanguageKey} from '../types/languages.interfaces.js';
-
 import {makeCompilationEnvironment, makeFakeCompilerInfo} from './utils.js';
 
 const languages = {
     go: {id: 'go' as LanguageKey},
 };
 
-let ce;
+let ce: CompilationEnvironment;
 const info = {
     exe: '/dev/null',
     remote: {

@@ -28,9 +28,15 @@ import {BaseCompiler} from '../lib/base-compiler.js';
 import {CompilationEnvironment} from '../lib/compilation-env.js';
 import * as properties from '../lib/properties.js';
 import {CompilerInfo} from '../types/compiler.interfaces.js';
+import {LanguageKey} from '../types/languages.interfaces.js';
 
-//const makeFakeCompilerInfo = (id: string, lang: string, group: string, semver: string, isSemver: boolean) => {
-const makeFakeCompilerInfo = (id, lang, group, semver, isSemver): Partial<CompilerInfo> => {
+const makeFakeCompilerInfo = (
+    id: string,
+    lang: LanguageKey,
+    group: string,
+    semver: string,
+    isSemver: boolean,
+): Partial<CompilerInfo> => {
     return {
         id: id,
         exe: '/dev/null',

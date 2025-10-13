@@ -24,6 +24,7 @@
 
 import {beforeAll, describe, expect, it} from 'vitest';
 
+import {CompilationEnvironment} from '../lib/compilation-env.js';
 import {DMDCompiler} from '../lib/compilers/dmd.js';
 import {LDCCompiler} from '../lib/compilers/ldc.js';
 import {LanguageKey} from '../types/languages.interfaces.js';
@@ -35,7 +36,7 @@ const languages = {
 };
 
 describe('D', () => {
-    let ce;
+    let ce: CompilationEnvironment;
     const info = {
         exe: '/dev/null',
         remote: {
