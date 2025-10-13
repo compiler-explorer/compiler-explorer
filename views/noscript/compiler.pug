@@ -40,46 +40,6 @@ block content
         textarea#source(name='source' cols='70' rows='10' placeholder='Type your code here' autocorrect="off" autocapitalize="off" spellcheck="false")
           =session.source
       .form-pair-inlined
-        input.btn.btn-primary(type='submit' value='Compile')
+        input.btn(type='submit' value='Compile')
         | 
-        button.btn.btn-outline-secondary(type='button' onclick='generateShareLink()') Get Shareable Link
-
-  script.
-    function generateShareLink() {
-        const source = document.getElementById('source').value;
-        const compiler = document.getElementById('compilerid').value;
-        const userArguments = document.getElementById('compileroptions').value;
-        const lang = document.getElementById('lang').value;
-        
-        // Creating a simple form and submit it
-        const form = document.createElement('form');
-        form.method = 'GET';
-        form.action = '/noscript/share';
-        
-        const sourceInput = document.createElement('input');
-        sourceInput.type = 'hidden';
-        sourceInput.name = 'source';
-        sourceInput.value = source;
-        form.appendChild(sourceInput);
-        
-        const compilerInput = document.createElement('input');
-        compilerInput.type = 'hidden';
-        compilerInput.name = 'compiler';
-        compilerInput.value = compiler;
-        form.appendChild(compilerInput);
-        
-        const optionsInput = document.createElement('input');
-        optionsInput.type = 'hidden';
-        optionsInput.name = 'userArguments';
-        optionsInput.value = userArguments;
-        form.appendChild(optionsInput);
-        
-        const langInput = document.createElement('input');
-        langInput.type = 'hidden';
-        langInput.name = 'language';
-        langInput.value = lang;
-        form.appendChild(langInput);
-        
-        document.body.appendChild(form);
-        form.submit();
-    }
+        input.btn(type='submit' value='Get Shareable Link' formaction=`${httpRoot}noscript/share` formmethod='POST')
