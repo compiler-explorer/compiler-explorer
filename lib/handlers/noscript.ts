@@ -63,7 +63,7 @@ initializeRoutes() {
                 ),
             );
         })
-        
+
         // SHARE ROUTE
         .get('/noscript/share', cached, csp, this.handleShareLink.bind(this))
         .get('/noscript/:language', cached, csp, (req, res) => {
@@ -157,8 +157,10 @@ initializeRoutes() {
         );
     }
 
-    handleShareLink(req: express.Request, res: express.Response) {
-    // Getting form data with proper type checking
+    async handleShareLink(req: express.Request, res: express.Response) {
+    console.log('=== SHARE LINK HANDLER CALLED ===');
+    
+    // Get form data with proper type checking
     const source = typeof req.query.source === 'string' ? req.query.source : '';
     const compiler = typeof req.query.compiler === 'string' ? req.query.compiler : '';
     const userArguments = typeof req.query.userArguments === 'string' ? req.query.userArguments : '';
@@ -166,7 +168,7 @@ initializeRoutes() {
 
     console.log('Received data:', { source, compiler, userArguments, language });
 
-    // Creating a simple state for sharing
+    // Create a simple state for sharing
     const state = this.createDefaultState(language as LanguageKey);
     
     if (source) {
@@ -184,24 +186,47 @@ initializeRoutes() {
         }
     }
 
-    // Generating shareable URL
-    const shareableUrl = this.generateShareableUrl(state);
+    // Generate shareable URL
+    const shareableUrl = await this.generateShareableUrl(state);
     console.log('Shareable URL:', shareableUrl);
 
-    // Rendering the share template directly without using renderConfig
+    // Render the share template
     res.render('noscript/share', {
         title: 'Shareable Link - Compiler Explorer',
         shareableUrl: shareableUrl,
         source: source,
         httpRoot: '/'
     });
-}
+    }
 
-    generateShareableUrl(state: ClientState): string {
-    const stateString = JSON.stringify(state);
-    const base64State = Buffer.from(stateString).toString('base64url');
-    // Using environment variable or default to localhost
-    const baseUrl = process.env.CE_ORIGIN || `http://localhost:${process.env.PORT || '10240'}`;
-    return `${baseUrl}/#${base64State}`;
+    async generateShareableUrl(state: ClientState): Promise<string> {
+    try {
+        // Create the stored object like the main handler does
+        const {config, configHash} = StorageBase.getSafeHash(state);
+        
+        // Find or create the unique subhash
+        const result = await this.storageHandler.findUniqueSubhash(configHash);
+        
+        if (!result.alreadyPresent) {
+            const storedObject = {
+                prefix: result.prefix,
+                uniqueSubHash: result.uniqueSubHash,
+                fullHash: configHash,
+                config: config,
+            };
+            
+            await this.storageHandler.storeItem(storedObject, {} as express.Request);
+        }
+        
+        const baseUrl = process.env.CE_ORIGIN || `http://localhost:${process.env.PORT || '10240'}`;
+        return `${baseUrl}/z/${result.uniqueSubHash}`;
+    } catch (err) {
+        logger.error(`Error storing share state: ${err}`);
+        // Fallback to direct encoding
+        const stateString = JSON.stringify(state);
+        const base64State = Buffer.from(stateString).toString('base64url');
+        const baseUrl = process.env.CE_ORIGIN || `http://localhost:${process.env.PORT || '10240'}`;
+        return `${baseUrl}/#${base64State}`;
+    }
     }
 }
