@@ -746,6 +746,44 @@ describe('Target hints', () => {
     });
 });
 
+describe('Rust options', () => {
+    let ce: CompilationEnvironment;
+    const executingCompilerInfo = makeFakeCompilerInfo({
+        remote: {
+            target: '',
+            path: '',
+            cmakePath: '',
+            basePath: '/',
+        },
+        semver: 'nightly',
+        lang: 'rust',
+        ldPath: [],
+        libPath: [],
+        supportsExecute: true,
+        supportsBinary: true,
+        options: '',
+    });
+
+    beforeAll(() => {
+        ce = makeCompilationEnvironment({
+            languages,
+        });
+        props.initialize(path.resolve('./test/test-properties/rust'), ['local']);
+    });
+
+    afterAll(() => {
+        props.reset();
+    });
+
+    it('does not pass `--crate-type` when specified by user', () => {
+        const compiler = new RustCompiler(executingCompilerInfo, ce);
+        const options = compiler.optionsForFilter({}, 'output.o', ['--crate-type=bin']);
+        expect(options).not.toContain('--crate-type');
+        const optionsTwoArgs = compiler.optionsForFilter({}, 'output.o', ['--crate-type', 'bin']);
+        expect(optionsTwoArgs).not.toContain('--crate-type');
+    });
+});
+
 describe('Rust overrides', () => {
     let ce: CompilationEnvironment;
     const executingCompilerInfo = makeFakeCompilerInfo({
