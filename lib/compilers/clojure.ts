@@ -156,7 +156,7 @@ export class ClojureCompiler extends JavaCompiler {
             this.getDefaultExecOptions(),
         );
         if (output.code !== 0) {
-            return [{text: `Failed to run compiler to get Clojure Macro Expansion`}];
+            return [{text: `Failed to run compiler to get Clojure Macro Expansion`}, ...output.stderr];
         }
         return output.stdout;
     }
