@@ -26,18 +26,18 @@ block content
         select.compiler-picker#compilerid(name='compiler' placeholder='Select a compiler...')
           - var selectedCompilerId = (session.compilers.length > 0) ? (session.compilers[0].id) : '';
           each compiler in compilers
-            - var compilerIsSelected = compiler.id == selectedCompilerId      
+            - var compilerIsSelected = compiler.id == selectedCompilerId
             if compiler.lang == session.language && (!compiler.hidden || compilerIsSelected)
               if compilerIsSelected
-                option(value=compiler.id selected=true)= compiler.name        
+                option(value=compiler.id selected=true)= compiler.name
               else
                 option(value=compiler.id )= compiler.name
       .form-pair-inlined
         label(for='compileroptions') Options
-        input#compileroptions(name='userArguments' type="text" placeholder='Compiler options...' autocorrect="off" autocapitalize="off" spellcheck="false" value=(session.compilers.length > 0) ? session.compilers[0].options : '')      
+        input#compileroptions(name='userArguments' type="text" placeholder='Compiler options...' autocorrect="off" autocapitalize="off" spellcheck="false" value=(session.compilers.length > 0) ? session.compilers[0].options : '')
       .form-pair-block
         label(for='source') Source code
-        textarea#source(name='source' cols='70' rows='10' placeholder='Type your code here' autocorrect="off" autocapitalize="off" spellcheck="false")      
+        textarea#source(name='source' cols='70' rows='10' placeholder='Type your code here' autocorrect="off" autocapitalize="off" spellcheck="false")
           =session.source
       .form-pair-inlined
         input.btn.btn-primary(type='submit' value='Compile')
@@ -51,7 +51,7 @@ block content
         const userArguments = document.getElementById('compileroptions').value;
         const lang = document.getElementById('lang').value;
         
-        // Create a simple form and submit it
+        // Creating a simple form and submit it
         const form = document.createElement('form');
         form.method = 'GET';
         form.action = '/noscript/share';
