@@ -7,6 +7,7 @@
 
 (def help-text
   "Compiler options supported:
+   -h   --help - Shows this text and flags sent to compiler
    -dl  --direct-linking - Eliminates var indirection in fn invocation
    -dlc --disable-locals-clearing - Eliminates instructions setting locals to null
    -em  --elide-meta [:doc,:arglists,:added,:file,...] - Drops metadata keys from classfiles
@@ -20,7 +21,7 @@
     (if-let [arg (first args)]
       (case arg
         ("-h" "--help")
-        (recur (assoc params :help true)
+        (recur (assoc params :show-help true)
                positional ignored (rest args))
 
         "--macro-expand"
@@ -95,13 +96,17 @@
       (pp/pprint (walk/macroexpand-all form))
       (println))))
 
-(defn compile-input [input-file compiler-options]
+(defn compile-input [input-file {:keys [show-help] :as params}]
   (let [working-dir (path-of-file input-file)
         namespace (read-namespace input-file)
         missing-namespace? (nil? namespace)
         namespace (or namespace "sample")
         compile-filename (io/file working-dir (ns->filename namespace))
-        compile-path (path-of-file compile-filename)]
+        compile-path (path-of-file compile-filename)
+        compiler-options (select-keys params
+                                      [:disable-locals-clearing
+                                       :direct-linking
+                                       :elide-meta])]
     (.mkdirs (io/file working-dir "classes"))
     (when compile-path
       (.mkdirs (io/file compile-path)))
@@ -112,10 +117,11 @@
           (.write out ns-form)))
       (io/copy input-file out))
 
-    (when (seq *compiler-options*)
-      (println "*compiler-options* set via environment:" *compiler-options*))
-    (when (seq compiler-options)
-      (println "*compiler-options* set via flags:" compiler-options))
+    (when show-help
+      (when (seq *compiler-options*)
+        (println "*compiler-options* set via environment:" *compiler-options*))
+      (when (seq compiler-options)
+        (println "*compiler-options* set via flags:" compiler-options)))
     (binding [*compiler-options* (merge *compiler-options* compiler-options)]
       (compile (symbol namespace)))))
 
@@ -123,16 +129,12 @@
       input-file (io/file (first positional))]
   (if (:macro-expand params)
     (print-macro-expansion input-file params)
-    (let [count-ignored (count ignored)
-          compiler-options (select-keys params
-                                        [:disable-locals-clearing
-                                         :direct-linking
-                                         :elide-meta])]
+    (let [count-ignored (count ignored)]
       (doseq [param ignored]
         (println (format "unrecognized option '%s' ignored" param)))
       (when (pos-int? count-ignored)
         (println (format "%d warning%s found" count-ignored
                          (if (= 1 count-ignored) "" "s"))))
-      (when (:help params)
+      (when (:show-help params)
         (println help-text))
-      (compile-input input-file compiler-options))))
+      (compile-input input-file params))))
