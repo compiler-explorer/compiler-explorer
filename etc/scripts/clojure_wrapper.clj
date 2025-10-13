@@ -57,21 +57,27 @@
           (recur params macro-params (conj positional arg) ignored (rest args))))
       [params macro-params positional ignored])))
 
-(defn forms [input-file]
-  (with-open [rdr (-> input-file io/reader PushbackReader.)]
-    (->> #(try (read rdr) (catch Exception e nil))
-         (repeatedly)
-         (take-while some?)
-         (doall))))
+(defn forms
+  ([input-file]
+   ;; Default is to load all forms while file is open
+   (forms input-file doall))
+  ([input-file extract]
+   (with-open [rdr (-> input-file io/reader PushbackReader.)]
+     (->> #(try (read rdr) (catch Exception _e nil))
+          (repeatedly)
+          (take-while some?)
+          extract))))
 
 (defn read-namespace [input-file]
-  (with-open [rdr (-> input-file io/reader PushbackReader.)]
-    (loop []
-      (when-let [form (try (read rdr) (catch Exception e nil))]
-        (if (and (= 'ns (first form))
-                 (symbol? (second form)))
-          (-> form second name)
-          (recur))))))
+  (let [parse-ns-name (fn [forms]
+                        (some->> forms
+                                 (filter (fn [form]
+                                           (and (= 'ns (first form))
+                                                (symbol? (second form)))))
+                                 first   ;; ns form
+                                 second  ;; namespace symbol
+                                 name))]
+    (forms input-file parse-ns-name)))
 
 (defn ns->filename [namespace]
   (-> namespace
