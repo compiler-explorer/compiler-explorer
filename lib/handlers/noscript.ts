@@ -45,28 +45,31 @@ export class NoScriptHandler {
         private readonly defaultLanguage: string | undefined,
     ) {}
 
-    initializeRoutes() {
-        this.router
-            .get('/noscript', cached, csp, (req, res) => {
-                this.renderNoScriptLayout(undefined, req, res);
-            })
-            .get('/noscript/z/:id', cached, csp, this.storedStateHandlerNoScript.bind(this))
-            .get('/noscript/sponsors', cached, csp, (req, res) => {
-                res.render(
-                    'noscript/sponsors',
-                    this.renderConfig(
-                        {
-                            embedded: false,
-                            mobileViewer: isMobileViewer(req),
-                        },
-                        req.query,
-                    ),
-                );
-            })
-            .get('/noscript/:language', cached, csp, (req, res) => {
-                this.renderNoScriptLayout(undefined, req, res);
-            });
-    }
+initializeRoutes() {
+    this.router
+        .get('/noscript', cached, csp, (req, res) => {
+            this.renderNoScriptLayout(undefined, req, res);
+        })
+        .get('/noscript/z/:id', cached, csp, this.storedStateHandlerNoScript.bind(this))
+        .get('/noscript/sponsors', cached, csp, (req, res) => {
+            res.render(
+                'noscript/sponsors',
+                this.renderConfig(
+                    {
+                        embedded: false,
+                        mobileViewer: isMobileViewer(req),
+                    },
+                    req.query,
+                ),
+            );
+        })
+        // SHARE ROUTE - MUST COME BEFORE :language route
+        .get('/noscript/share', cached, csp, this.handleShareLink.bind(this))
+        // This comes AFTER so it doesn't catch /noscript/share
+        .get('/noscript/:language', cached, csp, (req, res) => {
+            this.renderNoScriptLayout(undefined, req, res);
+        });
+}
 
     storedStateHandlerNoScript(req: express.Request, res: express.Response, next: express.NextFunction) {
         const id = req.params.id;
@@ -153,4 +156,54 @@ export class NoScriptHandler {
             ),
         );
     }
+
+handleShareLink(req: express.Request, res: express.Response) {
+    console.log('=== SHARE LINK HANDLER CALLED ===');
+    
+    // Get form data with proper type checking
+    const source = typeof req.query.source === 'string' ? req.query.source : '';
+    const compiler = typeof req.query.compiler === 'string' ? req.query.compiler : '';
+    const userArguments = typeof req.query.userArguments === 'string' ? req.query.userArguments : '';
+    const language = typeof req.query.language === 'string' ? req.query.language : 'c++';
+
+    console.log('Received data:', { source, compiler, userArguments, language });
+
+    // Create a simple state for sharing
+    const state = this.createDefaultState(language as LanguageKey);
+    
+    if (source) {
+        const session = state.findOrCreateSession(1);
+        session.source = source;
+        
+        if (compiler) {
+            const compilerObj = session.findOrCreateCompiler(1);
+            compilerObj.id = compiler;
+        }
+        
+        if (userArguments) {
+            const compilerObj = session.findOrCreateCompiler(1);
+            compilerObj.options = userArguments;
+        }
+    }
+
+    // Generate shareable URL
+    const shareableUrl = this.generateShareableUrl(state);
+    console.log('Shareable URL:', shareableUrl);
+
+    // Render the share template directly without using renderConfig
+    res.render('noscript/share', {
+        title: 'Shareable Link - Compiler Explorer',
+        shareableUrl: shareableUrl,
+        source: source,
+        httpRoot: '/'
+    });
+}
+
+generateShareableUrl(state: ClientState): string {
+    const stateString = JSON.stringify(state);
+    const base64State = Buffer.from(stateString).toString('base64url');
+    // Use environment variable or default to localhost
+    const baseUrl = process.env.CE_ORIGIN || `http://localhost:${process.env.PORT || '10240'}`;
+    return `${baseUrl}/#${base64State}`;
+}
 }

@@ -26,18 +26,60 @@ block content
         select.compiler-picker#compilerid(name='compiler' placeholder='Select a compiler...')
           - var selectedCompilerId = (session.compilers.length > 0) ? (session.compilers[0].id) : '';
           each compiler in compilers
-            - var compilerIsSelected = compiler.id == selectedCompilerId
+            - var compilerIsSelected = compiler.id == selectedCompilerId      
             if compiler.lang == session.language && (!compiler.hidden || compilerIsSelected)
               if compilerIsSelected
-                option(value=compiler.id selected=true)= compiler.name
+                option(value=compiler.id selected=true)= compiler.name        
               else
                 option(value=compiler.id )= compiler.name
       .form-pair-inlined
         label(for='compileroptions') Options
-        input#compileroptions(name='userArguments' type="text" placeholder='Compiler options...' autocorrect="off" autocapitalize="off" spellcheck="false" value=(session.compilers.length > 0) ? session.compilers[0].options : '')
+        input#compileroptions(name='userArguments' type="text" placeholder='Compiler options...' autocorrect="off" autocapitalize="off" spellcheck="false" value=(session.compilers.length > 0) ? session.compilers[0].options : '')      
       .form-pair-block
         label(for='source') Source code
-        textarea#source(name='source' cols='70' rows='10' placeholder='Type your code here' autocorrect="off" autocapitalize="off" spellcheck="false")
+        textarea#source(name='source' cols='70' rows='10' placeholder='Type your code here' autocorrect="off" autocapitalize="off" spellcheck="false")      
           =session.source
       .form-pair-inlined
-        input(type='submit' value='Compile')
+        input.btn.btn-primary(type='submit' value='Compile')
+        | 
+        button.btn.btn-outline-secondary(type='button' onclick='generateShareLink()') Get Shareable Link
+
+  script.
+    function generateShareLink() {
+        const source = document.getElementById('source').value;
+        const compiler = document.getElementById('compilerid').value;
+        const userArguments = document.getElementById('compileroptions').value;
+        const lang = document.getElementById('lang').value;
+        
+        // Create a simple form and submit it
+        const form = document.createElement('form');
+        form.method = 'GET';
+        form.action = '/noscript/share';
+        
+        const sourceInput = document.createElement('input');
+        sourceInput.type = 'hidden';
+        sourceInput.name = 'source';
+        sourceInput.value = source;
+        form.appendChild(sourceInput);
+        
+        const compilerInput = document.createElement('input');
+        compilerInput.type = 'hidden';
+        compilerInput.name = 'compiler';
+        compilerInput.value = compiler;
+        form.appendChild(compilerInput);
+        
+        const optionsInput = document.createElement('input');
+        optionsInput.type = 'hidden';
+        optionsInput.name = 'userArguments';
+        optionsInput.value = userArguments;
+        form.appendChild(optionsInput);
+        
+        const langInput = document.createElement('input');
+        langInput.type = 'hidden';
+        langInput.name = 'language';
+        langInput.value = lang;
+        form.appendChild(langInput);
+        
+        document.body.appendChild(form);
+        form.submit();
+    }

@@ -41,6 +41,7 @@
     "copy-webpack-plugin": "^13.0.1",
     "cross-env": "^10.1.0",
     "enhanced-ms": "^4.1.0",
+    "esbuild": "^0.25.10",
     "events": "^3.3.0",
     "express": "^5.1.0",
     "file-saver": "^2.0.5",
