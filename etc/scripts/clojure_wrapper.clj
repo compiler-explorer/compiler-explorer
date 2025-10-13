@@ -20,11 +20,6 @@
          args *command-line-args*]
     (if-let [arg (first args)]
       (case arg
-        "--help"
-        (do
-          (println help-text)
-          (System/exit 1))
-
         "--macro-expand"
         (recur params (assoc macro-params :macro-expand true)
                positional ignored (rest args))
