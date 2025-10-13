@@ -59,10 +59,10 @@
 
 (defn forms [input-file]
   (with-open [rdr (-> input-file io/reader PushbackReader.)]
-    (loop [forms []]
-      (if-let [form (try (read rdr) (catch Exception e nil))]
-        (recur (conj forms form))
-        forms))))
+    (->> #(try (read rdr) (catch Exception e nil))
+         (repeatedly)
+         (take-while some?)
+         (doall))))
 
 (defn read-namespace [input-file]
   (with-open [rdr (-> input-file io/reader PushbackReader.)]
