@@ -29,7 +29,7 @@ import {PELabelReconstructor} from '../lib/pe32-support.js';
 
 describe('Basic reconstructions', () => {
     it('No lines', () => {
-        const lines = [];
+        const lines: string[] = [];
         const reconstructor = new PELabelReconstructor(lines, false, new MapFileReader('unused'), false);
         expect(reconstructor.asmLines.length).toEqual(0);
     });

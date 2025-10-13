@@ -34,7 +34,7 @@ import * as utils from './utils.js';
 type MetaNode = {
     [key: string]: string | number | undefined;
     metaId: string;
-    metaType: string;
+    metaType?: string;
     file?: string;
     filename?: string;
     line?: number;

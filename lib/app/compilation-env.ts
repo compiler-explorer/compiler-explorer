@@ -56,7 +56,7 @@ export async function initializeCompilationEnvironment(
         appArgs.doCache,
     );
 
-    const compileHandler = new CompileHandler(compilationEnvironment, awsProps);
+    const compileHandler = new CompileHandler(compilationEnvironment, awsProps, appArgs);
     compilationEnvironment.setCompilerFinder(compileHandler.findCompiler.bind(compileHandler));
 
     return {

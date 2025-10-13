@@ -68,6 +68,7 @@ type EdgeSegment = {
     horizontalOffset: number;
     verticalOffset: number;
     type: SegmentType;
+    less_than(other: EdgeSegment): boolean;
 };
 
 type Edge = {
@@ -603,6 +604,12 @@ export class GraphLayoutCore {
             horizontalOffset: 0,
             verticalOffset: 0,
             type: start_col === end_col ? SegmentType.Vertical : SegmentType.Horizontal,
+            less_than(other: EdgeSegment): boolean {
+                if (this.start.row !== other.start.row) return this.start.row < other.start.row;
+                if (this.start.col !== other.start.col) return this.start.col < other.start.col;
+                if (this.end.row !== other.end.row) return this.end.row < other.end.row;
+                return this.end.col < other.end.col;
+            },
         });
         const target = this.blocks[edge.dest];
         // start just below the source block

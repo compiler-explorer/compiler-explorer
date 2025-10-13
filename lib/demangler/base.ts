@@ -219,7 +219,7 @@ export class BaseDemangler extends AsmRegex {
         return this.compiler.exec(this.demanglerExe, this.demanglerArguments, options);
     }
 
-    public async process(result: ParsedAsmResult, execOptions?: ExecutionOptions) {
+    public async process(result: ParsedAsmResult, execOptions?: ExecutionOptions): Promise<ParsedAsmResult> {
         const options = execOptions || {};
         this.result = result;
 

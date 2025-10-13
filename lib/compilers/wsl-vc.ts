@@ -76,7 +76,7 @@ export class WslVcCompiler extends Win32VcCompiler {
         compiler: string,
         options: string[],
         inputFilename: string,
-        execOptions: ExecutionOptionsWithEnv,
+        execOptions?: ExecutionOptionsWithEnv,
     ) {
         if (!execOptions) {
             execOptions = this.getDefaultExecOptions();

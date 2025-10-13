@@ -26,6 +26,7 @@ import child_process from 'node:child_process';
 
 import {beforeAll, describe, expect, it} from 'vitest';
 
+import {CompilationEnvironment} from '../lib/compilation-env.js';
 import {WineVcCompiler} from '../lib/compilers/wine-vc.js';
 import {WslVcCompiler} from '../lib/compilers/wsl-vc.js';
 import {LanguageKey} from '../types/languages.interfaces.js';
@@ -48,7 +49,7 @@ const info = {
 };
 
 describe('Paths', () => {
-    let env;
+    let env: CompilationEnvironment;
 
     beforeAll(() => {
         env = makeCompilationEnvironment({languages});
@@ -72,7 +73,7 @@ function testExecOutput(x) {
     return x;
 }
 
-let ce;
+let ce: CompilationEnvironment;
 
 function createCompiler(compiler) {
     if (ce === undefined) {

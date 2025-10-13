@@ -596,7 +596,7 @@ describe('squashes horizontal whitespace', () => {
 });
 
 describe('encodes in our version of base32', () => {
-    function doTest(original, expected) {
+    function doTest(original: string, expected: string) {
         expect(utils.base32Encode(Buffer.from(original))).toEqual(expected);
     }
 

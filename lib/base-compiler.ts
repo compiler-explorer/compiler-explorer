@@ -32,7 +32,7 @@ import {parseAllDocuments} from 'yaml';
 import {splitArguments, unique} from '../shared/common-utils.js';
 import {OptRemark} from '../static/panes/opt-view.interfaces.js';
 import {PPOptions} from '../static/panes/pp-view.interfaces.js';
-import {ParsedAsmResultLine} from '../types/asmresult/asmresult.interfaces.js';
+import {ParsedAsmResult, ParsedAsmResultLine} from '../types/asmresult/asmresult.interfaces.js';
 import {ClangirBackendOptions} from '../types/compilation/clangir.interfaces.js';
 import {
     ActiveTool,
@@ -465,6 +465,12 @@ export class BaseCompiler {
         const hash = BaseCache.hash(key);
 
         let result = await this.env.compilerCacheGet(key);
+        if (result) {
+            if (exec.hasNsjailPermissionsIssue(result)) {
+                logger.info(`Throwing out faulty cached result with nsjail permissions issue for ${compiler}`);
+                result = undefined;
+            }
+        }
 
         if (!result && this.env.willBeInCacheSoon(hash)) {
             result = await this.env.enqueue(async () => {
@@ -488,7 +494,9 @@ export class BaseCompiler {
             });
         }
 
-        if (options.createAndUseTempDir) fs.rm(options.customCwd!, {recursive: true, force: true}).catch(() => {});
+        if (options.createAndUseTempDir) {
+            fs.rm(options.customCwd!, {recursive: true, force: true}).catch(() => {});
+        }
 
         return result;
     }
@@ -648,7 +656,7 @@ export class BaseCompiler {
         }
 
         const objdumper = new this.objdumperClass();
-        const args = objdumper.getDefaultArgs(
+        const args = objdumper.getArgs(
             outputFilename,
             demangle,
             intelAsm,
@@ -1901,12 +1909,7 @@ export class BaseCompiler {
         return Promise.all(filesToWrite);
     }
 
-    protected async writeAllFiles(
-        dirPath: string,
-        source: string,
-        files: FiledataPair[],
-        filters: ParseFiltersAndOutputOptions,
-    ) {
+    protected async writeAllFiles(dirPath: string, source: string, files: FiledataPair[]) {
         if (!source) throw new Error(`File ${this.compileFilename} has no content or file is missing`);
 
         const inputFilename = path.join(dirPath, this.compileFilename);
@@ -1942,7 +1945,7 @@ export class BaseCompiler {
     }
 
     async buildExecutableInFolder(key: CacheKey, dirPath: string): Promise<BuildResult> {
-        const writeSummary = await this.writeAllFiles(dirPath, key.source, key.files, key.filters);
+        const writeSummary = await this.writeAllFiles(dirPath, key.source, key.files);
         const downloads = await this.setupBuildEnvironment(key, dirPath, true);
 
         const inputFilename = writeSummary.inputFilename;
@@ -2555,9 +2558,9 @@ export class BaseCompiler {
         return this.checkOutputFileAndDoPostProcess(asmResult, outputFilename, filters, backendOptions.produceOptInfo);
     }
 
-    doTempfolderCleanup(buildResult: BuildResult | CompilationResult) {
+    async doTempfolderCleanup(buildResult: BuildResult | CompilationResult) {
         if (buildResult.dirPath && !this.delayCleanupTemp) {
-            fs.rm(buildResult.dirPath, {recursive: true, force: true}).catch(() => {});
+            await fs.rm(buildResult.dirPath, {recursive: true, force: true}).catch(() => {});
         }
         buildResult.dirPath = undefined;
     }
@@ -2738,8 +2741,8 @@ export class BaseCompiler {
 
         const outputFilename = this.getExecutableFilename(path.join(dirPath, 'build'), this.outputFilebase, cacheKey);
 
-        let fullResult: CompilationResult = bypassExecutionCache(bypassCache)
-            ? null
+        let fullResult: CompilationResult = bypassCompilationCache(bypassCache)
+            ? undefined
             : await this.loadPackageWithExecutable(cacheKey, executablePackageHash, dirPath);
         if (fullResult) {
             fullResult.retreivedFromCache = true;
@@ -2749,151 +2752,177 @@ export class BaseCompiler {
             delete fullResult.dirPath;
             fullResult.executableFilename = outputFilename;
         } else {
-            let writeSummary;
-            try {
-                writeSummary = await this.writeAllFilesCMake(dirPath, cacheKey.source, files, cacheKey.filters);
-            } catch (e) {
-                return this.handleUserError(e, dirPath);
-            }
+            const queueTime = performance.now();
+            const moreResult = await this.env.enqueue(async () => {
+                const start = performance.now();
+                compilationQueueTimeHistogram.observe((start - queueTime) / 1000);
 
-            const execParams = this.getDefaultExecOptions();
-            execParams.appHome = dirPath;
-            execParams.customCwd = path.join(dirPath, 'build');
+                let writeSummary;
+                try {
+                    writeSummary = await this.writeAllFilesCMake(dirPath, cacheKey.source, files, cacheKey.filters);
+                } catch (e) {
+                    return this.handleUserError(e, dirPath);
+                }
 
-            await fs.mkdir(execParams.customCwd);
+                const execParams = this.getDefaultExecOptions();
+                execParams.appHome = dirPath;
+                execParams.customCwd = path.join(dirPath, 'build');
 
-            const makeExecParams = this.createCmakeExecParams(execParams, dirPath, libsAndOptions, toolchainPath);
+                await fs.mkdir(execParams.customCwd);
 
-            fullResult = {
-                code: 0,
-                timedOut: false,
-                stdout: [],
-                stderr: [],
-                buildsteps: [],
-                inputFilename: writeSummary.inputFilename,
-                executableFilename: outputFilename,
-            };
+                const makeExecParams = this.createCmakeExecParams(execParams, dirPath, libsAndOptions, toolchainPath);
 
-            fullResult.downloads = await this.setupBuildEnvironment(cacheKey, dirPath, true);
-
-            const toolchainparam = this.getCMakeExtToolchainParam(parsedRequest.backendOptions.overrides || []);
-
-            const cmakeArgs = splitArguments(parsedRequest.backendOptions.cmakeArgs);
-            const partArgs: string[] = [
-                toolchainparam,
-                ...this.getExtraCMakeArgs(parsedRequest),
-                ...cmakeArgs,
-                '..',
-            ].filter(Boolean); // filter out empty args
-            const useNinja = this.env.ceProps('useninja');
-            const fullArgs: string[] = useNinja ? ['-GNinja'].concat(partArgs) : partArgs;
-
-            const cmd = this.env.ceProps('cmake') as string;
-            assert(cmd, 'No cmake command found');
-
-            const cmakeStepResult = await this.doBuildstepAndAddToResult(
-                fullResult,
-                'cmake',
-                cmd,
-                fullArgs,
-                makeExecParams,
-            );
-
-            if (cmakeStepResult.code !== 0) {
-                fullResult.result = {
-                    dirPath,
+                const result: CompilationResult = {
+                    code: 0,
                     timedOut: false,
                     stdout: [],
                     stderr: [],
-                    okToCache: false,
-                    code: cmakeStepResult.code,
-                    asm: [{text: '<Build failed>'}],
+                    buildsteps: [],
+                    inputFilename: writeSummary.inputFilename,
+                    executableFilename: outputFilename,
                 };
-                fullResult.result.compilationOptions = this.getUsedEnvironmentVariableFlags(makeExecParams);
-                return fullResult;
-            }
 
-            const makeStepResult = await this.doBuildstepAndAddToResult(
-                fullResult,
-                'build',
-                cmd,
-                ['--build', '.'],
-                execParams,
-            );
+                result.downloads = await this.setupBuildEnvironment(cacheKey, dirPath, true);
 
-            if (makeStepResult.code !== 0) {
-                fullResult.result = {
-                    dirPath,
-                    timedOut: false,
-                    stdout: [],
-                    stderr: [],
-                    okToCache: false,
-                    code: makeStepResult.code,
-                    asm: [{text: '<Build failed>'}],
-                };
-                return fullResult;
-            }
+                const toolchainparam = this.getCMakeExtToolchainParam(parsedRequest.backendOptions.overrides || []);
 
-            fullResult.result = {
-                dirPath,
-                code: 0,
-                timedOut: false,
-                stdout: [],
-                stderr: [],
-                okToCache: true,
-                compilationOptions: this.getUsedEnvironmentVariableFlags(makeExecParams),
-            };
+                const cmakeArgs = splitArguments(parsedRequest.backendOptions.cmakeArgs);
+                const partArgs: string[] = [
+                    toolchainparam,
+                    ...this.getExtraCMakeArgs(parsedRequest),
+                    ...cmakeArgs,
+                    '..',
+                ].filter(Boolean); // filter out empty args
+                const useNinja = this.env.ceProps('useninja');
+                const fullArgs: string[] = useNinja ? ['-GNinja'].concat(partArgs) : partArgs;
 
-            if (!parsedRequest.backendOptions.skipAsm) {
-                const [asmResult] = await this.checkOutputFileAndDoPostProcess(
-                    fullResult.result,
-                    outputFilename,
-                    cacheKey.filters,
+                const cmd = this.env.ceProps('cmake') as string;
+                assert(cmd, 'No cmake command found');
+
+                const cmakeStepResult = await this.doBuildstepAndAddToResult(
+                    result,
+                    'cmake',
+                    cmd,
+                    fullArgs,
+                    makeExecParams,
                 );
-                fullResult.result = asmResult;
-            }
 
-            fullResult.code = 0;
-            if (fullResult.buildsteps) {
-                _.each(fullResult.buildsteps, step => {
-                    fullResult.code += step.code;
-                });
-            }
+                if (cmakeStepResult.code !== 0) {
+                    result.result = {
+                        dirPath,
+                        timedOut: false,
+                        stdout: [],
+                        stderr: [],
+                        okToCache: false,
+                        code: cmakeStepResult.code,
+                        asm: [{text: '<Build failed>'}],
+                    };
+                    result.result.compilationOptions = this.getUsedEnvironmentVariableFlags(makeExecParams);
+                    compilationTimeHistogram.observe((performance.now() - start) / 1000);
+                    return result;
+                }
 
-            await this.storePackageWithExecutable(executablePackageHash, dirPath, fullResult);
+                const makeStepResult = await this.doBuildstepAndAddToResult(
+                    result,
+                    'build',
+                    cmd,
+                    ['--build', '.'],
+                    execParams,
+                );
+
+                if (makeStepResult.code !== 0) {
+                    result.result = {
+                        dirPath,
+                        timedOut: false,
+                        stdout: [],
+                        stderr: [],
+                        okToCache: false,
+                        code: makeStepResult.code,
+                        asm: [{text: '<Build failed>'}],
+                    };
+                    compilationTimeHistogram.observe((performance.now() - start) / 1000);
+                    return result;
+                }
+
+                result.result = {
+                    dirPath,
+                    code: 0,
+                    timedOut: false,
+                    stdout: [],
+                    stderr: [],
+                    okToCache: true,
+                    compilationOptions: this.getUsedEnvironmentVariableFlags(makeExecParams),
+                };
+
+                if (!parsedRequest.backendOptions.skipAsm) {
+                    const [asmResult] = await this.checkOutputFileAndDoPostProcess(
+                        result.result,
+                        outputFilename,
+                        cacheKey.filters,
+                    );
+                    result.result = asmResult;
+                }
+
+                result.code = 0;
+                if (result.buildsteps) {
+                    _.each(result.buildsteps, step => {
+                        result.code += step.code;
+                    });
+                }
+
+                await this.storePackageWithExecutable(executablePackageHash, dirPath, result);
+
+                compilationTimeHistogram.observe((performance.now() - start) / 1000);
+                return result;
+            });
+
+            if (moreResult) fullResult = moreResult;
         }
 
         if (fullResult.result) {
             fullResult.result.dirPath = dirPath;
 
             if (doExecute && fullResult.result.code === 0) {
-                const execTriple = await RemoteExecutionQuery.guessExecutionTripleForBuildresult({
-                    ...fullResult,
-                    downloads: fullResult.downloads || [],
-                    executableFilename: outputFilename,
-                    compilationOptions: fullResult.compilationOptions || [],
-                });
-
-                if (matchesCurrentHost(execTriple)) {
-                    fullResult.execResult = await this.runExecutable(outputFilename, executeOptions, dirPath);
-                    fullResult.didExecute = true;
+                // Check if executable exists before trying to run it
+                if (!(await utils.fileExists(outputFilename))) {
+                    fullResult.execResult = {
+                        code: -1,
+                        okToCache: false,
+                        stdout: [],
+                        stderr: [{text: `Executable not found: ${utils.maskRootdir(outputFilename)}`}],
+                        execTime: 0,
+                        timedOut: false,
+                    };
+                    fullResult.didExecute = false;
                 } else {
-                    if (await RemoteExecutionQuery.isPossible(execTriple)) {
-                        fullResult.execResult = await this.runExecutableRemotely(
-                            executablePackageHash,
-                            executeOptions,
-                            execTriple,
-                        );
+                    const execTriple = await RemoteExecutionQuery.guessExecutionTripleForBuildresult({
+                        ...fullResult,
+                        downloads: fullResult.downloads || [],
+                        executableFilename: outputFilename,
+                        compilationOptions: fullResult.compilationOptions || [],
+                    });
+
+                    if (matchesCurrentHost(execTriple)) {
+                        fullResult.execResult = await this.runExecutable(outputFilename, executeOptions, dirPath);
                         fullResult.didExecute = true;
                     } else {
-                        fullResult.execResult = {
-                            code: -1,
-                            okToCache: false,
-                            stdout: [],
-                            stderr: [{text: `No execution available for ${execTriple.toString()}`}],
-                            execTime: 0,
-                            timedOut: false,
-                        };
+                        if (await RemoteExecutionQuery.isPossible(execTriple)) {
+                            fullResult.execResult = await this.runExecutableRemotely(
+                                executablePackageHash,
+                                executeOptions,
+                                execTriple,
+                            );
+                            fullResult.didExecute = true;
+                        } else {
+                            fullResult.execResult = {
+                                code: -1,
+                                okToCache: false,
+                                stdout: [],
+                                stderr: [{text: `No execution available for ${execTriple.toString()}`}],
+                                execTime: 0,
+                                timedOut: false,
+                            };
+                        }
                     }
                 }
             }
@@ -2917,6 +2946,12 @@ export class BaseCompiler {
         );
 
         if (fullResult.result) delete fullResult.result.dirPath;
+
+        // Cleanup temp directory after execution is complete
+        await this.doTempfolderCleanup(fullResult);
+        if (fullResult.result) {
+            await this.doTempfolderCleanup(fullResult.result);
+        }
 
         this.cleanupResult(fullResult);
         fullResult.s3Key = BaseCache.hash(cacheKey);
@@ -3040,7 +3075,7 @@ export class BaseCompiler {
                     );
 
                     if (result.execResult?.buildResult) {
-                        this.doTempfolderCleanup(result.execResult.buildResult);
+                        await this.doTempfolderCleanup(result.execResult.buildResult);
                     }
                 }
                 return result;
@@ -3057,7 +3092,7 @@ export class BaseCompiler {
                     if (backendOptions.executorRequest) {
                         const execResult = await this.handleExecution(key, executeOptions, bypassCache);
                         if (execResult?.buildResult) {
-                            this.doTempfolderCleanup(execResult.buildResult);
+                            await this.doTempfolderCleanup(execResult.buildResult);
                         }
                         return execResult;
                     }
@@ -3066,7 +3101,7 @@ export class BaseCompiler {
 
                     let writeSummary;
                     try {
-                        writeSummary = await this.writeAllFiles(dirPath, source, files, filters);
+                        writeSummary = await this.writeAllFiles(dirPath, source, files);
                     } catch (e) {
                         return this.handleUserError(e, dirPath);
                     }
@@ -3175,9 +3210,12 @@ export class BaseCompiler {
 
         if (!backendOptions.skipPopArgs) result.popularArguments = this.possibleArguments.getPopularArguments(options);
 
-        this.doTempfolderCleanup(result);
-        if (result.buildResult) {
-            this.doTempfolderCleanup(result.buildResult);
+        // Only cleanup immediately if not delaying caching (e.g., not in cmake flow)
+        if (!delayCaching) {
+            await this.doTempfolderCleanup(result);
+            if (result.buildResult) {
+                await this.doTempfolderCleanup(result.buildResult);
+            }
         }
 
         result = this.postCompilationPreCacheHook(result);
@@ -3199,7 +3237,7 @@ export class BaseCompiler {
             result.execResult = (await execPromise) as CompilationResult;
 
             if (result.execResult.buildResult) {
-                this.doTempfolderCleanup(result.execResult.buildResult);
+                await this.doTempfolderCleanup(result.execResult.buildResult);
             }
         }
 
@@ -3290,7 +3328,7 @@ export class BaseCompiler {
         return this.asm.process(result.asm, filters);
     }
 
-    async postProcessAsm(result, filters?: ParseFiltersAndOutputOptions) {
+    async postProcessAsm(result, filters?: ParseFiltersAndOutputOptions): Promise<ParsedAsmResult> {
         if (!result.okToCache || !this.demanglerClass || !result.asm) return result;
         const demangler = new this.demanglerClass(this.compiler.demangler, this, this.optionsForDemangler(filters));
 

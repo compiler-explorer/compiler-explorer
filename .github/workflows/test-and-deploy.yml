@@ -21,6 +21,8 @@ jobs:
         run: |
           make prereqs
           python3 -m pip install numba
+      - name: Install uv
+        uses: astral-sh/setup-uv@v6
       - name: Run checks
         run: |
           npm run lint-check
@@ -29,6 +31,7 @@ jobs:
           python3 ./etc/scripts/util/propscheck.py
           python3 ./etc/scripts/util/propschecktest.py
           python3 ./etc/scripts/test_numba_wrapper.py
+          uv run --directory etc/scripts/gh_tool pytest -v
       - uses: codecov/codecov-action@v5
         with:
           token: ${{ secrets.CODECOV_TOKEN }}

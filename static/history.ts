@@ -24,7 +24,7 @@
 
 import _ from 'underscore';
 import {localStorage} from './local.js';
-import {Sharing} from './sharing.js';
+import {SharingBase} from './sharing.js';
 
 const maxHistoryEntries = 30;
 export type HistorySource = {dt: number; source: string};
@@ -100,7 +100,7 @@ export function trackHistory(layout: any) {
     let lastState: string | null = null;
     const debouncedPush = _.debounce(push, 500);
     layout.on('stateChanged', () => {
-        const stringifiedConfig = JSON.stringify(Sharing.filterComponentState(layout.toConfig()));
+        const stringifiedConfig = JSON.stringify(SharingBase.filterComponentState(layout.toConfig()));
         if (stringifiedConfig !== lastState) {
             lastState = stringifiedConfig;
             debouncedPush(stringifiedConfig);

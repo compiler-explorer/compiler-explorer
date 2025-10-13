@@ -24,6 +24,7 @@
 
 import type {ExecutionOptions} from '../../types/compilation/compilation.interfaces.js';
 import type {UnprocessedExecResult} from '../../types/execution/execution.interfaces.js';
+import {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces.js';
 
 export interface ObjdumpResult {
     code: number;
@@ -39,13 +40,14 @@ export abstract class BaseObjdumper {
         protected readonly widthOptions: string[],
     ) {}
 
-    getDefaultArgs(
+    getArgs(
         outputFilename: string,
         demangle?: boolean,
         intelAsm?: boolean,
         staticReloc?: boolean,
         dynamicReloc?: boolean,
         objdumperArguments?: string[],
+        filters?: ParseFiltersAndOutputOptions,
     ) {
         const args = ['-d', outputFilename, '-l', ...this.widthOptions];
 
