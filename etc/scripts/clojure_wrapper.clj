@@ -88,7 +88,7 @@
 (defn path-of-file [file]
   (.getParent file))
 
-(defn print-macro-expanson [input-file macro-params]
+(defn print-macro-expansion [input-file macro-params]
   (binding [clojure.pprint/*print-pprint-dispatch* clojure.pprint/code-dispatch
             clojure.pprint/*print-right-margin* 60
             clojure.pprint/*print-miser-width* 20
@@ -128,7 +128,7 @@
 (let [[compiler-options macro-params positional ignored] (parse-command-line)
       input-file (io/file (first positional))]
   (if (:macro-expand macro-params)
-    (print-macro-expanson input-file macro-params)
+    (print-macro-expansion input-file macro-params)
     (let [count-ignored (count ignored)]
       (doseq [param ignored]
         (println (format "unrecognized option '%s' ignored" param)))

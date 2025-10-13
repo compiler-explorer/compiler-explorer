@@ -91,7 +91,8 @@ export class ClojureCompiler extends JavaCompiler {
         );
     }
 
-    override async readfiles(dirPath: string): Promise<string[]> {
+    override async readdir(dirPath: string): Promise<string[]> {
+        // Clojure requires recursive walk to find namespace-pathed class files
         return fs.readdir(dirPath, {recursive: true});
     }
 
