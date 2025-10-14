@@ -187,17 +187,17 @@ export class NoScriptHandler {
 
         // Creating a simple state for sharing
         const state = this.createDefaultState(language as LanguageKey);
-        
+
         if (source) {
             const session = state.findOrCreateSession(1);
             session.source = source;
             session.language = language;
-            
+
             if (compiler) {
                 const compilerObj = session.findOrCreateCompiler(1);
                 compilerObj.id = compiler;
             }
-            
+
             if (userArguments) {
                 const compilerObj = session.findOrCreateCompiler(1);
                 compilerObj.options = userArguments;
@@ -225,10 +225,10 @@ export class NoScriptHandler {
             },
             req.query,
         );
-        
+
         // Adding httpRoot to the render config
         (renderConfig as any).httpRoot = httpRoot;
-        
+
         res.render('noscript/share', renderConfig);
     }
 
@@ -236,10 +236,10 @@ export class NoScriptHandler {
         try {
             // Creating the stored object like the main handler does
             const {config, configHash} = StorageBase.getSafeHash(state);
-            
+
             // Finding or create the unique subhash
             const result = await this.storageHandler.findUniqueSubhash(configHash);
-            
+
             if (!result.alreadyPresent) {
                 const storedObject = {
                     prefix: result.prefix,
@@ -247,10 +247,10 @@ export class NoScriptHandler {
                     fullHash: configHash,
                     config: config,
                 };
-                
+
                 await this.storageHandler.storeItem(storedObject, {} as express.Request);
             }
-            
+
             return `/z/${result.uniqueSubHash}`;
         } catch (err) {
             logger.error(`Error storing share state: ${err}`);
