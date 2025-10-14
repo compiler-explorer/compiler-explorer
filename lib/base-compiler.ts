@@ -1455,7 +1455,7 @@ export class BaseCompiler {
         asm: ParsedAsmResultLine[];
         languageId: string;
     }> {
-        const irPath = this.getIrOutputFilename(output.inputFilename!, filters);
+        const irPath = this.getIrOutputFilename(output.inputFilename!, filters, irOptions);
         if (await utils.fileExists(irPath)) {
             const output = await fs.readFile(irPath, 'utf8');
             return await this.llvmIr.process(output, irOptions);
@@ -1701,8 +1701,18 @@ export class BaseCompiler {
         return [{text: 'Internal error; unable to open output path'}];
     }
 
-    getIrOutputFilename(inputFilename: string, filters?: ParseFiltersAndOutputOptions): string {
-        // filters are passed because rust needs to know whether a binary is being produced or not
+    /**
+     * Get the LLVM IR output filename.
+     *
+     * @param inputFilename Input filename.
+     * @param filters Can be used if this base method is overridden. E.g. in order to know whether a binary is being produced (used by Rust).
+     * @param irOptions Can be used if this base method is overridden. E.g. in order return an output file based on `irOptions` (used by Resolc).
+     */
+    getIrOutputFilename(
+        inputFilename: string,
+        filters?: ParseFiltersAndOutputOptions,
+        irOptions?: LLVMIrBackendOptions,
+    ): string {
         return utils.changeExtension(inputFilename, '.ll');
     }
 

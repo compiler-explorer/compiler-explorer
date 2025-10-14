@@ -108,8 +108,9 @@ export type LanguageKey =
     | 'vb'
     | 'vyper'
     | 'wasm'
-    | 'zig'
-    | 'ylc';
+    | 'ylc'
+    | 'yul'
+    | 'zig';
 
 export interface Language {
     /** Id of language. Added programmatically based on CELanguages key */
