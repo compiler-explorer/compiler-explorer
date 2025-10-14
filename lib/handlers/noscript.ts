@@ -164,7 +164,7 @@ export class NoScriptHandler {
         const userArguments = typeof req.body.userArguments === 'string' ? req.body.userArguments : (typeof req.query.userArguments === 'string' ? req.query.userArguments : '');
         const language = typeof req.body.lang === 'string' ? req.body.lang : (typeof req.query.language === 'string' ? req.query.language : 'c++');
 
-        console.log('Received data:', { source, compiler, userArguments, language });
+        logger.debug('Received data for sharing:', { source, compiler, userArguments, language });
 
         // Creating a simple state for sharing
         const state = this.createDefaultState(language as LanguageKey);
@@ -172,6 +172,7 @@ export class NoScriptHandler {
         if (source) {
             const session = state.findOrCreateSession(1);
             session.source = source;
+            session.language = language;
             
             if (compiler) {
                 const compilerObj = session.findOrCreateCompiler(1);
@@ -186,7 +187,7 @@ export class NoScriptHandler {
 
         // Generating shareable URL
         const shareableUrl = await this.generateShareableUrl(state);
-        console.log('Shareable URL:', shareableUrl);
+        logger.debug('Shareable URL:', shareableUrl);
 
         // Rendering the share template
         const renderConfig = this.renderConfig(
@@ -226,14 +227,16 @@ export class NoScriptHandler {
                 await this.storageHandler.storeItem(storedObject, {} as express.Request);
             }
             
-            const baseUrl = process.env.CE_ORIGIN || `http://localhost:${process.env.PORT || '10240'}`;
+            const renderConfig = this.renderConfig({});
+            const baseUrl = renderConfig.httpRoot;
             return `${baseUrl}/z/${result.uniqueSubHash}`;
         } catch (err) {
             logger.error(`Error storing share state: ${err}`);
             // Fallback to direct encoding
             const stateString = JSON.stringify(state);
             const base64State = Buffer.from(stateString).toString('base64url');
-            const baseUrl = process.env.CE_ORIGIN || `http://localhost:${process.env.PORT || '10240'}`;
+            const renderConfig = this.renderConfig({});
+            const baseUrl = renderConfig.httpRoot;
             return `${baseUrl}/#${base64State}`;
         }
     }
