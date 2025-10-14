@@ -165,5 +165,5 @@ From oldest to newest contributor, we would like to thank:
 - [Florian Freitag](https://github.com/flofriday)
 - [Trevor Gross](https://github.com/tgross35)
 - [Alex Trotta](https://github.com/Ahajha)
+- [natinusala](https://github.com/natinusala)
 - [LJ](https://github.com/elle-j)
-
