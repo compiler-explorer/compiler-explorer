@@ -1,0 +1,37 @@
+- var noscript = true
+doctype html
+html(lang="en")
+  head
+    title Shareable Link - Compiler Explorer
+    link(href=require("noscript.css") rel="stylesheet")
+    link(href=require("vendor.css") rel="stylesheet")
+    link(href=require("main.css") rel="stylesheet")
+  body
+    .container.mt-4
+      h1 Shareable Link Generated
+      
+      .card
+        .card-body
+          h5.card-title Your shareable link:
+          .input-group.mb-3
+            input.form-control(type="text" value=shareableUrl readonly)
+            button.btn.btn-primary(type="button" onclick="copyToClipboard()") Copy
+          
+          if source
+            .mb-3
+              strong Source code preview:
+              pre.bg-light.p-3(style="white-space: pre-wrap; font-family: monospace;") #{source}
+          
+          p.card-text
+            | This link will open your code in the main Compiler Explorer interface.
+          
+          .mt-3
+            a.btn.btn-success.me-2(href=shareableUrl target="_blank") Open in Compiler Explorer
+
+    script.
+      function copyToClipboard() {
+        const input = document.querySelector('input');
+        input.select();
+        document.execCommand('copy');
+        alert('Link copied to clipboard!');
+      }
