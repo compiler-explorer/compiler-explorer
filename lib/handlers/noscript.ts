@@ -218,7 +218,7 @@ export class NoScriptHandler {
                 mobileViewer: isMobileViewer(req),
                 wantedLanguage: language,
                 clientstate: state,
-                shareableUrl: shareableUrl,
+                shareableUrl: shortlink,
                 source: source,
             },
             req.query,
