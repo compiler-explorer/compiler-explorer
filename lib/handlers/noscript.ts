@@ -205,6 +205,8 @@ export class NoScriptHandler {
         }
 
         // Generating shareable URL
+        const shareableUrl = await this.generateShareableUrl(state);
+
         const httpRoot = (this.renderConfig as any).httpRoot || '/';
         const relativeUrl = shareableUrl.substring(shareableUrl.lastIndexOf('/z/') + 1);
         const shortlink = `${req.protocol}://${req.get('host')}${httpRoot}${relativeUrl}`;
