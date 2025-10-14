@@ -22,6 +22,8 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
+import path from 'node:path';
+
 import {beforeAll, describe, expect, it} from 'vitest';
 
 import type {CompilationEnvironment} from '../lib/compilation-env.js';
@@ -56,7 +58,7 @@ describe('Resolc', () => {
         expectedFilenameWithoutExtension: string,
     ): void {
         const defaultOutputFilename = `${expectedFilenameWithoutExtension}.pvmasm`;
-        expect(compiler.getOutputFilename('test/resolc')).toEqual(defaultOutputFilename);
+        expect(compiler.getOutputFilename(path.normalize('test/resolc'))).toEqual(defaultOutputFilename);
 
         let llvmIrBackendOptions = makeFakeLlvmIrBackendOptions({showOptimized: true});
         expect(compiler.getIrOutputFilename(inputFilename, undefined, llvmIrBackendOptions)).toEqual(
@@ -113,8 +115,8 @@ describe('Resolc', () => {
 
         it('should generate output filenames', () => {
             const compiler = makeCompiler(compilerInfo);
-            const filenameWithoutExtension = 'test/resolc/artifacts/test_resolc_example.sol.Square';
-            const inputFilename = 'test/resolc/example.sol';
+            const filenameWithoutExtension = path.normalize('test/resolc/artifacts/test_resolc_example.sol.Square');
+            const inputFilename = path.normalize('test/resolc/example.sol');
             expectCorrectOutputFilenames(compiler, inputFilename, filenameWithoutExtension);
         });
 
@@ -297,8 +299,8 @@ describe('Resolc', () => {
 
         it('should generate output filenames', () => {
             const compiler = makeCompiler(compilerInfo);
-            const filenameWithoutExtension = 'test/resolc/artifacts/test_resolc_example.yul.Square';
-            const inputFilename = 'test/resolc/example.yul';
+            const filenameWithoutExtension = path.normalize('test/resolc/artifacts/test_resolc_example.yul.Square');
+            const inputFilename = path.normalize('test/resolc/example.yul');
             expectCorrectOutputFilenames(compiler, inputFilename, filenameWithoutExtension);
         });
     });

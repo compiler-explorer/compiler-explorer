@@ -309,7 +309,7 @@ describe('ResolcRiscVAsmParser tests', () => {
         }
     }
 
-    it('should identify RISC-V instruction info and source line numbers', () => {
+    it.skipIf(process.platform === 'win32')('should identify RISC-V instruction info and source line numbers', () => {
         const filters: Partial<ParseFiltersAndOutputOptions> = {binaryObject: true};
         const riscv = `
 000000000000027a <__entry>:

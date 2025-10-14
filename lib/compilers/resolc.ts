@@ -132,13 +132,13 @@ export class ResolcCompiler extends BaseCompiler {
     }
 
     private getOutputFilenameWithExtension(dirPath: string, extension: string): string {
-        const basenamePrefix = dirPath.replaceAll('/', '_');
+        const basenamePrefix = dirPath.split(path.sep).join('_');
         const contractName = this.inputIs(InputKind.Solidity)
             ? this.getSolidityContractName(dirPath)
             : this.getYulContractName(dirPath);
         const basename = `${basenamePrefix}_${this.compileFilename}.${contractName}${extension}`;
 
-        return path.join(dirPath, `artifacts/${basename}`);
+        return path.join(dirPath, 'artifacts', basename);
     }
 
     override async processAsm(
@@ -290,7 +290,7 @@ export class ResolcCompiler extends BaseCompiler {
     }
 
     private getContractName(dirPath: string, nameRe: RegExp): string {
-        const source = fs.readFileSync(`${dirPath}/${this.compileFilename}`, {encoding: 'utf8'});
+        const source = fs.readFileSync(path.join(dirPath, this.compileFilename), {encoding: 'utf8'});
         const match = source.match(nameRe);
         assert(match?.groups?.name, 'Expected to find a contract name in the source file.');
 
