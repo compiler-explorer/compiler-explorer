@@ -83,14 +83,6 @@ export class ClojureCompiler extends JavaCompiler {
         return ClojureParser;
     }
 
-    override getOutputFilename(dirPath: string) {
-        return path.join(
-            dirPath,
-            'classes',
-            `${path.basename(this.compileFilename, this.lang.extensions[0])}__init.class`,
-        );
-    }
-
     override async readdir(dirPath: string): Promise<string[]> {
         // Clojure requires recursive walk to find namespace-pathed class files
         return fs.readdir(dirPath, {recursive: true});
