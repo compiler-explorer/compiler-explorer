@@ -72,4 +72,5 @@ import './tablegen-mode';
 import './v-mode';
 import './vala-mode';
 import './wat-mode';
+import './yul-mode';
 import './zig-mode';

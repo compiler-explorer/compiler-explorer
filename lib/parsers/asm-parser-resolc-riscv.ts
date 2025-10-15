@@ -1,4 +1,4 @@
-// Copyright (c) 2023, Compiler Explorer Authors
+// Copyright (c) 2025, Compiler Explorer Authors
 // All rights reserved.
 //
 // Redistribution and use in source and binary forms, with or without
@@ -22,12 +22,14 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-export type LLVMIrBackendOptions = {
-    filterDebugInfo: boolean;
-    filterIRMetadata: boolean;
-    filterAttributes: boolean;
-    filterComments: boolean;
-    noDiscardValueNames?: boolean;
-    demangle: boolean;
-    showOptimized?: boolean;
-};
+import {PropertyGetter} from '../properties.interfaces.js';
+import {AsmParser} from './asm-parser.js';
+
+export class ResolcRiscVAsmParser extends AsmParser {
+    constructor(compilerProps?: PropertyGetter) {
+        super(compilerProps);
+
+        // Example: "; artifacts/_var_folders_fj_1p_1d_T_compiler-explorer-compilerJzYPPi_example.yul.Square.yul:1"
+        this.lineRe = /^;\s+(?<file>\S+):(?<line>\d+)$/;
+    }
+}

@@ -25,7 +25,11 @@
 import {describe, expect, it} from 'vitest';
 import {AsmParser} from '../lib/parsers/asm-parser.js';
 import {MlirAsmParser} from '../lib/parsers/asm-parser-mlir.js';
+import {PolkaVMAsmParser} from '../lib/parsers/asm-parser-polkavm.js';
 import {PTXAsmParser} from '../lib/parsers/asm-parser-ptx.js';
+import {ResolcRiscVAsmParser} from '../lib/parsers/asm-parser-resolc-riscv.js';
+import type {ParsedAsmResult} from '../types/asmresult/asmresult.interfaces.js';
+import type {ParseFiltersAndOutputOptions} from '../types/features/filters.interfaces.js';
 
 describe('AsmParser tests', () => {
     const parser = new AsmParser();
@@ -291,5 +295,193 @@ module {
             const constLine = result.asm.find(line => line.text.includes('arith.constant 1024'));
             expect(constLine).toBeDefined();
         });
+    });
+});
+
+describe('ResolcRiscVAsmParser tests', () => {
+    const parser = new ResolcRiscVAsmParser();
+
+    function expectParsedAsmResult(result: ParsedAsmResult, expected: ParsedAsmResult): void {
+        expect(result.labelDefinitions).toEqual(expected.labelDefinitions);
+        expect(result.asm.length).toEqual(expected.asm.length);
+        for (let i = 0; i < result.asm.length; i++) {
+            expect(result.asm[i]).toMatchObject(expected.asm[i]);
+        }
+    }
+
+    it.skipIf(process.platform === 'win32')('should identify RISC-V instruction info and source line numbers', () => {
+        const filters: Partial<ParseFiltersAndOutputOptions> = {binaryObject: true};
+        const riscv = `
+000000000000027a <__entry>:
+; __entry():
+; path/to/example.sol.Square.yul:1
+     27a: 41 11        	addi	sp, sp, -0x10
+
+000000000000028c <.Lpcrel_hi4>:
+; .Lpcrel_hi4():
+     28c: 97 05 00 00  	auipc	a1, 0x0
+; path/to/example.sol.Square.yul:1
+     2a8: 1d 71        	addi	sp, sp, -0x60
+     2aa: 86 ec        	sd	ra, 0x58(sp)
+; path/to/example.sol.Square.yul:7
+     2ca: e7 80 00 00  	jalr	ra <.Lpcrel_hi4+0x3a>`;
+
+        const expected: ParsedAsmResult = {
+            asm: [
+                {
+                    text: '__entry:',
+                    source: null,
+                },
+                {
+                    text: ' addi	sp, sp, -0x10',
+                    address: 0x27a,
+                    opcodes: ['41', '11'],
+                    source: {
+                        line: 1,
+                        file: null,
+                    },
+                },
+                {
+                    text: '.Lpcrel_hi4:',
+                    source: null,
+                },
+                {
+                    text: ' auipc	a1, 0x0',
+                    address: 0x28c,
+                    opcodes: ['97', '05', '00', '00'],
+                    source: {
+                        line: 1,
+                        file: null,
+                    },
+                },
+                {
+                    text: ' addi	sp, sp, -0x60',
+                    address: 0x2a8,
+                    opcodes: ['1d', '71'],
+                    source: {
+                        line: 1,
+                        file: null,
+                    },
+                },
+                {
+                    text: ' sd	ra, 0x58(sp)',
+                    address: 0x2aa,
+                    opcodes: ['86', 'ec'],
+                    source: {
+                        line: 1,
+                        file: null,
+                    },
+                },
+                {
+                    text: ' jalr	ra <.Lpcrel_hi4+0x3a>',
+                    address: 0x2ca,
+                    opcodes: ['e7', '80', '00', '00'],
+                    source: {
+                        line: 7,
+                        file: null,
+                    },
+                },
+            ],
+            labelDefinitions: {
+                __entry: 1,
+                ['.Lpcrel_hi4']: 3,
+            },
+        };
+
+        const result = parser.processAsm(riscv, filters);
+        expectParsedAsmResult(result, expected);
+    });
+});
+
+describe('PolkaVMAsmParser tests', () => {
+    const parser = new PolkaVMAsmParser();
+
+    function expectParsedAsmResult(result: ParsedAsmResult, expected: ParsedAsmResult): void {
+        expect(result.labelDefinitions).toEqual(expected.labelDefinitions);
+        expect(result.asm.length).toEqual(expected.asm.length);
+        for (let i = 0; i < result.asm.length; i++) {
+            expect(result.asm[i]).toMatchObject(expected.asm[i]);
+        }
+    }
+
+    // Note: We currently have no source mappings from PVM.
+    it('should identify PVM instruction info', () => {
+        const filters: Partial<ParseFiltersAndOutputOptions> = {
+            binaryObject: false,
+            commentOnly: false,
+        };
+        const pvm = `
+// Code size = 1078 bytes
+
+<__entry>:
+      : @0 (gas: 6)
+     0: sp = sp + 0xfffffffffffffff0
+     3: u64 [sp + 0x8] = ra
+     6: u64 [sp] = s0
+     8: s0 = a0 & 0x1
+    11: ecalli 2 // 'call_data_size'
+    13: fallthrough
+      : @1 (gas: 2)
+    14: u32 [0x20000] = a0`;
+
+        const expected: ParsedAsmResult = {
+            asm: [
+                {
+                    text: '// Code size = 1078 bytes',
+                    source: null,
+                },
+                {
+                    text: '__entry:',
+                    source: null,
+                },
+                {
+                    text: '        @0 (gas: 6)',
+                    source: null,
+                },
+                {
+                    text: '        sp = sp + 0xfffffffffffffff0',
+                    address: 0,
+                    source: null,
+                },
+                {
+                    text: '        u64 [sp + 0x8] = ra',
+                    address: 3,
+                    source: null,
+                },
+                {
+                    text: '        u64 [sp] = s0',
+                    address: 6,
+                    source: null,
+                },
+                {
+                    text: '        s0 = a0 & 0x1',
+                    address: 8,
+                    source: null,
+                },
+                {
+                    text: "        ecalli 2 // 'call_data_size'",
+                    address: 11,
+                    source: null,
+                },
+                {
+                    text: '        fallthrough',
+                    address: 13,
+                    source: null,
+                },
+                {
+                    text: '        @1 (gas: 2)',
+                    source: null,
+                },
+                {
+                    text: '        u32 [0x20000] = a0',
+                    address: 14,
+                    source: null,
+                },
+            ],
+            labelDefinitions: {__entry: 2},
+        };
+
+        const result = parser.process(pvm, filters);
+        expectParsedAsmResult(result, expected);
     });
 });
