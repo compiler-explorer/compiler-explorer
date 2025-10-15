@@ -135,6 +135,7 @@
       (when (pos-int? count-ignored)
         (println (format "%d warning%s found" count-ignored
                          (if (= 1 count-ignored) "" "s"))))
-      (when (:show-help params)
+      (when (or (:show-help params)
+                (pos-int? count-ignored))
         (println help-text))
       (compile-input input-file params))))
