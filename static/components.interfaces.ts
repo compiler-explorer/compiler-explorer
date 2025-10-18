@@ -75,6 +75,7 @@ export const GNAT_DEBUG_TREE_VIEW_COMPONENT_NAME = 'gnatdebugtree' as const;
 export const GNAT_DEBUG_VIEW_COMPONENT_NAME = 'gnatdebug' as const;
 export const RUST_MACRO_EXP_VIEW_COMPONENT_NAME = 'rustmacroexp' as const;
 export const RUST_HIR_VIEW_COMPONENT_NAME = 'rusthir' as const;
+export const CLOJURE_MACRO_EXP_VIEW_COMPONENT_NAME = 'clojuremacroexp' as const;
 export const DEVICE_VIEW_COMPONENT_NAME = 'device' as const;
 export const EXPLAIN_VIEW_COMPONENT_NAME = 'explain' as const;
 
@@ -330,6 +331,15 @@ export type PopulatedRustHirViewState = StateWithId & {
     treeid: number;
 };
 
+export type EmptyClojureMacroExpViewState = EmptyState;
+export type PopulatedClojureMacroExpViewState = StateWithId & {
+    source: string;
+    clojureMacroExpOutput: unknown;
+    compilerName: string;
+    editorid: number;
+    treeid: number;
+};
+
 export type EmptyDeviceViewState = EmptyState;
 export type PopulatedDeviceViewState = StateWithId & {
     source: string;
@@ -379,6 +389,7 @@ export interface ComponentStateMap {
     [GNAT_DEBUG_VIEW_COMPONENT_NAME]: EmptyGnatDebugViewState | PopulatedGnatDebugViewState;
     [RUST_MACRO_EXP_VIEW_COMPONENT_NAME]: EmptyRustMacroExpViewState | PopulatedRustMacroExpViewState;
     [RUST_HIR_VIEW_COMPONENT_NAME]: EmptyRustHirViewState | PopulatedRustHirViewState;
+    [CLOJURE_MACRO_EXP_VIEW_COMPONENT_NAME]: EmptyClojureMacroExpViewState | PopulatedClojureMacroExpViewState;
     [DEVICE_VIEW_COMPONENT_NAME]: EmptyDeviceViewState | PopulatedDeviceViewState;
     [EXPLAIN_VIEW_COMPONENT_NAME]: EmptyExplainViewState | PopulatedExplainViewState;
 }

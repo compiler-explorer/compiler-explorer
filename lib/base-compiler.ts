@@ -1680,6 +1680,10 @@ export class BaseCompiler {
         return [{text: 'Internal error; unable to open output path'}];
     }
 
+    async generateClojureMacroExpansion(inputFilename: string, options: string[]): Promise<ResultLine[]> {
+        return [{text: 'Clojure Macro Expansion not applicable to current compiler.'}];
+    }
+
     async processHaskellExtraOutput(outpath: string, output: CompilationResult): Promise<ResultLine[]> {
         if (output.code !== 0) {
             return [{text: 'Failed to run compiler to get Haskell Core'}];
@@ -2430,6 +2434,7 @@ export class BaseCompiler {
         const makeGnatDebugTree = backendOptions.produceGnatDebugTree && this.compiler.supportsGnatDebugViews;
         const makeIr = backendOptions.produceIr && this.compiler.supportsIrView;
         const makeClangir = backendOptions.produceClangir && this.compiler.supportsClangirView;
+        const makeClojureMacroExp = backendOptions.produceClojureMacroExp && this.compiler.supportsClojureMacroExpView;
         const makeOptPipeline = backendOptions.produceOptPipeline && this.compiler.optPipeline;
         const makeRustMir = backendOptions.produceRustMir && this.compiler.supportsRustMirView;
         const makeRustMacroExp = backendOptions.produceRustMacroExp && this.compiler.supportsRustMacroExpView;
@@ -2448,6 +2453,7 @@ export class BaseCompiler {
             optPipelineResult,
             rustHirResult,
             rustMacroExpResult,
+            clojureMacroExpResult,
             toolsResult,
         ] = await Promise.all([
             this.runCompiler(this.compiler.exe, options, inputFilenameSafe, execOptions, filters),
@@ -2468,6 +2474,7 @@ export class BaseCompiler {
                 : undefined,
             makeRustHir ? this.generateRustHir(inputFilename, options) : undefined,
             makeRustMacroExp ? this.generateRustMacroExpansion(inputFilename, options) : undefined,
+            makeClojureMacroExp ? this.generateClojureMacroExpansion(inputFilename, options) : undefined,
             Promise.all(
                 this.runToolsOfType(
                     tools,
@@ -2551,6 +2558,8 @@ export class BaseCompiler {
         asmResult.haskellCoreOutput = haskellCoreResult;
         asmResult.haskellStgOutput = haskellStgResult;
         asmResult.haskellCmmOutput = haskellCmmResult;
+
+        asmResult.clojureMacroExpOutput = clojureMacroExpResult;
 
         if (asmResult.code !== 0) {
             return [{...asmResult, asm: '<Compilation failed>'}, [], []];

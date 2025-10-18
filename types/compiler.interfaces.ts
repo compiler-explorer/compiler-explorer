@@ -90,6 +90,7 @@ export type CompilerInfo = {
     supportsHaskellCoreView?: boolean;
     supportsHaskellStgView?: boolean;
     supportsHaskellCmmView?: boolean;
+    supportsClojureMacroExpView?: boolean;
     supportsCfg?: boolean;
     supportsGnatDebugViews?: boolean;
     supportsLibraryCodeFilter?: boolean;

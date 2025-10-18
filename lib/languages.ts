@@ -226,6 +226,17 @@ const definitions: Record<LanguageKey, LanguageDefinition> = {
         previewFilter: null,
         monacoDisassembly: null,
     },
+    clojure: {
+        name: 'Clojure',
+        monaco: 'clojure',
+        extensions: ['.clj'],
+        alias: [],
+        logoFilename: 'clojure.svg',
+        logoFilenameDark: null,
+        formatter: null,
+        previewFilter: null,
+        monacoDisassembly: null,
+    },
     cmake: {
         name: 'CMake',
         monaco: 'cmake',

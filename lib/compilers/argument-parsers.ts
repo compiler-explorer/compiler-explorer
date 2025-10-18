@@ -701,6 +701,12 @@ export class JavaParser extends BaseParser {
     }
 }
 
+export class ClojureParser extends BaseParser {
+    override async parse() {
+        return this.compiler;
+    }
+}
+
 export class KotlinParser extends BaseParser {
     override async parse() {
         await this.getOptions('-help');
