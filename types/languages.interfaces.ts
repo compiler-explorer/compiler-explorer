@@ -62,6 +62,7 @@ export type LanguageKey =
     | 'go'
     | 'haskell'
     | 'hlsl'
+    | 'helion'
     | 'hook'
     | 'hylo'
     | 'ispc'
