@@ -1066,8 +1066,8 @@ export class Editor extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Edit
             langTag = preferredLanguage;
         }
         const url =
-        'https://www.google.com/search?q=' +
-        encodeURIComponent(word.word + ' site:' + langTag + '.cppreference.com');
+            'https://www.google.com/search?q=' +
+            encodeURIComponent(word.word + ' site:' + langTag + '.cppreference.com');
         window.open(url, '_blank', 'noopener');
     }
 
