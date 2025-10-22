@@ -193,6 +193,7 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
     private haskellCoreButton: JQuery<HTMLButtonElement>;
     private haskellStgButton: JQuery<HTMLButtonElement>;
     private haskellCmmButton: JQuery<HTMLButtonElement>;
+    private clojureMacroExpButton: JQuery<HTMLButtonElement>;
     private gccDumpButton: JQuery<HTMLButtonElement>;
     private cfgButton: JQuery<HTMLButtonElement>;
     private explainButton: JQuery<HTMLButtonElement>;
@@ -269,6 +270,7 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
     private haskellCoreViewOpen: boolean;
     private haskellStgViewOpen: boolean;
     private haskellCmmViewOpen: boolean;
+    private clojureMacroExpViewOpen: boolean;
     private ppOptions: PPOptions;
     private llvmIrOptions: LLVMIrBackendOptions;
     private clangirOptions: ClangirBackendOptions;
@@ -623,6 +625,17 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
             );
         };
 
+        const createClojureMacroExpView = () => {
+            return Components.getClojureMacroExpViewWith(
+                this.id,
+                this.source,
+                this.lastResult?.clojureMacroExpOutput,
+                this.getCompilerName(),
+                this.sourceEditorId ?? 0,
+                this.sourceTreeId ?? 0,
+            );
+        };
+
         const createGccDumpView = () => {
             return Components.getGccDumpViewWith(
                 this.id,
@@ -894,6 +907,17 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
                 this.hub.findParentRowOrColumn(this.container.parent) ||
                 this.container.layoutManager.root.contentItems[0];
             insertPoint.addChild(createRustHirView());
+        });
+
+        createDragSource(this.container.layoutManager, this.clojureMacroExpButton, () =>
+            createClojureMacroExpView(),
+        ).on('dragStart', hidePaneAdder);
+
+        this.clojureMacroExpButton.on('click', () => {
+            const insertPoint =
+                this.hub.findParentRowOrColumn(this.container.parent) ||
+                this.container.layoutManager.root.contentItems[0];
+            insertPoint.addChild(createClojureMacroExpView());
         });
 
         createDragSource(this.container.layoutManager, this.gccDumpButton, () => createGccDumpView()).on(
@@ -1291,6 +1315,7 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
                 produceHaskellCore: this.haskellCoreViewOpen,
                 produceHaskellStg: this.haskellStgViewOpen,
                 produceHaskellCmm: this.haskellCmmViewOpen,
+                produceClojureMacroExp: this.clojureMacroExpViewOpen,
                 overrides: this.getCurrentState().overrides,
             },
             filters: this.getEffectiveFilters(),
@@ -2186,6 +2211,21 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
         }
     }
 
+    onClojureMacroExpViewOpened(id: number): void {
+        if (this.id === id) {
+            this.clojureMacroExpButton.prop('disabled', true);
+            this.clojureMacroExpViewOpen = true;
+            this.compile();
+        }
+    }
+
+    onClojureMacroExpViewClosed(id: number): void {
+        if (this.id === id) {
+            this.clojureMacroExpButton.prop('disabled', false);
+            this.clojureMacroExpViewOpen = false;
+        }
+    }
+
     onGccDumpUIInit(id: number): void {
         if (this.id === id) {
             this.compile();
@@ -2374,6 +2414,7 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
         this.haskellCoreButton = this.domRoot.find('.btn.view-haskellCore');
         this.haskellStgButton = this.domRoot.find('.btn.view-haskellStg');
         this.haskellCmmButton = this.domRoot.find('.btn.view-haskellCmm');
+        this.clojureMacroExpButton = this.domRoot.find('.btn.view-clojuremacroexp');
         this.gccDumpButton = this.domRoot.find('.btn.view-gccdump');
         this.cfgButton = this.domRoot.find('.btn.view-cfg');
         this.explainButton = this.domRoot.find('.btn.view-explain');
@@ -2657,6 +2698,7 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
         this.haskellCmmButton.prop('disabled', this.haskellCmmViewOpen);
         this.rustMacroExpButton.prop('disabled', this.rustMacroExpViewOpen);
         this.rustHirButton.prop('disabled', this.rustHirViewOpen);
+        this.clojureMacroExpButton.prop('disabled', this.clojureMacroExpViewOpen);
         this.gccDumpButton.prop('disabled', this.gccDumpViewOpen);
         this.gnatDebugTreeButton.prop('disabled', this.gnatDebugTreeViewOpen);
         this.gnatDebugButton.prop('disabled', this.gnatDebugViewOpen);
@@ -2677,6 +2719,7 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
         this.haskellCoreButton.toggle(!!this.compiler.supportsHaskellCoreView);
         this.haskellStgButton.toggle(!!this.compiler.supportsHaskellStgView);
         this.haskellCmmButton.toggle(!!this.compiler.supportsHaskellCmmView);
+        this.clojureMacroExpButton.toggle(!!this.compiler.supportsClojureMacroExpView);
         // TODO(jeremy-rifkin): Disable cfg button when binary mode is set?
         this.cfgButton.toggle(!!this.compiler.supportsCfg);
         this.gccDumpButton.toggle(!!this.compiler.supportsGccDump);
@@ -2853,6 +2896,8 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
         this.eventHub.on('haskellStgViewClosed', this.onHaskellStgViewClosed, this);
         this.eventHub.on('haskellCmmViewOpened', this.onHaskellCmmViewOpened, this);
         this.eventHub.on('haskellCmmViewClosed', this.onHaskellCmmViewClosed, this);
+        this.eventHub.on('clojureMacroExpViewOpened', this.onClojureMacroExpViewOpened, this);
+        this.eventHub.on('clojureMacroExpViewClosed', this.onClojureMacroExpViewClosed, this);
         this.eventHub.on('outputOpened', this.onOutputOpened, this);
         this.eventHub.on('outputClosed', this.onOutputClosed, this);
 

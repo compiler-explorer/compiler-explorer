@@ -32,6 +32,7 @@ import {
     AST_VIEW_COMPONENT_NAME,
     CFG_VIEW_COMPONENT_NAME,
     CLANGIR_VIEW_COMPONENT_NAME,
+    CLOJURE_MACRO_EXP_VIEW_COMPONENT_NAME,
     COMPILER_COMPONENT_NAME,
     CONFORMANCE_VIEW_COMPONENT_NAME,
     ComponentConfig,
@@ -909,6 +910,38 @@ export function getRustHirViewWith(
     };
 }
 
+/** Get an empty Clojure macro exp view component. */
+export function getClojureMacroExpView(): ComponentConfig<typeof CLOJURE_MACRO_EXP_VIEW_COMPONENT_NAME> {
+    return {
+        type: 'component',
+        componentName: CLOJURE_MACRO_EXP_VIEW_COMPONENT_NAME,
+        componentState: {},
+    };
+}
+
+/** Get a Clojure macro exp view with the given configuration. */
+export function getClojureMacroExpViewWith(
+    id: number,
+    source: string,
+    clojureMacroExpOutput: unknown,
+    compilerName: string,
+    editorid: number,
+    treeid: number,
+): ComponentConfig<typeof CLOJURE_MACRO_EXP_VIEW_COMPONENT_NAME> {
+    return {
+        type: 'component',
+        componentName: CLOJURE_MACRO_EXP_VIEW_COMPONENT_NAME,
+        componentState: {
+            id,
+            source,
+            clojureMacroExpOutput,
+            compilerName,
+            editorid,
+            treeid,
+        },
+    };
+}
+
 /** Get an empty device view component. */
 export function getDeviceView(): ComponentConfig<typeof DEVICE_VIEW_COMPONENT_NAME> {
     return {
@@ -1198,6 +1231,7 @@ function validateComponentState(componentName: string, state: any): boolean {
         case GNAT_DEBUG_VIEW_COMPONENT_NAME:
         case RUST_MACRO_EXP_VIEW_COMPONENT_NAME:
         case RUST_HIR_VIEW_COMPONENT_NAME:
+        case CLOJURE_MACRO_EXP_VIEW_COMPONENT_NAME:
         case DEVICE_VIEW_COMPONENT_NAME:
             return true;
 

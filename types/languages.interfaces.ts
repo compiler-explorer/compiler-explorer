@@ -36,6 +36,7 @@ export type LanguageKey =
     | 'circle'
     | 'circt'
     | 'clean'
+    | 'clojure'
     | 'cmake'
     | 'cmakescript'
     | 'cobol'
