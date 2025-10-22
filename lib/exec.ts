@@ -83,10 +83,7 @@ async function maybeUnbuffer(command: string, args: string[]): Promise<{command:
     if (stdbufPath) {
         const stdbufArgs = splitArguments(execProps<string>('unbufferStdoutArgs'));
         logger.debug(`Unbuffering ${command} with ${stdbufPath} ${stdbufArgs.join(' ')}`);
-        return {
-            command: stdbufPath,
-            args: stdbufArgs.concat([command], args),
-        };
+        return {command: stdbufPath, args: stdbufArgs.concat([command], args)};
     }
     return {command, args};
 }
@@ -118,13 +115,7 @@ export async function executeDirect(
     let timedOut = false;
     // In WSL; run Windows-volume executables in a temp directory.
     const cwd = options.customCwd || (command.startsWith('/mnt') && process.env.wsl ? os.tmpdir() : undefined);
-    logger.debug('Execution', {
-        type: 'executing',
-        command: command,
-        args: args,
-        env: env,
-        cwd: cwd,
-    });
+    logger.debug('Execution', {type: 'executing', command: command, args: args, env: env, cwd: cwd});
     const startTime = process.hrtime.bigint();
 
     const child = child_process.spawn(command, args, {
@@ -211,12 +202,7 @@ export async function executeDirect(
             // Check debug level explicitly as result may be a very large string
             // which we'd prefer to avoid preparing if it won't be used
             if (logger.isDebugEnabled()) {
-                logger.debug('Execution', {
-                    type: 'executed',
-                    command: command,
-                    args: args,
-                    result: result,
-                });
+                logger.debug('Execution', {type: 'executed', command: command, args: args, result: result});
             }
             resolve(result);
         });
@@ -531,10 +517,7 @@ export function startWineInit() {
             logger.info(`firejailed pid=${wineServer.pid}`);
         } else {
             logger.info(`Starting a new, long-lived wineserver complex ${server}`);
-            wineServer = child_process.spawn(wine, ['cmd'], {
-                env: env,
-                detached: true,
-            });
+            wineServer = child_process.spawn(wine, ['cmd'], {env: env, detached: true});
             logger.info(`wineserver pid=${wineServer.pid}`);
         }
 
