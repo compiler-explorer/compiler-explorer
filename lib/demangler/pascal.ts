@@ -93,7 +93,7 @@ export class PascalDemangler extends BaseDemangler {
         return false;
     }
 
-    public composeReadableMethodSignature(unitname, classname, methodname, params) {
+    public composeReadableMethodSignature(unitname: string, classname: string, methodname: string, params: string) {
         let signature = '';
 
         if (classname !== '') signature = classname.toLowerCase() + '.';
@@ -104,7 +104,7 @@ export class PascalDemangler extends BaseDemangler {
         return signature;
     }
 
-    public demangle(text) {
+    public demangle(text: string) {
         if (!text.endsWith(':')) return false;
         if (this.shouldIgnoreSymbol(text)) return false;
 
@@ -122,20 +122,21 @@ export class PascalDemangler extends BaseDemangler {
             const unmangledGlobalVar = text.substring(13).toLowerCase();
             this.symbolStore.add(text, unmangledGlobalVar);
             return unmangledGlobalVar;
-        } else if (text.startsWith('U_OUTPUT_')) {
+        }
+        if (text.startsWith('U_OUTPUT_')) {
             const unmangledGlobalVar = text.substring(9).toLowerCase();
             this.symbolStore.add(text, unmangledGlobalVar);
             return unmangledGlobalVar;
         }
 
-        let idx,
-            paramtype = '',
-            phase = 0;
-        let unitname = '',
-            classname = '',
-            methodname = '',
-            params = '',
-            resulttype = '';
+        let idx;
+        let paramtype = '';
+        let phase = 0;
+        let unitname = '';
+        let classname = '';
+        let methodname = '';
+        let params = '';
+        let resulttype = '';
 
         idx = text.indexOf('$_$');
         if (idx !== -1) {
@@ -201,11 +202,11 @@ export class PascalDemangler extends BaseDemangler {
         return unmangled;
     }
 
-    public addDemangleToCache(text) {
+    public addDemangleToCache(text: string) {
         this.demangle(text);
     }
 
-    public demangleIfNeeded(text) {
+    public demangleIfNeeded(text: string) {
         if (text.includes('$')) {
             if (this.shouldIgnoreSymbol(text)) {
                 return text;
@@ -217,9 +218,8 @@ export class PascalDemangler extends BaseDemangler {
             }
 
             return text;
-        } else {
-            return text;
         }
+        return text;
     }
 
     public override async process(result: ParsedAsmResult, execOptions?: ExecutionOptions) {

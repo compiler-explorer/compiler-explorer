@@ -3,21 +3,65 @@
 This document explains how to add a new compiler to Compiler Explorer ("CE" from here on), first for a local instance,
 and then how to submit PRs to get it into the main CE site.
 
-## Configuration
+## Quick method: Using ce-properties-wizard
+
+The easiest way to add a compiler to your local Compiler Explorer instance is to use the `ce-properties-wizard` tool. This interactive command-line tool automatically detects compiler information and updates your configuration files.
+
+### Basic usage
+
+From the Compiler Explorer root directory:
+
+```bash
+# Interactive mode - guides you through the process
+etc/scripts/ce-properties-wizard/run.sh
+
+# Path-first mode - provide compiler path directly
+etc/scripts/ce-properties-wizard/run.sh /usr/bin/g++-13
+
+# Fully automated mode - accepts all defaults
+etc/scripts/ce-properties-wizard/run.sh /usr/bin/g++-13 --yes
+```
+
+### Examples
+
+Add a custom GCC installation:
+```bash
+etc/scripts/ce-properties-wizard/run.sh /opt/gcc-14.2.0/bin/g++
+```
+
+Add a cross-compiler:
+```bash
+etc/scripts/ce-properties-wizard/run.sh /usr/bin/arm-linux-gnueabihf-g++ \
+  --name "ARM GCC 11.2" \
+  --group arm-gcc \
+  --yes
+```
+
+The wizard will:
+- Automatically detect the compiler type, version, and language
+- Generate appropriate compiler IDs and display names
+- Add the compiler to the correct properties file
+- Suggest appropriate groups for organization
+- Validate the configuration with `propscheck.py`
+
+For more options and examples, see the [ce-properties-wizard README](../etc/scripts/ce-properties-wizard/README.md).
+
+## Manual configuration
+
+If you need more control or want to understand how the configuration works, read on for the manual approach.
+
+### Configuration
 
 Compiler configuration is done through the `etc/config/c++.*.properties` files (for C++, other languages follow the
 obvious pattern, replace as needed for your case).
 
-The various named configuration files are used in different contexts: for example `etc/config/c++.local.properties` take
-priority over `etc/config/c++.defaults.properties`. The `local` version is ignored by git, so you can make your own
-personalised changes there. The live site uses the `etc/config/c++.amazon.properties` file.
+For a comprehensive overview of the configuration system, including file hierarchy, property types, and group inheritance,
+refer to [Configuration.md](Configuration.md).
 
-Within the file, configuration is a set of key and value pairs, separated by an `=`. Whitespace is _not_ trimmed. Lines
-starting with `#` are considered comments and not parsed. The list of compilers is set by the `compilers` key and is a
-list of compiler identifiers or groups, separated by colons. Group names have an `&` prepended. As a nod to backwards
-compatibility with very old configurations, a path to a compiler can also be put in the list, but that doesn't let you
-configure many aspects of the compiler, nor does it allow paths with colons in them (since these are used as
-separators). The identifier itself is not important, but must be unique to that compiler.
+Below are compiler-specific configuration details:
+
+The list of compilers is set by the `compilers` key and is a list of compiler identifiers or groups, separated by colons. 
+Group names have an `&` prepended. The identifier itself is not important, but must be unique to that compiler.
 
 An example configuration:
 
@@ -55,32 +99,8 @@ compiler.clang5.name=Clang 5
 compiler.clang5.exe=/usr/bin/clang5
 ```
 
-Note about configuration files hierarchy:
-
-As mentioned previously, the live site uses `etc/config/c++.amazon.properties` to load its configuration from, but for
-properties not defined in the `amazon` file, the values present in `etc/config/c++.defaults.properties` will be used.
-
-By design, this does not however work for groups (Nor any other nested property). That is, if in
-`etc/config/c++.defaults.properties` you define the `intelAsm` property as:
-
-```INI
-versionFlag=--version
-compilers=&clang
-group.clang.intelAsm=-mllvm -x86-asm-syntax=intel
-group.clang.groupName=Clang
-...
-```
-
-but `etc/config/c++.amazon.properties` only has:
-
-```INI
-compilers=&clang
-group.clang.groupName=Clang
-...
-```
-
-once the site runs on the Amazon environment, the `&clang` group **will not** have the `intelAsm` property set, but
-`versionFlag` will.
+Note about group properties: Properties defined for a group in one configuration file (e.g., `defaults`) will not be carried 
+forward if that group is redefined in a higher-priority configuration file (e.g., `amazon`) without that property.
 
 ### Configuration keys
 
@@ -99,6 +119,7 @@ once the site runs on the Amazon environment, the `&clang` group **will not** ha
 | versionRe            | RegExp     | A regular expression used to capture the version from the version output                                                                                           |
 | compilerType         | String     | The name of the class handling this compiler                                                                                                                       |
 | interpreted          | Boolean    | Whether this is an interpreted language, and so the "compiler" is really an interpreter                                                                            |
+| emulated             | Boolean    | Whether the compiler's output is run via an emulator (specified by `executionWrapper`) rather than natively                                                        |
 | executionWrapper     | Path       | Path to script that can execute the compiler's output (e.g. could run under `qemu` or `mpi_run` or similar)                                                        |
 | executionWrapperArgs | String     | List of arguments passed to the execution wrapper (separated by `\|` character)                                                                                    |
 | demangler            | String     | Path to the demangler tool                                                                                                                                         |
@@ -110,9 +131,9 @@ once the site runs on the Amazon environment, the `&clang` group **will not** ha
 The `compilerType` option is special: it refers to the Javascript class in `lib/compilers/*.ts` which handles running
 and handling output for this compiler type.
 
-## Adding a new compiler locally
+## Adding a new compiler manually
 
-It should be pretty straightforward to add a compiler of your own. Create a `etc/config/c++.local.properties` file and
+If the wizard doesn't work for your use case or you need fine-grained control, you can manually add a compiler. Create a `etc/config/c++.local.properties` file and
 override the `compilers` list to include your own compiler, and its configuration.
 
 Once you've done that, running `make` should pick up the configuration and during startup you should see your compiler
@@ -149,16 +170,19 @@ be able to see the MSVC compiler in the compiler list.
 
 ## Adding a new compiler to the live site
 
-On the main CE website, compilers are installed into a `/opt/compiler-explorer/` directory by a set of scripts in the
+On the main CE website, compilers are installed into `/opt/compiler-explorer/` using the `ce_install` tool from the
 sister GitHub repo: https://github.com/compiler-explorer/infra
 
-In the `update_compilers` directory in that repository are a set of scripts that download and install binaries and
-compilers. If you wish to test locally, and can create a `/opt/compiler-explorer` directory on your machine which is
-readable and writable by your current user, then you can run the scripts directly. The binaries and the free compilers
-can be installed - the commercial compilers live in the `install_nonfree_compilers.sh` and won't work.
+Compiler definitions are YAML-based configurations in the `bin/yaml/` directory of that repository (e.g., `cpp.yaml`,
+`rust.yaml`). For many compilers, adding a new version is as simple as adding the version number to the `targets:` list
+in the appropriate YAML file. See the infra repository's documentation at `docs/ce_install_yaml.md` and
+`docs/installing_compilers.md` for comprehensive details on the YAML configuration format and installation process.
 
-If your compiler fits nicely into the harness then it should be straightforward to add it there. Anything more complex:
-contact the CE authors for more help.
+If you wish to test locally, create a `/opt/compiler-explorer` directory readable and writable by your user, then run
+`./bin/ce_install install 'compilers/LANG/ARCH/COMPILER VERSION'` from the infra repository. Free compilers install
+normally; commercial compilers marked `non-free` in the YAML won't work without proper licensing.
+
+If your compiler fits the existing patterns it should be straightforward. Anything more complex: contact the CE authors.
 
 ## Putting it all together
 

@@ -22,10 +22,10 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import path from 'path';
+import path from 'node:path';
 
-import {ExecutionOptions} from '../../types/compilation/compilation.interfaces.js';
-import {Library} from '../../types/libraries/libraries.interfaces.js';
+import {splitArguments} from '../../shared/common-utils.js';
+import {CompilationInfo, ExecutionOptions} from '../../types/compilation/compilation.interfaces.js';
 import type {
     Fix,
     Link,
@@ -34,6 +34,7 @@ import type {
     ResultLineTag,
 } from '../../types/resultline/resultline.interfaces.js';
 import type {Artifact, ToolInfo, ToolResult} from '../../types/tool.interfaces.js';
+import {OptionsHandlerLibrary} from '../options-handler.js';
 import * as utils from '../utils.js';
 
 import {ToolEnv} from './base-tool.interface.js';
@@ -171,7 +172,7 @@ export class SonarTool extends BaseTool {
                     title: 'reproducer',
                 };
             }
-        } catch (err) {
+        } catch {
             output = utils.splitLines(lines).map(l => ({text: l}));
         }
         return output;
@@ -180,15 +181,19 @@ export class SonarTool extends BaseTool {
     buildCompilationCMD(
         compilationInfo: Record<any, any>,
         inputFilePath: string,
-        supportedLibraries?: Record<string, Library>,
+        supportedLibraries?: Record<string, OptionsHandlerLibrary>,
     ) {
         const cmd: any[] = [];
         cmd.push(compilationInfo.compiler.exe);
 
         // Collecting the flags of compilation
 
-        let compileFlags: string[] = utils.splitArguments(compilationInfo.compiler.options);
-        const includeflags = super.getIncludeArguments(compilationInfo.libraries, supportedLibraries || {});
+        let compileFlags: string[] = splitArguments(compilationInfo.compiler.options);
+        const includeflags = super.getIncludeArguments(
+            compilationInfo.libraries,
+            supportedLibraries || {},
+            inputFilePath ? path.dirname(inputFilePath) : undefined,
+        );
         compileFlags = compileFlags.concat(includeflags);
         const libOptions = super.getLibraryOptions(compilationInfo.libraries, supportedLibraries || {});
         compileFlags = compileFlags.concat(libOptions);
@@ -207,11 +212,11 @@ export class SonarTool extends BaseTool {
     }
 
     override async runTool(
-        compilationInfo: Record<any, any>,
+        compilationInfo: CompilationInfo,
         inputFilePath?: string,
         args?: string[],
         stdin?: string,
-        supportedLibraries?: Record<string, Library>,
+        supportedLibraries?: Record<string, OptionsHandlerLibrary>,
     ): Promise<ToolResult> {
         if (inputFilePath == null) {
             return new Promise(resolve => {

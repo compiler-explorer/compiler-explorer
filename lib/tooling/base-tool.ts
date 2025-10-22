@@ -22,20 +22,21 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import path from 'path';
+import path from 'node:path';
 
 import PromClient from 'prom-client';
 import _ from 'underscore';
 
-import {ExecutionOptions} from '../../types/compilation/compilation.interfaces.js';
+import {CompilationInfo, ExecutionOptions} from '../../types/compilation/compilation.interfaces.js';
 import {UnprocessedExecResult} from '../../types/execution/execution.interfaces.js';
-import {Library, SelectedLibraryVersion} from '../../types/libraries/libraries.interfaces.js';
+import {SelectedLibraryVersion} from '../../types/libraries/libraries.interfaces.js';
 import {ResultLine} from '../../types/resultline/resultline.interfaces.js';
 import {ToolInfo, ToolResult} from '../../types/tool.interfaces.js';
 import * as exec from '../exec.js';
 import {logger} from '../logger.js';
+import {OptionsHandlerLibrary} from '../options-handler.js';
+import {propsFor} from '../properties.js';
 import {parseOutput} from '../utils.js';
-
 import {ITool, ToolEnv} from './base-tool.interface.js';
 
 const toolCounter = new PromClient.Counter({
@@ -50,6 +51,7 @@ export class BaseTool implements ITool {
     protected addOptionsToToolArgs = true;
     public readonly id: string;
     public readonly type: string;
+    public readonly sandboxType: string;
 
     constructor(toolInfo: ToolInfo, env: ToolEnv) {
         this.tool = toolInfo;
@@ -57,6 +59,9 @@ export class BaseTool implements ITool {
         this.addOptionsToToolArgs = true;
         this.id = toolInfo.id;
         this.type = toolInfo.type || 'independent';
+
+        const execProps = propsFor('execution');
+        this.sandboxType = execProps('sandboxType', 'none');
     }
 
     getUniqueFilePrefix() {
@@ -78,7 +83,14 @@ export class BaseTool implements ITool {
         // string in the array, not an empty array.
         if (this.tool.exclude.length === 1 && this.tool.exclude[0] === '') return false;
 
-        return this.tool.exclude.find(excl => compilerId.includes(excl)) !== undefined;
+        return (
+            this.tool.exclude.find(excl => {
+                if (excl.endsWith('$')) {
+                    return compilerId === excl.substring(0, excl.length - 1);
+                }
+                return compilerId.includes(excl);
+            }) !== undefined
+        );
     }
 
     exec(toolExe: string, args: string[], options: ExecutionOptions) {
@@ -110,26 +122,50 @@ export class BaseTool implements ITool {
     }
 
     // mostly copy&paste from base-compiler.js
-    findLibVersion(selectedLib: SelectedLibraryVersion, supportedLibraries: Record<string, Library>) {
+    findLibVersion(selectedLib: SelectedLibraryVersion, supportedLibraries: Record<string, OptionsHandlerLibrary>) {
         const foundLib = _.find(supportedLibraries, (o, libId) => libId === selectedLib.id);
         if (!foundLib) return false;
 
         return _.find(foundLib.versions, (o, versionId) => versionId === selectedLib.version);
     }
 
-    // mostly copy&paste from base-compiler.js
-    getIncludeArguments(libraries: SelectedLibraryVersion[], supportedLibraries: Record<string, Library>): string[] {
+    protected replacePathsIfNeededForSandbox(args: string[], physicalPath: string): string[] {
+        if (this.sandboxType !== 'nsjail' || !physicalPath) return args;
+
+        return args.map(arg => {
+            if (arg && arg.length > 1) {
+                return arg.replace(physicalPath, '/app');
+            } else {
+                return '';
+            }
+        });
+    }
+
+    // mostly copy&paste from base-compiler.js, but has diverged a lot :(
+    getIncludeArguments(
+        libraries: SelectedLibraryVersion[],
+        supportedLibraries: Record<string, OptionsHandlerLibrary>,
+        dirPath?: string,
+    ): string[] {
         const includeFlag = '-I';
 
         return libraries.flatMap(selectedLib => {
             const foundVersion = this.findLibVersion(selectedLib, supportedLibraries);
             if (!foundVersion) return [];
 
+            if (foundVersion.packagedheaders && dirPath) {
+                const includePath = path.join(dirPath, selectedLib.id, 'include');
+                return [includeFlag + includePath];
+            }
+
             return foundVersion.path.map(path => includeFlag + path);
         });
     }
 
-    getLibraryOptions(libraries: SelectedLibraryVersion[], supportedLibraries: Record<string, Library>): string[] {
+    getLibraryOptions(
+        libraries: SelectedLibraryVersion[],
+        supportedLibraries: Record<string, OptionsHandlerLibrary>,
+    ): string[] {
         return libraries.flatMap(selectedLib => {
             const foundVersion = this.findLibVersion(selectedLib, supportedLibraries);
             if (!foundVersion) return [];
@@ -138,12 +174,17 @@ export class BaseTool implements ITool {
         });
     }
 
+    protected getToolExe(compilationInfo: CompilationInfo): string {
+        return this.tool.exe;
+    }
+
     async runTool(
-        compilationInfo: Record<any, any>,
+        compilationInfo: CompilationInfo,
         inputFilepath?: string,
         args?: string[],
         stdin?: string,
-        supportedLibraries?: Record<string, Library>,
+        supportedLibraries?: Record<string, OptionsHandlerLibrary>,
+        dontAppendInputFilepath?: boolean,
     ) {
         if (this.tool.name) {
             toolCounter.inc({
@@ -151,18 +192,20 @@ export class BaseTool implements ITool {
                 name: this.tool.name,
             });
         }
-        const execOptions = this.getDefaultExecOptions();
+        const execOptions = compilationInfo.execOptions || this.getDefaultExecOptions();
+        if (compilationInfo.preparedLdPaths) execOptions.ldPath = compilationInfo.preparedLdPaths;
         if (inputFilepath) execOptions.customCwd = path.dirname(inputFilepath);
         execOptions.input = stdin;
 
         args = args || [];
         if (this.addOptionsToToolArgs) args = this.tool.options.concat(args);
-        if (inputFilepath) args.push(inputFilepath);
+        if (inputFilepath && !dontAppendInputFilepath) args.push(inputFilepath);
 
-        const exeDir = path.dirname(this.tool.exe);
+        const toolExe = this.getToolExe(compilationInfo);
+        const exeDir = path.dirname(toolExe);
 
         try {
-            const result = await this.exec(this.tool.exe, args, execOptions);
+            const result = await this.exec(toolExe, args, execOptions);
             return this.convertResult(result, inputFilepath, exeDir);
         } catch (e) {
             logger.error('Error while running tool: ', e);

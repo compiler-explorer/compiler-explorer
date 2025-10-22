@@ -23,6 +23,7 @@
 // POSSIBILITY OF SUCH DAMAGE.
 
 import * as monaco from 'monaco-editor';
+
 import * as swift from 'monaco-editor/esm/vs/basic-languages/swift/swift';
 
 function definition(): monaco.languages.IMonarchLanguage {
@@ -177,5 +178,3 @@ function definition(): monaco.languages.IMonarchLanguage {
 monaco.languages.register({id: 'hylo'});
 monaco.languages.setMonarchTokensProvider('hylo', definition());
 monaco.languages.setLanguageConfiguration('hylo', swift.conf);
-
-export {};

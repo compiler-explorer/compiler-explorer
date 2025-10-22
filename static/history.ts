@@ -23,11 +23,11 @@
 // POSSIBILITY OF SUCH DAMAGE.
 
 import _ from 'underscore';
-import {Sharing} from './sharing.js';
 import {localStorage} from './local.js';
+import {SharingBase} from './sharing.js';
 
 const maxHistoryEntries = 30;
-type Source = {dt: number; source: string};
+export type HistorySource = {dt: number; source: string};
 export type HistoryEntry = {dt: number; sources: EditorSource[]; config: any};
 export type EditorSource = {lang: string; source: string};
 
@@ -100,7 +100,7 @@ export function trackHistory(layout: any) {
     let lastState: string | null = null;
     const debouncedPush = _.debounce(push, 500);
     layout.on('stateChanged', () => {
-        const stringifiedConfig = JSON.stringify(Sharing.filterComponentState(layout.toConfig()));
+        const stringifiedConfig = JSON.stringify(SharingBase.filterComponentState(layout.toConfig()));
         if (stringifiedConfig !== lastState) {
             lastState = stringifiedConfig;
             debouncedPush(stringifiedConfig);
@@ -112,8 +112,8 @@ export function sortedList(): HistoryEntry[] {
     return list().sort((a, b) => b.dt - a.dt);
 }
 
-export function sources(language: string): Source[] {
-    const sourcelist: Source[] = [];
+export function sources(language: string): HistorySource[] {
+    const sourcelist: HistorySource[] = [];
     for (const entry of sortedList()) {
         for (const source of entry.sources) {
             if (source.lang === language) {

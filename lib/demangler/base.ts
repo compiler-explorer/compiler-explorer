@@ -44,18 +44,18 @@ export class BaseDemangler extends AsmRegex {
     readonly includeMetadata: boolean;
     readonly compiler: BaseCompiler;
 
-    readonly jumpDef = /(j\w+|b|bl|blx)\s+([$_a-z][\w$@]*)/i;
-    readonly callDef = /callq?\s+([$._a-z][\w$.@]*)/i;
-    readonly callPtrDef1 = /callq?.*ptr\s\[[a-z]*\s\+\s([$._a-z][\w$.@]*)]/i;
-    readonly callPtrDef2 = /callq?\s+([$*._a-z][\w$.@]*)/i;
-    readonly callPtrDef3 = /callq?.*\[qword ptr\s([$._a-z][\w$.@]*).*]/i;
-    readonly callPtrDef4 = /callq?.*qword\sptr\s\[[a-z]*\s\+\s([$._a-z][\w$.@]*)\+?\d?]/i;
+    readonly jumpDef = /(j\w+|b|bl|blx)\s+([$_a-z][\w$.@]*|"[$_a-z][\w$.@]*")/i;
+    readonly callDef = /callq?\s+([$._a-z][\w$.@]*|"[$._a-z][\w$.@]*")/i;
+    readonly callPtrDef1 = /callq?.*ptr\s\[[a-z]*\s\+\s([$._a-z][\w$.@]*|"[$._a-z][\w$.@]*")]/i;
+    readonly callPtrDef2 = /callq?\s+([$*._a-z][\w$.@]*|"[$*._a-z][\w$.@]*")/i;
+    readonly callPtrDef3 = /callq?.*\[qword ptr\s([$._a-z][\w$.@]*|"[$._a-z][\w$.@]*").*]/i;
+    readonly callPtrDef4 = /callq?.*qword\sptr\s\[[a-z]*\s\+\s([$._a-z][\w$.@]*|"[$._a-z][\w$.@]*")\+?\d?]/i;
 
     // symbols in a mov or lea command starting with an underscore
-    readonly movUnderscoreDef = /mov.*[\s:](_[\w$.@]*)/i;
+    readonly movUnderscoreDef = /mov.*[\s:](_[\w$.@]*|"[\w$.@]*")/i;
     readonly leaUnderscoreDef = /lea.*[\s:](_[\w$.@]*)/i;
-    readonly quadUnderscoreDef = /\.quad\s*(_[\w$.@]*)/i;
-    readonly ptrOffset = /\bptr\s*\[.+\b(_[\w$.@]*)\s*]/i;
+    readonly quadUnderscoreDef = /\.quad\s*(_[\w$.@]*|"[\w$.@]*")/i;
+    readonly ptrOffset = /\bptr\s*\[.+\b(_[\w$.@]*|"[\w$.@]*")\s*]/i;
 
     // E.g., ".entry _Z6squarePii("
     // E.g., ".func  (.param .b32 func_retval0) bar("
@@ -84,7 +84,10 @@ export class BaseDemangler extends AsmRegex {
         return !!this.demanglerExe;
     }
 
-    protected demangleLabelDefinitions(labelDefinitions, translations: [string, string][]) {
+    protected demangleLabelDefinitions(
+        labelDefinitions: Record<string, number> | undefined,
+        translations: [string, string][],
+    ) {
         if (!labelDefinitions) return;
 
         for (const [oldValue, newValue] of translations) {
@@ -113,8 +116,19 @@ export class BaseDemangler extends AsmRegex {
             this.ptxFuncDef,
             this.ptxVarDef,
         ];
-        for (const {text: line} of this.result.asm) {
+        for (const {text: line, labels} of this.result.asm) {
             if (!line) continue;
+
+            if (labels) {
+                for (const label of labels) {
+                    if (label.target !== undefined) {
+                        unwrap(this.symbolstore).add(label.target);
+                        this.othersymbols.add(label.name);
+                    } else {
+                        unwrap(this.symbolstore).add(label.name);
+                    }
+                }
+            }
 
             const labelMatch = line.match(this.labelDef);
             if (labelMatch) unwrap(this.symbolstore).add(labelMatch[labelMatch.length - 1]);
@@ -176,6 +190,7 @@ export class BaseDemangler extends AsmRegex {
         ].filter(elem => elem[0] !== elem[1]);
         if (translations.length > 0) {
             const tree = new PrefixTree(translations);
+            const translationsDict = Object.fromEntries(translations);
             for (const asm of this.result.asm) {
                 const {newText, mapRanges, mapNames} = tree.replaceAll(asm.text);
                 asm.text = newText;
@@ -186,6 +201,9 @@ export class BaseDemangler extends AsmRegex {
                         if (mapRanges[label.range.startCol])
                             label.range = mapRanges[label.range.startCol][label.range.endCol] || label.range;
                         label.name = mapNames[label.name] || label.name;
+                        if (label.target !== undefined) {
+                            label.target = translationsDict[label.target] || label.target;
+                        }
                     }
                 }
             }
@@ -201,7 +219,7 @@ export class BaseDemangler extends AsmRegex {
         return this.compiler.exec(this.demanglerExe, this.demanglerArguments, options);
     }
 
-    public async process(result: ParsedAsmResult, execOptions?: ExecutionOptions) {
+    public async process(result: ParsedAsmResult, execOptions?: ExecutionOptions): Promise<ParsedAsmResult> {
         const options = execOptions || {};
         this.result = result;
 

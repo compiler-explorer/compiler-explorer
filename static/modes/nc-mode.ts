@@ -25,6 +25,7 @@
 import $ from 'jquery';
 
 import * as monaco from 'monaco-editor';
+
 import * as cpp from 'monaco-editor/esm/vs/basic-languages/cpp/cpp';
 
 // We need to ensure we use proper keywords for the Monaco Editor matcher. Note how
@@ -102,4 +103,4 @@ monaco.languages.register({id: 'nc'});
 monaco.languages.setLanguageConfiguration('nc', cpp.conf);
 monaco.languages.setMonarchTokensProvider('nc', def);
 
-export = def;
+export default def;

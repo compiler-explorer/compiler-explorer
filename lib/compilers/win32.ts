@@ -22,66 +22,132 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import path from 'path';
+import fs from 'node:fs';
+import path from 'node:path';
 
 import _ from 'underscore';
 
-import type {ExecutionOptions} from '../../types/compilation/compilation.interfaces.js';
+import {splitArguments} from '../../shared/common-utils.js';
+import type {BuildResult, CacheKey, ExecutionOptions} from '../../types/compilation/compilation.interfaces.js';
 import type {ConfiguredOverrides} from '../../types/compilation/compiler-overrides.interfaces.js';
 import type {PreliminaryCompilerInfo} from '../../types/compiler.interfaces.js';
+import {UnprocessedExecResult} from '../../types/execution/execution.interfaces.js';
 import type {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces.js';
+import {SelectedLibraryVersion} from '../../types/libraries/libraries.interfaces.js';
 import {unwrap} from '../assert.js';
 import {BaseCompiler} from '../base-compiler.js';
+import {copyNeededDlls} from '../binaries/win-utils.js';
+import {CompilationEnvironment} from '../compilation-env.js';
 import {MapFileReaderVS} from '../mapfiles/map-file-vs.js';
-import {AsmParser} from '../parsers/asm-parser.js';
+import {VcAsmParser} from '../parsers/asm-parser-vc.js';
 import {PELabelReconstructor} from '../pe32-support.js';
-import * as utils from '../utils.js';
 
 export class Win32Compiler extends BaseCompiler {
     static get key() {
         return 'win32';
     }
 
-    binaryAsmParser: AsmParser;
+    binaryAsmParser: VcAsmParser;
 
-    constructor(compilerInfo: PreliminaryCompilerInfo, env) {
+    constructor(compilerInfo: PreliminaryCompilerInfo, env: CompilationEnvironment) {
         super(compilerInfo, env);
 
-        this.binaryAsmParser = new AsmParser(this.compilerProps);
+        this.binaryAsmParser = new VcAsmParser();
+    }
+
+    private findExistingLibFile(libName: string, libPaths: string[]): string | null {
+        const fullLibName = libName.endsWith('.lib') ? libName : libName + '.lib';
+
+        for (const libPath of libPaths) {
+            const fullPath = path.join(libPath, fullLibName);
+            if (fs.existsSync(fullPath)) {
+                return libName;
+            }
+
+            // Try without 'd' suffix for debug libraries
+            if (fullLibName.endsWith('d.lib')) {
+                const releaseLibName = fullLibName.slice(0, -5) + '.lib';
+                const releaseFullPath = path.join(libPath, releaseLibName);
+                if (fs.existsSync(releaseFullPath)) {
+                    return libName.slice(0, -1);
+                }
+            }
+        }
+
+        // If fullLibName is an absolute path (not just a filename), try it directly
+        if (path.isAbsolute(fullLibName)) {
+            if (fs.existsSync(fullLibName)) {
+                return libName;
+            }
+
+            // Try without 'd' suffix for debug libraries
+            if (fullLibName.endsWith('d.lib')) {
+                const releaseLibName = fullLibName.slice(0, -5) + '.lib';
+                if (fs.existsSync(releaseLibName)) {
+                    return libName.slice(0, -1);
+                }
+            }
+        }
+        return null;
     }
 
     override getStdverFlags(): string[] {
         return ['/std:<value>'];
     }
 
-    override getExecutableFilename(dirPath: string, outputFilebase: string, key?) {
+    override getExecutableFilename(dirPath: string, outputFilebase: string, key?: CacheKey) {
         return this.getOutputFilename(dirPath, outputFilebase, key) + '.exe';
     }
 
-    override getObjdumpOutputFilename(defaultOutputFilename: string) {
-        return this.getExecutableFilename(path.dirname(defaultOutputFilename), 'output');
+    override getSharedLibraryPathsAsArguments(
+        libraries: SelectedLibraryVersion[],
+        libDownloadPath: string | undefined,
+        toolchainPath: string | undefined,
+        dirPath: string,
+    ): string[] {
+        const libPathFlag = '/LIBPATH:';
+
+        return this.getSharedLibraryPaths(libraries, dirPath).map(path => libPathFlag + path);
     }
 
-    override getSharedLibraryPathsAsArguments(libraries) {
-        const libPathFlag = this.compiler.libpathFlag || '/LIBPATH:';
-
-        return this.getSharedLibraryPaths(libraries).map(path => libPathFlag + path);
-    }
-
+    // Ofek: foundVersion having 'liblink' makes me suspicious of the decision to annotate everywhere
+    // with `SelectedLibraryVersion`, but can't test at this time
     override getSharedLibraryLinks(libraries: any[]): string[] {
         return _.flatten(
             libraries
                 .map(selectedLib => [selectedLib, this.findLibVersion(selectedLib)])
                 .filter(([selectedLib, foundVersion]) => !!foundVersion)
                 .map(([selectedLib, foundVersion]) => {
-                    return foundVersion.liblink.filter(Boolean).map(lib => `"${lib}.lib"`);
+                    // Combine compiler libPath with library-specific paths
+                    const compilerLibPaths = this.compiler.libPath || [];
+                    const libraryPaths = this.getSharedLibraryPaths(libraries);
+                    const libPaths = [...compilerLibPaths, ...libraryPaths];
+
+                    return foundVersion.liblink.filter(Boolean).map((lib: string) => {
+                        const existingLib = this.findExistingLibFile(lib, libPaths);
+                        if (existingLib) {
+                            return `"${existingLib}.lib"`;
+                        }
+                        // Fall back to original behavior if file not found
+                        return `"${lib}.lib"`;
+                    });
                 })
                 .map(([selectedLib, foundVersion]) => selectedLib),
         );
     }
 
-    override getStaticLibraryLinks(libraries) {
+    override getStaticLibraryLinks(libraries: SelectedLibraryVersion[], providedLibPaths: string[] = []) {
+        // Combine provided library paths with compiler libPath and library-specific paths
+        const compilerLibPaths = this.compiler.libPath || [];
+        const libraryPaths = this.getSharedLibraryPaths(libraries);
+        const libPaths = [...providedLibPaths, ...compilerLibPaths, ...libraryPaths];
+
         return super.getSortedStaticLibraries(libraries).map(lib => {
+            const existingLib = this.findExistingLibFile(lib, libPaths);
+            if (existingLib) {
+                return '"' + existingLib + '.lib"';
+            }
+            // Fall back to original behavior if file not found
             return '"' + lib + '.lib"';
         });
     }
@@ -92,21 +158,23 @@ export class Win32Compiler extends BaseCompiler {
         backendOptions: Record<string, any>,
         inputFilename: string,
         outputFilename: string,
-        libraries,
+        libraries: SelectedLibraryVersion[],
         overrides: ConfiguredOverrides,
     ) {
         let options = this.optionsForFilter(filters, outputFilename, userOptions);
         backendOptions = backendOptions || {};
 
         if (this.compiler.options) {
-            options = options.concat(utils.splitArguments(this.compiler.options));
+            options = options.concat(splitArguments(this.compiler.options));
         }
 
         if (this.compiler.supportsOptOutput && backendOptions.produceOptInfo) {
             options = options.concat(unwrap(this.compiler.optArg));
         }
 
-        const libIncludes = this.getIncludeArguments(libraries, path.dirname(inputFilename));
+        const dirPath = path.dirname(inputFilename);
+
+        const libIncludes = this.getIncludeArguments(libraries, dirPath);
         const libOptions = this.getLibraryOptions(libraries);
         let libLinks: any[] = [];
         let libPaths: string[] = [];
@@ -116,24 +184,56 @@ export class Win32Compiler extends BaseCompiler {
         if (filters.binary) {
             preLink = ['/link'];
             libLinks = this.getSharedLibraryLinks(libraries);
-            libPaths = this.getSharedLibraryPathsAsArguments(libraries);
-            staticlibLinks = this.getStaticLibraryLinks(libraries);
+            libPaths = this.getSharedLibraryPathsAsArguments(libraries, undefined, undefined, dirPath);
+            const libPathsForLinking = this.getSharedLibraryPaths(libraries, dirPath);
+            staticlibLinks = this.getStaticLibraryLinks(libraries, libPathsForLinking);
         }
 
         userOptions = this.filterUserOptions(userOptions) || [];
-        this.fixIncompatibleOptions(options, userOptions, overrides);
+        [options, overrides] = this.fixIncompatibleOptions(options, userOptions, overrides);
         this.changeOptionsBasedOnOverrides(options, overrides);
+
+        // `/link` and all that follows must come after the filename
+        const linkIndex = userOptions.indexOf('/link');
+        let linkUserOptions: string[] = [];
+        let compileUserOptions = userOptions;
+        if (linkIndex !== -1) {
+            linkUserOptions = userOptions.slice(linkIndex + 1);
+            compileUserOptions = userOptions.slice(0, linkIndex);
+            preLink = ['/link'];
+        }
 
         return options.concat(
             libIncludes,
             libOptions,
-            userOptions,
+            compileUserOptions,
             [this.filename(inputFilename)],
             preLink,
+            linkUserOptions,
             libPaths,
             libLinks,
             staticlibLinks,
         );
+    }
+
+    override fixIncompatibleOptions(
+        options: string[],
+        userOptions: string[],
+        overrides: ConfiguredOverrides,
+    ): [string[], ConfiguredOverrides] {
+        // If userOptions contains anything starting with /source-charset or /execution-charset, remove /utf-8 from options
+        if (
+            userOptions.some(option => option.startsWith('/source-charset') || option.startsWith('/execution-charset'))
+        ) {
+            options = options.filter(option => option !== '/utf-8');
+        }
+
+        // test for debug/release switches to override with, default is /MDd because libraries use that
+        if (userOptions.some(option => option.startsWith('/MD') || option.startsWith('/MT'))) {
+            options = options.filter(option => option !== '/MDd');
+        }
+
+        return [options, overrides];
     }
 
     override optionsForFilter(filters: ParseFiltersAndOutputOptions, outputFilename: string, userOptions?: string[]) {
@@ -141,7 +241,7 @@ export class Win32Compiler extends BaseCompiler {
             const mapFilename = outputFilename + '.map';
             const mapFileReader = new MapFileReaderVS(mapFilename);
 
-            (filters as any).preProcessBinaryAsmLines = asmLines => {
+            filters.preProcessBinaryAsmLines = asmLines => {
                 const reconstructor = new PELabelReconstructor(asmLines, false, mapFileReader);
                 reconstructor.run('output.s.obj');
 
@@ -150,33 +250,34 @@ export class Win32Compiler extends BaseCompiler {
 
             return [
                 '/nologo',
-                '/FA',
-                '/Fa' + this.filename(outputFilename.replace(/\.exe$/, '')),
-                '/Fo' + this.filename(outputFilename.replace(/\.exe$/, '') + '.obj'),
+                '/FA', // assembly listing with source and machine code
+                '/Fa' + this.filename(outputFilename.replace(/\.exe$/, '')), // assembly listing
+                '/Fo' + this.filename(outputFilename.replace(/\.exe$/, '') + '.obj'), // object file
                 '/Fm' + this.filename(mapFilename),
                 '/Fe' + this.filename(this.getExecutableFilename(path.dirname(outputFilename), 'output')),
-            ];
-        } else {
-            return [
-                '/nologo',
-                '/FA',
-                '/c',
-                '/Fa' + this.filename(outputFilename),
-                '/Fo' + this.filename(outputFilename + '.obj'),
+                '/Zi', // complete debugging information
             ];
         }
+        return [
+            '/nologo',
+            '/FA',
+            '/c', // compile only, do not link
+            '/Fa' + this.filename(outputFilename),
+            '/Fo' + this.filename(outputFilename + '.obj'),
+            '/Zi',
+            '/Fd' + this.filename(outputFilename + '.pdb'), // default pdb name for obj is vcXXX.pdb
+        ];
     }
 
-    override async processAsm(result, filters /*, options*/) {
+    override async processAsm(result, filters: ParseFiltersAndOutputOptions) {
         if (filters.binary) {
             filters.dontMaskFilenames = true;
             return this.binaryAsmParser.process(result.asm, filters);
-        } else {
-            return this.asm.process(result.asm, filters);
         }
+        return this.asm.process(result.asm, filters);
     }
 
-    override exec(compiler: string, args: string[], options_: ExecutionOptions) {
+    override async exec(compiler: string, args: string[], options_: ExecutionOptions): Promise<UnprocessedExecResult> {
         const options = Object.assign({}, options_);
         options.env = Object.assign({}, options.env);
 
@@ -191,5 +292,24 @@ export class Win32Compiler extends BaseCompiler {
         }
 
         return super.exec(compiler, args, options);
+    }
+
+    override async buildExecutableInFolder(key: CacheKey, dirPath: string): Promise<BuildResult> {
+        const result = await super.buildExecutableInFolder(key, dirPath);
+
+        if (result.code === 0) {
+            const execOptions = this.getDefaultExecOptions();
+            execOptions.customCwd = dirPath;
+
+            await copyNeededDlls(
+                dirPath,
+                result.executableFilename,
+                this.exec.bind(this),
+                this.compiler.objdumper,
+                execOptions,
+            );
+        }
+
+        return result;
     }
 }

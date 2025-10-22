@@ -22,15 +22,16 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import path from 'path';
+import path from 'node:path';
 
-import semverParser from 'semver';
+import Semver from 'semver';
 import _ from 'underscore';
 
 import type {PreliminaryCompilerInfo} from '../../types/compiler.interfaces.js';
 import type {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces.js';
 import {unwrap} from '../assert.js';
 import {BaseCompiler} from '../base-compiler.js';
+import {CompilationEnvironment} from '../compilation-env.js';
 import {CrystalAsmParser} from '../parsers/asm-parser-crystal.js';
 
 import {CrystalParser} from './argument-parsers.js';
@@ -42,10 +43,11 @@ export class CrystalCompiler extends BaseCompiler {
 
     ccPath: string;
 
-    constructor(compiler: PreliminaryCompilerInfo, env) {
+    constructor(compiler: PreliminaryCompilerInfo, env: CompilationEnvironment) {
         super(compiler, env);
         this.asm = new CrystalAsmParser();
         this.compiler.supportsIrView = true;
+        this.compiler.supportsIntel = this.supportsIntel();
         this.compiler.irArg = ['--emit', 'llvm-ir'];
         this.ccPath = this.compilerProps<string>(`compiler.${this.compiler.id}.cc`);
     }
@@ -71,6 +73,9 @@ export class CrystalCompiler extends BaseCompiler {
             if (!userRequestedEmit) {
                 options = options.concat('--emit', 'asm');
             }
+            if (filters.intel && this.compiler.supportsIntel) {
+                options = options.concat('--x86-asm-syntax=intel');
+            }
         }
 
         return options;
@@ -79,17 +84,15 @@ export class CrystalCompiler extends BaseCompiler {
     override getIrOutputFilename(inputFilename: string, filters: ParseFiltersAndOutputOptions): string {
         if (this.usesNewEmitFilenames()) {
             return this.getOutputFilename(path.dirname(inputFilename), this.outputFilebase).replace('.s', '.ll');
-        } else {
-            return super.getIrOutputFilename(inputFilename, filters);
         }
+        return super.getIrOutputFilename(inputFilename, filters);
     }
 
     override getOutputFilename(dirPath: string, outputFilebase: string) {
         if (this.usesNewEmitFilenames()) {
             return path.join(dirPath, `${outputFilebase}.s`);
-        } else {
-            return path.join(dirPath, `${path.basename(this.compileFilename, this.lang.extensions[0])}.s`);
         }
+        return path.join(dirPath, `${path.basename(this.compileFilename, this.lang.extensions[0])}.s`);
     }
 
     override getExecutableFilename(dirPath: string, outputFilebase: string) {
@@ -100,13 +103,15 @@ export class CrystalCompiler extends BaseCompiler {
         return this.getExecutableFilename(path.dirname(defaultOutputFilename), this.outputFilebase);
     }
 
-    override getArgumentParser() {
+    override getArgumentParserClass() {
         return CrystalParser;
     }
 
     private usesNewEmitFilenames(): boolean {
-        const versionRegex = /Crystal (\d+\.\d+\.\d+)/;
-        const versionMatch = versionRegex.exec(this.compiler.version);
-        return versionMatch ? semverParser.compare(versionMatch[1], '1.9.0', true) >= 0 : false;
+        return Semver.gte(this.compiler.semver, '1.9.0');
+    }
+
+    private supportsIntel(): boolean {
+        return Semver.gte(this.compiler.semver, '1.17.0');
     }
 }

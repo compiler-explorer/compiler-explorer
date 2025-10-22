@@ -22,17 +22,19 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import * as fs from 'fs/promises';
-import Path from 'path';
+import * as fs from 'node:fs/promises';
+import Path from 'node:path';
 
 import Semver from 'semver';
 import _ from 'underscore';
 
-import type {CompilationInfo} from '../../types/compilation/compilation.interfaces.js';
+import type {CompilationInfo, CompilationResult} from '../../types/compilation/compilation.interfaces.js';
 import type {PreliminaryCompilerInfo} from '../../types/compiler.interfaces.js';
 import type {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces.js';
 import {unwrap} from '../assert.js';
 import {BaseCompiler} from '../base-compiler.js';
+import {CompilationEnvironment} from '../compilation-env.js';
+import {PTXAsmParser} from '../parsers/asm-parser-ptx.js';
 import {SassAsmParser} from '../parsers/asm-parser-sass.js';
 import {asSafeVer} from '../utils.js';
 
@@ -44,12 +46,14 @@ export class NvccCompiler extends BaseCompiler {
     }
 
     deviceAsmParser: SassAsmParser;
+    ptxParser: PTXAsmParser;
 
-    constructor(info: PreliminaryCompilerInfo, env) {
+    constructor(info: PreliminaryCompilerInfo, env: CompilationEnvironment) {
         super(info, env);
         this.compiler.supportsOptOutput = true;
         this.compiler.supportsDeviceAsmView = true;
         this.deviceAsmParser = new SassAsmParser(this.compilerProps);
+        this.ptxParser = new PTXAsmParser(this.compilerProps);
     }
 
     // TODO: (for all of CUDA)
@@ -67,7 +71,7 @@ export class NvccCompiler extends BaseCompiler {
         return opts;
     }
 
-    override getArgumentParser() {
+    override getArgumentParserClass() {
         return ClangParser;
     }
 
@@ -102,11 +106,11 @@ export class NvccCompiler extends BaseCompiler {
 
     override async postProcess(result, outputFilename: string, filters: ParseFiltersAndOutputOptions) {
         const maxSize = this.env.ceProps('max-asm-size', 64 * 1024 * 1024);
-        const optPromise = result.optPath ? this.processOptOutput(result.optPath) : Promise.resolve('');
+        const optPromise = result.optPath ? this.processOptOutput(result.optPath) : Promise.resolve([]);
         const postProcess = _.compact(this.compiler.postProcess);
         const asmPromise = (
             filters.binary
-                ? this.objdump(outputFilename, {}, maxSize, filters.intel, filters.demangle, false, false, filters)
+                ? this.objdump(outputFilename, {}, maxSize, !!filters.intel, !!filters.demangle, false, false, filters)
                 : (async () => {
                       if (result.asmSize === undefined) {
                           result.asm = '<No output file>';
@@ -120,20 +124,23 @@ export class NvccCompiler extends BaseCompiler {
                       }
                       if (postProcess.length > 0) {
                           return await this.execPostProcess(result, postProcess, outputFilename, maxSize);
-                      } else {
-                          const contents = await fs.readFile(outputFilename, {encoding: 'utf8'});
-                          result.asm = contents.toString();
-                          return result;
                       }
+                      const contents = await fs.readFile(outputFilename, {encoding: 'utf8'});
+                      result.asm = contents.toString();
+                      return result;
                   })()
         ).then(asm => {
             result.asm = typeof asm === 'string' ? asm : asm.asm;
             return result;
         });
-        return Promise.all([asmPromise, optPromise, '']);
+        return Promise.all([asmPromise, optPromise, []]);
     }
 
-    override async extractDeviceCode(result, filters, compilationInfo: CompilationInfo) {
+    override async extractDeviceCode(
+        result: CompilationResult,
+        filters: ParseFiltersAndOutputOptions,
+        compilationInfo: CompilationInfo,
+    ) {
         const {dirPath} = result;
         const {demangle} = filters;
         const devices = {...result.devices};
@@ -151,11 +158,12 @@ export class NvccCompiler extends BaseCompiler {
                                 : await this.nvdisasm(Path.join(dirPath, name), {dirPath}, maxSize);
                         const archAndCode = name.split('.').slice(1, -1).join(', ') || '';
                         const nameAndArch = type + (archAndCode ? ` (${archAndCode.toLowerCase()})` : '');
+                        const parser = type === 'PTX' ? this.ptxParser : this.deviceAsmParser;
                         Object.assign(devices, {
                             [nameAndArch]: await this.postProcessAsm(
                                 {
                                     okToCache: demangle,
-                                    ...this.deviceAsmParser.process(asm, {...filters, binary: type === 'SASS'}),
+                                    ...parser.process(asm, {...filters, binary: type === 'SASS'}),
                                 },
                                 {...filters, binary: type === 'SASS'},
                             ),

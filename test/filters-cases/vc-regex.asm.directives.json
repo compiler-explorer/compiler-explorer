@@ -30,35 +30,7 @@
     },
     {
       "source": null,
-      "text": "        DD      FLAT:__unwindfunclet$?regexTest@@YAXXZ$0"
-    },
-    {
-      "source": null,
       "text": "__ehfuncinfo$?regexTest@@YAXXZ DD 019930522H"
-    },
-    {
-      "source": null,
-      "text": "        DD      01H"
-    },
-    {
-      "source": null,
-      "text": "        DD      FLAT:__unwindtable$?regexTest@@YAXXZ"
-    },
-    {
-      "source": null,
-      "text": "        DD      2 DUP(00H)"
-    },
-    {
-      "source": null,
-      "text": "        DD      2 DUP(00H)"
-    },
-    {
-      "source": null,
-      "text": "        DD      00H"
-    },
-    {
-      "source": null,
-      "text": "        DD      01H"
     },
     {
       "source": null,

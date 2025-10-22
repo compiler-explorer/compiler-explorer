@@ -22,12 +22,12 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
+import GoldenLayout from 'golden-layout';
 import $ from 'jquery';
 import {editor} from 'monaco-editor';
-import {SiteSettings} from './settings.js';
-import GoldenLayout from 'golden-layout';
 import {isString} from '../shared/common-utils.js';
 import {options} from './options.js';
+import {SiteSettings} from './settings.js';
 
 export type Themes = 'default' | 'dark' | 'darkplus' | 'pink' | 'onedark' | 'real-dark' | 'system';
 
@@ -118,6 +118,7 @@ editor.defineTheme('ce-dark', {
             fontStyle: 'bold',
         },
         {token: 'keyword.identifier.definition.herb', fontStyle: 'bold'},
+        {token: 'variable.predefined', foreground: '949eb0'},
     ],
     colors: {},
 });
@@ -132,6 +133,7 @@ editor.defineTheme('ce-dark-plus', {
             fontStyle: 'bold',
         },
         {token: 'keyword.identifier.definition.herb', fontStyle: 'bold'},
+        {token: 'variable.predefined', foreground: '949eb0'},
         {token: 'keyword.if.cpp', foreground: 'b66bb0'},
         {token: 'keyword.else.cpp', foreground: 'b66bb0'},
         {token: 'keyword.while.cpp', foreground: 'b66bb0'},
@@ -425,6 +427,7 @@ editor.defineTheme('ce-one-dark', {
             foreground: '61afef',
             fontStyle: 'bold',
         },
+        {token: 'variable.predefined', foreground: '949eb0'},
         // General Identifiers
         {token: 'identifier.cpp', foreground: 'abb2bf'},
         // Annotations (includes items in attribute list)

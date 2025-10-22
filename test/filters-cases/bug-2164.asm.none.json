@@ -81,15 +81,7 @@
       "text": "        .eabi_attribute 14, 0"
     },
     {
-      "labels": [
-        {
-          "name": "example",
-          "range": {
-            "endCol": 25,
-            "startCol": 18
-          }
-        }
-      ],
+      "labels": [],
       "source": null,
       "text": "        .file   \"example.3a1fbbbh-cgu.0\""
     },
@@ -150,15 +142,7 @@
       "text": ".Lfunc_begin0:"
     },
     {
-      "labels": [
-        {
-          "name": "example",
-          "range": {
-            "endCol": 38,
-            "startCol": 31
-          }
-        }
-      ],
+      "labels": [],
       "source": null,
       "text": "        .file   1 \"/home/ce/./example.rs\""
     },
@@ -911,15 +895,7 @@
       "text": ".Linfo_string1:"
     },
     {
-      "labels": [
-        {
-          "name": "example",
-          "range": {
-            "endCol": 27,
-            "startCol": 20
-          }
-        }
-      ],
+      "labels": [],
       "source": null,
       "text": "        .asciz  \"./example.rs\""
     },
@@ -939,15 +915,7 @@
       "text": ".Linfo_string3:"
     },
     {
-      "labels": [
-        {
-          "name": "example",
-          "range": {
-            "endCol": 25,
-            "startCol": 18
-          }
-        }
-      ],
+      "labels": [],
       "source": null,
       "text": "        .asciz  \"example\""
     },
@@ -957,15 +925,7 @@
       "text": ".Linfo_string4:"
     },
     {
-      "labels": [
-        {
-          "name": "example",
-          "range": {
-            "endCol": 25,
-            "startCol": 18
-          }
-        }
-      ],
+      "labels": [],
       "source": null,
       "text": "        .asciz  \"example::abort\""
     },
@@ -1048,15 +1008,7 @@
       "text": "        .long   38"
     },
     {
-      "labels": [
-        {
-          "name": "example",
-          "range": {
-            "endCol": 25,
-            "startCol": 18
-          }
-        }
-      ],
+      "labels": [],
       "source": null,
       "text": "        .asciz  \"example\""
     },

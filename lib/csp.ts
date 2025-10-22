@@ -22,7 +22,7 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-export const data = {
+export const data: Record<string, string[]> = {
     'default-src': ["'self'", 'https://*.godbolt.org', 'localhost:*', 'https://*.compiler-explorer.com'],
     'style-src': [
         "'self'",
@@ -39,9 +39,6 @@ export const data = {
         'localhost:*',
         'https://*.compiler-explorer.com',
         'https://*.twitter.com',
-        'https://www.google-analytics.com',
-        'https://apis.google.com',
-        'https://ssl.google-analytics.com',
         'https://sentry.io/',
     ],
     'img-src': [
@@ -50,9 +47,7 @@ export const data = {
         'localhost:*',
         'https://*.compiler-explorer.com',
         'data:',
-        'https://www.google-analytics.com/',
         'https://syndication.twitter.com',
-        'https://ssl.google-analytics.com',
         'https://csi.gstatic.com',
     ],
     'font-src': [
@@ -69,9 +64,6 @@ export const data = {
         'https://*.godbolt.org',
         'localhost:*',
         'https://*.compiler-explorer.com',
-        'https://www.google-analytics.com',
-        'https://accounts.google.com/',
-        'https://content.googleapis.com/',
         'https://sentry.io',
         'https://platform.twitter.com/',
         'https://syndication.twitter.com/',

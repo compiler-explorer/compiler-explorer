@@ -22,23 +22,20 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import _ from 'underscore';
 import {Container} from 'golden-layout';
 import * as monaco from 'monaco-editor';
-
-import {MonacoPaneState, PaneCompilerState, PaneState} from './pane.interfaces.js';
-
-import {FontScale} from '../widgets/fontscale.js';
-import {Settings, SiteSettings} from '../settings.js';
-import * as utils from '../utils.js';
-
-import {PaneRenaming} from '../widgets/pane-renaming.js';
+import _ from 'underscore';
+import {escapeHTML} from '../../shared/common-utils.js';
+import {CompilationResult} from '../../types/compilation/compilation.interfaces.js';
+import {CompilerInfo} from '../../types/compiler.interfaces.js';
+import {unwrap} from '../assert.js';
 import {EventHub} from '../event-hub.js';
 import {Hub} from '../hub.js';
-import {unwrap} from '../assert.js';
-import {CompilerInfo} from '../compiler.interfaces.js';
-import {CompilationResult} from '../compilation/compilation.interfaces.js';
-import {escapeHTML} from '../../shared/common-utils.js';
+import {Settings, SiteSettings} from '../settings.js';
+import * as utils from '../utils.js';
+import {FontScale} from '../widgets/fontscale.js';
+import {PaneRenaming} from '../widgets/pane-renaming.js';
+import {MonacoPaneState, PaneCompilerState, PaneState} from './pane.interfaces.js';
 
 /**
  * Basic container for a tool pane in Compiler Explorer.
@@ -87,7 +84,6 @@ export abstract class Pane<S> {
         this.registerButtons(state);
         this.registerStandardCallbacks();
         this.registerCallbacks();
-        this.registerOpeningAnalyticsEvent();
     }
 
     protected initializeCompilerInfo(state: PaneState) {
@@ -110,20 +106,6 @@ export abstract class Pane<S> {
      * ```
      */
     abstract getInitialHTML(): string;
-
-    /**
-     * Emit analytics event for opening the pane tab. Typical implementation
-     * looks like this:
-     *
-     * ```ts
-     * ga.proxy('send', {
-     *   hitType: 'event',
-     *   eventCategory: 'OpenViewPane',
-     *   eventAction: 'RustMir',
-     * });
-     * ```
-     */
-    abstract registerOpeningAnalyticsEvent(): void;
 
     initializeDefaults(): void {}
 
@@ -193,8 +175,7 @@ export abstract class Pane<S> {
     /**
      * Perform any clean-up events when the pane is closed.
      *
-     * This is typically used to emit an analytics event for closing the pane,
-     * unsubscribing from the event hub and disposing the monaco editor.
+     * This is typically used to unsubscribe from the event hub and dispose the monaco editor.
      */
     abstract close(): void;
 
@@ -226,9 +207,8 @@ export abstract class Pane<S> {
         const {compilerName, editorId, treeId, compilerId} = this.compilerInfo;
         if (editorId) {
             return `${compilerName} (Editor #${editorId}, Compiler #${compilerId})`;
-        } else {
-            return `${compilerName} (Tree #${treeId}, Compiler #${compilerId})`;
         }
+        return `${compilerName} (Tree #${treeId}, Compiler #${compilerId})`;
     }
 
     /** Get name for the pane */
@@ -244,7 +224,12 @@ export abstract class Pane<S> {
     /** Close the pane if the compiler this pane was attached to closes */
     protected onCompilerClose(compilerId: number) {
         if (this.compilerInfo.compilerId === compilerId) {
-            _.defer(() => this.container.close());
+            _.defer(() => {
+                // Check if container is still valid before attempting to close
+                if (this.container?.parent && this.container.layoutManager?.isInitialised) {
+                    this.container.close();
+                }
+            });
         }
     }
 
@@ -352,7 +337,7 @@ export abstract class MonacoPane<E extends monaco.editor.IEditor, S> extends Pan
     /** Initialize standard lifecycle hooks */
     protected override registerStandardCallbacks(): void {
         super.registerStandardCallbacks();
-        // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+
         if (this.fontScale) this.fontScale.on('change', this.updateState.bind(this));
         this.eventHub.on('broadcastFontScale', (scale: number) => {
             this.fontScale.setScale(scale);

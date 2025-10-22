@@ -23,10 +23,7 @@
 // POSSIBILITY OF SUCH DAMAGE.
 
 import $ from 'jquery';
-import {options} from '../options.js';
-import {CompilerInfo} from '../compiler.interfaces.js';
-import {assert} from '../assert.js';
-import {localStorage} from '../local.js';
+import {CompilerInfo} from '../../types/compiler.interfaces.js';
 import {
     ConfiguredRuntimeTool,
     ConfiguredRuntimeTools,
@@ -35,6 +32,10 @@ import {
     RuntimeToolOptions,
     RuntimeToolType,
 } from '../../types/execution/execution.interfaces.js';
+import {assert} from '../assert.js';
+import * as BootstrapUtils from '../bootstrap-utils.js';
+import {localStorage} from '../local.js';
+import {options} from '../options.js';
 
 const FAV_RUNTIMETOOLS_STORE_KEY = 'favruntimetools';
 
@@ -121,9 +122,8 @@ export class RuntimeToolsWidget {
                         name: env.substring(0, firstEqPos),
                         value: env.substring(firstEqPos + 1),
                     };
-                } else {
-                    return false;
                 }
+                return false;
             })
             .filter(Boolean) as RuntimeToolOptions;
     }
@@ -356,9 +356,8 @@ export class RuntimeToolsWidget {
     get(): ConfiguredRuntimeTools | undefined {
         if (this.compiler) {
             return this.configured;
-        } else {
-            return undefined;
         }
+        return undefined;
     }
 
     private getFavorites(): FavRuntimeTools {
@@ -394,9 +393,8 @@ export class RuntimeToolsWidget {
 
         const lastOverrides = JSON.stringify(this.configured);
 
-        const popup = this.popupDomRoot.modal();
         // popup is shared, so clear the events first
-        popup.off('hidden.bs.modal').on('hidden.bs.modal', () => {
+        BootstrapUtils.setElementEventHandler(this.popupDomRoot, 'hidden.bs.modal', () => {
             this.configured = this.loadStateFromUI();
 
             const newOverrides = JSON.stringify(this.configured);
@@ -406,5 +404,7 @@ export class RuntimeToolsWidget {
                 this.onChangeCallback();
             }
         });
+
+        BootstrapUtils.showModal(this.popupDomRoot);
     }
 }

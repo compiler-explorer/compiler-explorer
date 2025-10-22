@@ -22,6 +22,8 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
+import {Buffer} from 'buffer';
+
 import {Counter} from 'prom-client';
 
 import type {CacheableValue, GetResult} from '../../types/cache.interfaces.js';

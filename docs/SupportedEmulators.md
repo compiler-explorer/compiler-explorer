@@ -13,6 +13,7 @@ These are using Javascript and/or using external websites to facilitate emulatio
   with Z88DK (target `+sms`)
 - [Viciious](https://github.com/compiler-explorer/viciious) (https://static.ce-cdn.net/viciious/viciious.html) - for
   `.prg` files built with LLVM MOS C64 or CC65 (`--target c64`)
+- [WasmBoy](https://github.com/compiler-explorer/wasmboy) (https://static.ce-cdn.net/wasmboy/index.html) - for `.gb` ROM files built with z88dk (target `+gb`)
 
 ## Examples
 
@@ -25,4 +26,6 @@ These are using Javascript and/or using external websites to facilitate emulatio
 - Hello World with default sprites with CC65 https://compiler-explorer.com/z/e7eGa8rKa
 - Hello World with custom sprites with CC65 https://compiler-explorer.com/z/s8E3PeWfM
 - Hello World with LLVM-MOS C64 https://compiler-explorer.com/z/EveEETnKT
+- Hello World with MadPascal C64 https://compiler-explorer.com/z/fobvf78vY
 - Bouncing balls with CC65 https://compiler-explorer.com/z/ajav6Menq
+- Hello World using z88dk `+gb` https://compiler-explorer.com/z/6Kf88Ec5T

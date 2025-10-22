@@ -22,23 +22,23 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
+import child_process from 'node:child_process';
+import fs from 'node:fs/promises';
+import os from 'node:os';
+import path from 'node:path';
+import {Stream} from 'node:stream';
 import buffer from 'buffer';
-import child_process from 'child_process';
-import os from 'os';
-import path from 'path';
-import {Stream} from 'stream';
-
-import fs from 'fs-extra';
 import treeKill from 'tree-kill';
 import _ from 'underscore';
-
+import which from 'which';
+import {splitArguments} from '../shared/common-utils.js';
 import type {ExecutionOptions} from '../types/compilation/compilation.interfaces.js';
 import type {FilenameTransformFunc, UnprocessedExecResult} from '../types/execution/execution.interfaces.js';
-
 import {assert, unwrap, unwrapString} from './assert.js';
 import {logger} from './logger.js';
 import {Graceful} from './node-graceful.js';
 import {propsFor} from './properties.js';
+import * as utils from './utils.js';
 
 type NsJailOptions = {
     args: string[];
@@ -47,6 +47,9 @@ type NsJailOptions = {
 };
 
 const execProps = propsFor('execution');
+const c_nsjail_permissions_error = 'runChild():486 Launching child process failed';
+
+let stdbufPath: null | string = null;
 
 function checkExecOptions(options: ExecutionOptions) {
     if (options.env) {
@@ -67,7 +70,25 @@ function setupOnError(stream: Stream, name: string) {
     });
 }
 
-export function executeDirect(
+async function maybeUnbuffer(command: string, args: string[]): Promise<{command: string; args: string[]}> {
+    if (!stdbufPath) {
+        const unbufferStdoutExe = execProps<string>('unbufferStdoutExe');
+        if (unbufferStdoutExe) {
+            stdbufPath = await which(unbufferStdoutExe).catch(() => null);
+            if (!stdbufPath) logger.error(`Could not find ${unbufferStdoutExe} in PATH`);
+            else logger.info(`Unbuffering with ${stdbufPath}`);
+        }
+    }
+
+    if (stdbufPath) {
+        const stdbufArgs = splitArguments(execProps<string>('unbufferStdoutArgs'));
+        logger.debug(`Unbuffering ${command} with ${stdbufPath} ${stdbufArgs.join(' ')}`);
+        return {command: stdbufPath, args: stdbufArgs.concat([command], args)};
+    }
+    return {command, args};
+}
+
+export async function executeDirect(
     command: string,
     args: string[],
     options: ExecutionOptions,
@@ -115,8 +136,8 @@ export function executeDirect(
         });
 
     const streams = {
-        stderr: '',
-        stdout: '',
+        stderr: [] as Buffer[],
+        stdout: [] as Buffer[],
         truncated: false,
     };
     let timeout: NodeJS.Timeout | undefined;
@@ -126,24 +147,26 @@ export function executeDirect(
             okToCache = false;
             timedOut = true;
             kill();
-            streams.stderr += '\nKilled - processing time exceeded\n';
+            streams.stderr.push(Buffer.from('\nKilled - processing time exceeded\n', 'utf8'));
         }, timeoutMs);
 
-    function setupStream(stream: Stream, name: string) {
+    function setupStream(stream: Stream, name: 'stdout' | 'stderr') {
         if (stream === undefined) return;
-        stream.on('data', data => {
+        let currentLength = 0;
+        stream.on('data', (data: Buffer) => {
             if (streams.truncated) return;
-            const newLength = streams[name].length + data.length;
+            const newLength = currentLength + data.length;
             if (maxOutput > 0 && newLength > maxOutput) {
                 const truncatedMsg = '\n[Truncated]';
-                const spaceLeft = Math.max(maxOutput - streams[name].length - truncatedMsg.length, 0);
-                streams[name] = streams[name] + data.slice(0, spaceLeft);
-                streams[name] += truncatedMsg.slice(0, maxOutput - streams[name].length);
+                const spaceLeft = Math.max(maxOutput - currentLength - truncatedMsg.length, 0);
+                streams[name].push(Buffer.from(data).subarray(0, spaceLeft));
+                streams[name].push(Buffer.from(truncatedMsg));
                 streams.truncated = true;
                 kill();
                 return;
             }
-            streams[name] += data;
+            streams[name].push(Buffer.from(data));
+            currentLength = newLength;
         });
         setupOnError(stream, name);
     }
@@ -171,10 +194,10 @@ export function executeDirect(
                 okToCache,
                 timedOut,
                 filenameTransform: filenameTransform || (x => x),
-                stdout: streams.stdout,
-                stderr: streams.stderr,
+                stdout: Buffer.concat(streams.stdout).toString('utf8'),
+                stderr: Buffer.concat(streams.stderr).toString('utf8'),
                 truncated: streams.truncated,
-                execTime: ((endTime - startTime) / BigInt(1000000)).toString(),
+                execTime: utils.deltaTimeNanoToMili(startTime, endTime),
             };
             // Check debug level explicitly as result may be a very large string
             // which we'd prefer to avoid preparing if it won't be used
@@ -330,15 +353,41 @@ export function getExecuteCEWrapperOptions(command: string, args: string[], opti
     return getCeWrapperOptions('execute', command, args, options);
 }
 
-function sandboxNsjail(command: string, args: string[], options: ExecutionOptions) {
-    logger.info('Sandbox execution via nsjail', {command, args});
-    const nsOpts = getSandboxNsjailOptions(command, args, options);
-    return executeDirect(execProps<string>('nsjail'), nsOpts.args, nsOpts.options, nsOpts.filenameTransform);
+export function hasNsjailPermissionsIssue(result: UnprocessedExecResult): boolean {
+    return result.stderr.includes(c_nsjail_permissions_error) || (result.stderr === '' && result.code === 255);
 }
 
-function executeNsjail(command: string, args: string[], options: ExecutionOptions) {
+async function sandboxNsjail(
+    command: string,
+    args: string[],
+    options: ExecutionOptions,
+): Promise<UnprocessedExecResult> {
+    logger.info('Sandbox execution via nsjail', {command, args});
+    const nsOpts = getSandboxNsjailOptions(command, args, options);
+    const result = await executeDirect(
+        execProps<string>('nsjail'),
+        nsOpts.args,
+        nsOpts.options,
+        nsOpts.filenameTransform,
+    );
+    if (hasNsjailPermissionsIssue(result)) result.okToCache = false;
+    return result;
+}
+
+async function executeNsjail(
+    command: string,
+    args: string[],
+    options: ExecutionOptions,
+): Promise<UnprocessedExecResult> {
     const nsOpts = getNsJailOptions('execute', command, args, options);
-    return executeDirect(execProps<string>('nsjail'), nsOpts.args, nsOpts.options, nsOpts.filenameTransform);
+    const result = await executeDirect(
+        execProps<string>('nsjail'),
+        nsOpts.args,
+        nsOpts.options,
+        nsOpts.filenameTransform,
+    );
+    if (hasNsjailPermissionsIssue(result)) result.okToCache = false;
+    return result;
 }
 
 function sandboxCEWrapper(command: string, args: string[], options: ExecutionOptions) {
@@ -352,7 +401,7 @@ function executeCEWrapper(command: string, args: string[], options: ExecutionOpt
 }
 
 function withFirejailTimeout(args: string[], options?: ExecutionOptions) {
-    if (options && options.timeoutMs) {
+    if (options?.timeoutMs) {
         // const ExtraWallClockLeewayMs = 1000;
         const ExtraCpuLeewayMs = 1500;
         return args.concat([`--rlimit-cpu=${Math.round((options.timeoutMs + ExtraCpuLeewayMs) / 1000)}`]);
@@ -407,10 +456,11 @@ export async function sandbox(
 ): Promise<UnprocessedExecResult> {
     checkExecOptions(options);
     const type = execProps('sandboxType', 'firejail');
-    const dispatchEntry = sandboxDispatchTable[type];
+    const dispatchEntry = sandboxDispatchTable[type as 'none' | 'nsjail' | 'firejail' | 'cewrapper'];
     if (!dispatchEntry) throw new Error(`Bad sandbox type ${type}`);
-    if (!command) throw new Error(`No executable provided`);
-    return await dispatchEntry(command, args, options);
+    if (!command) throw new Error('No executable provided');
+    const unbuffered = await maybeUnbuffer(command, args);
+    return await dispatchEntry(unbuffered.command, unbuffered.args, options);
 }
 
 const wineSandboxName = 'ce-wineserver';
@@ -436,12 +486,9 @@ export function startWineInit() {
     logger.info(`Initialising WINE in ${prefix}`);
 
     const asyncSetup = async (): Promise<void> => {
-        if (!(await fs.pathExists(prefix))) {
-            logger.info(`Creating directory ${prefix}`);
-            await fs.mkdir(prefix);
-        }
+        await fs.mkdir(prefix, {recursive: true});
 
-        logger.info(`Killing any pre-existing wine-server`);
+        logger.info('Killing any pre-existing wine-server');
         child_process.exec(`${server} -k || true`, {env: env});
 
         // We run a long-lived cmd process, to:
@@ -453,7 +500,7 @@ export function startWineInit() {
 
         let wineServer: child_process.ChildProcess | undefined;
         if (firejail) {
-            logger.info(`Starting a new, firejailed, long-lived wineserver complex`);
+            logger.info('Starting a new, firejailed, long-lived wineserver complex');
             wineServer = child_process.spawn(
                 firejail,
                 [
@@ -608,7 +655,9 @@ async function executeNone(command: string, args: string[], options: ExecutionOp
     return await executeDirect(command, args, options);
 }
 
-const executeDispatchTable = {
+type DispatchFunction = (command: string, args: string[], options: ExecutionOptions) => Promise<UnprocessedExecResult>;
+
+const executeDispatchTable: Record<string, DispatchFunction> = {
     none: executeNone,
     firejail: executeFirejail,
     nsjail: (command: string, args: string[], options: ExecutionOptions) =>
@@ -625,6 +674,7 @@ export async function execute(
     const type = execProps('executionType', 'none');
     const dispatchEntry = executeDispatchTable[type];
     if (!dispatchEntry) throw new Error(`Bad sandbox type ${type}`);
-    if (!command) throw new Error(`No executable provided`);
-    return await dispatchEntry(command, args, options);
+    if (!command) throw new Error('No executable provided');
+    const unbuffered = await maybeUnbuffer(command, args);
+    return await dispatchEntry(unbuffered.command, unbuffered.args, options);
 }

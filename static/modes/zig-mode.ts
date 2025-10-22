@@ -228,7 +228,31 @@ function definition(): monaco.languages.IMonarchLanguage {
     };
 }
 
+const config: monaco.languages.LanguageConfiguration = {
+    comments: {
+        lineComment: '//',
+    },
+    brackets: [
+        ['{', '}'],
+        ['[', ']'],
+        ['(', ')'],
+    ],
+    autoClosingPairs: [
+        {open: '{', close: '}'},
+        {open: '[', close: ']'},
+        {open: '(', close: ')'},
+        {open: '"', close: '"'},
+        {open: "'", close: "'"},
+    ],
+    surroundingPairs: [
+        {open: '{', close: '}'},
+        {open: '[', close: ']'},
+        {open: '(', close: ')'},
+        {open: '"', close: '"'},
+        {open: "'", close: "'"},
+    ],
+};
+
 monaco.languages.register({id: 'zig'});
 monaco.languages.setMonarchTokensProvider('zig', definition());
-
-export {};
+monaco.languages.setLanguageConfiguration('zig', config);

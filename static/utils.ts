@@ -25,6 +25,17 @@
 import bigInt from 'big-integer';
 import {addDigitSeparator} from '../shared/common-utils.js';
 
+/**
+ * Get an image relative to `/public` in the source root.
+ */
+export function getStaticImage(filename: string, parent?: string) {
+    const root = window.staticRoot;
+    if (parent) {
+        return `${root}${parent}/${filename}`;
+    }
+    return `${root}${filename}`;
+}
+
 export function updateAndCalcTopBarHeight(domRoot: JQuery, topBar: JQuery, hideable: JQuery): number {
     let topBarHeight = 0;
     if (!topBar.hasClass('d-none')) {
@@ -41,7 +52,7 @@ export function updateAndCalcTopBarHeight(domRoot: JQuery, topBar: JQuery, hidea
 }
 
 export function formatDateTimeWithSpaces(d: Date) {
-    const t = x => x.slice(-2);
+    const t = (x: string) => x.slice(-2);
     // Hopefully some day we can use the temporal api to make this less of a pain
     return (
         `${d.getFullYear()} ${t('0' + (d.getMonth() + 1))} ${t('0' + d.getDate())}` +
@@ -67,9 +78,8 @@ export function formatISODate(dt: Date, full = false) {
             ':' +
             min.padStart(2, '0')
         );
-    } else {
-        return dt.getUTCFullYear() + '-' + month.padStart(2, '0') + '-' + day.padStart(2, '0');
     }
+    return dt.getUTCFullYear() + '-' + month.padStart(2, '0') + '-' + day.padStart(2, '0');
 }
 
 const hexLike = /^(#?[$]|0x)([0-9a-fA-F]+)$/;
@@ -92,13 +102,12 @@ function parseNumericValue(value: string): bigInt.BigInteger | null {
 }
 
 export function getNumericToolTip(value: string, digitSeparator?: string): string | null {
-    const formatNumber = (number, base, chunkSize) => {
-        const numberString = number.toString(base).toUpperCase();
+    const formatNumber = (num: bigInt.BigInteger, base: number, chunkSize: number) => {
+        const numberString = num.toString(base).toUpperCase();
         if (digitSeparator !== undefined) {
             return addDigitSeparator(numberString, digitSeparator, chunkSize);
-        } else {
-            return numberString;
         }
+        return numberString;
     };
     const numericValue = parseNumericValue(value);
     if (numericValue === null) return null;
@@ -139,9 +148,16 @@ export function getNumericToolTip(value: string, digitSeparator?: string): strin
     const decoder = new TextDecoder('utf-8', {fatal: true});
     try {
         result += ' = ' + JSON.stringify(decoder.decode(Uint8Array.from(bytes)));
-    } catch (e) {
+    } catch {
         // ignore `TypeError` when the number is not valid UTF-8
     }
 
     return result;
+}
+
+// zip two arrays up until min(a.length, b.length)
+export function* zip<T>(a: T[], b: T[]) {
+    for (let i = 0; i < Math.min(a.length, b.length); i++) {
+        yield [a[i], b[i]] as [T, T];
+    }
 }

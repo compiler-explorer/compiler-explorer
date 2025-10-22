@@ -22,10 +22,11 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import path from 'path';
+import path from 'node:path';
 
 import type {PreliminaryCompilerInfo} from '../../types/compiler.interfaces.js';
 import {BaseCompiler} from '../base-compiler.js';
+import {CompilationEnvironment} from '../compilation-env.js';
 
 import {BaseParser} from './argument-parsers.js';
 
@@ -34,7 +35,7 @@ export class CIRCTCompiler extends BaseCompiler {
         return 'circt';
     }
 
-    constructor(compilerInfo: PreliminaryCompilerInfo, env) {
+    constructor(compilerInfo: PreliminaryCompilerInfo, env: CompilationEnvironment) {
         super(
             {
                 disabledFilters: [
@@ -63,7 +64,7 @@ export class CIRCTCompiler extends BaseCompiler {
         return ['-o', outputFilename];
     }
 
-    override getArgumentParser(): any {
+    override getArgumentParserClass(): any {
         return BaseParser;
     }
 

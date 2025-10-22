@@ -11,6 +11,12 @@
           - 'etc/config/ada.*.properties'
           - 'static/modes/ada-mode.ts'
 
+'lang-algol68':
+  - changed-files:
+      - any-glob-to-any-file:
+          - 'lib/compilers/gac.ts'
+          - 'etc/config/algol68.*.properties'
+
 'lang-android-java':
   - changed-files:
       - any-glob-to-any-file:
@@ -92,6 +98,12 @@
           - 'etc/config/clean.*.properties'
           - 'static/modes/clean-mode.ts'
 
+'lang-clojure':
+  - changed-files:
+      - any-glob-to-any-file:
+          - 'lib/compilers/clojure.ts'
+          - 'etc/config/clojure.*.properties'
+
 'lang-cobol':
   - changed-files:
       - any-glob-to-any-file:
@@ -149,6 +161,7 @@
       - any-glob-to-any-file:
           - 'lib/compilers/flang.ts'
           - 'lib/compilers/flang-fc1.ts'
+          - 'lib/compilers/lfortran.ts'
           - 'lib/compilers/fortran.ts'
           - 'etc/config/fortran.*.properties'
           - 'static/modes/fortran-mode.ts'
@@ -179,6 +192,13 @@
           - 'lib/compilers/jakt.ts'
           - 'etc/config/jakt.*.properties'
           - 'static/modes/jakt-mode.ts'
+
+'lang-glsl':
+  - changed-files:
+      - any-glob-to-any-file:
+          - 'lib/compilers/glsl.ts'
+          - 'etc/config/glsl.*.properties'
+          - 'static/modes/glsl-mode.ts'
 
 'lang-go':
   - changed-files:
@@ -230,7 +250,6 @@
       - any-glob-to-any-file:
           - 'lib/llvm-ast.ts'
           - 'lib/llvm-ir.ts'
-          - 'lib/llvm-opt-transformer.ts'
           - 'lib/compilers/llc.ts'
           - 'lib/compilers/llvm-mca.ts'
           - 'lib/objdumper/llvm.ts'
@@ -246,12 +265,32 @@
           - 'etc/config/modula2.*.properties'
           - 'static/modes/modula2-mode.ts'
 
+'lang-mojo':
+  - changed-files:
+      - any-glob-to-any-file:
+          - 'lib/compilers/mojo.ts'
+          - 'etc/config/mojo.*.properties'
+          - 'static/modes/mojo-mode.ts'
+
 'lang-nim':
   - changed-files:
       - any-glob-to-any-file:
           - 'lib/compilers/nim.ts'
           - 'etc/config/nim.*.properties'
           - 'static/modes/nim-mode.ts'
+
+'lang-nix':
+  - changed-files:
+      - any-glob-to-any-file:
+          - 'lib/compilers/nix.ts'
+          - 'etc/config/nix.*.properties'
+          - 'static/modes/nix-mode.ts'
+
+'lang-numba':
+  - changed-files:
+      - any-glob-to-any-file:
+          - 'lib/compilers/numba.ts'
+          - 'etc/config/numba.*.properties'
 
 'lang-objc':
   - changed-files:
@@ -269,6 +308,13 @@
           - 'lib/compilers/ocaml.ts'
           - 'etc/config/ocaml.*.properties'
           - 'static/modes/ocaml-mode.ts'
+
+'lang-odin':
+  - changed-files:
+      - any-glob-to-any-file:
+          - 'lib/compilers/odin.ts'
+          - 'etc/config/odin.*.properties'
+          - 'static/modes/odin-mode.ts'
 
 'lang-opencl-c':
   - changed-files:
@@ -319,11 +365,19 @@
           - 'lib/compilers/scala.ts'
           - 'etc/config/scala.*.properties'
 
+'lang-slang':
+  - changed-files:
+      - any-glob-to-any-file:
+          - 'lib/compilers/slang.ts'
+          - 'etc/config/slang.*.properties'
+
 'lang-solidity':
   - changed-files:
       - any-glob-to-any-file:
           - 'lib/compilers/solidity.ts'
           - 'lib/compilers/solidity-zksync.ts'
+          - 'lib/compilers/solx.ts'
+          - 'lib/compilers/resolc.ts'
           - 'etc/config/solidity.*.properties'
 
 'lang-spice':
@@ -332,6 +386,14 @@
           - 'lib/compilers/spice.ts'
           - 'etc/config/spice.*.properties'
           - 'static/modes/spice-mode.ts'
+
+'lang-spirv':
+  - changed-files:
+      - any-glob-to-any-file:
+          - 'lib/compilers/spirv.ts'
+          - 'lib/compilers/spirv-tools.ts'
+          - 'etc/config/spirv.*.properties'
+          - 'static/modes/spirv-mode.ts'
 
 'lang-swift':
   - changed-files:
@@ -359,6 +421,12 @@
           - 'etc/config/toit.*.properties'
           - 'static/modes/toit-mode.ts'
 
+'lang-triton':
+  - changed-files:
+      - any-glob-to-any-file:
+          - 'lib/compilers/triton.ts'
+          - 'etc/config/triton.*.properties'
+
 'lang-typescript':
   - changed-files:
       - any-glob-to-any-file:
@@ -385,6 +453,13 @@
           - 'lib/compilers/wasmtime.ts'
           - 'etc/config/wasm.*.properties'
           - 'static/modes/wat-mode.ts'
+
+'lang-yul':
+  - changed-files:
+      - any-glob-to-any-file:
+          - 'lib/compilers/resolc.ts'
+          - 'etc/config/yul.*.properties'
+          - 'static/modes/yul-mode.ts'
 
 'lang-zig':
   - changed-files:

@@ -74,5 +74,5 @@ export interface AlertNotifyOptions {
     /**
      * onLoadHandler(element)
      */
-    onBeforeShow?: (any) => void;
+    onBeforeShow?: (arg: any) => void;
 }

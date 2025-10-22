@@ -26,17 +26,18 @@ import {beforeAll, describe, expect, it} from 'vitest';
 
 import {RacketPassDumpParser} from '../lib/parsers/racket-pass-dump-parser.js';
 import * as properties from '../lib/properties.js';
+import {ResultLine} from '../types/resultline/resultline.interfaces.js';
 
 const languages = {
     racket: {id: 'racket'},
 };
 
-function deepCopy(obj) {
+function deepCopy(obj: ResultLine[]): ResultLine[] {
     return JSON.parse(JSON.stringify(obj));
 }
 
 describe('racket-pass-dump-parser', () => {
-    let racketPassDumpParser;
+    let racketPassDumpParser: RacketPassDumpParser;
 
     beforeAll(() => {
         const fakeProps = new properties.CompilerProps(languages, properties.fakeProps({}));
@@ -45,21 +46,20 @@ describe('racket-pass-dump-parser', () => {
     });
 
     it('should recognize step', () => {
-        // prettier-ignore
-        const output = [
-            { text: ';; compile-linklet: phase: 0' },
-            { text: ';; compile-linklet: module: example' },
-            { text: ';; compile-linklet: name: module' },
-            { text: ';; compile-linklet: step: linklet' },
-            { text: ';; ---------------------' },
-            { text: '(linklet ((.get-syntax-literal!) (.set-transformer!)) (square)' },
-            { text: '  (void)' },
-            { text: '  (define-values (square)' },
-            { text: '    (#%name square (lambda (num_1) (* num_1 num_1))))' },
-            { text: '  (void))' },
+        const output: ResultLine[] = [
+            {text: ';; compile-linklet: phase: 0'},
+            {text: ';; compile-linklet: module: example'},
+            {text: ';; compile-linklet: name: module'},
+            {text: ';; compile-linklet: step: linklet'},
+            {text: ';; ---------------------'},
+            {text: '(linklet ((.get-syntax-literal!) (.set-transformer!)) (square)'},
+            {text: '  (void)'},
+            {text: '  (define-values (square)'},
+            {text: '    (#%name square (lambda (num_1) (* num_1 num_1))))'},
+            {text: '  (void))'},
         ];
 
-        const brokenDown = racketPassDumpParser.breakdownOutputIntoPassDumps(deepCopy(output), {});
+        const brokenDown = racketPassDumpParser.breakdownOutputIntoPassDumps(deepCopy(output));
 
         expect(brokenDown).toEqual([
             {
@@ -72,32 +72,31 @@ describe('racket-pass-dump-parser', () => {
     });
 
     it('should recognize pass', () => {
-        // prettier-ignore
-        const output = [
-            { text: ';; compile-linklet: module: (phases configure-runtime)' },
-            { text: ';; compile-linklet: name: decl' },
-            { text: ';; compile-linklet: passes: all' },
-            { text: ';; ---------------------' },
-            { text: 'output of cpnanopass:' },
-            { text: '(case-lambda          ' },
-            { text: '    [clause' },
-            { text: '    ()' },
-            { text: '    0' },
-            { text: '    (case-lambda' },
-            { text: '        [clause' },
-            { text: '        (instance-variable-reference.22' },
-            { text: '        .get-syntax-literal!1.23' },
-            { text: '        .set-transformer!2.24' },
-            { text: '        configure3.25)' },
-            { text: '        4' },
-            { text: '        (begin' },
-            { text: '        ((#[primref.a0xltlrcpeygsahopkplcn-2 $top-level-value 263393 #f]' },
-            { text: '            \'1/print-as-expression.rkt-io.sls-1/print-as-expression-0)' },
-            { text: '            \'#t)' },
-            { text: '        \'#<void>)])])' },
+        const output: ResultLine[] = [
+            {text: ';; compile-linklet: module: (phases configure-runtime)'},
+            {text: ';; compile-linklet: name: decl'},
+            {text: ';; compile-linklet: passes: all'},
+            {text: ';; ---------------------'},
+            {text: 'output of cpnanopass:'},
+            {text: '(case-lambda          '},
+            {text: '    [clause'},
+            {text: '    ()'},
+            {text: '    0'},
+            {text: '    (case-lambda'},
+            {text: '        [clause'},
+            {text: '        (instance-variable-reference.22'},
+            {text: '        .get-syntax-literal!1.23'},
+            {text: '        .set-transformer!2.24'},
+            {text: '        configure3.25)'},
+            {text: '        4'},
+            {text: '        (begin'},
+            {text: '        ((#[primref.a0xltlrcpeygsahopkplcn-2 $top-level-value 263393 #f]'},
+            {text: "            '1/print-as-expression.rkt-io.sls-1/print-as-expression-0)"},
+            {text: "            '#t)"},
+            {text: "        '#<void>)])])"},
         ];
 
-        const brokenDown = racketPassDumpParser.breakdownOutputIntoPassDumps(deepCopy(output), {});
+        const brokenDown = racketPassDumpParser.breakdownOutputIntoPassDumps(deepCopy(output));
 
         expect(brokenDown).toEqual([
             {

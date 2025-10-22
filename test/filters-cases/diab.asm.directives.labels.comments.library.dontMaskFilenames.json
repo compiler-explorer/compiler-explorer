@@ -670,11 +670,12 @@
     {
       "labels": [
         {
-          "name": ".L114",
+          "name": ".L114@ha",
           "range": {
-            "endCol": 33,
+            "endCol": 36,
             "startCol": 28
-          }
+          },
+          "target": ".L114"
         }
       ],
       "source": {
@@ -686,11 +687,12 @@
     {
       "labels": [
         {
-          "name": ".L114",
+          "name": ".L114@l",
           "range": {
-            "endCol": 36,
+            "endCol": 38,
             "startCol": 31
-          }
+          },
+          "target": ".L114"
         }
       ],
       "source": {
@@ -803,11 +805,12 @@
     {
       "labels": [
         {
-          "name": ".L115",
+          "name": ".L115@ha",
           "range": {
-            "endCol": 33,
+            "endCol": 36,
             "startCol": 28
-          }
+          },
+          "target": ".L115"
         }
       ],
       "source": {
@@ -819,11 +822,12 @@
     {
       "labels": [
         {
-          "name": ".L115",
+          "name": ".L115@l",
           "range": {
-            "endCol": 36,
+            "endCol": 38,
             "startCol": 31
-          }
+          },
+          "target": ".L115"
         }
       ],
       "source": {
@@ -1016,11 +1020,12 @@
     {
       "labels": [
         {
-          "name": ".L116",
+          "name": ".L116@ha",
           "range": {
-            "endCol": 33,
+            "endCol": 36,
             "startCol": 28
-          }
+          },
+          "target": ".L116"
         }
       ],
       "source": {
@@ -1032,11 +1037,12 @@
     {
       "labels": [
         {
-          "name": ".L116",
+          "name": ".L116@l",
           "range": {
-            "endCol": 36,
+            "endCol": 38,
             "startCol": 31
-          }
+          },
+          "target": ".L116"
         }
       ],
       "source": {
@@ -1069,11 +1075,12 @@
     {
       "labels": [
         {
-          "name": ".L117",
+          "name": ".L117@ha",
           "range": {
-            "endCol": 33,
+            "endCol": 36,
             "startCol": 28
-          }
+          },
+          "target": ".L117"
         }
       ],
       "source": {
@@ -1085,11 +1092,12 @@
     {
       "labels": [
         {
-          "name": ".L117",
+          "name": ".L117@l",
           "range": {
-            "endCol": 36,
+            "endCol": 38,
             "startCol": 31
-          }
+          },
+          "target": ".L117"
         }
       ],
       "source": {
@@ -1332,11 +1340,12 @@
     {
       "labels": [
         {
-          "name": ".L131",
+          "name": ".L131@ha",
           "range": {
-            "endCol": 33,
+            "endCol": 36,
             "startCol": 28
-          }
+          },
+          "target": ".L131"
         }
       ],
       "source": {
@@ -1348,11 +1357,12 @@
     {
       "labels": [
         {
-          "name": ".L131",
+          "name": ".L131@l",
           "range": {
-            "endCol": 36,
+            "endCol": 38,
             "startCol": 31
-          }
+          },
+          "target": ".L131"
         }
       ],
       "source": {
@@ -1600,11 +1610,12 @@
     {
       "labels": [
         {
-          "name": ".L131",
+          "name": ".L131@ha",
           "range": {
-            "endCol": 33,
+            "endCol": 36,
             "startCol": 28
-          }
+          },
+          "target": ".L131"
         }
       ],
       "source": {
@@ -1616,11 +1627,12 @@
     {
       "labels": [
         {
-          "name": ".L131",
+          "name": ".L131@l",
           "range": {
-            "endCol": 36,
+            "endCol": 38,
             "startCol": 31
-          }
+          },
+          "target": ".L131"
         }
       ],
       "source": {
@@ -1759,11 +1771,12 @@
     {
       "labels": [
         {
-          "name": ".L65",
+          "name": ".L65@ha",
           "range": {
-            "endCol": 33,
+            "endCol": 36,
             "startCol": 29
-          }
+          },
+          "target": ".L65"
         }
       ],
       "source": {
@@ -1775,11 +1788,12 @@
     {
       "labels": [
         {
-          "name": ".L65",
+          "name": ".L65@l",
           "range": {
-            "endCol": 37,
+            "endCol": 39,
             "startCol": 33
-          }
+          },
+          "target": ".L65"
         }
       ],
       "source": {
@@ -1884,11 +1898,12 @@
     {
       "labels": [
         {
-          "name": ".L159",
+          "name": ".L159@ha",
           "range": {
-            "endCol": 33,
+            "endCol": 36,
             "startCol": 28
-          }
+          },
+          "target": ".L159"
         }
       ],
       "source": {
@@ -1900,11 +1915,12 @@
     {
       "labels": [
         {
-          "name": ".L159",
+          "name": ".L159@l",
           "range": {
-            "endCol": 36,
+            "endCol": 38,
             "startCol": 31
-          }
+          },
+          "target": ".L159"
         }
       ],
       "source": {
@@ -1961,11 +1977,12 @@
     {
       "labels": [
         {
-          "name": ".L160",
+          "name": ".L160@ha",
           "range": {
-            "endCol": 33,
+            "endCol": 36,
             "startCol": 28
-          }
+          },
+          "target": ".L160"
         }
       ],
       "source": {
@@ -1977,11 +1994,12 @@
     {
       "labels": [
         {
-          "name": ".L160",
+          "name": ".L160@l",
           "range": {
-            "endCol": 36,
+            "endCol": 38,
             "startCol": 31
-          }
+          },
+          "target": ".L160"
         }
       ],
       "source": {
@@ -2001,11 +2019,12 @@
     {
       "labels": [
         {
-          "name": ".L159",
+          "name": ".L159@ha",
           "range": {
-            "endCol": 33,
+            "endCol": 36,
             "startCol": 28
-          }
+          },
+          "target": ".L159"
         }
       ],
       "source": {
@@ -2017,11 +2036,12 @@
     {
       "labels": [
         {
-          "name": ".L159",
+          "name": ".L159@l",
           "range": {
-            "endCol": 36,
+            "endCol": 38,
             "startCol": 31
-          }
+          },
+          "target": ".L159"
         }
       ],
       "source": {
@@ -2420,31 +2440,6 @@
     {
       "labels": [],
       "source": null,
-      "text": "        .double   +1.0000000000000000000"
-    },
-    {
-      "labels": [],
-      "source": null,
-      "text": "        .double   +2.0000000000000000000"
-    },
-    {
-      "labels": [],
-      "source": null,
-      "text": "        .double   +3.0000000000000000000"
-    },
-    {
-      "labels": [],
-      "source": null,
-      "text": "        .double   +4.0000000000000000000"
-    },
-    {
-      "labels": [],
-      "source": null,
-      "text": "        .double   +5.0000000000000000000"
-    },
-    {
-      "labels": [],
-      "source": null,
       "text": ".L114:"
     },
     {
@@ -2559,14 +2554,14 @@
     }
   ],
   "labelDefinitions": {
-    ".L114": 280,
-    ".L115": 283,
-    ".L116": 286,
-    ".L117": 289,
-    ".L131": 292,
+    ".L114": 275,
+    ".L115": 278,
+    ".L116": 281,
+    ".L117": 284,
+    ".L131": 287,
     ".L158": 206,
-    ".L159": 295,
-    ".L160": 298,
+    ".L159": 290,
+    ".L160": 293,
     ".L42": 12,
     ".L44": 31,
     ".L45": 56,
@@ -2585,7 +2580,7 @@
     ".L64": 229,
     ".L65": 272,
     ".L66": 217,
-    ".L86": 301,
+    ".L86": 296,
     "main": 235
   }
 }

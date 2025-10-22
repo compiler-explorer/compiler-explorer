@@ -22,21 +22,18 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import $ from 'jquery';
-import _ from 'underscore';
-import * as monaco from 'monaco-editor';
 import {Container} from 'golden-layout';
-
-import {MonacoPane} from './pane.js';
+import $ from 'jquery';
+import * as monaco from 'monaco-editor';
+import _ from 'underscore';
+import {CompilationResult} from '../../types/compilation/compilation.interfaces.js';
+import {CompilerInfo} from '../../types/compiler.interfaces.js';
+import {unwrap} from '../assert.js';
+import {Hub} from '../hub.js';
+import {extendConfig} from '../monaco-config.js';
 import {GnatDebugState} from './gnatdebug-view.interfaces.js';
 import {MonacoPaneState} from './pane.interfaces.js';
-
-import {ga} from '../analytics.js';
-import {extendConfig} from '../monaco-config.js';
-import {Hub} from '../hub.js';
-import {CompilationResult} from '../compilation/compilation.interfaces.js';
-import {CompilerInfo} from '../compiler.interfaces.js';
-import {unwrap} from '../assert.js';
+import {MonacoPane} from './pane.js';
 
 export class GnatDebug extends MonacoPane<monaco.editor.IStandaloneCodeEditor, GnatDebugState> {
     constructor(hub: Hub, container: Container, state: GnatDebugState & MonacoPaneState) {
@@ -66,20 +63,15 @@ export class GnatDebug extends MonacoPane<monaco.editor.IStandaloneCodeEditor, G
         return 'GNAT Debug Output';
     }
 
-    override registerOpeningAnalyticsEvent(): void {
-        ga.proxy('send', {
-            hitType: 'event',
-            eventCategory: 'OpenViewPane',
-            eventAction: 'GnatDebug',
-        });
-    }
-
     override getDefaultPaneName(): string {
         return 'GNAT Debug Viewer';
     }
 
     override registerCallbacks(): void {
-        const throttleFunction = _.throttle(event => this.onDidChangeCursorSelection(event), 500);
+        const throttleFunction = _.throttle(
+            (event: monaco.editor.ICursorSelectionChangedEvent) => this.onDidChangeCursorSelection(event),
+            500,
+        );
         this.editor.onDidChangeCursorSelection(event => throttleFunction(event));
         this.eventHub.emit('gnatDebugViewOpened', this.compilerInfo.compilerId);
         this.eventHub.emit('requestSettings');

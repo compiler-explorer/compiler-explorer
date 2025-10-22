@@ -1,0 +1,201 @@
+// Shared markdown rendering styles
+// Used by components that render markdown content (e.g., explain view)
+
+.markdown-content {
+    padding: 1rem;
+    font-size: 1rem;
+    line-height: 1.5;
+
+    &.wrap {
+        white-space: pre-wrap;
+        word-break: break-word;
+    }
+
+    // Headers
+    h1, h2, h3, h4, h5, h6 {
+        margin-top: 1.5rem;
+        margin-bottom: 1rem;
+        font-weight: 600;
+        line-height: 1.25;
+    }
+
+    h1 {
+        font-size: 2rem;
+        border-bottom: 1px solid #eaecef;
+        padding-bottom: 0.3rem;
+    }
+
+    h2 {
+        font-size: 1.5rem;
+        border-bottom: 1px solid #eaecef;
+        padding-bottom: 0.3rem;
+    }
+
+    h3 {
+        font-size: 1.25rem;
+    }
+
+    h4 {
+        font-size: 1rem;
+    }
+
+    // Code blocks
+    pre {
+        background-color: #f6f8fa;
+        padding: 0.75rem;
+        border-radius: 4px;
+        margin: 1rem 0;
+        overflow-x: auto;
+        border: 1px solid #e1e4e8;
+    }
+
+    code {
+        font-family: 'SF Mono', 'Courier New', Consolas, 'Liberation Mono', monospace;
+        background-color: rgba(27, 31, 35, 0.05);
+        padding: 0.125rem 0.25rem;
+        border-radius: 3px;
+        font-size: 0.875em;
+    }
+
+    pre code {
+        padding: 0;
+        background-color: transparent;
+        border-radius: 0;
+        font-size: 0.9rem;
+    }
+
+    // Tables
+    table {
+        border-collapse: collapse;
+        margin: 1rem 0;
+        width: 100%;
+        overflow: auto;
+
+        th, td {
+            border: 1px solid #ddd;
+            padding: 0.5rem 0.75rem;
+        }
+
+        th {
+            font-weight: 600;
+            background-color: #f6f8fa;
+        }
+
+        tr:nth-child(2n) {
+            background-color: #f6f8fa;
+        }
+    }
+
+    // Images
+    img {
+        max-width: 100%;
+        height: auto;
+        display: block;
+        margin: 1rem auto;
+    }
+
+    // Blockquotes
+    blockquote {
+        border-left: 0.25rem solid #dfe2e5;
+        padding: 0 1rem;
+        color: #6a737d;
+        margin: 1rem 0;
+
+        > p:first-child {
+            margin-top: 0;
+        }
+
+        > p:last-child {
+            margin-bottom: 0;
+        }
+    }
+
+    // Lists
+    ul, ol {
+        padding-left: 2rem;
+        margin-top: 0.75rem;
+        margin-bottom: 0.75rem;
+    }
+
+    li {
+        margin: 0.25rem 0;
+
+        > p {
+            margin-top: 0.5rem;
+            margin-bottom: 0.5rem;
+        }
+
+        + li {
+            margin-top: 0.25rem;
+        }
+    }
+
+    // Paragraphs
+    p {
+        margin: 0.75rem 0;
+    }
+
+    // Horizontal rule
+    hr {
+        height: 0.25em;
+        margin: 1.5rem 0;
+        padding: 0;
+        background-color: #e1e4e8;
+        border: 0;
+    }
+
+    // Links
+    a {
+        color: #0366d6;
+        text-decoration: none;
+
+        &:hover {
+            text-decoration: underline;
+        }
+    }
+
+    // Theme adjustments based on CE's dark mode
+    [data-theme="dark"] & {
+        color: #c9d1d9;
+
+        h1, h2 {
+            border-bottom-color: #30363d;
+        }
+
+        pre {
+            background-color: #161b22;
+        }
+
+        pre code {
+            border-color: #30363d;
+            background-color: transparent;
+        }
+
+        table {
+            th, td {
+                border-color: #30363d;
+            }
+
+            th {
+                background-color: #161b22;
+            }
+
+            tr:nth-child(2n) {
+                background-color: #161b22;
+            }
+        }
+
+        blockquote {
+            border-left-color: #30363d;
+            color: #8b949e;
+        }
+
+        hr {
+            background-color: #30363d;
+        }
+
+        a {
+            color: #58a6ff;
+        }
+    }
+}

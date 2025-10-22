@@ -26,10 +26,10 @@ import express from 'express';
 import request from 'supertest';
 import {beforeAll, describe, expect, it} from 'vitest';
 
-import {withAssemblyDocumentationProviders} from '../../lib/handlers/assembly-documentation.js';
+import {AssemblyDocumentationController} from '../../lib/handlers/api/assembly-documentation-controller.js';
 
 /** Test matrix of architecture to [opcode, tooptip, html, url] */
-export const TEST_MATRIX: Record<PropertyKey, [string, string, string, string][]> = {
+const TEST_MATRIX: Record<PropertyKey, [string, string, string, string][]> = {
     6502: [
         [
             'lda',
@@ -68,7 +68,7 @@ export const TEST_MATRIX: Record<PropertyKey, [string, string, string, string][]
             'mov',
             'Copy Register',
             'makes a copy of one register into another',
-            'https://ww1.microchip.com/downloads/en/DeviceDoc/AVR-InstructionSet-Manual-DS40002198.pdf',
+            'https://ww1.microchip.com/downloads/aemDocuments/documents/MCU08/ProductDocuments/ReferenceManuals/AVR-InstructionSet-Manual-DS40002198.pdf',
         ],
     ],
     java: [
@@ -103,7 +103,22 @@ export const TEST_MATRIX: Record<PropertyKey, [string, string, string, string][]
             'https://www.ibm.com/docs/en/aix/7.3?topic=set-addc-add-carrying-instruction',
         ],
     ],
-    sass: [['FADD', 'FP32 Add', 'FP32 Add', 'https://docs.nvidia.com/cuda/cuda-binary-utilities/index.html#id14']],
+    sass: [
+        [
+            'FADD',
+            'FP32 Add',
+            'FP32 Add',
+            'https://docs.nvidia.com/cuda/cuda-binary-utilities/index.html#instruction-set-reference',
+        ],
+    ],
+    wdc65c816: [
+        [
+            'jsl',
+            'Jump to Subroutine Long',
+            '<p>Jump to Subroutine Long</p>',
+            'https://www.pagetable.com/c64ref/6502/?cpu=65c816',
+        ],
+    ],
 };
 
 describe('Assembly Documentation API', () => {
@@ -111,14 +126,13 @@ describe('Assembly Documentation API', () => {
 
     beforeAll(() => {
         app = express();
-        const router = express.Router();
-        withAssemblyDocumentationProviders(router);
-        app.use('/api', router);
+        const controller = new AssemblyDocumentationController();
+        app.use('/', controller.createRouter());
     });
 
     it('should return 404 for unknown architecture', async () => {
         await request(app)
-            .get(`/api/asm/not_an_arch/mov`)
+            .get('/api/asm/not_an_arch/mov')
             .set('Accept', 'application/json')
             .expect('Content-Type', /json/)
             .expect(404, {error: `No documentation for 'not_an_arch'`});

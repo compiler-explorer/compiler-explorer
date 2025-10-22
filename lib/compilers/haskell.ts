@@ -22,11 +22,13 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import path from 'path';
+import path from 'node:path';
 
 import type {PreliminaryCompilerInfo} from '../../types/compiler.interfaces.js';
 import type {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces.js';
+import {SelectedLibraryVersion} from '../../types/libraries/libraries.interfaces.js';
 import {BaseCompiler} from '../base-compiler.js';
+import {CompilationEnvironment} from '../compilation-env.js';
 
 import {GHCParser} from './argument-parsers.js';
 
@@ -35,7 +37,7 @@ export class HaskellCompiler extends BaseCompiler {
         return 'haskell';
     }
 
-    constructor(info: PreliminaryCompilerInfo, env) {
+    constructor(info: PreliminaryCompilerInfo, env: CompilationEnvironment) {
         super(info, env);
         this.compiler.supportsHaskellCoreView = true;
         this.compiler.supportsHaskellStgView = true;
@@ -71,12 +73,12 @@ export class HaskellCompiler extends BaseCompiler {
         return options;
     }
 
-    override getSharedLibraryPathsAsArguments(libraries) {
+    override getSharedLibraryPathsAsArguments(libraries: SelectedLibraryVersion[]) {
         const libPathFlag = this.compiler.libpathFlag || '-L';
         return [libPathFlag + '.', ...this.getSharedLibraryPaths(libraries).map(path => libPathFlag + path)];
     }
 
-    override getArgumentParser(): any {
+    override getArgumentParserClass(): any {
         return GHCParser;
     }
 }

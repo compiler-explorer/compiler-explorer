@@ -25,9 +25,9 @@
 import {beforeAll, describe, expect, it} from 'vitest';
 
 import {unwrap} from '../lib/assert.js';
+import {AsmParser} from '../lib/parsers/asm-parser.js';
 import {VcAsmParser} from '../lib/parsers/asm-parser-vc.js';
 import {AsmParserZ88dk} from '../lib/parsers/asm-parser-z88dk.js';
-import {AsmParser} from '../lib/parsers/asm-parser.js';
 import {AsmRegex} from '../lib/parsers/asmregex.js';
 
 import {makeFakeParseFiltersAndOutputOptions} from './utils.js';
@@ -200,7 +200,7 @@ ${' '.repeat(65530)}x
         ret
 `;
         const output = parser.process(asm, filters);
-        expect(parseInt(unwrap(output.parsingTime))).toBeLessThan(500); // reported as ms, generous timeout for ci runner
+        expect(unwrap(output.parsingTime)).toBeLessThan(500); // reported as ms, generous timeout for ci runner
     });
 });
 
@@ -229,6 +229,6 @@ ${' '.repeat(65530)}x
         ret
 `;
         const output = parser.process(asm, filters);
-        expect(parseInt(unwrap(output.parsingTime))).toBeLessThan(500); // reported as ms, generous timeout for ci runner
+        expect(unwrap(output.parsingTime)).toBeLessThan(500); // reported as ms, generous timeout for ci runner
     });
 });

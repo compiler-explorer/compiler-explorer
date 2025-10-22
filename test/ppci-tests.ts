@@ -24,6 +24,7 @@
 
 import {beforeAll, describe, expect, it} from 'vitest';
 
+import {CompilationEnvironment} from '../lib/compilation-env.js';
 import {PPCICompiler} from '../lib/compilers/ppci.js';
 import {LanguageKey} from '../types/languages.interfaces.js';
 
@@ -34,13 +35,14 @@ const languages = {
 };
 
 describe('PPCI', () => {
-    let ce;
+    let ce: CompilationEnvironment;
     const info = {
         exe: '/dev/null',
         remote: {
             target: 'foo',
             path: 'bar',
             cmakePath: 'cmake',
+            basePath: '/',
         },
         lang: languages.c.id,
     };

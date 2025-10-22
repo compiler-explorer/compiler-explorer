@@ -22,51 +22,46 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
+import fs from 'node:fs/promises';
+import path from 'node:path';
+
 import {describe, expect, it} from 'vitest';
 
 import {Packager} from '../lib/packager.js';
 
-import {fs, newTempDir, path} from './utils.js';
+import {newTempDir} from './utils.js';
 
-function writeTestFile(filepath) {
+async function writeTestFile(filepath: string) {
     return fs.writeFile(filepath, '#!/bin/sh\n\necho Hello, world!\n\n');
 }
 
 describe('Packager', () => {
-    it(
-        'should be able to package 1 file',
-        async () => {
-            const pack = new Packager();
+    it('should be able to package 1 file', async () => {
+        const pack = new Packager();
 
-            const dirPath = newTempDir();
-            await writeTestFile(path.join(dirPath, 'hello.txt'));
+        const dirPath = newTempDir();
+        await writeTestFile(path.join(dirPath, 'hello.txt'));
 
-            const targzPath = path.join(dirPath, 'package.tgz');
-            await pack.package(dirPath, targzPath);
+        const targzPath = path.join(dirPath, 'package.tgz');
+        await pack.package(dirPath, targzPath);
 
-            await expect(fs.exists(targzPath)).resolves.toBe(true);
-        },
-        {timeout: 5000},
-    );
+        await expect(fs.stat(targzPath)).resolves.toBeDefined();
+    }, 5000);
 
-    it(
-        'should be able to unpack',
-        async () => {
-            const pack = new Packager();
+    it('should be able to unpack', async () => {
+        const pack = new Packager();
 
-            const dirPath = newTempDir();
-            await writeTestFile(path.join(dirPath, 'hello.txt'));
+        const dirPath = newTempDir();
+        await writeTestFile(path.join(dirPath, 'hello.txt'));
 
-            const targzPath = path.join(dirPath, 'package.tgz');
-            await pack.package(dirPath, targzPath);
+        const targzPath = path.join(dirPath, 'package.tgz');
+        await pack.package(dirPath, targzPath);
 
-            const unpackPath = newTempDir();
-            const pack2 = new Packager();
-            await pack2.unpack(targzPath, unpackPath);
+        const unpackPath = newTempDir();
+        const pack2 = new Packager();
+        await pack2.unpack(targzPath, unpackPath);
 
-            const unpackedFilepath = path.join(unpackPath, 'hello.txt');
-            await expect(fs.exists(unpackedFilepath)).resolves.toBe(true);
-        },
-        {timeout: 5000},
-    );
+        const unpackedFilepath = path.join(unpackPath, 'hello.txt');
+        await expect(fs.stat(unpackedFilepath)).resolves.toBeDefined;
+    }, 5000);
 });

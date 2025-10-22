@@ -22,7 +22,6 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import bodyParser from 'body-parser';
 import express from 'express';
 import _ from 'underscore';
 
@@ -32,24 +31,19 @@ import {Language, LanguageKey} from '../../types/languages.interfaces.js';
 import {assert, unwrap} from '../assert.js';
 import {ClientStateNormalizer} from '../clientstate-normalizer.js';
 import {CompilationEnvironment} from '../compilation-env.js';
-import {LocalExecutionEnvironment} from '../execution/base-execution-env.js';
 import {IExecutionEnvironment} from '../execution/execution-env.interfaces.js';
+import {LocalExecutionEnvironment} from '../execution/index.js';
 import {logger} from '../logger.js';
 import {ClientOptionsHandler} from '../options-handler.js';
 import {PropertyGetter} from '../properties.interfaces.js';
 import {SentryCapture} from '../sentry.js';
 import {BaseShortener, getShortenerTypeByKey} from '../shortener/index.js';
 import {StorageBase} from '../storage/index.js';
-import * as utils from '../utils.js';
 
-import {withAssemblyDocumentationProviders} from './assembly-documentation.js';
 import {CompileHandler} from './compile.js';
-import {FormattingHandler} from './formatting.js';
-import {getSiteTemplates} from './site-templates.js';
 
 function methodNotAllowed(req: express.Request, res: express.Response) {
-    res.send('Method Not Allowed');
-    return res.status(405).end();
+    res.status(405).send('Method Not Allowed');
 }
 
 export class ApiHandler {
@@ -81,7 +75,11 @@ export class ApiHandler {
                 'Access-Control-Allow-Headers': 'Origin, X-Requested-With, Content-Type, Accept',
                 'Cache-Control': cacheHeader,
             });
-            next();
+            if (req.method === 'OPTIONS') {
+                res.sendStatus(200);
+            } else {
+                next();
+            }
         });
         this.handle.route('/compilers').get(this.handleCompilers.bind(this)).all(methodNotAllowed);
 
@@ -93,16 +91,15 @@ export class ApiHandler {
 
         this.handle.route('/libraries').get(this.handleAllLibraries.bind(this)).all(methodNotAllowed);
 
-        // Binding for assembly documentation
-        withAssemblyDocumentationProviders(this.handle);
-        // Legacy binding for old clients.
+        this.handle.route('/tools/:language').get(this.handleLangTools.bind(this)).all(methodNotAllowed);
+
         this.handle
             .route('/asm/:opcode')
             .get((req, res) => res.redirect(`amd64/${req.params.opcode}`))
             .all(methodNotAllowed);
 
         const maxUploadSize = ceProps('maxUploadSize', '1mb');
-        const textParser = bodyParser.text({limit: ceProps('bodyParserLimit', maxUploadSize), type: () => true});
+        const textParser = express.text({limit: ceProps('bodyParserLimit', maxUploadSize), type: () => true});
 
         this.handle
             .route('/compiler/:compiler/compile')
@@ -127,26 +124,6 @@ export class ApiHandler {
             .post(compileHandler.handleOptimizationArguments.bind(compileHandler))
             .get(compileHandler.handleOptimizationArguments.bind(compileHandler))
             .all(methodNotAllowed);
-
-        const formatHandler = new FormattingHandler(ceProps);
-        this.handle
-            .route('/format/:tool')
-            .post((req, res) => formatHandler.handle(req, res))
-            .all(methodNotAllowed);
-        this.handle
-            .route('/formats')
-            .get((req, res) => {
-                const all = formatHandler.getFormatterInfo();
-                res.send(all);
-            })
-            .all(methodNotAllowed);
-        this.handle
-            .route('/siteTemplates')
-            .get((req, res) => {
-                res.send(getSiteTemplates());
-            })
-            .all(methodNotAllowed);
-
         this.handle.route('/shortlinkinfo/:id').get(this.shortlinkInfoHandler.bind(this)).all(methodNotAllowed);
 
         const shortenerType = getShortenerTypeByKey(urlShortenService);
@@ -155,6 +132,11 @@ export class ApiHandler {
 
         this.handle.route('/version').get(this.handleReleaseName.bind(this)).all(methodNotAllowed);
         this.handle.route('/releaseBuild').get(this.handleReleaseBuild.bind(this)).all(methodNotAllowed);
+        // Let's not document this one, eh?
+        this.handle.route('/forceServerError').get((req, res) => {
+            logger.error(`Forced server error from ${req.ip}`);
+            throw new Error('Forced server error');
+        });
     }
 
     shortlinkInfoHandler(req: express.Request, res: express.Response, next: express.NextFunction) {
@@ -238,12 +220,10 @@ export class ApiHandler {
                 .concat([title])
                 .map(item => item.length),
         );
+        const header = title.padEnd(maxLength, ' ') + ' | Name\n';
+        const body = list.map(lang => lang.id.padEnd(maxLength, ' ') + ' | ' + lang.name).join('\n');
         res.set('Content-Type', 'text/plain');
-        res.send(
-            utils.padRight(title, maxLength) +
-                ' | Name\n' +
-                list.map(lang => utils.padRight(lang.id, maxLength) + ' | ' + lang.name).join('\n'),
-        );
+        res.send(header + body);
     }
 
     getLibrariesAsArray(languageId: LanguageKey) {
@@ -269,10 +249,44 @@ export class ApiHandler {
         });
     }
 
+    getToolsAsArray(languageId: LanguageKey) {
+        const toolsForLanguageObj = unwrap(this.options).options.tools[languageId];
+        if (!toolsForLanguageObj) return [];
+
+        return Object.keys(toolsForLanguageObj).map(key => {
+            const tool = toolsForLanguageObj[key];
+            return {
+                id: key,
+                name: tool.name,
+                type: tool.type,
+                languageId: tool.languageId || languageId,
+                allowStdin: tool.stdinHint !== 'disabled',
+            };
+        });
+    }
+
     handleLangLibraries(req: express.Request, res: express.Response, next: express.NextFunction) {
         if (this.options) {
             if (req.params.language) {
                 res.send(this.getLibrariesAsArray(req.params.language as LanguageKey));
+            } else {
+                next({
+                    statusCode: 404,
+                    message: 'Language is required',
+                });
+            }
+        } else {
+            next({
+                statusCode: 500,
+                message: 'Internal error',
+            });
+        }
+    }
+
+    handleLangTools(req: express.Request, res: express.Response, next: express.NextFunction) {
+        if (this.options) {
+            if (req.params.language) {
+                res.send(this.getToolsAsArray(req.params.language as LanguageKey));
             } else {
                 next({
                     statusCode: 404,

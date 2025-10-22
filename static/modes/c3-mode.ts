@@ -63,6 +63,7 @@ function definition(): monaco.languages.IMonarchLanguage {
             '$eval',
             '$evaltype',
             '$extnameof',
+            '$exec',
             '$for',
             '$foreach',
             '$if',
@@ -205,12 +206,9 @@ function definition(): monaco.languages.IMonarchLanguage {
         ],
         operators: [
             '+',
-            '+%',
             '-',
-            '-%',
             '/',
             '*',
-            '*%',
             '=',
             '^',
             '&',
@@ -220,28 +218,29 @@ function definition(): monaco.languages.IMonarchLanguage {
             '>',
             '<',
             '%',
+            '??',
+            '!!',
+            '++',
+            '--',
             '<<',
-            '<<%',
             '>>',
             '+=',
-            '+%=',
             '-=',
-            '-%=',
             '/=',
             '*=',
-            '*%=',
             '==',
+            '!=',
             '^=',
             '&=',
-            '?=',
             '|=',
-            '!=',
             '>=',
             '<=',
             '%=',
             '<<=',
-            '<<%=',
             '>>=',
+            '+++',
+            '&&&',
+            '|||',
         ],
 
         symbols: /[=><!~?:&|+\-*/^%]+/,
@@ -309,7 +308,7 @@ function definition(): monaco.languages.IMonarchLanguage {
             whitespace: [
                 [/[ \r\n]+/, 'white'],
                 [/\/\*/, 'comment', '@comment'],
-                [/\/\+/, 'comment', '@comment'],
+                [/<\*/, 'contract', '@contract'],
                 [/\/\/.*$/, 'comment'],
                 [/\t/, 'comment.invalid'],
             ],
@@ -318,7 +317,15 @@ function definition(): monaco.languages.IMonarchLanguage {
                 [/[^/*]+/, 'comment'],
                 [/\/\*/, 'comment', '@comment'],
                 [/\*\//, 'comment', '@pop'],
+                [/\*>/, 'comment', '@pop'],
                 [/[/*]/, 'comment'],
+            ],
+
+            contract: [
+                [/[^/*]+/, 'contract'],
+                [/\*>/, 'contract', '@pop'],
+                [/[/*]/, 'contract'],
+                [/\t/, 'contract.invalid'],
             ],
 
             string: [
@@ -333,5 +340,3 @@ function definition(): monaco.languages.IMonarchLanguage {
 
 monaco.languages.register({id: 'c3'});
 monaco.languages.setMonarchTokensProvider('c3', definition());
-
-export {};

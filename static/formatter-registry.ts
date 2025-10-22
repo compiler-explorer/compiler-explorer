@@ -24,11 +24,11 @@
 
 import * as monaco from 'monaco-editor';
 
-import {Alert} from './widgets/alert.js';
-import {Settings} from './settings.js';
-import {FormattingRequest} from './api/formatting.interfaces.js';
 import {getFormattedCode} from './api/api.js';
+import {FormattingRequest} from './api/formatting.interfaces.js';
 import {unwrap} from './assert.js';
+import {Settings} from './settings.js';
+import {Alert} from './widgets/alert.js';
 
 // Proxy function to emit the error to the alert system
 const onFormatError = (cause: string, source: string) => {
@@ -102,6 +102,6 @@ const register = (lang: string, formatter: string, isOneTrueStyle: boolean) => {
 register('cppp', 'clangformat', false);
 register('nc', 'clangformat', false);
 register('go', 'gofmt', true);
-register('rust', 'rustfmt', true);
+register('rustp', 'rustfmt', true);
 register('dart', 'dartformat', true);
 register('v', 'vfmt', true);

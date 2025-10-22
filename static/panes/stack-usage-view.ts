@@ -22,22 +22,19 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import $ from 'jquery';
-import _ from 'underscore';
-import * as monaco from 'monaco-editor';
 import {Container} from 'golden-layout';
-
+import $ from 'jquery';
+import * as monaco from 'monaco-editor';
+import _ from 'underscore';
+import {CompilationResult} from '../../types/compilation/compilation.interfaces.js';
+import {CompilerInfo} from '../../types/compiler.interfaces.js';
+import {unwrap} from '../assert.js';
+import {Hub} from '../hub.js';
+import {extendConfig} from '../monaco-config.js';
+import {SentryCapture} from '../sentry.js';
+import {MonacoPaneState} from './pane.interfaces.js';
 import {MonacoPane} from './pane.js';
 import {StackUsageState, suCodeEntry} from './stack-usage-view.interfaces.js';
-import {MonacoPaneState} from './pane.interfaces.js';
-
-import {ga} from '../analytics.js';
-import {extendConfig} from '../monaco-config.js';
-import {Hub} from '../hub.js';
-import {CompilationResult} from '../compilation/compilation.interfaces.js';
-import {CompilerInfo} from '../compiler.interfaces.js';
-import {unwrap} from '../assert.js';
-import {SentryCapture} from '../sentry.js';
 
 type SuClass = 'None' | 'static' | 'dynamic' | 'dynamic,bounded';
 
@@ -74,14 +71,6 @@ export class StackUsage extends MonacoPane<monaco.editor.IStandaloneCodeEditor, 
         );
     }
 
-    override registerOpeningAnalyticsEvent() {
-        ga.proxy('send', {
-            hitType: 'event',
-            eventCategory: 'OpenViewPane',
-            eventAction: 'StackUsage',
-        });
-    }
-
     override registerCallbacks() {
         this.eventHub.emit('requestSettings');
         this.eventHub.emit('findCompilers');
@@ -96,9 +85,10 @@ export class StackUsage extends MonacoPane<monaco.editor.IStandaloneCodeEditor, 
 
     override onCompileResult(id: number, compiler: CompilerInfo, result: CompilationResult) {
         if (this.compilerInfo.compilerId !== id || !this.isCompilerSupported) return;
-        this.editor.setValue(unwrap(result.source));
+        const source = unwrap(result.source);
+        this.editor.setValue(source);
         if (result.stackUsageOutput) {
-            this.showStackUsageResults(result.stackUsageOutput);
+            this.showStackUsageResults(result.stackUsageOutput, source);
         }
 
         // TODO: This is inelegant again. Previously took advantage of fourth argument for the compileResult event.
@@ -130,7 +120,7 @@ export class StackUsage extends MonacoPane<monaco.editor.IStandaloneCodeEditor, 
         return '<Unimplemented>';
     }
 
-    showStackUsageResults(suEntries: suCodeEntry[], source?: string) {
+    showStackUsageResults(suEntries: suCodeEntry[], source: string) {
         const splitLines = (text: string): string[] => {
             if (!text) return [];
             const result = text.split(/\r?\n/);
@@ -162,7 +152,6 @@ export class StackUsage extends MonacoPane<monaco.editor.IStandaloneCodeEditor, 
 
         const suDecorations: monaco.editor.IModelDeltaDecoration[] = [];
         resLines.forEach((line, lineNum) => {
-            // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
             if (!line.suClass) {
                 // Shouldn't be possible, temp SentryCapture here to investigate
                 // https://compiler-explorer.sentry.io/issues/5374209222/
@@ -174,7 +163,7 @@ export class StackUsage extends MonacoPane<monaco.editor.IStandaloneCodeEditor, 
             }
             if (line.suClass !== 'None') {
                 suDecorations.push({
-                    range: new monaco.Range(lineNum + 1, 1, lineNum + 1, Infinity),
+                    range: new monaco.Range(lineNum + 1, 1, lineNum + 1, Number.POSITIVE_INFINITY),
                     options: {
                         isWholeLine: true,
                         after: {
@@ -188,7 +177,7 @@ export class StackUsage extends MonacoPane<monaco.editor.IStandaloneCodeEditor, 
         this.editorDecorations.set(suDecorations);
     }
 
-    override onCompiler(id: number, compiler) {
+    override onCompiler(id: number, compiler: CompilerInfo | null) {
         if (id === this.compilerInfo.compilerId) {
             this.compilerInfo.compilerName = compiler ? compiler.name : '';
             this.updateTitle();

@@ -22,7 +22,7 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import Path from 'path';
+import Path from 'node:path';
 
 import Semver from 'semver';
 
@@ -30,7 +30,8 @@ import {PreliminaryCompilerInfo} from '../../types/compiler.interfaces.js';
 import {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces.js';
 import {unwrap} from '../assert.js';
 import {BaseCompiler} from '../base-compiler.js';
-import {SassAsmParser} from '../parsers/asm-parser-sass.js';
+import {CompilationEnvironment} from '../compilation-env.js';
+import {PTXAsmParser} from '../parsers/asm-parser-ptx.js';
 import {asSafeVer} from '../utils.js';
 
 import {ClangParser} from './argument-parsers.js';
@@ -40,21 +41,21 @@ export class NvrtcCompiler extends BaseCompiler {
         return 'nvrtc';
     }
 
-    constructor(info: PreliminaryCompilerInfo, env) {
+    constructor(info: PreliminaryCompilerInfo, env: CompilationEnvironment) {
         super(info, env);
 
-        this.asm = new SassAsmParser(this.compilerProps);
+        this.asm = new PTXAsmParser(this.compilerProps);
     }
 
     override optionsForFilter(filters: ParseFiltersAndOutputOptions, outputFilename: string, userOptions?: string[]) {
         return ['-o', this.filename(outputFilename), '-lineinfo', filters.binary ? '-cubin' : '-ptx'];
     }
 
-    override getArgumentParser() {
+    override getArgumentParserClass() {
         return ClangParser;
     }
 
-    override async objdump(outputFilename, result: any, maxSize: number) {
+    override async objdump(outputFilename: string, result: any, maxSize: number) {
         const {nvdisasm, semver} = this.compiler;
 
         const args = Semver.lt(asSafeVer(semver), '11.0.0', true)

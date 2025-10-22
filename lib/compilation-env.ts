@@ -22,31 +22,35 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import child_process from 'child_process';
+import child_process from 'node:child_process';
 
-import fs from 'fs-extra';
+import fs from 'node:fs/promises';
 import _ from 'underscore';
 
 import type {CacheableValue} from '../types/cache.interfaces.js';
 import {CompilerOverrideOptions} from '../types/compilation/compiler-overrides.interfaces.js';
 
+import {LanguageKey} from '../types/languages.interfaces.js';
 import {unwrap} from './assert.js';
+import {BaseCompiler} from './base-compiler.js';
 import type {Cache} from './cache/base.interfaces.js';
 import {BaseCache} from './cache/base.js';
 import {createCacheFromConfig} from './cache/from-config.js';
+import {S3Cache} from './cache/s3.js';
 import {CompilationQueue, EnqueueOptions, Job} from './compilation-queue.js';
-import {FormattingHandler} from './handlers/formatting.js';
+import {FormattingService} from './formatting-service.js';
 import {logger} from './logger.js';
 import type {PropertyGetter} from './properties.interfaces.js';
-import {CompilerProps} from './properties.js';
+import {CompilerProps, PropFunc} from './properties.js';
 import {createStatsNoter, IStatsNoter} from './stats.js';
 
-type PropFunc = (string, any?) => any;
+type FindCompiler = (langId: LanguageKey, compilerId: string) => BaseCompiler | undefined;
 
 export class CompilationEnvironment {
     ceProps: PropertyGetter;
+    awsProps: PropFunc;
     compilationQueue: CompilationQueue;
-    compilerProps: CompilerProps;
+    compilerProps: PropFunc;
     okOptions: RegExp;
     badOptions: RegExp;
     cache: Cache;
@@ -55,13 +59,21 @@ export class CompilationEnvironment {
     reportCacheEvery: number;
     multiarch: string | null;
     baseEnv: Record<string, string>;
-    formatHandler: FormattingHandler;
     possibleToolchains?: CompilerOverrideOptions;
     statsNoter: IStatsNoter;
     private logCompilerCacheAccesses: boolean;
+    private cachingInProgress: Record<string, boolean>;
+    private findCompilerFunc?: FindCompiler;
 
-    constructor(compilerProps, compilationQueue, doCache) {
+    constructor(
+        compilerProps: CompilerProps,
+        awsProps: PropFunc,
+        compilationQueue: CompilationQueue,
+        public formattingService: FormattingService,
+        doCache?: boolean,
+    ) {
         this.ceProps = compilerProps.ceProps;
+        this.awsProps = awsProps;
         this.compilationQueue = compilationQueue;
         this.compilerProps = compilerProps.get.bind(compilerProps);
         // So people running local instances don't break suddenly when updating
@@ -82,6 +94,7 @@ export class CompilationEnvironment {
             'compiler',
             doCache === undefined || doCache ? this.ceProps('compilerCacheConfig', '') : '',
         );
+        this.cachingInProgress = {};
         this.reportCacheEvery = this.ceProps('cacheReportEvery', 100);
         this.multiarch = null;
         try {
@@ -101,9 +114,6 @@ export class CompilationEnvironment {
             if (environmentVariable === '') return;
             this.baseEnv[environmentVariable] = process.env[environmentVariable] ?? '';
         });
-        // I'm not sure that this is the best design; but each compiler having its own means each constructs its own
-        // handler, and passing it in from the outside is a pain as each compiler's constructor needs it.
-        this.formatHandler = new FormattingHandler(this.ceProps);
         this.logCompilerCacheAccesses = this.ceProps('logCompilerCacheAccesses', false);
         this.statsNoter = createStatsNoter(this.ceProps);
     }
@@ -144,7 +154,8 @@ export class CompilationEnvironment {
         const key = BaseCache.hash(object);
         const result = await this.compilerCache.get(key);
         if (this.logCompilerCacheAccesses) {
-            logger.info(`Cache get ${JSON.stringify(object)} hash ${key} ${result.hit ? 'hit' : 'miss'}`);
+            logger.info(`hash ${key} (${object?.['compiler'] || '???'}) ${result.hit ? 'hit' : 'miss'}`);
+            logger.debug(`Cache get ${JSON.stringify(object)}`);
         }
         if (!result.hit) return null;
         return JSON.parse(unwrap(result.data).toString());
@@ -158,8 +169,37 @@ export class CompilationEnvironment {
         return this.compilerCache.put(key, JSON.stringify(result), creator);
     }
 
-    async executableGet(object: CacheableValue, destinationFolder: string): Promise<string | null> {
-        const key = BaseCache.hash(object) + '_exec';
+    async cachePutWithTTL(object: CacheableValue, result: object, ttlDays: number, creator: string | undefined) {
+        const key = BaseCache.hash(object);
+        const jsonData = JSON.stringify(result);
+
+        // Check if cache is S3Cache to use TTL functionality
+        if (this.cache instanceof S3Cache) {
+            return this.cache.putWithTTL(key, Buffer.from(jsonData), ttlDays, creator);
+        } else {
+            // Fallback to regular put for non-S3 caches
+            return this.cache.put(key, jsonData, creator);
+        }
+    }
+
+    async tempCachePutWithTTL(object: CacheableValue, result: object, ttlDays: number, creator: string | undefined) {
+        const key = BaseCache.hash(object);
+        const jsonData = JSON.stringify(result);
+
+        // Check if cache is S3Cache to use TTL functionality with temp path
+        if (this.cache instanceof S3Cache) {
+            return this.cache.putWithTTLAndPath(key, Buffer.from(jsonData), ttlDays, 'temp', creator);
+        } else {
+            // Fallback to regular put for non-S3 caches
+            return this.cache.put(key, jsonData, creator);
+        }
+    }
+
+    getExecutableHash(object: CacheableValue): string {
+        return BaseCache.hash(object) + '_exec';
+    }
+
+    async executableGet(key: string, destinationFolder: string): Promise<string | null> {
         const result = await this.executableCache.get(key);
         if (!result.hit) return null;
         const filepath = destinationFolder + '/' + key;
@@ -167,14 +207,24 @@ export class CompilationEnvironment {
         return filepath;
     }
 
-    async executablePut(object: CacheableValue, filepath: string): Promise<string> {
-        const key = BaseCache.hash(object) + '_exec';
-        await this.executableCache.put(key, fs.readFileSync(filepath));
-        return key;
+    async executablePut(key: string, filepath: string): Promise<void> {
+        await this.executableCache.put(key, await fs.readFile(filepath));
+    }
+
+    setCachingInProgress(key: string) {
+        this.cachingInProgress[key] = true;
+    }
+
+    clearCachingInProgress(key: string) {
+        delete this.cachingInProgress[key];
+    }
+
+    willBeInCacheSoon(key: string): boolean {
+        return this.cachingInProgress[key] || false;
     }
 
     enqueue<T>(job: Job<T>, options?: EnqueueOptions) {
-        return this.compilationQueue.enqueue(job, options);
+        if (this.compilationQueue) return this.compilationQueue.enqueue(job, options);
     }
 
     findBadOptions(options: string[]) {
@@ -183,5 +233,14 @@ export class CompilationEnvironment {
 
     getCompilerPropsForLanguage(languageId: string): PropFunc {
         return _.partial(this.compilerProps as any, languageId);
+    }
+
+    setCompilerFinder(compilerFinder: FindCompiler) {
+        this.findCompilerFunc = compilerFinder;
+    }
+
+    findCompiler(langId: LanguageKey, compilerId: string): BaseCompiler | undefined {
+        if (!this.findCompilerFunc) throw new Error('Compiler finder not set');
+        return this.findCompilerFunc(langId, compilerId);
     }
 }

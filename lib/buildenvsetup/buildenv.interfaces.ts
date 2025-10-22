@@ -1,5 +1,5 @@
 export type BuildEnvDownloadInfo = {
     step: string;
     packageUrl: string;
-    time: string;
+    time: number;
 };

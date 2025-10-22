@@ -1,18 +1,17 @@
 mixin checkbox(cls, text)
-  .checkbox
-    label
-      input(class=cls type="checkbox")
-      != text
+  .form-check
+    input.form-check-input(class=cls type="checkbox" id="settings-checkbox-"+cls)
+    label.form-check-label(for="settings-checkbox-"+cls)!= text
 
 mixin select(cls, text)
-  div
-    label!= text
-    select(class=cls)
+  .mb-3
+    label.form-label(for="settings-select-"+cls)!= text
+    select.form-select(class=cls id="settings-select-"+cls)
 
 mixin input(cls, type, text, style)
-  div
-    label!= text
-    input(class=cls type=type style=style)
+  .mb-3
+    label.form-label(for="settings-input-"+cls)!= text
+    input.form-control(class=cls type=type style=style id="settings-input-"+cls)
 
 
 #settings.modal.fade.gl_keep(tabindex="-1" role="dialog")
@@ -21,8 +20,7 @@ mixin input(cls, type, text, style)
       .modal-header
         h5.modal-title
           | Compiler Explorer Settings
-        button.close(type="button" data-dismiss="modal" aria-label="Close")
-          span(aria-hidden="true") &times;
+        button.btn-close(type="button" data-bs-dismiss="modal" aria-label="Close")
       .modal-body
         .card
           .card-header
@@ -30,53 +28,54 @@ mixin input(cls, type, text, style)
             | preserved as part of shared URLs, and are persisted locally using browser
             | local storage.
             ul.nav.nav-tabs.card-header-tabs(role="tablist")
-              li.nav-item(role="presentation"): a.nav-link.active(href="#colouring" role="tab" data-toggle="tab") Colouring
-              li.nav-item(role="presentation"): a.nav-link(href="#site-behaviour" role="tab" data-toggle="tab") Site behaviour
-              li.nav-item(role="presentation"): a.nav-link(href="#keybindings" role="tab" data-toggle="tab") Keybindings
-              li.nav-item(role="presentation"): a.nav-link(href="#editor" role="tab" data-toggle="tab") Editor
-              li.nav-item(role="presentation"): a.nav-link(href="#compilation" role="tab" data-toggle="tab") Compilation
+              li.nav-item(role="presentation"): a.nav-link.active(href="#colouring" role="tab" data-bs-toggle="tab") Colouring
+              li.nav-item(role="presentation"): a.nav-link(href="#site-behaviour" role="tab" data-bs-toggle="tab") Site behaviour
+              li.nav-item(role="presentation"): a.nav-link(href="#keybindings" role="tab" data-bs-toggle="tab") Keybindings
+              li.nav-item(role="presentation"): a.nav-link(href="#editor" role="tab" data-bs-toggle="tab") Editor
+              li.nav-item(role="presentation"): a.nav-link(href="#compilation" role="tab" data-bs-toggle="tab") Compilation
           .card-body.tab-content
-            #colouring.tab-pane.active.form-group(role="group")
+            #colouring.tab-pane.active(role="group")
               +select("theme", "Site theme")
               +checkbox("colourise", "Colourise lines to show how the source maps to the output")
               +checkbox("alwaysEnableAllSchemes", "Make all colour schemes available regardless of theme")
               +select("colourScheme", "Line highlighting colour scheme")
-            #site-behaviour.tab-pane.form-group(role="group")
-              label
-                | Default language
-                small(style="margin-left: 3px")
-                  span.fas.fa-info-circle(title="New editors only (Reset UI to clear yours)" aria-label="New editors only (Reset UI to clear yours)")
-              select.defaultLanguage
+            #site-behaviour.tab-pane(role="group")
+              .mb-3
+                label.form-label(for="settings-select-defaultLanguage") Default language
+                  small(style="margin-left: 3px")
+                    span.fas.fa-info-circle(title="New editors only (Reset UI to clear yours)" aria-label="New editors only (Reset UI to clear yours)")
+                select.form-select.defaultLanguage(id="settings-select-defaultLanguage")
               +checkbox("keepMultipleTabs", "Keep page status per tab")
               +checkbox("allowStoreCodeDebug", "Allow my source code to be temporarily stored for diagnostic purposes in the event of an error")
               +checkbox("newEditorLastLang", "Use last selected language when opening new Editors")
               +checkbox("enableCommunityAds", "Show community events")
-            #keybindings.tab-pane.form-group(role="group")
+            #keybindings.tab-pane(role="group")
               +checkbox("useVim", "Vim editor mode")
               .the-save-option-to-auto-share
-                label
-                  kbd Ctrl
-                  | +
-                  kbd S
-                  | &nbsp;behaviour
-                select.enableCtrlS
-              .checkbox.the-save-option-to-tree-save
-                label
-                  input.enableCtrlStree(type="checkbox")
+                mb-3
+                  label.form-label(for="settings-checkbox-enableCtrlS")
+                    kbd Ctrl
+                    | +
+                    kbd S
+                    | &nbsp;behaviour
+                    select.form-select.enableCtrlS(id="settings-checkbox-enableCtrlS")
+              .form-check.the-save-option-to-tree-save
+                input.form-check-input.enableCtrlStree(type="checkbox" id="settings-checkbox-enableCtrlStree")
+                label.form-check-label(for="settings-checkbox-enableCtrlStree")
                   | Make
                   kbd Ctrl
                   | +
                   kbd S
                   | &nbsp;include and save the file to a Tree if that's added to the UI
-              .checkbox.the-popup-dialog-box-option
-                label
-                  input.enableSharingPopover(type="checkbox")
+              .form-check.the-popup-dialog-box-option
+                input.form-check-input.enableSharingPopover(type="checkbox" id="settings-checkbox-enableSharingPopover")
+                label.form-check-label(for="settings-checkbox-enableSharingPopover")
                   | Pop up a dialog box when
                   kbd Ctrl
                   | +
                   kbd S
                   | &nbsp; is set to create a short link.
-            #editor.tab-pane.form-group(role="group")
+            #editor.tab-pane(role="group")
               +input("editorsFFont", "text", "Desired Font Family in editors", "width:100%")
               +select("defaultFontScale", "Default font scale")
               +checkbox("editorsFLigatures", "Enable font ligatures")
@@ -97,19 +96,20 @@ mixin input(cls, type, text, style)
               +checkbox("wordWrap", "Enable Word Wrapping")
               +checkbox("enableCodeLens", "Enable CodeLens features (requires refresh to take effect)")
               +checkbox("colouriseBrackets", "Colourise matching bracket pairs")
-            #compilation.tab-pane.form-group(role="group")
+            #compilation.tab-pane(role="group")
               div
                 +checkbox("compileOnChange", "Compile automatically when source changes")
                 +checkbox("autoDelayBeforeCompile", "Use automatic delay before compiling")
                 div
-                  label Delay before compiling:&nbsp;
-                    span.delay-current-value &nbsp;
-                  .slider-input
-                    b 0.25s
-                    input.delay(type="range")
-                    b 3s
+                  mb-3
+                    label.form-label(for="settings-input-delay") Delay before compiling:&nbsp;
+                      span.delay-current-value &nbsp;
+                    .slider-input(id="settings-input-delay")
+                      b 0.25s
+                      input.delay(type="range")
+                      b 3s
                 +checkbox("formatOnCompile", "Enable formatting on compilation (for supported languages)")
                 +checkbox("executorCompileOnChange", "Compile executor automatically when arguments change")
                 +checkbox("shakeStatusIconOnWarnings", "Shake the status icon on argument warnings")
       .modal-footer
-        button.btn.btn-outline-primary(type="button" data-dismiss="modal") Close
+        button.btn.btn-outline-primary(type="button" data-bs-dismiss="modal") Close

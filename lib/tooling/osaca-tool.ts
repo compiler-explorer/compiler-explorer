@@ -22,10 +22,13 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import fs from 'fs-extra';
+import fs from 'node:fs/promises';
 
+// import {CompilationInfo} from '../../types/compilation/compilation.interfaces.js';
+import {CompilationInfo} from '../../types/compilation/compilation.interfaces.js';
 import {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces.js';
-import {AsmParser} from '../parsers/asm-parser.js';
+import {IAsmParser} from '../parsers/asm-parser.interfaces.js';
+import * as utils from '../utils.js';
 
 import {BaseTool} from './base-tool.js';
 
@@ -34,21 +37,25 @@ export class OSACATool extends BaseTool {
         return 'osaca-tool';
     }
 
-    async writeAsmFile(asmParser: AsmParser, asm: string, filters: ParseFiltersAndOutputOptions, destination: string) {
-        // Applying same filters as applied to compiler outpu
-        const filteredAsm = asmParser.process(asm, filters).asm.reduce(function (acc, line) {
-            return acc + line.text + '\n';
-        }, '');
+    async writeAsmFile(
+        asmParser: IAsmParser,
+        asm: string | any[],
+        filters: ParseFiltersAndOutputOptions,
+        destination: string,
+    ) {
+        // Applying same filters as applied to compiler output
+        const asmString = utils.normalizeAsmToString(asm);
+        const filteredAsm = asmParser.process(asmString, filters).asm.reduce((acc, line) => acc + line.text + '\n', '');
         return fs.writeFile(destination, filteredAsm);
     }
 
-    override async runTool(compilationInfo: Record<any, any>, inputFilepath?: string, args?: string[]) {
+    override async runTool(compilationInfo: CompilationInfo, inputFilepath?: string, args?: string[]) {
         if (compilationInfo.filters.binary) {
             return this.createErrorResponse('<cannot run analysis on binary>');
         }
 
-        if (compilationInfo.filters.intel) {
-            return this.createErrorResponse('<cannot run analysis on Intel assembly>');
+        if (!compilationInfo.asm) {
+            return this.createErrorResponse('<no assembly output available>');
         }
 
         const rewrittenOutputFilename = compilationInfo.outputFilename + '.osaca';

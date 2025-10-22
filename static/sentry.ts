@@ -22,13 +22,11 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import {parse} from '../shared/stacktrace.js';
-
-import {options} from './options.js';
-
 import * as Sentry from '@sentry/browser';
-
 import GoldenLayout from 'golden-layout';
+import {parse} from '../shared/stacktrace.js';
+import {options} from './options.js';
+import {SiteSettings} from './settings.js';
 import {serialiseState} from './url.js';
 
 let layout: GoldenLayout;
@@ -36,7 +34,7 @@ let allowSendCode: boolean;
 
 export function setSentryLayout(l: GoldenLayout) {
     layout = l;
-    layout.eventHub.on('settingsChange', newSettings => {
+    layout.eventHub.on('settingsChange', (newSettings: SiteSettings) => {
         allowSendCode = newSettings.allowStoreCodeDebug;
     });
 
@@ -51,11 +49,29 @@ export function setSentryLayout(l: GoldenLayout) {
             }
             event.extra['full_url'] = window.location.origin + window.httpRoot + '#' + serialiseState(config);
         } catch (e) {
-            // eslint-disable-next-line no-console
             console.log('Error adding full_url to Sentry event', e);
         }
         return event;
     });
+}
+
+function isEventLike(value: unknown): value is Event {
+    return value instanceof Event || value?.constructor?.name === 'Event' || value?.constructor?.name === 'CustomEvent';
+}
+
+function formatEventRejection(evt: Event): string {
+    const targetName = evt.target?.constructor?.name ?? 'unknown';
+    let message = `Event rejection: type="${evt.type}", target="${targetName}"`;
+
+    if ('detail' in evt && evt.detail !== undefined) {
+        try {
+            message += `, detail=${JSON.stringify(evt.detail)}`;
+        } catch {
+            message += ', detail=[Unserializable]';
+        }
+    }
+
+    return message;
 }
 
 export function SetupSentry() {
@@ -64,9 +80,71 @@ export function SetupSentry() {
             dsn: options.sentryDsn,
             release: options.release,
             environment: options.sentryEnvironment,
+            ignoreErrors: [
+                // NOTE: Monaco Editor patterns may not work reliably due to code minification
+                // Source mapping happens AFTER beforeSend/ignoreErrors processing
+                /this.error\(new CancellationError\(\)/,
+                /new StandardMouseEvent\(monaco-editor/,
+                // CEFSharp bot errors - these come from automated scanners, particularly Microsoft Outlook's
+                // SafeLink feature that scans URLs in emails. The error format "Object Not Found Matching Id:X,
+                // MethodName:Y, ParamCount:Z" is specific to CEFSharp (.NET Chromium wrapper).
+                // Analysis of 76,000+ events shows 100% come from Windows + Chrome (CEFSharp's signature).
+                // This pattern was previously seen with Id:2 (PR #7103).
+                // See: https://github.com/DataDog/browser-sdk/issues/2715
+                /Object Not Found Matching Id:\d+/,
+                /Illegal value for lineNumber/,
+                'SlowRequest',
+                // Monaco Editor clipboard cancellation errors
+                'Canceled',
+            ],
+            beforeSend(event, hint) {
+                // Filter Monaco Editor errors
+                //
+                // IMPORTANT: Frame-based filtering doesn't work reliably!
+                // In beforeSend hooks, frame.filename contains minified bundle paths like:
+                // "https://static.ce-cdn.net/vendor.v59.be68c0bf31258854d1b2.js"
+                //
+                // Source mapping happens AFTER beforeSend processing, which is why the
+                // final Sentry UI shows readable paths like:
+                // "./node_modules/monaco-editor/esm/vs/platform/clipboard/browser/clipboardService.js"
+                //
+                // For reliable filtering, use:
+                // 1. ignoreErrors patterns (processed before beforeSend)
+                // 2. Error message content (event.exception.values[0].value)
+                // 3. Error type (event.exception.values[0].type)
+                //
+                // DO NOT rely on frame.filename, frame.module, or frame.function for Monaco errors!
+
+                if (event.exception?.values?.[0]) {
+                    // Filter hit testing errors
+                    // See: https://github.com/microsoft/monaco-editor/issues/4527
+                    // Uses error message content since frame data is minified
+                    if (event.exception.values[0].value?.includes('_doHitTestWithCaretPositionFromPoint')) {
+                        return null; // Don't send to Sentry
+                    }
+                }
+                return event;
+            },
         });
         window.addEventListener('unhandledrejection', event => {
-            SentryCapture(event.reason, 'Unhandled Promise Rejection');
+            let reason = event.reason;
+
+            if (!(reason instanceof Error)) {
+                // Safari sometimes rejects promises with CustomEvent/Event objects.
+                // Extract useful properties instead of stringifying to empty object.
+                // See: https://github.com/compiler-explorer/compiler-explorer/issues/8172
+                // Related: https://github.com/getsentry/sentry-javascript/issues/2210
+                const errorMessage =
+                    typeof reason === 'string'
+                        ? reason
+                        : isEventLike(reason)
+                          ? formatEventRejection(reason)
+                          : `Non-Error rejection: ${JSON.stringify(reason)}`;
+
+                reason = Object.assign(new Error(errorMessage), {originalReason: event.reason});
+            }
+
+            SentryCapture(reason, 'Unhandled Promise Rejection');
         });
     }
 }
@@ -78,13 +156,13 @@ export function SentryCapture(value: unknown, context?: string) {
         }
         Sentry.captureException(value);
     } else {
-        const e = new Error(); // eslint-disable-line unicorn/error-message
+        const e = new Error();
         const trace = parse(e);
         Sentry.captureMessage(
-            `Non-Error capture:\n` +
+            'Non-Error capture:\n' +
                 (context ? `Context: ${context}\n` : '') +
                 `Data:\n${JSON.stringify(value)}\n` +
-                `Trace:\n` +
+                'Trace:\n' +
                 trace
                     .map(frame => `${frame.functionName} ${frame.fileName}:${frame.lineNumber}:${frame.columnNumber}`)
                     .join('\n'),

@@ -22,9 +22,8 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import path from 'path';
-
-import fs from 'fs-extra';
+import fs from 'node:fs/promises';
+import path from 'node:path';
 
 import {BufferOkFunc, BuildResult, CompilationResult} from '../types/compilation/compilation.interfaces.js';
 import {Artifact, ArtifactType} from '../types/tool.interfaces.js';
@@ -56,10 +55,10 @@ export async function addArtifactToResult(
 }
 
 export async function addHeaptrackResults(result: CompilationResult, dirPath?: string): Promise<void> {
-    let dirPathToUse: string = '';
+    let dirPathToUse = '';
     if (dirPath) {
         dirPathToUse = dirPath;
-    } else if (result.buildResult && result.buildResult.dirPath) {
+    } else if (result.buildResult?.dirPath) {
         dirPathToUse = result.buildResult.dirPath;
     }
 

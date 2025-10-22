@@ -1,4 +1,4 @@
-// Copyright (c) 2023, Marc Auberer
+// Copyright (c) 2023-2025, Marc Auberer
 // All rights reserved.
 //
 // Redistribution and use in source and binary forms, with or without
@@ -35,6 +35,7 @@ function definition(): monaco.languages.IMonarchLanguage {
             'assert',
             'break',
             'case',
+            'cast',
             'compose',
             'const',
             'continue',
@@ -212,4 +213,4 @@ const def = definition();
 monaco.languages.register({id: 'spice'});
 monaco.languages.setMonarchTokensProvider('spice', def);
 
-export = def;
+export default def;

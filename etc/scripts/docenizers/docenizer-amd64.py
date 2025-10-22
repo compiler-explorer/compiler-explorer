@@ -40,7 +40,7 @@ IGNORED_FILE_NAMES = [
     "EDECVIRTCHILD",
     "EINCVIRTCHILD",
     "EINIT",
-    "ELDB:ELDU:ELDBC:ELBUC",
+    "ELDB:ELDU:ELDBC:ELDUC",
     "EMODPE",
     "EMODPR",
     "EMODT",
@@ -178,10 +178,14 @@ def get_description_paragraphs(document_soup):
 
 def parse(filename, f):
     doc = BeautifulSoup(f, 'html.parser')
-    if doc.table is None:
+    tables = doc.find_all('table')
+    if not tables:
         print(f"{filename}: Failed to find table")
         return None
-    table = read_table(doc.table)
+
+    # Combine all instruction tables (some files have multiple tables)
+    table = [row for tbl in tables for row in read_table(tbl)]
+
     names = set()
 
     def add_all(instrs):
@@ -354,7 +358,7 @@ def main():
     print(f"Writing {len(instructions)} instructions")
     with open(args.outputpath, 'w') as f:
         f.write("""
-import {AssemblyInstructionInfo} from '../base.js';
+import type {AssemblyInstructionInfo} from '../../../types/assembly-docs.interfaces.js';
 
 export function getAsmOpcode(opcode: string | undefined): AssemblyInstructionInfo | undefined {
     if (!opcode) return;

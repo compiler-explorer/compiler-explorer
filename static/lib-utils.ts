@@ -22,18 +22,15 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import {options} from './options.js';
+import {getRemoteId} from '../shared/remote-utils.js';
+import {Remote} from '../types/compiler.interfaces.js';
 import {LanguageLibs, Library} from './options.interfaces.js';
+import {options} from './options.js';
 
 const LIB_MATCH_RE = /([\w-]*)\.([\w-]*)/i;
 
-function getRemoteId(language: string, remoteUrl: string): string {
-    const url: URL = new URL(remoteUrl);
-    return url.host.replace(/\./g, '_') + '_' + language;
-}
-
 function getRemoteLibraries(language: string, remoteUrl: string): LanguageLibs {
-    const remoteId = getRemoteId(language, remoteUrl);
+    const remoteId = getRemoteId(remoteUrl, language);
     return options.remoteLibs[remoteId];
 }
 
@@ -68,7 +65,7 @@ function copyAndFilterLibraries(allLibraries: LanguageLibs, filter: string[]) {
 export function getSupportedLibraries(
     supportedLibrariesArr: string[] | undefined,
     langId: string,
-    remote,
+    remote?: Remote,
 ): LanguageLibs {
     if (!remote) {
         const allLibs = options.libs[langId];
@@ -76,11 +73,10 @@ export function getSupportedLibraries(
             return copyAndFilterLibraries(allLibs, supportedLibrariesArr);
         }
         return allLibs;
-    } else {
-        const allLibs = getRemoteLibraries(langId, remote.target);
-        if (supportedLibrariesArr && supportedLibrariesArr.length > 0) {
-            return copyAndFilterLibraries(allLibs, supportedLibrariesArr);
-        }
-        return allLibs;
     }
+    const allLibs = getRemoteLibraries(langId, remote.target + remote.basePath);
+    if (supportedLibrariesArr && supportedLibrariesArr.length > 0) {
+        return copyAndFilterLibraries(allLibs, supportedLibrariesArr);
+    }
+    return allLibs;
 }

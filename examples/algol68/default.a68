@@ -1,0 +1,1 @@
+begin puts ("Hello world!'n") end

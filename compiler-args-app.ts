@@ -22,24 +22,43 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-/* eslint-disable unicorn/prefer-top-level-await */
-/* eslint-disable no-console */
-
-import nopt from 'nopt';
+import {Command} from 'commander';
 import _ from 'underscore';
 
 import {CompilerArguments} from './lib/compiler-arguments.js';
 import * as Parsers from './lib/compilers/argument-parsers.js';
 import {executeDirect} from './lib/exec.js';
 import {logger} from './lib/logger.js';
-import {padRight} from './lib/utils.js';
+import {BaseParser} from './lib/compilers/argument-parsers.js';
 
-const opts = nopt({
-    parser: [String],
-    exe: [String],
-    padding: [Number],
-    debug: [Boolean],
-});
+const program = new Command();
+program
+    .name('compiler-args-app.ts')
+    .usage('--parser=<compilertype> --exe=<path> [--padding=<number>]')
+    .description(
+        'Extracts compiler arguments\nFor example: node --no-warnings=ExperimentalWarning --import=tsx compiler-args-app.ts --parser=clang --exe=/opt/compiler-explorer/clang-15.0.0/bin/clang++ --padding=50',
+    )
+    .requiredOption('--parser <type>', 'Compiler parser type')
+    .requiredOption('--exe <path>', 'Path to compiler executable')
+    .option('--padding <number>', 'Padding for output formatting', '40')
+    .option('--debug', 'Enable debug output')
+    .allowUnknownOption(false)
+    .configureOutput({
+        writeErr: (str) => {
+            if (str.includes('too many arguments')) {
+                console.error('Error: Unexpected arguments provided.');
+                console.error('This tool only accepts the following options: --parser, --exe, --padding, --debug');
+                console.error('\nExample usage:');
+                console.error('  node --import tsx compiler-args-app.ts --parser gcc --exe /path/to/gcc');
+                console.error('\nNote: Do not use shell redirections like "2>&1" directly - they will be interpreted as arguments');
+                process.exit(1);
+            }
+            process.stderr.write(str);
+        }
+    });
+
+program.parse();
+const opts = program.opts();
 
 if (opts.debug) logger.level = 'debug';
 
@@ -65,6 +84,7 @@ const compilerParsers = {
     ghc: Parsers.GHCParser,
     tendra: Parsers.TendraParser,
     golang: Parsers.GolangParser,
+    zig: Parsers.ZigParser,
 };
 
 class CompilerArgsApp {
@@ -76,7 +96,7 @@ class CompilerArgsApp {
     constructor() {
         this.parserName = opts.parser;
         this.executable = opts.exe;
-        this.pad = opts.padding || 40;
+        this.pad = Number.parseInt(opts.padding, 10);
         this.compiler = {
             compiler: {
                 exe: this.executable,
@@ -85,6 +105,13 @@ class CompilerArgsApp {
             execCompilerCached: async (command: string, args: string[]) => {
                 return executeDirect(command, args, {}, fn => fn);
             },
+            getDefaultExecOptions: () => {
+                return {
+                    env: process.env,
+                    cwd: process.cwd(),
+                    timeout: 10000,
+                };
+            }
         };
 
         if (this.parserName === 'juliawrapper') {
@@ -94,36 +121,37 @@ class CompilerArgsApp {
 
     async getPossibleStdvers() {
         const parser = this.getParser();
-        return await parser.getPossibleStdvers(this.compiler);
+        return await parser.getPossibleStdvers();
     }
 
     async getPossibleTargets() {
         const parser = this.getParser();
-        return await parser.getPossibleTargets(this.compiler);
+        return await parser.getPossibleTargets();
     }
 
     async getPossibleEditions() {
         const parser = this.getParser();
-        return await parser.getPossibleEditions(this.compiler);
+        return await parser.getPossibleEditions();
     }
 
-    getParser() {
-        if (compilerParsers[this.parserName]) {
-            return compilerParsers[this.parserName];
-        } else {
-            console.error('Unknown parser type');
-            process.exit(1);
+    getParser(): BaseParser {
+        if (compilerParsers[this.parserName as keyof typeof compilerParsers]) {
+            return new (compilerParsers[this.parserName as keyof typeof compilerParsers])(this.compiler);
         }
+        console.error('Unknown parser type');
+        process.exit(1);
     }
 
     async doTheParsing() {
         const parser = this.getParser();
-        await parser.parse(this.compiler);
+        await parser.parse();
         const options = this.compiler.possibleArguments.possibleArguments;
         if (parser.hasSupportStartsWith(options, '--target=')) {
             console.log('supportsTargetIs');
         } else if (parser.hasSupportStartsWith(options, '--target ')) {
             console.log('supportsTarget');
+        } else if (parser.hasSupportStartsWith(options, '-target ')) {
+            console.log('supportsHyphenTarget');
         } else if (parser.hasSupportStartsWith(options, '--march=')) {
             console.log('supportsMarch');
         } else {
@@ -134,7 +162,8 @@ class CompilerArgsApp {
     async print() {
         const args = _.keys(this.compiler.possibleArguments.possibleArguments);
         for (const arg of args) {
-            console.log(padRight(arg, this.pad) + this.compiler.possibleArguments.possibleArguments[arg].description);
+            const description = this.compiler.possibleArguments.possibleArguments[arg].description;
+            console.log(`${arg.padEnd(this.pad, ' ')} ${description}`);
         }
 
         console.log('Stdvers:');
@@ -143,20 +172,15 @@ class CompilerArgsApp {
         console.log(await this.getPossibleTargets());
         console.log('Editions:');
         console.log(await this.getPossibleEditions());
+
+        console.log('supportsOptOutput:', !!this.compiler.compiler.supportsOptOutput);
+        console.log('supportsStackUsageOutput', !!this.compiler.compiler.supportsStackUsageOutput);
+        console.log('optPipeline:', this.compiler.compiler.optPipeline);
+        console.log('supportsGccDump', !!this.compiler.compiler.supportsGccDump);
     }
 }
 
-if (!opts.parser || !opts.exe) {
-    console.error(
-        'Usage: ' +
-            'node --no-warnings=ExperimentalWarning --loader ts-node/esm compiler-args-app.ts ' +
-            '--parser=<compilertype> --exe=<path> [--padding=<number>]\n' +
-            'for example: --parser=clang --exe=/opt/compiler-explorer/clang-15.0.0/bin/clang++ --padding=50',
-    );
-    process.exit(1);
-} else {
-    const app = new CompilerArgsApp();
-    app.doTheParsing()
-        .then(() => app.print())
-        .catch(e => console.error(e));
-}
+const app = new CompilerArgsApp();
+app.doTheParsing()
+    .then(() => app.print())
+    .catch(e => console.error(e));

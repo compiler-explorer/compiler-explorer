@@ -22,29 +22,25 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
+import GoldenLayout from 'golden-layout';
 import $ from 'jquery';
-
-import {SiteTemplatesType, UserSiteTemplate} from '../../types/features/site-templates.interfaces.js';
+import {escapeHTML} from '../../shared/common-utils.js';
+import {SiteTemplateConfiguration, UserSiteTemplate} from '../../types/features/site-templates.interfaces.js';
 import {assert, unwrap, unwrapString} from '../assert.js';
+import * as BootstrapUtils from '../bootstrap-utils.js';
+import {localStorage} from '../local.js';
 import {Settings} from '../settings.js';
 import * as url from '../url.js';
-import GoldenLayout from 'golden-layout';
+import {getStaticImage} from '../utils';
 import {Alert} from './alert.js';
-import {escapeHTML} from '../../shared/common-utils.js';
-import {localStorage} from '../local.js';
 
 class SiteTemplatesWidget {
     private readonly modal: JQuery;
     private readonly img: HTMLImageElement;
-    private readonly siteTemplateScreenshots: any;
     private readonly alertSystem: Alert;
-    private templatesConfig: null | SiteTemplatesType = null;
+    private templatesConfig: null | SiteTemplateConfiguration = null;
     private populated = false;
-    constructor(
-        siteTemplateScreenshots: any,
-        private readonly layout: GoldenLayout,
-    ) {
-        this.siteTemplateScreenshots = siteTemplateScreenshots;
+    constructor(private readonly layout: GoldenLayout) {
         this.modal = $('#site-template-loader');
         const siteTemplatePreview = document.getElementById('site-template-preview');
         if (siteTemplatePreview === null) {
@@ -77,7 +73,7 @@ class SiteTemplatesWidget {
     }
     async getTemplates() {
         if (this.templatesConfig === null) {
-            this.templatesConfig = await new Promise<SiteTemplatesType>((resolve, reject) => {
+            this.templatesConfig = await new Promise<SiteTemplateConfiguration>((resolve, reject) => {
                 $.getJSON(window.location.origin + window.httpRoot + 'api/siteTemplates', resolve);
             });
         }
@@ -88,33 +84,35 @@ class SiteTemplatesWidget {
         if (!theme) {
             // apparently this can happen
             return 'default';
-        } else if (theme === 'system') {
+        }
+        if (theme === 'system') {
             if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
                 return 'dark';
-            } else {
-                return 'default';
             }
-        } else {
-            return theme;
+            return 'default';
         }
+        return theme;
     }
     getAsset(name: string) {
-        return this.siteTemplateScreenshots(`./${name}.${this.getCurrentTheme()}.png`);
+        return getStaticImage(`${name}.${this.getCurrentTheme()}.png`, 'template_screenshots');
+    }
+    getDefaultAsset() {
+        return 'https://placehold.jp/30/4b4b4b/ffffff/1000x800.png?text=we%27ll+support+screenshot+generation+for+user+templates+some+day';
     }
     async setDefaultPreview() {
         const templatesConfig = await this.getTemplates(); // by the time this is called it will be cached
-        const first = Object.entries(templatesConfig.templates)[0][0]; // preview the first entry
-        this.img.src = this.getAsset(first.replace(/[^a-z]/gi, ''));
+        const first = templatesConfig.templates[0].id; // preview the first entry
+        this.img.src = this.getAsset(first) ?? this.getDefaultAsset();
     }
     populateUserTemplates() {
         const userTemplates: Record<string, UserSiteTemplate> = JSON.parse(localStorage.get('userSiteTemplates', '{}'));
         const userTemplatesList = $('#site-user-templates-list');
         userTemplatesList.empty();
         if (Object.entries(userTemplates).length === 0) {
-            userTemplatesList.append(`<span>Nothing here yet</span>`);
+            userTemplatesList.append('<span>Nothing here yet</span>');
         } else {
             for (const [id, {title, data}] of Object.entries(userTemplates)) {
-                const li = $(`<li></li>`);
+                const li = $('<li></li>');
                 $(`<div class="title">${escapeHTML(title)}</div>`)
                     .attr('data-data', data)
                     .appendTo(li);
@@ -135,14 +133,12 @@ class SiteTemplatesWidget {
         const templatesConfig = await this.getTemplates();
         const siteTemplatesList = $('#site-templates-list');
         siteTemplatesList.empty();
-        for (const [name, data] of Object.entries(templatesConfig.templates)) {
+        for (const {name, id, reference} of templatesConfig.templates) {
             // Note: Trusting the server-provided data attribute
             siteTemplatesList.append(
-                `<li>` +
-                    `<div class="title" data-data="${data}" data-name="${name.replace(/[^a-z]/gi, '')}">${escapeHTML(
-                        name,
-                    )}</div>` +
-                    `</li>`,
+                '<li>' +
+                    `<div class="title" data-id="${id}" data-data="${reference}" data-name="${name}">${escapeHTML(name)}</div>` +
+                    '</li>',
             );
         }
         for (const titleDiv of $('#site-user-templates-list li .title, #site-templates-list li .title')) {
@@ -150,15 +146,8 @@ class SiteTemplatesWidget {
             titleDiv.addEventListener(
                 'mouseover',
                 () => {
-                    const name = titleDivCopy.getAttribute('data-name');
-                    this.img.src = '';
-                    if (name) {
-                        this.img.src = this.getAsset(name);
-                    } else {
-                        this.img.src =
-                            // eslint-disable-next-line max-len
-                            'https://placehold.jp/30/4b4b4b/ffffff/1000x800.png?text=we%27ll+support+screenshot+generation+for+user+templates+some+day';
-                    }
+                    const id = titleDivCopy.getAttribute('data-id');
+                    this.img.src = id !== null ? (this.getAsset(id) ?? this.getDefaultAsset()) : this.getDefaultAsset();
                 },
                 false,
             );
@@ -178,7 +167,7 @@ class SiteTemplatesWidget {
         this.populated = true;
     }
     show() {
-        this.modal.modal('show');
+        BootstrapUtils.showModal(this.modal);
         if (!this.populated) {
             this.populate();
         }
@@ -186,8 +175,8 @@ class SiteTemplatesWidget {
     }
 }
 
-export function setupSiteTemplateWidgetButton(siteTemplateScreenshots: any, layout: GoldenLayout) {
-    const siteTemplateModal = new SiteTemplatesWidget(siteTemplateScreenshots, layout);
+export function setupSiteTemplateWidgetButton(layout: GoldenLayout) {
+    const siteTemplateModal = new SiteTemplatesWidget(layout);
     $('#loadSiteTemplate').on('click', () => {
         siteTemplateModal.show();
     });

@@ -48,14 +48,14 @@ export class LlvmIrCfgParser extends BaseCFGParser {
         super(instructionSetInfo);
         this.functionDefinition = /^define .+ @("?[^"]+"?)\(/;
         this.labelRe = /^("?[\w$.-]+"?):\s*(;.*)?$/;
-        this.labelReference = /%("?[\w$.-]+"?)/g;
+        this.labelReference = /%"?([^, ]+)"?/g;
     }
 
     override filterData(asmArr: AssemblyLine[]) {
         return asmArr;
     }
 
-    override splitToFunctions(asmArr: AssemblyLine[]) {
+    override splitToFunctions(asmArr: AssemblyLine[]): Range[] {
         if (asmArr.length === 0) return [];
         const result: Range[] = [];
         let i = 0;
@@ -83,7 +83,7 @@ export class LlvmIrCfgParser extends BaseCFGParser {
         const result: BBRange[] = [];
         let i = fn.start + 1;
         let bbStart = i;
-        let currentName: string = '';
+        let currentName = '';
         let namePrefix: string = fnName + '\n\n';
         while (i < fn.end) {
             const match = code[i].text.match(this.labelRe);
@@ -152,14 +152,16 @@ export class LlvmIrCfgParser extends BaseCFGParser {
                     //    i32 14, label %7
                     //    i32 60, label %2
                     //    i32 12, label %3
+                    //    i32 35, label %"core::Result<&[u8]>::exit53"
                     //    i32 4, label %4
                     //  ], !dbg !60
                     const end = lastInst--;
-                    while (!asmArr[lastInst].text.includes('[')) {
+                    while (!asmArr[lastInst].text.trim().startsWith('switch')) {
                         lastInst--;
                     }
                     return this.concatInstructions(asmArr, lastInst, end + 1);
-                } else if (
+                }
+                if (
                     lastInst >= 1 &&
                     asmArr[lastInst].text.includes('unwind label') &&
                     asmArr[lastInst - 1].text.trim().includes('invoke ')
@@ -168,7 +170,8 @@ export class LlvmIrCfgParser extends BaseCFGParser {
                     // invoke void @__cxa_throw(ptr nonnull %exception, ptr nonnull @typeinfo for int, ptr null) #3
                     //          to label %unreachable unwind label %lpad
                     return this.concatInstructions(asmArr, lastInst - 1, lastInst + 1);
-                } else if (
+                }
+                if (
                     lastInst >= 1 &&
                     asmArr[lastInst - 1].text.includes('landingpad') &&
                     asmArr[lastInst].text.includes('catch')
@@ -177,7 +180,8 @@ export class LlvmIrCfgParser extends BaseCFGParser {
                     // %0 = landingpad { ptr, i32 }
                     //         catch ptr null
                     return this.concatInstructions(asmArr, lastInst - 1, lastInst + 1);
-                } else if (
+                }
+                if (
                     lastInst >= 1 &&
                     asmArr[lastInst - 1].text.includes('callbr') &&
                     asmArr[lastInst].text.trim().startsWith('to label')
@@ -186,15 +190,16 @@ export class LlvmIrCfgParser extends BaseCFGParser {
                     // %2 = callbr i32 asm "mov ${1:l}, $0", "=r,!i,~{dirflag},~{fpsr},~{flags}"() #2
                     //      to label %asm.fallthrough1 [label %err.split2]
                     return this.concatInstructions(asmArr, lastInst - 1, lastInst + 1);
-                } else {
-                    return asmArr[lastInst].text;
                 }
+                return asmArr[lastInst].text;
             })();
             let terminator;
             if (terminatingInstruction.includes('invoke ')) {
                 terminator = 'invoke';
             } else if (terminatingInstruction.includes('callbr')) {
                 terminator = 'callbr';
+            } else if (terminatingInstruction.includes('catchswitch')) {
+                terminator = 'catchswitch';
             } else {
                 terminator = terminatingInstruction.trim().split(' ')[0].replaceAll(',', '');
             }
@@ -206,6 +211,8 @@ export class LlvmIrCfgParser extends BaseCFGParser {
                     break;
                 }
                 case 'br': {
+                    // br label %\"<example::MyAllocator as core::alloc::global::GlobalAlloc>::alloc::h48bb40aafe1fee0e.exit\""
+
                     // br label %16, !dbg !41
                     // br i1 %13, label %59, label %14, !dbg !41
                     if (labels.length === 1) {
@@ -324,17 +331,53 @@ export class LlvmIrCfgParser extends BaseCFGParser {
                 }
                 case 'catchswitch': {
                     // %cs2 = catchswitch within %parenthandler [label %handler0] unwind label %cleanup
-                    // TODO
+                    const handlersOrUnwindPart = terminatingInstruction.slice(
+                        terminatingInstruction.lastIndexOf('[label '),
+                    );
+                    const catchswitchLabels = [...handlersOrUnwindPart.matchAll(this.labelReference)].map(m => m[1]);
+
+                    for (const label of catchswitchLabels) {
+                        edges.push({
+                            from: bb.nameId,
+                            to: label,
+                            arrows: 'to',
+                            color: 'blue',
+                        });
+                    }
                     break;
                 }
                 case 'catchret': {
                     // catchret from %catch to label %continue
-                    // TODO
+                    const catchretLabelsPart = terminatingInstruction.slice(
+                        terminatingInstruction.lastIndexOf('to label'),
+                    );
+                    const catchretLabels = [...catchretLabelsPart.matchAll(this.labelReference)].map(m => m[1]);
+                    // Should be a single one, but sticking to the regular handling
+                    for (const label of catchretLabels) {
+                        edges.push({
+                            from: bb.nameId,
+                            to: label,
+                            arrows: 'to',
+                            color: 'blue',
+                        });
+                    }
                     break;
                 }
                 case 'cleanupret': {
                     // cleanupret from %cleanup unwind label %continue
-                    // TODO
+                    const continueLabelsPart = terminatingInstruction.slice(
+                        terminatingInstruction.lastIndexOf('unwind label'),
+                    );
+                    const continueLabels = [...continueLabelsPart.matchAll(this.labelReference)].map(m => m[1]);
+                    // Should be a single one, but sticking to the regular handling
+                    for (const label of continueLabels) {
+                        edges.push({
+                            from: bb.nameId,
+                            to: label,
+                            arrows: 'to',
+                            color: 'blue',
+                        });
+                    }
                     break;
                 }
                 default: {

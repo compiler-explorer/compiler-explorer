@@ -28,16 +28,8 @@ levels:
         topIconShowEvery: 3
         displayType: SideBySide
         statsId: google
-      - name: thinkcell
-        description: Looking for C++ Developers (m/f/d) in Berlin and REMOTE. Earn up to 130 000 EUR per year.
-        img: https://static.ce-cdn.net/thinkcell/think-cell-wb-2.svg
-        url: https://www.think-cell.com/compilerexplorer
-        topIconShowEvery: 3
-        displayType: SideBySide
-        statsId: thinkcell
-        bgColour: rgb(110, 166, 0)
       - name: CLion
-        description: CLion, the cross-platform IDE for C and C++, is robust, responsive, and loaded with new functionality to help you make your development experience smoother and more productive.
+        description: CLion is a powerful, cross-platform IDE for C and C++ that boosts your productivity – and it’s free for learning, contributing to open-source projects, creating content, developing educational courses, and programming as a hobby.
         icon: https://static.ce-cdn.net/jetbrains/Jetbrains.png
         icon_dark: https://static.ce-cdn.net/jetbrains/JetbrainsWhite.png
         img: https://static.ce-cdn.net/jetbrains/ClionWhite.png
@@ -45,6 +37,15 @@ levels:
         topIconShowEvery: 3
         displayType: SideBySide
         statsId: jetbrains
+      - name: Cppcon
+        description: Join the CppCon family live &amp; in-person this September in Aurora, Colorado, USA! Pre-register for CppCon 2025 at <a href="https://www.CppCon.org" target="_blank">www.CppCon.org</a>.
+        img: https://static.ce-cdn.net/cppcon/cppcon-white-gold-5.svg
+        icon: https://static.ce-cdn.net/cppcon/cppcon-blue-gold-5.svg
+        icon_dark: https://static.ce-cdn.net/cppcon/cppcon-white-gold-5.svg
+        url: https://cppcon.org/
+        displayType: SideBySide
+        topIconShowEvery: 3
+        statsId: cppcon
   - name: Patreon Legends
     description: 'These amazing people have pledged at the highest level of support. Huge thanks to these fine folks:'
     class: legendary
@@ -86,6 +87,8 @@ levels:
       - name: Edison Design Group
         url: https://www.edg.com/
       - name: Daniel Jennings
+      - name: 3dB Labs
+        url: https://www.3db-labs.com/
   - name: Patreons
     description: 'Thanks to all my patrons:'
     sponsors:
@@ -404,6 +407,7 @@ levels:
       - Daniele Salvatore Albano
       - Frank Wessels
       - Michele Bianchi
+      - Piotr Fusik
       - Chandler Carruth
       - Daniel Collin
       - Deirdre Connolly
@@ -422,7 +426,7 @@ levels:
       - Michael Sartain
       - Patricia Aas
       - Rasmus
-      - Siyuan Han
+      - Siyuan.H
       - Vezel
       - lcnr
       - Abhishek Bhrushundi
@@ -473,3 +477,57 @@ levels:
       - oldspiderdude
       - Harish Naik
       - Gabriel Ravier
+      - Лев Роскошин
+      - salusdano
+      - Nitin A
+      - Aaron D. Marasco
+      - Tomas Karban
+      - Abdullah Al-Kheshen
+      - Matthew Kolbe
+      - Cem Dervis
+      - Chris Barlas
+      - Dino Occhialini
+      - Gregory Popovitch
+      - Isaac Cloos
+      - Joachim Meyer
+      - Martin Pernica
+      - Matthew Nielsen
+      - Michael
+      - Mike
+      - Paul Horn
+      - Per Tillisch
+      - Tobias Neukom
+      - mason
+      - Apostolos Piperis
+      - Patrik Bachan
+      - Simon Turner
+      - Sharad Khanna
+      - Kim Gräsman
+      - Waffles The Dog
+      - Pablo Halpern
+      - Benjamin FrantzDale
+      - Jevin Sweval
+      - woobwoobwoob
+      - Drew Dormann
+      - Ryan Lee
+      - elliot
+      - Cemalettin Dervis
+      - Yuki ITO
+      - André Brand
+      - Justin Simms
+      - Andy Hu
+      - jml2k
+      - Corentin Jabot
+      - Yuxuan Chen
+      - Clinton Ingram
+      - Yunsong Wang
+      - nnshi_s
+      - Sanveer Singh
+      - Martin Pernica
+      - Sam
+      - Trevor McCulloch
+      - Michael Schmidt
+      - Anvesha Amaravati
+      - Can Cagri
+      - Passionsock
+      - John Moran

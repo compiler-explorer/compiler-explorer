@@ -1,0 +1,38 @@
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "compiler-explorer-gh-tool"
+version = "0.0.1"
+description = "GitHub automation tool for Compiler Explorer"
+requires-python = ">=3.12"
+dependencies = [
+    "anthropic>=0.40.0",
+    "click>=8.1.0",
+    "pytest>=8.0.0",
+    "python-dotenv>=1.0.0",
+    "ruff>=0.8.0",
+]
+
+[project.scripts]
+gh_tool = "gh_tool.cli:main"
+
+[tool.uv]
+package = true
+
+[tool.ruff]
+line-length = 120
+target-version = "py312"
+
+[tool.ruff.lint]
+select = [
+    "E", # pycodestyle errors
+    "W", # pycodestyle warnings
+    "F", # pyflake
+    "I", # isort
+    "UP", # pyupgrade
+]
+ignore = [
+    "E501", # line length
+]

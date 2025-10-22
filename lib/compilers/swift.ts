@@ -22,8 +22,11 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
+import path from 'node:path';
+
 import type {PreliminaryCompilerInfo} from '../../types/compiler.interfaces.js';
 import {BaseCompiler} from '../base-compiler.js';
+import {CompilationEnvironment} from '../compilation-env.js';
 
 import {SwiftParser} from './argument-parsers.js';
 
@@ -32,8 +35,11 @@ export class SwiftCompiler extends BaseCompiler {
         return 'swift';
     }
 
-    constructor(info: PreliminaryCompilerInfo, env) {
+    constructor(info: PreliminaryCompilerInfo, env: CompilationEnvironment) {
         super(info, env);
+        this.compiler.supportsIrView = true;
+        this.compiler.irArg = ['-emit-ir'];
+        this.compiler.minIrArgs = ['-emit-ir'];
         this.compiler.optPipeline = {
             arg: ['-Xllvm', '-print-after-all', '-Xllvm', '-print-before-all'],
             moduleScopeArg: ['-Xllvm', '-print-module-scope'],
@@ -45,11 +51,15 @@ export class SwiftCompiler extends BaseCompiler {
         return [];
     }
 
-    override getArgumentParser() {
+    override getArgumentParserClass() {
         return SwiftParser;
     }
 
     override isCfgCompiler() {
         return true;
+    }
+
+    override getIrOutputFilename(inputFilename: string): string {
+        return this.getOutputFilename(path.dirname(inputFilename), this.outputFilebase).replace('.o', '.ll');
     }
 }

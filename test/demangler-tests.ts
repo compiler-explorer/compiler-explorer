@@ -22,6 +22,10 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
+import * as fsSync from 'node:fs';
+import fs from 'node:fs/promises';
+import path from 'node:path';
+
 import {describe, expect, it} from 'vitest';
 
 import {unwrap} from '../lib/assert.js';
@@ -34,8 +38,7 @@ import * as exec from '../lib/exec.js';
 import * as properties from '../lib/properties.js';
 import {SymbolStore} from '../lib/symbol-store.js';
 import * as utils from '../lib/utils.js';
-
-import {fs, makeFakeCompilerInfo, path, resolvePathFromTestRoot} from './utils.js';
+import {makeFakeCompilerInfo, processAsm, resolvePathFromTestRoot} from './utils.js';
 
 const cppfiltpath = 'c++filt';
 
@@ -49,7 +52,7 @@ class DummyCompiler extends BaseCompiler {
         } as unknown as CompilationEnvironment;
 
         // using c++ as the compiler needs at least one language
-        const compiler = makeFakeCompilerInfo({lang: 'c++'});
+        const compiler = makeFakeCompilerInfo({lang: 'c++', exe: 'gcc'});
 
         super(compiler, env);
     }
@@ -107,6 +110,22 @@ describe('Basic demangling', () => {
         ]);
     });
 
+    it('One quoted label and some asm', () => {
+        const result = {asm: [{text: '"_Z6squarei":'}, {text: '  ret'}]};
+
+        const demangler = new DummyCppDemangler(cppfiltpath, new DummyCompiler(), ['-n']);
+
+        return Promise.all([
+            demangler
+                .process(result)
+                .then(output => {
+                    expect(output.asm[0].text).toEqual('"square(int)":');
+                    expect(output.asm[1].text).toEqual('  ret');
+                })
+                .catch(catchCppfiltNonexistence),
+        ]);
+    });
+
     it('One label and use of a label', () => {
         const result = {asm: [{text: '_Z6squarei:'}, {text: '  mov eax, $_Z6squarei'}]};
 
@@ -118,6 +137,22 @@ describe('Basic demangling', () => {
                 .then(output => {
                     expect(output.asm[0].text).toEqual('square(int):');
                     expect(output.asm[1].text).toEqual('  mov eax, $square(int)');
+                })
+                .catch(catchCppfiltNonexistence),
+        ]);
+    });
+
+    it('One quoted label and use of a label', () => {
+        const result = {asm: [{text: '"_Z6squarei":'}, {text: '  mov eax, $"_Z6squarei"'}]};
+
+        const demangler = new DummyCppDemangler(cppfiltpath, new DummyCompiler(), ['-n']);
+
+        return Promise.all([
+            demangler
+                .process(result)
+                .then(output => {
+                    expect(output.asm[0].text).toEqual('"square(int)":');
+                    expect(output.asm[1].text).toEqual('  mov eax, $"square(int)"');
                 })
                 .catch(catchCppfiltNonexistence),
         ]);
@@ -155,15 +190,32 @@ describe('Basic demangling', () => {
             demangler
                 .process(result)
                 .then(output => {
-                    if (process.platform === 'win32') {
-                        expect(output.asm[0].text).toEqual(
-                            'jmp     qword ptr [rip + core::fmt::num::imp::<impl core::fmt::Display for usize>::fmt@GOTPCREL]',
-                        );
-                    } else {
-                        expect(output.asm[0].text).toEqual(
-                            'jmp     qword ptr [rip + core::fmt::num::imp::<impl core::fmt::Display for usize>::fmt::h7bbbd896a38dccca@GOTPCREL]',
-                        );
-                    }
+                    expect(output.asm[0].text).toEqual(
+                        'jmp     qword ptr [rip + core::fmt::num::imp::<impl core::fmt::Display for usize>::fmt::h7bbbd896a38dccca@GOTPCREL]',
+                    );
+                })
+                .catch(catchCppfiltNonexistence),
+        ]);
+    });
+
+    it('AArch64 branch with dotted symbol', () => {
+        const result = {
+            asm: [
+                {
+                    text: 'b       _ZN4core3fmt3num3imp52_$LT$impl$u20$core..fmt..Display$u20$for$u20$i32$GT$3fmt17h0feee90717706137E',
+                },
+            ],
+        };
+
+        const demangler = new DummyCppDemangler(cppfiltpath, new DummyCompiler(), ['-n']);
+
+        return Promise.all([
+            demangler
+                .process(result)
+                .then(output => {
+                    expect(output.asm[0].text).toEqual(
+                        'b       core::fmt::num::imp::<impl core::fmt::Display for i32>::fmt::h0feee90717706137',
+                    );
                 })
                 .catch(catchCppfiltNonexistence),
         ]);
@@ -222,7 +274,14 @@ describe('Basic demangling', () => {
     });
 
     it('Should also support ARM branch instructions', () => {
-        const result = {asm: [{text: '   bl _ZN3FooC1Ev'}]};
+        const result = {
+            asm: [
+                {text: '   bl _ZN3FooC1Ev'},
+                {
+                    text: 'b       _ZN4core3fmt3num3imp52_$LT$impl$u20$core..fmt..Display$u20$for$u20$i32$GT$3fmt17h0feee90717706137E',
+                },
+            ],
+        };
 
         const demangler = new DummyCppDemangler(cppfiltpath, new DummyCompiler(), ['-n']);
 
@@ -231,7 +290,12 @@ describe('Basic demangling', () => {
         demangler.collectLabels();
 
         const output = demangler.othersymbols.listSymbols();
-        expect(output).toEqual(['_ZN3FooC1Ev']);
+        expect(output.sort()).toEqual(
+            [
+                '_ZN3FooC1Ev',
+                '_ZN4core3fmt3num3imp52_$LT$impl$u20$core..fmt..Display$u20$for$u20$i32$GT$3fmt17h0feee90717706137E',
+            ].sort(),
+        );
     });
 
     it('Should NOT handle undecorated labels', () => {
@@ -305,8 +369,7 @@ describe('Basic demangling', () => {
 });
 
 async function readResultFile(filename: string) {
-    const data = await fs.readFile(filename);
-    const asm = utils.splitLines(data.toString()).map(line => {
+    const asm = utils.splitLines(await fs.readFile(filename, 'utf-8')).map(line => {
         return {text: line};
     });
 
@@ -322,27 +385,34 @@ async function DoDemangleTest(filename: string) {
     await expect(demangler.process(resultIn)).resolves.toEqual(resultOut);
 }
 
+async function DoDemangleTestWithLabels(filename: string) {
+    const asm = processAsm(filename, {labels: true});
+    delete asm.parsingTime;
+    delete asm.filteredCount;
+
+    const demangler = new DummyCppDemangler(cppfiltpath, new DummyCompiler(), ['-n']);
+    await expect(demangler.process(asm)).resolves.toMatchFileSnapshot(filename + '.json');
+}
+
 if (process.platform === 'linux') {
     describe('File demangling', () => {
         const testcasespath = resolvePathFromTestRoot('demangle-cases');
 
-        /*
-         * NB: this readdir must *NOT* be async
-         *
-         * Mocha calls the function passed to `describe` synchronously
-         * and expects the test suite to be fully configured upon return.
-         *
-         * If you pass an async function to describe and setup test cases
-         * after an await there is no guarantee they will be found, and
-         * if they are they will not end up in the expected suite.
-         */
-        const files = fs.readdirSync(testcasespath);
+        // For backwards compatability reasons, we have a sync readdir here. For details, see
+        // the git blame of this file.
+        // TODO: Consider replacing with https://github.com/vitest-dev/vitest/issues/703
+        const files = fsSync.readdirSync(testcasespath);
 
         for (const filename of files) {
             if (filename.endsWith('.asm')) {
                 it(filename, async () => {
                     await DoDemangleTest(path.join(testcasespath, filename));
                 });
+                if (filename !== 'bug-1336-first-20000-lines.asm') {
+                    it(`demangles ${filename} with labels`, async () => {
+                        await DoDemangleTestWithLabels(path.join(testcasespath, filename));
+                    });
+                }
             }
         }
     });

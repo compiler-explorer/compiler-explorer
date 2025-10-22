@@ -27,7 +27,15 @@
       "text": "        movq    %rsp, %rbp"
     },
     {
-      "labels": [],
+      "labels": [
+        {
+          "name": ".L.str",
+          "range": {
+            "endCol": 24,
+            "startCol": 18
+          }
+        }
+      ],
       "source": {
         "column": 1,
         "file": null,
@@ -139,16 +147,6 @@
     {
       "labels": [],
       "source": null,
-      "text": "        .short  2                       # DWARF Version"
-    },
-    {
-      "labels": [],
-      "source": null,
-      "text": "        .long   .Linfo_begin1           # Offset of Compilation Unit Info"
-    },
-    {
-      "labels": [],
-      "source": null,
       "text": ".Lset1 = .Linfo_end1-.Linfo_begin1      # Compilation Unit Length"
     },
     {
@@ -170,15 +168,7 @@
       "text": "        .long   139                     # DIE offset"
     },
     {
-      "labels": [
-        {
-          "name": "main",
-          "range": {
-            "endCol": 23,
-            "startCol": 19
-          }
-        }
-      ],
+      "labels": [],
       "source": null,
       "text": "        .asciz   \"main\"                 # External Name"
     },
@@ -208,16 +198,6 @@
     {
       "labels": [],
       "source": null,
-      "text": "        .short  2                       # DWARF Version"
-    },
-    {
-      "labels": [],
-      "source": null,
-      "text": "        .long   .Linfo_begin1           # Offset of Compilation Unit Info"
-    },
-    {
-      "labels": [],
-      "source": null,
       "text": ".Lset3 = .Linfo_end1-.Linfo_begin1      # Compilation Unit Length"
     },
     {
@@ -242,9 +222,9 @@
   "labelDefinitions": {
     ".L.str": 13,
     ".Lset0": 17,
-    ".Lset1": 21,
-    ".Lset2": 26,
-    ".Lset3": 30,
+    ".Lset1": 19,
+    ".Lset2": 24,
+    ".Lset3": 26,
     "main": 1,
     "str": 15
   }

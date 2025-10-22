@@ -22,14 +22,27 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import os from 'os';
-import {Writable} from 'stream';
+import os from 'node:os';
+import {Writable} from 'node:stream';
 
 import {LEVEL, MESSAGE} from 'triple-beam';
 import winston from 'winston';
 import LokiTransport from 'winston-loki';
+
 import {Papertrail} from 'winston-papertrail';
 import TransportStream, {TransportStreamOptions} from 'winston-transport';
+/**
+ * Options required for configuring logging
+ */
+export interface LoggingOptions {
+    debug: boolean;
+    logHost?: string;
+    logPort?: number;
+    hostnameForLogging?: string;
+    loki?: string;
+    suppressConsoleLog: boolean;
+    paperTrailIdentifier: string;
+}
 
 const consoleTransportInstance = new winston.transports.Console();
 export const logger = winston.createLogger({
@@ -43,7 +56,7 @@ export const logger = winston.createLogger({
 
 // Creates a log stream, suitable to passing to something that writes complete lines of output to a stream, for example
 // morgan's http logger. We look for complete text lines and output each as a winston log entry.
-export function makeLogStream(level: string, logger_: winston.Logger = logger): {write: (string) => void} {
+export function makeLogStream(level: string, logger_: winston.Logger = logger): {write: (chunk: string) => void} {
     let buffer = '';
     return new Writable({
         write: (chunk: string, encoding, callback: () => void) => {
@@ -87,7 +100,7 @@ class MyPapertrailTransport extends TransportStream {
         this.transport = new Papertrail({
             host: opts.host,
             port: opts.port,
-            logFormat: (level, message) => message,
+            logFormat: (level: any, message: any) => message,
             hostname: this.hostname,
             format: opts.format,
         });
@@ -99,12 +112,12 @@ class MyPapertrailTransport extends TransportStream {
         });
 
         // We can't use callback here as winston-papertrail is a bit lax in calling it back
-        this.transport.sendMessage(this.hostname, this.program, info[LEVEL], info[MESSAGE], x => x);
+        this.transport.sendMessage(this.hostname, this.program, info[LEVEL], info[MESSAGE], (x: any) => x);
         callback();
     }
 }
 
-export function logToLoki(url) {
+function logToLoki(url: string) {
     const transport = new LokiTransport({
         host: url,
         labels: {job: 'ce'},
@@ -121,7 +134,7 @@ export function logToLoki(url) {
     logger.info('Configured loki');
 }
 
-export function logToPapertrail(host: string, port: number, identifier: string, hostnameForLogging?: string) {
+function logToPapertrail(host: string, port: number, identifier: string, hostnameForLogging?: string) {
     const settings: MyPapertrailTransportOptions = {
         host: host,
         port: port,
@@ -131,11 +144,11 @@ export function logToPapertrail(host: string, port: number, identifier: string, 
     };
 
     const transport = new MyPapertrailTransport(settings);
-    transport.transport.on('error', err => {
+    transport.transport.on('error', (err: any) => {
         logger.error(err);
     });
 
-    transport.transport.on('connect', message => {
+    transport.transport.on('connect', (message: any) => {
         logger.info(message);
     });
     logger.add(transport);
@@ -145,6 +158,25 @@ export function logToPapertrail(host: string, port: number, identifier: string, 
 class Blackhole extends TransportStream {
     override log(info: any, callback: () => void) {
         callback();
+    }
+}
+
+export function initialiseLogging(options: LoggingOptions) {
+    if (options.debug) {
+        logger.level = 'debug';
+    }
+
+    if (options.logHost && options.logPort) {
+        logToPapertrail(options.logHost, options.logPort, options.paperTrailIdentifier, options.hostnameForLogging);
+    }
+
+    if (options.loki) {
+        logToLoki(options.loki);
+    }
+
+    if (options.suppressConsoleLog) {
+        logger.info('Disabling further console logging');
+        suppressConsoleLog();
     }
 }
 

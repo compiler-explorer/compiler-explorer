@@ -22,13 +22,15 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import path from 'path';
+import fs from 'node:fs/promises';
+import path from 'node:path';
 
-import fs from 'fs-extra';
+import {splitArguments} from '../../shared/common-utils.js';
+import {CompilationInfo} from '../../types/compilation/compilation.interfaces.js';
+import {ToolInfo} from '../../types/tool.interfaces.js';
+import {OptionsHandlerLibrary} from '../options-handler.js';
 
-import {Library} from '../../types/libraries/libraries.interfaces.js';
-import * as utils from '../utils.js';
-
+import {ToolEnv} from './base-tool.interface.js';
 import {BaseTool} from './base-tool.js';
 
 export class ClangTidyTool extends BaseTool {
@@ -36,23 +38,23 @@ export class ClangTidyTool extends BaseTool {
         return 'clang-tidy-tool';
     }
 
-    constructor(toolInfo, env) {
+    constructor(toolInfo: ToolInfo, env: ToolEnv) {
         super(toolInfo, env);
 
         this.addOptionsToToolArgs = false;
     }
 
     override async runTool(
-        compilationInfo: Record<any, any>,
+        compilationInfo: CompilationInfo,
         inputFilepath: string,
         args?: string[],
         stdin?: string,
-        supportedLibraries?: Record<string, Library>,
+        supportedLibraries?: Record<string, OptionsHandlerLibrary>,
     ) {
         const sourcefile = inputFilepath;
         const options = compilationInfo.options;
         const dir = path.dirname(sourcefile);
-        const includeflags = super.getIncludeArguments(compilationInfo.libraries, supportedLibraries || {});
+        const includeflags = super.getIncludeArguments(compilationInfo.libraries, supportedLibraries || {}, dir);
         const libOptions = super.getLibraryOptions(compilationInfo.libraries, supportedLibraries || {});
 
         let source = '';
@@ -61,8 +63,7 @@ export class ClangTidyTool extends BaseTool {
         if (wantsFix) {
             args = args.filter(option => !option.includes('-header-filter='));
 
-            const data = await fs.readFile(sourcefile);
-            source = data.toString();
+            source = await fs.readFile(sourcefile, 'utf-8');
         }
 
         // order should be:
@@ -72,13 +73,15 @@ export class ClangTidyTool extends BaseTool {
         //     -> before my patchup this was done only for non-clang compilers
         //  3) options manually specified in the compiler tab (options)
         //  *) indepenent are `args` from the clang-tidy tab
-        let compileFlags = utils.splitArguments(compilationInfo.compiler.options);
+        let compileFlags = splitArguments(compilationInfo.compiler.options);
         compileFlags = compileFlags.concat(includeflags);
         compileFlags = compileFlags.concat(libOptions);
 
         const manualCompileFlags = options.filter(option => option !== sourcefile);
         compileFlags = compileFlags.concat(manualCompileFlags);
         compileFlags = compileFlags.concat(this.tool.options);
+
+        compileFlags = this.replacePathsIfNeededForSandbox(compileFlags, dir);
 
         // TODO: do we want compile_flags.txt rather than prefixing everything with -extra-arg=
         await fs.writeFile(path.join(dir, 'compile_flags.txt'), compileFlags.join('\n'));

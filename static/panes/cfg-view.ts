@@ -22,32 +22,31 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import {Pane} from './pane.js';
-import * as monaco from 'monaco-editor';
-import $ from 'jquery';
-import _ from 'underscore';
 import * as fileSaver from 'file-saver';
-
-import {CfgState} from './cfg-view.interfaces.js';
-import {Hub} from '../hub.js';
 import {Container} from 'golden-layout';
-import {PaneState} from './pane.interfaces.js';
-import {ga} from '../analytics.js';
-import * as utils from '../utils.js';
-
+import $ from 'jquery';
+import * as monaco from 'monaco-editor';
+import TomSelect from 'tom-select';
+import _ from 'underscore';
+import {escapeHTML} from '../../shared/common-utils.js';
 import {
     AnnotatedCfgDescriptor,
     AnnotatedNodeDescriptor,
-    CfgDescriptor,
     CFGResult,
+    CfgDescriptor,
 } from '../../types/compilation/cfg.interfaces.js';
-import {GraphLayoutCore} from '../graph-layout-core.js';
-import * as MonacoConfig from '../monaco-config.js';
-import TomSelect from 'tom-select';
+import {CompilationResult} from '../../types/compilation/compilation.interfaces.js';
+import {CompilerInfo} from '../../types/compiler.interfaces.js';
 import {assert, unwrap} from '../assert.js';
-import {CompilationResult} from '../compilation/compilation.interfaces.js';
-import {CompilerInfo} from '../compiler.interfaces.js';
-import {escapeHTML} from '../../shared/common-utils.js';
+import * as BootstrapUtils from '../bootstrap-utils.js';
+import {GraphLayoutCore} from '../graph-layout-core.js';
+import {Hub} from '../hub.js';
+import * as MonacoConfig from '../monaco-config.js';
+import * as utils from '../utils.js';
+import {Toggles} from '../widgets/toggles.js';
+import {CfgState} from './cfg-view.interfaces.js';
+import {PaneState} from './pane.interfaces.js';
+import {Pane} from './pane.js';
 
 const ColorTable = {
     red: '#FE5D5D',
@@ -77,8 +76,8 @@ function special_round(x: number) {
     if (x === 0) {
         return 0;
     }
-    const p = Math.pow(10, Math.floor(Math.log10(x)));
-    // prettier-ignore
+    const p = 10 ** Math.floor(Math.log10(x));
+    // biome-ignore format: keep as-is for readability
     const candidates = [
         Math.round(x / p) * p - p / 2,
         Math.round(x / p) * p,
@@ -90,13 +89,14 @@ function special_round(x: number) {
 function size_to_human(bytes: number) {
     if (bytes < 1000) {
         return special_round(bytes) + ' B';
-    } else if (bytes < 1_000_000) {
-        return special_round(bytes / 1_000) + ' KB';
-    } else if (bytes < 1_000_000_000) {
-        return special_round(bytes / 1_000_000) + ' MB';
-    } else {
-        return special_round(bytes / 1_000_000_000) + ' GB';
     }
+    if (bytes < 1_000_000) {
+        return special_round(bytes / 1_000) + ' KB';
+    }
+    if (bytes < 1_000_000_000) {
+        return special_round(bytes / 1_000_000) + ' MB';
+    }
+    return special_round(bytes / 1_000_000_000) + ' GB';
 }
 
 export class Cfg extends Pane<CfgState> {
@@ -106,6 +106,7 @@ export class Cfg extends Pane<CfgState> {
     graphContainer: HTMLElement;
     graphElement: HTMLElement;
     infoElement: HTMLElement;
+    centerParentsButton: JQuery<HTMLElement>;
     exportPNGButton: JQuery;
     estimatedPNGSize: Element;
     exportSVGButton: JQuery;
@@ -117,6 +118,8 @@ export class Cfg extends Pane<CfgState> {
     functionSelector: TomSelect;
     resetViewButton: JQuery;
     zoomOutButton: JQuery;
+    toggles: Toggles;
+
     results: CFGResult;
     state: CfgState & PaneState;
     layout: GraphLayoutCore;
@@ -138,6 +141,8 @@ export class Cfg extends Pane<CfgState> {
                 editorid: state.editorid,
                 treeid: state.treeid,
                 selectedFunction: (state as any).selectedFn,
+                centerparents: state.centerparents,
+                narrowtreelayout: state.narrowtreelayout,
             };
         }
         super(hub, container, state);
@@ -158,12 +163,10 @@ export class Cfg extends Pane<CfgState> {
     override getDefaultPaneName() {
         // We need to check if this.state exists because this is called in the super constructor before this is actually
         // constructed
-        // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-        if (this.state && this.state.isircfg) {
-            return `IR CFG`;
-        } else {
-            return `CFG`;
+        if (this.state?.isircfg) {
+            return 'IR CFG';
         }
+        return 'CFG';
     }
 
     override registerButtons() {
@@ -177,7 +180,7 @@ export class Cfg extends Pane<CfgState> {
             dropdownParent: 'body',
             plugins: ['dropdown_input'],
             sortField: 'title',
-            onChange: e => this.selectFunction(e as unknown as string),
+            onChange: (e: string) => this.selectFunction(e),
         });
         this.functionSelector.on('dropdown_close', () => {
             // scroll back to the selection on the next open
@@ -195,14 +198,6 @@ export class Cfg extends Pane<CfgState> {
         });
     }
 
-    override registerOpeningAnalyticsEvent(): void {
-        ga.proxy('send', {
-            hitType: 'event',
-            eventCategory: 'OpenViewPane',
-            eventAction: 'CFGViewPane',
-        });
-    }
-
     override registerDynamicElements(state: CfgState) {
         this.graphDiv = this.domRoot.find('.graph')[0];
         this.svg = this.domRoot.find('svg')[0];
@@ -210,10 +205,13 @@ export class Cfg extends Pane<CfgState> {
         this.graphContainer = this.domRoot.find('.graph-container')[0];
         this.graphElement = this.domRoot.find('.graph')[0];
         this.infoElement = this.domRoot.find('.cfg-info')[0];
+        this.centerParentsButton = this.domRoot.find('.center-parents');
         this.exportPNGButton = this.domRoot.find('.export-png').first();
         this.estimatedPNGSize = unwrap(this.exportPNGButton[0].querySelector('.estimated-export-size'));
         this.exportSVGButton = this.domRoot.find('.export-svg').first();
         this.setupFictitiousGraphContainer();
+
+        this.toggles = new Toggles(this.domRoot.find('.options'), state as unknown as Record<string, boolean>);
     }
 
     setupFictitiousGraphContainer() {
@@ -250,7 +248,7 @@ export class Cfg extends Pane<CfgState> {
                 // pass, let the user select block contents and other text
             }
         });
-        this.graphContainer.addEventListener('mouseup', e => {
+        this.graphContainer.addEventListener('mouseup', () => {
             this.dragging = false;
         });
         this.graphContainer.addEventListener('mousemove', e => {
@@ -280,6 +278,7 @@ export class Cfg extends Pane<CfgState> {
             }
             e.preventDefault();
         });
+        this.toggles.on('change', this.onToggleChange.bind(this));
         this.exportPNGButton.on('click', () => {
             this.exportPNG();
         });
@@ -291,10 +290,18 @@ export class Cfg extends Pane<CfgState> {
             if (this.tooltipOpen) {
                 if (!e.target.classList.contains('fold') && $(e.target).parents('.popover.in').length === 0) {
                     this.tooltipOpen = false;
-                    $('.fold').popover('hide');
+                    $('.fold').each((_, element) => {
+                        BootstrapUtils.hidePopover(element);
+                    });
                 }
             }
         });
+    }
+
+    onToggleChange() {
+        this.state = this.getCurrentState();
+        this.updateState();
+        this.selectFunction(this.state.selectedFunction);
     }
 
     async exportPNG() {
@@ -377,10 +384,9 @@ export class Cfg extends Pane<CfgState> {
                     .map((line, i) => {
                         if (line.length <= 100) {
                             return line;
-                        } else {
-                            folded_lines.push(i);
-                            return line.slice(0, 100);
                         }
+                        folded_lines.push(i);
+                        return line.slice(0, 100);
                     })
                     .join('\n'),
                 this.contentsAreIr ? 'llvm-ir' : 'asm',
@@ -400,25 +406,27 @@ export class Cfg extends Pane<CfgState> {
                 }" aria-describedby="wtf">&#8943;</span>`;
             }
             div.innerHTML = lines.join('<br/>');
-            for (const fold of div.getElementsByClassName('fold')) {
-                $(fold)
-                    .popover({
-                        content: unwrap(fold.getAttribute('data-extra')),
-                        html: true,
-                        placement: 'top',
-                        template:
-                            '<div class="popover cfg-fold-popover" role="tooltip">' +
-                            '<div class="arrow"></div>' +
-                            '<h3 class="popover-header"></h3>' +
-                            '<div class="popover-body"></div>' +
-                            '</div>',
-                    })
-                    .on('show.bs.popover', () => {
-                        this.tooltipOpen = true;
-                    })
-                    .on('hide.bs.popover', () => {
-                        this.tooltipOpen = false;
-                    });
+            for (const foldElement of div.getElementsByClassName('fold')) {
+                const fold = foldElement as HTMLElement;
+
+                BootstrapUtils.initPopover(fold, {
+                    content: unwrap(fold.getAttribute('data-extra')),
+                    html: true,
+                    placement: 'top',
+                    template:
+                        '<div class="popover cfg-fold-popover" role="tooltip">' +
+                        '<div class="arrow"></div>' +
+                        '<h3 class="popover-header"></h3>' +
+                        '<div class="popover-body"></div>' +
+                        '</div>',
+                });
+
+                BootstrapUtils.setElementEventHandler(fold, 'show.bs.popover', () => {
+                    this.tooltipOpen = true;
+                });
+                BootstrapUtils.setElementEventHandler(fold, 'hide.bs.popover', () => {
+                    this.tooltipOpen = false;
+                });
             }
             // So because this is async there's a race condition here if you rapidly switch functions.
             // This can be triggered by loading an example program. Because the fix going to be tricky I'll defer
@@ -511,7 +519,11 @@ export class Cfg extends Pane<CfgState> {
     // Display the cfg for the specified function if it exists
     // This function sets this.state.selectedFunction if the input is non-null and valid
     async selectFunction(name: string | null) {
-        $('.fold').popover('dispose');
+        $('.fold').each((_, element) => {
+            const popover = BootstrapUtils.getPopoverInstance(element);
+            if (popover) popover.dispose();
+            // We need to dispose here, not just hide
+        });
         this.blockContainer.innerHTML = '';
         this.svg.innerHTML = '';
         this.estimatedPNGSize.innerHTML = '';
@@ -521,7 +533,11 @@ export class Cfg extends Pane<CfgState> {
         const fn = this.results[name];
         this.bbMap = {};
         await this.createBasicBlocks(fn);
-        this.layout = new GraphLayoutCore(fn as AnnotatedCfgDescriptor);
+        this.layout = new GraphLayoutCore(
+            fn as AnnotatedCfgDescriptor,
+            !!this.state.centerparents,
+            !!this.state.narrowtreelayout,
+        );
         this.applyLayout();
         this.drawEdges();
         this.infoElement.innerHTML = `Layout time: ${Math.round(this.layout.layoutTime)}ms<br/>Basic blocks: ${
@@ -556,17 +572,20 @@ export class Cfg extends Pane<CfgState> {
     }
 
     birdsEyeView() {
-        if (this.layout.blocks.length > 0) {
-            const fullW = this.layout.getWidth();
-            const fullH = this.layout.getHeight();
-            const container_size = this.graphContainer.getBoundingClientRect();
-            const zoom = Math.min(container_size.width / fullW, container_size.height / fullH);
-            this.setZoom(zoom);
-            this.setPan({
-                x: container_size.width / 2 - (fullW * zoom) / 2,
-                y: container_size.height / 2 - (fullH * zoom) / 2,
-            });
+        if (!this.layout?.blocks?.length) {
+            // No layout loaded yet or empty layout - nothing to zoom to
+            return;
         }
+
+        const fullW = this.layout.getWidth();
+        const fullH = this.layout.getHeight();
+        const container_size = this.graphContainer.getBoundingClientRect();
+        const zoom = Math.min(container_size.width / fullW, container_size.height / fullH);
+        this.setZoom(zoom);
+        this.setPan({
+            x: container_size.width / 2 - (fullW * zoom) / 2,
+            y: container_size.height / 2 - (fullH * zoom) / 2,
+        });
     }
 
     setZoom(zoom: number, superficial?: boolean) {
@@ -605,6 +624,13 @@ export class Cfg extends Pane<CfgState> {
         })} />`;
         // just grab the edges/arrows directly
         doc += this.svg.innerHTML;
+
+        if (!this.layout) {
+            // empty function, or no function selected
+            doc += '</svg>';
+            this.setZoom(this.zoom, true);
+            return doc;
+        }
         // the blocks we'll have to copy over
         for (const block of this.layout.blocks) {
             const block_elem = this.bbMap[block.data.id];
@@ -630,7 +656,7 @@ export class Cfg extends Pane<CfgState> {
                 const left = span_box.left - block_bounding_box.left;
                 doc += `<text ${attrs({
                     x: block.coordinates.x + left,
-                    y: block.coordinates.y + top + span_box.height / 2 + parseInt(block_style.paddingTop),
+                    y: block.coordinates.y + top + span_box.height / 2 + Number.parseInt(block_style.paddingTop, 10),
                     class: 'code',
                     fill: span_style.color,
                 })}>${escapeHTML(text)}</text>`;
@@ -669,7 +695,7 @@ export class Cfg extends Pane<CfgState> {
                 if (blob) {
                     resolve(blob);
                 } else {
-                    reject(blob);
+                    reject(new Error('Failed to create blob from canvas'));
                 }
             }, 'image/png');
         });
@@ -680,7 +706,9 @@ export class Cfg extends Pane<CfgState> {
             const topBarHeight = utils.updateAndCalcTopBarHeight(this.domRoot, this.topBar, this.hideable);
             this.graphContainer.style.width = `${unwrap(this.domRoot.width())}px`;
             this.graphContainer.style.height = `${unwrap(this.domRoot.height()) - topBarHeight}px`;
-            $('.fold').popover('hide');
+            $('.fold').each((_, element) => {
+                BootstrapUtils.hidePopover(element);
+            });
         });
     }
 
@@ -692,6 +720,8 @@ export class Cfg extends Pane<CfgState> {
             treeid: this.compilerInfo.treeId,
             selectedFunction: this.state.selectedFunction,
             isircfg: this.state.isircfg,
+            centerparents: this.toggles.get().centerparents,
+            narrowtreelayout: this.toggles.get().narrowtreelayout,
         };
         this.paneRenaming.addState(state);
         return state;

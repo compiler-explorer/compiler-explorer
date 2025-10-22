@@ -22,11 +22,12 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import path from 'path';
+import path from 'node:path';
 
 import {beforeAll, describe, expect, it} from 'vitest';
 
 import {unwrap} from '../lib/assert.js';
+import {CompilationEnvironment} from '../lib/compilation-env.js';
 import {NimCompiler} from '../lib/compilers/nim.js';
 import {LanguageKey} from '../types/languages.interfaces.js';
 
@@ -37,13 +38,14 @@ const languages = {
 };
 
 describe('Nim', () => {
-    let ce;
+    let ce: CompilationEnvironment;
     const info = {
         exe: '/dev/null',
         remote: {
             target: 'foo',
             path: 'bar',
             cmakePath: 'cmake',
+            basePath: '/',
         },
         lang: languages.nim.id,
     };
@@ -66,14 +68,14 @@ describe('Nim', () => {
     });
 
     it('test getCacheFile from possible user-options', () => {
-        const compiler = new NimCompiler(makeFakeCompilerInfo(info), ce),
-            input = 'test.min',
-            folder = path.join('/', 'tmp/'),
-            expected = {
-                cpp: folder + '@m' + input + '.cpp.o',
-                c: folder + '@m' + input + '.c.o',
-                objc: folder + '@m' + input + '.m.o',
-            };
+        const compiler = new NimCompiler(makeFakeCompilerInfo(info), ce);
+        const input = 'test.min';
+        const folder = path.join('/', 'tmp/');
+        const expected = {
+            cpp: folder + '@m' + input + '.cpp.o',
+            c: folder + '@m' + input + '.c.o',
+            objc: folder + '@m' + input + '.m.o',
+        };
 
         for (const lang of ['cpp', 'c', 'objc']) {
             expect(unwrap(compiler.getCacheFile([lang], input, folder))).toEqual(expected[lang]);

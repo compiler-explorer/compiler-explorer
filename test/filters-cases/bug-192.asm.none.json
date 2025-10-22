@@ -484,15 +484,7 @@
       "text": ".Linfo_string8:"
     },
     {
-      "labels": [
-        {
-          "name": "main",
-          "range": {
-            "endCol": 22,
-            "startCol": 18
-          }
-        }
-      ],
+      "labels": [],
       "source": null,
       "text": "        .asciz  \"main\"                  # string offset=175"
     },
@@ -512,15 +504,7 @@
       "text": ".Linfo_string10:"
     },
     {
-      "labels": [
-        {
-          "name": "__cxx_global_var_init",
-          "range": {
-            "endCol": 39,
-            "startCol": 18
-          }
-        }
-      ],
+      "labels": [],
       "source": null,
       "text": "        .asciz  \"__cxx_global_var_init\" # string offset=184"
     },
@@ -1818,15 +1802,7 @@
       "text": "        .long   99                      # DIE offset"
     },
     {
-      "labels": [
-        {
-          "name": "main",
-          "range": {
-            "endCol": 22,
-            "startCol": 18
-          }
-        }
-      ],
+      "labels": [],
       "source": null,
       "text": "        .asciz  \"main\"                  # External Name"
     },
@@ -1836,15 +1812,7 @@
       "text": "        .long   124                     # DIE offset"
     },
     {
-      "labels": [
-        {
-          "name": "__cxx_global_var_init",
-          "range": {
-            "endCol": 39,
-            "startCol": 18
-          }
-        }
-      ],
+      "labels": [],
       "source": null,
       "text": "        .asciz  \"__cxx_global_var_init\" # External Name"
     },

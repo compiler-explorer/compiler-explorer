@@ -22,26 +22,53 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import os from 'os';
-import path from 'path';
-import {fileURLToPath} from 'url';
+import fs from 'node:fs';
+import path from 'node:path';
+import {fileURLToPath} from 'node:url';
 
-import fs from 'fs-extra';
-import temp from 'temp';
-import {expect} from 'vitest';
+import {afterEach, expect, onTestFinished} from 'vitest';
+import * as temp from '../lib/temp.js';
+
+// Check if expensive tests should be skipped (e.g., during pre-commit hooks)
+export const skipExpensiveTests = process.env.SKIP_EXPENSIVE_TESTS === 'true';
 
 import {CompilationEnvironment} from '../lib/compilation-env.js';
 import {CompilationQueue} from '../lib/compilation-queue.js';
+import {AsmParser} from '../lib/parsers/asm-parser.js';
+import {CC65AsmParser} from '../lib/parsers/asm-parser-cc65.js';
+import {AsmEWAVRParser} from '../lib/parsers/asm-parser-ewavr.js';
+import {PTXAsmParser} from '../lib/parsers/asm-parser-ptx.js';
+import {SassAsmParser} from '../lib/parsers/asm-parser-sass.js';
+import {VcAsmParser} from '../lib/parsers/asm-parser-vc.js';
 import {CompilerProps, fakeProps} from '../lib/properties.js';
+import {LLVMIrBackendOptions} from '../types/compilation/ir.interfaces.js';
 import {CompilerInfo} from '../types/compiler.interfaces.js';
 import {ParseFiltersAndOutputOptions} from '../types/features/filters.interfaces.js';
 import {Language} from '../types/languages.interfaces.js';
 
+// Test helper class that extends AsmParser to allow setting protected properties for testing
+class AsmParserForTest extends AsmParser {
+    setBinaryHideFuncReForTest(regex: RegExp | null) {
+        this.binaryHideFuncRe = regex;
+    }
+}
+
+function ensureTempCleanup() {
+    // Sometimes we're called from inside a test, sometimes from outside. Handle both.
+    afterEach(async () => await temp.cleanup());
+    try {
+        onTestFinished(async () => await temp.cleanup());
+    } catch (_) {
+        // ignore; we weren't in a test body.
+    }
+}
+
 // TODO: Find proper type for options
 export function makeCompilationEnvironment(options: Record<string, any>): CompilationEnvironment {
+    ensureTempCleanup();
     const compilerProps = new CompilerProps(options.languages, fakeProps(options.props || {}));
     const compilationQueue = options.queue || new CompilationQueue(options.concurrency || 1, options.timeout, 100_000);
-    return new CompilationEnvironment(compilerProps, compilationQueue, options.doCache);
+    return new CompilationEnvironment(compilerProps, fakeProps({}), compilationQueue, options.doCache);
 }
 
 export function makeFakeCompilerInfo(props: Partial<CompilerInfo>): CompilerInfo {
@@ -56,6 +83,10 @@ export function makeFakeParseFiltersAndOutputOptions(
     options: Partial<ParseFiltersAndOutputOptions>,
 ): ParseFiltersAndOutputOptions {
     return options as ParseFiltersAndOutputOptions;
+}
+
+export function makeFakeLlvmIrBackendOptions(options: Partial<LLVMIrBackendOptions>): LLVMIrBackendOptions {
+    return options as LLVMIrBackendOptions;
 }
 
 // This combines a should assert and a type guard
@@ -85,9 +116,24 @@ export function resolvePathFromTestRoot(...args: string[]): string {
 
 // Tracked temporary directories.
 export function newTempDir() {
-    temp.track(true);
-    return temp.mkdirSync({prefix: 'compiler-explorer-tests', dir: os.tmpdir()});
+    ensureTempCleanup();
+    return temp.mkdirSync('compiler-explorer-tests');
 }
 
-// eslint-disable-next-line -- do not rewrite exports
-export {path, fs};
+export function processAsm(filename: string, filters: ParseFiltersAndOutputOptions) {
+    const file = fs.readFileSync(filename, 'utf8');
+    let parser: AsmParser;
+    if (file.includes('Microsoft')) parser = new VcAsmParser();
+    else if (filename.includes('sass-')) parser = new SassAsmParser();
+    else if (filename.includes('ptx-')) parser = new PTXAsmParser();
+    else if (filename.includes('cc65-')) parser = new CC65AsmParser(fakeProps({}));
+    else if (filename.includes('ewarm-')) parser = new AsmEWAVRParser(fakeProps({}));
+    else {
+        const testParser = new AsmParserForTest();
+        testParser.setBinaryHideFuncReForTest(
+            /^(__.*|_(init|start|fini)|(de)?register_tm_clones|call_gmon_start|frame_dummy|\.plt.*|_dl_relocate_static_pie)$/,
+        );
+        parser = testParser;
+    }
+    return parser.process(file, filters);
+}

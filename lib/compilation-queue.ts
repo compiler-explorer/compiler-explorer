@@ -22,11 +22,12 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-// eslint-disable-next-line n/no-unsupported-features/node-builtins
-import {executionAsyncId} from 'async_hooks';
+import {executionAsyncId} from 'node:async_hooks';
 
 import {default as Queue} from 'p-queue';
 import PromClient from 'prom-client';
+
+import {PropertyGetter} from './properties.interfaces.js';
 
 // globals as essentially the compilation queue is a singleton, and if we make them members of the queue, tests fail as
 // when we create a second queue, the previous counters are still registered.
@@ -60,18 +61,14 @@ export class CompilationQueue {
     private readonly _staleAfterMs: number;
 
     constructor(concurrency: number, timeout: number, staleAfterMs: number) {
-        this._queue = new Queue({
-            concurrency,
-            timeout,
-            throwOnTimeout: true,
-        });
+        this._queue = new Queue({concurrency, timeout});
         this._staleAfterMs = staleAfterMs;
     }
 
-    static fromProps(ceProps) {
+    static fromProps(ceProps: PropertyGetter) {
         return new CompilationQueue(
             ceProps('maxConcurrentCompiles', 1),
-            ceProps('compilationEnvTimeoutMs'),
+            ceProps('compilationEnvTimeoutMs', 300_000),
             ceProps('compilationStaleAfterMs', 60_000),
         );
     }
@@ -88,7 +85,7 @@ export class CompilationQueue {
             () => {
                 const dequeuedAt = Date.now();
                 queueDequeued.inc();
-                if (options && options.abandonIfStale && dequeuedAt > enqueuedAt + this._staleAfterMs) {
+                if (options?.abandonIfStale && dequeuedAt > enqueuedAt + this._staleAfterMs) {
                     queueCompleted.inc();
                     queueStale.inc();
                     const queueTimeSecs = (dequeuedAt - enqueuedAt) / 1000;
@@ -100,7 +97,9 @@ export class CompilationQueue {
                     );
                 }
                 const jobAsyncId = executionAsyncId();
-                if (this._running.has(jobAsyncId)) throw new Error('somehow we entered the context twice');
+                if (this._running.has(jobAsyncId)) {
+                    throw new Error('somehow we entered the context twice');
+                }
                 try {
                     this._running.add(jobAsyncId);
                     return job();
@@ -109,15 +108,16 @@ export class CompilationQueue {
                     queueCompleted.inc();
                 }
             },
-            {priority: options?.highPriority ? 100 : 0},
-        ) as PromiseLike<Result>; // TODO(supergrecko): investigate why this assert is needed
+            {priority: options?.highPriority ? 100 : 0, timeout: undefined},
+        );
     }
 
     status(): {busy: boolean; pending: number; size: number} {
         const pending = this._queue.pending;
         const size = this._queue.size;
+        const running = this._running.size;
         return {
-            busy: pending > 0 || size > 0,
+            busy: pending > 0 || size > 0 || running > 0,
             pending,
             size,
         };

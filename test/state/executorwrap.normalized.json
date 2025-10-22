@@ -1,0 +1,68 @@
+{
+    "sessions": [
+        {
+            "id": 1,
+            "language": "c++",
+            "source": "// Type your code here, or load an example.\nint square(int num) {\n    return num * num;\n}",
+            "conformanceview": false,
+            "compilers": [
+                {
+                    "_internalid": 1,
+                    "id": "g111",
+                    "options": "",
+                    "filters": {
+                        "binary": false,
+                        "commentOnly": true,
+                        "demangle": true,
+                        "directives": true,
+                        "execute": false,
+                        "intel": true,
+                        "labels": true,
+                        "libraryCode": true,
+                        "debugCalls": false,
+                        "trim": false
+                    },
+                    "libs": [],
+                    "specialoutputs": [],
+                    "tools": [],
+                    "overrides": []
+                }
+            ],
+            "executors": [
+                {
+                    "compilerVisible": true,
+                    "overrides": [],
+                    "compilerOutputVisible": true,
+                    "arguments": "",
+                    "argumentsVisible": false,
+                    "stdin": "",
+                    "stdinVisible": false,
+                    "runtimeTools": [],
+                    "compiler": {
+                        "id": "g111",
+                        "options": "",
+                        "filters": {
+                            "binary": false,
+                            "binaryObject": false,
+                            "commentOnly": true,
+                            "demangle": true,
+                            "directives": true,
+                            "execute": false,
+                            "intel": true,
+                            "labels": true,
+                            "libraryCode": false,
+                            "debugCalls": false,
+                            "trim": false
+                        },
+                        "libs": [],
+                        "specialoutputs": [],
+                        "tools": [],
+                        "overrides": []
+                    },
+                    "wrap": true
+                }
+            ]
+        }
+    ],
+    "trees": []
+}

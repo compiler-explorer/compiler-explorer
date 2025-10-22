@@ -22,18 +22,17 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
+import {Container} from 'golden-layout';
 import $ from 'jquery';
 import * as monaco from 'monaco-editor';
 import TomSelect from 'tom-select';
-
-import {ga} from '../analytics.js';
-import {Hub} from '../hub.js';
-import {Container} from 'golden-layout';
-import {MonacoPane} from './pane.js';
-import {MonacoPaneState} from './pane.interfaces.js';
-import {DiffState, DiffType} from './diff.interfaces.js';
 import {CompilationResult} from '../../types/compilation/compilation.interfaces.js';
 import {CompilerInfo} from '../../types/compiler.interfaces.js';
+import {ResultLine} from '../../types/resultline/resultline.interfaces.js';
+import {Hub} from '../hub.js';
+import {DiffState, DiffType} from './diff.interfaces.js';
+import {MonacoPaneState} from './pane.interfaces.js';
+import {MonacoPane} from './pane.js';
 
 type DiffTypeAndExtra = {
     difftype: DiffType;
@@ -43,24 +42,22 @@ type DiffTypeAndExtra = {
 function encodeSelectizeValue(value: DiffTypeAndExtra): string {
     if (value.extraoption) {
         return value.difftype.toString() + `:${value.extraoption}`;
-    } else {
-        return value.difftype.toString();
     }
+    return value.difftype.toString();
 }
 
 function decodeSelectizeValue(value: string): DiffTypeAndExtra {
     const opts = value.split(':');
     if (opts.length > 1) {
         return {
-            difftype: parseInt(opts[0]),
+            difftype: Number.parseInt(opts[0], 10),
             extraoption: opts[1],
         };
-    } else {
-        return {
-            difftype: parseInt(value),
-            extraoption: '',
-        };
     }
+    return {
+        difftype: Number.parseInt(value, 10),
+        extraoption: '',
+    };
 }
 
 type DiffOption = {
@@ -91,9 +88,17 @@ class DiffStateObject {
         this.extraoption = extraoption;
     }
 
-    update(id: number | string, compiler, result: CompilationResult) {
+    update(id: number | string, compiler: CompilerInfo, result: CompilationResult) {
         if (this.id !== id) return false;
-        this.compiler = compiler;
+
+        // Handle the case where compiler hasn't been initialized yet
+        // In a race condition, we might receive results before the compiler is registered
+        if (!this.compiler) {
+            // Ignore the update - the result will be requested again when the compiler is registered
+            return false;
+        }
+
+        this.compiler.compiler = compiler;
         this.result = result;
         this.refresh();
 
@@ -105,7 +110,11 @@ class DiffStateObject {
         if (this.result) {
             switch (this.difftype) {
                 case DiffType.ASM:
-                    output = this.result.asm || [];
+                    output = this.result.asm
+                        ? (this.result.asm as ResultLine[])
+                        : this.result.result?.asm
+                          ? (this.result.result?.asm as ResultLine[])
+                          : [];
                     break;
                 case DiffType.CompilerStdOut:
                     output = this.result.stdout;
@@ -135,7 +144,7 @@ class DiffStateObject {
                     break;
                 case DiffType.DeviceView:
                     if (this.result.devices && this.extraoption && this.extraoption in this.result.devices) {
-                        output = this.result.devices[this.extraoption].asm || [];
+                        output = this.result.devices[this.extraoption].asm as ResultLine[];
                     }
                     break;
                 case DiffType.AstOutput:
@@ -159,6 +168,11 @@ class DiffStateObject {
                 case DiffType.RustHirOutput:
                     output = this.result.rustHirOutput || [
                         {text: "<select 'Add new...' → 'Rust HIR' in this compiler's pane>"},
+                    ];
+                    break;
+                case DiffType.ClojureMacroExpOutput:
+                    output = this.result.clojureMacroExpOutput || [
+                        {text: "<select 'Add new...' → 'Clojure Macro Expansion' in this compiler's pane>"},
                     ];
                     break;
             }
@@ -198,9 +212,12 @@ export class Diff extends MonacoPane<monaco.editor.IStandaloneDiffEditor, DiffSt
     compilers: Record<string | number, CompilerEntry> = {};
     lhs: DiffStateObject;
     rhs: DiffStateObject;
-    selectize: SelectizeType = {} as any; // will be filled in by the constructor
+    selectize: SelectizeType;
     constructor(hub: Hub, container: Container, state: MonacoPaneState & DiffState) {
         super(hub, container, state);
+
+        // note: keep this hacky line, properties will be filled in later (1 by 1)
+        this.selectize = {} as any;
 
         this.lhs = new DiffStateObject(
             state.lhs,
@@ -231,8 +248,8 @@ export class Diff extends MonacoPane<monaco.editor.IStandaloneDiffEditor, DiffSt
                 options: diffableOptions,
                 items: [],
                 render: <any>{
-                    option: (item, escape) => {
-                        return `<div>${escape(item.name)}</div>`;
+                    option: (item, escapeHtml) => {
+                        return `<div>${escapeHtml(item.name)}</div>`;
                     },
                 },
                 dropdownParent: 'body',
@@ -271,15 +288,15 @@ export class Diff extends MonacoPane<monaco.editor.IStandaloneDiffEditor, DiffSt
                 options: [],
                 items: [],
                 render: <any>{
-                    option: function (item, escape) {
+                    option: (item, escapeHtml) => {
                         const origin = item.editorId !== false ? 'Editor #' + item.editorId : 'Tree #' + item.treeId;
                         return (
                             '<div>' +
-                            `<span class="compiler">${escape(item.compiler.name)}</span>` +
-                            `<span class="options">${escape(item.options)}</span>` +
+                            `<span class="compiler">${escapeHtml(item.compiler.name)}</span>` +
+                            `<span class="options">${escapeHtml(item.options)}</span>` +
                             '<ul class="meta">' +
-                            `<li class="editor">${escape(origin)}</li>` +
-                            `<li class="compilerId">${escape(getItemDisplayTitle(item))}</li>` +
+                            `<li class="editor">${escapeHtml(origin)}</li>` +
+                            `<li class="compilerId">${escapeHtml(getItemDisplayTitle(item))}</li>` +
                             '</ul>' +
                             '</div>'
                         );
@@ -321,7 +338,7 @@ export class Diff extends MonacoPane<monaco.editor.IStandaloneDiffEditor, DiffSt
         this.updateCompilers();
     }
 
-    getDiffableOptions(picker?, extraoptions?: DiffOption[]): any[] {
+    getDiffableOptions(picker?: HTMLSelectElement | TomSelect, extraoptions?: DiffOption[]): any[] {
         const options: DiffOption[] = [
             {id: DiffType.ASM.toString(), name: 'Assembly'},
             {id: DiffType.CompilerStdOut.toString(), name: 'Compiler stdout'},
@@ -332,7 +349,7 @@ export class Diff extends MonacoPane<monaco.editor.IStandaloneDiffEditor, DiffSt
             {id: DiffType.GNAT_Tree.toString(), name: 'GNAT Tree Code'},
         ];
 
-        if (picker && picker.classList) {
+        if (picker?.classList) {
             if (picker.classList.contains('lhsdifftype')) {
                 if (this.lhs.difftype === DiffType.DeviceView && this.lhs.extraoption) {
                     options.push({
@@ -363,14 +380,6 @@ export class Diff extends MonacoPane<monaco.editor.IStandaloneDiffEditor, DiffSt
         }
 
         return options;
-    }
-
-    override registerOpeningAnalyticsEvent(): void {
-        ga.proxy('send', {
-            hitType: 'event',
-            eventCategory: 'OpenViewPane',
-            eventAction: 'Diff',
-        });
     }
 
     override getInitialHTML() {
@@ -428,7 +437,7 @@ export class Diff extends MonacoPane<monaco.editor.IStandaloneDiffEditor, DiffSt
         if (typeof id === 'string') {
             const p = id.indexOf('_exec');
             if (p !== -1) {
-                const execId = parseInt(id.substr(0, p));
+                const execId = Number.parseInt(id.substr(0, p), 10);
                 this.eventHub.emit('resendExecution', execId);
             }
         } else {
@@ -469,6 +478,9 @@ export class Diff extends MonacoPane<monaco.editor.IStandaloneDiffEditor, DiffSt
             if (compiler.supportsRustHirView) {
                 options.push({id: DiffType.RustHirOutput.toString(), name: 'Rust HIR'});
             }
+            if (compiler.supportsClojureMacroExpView) {
+                options.push({id: DiffType.ClojureMacroExpOutput.toString(), name: 'Clojure Macro Expansion'});
+            }
         }
 
         const lhsoptions = this.getDiffableOptions(this.selectize.lhs, lhsextraoptions);
@@ -489,10 +501,7 @@ export class Diff extends MonacoPane<monaco.editor.IStandaloneDiffEditor, DiffSt
     ) {
         if (!compiler) return;
         options = options || '';
-        let name = compiler.name + ' ' + options;
-        // TODO: tomselect doesn't play nicely with CSS tricks for truncation; this is the best I can do
-        const maxLength = 30;
-        if (name.length > maxLength - 3) name = name.substring(0, maxLength - 3) + '...';
+        const name = compiler.name + ' ' + options;
         this.compilers[id] = {
             id: id,
             name: name,

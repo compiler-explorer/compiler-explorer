@@ -22452,15 +22452,7 @@
       "text": ".LASF296:"
     },
     {
-      "labels": [
-        {
-          "name": "_Z3sumRKSt6vectorIiSaIiEE",
-          "range": {
-            "endCol": 43,
-            "startCol": 18
-          }
-        }
-      ],
+      "labels": [],
       "source": null,
       "text": "        .string \"_Z3sumRKSt6vectorIiSaIiEE\""
     },

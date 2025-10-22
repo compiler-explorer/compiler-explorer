@@ -1,0 +1,5 @@
+define i32 @square(i32 %0) {
+  entry:
+    %1 = mul i32 %0, %0
+    ret i32 %1
+}

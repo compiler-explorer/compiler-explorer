@@ -25,12 +25,12 @@
 import {BaseDemangler} from './base.js';
 
 const LabelMetadata = [
-    {ident: new RegExp('C1E[a-zA-Z0-9_$]*$'), description: 'complete object constructor'},
-    {ident: new RegExp('C2E[a-zA-Z0-9_$]*$'), description: 'base object constructor'},
-    {ident: new RegExp('C3E[a-zA-Z0-9_$]*$'), description: 'complete object allocating constructor'},
-    {ident: new RegExp('D0Ev$'), description: 'deleting destructor'},
-    {ident: new RegExp('D1Ev$'), description: 'complete object destructor'},
-    {ident: new RegExp('D2Ev$'), description: 'base object destructor'},
+    {ident: /C1E[a-zA-Z0-9_$]*$/, description: 'complete object constructor'},
+    {ident: /C2E[a-zA-Z0-9_$]*$/, description: 'base object constructor'},
+    {ident: /C3E[a-zA-Z0-9_$]*$/, description: 'complete object allocating constructor'},
+    {ident: /D0Ev$/, description: 'deleting destructor'},
+    {ident: /D1Ev$/, description: 'complete object destructor'},
+    {ident: /D2Ev$/, description: 'base object destructor'},
 ];
 
 export class CppDemangler extends BaseDemangler {

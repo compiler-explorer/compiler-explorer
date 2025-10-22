@@ -22,16 +22,16 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
+import * as sifter from '@orchidjs/sifter';
 import $ from 'jquery';
 
-import * as sifter from '@orchidjs/sifter';
-
-import {CompilerInfo} from '../../types/compiler.interfaces';
-import {escapeHTML, intersection, remove, unique} from '../../shared/common-utils';
-import {unwrap, unwrapString} from '../assert';
-import {CompilerPicker} from './compiler-picker';
-import {CompilerService} from '../compiler-service';
-import {highlight} from '../highlight';
+import {escapeHTML, intersection, remove, unique} from '../../shared/common-utils.js';
+import {CompilerInfo} from '../../types/compiler.interfaces.js';
+import {unwrap, unwrapString} from '../assert.js';
+import * as BootstrapUtils from '../bootstrap-utils.js';
+import {CompilerService} from '../compiler-service.js';
+import {highlight} from '../highlight.js';
+import {CompilerPicker} from './compiler-picker.js';
 
 export class CompilerPickerPopup {
     modal: JQuery<HTMLElement>;
@@ -60,8 +60,11 @@ export class CompilerPickerPopup {
         this.compilersContainer = this.modal.find('.compilers-row');
         this.resultsContainer = this.modal.find('.compilers');
         this.favoritesContainer = this.modal.find('.favorites');
+        this.isaFilters = [];
+        this.categoryFilters = [];
+        this.searchBar.val('');
 
-        this.modal.on('shown.bs.modal', () => {
+        BootstrapUtils.setElementEventHandler(this.modal, 'shown.bs.modal', () => {
             this.searchBar[0].focus();
         });
     }
@@ -88,7 +91,7 @@ export class CompilerPickerPopup {
                 .map(isa => `<span class="architecture" data-value=${escapeHTML(isa)}>${escapeHTML(isa)}</span>`),
         );
         // get available compiler types
-        const compilerTypes = compilers.map(compiler => compiler.compilerCategories ?? ['other']).flat();
+        const compilerTypes = compilers.flatMap(compiler => compiler.compilerCategories ?? ['other']);
         this.compilerTypes.empty();
         this.compilerTypes.append(
             ...unique(compilerTypes)
@@ -183,7 +186,7 @@ export class CompilerPickerPopup {
                     `
                     <div class="compiler d-flex" data-value="${compiler.id}">
                         <div>${searchRegexes ? highlight(name, searchRegexes) : name}</div>
-                        <div title="Click to mark or unmark as a favorite" class="ml-auto toggle-fav">
+                        <div title="Click to mark or unmark as a favorite" class="ms-auto toggle-fav">
                             <i class="${extraClasses}"></i>
                         </div>
                     </div>
@@ -259,17 +262,12 @@ export class CompilerPickerPopup {
     }
 
     show() {
-        // reflow the compilers to get any new favorites from the compiler picker dropdown and reset filters and whatnot
-        this.isaFilters = [];
-        this.categoryFilters = [];
-        this.searchBar.val('');
         this.searchBar.trigger('input');
-        this.modal.find('.architectures .active, .compiler-types .active').toggleClass('active');
         this.fillCompilers();
-        this.modal.modal({});
+        BootstrapUtils.showModal(this.modal);
     }
 
     hide() {
-        this.modal.modal('hide');
+        BootstrapUtils.hideModal(this.modal);
     }
 }

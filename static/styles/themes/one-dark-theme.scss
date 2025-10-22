@@ -1,5 +1,7 @@
 // based on pink-theme.scss
-@import 'custom-golden-layout-themes/one-dark';
+@use 'sass:color';
+@use 'custom-golden-layout-themes/one-dark';
+@use 'ansi-dark';
 
 $logo-primary: #67c52a;
 $logo-secondary: #999999;
@@ -11,12 +13,21 @@ $base: #282c34;
 $dark: #21252b;
 $darker: #1e1f22;
 
+html[data-theme='one-dark'] {
+// Export as CSS custom properties for use in explorer.scss
+--light: #{$light};
+--lighter: #{$lighter};
+--lightest: #{$lightest};
+--base: #{$base};
+--dark: #{$dark};
+--darker: #{$darker};
+
 ::-webkit-scrollbar {
     background: $lighter;
 }
 
 ::-webkit-scrollbar-thumb {
-    background: lighten($lighter, 10%);
+    background: color.adjust($lighter, $lightness: 10%);
 }
 
 a {
@@ -39,10 +50,22 @@ body {
     background-color: $base !important;
 }
 
+// Border color adjustments for form elements in dark theme
+.form-select,
+.form-control,
+.input-group-text,
+.ts-wrapper .ts-control {
+    --bs-border-color: $dark;
+}
+
 input {
     color: #eee !important;
     background-color: $lighter;
     border: 0 !important;
+
+    &::placeholder {
+        color: #888 !important;
+    }
 
     &:focus {
         color: #eee !important;
@@ -141,7 +164,7 @@ textarea.form-control {
 
     &:disabled,
     &:disabled:hover {
-        background-color: lighten($light, 5%) !important;
+        background-color: color.adjust($light, $lightness: 5%) !important;
         color: #7c8895 !important;
     }
 }
@@ -167,7 +190,7 @@ textarea.form-control {
 
         &:disabled,
         &:disabled:hover {
-            background-color: lighten($light, 5%) !important;
+            background-color: color.adjust($light, $lightness: 5%) !important;
             color: #7c8895 !important;
         }
     }
@@ -204,7 +227,7 @@ textarea.form-control {
 .conformance-wrapper {
     background-color: #1e1e1e !important;
 
-    .compiler-list .form-row {
+    .compiler-list .row {
         border-bottom: 1px solid #3e3e3e;
     }
 }
@@ -219,10 +242,10 @@ textarea.form-control {
 
 .currentCursorPosition {
     color: #eee;
-    background-color: opacify($dark, 0.8);
+    background-color: color.adjust($dark, $alpha: 0.8);
 }
 
-.custom-select {
+.form-select {
     background-color: #dddddd !important;
     color: #000 !important;
 }
@@ -234,6 +257,11 @@ textarea.form-control {
     &:hover {
         color: #fff !important;
         background-color: $lighter !important;
+    }
+
+    &.active {
+        background-color: #405f9d !important;
+        color: #fff !important;
     }
 }
 
@@ -283,7 +311,7 @@ textarea.form-control {
 }
 
 .form-control:disabled {
-    background-color: darken(#474747, 10%);
+    background-color: color.scale(#474747, $lightness: -10%);
 }
 
 .graph-container {
@@ -325,7 +353,7 @@ textarea.form-control {
     }
 }
 
-#v-status {
+.v-status {
     color: #eee !important;
 }
 
@@ -342,7 +370,7 @@ textarea.form-control {
 }
 
 .linked-code-decoration-line {
-    background: lighten($lighter, 5%) !important;
+    background: color.adjust($lighter, $lightness: 5%) !important;
 }
 
 .linked-code-decoration-margin {
@@ -422,8 +450,8 @@ textarea.form-control {
     color: #eee !important;
     background-color: $base !important;
 
-    .close {
-        color: #eee;
+    .btn-close {
+        filter: invert(90%);
     }
 }
 
@@ -493,8 +521,8 @@ textarea.form-control {
     background-color: #aa3333 !important;
     color: #fff;
 
-    .close {
-        color: #fff;
+    .btn-close {
+        filter: invert(100%);
     }
 }
 
@@ -507,8 +535,8 @@ textarea.form-control {
     background-color: #222 !important;
     color: #fff;
 
-    .close {
-        color: #fff;
+    .btn-close {
+        filter: invert(100%);
     }
 }
 
@@ -561,8 +589,8 @@ textarea.form-control {
 
 .popover .arrow::after,
 .popover .arrow::before {
-    border-left-color: lighten($light, 2%) !important;
-    border-right-color: lighten($light, 2%) !important;
+    border-left-color: color.adjust($light, $lightness: 2%) !important;
+    border-right-color: color.adjust($light, $lightness: 2%) !important;
 }
 
 .popover {
@@ -592,6 +620,7 @@ textarea.form-control {
 
 .rainbow-decoration {
     -webkit-background-clip: text;
+    background-clip: text;
     -webkit-text-fill-color: transparent;
     background-image: linear-gradient(
         60deg,
@@ -613,13 +642,25 @@ textarea.form-control {
 }
 
 .share-reddit {
-    background-color: #ff4500 !important;
-    color: #eee !important;
+    background-color: #BF616A !important; /* Soft muted crimson */
+    color: #ffffff !important;
+    text-decoration: none !important;
+
 }
 
 .share-twitter {
-    background-color: #1da1f2 !important;
-    color: #eee !important;
+    background-color: #4C566A !important; /* Cool neutral gray */
+    color: #ffffff !important;
+    text-decoration: none !important;
+
+}
+
+
+.share-bluesky {
+    background-color: #5E81AC !important; /* Soft desaturated steel blue */
+    color: #ffffff !important;
+    text-decoration: none !important;
+
 }
 
 #simplecook {
@@ -647,7 +688,7 @@ textarea.form-control {
         color: #eee;
 
         &:hover {
-            background-color: lighten($base, 5%) !important;
+            background-color: color.adjust($base, $lightness: 5%) !important;
         }
     }
 }
@@ -683,18 +724,19 @@ textarea.form-control {
     .ts-control {
         border: none;
         color: #f2f2f2 !important;
-        background: $light !important;
+        background-color: $light !important;
         text-shadow: none !important;
-
-        &:after {
-            border-color: #525252 transparent transparent transparent;
-        }
 
         &.disabled {
             color: #f2f2f2 !important;
             background-color: $light !important;
         }
     }
+}
+
+/* Override arrow specifically with the same selector as TomSelect uses */
+.ts-wrapper:not(.form-control, .form-select).single .ts-control {
+    background-image: dropdown-arrow-svg(#999) !important;
 }
 
 #compiler-picker-modal {
@@ -754,4 +796,26 @@ textarea.form-control {
     border-left: 1px solid $dark;
 }
 
-@import 'ansi-dark';
+#motd {
+    .btn-close {
+        filter: invert(100%);
+    }
+}
+
+.explain-box {
+    background-color: #282c34;
+    border-color: #4b5263;
+    color: #abb2bf;
+}
+
+.explain-bottom-bar {
+    background-color: $dark !important;
+    color: #abb2bf;
+}
+
+.ai-disclaimer.bg-warning {
+    background-color: #664d03 !important;
+    color: #ffda6a !important;
+}
+
+} // End html[data-theme='one-dark']

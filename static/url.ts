@@ -22,11 +22,10 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import _ from 'underscore';
 import GoldenLayout from 'golden-layout';
-
-const lzstring = require('lz-string');
-const Components = require('./components');
+import lzstring from 'lz-string';
+import _ from 'underscore';
+import * as Components from './components.js';
 
 import * as rison from './rison.js';
 
@@ -47,6 +46,8 @@ export function convertOldState(state: any): any {
     };
     const filters = _.clone(state.filterAsm);
     delete filters.colouriseAsm;
+    // TODO(junlarsen): find the missing language field here
+    // @ts-expect-error: this is missing the language field, which was never noticed because the import was untyped
     content.push(Components.getEditorWith(1, source, options));
     content.push(Components.getCompilerWith(1, filters, sc.options, sc.compiler));
     return {version: 4, content: [{type: 'row', content: content}]};
@@ -88,7 +89,7 @@ export function deserialiseState(stateText: string): any {
     let exception;
     try {
         state = unrisonify(stateText);
-        if (state && state.z) {
+        if (state?.z) {
             const data = lzstring.decompressFromBase64(state.z);
             // If lzstring fails to decompress this it'll return an empty string rather than throwing an error
             if (data === '') {
@@ -121,7 +122,6 @@ export function serialiseState(stateText: any): string {
     const MinimalSavings = 0.2; // at least this ratio smaller
     if (compressed.length < uncompressed.length * (1.0 - MinimalSavings)) {
         return compressed;
-    } else {
-        return uncompressed;
     }
+    return uncompressed;
 }

@@ -23,66 +23,61 @@
 // POSSIBILITY OF SUCH DAMAGE.
 
 // Setup sentry before anything else so we can capture errors
-import {SetupSentry, SentryCapture, setSentryLayout} from './sentry.js';
+import {SentryCapture, SetupSentry, setSentryLayout} from './sentry.js';
 
 SetupSentry();
 
-import {ga as analytics} from './analytics.js';
+// Then configure the options so that window.staticRoot/httpRoot are set
+import './options.js';
 
 import 'whatwg-fetch';
-import 'popper.js'; // eslint-disable-line requirejs/no-js-extension
+import '@popperjs/core';
 import 'bootstrap';
 
-import $ from 'jquery';
-import _ from 'underscore';
-
-import GoldenLayout from 'golden-layout';
-import JsCookie from 'js-cookie';
 import clipboard from 'clipboard';
+import GoldenLayout from 'golden-layout';
+import $ from 'jquery';
+import JsCookie from 'js-cookie';
+import _ from 'underscore';
 
 // We re-assign this
 let jsCookie = JsCookie;
 
-import {Sharing} from './sharing.js';
-import * as Components from './components.js';
-import * as url from './url.js';
-import {Hub} from './hub.js';
-import {Settings, SiteSettings} from './settings.js';
-import {Alert} from './widgets/alert.js';
-import {Themer} from './themes.js';
-import * as motd from './motd.js';
-import {SimpleCook} from './widgets/simplecook.js';
-import {HistoryWidget} from './widgets/history-widget.js';
-import * as History from './history.js';
-import {Presentation} from './presentation.js';
-import {setupSiteTemplateWidgetButton} from './widgets/site-templates-widget.js';
-import {options} from './options.js';
-import {unwrap} from './assert.js';
-
-import {Language, LanguageKey} from '../types/languages.interfaces.js';
-import {CompilerExplorerOptions} from './global.js';
-import {ComponentConfig, EmptyCompilerState, StateWithId, StateWithLanguage} from './components.interfaces.js';
-
 import * as utils from '../shared/common-utils.js';
-import {Printerinator} from './print-view.js';
-import {formatISODate, updateAndCalcTopBarHeight} from './utils.js';
+import {ParseFiltersAndOutputOptions} from '../types/features/filters.interfaces.js';
+import {LanguageKey} from '../types/languages.interfaces.js';
+import {unwrap} from './assert.js';
+import * as BootstrapUtils from './bootstrap-utils.js';
+import {ComponentConfig, ComponentStateMap, GoldenLayoutConfig} from './components.interfaces.js';
+import * as Components from './components.js';
+import {createDragSource, createLayoutItem, toGoldenLayoutConfig} from './components.js';
+import changelogDocument from './generated/changelog.pug';
+import cookiesDocument from './generated/cookies.pug';
+import privacyDocument from './generated/privacy.pug';
+import {CompilerExplorerOptions} from './global.js';
+import * as History from './history.js';
+import {Hub} from './hub.js';
 import {localStorage, sessionThenLocalStorage} from './local.js';
+import * as motd from './motd.js';
+import {options} from './options.js';
+import {Presentation} from './presentation.js';
+import {Printerinator} from './print-view.js';
 import {setupRealDark, takeUsersOutOfRealDark} from './real-dark.js';
+import {Settings, SiteSettings} from './settings.js';
+import {initialiseSharing} from './sharing.js';
+import {Themer} from './themes.js';
+import * as url from './url.js';
+import {formatISODate, updateAndCalcTopBarHeight} from './utils.js';
+import {Alert} from './widgets/alert.js';
+import {HistoryWidget} from './widgets/history-widget.js';
+import {SimpleCook} from './widgets/simplecook.js';
+import {setupSiteTemplateWidgetButton} from './widgets/site-templates-widget.js';
 
-const logos = require.context('../views/resources/logos', false, /\.(png|svg)$/);
-
-const siteTemplateScreenshots = require.context('../views/resources/template_screenshots', false, /\.png$/);
-
-if (!window.PRODUCTION && !options.embedded) {
-    require('./tests/_all');
-}
-
-//css
-require('bootstrap/dist/css/bootstrap.min.css');
-require('golden-layout/src/css/goldenlayout-base.css');
-require('tom-select/dist/css/tom-select.bootstrap4.css');
-require('./styles/colours.scss');
-require('./styles/explorer.scss');
+import 'bootstrap/dist/css/bootstrap.min.css';
+import 'golden-layout/src/css/goldenlayout-base.css';
+import 'tom-select/dist/css/tom-select.bootstrap5.css';
+import './styles/colours.scss';
+import './styles/explorer.scss';
 
 // Check to see if the current unload is a UI reset.
 // Forgive me the global usage here
@@ -91,8 +86,8 @@ const simpleCooks = new SimpleCook();
 const historyWidget = new HistoryWidget();
 
 const policyDocuments = {
-    cookies: require('./generated/cookies.pug').default,
-    privacy: require('./generated/privacy.pug').default,
+    cookies: cookiesDocument,
+    privacy: privacyDocument,
 };
 
 function setupSettings(hub: Hub): [Themer, SiteSettings] {
@@ -103,20 +98,6 @@ function setupSettings(hub: Hub): [Themer, SiteSettings] {
     let currentSettings: SiteSettings = JSON.parse(localStorage.get('settings', 'null')) || defaultSettings;
 
     function onChange(newSettings: SiteSettings) {
-        if (currentSettings.theme !== newSettings.theme) {
-            analytics.proxy('send', {
-                hitType: 'event',
-                eventCategory: 'ThemeChange',
-                eventAction: newSettings.theme,
-            });
-        }
-        if (currentSettings.colourScheme !== newSettings.colourScheme) {
-            analytics.proxy('send', {
-                hitType: 'event',
-                eventCategory: 'ColourSchemeChange',
-                eventAction: newSettings.colourScheme,
-            });
-        }
         $('#settings').find('.editorsFFont').css('font-family', newSettings.editorsFFont);
         currentSettings = newSettings;
         Settings.setStoredSettings(newSettings);
@@ -157,10 +138,7 @@ function setupButtons(options: CompilerExplorerOptions, hub: Hub) {
     // so we instead trigger a click here when we want it to open with this effect. Sorry!
     if (options.policies.privacy.enabled) {
         $('#privacy').on('click', (event, data) => {
-            const modal = alertSystem.alert(
-                data && data.title ? data.title : 'Privacy policy',
-                policyDocuments.privacy.text,
-            );
+            const modal = alertSystem.alert(data?.title ? data.title : 'Privacy policy', policyDocuments.privacy.text);
             calcLocaleChangedDate(modal);
             // I can't remember why this check is here as it seems superfluous
             if (options.policies.privacy.enabled) {
@@ -210,7 +188,7 @@ function setupButtons(options: CompilerExplorerOptions, hub: Hub) {
 
     $('#changes').on('click', () => {
         // TODO(jeremy-rifkin): Fix types
-        alertSystem.alert('Changelog', $(require('./generated/changelog.pug').default.text) as any);
+        alertSystem.alert('Changelog', changelogDocument.text);
     });
 
     $.get(window.location.origin + window.httpRoot + 'bits/icons.html')
@@ -218,25 +196,40 @@ function setupButtons(options: CompilerExplorerOptions, hub: Hub) {
             $('#ces .ces-icons').html(data);
         })
         .fail(err => {
-            SentryCapture(err, '$.get failed');
+            // Filter out network-level failures that aren't actionable bugs
+            // readyState 0 with status 0 typically indicates network issues, ad blockers, or aborted requests
+            if (err.readyState === 0 && err.status === 0) {
+                console.debug('Icons request failed due to network/browser policy:', err.statusText);
+                return;
+            }
+
+            // Only capture server errors or other potentially actionable failures
+            if (err.status >= 400) {
+                SentryCapture(err, '$.get failed loading icons');
+            }
         });
 
     $('#ces').on('click', () => {
         $.get(window.location.origin + window.httpRoot + 'bits/sponsors.html')
             .done(data => {
                 alertSystem.alert('Compiler Explorer Sponsors', data);
-                analytics.proxy('send', {
-                    hitType: 'event',
-                    eventCategory: 'Sponsors',
-                    eventAction: 'open',
-                });
             })
             .fail(err => {
-                const result = err.responseText || JSON.stringify(err);
-                alertSystem.alert(
-                    'Compiler Explorer Sponsors',
-                    '<div>Unable to fetch sponsors:</div><div>' + result + '</div>',
-                );
+                // Filter out network-level failures that aren't actionable bugs
+                if (err.readyState === 0 && err.status === 0) {
+                    console.debug('Sponsors request failed due to network/browser policy:', err.statusText);
+                    return;
+                }
+
+                if (err.status >= 400) {
+                    // Capture server errors for Sentry, and show to the user
+                    SentryCapture(err, '$.get failed loading sponsors');
+                    const result = err.responseText || JSON.stringify(err);
+                    alertSystem.alert(
+                        'Compiler Explorer Sponsors',
+                        '<div>Unable to fetch sponsors:</div><div>' + result + '</div>',
+                    );
+                }
             });
     });
 
@@ -248,7 +241,7 @@ function setupButtons(options: CompilerExplorerOptions, hub: Hub) {
             window.location.reload();
         });
 
-        $('#history').modal();
+        BootstrapUtils.showModal('#history');
     });
 
     $('#ui-apply-default-font-scale').on('click', () => {
@@ -264,7 +257,7 @@ function configFromEmbedded(embeddedUrl: string, defaultLangId: string) {
     let params;
     try {
         params = url.unrisonify(embeddedUrl);
-    } catch (e) {
+    } catch {
         document.write(
             '<div style="padding: 10px; background: #fa564e; color: black;">' +
                 "An error was encountered while decoding the URL for this embed. Make sure the URL hasn't been " +
@@ -276,27 +269,26 @@ function configFromEmbedded(embeddedUrl: string, defaultLangId: string) {
         );
         throw new Error('Embed url decode error');
     }
-    if (params && params.source && params.compiler) {
-        const filters = Object.fromEntries(((params.filters as string) || '').split(',').map(o => [o, true]));
-        // TODO(jeremy-rifkin): Fix types
+    if (params?.source && params.compiler) {
+        const filters: ParseFiltersAndOutputOptions = Object.fromEntries(
+            ((params.filters as string) || '').split(',').map(o => [o, true]),
+        );
         return {
             content: [
                 {
                     type: 'row',
                     content: [
-                        Components.getEditorWith(1, params.source, filters as any, defaultLangId),
-                        Components.getCompilerWith(1, filters as any, params.options, params.compiler),
+                        Components.getEditorWith(1, params.source, filters, defaultLangId),
+                        Components.getCompilerWith(1, filters, params.options, params.compiler),
                     ],
                 },
             ],
         };
-    } else {
-        return url.deserialiseState(embeddedUrl);
     }
+    return url.deserialiseState(embeddedUrl);
 }
 
-// TODO(jeremy-rifkin): Unsure of the type, just typing enough for `content` at the moment
-function fixBugsInConfig(config: Record<string, any> & {content?: any[]}) {
+function fixBugsInConfig(config: Partial<GoldenLayout.Config & {activeItemIndex?: number}>): void {
     if (config.activeItemIndex && config.activeItemIndex >= unwrap(config.content).length) {
         config.activeItemIndex = unwrap(config.content).length - 1;
     }
@@ -308,18 +300,12 @@ function fixBugsInConfig(config: Record<string, any> & {content?: any[]}) {
     }
 }
 
-type ConfigType = {
-    settings: {
-        showPopoutIcon: boolean;
-    };
-    content: {
-        type: string;
-        content: (ComponentConfig<Partial<StateWithId & StateWithLanguage>> | ComponentConfig<EmptyCompilerState>)[];
-    }[];
-};
-
-function findConfig(defaultConfig: ConfigType, options: CompilerExplorerOptions, defaultLangId: string) {
-    let config;
+function findConfig(
+    defaultConfig: GoldenLayoutConfig,
+    options: CompilerExplorerOptions,
+    defaultLangId: string,
+): GoldenLayoutConfig {
+    let config: any;
     if (!options.embedded) {
         if (options.slides) {
             const presentation = new Presentation(unwrap(window.compilerExplorerOptions.slides).length);
@@ -347,7 +333,7 @@ function findConfig(defaultConfig: ConfigType, options: CompilerExplorerOptions,
             } else {
                 try {
                     config = url.deserialiseState(window.location.hash.substring(1));
-                } catch (e) {
+                } catch {
                     // #3518 Alert the user that the url is invalid
                     const alertSystem = new Alert();
                     alertSystem.alert(
@@ -369,7 +355,7 @@ function findConfig(defaultConfig: ConfigType, options: CompilerExplorerOptions,
                 const savedState = sessionThenLocalStorage.get('gl', null);
                 if (savedState) config = JSON.parse(savedState);
             }
-            if (!config.content || config.content.length === 0) {
+            if (!config?.content || config.content?.length === 0) {
                 config = defaultConfig;
             }
         }
@@ -390,7 +376,8 @@ function findConfig(defaultConfig: ConfigType, options: CompilerExplorerOptions,
     removeOrphanedMaximisedItemFromConfig(config);
     fixBugsInConfig(config);
 
-    return config;
+    // TODO(#7808): Replace unsafe casting with fromGoldenLayoutConfig() validation
+    return config as GoldenLayoutConfig;
 }
 
 function initializeResetLayoutLink() {
@@ -431,10 +418,8 @@ function initPolicies(options: CompilerExplorerOptions) {
             expires: 365,
             sameSite: 'strict',
         });
-        analytics.toggle(true);
     });
     simpleCooks.setOnDontConsent(() => {
-        analytics.toggle(false);
         jsCookie.set(options.policies.cookies.key, '', {
             sameSite: 'strict',
         });
@@ -466,8 +451,6 @@ function initPolicies(options: CompilerExplorerOptions) {
                 }
                 ccookiesBellNotification.addClass('d-none');
             });
-        } else if (hasCookieConsented(options)) {
-            analytics.initialise();
         }
     }
 }
@@ -506,21 +489,6 @@ function removeOrphanedMaximisedItemFromConfig(config) {
     }
 }
 
-function setupLanguageLogos(languages: Partial<Record<LanguageKey, Language>>) {
-    for (const lang of Object.values(languages)) {
-        try {
-            if (lang.logoUrl !== null) {
-                lang.logoData = logos('./' + lang.logoUrl);
-                if (lang.logoUrlDark !== null) {
-                    lang.logoDataDark = logos('./' + lang.logoUrlDark);
-                }
-            }
-        } catch (ignored) {
-            lang.logoData = '';
-        }
-    }
-}
-
 function earlyGetDefaultLangSetting() {
     return Settings.getStoredSettings().defaultLanguage;
 }
@@ -551,13 +519,13 @@ function showShortlinkInfoButton() {
 }
 
 function initShortlinkInfoButton() {
-    if (options.metadata && options.metadata['ogCreated']) {
+    if (options.metadata?.['ogCreated']) {
         const buttonText = $('.shortlinkInfoText');
         const dt = new Date(options.metadata['ogCreated']);
         buttonText.html('');
 
         const button = $('.shortlinkInfo');
-        button.popover({
+        BootstrapUtils.initPopover(button, {
             html: true,
             title: 'Link created',
             content: formatISODate(dt, true),
@@ -578,14 +546,13 @@ function sizeCheckNavHideables() {
     updateAndCalcTopBarHeight($('body'), nav, hideables);
 }
 
-// eslint-disable-next-line max-statements
 function start() {
     takeUsersOutOfRealDark();
 
     initializeResetLayoutLink();
 
     const hostnameParts = window.location.hostname.split('.');
-    let subLangId: LanguageKey | undefined = undefined;
+    let subLangId: LanguageKey | undefined;
     // Only set the subdomain lang id if it makes sense to do so
     if (hostnameParts.length > 0) {
         const subdomainPart = hostnameParts[0];
@@ -599,24 +566,19 @@ function start() {
 
     const defaultLangId = getDefaultLangId(subLangId, options);
 
-    setupLanguageLogos(options.languages);
-
     // Cookie domains are matched as a RE against the window location. This allows a flexible
     // way that works across multiple domains (e.g. godbolt.org and compiler-explorer.com).
     // We allow this to be configurable so that (for example), gcc.godbolt.org and d.godbolt.org
     // share the same cookie domain for some settings.
     const cookieDomain = new RegExp(options.cookieDomainRe).exec(window.location.hostname);
-    if (cookieDomain && cookieDomain[0]) {
+    if (cookieDomain?.[0]) {
         jsCookie = jsCookie.withAttributes({domain: cookieDomain[0]});
     }
 
-    const defaultConfig = {
+    const defaultConfig: GoldenLayoutConfig = {
         settings: {showPopoutIcon: false},
         content: [
-            {
-                type: 'row',
-                content: [Components.getEditor(defaultLangId, 1), Components.getCompiler(1, defaultLangId)],
-            },
+            createLayoutItem('row', [Components.getEditor(defaultLangId, 1), Components.getCompiler(1, defaultLangId)]),
         ],
     };
 
@@ -640,18 +602,31 @@ function start() {
 
     let layout: GoldenLayout;
     let hub: Hub;
+    let themer: Themer;
+    let settings: SiteSettings;
+
+    function initializeLayout(
+        config: GoldenLayoutConfig,
+        root: JQuery<HTMLElement>,
+    ): [GoldenLayout, Hub, Themer, SiteSettings] {
+        const layout = new GoldenLayout(toGoldenLayoutConfig(config), root);
+        const hub = new Hub(layout, subLangId, defaultLangId);
+        const [themer, settings] = setupSettings(hub);
+        hub.initLayout();
+        return [layout, hub, themer, settings];
+    }
+
     try {
-        layout = new GoldenLayout(config, root);
-        hub = new Hub(layout, subLangId, defaultLangId);
+        [layout, hub, themer, settings] = initializeLayout(config, root);
     } catch (e) {
         SentryCapture(e, 'goldenlayout/hub setup');
+        console.log('Exception processing state, resetting layout to default', e);
 
         if (document.URL.includes('/z/')) {
             document.location = document.URL.replace('/z/', '/resetlayout/');
         }
 
-        layout = new GoldenLayout(defaultConfig, root);
-        hub = new Hub(layout, subLangId, defaultLangId);
+        [layout, hub, themer, settings] = initializeLayout(defaultConfig, root);
     }
 
     setSentryLayout(layout);
@@ -667,6 +642,20 @@ function start() {
         sizeCheckNavHideables();
     }
 
+    new clipboard('.btn.clippy');
+
+    function handleCtrlS(event: JQuery.KeyDownEvent<Window, undefined, Window, Window>): void {
+        event.preventDefault();
+        if (settings.enableCtrlS === 'false') {
+            // emit short link
+            if (settings.enableSharingPopover) {
+                hub.layout.eventHub.emit('displaySharingPopover');
+            } else {
+                hub.layout.eventHub.emit('copyShortLinkToClip');
+            }
+        }
+    }
+
     $(window)
         .on('resize', sizeRoot)
         .on('beforeunload', () => {
@@ -676,29 +665,33 @@ function start() {
                 if (layout.config.content && layout.config.content.length > 0)
                     sessionThenLocalStorage.set('gl', JSON.stringify(layout.toConfig()));
             }
+        })
+        .on('keydown', event => {
+            if ((event.ctrlKey || event.metaKey) && String.fromCharCode(event.which).toLowerCase() === 's') {
+                handleCtrlS(event);
+            }
         });
-
-    new clipboard('.btn.clippy');
-
-    const [themer, settings] = setupSettings(hub);
 
     // We assume no consent for embed users
     if (!options.embedded) {
         setupButtons(options, hub);
     }
 
-    const addDropdown = $('#addDropdown');
-
-    function setupAdd<C>(thing: JQuery, func: () => ComponentConfig<C>) {
-        (layout.createDragSource(thing, func as any) as any)._dragListener.on('dragStart', () => {
-            addDropdown.dropdown('toggle');
+    function setupAdd<K extends keyof ComponentStateMap>(thing: JQuery, func: () => ComponentConfig<K>) {
+        createDragSource(layout, thing, func).on('dragStart', () => {
+            const addDropdown = unwrap(
+                BootstrapUtils.getDropdownInstance('#addDropdown'),
+                'Dropdown instance not found for #addDropdown',
+            );
+            addDropdown.toggle();
         });
 
         thing.on('click', () => {
+            const config = func();
             if (hub.hasTree()) {
-                hub.addInEditorStackIfPossible(func() as any);
+                hub.addInEditorStackIfPossible(config);
             } else {
-                hub.addAtRoot(func() as any);
+                hub.addAtRoot(config);
             }
         });
     }
@@ -758,13 +751,6 @@ function start() {
     setupRealDark(hub);
 
     window.onSponsorClick = (sponsorUrl: string) => {
-        analytics.proxy('send', {
-            hitType: 'event',
-            eventCategory: 'Sponsors',
-            eventAction: 'click',
-            eventLabel: sponsorUrl,
-            transport: 'beacon',
-        });
         window.open(sponsorUrl);
     };
 
@@ -792,9 +778,11 @@ function start() {
     }
 
     History.trackHistory(layout);
-    setupSiteTemplateWidgetButton(siteTemplateScreenshots, layout);
-    new Sharing(layout);
+    setupSiteTemplateWidgetButton(layout);
+    initialiseSharing(layout, !!options.embedded);
     new Printerinator(hub, themer);
+
+    hub.layout.eventHub.emit('settingsChange', settings); // Ensure everyone knows the settings
 }
 
 $(start);

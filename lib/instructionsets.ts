@@ -51,9 +51,17 @@ export class InstructionSets {
                 target: ['c6x'],
                 path: ['/tic6x-'],
             },
+            dex: {
+                target: [],
+                path: [],
+            },
             ebpf: {
                 target: ['bpf'],
                 path: ['/bpf-'],
+            },
+            ez80: {
+                target: ['ez80'],
+                path: [],
             },
             kvx: {
                 target: ['kvx'],
@@ -119,11 +127,19 @@ export class InstructionSets {
                 target: ['xtensa'],
                 path: ['/xtensa-'],
             },
+            z180: {
+                target: ['z180'],
+                path: [],
+            },
             z80: {
                 target: ['z80'],
                 path: [],
             },
             6502: {
+                target: [],
+                path: [],
+            },
+            wdc65c816: {
                 target: [],
                 path: [],
             },
@@ -144,6 +160,10 @@ export class InstructionSets {
                 path: [],
             },
             ptx: {
+                target: [],
+                path: [],
+            },
+            x86: {
                 target: [],
                 path: [],
             },

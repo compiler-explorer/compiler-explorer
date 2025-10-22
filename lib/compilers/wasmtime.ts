@@ -22,7 +22,7 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import path from 'path';
+import path from 'node:path';
 
 import type {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces.js';
 import {BaseCompiler} from '../base-compiler.js';
@@ -58,7 +58,7 @@ export class WasmtimeCompiler extends BaseCompiler {
         return path.join(dirPath, `${outputFilebase}.cwasm`);
     }
 
-    override getArgumentParser() {
+    override getArgumentParserClass() {
         return WasmtimeParser;
     }
 

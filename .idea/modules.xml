@@ -3,7 +3,6 @@
   <component name="ProjectModuleManager">
     <modules>
       <module fileurl="file://$PROJECT_DIR$/.idea/compiler-explorer.iml" filepath="$PROJECT_DIR$/.idea/compiler-explorer.iml" />
-      <module fileurl="file://$PROJECT_DIR$/rust/rustfilt.iml" filepath="$PROJECT_DIR$/rust/rustfilt.iml" />
     </modules>
   </component>
 </project>

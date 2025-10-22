@@ -22,13 +22,15 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
+import fs from 'node:fs/promises';
 import type {ParsedAsmResult} from '../../types/asmresult/asmresult.interfaces.js';
-import type {CompilationResult} from '../../types/compilation/compilation.interfaces.js';
+import {CompilationResult, ExecutionOptionsWithEnv} from '../../types/compilation/compilation.interfaces.js';
 import type {PreliminaryCompilerInfo} from '../../types/compiler.interfaces.js';
 import type {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces.js';
 import type {ResultLine} from '../../types/resultline/resultline.interfaces.js';
+import {unwrap} from '../assert.js';
 import {BaseCompiler} from '../base-compiler.js';
-
+import {CompilationEnvironment} from '../compilation-env.js';
 import {BaseParser} from './argument-parsers.js';
 
 export class CarbonCompiler extends BaseCompiler {
@@ -36,7 +38,68 @@ export class CarbonCompiler extends BaseCompiler {
         return 'carbon';
     }
 
-    constructor(compilerInfo: PreliminaryCompilerInfo, env) {
+    override orderArguments(
+        options: string[],
+        inputFilename: string,
+        libIncludes: string[],
+        libOptions: string[],
+        libPaths: string[],
+        libLinks: string[],
+        userOptions: string[],
+        staticLibLinks: string[],
+    ): string[] {
+        return ['compile'].concat(
+            options,
+            userOptions,
+            [this.filename(inputFilename)],
+            // We don't support libraries in Carbon, so drop all the `-L` args
+        );
+    }
+
+    override isCfgCompiler() {
+        return true;
+    }
+
+    override optionsForFilter(filters: ParseFiltersAndOutputOptions, outputFilename: string): string[] {
+        const args = [`--output=${outputFilename}`];
+        if (!filters.binary && !filters.binaryObject) args.push('--asm-output');
+        return args;
+    }
+
+    async linkExecutable(options: string[], execOptions: ExecutionOptionsWithEnv) {
+        // Rely on the fact we definitely put a `--output=` in the options.
+        const outputArg = unwrap(options.filter(opt => opt.startsWith('--output='))[0]);
+        const outputFile = outputArg.split('=', 2)[1];
+        const renamedFile = outputFile + '.tmp';
+        await fs.rename(outputFile, renamedFile);
+        return await this.exec(this.compiler.exe, ['link', outputArg, renamedFile], execOptions);
+    }
+
+    override async runCompiler(
+        compiler: string,
+        options: string[],
+        inputFilename: string,
+        execOptions: ExecutionOptionsWithEnv,
+        filters?: ParseFiltersAndOutputOptions,
+    ): Promise<CompilationResult> {
+        const result = await super.runCompiler(compiler, options, inputFilename, execOptions, filters);
+        if (result.code !== 0) return result;
+        if (filters?.binary) {
+            const linkResult = await this.linkExecutable(options, execOptions);
+            if (linkResult.code !== 0) {
+                return {...result, ...this.transformToCompilationResult(linkResult, inputFilename)};
+            }
+        }
+        return result;
+    }
+}
+
+export class CarbonExplorerCompiler extends BaseCompiler {
+    static get key() {
+        return 'carbon-explorer';
+    }
+
+    constructor(compilerInfo: PreliminaryCompilerInfo, env: CompilationEnvironment) {
         super(compilerInfo, env);
         this.compiler.demangler = '';
         this.demanglerClass = null;
@@ -46,7 +109,11 @@ export class CarbonCompiler extends BaseCompiler {
         return ['--color', `--trace_file=${outputFilename}`];
     }
 
-    override async processAsm(result, filters, options): Promise<ParsedAsmResult> {
+    override async processAsm(
+        result,
+        filters: ParseFiltersAndOutputOptions,
+        options: string[],
+    ): Promise<ParsedAsmResult> {
         // Really should write a custom parser, but for now just don't filter anything.
         return await super.processAsm(
             result,
@@ -77,8 +144,8 @@ export class CarbonCompiler extends BaseCompiler {
         if (result.code === 0) {
             // Hook to parse out the "result: 123" line at the end of the interpreted execution run.
             const re = /^result: (\d+)$/;
-            const match = re.exec(this.lastLine(result.asm));
-            const code = match ? parseInt(match[1]) : -1;
+            const match = re.exec(this.lastLine(result.asm as ResultLine[]));
+            const code = match ? Number.parseInt(match[1], 10) : -1;
             result.execResult = {
                 stdout: result.stdout,
                 stderr: [],
@@ -101,7 +168,7 @@ export class CarbonCompiler extends BaseCompiler {
         return result;
     }
 
-    override getArgumentParser() {
+    override getArgumentParserClass() {
         // TODO: may need a custom one, based on/borrowing from ClangParser
         return BaseParser;
     }

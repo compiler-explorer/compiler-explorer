@@ -22,16 +22,20 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import path from 'path';
-import zlib from 'zlib';
-
-import fs, {mkdirp} from 'fs-extra';
-import request from 'request';
+import fs from 'node:fs';
+import os from 'node:os';
+import path from 'node:path';
+import {Readable} from 'node:stream';
+import zlib from 'node:zlib';
 import tar from 'tar-stream';
 import _ from 'underscore';
 
-import {LibraryVersion} from '../../types/libraries/libraries.interfaces.js';
+import {CacheKey} from '../../types/compilation/compilation.interfaces.js';
+import {CompilerInfo} from '../../types/compiler.interfaces.js';
+import {CompilationEnvironment} from '../compilation-env.js';
 import {logger} from '../logger.js';
+import {VersionInfo} from '../options-handler.js';
+import * as utils from '../utils.js';
 
 import {BuildEnvSetupBase} from './base.js';
 import type {BuildEnvDownloadInfo} from './buildenv.interfaces.js';
@@ -47,81 +51,97 @@ export type ConanBuildProperties = {
     flagcollection: string;
 };
 
+type LibVerBuild = {
+    id: string;
+    version: string;
+    lookupname: string;
+    lookupversion: string;
+    possibleBuilds: any;
+};
+
 export class BuildEnvSetupCeConanDirect extends BuildEnvSetupBase {
     protected host: any;
     protected onlyonstaticliblink: any;
     protected extractAllToRoot: boolean;
+    protected conan_os: string;
 
     static get key() {
         return 'ceconan';
     }
 
-    constructor(compilerInfo, env) {
+    constructor(compilerInfo: CompilerInfo, env: CompilationEnvironment) {
         super(compilerInfo, env);
 
-        this.host = compilerInfo.buildenvsetup.props('host', false);
-        this.onlyonstaticliblink = compilerInfo.buildenvsetup.props('onlyonstaticliblink', false);
+        this.host = compilerInfo.buildenvsetup!.props('host', '');
+        this.onlyonstaticliblink = compilerInfo.buildenvsetup!.props('onlyonstaticliblink', '');
         this.extractAllToRoot = false;
-
-        if (env.debug) request.debug = true;
+        this.conan_os = os.platform() === 'win32' ? 'Windows' : 'Linux';
     }
 
-    async getAllPossibleBuilds(libid, version) {
+    async getAllPossibleBuilds(libid: string, version: string): Promise<any> {
         return new Promise((resolve, reject) => {
             const encLibid = encodeURIComponent(libid);
             const encVersion = encodeURIComponent(version);
             const url = `${this.host}/v1/conans/${encLibid}/${encVersion}/${encLibid}/${encVersion}/search`;
-            const settings = {
+
+            const settings: RequestInit = {
                 method: 'GET',
-                json: true,
+                headers: {
+                    'Content-Type': 'application/json',
+                },
             };
 
-            request(url, settings, (err, res, body) => {
-                if (err) {
+            fetch(url, settings)
+                .then(async (response: Response) => {
+                    if (response.status === 404) {
+                        reject(`Not found (${url})`);
+                    } else {
+                        resolve(await response.json());
+                    }
+                })
+                .catch(err => {
                     logger.error(`Unexpected error during getAllPossibleBuilds(${libid}, ${version}): `, err);
                     reject(err);
-                } else if (res && res.statusCode === 404) {
-                    reject(`Not found (${url})`);
-                } else {
-                    resolve(body);
-                }
-            });
+                });
         });
     }
 
-    async getPackageUrl(libid, version, hash): Promise<string> {
-        return new Promise((resolve, reject) => {
-            const encLibid = encodeURIComponent(libid);
-            const encVersion = encodeURIComponent(version);
-            const libUrl = `${this.host}/v1/conans/${encLibid}/${encVersion}/${encLibid}/${encVersion}`;
-            const url = `${libUrl}/packages/${hash}/download_urls`;
+    async getPackageUrl(libid: string, version: string, hash: string): Promise<string> {
+        const encLibid = encodeURIComponent(libid);
+        const encVersion = encodeURIComponent(version);
+        const libUrl = `${this.host}/v1/conans/${encLibid}/${encVersion}/${encLibid}/${encVersion}`;
+        const url = `${libUrl}/packages/${hash}/download_urls`;
 
-            const settings = {
-                method: 'GET',
-                json: true,
-            };
+        const settings: RequestInit = {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+        };
 
-            request(url, settings, (err, res, body) => {
-                if (err) {
-                    reject(err);
-                    return;
-                }
-
-                resolve(body['conan_package.tgz']);
-            });
-        });
+        const response = await fetch(url, settings);
+        const body = await response.json();
+        const packageURL = body['conan_package.tgz'];
+        if (!packageURL) {
+            throw new Error('Unable to get package download URL from conan.');
+        }
+        return packageURL;
     }
 
     getDestinationFilepath(downloadPath: string, zippedPath: string, libId: string): string {
         if (this.extractAllToRoot) {
             const filename = path.basename(zippedPath);
             return path.join(downloadPath, filename);
-        } else {
-            return path.join(downloadPath, libId, zippedPath);
         }
+        return path.join(downloadPath, libId, zippedPath);
     }
 
-    async downloadAndExtractPackage(libId, version, downloadPath, packageUrl): Promise<BuildEnvDownloadInfo> {
+    async downloadAndExtractPackage(
+        libId: string,
+        version: string,
+        downloadPath: string,
+        packageUrl: string,
+    ): Promise<BuildEnvDownloadInfo> {
         return new Promise((resolve, reject) => {
             const startTime = process.hrtime.bigint();
             const extract = tar.extract();
@@ -140,7 +160,7 @@ export class BuildEnvSetupCeConanDirect extends BuildEnvSetupBase {
                     }
 
                     if (!this.extractAllToRoot) {
-                        await mkdirp(path.dirname(filepath));
+                        await fs.promises.mkdir(path.dirname(filepath), {recursive: true});
                     }
 
                     const filestream = fs.createWriteStream(filepath);
@@ -150,7 +170,7 @@ export class BuildEnvSetupCeConanDirect extends BuildEnvSetupBase {
                         next();
                     } else {
                         stream
-                            .on('error', error => {
+                            .on('error', (error: any) => {
                                 logger.error(`Error in stream handling: ${error}`);
                                 reject(error);
                             })
@@ -165,7 +185,7 @@ export class BuildEnvSetupCeConanDirect extends BuildEnvSetupBase {
             });
 
             extract
-                .on('error', error => {
+                .on('error', (error: any) => {
                     logger.error(`Error in tar handling: ${error}`);
                     reject(error);
                 })
@@ -174,7 +194,7 @@ export class BuildEnvSetupCeConanDirect extends BuildEnvSetupBase {
                     resolve({
                         step: `Download of ${libId} ${version}`,
                         packageUrl: packageUrl,
-                        time: ((endTime - startTime) / BigInt(1000000)).toString(),
+                        time: utils.deltaTimeNanoToMili(startTime, endTime),
                     });
                 });
 
@@ -185,37 +205,38 @@ export class BuildEnvSetupCeConanDirect extends BuildEnvSetupBase {
                 })
                 .pipe(extract);
 
-            const settings = {
+            const settings: RequestInit = {
                 method: 'GET',
-                encoding: null,
+                headers: {
+                    'Content-Type': 'application/json',
+                },
             };
 
-            // https://stackoverflow.com/questions/49277790/how-to-pipe-npm-request-only-if-http-200-is-received
-            const req = request(packageUrl, settings)
-                .on('error', error => {
+            fetch(packageUrl, settings)
+                .then((res: Response) => {
+                    if (res.ok && res.body) {
+                        Readable.from(res.body).pipe(gunzip);
+                    } else {
+                        logger.error(`Error requesting package from conan: ${res.status} for ${packageUrl}`);
+                        reject(new Error(`Unable to request library from conan: ${res.status}`));
+                    }
+                })
+                .catch((error: any) => {
                     logger.error(`Error in request handling: ${error}`);
                     reject(error);
-                })
-                .on('response', res => {
-                    if (res.statusCode === 200) {
-                        req.pipe(gunzip);
-                    } else {
-                        logger.error(`Error requesting package from conan: ${res.statusCode} for ${packageUrl}`);
-                        reject(new Error(`Unable to request library from conan: ${res.statusCode}`));
-                    }
                 });
         });
     }
 
-    async getConanBuildProperties(key): Promise<ConanBuildProperties> {
+    async getConanBuildProperties(key: CacheKey, buildType = 'Debug'): Promise<ConanBuildProperties> {
         const arch = this.getTarget(key);
         const libcxx = this.getLibcxx(key);
         const stdver = '';
         const flagcollection = '';
 
         return {
-            os: 'Linux',
-            build_type: 'Debug',
+            os: this.conan_os,
+            build_type: buildType,
             compiler: this.compilerTypeOrGCC,
             'compiler.version': this.compiler.id,
             'compiler.libcxx': libcxx,
@@ -225,52 +246,89 @@ export class BuildEnvSetupCeConanDirect extends BuildEnvSetupBase {
         };
     }
 
-    async findMatchingHash(buildProperties, possibleBuilds) {
+    async findMatchingHash(buildProperties: ConanBuildProperties, possibleBuilds: any) {
         return _.findKey(possibleBuilds, elem => {
             return _.all(buildProperties, (val, key) => {
+                if ((key === 'compiler' || key === 'compiler.version') && elem.settings[key] === 'headeronly') {
+                    return true;
+                }
                 if ((key === 'compiler' || key === 'compiler.version') && elem.settings[key] === 'cshared') {
                     return true;
-                } else if (key === 'compiler.libcxx' && elem.settings['compiler'] === 'cshared') {
-                    return true;
-                } else {
-                    return val === elem.settings[key];
                 }
+                if (key === 'compiler.libcxx' && elem.settings['compiler'] === 'headeronly') {
+                    return true;
+                }
+                if (key === 'arch' && elem.settings['compiler'] === 'headeronly') {
+                    return true;
+                }
+                if (key === 'compiler.libcxx' && elem.settings['compiler'] === 'cshared') {
+                    return true;
+                }
+                if (key === 'stdver') {
+                    // unless ABI breakage happens in future stdversions, assume they are all cxx11 and compatible
+                    //  or if not that the compiler.version has already made sure those won't be matched
+                    return true;
+                }
+                return val === elem.settings[key];
             });
         });
     }
 
-    async download(key, dirPath, libraryDetails): Promise<BuildEnvDownloadInfo[]> {
+    async download(
+        key: CacheKey,
+        dirPath: string,
+        libraryDetails: Record<string, VersionInfo>,
+    ): Promise<BuildEnvDownloadInfo[]> {
         const allDownloads: Promise<BuildEnvDownloadInfo>[] = [];
-        const allLibraryBuilds: any = [];
+        const allLibraryBuilds: LibVerBuild[] = [];
 
-        _.each(libraryDetails, (details, libId) => {
+        _.each(libraryDetails, (details: VersionInfo, libId: string) => {
             if (details.packagedheaders || this.hasBinariesToLink(details)) {
+                const lookupname = details.lookupname || libId;
                 const lookupversion = details.lookupversion || details.version;
                 allLibraryBuilds.push({
                     id: libId,
                     version: details.version,
-                    lookupversion: details.lookupversion,
-                    possibleBuilds: this.getAllPossibleBuilds(libId, lookupversion).catch(() => false),
+                    lookupname: details.lookupname as string,
+                    lookupversion: details.lookupversion as string,
+                    possibleBuilds: this.getAllPossibleBuilds(lookupname as string, lookupversion as string).catch(
+                        () => false,
+                    ),
                 });
             }
         });
 
-        const buildProperties = await this.getConanBuildProperties(key);
+        // For MSVC compilers, try Release builds first, then fall back to Debug
+        const buildTypesToTry = this.compilerTypeOrGCC === 'win32-vc' ? ['Release', 'Debug'] : ['Debug'];
 
         for (const libVerBuilds of allLibraryBuilds) {
+            const lookupname = libVerBuilds.lookupname || libVerBuilds.id;
             const lookupversion = libVerBuilds.lookupversion || libVerBuilds.version;
-            const libVer = `${libVerBuilds.id}/${lookupversion}`;
+            const libVer = `${lookupname}/${lookupversion}`;
             const possibleBuilds = await libVerBuilds.possibleBuilds;
             if (possibleBuilds) {
-                const hash = await this.findMatchingHash(buildProperties, possibleBuilds);
-                if (hash) {
-                    logger.debug(`Found conan hash ${hash} for ${libVer}`);
+                let hash: string | undefined;
+                let selectedBuildType: string | undefined;
+
+                // Try each build type in order until we find a matching hash
+                for (const buildType of buildTypesToTry) {
+                    const buildProperties = await this.getConanBuildProperties(key, buildType);
+                    hash = await this.findMatchingHash(buildProperties, possibleBuilds);
+                    if (hash) {
+                        selectedBuildType = buildType;
+                        break;
+                    }
+                }
+
+                if (hash && selectedBuildType) {
+                    logger.debug(`Found conan hash ${hash} for ${libVer} with build type ${selectedBuildType}`);
                     allDownloads.push(
-                        this.getPackageUrl(libVerBuilds.id, lookupversion, hash).then(downloadUrl => {
+                        this.getPackageUrl(lookupname, lookupversion, hash).then(downloadUrl => {
                             return this.downloadAndExtractPackage(libVerBuilds.id, lookupversion, dirPath, downloadUrl);
                         }),
                     );
                 } else {
+                    const buildProperties = await this.getConanBuildProperties(key);
                     logger.warn(`No build found for ${libVer} matching ${JSON.stringify(buildProperties)}`);
                 }
             } else {
@@ -282,18 +340,18 @@ export class BuildEnvSetupCeConanDirect extends BuildEnvSetupBase {
     }
 
     override async setup(
-        key,
-        dirPath,
-        libraryDetails: Record<string, LibraryVersion>,
-        binary,
+        key: CacheKey,
+        dirPath: string,
+        libraryDetails: Record<string, VersionInfo>,
+        binary: boolean,
     ): Promise<BuildEnvDownloadInfo[]> {
         if (!this.host) return [];
 
         if (this.onlyonstaticliblink && !binary) return [];
 
-        const librariesToDownload = _.pick(libraryDetails, details => {
+        const librariesToDownload = _.pick(libraryDetails, (details: VersionInfo) => {
             return this.shouldDownloadPackage(details);
-        }) as Record<string, LibraryVersion>;
+        }) as Record<string, VersionInfo>;
 
         return this.download(key, dirPath, librariesToDownload);
     }

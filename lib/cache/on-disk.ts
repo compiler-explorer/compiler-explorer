@@ -22,10 +22,10 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import crypto from 'crypto';
-import path from 'path';
-
-import fs from 'fs-extra';
+import crypto from 'node:crypto';
+import fs from 'node:fs';
+import path from 'node:path';
+import {Buffer} from 'buffer';
 import {LRUCache} from 'lru-cache';
 
 import type {GetResult} from '../../types/cache.interfaces.js';
@@ -34,9 +34,11 @@ import {logger} from '../logger.js';
 import {BaseCache} from './base.js';
 
 // With thanks to https://gist.github.com/kethinov/6658166
-function getAllFiles(root: string, dir?: string) {
+type relFile = {name: string; fullPath: string};
+
+function getAllFiles(root: string, dir?: string): Array<relFile> {
     const actualDir = dir || root;
-    return fs.readdirSync(actualDir).reduce((files: Array<string>, file: string) => {
+    return fs.readdirSync(actualDir).reduce((files: Array<relFile>, file: string) => {
         const fullPath = path.join(actualDir, file);
         const name = path.relative(root, fullPath);
         const isDirectory = fs.statSync(fullPath).isDirectory();
@@ -68,7 +70,7 @@ export class OnDiskCache extends BaseCache {
                 if (stat.size === 0 || fullPath.endsWith('.tmp')) {
                     logger.info(`Removing old temporary or broken empty file ${fullPath}`);
                     fs.unlink(fullPath, () => {});
-                    return;
+                    return undefined;
                 }
                 return {
                     key: name,
@@ -80,9 +82,13 @@ export class OnDiskCache extends BaseCache {
                 };
             })
             .filter(Boolean);
+
         // Sort oldest first
+
+        // @ts-expect-error filter(Boolean) should have sufficed but doesn't
         info.sort((x, y) => x.sort - y.sort);
         for (const i of info) {
+            // @ts-expect-error
             this.cache.set(i.key, i.data);
         }
     }
@@ -99,7 +105,7 @@ export class OnDiskCache extends BaseCache {
         if (!cached) return {hit: false};
 
         try {
-            const data = await fs.readFile(cached.path);
+            const data = await fs.promises.readFile(cached.path);
             return {hit: true, data: data};
         } catch (err) {
             logger.error(`error reading '${key}' from disk cache: `, err);
@@ -114,8 +120,8 @@ export class OnDiskCache extends BaseCache {
         };
         // Write to a temp file and then rename
         const tempFile = info.path + `.tmp.${crypto.randomUUID()}`;
-        await fs.writeFile(tempFile, value);
-        await fs.rename(tempFile, info.path);
+        await fs.promises.writeFile(tempFile, value);
+        await fs.promises.rename(tempFile, info.path);
         this.cache.set(key, info);
     }
 }

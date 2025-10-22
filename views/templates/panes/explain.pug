@@ -1,0 +1,53 @@
+#explain
+  .explain-container.d-flex.flex-column.h-100
+    .top-bar.btn-toolbar.options-toolbar.bg-light.flex-shrink-0(role="toolbar")
+      .btn-group(role="group" aria-label="Explain options")
+        include ../../font-size
+        .ai-disclaimer.text-muted.badge.bg-warning.mx-2(
+            title="LLM-generated explanations may contain errors or inaccuracies, and can state things with more \
+confidence than they deserve. \
+Please check before acting on information derived from this view."
+          )
+          i.fas.fa-triangle-exclamation.me-1
+          | LLMs can be inaccurate
+        .input-group
+          select.explain-audience.form-select.form-select-sm(style="width: auto;" aria-label="Select audience level")
+            option(value="loading") Loading...
+          button.btn.btn-sm.btn-outline-secondary.explain-audience-info(type="button" title="Audience level" tabindex="0")
+            i.fas.fa-info-circle
+        .input-group
+          select.explain-type.form-select.form-select-sm(style="width: auto;" aria-label="Select explanation type")
+            option(value="loading") Loading...
+          button.btn.btn-sm.btn-outline-secondary.explain-type-info(type="button" title="Explanation focus" tabindex="0")
+            i.fas.fa-info-circle
+      .btn-group(role="group" aria-label="Status").ms-auto
+        .status.my-auto
+          i.status-icon.fas.d-none
+        .text-muted.badge.bg-info.d-flex.align-items-center.user-select-none(title="Claude Explain is a beta feature and is subject to change or removal at any time.")
+          i.fas.fa-info-circle.me-1
+          | Beta
+    .explain-consent.explain-box.d-none.flex-shrink-0
+      h4 Consent Request
+      p
+        | Claude Explain will send your #[b source code] and #[b compilation output] to
+        | #[a(href="https://www.anthropic.com/" target="_blank" rel="noopener noreferrer") Anthropic]
+        | (a third party company), and will use a large language model (LLM, a form of AI) to attempt to explain your
+        | code and the assembly output it produces.
+      p LLMs can be useful but can make mistakes and can sound confident even when they're wrong.
+      p
+        | The data sent is #[b not] collected or used by Anthropic to train their model, and remains private to Compiler Explorer,
+        | and is covered by our #[a(href="/#privacy" target="_blank" rel="noopener noreferrer") Privacy Policy].
+      p Continue?
+      button.btn.btn-primary.mt-2.consent-btn Yes, explain this code
+    .explain-no-ai.explain-box.d-none.flex-shrink-0
+      h4 AI Explanation Not Available
+      p This code contains a "#[b no-ai]" directive.
+      p
+        | As a courtesy to people who do not wish to have their code processed by forms of AI (including LLMs), Compiler Explorer looks for
+        | the string #[code no-ai] in the source (or libraries included by the source).
+      p If found, we will not process with AI.
+    .explain-content.markdown-content.content.flex-grow-1.overflow-auto
+    .bottom-bar.bg-light.d-none.explain-bottom-bar.flex-shrink-0.px-3.d-flex.align-items-center
+      button.btn.btn-sm.btn-link.explain-reload(title="Regenerate explanation")
+        i.fas.fa-sync-alt
+      span.explain-stats.ms-auto

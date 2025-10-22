@@ -30,7 +30,7 @@ If needed, you can now restart the currently running instances with `ce --env be
 Once this is finished, the `/beta` endpoint should be ready for testing.
 
 - The first issue you might find is that the beta instance does not boot. This might be caused by the
-  `--ensureNoIdClash` flag shutting the app down if it detects one or more pairs of compilers sharing the same id even
+  `--ensure-no-id-clash` flag shutting the app down if it detects one or more pairs of compilers sharing the same id even
   if they belong to different languages. An error should be logged with the culprits for easy debugging.
 
 ## Basic general site functionality

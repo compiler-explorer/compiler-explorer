@@ -22,17 +22,20 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import {fileURLToPath} from 'url';
+import {fileURLToPath} from 'node:url';
 
 import _ from 'underscore';
 import {beforeAll, describe, expect, it} from 'vitest';
 
-import {AppDefaultArguments} from '../app.js';
+import {AppArguments} from '../lib/app.interfaces.js';
 import {BaseCompiler} from '../lib/base-compiler.js';
 import {CompilationEnvironment} from '../lib/compilation-env.js';
+import {CompilerFinder} from '../lib/compiler-finder.js';
 import {ClientOptionsHandler, ClientOptionsType} from '../lib/options-handler.js';
 import * as properties from '../lib/properties.js';
 import {BaseTool} from '../lib/tooling/base-tool.js';
+import {getRemoteId} from '../shared/remote-utils.js';
+import {UrlTestCases} from '../shared/url-testcases.js';
 import {CompilerInfo} from '../types/compiler.interfaces.js';
 import {LanguageKey} from '../types/languages.interfaces.js';
 
@@ -169,19 +172,19 @@ describe('Options handler', () => {
     beforeAll(() => {
         fakeOptionProps = properties.fakeProps(optionsProps);
         compilerProps = new properties.CompilerProps(languages, fakeOptionProps);
-        optionsHandler = new ClientOptionsHandler([], compilerProps, {env: ['dev']} as unknown as AppDefaultArguments);
+        optionsHandler = new ClientOptionsHandler([], compilerProps, {env: ['dev']} as unknown as AppArguments);
 
         fakeMoreCompilerProps = properties.fakeProps(moreLibProps);
         moreCompilerProps = new properties.CompilerProps(languages, fakeMoreCompilerProps);
         moreOptionsHandler = new ClientOptionsHandler([], moreCompilerProps, {
             env: ['dev'],
-        } as unknown as AppDefaultArguments);
+        } as unknown as AppArguments);
 
         env = {
             ceProps: properties.fakeProps({}),
             compilerProps: () => {},
             getCompilerPropsForLanguage: () => {
-                return (prop, def) => def;
+                return (prop: string, def: any) => def;
             },
         } as unknown as CompilationEnvironment;
     });
@@ -493,7 +496,7 @@ describe('Options handler', () => {
             ceProps: properties.fakeProps({}),
             compilerProps: () => {},
             getCompilerPropsForLanguage: () => {
-                return (prop, def) => def;
+                return (prop: string, def: any) => def;
             },
         } as unknown as CompilationEnvironment;
 
@@ -525,6 +528,7 @@ describe('Options handler', () => {
                     id: 'faketool',
                     type: 'independent',
                     addOptionsToToolArgs: true,
+                    sandboxType: 'none',
                     tool: {
                         args: undefined,
                         compilerLanguage: 'fake',
@@ -546,6 +550,7 @@ describe('Options handler', () => {
                     id: 'someothertool',
                     type: 'independent',
                     addOptionsToToolArgs: true,
+                    sandboxType: 'none',
                     tool: {
                         args: undefined,
                         compilerLanguage: 'fake',
@@ -564,6 +569,41 @@ describe('Options handler', () => {
                     },
                 },
             },
+        });
+    });
+
+    it('should correctly resolve remote urls', () => {
+        const compilerName = 'godbolt.org@443/gpu';
+        const {host, port, uriBase} = CompilerFinder.getRemotePartsFromCompilerName(compilerName);
+        expect(host).toEqual('godbolt.org');
+        expect(port).toEqual(443);
+        expect(uriBase).toEqual('gpu');
+
+        const {uriSchema, uri, apiPath} = CompilerFinder.prepareRemoteUrlParts(host, port, uriBase, 'c++');
+        expect(uriSchema).toEqual('https');
+        expect(uri).toEqual('https://godbolt.org:443/gpu');
+        expect(apiPath).toEqual('/gpu/api/compilers/c++?fields=all');
+
+        const info = CompilerFinder.getRemoteInfo(uriSchema, host, port, uriBase, 'g123remote');
+        expect(info).toEqual({
+            target: 'https://godbolt.org:443',
+            path: '/gpu/api/compiler/g123remote/compile',
+            cmakePath: '/gpu/api/compiler/g123remote/cmake',
+            basePath: '/gpu',
+        });
+
+        const fullUrl = ClientOptionsHandler.getFullRemoteUrl(info);
+        const librariesUrl = ClientOptionsHandler.getRemoteUrlForLibraries(fullUrl, 'c++');
+
+        expect(librariesUrl).toEqual('https://godbolt.org:443/gpu/api/libraries/c++');
+    });
+
+    describe('getRemoteId', () => {
+        UrlTestCases.forEach(testCase => {
+            it(`should generate remote ID for URL "${testCase.remoteUrl}" with language "${testCase.language}"`, () => {
+                const result = getRemoteId(testCase.remoteUrl, testCase.language);
+                expect(result).toBe(testCase.expectedId);
+            });
         });
     });
 });

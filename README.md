@@ -1,13 +1,13 @@
 [![Build Status](https://github.com/compiler-explorer/compiler-explorer/workflows/Compiler%20Explorer/badge.svg)](https://github.com/compiler-explorer/compiler-explorer/actions?query=workflow%3A%22Compiler+Explorer%22)
 [![codecov](https://codecov.io/gh/compiler-explorer/compiler-explorer/branch/main/graph/badge.svg)](https://codecov.io/gh/compiler-explorer/compiler-explorer)
 
-[![logo](views/resources/logos/assembly.png)](https://godbolt.org/)
+[![logo](public/logos/assembly.png)](https://godbolt.org/)
 
 # Compiler Explorer
 
-Is an interactive compiler exploration website. Edit code in C, C++, C#, F#, Rust, Go, D, Haskell, Swift, Pascal,
+Compiler Explorer is an interactive compiler exploration website. Edit code in C, C++, C#, F#, Rust, Go, D, Haskell, Swift, Pascal,
 [ispc](https://ispc.github.io/), Python, Java, or any of the other
-[30+ supported languages](https://godbolt.org/api/languages) components, and see how that code looks after being
+[30+ supported languages](https://godbolt.org/api/languages), and see how that code looks after being
 compiled in real time.
 
 [Bug Report](https://github.com/compiler-explorer/compiler-explorer/issues/new?assignees=&labels=bug&projects=&template=bug_report.yml&title=%5BBUG%5D%3A+)
@@ -28,7 +28,7 @@ layout is configurable (thanks to [GoldenLayout](https://www.golden-layout.com/)
 
 Try out at [godbolt.org](https://godbolt.org), or [run your own local instance](#running-a-local-instance). An overview
 of what the site lets you achieve, why it's useful, and how to use it is
-[available here](docs/WhatIsCompilerExplorer.md).
+[available here](docs/WhatIsCompilerExplorer.md), or in [this talk](https://www.youtube.com/watch?v=_9sGKcvT-TA).
 
 **Compiler Explorer** follows a [Code of Conduct](CODE_OF_CONDUCT.md) which aims to foster an open and welcoming
 environment.
@@ -42,7 +42,7 @@ Since then, it has become a public website serving over
 You can financially support [this project on Patreon](https://patreon.com/mattgodbolt),
 [GitHub](https://github.com/sponsors/mattgodbolt/),
 [Paypal](https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=KQWQZ7GPY2GZ6&item_name=Compiler+Explorer+development&currency_code=USD&source=url),
-or by buying cool gear on the [Compiler Explorer store](https://shop.spreadshirt.com/compiler-explorer/).
+or by buying cool gear on the [Compiler Explorer store](https://shop.compiler-explorer.com).
 
 ## Using Compiler Explorer
 
@@ -75,18 +75,21 @@ Assuming you have a compatible version of `node` installed, on Linux simply runn
 running with an Explorer running on port 10240 on your local machine:
 [http://localhost:10240/](http://localhost:10240/). If this doesn't work for you, please contact us, as we consider it
 important you can quickly and easily get running. Currently, **Compiler Explorer** requires
-[`node` 20](CONTRIBUTING.md#node-version) installed, either on the path or at `NODE_DIR` (an environment variable or
+[`node` 20 or higher](CONTRIBUTING.md#node-version) installed, either on the path or at `NODE_DIR` (an environment variable or
 `make` parameter).
 
 Running with `make EXTRA_ARGS='--language LANG'` will allow you to load `LANG` exclusively, where `LANG` is one for the
 language ids/aliases defined in `lib/languages.ts`. For example, to only run **Compiler Explorer** with C++ support,
-you'd run `make EXTRA_ARGS='--language c++'`. The `Makefile` will automatically install all the third-party libraries
-needed to run; using `npm` to install server-side and client-side components.
+you'd run `make EXTRA_ARGS='--language c++'`. You can supply multiple `--language` arguments to restrict to more than
+one language. The `Makefile` will automatically install all the third-party libraries needed to run; using `npm` to
+install server-side and client-side components.
 
 For development, we suggest using `make dev` to enable some useful features, such as automatic reloading on file changes
 and shorter startup times.
 
 You can also use `npm run dev` to run if `make dev` doesn't work on your machine.
+
+When making UI changes, we recommend following the [UI Testing Checklist](docs/TestingTheUi.md) to ensure all components work correctly.
 
 Some languages need extra tools to demangle them, e.g. `rust`, `d`, or `haskell`. Such tools are kept separately in the
 [tools repo](https://github.com/compiler-explorer/compiler-explorer-tools).
@@ -106,6 +109,11 @@ how to add new compilers or languages to the site.
 If you want to point it at your own GCC or similar binaries, either edit the `etc/config/LANG.defaults.properties` or
 else make a new one with the name `LANG.local.properties`, substituting `LANG` as needed. `*.local.properties` files
 have the highest priority when loading properties.
+
+For a quick and easy way to add local compilers, use the 
+[CE Properties Wizard](etc/scripts/ce-properties-wizard/) which automatically detects and configures compilers 
+for [30+ languages](etc/scripts/ce-properties-wizard/README.md#supported-languages). 
+See [Adding a Compiler](docs/AddingACompiler.md) for more details.
 
 If you want to support multiple compilers and languages like [godbolt.org](https://godbolt.org), you can use the
 `bin/ce_install install compilers` command in the [infra](https://github.com/compiler-explorer/infra) project to install
@@ -156,7 +164,7 @@ language already selected.
 We would like to thank the contributors listed in the [CONTRIBUTORS](CONTRIBUTORS.md) file, who have helped shape
 **Compiler Explorer**.
 
-We would also like to specially thank these people for their contributions to **Compiler Explorer**:
+We would also like to especially thank these people for their contributions to **Compiler Explorer**:
 
 - [Gabriel Devillers](https://github.com/voxelf) (_while working for [Kalray](http://www.kalrayinc.com/)_)
 - [Johan Engelen](https://github.com/JohanEngelen)

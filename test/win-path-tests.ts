@@ -22,10 +22,11 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import child_process from 'child_process';
+import child_process from 'node:child_process';
 
 import {beforeAll, describe, expect, it} from 'vitest';
 
+import {CompilationEnvironment} from '../lib/compilation-env.js';
 import {WineVcCompiler} from '../lib/compilers/wine-vc.js';
 import {WslVcCompiler} from '../lib/compilers/wsl-vc.js';
 import {LanguageKey} from '../types/languages.interfaces.js';
@@ -43,11 +44,12 @@ const info = {
         target: 'foo',
         path: 'bar',
         cmakePath: 'cmake',
+        basePath: '/',
     },
 };
 
 describe('Paths', () => {
-    let env;
+    let env: CompilationEnvironment;
 
     beforeAll(() => {
         env = makeCompilationEnvironment({languages});
@@ -71,7 +73,7 @@ function testExecOutput(x) {
     return x;
 }
 
-let ce;
+let ce: CompilationEnvironment;
 
 function createCompiler(compiler) {
     if (ce === undefined) {

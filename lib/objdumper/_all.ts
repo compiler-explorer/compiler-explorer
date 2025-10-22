@@ -23,7 +23,9 @@
 // POSSIBILITY OF SUCH DAMAGE.
 
 export {BinutilsObjdumper} from './binutils.js';
+export {Da65Objdumper} from './da65.js';
 export {DefaultObjdumper} from './default.js';
 export {ElfToolChainObjdumper} from './elftoolchain.js';
+export {GoldenGateObjdumper} from './goldengate.js';
 export {LlvmObjdumper} from './llvm.js';
-export {Da65Objdumper} from './da65.js';
+export {VcObjdumper} from './vc.js';

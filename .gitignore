@@ -10,12 +10,17 @@
 /asm-docs*
 /etc/scripts/asm-docs*
 
+# Python virtual environments and uv
+/etc/scripts/docenizers/.venv
+/etc/scripts/docenizers/.uv
+
 # user local customizations
 /etc/**/*.local.*
 /lib/storage/data
 
 # IDE project files
 /.idea/shelf
+/.vs
 /nbproject
 *.vscode
 *.code-workspace
@@ -28,3 +33,9 @@ newrelic_agent.log
 
 # approval tests
 *.received.*
+
+# Claude local settings
+.claude/settings.local.json
+.aider*
+
+etc/scripts/ce-properties-wizard/ce_properties_wizard/__pycache__

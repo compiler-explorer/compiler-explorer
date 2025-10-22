@@ -22,40 +22,53 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import * as fs from 'fs';
-import path from 'path';
+import * as fs from 'node:fs';
+import path from 'node:path';
 
 import {isString} from '../shared/common-utils.js';
 import {parse} from '../shared/stacktrace.js';
 
+// Helper for cross-platform path handling in tests
+export function normalizePath(filePath: string): string {
+    return filePath.split(path.sep).join('/');
+}
+
+let ce_base_directory = '';
+
 const filePrefix = 'file://';
 
-function removeFileProtocol(path: string) {
+export function setBaseDirectory(base_url_path: URL) {
+    ce_base_directory = base_url_path.pathname;
+}
+
+// Explicitly export for testing purposes - not part of the public API
+export function removeFileProtocol(path: string) {
     if (path.startsWith(filePrefix)) {
         return path.slice(filePrefix.length);
-    } else {
-        return path;
     }
+    return path;
 }
 
-function check_path(parent: URL, directory: string) {
+// Explicitly export for testing purposes - not part of the public API
+export function check_path(parent: string, directory: string) {
     // https://stackoverflow.com/a/45242825/15675011
-    const relative = path.relative(parent.pathname, directory);
+    const relative = path.relative(parent, directory);
     if (relative && !relative.startsWith('..') && !path.isAbsolute(relative)) {
-        return relative;
-    } else {
-        return false;
+        // Normalize separators to forward slashes for consistent behavior across platforms
+        return normalizePath(relative);
     }
+    return false;
 }
 
-function get_diagnostic() {
-    const e = new Error(); // eslint-disable-line unicorn/error-message
+// Explicitly export for testing purposes - not part of the public API
+export function get_diagnostic() {
+    const e = new Error();
     const trace = parse(e);
     if (trace.length >= 4) {
         const invoker_frame = trace[3];
         if (invoker_frame.fileName && invoker_frame.lineNumber) {
             // Just out of an abundance of caution...
-            const relative = check_path(global.ce_base_directory, removeFileProtocol(invoker_frame.fileName));
+            const relative = check_path(ce_base_directory, removeFileProtocol(invoker_frame.fileName));
             if (relative) {
                 try {
                     const file = fs.readFileSync(invoker_frame.fileName, 'utf8');
@@ -65,7 +78,7 @@ function get_diagnostic() {
                         line: invoker_frame.lineNumber,
                         src: lines[invoker_frame.lineNumber - 1].trim(),
                     };
-                } catch (e: any) {}
+                } catch {}
             }
         }
     }
@@ -84,18 +97,19 @@ function fail(fail_message: string, user_message: string | undefined, args: any[
     if (args.length > 0) {
         try {
             assert_line += ', ' + JSON.stringify(args);
-        } catch (e) {}
+        } catch {}
     }
 
     const diagnostic = get_diagnostic();
     if (diagnostic) {
         throw new Error(assert_line + `, at ${diagnostic.file}:${diagnostic.line} \`${diagnostic.src}\``);
-    } else {
-        throw new Error(assert_line);
     }
+    throw new Error(assert_line);
 }
 
-export function assert<C>(c: C, message?: string, ...extra_info: any[]): asserts c {
+// Using `unknown` instead of generic implementation due to:
+// https://github.com/microsoft/TypeScript/issues/60130
+export function assert(c: unknown, message?: string, ...extra_info: any[]): asserts c {
     if (!c) {
         fail('Assertion failed', message, extra_info);
     }

@@ -419,15 +419,7 @@
       "text": ".Linfo_string3:"
     },
     {
-      "labels": [
-        {
-          "name": "trap_arm",
-          "range": {
-            "endCol": 26,
-            "startCol": 18
-          }
-        }
-      ],
+      "labels": [],
       "source": null,
       "text": "        .asciz  \"trap_arm\"              @ string offset=124"
     },
@@ -437,15 +429,7 @@
       "text": ".Linfo_string4:"
     },
     {
-      "labels": [
-        {
-          "name": "trap_thumb",
-          "range": {
-            "endCol": 28,
-            "startCol": 18
-          }
-        }
-      ],
+      "labels": [],
       "source": null,
       "text": "        .asciz  \"trap_thumb\"            @ string offset=133"
     },

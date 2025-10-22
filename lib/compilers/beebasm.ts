@@ -22,15 +22,15 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import path from 'path';
+import fs from 'node:fs/promises';
+import path from 'node:path';
 
-import fs from 'fs-extra';
-
-import type {ExecutionOptions} from '../../types/compilation/compilation.interfaces.js';
+import type {ExecutionOptionsWithEnv} from '../../types/compilation/compilation.interfaces.js';
 import type {PreliminaryCompilerInfo} from '../../types/compiler.interfaces.js';
 import {ArtifactType} from '../../types/tool.interfaces.js';
 import {addArtifactToResult} from '../artifact-utils.js';
 import {BaseCompiler} from '../base-compiler.js';
+import {CompilationEnvironment} from '../compilation-env.js';
 import {AsmParserBeebAsm} from '../parsers/asm-parser-beebasm.js';
 import * as utils from '../utils.js';
 
@@ -39,7 +39,7 @@ export class BeebAsmCompiler extends BaseCompiler {
         return 'beebasm';
     }
 
-    constructor(compilerInfo: PreliminaryCompilerInfo, env) {
+    constructor(compilerInfo: PreliminaryCompilerInfo, env: CompilationEnvironment) {
         super(compilerInfo, env);
 
         this.asm = new AsmParserBeebAsm(this.compilerProps);
@@ -57,7 +57,7 @@ export class BeebAsmCompiler extends BaseCompiler {
         compiler: string,
         options: string[],
         inputFilename: string,
-        execOptions: ExecutionOptions & {env: Record<string, string>},
+        execOptions: ExecutionOptionsWithEnv,
     ) {
         if (!execOptions) {
             execOptions = this.getDefaultExecOptions();
@@ -76,7 +76,7 @@ export class BeebAsmCompiler extends BaseCompiler {
 
         if (compilerExecResult.stdout.length > 0) {
             const outputFilename = this.getOutputFilename(dirPath, this.outputFilebase);
-            fs.writeFileSync(outputFilename, compilerExecResult.stdout);
+            await fs.writeFile(outputFilename, compilerExecResult.stdout);
             compilerExecResult.stdout = '';
         }
 

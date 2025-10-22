@@ -22,6 +22,8 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
+import fs from 'node:fs';
+
 import cloneDeep from 'lodash.clonedeep';
 import {beforeAll, describe, expect, it} from 'vitest';
 
@@ -29,23 +31,21 @@ import {LlvmAstParser} from '../lib/llvm-ast.js';
 import * as properties from '../lib/properties.js';
 import * as utils from '../lib/utils.js';
 
-import {fs} from './utils.js';
-
 const languages = {
     'c++': {id: 'c++'},
 };
 
-function mockAstOutput(astLines) {
+function mockAstOutput(astLines: string[]) {
     return {stdout: astLines.map(l => ({text: l}))};
 }
 
 describe('llvm-ast', () => {
     let compilerProps;
     let astParser;
-    let astDump;
+    let astDump: string[];
     let compilerOutput;
-    let astDumpWithCTime;
-    let astDumpNestedDecl1346;
+    let astDumpWithCTime: string[];
+    let astDumpNestedDecl1346: string[];
 
     beforeAll(() => {
         const fakeProps = new properties.CompilerProps(languages, properties.fakeProps({}));
@@ -155,7 +155,7 @@ describe('llvm-ast bug-3849b', () => {
 describe('llvm-ast bug-5889', () => {
     let compilerProps;
     let astParser;
-    let astDump;
+    let astDump: string[];
     let compilerOutput;
 
     beforeAll(() => {

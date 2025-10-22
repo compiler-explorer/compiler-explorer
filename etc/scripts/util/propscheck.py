@@ -27,10 +27,12 @@ from os import listdir
 from os.path import isfile, join
 import re
 import argparse
+from argparse import Namespace
 
 parser = argparse.ArgumentParser(description='Checks for incorrect/suspicious properties.')
 parser.add_argument ('--check-suspicious-in-default-prop', required=False, action="store_true")
 parser.add_argument ('--config-dir', required=False, default="./etc/config")
+parser.add_argument ('--check-local', required=False, action="store_true")
 
 
 PROP_RE = re.compile(r'([^# ]*)=(.*)#*')
@@ -101,12 +103,13 @@ def check_suspicious_path_and_add(line: Line, m, s):
         s.add(Line(line.number, m.group(2)))
 
 
-def process_file(file: str, args):
+def process_file(file: str, args: Namespace):
     default_compiler = set()
 
     listed_groups = set()
     seen_groups = set()
 
+    no_compilers_list = set()
     listed_compilers = set()
     seen_compilers_exe = set()
     seen_compilers_id = set()
@@ -133,7 +136,7 @@ def process_file(file: str, args):
     duplicated_compiler_references = set()
     duplicated_group_references = set()
 
-    suspicious_check = args.check_suspicious_in_default_prop or not (file.endswith('.defaults.properties'))
+    suspicious_check = args.check_suspicious_in_default_prop or (not file.endswith('.defaults.properties') and not file.endswith('.local.properties'))
     suspicious_path = set()
 
     seen_typo_compilers = set()
@@ -234,7 +237,19 @@ def process_file(file: str, args):
     bad_tools_exe = listed_tools.symmetric_difference(seen_tools_exe)
     bad_tools_id = listed_tools.symmetric_difference(seen_tools_id)
     bad_default = default_compiler - listed_compilers
+
+    if len(listed_compilers) == 0 and len(listed_groups) == 0:
+        allowed = ('execution.','compiler-explorer.', 'aws.', 'asm-docs.', 'builtin.', '.defaults.')
+        is_allowed_to_be_empty = False
+        for allow in allowed:
+            if allow in file:
+                is_allowed_to_be_empty = True
+                break
+        if not is_allowed_to_be_empty:
+            no_compilers_list.add(file)
+
     return {
+        "no_compilers_list": no_compilers_list,
         "not_a_valid_prop": not_a_valid_prop,
         "bad_compilers_exe": bad_compilers_exe - disabled,
         "bad_compilers_id": bad_compilers_ids - disabled,
@@ -255,11 +270,17 @@ def process_file(file: str, args):
     }
 
 def process_folder(folder: str, args):
-    return [(f, process_file(join(folder, f), args))
-            for f in listdir(folder)
-            if isfile(join(folder, f))
-            and not f.endswith('.local.properties')
-            and f.endswith('.properties')]
+    if not args.check_local:
+        return [(f, process_file(join(folder, f), args))
+                for f in listdir(folder)
+                if isfile(join(folder, f))
+                and not f.endswith('.local.properties')
+                and f.endswith('.properties')]
+    else:
+        return [(f, process_file(join(folder, f), args))
+                for f in listdir(folder)
+                if isfile(join(folder, f))
+                and f.endswith('.properties')]
 
 def problems_found(file_result):
     return any(len(file_result[r]) > 0 for r in file_result if r != "filename")
@@ -270,9 +291,56 @@ def print_issue(name, result):
         print(f"{name}:\n  {sep.join(sorted([str(issue) for issue in result]))}")
 
 
-def find_orphans(args: dict):
+def check_cross_file_duplicates(folder: str):
+    """Check for compiler IDs that are defined in multiple Amazon files"""
+    from collections import defaultdict
+
+    compiler_id_locations = defaultdict(list)
+
+    for filename in listdir(folder):
+        if not filename.endswith('.properties') or filename.endswith('.local.properties'):
+            continue
+        if 'amazon' not in filename.lower():
+            continue
+
+        filepath = join(folder, filename)
+        with open(filepath, 'r') as f:
+            seen_compilers = set()
+
+            for line_num, text in enumerate(f, start=1):
+                text = text.strip()
+                if not text or text.startswith('#'):
+                    continue
+
+                # Check for compiler IDs only
+                compiler_match = COMPILER_ID_RE.match(text)
+                if compiler_match:
+                    compiler_id = compiler_match.group(1)
+                    if compiler_id not in seen_compilers:
+                        seen_compilers.add(compiler_id)
+                        compiler_id_locations[compiler_id].append((filename, line_num))
+
+    duplicate_compiler_ids = {id: locs for id, locs in compiler_id_locations.items() if len(locs) > 1}
+
+    return duplicate_compiler_ids
+
+def find_orphans_and_duplicates(args: Namespace):
     folder = args.config_dir
     result = sorted([(f, r) for (f, r) in process_folder(folder, args) if problems_found(r)], key=lambda x: x[0])
+
+    duplicate_compiler_ids = check_cross_file_duplicates(folder)
+
+    has_cross_file_issues = False
+    if duplicate_compiler_ids:
+        has_cross_file_issues = True
+        print("Found duplicate Compiler IDs across Amazon property files:")
+        print("################")
+        for compiler_id, locations in sorted(duplicate_compiler_ids.items()):
+            print(f"  {compiler_id}:")
+            for filename, line_num in sorted(locations):
+                print(f"    - {filename}:Line {line_num}")
+        print("")
+
     if result:
         print(f"Found {len(result)} property file(s) with issues:")
         for (filename, issues) in result:
@@ -284,12 +352,13 @@ def find_orphans(args: dict):
         print("To suppress this warning on IDs that are temporally disabled, "
               "add one or more comments to each listed file:")
         print("# Disabled: id1 id2 ...")
-    else:
+    elif not has_cross_file_issues:
         print("No configuration mismatches found")
-    return result
+
+    return result or has_cross_file_issues
 
 
 if __name__ == '__main__':
     args = parser.parse_args()
-    if find_orphans(args):
+    if find_orphans_and_duplicates(args):
         sys.exit(1)

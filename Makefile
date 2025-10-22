@@ -8,7 +8,10 @@ NODE:=node-not-found
 NPM:=npm-not-found
 NODE_MODULES:=./node_modules/.npm-updated
 NODE_ARGS?=
-TS_NODE_ARGS:=--no-warnings=ExperimentalWarning --loader ts-node/esm
+TS_NODE_ARGS:=--no-warnings=ExperimentalWarning --import=tsx
+
+# All file paths that are not .ts files that should be watched for changes if launched with watch.
+FILEWATCHER_ARGS:=--watch --include "etc/config/*"
 
 # These 'find' scripts cache their results in a dotfile.
 # Doing it this way instead of NODE:=$(shell etc/script/find-node) means
@@ -31,6 +34,12 @@ info: node-installed ## print out some useful variables
 	@echo Using npm from $(NPM)
 	@echo PATH is $(PATH)
 
+# disassemblers are needed for local deploys: #4225
+.PHONY: scripts
+scripts:
+	mkdir -p out/dist/etc/scripts/disasms
+	rsync -r -u etc/scripts/disasms/* out/dist/etc/scripts/disasms
+
 .PHONY: prereqs
 prereqs: $(NODE_MODULES)
 
@@ -48,10 +57,6 @@ lint: $(NODE_MODULES)  ## Checks if the source currently matches code convention
 lint-fix: $(NODE_MODULES)  ## Checks if everything matches code conventions & fixes those which are trivial to do so
 	$(NPM) run lint
 
-.PHONY: ci-lint
-ci-lint: $(NODE_MODULES)
-	$(NPM) run ci-lint
-
 .PHONY: test
 test: $(NODE_MODULES)  ## Runs the tests
 	$(NPM) run test
@@ -65,21 +70,25 @@ test-min: $(NODE_MODULES)  ## Runs the minimal tests
 .PHONY: check
 check: $(NODE_MODULES) lint test  ## Runs all checks required before committing (fixing trivial things automatically)
 
+.PHONY: check-frontend-imports
+check-frontend-imports: node-installed  ## Check that frontend doesn't import from backend
+	@$(NODE) ./etc/scripts/check-frontend-imports.js
+
 .PHONY: pre-commit
-pre-commit: $(NODE_MODULES) test-min lint
+pre-commit: $(NODE_MODULES) test-min lint check-frontend-imports
 
 .PHONY: clean
 clean:  ## Cleans up everything
 	rm -rf node_modules .*-updated .*-bin out
 
 .PHONY: prebuild
-prebuild: prereqs
+prebuild: prereqs scripts
 	$(NPM) run webpack
 	$(NPM) run ts-compile
 
 .PHONY: run-only
 run-only: node-installed  ## Runs the site like it runs in production without building it
-	env NODE_ENV=production $(NODE) $(NODE_ARGS) ./out/dist/app.js --webpackContent ./out/webpack/static $(EXTRA_ARGS)
+	env NODE_ENV=production $(NODE) $(NODE_ARGS) ./out/dist/app.js --static ./out/webpack/static $(EXTRA_ARGS)
 
 .PHONY: run
 run:  ## Runs the site like it runs in production
@@ -88,22 +97,24 @@ run:  ## Runs the site like it runs in production
 
 .PHONY: dev
 dev: prereqs ## Runs the site as a developer; including live reload support and installation of git hooks
-	NODE_OPTIONS="$(TS_NODE_ARGS) $(NODE_ARGS)" ./node_modules/.bin/supervisor -w app.ts,lib,etc/config,static/tsconfig.json -e 'js|ts|node|properties|yaml' -n exit --exec $(NODE) -- ./app.ts $(EXTRA_ARGS)
+	NODE_OPTIONS="$(TS_NODE_ARGS) $(NODE_ARGS)" ./node_modules/.bin/tsx watch $(FILEWATCHER_ARGS) ./app.ts $(EXTRA_ARGS)
 
 .PHONY: gpu-dev
 gpu-dev: prereqs ## Runs the site as a developer; including live reload support and installation of git hooks
-	NODE_OPTIONS="$(TS_NODE_ARGS) $(NODE_ARGS)" ./node_modules/.bin/supervisor -w app.ts,lib,etc/config,static/tsconfig.json -e 'js|ts|node|properties|yaml' -n exit --exec $(NODE) -- ./app.ts --env gpu $(EXTRA_ARGS)
+	NODE_OPTIONS="$(TS_NODE_ARGS) $(NODE_ARGS)" ./node_modules/.bin/tsx watch $(FILEWATCHER_ARGS) ./app.ts --env gpu $(EXTRA_ARGS)
 
 .PHONY: debug
 debug: prereqs ## Runs the site as a developer with full debugging; including live reload support and installation of git hooks
-	NODE_OPTIONS="$(TS_NODE_ARGS) $(NODE_ARGS) --inspect 9229" ./node_modules/.bin/supervisor -w app.ts,lib,etc/config,static/tsconfig.json -e 'js|ts|node|properties|yaml' -n exit --exec $(NODE) -- ./app.ts --debug $(EXTRA_ARGS)
+	NODE_OPTIONS="$(TS_NODE_ARGS) $(NODE_ARGS) --inspect 9229" ./node_modules/.bin/tsx watch $(FILEWATCHER_ARGS) ./app.ts --debug $(EXTRA_ARGS)
 
 .PHONY:
 asm-docs:
 	$(MAKE) -C etc/scripts/docenizers || ( \
 		echo "==============================================================================="; \
-		echo "One of the docenizers failed to run, make sure you have installed the necessary"; \
-		echo "dependencies: pip3 install beautifulsoup4 pdfminer.six && npm install"; \
+		echo "One of the docenizers failed to run. The dependencies are managed by uv and"; \
+		echo "should be automatically installed. If you see this error, please check that:"; \
+		echo "  1. uv is available (it will be auto-installed if not)"; \
+		echo "  2. npm install has been run for the TypeScript docenizers"; \
 		echo "==============================================================================="; \
 		exit 1 \
 	)

@@ -6,7 +6,7 @@ block content
       input#filterAnsi(name='filterAnsi' value='true' type='hidden')
 
       .form-pair.inlined.dropdown
-        a.btn.nodropdown-toggle#outputDropdown(href="javascript:;" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false")
+        a.btn.link-primary.nodropdown-toggle#outputDropdown(role="button" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false")
           span.fas.fa-cog
           | Output
 
@@ -14,7 +14,7 @@ block content
           include ../options-output.pug
 
       .form-pair.inlined.dropdown
-        a.btn.nodropdown-toggle#filtersDropdown(href="javascript:;" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false")
+        a.btn.link-primary.nodropdown-toggle#filtersDropdown(role="button" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false")
           span.fas.fa-filter
           | Filters
 
@@ -40,4 +40,6 @@ block content
         textarea#source(name='source' cols='70' rows='10' placeholder='Type your code here' autocorrect="off" autocapitalize="off" spellcheck="false")
           =session.source
       .form-pair-inlined
-        input(type='submit' value='Compile')
+        input.btn(type='submit' value='Compile')
+        | 
+        input.btn(type='submit' value='Get Shareable Link' formaction=`${httpRoot}noscript/share` formmethod='POST')

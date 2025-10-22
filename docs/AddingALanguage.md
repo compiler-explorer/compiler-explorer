@@ -12,8 +12,8 @@ If you want to add a new language to the site, you should follow this steps:
     monaco: MONACO_MODE_ID,
     extensions: ARRAY_OF_FILE_EXTENSIONS_OF_YOUR_LANGUAGE,
     alias: [], // Leave empty unless needed,
-    logoUrl: PATH_TO_LOGO,
-    logoUrlDark: PATH_TO_DARK_LOGO, // Optional if not needed
+    logoFilename: NAME_OF_LOGO_FILE, // Name of the logo file in views/resources/logos/
+    logoFilenameDark: NAME_OF_DARK_LOGO_FILE, // Optional, if there is a dark version of the logo
   }
   ```
 
@@ -24,9 +24,11 @@ If you want to add a new language to the site, you should follow this steps:
     _require_ your mode file in `static/modes/_all.ts`, in alphabetical order
   - `language-key` is how your language will be referred internally by the code. In the rest of this document, replace
     `{language-key}` by the corresponding value in the real files.
-  - Add a logo file to the `views/resources/logos/` folder and add its path to the `logoUrl{Dark}` key(s) in the
+  - Add a logo file to the `views/resources/logos/` folder and add its path to the `logoFilename{Dark}` key(s) in the
     language object
+  - Add the logo keys to the `static/logos.ts` file, in alphabetical order.
 
+- Add `{language-key}` to type list in `types/languages.interfaces.ts`
 - Add a `lib/compilers/{language-key}.ts` file using the template below:
 
   ```js
@@ -43,8 +45,8 @@ If you want to add a new language to the site, you should follow this steps:
     `etc/config/{language-key}.defaults.properties` (Explained below). This is usually `{language-key}`, but you can use
     whatever fits best
   - Override the `OptionsForFilter` method from the base class
-  - Comment out the line saying `fs.remove(result.dirPath);` in `base-compiler.ts`, so the latest CE compile attempt
-    remains on disk for you to review
+  - Comment out the line saying `fs.remove(buildResult.dirPath);` in `base-compiler.ts`, so the latest CE compile
+    attempt remains on disk for you to review
     - Remember to undo this change before opening a PR!
   - For reference, the basic behaviour of BaseCompiler is:
     - make a random temporary folder
@@ -62,7 +64,8 @@ If you want to add a new language to the site, you should follow this steps:
 
 - Add a `etc/config/{language-key}.local.properties` file:
 
-  - The syntax for its basic contents is documented in [AddingACompiler.md](AddingACompiler.md)
+  - For the general configuration system details, refer to [Configuration.md](Configuration.md)
+  - The specific configuration syntax for compilers is documented in [AddingACompiler.md](AddingACompiler.md)
   - This file is ignored by Git, so that you can test the config locally
   - You should add 1 compiler for the language you want to test
   - Test the command line options of the language compilers outside CE
