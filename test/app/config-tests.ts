@@ -71,6 +71,9 @@ import * as props from '../../lib/properties.js';
 import type {Language, LanguageKey} from '../../types/languages.interfaces.js';
 
 // Mock modules
+// Vitest 4.0 requires constructor mocks to be actual classes/functions, not arrow functions.
+// We define classes directly here because .mockImplementation() gets auto-converted to arrow
+// functions by Biome, which breaks constructor calls. Do not refactor to arrow functions!
 vi.mock('node:os', async () => {
     const actual = await vi.importActual('node:os');
     return {

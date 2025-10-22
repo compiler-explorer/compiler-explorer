@@ -41,6 +41,9 @@ import * as sponsors from '../../lib/sponsors.js';
 import {getStorageTypeByKey} from '../../lib/storage/index.js';
 
 // We need to mock all these modules to avoid actual API calls
+// Vitest 4.0 requires constructor mocks to be actual classes/functions, not arrow functions.
+// We define classes directly here because .mockImplementation() gets auto-converted to arrow
+// functions by Biome, which breaks constructor calls. Do not refactor to arrow functions!
 vi.mock('../../lib/aws.js');
 vi.mock('../../lib/exec.js');
 vi.mock('../../lib/execution/execution-query.js');
