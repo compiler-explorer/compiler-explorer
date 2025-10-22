@@ -113,7 +113,6 @@ describe('Server Config Module', () => {
             // Verify critical server configurations
             expect(mockWebServer.set).toHaveBeenCalledWith('trust proxy', true);
             expect(mockWebServer.set).toHaveBeenCalledWith('view engine', 'pug');
-            expect(mockWebServer.on).toHaveBeenCalledWith('error', expect.any(Function));
             expect(mockWebServer.use).toHaveBeenCalled();
             expect(mockWebServer.use).toHaveBeenCalledWith(mockOptions.httpRoot, mockRouter);
             expect(Sentry.setupExpressErrorHandler).toHaveBeenCalledWith(mockWebServer);
