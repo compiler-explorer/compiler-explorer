@@ -83,7 +83,10 @@ async function maybeUnbuffer(command: string, args: string[]): Promise<{command:
     if (stdbufPath) {
         const stdbufArgs = splitArguments(execProps<string>('unbufferStdoutArgs'));
         logger.debug(`Unbuffering ${command} with ${stdbufPath} ${stdbufArgs.join(' ')}`);
-        return {command: stdbufPath, args: stdbufArgs.concat([command], args)};
+        return {
+            command: stdbufPath,
+            args: stdbufArgs.concat([command], args),
+        };
     }
     return {command, args};
 }
@@ -115,7 +118,13 @@ export async function executeDirect(
     let timedOut = false;
     // In WSL; run Windows-volume executables in a temp directory.
     const cwd = options.customCwd || (command.startsWith('/mnt') && process.env.wsl ? os.tmpdir() : undefined);
-    logger.debug('Execution', {type: 'executing', command: command, args: args, env: env, cwd: cwd});
+    logger.debug('Execution', {
+        type: 'executing',
+        command: command,
+        args: args,
+        env: env,
+        cwd: cwd,
+    });
     const startTime = process.hrtime.bigint();
 
     const child = child_process.spawn(command, args, {
@@ -202,7 +211,12 @@ export async function executeDirect(
             // Check debug level explicitly as result may be a very large string
             // which we'd prefer to avoid preparing if it won't be used
             if (logger.isDebugEnabled()) {
-                logger.debug('Execution', {type: 'executed', command: command, args: args, result: result});
+                logger.debug('Execution', {
+                    type: 'executed',
+                    command: command,
+                    args: args,
+                    result: result,
+                });
             }
             resolve(result);
         });
@@ -243,6 +257,8 @@ export function getFirejailProfileFilePath(profileName: string): string {
     return profilePath;
 }
 
+const jailedHomeDir = '/app';
+
 export function getNsJailOptions(
     configName: string,
     command: string,
@@ -257,26 +273,25 @@ export function getNsJailOptions(
         jailingOptions.push(`--time_limit=${Math.round((options.timeoutMs + ExtraWallClockLeewayMs) / 1000)}`);
     }
 
-    const homeDir = '/app';
     let filenameTransform: FilenameTransformFunc | undefined;
     if (options.customCwd) {
         let replacement = options.customCwd;
         if (options.appHome) {
             replacement = options.appHome;
-            const relativeCwd = path.join(homeDir, path.relative(options.appHome, options.customCwd));
-            jailingOptions.push('--cwd', relativeCwd, '--bindmount', `${options.appHome}:${homeDir}`);
+            const relativeCwd = path.join(jailedHomeDir, path.relative(options.appHome, options.customCwd));
+            jailingOptions.push('--cwd', relativeCwd, '--bindmount', `${options.appHome}:${jailedHomeDir}`);
         } else {
-            jailingOptions.push('--cwd', homeDir, '--bindmount', `${options.customCwd}:${homeDir}`);
+            jailingOptions.push('--cwd', jailedHomeDir, '--bindmount', `${options.customCwd}:${jailedHomeDir}`);
         }
 
-        filenameTransform = opt => opt.replaceAll(replacement, '/app');
+        filenameTransform = opt => opt.replaceAll(replacement, jailedHomeDir);
         args = args.map(filenameTransform);
         delete options.customCwd;
     }
 
     const transform = filenameTransform || (x => x);
 
-    const env: Record<string, string> = {...options.env, HOME: homeDir};
+    const env: Record<string, string> = {...options.env, HOME: jailedHomeDir};
     if (options.ldPath) {
         const ldPaths = options.ldPath.filter(Boolean).map(path => transform(path));
         jailingOptions.push(`--env=LD_LIBRARY_PATH=${ldPaths.join(path.delimiter)}`);
@@ -516,7 +531,10 @@ export function startWineInit() {
             logger.info(`firejailed pid=${wineServer.pid}`);
         } else {
             logger.info(`Starting a new, long-lived wineserver complex ${server}`);
-            wineServer = child_process.spawn(wine, ['cmd'], {env: env, detached: true});
+            wineServer = child_process.spawn(wine, ['cmd'], {
+                env: env,
+                detached: true,
+            });
             logger.info(`wineserver pid=${wineServer.pid}`);
         }
 
@@ -677,4 +695,8 @@ export async function execute(
     if (!command) throw new Error('No executable provided');
     const unbuffered = await maybeUnbuffer(command, args);
     return await dispatchEntry(unbuffered.command, unbuffered.args, options);
+}
+
+export function maybeRemapJailedDir(customCwd: string): string {
+    return execProps('executionType', 'none') == 'nsjail' ? jailedHomeDir : customCwd;
 }
