@@ -53,7 +53,6 @@ export function setupBaseServerConfig(
     webServer
         .set('trust proxy', true)
         .set('view engine', 'pug')
-        .on('error', err => logger.error('Caught error in web handler; continuing:', err))
         .use(
             responseTime((req, res, time) => {
                 if (options.sentrySlowRequestMs > 0 && time >= options.sentrySlowRequestMs) {
