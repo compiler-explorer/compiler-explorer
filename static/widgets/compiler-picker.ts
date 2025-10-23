@@ -24,9 +24,8 @@
 
 import $ from 'jquery';
 import TomSelect from 'tom-select';
-
+import {unwrap} from '../../shared/assert.js';
 import {CompilerInfo} from '../../types/compiler.interfaces.js';
-import {unwrap} from '../assert.js';
 import {CompilerService} from '../compiler-service.js';
 import {EventHub} from '../event-hub.js';
 import {Hub} from '../hub.js';

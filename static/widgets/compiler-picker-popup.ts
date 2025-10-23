@@ -24,10 +24,9 @@
 
 import * as sifter from '@orchidjs/sifter';
 import $ from 'jquery';
-
+import {unwrap, unwrapString} from '../../shared/assert.js';
 import {escapeHTML, intersection, remove, unique} from '../../shared/common-utils.js';
 import {CompilerInfo} from '../../types/compiler.interfaces.js';
-import {unwrap, unwrapString} from '../assert.js';
 import * as BootstrapUtils from '../bootstrap-utils.js';
 import {CompilerService} from '../compiler-service.js';
 import {highlight} from '../highlight.js';

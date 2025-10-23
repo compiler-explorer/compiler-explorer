@@ -26,9 +26,9 @@
 // Converted to typescript by MarkusJx
 
 import _ from 'underscore';
+import {assert, unwrap} from '../shared/assert.js';
 import {escapeHTML, isString} from '../shared/common-utils.js';
 import {AnsiToHtmlOptions, ColorCodes} from './ansi-to-html.interfaces.js';
-import {assert, unwrap} from './assert.js';
 
 const defaults: AnsiToHtmlOptions = {
     fg: '#FFF',

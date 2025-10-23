@@ -30,10 +30,10 @@ import _ from 'underscore';
 
 import IEditorMouseEvent = editor.IEditorMouseEvent;
 
+import {unwrap} from '../../shared/assert.js';
 import {CompilationResult} from '../../types/compilation/compilation.interfaces.js';
 import {LLVMIrBackendOptions} from '../../types/compilation/ir.interfaces.js';
 import {CompilerInfo} from '../../types/compiler.interfaces.js';
-import {unwrap} from '../assert.js';
 import {applyColours} from '../colour.js';
 import * as Components from '../components.js';
 import {createDragSource} from '../components.js';
