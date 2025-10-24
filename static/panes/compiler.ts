@@ -75,6 +75,7 @@ import fileSaver from 'file-saver';
 import {escapeHTML, splitArguments} from '../../shared/common-utils.js';
 import {ClangirBackendOptions} from '../../types/compilation/clangir.interfaces.js';
 import {LLVMIrBackendOptions} from '../../types/compilation/ir.interfaces.js';
+import {YulBackendOptions} from '../../types/compilation/yul.interfaces.js';
 import {CompilerOutputOptions} from '../../types/features/filters.interfaces.js';
 import {InstructionSet} from '../../types/instructionsets.js';
 import {LanguageKey} from '../../types/languages.interfaces.js';
@@ -276,6 +277,7 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
     private ppOptions: PPOptions;
     private llvmIrOptions: LLVMIrBackendOptions;
     private clangirOptions: ClangirBackendOptions;
+    private yulOptions: YulBackendOptions;
     private optPipelineOptions: OptPipelineBackendOptions;
     private isOutputOpened: boolean;
     private mouseMoveThrottledFunction?: ((e: monaco.editor.IEditorMouseEvent) => void) & _.Cancelable;
@@ -1341,7 +1343,7 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
                 produceHaskellStg: this.haskellStgViewOpen,
                 produceHaskellCmm: this.haskellCmmViewOpen,
                 produceClojureMacroExp: this.clojureMacroExpViewOpen,
-                produceYul: this.yulViewOpen,
+                produceYul: this.yulViewOpen ? this.yulOptions : null,
                 overrides: this.getCurrentState().overrides,
             },
             filters: this.getEffectiveFilters(),
@@ -2267,6 +2269,15 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
         }
     }
 
+    onYulViewOptionsUpdated(id: number, options: YulBackendOptions, recompile: boolean): void {
+        if (this.id === id) {
+            this.yulOptions = options;
+            if (recompile) {
+                this.compile();
+            }
+        }
+    }
+
     onGccDumpUIInit(id: number): void {
         if (this.id === id) {
             this.compile();
@@ -2944,6 +2955,7 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
         this.eventHub.on('clojureMacroExpViewClosed', this.onClojureMacroExpViewClosed, this);
         this.eventHub.on('yulViewOpened', this.onYulViewOpened, this);
         this.eventHub.on('yulViewClosed', this.onYulViewClosed, this);
+        this.eventHub.on('yulViewOptionsUpdated', this.onYulViewOptionsUpdated, this);
         this.eventHub.on('outputOpened', this.onOutputOpened, this);
         this.eventHub.on('outputClosed', this.onOutputClosed, this);
 

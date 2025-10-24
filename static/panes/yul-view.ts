@@ -27,19 +27,28 @@ import $ from 'jquery';
 import * as monaco from 'monaco-editor';
 import _ from 'underscore';
 import {CompilationResult} from '../../types/compilation/compilation.interfaces.js';
+import {YulBackendOptions} from '../../types/compilation/yul.interfaces.js';
 import {CompilerInfo} from '../../types/compiler.interfaces.js';
 import {Hub} from '../hub.js';
 import {extendConfig} from '../monaco-config.js';
+import {Toggles} from '../widgets/toggles.js';
 import {MonacoPaneState} from './pane.interfaces.js';
 import {MonacoPane} from './pane.js';
 import {YulState} from './yul-view.interfaces.js';
 
 export class Yul extends MonacoPane<monaco.editor.IStandaloneCodeEditor, YulState> {
+    private filters: Toggles;
+    private lastOptions: YulBackendOptions = {
+        filterDebugInfo: true,
+    };
+
     constructor(hub: Hub, container: Container, state: YulState & MonacoPaneState) {
         super(hub, container, state);
         if (state.yulOutput) {
             this.showYulResults(state.yulOutput);
         }
+
+        this.onOptionsChange(true);
     }
 
     override getInitialHTML(): string {
@@ -66,6 +75,16 @@ export class Yul extends MonacoPane<monaco.editor.IStandaloneCodeEditor, YulStat
         return 'Yul (Solidity IR) Viewer';
     }
 
+    override registerButtons(state: YulState): void {
+        super.registerButtons(state);
+        this.filters = new Toggles(this.domRoot.find('.filters'), state as unknown as Record<string, boolean>);
+        this.filters.on('change', () => this.onOptionsChange());
+    }
+
+    updateButtons(compiler: CompilerInfo | null): void {
+        this.filters.enableToggle('filter-debug-info', !!compiler?.supportsYulView);
+    }
+
     override registerCallbacks(): void {
         const throttleFunction = _.throttle(
             (event: monaco.editor.ICursorSelectionChangedEvent) => this.onDidChangeCursorSelection(event),
@@ -74,6 +93,33 @@ export class Yul extends MonacoPane<monaco.editor.IStandaloneCodeEditor, YulStat
         this.editor.onDidChangeCursorSelection(event => throttleFunction(event));
         this.eventHub.emit('yulViewOpened', this.compilerInfo.compilerId);
         this.eventHub.emit('requestSettings');
+    }
+
+    override getCurrentState(): MonacoPaneState {
+        return {
+            ...super.getCurrentState(),
+            ...this.filters.get(),
+        };
+    }
+
+    onOptionsChange(force = false): void {
+        const filters = this.filters.get();
+        const newOptions: YulBackendOptions = {
+            filterDebugInfo: filters['filter-debug-info'],
+        };
+
+        let changed = false;
+        for (const key in newOptions) {
+            if (newOptions[key as keyof YulBackendOptions] !== this.lastOptions[key as keyof Yul]) {
+                changed = true;
+                break;
+            }
+        }
+
+        this.lastOptions = newOptions;
+        if (changed || force) {
+            this.eventHub.emit('yulViewOptionsUpdated', this.compilerInfo.compilerId, newOptions, true);
+        }
     }
 
     override onCompileResult(compilerId: number, compiler: CompilerInfo, result: CompilationResult): void {
@@ -98,6 +144,7 @@ export class Yul extends MonacoPane<monaco.editor.IStandaloneCodeEditor, YulStat
             this.compilerInfo.editorId = editorId;
             this.compilerInfo.treeId = treeId;
             this.updateTitle();
+            this.updateButtons(compiler);
             if (!compiler?.supportsYulView) {
                 const text = compiler?.name.toLowerCase().includes('resolc')
                     ? '<Yul output is only supported for this compiler when the input language is Solidity>'

@@ -66,6 +66,7 @@ import type {
     OptPipelineBackendOptions,
     OptPipelineOutput,
 } from '../types/compilation/opt-pipeline-output.interfaces.js';
+import type {YulBackendOptions} from '../types/compilation/yul.interfaces.js';
 import type {CompilerInfo, PreliminaryCompilerInfo} from '../types/compiler.interfaces.js';
 import {
     BasicExecutionResult,
@@ -1709,7 +1710,11 @@ export class BaseCompiler {
         return [{text: 'Internal error; unable to open output path'}];
     }
 
-    async processYulOutput(defaultOutputFilename: string, result: CompilationResult): Promise<ResultLine[]> {
+    async processYulOutput(
+        defaultOutputFilename: string,
+        result: CompilationResult,
+        yulOptions: YulBackendOptions,
+    ): Promise<ResultLine[]> {
         if (result.code !== 0) {
             return [{text: 'Failed to run compiler to get Yul intermediary output'}];
         }
@@ -1717,7 +1722,15 @@ export class BaseCompiler {
         const outputFilename = this.getYulOutputFilename(defaultOutputFilename);
         if (await utils.fileExists(outputFilename)) {
             const content = await fs.readFile(outputFilename, 'utf8');
-            return content.split('\n').map(line => ({text: line}));
+            const result: ResultLine[] = content.split('\n').map(line => ({text: line}));
+            const filters: RegExp[] = [];
+
+            if (yulOptions.filterDebugInfo) {
+                const debugInfoRe = /^\s*\/\/\/ @(use-src|src)/;
+                filters.push(debugInfoRe);
+            }
+
+            return result.filter(line => filters.every(re => !line.text.match(re)));
         }
 
         return [{text: 'Internal error: Unable to open output path'}];
@@ -2528,7 +2541,9 @@ export class BaseCompiler {
             ? await this.processHaskellExtraOutput(this.getHaskellCmmOutputFilename(inputFilename), asmResult)
             : undefined;
 
-        const yulResult = makeYul ? await this.processYulOutput(outputFilename, asmResult) : undefined;
+        const yulResult = makeYul
+            ? await this.processYulOutput(outputFilename, asmResult, backendOptions.produceYul)
+            : undefined;
 
         asmResult.dirPath = dirPath;
         if (!asmResult.compilationOptions) asmResult.compilationOptions = options;
