@@ -225,6 +225,7 @@ export type CompilationResult = {
     retreivedFromCache?: boolean;
     retreivedFromCacheTime?: number;
     packageDownloadAndUnzipTime?: number;
+    packageStoreTime?: number;
     execTime?: number;
     processExecutionResultTime?: number;
     objdumpTime?: number;

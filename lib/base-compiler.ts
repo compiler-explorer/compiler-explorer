@@ -2030,7 +2030,10 @@ export class BaseCompiler {
         buildResult.preparedLdPaths = this.getSharedLibraryPathsAsLdLibraryPathsForExecution(key, dirPath);
         buildResult.defaultExecOptions = this.getDefaultExecOptions();
 
+        const packageStoreStart = process.hrtime.bigint();
         await this.storePackageWithExecutable(executablePackageHash, dirPath, buildResult);
+        const packageStoreEnd = process.hrtime.bigint();
+        buildResult.packageStoreTime = utils.deltaTimeNanoToMili(packageStoreStart, packageStoreEnd);
 
         if (!buildResult.dirPath) {
             buildResult.dirPath = dirPath;
