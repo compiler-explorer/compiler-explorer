@@ -117,6 +117,7 @@ export type CompilationRequestOptions = {
         produceHaskellStg?: boolean;
         produceHaskellCmm?: boolean;
         produceClojureMacroExp?: boolean;
+        produceYul?: boolean;
         cmakeArgs?: string;
         customOutputFilename?: string;
         overrides?: ConfiguredOverrides;
@@ -215,6 +216,8 @@ export type CompilationResult = {
     haskellCmmOutput?: ResultLine[];
 
     clojureMacroExpOutput?: ResultLine[];
+
+    yulOutput?: ResultLine[];
 
     forceBinaryView?: boolean;
 

@@ -160,6 +160,8 @@ export type EventMap = {
     rustMirViewOpened: (compilerId: number) => void;
     clojureMacroExpViewClosed: (compilerId: number) => void;
     clojureMacroExpViewOpened: (compilerId: number) => void;
+    yulViewClosed: (compilerId: number) => void;
+    yulViewOpened: (compilerId: number) => void;
     // TODO: There are no emitters for this event
     selectLine: (editorId: number, lineNumber: number) => void;
     settingsChange: (newSettings: SiteSettings) => void;
