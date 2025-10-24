@@ -1627,6 +1627,10 @@ export class BaseCompiler {
         return utils.changeExtension(inputFilename, '.dump-cmm');
     }
 
+    getYulOutputFilename(defaultOutputFilename: string) {
+        return utils.changeExtension(defaultOutputFilename, '.yul');
+    }
+
     // Currently called for getting macro expansion and HIR.
     // It returns the content of the output file created after using -Z unpretty=<unprettyOpt>.
     // The outputFriendlyName is a free form string used in case of error.
@@ -1703,6 +1707,20 @@ export class BaseCompiler {
                 }));
         }
         return [{text: 'Internal error; unable to open output path'}];
+    }
+
+    async processYulOutput(defaultOutputFilename: string, result: CompilationResult): Promise<ResultLine[]> {
+        if (result.code !== 0) {
+            return [{text: 'Failed to run compiler to get Yul intermediary output'}];
+        }
+
+        const outputFilename = this.getYulOutputFilename(defaultOutputFilename);
+        if (await utils.fileExists(outputFilename)) {
+            const content = await fs.readFile(outputFilename, 'utf8');
+            return content.split('\n').map(line => ({text: line}));
+        }
+
+        return [{text: 'Internal error: Unable to open output path'}];
     }
 
     /**
@@ -2443,6 +2461,7 @@ export class BaseCompiler {
         const makeHaskellStg = backendOptions.produceHaskellStg && this.compiler.supportsHaskellStgView;
         const makeHaskellCmm = backendOptions.produceHaskellCmm && this.compiler.supportsHaskellCmmView;
         const makeGccDump = backendOptions.produceGccDump?.opened && this.compiler.supportsGccDump;
+        const makeYul = backendOptions.produceYul && this.compiler.supportsYulView;
 
         const [
             asmResult,
@@ -2509,6 +2528,8 @@ export class BaseCompiler {
             ? await this.processHaskellExtraOutput(this.getHaskellCmmOutputFilename(inputFilename), asmResult)
             : undefined;
 
+        const yulResult = makeYul ? await this.processYulOutput(outputFilename, asmResult) : undefined;
+
         asmResult.dirPath = dirPath;
         if (!asmResult.compilationOptions) asmResult.compilationOptions = options;
         asmResult.downloads = downloads;
@@ -2560,6 +2581,8 @@ export class BaseCompiler {
         asmResult.haskellCmmOutput = haskellCmmResult;
 
         asmResult.clojureMacroExpOutput = clojureMacroExpResult;
+
+        asmResult.yulOutput = yulResult;
 
         if (asmResult.code !== 0) {
             return [{...asmResult, asm: '<Compilation failed>'}, [], []];
