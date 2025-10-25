@@ -62,4 +62,11 @@ export class SwiftCompiler extends BaseCompiler {
     override getIrOutputFilename(inputFilename: string): string {
         return this.getOutputFilename(path.dirname(inputFilename), this.outputFilebase).replace('.o', '.ll');
     }
+
+    override getDefaultFilters() {
+        return {
+            ...super.getDefaultFilters(),
+            commentOnly: false, // SIL output includes useful demangled commentary
+        };
+    }
 }
