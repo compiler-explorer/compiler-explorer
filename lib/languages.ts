@@ -488,6 +488,18 @@ const definitions: Record<LanguageKey, LanguageDefinition> = {
         previewFilter: null,
         monacoDisassembly: null,
     },
+    helion: {
+        name: 'Helion',
+        monaco: 'python',
+        extensions: ['.py'],
+        alias: [],
+        logoFilename: 'helion.png',
+        logoFilenameDark: 'helion.png',
+        formatter: null,
+        previewFilter: null,
+        monacoDisassembly: null,
+        digitSeparator: '_',
+    },
     hook: {
         name: 'Hook',
         monaco: 'hook',

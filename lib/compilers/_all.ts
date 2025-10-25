@@ -92,6 +92,7 @@ export {GM2Compiler} from './gm2.js';
 export {GnuCobolCompiler} from './gnucobol.js';
 export {GolangCompiler} from './golang.js';
 export {HaskellCompiler} from './haskell.js';
+export {HelionCompiler} from './helion.js';
 export {HLSLCompiler} from './hlsl.js';
 export {HookCompiler} from './hook.js';
 export {HyloCompiler} from './hylo.js';
