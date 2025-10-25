@@ -1726,7 +1726,7 @@ export class BaseCompiler {
             const filters: RegExp[] = [];
 
             if (yulOptions.filterDebugInfo) {
-                const debugInfoRe = /^\s*\/\/\/ @(use-src|src)/;
+                const debugInfoRe = /^\s*\/\/\/ @(use-src|src|ast-id)/;
                 filters.push(debugInfoRe);
             }
 
