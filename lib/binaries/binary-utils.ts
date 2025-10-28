@@ -48,6 +48,9 @@ export class BinaryInfoLinux {
             case 'intel 80386': {
                 return 'x86';
             }
+            case 'intel i386': {
+                return 'x86';
+            }
             case '80386': {
                 return 'x86';
             }

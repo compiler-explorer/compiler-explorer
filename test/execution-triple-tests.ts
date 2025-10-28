@@ -75,4 +75,11 @@ describe('Execution triple utils', () => {
         expect(info?.instructionSet).toEqual('avr');
         expect(info?.os).toEqual('linux');
     });
+    it('recognizes 32-bit Intel for file >= v5.46', () => {
+        const info = BinaryInfoLinux.parseFileInfo(
+            'ELF 32-bit LSB executable, Intel i386, version 1 (SYSV), dynamically linked, interpreter /lib/ld-linux.so.2, BuildID[sha1]=936152b4351a49d381553a593f68286e1069435f, for GNU/Linux 4.4.0, not stripped',
+        );
+        expect(info?.instructionSet).toEqual('x86');
+        expect(info?.os).toEqual('linux');
+    });
 });
