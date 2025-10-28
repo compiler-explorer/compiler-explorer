@@ -63,6 +63,10 @@ function addBuildResultToTimings(data: Data, buildResult: any) {
         } else if (buildResult.execTime) {
             pushTimingInfo(data, 'Compilation', buildResult.execTime);
         }
+
+        if (buildResult.packageStoreTime) {
+            pushTimingInfo(data, 'Package build for cache', buildResult.packageStoreTime);
+        }
     }
 }
 
