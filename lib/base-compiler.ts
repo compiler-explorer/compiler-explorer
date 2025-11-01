@@ -630,7 +630,7 @@ export class BaseCompiler {
         return !!this.objdumperClass;
     }
 
-    getObjdumpOutputFilename(defaultOutputFilename: string): string {
+    getObjdumpInputFilename(defaultOutputFilename: string, filters?: ParseFiltersAndOutputOptions): string {
         return defaultOutputFilename;
     }
 
@@ -648,21 +648,22 @@ export class BaseCompiler {
         dynamicReloc: boolean,
         filters: ParseFiltersAndOutputOptions,
     ) {
-        outputFilename = this.getObjdumpOutputFilename(outputFilename);
+        const objdumpInputFile = this.getObjdumpInputFilename(outputFilename, filters);
 
-        if (!(await utils.fileExists(outputFilename))) {
-            result.asm = '<No output file ' + outputFilename + '>';
+        if (!(await utils.fileExists(objdumpInputFile))) {
+            result.asm = '<No output file ' + objdumpInputFile + '>';
             return result;
         }
 
         const objdumper = new this.objdumperClass();
         const args = objdumper.getArgs(
-            outputFilename,
+            objdumpInputFile,
             demangle,
             intelAsm,
             staticReloc,
             dynamicReloc,
             this.compiler.objdumperArgs,
+            filters,
         );
 
         if (this.externalparser) {
@@ -676,7 +677,7 @@ export class BaseCompiler {
         } else {
             const execOptions: ExecutionOptions = {
                 maxOutput: maxSize,
-                customCwd: (result.dirPath as string) || path.dirname(outputFilename),
+                customCwd: (result.dirPath as string) || path.dirname(objdumpInputFile),
             };
 
             const objResult = await objdumper.executeObjdump(

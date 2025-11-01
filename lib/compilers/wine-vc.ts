@@ -76,7 +76,7 @@ export class WineVcCompiler extends BaseCompiler {
         return this.getOutputFilename(dirPath, outputFilebase) + '.exe';
     }
 
-    override getObjdumpOutputFilename(defaultOutputFilename: string) {
+    override getObjdumpInputFilename(defaultOutputFilename: string) {
         return this.getExecutableFilename(path.dirname(defaultOutputFilename), 'output');
     }
 

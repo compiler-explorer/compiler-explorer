@@ -34,7 +34,7 @@ import type {PreliminaryCompilerInfo} from '../../types/compiler.interfaces.js';
 import {UnprocessedExecResult} from '../../types/execution/execution.interfaces.js';
 import type {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces.js';
 import {SelectedLibraryVersion} from '../../types/libraries/libraries.interfaces.js';
-import {unwrap} from '../assert.js';
+import {assert, unwrap} from '../assert.js';
 import {BaseCompiler} from '../base-compiler.js';
 import {copyNeededDlls} from '../binaries/win-utils.js';
 import {CompilationEnvironment} from '../compilation-env.js';
@@ -97,6 +97,16 @@ export class Win32Compiler extends BaseCompiler {
 
     override getExecutableFilename(dirPath: string, outputFilebase: string, key?: CacheKey) {
         return this.getOutputFilename(dirPath, outputFilebase, key) + '.exe';
+    }
+
+    override getObjdumpInputFilename(baseFilename: string, filters?: ParseFiltersAndOutputOptions): string {
+        if (filters?.binary) {
+            return baseFilename + '.exe';
+        }
+        if (filters?.binaryObject) {
+            return baseFilename + '.obj';
+        }
+        assert(false, 'getObjdumpInputFilename called without binary or binaryObject filter');
     }
 
     override getSharedLibraryPathsAsArguments(
