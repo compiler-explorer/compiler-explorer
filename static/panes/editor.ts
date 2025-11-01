@@ -33,6 +33,7 @@ import * as BootstrapUtils from '../bootstrap-utils.js';
 import * as colour from '../colour.js';
 import * as Components from '../components.js';
 import {createDragSource} from '../components.js';
+import {safeFetch} from '../http-utils.js';
 import * as monacoConfig from '../monaco-config.js';
 import {options} from '../options.js';
 import * as quickFixesHandler from '../quick-fixes-handler.js';
@@ -1169,16 +1170,21 @@ export class Editor extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Edit
             return;
         }
 
-        $.ajax({
-            type: 'POST',
-            url: window.location.origin + this.httpRoot + 'api/format/' + lang?.formatter,
-            dataType: 'json', // Expected
-            contentType: 'application/json', // Sent
-            data: JSON.stringify({
-                source: previousSource,
-                base: this.settings.formatBase,
-            }),
-            success: result => {
+        (async () => {
+            const {data: result, error} = await safeFetch<'json', {exit: number; answer: string}>(
+                window.location.origin + this.httpRoot + 'api/format/' + lang?.formatter,
+                {
+                    method: 'POST',
+                    body: {
+                        source: previousSource,
+                        base: this.settings.formatBase,
+                    },
+                    parseAs: 'json',
+                },
+                'code formatting',
+            );
+
+            if (result) {
                 if (result.exit === 0) {
                     if (this.doesMatchEditor(previousSource)) {
                         this.updateSource(result.answer);
@@ -1186,31 +1192,19 @@ export class Editor extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Edit
                         this.confirmOverwrite(this.updateSource.bind(this, result.answer));
                     }
                 } else {
-                    // Ops, the formatter itself failed!
+                    // Formatter itself failed!
                     this.alertSystem.notify('We encountered an error formatting your code: ' + result.answer, {
                         group: 'formatting',
                         alertClass: 'notification-error',
                     });
                 }
-            },
-            error: (xhr, e_status, error) => {
-                // Hopefully we have not exploded!
-                if (xhr.responseText) {
-                    try {
-                        const res = JSON.parse(xhr.responseText);
-                        error = res.answer || error;
-                    } catch {
-                        // continue regardless of error
-                    }
-                }
-                error = error || 'Unknown error';
-                this.alertSystem.notify('We ran into some issues while formatting your code: ' + error, {
+            } else if (error) {
+                this.alertSystem.notify('We ran into some issues while formatting your code: ' + error.message, {
                     group: 'formatting',
                     alertClass: 'notification-error',
                 });
-            },
-            cache: true,
-        });
+            }
+        })();
     }
 
     override resize(): void {

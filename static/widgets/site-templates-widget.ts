@@ -28,11 +28,17 @@ import {escapeHTML} from '../../shared/common-utils.js';
 import {SiteTemplateConfiguration, UserSiteTemplate} from '../../types/features/site-templates.interfaces.js';
 import {assert, unwrap, unwrapString} from '../assert.js';
 import * as BootstrapUtils from '../bootstrap-utils.js';
+import {safeFetch} from '../http-utils.js';
 import {localStorage} from '../local.js';
 import {Settings} from '../settings.js';
 import * as url from '../url.js';
 import {getStaticImage} from '../utils';
 import {Alert} from './alert.js';
+
+const noTemplates: SiteTemplateConfiguration = {
+    meta: {screenshot_dimensions: {width: 0, height: 0}},
+    templates: [],
+};
 
 class SiteTemplatesWidget {
     private readonly modal: JQuery;
@@ -71,11 +77,17 @@ class SiteTemplatesWidget {
             },
         });
     }
-    async getTemplates() {
+    async getTemplates(): Promise<SiteTemplateConfiguration> {
         if (this.templatesConfig === null) {
-            this.templatesConfig = await new Promise<SiteTemplateConfiguration>((resolve, reject) => {
-                $.getJSON(window.location.origin + window.httpRoot + 'api/siteTemplates', resolve);
-            });
+            this.templatesConfig = noTemplates;
+            const {data: result} = await safeFetch<'json', SiteTemplateConfiguration>(
+                window.location.origin + window.httpRoot + 'api/siteTemplates',
+                {parseAs: 'json'},
+                'site templates',
+            );
+            if (result) {
+                this.templatesConfig = result;
+            }
         }
         return this.templatesConfig;
     }
@@ -101,8 +113,12 @@ class SiteTemplatesWidget {
     }
     async setDefaultPreview() {
         const templatesConfig = await this.getTemplates(); // by the time this is called it will be cached
-        const first = templatesConfig.templates[0].id; // preview the first entry
-        this.img.src = this.getAsset(first) ?? this.getDefaultAsset();
+        if (templatesConfig.templates.length > 0) {
+            const first = templatesConfig.templates[0].id; // preview the first entry
+            this.img.src = this.getAsset(first) ?? this.getDefaultAsset();
+        } else {
+            this.img.src = this.getDefaultAsset();
+        }
     }
     populateUserTemplates() {
         const userTemplates: Record<string, UserSiteTemplate> = JSON.parse(localStorage.get('userSiteTemplates', '{}'));

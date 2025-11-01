@@ -22,6 +22,7 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
+import {safeFetch} from './http-utils.js';
 // Setup sentry before anything else so we can capture errors
 import {SentryCapture, SetupSentry, setSentryLayout} from './sentry.js';
 
@@ -191,46 +192,31 @@ function setupButtons(options: CompilerExplorerOptions, hub: Hub) {
         alertSystem.alert('Changelog', changelogDocument.text);
     });
 
-    $.get(window.location.origin + window.httpRoot + 'bits/icons.html')
-        .done(data => {
+    // Load icons silently on startup
+    (async () => {
+        const {data} = await safeFetch(
+            window.location.origin + window.httpRoot + 'bits/icons.html',
+            {parseAs: 'text'},
+            'loading icons',
+        );
+        if (data) {
             $('#ces .ces-icons').html(data);
-        })
-        .fail(err => {
-            // Filter out network-level failures that aren't actionable bugs
-            // readyState 0 with status 0 typically indicates network issues, ad blockers, or aborted requests
-            if (err.readyState === 0 && err.status === 0) {
-                console.debug('Icons request failed due to network/browser policy:', err.statusText);
-                return;
-            }
+        }
+    })();
 
-            // Only capture server errors or other potentially actionable failures
-            if (err.status >= 400) {
-                SentryCapture(err, '$.get failed loading icons');
-            }
+    $('#ces').on('click', async () => {
+        const {data, error} = await safeFetch(window.location.origin + window.httpRoot + 'bits/sponsors.html', {
+            parseAs: 'text',
         });
 
-    $('#ces').on('click', () => {
-        $.get(window.location.origin + window.httpRoot + 'bits/sponsors.html')
-            .done(data => {
-                alertSystem.alert('Compiler Explorer Sponsors', data);
-            })
-            .fail(err => {
-                // Filter out network-level failures that aren't actionable bugs
-                if (err.readyState === 0 && err.status === 0) {
-                    console.debug('Sponsors request failed due to network/browser policy:', err.statusText);
-                    return;
-                }
-
-                if (err.status >= 400) {
-                    // Capture server errors for Sentry, and show to the user
-                    SentryCapture(err, '$.get failed loading sponsors');
-                    const result = err.responseText || JSON.stringify(err);
-                    alertSystem.alert(
-                        'Compiler Explorer Sponsors',
-                        '<div>Unable to fetch sponsors:</div><div>' + result + '</div>',
-                    );
-                }
-            });
+        if (data) {
+            alertSystem.alert('Compiler Explorer Sponsors', data);
+        } else {
+            alertSystem.alert(
+                'Compiler Explorer Sponsors',
+                '<div>Unable to fetch sponsors:</div><div>' + (error?.message || 'Unknown error') + '</div>',
+            );
+        }
     });
 
     $('#ui-history').on('click', () => {
@@ -760,7 +746,16 @@ function start() {
                 .map((_, value) => value.dataset.statsid)
                 .get()
                 .join(',');
-            $.post(options.pageloadUrl + '?icons=' + encodeURIComponent(visibleIcons));
+            // Fire and forget analytics POST - no need to await or handle errors
+            safeFetch(
+                options.pageloadUrl + '?icons=' + encodeURIComponent(visibleIcons),
+                {
+                    method: 'POST',
+                    body: {},
+                    parseAs: 'json',
+                },
+                'pageload analytics',
+            ).catch(() => {});
         }, 5000);
     }
 

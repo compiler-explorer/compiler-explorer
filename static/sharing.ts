@@ -29,6 +29,7 @@ import $ from 'jquery';
 import _ from 'underscore';
 import {unwrap} from './assert.js';
 import * as BootstrapUtils from './bootstrap-utils.js';
+import {safeFetch} from './http-utils.js';
 import {sessionThenLocalStorage} from './local.js';
 import {options} from './options.js';
 import {SentryCapture} from './sentry.js';
@@ -433,27 +434,28 @@ export class Sharing extends SharingBase {
         }
     }
 
-    private static getShortLink(config: any, root: string, done: CallableFunction): void {
+    private static async getShortLink(config: any, root: string, done: CallableFunction): Promise<void> {
         const useExternalShortener = options.urlShortenService !== 'default';
-        const data = JSON.stringify({
+        const data = {
             config: useExternalShortener ? url.serialiseState(config) : config,
-        });
-        $.ajax({
-            type: 'POST',
-            url: window.location.origin + root + 'api/shortener',
-            dataType: 'json', // Expected
-            contentType: 'application/json', // Sent
-            data: data,
-            success: (result: any) => {
-                const pushState = useExternalShortener ? null : result.url;
-                done(null, result.url, pushState, true);
+        };
+
+        const {data: result, error} = await safeFetch<'json', {url: string}>(
+            window.location.origin + root + 'api/shortener',
+            {
+                method: 'POST',
+                body: data,
+                parseAs: 'json',
             },
-            error: err => {
-                // Notify the user that we ran into trouble?
-                done(err.statusText, null, false);
-            },
-            cache: true,
-        });
+            'shortener request',
+        );
+
+        if (result) {
+            const pushState = useExternalShortener ? null : result.url;
+            done(null, result.url, pushState, true);
+        } else {
+            done(error?.message || 'Network error', null, false);
+        }
     }
 
     private static getEmbeddedHtml(
