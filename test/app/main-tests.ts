@@ -29,39 +29,82 @@ import {initialiseApplication} from '../../lib/app/main.js';
 import * as server from '../../lib/app/server.js';
 import {AppArguments} from '../../lib/app.interfaces.js';
 import * as aws from '../../lib/aws.js';
-import {CompilationEnvironment} from '../../lib/compilation-env.js';
 import {CompilationQueue} from '../../lib/compilation-queue.js';
-import {CompilerFinder} from '../../lib/compiler-finder.js';
 import * as exec from '../../lib/exec.js';
 import {RemoteExecutionQuery} from '../../lib/execution/execution-query.js';
 import * as execTriple from '../../lib/execution/execution-triple.js';
 import * as execQueue from '../../lib/execution/sqs-execution-queue.js';
-import {FormattingService} from '../../lib/formatting-service.js';
-import {CompileHandler} from '../../lib/handlers/compile.js';
-import {NoScriptHandler} from '../../lib/handlers/noscript.js';
-import {RouteAPI} from '../../lib/handlers/route-api.js';
 import {logger} from '../../lib/logger.js';
 import {setupMetricsServer} from '../../lib/metrics-server.js';
-import {ClientOptionsHandler} from '../../lib/options-handler.js';
 import * as sentry from '../../lib/sentry.js';
 import * as sponsors from '../../lib/sponsors.js';
 import {getStorageTypeByKey} from '../../lib/storage/index.js';
 
 // We need to mock all these modules to avoid actual API calls
+// Vitest 4.0 requires constructor mocks to be actual classes/functions, not arrow functions.
+// We define classes directly here because .mockImplementation() gets auto-converted to arrow
+// functions by Biome, which breaks constructor calls. Do not refactor to arrow functions!
 vi.mock('../../lib/aws.js');
 vi.mock('../../lib/exec.js');
 vi.mock('../../lib/execution/execution-query.js');
 vi.mock('../../lib/execution/execution-triple.js');
 vi.mock('../../lib/execution/sqs-execution-queue.js');
-vi.mock('../../lib/compilation-env.js');
+vi.mock('../../lib/compilation-env.js', () => ({
+    CompilationEnvironment: class {
+        setCompilerFinder = vi.fn();
+    },
+}));
 vi.mock('../../lib/compilation-queue.js');
-vi.mock('../../lib/compiler-finder.js');
-vi.mock('../../lib/formatting-service.js');
-vi.mock('../../lib/handlers/compile.js');
-vi.mock('../../lib/handlers/noscript.js');
-vi.mock('../../lib/handlers/route-api.js');
+// Shared mock implementations for CompilerFinder
+const mockCompilerFinderFind = vi.fn();
+const mockCompilerFinderLoadPrediscovered = vi.fn();
+const mockCompilerFinderCompileHandler = {findCompiler: vi.fn()};
+
+vi.mock('../../lib/compiler-finder.js', () => ({
+    CompilerFinder: class {
+        find = mockCompilerFinderFind;
+        loadPrediscovered = mockCompilerFinderLoadPrediscovered;
+        compileHandler = mockCompilerFinderCompileHandler;
+    },
+}));
+vi.mock('../../lib/formatting-service.js', () => ({
+    FormattingService: class {
+        initialize = vi.fn().mockResolvedValue(undefined);
+    },
+}));
+vi.mock('../../lib/handlers/compile.js', () => ({
+    CompileHandler: class {
+        findCompiler = vi.fn().mockReturnValue({
+            possibleArguments: {possibleArguments: []},
+        });
+        handle = vi.fn();
+    },
+}));
+vi.mock('../../lib/handlers/noscript.js', () => ({
+    NoScriptHandler: class {
+        initializeRoutes = vi.fn();
+        createRouter = vi.fn().mockReturnValue({});
+    },
+}));
+vi.mock('../../lib/handlers/route-api.js', () => ({
+    RouteAPI: class {
+        apiHandler = {
+            setCompilers: vi.fn(),
+            setLanguages: vi.fn(),
+            setOptions: vi.fn(),
+        };
+        initializeRoutes = vi.fn();
+    },
+}));
 vi.mock('../../lib/metrics-server.js');
-vi.mock('../../lib/options-handler.js');
+vi.mock('../../lib/options-handler.js', () => ({
+    ClientOptionsHandler: class {
+        setCompilers = vi.fn().mockResolvedValue(undefined);
+        get = vi.fn();
+        getHash = vi.fn();
+        getJSON = vi.fn();
+    },
+}));
 vi.mock('../../lib/sentry.js');
 vi.mock('../../lib/sponsors.js');
 vi.mock('../../lib/storage/index.js');
@@ -113,9 +156,9 @@ describe('Main module', () => {
     };
 
     const mockConfig = {
-        ceProps: vi.fn(),
+        ceProps: vi.fn((_key: string, defaultValue?: any) => defaultValue),
         compilerProps: {
-            ceProps: vi.fn(),
+            ceProps: vi.fn((_key: string, defaultValue?: any) => defaultValue),
         },
         languages: {},
         staticMaxAgeSecs: 60,
@@ -147,48 +190,23 @@ describe('Main module', () => {
         vi.mocked(exec.startWineInit).mockReturnValue();
         vi.mocked(RemoteExecutionQuery.initRemoteExecutionArchs).mockReturnValue();
 
-        const mockFormattingService = {
-            initialize: vi.fn().mockResolvedValue(undefined),
-        };
-        vi.mocked(FormattingService).mockImplementation(() => mockFormattingService as unknown as FormattingService);
+        // Classes are mocked with proper constructors in vi.mock above
+        // Configure the default behavior for CompilerFinder methods
+        mockCompilerFinderFind.mockResolvedValue({compilers: mockCompilers, foundClash: false});
+        mockCompilerFinderLoadPrediscovered.mockResolvedValue(mockCompilers);
+        mockCompilerFinderCompileHandler.findCompiler.mockReturnValue({possibleArguments: {possibleArguments: []}});
 
         const mockCompilationQueue = {
             queue: vi.fn(),
         };
         vi.mocked(CompilationQueue.fromProps).mockReturnValue(mockCompilationQueue as unknown as CompilationQueue);
 
-        const mockCompilationEnv = {
-            setCompilerFinder: vi.fn(),
-        };
-        vi.mocked(CompilationEnvironment).mockImplementation(
-            () => mockCompilationEnv as unknown as CompilationEnvironment,
-        );
-
-        const mockCompileHandler = {
-            findCompiler: vi.fn().mockReturnValue({
-                possibleArguments: {possibleArguments: []},
-            }),
-            handle: vi.fn(),
-        };
-        vi.mocked(CompileHandler).mockImplementation(() => mockCompileHandler as unknown as CompileHandler);
-
         const mockStorageType = vi.fn();
         vi.mocked(getStorageTypeByKey).mockReturnValue(
             mockStorageType as unknown as ReturnType<typeof getStorageTypeByKey>,
         );
 
-        const mockFindResult = {
-            compilers: mockCompilers,
-            foundClash: false,
-        };
-        const mockCompilerFinder = {
-            find: vi.fn().mockResolvedValue(mockFindResult),
-            loadPrediscovered: vi.fn().mockResolvedValue(mockCompilers),
-            compileHandler: {findCompiler: mockCompileHandler.findCompiler},
-        };
-        vi.mocked(CompilerFinder).mockImplementation(() => mockCompilerFinder as any);
-
-        vi.mocked(mockConfig.ceProps).mockImplementation((key, defaultValue) => {
+        vi.mocked(mockConfig.ceProps).mockImplementation((key: string, defaultValue?: any) => {
             if (key === 'execqueue.is_worker') return false;
             if (key === 'healthCheckFilePath') return null;
             if (key === 'sentrySlowRequestMs') return 0;
@@ -216,34 +234,7 @@ describe('Main module', () => {
         };
         vi.mocked(server.setupWebServer).mockResolvedValue(mockWebServerResult);
         vi.mocked(server.startListening).mockImplementation(() => {});
-
-        const mockNoscriptHandler = {
-            initializeRoutes: vi.fn(),
-            createRouter: vi.fn().mockReturnValue({}),
-        };
-        vi.mocked(NoScriptHandler).mockImplementation(() => mockNoscriptHandler as unknown as NoScriptHandler);
-
-        const mockApiHandler = {
-            setCompilers: vi.fn(),
-            setLanguages: vi.fn(),
-            setOptions: vi.fn(),
-        };
-        const mockRouteApi = {
-            apiHandler: mockApiHandler,
-            initializeRoutes: vi.fn(),
-        };
-        vi.mocked(RouteAPI).mockImplementation(() => mockRouteApi as unknown as RouteAPI);
-
-        // Mock ClientOptionsHandler
-        const mockClientOptionsHandler = {
-            setCompilers: vi.fn().mockResolvedValue(undefined),
-            get: vi.fn(),
-            getHash: vi.fn(),
-            getJSON: vi.fn(),
-        };
-        vi.mocked(ClientOptionsHandler).mockImplementation(
-            () => mockClientOptionsHandler as unknown as ClientOptionsHandler,
-        );
+        // NoScriptHandler, RouteAPI, and ClientOptionsHandler are already properly mocked with classes
     });
 
     afterEach(() => {
@@ -306,7 +297,7 @@ describe('Main module', () => {
     });
 
     it('should initialize execution worker if configured', async () => {
-        vi.mocked(mockConfig.ceProps).mockImplementation((key, defaultValue) => {
+        vi.mocked(mockConfig.ceProps).mockImplementation((key: string, defaultValue?: any) => {
             if (key === 'execqueue.is_worker') return true;
             return defaultValue;
         });
@@ -323,10 +314,7 @@ describe('Main module', () => {
     });
 
     it('should throw an error if no compilers are found', async () => {
-        const mockCompilerFinder = {
-            find: vi.fn().mockResolvedValue({compilers: [], foundClash: false}),
-        };
-        vi.mocked(CompilerFinder).mockImplementation(() => mockCompilerFinder as any);
+        mockCompilerFinderFind.mockResolvedValue({compilers: [], foundClash: false});
 
         await expect(
             initialiseApplication({
@@ -339,10 +327,7 @@ describe('Main module', () => {
     });
 
     it('should throw an error if there are compiler clashes and ensureNoCompilerClash is set', async () => {
-        const mockCompilerFinder = {
-            find: vi.fn().mockResolvedValue({compilers: mockCompilers, foundClash: true}),
-        };
-        vi.mocked(CompilerFinder).mockImplementation(() => mockCompilerFinder as any);
+        mockCompilerFinderFind.mockResolvedValue({compilers: mockCompilers, foundClash: true});
 
         await expect(
             initialiseApplication({
