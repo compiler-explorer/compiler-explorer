@@ -78,6 +78,7 @@ export const RUST_HIR_VIEW_COMPONENT_NAME = 'rusthir' as const;
 export const CLOJURE_MACRO_EXP_VIEW_COMPONENT_NAME = 'clojuremacroexp' as const;
 export const DEVICE_VIEW_COMPONENT_NAME = 'device' as const;
 export const EXPLAIN_VIEW_COMPONENT_NAME = 'explain' as const;
+export const YUL_VIEW_COMPONENT_NAME = 'yul' as const;
 
 export type StateWithLanguage = {lang: string};
 // TODO(#7808): Normalize state types to reduce duplication (see #4490)
@@ -356,6 +357,15 @@ export type PopulatedExplainViewState = StateWithId & {
     treeid: number;
 };
 
+export type EmptyYulViewState = EmptyState;
+export type PopulatedYulViewState = StateWithId & {
+    source: string;
+    yulOutput: unknown;
+    compilerName: string;
+    editorid: number;
+    treeid: number;
+};
+
 /**
  * Mapping of component names to their expected state types. This provides compile-time type safety for component
  * states. Components can have either empty (default) or populated states.
@@ -392,6 +402,7 @@ export interface ComponentStateMap {
     [CLOJURE_MACRO_EXP_VIEW_COMPONENT_NAME]: EmptyClojureMacroExpViewState | PopulatedClojureMacroExpViewState;
     [DEVICE_VIEW_COMPONENT_NAME]: EmptyDeviceViewState | PopulatedDeviceViewState;
     [EXPLAIN_VIEW_COMPONENT_NAME]: EmptyExplainViewState | PopulatedExplainViewState;
+    [YUL_VIEW_COMPONENT_NAME]: EmptyYulViewState | PopulatedYulViewState;
 }
 
 /**

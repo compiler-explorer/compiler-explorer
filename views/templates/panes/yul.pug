@@ -1,0 +1,17 @@
+mixin optionButton(bind, isActive, text, title)
+  .button-checkbox
+    button(type="button" class="dropdown-item btn btn-sm btn-light" + (isActive ? " active" : "") title=title data-bind=bind aria-pressed=isActive ? "true" : "false")
+      span #{text}
+    input.d-none(type="checkbox" checked=isActive)
+
+#yul
+  .top-bar.btn-toolbar.bg-light(role="toolbar")
+    include ../../font-size
+    .btn-group.btn-group-sm.filters(role="group")
+      button.btn.btn-sm.btn-light.dropdown-toggle(type="button" title="Yul Output Filters" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false" aria-label="Set output filters")
+        span.fas.fa-filter
+        span.hideable Filters
+      .dropdown-menu
+        +optionButton("filter-debug-info", true, "Hide Debug Info", "Filter debug info intrinsics")
+  div.yul-body
+    .monaco-placeholder
