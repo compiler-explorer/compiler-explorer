@@ -70,7 +70,7 @@ describe('Resolc', () => {
             `${expectedFilenameWithoutExtension}.unoptimized.ll`,
         );
 
-        expect(compiler.getObjdumpOutputFilename(defaultOutputFilename)).toEqual(
+        expect(compiler.getObjdumpInputFilename(defaultOutputFilename)).toEqual(
             `${expectedFilenameWithoutExtension}.o`,
         );
     }

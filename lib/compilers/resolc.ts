@@ -128,7 +128,7 @@ export class ResolcCompiler extends BaseCompiler {
         return this.getOutputFilenameWithExtension(path.dirname(inputFilename), extension);
     }
 
-    override getObjdumpOutputFilename(defaultOutputFilename: string): string {
+    override getObjdumpInputFilename(defaultOutputFilename: string): string {
         return changeExtension(defaultOutputFilename, '.o');
     }
 

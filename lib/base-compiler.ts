@@ -114,7 +114,7 @@ import {languages} from './languages.js';
 import {LlvmAstParser} from './llvm-ast.js';
 import {LlvmIrParser} from './llvm-ir.js';
 import {logger} from './logger.js';
-import {getObjdumperTypeByKey, LlvmObjdumper} from './objdumper/index.js';
+import {getObjdumperTypeByKey} from './objdumper/index.js';
 import {ClientOptionsType, OptionsHandlerLibrary, VersionInfo} from './options-handler.js';
 import {Packager} from './packager.js';
 import type {IAsmParser} from './parsers/asm-parser.interfaces.js';
@@ -663,7 +663,7 @@ export class BaseCompiler {
             staticReloc,
             dynamicReloc,
             this.compiler.objdumperArgs,
-            filters
+            filters,
         );
 
         if (this.externalparser) {

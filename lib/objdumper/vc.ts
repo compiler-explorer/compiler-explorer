@@ -48,7 +48,7 @@ export class VcObjdumper extends BaseObjdumper {
         if (filters?.directives) args.push('/DIRECTIVES');
 
         // if (staticReloc || dynamicReloc) args.push('/RELOCATIONS');
-        
+
         // TODO: handle demangling in post-process
         // TODO: disable intel-syntax checkbox as selected, dumpbin supports only that
         if (objdumperArguments) args.push(...objdumperArguments);
