@@ -113,6 +113,7 @@ export function definition(): monaco.languages.IMonarchLanguage {
             'or',
             'ord',
             'phi',
+            'ptrtoaddr',
             'ptrtoint',
             'resume',
             'ret',
