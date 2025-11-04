@@ -74,9 +74,6 @@ export function loadState(state: any): any {
     return state;
 }
 
-// Re-export shared serialization functions
-export {risonify, serialiseState, unrisonify} from '../shared/url-serialization.js';
-
 export function deserialiseState(stateText: string): any {
     let state;
     let exception;
