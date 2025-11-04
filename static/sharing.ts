@@ -28,12 +28,12 @@ import GoldenLayout from 'golden-layout';
 import $ from 'jquery';
 import _ from 'underscore';
 import {unwrap} from '../shared/assert.js';
+import {serialiseState} from '../shared/url-serialization.js';
 import * as BootstrapUtils from './bootstrap-utils.js';
 import {sessionThenLocalStorage} from './local.js';
 import {options} from './options.js';
 import {SentryCapture} from './sentry.js';
 import {Settings, SiteSettings} from './settings.js';
-import * as url from './url.js';
 
 import ClickEvent = JQuery.ClickEvent;
 
@@ -106,7 +106,7 @@ export class SharingBase {
         // Update embedded links if present (works in both modes)
         if (options.embedded) {
             const strippedToLast = window.location.pathname.substring(0, window.location.pathname.lastIndexOf('/') + 1);
-            $('a.link').prop('href', strippedToLast + '#' + url.serialiseState(config));
+            $('a.link').prop('href', strippedToLast + '#' + serialiseState(config));
         }
     }
 
@@ -417,7 +417,7 @@ export class Sharing extends SharingBase {
                 Sharing.getShortLink(config, root, done);
                 return;
             case LinkType.Full:
-                done(null, window.location.origin + root + '#' + url.serialiseState(config), false);
+                done(null, window.location.origin + root + '#' + serialiseState(config), false);
                 return;
             case LinkType.Embed: {
                 const options: Record<string, boolean> = {};
@@ -436,7 +436,7 @@ export class Sharing extends SharingBase {
     private static getShortLink(config: any, root: string, done: CallableFunction): void {
         const useExternalShortener = options.urlShortenService !== 'default';
         const data = JSON.stringify({
-            config: useExternalShortener ? url.serialiseState(config) : config,
+            config: useExternalShortener ? serialiseState(config) : config,
         });
         $.ajax({
             type: 'POST',
@@ -485,7 +485,7 @@ export class Sharing extends SharingBase {
 
         const path = (readOnly ? 'embed-ro' : 'e') + parameters + '#';
 
-        return location + path + url.serialiseState(config);
+        return location + path + serialiseState(config);
     }
 
     private static storeCurrentConfig(config: any, extra: string): void {
