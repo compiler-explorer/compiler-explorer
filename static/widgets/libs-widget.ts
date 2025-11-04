@@ -23,7 +23,7 @@
 // POSSIBILITY OF SUCH DAMAGE.
 
 import $ from 'jquery';
-import {unwrapString} from '../assert.js';
+import {unwrapString} from '../../shared/assert.js';
 import * as BootstrapUtils from '../bootstrap-utils.js';
 import {localStorage} from '../local.js';
 import {Library, LibraryVersion} from '../options.interfaces.js';

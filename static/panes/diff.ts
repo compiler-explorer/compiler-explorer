@@ -175,6 +175,11 @@ class DiffStateObject {
                         {text: "<select 'Add new...' → 'Clojure Macro Expansion' in this compiler's pane>"},
                     ];
                     break;
+                case DiffType.YulOutput:
+                    output = this.result.yulOutput || [
+                        {text: "<select 'Add new...' → 'Yul (Solidity IR)' in this compiler's pane>"},
+                    ];
+                    break;
             }
         }
         this.model.setValue(output.map(x => x.text).join('\n'));
@@ -480,6 +485,9 @@ export class Diff extends MonacoPane<monaco.editor.IStandaloneDiffEditor, DiffSt
             }
             if (compiler.supportsClojureMacroExpView) {
                 options.push({id: DiffType.ClojureMacroExpOutput.toString(), name: 'Clojure Macro Expansion'});
+            }
+            if (compiler.supportsYulView) {
+                options.push({id: DiffType.YulOutput.toString(), name: 'Yul (Solidity IR)'});
             }
         }
 

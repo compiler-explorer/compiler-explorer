@@ -25,10 +25,10 @@
 import {Container} from 'golden-layout';
 import * as monaco from 'monaco-editor';
 import _ from 'underscore';
+import {unwrap} from '../../shared/assert.js';
 import {escapeHTML} from '../../shared/common-utils.js';
 import {CompilationResult} from '../../types/compilation/compilation.interfaces.js';
 import {CompilerInfo} from '../../types/compiler.interfaces.js';
-import {unwrap} from '../assert.js';
 import {EventHub} from '../event-hub.js';
 import {Hub} from '../hub.js';
 import {Settings, SiteSettings} from '../settings.js';
