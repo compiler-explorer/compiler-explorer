@@ -28,6 +28,7 @@ import $ from 'jquery';
 import * as monaco from 'monaco-editor';
 import TomSelect from 'tom-select';
 import _ from 'underscore';
+import {assert, unwrap} from '../../shared/assert.js';
 import {escapeHTML} from '../../shared/common-utils.js';
 import {
     AnnotatedCfgDescriptor,
@@ -37,7 +38,6 @@ import {
 } from '../../types/compilation/cfg.interfaces.js';
 import {CompilationResult} from '../../types/compilation/compilation.interfaces.js';
 import {CompilerInfo} from '../../types/compiler.interfaces.js';
-import {assert, unwrap} from '../assert.js';
 import * as BootstrapUtils from '../bootstrap-utils.js';
 import {GraphLayoutCore} from '../graph-layout-core.js';
 import {Hub} from '../hub.js';

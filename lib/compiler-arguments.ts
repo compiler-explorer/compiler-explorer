@@ -25,10 +25,8 @@
 import fs from 'node:fs/promises';
 import path from 'node:path';
 import _ from 'underscore';
-
+import {unwrap} from '../shared/assert.js';
 import type {ICompilerArguments, PossibleArguments} from '../types/compiler-arguments.interfaces.js';
-
-import {unwrap} from './assert.js';
 import {logger} from './logger.js';
 import type {PropertyGetter} from './properties.interfaces.js';
 import {S3Bucket} from './s3-handler.js';

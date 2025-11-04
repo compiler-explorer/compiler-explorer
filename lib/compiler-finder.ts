@@ -29,15 +29,13 @@ import path from 'node:path';
 import {promisify} from 'node:util';
 import _ from 'underscore';
 import urljoin from 'url-join';
-
+import {assert, unwrap, unwrapString} from '../shared/assert.js';
 import {basic_comparator, remove} from '../shared/common-utils.js';
 import type {CompilerInfo, PreliminaryCompilerInfo} from '../types/compiler.interfaces.js';
 import {InstructionSet, InstructionSetsList} from '../types/instructionsets.js';
 import type {Language, LanguageKey} from '../types/languages.interfaces.js';
 import {Tool, ToolInfo} from '../types/tool.interfaces.js';
 import {AppArguments} from './app.interfaces.js';
-
-import {assert, unwrap, unwrapString} from './assert.js';
 import {CompileHandler} from './handlers/compile.js';
 import {logger} from './logger.js';
 import {ClientOptionsHandler} from './options-handler.js';

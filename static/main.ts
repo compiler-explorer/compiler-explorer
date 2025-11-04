@@ -43,10 +43,10 @@ import _ from 'underscore';
 // We re-assign this
 let jsCookie = JsCookie;
 
+import {unwrap} from '../shared/assert.js';
 import * as utils from '../shared/common-utils.js';
 import {ParseFiltersAndOutputOptions} from '../types/features/filters.interfaces.js';
 import {LanguageKey} from '../types/languages.interfaces.js';
-import {unwrap} from './assert.js';
 import * as BootstrapUtils from './bootstrap-utils.js';
 import {ComponentConfig, ComponentStateMap, GoldenLayoutConfig} from './components.interfaces.js';
 import * as Components from './components.js';

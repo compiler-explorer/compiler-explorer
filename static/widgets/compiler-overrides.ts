@@ -23,6 +23,7 @@
 // POSSIBILITY OF SUCH DAMAGE.
 
 import $ from 'jquery';
+import {assert, unwrap} from '../../shared/assert.js';
 import {
     CompilerOverrideType,
     ConfiguredOverride,
@@ -30,7 +31,6 @@ import {
     EnvVarOverrides,
 } from '../../types/compilation/compiler-overrides.interfaces.js';
 import {CompilerInfo} from '../../types/compiler.interfaces.js';
-import {assert, unwrap} from '../assert.js';
 import * as BootstrapUtils from '../bootstrap-utils.js';
 import {localStorage} from '../local.js';
 import {options} from '../options.js';

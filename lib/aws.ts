@@ -28,7 +28,7 @@ import {fromNodeProviderChain} from '@aws-sdk/credential-providers';
 
 import {AwsCredentialIdentityProvider} from '@smithy/types/dist-types/identity/awsCredentialIdentity.js';
 
-import {unwrap} from './assert.js';
+import {unwrap} from '../shared/assert.js';
 import {logger} from './logger.js';
 import type {PropertyGetter} from './properties.interfaces.js';
 

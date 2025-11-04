@@ -22,7 +22,7 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import {assert} from './assert.js';
+import {assert} from '../shared/assert.js';
 import {
     ClientState,
     ClientStateCompiler,
