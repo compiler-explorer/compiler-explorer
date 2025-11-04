@@ -66,6 +66,7 @@ import type {
     OptPipelineBackendOptions,
     OptPipelineOutput,
 } from '../types/compilation/opt-pipeline-output.interfaces.js';
+import type {YulBackendOptions} from '../types/compilation/yul.interfaces.js';
 import type {CompilerInfo, PreliminaryCompilerInfo} from '../types/compiler.interfaces.js';
 import {
     BasicExecutionResult,
@@ -1628,6 +1629,10 @@ export class BaseCompiler {
         return utils.changeExtension(inputFilename, '.dump-cmm');
     }
 
+    getYulOutputFilename(defaultOutputFilename: string) {
+        return utils.changeExtension(defaultOutputFilename, '.yul');
+    }
+
     // Currently called for getting macro expansion and HIR.
     // It returns the content of the output file created after using -Z unpretty=<unprettyOpt>.
     // The outputFriendlyName is a free form string used in case of error.
@@ -1704,6 +1709,32 @@ export class BaseCompiler {
                 }));
         }
         return [{text: 'Internal error; unable to open output path'}];
+    }
+
+    async processYulOutput(
+        defaultOutputFilename: string,
+        result: CompilationResult,
+        yulOptions: YulBackendOptions,
+    ): Promise<ResultLine[]> {
+        if (result.code !== 0) {
+            return [{text: 'Failed to run compiler to get Yul intermediary output'}];
+        }
+
+        const outputFilename = this.getYulOutputFilename(defaultOutputFilename);
+        if (await utils.fileExists(outputFilename)) {
+            const content = await fs.readFile(outputFilename, 'utf8');
+            const result: ResultLine[] = content.split('\n').map(line => ({text: line}));
+            const filters: RegExp[] = [];
+
+            if (yulOptions.filterDebugInfo) {
+                const debugInfoRe = /^\s*\/\/\/ @(use-src|src|ast-id)/;
+                filters.push(debugInfoRe);
+            }
+
+            return result.filter(line => filters.every(re => !line.text.match(re)));
+        }
+
+        return [{text: 'Internal error: Unable to open output path'}];
     }
 
     /**
@@ -2447,6 +2478,7 @@ export class BaseCompiler {
         const makeHaskellStg = backendOptions.produceHaskellStg && this.compiler.supportsHaskellStgView;
         const makeHaskellCmm = backendOptions.produceHaskellCmm && this.compiler.supportsHaskellCmmView;
         const makeGccDump = backendOptions.produceGccDump?.opened && this.compiler.supportsGccDump;
+        const makeYul = backendOptions.produceYul && this.compiler.supportsYulView;
 
         const [
             asmResult,
@@ -2513,6 +2545,10 @@ export class BaseCompiler {
             ? await this.processHaskellExtraOutput(this.getHaskellCmmOutputFilename(inputFilename), asmResult)
             : undefined;
 
+        const yulResult = makeYul
+            ? await this.processYulOutput(outputFilename, asmResult, backendOptions.produceYul)
+            : undefined;
+
         asmResult.dirPath = dirPath;
         if (!asmResult.compilationOptions) asmResult.compilationOptions = options;
         asmResult.downloads = downloads;
@@ -2564,6 +2600,8 @@ export class BaseCompiler {
         asmResult.haskellCmmOutput = haskellCmmResult;
 
         asmResult.clojureMacroExpOutput = clojureMacroExpResult;
+
+        asmResult.yulOutput = yulResult;
 
         if (asmResult.code !== 0) {
             return [{...asmResult, asm: '<Compilation failed>'}, [], []];

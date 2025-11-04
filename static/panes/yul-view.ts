@@ -1,4 +1,4 @@
-// Copyright (c) 2021, Compiler Explorer Authors
+// Copyright (c) 2025, Compiler Explorer Authors
 // All rights reserved.
 //
 // Redistribution and use in source and binary forms, with or without
@@ -26,32 +26,40 @@ import {Container} from 'golden-layout';
 import $ from 'jquery';
 import * as monaco from 'monaco-editor';
 import _ from 'underscore';
-import {unwrap} from '../../shared/assert.js';
 import {CompilationResult} from '../../types/compilation/compilation.interfaces.js';
+import {YulBackendOptions} from '../../types/compilation/yul.interfaces.js';
 import {CompilerInfo} from '../../types/compiler.interfaces.js';
 import {Hub} from '../hub.js';
 import {extendConfig} from '../monaco-config.js';
-import {GnatDebugState} from './gnatdebug-view.interfaces.js';
+import {Toggles} from '../widgets/toggles.js';
 import {MonacoPaneState} from './pane.interfaces.js';
 import {MonacoPane} from './pane.js';
+import {YulState} from './yul-view.interfaces.js';
 
-export class GnatDebug extends MonacoPane<monaco.editor.IStandaloneCodeEditor, GnatDebugState> {
-    constructor(hub: Hub, container: Container, state: GnatDebugState & MonacoPaneState) {
+export class Yul extends MonacoPane<monaco.editor.IStandaloneCodeEditor, YulState> {
+    private filters: Toggles;
+    private lastOptions: YulBackendOptions = {
+        filterDebugInfo: true,
+    };
+
+    constructor(hub: Hub, container: Container, state: YulState & MonacoPaneState) {
         super(hub, container, state);
-        if (state.gnatDebugOutput) {
-            this.showGnatDebugResults(state.gnatDebugOutput);
+        if (state.yulOutput) {
+            this.showYulResults(state.yulOutput);
         }
+
+        this.onOptionsChange(true);
     }
 
     override getInitialHTML(): string {
-        return $('#gnatdebug').html();
+        return $('#yul').html();
     }
 
     override createEditor(editorRoot: HTMLElement): void {
         this.editor = monaco.editor.create(
             editorRoot,
             extendConfig({
-                language: 'ada',
+                language: 'yul',
                 readOnly: true,
                 glyphMargin: true,
                 lineNumbersMinChars: 3,
@@ -60,11 +68,21 @@ export class GnatDebug extends MonacoPane<monaco.editor.IStandaloneCodeEditor, G
     }
 
     override getPrintName() {
-        return 'GNAT Debug Output';
+        return 'Yul Output';
     }
 
     override getDefaultPaneName(): string {
-        return 'GNAT Debug Viewer';
+        return 'Yul (Solidity IR) Viewer';
+    }
+
+    override registerButtons(state: YulState): void {
+        super.registerButtons(state);
+        this.filters = new Toggles(this.domRoot.find('.filters'), state as unknown as Record<string, boolean>);
+        this.filters.on('change', () => this.onOptionsChange());
+    }
+
+    updateButtons(compiler: CompilerInfo | null): void {
+        this.filters.enableToggle('filter-debug-info', !!compiler?.supportsYulView);
     }
 
     override registerCallbacks(): void {
@@ -73,41 +91,72 @@ export class GnatDebug extends MonacoPane<monaco.editor.IStandaloneCodeEditor, G
             500,
         );
         this.editor.onDidChangeCursorSelection(event => throttleFunction(event));
-        this.eventHub.emit('gnatDebugViewOpened', this.compilerInfo.compilerId);
+        this.eventHub.emit('yulViewOpened', this.compilerInfo.compilerId);
         this.eventHub.emit('requestSettings');
+    }
+
+    override getCurrentState(): MonacoPaneState {
+        return {
+            ...super.getCurrentState(),
+            ...this.filters.get(),
+        };
+    }
+
+    onOptionsChange(force = false): void {
+        const filters = this.filters.get();
+        const newOptions: YulBackendOptions = {
+            filterDebugInfo: filters['filter-debug-info'],
+        };
+
+        let changed = false;
+        for (const key in newOptions) {
+            if (newOptions[key as keyof YulBackendOptions] !== this.lastOptions[key as keyof Yul]) {
+                changed = true;
+                break;
+            }
+        }
+
+        this.lastOptions = newOptions;
+        if (changed || force) {
+            this.eventHub.emit('yulViewOptionsUpdated', this.compilerInfo.compilerId, newOptions, true);
+        }
     }
 
     override onCompileResult(compilerId: number, compiler: CompilerInfo, result: CompilationResult): void {
         if (this.compilerInfo.compilerId !== compilerId) return;
-        if (result.gnatDebugOutput) {
-            this.showGnatDebugResults(unwrap(result.gnatDebugOutput));
-        } else if (compiler.supportsGnatDebugViews) {
-            this.showGnatDebugResults([{text: '<No output>'}]);
+
+        if (result.yulOutput) {
+            this.showYulResults(result.yulOutput);
+        } else if (compiler.supportsYulView) {
+            this.showYulResults([{text: '<No output>'}]);
         }
     }
 
     override onCompiler(
         compilerId: number,
-        compiler: CompilerInfo,
+        compiler: CompilerInfo | null,
         options: string,
         editorId?: number,
         treeId?: number,
     ): void {
         if (this.compilerInfo.compilerId === compilerId) {
-            this.compilerInfo.compilerName = compiler.name;
+            this.compilerInfo.compilerName = compiler?.name || '';
             this.compilerInfo.editorId = editorId;
             this.compilerInfo.treeId = treeId;
             this.updateTitle();
-            if (!compiler.supportsGnatDebugViews) {
-                this.showGnatDebugResults([{text: '<GNAT Debug output is not supported for this compiler>'}]);
+            this.updateButtons(compiler);
+            if (!compiler?.supportsYulView) {
+                const text = compiler?.name.toLowerCase().includes('resolc')
+                    ? '<Yul output is only supported for this compiler when the input language is Solidity>'
+                    : '<Yul output is not supported for this compiler>';
+                this.showYulResults([{text}]);
             }
         }
     }
 
-    showGnatDebugResults(result: any[]): void {
-        this.editor
-            .getModel()
-            ?.setValue(result.length ? _.pluck(result, 'text').join('\n') : '<No GNAT Debug generated>');
+    showYulResults(result: any[]): void {
+        const newValue = result.length ? _.pluck(result, 'text').join('\n') : '<No Yul generated>';
+        this.editor.getModel()?.setValue(newValue);
 
         if (!this.isAwaitingInitialResults) {
             if (this.selection) {
@@ -120,7 +169,7 @@ export class GnatDebug extends MonacoPane<monaco.editor.IStandaloneCodeEditor, G
 
     override close(): void {
         this.eventHub.unsubscribe();
-        this.eventHub.emit('gnatDebugViewClosed', this.compilerInfo.compilerId);
+        this.eventHub.emit('yulViewClosed', this.compilerInfo.compilerId);
         this.editor.dispose();
     }
 }

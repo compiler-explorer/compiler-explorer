@@ -66,6 +66,7 @@ import {
     TOOL_COMPONENT_NAME,
     TOOL_INPUT_VIEW_COMPONENT_NAME,
     TREE_COMPONENT_NAME,
+    YUL_VIEW_COMPONENT_NAME,
 } from './components.interfaces.js';
 import {GccDumpViewState} from './panes/gccdump-view.interfaces.js';
 import {SentryCapture} from './sentry.js';
@@ -782,6 +783,38 @@ export function getHaskellCmmViewWith(
     };
 }
 
+/** Get an empty Yul view component. */
+export function getYulView(): ComponentConfig<typeof YUL_VIEW_COMPONENT_NAME> {
+    return {
+        type: 'component',
+        componentName: YUL_VIEW_COMPONENT_NAME,
+        componentState: {},
+    };
+}
+
+/** Get a Yul view with the given configuration. */
+export function getYulViewWith(
+    id: number,
+    source: string,
+    yulOutput: unknown,
+    compilerName: string,
+    editorid: number,
+    treeid: number,
+): ComponentConfig<typeof YUL_VIEW_COMPONENT_NAME> {
+    return {
+        type: 'component',
+        componentName: YUL_VIEW_COMPONENT_NAME,
+        componentState: {
+            id,
+            source,
+            yulOutput,
+            compilerName,
+            editorid,
+            treeid,
+        },
+    };
+}
+
 /** Get an empty gnat debug tree view component. */
 export function getGnatDebugTreeView(): ComponentConfig<typeof GNAT_DEBUG_TREE_VIEW_COMPONENT_NAME> {
     return {
@@ -1233,6 +1266,7 @@ function validateComponentState(componentName: string, state: any): boolean {
         case RUST_HIR_VIEW_COMPONENT_NAME:
         case CLOJURE_MACRO_EXP_VIEW_COMPONENT_NAME:
         case DEVICE_VIEW_COMPONENT_NAME:
+        case YUL_VIEW_COMPONENT_NAME:
             return true;
 
         default:
