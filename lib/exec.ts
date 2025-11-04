@@ -243,6 +243,8 @@ export function getFirejailProfileFilePath(profileName: string): string {
     return profilePath;
 }
 
+const jailedHomeDir = '/app';
+
 export function getNsJailOptions(
     configName: string,
     command: string,
@@ -257,26 +259,25 @@ export function getNsJailOptions(
         jailingOptions.push(`--time_limit=${Math.round((options.timeoutMs + ExtraWallClockLeewayMs) / 1000)}`);
     }
 
-    const homeDir = '/app';
     let filenameTransform: FilenameTransformFunc | undefined;
     if (options.customCwd) {
         let replacement = options.customCwd;
         if (options.appHome) {
             replacement = options.appHome;
-            const relativeCwd = path.join(homeDir, path.relative(options.appHome, options.customCwd));
-            jailingOptions.push('--cwd', relativeCwd, '--bindmount', `${options.appHome}:${homeDir}`);
+            const relativeCwd = path.join(jailedHomeDir, path.relative(options.appHome, options.customCwd));
+            jailingOptions.push('--cwd', relativeCwd, '--bindmount', `${options.appHome}:${jailedHomeDir}`);
         } else {
-            jailingOptions.push('--cwd', homeDir, '--bindmount', `${options.customCwd}:${homeDir}`);
+            jailingOptions.push('--cwd', jailedHomeDir, '--bindmount', `${options.customCwd}:${jailedHomeDir}`);
         }
 
-        filenameTransform = opt => opt.replaceAll(replacement, '/app');
+        filenameTransform = opt => opt.replaceAll(replacement, jailedHomeDir);
         args = args.map(filenameTransform);
         delete options.customCwd;
     }
 
     const transform = filenameTransform || (x => x);
 
-    const env: Record<string, string> = {...options.env, HOME: homeDir};
+    const env: Record<string, string> = {...options.env, HOME: jailedHomeDir};
     if (options.ldPath) {
         const ldPaths = options.ldPath.filter(Boolean).map(path => transform(path));
         jailingOptions.push(`--env=LD_LIBRARY_PATH=${ldPaths.join(path.delimiter)}`);
@@ -677,4 +678,8 @@ export async function execute(
     if (!command) throw new Error('No executable provided');
     const unbuffered = await maybeUnbuffer(command, args);
     return await dispatchEntry(unbuffered.command, unbuffered.args, options);
+}
+
+export function maybeRemapJailedDir(customCwd: string): string {
+    return execProps('executionType', 'none') == 'nsjail' ? jailedHomeDir : customCwd;
 }

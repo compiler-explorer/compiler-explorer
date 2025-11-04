@@ -206,7 +206,7 @@ export class AssemblyCompiler extends BaseCompiler {
         return this.postProcess(asmResult, outputFilename, filters);
     }
 
-    override getObjdumpOutputFilename(defaultOutputFilename: string): string {
+    override getObjdumpInputFilename(defaultOutputFilename: string): string {
         return this.getGeneratedOutputFilename(defaultOutputFilename);
     }
 

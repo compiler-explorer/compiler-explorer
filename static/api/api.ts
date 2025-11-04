@@ -48,7 +48,9 @@ const request = async <R>(uri: string, options?: RequestInit): Promise<TypedResp
 
 /** GET /api/asm/:arch/:instruction */
 export const getAssemblyDocumentation = async (options: AssemblyDocumentationRequest) =>
-    await request<AssemblyDocumentationResponse>(`/asm/${options.instructionSet}/${options.opcode}`);
+    await request<AssemblyDocumentationResponse>(`/asm/${options.instructionSet}/${options.opcode}`, {
+        credentials: 'omit',
+    });
 
 /** POST /api/format/:formatter */
 export const getFormattedCode = async (options: FormattingRequest) =>

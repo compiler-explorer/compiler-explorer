@@ -20,6 +20,7 @@ const PANE_DATA_MAP = {
     haskellCore: {name: 'Core', selector: 'view-haskellCore'},
     haskellStg: {name: 'STG', selector: 'view-haskellStg'},
     haskellCmm: {name: 'Cmm', selector: 'view-haskellCmm'},
+    yul: {name: 'Yul', selector: 'view-yul'},
     clojuremacroexp: {name: 'Clojure Macro', selector: 'view-clojuremacroexp'},
     gccdump: {name: 'Tree/RTL', selector: 'view-gccdump'},
     gnatdebugtree: {name: 'Tree', selector: 'view-gnatdebugtree'},
@@ -71,6 +72,8 @@ describe('Individual pane testing', () => {
     addPaneOpenTest(PANE_DATA_MAP.haskellCore);
     addPaneOpenTest(PANE_DATA_MAP.haskellStg);
     addPaneOpenTest(PANE_DATA_MAP.haskellCmm);
+    addPaneOpenTest(PANE_DATA_MAP.yul);
+    addPaneOpenTest(PANE_DATA_MAP.clojuremacroexp);
     addPaneOpenTest(PANE_DATA_MAP.gccdump);
     addPaneOpenTest(PANE_DATA_MAP.gnatdebugtree);
     addPaneOpenTest(PANE_DATA_MAP.gnatdebug);
@@ -139,6 +142,7 @@ function buildKnownGoodState() {
         haskellCore: {compilerName: 'g++ default', editorid: editorId, id: compilerId},
         haskellStg: {compilerName: 'g++ default', editorid: editorId, id: compilerId},
         haskellCmm: {compilerName: 'g++ default', editorid: editorId, id: compilerId},
+        yul: {compilerName: 'g++ default', editorid: editorId, id: compilerId},
         clojuremacroexp: {compilerName: 'g++ default', editorid: editorId, id: compilerId},
         gccdump: {
             compilerName: 'g++ default',

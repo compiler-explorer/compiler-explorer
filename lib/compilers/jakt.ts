@@ -74,7 +74,7 @@ export class JaktCompiler extends BaseCompiler {
         return ['--binary-dir', path.dirname(outputFilename)];
     }
 
-    override getObjdumpOutputFilename(defaultOutputFilename: string) {
+    override getObjdumpInputFilename(defaultOutputFilename: string) {
         const parsed_path = path.parse(defaultOutputFilename);
 
         return path.join(parsed_path.dir, this.outputFilebase);

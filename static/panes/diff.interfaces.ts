@@ -38,6 +38,7 @@ export enum DiffType {
     RustMacroExpOutput = 11,
     RustHirOutput = 12,
     ClojureMacroExpOutput = 13,
+    YulOutput = 14,
 }
 
 export type DiffState = {

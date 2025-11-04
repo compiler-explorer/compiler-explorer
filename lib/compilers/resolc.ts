@@ -32,6 +32,7 @@ import type {ParseFiltersAndOutputOptions} from '../../types/features/filters.in
 import type {Language} from '../../types/languages.interfaces.js';
 import {assert} from '../assert.js';
 import {BaseCompiler} from '../base-compiler.js';
+import {maybeRemapJailedDir} from '../exec.js';
 import {PolkaVMAsmParser} from '../parsers/asm-parser-polkavm.js';
 import {ResolcRiscVAsmParser} from '../parsers/asm-parser-resolc-riscv.js';
 import {changeExtension} from '../utils.js';
@@ -84,6 +85,7 @@ export class ResolcCompiler extends BaseCompiler {
         this.compiler.irArg = [];
         this.compiler.supportsIrView = true;
         this.compiler.supportsIrViewOptToggleOption = true;
+        this.compiler.supportsYulView = this.inputIs(InputKind.Solidity);
     }
 
     override getSharedLibraryPathsAsArguments(): string[] {
@@ -127,12 +129,12 @@ export class ResolcCompiler extends BaseCompiler {
         return this.getOutputFilenameWithExtension(path.dirname(inputFilename), extension);
     }
 
-    override getObjdumpOutputFilename(defaultOutputFilename: string): string {
+    override getObjdumpInputFilename(defaultOutputFilename: string): string {
         return changeExtension(defaultOutputFilename, '.o');
     }
 
     private getOutputFilenameWithExtension(dirPath: string, extension: string): string {
-        const basenamePrefix = dirPath.split(path.sep).join('_');
+        const basenamePrefix = maybeRemapJailedDir(dirPath).split(path.sep).join('_');
         const contractName = this.inputIs(InputKind.Solidity)
             ? this.getSolidityContractName(dirPath)
             : this.getYulContractName(dirPath);

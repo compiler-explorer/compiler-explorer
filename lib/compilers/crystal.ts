@@ -99,7 +99,7 @@ export class CrystalCompiler extends BaseCompiler {
         return path.join(dirPath, outputFilebase);
     }
 
-    override getObjdumpOutputFilename(defaultOutputFilename: string) {
+    override getObjdumpInputFilename(defaultOutputFilename: string) {
         return this.getExecutableFilename(path.dirname(defaultOutputFilename), this.outputFilebase);
     }
 

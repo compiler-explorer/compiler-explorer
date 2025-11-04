@@ -58,7 +58,7 @@ describe('Resolc', () => {
         expectedFilenameWithoutExtension: string,
     ): void {
         const defaultOutputFilename = `${expectedFilenameWithoutExtension}.pvmasm`;
-        expect(compiler.getOutputFilename(path.normalize('test/resolc'))).toEqual(defaultOutputFilename);
+        expect(compiler.getOutputFilename(path.normalize(path.dirname(inputFilename)))).toEqual(defaultOutputFilename);
 
         let llvmIrBackendOptions = makeFakeLlvmIrBackendOptions({showOptimized: true});
         expect(compiler.getIrOutputFilename(inputFilename, undefined, llvmIrBackendOptions)).toEqual(
@@ -70,7 +70,7 @@ describe('Resolc', () => {
             `${expectedFilenameWithoutExtension}.unoptimized.ll`,
         );
 
-        expect(compiler.getObjdumpOutputFilename(defaultOutputFilename)).toEqual(
+        expect(compiler.getObjdumpInputFilename(defaultOutputFilename)).toEqual(
             `${expectedFilenameWithoutExtension}.o`,
         );
     }

@@ -43,8 +43,8 @@ export class Packager {
         await compress({
             source: cwd,
             destination,
-            level: 6,
-            memLevel: 6,
+            level: 3,
+            memLevel: 9,
             options: {
                 dereference: true,
             },
