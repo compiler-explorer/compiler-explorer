@@ -65,7 +65,7 @@ describe('Individual pane testing', () => {
     addPaneOpenTest(PANE_DATA_MAP.ast);
     addPaneOpenTest(PANE_DATA_MAP.ir);
     addPaneOpenTest(PANE_DATA_MAP.llvmOptPipelineView);
-    // TODO: re-enable this when fixed addPaneOpenTest(PANE_DATA_MAP.device);
+    addPaneOpenTest(PANE_DATA_MAP.device);
     addPaneOpenTest(PANE_DATA_MAP.rustmir);
     addPaneOpenTest(PANE_DATA_MAP.rusthir);
     addPaneOpenTest(PANE_DATA_MAP.rustmacroexp);
@@ -93,7 +93,7 @@ describe('Individual pane testing', () => {
         cy.get('[data-cy="new-compiler-dropdown-btn"]:visible').click();
         cy.get('[data-cy="new-editor-dropdown-btn"]:visible').click();
         cy.get('[data-cy="new-conformance-btn"]:visible').click();
-        // TODO: re-enable this when fixed cy.get('span.lm_title:visible').contains('Conformance');
+        cy.get('span.lm_title:visible').contains('Conformance');
     });
 });
 
