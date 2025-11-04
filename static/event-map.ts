@@ -26,6 +26,7 @@ import {ClangirBackendOptions} from '../types/compilation/clangir.interfaces.js'
 import {CompilationResult} from '../types/compilation/compilation.interfaces.js';
 import {LLVMIrBackendOptions} from '../types/compilation/ir.interfaces.js';
 import {OptPipelineBackendOptions} from '../types/compilation/opt-pipeline-output.interfaces.js';
+import {YulBackendOptions} from '../types/compilation/yul.interfaces.js';
 import {CompilerInfo} from '../types/compiler.interfaces.js';
 import {Language, LanguageKey} from '../types/languages.interfaces.js';
 import {MessageWithLocation} from '../types/resultline/resultline.interfaces.js';
@@ -160,6 +161,9 @@ export type EventMap = {
     rustMirViewOpened: (compilerId: number) => void;
     clojureMacroExpViewClosed: (compilerId: number) => void;
     clojureMacroExpViewOpened: (compilerId: number) => void;
+    yulViewClosed: (compilerId: number) => void;
+    yulViewOpened: (compilerId: number) => void;
+    yulViewOptionsUpdated: (compilerId: number, options: YulBackendOptions, recompile: boolean) => void;
     // TODO: There are no emitters for this event
     selectLine: (editorId: number, lineNumber: number) => void;
     settingsChange: (newSettings: SiteSettings) => void;

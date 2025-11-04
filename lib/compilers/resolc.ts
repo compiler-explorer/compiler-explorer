@@ -85,6 +85,7 @@ export class ResolcCompiler extends BaseCompiler {
         this.compiler.irArg = [];
         this.compiler.supportsIrView = true;
         this.compiler.supportsIrViewOptToggleOption = true;
+        this.compiler.supportsYulView = this.inputIs(InputKind.Solidity);
     }
 
     override getSharedLibraryPathsAsArguments(): string[] {

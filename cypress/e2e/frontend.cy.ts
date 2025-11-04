@@ -15,6 +15,7 @@ const PANE_DATA_MAP = {
     core: {name: 'Core', selector: 'view-haskellCore'},
     stg: {name: 'STG', selector: 'view-haskellStg'},
     cmm: {name: 'Cmm', selector: 'view-haskellCmm'},
+    yul: {name: 'Yul', selector: 'view-yul'},
     // TODO find a way to properly hack the state URL to test this pane like the rust
     // ones seem to be able to do.
     // clojure_macro: {name: 'Clojure Macro', selector: 'view-clojuremacroexp'},
@@ -68,6 +69,7 @@ describe('Individual pane testing', () => {
     addPaneOpenTest(PANE_DATA_MAP.core);
     addPaneOpenTest(PANE_DATA_MAP.stg);
     addPaneOpenTest(PANE_DATA_MAP.cmm);
+    addPaneOpenTest(PANE_DATA_MAP.yul);
     addPaneOpenTest(PANE_DATA_MAP.dump);
     addPaneOpenTest(PANE_DATA_MAP.tree);
     addPaneOpenTest(PANE_DATA_MAP.debug);
