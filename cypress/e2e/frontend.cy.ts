@@ -79,8 +79,7 @@ describe('Individual pane testing', () => {
     addPaneOpenTest(PANE_DATA_MAP.gnatdebug);
     addPaneOpenTest(PANE_DATA_MAP.stackusage);
     addPaneOpenTest(PANE_DATA_MAP.explain);
-    // TODO: Bring back once #3899 lands
-    // addPaneOpenTest(PaneDataMap.cfg);
+    addPaneOpenTest(PANE_DATA_MAP.cfg);
 
     it('Output pane', () => {
         // Hide the dropdown
