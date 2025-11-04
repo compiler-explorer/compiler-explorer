@@ -25,10 +25,10 @@
 import {saveAs} from 'file-saver';
 import $ from 'jquery';
 import _ from 'underscore';
+import {unwrap, unwrapString} from '../../shared/assert.js';
 import {escapeHTML} from '../../shared/common-utils.js';
 import {Language} from '../../types/languages.interfaces.js';
 import {SourceApiEntry} from '../../types/source.interfaces.js';
-import {unwrap, unwrapString} from '../assert.js';
 import * as BootstrapUtils from '../bootstrap-utils.js';
 import * as history from '../history.js';
 import {HistorySource} from '../history.js';

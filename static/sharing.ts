@@ -27,7 +27,7 @@ import ClipboardJS from 'clipboard';
 import GoldenLayout from 'golden-layout';
 import $ from 'jquery';
 import _ from 'underscore';
-import {unwrap} from './assert.js';
+import {unwrap} from '../shared/assert.js';
 import * as BootstrapUtils from './bootstrap-utils.js';
 import {sessionThenLocalStorage} from './local.js';
 import {options} from './options.js';

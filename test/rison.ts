@@ -1,6 +1,6 @@
 import {describe, expect, it} from 'vitest';
 
-import * as rison from '../static/rison.js';
+import * as rison from '../shared/rison.js';
 
 // Copied from https://github.com/Nanonid/rison/blob/master/python/rison/tests.py
 const py_testcases = {

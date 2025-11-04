@@ -25,11 +25,11 @@
 import {Container} from 'golden-layout';
 import $ from 'jquery';
 import _ from 'underscore';
+import {unwrapString} from '../../shared/assert.js';
 import {escapeHTML, unique} from '../../shared/common-utils.js';
 import {CompilationResult} from '../../types/compilation/compilation.interfaces.js';
 import {CompilerInfo} from '../../types/compiler.interfaces.js';
 import {SelectedLibraryVersion} from '../../types/libraries/libraries.interfaces.js';
-import {unwrapString} from '../assert.js';
 import * as BootstrapUtils from '../bootstrap-utils.js';
 import {CompilationStatus} from '../compiler-service.interfaces.js';
 import {CompilerService} from '../compiler-service.js';

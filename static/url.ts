@@ -25,9 +25,8 @@
 import GoldenLayout from 'golden-layout';
 import lzstring from 'lz-string';
 import _ from 'underscore';
+import * as rison from '../shared/rison.js';
 import * as Components from './components.js';
-
-import * as rison from './rison.js';
 
 export function convertOldState(state: any): any {
     const sc = state.compilers[0];
