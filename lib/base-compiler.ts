@@ -29,7 +29,6 @@ import path from 'node:path';
 import * as PromClient from 'prom-client';
 import _ from 'underscore';
 import {parseAllDocuments} from 'yaml';
-import {assert, unwrap} from '../shared/assert.js';
 import {splitArguments, unique} from '../shared/common-utils.js';
 import {OptRemark} from '../static/panes/opt-view.interfaces.js';
 import {PPOptions} from '../static/panes/pp-view.interfaces.js';
@@ -82,6 +81,7 @@ import type {SelectedLibraryVersion} from '../types/libraries/libraries.interfac
 import type {ResultLine} from '../types/resultline/resultline.interfaces.js';
 import {type ToolResult, type ToolTypeKey} from '../types/tool.interfaces.js';
 import {moveArtifactsIntoResult} from './artifact-utils.js';
+import {assert, unwrap} from './assert.js';
 import {copyCopperSpicePlugins} from './binaries/copperspice-utils.js';
 import type {BuildEnvDownloadInfo} from './buildenvsetup/buildenv.interfaces.js';
 import {BuildEnvSetupBase, getBuildEnvTypeByKey} from './buildenvsetup/index.js';
