@@ -26,6 +26,65 @@ import {describe, expect, it} from 'vitest';
 import {deserialiseState} from '../url.js';
 
 describe('Historical URL Backward Compatibility', () => {
+    describe('Version 4 (modern minified format)', () => {
+        const findComponent = (content: any[], name: string): any => {
+            for (const item of content) {
+                if (item.componentName === name) return item;
+                if (item.content && Array.isArray(item.content)) {
+                    const found = findComponent(item.content, name);
+                    if (found) return found;
+                }
+            }
+            return null;
+        };
+
+        it('should deserialize uncompressed minified URL', () => {
+            const urlHash =
+                'g:!((g:!((g:!((h:codeEditor,i:(filename:%271%27,fontScale:14,fontUsePx:%270%27,j:1,lang:c%2B%2B,source:%27//+Type+your+code+here,+or+load+an+example.%0Aint+square(int+num)+%7B%0A++++return+num+*+num%3B%0A%7D%27),l:%275%27,n:%270%27,o:%27C%2B%2B+source+%231%27,t:%270%27)),k:50,l:%274%27,n:%270%27,o:%27%27,s:0,t:%270%27),(g:!((h:compiler,i:(compiler:g152,filters:(b:%270%27,binary:%271%27,binaryObject:%271%27,commentOnly:%270%27,debugCalls:%271%27,demangle:%270%27,directives:%270%27,execute:%271%27,intel:%270%27,libraryCode:%270%27,trim:%271%27,verboseDemangling:%270%27),flagsViewOpen:%271%27,fontScale:14,fontUsePx:%270%27,j:1,lang:c%2B%2B,libs:!(),options:%27%27,overrides:!(),selection:(endColumn:1,endLineNumber:1,positionColumn:1,positionLineNumber:1,selectionStartColumn:1,selectionStartLineNumber:1,startColumn:1,startLineNumber:1),source:1),l:%275%27,n:%270%27,o:%27+x86-64+gcc+15.2+(Editor+%231)%27,t:%270%27)),k:50,l:%274%27,n:%270%27,o:%27%27,s:0,t:%270%27)),l:%272%27,n:%270%27,o:%27%27,t:%270%27)),version:4';
+
+            const state = deserialiseState(urlHash);
+
+            expect(state).toBeTruthy();
+            expect(state.version).toBe(4);
+            expect(state.content).toBeTruthy();
+            expect(Array.isArray(state.content)).toBe(true);
+
+            const editor = findComponent(state.content, 'codeEditor');
+            expect(editor).toBeTruthy();
+            expect(editor.componentState.source).toContain('square');
+
+            const compiler = findComponent(state.content, 'compiler');
+            expect(compiler).toBeTruthy();
+            expect(compiler.componentState.compiler).toBe('g152');
+        });
+
+        it('should deserialize compressed minified URL', () => {
+            const urlHash =
+                'z:OYLghAFBqd5TKALEBjA9gEwKYFFMCWALugE4A0BIEAZgQDbYB2AhgLbYgDkAjF%2BTXRMiAZVQtGIHgBYBQogFUAztgAKAD24AGfgCsp5eiyahUAUgBMAIUtXyKxqiIEh1ZpgDC6egFc2TEAtZdwAZAiZsADk/ACNsUgMAB3QlYhcmL19/QNlk1OchMIjotjiEnntsRwKmESIWUiJMvwCgyur0uoaiIqjY%2BIMlesbm7Lah7t6SsqkASnt0H1JUTi4AejWAahiWTGB47d390kO9%2BK55%2Bm4AVn4Arh1ydG4PW1tNpUXl7E3LAGY%2BOQiNoLvMANYga5aQzcaT8NiQ6H3R7PLj8JQgaHAh4XchwWAoCaoME%2BJQsfaUagYNiJBjxSLsVbqAAcADYALSs6SbYCoVCbHjXAB0Fn42EIJFIBEwBkEwjEEk4MjkwmUak0OPI%2BgqDmwTnSbiYnm8LQMoXCfVKAwqeTSQlGARtKTtTCm/XK7T1NS6IxN2R1VS9nWGPQt02t9hDDsGIbdVvK8yIpGw2GlmMuNzuIKe3C6xM2ynJPwAagRsAB3A4sjlcnl8gXCiybCD4YhkX4WAHkTZeGl0k7/HizfjYnSzeZIbC7AYQDNcOHkBFQ8jI/io9GYoEg8fkCHLq5cP5ZzXrrc4%2Bb4hDwCAoam0xgUKgQO/9kDAQUWAQMIjxDEQGLZjE4QNAAntwgJAawpAgQA8jEuheuB/DUhwwgwUw9BgZqOAxD4wAeBI9AYrw/A4GwxjAJI2EEMm%2BoAG7YMRjzYOoeo%2BD%2BSGUMIVTZvQBAxKQoFeDg2ZJgQCIkeQDGkDEKTYAAItg5EmHxJjbgIRjAEopYVjBiTMJxcqiOIkjKkZaoaNm2qGBRaBvNYhj8RikDzOgiQ1MR7IwaKTzSVKODObOnr6q4EDuNG0isuQ5rFO6STOjUEVRbaNRxjMAYdEIPpNH6ASRcF3qxmGcU6lGuUgPlEyNGl1rzJ8SwrHMMJcLcK7ZqimzVpy3K8vygois2raSh2ALDmeY7goizULkuSLtdwG5Yupl43iAiSJJSz5GCY7KCKQ5HYoC4ptv5srfvE7KTtOpBMfwRkKqZsjmSolmatZSYpmmWhzq1q45lwqjJokpDoCsSifCcMHsYk7GdWy3V1n1jaDRK7aDt2vb3gcg5jaOoLkFdOAJEFB4zVNf2nhiS3npN%2B7cEebUngt434wePkU8zeM7tJqSuNIQA%3D%3D';
+
+            const state = deserialiseState(urlHash);
+
+            expect(state).toBeTruthy();
+            expect(state.version).toBe(4);
+            expect(state.content).toBeTruthy();
+            expect(Array.isArray(state.content)).toBe(true);
+
+            const editor = findComponent(state.content, 'codeEditor');
+            expect(editor).toBeTruthy();
+            expect(editor.componentState.source).toContain('badger');
+
+            const compiler = findComponent(state.content, 'compiler');
+            expect(compiler).toBeTruthy();
+            expect(compiler.componentState.compiler).toBe('g152');
+
+            const pp = findComponent(state.content, 'pp');
+            expect(pp).toBeTruthy();
+
+            const stackUsage = findComponent(state.content, 'stackusage');
+            expect(stackUsage).toBeTruthy();
+        });
+    });
+
     describe('Version 2 (JSON format from 2013)', () => {
         it('should deserialize ICC example with filters', () => {
             // From etc/oldhash.txt
