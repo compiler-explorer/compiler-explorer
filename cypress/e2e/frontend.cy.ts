@@ -15,10 +15,10 @@ const PANE_DATA_MAP = {
     core: {name: 'Core', selector: 'view-haskellCore'},
     stg: {name: 'STG', selector: 'view-haskellStg'},
     cmm: {name: 'Cmm', selector: 'view-haskellCmm'},
-    yul: {name: 'Yul', selector: 'view-yul'},
-    // TODO find a way to properly hack the state URL to test this pane like the rust
+    // TODO find a way to properly hack the state URL to test these panes like the rust
     // ones seem to be able to do.
     // clojure_macro: {name: 'Clojure Macro', selector: 'view-clojuremacroexp'},
+    // yul: {name: 'Yul', selector: 'view-yul'},
     dump: {name: 'Tree/RTL', selector: 'view-gccdump'},
     tree: {name: 'Tree', selector: 'view-gnatdebugtree'},
     debug: {name: 'Debug', selector: 'view-gnatdebug'},
@@ -69,7 +69,8 @@ describe('Individual pane testing', () => {
     addPaneOpenTest(PANE_DATA_MAP.core);
     addPaneOpenTest(PANE_DATA_MAP.stg);
     addPaneOpenTest(PANE_DATA_MAP.cmm);
-    addPaneOpenTest(PANE_DATA_MAP.yul);
+    // TODO: bring back once #8215 lands
+    // addPaneOpenTest(PANE_DATA_MAP.yul);
     addPaneOpenTest(PANE_DATA_MAP.dump);
     addPaneOpenTest(PANE_DATA_MAP.tree);
     addPaneOpenTest(PANE_DATA_MAP.debug);
