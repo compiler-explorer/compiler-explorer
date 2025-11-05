@@ -72,8 +72,8 @@ export class PTXAsmParser extends AsmParser {
         this.ptxDataDeclaration =
             /^\s*\.global\s+\.align\s+\d+\s+\.(b8|b16|b32|b64|u8|u16|u32|u64|s8|s16|s32|s64|f16|f32|f64)/;
 
-        this.functionStart = /^\s*\{/;
-        this.functionEnd = /^\s*\}/;
+        this.functionStart = /^\s*\{\s*$/;
+        this.functionEnd = /^\s*\}\s*$/;
 
         this.callInstruction = /^\s*call\./;
         this.functionCallParam = /^\s*[a-zA-Z_][a-zA-Z0-9_]*,?\s*$/;
