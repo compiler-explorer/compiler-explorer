@@ -53,7 +53,9 @@ export class ClojureCompiler extends JavaCompiler {
             this.compilerProps('compilerWrapper', '') ||
             utils.resolvePathFromAppRoot('etc', 'scripts', 'clojure_wrapper.clj');
         this.compiler.supportsClojureMacroExpView = true;
-        const repoDir = path.resolve(path.dirname(this.compiler.exe), '../.m2/repository');
+        const repoDir =
+            this.compilerProps<string>(`compiler.${this.compiler.id}.repo_dir`) ||
+            path.resolve(path.dirname(this.compiler.exe), '../.m2/repository');
         this.defaultDeps = `{:mvn/local-repo "${repoDir}"}`;
     }
 
