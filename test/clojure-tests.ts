@@ -35,7 +35,7 @@ const languages = {
 };
 
 const info = {
-    exe: null,
+    exe: '/opt/clojure/test-version/bin/clojure',
     remote: true,
     lang: languages.clojure.id,
 } as unknown as CompilerInfo;
