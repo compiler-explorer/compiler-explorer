@@ -338,4 +338,9 @@ export class RustCompiler extends BaseCompiler {
         );
         return super.runCompiler(compiler, newOptions, inputFilename, execOptions);
     }
+
+    override isOutputLikelyLlvmIr(options: string[]): boolean {
+        const emitIndex = options.indexOf('--emit');
+        return options.includes('--emit=llvm-ir') || (emitIndex >= 0 && options[emitIndex + 1] == 'llvm-ir');
+    }
 }
