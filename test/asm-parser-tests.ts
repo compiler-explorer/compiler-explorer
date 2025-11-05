@@ -72,6 +72,11 @@ describe('PTXAsmParser tests', () => {
             expect(parser.hasOpcode('  @!%p1 bra LBB6_2;')).toBe(true);
             expect(parser.hasOpcode('  @%r789 bra LBB6_2;')).toBe(true);
         });
+        it('should identify PTX opcodes wrapped in braces', () => {
+            expect(parser.hasOpcode('{fma.rn.f16x2 %r9,%r2,%r3,%r270;')).toBe(true);
+            expect(parser.hasOpcode('  {fma.rn.f16x2 %r9,%r2,%r3,%r270;')).toBe(true);
+            expect(parser.hasOpcode('{ add.s32 %r1, %r2, %r3;')).toBe(true);
+        });
     });
 
     describe('Nested brace indentation', () => {
@@ -155,6 +160,47 @@ mov.u64 %rd1, $str;
             expect(lines[1]).toBe('$L__BB0_3:');
             expect(lines[2]).toBe('\tmov.u64 %rd1, $str;');
             expect(lines[3]).toBe('}');
+        });
+    });
+
+    describe('Braced instructions', () => {
+        it('should not drop FMA instructions wrapped in braces on separate lines', () => {
+            const input = `{fma.rn.f16x2 %r9,%r2,%r3,%r270;
+}
+{fma.rn.f16x2 %r13,%r2,%r3,%r9;
+}`;
+            const result = parser.processAsm(input, {});
+            const lines = result.asm.map(line => line.text);
+
+            expect(lines.length).toBe(4);
+            expect(lines[0]).toBe('{fma.rn.f16x2 %r9,%r2,%r3,%r270;');
+            expect(lines[1]).toBe('}');
+            expect(lines[2]).toBe('{fma.rn.f16x2 %r13,%r2,%r3,%r9;');
+            expect(lines[3]).toBe('}');
+        });
+
+        it('should preserve braced instructions inside functions', () => {
+            const input = `.visible .entry kernel()
+{
+mov.u32 %r1, 0;
+{fma.rn.f16x2 %r9,%r2,%r3,%r270;
+}
+{fma.rn.f16x2 %r13,%r2,%r3,%r9;
+}
+ret;
+}`;
+            const result = parser.processAsm(input, {});
+            const lines = result.asm.map(line => line.text);
+
+            expect(lines[0]).toBe('.visible .entry kernel()');
+            expect(lines[1]).toBe('{');
+            expect(lines[2]).toBe('\tmov.u32 %r1, 0;');
+            expect(lines[3]).toBe('\t{fma.rn.f16x2 %r9,%r2,%r3,%r270;');
+            expect(lines[4]).toBe('\t}');
+            expect(lines[5]).toBe('\t{fma.rn.f16x2 %r13,%r2,%r3,%r9;');
+            expect(lines[6]).toBe('\t}');
+            expect(lines[7]).toBe('\tret;');
+            expect(lines[8]).toBe('}');
         });
     });
 
