@@ -35,14 +35,14 @@ import {ClojureParser} from './argument-parsers.js';
 import {JavaCompiler} from './java.js';
 
 export class ClojureCompiler extends JavaCompiler {
-    public compilerWrapperPath: string;
-    public defaultDeps: string;
+    compilerWrapperPath: string;
+    defaultDeps: string;
+    configDir: string;
+    javaHome: string;
 
     static override get key() {
         return 'clojure';
     }
-
-    javaHome: string;
 
     constructor(compilerInfo: PreliminaryCompilerInfo, env: CompilationEnvironment) {
         super(compilerInfo, env);
@@ -53,6 +53,9 @@ export class ClojureCompiler extends JavaCompiler {
             this.compilerProps('compilerWrapper', '') ||
             utils.resolvePathFromAppRoot('etc', 'scripts', 'clojure_wrapper.clj');
         this.compiler.supportsClojureMacroExpView = true;
+        this.configDir =
+            this.compilerProps<string>(`compiler.${this.compiler.id}.config_dir`) ||
+            path.resolve(path.dirname(this.compiler.exe), '../.config');
         const repoDir =
             this.compilerProps<string>(`compiler.${this.compiler.id}.repo_dir`) ||
             path.resolve(path.dirname(this.compiler.exe), '../.m2/repository');
@@ -64,6 +67,7 @@ export class ClojureCompiler extends JavaCompiler {
         if (this.javaHome) {
             execOptions.env.JAVA_HOME = this.javaHome;
         }
+        execOptions.env.CLJ_CONFIG = this.configDir;
 
         return execOptions;
     }
