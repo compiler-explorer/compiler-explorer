@@ -45,6 +45,7 @@ export const InstructionSetsList = [
     'm68k',
     'mips',
     'mos6502',
+    'mpy',
     'mrisc32',
     'msp430',
     'powerpc',
