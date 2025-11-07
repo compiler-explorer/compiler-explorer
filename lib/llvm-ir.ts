@@ -59,6 +59,8 @@ export class LlvmIrParser {
     private functionAttrs: RegExp;
     private commentOnly: RegExp;
     private commentAtEOL: RegExp;
+    private symbolDefRe: RegExp;
+    private symbolRe: RegExp;
 
     constructor(
         compilerProps: PropertyGetter,
@@ -87,6 +89,9 @@ export class LlvmIrParser {
 
         // Issue #5923: make sure the comment mark `;` is outside quotes
         this.commentAtEOL = /\s*;(?=(?:[^"]|"[^"]*")*$).*$/;
+
+        this.symbolDefRe = /^\s*(define|declare) .* @((?<name>[-a-zA-Z$._][-a-zA-Z$._0-9]*)|"(?<name>[^"]+)")/;
+        this.symbolRe = /@((?<name>[-a-zA-Z$._][-a-zA-Z$._0-9]*)|"(?<name>[^"]+)")/dg;
     }
 
     getFileName(debugInfo: Record<string, MetaNode>, scope: string): string | null {
@@ -191,6 +196,8 @@ export class LlvmIrParser {
             lineFilters.push(this.commentAtEOL);
         }
 
+        const labelDefinitions: Record<string, number> = {};
+
         for (const line of irLines) {
             const symbolsInLine: AsmResultLabel[] = [];
 
@@ -234,6 +241,26 @@ export class LlvmIrParser {
                     continue;
                 }
 
+                const symbolDefMatch = line.match(this.symbolDefRe);
+                const definedSymbol = symbolDefMatch?.groups?.name;
+                if (symbolDefMatch) {
+                    labelDefinitions[symbolDefMatch.groups!.name] = result.length + 1;
+                }
+
+                line.matchAll(this.symbolRe).forEach(match => {
+                    const name = match.groups!.name;
+                    if (name !== definedSymbol) {
+                        const [start, end] = match.indices!.groups!.name;
+                        symbolsInLine.push({
+                            name,
+                            range: {
+                                startCol: start + 1,
+                                endCol: end + 1,
+                            },
+                        });
+                    }
+                });
+
                 result.push(resultLine);
                 prevLineEmpty = false;
             }
@@ -254,15 +281,17 @@ export class LlvmIrParser {
         }
 
         if (options.demangle && this.irDemangler.canDemangle()) {
-            const demangled = await this.irDemangler.process({asm: result});
+            const demangled = await this.irDemangler.process({asm: result, labelDefinitions});
             return {
                 asm: demangled.asm,
                 languageId: 'llvm-ir',
+                labelDefinitions,
             };
         }
         return {
             asm: result,
             languageId: 'llvm-ir',
+            labelDefinitions,
         };
     }
 
