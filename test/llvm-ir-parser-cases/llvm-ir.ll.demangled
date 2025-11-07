@@ -1,0 +1,1286 @@
+{
+  "asm": [
+    {
+      "text": "; https://godbolt.org/z/hWjbzz9cd",
+    },
+    {
+      "text": "",
+    },
+    {
+      "text": "; ModuleID = 'example.6fc459369532c9ff-cgu.0'",
+    },
+    {
+      "text": "source_filename = "example.6fc459369532c9ff-cgu.0"",
+    },
+    {
+      "text": "target datalayout = "e-m:e-p270:32:32-p271:32:32-p272:64:64-i64:64-i128:128-f80:128-n8:16:32:64-S128"",
+    },
+    {
+      "text": "target triple = "x86_64-unknown-linux-gnu"",
+    },
+    {
+      "text": "",
+    },
+    {
+      "text": "%"core::fmt::rt::Argument<'_>" = type { %"core::fmt::rt::ArgumentType<'_>" }",
+    },
+    {
+      "text": "%"core::fmt::rt::ArgumentType<'_>" = type { ptr, [1 x i64] }",
+    },
+    {
+      "text": "",
+    },
+    {
+      "text": "@anon.f36d5c7f45057ddc2f9588b66728efc8.0 = private unnamed_addr constant <{ [8 x i8], [8 x i8] }> <{ [8 x i8] zeroinitializer, [8 x i8] undef }>, align 8",
+    },
+    {
+      "text": "@alloc_5f8966ccdf63990eeb3d1b59d49d4e62 = private unnamed_addr constant [7 x i8] c"hello: ", align 1",
+    },
+    {
+      "text": "@alloc_49a1e817e911805af64bbc7efb390101 = private unnamed_addr constant [1 x i8] c"\0A", align 1",
+    },
+    {
+      "text": "@alloc_d535c95e835c6805448e14cd6baa16b3 = private unnamed_addr constant <{ ptr, [8 x i8], ptr, [8 x i8] }> <{ ptr @alloc_5f8966ccdf63990eeb3d1b59d49d4e62, [8 x i8] c"\07\00\00\00\00\00\00\00", ptr @alloc_49a1e817e911805af64bbc7efb390101, [8 x i8] c"\01\00\00\00\00\00\00\00" }>, align 8",
+    },
+    {
+      "text": "@alloc_0bd83ae4d998a852bdd6080f4dbcd402 = private unnamed_addr constant [16 x i8] c"/app/example.rs\00", align 1",
+    },
+    {
+      "text": "@alloc_c26c07bead26123c9be372ecc3ac81e3 = private unnamed_addr constant <{ ptr, [16 x i8] }> <{ ptr @alloc_0bd83ae4d998a852bdd6080f4dbcd402, [16 x i8] c"\0F\00\00\00\00\00\00\00\02\00\00\00\05\00\00\00" }>, align 8",
+    },
+    {
+      "text": "",
+    },
+    {
+      "text": "; core::fmt::rt::<impl core::fmt::Arguments>::new_v1",
+    },
+    {
+      "text": "; Function Attrs: inlinehint nonlazybind uwtable",
+    },
+    {
+      "scope": "!7",
+      "source": {
+        "column": undefined,
+        "file": "/rustc/f8297e351a40c1439a467bbbb6879088047f50b3/library/core/src/fmt/rt.rs",
+        "line": 209,
+      },
+      "text": "define void @"core::fmt::rt::<impl core::fmt::Arguments>::new_v1::h1b5b6f49e17440e0"(ptr sret([48 x i8]) align 8 %_0, ptr align 8 %pieces, ptr align 8 %args) unnamed_addr #0 !dbg !7 {",
+    },
+    {
+      "text": "start:",
+    },
+    {
+      "text": "  %args.dbg.spill = alloca [8 x i8], align 8",
+    },
+    {
+      "text": "  %pieces.dbg.spill = alloca [8 x i8], align 8",
+    },
+    {
+      "text": "  store ptr %pieces, ptr %pieces.dbg.spill, align 8",
+    },
+    {
+      "text": "    #dbg_declare(ptr %pieces.dbg.spill, !163, !DIExpression(), !165)",
+    },
+    {
+      "text": "  store ptr %args, ptr %args.dbg.spill, align 8",
+    },
+    {
+      "text": "    #dbg_declare(ptr %args.dbg.spill, !164, !DIExpression(), !166)",
+    },
+    {
+      "scope": "!167",
+      "source": {
+        "column": 9,
+        "file": "/rustc/f8297e351a40c1439a467bbbb6879088047f50b3/library/core/src/fmt/rt.rs",
+        "line": 214,
+      },
+      "text": "  store ptr %pieces, ptr %_0, align 8, !dbg !167",
+    },
+    {
+      "scope": "!167",
+      "source": {
+        "column": 9,
+        "file": "/rustc/f8297e351a40c1439a467bbbb6879088047f50b3/library/core/src/fmt/rt.rs",
+        "line": 214,
+      },
+      "text": "  %0 = getelementptr inbounds i8, ptr %_0, i64 8, !dbg !167",
+    },
+    {
+      "scope": "!167",
+      "source": {
+        "column": 9,
+        "file": "/rustc/f8297e351a40c1439a467bbbb6879088047f50b3/library/core/src/fmt/rt.rs",
+        "line": 214,
+      },
+      "text": "  store i64 2, ptr %0, align 8, !dbg !167",
+    },
+    {
+      "scope": "!167",
+      "source": {
+        "column": 9,
+        "file": "/rustc/f8297e351a40c1439a467bbbb6879088047f50b3/library/core/src/fmt/rt.rs",
+        "line": 214,
+      },
+      "text": "  %1 = load ptr, ptr @anon.f36d5c7f45057ddc2f9588b66728efc8.0, align 8, !dbg !167",
+    },
+    {
+      "scope": "!167",
+      "source": {
+        "column": 9,
+        "file": "/rustc/f8297e351a40c1439a467bbbb6879088047f50b3/library/core/src/fmt/rt.rs",
+        "line": 214,
+      },
+      "text": "  %2 = load i64, ptr getelementptr inbounds (i8, ptr @anon.f36d5c7f45057ddc2f9588b66728efc8.0, i64 8), align 8, !dbg !167",
+    },
+    {
+      "scope": "!167",
+      "source": {
+        "column": 9,
+        "file": "/rustc/f8297e351a40c1439a467bbbb6879088047f50b3/library/core/src/fmt/rt.rs",
+        "line": 214,
+      },
+      "text": "  %3 = getelementptr inbounds i8, ptr %_0, i64 32, !dbg !167",
+    },
+    {
+      "scope": "!167",
+      "source": {
+        "column": 9,
+        "file": "/rustc/f8297e351a40c1439a467bbbb6879088047f50b3/library/core/src/fmt/rt.rs",
+        "line": 214,
+      },
+      "text": "  store ptr %1, ptr %3, align 8, !dbg !167",
+    },
+    {
+      "scope": "!167",
+      "source": {
+        "column": 9,
+        "file": "/rustc/f8297e351a40c1439a467bbbb6879088047f50b3/library/core/src/fmt/rt.rs",
+        "line": 214,
+      },
+      "text": "  %4 = getelementptr inbounds i8, ptr %3, i64 8, !dbg !167",
+    },
+    {
+      "scope": "!167",
+      "source": {
+        "column": 9,
+        "file": "/rustc/f8297e351a40c1439a467bbbb6879088047f50b3/library/core/src/fmt/rt.rs",
+        "line": 214,
+      },
+      "text": "  store i64 %2, ptr %4, align 8, !dbg !167",
+    },
+    {
+      "scope": "!167",
+      "source": {
+        "column": 9,
+        "file": "/rustc/f8297e351a40c1439a467bbbb6879088047f50b3/library/core/src/fmt/rt.rs",
+        "line": 214,
+      },
+      "text": "  %5 = getelementptr inbounds i8, ptr %_0, i64 16, !dbg !167",
+    },
+    {
+      "scope": "!167",
+      "source": {
+        "column": 9,
+        "file": "/rustc/f8297e351a40c1439a467bbbb6879088047f50b3/library/core/src/fmt/rt.rs",
+        "line": 214,
+      },
+      "text": "  store ptr %args, ptr %5, align 8, !dbg !167",
+    },
+    {
+      "scope": "!167",
+      "source": {
+        "column": 9,
+        "file": "/rustc/f8297e351a40c1439a467bbbb6879088047f50b3/library/core/src/fmt/rt.rs",
+        "line": 214,
+      },
+      "text": "  %6 = getelementptr inbounds i8, ptr %5, i64 8, !dbg !167",
+    },
+    {
+      "scope": "!167",
+      "source": {
+        "column": 9,
+        "file": "/rustc/f8297e351a40c1439a467bbbb6879088047f50b3/library/core/src/fmt/rt.rs",
+        "line": 214,
+      },
+      "text": "  store i64 1, ptr %6, align 8, !dbg !167",
+    },
+    {
+      "scope": "!168",
+      "source": {
+        "column": 6,
+        "file": "/rustc/f8297e351a40c1439a467bbbb6879088047f50b3/library/core/src/fmt/rt.rs",
+        "line": 215,
+      },
+      "text": "  ret void, !dbg !168",
+    },
+    {
+      "text": "}",
+    },
+    {
+      "text": "",
+    },
+    {
+      "text": "; core::fmt::rt::Argument::new_display",
+    },
+    {
+      "text": "; Function Attrs: inlinehint nonlazybind uwtable",
+    },
+    {
+      "scope": "!169",
+      "source": {
+        "column": undefined,
+        "file": "/rustc/f8297e351a40c1439a467bbbb6879088047f50b3/library/core/src/fmt/rt.rs",
+        "line": 110,
+      },
+      "text": "define void @core::fmt::rt::Argument::new_display::hf32c8dfb2613a44d(ptr sret([16 x i8]) align 8 %_0, ptr align 4 %x) unnamed_addr #0 !dbg !169 {",
+    },
+    {
+      "text": "start:",
+    },
+    {
+      "text": "  %x.dbg.spill = alloca [8 x i8], align 8",
+    },
+    {
+      "text": "  %_2 = alloca [16 x i8], align 8",
+    },
+    {
+      "text": "  store ptr %x, ptr %x.dbg.spill, align 8",
+    },
+    {
+      "text": "    #dbg_declare(ptr %x.dbg.spill, !178, !DIExpression(), !179)",
+    },
+    {
+      "text": "    #dbg_declare(ptr %x.dbg.spill, !180, !DIExpression(), !191)",
+    },
+    {
+      "scope": "!193",
+      "source": {
+        "column": 17,
+        "file": "/rustc/f8297e351a40c1439a467bbbb6879088047f50b3/library/core/src/fmt/rt.rs",
+        "line": 68,
+      },
+      "text": "  store ptr %x, ptr %_2, align 8, !dbg !193",
+    },
+    {
+      "scope": "!193",
+      "source": {
+        "column": 17,
+        "file": "/rustc/f8297e351a40c1439a467bbbb6879088047f50b3/library/core/src/fmt/rt.rs",
+        "line": 68,
+      },
+      "text": "  %0 = getelementptr inbounds i8, ptr %_2, i64 8, !dbg !193",
+    },
+    {
+      "scope": "!193",
+      "source": {
+        "column": 17,
+        "file": "/rustc/f8297e351a40c1439a467bbbb6879088047f50b3/library/core/src/fmt/rt.rs",
+        "line": 68,
+      },
+      "text": "  store ptr @"core::fmt::num::imp::<impl core::fmt::Display for i32>::fmt::ha5bd85893b48e317", ptr %0, align 8, !dbg !193",
+    },
+    {
+      "scope": "!194",
+      "source": {
+        "column": 9,
+        "file": "/rustc/f8297e351a40c1439a467bbbb6879088047f50b3/library/core/src/fmt/rt.rs",
+        "line": 65,
+      },
+      "text": "  call void @llvm.memcpy.p0.p0.i64(ptr align 8 %_0, ptr align 8 %_2, i64 16, i1 false), !dbg !194",
+    },
+    {
+      "scope": "!195",
+      "source": {
+        "column": 6,
+        "file": "/rustc/f8297e351a40c1439a467bbbb6879088047f50b3/library/core/src/fmt/rt.rs",
+        "line": 112,
+      },
+      "text": "  ret void, !dbg !195",
+    },
+    {
+      "text": "}",
+    },
+    {
+      "text": "",
+    },
+    {
+      "text": "; example::main",
+    },
+    {
+      "text": "; Function Attrs: nonlazybind uwtable",
+    },
+    {
+      "scope": "!196",
+      "source": {
+        "column": undefined,
+        "file": null,
+        "line": 5,
+      },
+      "text": "define void @example::main::hf6eacbf6b45cf567() unnamed_addr #1 !dbg !196 {",
+    },
+    {
+      "text": "start:",
+    },
+    {
+      "text": "  %_6 = alloca [4 x i8], align 4",
+    },
+    {
+      "text": "  %_4 = alloca [16 x i8], align 8",
+    },
+    {
+      "text": "  %args = alloca [16 x i8], align 8",
+    },
+    {
+      "text": "  %_2 = alloca [48 x i8], align 8",
+    },
+    {
+      "text": "    #dbg_declare(ptr %args, !202, !DIExpression(), !206)",
+    },
+    {
+      "text": "; call example::square",
+    },
+    {
+      "scope": "!207",
+      "source": {
+        "column": 27,
+        "file": null,
+        "line": 6,
+      },
+      "text": "  %0 = call i32 @example::square::hc0cdb60f35a100bf(i32 3), !dbg !207",
+    },
+    {
+      "scope": "!207",
+      "source": {
+        "column": 27,
+        "file": null,
+        "line": 6,
+      },
+      "text": "  store i32 %0, ptr %_6, align 4, !dbg !207",
+    },
+    {
+      "text": "; call core::fmt::rt::Argument::new_display",
+    },
+    {
+      "scope": "!208",
+      "source": {
+        "column": 5,
+        "file": null,
+        "line": 6,
+      },
+      "text": "  call void @core::fmt::rt::Argument::new_display::hf32c8dfb2613a44d(ptr sret([16 x i8]) align 8 %_4, ptr align 4 %_6), !dbg !208",
+    },
+    {
+      "scope": "!208",
+      "source": {
+        "column": 5,
+        "file": null,
+        "line": 6,
+      },
+      "text": "  %1 = getelementptr inbounds nuw %"core::fmt::rt::Argument<'_>", ptr %args, i64 0, !dbg !208",
+    },
+    {
+      "scope": "!208",
+      "source": {
+        "column": 5,
+        "file": null,
+        "line": 6,
+      },
+      "text": "  call void @llvm.memcpy.p0.p0.i64(ptr align 8 %1, ptr align 8 %_4, i64 16, i1 false), !dbg !208",
+    },
+    {
+      "text": "; call core::fmt::rt::<impl core::fmt::Arguments>::new_v1",
+    },
+    {
+      "scope": "!206",
+      "source": {
+        "column": 5,
+        "file": null,
+        "line": 6,
+      },
+      "text": "  call void @"core::fmt::rt::<impl core::fmt::Arguments>::new_v1::h1b5b6f49e17440e0"(ptr sret([48 x i8]) align 8 %_2, ptr align 8 @alloc_d535c95e835c6805448e14cd6baa16b3, ptr align 8 %args), !dbg !206",
+    },
+    {
+      "text": "; call std::io::stdio::_print",
+    },
+    {
+      "scope": "!208",
+      "source": {
+        "column": 5,
+        "file": null,
+        "line": 6,
+      },
+      "text": "  call void @std::io::stdio::_print::h02b5be036b2109f4(ptr align 8 %_2), !dbg !208",
+    },
+    {
+      "scope": "!209",
+      "source": {
+        "column": 2,
+        "file": null,
+        "line": 7,
+      },
+      "text": "  ret void, !dbg !209",
+    },
+    {
+      "text": "}",
+    },
+    {
+      "text": "",
+    },
+    {
+      "text": "; example::square",
+    },
+    {
+      "text": "; Function Attrs: nonlazybind uwtable",
+    },
+    {
+      "scope": "!211",
+      "source": {
+        "column": undefined,
+        "file": null,
+        "line": 1,
+      },
+      "text": "define i32 @example::square::hc0cdb60f35a100bf(i32 %num) unnamed_addr #1 !dbg !211 {",
+    },
+    {
+      "text": "start:",
+    },
+    {
+      "text": "  %num.dbg.spill = alloca [4 x i8], align 4",
+    },
+    {
+      "text": "  store i32 %num, ptr %num.dbg.spill, align 4",
+    },
+    {
+      "text": "    #dbg_declare(ptr %num.dbg.spill, !215, !DIExpression(), !216)",
+    },
+    {
+      "scope": "!217",
+      "source": {
+        "column": 5,
+        "file": null,
+        "line": 2,
+      },
+      "text": "  %0 = call { i32, i1 } @llvm.smul.with.overflow.i32(i32 %num, i32 %num), !dbg !217",
+    },
+    {
+      "scope": "!217",
+      "source": {
+        "column": 5,
+        "file": null,
+        "line": 2,
+      },
+      "text": "  %_2.0 = extractvalue { i32, i1 } %0, 0, !dbg !217",
+    },
+    {
+      "scope": "!217",
+      "source": {
+        "column": 5,
+        "file": null,
+        "line": 2,
+      },
+      "text": "  %_2.1 = extractvalue { i32, i1 } %0, 1, !dbg !217",
+    },
+    {
+      "scope": "!217",
+      "source": {
+        "column": 5,
+        "file": null,
+        "line": 2,
+      },
+      "text": "  br i1 %_2.1, label %panic, label %bb1, !dbg !217",
+    },
+    {
+      "text": "",
+    },
+    {
+      "text": "bb1:                                              ; preds = %start",
+    },
+    {
+      "scope": "!218",
+      "source": {
+        "column": 2,
+        "file": null,
+        "line": 3,
+      },
+      "text": "  ret i32 %_2.0, !dbg !218",
+    },
+    {
+      "text": "",
+    },
+    {
+      "text": "panic:                                            ; preds = %start",
+    },
+    {
+      "text": "; call core::panicking::panic_const::panic_const_mul_overflow",
+    },
+    {
+      "scope": "!217",
+      "source": {
+        "column": 5,
+        "file": null,
+        "line": 2,
+      },
+      "text": "  call void @core::panicking::panic_const::panic_const_mul_overflow::h3b9426197cab89a4(ptr align 8 @alloc_c26c07bead26123c9be372ecc3ac81e3) #5, !dbg !217",
+    },
+    {
+      "scope": "!217",
+      "source": {
+        "column": 5,
+        "file": null,
+        "line": 2,
+      },
+      "text": "  unreachable, !dbg !217",
+    },
+    {
+      "text": "}",
+    },
+    {
+      "text": "",
+    },
+    {
+      "text": "; core::fmt::num::imp::<impl core::fmt::Display for i32>::fmt",
+    },
+    {
+      "text": "; Function Attrs: nonlazybind uwtable",
+    },
+    {
+      "text": "declare zeroext i1 @"core::fmt::num::imp::<impl core::fmt::Display for i32>::fmt::ha5bd85893b48e317"(ptr align 4, ptr align 8) unnamed_addr #1",
+    },
+    {
+      "text": "",
+    },
+    {
+      "text": "; Function Attrs: nocallback nofree nounwind willreturn memory(argmem: readwrite)",
+    },
+    {
+      "text": "declare void @llvm.memcpy.p0.p0.i64(ptr noalias writeonly captures(none), ptr noalias readonly captures(none), i64, i1 immarg) #2",
+    },
+    {
+      "text": "",
+    },
+    {
+      "text": "; std::io::stdio::_print",
+    },
+    {
+      "text": "; Function Attrs: nonlazybind uwtable",
+    },
+    {
+      "text": "declare void @std::io::stdio::_print::h02b5be036b2109f4(ptr align 8) unnamed_addr #1",
+    },
+    {
+      "text": "",
+    },
+    {
+      "text": "; Function Attrs: nocallback nofree nosync nounwind speculatable willreturn memory(none)",
+    },
+    {
+      "text": "declare { i32, i1 } @llvm.smul.with.overflow.i32(i32, i32) #3",
+    },
+    {
+      "text": "",
+    },
+    {
+      "text": "; core::panicking::panic_const::panic_const_mul_overflow",
+    },
+    {
+      "text": "; Function Attrs: cold noinline noreturn nonlazybind uwtable",
+    },
+    {
+      "text": "declare void @core::panicking::panic_const::panic_const_mul_overflow::h3b9426197cab89a4(ptr align 8) unnamed_addr #4",
+    },
+    {
+      "text": "",
+    },
+    {
+      "text": "attributes #0 = { inlinehint nonlazybind uwtable "probe-stack"="inline-asm" "target-cpu"="x86-64" }",
+    },
+    {
+      "text": "attributes #1 = { nonlazybind uwtable "probe-stack"="inline-asm" "target-cpu"="x86-64" }",
+    },
+    {
+      "text": "attributes #2 = { nocallback nofree nounwind willreturn memory(argmem: readwrite) }",
+    },
+    {
+      "text": "attributes #3 = { nocallback nofree nosync nounwind speculatable willreturn memory(none) }",
+    },
+    {
+      "text": "attributes #4 = { cold noinline noreturn nonlazybind uwtable "probe-stack"="inline-asm" "target-cpu"="x86-64" }",
+    },
+    {
+      "text": "attributes #5 = { noreturn }",
+    },
+    {
+      "text": "",
+    },
+    {
+      "text": "!llvm.module.flags = !{!0, !1, !2, !3}",
+    },
+    {
+      "text": "!llvm.ident = !{!4}",
+    },
+    {
+      "text": "!llvm.dbg.cu = !{!5}",
+    },
+    {
+      "text": "",
+    },
+    {
+      "text": "!0 = !{i32 8, !"PIC Level", i32 2}",
+    },
+    {
+      "text": "!1 = !{i32 2, !"RtLibUseGOT", i32 1}",
+    },
+    {
+      "text": "!2 = !{i32 7, !"Dwarf Version", i32 4}",
+    },
+    {
+      "text": "!3 = !{i32 2, !"Debug Info Version", i32 3}",
+    },
+    {
+      "text": "!4 = !{!"rustc version 1.91.0 (f8297e351 2025-10-28)"}",
+    },
+    {
+      "text": "!5 = distinct !DICompileUnit(language: DW_LANG_Rust, file: !6, producer: "clang LLVM (rustc version 1.91.0 (f8297e351 2025-10-28))", isOptimized: false, runtimeVersion: 0, emissionKind: FullDebug, splitDebugInlining: false, nameTableKind: None)",
+    },
+    {
+      "text": "!6 = !DIFile(filename: "/app/example.rs/@/example.6fc459369532c9ff-cgu.0", directory: "/app")",
+    },
+    {
+      "text": "!7 = distinct !DISubprogram(name: "new_v1<2, 1>", linkageName: "core::fmt::rt::<impl core::fmt::Arguments>::new_v1::h1b5b6f49e17440e0", scope: !9, file: !8, line: 209, type: !151, scopeLine: 209, flags: DIFlagPrototyped, spFlags: DISPFlagLocalToUnit | DISPFlagDefinition, unit: !5, templateParams: !26, declaration: !161, retainedNodes: !162)",
+    },
+    {
+      "text": "!8 = !DIFile(filename: "/rustc/f8297e351a40c1439a467bbbb6879088047f50b3/library/core/src/fmt/rt.rs", directory: "", checksumkind: CSK_MD5, checksum: "03cba3c9b7eca44212bc16adf1d5b1bc")",
+    },
+    {
+      "text": "!9 = !DICompositeType(tag: DW_TAG_structure_type, name: "Arguments", scope: !11, file: !10, size: 384, align: 64, flags: DIFlagPublic, elements: !13, templateParams: !26, identifier: "3e14e6e534bc9c56f5fa95bdb9db37b9")",
+    },
+    {
+      "text": "!10 = !DIFile(filename: "<unknown>", directory: "")",
+    },
+    {
+      "text": "!11 = !DINamespace(name: "fmt", scope: !12)",
+    },
+    {
+      "text": "!12 = !DINamespace(name: "core", scope: null)",
+    },
+    {
+      "text": "!13 = !{!14, !28, !73}",
+    },
+    {
+      "text": "!14 = !DIDerivedType(tag: DW_TAG_member, name: "pieces", scope: !9, file: !10, baseType: !15, size: 128, align: 64, flags: DIFlagPrivate)",
+    },
+    {
+      "text": "!15 = !DICompositeType(tag: DW_TAG_structure_type, name: "&[&str]", file: !10, size: 128, align: 64, elements: !16, templateParams: !26, identifier: "4e66b00a376d6af5b8765440fb2839f")",
+    },
+    {
+      "text": "!16 = !{!17, !27}",
+    },
+    {
+      "text": "!17 = !DIDerivedType(tag: DW_TAG_member, name: "data_ptr", scope: !15, file: !10, baseType: !18, size: 64, align: 64)",
+    },
+    {
+      "text": "!18 = !DIDerivedType(tag: DW_TAG_pointer_type, baseType: !19, size: 64, align: 64, dwarfAddressSpace: 0)",
+    },
+    {
+      "text": "!19 = !DICompositeType(tag: DW_TAG_structure_type, name: "&str", file: !10, size: 128, align: 64, elements: !20, templateParams: !26, identifier: "9277eecd40495f85161460476aacc992")",
+    },
+    {
+      "text": "!20 = !{!21, !24}",
+    },
+    {
+      "text": "!21 = !DIDerivedType(tag: DW_TAG_member, name: "data_ptr", scope: !19, file: !10, baseType: !22, size: 64, align: 64)",
+    },
+    {
+      "text": "!22 = !DIDerivedType(tag: DW_TAG_pointer_type, baseType: !23, size: 64, align: 64, dwarfAddressSpace: 0)",
+    },
+    {
+      "text": "!23 = !DIBasicType(name: "u8", size: 8, encoding: DW_ATE_unsigned)",
+    },
+    {
+      "text": "!24 = !DIDerivedType(tag: DW_TAG_member, name: "length", scope: !19, file: !10, baseType: !25, size: 64, align: 64, offset: 64)",
+    },
+    {
+      "text": "!25 = !DIBasicType(name: "usize", size: 64, encoding: DW_ATE_unsigned)",
+    },
+    {
+      "text": "!26 = !{}",
+    },
+    {
+      "text": "!27 = !DIDerivedType(tag: DW_TAG_member, name: "length", scope: !15, file: !10, baseType: !25, size: 64, align: 64, offset: 64)",
+    },
+    {
+      "text": "!28 = !DIDerivedType(tag: DW_TAG_member, name: "fmt", scope: !9, file: !10, baseType: !29, size: 128, align: 64, offset: 256, flags: DIFlagPrivate)",
+    },
+    {
+      "text": "!29 = !DICompositeType(tag: DW_TAG_structure_type, name: "Option<&[core::fmt::rt::Placeholder]>", scope: !30, file: !10, size: 128, align: 64, flags: DIFlagPublic, elements: !31, templateParams: !26, identifier: "f4128f4a1478b8d4e97c2666c541d44c")",
+    },
+    {
+      "text": "!30 = !DINamespace(name: "option", scope: !12)",
+    },
+    {
+      "text": "!31 = !{!32}",
+    },
+    {
+      "text": "!32 = !DICompositeType(tag: DW_TAG_variant_part, scope: !29, file: !10, size: 128, align: 64, elements: !33, templateParams: !26, identifier: "9c68ec629ca43f00f69cd1c83e6a86ee", discriminator: !71)",
+    },
+    {
+      "text": "!33 = !{!34, !67}",
+    },
+    {
+      "text": "!34 = !DIDerivedType(tag: DW_TAG_member, name: "None", scope: !32, file: !10, baseType: !35, size: 128, align: 64, extraData: i64 0)",
+    },
+    {
+      "text": "!35 = !DICompositeType(tag: DW_TAG_structure_type, name: "None", scope: !29, file: !10, size: 128, align: 64, flags: DIFlagPublic, elements: !26, templateParams: !36, identifier: "47cc9dc96ffcd771f05fd8baf8718f9f")",
+    },
+    {
+      "text": "!36 = !{!37}",
+    },
+    {
+      "text": "!37 = !DITemplateTypeParameter(name: "T", type: !38)",
+    },
+    {
+      "text": "!38 = !DICompositeType(tag: DW_TAG_structure_type, name: "&[core::fmt::rt::Placeholder]", file: !10, size: 128, align: 64, elements: !39, templateParams: !26, identifier: "47e0d68c4284c2763bc79684afc58b04")",
+    },
+    {
+      "text": "!39 = !{!40, !66}",
+    },
+    {
+      "text": "!40 = !DIDerivedType(tag: DW_TAG_member, name: "data_ptr", scope: !38, file: !10, baseType: !41, size: 64, align: 64)",
+    },
+    {
+      "text": "!41 = !DIDerivedType(tag: DW_TAG_pointer_type, baseType: !42, size: 64, align: 64, dwarfAddressSpace: 0)",
+    },
+    {
+      "text": "!42 = !DICompositeType(tag: DW_TAG_structure_type, name: "Placeholder", scope: !43, file: !10, size: 384, align: 64, flags: DIFlagPublic, elements: !44, templateParams: !26, identifier: "a24e9441b09da4bb466626271bc603ff")",
+    },
+    {
+      "text": "!43 = !DINamespace(name: "rt", scope: !11)",
+    },
+    {
+      "text": "!44 = !{!45, !46, !48, !65}",
+    },
+    {
+      "text": "!45 = !DIDerivedType(tag: DW_TAG_member, name: "position", scope: !42, file: !10, baseType: !25, size: 64, align: 64, offset: 256, flags: DIFlagPublic)",
+    },
+    {
+      "text": "!46 = !DIDerivedType(tag: DW_TAG_member, name: "flags", scope: !42, file: !10, baseType: !47, size: 32, align: 32, offset: 320, flags: DIFlagPublic)",
+    },
+    {
+      "text": "!47 = !DIBasicType(name: "u32", size: 32, encoding: DW_ATE_unsigned)",
+    },
+    {
+      "text": "!48 = !DIDerivedType(tag: DW_TAG_member, name: "precision", scope: !42, file: !10, baseType: !49, size: 128, align: 64, flags: DIFlagPublic)",
+    },
+    {
+      "text": "!49 = !DICompositeType(tag: DW_TAG_structure_type, name: "Count", scope: !43, file: !10, size: 128, align: 64, flags: DIFlagPublic, elements: !50, templateParams: !26, identifier: "40215f7dafe59c81d016b26a091f523c")",
+    },
+    {
+      "text": "!50 = !{!51}",
+    },
+    {
+      "text": "!51 = !DICompositeType(tag: DW_TAG_variant_part, scope: !49, file: !10, size: 128, align: 64, elements: !52, templateParams: !26, identifier: "6d1f0d392a2148b575e310d1f1121c4e", discriminator: !64)",
+    },
+    {
+      "text": "!52 = !{!53, !58, !62}",
+    },
+    {
+      "text": "!53 = !DIDerivedType(tag: DW_TAG_member, name: "Is", scope: !51, file: !10, baseType: !54, size: 128, align: 64, extraData: i16 0)",
+    },
+    {
+      "text": "!54 = !DICompositeType(tag: DW_TAG_structure_type, name: "Is", scope: !49, file: !10, size: 128, align: 64, flags: DIFlagPublic, elements: !55, templateParams: !26, identifier: "eb70fbd88edb38f655d53298908aed8b")",
+    },
+    {
+      "text": "!55 = !{!56}",
+    },
+    {
+      "text": "!56 = !DIDerivedType(tag: DW_TAG_member, name: "__0", scope: !54, file: !10, baseType: !57, size: 16, align: 16, offset: 16, flags: DIFlagPublic)",
+    },
+    {
+      "text": "!57 = !DIBasicType(name: "u16", size: 16, encoding: DW_ATE_unsigned)",
+    },
+    {
+      "text": "!58 = !DIDerivedType(tag: DW_TAG_member, name: "Param", scope: !51, file: !10, baseType: !59, size: 128, align: 64, extraData: i16 1)",
+    },
+    {
+      "text": "!59 = !DICompositeType(tag: DW_TAG_structure_type, name: "Param", scope: !49, file: !10, size: 128, align: 64, flags: DIFlagPublic, elements: !60, templateParams: !26, identifier: "98b6d299d0747bdfcea62178e60c14d2")",
+    },
+    {
+      "text": "!60 = !{!61}",
+    },
+    {
+      "text": "!61 = !DIDerivedType(tag: DW_TAG_member, name: "__0", scope: !59, file: !10, baseType: !25, size: 64, align: 64, offset: 64, flags: DIFlagPublic)",
+    },
+    {
+      "text": "!62 = !DIDerivedType(tag: DW_TAG_member, name: "Implied", scope: !51, file: !10, baseType: !63, size: 128, align: 64, extraData: i16 2)",
+    },
+    {
+      "text": "!63 = !DICompositeType(tag: DW_TAG_structure_type, name: "Implied", scope: !49, file: !10, size: 128, align: 64, flags: DIFlagPublic, elements: !26, identifier: "b0e7d3bde035ab0cee4c0dd5a5255ff4")",
+    },
+    {
+      "text": "!64 = !DIDerivedType(tag: DW_TAG_member, scope: !49, file: !10, baseType: !57, size: 16, align: 16, flags: DIFlagArtificial)",
+    },
+    {
+      "text": "!65 = !DIDerivedType(tag: DW_TAG_member, name: "width", scope: !42, file: !10, baseType: !49, size: 128, align: 64, offset: 128, flags: DIFlagPublic)",
+    },
+    {
+      "text": "!66 = !DIDerivedType(tag: DW_TAG_member, name: "length", scope: !38, file: !10, baseType: !25, size: 64, align: 64, offset: 64)",
+    },
+    {
+      "text": "!67 = !DIDerivedType(tag: DW_TAG_member, name: "Some", scope: !32, file: !10, baseType: !68, size: 128, align: 64)",
+    },
+    {
+      "text": "!68 = !DICompositeType(tag: DW_TAG_structure_type, name: "Some", scope: !29, file: !10, size: 128, align: 64, flags: DIFlagPublic, elements: !69, templateParams: !36, identifier: "bf5c5b5bd7587d5644e79af587197807")",
+    },
+    {
+      "text": "!69 = !{!70}",
+    },
+    {
+      "text": "!70 = !DIDerivedType(tag: DW_TAG_member, name: "__0", scope: !68, file: !10, baseType: !38, size: 128, align: 64, flags: DIFlagPublic)",
+    },
+    {
+      "text": "!71 = !DIDerivedType(tag: DW_TAG_member, scope: !29, file: !10, baseType: !72, size: 64, align: 64, flags: DIFlagArtificial)",
+    },
+    {
+      "text": "!72 = !DIBasicType(name: "u64", size: 64, encoding: DW_ATE_unsigned)",
+    },
+    {
+      "text": "!73 = !DIDerivedType(tag: DW_TAG_member, name: "args", scope: !9, file: !10, baseType: !74, size: 128, align: 64, offset: 128, flags: DIFlagPrivate)",
+    },
+    {
+      "text": "!74 = !DICompositeType(tag: DW_TAG_structure_type, name: "&[core::fmt::rt::Argument]", file: !10, size: 128, align: 64, elements: !75, templateParams: !26, identifier: "58bf012de0ac0100eebb52b78c8cbe69")",
+    },
+    {
+      "text": "!75 = !{!76, !150}",
+    },
+    {
+      "text": "!76 = !DIDerivedType(tag: DW_TAG_member, name: "data_ptr", scope: !74, file: !10, baseType: !77, size: 64, align: 64)",
+    },
+    {
+      "text": "!77 = !DIDerivedType(tag: DW_TAG_pointer_type, baseType: !78, size: 64, align: 64, dwarfAddressSpace: 0)",
+    },
+    {
+      "text": "!78 = !DICompositeType(tag: DW_TAG_structure_type, name: "Argument", scope: !43, file: !10, size: 128, align: 64, flags: DIFlagPublic, elements: !79, templateParams: !26, identifier: "a64ebb2da98ad8cd523bf22d581450a0")",
+    },
+    {
+      "text": "!79 = !{!80}",
+    },
+    {
+      "text": "!80 = !DIDerivedType(tag: DW_TAG_member, name: "ty", scope: !78, file: !10, baseType: !81, size: 128, align: 64, flags: DIFlagPrivate)",
+    },
+    {
+      "text": "!81 = !DICompositeType(tag: DW_TAG_structure_type, name: "ArgumentType", scope: !43, file: !10, size: 128, align: 64, flags: DIFlagPrivate, elements: !82, templateParams: !26, identifier: "a0986c1d8c42330c2ccb6994238d036")",
+    },
+    {
+      "text": "!82 = !{!83}",
+    },
+    {
+      "text": "!83 = !DICompositeType(tag: DW_TAG_variant_part, scope: !81, file: !10, size: 128, align: 64, elements: !84, templateParams: !26, identifier: "4cce771e46b015aa294ea53675c7967", discriminator: !149)",
+    },
+    {
+      "text": "!84 = !{!85, !145}",
+    },
+    {
+      "text": "!85 = !DIDerivedType(tag: DW_TAG_member, name: "Placeholder", scope: !83, file: !10, baseType: !86, size: 128, align: 64)",
+    },
+    {
+      "text": "!86 = !DICompositeType(tag: DW_TAG_structure_type, name: "Placeholder", scope: !81, file: !10, size: 128, align: 64, flags: DIFlagPrivate, elements: !87, templateParams: !26, identifier: "32096f5d360ce82abef8f28a1c366c8e")",
+    },
+    {
+      "text": "!87 = !{!88, !98, !139}",
+    },
+    {
+      "text": "!88 = !DIDerivedType(tag: DW_TAG_member, name: "value", scope: !86, file: !10, baseType: !89, size: 64, align: 64, flags: DIFlagPrivate)",
+    },
+    {
+      "text": "!89 = !DICompositeType(tag: DW_TAG_structure_type, name: "NonNull<()>", scope: !90, file: !10, size: 64, align: 64, flags: DIFlagPublic, elements: !92, templateParams: !96, identifier: "59004c9764b8f8a0c7eeffd3340ced68")",
+    },
+    {
+      "text": "!90 = !DINamespace(name: "non_null", scope: !91)",
+    },
+    {
+      "text": "!91 = !DINamespace(name: "ptr", scope: !12)",
+    },
+    {
+      "text": "!92 = !{!93}",
+    },
+    {
+      "text": "!93 = !DIDerivedType(tag: DW_TAG_member, name: "pointer", scope: !89, file: !10, baseType: !94, size: 64, align: 64, flags: DIFlagPrivate)",
+    },
+    {
+      "text": "!94 = !DIDerivedType(tag: DW_TAG_pointer_type, name: "*const ()", baseType: !95, size: 64, align: 64, dwarfAddressSpace: 0)",
+    },
+    {
+      "text": "!95 = !DIBasicType(name: "()", encoding: DW_ATE_unsigned)",
+    },
+    {
+      "text": "!96 = !{!97}",
+    },
+    {
+      "text": "!97 = !DITemplateTypeParameter(name: "T", type: !95)",
+    },
+    {
+      "text": "!98 = !DIDerivedType(tag: DW_TAG_member, name: "formatter", scope: !86, file: !10, baseType: !99, size: 64, align: 64, offset: 64, flags: DIFlagPrivate)",
+    },
+    {
+      "text": "!99 = !DIDerivedType(tag: DW_TAG_pointer_type, name: "unsafe fn(core::ptr::non_null::NonNull<()>, &mut core::fmt::Formatter) -> core::result::Result<(), core::fmt::Error>", baseType: !100, size: 64, align: 64, dwarfAddressSpace: 0)",
+    },
+    {
+      "text": "!100 = !DISubroutineType(types: !101)",
+    },
+    {
+      "text": "!101 = !{!102, !89, !119}",
+    },
+    {
+      "text": "!102 = !DICompositeType(tag: DW_TAG_structure_type, name: "Result<(), core::fmt::Error>", scope: !103, file: !10, size: 8, align: 8, flags: DIFlagPublic, elements: !104, templateParams: !26, identifier: "cc621153baa62273e1d5317cd8c95256")",
+    },
+    {
+      "text": "!103 = !DINamespace(name: "result", scope: !12)",
+    },
+    {
+      "text": "!104 = !{!105}",
+    },
+    {
+      "text": "!105 = !DICompositeType(tag: DW_TAG_variant_part, scope: !102, file: !10, size: 8, align: 8, elements: !106, templateParams: !26, identifier: "97f70f95c44c3df549ad0d94d230cef4", discriminator: !118)",
+    },
+    {
+      "text": "!106 = !{!107, !114}",
+    },
+    {
+      "text": "!107 = !DIDerivedType(tag: DW_TAG_member, name: "Ok", scope: !105, file: !10, baseType: !108, size: 8, align: 8, extraData: i8 0)",
+    },
+    {
+      "text": "!108 = !DICompositeType(tag: DW_TAG_structure_type, name: "Ok", scope: !102, file: !10, size: 8, align: 8, flags: DIFlagPublic, elements: !109, templateParams: !111, identifier: "ec2f8aa08737d6854b25f87e36015000")",
+    },
+    {
+      "text": "!109 = !{!110}",
+    },
+    {
+      "text": "!110 = !DIDerivedType(tag: DW_TAG_member, name: "__0", scope: !108, file: !10, baseType: !95, align: 8, offset: 8, flags: DIFlagPublic)",
+    },
+    {
+      "text": "!111 = !{!97, !112}",
+    },
+    {
+      "text": "!112 = !DITemplateTypeParameter(name: "E", type: !113)",
+    },
+    {
+      "text": "!113 = !DICompositeType(tag: DW_TAG_structure_type, name: "Error", scope: !11, file: !10, align: 8, flags: DIFlagPublic, elements: !26, identifier: "4e10c97380bc1052e26842e514c07b58")",
+    },
+    {
+      "text": "!114 = !DIDerivedType(tag: DW_TAG_member, name: "Err", scope: !105, file: !10, baseType: !115, size: 8, align: 8, extraData: i8 1)",
+    },
+    {
+      "text": "!115 = !DICompositeType(tag: DW_TAG_structure_type, name: "Err", scope: !102, file: !10, size: 8, align: 8, flags: DIFlagPublic, elements: !116, templateParams: !111, identifier: "5836f172dd113fa0e1839c449d1255a")",
+    },
+    {
+      "text": "!116 = !{!117}",
+    },
+    {
+      "text": "!117 = !DIDerivedType(tag: DW_TAG_member, name: "__0", scope: !115, file: !10, baseType: !113, align: 8, offset: 8, flags: DIFlagPublic)",
+    },
+    {
+      "text": "!118 = !DIDerivedType(tag: DW_TAG_member, scope: !102, file: !10, baseType: !23, size: 8, align: 8, flags: DIFlagArtificial)",
+    },
+    {
+      "text": "!119 = !DIDerivedType(tag: DW_TAG_pointer_type, name: "&mut core::fmt::Formatter", baseType: !120, size: 64, align: 64, dwarfAddressSpace: 0)",
+    },
+    {
+      "text": "!120 = !DICompositeType(tag: DW_TAG_structure_type, name: "Formatter", scope: !11, file: !10, size: 192, align: 64, flags: DIFlagPublic, elements: !121, templateParams: !26, identifier: "94e132869bcec4069af040a17a417dc7")",
+    },
+    {
+      "text": "!121 = !{!122, !128}",
+    },
+    {
+      "text": "!122 = !DIDerivedType(tag: DW_TAG_member, name: "options", scope: !120, file: !10, baseType: !123, size: 64, align: 32, offset: 128, flags: DIFlagPrivate)",
+    },
+    {
+      "text": "!123 = !DICompositeType(tag: DW_TAG_structure_type, name: "FormattingOptions", scope: !11, file: !10, size: 64, align: 32, flags: DIFlagPublic, elements: !124, templateParams: !26, identifier: "693054fe9da7b65cbaf8d4db1884220d")",
+    },
+    {
+      "text": "!124 = !{!125, !126, !127}",
+    },
+    {
+      "text": "!125 = !DIDerivedType(tag: DW_TAG_member, name: "flags", scope: !123, file: !10, baseType: !47, size: 32, align: 32, flags: DIFlagPrivate)",
+    },
+    {
+      "text": "!126 = !DIDerivedType(tag: DW_TAG_member, name: "width", scope: !123, file: !10, baseType: !57, size: 16, align: 16, offset: 32, flags: DIFlagPrivate)",
+    },
+    {
+      "text": "!127 = !DIDerivedType(tag: DW_TAG_member, name: "precision", scope: !123, file: !10, baseType: !57, size: 16, align: 16, offset: 48, flags: DIFlagPrivate)",
+    },
+    {
+      "text": "!128 = !DIDerivedType(tag: DW_TAG_member, name: "buf", scope: !120, file: !10, baseType: !129, size: 128, align: 64, flags: DIFlagPrivate)",
+    },
+    {
+      "text": "!129 = !DICompositeType(tag: DW_TAG_structure_type, name: "&mut dyn core::fmt::Write", file: !10, size: 128, align: 64, elements: !130, templateParams: !26, identifier: "104810609c399af05a756c8a6780b67e")",
+    },
+    {
+      "text": "!130 = !{!131, !134}",
+    },
+    {
+      "text": "!131 = !DIDerivedType(tag: DW_TAG_member, name: "pointer", scope: !129, file: !10, baseType: !132, size: 64, align: 64)",
+    },
+    {
+      "text": "!132 = !DIDerivedType(tag: DW_TAG_pointer_type, baseType: !133, size: 64, align: 64, dwarfAddressSpace: 0)",
+    },
+    {
+      "text": "!133 = !DICompositeType(tag: DW_TAG_structure_type, name: "dyn core::fmt::Write", file: !10, align: 8, elements: !26, identifier: "a14cb6e521f593dff04dad945921eaa8")",
+    },
+    {
+      "text": "!134 = !DIDerivedType(tag: DW_TAG_member, name: "vtable", scope: !129, file: !10, baseType: !135, size: 64, align: 64, offset: 64)",
+    },
+    {
+      "text": "!135 = !DIDerivedType(tag: DW_TAG_pointer_type, name: "&[usize; 6]", baseType: !136, size: 64, align: 64, dwarfAddressSpace: 0)",
+    },
+    {
+      "text": "!136 = !DICompositeType(tag: DW_TAG_array_type, baseType: !25, size: 384, align: 64, elements: !137)",
+    },
+    {
+      "text": "!137 = !{!138}",
+    },
+    {
+      "text": "!138 = !DISubrange(count: 6, lowerBound: 0)",
+    },
+    {
+      "text": "!139 = !DIDerivedType(tag: DW_TAG_member, name: "_lifetime", scope: !86, file: !10, baseType: !140, align: 8, offset: 128, flags: DIFlagPrivate)",
+    },
+    {
+      "text": "!140 = !DICompositeType(tag: DW_TAG_structure_type, name: "PhantomData<&()>", scope: !141, file: !10, align: 8, flags: DIFlagPublic, elements: !26, templateParams: !142, identifier: "3353c2e93b9170d7bdb4cbe585bbf9b1")",
+    },
+    {
+      "text": "!141 = !DINamespace(name: "marker", scope: !12)",
+    },
+    {
+      "text": "!142 = !{!143}",
+    },
+    {
+      "text": "!143 = !DITemplateTypeParameter(name: "T", type: !144)",
+    },
+    {
+      "text": "!144 = !DIDerivedType(tag: DW_TAG_pointer_type, name: "&()", baseType: !95, size: 64, align: 64, dwarfAddressSpace: 0)",
+    },
+    {
+      "text": "!145 = !DIDerivedType(tag: DW_TAG_member, name: "Count", scope: !83, file: !10, baseType: !146, size: 128, align: 64, extraData: i64 0)",
+    },
+    {
+      "text": "!146 = !DICompositeType(tag: DW_TAG_structure_type, name: "Count", scope: !81, file: !10, size: 128, align: 64, flags: DIFlagPrivate, elements: !147, templateParams: !26, identifier: "b3336e3ef853d0e4f5e2fa7ee806da5b")",
+    },
+    {
+      "text": "!147 = !{!148}",
+    },
+    {
+      "text": "!148 = !DIDerivedType(tag: DW_TAG_member, name: "__0", scope: !146, file: !10, baseType: !57, size: 16, align: 16, offset: 64, flags: DIFlagPrivate)",
+    },
+    {
+      "text": "!149 = !DIDerivedType(tag: DW_TAG_member, scope: !81, file: !10, baseType: !72, size: 64, align: 64, flags: DIFlagArtificial)",
+    },
+    {
+      "text": "!150 = !DIDerivedType(tag: DW_TAG_member, name: "length", scope: !74, file: !10, baseType: !25, size: 64, align: 64, offset: 64)",
+    },
+    {
+      "text": "!151 = !DISubroutineType(types: !152)",
+    },
+    {
+      "text": "!152 = !{!9, !153, !157}",
+    },
+    {
+      "text": "!153 = !DIDerivedType(tag: DW_TAG_pointer_type, name: "&[&str; 2]", baseType: !154, size: 64, align: 64, dwarfAddressSpace: 0)",
+    },
+    {
+      "text": "!154 = !DICompositeType(tag: DW_TAG_array_type, baseType: !19, size: 256, align: 64, elements: !155)",
+    },
+    {
+      "text": "!155 = !{!156}",
+    },
+    {
+      "text": "!156 = !DISubrange(count: 2, lowerBound: 0)",
+    },
+    {
+      "text": "!157 = !DIDerivedType(tag: DW_TAG_pointer_type, name: "&[core::fmt::rt::Argument; 1]", baseType: !158, size: 64, align: 64, dwarfAddressSpace: 0)",
+    },
+    {
+      "text": "!158 = !DICompositeType(tag: DW_TAG_array_type, baseType: !78, size: 128, align: 64, elements: !159)",
+    },
+    {
+      "text": "!159 = !{!160}",
+    },
+    {
+      "text": "!160 = !DISubrange(count: 1, lowerBound: 0)",
+    },
+    {
+      "text": "!161 = !DISubprogram(name: "new_v1<2, 1>", linkageName: "core::fmt::rt::<impl core::fmt::Arguments>::new_v1::h1b5b6f49e17440e0", scope: !9, file: !8, line: 209, type: !151, scopeLine: 209, flags: DIFlagPrototyped, spFlags: DISPFlagLocalToUnit, templateParams: !26)",
+    },
+    {
+      "text": "!162 = !{!163, !164}",
+    },
+    {
+      "text": "!163 = !DILocalVariable(name: "pieces", arg: 1, scope: !7, file: !8, line: 210, type: !153)",
+    },
+    {
+      "text": "!164 = !DILocalVariable(name: "args", arg: 2, scope: !7, file: !8, line: 211, type: !157)",
+    },
+    {
+      "text": "!165 = !DILocation(line: 210, column: 9, scope: !7)",
+    },
+    {
+      "text": "!166 = !DILocation(line: 211, column: 9, scope: !7)",
+    },
+    {
+      "text": "!167 = !DILocation(line: 214, column: 9, scope: !7)",
+    },
+    {
+      "text": "!168 = !DILocation(line: 215, column: 6, scope: !7)",
+    },
+    {
+      "text": "!169 = distinct !DISubprogram(name: "new_display<i32>", linkageName: "core::fmt::rt::Argument::new_display::hf32c8dfb2613a44d", scope: !78, file: !8, line: 110, type: !170, scopeLine: 110, flags: DIFlagPrototyped, spFlags: DISPFlagLocalToUnit | DISPFlagDefinition, unit: !5, templateParams: !175, declaration: !174, retainedNodes: !177)",
+    },
+    {
+      "text": "!170 = !DISubroutineType(types: !171)",
+    },
+    {
+      "text": "!171 = !{!78, !172}",
+    },
+    {
+      "text": "!172 = !DIDerivedType(tag: DW_TAG_pointer_type, name: "&i32", baseType: !173, size: 64, align: 64, dwarfAddressSpace: 0)",
+    },
+    {
+      "text": "!173 = !DIBasicType(name: "i32", size: 32, encoding: DW_ATE_signed)",
+    },
+    {
+      "text": "!174 = !DISubprogram(name: "new_display<i32>", linkageName: "core::fmt::rt::Argument::new_display::hf32c8dfb2613a44d", scope: !78, file: !8, line: 110, type: !170, scopeLine: 110, flags: DIFlagPrototyped, spFlags: DISPFlagLocalToUnit, templateParams: !175)",
+    },
+    {
+      "text": "!175 = !{!176}",
+    },
+    {
+      "text": "!176 = !DITemplateTypeParameter(name: "T", type: !173)",
+    },
+    {
+      "text": "!177 = !{!178}",
+    },
+    {
+      "text": "!178 = !DILocalVariable(name: "x", arg: 1, scope: !169, file: !8, line: 110, type: !172)",
+    },
+    {
+      "text": "!179 = !DILocation(line: 110, column: 42, scope: !169)",
+    },
+    {
+      "text": "!180 = !DILocalVariable(name: "r", arg: 1, scope: !181, file: !182, line: 282, type: !172)",
+    },
+    {
+      "text": "!181 = distinct !DISubprogram(name: "from_ref<i32>", linkageName: "_ZN4core3ptr8non_null16NonNull$LT$T$GT$8from_ref17h4367acf8e6733bf3E", scope: !183, file: !182, line: 282, type: !187, scopeLine: 282, flags: DIFlagPrototyped, spFlags: DISPFlagLocalToUnit | DISPFlagDefinition, unit: !5, templateParams: !175, declaration: !189, retainedNodes: !190)",
+    },
+    {
+      "text": "!182 = !DIFile(filename: "/rustc/f8297e351a40c1439a467bbbb6879088047f50b3/library/core/src/ptr/non_null.rs", directory: "", checksumkind: CSK_MD5, checksum: "fe6b212de8e408ed39a19b25adfce33d")",
+    },
+    {
+      "text": "!183 = !DICompositeType(tag: DW_TAG_structure_type, name: "NonNull<i32>", scope: !90, file: !10, size: 64, align: 64, flags: DIFlagPublic, elements: !184, templateParams: !175, identifier: "712d1f4468ec9bab5782fbdcf0c44e4")",
+    },
+    {
+      "text": "!184 = !{!185}",
+    },
+    {
+      "text": "!185 = !DIDerivedType(tag: DW_TAG_member, name: "pointer", scope: !183, file: !10, baseType: !186, size: 64, align: 64, flags: DIFlagPrivate)",
+    },
+    {
+      "text": "!186 = !DIDerivedType(tag: DW_TAG_pointer_type, name: "*const i32", baseType: !173, size: 64, align: 64, dwarfAddressSpace: 0)",
+    },
+    {
+      "text": "!187 = !DISubroutineType(types: !188)",
+    },
+    {
+      "text": "!188 = !{!183, !172}",
+    },
+    {
+      "text": "!189 = !DISubprogram(name: "from_ref<i32>", linkageName: "_ZN4core3ptr8non_null16NonNull$LT$T$GT$8from_ref17h4367acf8e6733bf3E", scope: !183, file: !182, line: 282, type: !187, scopeLine: 282, flags: DIFlagPrototyped, spFlags: DISPFlagLocalToUnit, templateParams: !175)",
+    },
+    {
+      "text": "!190 = !{!180}",
+    },
+    {
+      "text": "!191 = !DILocation(line: 282, column: 27, scope: !181, inlinedAt: !192)",
+    },
+    {
+      "text": "!192 = !DILocation(line: 69, column: 24, scope: !169)",
+    },
+    {
+      "text": "!193 = !DILocation(line: 68, column: 17, scope: !169)",
+    },
+    {
+      "text": "!194 = !DILocation(line: 65, column: 9, scope: !169)",
+    },
+    {
+      "text": "!195 = !DILocation(line: 112, column: 6, scope: !169)",
+    },
+    {
+      "text": "!196 = distinct !DISubprogram(name: "main", linkageName: "example::main::hf6eacbf6b45cf567", scope: !198, file: !197, line: 5, type: !199, scopeLine: 5, flags: DIFlagPrototyped, spFlags: DISPFlagDefinition, unit: !5, templateParams: !26, retainedNodes: !201)",
+    },
+    {
+      "text": "!197 = !DIFile(filename: "example.rs", directory: "/app", checksumkind: CSK_MD5, checksum: "c8d2e84873cc94ceb7b364b053fe04df")",
+    },
+    {
+      "text": "!198 = !DINamespace(name: "example", scope: null)",
+    },
+    {
+      "text": "!199 = !DISubroutineType(types: !200)",
+    },
+    {
+      "text": "!200 = !{null}",
+    },
+    {
+      "text": "!201 = !{!202}",
+    },
+    {
+      "text": "!202 = !DILocalVariable(name: "args", scope: !203, file: !197, line: 6, type: !158, align: 64)",
+    },
+    {
+      "text": "!203 = !DILexicalBlockFile(scope: !204, file: !197, discriminator: 0)",
+    },
+    {
+      "text": "!204 = distinct !DILexicalBlock(scope: !196, file: !205, line: 143, column: 28)",
+    },
+    {
+      "text": "!205 = !DIFile(filename: "/rustc/f8297e351a40c1439a467bbbb6879088047f50b3/library/std/src/macros.rs", directory: "", checksumkind: CSK_MD5, checksum: "a8906dec5ca2014c3fea0770b2c16963")",
+    },
+    {
+      "text": "!206 = !DILocation(line: 6, column: 5, scope: !203)",
+    },
+    {
+      "text": "!207 = !DILocation(line: 6, column: 27, scope: !196)",
+    },
+    {
+      "text": "!208 = !DILocation(line: 6, column: 5, scope: !196)",
+    },
+    {
+      "text": "!209 = !DILocation(line: 7, column: 2, scope: !210)",
+    },
+    {
+      "text": "!210 = !DILexicalBlockFile(scope: !196, file: !197, discriminator: 0)",
+    },
+    {
+      "text": "!211 = distinct !DISubprogram(name: "square", linkageName: "example::square::hc0cdb60f35a100bf", scope: !198, file: !197, line: 1, type: !212, scopeLine: 1, flags: DIFlagPrototyped, spFlags: DISPFlagDefinition, unit: !5, templateParams: !26, retainedNodes: !214)",
+    },
+    {
+      "text": "!212 = !DISubroutineType(types: !213)",
+    },
+    {
+      "text": "!213 = !{!173, !173}",
+    },
+    {
+      "text": "!214 = !{!215}",
+    },
+    {
+      "text": "!215 = !DILocalVariable(name: "num", arg: 1, scope: !211, file: !197, line: 1, type: !173)",
+    },
+    {
+      "text": "!216 = !DILocation(line: 1, column: 15, scope: !211)",
+    },
+    {
+      "text": "!217 = !DILocation(line: 2, column: 5, scope: !211)",
+    },
+    {
+      "text": "!218 = !DILocation(line: 3, column: 2, scope: !211)",
+    },
+  ],
+  "languageId": "llvm-ir",
+}

@@ -22,11 +22,15 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
+import fs from 'node:fs/promises';
+import path from 'node:path';
+
 import {beforeAll, describe, expect, it} from 'vitest';
 
 import {LLVMIRDemangler} from '../lib/demangler/llvm.js';
 import {LlvmIrParser} from '../lib/llvm-ir.js';
 import * as properties from '../lib/properties.js';
+import {DummyCompiler, resolvePathFromTestRoot} from './utils.js';
 
 const languages = {
     'c++': {id: 'c++'},
@@ -221,4 +225,39 @@ describe('llvm-ir getFileName', () => {
         expect(llvmIrParser.getFileName(debugInfo, '!20')).toBe(null);
         expect(llvmIrParser.getFileName(debugInfo, '!21')).toBe(null);
     });
+});
+
+describe('llvm-ir file tests', async () => {
+    let llvmIrParser: LlvmIrParser;
+    let compilerProps;
+
+    beforeAll(() => {
+        const fakeProps = new properties.CompilerProps(languages, properties.fakeProps({}));
+        compilerProps = (fakeProps.get as any).bind(fakeProps, 'c++');
+        llvmIrParser = new LlvmIrParser(
+            compilerProps,
+            new LLVMIRDemangler('c++filt', new DummyCompiler(), ['--no-strip-underscores']),
+        );
+    });
+
+    const testCasesPath = resolvePathFromTestRoot('llvm-ir-parser-cases');
+    const files = await fs.readdir(testCasesPath);
+
+    for (const filename of files.map(filename => path.join(testCasesPath, filename))) {
+        if (path.extname(filename) == '.ll') {
+            const basename = path.basename(filename);
+            it(`parses ${basename}`, async () => {
+                const ir = await fs.readFile(filename, 'utf-8');
+                await expect(llvmIrParser.processFromFilters(ir, {})).resolves.toMatchFileSnapshot(
+                    `${filename}.parsed`,
+                );
+            });
+            it(`parses ${basename} with demangling`, async () => {
+                const ir = await fs.readFile(filename, 'utf-8');
+                await expect(llvmIrParser.processFromFilters(ir, {demangle: true})).resolves.toMatchFileSnapshot(
+                    `${filename}.demangled`,
+                );
+            });
+        }
+    }
 });
