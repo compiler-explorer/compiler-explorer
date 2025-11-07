@@ -38,96 +38,27 @@
       "text": "",
     },
     {
-      "labels": [
-        {
-          "name": "anon.f36d5c7f45057ddc2f9588b66728efc8.0",
-          "range": {
-            "endCol": 41,
-            "startCol": 2,
-          },
-        },
-      ],
+      "labels": [],
       "text": "@anon.f36d5c7f45057ddc2f9588b66728efc8.0 = private unnamed_addr constant <{ [8 x i8], [8 x i8] }> <{ [8 x i8] zeroinitializer, [8 x i8] undef }>, align 8",
     },
     {
-      "labels": [
-        {
-          "name": "alloc_5f8966ccdf63990eeb3d1b59d49d4e62",
-          "range": {
-            "endCol": 40,
-            "startCol": 2,
-          },
-        },
-      ],
+      "labels": [],
       "text": "@alloc_5f8966ccdf63990eeb3d1b59d49d4e62 = private unnamed_addr constant [7 x i8] c"hello: ", align 1",
     },
     {
-      "labels": [
-        {
-          "name": "alloc_49a1e817e911805af64bbc7efb390101",
-          "range": {
-            "endCol": 40,
-            "startCol": 2,
-          },
-        },
-      ],
+      "labels": [],
       "text": "@alloc_49a1e817e911805af64bbc7efb390101 = private unnamed_addr constant [1 x i8] c"\0A", align 1",
     },
     {
-      "labels": [
-        {
-          "name": "alloc_d535c95e835c6805448e14cd6baa16b3",
-          "range": {
-            "endCol": 40,
-            "startCol": 2,
-          },
-        },
-        {
-          "name": "alloc_5f8966ccdf63990eeb3d1b59d49d4e62",
-          "range": {
-            "endCol": 154,
-            "startCol": 116,
-          },
-        },
-        {
-          "name": "alloc_49a1e817e911805af64bbc7efb390101",
-          "range": {
-            "endCol": 237,
-            "startCol": 199,
-          },
-        },
-      ],
+      "labels": [],
       "text": "@alloc_d535c95e835c6805448e14cd6baa16b3 = private unnamed_addr constant <{ ptr, [8 x i8], ptr, [8 x i8] }> <{ ptr @alloc_5f8966ccdf63990eeb3d1b59d49d4e62, [8 x i8] c"\07\00\00\00\00\00\00\00", ptr @alloc_49a1e817e911805af64bbc7efb390101, [8 x i8] c"\01\00\00\00\00\00\00\00" }>, align 8",
     },
     {
-      "labels": [
-        {
-          "name": "alloc_0bd83ae4d998a852bdd6080f4dbcd402",
-          "range": {
-            "endCol": 40,
-            "startCol": 2,
-          },
-        },
-      ],
+      "labels": [],
       "text": "@alloc_0bd83ae4d998a852bdd6080f4dbcd402 = private unnamed_addr constant [16 x i8] c"/app/example.rs\00", align 1",
     },
     {
-      "labels": [
-        {
-          "name": "alloc_c26c07bead26123c9be372ecc3ac81e3",
-          "range": {
-            "endCol": 40,
-            "startCol": 2,
-          },
-        },
-        {
-          "name": "alloc_0bd83ae4d998a852bdd6080f4dbcd402",
-          "range": {
-            "endCol": 140,
-            "startCol": 102,
-          },
-        },
-      ],
+      "labels": [],
       "text": "@alloc_c26c07bead26123c9be372ecc3ac81e3 = private unnamed_addr constant <{ ptr, [16 x i8] }> <{ ptr @alloc_0bd83ae4d998a852bdd6080f4dbcd402, [16 x i8] c"\0F\00\00\00\00\00\00\00\02\00\00\00\05\00\00\00" }>, align 8",
     },
     {
@@ -210,15 +141,7 @@
       "text": "  store i64 2, ptr %0, align 8, !dbg !167",
     },
     {
-      "labels": [
-        {
-          "name": "anon.f36d5c7f45057ddc2f9588b66728efc8.0",
-          "range": {
-            "endCol": 62,
-            "startCol": 23,
-          },
-        },
-      ],
+      "labels": [],
       "scope": "!167",
       "source": {
         "column": 9,
@@ -228,15 +151,7 @@
       "text": "  %1 = load ptr, ptr @anon.f36d5c7f45057ddc2f9588b66728efc8.0, align 8, !dbg !167",
     },
     {
-      "labels": [
-        {
-          "name": "anon.f36d5c7f45057ddc2f9588b66728efc8.0",
-          "range": {
-            "endCol": 94,
-            "startCol": 55,
-          },
-        },
-      ],
+      "labels": [],
       "scope": "!167",
       "source": {
         "column": 9,
@@ -594,13 +509,6 @@
             "startCol": 15,
           },
         },
-        {
-          "name": "alloc_d535c95e835c6805448e14cd6baa16b3",
-          "range": {
-            "endCol": 183,
-            "startCol": 145,
-          },
-        },
       ],
       "scope": "!206",
       "source": {
@@ -766,13 +674,6 @@
           "range": {
             "endCol": 87,
             "startCol": 14,
-          },
-        },
-        {
-          "name": "alloc_c26c07bead26123c9be372ecc3ac81e3",
-          "range": {
-            "endCol": 143,
-            "startCol": 105,
           },
         },
       ],

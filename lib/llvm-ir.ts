@@ -28,6 +28,7 @@ import {LLVMIrBackendOptions} from '../types/compilation/ir.interfaces.js';
 import {ParseFiltersAndOutputOptions} from '../types/features/filters.interfaces.js';
 
 import {LLVMIRDemangler} from './demangler/llvm.js';
+import {LabelProcessor} from './parsers/label-processor.js';
 import {PropertyGetter} from './properties.interfaces.js';
 import * as utils from './utils.js';
 
@@ -279,6 +280,8 @@ export class LlvmIrParser {
                 column: this.getSourceColumn(debugInfo, line.scope),
             };
         }
+
+        new LabelProcessor().removeLabelsWithoutDefinition(result, labelDefinitions);
 
         if (options.demangle && this.irDemangler.canDemangle()) {
             const demangled = await this.irDemangler.process({asm: result, labelDefinitions});
