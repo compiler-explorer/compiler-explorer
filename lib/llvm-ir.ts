@@ -23,7 +23,7 @@
 // POSSIBILITY OF SUCH DAMAGE.
 
 import {isString} from '../shared/common-utils.js';
-import type {IRResultLine, ParsedAsmResult} from '../types/asmresult/asmresult.interfaces.js';
+import type {AsmResultLabel, IRResultLine, ParsedAsmResult} from '../types/asmresult/asmresult.interfaces.js';
 import {LLVMIrBackendOptions} from '../types/compilation/ir.interfaces.js';
 import {ParseFiltersAndOutputOptions} from '../types/features/filters.interfaces.js';
 
@@ -192,6 +192,8 @@ export class LlvmIrParser {
         }
 
         for (const line of irLines) {
+            const symbolsInLine: AsmResultLabel[] = [];
+
             if (line.trim().length === 0) {
                 // Avoid multiple successive empty lines.
                 if (!prevLineEmpty) {
@@ -213,6 +215,7 @@ export class LlvmIrParser {
 
                 const resultLine: IRResultLine = {
                     text: newLine,
+                    labels: symbolsInLine,
                 };
 
                 // Non-Meta IR line. Metadata is attached to it using "!dbg !123"
