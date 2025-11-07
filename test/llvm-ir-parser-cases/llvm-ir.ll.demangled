@@ -31,21 +31,27 @@
       "text": "",
     },
     {
+      "labels": [],
       "text": "@anon.f36d5c7f45057ddc2f9588b66728efc8.0 = private unnamed_addr constant <{ [8 x i8], [8 x i8] }> <{ [8 x i8] zeroinitializer, [8 x i8] undef }>, align 8",
     },
     {
+      "labels": [],
       "text": "@alloc_5f8966ccdf63990eeb3d1b59d49d4e62 = private unnamed_addr constant [7 x i8] c"hello: ", align 1",
     },
     {
+      "labels": [],
       "text": "@alloc_49a1e817e911805af64bbc7efb390101 = private unnamed_addr constant [1 x i8] c"\0A", align 1",
     },
     {
+      "labels": [],
       "text": "@alloc_d535c95e835c6805448e14cd6baa16b3 = private unnamed_addr constant <{ ptr, [8 x i8], ptr, [8 x i8] }> <{ ptr @alloc_5f8966ccdf63990eeb3d1b59d49d4e62, [8 x i8] c"\07\00\00\00\00\00\00\00", ptr @alloc_49a1e817e911805af64bbc7efb390101, [8 x i8] c"\01\00\00\00\00\00\00\00" }>, align 8",
     },
     {
+      "labels": [],
       "text": "@alloc_0bd83ae4d998a852bdd6080f4dbcd402 = private unnamed_addr constant [16 x i8] c"/app/example.rs\00", align 1",
     },
     {
+      "labels": [],
       "text": "@alloc_c26c07bead26123c9be372ecc3ac81e3 = private unnamed_addr constant <{ ptr, [16 x i8] }> <{ ptr @alloc_0bd83ae4d998a852bdd6080f4dbcd402, [16 x i8] c"\0F\00\00\00\00\00\00\00\02\00\00\00\05\00\00\00" }>, align 8",
     },
     {
@@ -115,6 +121,7 @@
       "text": "  store i64 2, ptr %0, align 8, !dbg !167",
     },
     {
+      "labels": [],
       "scope": "!167",
       "source": {
         "column": 9,
@@ -124,6 +131,7 @@
       "text": "  %1 = load ptr, ptr @anon.f36d5c7f45057ddc2f9588b66728efc8.0, align 8, !dbg !167",
     },
     {
+      "labels": [],
       "scope": "!167",
       "source": {
         "column": 9,
@@ -271,6 +279,15 @@
       "text": "  %0 = getelementptr inbounds i8, ptr %_2, i64 8, !dbg !193",
     },
     {
+      "labels": [
+        {
+          "name": "core::fmt::num::imp::<impl core::fmt::Display for i32>::fmt::ha5bd85893b48e317",
+          "range": {
+            "endCol": 93,
+            "startCol": 15,
+          },
+        },
+      ],
       "scope": "!193",
       "source": {
         "column": 17,
@@ -280,6 +297,15 @@
       "text": "  store ptr @"core::fmt::num::imp::<impl core::fmt::Display for i32>::fmt::ha5bd85893b48e317", ptr %0, align 8, !dbg !193",
     },
     {
+      "labels": [
+        {
+          "name": "llvm.memcpy.p0.p0.i64",
+          "range": {
+            "endCol": 35,
+            "startCol": 14,
+          },
+        },
+      ],
       "scope": "!194",
       "source": {
         "column": 9,
@@ -340,6 +366,15 @@
       "text": "; call example::square",
     },
     {
+      "labels": [
+        {
+          "name": "example::square::hc0cdb60f35a100bf",
+          "range": {
+            "endCol": 52,
+            "startCol": 18,
+          },
+        },
+      ],
       "scope": "!207",
       "source": {
         "column": 27,
@@ -361,6 +396,15 @@
       "text": "; call core::fmt::rt::Argument::new_display",
     },
     {
+      "labels": [
+        {
+          "name": "core::fmt::rt::Argument::new_display::hf32c8dfb2613a44d",
+          "range": {
+            "endCol": 69,
+            "startCol": 14,
+          },
+        },
+      ],
       "scope": "!208",
       "source": {
         "column": 5,
@@ -379,6 +423,15 @@
       "text": "  %1 = getelementptr inbounds nuw %"core::fmt::rt::Argument<'_>", ptr %args, i64 0, !dbg !208",
     },
     {
+      "labels": [
+        {
+          "name": "llvm.memcpy.p0.p0.i64",
+          "range": {
+            "endCol": 35,
+            "startCol": 14,
+          },
+        },
+      ],
       "scope": "!208",
       "source": {
         "column": 5,
@@ -391,6 +444,15 @@
       "text": "; call core::fmt::rt::<impl core::fmt::Arguments>::new_v1",
     },
     {
+      "labels": [
+        {
+          "name": "core::fmt::rt::<impl core::fmt::Arguments>::new_v1::h1b5b6f49e17440e0",
+          "range": {
+            "endCol": 84,
+            "startCol": 15,
+          },
+        },
+      ],
       "scope": "!206",
       "source": {
         "column": 5,
@@ -403,6 +465,15 @@
       "text": "; call std::io::stdio::_print",
     },
     {
+      "labels": [
+        {
+          "name": "std::io::stdio::_print::h02b5be036b2109f4",
+          "range": {
+            "endCol": 55,
+            "startCol": 14,
+          },
+        },
+      ],
       "scope": "!208",
       "source": {
         "column": 5,
@@ -454,6 +525,15 @@
       "text": "    #dbg_declare(ptr %num.dbg.spill, !215, !DIExpression(), !216)",
     },
     {
+      "labels": [
+        {
+          "name": "llvm.smul.with.overflow.i32",
+          "range": {
+            "endCol": 53,
+            "startCol": 26,
+          },
+        },
+      ],
       "scope": "!217",
       "source": {
         "column": 5,
@@ -514,6 +594,15 @@
       "text": "; call core::panicking::panic_const::panic_const_mul_overflow",
     },
     {
+      "labels": [
+        {
+          "name": "core::panicking::panic_const::panic_const_mul_overflow::h3b9426197cab89a4",
+          "range": {
+            "endCol": 87,
+            "startCol": 14,
+          },
+        },
+      ],
       "scope": "!217",
       "source": {
         "column": 5,
@@ -1282,5 +1371,16 @@
       "text": "!218 = !DILocation(line: 3, column: 2, scope: !211)",
     },
   ],
+  "labelDefinitions": {
+    "core::fmt::num::imp::<impl core::fmt::Display for i32>::fmt::ha5bd85893b48e317": 106,
+    "core::fmt::rt::<impl core::fmt::Arguments>::new_v1::h1b5b6f49e17440e0": 20,
+    "core::fmt::rt::Argument::new_display::hf32c8dfb2613a44d": 46,
+    "core::panicking::panic_const::panic_const_mul_overflow::h3b9426197cab89a4": 120,
+    "example::main::hf6eacbf6b45cf567": 62,
+    "example::square::hc0cdb60f35a100bf": 85,
+    "llvm.memcpy.p0.p0.i64": 109,
+    "llvm.smul.with.overflow.i32": 116,
+    "std::io::stdio::_print::h02b5be036b2109f4": 113,
+  },
   "languageId": "llvm-ir",
 }

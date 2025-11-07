@@ -28,6 +28,7 @@ import {LLVMIrBackendOptions} from '../types/compilation/ir.interfaces.js';
 import {ParseFiltersAndOutputOptions} from '../types/features/filters.interfaces.js';
 
 import {LLVMIRDemangler} from './demangler/llvm.js';
+import {LabelProcessor} from './parsers/label-processor.js';
 import {PropertyGetter} from './properties.interfaces.js';
 import * as utils from './utils.js';
 
@@ -59,6 +60,8 @@ export class LlvmIrParser {
     private functionAttrs: RegExp;
     private commentOnly: RegExp;
     private commentAtEOL: RegExp;
+    private symbolDefRes: RegExp[];
+    private symbolRes: RegExp[];
 
     constructor(
         compilerProps: PropertyGetter,
@@ -87,6 +90,12 @@ export class LlvmIrParser {
 
         // Issue #5923: make sure the comment mark `;` is outside quotes
         this.commentAtEOL = /\s*;(?=(?:[^"]|"[^"]*")*$).*$/;
+
+        this.symbolDefRes = [
+            /^\s*(define|declare) .* @(?<name>[-a-zA-Z$._][-a-zA-Z$._0-9]*)\s*\(/,
+            /^\s*(define|declare) .* @"(?<name>[^"]+)"\s*\(/,
+        ];
+        this.symbolRes = [/@(?<name>[-a-zA-Z$._][-a-zA-Z$._0-9]*)/dg, /@"(?<name>[^"]+)"/dg];
     }
 
     getFileName(debugInfo: Record<string, MetaNode>, scope: string): string | null {
@@ -191,6 +200,8 @@ export class LlvmIrParser {
             lineFilters.push(this.commentAtEOL);
         }
 
+        const labelDefinitions: Record<string, number> = {};
+
         for (const line of irLines) {
             if (line.trim().length === 0) {
                 // Avoid multiple successive empty lines.
@@ -231,6 +242,33 @@ export class LlvmIrParser {
                     continue;
                 }
 
+                const definedSymbols = this.symbolDefRes
+                    .map(re => line.match(re))
+                    .filter(match => match)
+                    .map(match => match!.groups!.name);
+
+                for (const symbol of definedSymbols) {
+                    labelDefinitions[symbol] = result.length + 1;
+                }
+
+                const symbols = this.symbolRes
+                    .flatMap(re => [...line.matchAll(re)])
+                    .filter(match => !definedSymbols.includes(match.groups!.name))
+                    .map(match => {
+                        const [start, end] = match.indices!.groups!.name;
+                        return {
+                            name: match.groups!.name,
+                            range: {
+                                startCol: start + 1,
+                                endCol: end + 1,
+                            },
+                        };
+                    });
+
+                if (symbols.length !== 0) {
+                    resultLine.labels = symbols;
+                }
+
                 result.push(resultLine);
                 prevLineEmpty = false;
             }
@@ -250,16 +288,20 @@ export class LlvmIrParser {
             };
         }
 
+        new LabelProcessor().removeLabelsWithoutDefinition(result, labelDefinitions);
+
         if (options.demangle && this.irDemangler.canDemangle()) {
-            const demangled = await this.irDemangler.process({asm: result});
+            const demangled = await this.irDemangler.process({asm: result, labelDefinitions});
             return {
                 asm: demangled.asm,
                 languageId: 'llvm-ir',
+                labelDefinitions,
             };
         }
         return {
             asm: result,
             languageId: 'llvm-ir',
+            labelDefinitions,
         };
     }
 
