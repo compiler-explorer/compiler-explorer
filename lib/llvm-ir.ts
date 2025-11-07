@@ -90,8 +90,8 @@ export class LlvmIrParser {
         // Issue #5923: make sure the comment mark `;` is outside quotes
         this.commentAtEOL = /\s*;(?=(?:[^"]|"[^"]*")*$).*$/;
 
-        this.symbolDefRe = /^\s*(define|declare) .* @((?<name>[-a-zA-Z$._][-a-zA-Z$._0-9]*)|"(?<name>[^"]+)")/;
-        this.symbolRe = /@((?<name>[-a-zA-Z$._][-a-zA-Z$._0-9]*)|"(?<name>[^"]+)")/dg;
+        this.symbolDefRe = /^\s*(define|declare) .* @((?<name>[-a-zA-Z$._][-a-zA-Z$._0-9]*)|"(?<quotedName>[^"]+)")/;
+        this.symbolRe = /@((?<name>[-a-zA-Z$._][-a-zA-Z$._0-9]*)|"(?<quotedName>[^"]+)")/dg;
     }
 
     getFileName(debugInfo: Record<string, MetaNode>, scope: string): string | null {
@@ -242,15 +242,15 @@ export class LlvmIrParser {
                 }
 
                 const symbolDefMatch = line.match(this.symbolDefRe);
-                const definedSymbol = symbolDefMatch?.groups?.name;
+                const definedSymbol = symbolDefMatch?.groups?.name ?? symbolDefMatch?.groups?.quotedName;
                 if (symbolDefMatch) {
-                    labelDefinitions[symbolDefMatch.groups!.name] = result.length + 1;
+                    labelDefinitions[definedSymbol!] = result.length + 1;
                 }
 
                 line.matchAll(this.symbolRe).forEach(match => {
-                    const name = match.groups!.name;
+                    const name = match.groups!.name ?? match.groups!.quotedName;
                     if (name !== definedSymbol) {
-                        const [start, end] = match.indices!.groups!.name;
+                        const [start, end] = match.indices!.groups!.name ?? match.indices!.groups!.quotedName;
                         symbolsInLine.push({
                             name,
                             range: {
