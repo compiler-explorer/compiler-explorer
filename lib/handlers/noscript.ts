@@ -159,25 +159,25 @@ export class NoScriptHandler {
     async handleShareLink(req: express.Request, res: express.Response) {
         // Getting form data with proper type checking - handle both GET and POST
         const source =
-            typeof req.body.source === 'string'
+            typeof req.body?.source === 'string'
                 ? req.body.source
                 : typeof req.query.source === 'string'
                   ? req.query.source
                   : '';
         const compiler =
-            typeof req.body.compiler === 'string'
+            typeof req.body?.compiler === 'string'
                 ? req.body.compiler
                 : typeof req.query.compiler === 'string'
                   ? req.query.compiler
                   : '';
         const userArguments =
-            typeof req.body.userArguments === 'string'
+            typeof req.body?.userArguments === 'string'
                 ? req.body.userArguments
                 : typeof req.query.userArguments === 'string'
                   ? req.query.userArguments
                   : '';
         const language =
-            typeof req.body.lang === 'string'
+            typeof req.body?.lang === 'string'
                 ? req.body.lang
                 : typeof req.query.language === 'string'
                   ? req.query.language
