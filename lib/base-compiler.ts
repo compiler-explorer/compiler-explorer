@@ -1405,15 +1405,19 @@ export class BaseCompiler {
         produceCfg: boolean,
         filters: ParseFiltersAndOutputOptions,
     ) {
-        const newOptions = options
-            // `-E` /`-fsave-optimization-record` switches caused simultaneus writes into some output files,
-            // see bugs #5854 / #6745
-            .filter(option => !['-fcolor-diagnostics', '-E', '-fsave-optimization-record'].includes(option))
-            .concat(unwrap(this.compiler.irArg)); // produce IR
+        const newOptions: string[] = [];
 
         if (irOptions.noDiscardValueNames && this.compiler.optPipeline?.noDiscardValueNamesArg) {
             newOptions.push(...this.compiler.optPipeline.noDiscardValueNamesArg);
         }
+
+        newOptions.push(
+            // `-E` /`-fsave-optimization-record` switches caused simultaneus writes into some output files,
+            // see bugs #5854 / #6745
+            ...options.filter(option => !['-fcolor-diagnostics', '-E', '-fsave-optimization-record'].includes(option)),
+            // produce IR
+            ...unwrap(this.compiler.irArg),
+        );
 
         const execOptions = this.getDefaultExecOptions();
         // A higher max output is needed for when the user includes headers
