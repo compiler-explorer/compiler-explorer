@@ -3772,7 +3772,7 @@ but nothing was dumped. Possible causes are:
 
         try {
             const res = await this.execCompilerCached(this.compiler.exe, versionFlag, execOptions);
-            return {stdout: res.stdout, stderr: res.stderr, code: res.code};
+            return {stdout: res.stderr, stderr: res.stderr, code: res.code};
         } catch (err) {
             logger.error(`Unable to get version for compiler '${this.compiler.exe}' - ${err}`);
             return null;

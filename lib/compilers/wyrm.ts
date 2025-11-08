@@ -30,6 +30,7 @@ import type {ParseFiltersAndOutputOptions} from '../../types/features/filters.in
 import {unwrap} from '../assert.js';
 import {BaseCompiler} from '../base-compiler.js';
 import {CompilationEnvironment} from '../compilation-env.js';
+import {logger} from '../logger.js';
 
 export class WyrmCompiler extends BaseCompiler {
     static get key() {
@@ -75,6 +76,7 @@ export class WyrmCompiler extends BaseCompiler {
     }
 
     override async getVersion() {
+        logger.info(`Gathering ${this.compiler.id} version information on ${this.compiler.exe}...`);
         return {
             stdout: 'trunk',
             stderr: '',
