@@ -26,8 +26,8 @@ import path from 'node:path';
 
 import type {PreliminaryCompilerInfo} from '../../types/compiler.interfaces.js';
 import {CompilationEnvironment} from '../compilation-env.js';
+import {logger} from '../logger.js';
 import {VcAsmParser} from '../parsers/asm-parser-vc.js';
-
 import {VCParser} from './argument-parsers.js';
 import {Win32Compiler} from './win32.js';
 
@@ -75,5 +75,26 @@ export class Win32VcCompiler extends Win32Compiler {
         }
 
         return args;
+    }
+
+    override async getVersion() {
+        logger.info(`Gathering ${this.compiler.id} version information on ${this.compiler.exe}...`);
+        if (this.compiler.explicitVersion) {
+            logger.debug(`${this.compiler.id} has forced version output: ${this.compiler.explicitVersion}`);
+            return {stdout: this.compiler.explicitVersion, stderr: '', code: 0};
+        }
+        const execOptions = this.getDefaultExecOptions();
+        const versionFlag = this.compiler.versionFlag || ['--version'];
+        execOptions.timeoutMs = 0; // No timeout for --version. A sort of workaround for slow EFS/NFS on the prod site
+        execOptions.ldPath = this.getSharedLibraryPathsAsLdLibraryPaths([]);
+
+        try {
+            const res = await this.execCompilerCached(this.compiler.exe, versionFlag, execOptions);
+            // For msvc version info is output to stderr. stdout contains a dump of switches.
+            return {stdout: res.stderr, stderr: '', code: res.code};
+        } catch (err) {
+            logger.error(`Unable to get version for compiler '${this.compiler.exe}' - ${err}`);
+            return null;
+        }
     }
 }
