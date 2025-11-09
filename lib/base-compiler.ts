@@ -3761,6 +3761,7 @@ but nothing was dumped. Possible causes are:
 
     async getVersion() {
         logger.info(`Gathering ${this.compiler.id} version information on ${this.compiler.exe}...`);
+        logger.info('BaseCompiler.getVersion called');
         if (this.compiler.explicitVersion) {
             logger.debug(`${this.compiler.id} has forced version output: ${this.compiler.explicitVersion}`);
             return {stdout: this.compiler.explicitVersion, stderr: '', code: 0};
@@ -3771,6 +3772,7 @@ but nothing was dumped. Possible causes are:
         execOptions.ldPath = this.getSharedLibraryPathsAsLdLibraryPaths([]);
 
         try {
+            logger.info(`Executing ${this.compiler.exe} ${versionFlag.join(' ')}...`);
             const res = await this.execCompilerCached(this.compiler.exe, versionFlag, execOptions);
             return {stdout: res.stderr, stderr: res.stderr, code: res.code};
         } catch (err) {
