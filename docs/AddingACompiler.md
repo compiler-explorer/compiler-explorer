@@ -184,6 +184,84 @@ normally; commercial compilers marked `non-free` in the YAML won't work without 
 
 If your compiler fits the existing patterns it should be straightforward. Anything more complex: contact the CE authors.
 
+## Adding a patched GCC or Clang compiler
+
+Compiler Explorer hosts experimental branches of GCC and Clang that implement proposed C++ features. This requires
+PRs to four repositories: the builder repo, compiler-workflows, infra, and this repo.
+
+### 1. Configure the builder
+
+Add a case block to `build/build.sh` in [clang-builder](https://github.com/compiler-explorer/clang-builder) or
+[gcc-builder](https://github.com/compiler-explorer/gcc-builder).
+
+#### Clang
+
+[Example commit](https://github.com/compiler-explorer/clang-builder/commit/826e1e93f0dff5d83a9ac98df33b39cfbcfbf718):
+
+```bash
+p3334-trunk)
+  BRANCH=p3334-cross-static
+  URL=https://github.com/tal-yac/llvm-project
+  VERSION=p3334-trunk-$(date +%Y%m%d)
+  ;;
+```
+
+#### GCC
+
+```bash
+elif echo "${VERSION}" | grep 'lock3-contracts'; then
+    VERSION=lock3-contracts-trunk-$(date +%Y%m%d)
+    URL=https://github.com/lock3/gcc.git
+    BRANCH=contracts
+    MAJOR=13
+    MAJOR_MINOR=13-trunk
+    LANGUAGES=c,c++
+```
+
+### 2. Configure CI workflow
+
+Add to [compiler-workflows](https://github.com/compiler-explorer/compiler-workflows)' `compilers.yaml` ([example](https://github.com/compiler-explorer/compiler-workflows/commit/688f0008a5f12fb976842926fd9d64d279685dd1)):
+
+```yaml
+- { image: clang, name: clang_p3334, args: p3334-trunk }
+```
+
+The `args` value must match the case label (or `if` check) in `build.sh`. Run `make build-yamls` to generate the workflow file.
+
+### 3. Configure installation
+
+Add to the nightly targets in [infra](https://github.com/compiler-explorer/infra)'s `bin/yaml/cpp.yaml` ([example](https://github.com/compiler-explorer/infra/commit/022371a55584fe6be4b7c24ad8e74078711c9567)):
+
+```yaml
+    nightly:
+      if: nightly
+      clang:
+        type: nightly
+        check_exe: bin/clang++ --version
+        targets:
+          - trunk
+          - assertions-trunk
+          - p3334-trunk # <-- add a line like this in the appropriate place
+          - p3367-trunk
+```
+
+### 4. Configure Compiler Explorer
+
+In `etc/config/c++.amazon.properties` ([example](https://github.com/compiler-explorer/compiler-explorer/commit/6f9cfdef90159ba20f61a807b4e113c6324b5b17)):
+
+```ini
+# Add to group compiler list
+group.clangx86trunk.compilers=clang_trunk:clang_assertions_trunk:clang_p3334:...
+
+# Configure the compiler
+compiler.clang_p3334.exe=/opt/compiler-explorer/clang-p3334-trunk/bin/clang++
+compiler.clang_p3334.semver=(experimental P3334)
+compiler.clang_p3334.notification=Experimental cross static; see <a href="https://github.com/tal-yac/llvm-project/tree/p3334-cross-static" target="_blank" rel="noopener noreferrer">P3334<sup><small class="fas fa-external-link-alt opens-new-window" title="Opens in a new window"></small></sup></a>
+```
+
+The `notification` field creates a tooltip linking to documentation. For GCC compilers, also add `demangler`,
+`objdumper`, and `isNightly=true` properties, as necessary (check some of the other compilers around for inspiration).
+
 ## Putting it all together
 
 Hopefully that's enough to get an idea. The ideal case of a GCC-like compiler should be a pull request to add a couple
