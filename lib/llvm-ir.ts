@@ -94,6 +94,8 @@ export class LlvmIrParser {
         this.symbolDefRes = [
             /^\s*(define|declare) .* @(?<name>[-a-zA-Z$._][-a-zA-Z$._0-9]*)\s*\(/,
             /^\s*(define|declare) .* @"(?<name>[^"]+)"\s*\(/,
+            /^\s*@(?<name>[-a-zA-Z$._][-a-zA-Z$._0-9]*)\s*=/,
+            /^\s*@"(?<name>[^"]+)"\s*=/,
         ];
         this.symbolRes = [/@(?<name>[-a-zA-Z$._][-a-zA-Z$._0-9]*)/dg, /@"(?<name>[^"]+)"/dg];
     }
