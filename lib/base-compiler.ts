@@ -182,10 +182,6 @@ export interface SimpleOutputFilenameCompiler {
     getOutputFilename(dirPath: string): string;
 }
 
-function isOutputLikelyLllvmIr(compilerOptions: string[]): boolean {
-    return compilerOptions && (compilerOptions.includes('-emit-llvm') || compilerOptions.includes('-mlir-to-llvmir'));
-}
-
 export class BaseCompiler {
     public compiler: CompilerInfo;
     public lang: Language;
@@ -3258,7 +3254,7 @@ export class BaseCompiler {
             if (this.compiler.supportsCfg && backendOptions.produceCfg && backendOptions.produceCfg.asm) {
                 const isLlvmIr =
                     this.compiler.instructionSet === 'llvm' ||
-                    (options && isOutputLikelyLllvmIr(options)) ||
+                    (options && this.isOutputLikelyLlvmIr(options)) ||
                     this.llvmIr.isLlvmIr(result.asm);
                 result.cfg = await cfg.generateStructure(this.compiler, result.asm, isLlvmIr, result);
             }
@@ -3372,10 +3368,14 @@ export class BaseCompiler {
         return result;
     }
 
+    protected isOutputLikelyLlvmIr(compilerOptions: string[]): boolean {
+        return compilerOptions.includes('-emit-llvm') || compilerOptions.includes('-mlir-to-llvmir');
+    }
+
     async processAsm(result, filters: ParseFiltersAndOutputOptions, options: string[]) {
         if (
             result.languageId === 'llvm-ir' ||
-            (options && isOutputLikelyLllvmIr(options)) ||
+            (options && this.isOutputLikelyLlvmIr(options)) ||
             this.llvmIr.isLlvmIr(result.asm)
         ) {
             return await this.llvmIr.processFromFilters(result.asm, filters);
