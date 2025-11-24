@@ -22,8 +22,11 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import _ from 'underscore';
+import fs from 'node:fs/promises';
+import path from 'node:path';
 
+import _ from 'underscore';
+import type {ExecutionOptionsWithEnv} from '../../types/compilation/compilation.interfaces.js';
 import type {PreliminaryCompilerInfo} from '../../types/compiler.interfaces.js';
 import type {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces.js';
 import type {ResultLine} from '../../types/resultline/resultline.interfaces.js';
@@ -54,6 +57,7 @@ type GoEnv = {
 
 export class GolangCompiler extends BaseCompiler {
     private readonly GOENV: GoEnv;
+    private readonly sourceCachePath?: string;
 
     static get key() {
         return 'golang';
@@ -63,11 +67,14 @@ export class GolangCompiler extends BaseCompiler {
         super(compilerInfo, env);
         const group = this.compiler.group;
 
-        const goroot = this.compilerProps<string | undefined>(
+        let goroot = this.compilerProps<string | undefined>(
             'goroot',
             this.compilerProps<string | undefined>(`group.${group}.goroot`),
         );
-        // GOARCH can be something like '386' which is read out as a number.
+        if (!goroot && compilerInfo.exe) {
+            goroot = path.dirname(path.dirname(compilerInfo.exe));
+        }
+
         const goarch = this.compilerProps<string | number | undefined>(
             'goarch',
             this.compilerProps<string | undefined>(`group.${group}.goarch`),
@@ -80,6 +87,7 @@ export class GolangCompiler extends BaseCompiler {
         this.GOENV = {};
         if (goroot) {
             this.GOENV.GOROOT = goroot;
+            this.sourceCachePath = path.join(goroot, '..', 'cache');
         }
         if (goarch) {
             this.GOENV.GOARCH = goarch.toString();
@@ -87,6 +95,44 @@ export class GolangCompiler extends BaseCompiler {
         if (goos) {
             this.GOENV.GOOS = goos;
         }
+    }
+
+    override async runCompiler(
+        compiler: string,
+        options: string[],
+        inputFilename: string,
+        execOptions: ExecutionOptionsWithEnv,
+        filters?: ParseFiltersAndOutputOptions,
+    ) {
+        if (!execOptions) {
+            execOptions = this.getDefaultExecOptions();
+        }
+
+        if (this.sourceCachePath) {
+            const inputDir = path.dirname(inputFilename);
+            const tempCachePath = path.join(inputDir, 'cache');
+
+            execOptions.env = {
+                ...execOptions.env,
+                GOCACHE: tempCachePath,
+            };
+
+            try {
+                await fs.mkdir(tempCachePath, {recursive: true});
+
+                try {
+                    // todo: add actual check instead of relying on exceptions
+                    await fs.access(this.sourceCachePath);
+                    await fs.cp(this.sourceCachePath, tempCachePath, {recursive: true, force: false});
+                } catch {
+                    // Source cache doesn't exist, use empty cache
+                }
+            } catch {
+                // Cache setup failed, continue without cache
+            }
+        }
+
+        return super.runCompiler(compiler, options, inputFilename, execOptions, filters);
     }
 
     convertNewGoL(code: ResultLine[]): string {
