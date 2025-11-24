@@ -112,20 +112,21 @@ export class GolangCompiler extends BaseCompiler {
             const inputDir = path.dirname(inputFilename);
             const tempCachePath = path.join(inputDir, 'cache');
 
+            execOptions.env = {
+                ...execOptions.env,
+                GOCACHE: tempCachePath,
+            };
+
             try {
                 await fs.mkdir(tempCachePath, {recursive: true});
 
                 try {
+                    // todo: add actual check instead of relying on exceptions
                     await fs.access(this.sourceCachePath);
                     await fs.cp(this.sourceCachePath, tempCachePath, {recursive: true, force: false});
                 } catch {
                     // Source cache doesn't exist, use empty cache
                 }
-
-                execOptions.env = {
-                    ...execOptions.env,
-                    GOCACHE: tempCachePath,
-                };
             } catch {
                 // Cache setup failed, continue without cache
             }
