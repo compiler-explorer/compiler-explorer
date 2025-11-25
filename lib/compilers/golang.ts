@@ -57,7 +57,6 @@ type GoEnv = {
 
 export class GolangCompiler extends BaseCompiler {
     private readonly GOENV: GoEnv;
-    private readonly sourceCachePath?: string;
 
     static get key() {
         return 'golang';
@@ -87,7 +86,6 @@ export class GolangCompiler extends BaseCompiler {
         this.GOENV = {};
         if (goroot) {
             this.GOENV.GOROOT = goroot;
-            this.sourceCachePath = path.join(goroot, '..', 'cache');
         }
         if (goarch) {
             this.GOENV.GOARCH = goarch.toString();
@@ -95,6 +93,18 @@ export class GolangCompiler extends BaseCompiler {
         if (goos) {
             this.GOENV.GOOS = goos;
         }
+    }
+
+    async getSourceCachePath(): Promise<string | undefined> {
+        if (!this.GOENV.GOROOT) return undefined;
+
+        let sourceCachePath = path.join(this.GOENV.GOROOT, '..', 'cache');
+        if (await utils.dirExists(sourceCachePath)) return sourceCachePath;
+
+        sourceCachePath = path.join(this.GOENV.GOROOT, 'cache');
+        if (await utils.dirExists(sourceCachePath)) return sourceCachePath;
+
+        return undefined;
     }
 
     override async runCompiler(
@@ -108,25 +118,20 @@ export class GolangCompiler extends BaseCompiler {
             execOptions = this.getDefaultExecOptions();
         }
 
-        if (this.sourceCachePath) {
-            const inputDir = path.dirname(inputFilename);
-            const tempCachePath = path.join(inputDir, 'cache');
+        const inputDir = path.dirname(inputFilename);
+        const tempCachePath = path.join(inputDir, 'cache');
 
-            execOptions.env = {
-                ...execOptions.env,
-                GOCACHE: tempCachePath,
-            };
+        execOptions.env = {
+            ...execOptions.env,
+            GOCACHE: tempCachePath,
+        };
 
+        const sourceCachePath = await this.getSourceCachePath();
+        if (sourceCachePath) {
             try {
                 await fs.mkdir(tempCachePath, {recursive: true});
 
-                try {
-                    // todo: add actual check instead of relying on exceptions
-                    await fs.access(this.sourceCachePath);
-                    await fs.cp(this.sourceCachePath, tempCachePath, {recursive: true, force: false});
-                } catch {
-                    // Source cache doesn't exist, use empty cache
-                }
+                await fs.cp(sourceCachePath, tempCachePath, {recursive: true, force: false});
             } catch {
                 // Cache setup failed, continue without cache
             }
