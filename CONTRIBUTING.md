@@ -20,7 +20,7 @@ in the right direction.
 
 ## Node version
 
-**Compiler Explorer** currently targets [Node.js](https://nodejs.org/) version 20, so it's better if you do so as well
+**Compiler Explorer** currently targets [Node.js](https://nodejs.org/) version 22, so it's better if you do so as well
 when testing your changes locally.
 
 > Note that this repository is compatible with `GitHub Codespaces` as well as `VS Code Dev Containers`. Opening your
