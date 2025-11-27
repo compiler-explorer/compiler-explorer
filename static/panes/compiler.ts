@@ -2691,7 +2691,15 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
             );
         };
         const isIntelFilterDisabled = !this.compiler.supportsIntel && !filters.binary && !filters.binaryObject;
-        this.filterIntelButton.prop('disabled', isIntelFilterDisabled);
+        // Hide the Intel syntax option for languages where it doesn't make sense (e.g., Java, Go)
+        // unless we're in binary mode (which uses objdump that might support Intel syntax)
+        const shouldHideIntelFilter = isIntelFilterDisabled;
+        if (shouldHideIntelFilter) {
+            this.filterIntelButton.parent().hide();
+        } else {
+            this.filterIntelButton.parent().show();
+            this.filterIntelButton.prop('disabled', isIntelFilterDisabled);
+        }
         formatFilterTitle(this.filterIntelButton, this.filterIntelTitle);
 
         // Disable binaryObject support on compilers that don't work with it or if binary is selected
