@@ -1046,6 +1046,18 @@ export class Editor extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Edit
         this.editor.addCommand(monaco.KeyMod.CtrlCmd | monaco.KeyCode.KeyD, () => {
             unwrap(this.editor.getAction('editor.action.duplicateSelection')).run();
         });
+
+        this.editor.addAction({
+            id: 'blockComment',
+            label: 'Comment selected block',
+            keybindings: [monaco.KeyMod.CtrlCmd | monaco.KeyMod.Shift | monaco.KeyCode.Slash],
+            contextMenuGroupId: 'navigation',
+            contextMenuOrder: 1.5,
+
+            run: ed => {
+                ed.trigger('keyboard', 'editor.action.blockComment', {});
+            },
+        });
     }
 
     runFormatDocumentAction(): void {

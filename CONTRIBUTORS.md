@@ -171,3 +171,4 @@ From oldest to newest contributor, we would like to thank:
 - [Frank Leon Rose](https://github.com/frankleonrose)
 - [Oguz Ulgen](https://github.com/oulgen)
 - [Josh Brice] (https://github.com/jjb0123)
+- [Vladislav Kharlamov](httpsL//github.com/avg-itmo-enjoer)
