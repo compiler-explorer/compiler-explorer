@@ -237,6 +237,7 @@ describe('CLI Module', () => {
 
             expect(result).toEqual({
                 rootDir: './etc',
+                propertiesDirs: undefined,
                 env: ['dev'],
                 hostname: 'localhost',
                 port: 10240,
@@ -265,6 +266,26 @@ describe('CLI Module', () => {
                     paperTrailIdentifier: 'dev',
                 },
             });
+        });
+
+        it('should pass through propertiesDirs when provided', () => {
+            const options = {
+                rootDir: './etc',
+                propertiesDirs: ['/extra/one', '/extra/two'],
+                env: ['dev'],
+                port: 10240,
+                cache: true,
+                remoteFetch: true,
+                local: true,
+                propDebug: false,
+                suppressConsoleLog: false,
+                version: false,
+                devMode: false,
+            } as CompilerExplorerOptions;
+
+            const result = convertOptionsToAppArguments(options, 'abc', '123', false);
+
+            expect(result.propertiesDirs).toEqual(['/extra/one', '/extra/two']);
         });
     });
 
@@ -305,6 +326,14 @@ describe('CLI Module', () => {
 
             expect(result.rootDir).toEqual('/custom/path');
             expect(result.metricsPort).toEqual(9000);
+        });
+
+        it('should parse --properties-dirs option with multiple directories', () => {
+            const argv = ['node', 'app.js', '--properties-dirs', '/path/one', '/path/two'];
+
+            const result = parseCommandLine(argv);
+
+            expect(result.propertiesDirs).toEqual(['/path/one', '/path/two']);
         });
     });
 

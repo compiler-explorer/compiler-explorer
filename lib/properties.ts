@@ -97,18 +97,26 @@ export function parseProperties(blob: string, name: string): Record<string, Prop
     return props;
 }
 
-export function initialize(directory: string, hier: string[]) {
+export function initialize(directories: string[], hier: string[]) {
     if (hier === null) throw new Error('Must supply a hierarchy array');
     hierarchy = hier.map((x: string) => x.toLowerCase());
-    logger.info(`Reading properties from ${directory} with hierarchy ${hierarchy}`);
     const endsWith = /\.properties$/;
-    const propertyFiles = fs.readdirSync(directory).filter(filename => filename.match(endsWith));
     properties = {};
-    for (let file of propertyFiles) {
-        const baseName = file.replace(endsWith, '');
-        file = path.join(directory, file);
-        debug('Reading config from ' + file);
-        properties[baseName] = parseProperties(fs.readFileSync(file, 'utf8'), file);
+    for (const directory of directories) {
+        logger.info(`Reading properties from ${directory} with hierarchy ${hierarchy}`);
+        const propertyFiles = fs.readdirSync(directory).filter(filename => filename.match(endsWith));
+        for (let file of propertyFiles) {
+            const baseName = file.replace(endsWith, '');
+            file = path.join(directory, file);
+            debug('Reading config from ' + file);
+            const fileProps = parseProperties(fs.readFileSync(file, 'utf8'), file);
+            // Merge properties, later directories take precedence
+            if (properties[baseName]) {
+                properties[baseName] = {...properties[baseName], ...fileProps};
+            } else {
+                properties[baseName] = fileProps;
+            }
+        }
     }
     logger.debug('props.properties = ', properties);
 }
