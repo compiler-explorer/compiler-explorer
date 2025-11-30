@@ -346,7 +346,7 @@ describe('Config Module', () => {
             const result = loadConfiguration(appArgs);
 
             // Verify initialization happened correctly
-            expect(props.initialize).toHaveBeenCalledWith(path.normalize('/test/root/config'), expect.any(Array));
+            expect(props.initialize).toHaveBeenCalledWith([path.normalize('/test/root/config')], expect.any(Array));
             expect(props.propsFor).toHaveBeenCalledWith('compiler-explorer');
             // CompilerProps is a class, not a spy, so we can't check if it was called
 
