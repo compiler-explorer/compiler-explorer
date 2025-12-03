@@ -119,7 +119,7 @@ export class SpiceCompiler extends BaseCompiler {
         return path.join(dirPath, 'example-ir-code' + this.optLevelSuffix + '.ll');
     }
 
-    override getObjdumpOutputFilename(inputFilename: string): string {
+    override getObjdumpInputFilename(inputFilename: string): string {
         const dirPath = path.dirname(inputFilename);
         return path.join(dirPath, this.outputFilebase);
     }

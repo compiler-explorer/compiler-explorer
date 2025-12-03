@@ -47,6 +47,7 @@ type NsJailOptions = {
 };
 
 const execProps = propsFor('execution');
+const c_nsjail_permissions_error = 'runChild():486 Launching child process failed';
 
 let stdbufPath: null | string = null;
 
@@ -242,6 +243,8 @@ export function getFirejailProfileFilePath(profileName: string): string {
     return profilePath;
 }
 
+const jailedHomeDir = '/app';
+
 export function getNsJailOptions(
     configName: string,
     command: string,
@@ -256,26 +259,25 @@ export function getNsJailOptions(
         jailingOptions.push(`--time_limit=${Math.round((options.timeoutMs + ExtraWallClockLeewayMs) / 1000)}`);
     }
 
-    const homeDir = '/app';
     let filenameTransform: FilenameTransformFunc | undefined;
     if (options.customCwd) {
         let replacement = options.customCwd;
         if (options.appHome) {
             replacement = options.appHome;
-            const relativeCwd = path.join(homeDir, path.relative(options.appHome, options.customCwd));
-            jailingOptions.push('--cwd', relativeCwd, '--bindmount', `${options.appHome}:${homeDir}`);
+            const relativeCwd = path.join(jailedHomeDir, path.relative(options.appHome, options.customCwd));
+            jailingOptions.push('--cwd', relativeCwd, '--bindmount', `${options.appHome}:${jailedHomeDir}`);
         } else {
-            jailingOptions.push('--cwd', homeDir, '--bindmount', `${options.customCwd}:${homeDir}`);
+            jailingOptions.push('--cwd', jailedHomeDir, '--bindmount', `${options.customCwd}:${jailedHomeDir}`);
         }
 
-        filenameTransform = opt => opt.replaceAll(replacement, '/app');
+        filenameTransform = opt => opt.replaceAll(replacement, jailedHomeDir);
         args = args.map(filenameTransform);
         delete options.customCwd;
     }
 
     const transform = filenameTransform || (x => x);
 
-    const env: Record<string, string> = {...options.env, HOME: homeDir};
+    const env: Record<string, string> = {...options.env, HOME: jailedHomeDir};
     if (options.ldPath) {
         const ldPaths = options.ldPath.filter(Boolean).map(path => transform(path));
         jailingOptions.push(`--env=LD_LIBRARY_PATH=${ldPaths.join(path.delimiter)}`);
@@ -352,15 +354,41 @@ export function getExecuteCEWrapperOptions(command: string, args: string[], opti
     return getCeWrapperOptions('execute', command, args, options);
 }
 
-function sandboxNsjail(command: string, args: string[], options: ExecutionOptions) {
-    logger.info('Sandbox execution via nsjail', {command, args});
-    const nsOpts = getSandboxNsjailOptions(command, args, options);
-    return executeDirect(execProps<string>('nsjail'), nsOpts.args, nsOpts.options, nsOpts.filenameTransform);
+export function hasNsjailPermissionsIssue(result: UnprocessedExecResult): boolean {
+    return result.stderr.includes(c_nsjail_permissions_error) || (result.stderr === '' && result.code === 255);
 }
 
-function executeNsjail(command: string, args: string[], options: ExecutionOptions) {
+async function sandboxNsjail(
+    command: string,
+    args: string[],
+    options: ExecutionOptions,
+): Promise<UnprocessedExecResult> {
+    logger.info('Sandbox execution via nsjail', {command, args});
+    const nsOpts = getSandboxNsjailOptions(command, args, options);
+    const result = await executeDirect(
+        execProps<string>('nsjail'),
+        nsOpts.args,
+        nsOpts.options,
+        nsOpts.filenameTransform,
+    );
+    if (hasNsjailPermissionsIssue(result)) result.okToCache = false;
+    return result;
+}
+
+async function executeNsjail(
+    command: string,
+    args: string[],
+    options: ExecutionOptions,
+): Promise<UnprocessedExecResult> {
     const nsOpts = getNsJailOptions('execute', command, args, options);
-    return executeDirect(execProps<string>('nsjail'), nsOpts.args, nsOpts.options, nsOpts.filenameTransform);
+    const result = await executeDirect(
+        execProps<string>('nsjail'),
+        nsOpts.args,
+        nsOpts.options,
+        nsOpts.filenameTransform,
+    );
+    if (hasNsjailPermissionsIssue(result)) result.okToCache = false;
+    return result;
 }
 
 function sandboxCEWrapper(command: string, args: string[], options: ExecutionOptions) {
@@ -650,4 +678,8 @@ export async function execute(
     if (!command) throw new Error('No executable provided');
     const unbuffered = await maybeUnbuffer(command, args);
     return await dispatchEntry(unbuffered.command, unbuffered.args, options);
+}
+
+export function maybeRemapJailedDir(customCwd: string): string {
+    return execProps('executionType', 'none') == 'nsjail' ? jailedHomeDir : customCwd;
 }

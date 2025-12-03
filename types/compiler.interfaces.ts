@@ -82,6 +82,7 @@ export type CompilerInfo = {
     supportsPpView?: boolean;
     supportsAstView?: boolean;
     supportsIrView?: boolean;
+    supportsIrViewOptToggleOption?: boolean;
     supportsClangirView?: boolean;
     supportsRustMirView?: boolean;
     supportsRustMacroExpView?: boolean;
@@ -89,6 +90,8 @@ export type CompilerInfo = {
     supportsHaskellCoreView?: boolean;
     supportsHaskellStgView?: boolean;
     supportsHaskellCmmView?: boolean;
+    supportsClojureMacroExpView?: boolean;
+    supportsYulView?: boolean;
     supportsCfg?: boolean;
     supportsGnatDebugViews?: boolean;
     supportsLibraryCodeFilter?: boolean;

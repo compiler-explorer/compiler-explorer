@@ -77,20 +77,30 @@ function definition(): monaco.languages.IMonarchLanguage {
             ],
 
             comment: [
-                [/[^/*]+/, 'comment'],
-                [/\*\//, 'comment', '@pop'],
-                [/[/*]/, 'comment'],
+                [/[^{-]+/, 'comment'],
+                [/{-/, 'comment', '@push'],
+                [/-}/, 'comment', '@pop'],
+                [/[{-]/, 'comment'],
             ],
 
             whitespace: [
                 [/[ \t\r\n]+/, 'white'],
-                [/\/\*/, 'comment', '@comment'],
-                [/\/\/.*$/, 'comment'],
+                [/{-/, 'comment', '@comment'],
                 [/--.*$/, 'comment'],
             ],
         },
     };
 }
 
+function configuration(): monaco.languages.LanguageConfiguration {
+    return {
+        comments: {
+            lineComment: '--',
+            blockComment: ['{-', '-}'],
+        },
+    };
+}
+
 monaco.languages.register({id: 'haskell'});
 monaco.languages.setMonarchTokensProvider('haskell', definition());
+monaco.languages.setLanguageConfiguration('haskell', configuration());

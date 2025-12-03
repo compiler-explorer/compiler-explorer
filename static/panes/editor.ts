@@ -43,12 +43,12 @@ import '../formatter-registry';
 import '../modes/_all';
 import {Container} from 'golden-layout';
 import type {escape_html} from 'tom-select/dist/types/utils.js';
+import {assert, unwrap} from '../../shared/assert.js';
 import {escapeHTML, isString} from '../../shared/common-utils.js';
 import {CompilationResult} from '../../types/compilation/compilation.interfaces.js';
 import {CompilerInfo} from '../../types/compiler.interfaces.js';
 import {Language, LanguageKey} from '../../types/languages.interfaces.js';
 import {MessageWithLocation, ResultLine} from '../../types/resultline/resultline.interfaces.js';
-import {assert, unwrap} from '../assert.js';
 import {Hub} from '../hub.js';
 import {Decoration, Motd} from '../motd.interfaces.js';
 import {Compiler} from './compiler.js';
@@ -1065,7 +1065,9 @@ export class Editor extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Edit
         if (cpprefLangs.includes(preferredLanguage)) {
             langTag = preferredLanguage;
         }
-        const url = 'https://' + langTag + '.cppreference.com/mwiki/index.php?search=' + encodeURIComponent(word.word);
+        const url =
+            'https://www.google.com/search?q=' +
+            encodeURIComponent(word.word + ' site:' + langTag + '.cppreference.com');
         window.open(url, '_blank', 'noopener');
     }
 

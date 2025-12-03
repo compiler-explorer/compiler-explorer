@@ -38,9 +38,9 @@ import type {ParseFiltersAndOutputOptions} from '../../types/features/filters.in
 import type {SelectedLibraryVersion} from '../../types/libraries/libraries.interfaces.js';
 import {BaseCompiler} from '../base-compiler.js';
 import {CompilationEnvironment} from '../compilation-env.js';
+import {logger} from '../logger.js';
 import {Dex2OatPassDumpParser} from '../parsers/dex2oat-pass-dump-parser.js';
 import * as utils from '../utils.js';
-
 import {D8Compiler} from './d8.js';
 
 const BOOTCLASSPATH_JARS = [
@@ -382,6 +382,7 @@ export class Dex2OatCompiler extends BaseCompiler {
     // dex2oat doesn't have --version, but artArtifactDir contains a file with
     // the build number.
     override async getVersion() {
+        logger.info(`Gathering ${this.compiler.id} version information on ${this.compiler.exe}...`);
         const versionFile = this.artArtifactDir + '/snapshot-creation-build-number.txt';
         const version = await fs.readFile(versionFile, {encoding: 'utf8'});
         return {

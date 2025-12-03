@@ -19,7 +19,7 @@
   },
   "overrides": [
     {
-      "includes": ["static/**"],
+      "includes": ["static/**", "shared/**"],
       "linter": {
         "rules": {
           "suspicious": {

@@ -24,13 +24,13 @@
 
 import GoldenLayout from 'golden-layout';
 import $ from 'jquery';
+import {assert, unwrap, unwrapString} from '../../shared/assert.js';
 import {escapeHTML} from '../../shared/common-utils.js';
+import {serialiseState} from '../../shared/url-serialization.js';
 import {SiteTemplateConfiguration, UserSiteTemplate} from '../../types/features/site-templates.interfaces.js';
-import {assert, unwrap, unwrapString} from '../assert.js';
 import * as BootstrapUtils from '../bootstrap-utils.js';
 import {localStorage} from '../local.js';
 import {Settings} from '../settings.js';
-import * as url from '../url.js';
 import {getStaticImage} from '../utils';
 import {Alert} from './alert.js';
 
@@ -54,7 +54,7 @@ class SiteTemplatesWidget {
     }
     saveCurrentAsTemplate() {
         const config = this.layout.toConfig();
-        const data = url.serialiseState(config);
+        const data = serialiseState(config);
         this.alertSystem.enterSomething('Template Name', '', '', {
             yes: name => {
                 const userTemplates: Record<string, UserSiteTemplate> = JSON.parse(

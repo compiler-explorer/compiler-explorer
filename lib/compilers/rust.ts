@@ -69,7 +69,7 @@ export class RustCompiler extends BaseCompiler {
         this.compiler.irArg = ['--emit', 'llvm-ir'];
         this.compiler.minIrArgs = ['--emit=llvm-ir'];
         this.compiler.optPipeline = {
-            arg: ['-C', 'llvm-args=-print-after-all -print-before-all'],
+            arg: ['-C', 'llvm-args=-print-after-all -print-before-all', '-C', 'extra-filename=llvm-opt-pipeline'],
             moduleScopeArg: ['-C', 'llvm-args=-print-module-scope'],
             noDiscardValueNamesArg: isNightly ? ['-Z', 'fewer-names=no'] : [],
         };
@@ -271,19 +271,22 @@ export class RustCompiler extends BaseCompiler {
         let options = ['-C', 'debuginfo=2', '-o', this.filename(outputFilename)];
 
         const userRequestedEmit = _.any(unwrap(userOptions), opt => opt.includes('--emit'));
+        const userRequestedCrateType = _.any(unwrap(userOptions), opt => opt.includes('--crate-type'));
+        const setCrateType = (options, type) =>
+            userRequestedCrateType ? options : options.concat(['--crate-type', type]);
         if (filters.binary) {
-            options = options.concat(['--crate-type', 'bin']);
+            options = setCrateType(options, 'bin');
             if (this.amd64linker) {
                 options = options.concat(`-Clinker=${this.amd64linker}`);
             }
         } else if (filters.binaryObject) {
-            options = options.concat(['--crate-type', 'lib']);
+            options = setCrateType(options, 'lib');
         } else {
             if (!userRequestedEmit) {
                 options = options.concat('--emit', 'asm');
             }
             if (filters.intel) options = options.concat('-Cllvm-args=--x86-asm-syntax=intel');
-            options = options.concat(['--crate-type', 'rlib']);
+            options = setCrateType(options, 'rlib');
         }
         return options;
     }
@@ -334,5 +337,10 @@ export class RustCompiler extends BaseCompiler {
                 !(opt === '--emit' && allOpts[idx + 1].startsWith('mir=')) && !opt.startsWith('mir='),
         );
         return super.runCompiler(compiler, newOptions, inputFilename, execOptions);
+    }
+
+    override isOutputLikelyLlvmIr(options: string[]): boolean {
+        const emitIndex = options.indexOf('--emit');
+        return options.includes('--emit=llvm-ir') || (emitIndex >= 0 && options[emitIndex + 1] == 'llvm-ir');
     }
 }

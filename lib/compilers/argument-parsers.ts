@@ -701,6 +701,12 @@ export class JavaParser extends BaseParser {
     }
 }
 
+export class ClojureParser extends BaseParser {
+    override async parse() {
+        return this.compiler;
+    }
+}
+
 export class KotlinParser extends BaseParser {
     override async parse() {
         await this.getOptions('-help');
@@ -938,6 +944,13 @@ export class SolxParser extends RustParser {
     override async parse() {
         const options = await this.getOptions('--help');
         await this.setCompilerSettingsFromOptions(options);
+        return this.compiler;
+    }
+}
+
+export class ResolcParser extends BaseParser {
+    override async parse() {
+        await this.getOptions('--help');
         return this.compiler;
     }
 }

@@ -29,7 +29,7 @@ export class GoldenGateObjdumper extends BaseObjdumper {
         super([], []);
     }
 
-    override getDefaultArgs(outputFilename: string) {
+    override getArgs(outputFilename: string) {
         return [outputFilename];
     }
 

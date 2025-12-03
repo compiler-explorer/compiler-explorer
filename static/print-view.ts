@@ -26,7 +26,7 @@ import $ from 'jquery';
 
 import * as monaco from 'monaco-editor';
 
-import {unwrap} from './assert.js';
+import {unwrap} from '../shared/assert.js';
 import {EventHub} from './event-hub.js';
 import {Hub} from './hub.js';
 import {Themer, themes} from './themes.js';

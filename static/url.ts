@@ -22,12 +22,10 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import GoldenLayout from 'golden-layout';
 import lzstring from 'lz-string';
 import _ from 'underscore';
+import * as urlSerialization from '../shared/url-serialization.js';
 import * as Components from './components.js';
-
-import * as rison from './rison.js';
 
 export function convertOldState(state: any): any {
     const sc = state.compilers[0];
@@ -68,7 +66,7 @@ export function loadState(state: any): any {
             state = convertOldState(state);
             break; // no fall through
         case 4:
-            state = GoldenLayout.unminifyConfig(state);
+            state = urlSerialization.unminifyConfig(state);
             break;
         default:
             throw new Error("Invalid version '" + state.version + "'");
@@ -76,26 +74,18 @@ export function loadState(state: any): any {
     return state;
 }
 
-export function risonify(obj: rison.JSONValue): string {
-    return rison.quote(rison.encode_object(obj));
-}
-
-export function unrisonify(text: string): any {
-    return rison.decode_object(decodeURIComponent(text.replace(/\+/g, '%20')));
-}
-
 export function deserialiseState(stateText: string): any {
     let state;
     let exception;
     try {
-        state = unrisonify(stateText);
+        state = urlSerialization.unrisonify(stateText);
         if (state?.z) {
             const data = lzstring.decompressFromBase64(state.z);
             // If lzstring fails to decompress this it'll return an empty string rather than throwing an error
             if (data === '') {
                 throw new Error('lzstring decompress error, url is corrupted');
             }
-            state = unrisonify(data);
+            state = urlSerialization.unrisonify(data);
         }
     } catch (ex) {
         exception = ex;
@@ -112,16 +102,4 @@ export function deserialiseState(stateText: string): any {
     }
     if (exception) throw exception;
     return loadState(state);
-}
-
-export function serialiseState(stateText: any): string {
-    const ctx = GoldenLayout.minifyConfig({content: stateText.content});
-    ctx.version = 4;
-    const uncompressed = risonify(ctx);
-    const compressed = risonify({z: lzstring.compressToBase64(uncompressed)});
-    const MinimalSavings = 0.2; // at least this ratio smaller
-    if (compressed.length < uncompressed.length * (1.0 - MinimalSavings)) {
-        return compressed;
-    }
-    return uncompressed;
 }

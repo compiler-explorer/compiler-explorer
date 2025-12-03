@@ -30,6 +30,7 @@ import {
     AST_VIEW_COMPONENT_NAME,
     CFG_VIEW_COMPONENT_NAME,
     CLANGIR_VIEW_COMPONENT_NAME,
+    CLOJURE_MACRO_EXP_VIEW_COMPONENT_NAME,
     COMPILER_COMPONENT_NAME,
     CONFORMANCE_VIEW_COMPONENT_NAME,
     DEVICE_VIEW_COMPONENT_NAME,
@@ -58,6 +59,7 @@ import {
     TOOL_COMPONENT_NAME,
     TOOL_INPUT_VIEW_COMPONENT_NAME,
     TREE_COMPONENT_NAME,
+    YUL_VIEW_COMPONENT_NAME,
 } from './components.interfaces.js';
 import {EventHub} from './event-hub.js';
 import {EventMap} from './event-map.js';
@@ -65,6 +67,7 @@ import {IdentifierSet} from './identifier-set.js';
 import {Ast as AstView} from './panes/ast-view.js';
 import {Cfg as CfgView} from './panes/cfg-view.js';
 import {Clangir as ClangirView} from './panes/clangir-view.js';
+import {ClojureMacroExp as ClojureMacroExpView} from './panes/clojuremacroexp-view.js';
 import {Compiler} from './panes/compiler.js';
 import {Conformance as ConformanceView} from './panes/conformance-view.js';
 import {DeviceAsm as DeviceView} from './panes/device-view.js';
@@ -91,6 +94,7 @@ import {StackUsage as StackUsageView} from './panes/stack-usage-view.js';
 import {Tool} from './panes/tool.js';
 import {ToolInputView} from './panes/tool-input-view.js';
 import {Tree, TreeState} from './panes/tree.js';
+import {Yul as YulView} from './panes/yul-view.js';
 
 type GLC = GoldenLayout.Container;
 
@@ -162,12 +166,16 @@ export class Hub {
             this.rustMacroExpViewFactory(c, s),
         );
         layout.registerComponent(RUST_HIR_VIEW_COMPONENT_NAME, (c: GLC, s: any) => this.rustHirViewFactory(c, s));
+        layout.registerComponent(CLOJURE_MACRO_EXP_VIEW_COMPONENT_NAME, (c: GLC, s: any) =>
+            this.clojureMacroExpViewFactory(c, s),
+        );
         layout.registerComponent(GCC_DUMP_VIEW_COMPONENT_NAME, (c: GLC, s: any) => this.gccDumpViewFactory(c, s));
         layout.registerComponent(CFG_VIEW_COMPONENT_NAME, (c: GLC, s: any) => this.cfgViewFactory(c, s));
         layout.registerComponent(CONFORMANCE_VIEW_COMPONENT_NAME, (c: GLC, s: any) =>
             this.conformanceViewFactory(c, s),
         );
         layout.registerComponent(EXPLAIN_VIEW_COMPONENT_NAME, (c: GLC, s: any) => this.explainViewFactory(c, s));
+        layout.registerComponent(YUL_VIEW_COMPONENT_NAME, (c: GLC, s: any) => this.yulViewFactory(c, s));
 
         layout.eventHub.on(
             'editorOpen',
@@ -574,6 +582,13 @@ export class Hub {
         return new HaskellCmmView(this, container, state);
     }
 
+    public clojureMacroExpViewFactory(
+        container: GoldenLayout.Container,
+        state: InferComponentState<ClojureMacroExpView>,
+    ): ClojureMacroExpView {
+        return new ClojureMacroExpView(this, container, state);
+    }
+
     public gccDumpViewFactory(container: GoldenLayout.Container, state: InferComponentState<GCCDumpView>): GCCDumpView {
         return new GCCDumpView(this, container, state);
     }
@@ -591,5 +606,9 @@ export class Hub {
 
     public explainViewFactory(container: GoldenLayout.Container, state: any): ExplainView {
         return new ExplainView(this, container, state);
+    }
+
+    public yulViewFactory(container: GoldenLayout.Container, state: InferComponentState<YulView>): YulView {
+        return new YulView(this, container, state);
     }
 }

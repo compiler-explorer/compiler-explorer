@@ -117,7 +117,7 @@ export class z88dkCompiler extends BaseCompiler {
         return opts;
     }
 
-    override getObjdumpOutputFilename(defaultOutputFilename: string) {
+    override getObjdumpInputFilename(defaultOutputFilename: string) {
         return defaultOutputFilename;
     }
 
@@ -143,7 +143,7 @@ export class z88dkCompiler extends BaseCompiler {
         dynamicReloc: boolean,
         filters: ParseFiltersAndOutputOptions,
     ) {
-        outputFilename = this.getObjdumpOutputFilename(outputFilename);
+        outputFilename = this.getObjdumpInputFilename(outputFilename);
 
         // sometimes (with +z80 for example) the .bin file is written and the .s file is empty
         if (await utils.fileExists(outputFilename + '.bin')) {

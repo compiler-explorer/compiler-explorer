@@ -149,7 +149,7 @@ export class AssemblyCompiler extends BaseCompiler {
     override async buildExecutableInFolder(key: CacheKey, dirPath: string): Promise<BuildResult> {
         const buildEnvironment = this.setupBuildEnvironment(key, dirPath, true);
 
-        const writeSummary = await this.writeAllFiles(dirPath, key.source, key.files, key.filters);
+        const writeSummary = await this.writeAllFiles(dirPath, key.source, key.files);
         const inputFilename = writeSummary.inputFilename;
 
         const outputFilename = this.getExecutableFilename(dirPath);
@@ -206,7 +206,7 @@ export class AssemblyCompiler extends BaseCompiler {
         return this.postProcess(asmResult, outputFilename, filters);
     }
 
-    override getObjdumpOutputFilename(defaultOutputFilename: string): string {
+    override getObjdumpInputFilename(defaultOutputFilename: string): string {
         return this.getGeneratedOutputFilename(defaultOutputFilename);
     }
 

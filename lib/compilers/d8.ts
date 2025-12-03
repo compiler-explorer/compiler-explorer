@@ -306,6 +306,7 @@ export class D8Compiler extends BaseCompiler implements SimpleOutputFilenameComp
     }
 
     override async getVersion() {
+        logger.info(`Gathering ${this.compiler.id} version information on ${this.compiler.exe}...`);
         const versionFile = path.join(path.dirname(this.compiler.exe), 'r8-version.properties');
         const versionInfo = await utils.tryReadTextFile(versionFile);
         const versionCode = (() => {

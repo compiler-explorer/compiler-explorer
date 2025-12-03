@@ -36,6 +36,7 @@ export type LanguageKey =
     | 'circle'
     | 'circt'
     | 'clean'
+    | 'clojure'
     | 'cmake'
     | 'cmakescript'
     | 'cobol'
@@ -61,6 +62,7 @@ export type LanguageKey =
     | 'go'
     | 'haskell'
     | 'hlsl'
+    | 'helion'
     | 'hook'
     | 'hylo'
     | 'ispc'
@@ -108,8 +110,9 @@ export type LanguageKey =
     | 'vb'
     | 'vyper'
     | 'wasm'
-    | 'zig'
-    | 'ylc';
+    | 'ylc'
+    | 'yul'
+    | 'zig';
 
 export interface Language {
     /** Id of language. Added programmatically based on CELanguages key */

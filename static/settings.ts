@@ -23,9 +23,9 @@
 // POSSIBILITY OF SUCH DAMAGE.
 
 import $ from 'jquery';
+import {assert, unwrapString} from '../shared/assert.js';
 import {isString, keys} from '../shared/common-utils.js';
 import {LanguageKey} from '../types/languages.interfaces.js';
-import {assert, unwrapString} from './assert.js';
 import * as colour from './colour.js';
 import {AppTheme, ColourScheme, ColourSchemeInfo} from './colour.js';
 import {EventHub} from './event-hub.js';

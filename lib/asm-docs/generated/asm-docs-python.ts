@@ -96,8 +96,8 @@ export function getAsmOpcode(opcode: string | undefined): AssemblyInstructionInf
 
         case "CALL":
             return {
-                "html": "<p>Calls a callable object with the number of arguments specified by <code>argc</code>,\nincluding the named arguments specified by the preceding\n<code>KW_NAMES</code>, if any.\nOn the stack are (in ascending order), either:</p>\n<ul>\n<li><p>NULL</p></li>\n<li><p>The callable</p></li>\n<li><p>The positional arguments</p></li>\n<li><p>The named arguments</p></li>\n</ul>\n<p>or:</p>\n<ul>\n<li><p>The callable</p></li>\n<li><p><code>self</code></p></li>\n<li><p>The remaining positional arguments</p></li>\n<li><p>The named arguments</p></li>\n</ul>\n<p><code>argc</code> is the total of the positional and named arguments, excluding\n<code>self</code> when a <code>NULL</code> is not present.</p>\n<p><code>CALL</code> pops all arguments and the callable object off the stack,\ncalls the callable object with those arguments, and pushes the return value\nreturned by the callable object.</p>\n\n<p>Added in version 3.11.</p>\n\n",
-                "tooltip": "Calls a callable object with the number of arguments specified by argc,\nincluding the named arguments specified by the preceding\nKW_NAMES, if any.\nOn the stack are (in ascending order), either",
+                "html": "<p>Calls a callable object with the number of arguments specified by <code>argc</code>.\nOn the stack are (in ascending order):</p>\n<ul>\n<li><p>The callable</p></li>\n<li><p><code>self</code> or <code>NULL</code></p></li>\n<li><p>The remaining positional arguments</p></li>\n</ul>\n<p><code>argc</code> is the total of the positional arguments, excluding <code>self</code>.</p>\n<p><code>CALL</code> pops all arguments and the callable object off the stack,\ncalls the callable object with those arguments, and pushes the return value\nreturned by the callable object.</p>\n\n<p>Added in version 3.11.</p>\n\n\n<p>Changed in version 3.13: The callable now always appears at the same position on the stack.</p>\n\n\n<p>Changed in version 3.13: Calls with keyword arguments are now handled by <code>CALL_KW</code>.</p>\n\n",
+                "tooltip": "Calls a callable object with the number of arguments specified by argc.\nOn the stack are (in ascending order)",
                 "url": "https://docs.python.org/3/library/dis.html#opcode-CALL"
             };
 
@@ -117,9 +117,16 @@ export function getAsmOpcode(opcode: string | undefined): AssemblyInstructionInf
 
         case "CALL_INTRINSIC_2":
             return {
-                "html": "<p>Calls an intrinsic function with two arguments. Used to implement functionality\nthat is not performance critical:</p>\n<pre>arg2 = STACK.pop()\narg1 = STACK.pop()\nresult = intrinsic2(arg1, arg2)\nSTACK.push(result)\n</pre>\n\n<p>The operand determines which intrinsic function is called:</p>\n<table>\n\n<tr><th><p>Operand</p></th>\n<th><p>Description</p></th>\n</tr>\n\n\n<tr><td><p><code>INTRINSIC_2_INVALID</code></p></td>\n<td><p>Not valid</p></td>\n</tr>\n<tr><td><p><code>INTRINSIC_PREP_RERAISE_STAR</code></p></td>\n<td><p>Calculates the\n<code>ExceptionGroup</code> to raise\nfrom a <code>try-except*</code>.</p></td>\n</tr>\n<tr><td><p><code>INTRINSIC_TYPEVAR_WITH_BOUND</code></p></td>\n<td><p>Creates a <code>typing.TypeVar</code>\nwith a bound.</p></td>\n</tr>\n<tr><td><p><code>INTRINSIC_TYPEVAR_WITH_CONSTRAINTS</code></p></td>\n<td><p>Creates a\n<code>typing.TypeVar</code> with\nconstraints.</p></td>\n</tr>\n<tr><td><p><code>INTRINSIC_SET_FUNCTION_TYPE_PARAMS</code></p></td>\n<td><p>Sets the <code>__type_params__</code>\nattribute of a function.</p></td>\n</tr>\n\n</table>\n\n<p>Added in version 3.12.</p>\n\n",
+                "html": "<p>Calls an intrinsic function with two arguments. Used to implement functionality\nthat is not performance critical:</p>\n<pre>arg2 = STACK.pop()\narg1 = STACK.pop()\nresult = intrinsic2(arg1, arg2)\nSTACK.append(result)\n</pre>\n\n<p>The operand determines which intrinsic function is called:</p>\n<table>\n\n<tr><th><p>Operand</p></th>\n<th><p>Description</p></th>\n</tr>\n\n\n<tr><td><p><code>INTRINSIC_2_INVALID</code></p></td>\n<td><p>Not valid</p></td>\n</tr>\n<tr><td><p><code>INTRINSIC_PREP_RERAISE_STAR</code></p></td>\n<td><p>Calculates the\n<code>ExceptionGroup</code> to raise\nfrom a <code>try-except*</code>.</p></td>\n</tr>\n<tr><td><p><code>INTRINSIC_TYPEVAR_WITH_BOUND</code></p></td>\n<td><p>Creates a <code>typing.TypeVar</code>\nwith a bound.</p></td>\n</tr>\n<tr><td><p><code>INTRINSIC_TYPEVAR_WITH_CONSTRAINTS</code></p></td>\n<td><p>Creates a\n<code>typing.TypeVar</code> with\nconstraints.</p></td>\n</tr>\n<tr><td><p><code>INTRINSIC_SET_FUNCTION_TYPE_PARAMS</code></p></td>\n<td><p>Sets the <code>__type_params__</code>\nattribute of a function.</p></td>\n</tr>\n\n</table>\n\n<p>Added in version 3.12.</p>\n\n",
                 "tooltip": "Calls an intrinsic function with two arguments. Used to implement functionality\nthat is not performance critical",
                 "url": "https://docs.python.org/3/library/dis.html#opcode-CALL_INTRINSIC_2"
+            };
+
+        case "CALL_KW":
+            return {
+                "html": "<p>Calls a callable object with the number of arguments specified by <code>argc</code>,\nincluding one or more named arguments. On the stack are (in ascending order):</p>\n<ul>\n<li><p>The callable</p></li>\n<li><p><code>self</code> or <code>NULL</code></p></li>\n<li><p>The remaining positional arguments</p></li>\n<li><p>The named arguments</p></li>\n<li><p>A <code>tuple</code> of keyword argument names</p></li>\n</ul>\n<p><code>argc</code> is the total of the positional and named arguments, excluding <code>self</code>.\nThe length of the tuple of keyword argument names is the number of named arguments.</p>\n<p><code>CALL_KW</code> pops all arguments, the keyword names, and the callable object\noff the stack, calls the callable object with those arguments, and pushes the\nreturn value returned by the callable object.</p>\n\n<p>Added in version 3.13.</p>\n\n",
+                "tooltip": "Calls a callable object with the number of arguments specified by argc,\nincluding one or more named arguments. On the stack are (in ascending order)",
+                "url": "https://docs.python.org/3/library/dis.html#opcode-CALL_KW"
             };
 
         case "CHECK_EG_MATCH":
@@ -145,8 +152,8 @@ export function getAsmOpcode(opcode: string | undefined): AssemblyInstructionInf
 
         case "COMPARE_OP":
             return {
-                "html": "<p>Performs a Boolean operation.  The operation name can be found in\n<code>cmp_op[opname &gt;&gt; 4]</code>.</p>\n\n<p>Changed in version 3.12: The cmp_op index is now stored in the four-highest bits of oparg instead of the four-lowest bits of oparg.</p>\n\n",
-                "tooltip": "Performs a Boolean operation.  The operation name can be found in\ncmp_op[opname >> 4].",
+                "html": "<p>Performs a Boolean operation.  The operation name can be found in\n<code>cmp_op[opname &gt;&gt; 5]</code>. If the fifth-lowest bit of <code>opname</code> is set\n(<code>opname &amp; 16</code>), the result should be coerced to <code>bool</code>.</p>\n\n<p>Changed in version 3.13: The fifth-lowest bit of the oparg now indicates a forced conversion to\n<code>bool</code>.</p>\n\n",
+                "tooltip": "Performs a Boolean operation.  The operation name can be found in\ncmp_op[opname >> 5]. If the fifth-lowest bit of opname is set\n(opname & 16), the result should be coerced to bool.",
                 "url": "https://docs.python.org/3/library/dis.html#opcode-COMPARE_OP"
             };
 
@@ -155,6 +162,13 @@ export function getAsmOpcode(opcode: string | undefined): AssemblyInstructionInf
                 "html": "<p>Performs <code>in</code> comparison, or <code>not in</code> if <code>invert</code> is 1.</p>\n\n<p>Added in version 3.9.</p>\n\n",
                 "tooltip": "Performs in comparison, or not in if invert is 1.",
                 "url": "https://docs.python.org/3/library/dis.html#opcode-CONTAINS_OP"
+            };
+
+        case "CONVERT_VALUE":
+            return {
+                "html": "<p>Convert value to a string, depending on <code>oparg</code>:</p>\n<pre>value = STACK.pop()\nresult = func(value)\nSTACK.append(result)\n</pre>\n\n<ul>\n<li><p><code>oparg == 1</code>: call <code>str()</code> on value</p></li>\n<li><p><code>oparg == 2</code>: call <code>repr()</code> on value</p></li>\n<li><p><code>oparg == 3</code>: call <code>ascii()</code> on value</p></li>\n</ul>\n<p>Used for implementing formatted string literals (f-strings).</p>\n\n<p>Added in version 3.13.</p>\n\n",
+                "tooltip": "Convert value to a string, depending on oparg",
+                "url": "https://docs.python.org/3/library/dis.html#opcode-CONVERT_VALUE"
             };
 
         case "COPY":
@@ -166,8 +180,8 @@ export function getAsmOpcode(opcode: string | undefined): AssemblyInstructionInf
 
         case "COPY_FREE_VARS":
             return {
-                "html": "<p>Copies the <code>n</code> free variables from the closure into the frame.\nRemoves the need for special code on the caller\u2019s side when calling\nclosures.</p>\n\n<p>Added in version 3.11.</p>\n\n",
-                "tooltip": "Copies the n free variables from the closure into the frame.\nRemoves the need for special code on the caller\u2019s side when calling\nclosures.",
+                "html": "<p>Copies the <code>n</code> free (closure) variables from the closure\ninto the frame. Removes the need for special code on the caller\u2019s side when calling\nclosures.</p>\n\n<p>Added in version 3.11.</p>\n\n",
+                "tooltip": "Copies the n free (closure) variables from the closure\ninto the frame. Removes the need for special code on the caller\u2019s side when calling\nclosures.",
                 "url": "https://docs.python.org/3/library/dis.html#opcode-COPY_FREE_VARS"
             };
 
@@ -236,8 +250,8 @@ export function getAsmOpcode(opcode: string | undefined): AssemblyInstructionInf
 
         case "END_FOR":
             return {
-                "html": "<p>Removes the top two values from the stack.\nEquivalent to <code>POP_TOP</code>; <code>POP_TOP</code>.\nUsed to clean up at the end of loops, hence the name.</p>\n\n<p>Added in version 3.12.</p>\n\n",
-                "tooltip": "Removes the top two values from the stack.\nEquivalent to POP_TOP; POP_TOP.\nUsed to clean up at the end of loops, hence the name.",
+                "html": "<p>Removes the top-of-stack item.\nEquivalent to <code>POP_TOP</code>.\nUsed to clean up at the end of loops, hence the name.</p>\n\n<p>Added in version 3.12.</p>\n\n",
+                "tooltip": "Removes the top-of-stack item.\nEquivalent to POP_TOP.\nUsed to clean up at the end of loops, hence the name.",
                 "url": "https://docs.python.org/3/library/dis.html#opcode-END_FOR"
             };
 
@@ -255,11 +269,18 @@ export function getAsmOpcode(opcode: string | undefined): AssemblyInstructionInf
                 "url": "https://docs.python.org/3/library/dis.html#opcode-EXTENDED_ARG"
             };
 
-        case "FORMAT_VALUE":
+        case "FORMAT_SIMPLE":
             return {
-                "html": "<p>Used for implementing formatted literal strings (f-strings).  Pops\nan optional fmt_spec from the stack, then a required value.\nflags is interpreted as follows:</p>\n<ul>\n<li><p><code>(flags &amp; 0x03) == 0x00</code>: value is formatted as-is.</p></li>\n<li><p><code>(flags &amp; 0x03) == 0x01</code>: call <code>str()</code> on value before\nformatting it.</p></li>\n<li><p><code>(flags &amp; 0x03) == 0x02</code>: call <code>repr()</code> on value before\nformatting it.</p></li>\n<li><p><code>(flags &amp; 0x03) == 0x03</code>: call <code>ascii()</code> on value before\nformatting it.</p></li>\n<li><p><code>(flags &amp; 0x04) == 0x04</code>: pop fmt_spec from the stack and use\nit, else use an empty fmt_spec.</p></li>\n</ul>\n<p>Formatting is performed using <code>PyObject_Format()</code>.  The\nresult is pushed on the stack.</p>\n\n<p>Added in version 3.6.</p>\n\n",
-                "tooltip": "Used for implementing formatted literal strings (f-strings).  Pops\nan optional fmt_spec from the stack, then a required value.\nflags is interpreted as follows",
-                "url": "https://docs.python.org/3/library/dis.html#opcode-FORMAT_VALUE"
+                "html": "<p>Formats the value on top of stack:</p>\n<pre>value = STACK.pop()\nresult = value.__format__(\"\")\nSTACK.append(result)\n</pre>\n\n<p>Used for implementing formatted string literals (f-strings).</p>\n\n<p>Added in version 3.13.</p>\n\n",
+                "tooltip": "Formats the value on top of stack",
+                "url": "https://docs.python.org/3/library/dis.html#opcode-FORMAT_SIMPLE"
+            };
+
+        case "FORMAT_WITH_SPEC":
+            return {
+                "html": "<p>Formats the given value with the given format spec:</p>\n<pre>spec = STACK.pop()\nvalue = STACK.pop()\nresult = value.__format__(spec)\nSTACK.append(result)\n</pre>\n\n<p>Used for implementing formatted string literals (f-strings).</p>\n\n<p>Added in version 3.13.</p>\n\n",
+                "tooltip": "Formats the given value with the given format spec",
+                "url": "https://docs.python.org/3/library/dis.html#opcode-FORMAT_WITH_SPEC"
             };
 
         case "FOR_ITER":
@@ -299,8 +320,8 @@ export function getAsmOpcode(opcode: string | undefined): AssemblyInstructionInf
 
         case "GET_LEN":
             return {
-                "html": "<p>Perform <code>STACK.append(len(STACK[-1]))</code>.</p>\n\n<p>Added in version 3.10.</p>\n\n",
-                "tooltip": "Perform STACK.append(len(STACK[-1])).",
+                "html": "<p>Perform <code>STACK.append(len(STACK[-1]))</code>. Used in <code>match</code> statements where\ncomparison with structure of pattern is needed.</p>\n\n<p>Added in version 3.10.</p>\n\n",
+                "tooltip": "Perform STACK.append(len(STACK[-1])). Used in match statements where\ncomparison with structure of pattern is needed.",
                 "url": "https://docs.python.org/3/library/dis.html#opcode-GET_LEN"
             };
 
@@ -313,7 +334,7 @@ export function getAsmOpcode(opcode: string | undefined): AssemblyInstructionInf
 
         case "HAVE_ARGUMENT":
             return {
-                "html": "<p>This is not really an opcode.  It identifies the dividing line between\nopcodes in the range [0,255] which don\u2019t use their argument and those\nthat do (<code>&lt; HAVE_ARGUMENT</code> and <code>&gt;= HAVE_ARGUMENT</code>, respectively).</p>\n<p>If your application uses pseudo instructions, use the <code>hasarg</code>\ncollection instead.</p>\n\n<p>Changed in version 3.6: Now every instruction has an argument, but opcodes <code>&lt; HAVE_ARGUMENT</code>\nignore it. Before, only opcodes <code>&gt;= HAVE_ARGUMENT</code> had an argument.</p>\n\n\n<p>Changed in version 3.12: Pseudo instructions were added to the <code>dis</code> module, and for them\nit is not true that comparison with <code>HAVE_ARGUMENT</code> indicates whether\nthey use their arg.</p>\n\n",
+                "html": "<p>This is not really an opcode.  It identifies the dividing line between\nopcodes in the range [0,255] which don\u2019t use their argument and those\nthat do (<code>&lt; HAVE_ARGUMENT</code> and <code>&gt;= HAVE_ARGUMENT</code>, respectively).</p>\n<p>If your application uses pseudo instructions or specialized instructions,\nuse the <code>hasarg</code> collection instead.</p>\n\n<p>Changed in version 3.6: Now every instruction has an argument, but opcodes <code>&lt; HAVE_ARGUMENT</code>\nignore it. Before, only opcodes <code>&gt;= HAVE_ARGUMENT</code> had an argument.</p>\n\n\n<p>Changed in version 3.12: Pseudo instructions were added to the <code>dis</code> module, and for them\nit is not true that comparison with <code>HAVE_ARGUMENT</code> indicates whether\nthey use their arg.</p>\n\n\n<p>Deprecated since version 3.13: Use <code>hasarg</code> instead.</p>\n\n",
                 "tooltip": "This is not really an opcode.  It identifies the dividing line between\nopcodes in the range [0,255] which don\u2019t use their argument and those\nthat do (< HAVE_ARGUMENT and >= HAVE_ARGUMENT, respectively).",
                 "url": "https://docs.python.org/3/library/dis.html#opcode-HAVE_ARGUMENT"
             };
@@ -374,13 +395,6 @@ export function getAsmOpcode(opcode: string | undefined): AssemblyInstructionInf
                 "url": "https://docs.python.org/3/library/dis.html#opcode-JUMP_NO_INTERRUPT"
             };
 
-        case "KW_NAMES":
-            return {
-                "html": "<p>Prefixes <code>CALL</code>.\nStores a reference to <code>co_consts[consti]</code> into an internal variable\nfor use by <code>CALL</code>. <code>co_consts[consti]</code> must be a tuple of strings.</p>\n\n<p>Added in version 3.11.</p>\n\n",
-                "tooltip": "Prefixes CALL.\nStores a reference to co_consts[consti] into an internal variable\nfor use by CALL. co_consts[consti] must be a tuple of strings.",
-                "url": "https://docs.python.org/3/library/dis.html#opcode-KW_NAMES"
-            };
-
         case "LIST_APPEND":
             return {
                 "html": "<p>Implements:</p>\n<pre>item = STACK.pop()\nlist.append(STACK[-i], item)\n</pre>\n\n<p>Used to implement list comprehensions.</p>\n",
@@ -404,7 +418,7 @@ export function getAsmOpcode(opcode: string | undefined): AssemblyInstructionInf
 
         case "LOAD_ATTR":
             return {
-                "html": "<p>If the low bit of <code>namei</code> is not set, this replaces <code>STACK[-1]</code> with\n<code>getattr(STACK[-1], co_names[namei&gt;&gt;1])</code>.</p>\n<p>If the low bit of <code>namei</code> is set, this will attempt to load a method named\n<code>co_names[namei&gt;&gt;1]</code> from the <code>STACK[-1]</code> object. <code>STACK[-1]</code> is popped.\nThis bytecode distinguishes two cases: if <code>STACK[-1]</code> has a method with the\ncorrect name, the bytecode pushes the unbound method and <code>STACK[-1]</code>.\n<code>STACK[-1]</code> will be used as the first argument (<code>self</code>) by <code>CALL</code>\nwhen calling the unbound method. Otherwise, <code>NULL</code> and the object returned by\nthe attribute lookup are pushed.</p>\n\n<p>Changed in version 3.12: If the low bit of <code>namei</code> is set, then a <code>NULL</code> or <code>self</code> is\npushed to the stack before the attribute or unbound method respectively.</p>\n\n",
+                "html": "<p>If the low bit of <code>namei</code> is not set, this replaces <code>STACK[-1]</code> with\n<code>getattr(STACK[-1], co_names[namei&gt;&gt;1])</code>.</p>\n<p>If the low bit of <code>namei</code> is set, this will attempt to load a method named\n<code>co_names[namei&gt;&gt;1]</code> from the <code>STACK[-1]</code> object. <code>STACK[-1]</code> is popped.\nThis bytecode distinguishes two cases: if <code>STACK[-1]</code> has a method with the\ncorrect name, the bytecode pushes the unbound method and <code>STACK[-1]</code>.\n<code>STACK[-1]</code> will be used as the first argument (<code>self</code>) by <code>CALL</code>\nor <code>CALL_KW</code> when calling the unbound method.\nOtherwise, <code>NULL</code> and the object returned by\nthe attribute lookup are pushed.</p>\n\n<p>Changed in version 3.12: If the low bit of <code>namei</code> is set, then a <code>NULL</code> or <code>self</code> is\npushed to the stack before the attribute or unbound method respectively.</p>\n\n",
                 "tooltip": "If the low bit of namei is not set, this replaces STACK[-1] with\ngetattr(STACK[-1], co_names[namei>>1]).",
                 "url": "https://docs.python.org/3/library/dis.html#opcode-LOAD_ATTR"
             };
@@ -418,8 +432,8 @@ export function getAsmOpcode(opcode: string | undefined): AssemblyInstructionInf
 
         case "LOAD_CLOSURE":
             return {
-                "html": "<p>Pushes a reference to the cell contained in slot <code>i</code> of the \u201cfast locals\u201d\nstorage.  The name of the variable is <code>co_fastlocalnames[i]</code>.</p>\n<p>Note that <code>LOAD_CLOSURE</code> is effectively an alias for <code>LOAD_FAST</code>.\nIt exists to keep bytecode a little more readable.</p>\n\n<p>Changed in version 3.11: <code>i</code> is no longer offset by the length of <code>co_varnames</code>.</p>\n\n",
-                "tooltip": "Pushes a reference to the cell contained in slot i of the \u201cfast locals\u201d\nstorage.  The name of the variable is co_fastlocalnames[i].",
+                "html": "<p>Pushes a reference to the cell contained in slot <code>i</code> of the \u201cfast locals\u201d\nstorage.</p>\n<p>Note that <code>LOAD_CLOSURE</code> is replaced with <code>LOAD_FAST</code> in the assembler.</p>\n\n<p>Changed in version 3.13: This opcode is now a pseudo-instruction.</p>\n\n",
+                "tooltip": "Pushes a reference to the cell contained in slot i of the \u201cfast locals\u201d\nstorage.",
                 "url": "https://docs.python.org/3/library/dis.html#opcode-LOAD_CLOSURE"
             };
 
@@ -458,10 +472,17 @@ export function getAsmOpcode(opcode: string | undefined): AssemblyInstructionInf
                 "url": "https://docs.python.org/3/library/dis.html#opcode-LOAD_FAST_CHECK"
             };
 
+        case "LOAD_FAST_LOAD_FAST":
+            return {
+                "html": "<p>Pushes references to <code>co_varnames[var_nums &gt;&gt; 4]</code> and\n<code>co_varnames[var_nums &amp; 15]</code> onto the stack.</p>\n\n<p>Added in version 3.13.</p>\n\n",
+                "tooltip": "Pushes references to co_varnames[var_nums >> 4] and\nco_varnames[var_nums & 15] onto the stack.",
+                "url": "https://docs.python.org/3/library/dis.html#opcode-LOAD_FAST_LOAD_FAST"
+            };
+
         case "LOAD_FROM_DICT_OR_DEREF":
             return {
-                "html": "<p>Pops a mapping off the stack and looks up the name associated with\nslot <code>i</code> of the \u201cfast locals\u201d storage in this mapping.\nIf the name is not found there, loads it from the cell contained in\nslot <code>i</code>, similar to <code>LOAD_DEREF</code>. This is used for loading\nfree variables in class bodies (which previously used\n<code>LOAD_CLASSDEREF</code>) and in\nannotation scopes within class bodies.</p>\n\n<p>Added in version 3.12.</p>\n\n",
-                "tooltip": "Pops a mapping off the stack and looks up the name associated with\nslot i of the \u201cfast locals\u201d storage in this mapping.\nIf the name is not found there, loads it from the cell contained in\nslot i, similar to LOAD_DEREF. This is used for loading\nfree variables in class bodies (which previously used\nLOAD_CLASSDEREF) and in\nannotation scopes within class bodies.",
+                "html": "<p>Pops a mapping off the stack and looks up the name associated with\nslot <code>i</code> of the \u201cfast locals\u201d storage in this mapping.\nIf the name is not found there, loads it from the cell contained in\nslot <code>i</code>, similar to <code>LOAD_DEREF</code>. This is used for loading\nclosure variables in class bodies (which previously used\n<code>LOAD_CLASSDEREF</code>) and in\nannotation scopes within class bodies.</p>\n\n<p>Added in version 3.12.</p>\n\n",
+                "tooltip": "Pops a mapping off the stack and looks up the name associated with\nslot i of the \u201cfast locals\u201d storage in this mapping.\nIf the name is not found there, loads it from the cell contained in\nslot i, similar to LOAD_DEREF. This is used for loading\nclosure variables in class bodies (which previously used\nLOAD_CLASSDEREF) and in\nannotation scopes within class bodies.",
                 "url": "https://docs.python.org/3/library/dis.html#opcode-LOAD_FROM_DICT_OR_DEREF"
             };
 
@@ -502,7 +523,7 @@ export function getAsmOpcode(opcode: string | undefined): AssemblyInstructionInf
 
         case "LOAD_SUPER_ATTR":
             return {
-                "html": "<p>This opcode implements <code>super()</code>, both in its zero-argument and\ntwo-argument forms (e.g. <code>super().method()</code>, <code>super().attr</code> and\n<code>super(cls, self).method()</code>, <code>super(cls, self).attr</code>).</p>\n<p>It pops three values from the stack (from top of stack down):\n- <code>self</code>: the first argument to the current method\n-  <code>cls</code>: the class within which the current method was defined\n-  the global <code>super</code></p>\n<p>With respect to its argument, it works similarly to <code>LOAD_ATTR</code>,\nexcept that <code>namei</code> is shifted left by 2 bits instead of 1.</p>\n<p>The low bit of <code>namei</code> signals to attempt a method load, as with\n<code>LOAD_ATTR</code>, which results in pushing <code>NULL</code> and the loaded method.\nWhen it is unset a single value is pushed to the stack.</p>\n<p>The second-low bit of <code>namei</code>, if set, means that this was a two-argument\ncall to <code>super()</code> (unset means zero-argument).</p>\n\n<p>Added in version 3.12.</p>\n\n",
+                "html": "<p>This opcode implements <code>super()</code>, both in its zero-argument and\ntwo-argument forms (e.g. <code>super().method()</code>, <code>super().attr</code> and\n<code>super(cls, self).method()</code>, <code>super(cls, self).attr</code>).</p>\n<p>It pops three values from the stack (from top of stack down):</p>\n<ul>\n<li><p><code>self</code>: the first argument to the current method</p></li>\n<li><p><code>cls</code>: the class within which the current method was defined</p></li>\n<li><p>the global <code>super</code></p></li>\n</ul>\n<p>With respect to its argument, it works similarly to <code>LOAD_ATTR</code>,\nexcept that <code>namei</code> is shifted left by 2 bits instead of 1.</p>\n<p>The low bit of <code>namei</code> signals to attempt a method load, as with\n<code>LOAD_ATTR</code>, which results in pushing <code>NULL</code> and the loaded method.\nWhen it is unset a single value is pushed to the stack.</p>\n<p>The second-low bit of <code>namei</code>, if set, means that this was a two-argument\ncall to <code>super()</code> (unset means zero-argument).</p>\n\n<p>Added in version 3.12.</p>\n\n",
                 "tooltip": "This opcode implements super(), both in its zero-argument and\ntwo-argument forms (e.g. super().method(), super().attr and\nsuper(cls, self).method(), super(cls, self).attr).",
                 "url": "https://docs.python.org/3/library/dis.html#opcode-LOAD_SUPER_ATTR"
             };
@@ -516,8 +537,8 @@ export function getAsmOpcode(opcode: string | undefined): AssemblyInstructionInf
 
         case "MAKE_FUNCTION":
             return {
-                "html": "<p>Pushes a new function object on the stack.  From bottom to top, the consumed\nstack must consist of values if the argument carries a specified flag value</p>\n<ul>\n<li><p><code>0x01</code> a tuple of default values for positional-only and\npositional-or-keyword parameters in positional order</p></li>\n<li><p><code>0x02</code> a dictionary of keyword-only parameters\u2019 default values</p></li>\n<li><p><code>0x04</code> a tuple of strings containing parameters\u2019 annotations</p></li>\n<li><p><code>0x08</code> a tuple containing cells for free variables, making a closure</p></li>\n<li><p>the code associated with the function (at <code>STACK[-1]</code>)</p></li>\n</ul>\n\n<p>Changed in version 3.10: Flag value <code>0x04</code> is a tuple of strings instead of dictionary</p>\n\n\n<p>Changed in version 3.11: Qualified name at <code>STACK[-1]</code> was removed.</p>\n\n",
-                "tooltip": "Pushes a new function object on the stack.  From bottom to top, the consumed\nstack must consist of values if the argument carries a specified flag value",
+                "html": "<p>Pushes a new function object on the stack built from the code object at <code>STACK[-1]</code>.</p>\n\n<p>Changed in version 3.10: Flag value <code>0x04</code> is a tuple of strings instead of dictionary</p>\n\n\n<p>Changed in version 3.11: Qualified name at <code>STACK[-1]</code> was removed.</p>\n\n\n<p>Changed in version 3.13: Extra function attributes on the stack, signaled by oparg flags, were\nremoved. They now use <code>SET_FUNCTION_ATTRIBUTE</code>.</p>\n\n",
+                "tooltip": "Pushes a new function object on the stack built from the code object at STACK[-1].",
                 "url": "https://docs.python.org/3/library/dis.html#opcode-MAKE_FUNCTION"
             };
 
@@ -579,28 +600,28 @@ export function getAsmOpcode(opcode: string | undefined): AssemblyInstructionInf
 
         case "POP_JUMP_IF_FALSE":
             return {
-                "html": "<p>If <code>STACK[-1]</code> is false, increments the bytecode counter by delta.\n<code>STACK[-1]</code> is popped.</p>\n\n<p>Changed in version 3.11: The oparg is now a relative delta rather than an absolute target.\nThis opcode is a pseudo-instruction, replaced in final bytecode by\nthe directed versions (forward/backward).</p>\n\n\n<p>Changed in version 3.12: This is no longer a pseudo-instruction.</p>\n\n",
+                "html": "<p>If <code>STACK[-1]</code> is false, increments the bytecode counter by delta.\n<code>STACK[-1]</code> is popped.</p>\n\n<p>Changed in version 3.11: The oparg is now a relative delta rather than an absolute target.\nThis opcode is a pseudo-instruction, replaced in final bytecode by\nthe directed versions (forward/backward).</p>\n\n\n<p>Changed in version 3.12: This is no longer a pseudo-instruction.</p>\n\n\n<p>Changed in version 3.13: This instruction now requires an exact <code>bool</code> operand.</p>\n\n",
                 "tooltip": "If STACK[-1] is false, increments the bytecode counter by delta.\nSTACK[-1] is popped.",
                 "url": "https://docs.python.org/3/library/dis.html#opcode-POP_JUMP_IF_FALSE"
             };
 
         case "POP_JUMP_IF_NONE":
             return {
-                "html": "<p>If <code>STACK[-1]</code> is <code>None</code>, increments the bytecode counter by delta.\n<code>STACK[-1]</code> is popped.</p>\n<p>This opcode is a pseudo-instruction, replaced in final bytecode by\nthe directed versions (forward/backward).</p>\n\n<p>Added in version 3.11.</p>\n\n\n<p>Changed in version 3.12: This is no longer a pseudo-instruction.</p>\n\n",
+                "html": "<p>If <code>STACK[-1]</code> is <code>None</code>, increments the bytecode counter by delta.\n<code>STACK[-1]</code> is popped.</p>\n\n<p>Added in version 3.11.</p>\n\n\n<p>Changed in version 3.12: This is no longer a pseudo-instruction.</p>\n\n",
                 "tooltip": "If STACK[-1] is None, increments the bytecode counter by delta.\nSTACK[-1] is popped.",
                 "url": "https://docs.python.org/3/library/dis.html#opcode-POP_JUMP_IF_NONE"
             };
 
         case "POP_JUMP_IF_NOT_NONE":
             return {
-                "html": "<p>If <code>STACK[-1]</code> is not <code>None</code>, increments the bytecode counter by delta.\n<code>STACK[-1]</code> is popped.</p>\n<p>This opcode is a pseudo-instruction, replaced in final bytecode by\nthe directed versions (forward/backward).</p>\n\n<p>Added in version 3.11.</p>\n\n\n<p>Changed in version 3.12: This is no longer a pseudo-instruction.</p>\n\n",
+                "html": "<p>If <code>STACK[-1]</code> is not <code>None</code>, increments the bytecode counter by delta.\n<code>STACK[-1]</code> is popped.</p>\n\n<p>Added in version 3.11.</p>\n\n\n<p>Changed in version 3.12: This is no longer a pseudo-instruction.</p>\n\n",
                 "tooltip": "If STACK[-1] is not None, increments the bytecode counter by delta.\nSTACK[-1] is popped.",
                 "url": "https://docs.python.org/3/library/dis.html#opcode-POP_JUMP_IF_NOT_NONE"
             };
 
         case "POP_JUMP_IF_TRUE":
             return {
-                "html": "<p>If <code>STACK[-1]</code> is true, increments the bytecode counter by delta.\n<code>STACK[-1]</code> is popped.</p>\n\n<p>Changed in version 3.11: The oparg is now a relative delta rather than an absolute target.\nThis opcode is a pseudo-instruction, replaced in final bytecode by\nthe directed versions (forward/backward).</p>\n\n\n<p>Changed in version 3.12: This is no longer a pseudo-instruction.</p>\n\n",
+                "html": "<p>If <code>STACK[-1]</code> is true, increments the bytecode counter by delta.\n<code>STACK[-1]</code> is popped.</p>\n\n<p>Changed in version 3.11: The oparg is now a relative delta rather than an absolute target.\nThis opcode is a pseudo-instruction, replaced in final bytecode by\nthe directed versions (forward/backward).</p>\n\n\n<p>Changed in version 3.12: This is no longer a pseudo-instruction.</p>\n\n\n<p>Changed in version 3.13: This instruction now requires an exact <code>bool</code> operand.</p>\n\n",
                 "tooltip": "If STACK[-1] is true, increments the bytecode counter by delta.\nSTACK[-1] is popped.",
                 "url": "https://docs.python.org/3/library/dis.html#opcode-POP_JUMP_IF_TRUE"
             };
@@ -642,7 +663,7 @@ export function getAsmOpcode(opcode: string | undefined): AssemblyInstructionInf
 
         case "RESUME":
             return {
-                "html": "<p>A no-op. Performs internal tracing, debugging and optimization checks.</p>\n<p>The <code>where</code> operand marks where the <code>RESUME</code> occurs:</p>\n<ul>\n<li><p><code>0</code> The start of a function, which is neither a generator, coroutine\nnor an async generator</p></li>\n<li><p><code>1</code> After a <code>yield</code> expression</p></li>\n<li><p><code>2</code> After a <code>yield from</code> expression</p></li>\n<li><p><code>3</code> After an <code>await</code> expression</p></li>\n</ul>\n\n<p>Added in version 3.11.</p>\n\n",
+                "html": "<p>A no-op. Performs internal tracing, debugging and optimization checks.</p>\n<p>The <code>context</code> oparand consists of two parts. The lowest two bits\nindicate where the <code>RESUME</code> occurs:</p>\n<ul>\n<li><p><code>0</code> The start of a function, which is neither a generator, coroutine\nnor an async generator</p></li>\n<li><p><code>1</code> After a <code>yield</code> expression</p></li>\n<li><p><code>2</code> After a <code>yield from</code> expression</p></li>\n<li><p><code>3</code> After an <code>await</code> expression</p></li>\n</ul>\n<p>The next bit is <code>1</code> if the RESUME is at except-depth <code>1</code>, and <code>0</code>\notherwise.</p>\n\n<p>Added in version 3.11.</p>\n\n\n<p>Changed in version 3.13: The oparg value changed to include information about except-depth</p>\n\n",
                 "tooltip": "A no-op. Performs internal tracing, debugging and optimization checks.",
                 "url": "https://docs.python.org/3/library/dis.html#opcode-RESUME"
             };
@@ -710,6 +731,13 @@ export function getAsmOpcode(opcode: string | undefined): AssemblyInstructionInf
                 "url": "https://docs.python.org/3/library/dis.html#opcode-SET_ADD"
             };
 
+        case "SET_FUNCTION_ATTRIBUTE":
+            return {
+                "html": "<p>Sets an attribute on a function object. Expects the function at <code>STACK[-1]</code>\nand the attribute value to set at <code>STACK[-2]</code>; consumes both and leaves the\nfunction at <code>STACK[-1]</code>. The flag determines which attribute to set:</p>\n<ul>\n<li><p><code>0x01</code> a tuple of default values for positional-only and\npositional-or-keyword parameters in positional order</p></li>\n<li><p><code>0x02</code> a dictionary of keyword-only parameters\u2019 default values</p></li>\n<li><p><code>0x04</code> a tuple of strings containing parameters\u2019 annotations</p></li>\n<li><p><code>0x08</code> a tuple containing cells for free variables, making a closure</p></li>\n</ul>\n\n<p>Added in version 3.13.</p>\n\n",
+                "tooltip": "Sets an attribute on a function object. Expects the function at STACK[-1]\nand the attribute value to set at STACK[-2]; consumes both and leaves the\nfunction at STACK[-1]. The flag determines which attribute to set",
+                "url": "https://docs.python.org/3/library/dis.html#opcode-SET_FUNCTION_ATTRIBUTE"
+            };
+
         case "SET_UPDATE":
             return {
                 "html": "<p>Implements:</p>\n<pre>seq = STACK.pop()\nset.update(STACK[-i], seq)\n</pre>\n\n<p>Used to build sets.</p>\n\n<p>Added in version 3.9.</p>\n\n",
@@ -736,6 +764,20 @@ export function getAsmOpcode(opcode: string | undefined): AssemblyInstructionInf
                 "html": "<p>Stores <code>STACK.pop()</code> into the local <code>co_varnames[var_num]</code>.</p>\n",
                 "tooltip": "Stores STACK.pop() into the local co_varnames[var_num].",
                 "url": "https://docs.python.org/3/library/dis.html#opcode-STORE_FAST"
+            };
+
+        case "STORE_FAST_LOAD_FAST":
+            return {
+                "html": "<p>Stores <code>STACK.pop()</code> into the local <code>co_varnames[var_nums &gt;&gt; 4]</code>\nand pushes a reference to the local <code>co_varnames[var_nums &amp; 15]</code>\nonto the stack.</p>\n\n<p>Added in version 3.13.</p>\n\n",
+                "tooltip": "Stores STACK.pop() into the local co_varnames[var_nums >> 4]\nand pushes a reference to the local co_varnames[var_nums & 15]\nonto the stack.",
+                "url": "https://docs.python.org/3/library/dis.html#opcode-STORE_FAST_LOAD_FAST"
+            };
+
+        case "STORE_FAST_STORE_FAST":
+            return {
+                "html": "<p>Stores <code>STACK[-1]</code> into <code>co_varnames[var_nums &gt;&gt; 4]</code>\nand <code>STACK[-2]</code> into <code>co_varnames[var_nums &amp; 15]</code>.</p>\n\n<p>Added in version 3.13.</p>\n\n",
+                "tooltip": "Stores STACK[-1] into co_varnames[var_nums >> 4]\nand STACK[-2] into co_varnames[var_nums & 15].",
+                "url": "https://docs.python.org/3/library/dis.html#opcode-STORE_FAST_STORE_FAST"
             };
 
         case "STORE_GLOBAL":
@@ -773,6 +815,13 @@ export function getAsmOpcode(opcode: string | undefined): AssemblyInstructionInf
                 "url": "https://docs.python.org/3/library/dis.html#opcode-SWAP"
             };
 
+        case "TO_BOOL":
+            return {
+                "html": "<p>Implements <code>STACK[-1] = bool(STACK[-1])</code>.</p>\n\n<p>Added in version 3.13.</p>\n\n",
+                "tooltip": "Implements STACK[-1] = bool(STACK[-1]).",
+                "url": "https://docs.python.org/3/library/dis.html#opcode-TO_BOOL"
+            };
+
         case "UNARY_INVERT":
             return {
                 "html": "<p>Implements <code>STACK[-1] = ~STACK[-1]</code>.</p>\n",
@@ -789,7 +838,7 @@ export function getAsmOpcode(opcode: string | undefined): AssemblyInstructionInf
 
         case "UNARY_NOT":
             return {
-                "html": "<p>Implements <code>STACK[-1] = not STACK[-1]</code>.</p>\n",
+                "html": "<p>Implements <code>STACK[-1] = not STACK[-1]</code>.</p>\n\n<p>Changed in version 3.13: This instruction now requires an exact <code>bool</code> operand.</p>\n\n",
                 "tooltip": "Implements STACK[-1] = not STACK[-1].",
                 "url": "https://docs.python.org/3/library/dis.html#opcode-UNARY_NOT"
             };
@@ -817,7 +866,7 @@ export function getAsmOpcode(opcode: string | undefined): AssemblyInstructionInf
 
         case "YIELD_VALUE":
             return {
-                "html": "<p>Yields <code>STACK.pop()</code> from a generator.</p>\n\n<p>Changed in version 3.11: oparg set to be the stack depth.</p>\n\n\n<p>Changed in version 3.12: oparg set to be the exception block depth, for efficient closing of generators.</p>\n\n",
+                "html": "<p>Yields <code>STACK.pop()</code> from a generator.</p>\n\n<p>Changed in version 3.11: oparg set to be the stack depth.</p>\n\n\n<p>Changed in version 3.12: oparg set to be the exception block depth, for efficient closing of generators.</p>\n\n\n<p>Changed in version 3.13: oparg is <code>1</code> if this instruction is part of a yield-from or await, and <code>0</code>\notherwise.</p>\n\n",
                 "tooltip": "Yields STACK.pop() from a generator.",
                 "url": "https://docs.python.org/3/library/dis.html#opcode-YIELD_VALUE"
             };

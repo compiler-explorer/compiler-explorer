@@ -26,6 +26,7 @@ import fs from 'node:fs';
 
 import {beforeAll, describe, expect, it} from 'vitest';
 
+import {CompilationEnvironment} from '../lib/compilation-env.js';
 import {OdinCompiler} from '../lib/compilers/odin.js';
 import {CompilerOutputOptions} from '../types/features/filters.interfaces.js';
 import {LanguageKey} from '../types/languages.interfaces.js';
@@ -36,7 +37,7 @@ const languages = {
     odin: {id: 'odin' as LanguageKey},
 };
 
-let ce;
+let ce: CompilationEnvironment;
 const info = {
     exe: '/dev/null',
     remote: {

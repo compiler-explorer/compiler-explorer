@@ -23,6 +23,7 @@
 // POSSIBILITY OF SUCH DAMAGE.
 
 import $ from 'jquery';
+import {assert} from '../../shared/assert.js';
 import {CompilerInfo} from '../../types/compiler.interfaces.js';
 import {
     ConfiguredRuntimeTool,
@@ -32,7 +33,6 @@ import {
     RuntimeToolOptions,
     RuntimeToolType,
 } from '../../types/execution/execution.interfaces.js';
-import {assert} from '../assert.js';
 import * as BootstrapUtils from '../bootstrap-utils.js';
 import {localStorage} from '../local.js';
 import {options} from '../options.js';

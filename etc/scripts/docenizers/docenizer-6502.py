@@ -151,7 +151,7 @@ def parse_descriptions(line, line_num, cpu_type, instructions):
 
 
 def write_script(filename, instructions):
-    script = ["import {AssemblyInstructionInfo} from '../base.js';",
+    script = ["import type {AssemblyInstructionInfo} from '../../../types/assembly-docs.interfaces.js';",
               "",
               "export function getAsmOpcode(opcode: string | undefined): AssemblyInstructionInfo | undefined {",
               "    if (!opcode) return;",

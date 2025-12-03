@@ -1,10 +1,6 @@
 // Type your code here, or load an example.
 varying int square_even(varying int num) {
-    if (num % 2 == 0) {
-        return num * num;
-    } else {
-        return num;
-    }
+    return (num % 2 == 0)? num * num: num;
 }
 
 // Uncomment this if you would like to execute the code

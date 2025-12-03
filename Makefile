@@ -111,8 +111,10 @@ debug: prereqs ## Runs the site as a developer with full debugging; including li
 asm-docs:
 	$(MAKE) -C etc/scripts/docenizers || ( \
 		echo "==============================================================================="; \
-		echo "One of the docenizers failed to run, make sure you have installed the necessary"; \
-		echo "dependencies: pip3 install beautifulsoup4 pdfminer.six && npm install"; \
+		echo "One of the docenizers failed to run. The dependencies are managed by uv and"; \
+		echo "should be automatically installed. If you see this error, please check that:"; \
+		echo "  1. uv is available (it will be auto-installed if not)"; \
+		echo "  2. npm install has been run for the TypeScript docenizers"; \
 		echo "==============================================================================="; \
 		exit 1 \
 	)

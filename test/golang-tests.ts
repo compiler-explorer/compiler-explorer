@@ -26,17 +26,17 @@ import fs from 'node:fs';
 
 import {beforeAll, describe, expect, it} from 'vitest';
 
+import {CompilationEnvironment} from '../lib/compilation-env.js';
 import {GolangCompiler} from '../lib/compilers/golang.js';
 import * as utils from '../lib/utils.js';
 import {LanguageKey} from '../types/languages.interfaces.js';
-
 import {makeCompilationEnvironment, makeFakeCompilerInfo} from './utils.js';
 
 const languages = {
     go: {id: 'go' as LanguageKey},
 };
 
-let ce;
+let ce: CompilationEnvironment;
 const info = {
     exe: '/dev/null',
     remote: {
@@ -81,5 +81,45 @@ describe('GO asm tests', () => {
     });
     it('Rewrites PC jumps to labels', async () => {
         await testGoAsm('test/golang/labels');
+    });
+});
+
+describe('GO environment variables', () => {
+    beforeAll(() => {
+        ce = makeCompilationEnvironment({languages});
+    });
+
+    it('Derives GOROOT from compiler executable path', () => {
+        const compilerInfo = makeFakeCompilerInfo({
+            exe: '/opt/compiler-explorer/go1.20/bin/go',
+            lang: languages.go.id,
+        });
+        const compiler = new GolangCompiler(compilerInfo, ce);
+        const execOptions = compiler.getDefaultExecOptions();
+
+        expect(execOptions.env.GOROOT).toBe('/opt/compiler-explorer/go1.20');
+        // GOCACHE is not set in default exec options, it's set during runCompiler
+        expect(execOptions.env.GOCACHE).toBeUndefined();
+    });
+
+    it('Uses explicit GOROOT from properties when set', () => {
+        const compilerInfo = makeFakeCompilerInfo({
+            exe: '/opt/compiler-explorer/go1.20/bin/go',
+            lang: languages.go.id,
+            id: 'go120',
+        });
+        // Override compilerProps to return a specific GOROOT
+        const ceWithProps = makeCompilationEnvironment({
+            languages,
+            props: {
+                goroot: '/custom/goroot/path',
+            },
+        });
+        const compiler = new GolangCompiler(compilerInfo, ceWithProps);
+        const execOptions = compiler.getDefaultExecOptions();
+
+        expect(execOptions.env.GOROOT).toBe('/custom/goroot/path');
+        // GOCACHE is not set in default exec options, it's set during runCompiler
+        expect(execOptions.env.GOCACHE).toBeUndefined();
     });
 });

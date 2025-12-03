@@ -42,6 +42,7 @@ import {ClangirBackendOptions} from './clangir.interfaces.js';
 import {ConfiguredOverrides} from './compiler-overrides.interfaces.js';
 import {LLVMIrBackendOptions} from './ir.interfaces.js';
 import {OptPipelineBackendOptions, OptPipelineOutput} from './opt-pipeline-output.interfaces.js';
+import {YulBackendOptions} from './yul.interfaces.js';
 
 export type ActiveTool = {
     id: string;
@@ -116,6 +117,8 @@ export type CompilationRequestOptions = {
         produceHaskellCore?: boolean;
         produceHaskellStg?: boolean;
         produceHaskellCmm?: boolean;
+        produceClojureMacroExp?: boolean;
+        produceYul?: YulBackendOptions | null;
         cmakeArgs?: string;
         customOutputFilename?: string;
         overrides?: ConfiguredOverrides;
@@ -213,6 +216,10 @@ export type CompilationResult = {
     haskellStgOutput?: ResultLine[];
     haskellCmmOutput?: ResultLine[];
 
+    clojureMacroExpOutput?: ResultLine[];
+
+    yulOutput?: ResultLine[];
+
     forceBinaryView?: boolean;
 
     artifacts?: Artifact[];
@@ -222,6 +229,7 @@ export type CompilationResult = {
     retreivedFromCache?: boolean;
     retreivedFromCacheTime?: number;
     packageDownloadAndUnzipTime?: number;
+    packageStoreTime?: number;
     execTime?: number;
     processExecutionResultTime?: number;
     objdumpTime?: number;
@@ -302,7 +310,7 @@ export type SingleFileCacheKey = {
     filters?: any;
     tools: any[];
     libraries: SelectedLibraryVersion[];
-    files: any[];
+    files: FiledataPair[];
 };
 
 export type CmakeCacheKey = Omit<SingleFileCacheKey, 'tools'> & {

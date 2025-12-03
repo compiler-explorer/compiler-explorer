@@ -27,6 +27,7 @@ import path from 'node:path';
 import {beforeAll, describe, expect, it} from 'vitest';
 
 import {unwrap} from '../lib/assert.js';
+import {CompilationEnvironment} from '../lib/compilation-env.js';
 import {NimCompiler} from '../lib/compilers/nim.js';
 import {LanguageKey} from '../types/languages.interfaces.js';
 
@@ -37,7 +38,7 @@ const languages = {
 };
 
 describe('Nim', () => {
-    let ce;
+    let ce: CompilationEnvironment;
     const info = {
         exe: '/dev/null',
         remote: {

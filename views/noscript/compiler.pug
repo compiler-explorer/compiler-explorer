@@ -40,4 +40,6 @@ block content
         textarea#source(name='source' cols='70' rows='10' placeholder='Type your code here' autocorrect="off" autocapitalize="off" spellcheck="false")
           =session.source
       .form-pair-inlined
-        input(type='submit' value='Compile')
+        input.btn(type='submit' value='Compile')
+        | 
+        input.btn(type='submit' value='Get Shareable Link' formaction=`${httpRoot}noscript/share` formmethod='POST')

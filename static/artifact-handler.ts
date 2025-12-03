@@ -24,9 +24,9 @@
 
 import {Buffer} from 'buffer';
 import $ from 'jquery';
+import {assert, unwrap} from '../shared/assert.js';
 import {CompilationResult} from '../types/compilation/compilation.interfaces.js';
 import {Artifact, ArtifactType} from '../types/tool.interfaces.js';
-import {assert, unwrap} from './assert.js';
 import * as BootstrapUtils from './bootstrap-utils.js';
 import {Alert} from './widgets/alert.js';
 

@@ -43,10 +43,11 @@ import _ from 'underscore';
 // We re-assign this
 let jsCookie = JsCookie;
 
+import {unwrap} from '../shared/assert.js';
 import * as utils from '../shared/common-utils.js';
+import {unrisonify} from '../shared/url-serialization.js';
 import {ParseFiltersAndOutputOptions} from '../types/features/filters.interfaces.js';
 import {LanguageKey} from '../types/languages.interfaces.js';
-import {unwrap} from './assert.js';
 import * as BootstrapUtils from './bootstrap-utils.js';
 import {ComponentConfig, ComponentStateMap, GoldenLayoutConfig} from './components.interfaces.js';
 import * as Components from './components.js';
@@ -64,9 +65,9 @@ import {Presentation} from './presentation.js';
 import {Printerinator} from './print-view.js';
 import {setupRealDark, takeUsersOutOfRealDark} from './real-dark.js';
 import {Settings, SiteSettings} from './settings.js';
-import {Sharing} from './sharing.js';
+import {initialiseSharing} from './sharing.js';
 import {Themer} from './themes.js';
-import * as url from './url.js';
+import {deserialiseState} from './url.js';
 import {formatISODate, updateAndCalcTopBarHeight} from './utils.js';
 import {Alert} from './widgets/alert.js';
 import {HistoryWidget} from './widgets/history-widget.js';
@@ -256,7 +257,7 @@ function configFromEmbedded(embeddedUrl: string, defaultLangId: string) {
     // Old-style link?
     let params;
     try {
-        params = url.unrisonify(embeddedUrl);
+        params = unrisonify(embeddedUrl);
     } catch {
         document.write(
             '<div style="padding: 10px; background: #fa564e; color: black;">' +
@@ -285,7 +286,7 @@ function configFromEmbedded(embeddedUrl: string, defaultLangId: string) {
             ],
         };
     }
-    return url.deserialiseState(embeddedUrl);
+    return deserialiseState(embeddedUrl);
 }
 
 function fixBugsInConfig(config: Partial<GoldenLayout.Config & {activeItemIndex?: number}>): void {
@@ -332,7 +333,7 @@ function findConfig(
                 config = options.config;
             } else {
                 try {
-                    config = url.deserialiseState(window.location.hash.substring(1));
+                    config = deserialiseState(window.location.hash.substring(1));
                 } catch {
                     // #3518 Alert the user that the url is invalid
                     const alertSystem = new Alert();
@@ -779,8 +780,10 @@ function start() {
 
     History.trackHistory(layout);
     setupSiteTemplateWidgetButton(layout);
-    if (!options.embedded) new Sharing(layout);
+    initialiseSharing(layout, !!options.embedded);
     new Printerinator(hub, themer);
+
+    hub.layout.eventHub.emit('settingsChange', settings); // Ensure everyone knows the settings
 }
 
 $(start);

@@ -1,7 +1,5 @@
 # Running on Windows
 
-Contact: [Nicole Mazzuca](https://github.com/ubsan)
-
 ## Basic Setup
 
 The setup on Windows should be fairly trivial: the only prerequisite is node. If you haven't yet installed node yet, you
@@ -14,22 +12,31 @@ you want the Compiler Explorer (from here on, CE) to live:
 git clone https://github.com/compiler-explorer/compiler-explorer.git
 ```
 
-Then, we'll need to make a configuration file which points at your compilers and include directories. Copy
+For quick setup with MSVC compilers, you can use the CE Properties Wizard to automatically configure your compiler:
+
+```bat
+cd compiler-explorer
+etc\scripts\ce-properties-wizard\run.ps1 <path-to-cl.exe>
+```
+
+Alternatively, you can manually create a configuration file which points at your compilers and include directories. Copy
 [`docs\WindowsLocal.properties`](https://github.com/compiler-explorer/compiler-explorer/blob/main/docs/WindowsLocal.properties)
-to a new file, `etc\config\c++.local.properties`, and edit it, following the instructions in the comments. For a comprehensive explanation of the configuration system, see [Configuration.md](Configuration.md). If you have
-any questions, please ping me on discord.
+to a new file, `etc\config\c++.local.properties`, and edit it, following the instructions in the comments.
+
+For a comprehensive explanation of the configuration system, see [Configuration.md](Configuration.md).
 
 ## Actually Running the danged thing
 
 Once you've finished setting it up, you can `cd` into the `compiler-explorer` directory, then run
 
 ```bat
-npm install
-npm install webpack -g
-npm install webpack-cli -g
-npm update webpack
-npm start
+npm i
+npm run dev
 ```
+
+For debugging, use `npm run debug` instead of `npm run dev`.
+
+For production builds, use `npm start` (which runs webpack and starts the server in production mode).
 
 Eventually, you'll see something that looks like
 
@@ -41,39 +48,15 @@ info:   Listening on http://localhost:10240/
 info: =======================================
 ```
 
-Now point your favorite web browser at http://localhost:10240, and you should be done!
+Now point your favourite web browser at http://localhost:10240, and you should be done!
 
-You only have to run `npm install` the first time; every time after that, you should just be able to run `npm start`.
+You only have to run `npm i` the first time; every time after that, you should just be able to run `npm run dev` (or `npm start` for production).
 
 ## Debugging using VSCode
 
-Similar to [WindowsSubsystemForLinux](WindowsSubsystemForLinux.md), the following is a `launch.json` that works for
-attaching to an instance of CE that was launched with `npm run-script debugger` (launches with the `--inspect` flag).
+The easiest way to debug is to add a new terminal in VSCode called `JavaScript Debug Terminal` (via the terminal dropdown menu), then run `npm run dev` from that terminal. This will automatically attach the debugger.
 
-```json
-{
-  "version": "0.2.0",
-  "configurations": [
-    {
-      "type": "node",
-      "request": "attach",
-      "name": "Attach to Process",
-      "port": 9229,
-      "address": "localhost",
-      "localRoot": "${workspaceRoot}",
-      "remoteRoot": "C:\\Users\\${username}\\compiler-explorer"
-    }
-  ]
-}
-```
-
-Launch CE with `npm run-script debugger` to have node listen on port 9229.
-
-Because this only attaches to the process, as opposed to launching the process, in order to debug startup code you need
-to attach while npm is starting up. The `debugger` script also enables `debug` logging level so debug print statements
-can be seen during the CE startup and run.
-
-### Setting up binary mode and execution
+## Setting up binary mode and execution
 
 To create executables with Visual C++, it's required to install the Windows SDK.
 
@@ -115,3 +98,30 @@ objdumper=objdump
 ```
 
 _Note that the 32 bit version of MingW does not support 64 bit binaries._
+
+## Running a Production Build
+
+For a production deployment, you'll want to build a distribution package and run it with more control over node parameters.
+
+**Note:** This setup is intended for local or internal deployments only, not for publicly accessible websites.
+
+First, build the distribution using the provided script:
+
+```bat
+etc\scripts\build-dist-win.ps1
+```
+
+This creates a ready-to-deploy package in `out/dist/`. You can then run node directly with custom parameters instead of using npm scripts. For example, as done in the [infra repository](https://github.com/compiler-explorer/infra/blob/main/init/run.ps1):
+
+```bat
+node.exe --max_old_space_size=6000 -- app.js --dist --port 10240 --language c++
+```
+
+Common parameters you might want to configure:
+- `--max_old_space_size`: Node memory limit (in MB)
+- `--dist`: Run in distribution mode
+- `--port`: Server port (default: 10240)
+- `--language`: Specify which languages to enable
+- `--env`: Environment configuration to load
+
+See `node app.js --help` for all available options.

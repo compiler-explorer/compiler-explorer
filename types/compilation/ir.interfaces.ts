@@ -29,4 +29,5 @@ export type LLVMIrBackendOptions = {
     filterComments: boolean;
     noDiscardValueNames?: boolean;
     demangle: boolean;
+    showOptimized?: boolean;
 };

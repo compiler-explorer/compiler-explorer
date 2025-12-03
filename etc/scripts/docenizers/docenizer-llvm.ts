@@ -47,10 +47,15 @@ const getInstructionInfo = (instruction: string, root: Cheerio<Document>, $: Che
 
     // Extract the modified HTML content
     const modifiedHtml = myhtml$.html();
-    
+
+    // Instructions that have '-to' in their anchors are likely conversion
+    // instructions. The trailing '-to' has to be trimmed, as otherwise
+    // operations like 'fptrunc' won't find a match in the documentation.
+    const name = instruction.replace(new RegExp("-to$"),'')
+
     return {
         url,
-        name: instruction,
+        name,
         html: modifiedHtml,
         tooltip: $(overviewPars$).text()
     };
@@ -62,7 +67,7 @@ const $ = load(contents);
 const names = getInstructionList($.root(), $);
 const info = names.map((x) => getInstructionInfo(x, $.root(), $));
 
-console.log('import {AssemblyInstructionInfo} from \'../base.js\';');
+console.log('import type {AssemblyInstructionInfo} from \'../../../types/assembly-docs.interfaces.js\';');
 console.log('');
 console.log('export function getAsmOpcode(opcode: string | undefined): AssemblyInstructionInfo | undefined {');
 console.log('    if (!opcode) return;');

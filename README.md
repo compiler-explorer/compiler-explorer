@@ -28,7 +28,7 @@ layout is configurable (thanks to [GoldenLayout](https://www.golden-layout.com/)
 
 Try out at [godbolt.org](https://godbolt.org), or [run your own local instance](#running-a-local-instance). An overview
 of what the site lets you achieve, why it's useful, and how to use it is
-[available here](docs/WhatIsCompilerExplorer.md).
+[available here](docs/WhatIsCompilerExplorer.md), or in [this talk](https://www.youtube.com/watch?v=_9sGKcvT-TA).
 
 **Compiler Explorer** follows a [Code of Conduct](CODE_OF_CONDUCT.md) which aims to foster an open and welcoming
 environment.
@@ -109,6 +109,11 @@ how to add new compilers or languages to the site.
 If you want to point it at your own GCC or similar binaries, either edit the `etc/config/LANG.defaults.properties` or
 else make a new one with the name `LANG.local.properties`, substituting `LANG` as needed. `*.local.properties` files
 have the highest priority when loading properties.
+
+For a quick and easy way to add local compilers, use the 
+[CE Properties Wizard](etc/scripts/ce-properties-wizard/) which automatically detects and configures compilers 
+for [30+ languages](etc/scripts/ce-properties-wizard/README.md#supported-languages). 
+See [Adding a Compiler](docs/AddingACompiler.md) for more details.
 
 If you want to support multiple compilers and languages like [godbolt.org](https://godbolt.org), you can use the
 `bin/ce_install install compilers` command in the [infra](https://github.com/compiler-explorer/infra) project to install

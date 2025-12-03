@@ -38,7 +38,7 @@ describe('Health checks', () => {
         const compileHandlerMock = {
             hasLanguages: () => true,
         };
-        compilationQueue = new CompilationQueue(1, 0, 0);
+        compilationQueue = new CompilationQueue(1, 1000 * 1000, 1000 * 1000);
         app = express();
         const controller = new HealthcheckController(compilationQueue, null, compileHandlerMock, false);
         app.use(controller.createRouter());
@@ -67,7 +67,7 @@ describe('Health checks without lang/comp', () => {
         const compileHandlerMock = {
             hasLanguages: () => false,
         };
-        compilationQueue = new CompilationQueue(1, 0, 0);
+        compilationQueue = new CompilationQueue(1, 1000 * 1000, 1000 * 1000);
         app = express();
         const controller = new HealthcheckController(compilationQueue, null, compileHandlerMock, false);
         app.use(controller.createRouter());
@@ -86,7 +86,7 @@ describe('Health checks without lang/comp but in execution worker mode', () => {
         const compileHandlerMock = {
             hasLanguages: () => false,
         };
-        compilationQueue = new CompilationQueue(1, 0, 0);
+        compilationQueue = new CompilationQueue(1, 1000 * 1000, 1000 * 1000);
         app = express();
         const controller = new HealthcheckController(compilationQueue, null, compileHandlerMock, true);
         app.use(controller.createRouter());
@@ -105,7 +105,7 @@ describe('Health checks on disk', () => {
         const compileHandlerMock = {
             hasLanguages: () => true,
         };
-        const compilationQueue = new CompilationQueue(1, 0, 0);
+        const compilationQueue = new CompilationQueue(1, 1000 * 1000, 1000 * 1000);
 
         healthyApp = express();
         const hc1 = new HealthcheckController(compilationQueue, '/fake/.health', compileHandlerMock, false);

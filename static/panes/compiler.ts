@@ -72,15 +72,16 @@ import {PPOptions} from './pp-view.interfaces.js';
 import IEditorMouseEvent = editor.IEditorMouseEvent;
 
 import fileSaver from 'file-saver';
+import {unwrap, unwrapString} from '../../shared/assert.js';
 import {escapeHTML, splitArguments} from '../../shared/common-utils.js';
 import {ClangirBackendOptions} from '../../types/compilation/clangir.interfaces.js';
 import {LLVMIrBackendOptions} from '../../types/compilation/ir.interfaces.js';
+import {YulBackendOptions} from '../../types/compilation/yul.interfaces.js';
 import {CompilerOutputOptions} from '../../types/features/filters.interfaces.js';
 import {InstructionSet} from '../../types/instructionsets.js';
 import {LanguageKey} from '../../types/languages.interfaces.js';
 import {Tool} from '../../types/tool.interfaces.js';
 import {ArtifactHandler} from '../artifact-handler.js';
-import {unwrap, unwrapString} from '../assert.js';
 import {ICompilerShared} from '../compiler-shared.interfaces.js';
 import {CompilerShared} from '../compiler-shared.js';
 import {SourceAndFiles} from '../download-service.js';
@@ -193,6 +194,8 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
     private haskellCoreButton: JQuery<HTMLButtonElement>;
     private haskellStgButton: JQuery<HTMLButtonElement>;
     private haskellCmmButton: JQuery<HTMLButtonElement>;
+    private clojureMacroExpButton: JQuery<HTMLButtonElement>;
+    private yulButton: JQuery<HTMLButtonElement>;
     private gccDumpButton: JQuery<HTMLButtonElement>;
     private cfgButton: JQuery<HTMLButtonElement>;
     private explainButton: JQuery<HTMLButtonElement>;
@@ -269,9 +272,12 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
     private haskellCoreViewOpen: boolean;
     private haskellStgViewOpen: boolean;
     private haskellCmmViewOpen: boolean;
+    private clojureMacroExpViewOpen: boolean;
+    private yulViewOpen: boolean;
     private ppOptions: PPOptions;
     private llvmIrOptions: LLVMIrBackendOptions;
     private clangirOptions: ClangirBackendOptions;
+    private yulOptions: YulBackendOptions;
     private optPipelineOptions: OptPipelineBackendOptions;
     private isOutputOpened: boolean;
     private mouseMoveThrottledFunction?: ((e: monaco.editor.IEditorMouseEvent) => void) & _.Cancelable;
@@ -623,6 +629,28 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
             );
         };
 
+        const createClojureMacroExpView = () => {
+            return Components.getClojureMacroExpViewWith(
+                this.id,
+                this.source,
+                this.lastResult?.clojureMacroExpOutput,
+                this.getCompilerName(),
+                this.sourceEditorId ?? 0,
+                this.sourceTreeId ?? 0,
+            );
+        };
+
+        const createYulView = () => {
+            return Components.getYulViewWith(
+                this.id,
+                this.source,
+                this.lastResult?.yulOutput,
+                this.getCompilerName(),
+                this.sourceEditorId ?? 0,
+                this.sourceTreeId ?? 0,
+            );
+        };
+
         const createGccDumpView = () => {
             return Components.getGccDumpViewWith(
                 this.id,
@@ -894,6 +922,29 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
                 this.hub.findParentRowOrColumn(this.container.parent) ||
                 this.container.layoutManager.root.contentItems[0];
             insertPoint.addChild(createRustHirView());
+        });
+
+        createDragSource(this.container.layoutManager, this.clojureMacroExpButton, () =>
+            createClojureMacroExpView(),
+        ).on('dragStart', hidePaneAdder);
+
+        this.clojureMacroExpButton.on('click', () => {
+            const insertPoint =
+                this.hub.findParentRowOrColumn(this.container.parent) ||
+                this.container.layoutManager.root.contentItems[0];
+            insertPoint.addChild(createClojureMacroExpView());
+        });
+
+        createDragSource(this.container.layoutManager, this.yulButton, () => createYulView()).on(
+            'dragStart',
+            hidePaneAdder,
+        );
+
+        this.yulButton.on('click', () => {
+            const insertPoint =
+                this.hub.findParentRowOrColumn(this.container.parent) ||
+                this.container.layoutManager.root.contentItems[0];
+            insertPoint.addChild(createYulView());
         });
 
         createDragSource(this.container.layoutManager, this.gccDumpButton, () => createGccDumpView()).on(
@@ -1291,6 +1342,8 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
                 produceHaskellCore: this.haskellCoreViewOpen,
                 produceHaskellStg: this.haskellStgViewOpen,
                 produceHaskellCmm: this.haskellCmmViewOpen,
+                produceClojureMacroExp: this.clojureMacroExpViewOpen,
+                produceYul: this.yulViewOpen ? this.yulOptions : null,
                 overrides: this.getCurrentState().overrides,
             },
             filters: this.getEffectiveFilters(),
@@ -2186,6 +2239,45 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
         }
     }
 
+    onClojureMacroExpViewOpened(id: number): void {
+        if (this.id === id) {
+            this.clojureMacroExpButton.prop('disabled', true);
+            this.clojureMacroExpViewOpen = true;
+            this.compile();
+        }
+    }
+
+    onClojureMacroExpViewClosed(id: number): void {
+        if (this.id === id) {
+            this.clojureMacroExpButton.prop('disabled', false);
+            this.clojureMacroExpViewOpen = false;
+        }
+    }
+
+    onYulViewOpened(id: number): void {
+        if (this.id === id) {
+            this.yulButton.prop('disabled', true);
+            this.yulViewOpen = true;
+            this.compile();
+        }
+    }
+
+    onYulViewClosed(id: number): void {
+        if (this.id === id) {
+            this.yulButton.prop('disabled', false);
+            this.yulViewOpen = false;
+        }
+    }
+
+    onYulViewOptionsUpdated(id: number, options: YulBackendOptions, recompile: boolean): void {
+        if (this.id === id) {
+            this.yulOptions = options;
+            if (recompile) {
+                this.compile();
+            }
+        }
+    }
+
     onGccDumpUIInit(id: number): void {
         if (this.id === id) {
             this.compile();
@@ -2374,6 +2466,8 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
         this.haskellCoreButton = this.domRoot.find('.btn.view-haskellCore');
         this.haskellStgButton = this.domRoot.find('.btn.view-haskellStg');
         this.haskellCmmButton = this.domRoot.find('.btn.view-haskellCmm');
+        this.clojureMacroExpButton = this.domRoot.find('.btn.view-clojuremacroexp');
+        this.yulButton = this.domRoot.find('.btn.view-yul');
         this.gccDumpButton = this.domRoot.find('.btn.view-gccdump');
         this.cfgButton = this.domRoot.find('.btn.view-cfg');
         this.explainButton = this.domRoot.find('.btn.view-explain');
@@ -2657,6 +2751,8 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
         this.haskellCmmButton.prop('disabled', this.haskellCmmViewOpen);
         this.rustMacroExpButton.prop('disabled', this.rustMacroExpViewOpen);
         this.rustHirButton.prop('disabled', this.rustHirViewOpen);
+        this.clojureMacroExpButton.prop('disabled', this.clojureMacroExpViewOpen);
+        this.yulButton.prop('disabled', this.yulViewOpen);
         this.gccDumpButton.prop('disabled', this.gccDumpViewOpen);
         this.gnatDebugTreeButton.prop('disabled', this.gnatDebugTreeViewOpen);
         this.gnatDebugButton.prop('disabled', this.gnatDebugViewOpen);
@@ -2677,6 +2773,8 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
         this.haskellCoreButton.toggle(!!this.compiler.supportsHaskellCoreView);
         this.haskellStgButton.toggle(!!this.compiler.supportsHaskellStgView);
         this.haskellCmmButton.toggle(!!this.compiler.supportsHaskellCmmView);
+        this.clojureMacroExpButton.toggle(!!this.compiler.supportsClojureMacroExpView);
+        this.yulButton.toggle(!!this.compiler.supportsYulView);
         // TODO(jeremy-rifkin): Disable cfg button when binary mode is set?
         this.cfgButton.toggle(!!this.compiler.supportsCfg);
         this.gccDumpButton.toggle(!!this.compiler.supportsGccDump);
@@ -2853,6 +2951,11 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
         this.eventHub.on('haskellStgViewClosed', this.onHaskellStgViewClosed, this);
         this.eventHub.on('haskellCmmViewOpened', this.onHaskellCmmViewOpened, this);
         this.eventHub.on('haskellCmmViewClosed', this.onHaskellCmmViewClosed, this);
+        this.eventHub.on('clojureMacroExpViewOpened', this.onClojureMacroExpViewOpened, this);
+        this.eventHub.on('clojureMacroExpViewClosed', this.onClojureMacroExpViewClosed, this);
+        this.eventHub.on('yulViewOpened', this.onYulViewOpened, this);
+        this.eventHub.on('yulViewClosed', this.onYulViewClosed, this);
+        this.eventHub.on('yulViewOptionsUpdated', this.onYulViewOptionsUpdated, this);
         this.eventHub.on('outputOpened', this.onOutputOpened, this);
         this.eventHub.on('outputClosed', this.onOutputClosed, this);
 
