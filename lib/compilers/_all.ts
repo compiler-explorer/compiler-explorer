@@ -115,6 +115,7 @@ export {Msp430Compiler} from './msp430.js';
 export {NasmCompiler} from './nasm.js';
 export {NimCompiler} from './nim.js';
 export {NixCompiler} from './nix.js';
+export {NorcroftCompiler} from './norcroft.js';
 export {NumbaCompiler} from './numba.js';
 export {NvccCompiler} from './nvcc.js';
 export {NvcppCompiler} from './nvcpp.js';
