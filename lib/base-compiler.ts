@@ -2867,7 +2867,7 @@ export class BaseCompiler {
                         stderr: [],
                         okToCache: false,
                         code: cmakeStepResult.code,
-                        asm: [{text: '<Build failed>'}],
+                        asm: '<CMake configure step failed>',
                     };
                     result.result.compilationOptions = this.getUsedEnvironmentVariableFlags(makeExecParams);
                     compilationTimeHistogram.observe((performance.now() - start) / 1000);
@@ -2890,7 +2890,7 @@ export class BaseCompiler {
                         stderr: [],
                         okToCache: false,
                         code: makeStepResult.code,
-                        asm: [{text: '<Build failed>'}],
+                        asm: '<CMake build step failed>',
                     };
                     compilationTimeHistogram.observe((performance.now() - start) / 1000);
                     return result;
