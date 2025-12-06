@@ -107,7 +107,7 @@ import {RemoteExecutionQuery} from './execution/execution-query.js';
 import {matchesCurrentHost} from './execution/execution-triple.js';
 import {getExecutionEnvironmentByKey} from './execution/index.js';
 import {RemoteExecutionEnvironment} from './execution/remote-execution-env.js';
-import {ExternalParserBase} from './external-parsers/base.js';
+import {IExternalParser} from './external-parsers/external-parser.interface.js';
 import {getExternalParserByKey} from './external-parsers/index.js';
 import {ParsedRequest} from './handlers/compile.js';
 import {InstructionSets} from './instructionsets.js';
@@ -206,7 +206,7 @@ export class BaseCompiler {
     protected mtime: Date | null = null;
     protected cmakeBaseEnv: Record<string, string>;
     protected buildenvsetup: null | any;
-    protected externalparser: null | ExternalParserBase;
+    protected externalparser: null | IExternalParser;
     protected supportedLibraries?: Record<string, OptionsHandlerLibrary>;
     protected packager: Packager;
     protected defaultRpathFlag = '-Wl,-rpath,';
