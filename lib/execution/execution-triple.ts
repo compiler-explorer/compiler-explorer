@@ -68,6 +68,9 @@ class CurrentHostExecHelper {
         if (hostArch === 'ia32' && value === 'x86') {
             return true;
         }
+        if (hostArch === 'riscv64' && value === 'riscv64') {
+            return true;
+        }
 
         return false;
     }
