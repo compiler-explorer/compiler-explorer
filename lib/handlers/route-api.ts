@@ -225,16 +225,12 @@ export class RouteAPI {
             });
     }
 
-    escapeLine(req: express.Request, line: string) {
-        return line.replaceAll('&', '&amp;').replaceAll('<', '&lt;').replaceAll('>', '&gt;');
-    }
-
     filterCode(req: express.Request, code: string, lang: Language) {
         let lines = code.split('\n');
         if (lang.previewFilter !== null) {
             lines = lines.filter(line => !lang.previewFilter || !lang.previewFilter.test(line));
         }
-        return lines.map(line => this.escapeLine(req, line)).join('\n');
+        return lines.join('\n');
     }
 
     getMetaDataFromLink(req: express.Request, link: ExpandedShortLink | null, config: any) {
