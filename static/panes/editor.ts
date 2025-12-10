@@ -449,18 +449,22 @@ export class Editor extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Edit
 
     onEscapeKey(): void {
         if ((this.editor as any).vimInUse) {
-            const currentState = monacoVim.VimMode.Vim.maybeInitVimState_(this.vimMode);
+            // The Vim property exists at runtime but isn't in the type definitions
+            const Vim = (monacoVim.VimMode as any).Vim;
+            const currentState = Vim.maybeInitVimState_(this.vimMode);
             if (currentState.insertMode) {
-                monacoVim.VimMode.Vim.exitInsertMode(this.vimMode);
+                Vim.exitInsertMode(this.vimMode);
             } else if (currentState.visualMode) {
-                monacoVim.VimMode.Vim.exitVisualMode(this.vimMode, false);
+                Vim.exitVisualMode(this.vimMode, false);
             }
         }
     }
 
     onInsertKey(event: JQuery.TriggeredEvent<Document, undefined, Document, Document>): void {
         if ((this.editor as any).vimInUse) {
-            const currentState = monacoVim.VimMode.Vim.maybeInitVimState_(this.vimMode);
+            // The Vim property exists at runtime but isn't in the type definitions
+            const Vim = (monacoVim.VimMode as any).Vim;
+            const currentState = Vim.maybeInitVimState_(this.vimMode);
             if (!currentState.insertMode) {
                 const insertEvent = {
                     preventDefault: event.preventDefault,
