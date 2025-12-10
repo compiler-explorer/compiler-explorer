@@ -30,7 +30,7 @@ export class OdinAsmParser extends AsmParser {
     constructor(compilerProps?: PropertyGetter) {
         super(compilerProps);
 
-        this.labelDef = /^(?:.proc\s+)?([\w"$.@-]+):/i;
-        this.labelFindNonMips = /[".A-Z_a-z][\w"$.-]*/g;
+        this.labelDef = /^(?:\.proc\s+)?("(?:[^"]+)"|[\w$.@-]+(?:::[\w$.@-]+)*):/i;
+        this.labelFindNonMips = /"(?:[^"]+)"|[\w$.@-]+(?:::[\w$.@-]+)*/g;
     }
 }
