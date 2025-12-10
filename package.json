@@ -42,7 +42,7 @@
     "cross-env": "^10.1.0",
     "enhanced-ms": "^4.1.0",
     "events": "^3.3.0",
-    "express": "^5.1.0",
+    "express": "^5.2.0",
     "file-saver": "^2.0.5",
     "golden-layout": "^1.5.9",
     "http-proxy": "^1.18.1",
