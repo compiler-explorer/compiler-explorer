@@ -559,7 +559,7 @@ export function startWineInit() {
             setupOnError(stdout, 'stdout');
             setupOnError(stderr, 'stderr');
             const magicString = '!!EVERYTHING IS WORKING!!';
-            stdin.write(`echo ${magicString}`);
+            stdin.write(`echo ${magicString}\n`);
 
             let output = '';
             stdout.on('data', data => {
