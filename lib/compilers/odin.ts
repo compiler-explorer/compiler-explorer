@@ -8,6 +8,38 @@ import {CompilationEnvironment} from '../compilation-env.js';
 import {OdinAsmParser} from '../parsers/asm-parser-odin.js';
 import * as utils from '../utils.js';
 
+class OdinVersion {
+    year: number = 0;
+    month: number = 0;
+
+    constructor(version: string) {
+        const match = version.match(/(\d{4})-(\d{1,2})[a-zA-Z]*/);
+        if (!match) {
+            throw new Error(`Invalid version format: "${version}"`);
+        }
+
+        const year = Number(match[1]);
+        const month = Number(match[2]);
+
+        if (month < 1 || month > 12) {
+            throw new Error(`Invalid month in version: "${version}"`);
+        }
+
+        this.year = year;
+        this.month = month;
+    }
+
+    gte(version: OdinVersion) {
+        if (this.year > version.year) {
+            return true;
+        } else if (this.year === version.year) {
+            return this.month >= version.month;
+        } else {
+            return false;
+        }
+    }
+}
+
 export class OdinCompiler extends BaseCompiler {
     private clangPath?: string;
 
@@ -25,12 +57,19 @@ export class OdinCompiler extends BaseCompiler {
     }
 
     override optionsForFilter(filters: ParseFiltersAndOutputOptions, outputFilename: string) {
-        if (filters.execute || filters.binary) {
-            return ['-debug', '-keep-temp-files', `-out:${this.filename(outputFilename)}`];
+        const options: string[] = ['-debug', '-keep-temp-files', `-out:${this.filename(outputFilename)}`];
+
+        const version = new OdinVersion(this.compiler.version);
+        if (version.gte(new OdinVersion('dev-2025-02'))) {
+            options.push('-use-single-module');
         }
 
-        filters.preProcessLines = this.preProcessLines.bind(this);
-        return ['-build-mode:asm', '-debug', '-keep-temp-files', `-out:${this.filename(outputFilename)}`];
+        if (!(filters.execute || filters.binary)) {
+            filters.preProcessLines = this.preProcessLines.bind(this);
+            options.push('-build-mode:asm');
+        }
+
+        return options;
     }
 
     override orderArguments(
@@ -133,8 +172,9 @@ export class OdinCompiler extends BaseCompiler {
         let funcStart = -1;
         while (i < asmLines.length) {
             const line = asmLines[i];
-            // filter out __$ builtin functions
-            if (funcStart === -1 && line.startsWith('__$') && line.endsWith(':')) {
+            // filter out __$ and "__$" builtin functions
+            const hasBuiltinPrefix = line.startsWith('__$') || line.startsWith('"__$');
+            if (funcStart === -1 && hasBuiltinPrefix && line.endsWith(':')) {
                 // ensure there is cfi_startproc
                 for (let j = i; j < asmLines.length && j < i + 5; j++) {
                     if (asmLines[j].includes('.cfi_startproc')) {
