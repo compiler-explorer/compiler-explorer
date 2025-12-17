@@ -1,4 +1,4 @@
-body {
+@mixin terminal-colors {
     --terminal-black: #4f5666;
     --terminal-red: #f85757;
     --terminal-green: #50d750;
