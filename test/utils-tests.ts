@@ -247,49 +247,49 @@ describe('Pascal compiler output', () => {
 describe('Rust compiler output', () => {
     it('handles simple cases', () => {
         expect(utils.parseRustOutput('Line one\nLine two', 'bob.rs')).toEqual([{text: 'Line one'}, {text: 'Line two'}]);
-        expect(utils.parseRustOutput('Unrelated\nLine one\n --> bob.rs:1\nUnrelated', 'bob.rs')).toEqual([
+        expect(utils.parseRustOutput('Unrelated\nLine one\n --> bob.rs:1:0\nUnrelated', 'bob.rs')).toEqual([
             {text: 'Unrelated'},
             {
-                tag: {column: 0, line: 1, text: 'Line one', severity: 3, fixes: []},
+                tag: {file: 'bob.rs', column: 0, line: 1, text: 'Line one', severity: 3, fixes: []},
                 text: 'Line one',
             },
             {
-                tag: {column: 0, line: 1, text: '', severity: 3},
-                text: ' --> <source>:1',
+                tag: {file: 'bob.rs', column: 0, line: 1, text: '', severity: 3},
+                text: ' --> <source>:1:0',
             },
             {text: 'Unrelated'},
         ]);
         expect(utils.parseRustOutput('Line one\n --> bob.rs:1:5', 'bob.rs')).toEqual([
             {
-                tag: {column: 5, line: 1, text: 'Line one', severity: 3, fixes: []},
+                tag: {file: 'bob.rs', column: 5, line: 1, text: 'Line one', severity: 3, fixes: []},
                 text: 'Line one',
             },
             {
-                tag: {column: 5, line: 1, text: '', severity: 3},
+                tag: {file: 'bob.rs', column: 5, line: 1, text: '', severity: 3},
                 text: ' --> <source>:1:5',
             },
         ]);
         expect(utils.parseRustOutput('Multiple spaces\n   --> bob.rs:1:5', 'bob.rs')).toEqual([
             {
-                tag: {column: 5, line: 1, text: 'Multiple spaces', severity: 3, fixes: []},
+                tag: {file: 'bob.rs', column: 5, line: 1, text: 'Multiple spaces', severity: 3, fixes: []},
                 text: 'Multiple spaces',
             },
             {
-                tag: {column: 5, line: 1, text: '', severity: 3},
+                tag: {file: 'bob.rs', column: 5, line: 1, text: '', severity: 3},
                 text: '   --> <source>:1:5',
             },
         ]);
     });
 
     it('replaces all references to input source', () => {
-        expect(utils.parseRustOutput('error: Error in bob.rs\n --> bob.rs:1', 'bob.rs')).toEqual([
+        expect(utils.parseRustOutput('error: Error in bob.rs\n --> bob.rs:1:42', 'bob.rs')).toEqual([
             {
-                tag: {column: 0, line: 1, text: 'error: Error in <source>', severity: 3, fixes: []},
+                tag: {file: 'bob.rs', column: 42, line: 1, text: 'error: Error in <source>', severity: 3, fixes: []},
                 text: 'error: Error in <source>',
             },
             {
-                tag: {column: 0, line: 1, text: '', severity: 3},
-                text: ' --> <source>:1',
+                tag: {file: 'bob.rs', column: 42, line: 1, text: '', severity: 3},
+                text: ' --> <source>:1:42',
             },
         ]);
     });
@@ -297,11 +297,11 @@ describe('Rust compiler output', () => {
     it('treats <stdin> as if it were the compiler source', () => {
         expect(utils.parseRustOutput('error: <stdin> is sad\n --> <stdin>:120:25', 'bob.rs')).toEqual([
             {
-                tag: {column: 25, line: 120, text: 'error: <source> is sad', severity: 3, fixes: []},
+                tag: {file: 'bob.rs', column: 25, line: 120, text: 'error: <source> is sad', severity: 3, fixes: []},
                 text: 'error: <source> is sad',
             },
             {
-                tag: {column: 25, line: 120, text: '', severity: 3},
+                tag: {file: 'bob.rs', column: 25, line: 120, text: '', severity: 3},
                 text: ' --> <source>:120:25',
             },
         ]);
@@ -410,6 +410,68 @@ describe('Rust compiler output', () => {
                 text: ' --> <source>:42:27',
             },
             {text: '   = help: add `#![feature(num_midpoint_signed)]` to the crate attributes to enable'},
+        ]);
+    });
+
+    it('attaches filenames to errors from multiple files', () => {
+        // https://godbolt.org/z/nWE3PTeGf
+        expect(
+            utils.parseRustOutput(
+                `warning: function \`f1\` is never used
+ --> <source>:3:4
+
+warning: function \`f2\` is never used
+ --> /app/m.rs:1:4
+
+warning: 2 warnings emitted`,
+                'example.rs',
+            ),
+        ).toEqual([
+            {
+                text: 'warning: function `f1` is never used',
+                tag: {
+                    line: 3,
+                    column: 4,
+                    file: 'example.rs',
+                    severity: 2,
+                    text: 'warning: function `f1` is never used',
+                    fixes: [],
+                },
+            },
+            {
+                text: ' --> <source>:3:4',
+                tag: {
+                    line: 3,
+                    column: 4,
+                    file: 'example.rs',
+                    severity: 3,
+                    text: '',
+                },
+            },
+            {text: ''},
+            {
+                text: 'warning: function `f2` is never used',
+                tag: {
+                    line: 1,
+                    column: 4,
+                    file: 'm.rs',
+                    severity: 2,
+                    text: 'warning: function `f2` is never used',
+                    fixes: [],
+                },
+            },
+            {
+                text: ' --> /app/m.rs:1:4',
+                tag: {
+                    line: 1,
+                    column: 4,
+                    file: 'm.rs',
+                    severity: 3,
+                    text: '',
+                },
+            },
+            {text: ''},
+            {text: 'warning: 2 warnings emitted'},
         ]);
     });
 });
