@@ -144,8 +144,7 @@ type Assembly = {
 
 const COMPILING_PLACEHOLDER = '<Compiling...>';
 
-// Disable max line count only for the constructor. Turns out, it needs to do
-// quite a lot of things
+// Disable max line count only for the constructor. Turns out, it needs to do quite a lot of things
 
 const attSyntaxWarning = '***WARNING: The information shown pertains to Intel syntax.***';
 
@@ -3502,7 +3501,6 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
         if (cached) {
             if (cached.found) {
                 const cachedData = cached.data as AssemblyInstructionInfo;
-                // Return a copy with warnings added based on current syntax mode
                 return addAttWarningIfNeeded(cachedData);
             }
             throw new Error(cached.data as string);
