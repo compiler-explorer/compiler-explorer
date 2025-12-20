@@ -538,7 +538,7 @@ export class Executor extends Pane<ExecutorState> {
         const outElem = $('<pre class="card execution-stdoutstderr"></pre>').appendTo(element);
         output.forEach(obj => {
             // Bug #8152: output lines with only null characters should be rendered as empty lines
-            if (obj.text === '' || obj.text.replace(/\x00/g, '') === '') {
+            if (obj.text === '' || (obj.text.includes('\x00') && obj.text.replace(/\x00/g, '') === '')) {
                 this.addCompilerOutputLine('<br/>', outElem, undefined, undefined, false, null);
             } else {
                 const lineNumber = obj.tag ? obj.tag.line : obj.line;
