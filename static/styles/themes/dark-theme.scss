@@ -3,6 +3,8 @@
 
 html[data-theme='dark'] {
 
+@include ansi-dark.terminal-colors;
+
 ::-webkit-scrollbar {
     background: color.scale(#1e1e1e, $lightness: 10%);
 }
