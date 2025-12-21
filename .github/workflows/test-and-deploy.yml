@@ -116,7 +116,7 @@ jobs:
           export SENTRY_PROJECT=compiler-explorer
           npm run sentry -- releases new -p compiler-explorer "${{ needs.build_dist.outputs.release_name }}"
           npm run sentry -- releases set-commits --auto "${{ needs.build_dist.outputs.release_name }}"
-          npm run sentry -- releases files "${{ needs.build_dist.outputs.release_name }}" upload-sourcemaps out/dist/static
+          npm run sentry -- sourcemaps upload --release "${{ needs.build_dist.outputs.release_name }}" out/dist/static
       - name: Deploy
         uses: jakejarvis/s3-sync-action@master
         with:
