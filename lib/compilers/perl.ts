@@ -50,7 +50,10 @@ export class PerlCompiler extends BaseCompiler {
     }
 
     override async processAsm(result) {
-        const lineRe = /^\s{0,4}(\d+)(.*)/;
+        // only nextstates have line numbers
+        // state op parameters are (stash seq_no file:lineno)
+        const nextstateRe = /^(?:-|\w+)\s+<;> (?:ex-)?(?:next|db)state\([\w:]+ \d+ ([^\s:]+):(\d+)\)/;
+        const functionTopRe = /^(?:main program|main::\w+):/;
 
         const bytecodeLines = result.asm.split('\n');
 
@@ -59,13 +62,13 @@ export class PerlCompiler extends BaseCompiler {
         let sourceLoc: AsmResultSource | null = null;
 
         for (const line of bytecodeLines) {
-            const match = line.match(lineRe);
+            const match = line.match(nextstateRe);
 
             if (match) {
-                const lineno = Number.parseInt(match[1], 10);
+                const lineno = Number.parseInt(match[2], 10);
                 sourceLoc = {line: lineno, file: null};
                 lastLineNo = lineno;
-            } else if (line) {
+            } else if (line && !line.match(functionTopRe)) {
                 sourceLoc = {line: lastLineNo, file: null};
             } else {
                 sourceLoc = {line: null, file: null};
