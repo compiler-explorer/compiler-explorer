@@ -1,4 +1,4 @@
-void maxArray(double* x, double* y) {
+void maxArray(double* x, const double* y) {
     int i;
 
     for (i = 0; i < 65536; i++) {
