@@ -159,6 +159,10 @@ export class InstructionSets {
                 target: [],
                 path: [],
             },
+            mpy: {
+                target: [],
+                path: [],
+            },
             ptx: {
                 target: [],
                 path: [],
