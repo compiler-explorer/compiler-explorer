@@ -82,6 +82,7 @@ import {InstructionSet} from '../../types/instructionsets.js';
 import {LanguageKey} from '../../types/languages.interfaces.js';
 import {Tool} from '../../types/tool.interfaces.js';
 import {ArtifactHandler} from '../artifact-handler.js';
+import {AssemblySyntax} from '../assembly-syntax.js';
 import {ICompilerShared} from '../compiler-shared.interfaces.js';
 import {CompilerShared} from '../compiler-shared.js';
 import {SourceAndFiles} from '../download-service.js';
@@ -144,6 +145,8 @@ type Assembly = {
 const COMPILING_PLACEHOLDER = '<Compiling...>';
 
 // Disable max line count only for the constructor. Turns out, it needs to do quite a lot of things
+
+const attSyntaxWarning = '***WARNING: The information shown pertains to Intel syntax.***';
 
 export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, CompilerState> {
     private compilerService: CompilerService;
@@ -2817,6 +2820,12 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
         );
     }
 
+    asmSyntax(): AssemblySyntax {
+        return this.compiler?.supportsIntel && this.filters.isSet('intel') && this.compiler.intelAsm.includes('intel')
+            ? 'intel'
+            : 'att';
+    }
+
     handlePopularArgumentsResult(result: Record<string, {description: string}> | null): void {
         const popularArgumentsMenu = $(this.domRoot.find('div.populararguments div.dropdown-menu'));
 
@@ -3472,11 +3481,28 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
     public static async getAsmInfo(
         opcode: string,
         instructionSet: InstructionSet,
+        syntax: AssemblySyntax = 'intel',
     ): Promise<AssemblyInstructionInfo | undefined> {
         const cacheName = `asm/${instructionSet}/${opcode}`;
         const cached = OpcodeCache.get(cacheName);
+
+        // Helper to add AT&T syntax warning to opcode data without mutating cache
+        const addAttWarningIfNeeded = (data: AssemblyInstructionInfo): AssemblyInstructionInfo => {
+            if (syntax === 'att') {
+                return {
+                    ...data,
+                    tooltip: attSyntaxWarning + '\n\n' + data.tooltip,
+                    html: attSyntaxWarning + '<br><br>' + data.html,
+                };
+            }
+            return data;
+        };
+
         if (cached) {
-            if (cached.found) return cached.data as AssemblyInstructionInfo;
+            if (cached.found) {
+                const cachedData = cached.data as AssemblyInstructionInfo;
+                return addAttWarningIfNeeded(cachedData);
+            }
             throw new Error(cached.data as string);
         }
 
@@ -3484,7 +3510,7 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
         const body = await response.json();
         if (response.status === 200) {
             OpcodeCache.set(cacheName, {found: true, data: body});
-            return body;
+            return addAttWarningIfNeeded(body);
         }
         const error = (body as any).error;
         OpcodeCache.set(cacheName, {found: false, data: error});
@@ -3593,6 +3619,7 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
                     const response = await Compiler.getAsmInfo(
                         currentWord.word,
                         unwrap(this.recentInstructionSet || this.compiler.instructionSet),
+                        this.asmSyntax(),
                     );
                     if (!response) return;
                     this.decorations.asmToolTip = [
@@ -3649,12 +3676,13 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
             );
         }
 
-        function appendInfo(url: string): string {
+        function appendInfo(url: string, syntax: AssemblySyntax): string {
             return (
                 '<br><br>For more information, visit <a href="' +
                 url +
                 '" target="_blank" rel="noopener noreferrer">the ' +
                 opcode +
+                (syntax === 'att' ? syntaxWarning() : '') +
                 ' documentation <sup><small class="fas fa-external-link-alt opens-new-window"' +
                 ' title="Opens in a new window"></small></sup></a>.' +
                 '<br>If the documentation for this opcode is wrong or broken in some way, ' +
@@ -3666,14 +3694,20 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
             );
         }
 
+        function syntaxWarning(): string {
+            return `<br><br><b>${attSyntaxWarning}</b>`;
+        }
+
         try {
             if (this.compiler?.supportsAsmDocs) {
+                const asmSyntax = this.asmSyntax();
                 const asmHelp = await Compiler.getAsmInfo(
                     word.word,
                     unwrap(this.recentInstructionSet || this.compiler.instructionSet),
+                    asmSyntax,
                 );
                 if (asmHelp) {
-                    this.alertSystem.alert(opcode + ' help', asmHelp.html + appendInfo(asmHelp.url), {
+                    this.alertSystem.alert(opcode + ' help', asmHelp.html + appendInfo(asmHelp.url, asmSyntax), {
                         onClose: () => {
                             ed.focus();
                             ed.setPosition(pos);

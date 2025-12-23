@@ -170,4 +170,5 @@ From oldest to newest contributor, we would like to thank:
 - [LJ](https://github.com/elle-j)
 - [Frank Leon Rose](https://github.com/frankleonrose)
 - [Oguz Ulgen](https://github.com/oulgen)
-- [Josh Brice] (https://github.com/jjb0123)
+- [Josh Brice](https://github.com/jjb0123)
+- [Sean Garwood](https://github.com/sean-garwood)
