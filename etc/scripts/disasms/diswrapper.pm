@@ -42,10 +42,6 @@ CHECK {
     $filename
 	or die "diswrapper: Usage -Mdiswrapper,outputfilename";
     my $buf;
-    #local *STDOUT = *STDOUT;
-    #open my $save, ">&", \*STDOUT
-    #or die "diswrapper: Cannot save STDOUT: $!";
-    #open STDOUT, ">", \$buf;
 
     walk_output(\$buf);
     # build our own list of subs to dump
