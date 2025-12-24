@@ -5,3003 +5,3003 @@ export function getAsmOpcode(opcode: string | undefined): AssemblyInstructionInf
     switch (opcode.toLowerCase()) {
         case "aassign":
             return {
-                "html": "list assignment",
+                "html": "<p>list assignment</p>",
                 "tooltip": "list assignment",
                 "url": ""
             };
 
         case "abs":
             return {
-                "html": "abs",
+                "html": "<p>abs</p>",
                 "tooltip": "abs",
                 "url": ""
             };
 
         case "accept":
             return {
-                "html": "accept",
+                "html": "<p>accept</p>",
                 "tooltip": "accept",
                 "url": ""
             };
 
         case "add":
             return {
-                "html": "addition (+)",
+                "html": "<p>addition (+)</p>",
                 "tooltip": "addition (+)",
                 "url": ""
             };
 
         case "aeach":
             return {
-                "html": "each on array",
+                "html": "<p>each on array</p>",
                 "tooltip": "each on array",
                 "url": ""
             };
 
         case "aelem":
             return {
-                "html": "array element",
+                "html": "<p>array element</p>",
                 "tooltip": "array element",
                 "url": ""
             };
 
         case "aelemfast":
             return {
-                "html": "constant array element",
+                "html": "<p>constant array element</p>",
                 "tooltip": "constant array element",
                 "url": ""
             };
 
         case "aelemfast_lex":
             return {
-                "html": "constant lexical array element",
+                "html": "<p>constant lexical array element</p>",
                 "tooltip": "constant lexical array element",
                 "url": ""
             };
 
         case "aelemfastlex_store":
             return {
-                "html": "const lexical array element store",
+                "html": "<p>const lexical array element store</p>",
                 "tooltip": "const lexical array element store",
                 "url": ""
             };
 
         case "akeys":
             return {
-                "html": "keys on array",
+                "html": "<p>keys on array</p>",
                 "tooltip": "keys on array",
                 "url": ""
             };
 
         case "alarm":
             return {
-                "html": "alarm",
+                "html": "<p>alarm</p>",
                 "tooltip": "alarm",
                 "url": ""
             };
 
         case "allstart":
             return {
-                "html": "all",
+                "html": "<p>all</p>",
                 "tooltip": "all",
                 "url": ""
             };
 
         case "and":
             return {
-                "html": "logical and (&&)",
-                "tooltip": "logical and (&&)",
+                "html": "<p>logical and (&amp;&amp;)</p>",
+                "tooltip": "logical and (&amp;&amp;)",
                 "url": ""
             };
 
         case "andassign":
             return {
-                "html": "logical and assignment (&&=)",
-                "tooltip": "logical and assignment (&&=)",
+                "html": "<p>logical and assignment (&amp;&amp;=)</p>",
+                "tooltip": "logical and assignment (&amp;&amp;=)",
                 "url": ""
             };
 
         case "anoncode":
             return {
-                "html": "anonymous subroutine",
+                "html": "<p>anonymous subroutine</p>",
                 "tooltip": "anonymous subroutine",
                 "url": ""
             };
 
         case "anonconst":
             return {
-                "html": "anonymous constant",
+                "html": "<p>anonymous constant</p>",
                 "tooltip": "anonymous constant",
                 "url": ""
             };
 
         case "anonhash":
             return {
-                "html": "anonymous hash ({})",
+                "html": "<p>anonymous hash ({})</p>",
                 "tooltip": "anonymous hash ({})",
                 "url": ""
             };
 
         case "anonlist":
             return {
-                "html": "anonymous array ([])",
+                "html": "<p>anonymous array ([])</p>",
                 "tooltip": "anonymous array ([])",
                 "url": ""
             };
 
         case "anystart":
             return {
-                "html": "any",
+                "html": "<p>any</p>",
                 "tooltip": "any",
                 "url": ""
             };
 
         case "anywhile":
             return {
-                "html": "any/all iterator",
+                "html": "<p>any/all iterator</p>",
                 "tooltip": "any/all iterator",
                 "url": ""
             };
 
         case "argcheck":
             return {
-                "html": "check subroutine arguments",
+                "html": "<p>check subroutine arguments</p>",
                 "tooltip": "check subroutine arguments",
                 "url": ""
             };
 
         case "argdefelem":
             return {
-                "html": "subroutine argument default value",
+                "html": "<p>subroutine argument default value</p>",
                 "tooltip": "subroutine argument default value",
                 "url": ""
             };
 
         case "argelem":
             return {
-                "html": "subroutine argument",
+                "html": "<p>subroutine argument</p>",
                 "tooltip": "subroutine argument",
                 "url": ""
             };
 
         case "aslice":
             return {
-                "html": "array slice",
+                "html": "<p>array slice</p>",
                 "tooltip": "array slice",
                 "url": ""
             };
 
         case "atan2":
             return {
-                "html": "atan2",
+                "html": "<p>atan2</p>",
                 "tooltip": "atan2",
                 "url": ""
             };
 
         case "av2arylen":
             return {
-                "html": "array length",
+                "html": "<p>array length</p>",
                 "tooltip": "array length",
                 "url": ""
             };
 
         case "avalues":
             return {
-                "html": "values on array",
+                "html": "<p>values on array</p>",
                 "tooltip": "values on array",
                 "url": ""
             };
 
         case "avhvswitch":
             return {
-                "html": "Array/hash switch",
+                "html": "<p>Array/hash switch</p>",
                 "tooltip": "Array/hash switch",
                 "url": ""
             };
 
         case "backtick":
             return {
-                "html": "quoted execution (``, qx)",
+                "html": "<p>quoted execution (``, qx)</p>",
                 "tooltip": "quoted execution (``, qx)",
                 "url": ""
             };
 
         case "bind":
             return {
-                "html": "bind",
+                "html": "<p>bind</p>",
                 "tooltip": "bind",
                 "url": ""
             };
 
         case "binmode":
             return {
-                "html": "binmode",
+                "html": "<p>binmode</p>",
                 "tooltip": "binmode",
                 "url": ""
             };
 
         case "bit_and":
             return {
-                "html": "bitwise and (&)",
-                "tooltip": "bitwise and (&)",
+                "html": "<p>bitwise and (&amp;)</p>",
+                "tooltip": "bitwise and (&amp;)",
                 "url": ""
             };
 
         case "bit_or":
             return {
-                "html": "bitwise or (|)",
+                "html": "<p>bitwise or (|)</p>",
                 "tooltip": "bitwise or (|)",
                 "url": ""
             };
 
         case "bit_xor":
             return {
-                "html": "bitwise xor (^)",
+                "html": "<p>bitwise xor (^)</p>",
                 "tooltip": "bitwise xor (^)",
                 "url": ""
             };
 
         case "bless":
             return {
-                "html": "bless",
+                "html": "<p>bless</p>",
                 "tooltip": "bless",
                 "url": ""
             };
 
         case "blessed":
             return {
-                "html": "blessed",
+                "html": "<p>blessed</p>",
                 "tooltip": "blessed",
                 "url": ""
             };
 
         case "break":
             return {
-                "html": "break",
+                "html": "<p>break</p>",
                 "tooltip": "break",
                 "url": ""
             };
 
         case "caller":
             return {
-                "html": "caller",
+                "html": "<p>caller</p>",
                 "tooltip": "caller",
                 "url": ""
             };
 
         case "catch":
             return {
-                "html": "catch {} block",
+                "html": "<p>catch {} block</p>",
                 "tooltip": "catch {} block",
                 "url": ""
             };
 
         case "ceil":
             return {
-                "html": "ceil",
+                "html": "<p>ceil</p>",
                 "tooltip": "ceil",
                 "url": ""
             };
 
         case "chdir":
             return {
-                "html": "chdir",
+                "html": "<p>chdir</p>",
                 "tooltip": "chdir",
                 "url": ""
             };
 
         case "chmod":
             return {
-                "html": "chmod",
+                "html": "<p>chmod</p>",
                 "tooltip": "chmod",
                 "url": ""
             };
 
         case "chomp":
             return {
-                "html": "chomp",
+                "html": "<p>chomp</p>",
                 "tooltip": "chomp",
                 "url": ""
             };
 
         case "chop":
             return {
-                "html": "chop",
+                "html": "<p>chop</p>",
                 "tooltip": "chop",
                 "url": ""
             };
 
         case "chown":
             return {
-                "html": "chown",
+                "html": "<p>chown</p>",
                 "tooltip": "chown",
                 "url": ""
             };
 
         case "chr":
             return {
-                "html": "chr",
+                "html": "<p>chr</p>",
                 "tooltip": "chr",
                 "url": ""
             };
 
         case "chroot":
             return {
-                "html": "chroot",
+                "html": "<p>chroot</p>",
                 "tooltip": "chroot",
                 "url": ""
             };
 
         case "classname":
             return {
-                "html": "class name",
+                "html": "<p>class name</p>",
                 "tooltip": "class name",
                 "url": ""
             };
 
         case "clonecv":
             return {
-                "html": "private subroutine",
+                "html": "<p>private subroutine</p>",
                 "tooltip": "private subroutine",
                 "url": ""
             };
 
         case "close":
             return {
-                "html": "close",
+                "html": "<p>close</p>",
                 "tooltip": "close",
                 "url": ""
             };
 
         case "closedir":
             return {
-                "html": "closedir",
+                "html": "<p>closedir</p>",
                 "tooltip": "closedir",
                 "url": ""
             };
 
         case "cmpchain_and":
             return {
-                "html": "comparison chaining",
+                "html": "<p>comparison chaining</p>",
                 "tooltip": "comparison chaining",
                 "url": ""
             };
 
         case "cmpchain_dup":
             return {
-                "html": "comparand shuffling",
+                "html": "<p>comparand shuffling</p>",
                 "tooltip": "comparand shuffling",
                 "url": ""
             };
 
         case "complement":
             return {
-                "html": "1's complement (~)",
-                "tooltip": "1's complement (~)",
+                "html": "<p>1&#x27;s complement (~)</p>",
+                "tooltip": "1&#x27;s complement (~)",
                 "url": ""
             };
 
         case "concat":
             return {
-                "html": "concatenation (.) or string",
+                "html": "<p>concatenation (.) or string</p>",
                 "tooltip": "concatenation (.) or string",
                 "url": ""
             };
 
         case "cond_expr":
             return {
-                "html": "conditional expression",
+                "html": "<p>conditional expression</p>",
                 "tooltip": "conditional expression",
                 "url": ""
             };
 
         case "connect":
             return {
-                "html": "connect",
+                "html": "<p>connect</p>",
                 "tooltip": "connect",
                 "url": ""
             };
 
         case "const":
             return {
-                "html": "constant item",
+                "html": "<p>constant item</p>",
                 "tooltip": "constant item",
                 "url": ""
             };
 
         case "continue":
             return {
-                "html": "continue",
+                "html": "<p>continue</p>",
                 "tooltip": "continue",
                 "url": ""
             };
 
         case "coreargs":
             return {
-                "html": "CORE:: subroutine",
+                "html": "<p>CORE:: subroutine</p>",
                 "tooltip": "CORE:: subroutine",
                 "url": ""
             };
 
         case "cos":
             return {
-                "html": "cos",
+                "html": "<p>cos</p>",
                 "tooltip": "cos",
                 "url": ""
             };
 
         case "crypt":
             return {
-                "html": "crypt",
+                "html": "<p>crypt</p>",
                 "tooltip": "crypt",
                 "url": ""
             };
 
         case "custom":
             return {
-                "html": "unknown custom operator",
+                "html": "<p>unknown custom operator</p>",
                 "tooltip": "unknown custom operator",
                 "url": ""
             };
 
         case "dbmclose":
             return {
-                "html": "dbmclose",
+                "html": "<p>dbmclose</p>",
                 "tooltip": "dbmclose",
                 "url": ""
             };
 
         case "dbmopen":
             return {
-                "html": "dbmopen",
+                "html": "<p>dbmopen</p>",
                 "tooltip": "dbmopen",
                 "url": ""
             };
 
         case "dbstate":
             return {
-                "html": "debug next statement",
+                "html": "<p>debug next statement</p>",
                 "tooltip": "debug next statement",
                 "url": ""
             };
 
         case "defined":
             return {
-                "html": "defined operator",
+                "html": "<p>defined operator</p>",
                 "tooltip": "defined operator",
                 "url": ""
             };
 
         case "delete":
             return {
-                "html": "delete",
+                "html": "<p>delete</p>",
                 "tooltip": "delete",
                 "url": ""
             };
 
         case "die":
             return {
-                "html": "die",
+                "html": "<p>die</p>",
                 "tooltip": "die",
                 "url": ""
             };
 
         case "divide":
             return {
-                "html": "division (/)",
+                "html": "<p>division (/)</p>",
                 "tooltip": "division (/)",
                 "url": ""
             };
 
         case "dofile":
             return {
-                "html": "do \"file\"",
-                "tooltip": "do \"file\"",
+                "html": "<p>do &quot;file&quot;</p>",
+                "tooltip": "do &quot;file&quot;",
                 "url": ""
             };
 
         case "dor":
             return {
-                "html": "defined or (//)",
+                "html": "<p>defined or (//)</p>",
                 "tooltip": "defined or (//)",
                 "url": ""
             };
 
         case "dorassign":
             return {
-                "html": "defined or assignment (//=)",
+                "html": "<p>defined or assignment (//=)</p>",
                 "tooltip": "defined or assignment (//=)",
                 "url": ""
             };
 
         case "dump":
             return {
-                "html": "dump",
+                "html": "<p>dump</p>",
                 "tooltip": "dump",
                 "url": ""
             };
 
         case "each":
             return {
-                "html": "each",
+                "html": "<p>each</p>",
                 "tooltip": "each",
                 "url": ""
             };
 
         case "egrent":
             return {
-                "html": "endgrent",
+                "html": "<p>endgrent</p>",
                 "tooltip": "endgrent",
                 "url": ""
             };
 
         case "ehostent":
             return {
-                "html": "endhostent",
+                "html": "<p>endhostent</p>",
                 "tooltip": "endhostent",
                 "url": ""
             };
 
         case "emptyavhv":
             return {
-                "html": "empty anon hash/array",
+                "html": "<p>empty anon hash/array</p>",
                 "tooltip": "empty anon hash/array",
                 "url": ""
             };
 
         case "enetent":
             return {
-                "html": "endnetent",
+                "html": "<p>endnetent</p>",
                 "tooltip": "endnetent",
                 "url": ""
             };
 
         case "enter":
             return {
-                "html": "block entry",
+                "html": "<p>block entry</p>",
                 "tooltip": "block entry",
                 "url": ""
             };
 
         case "entereval":
             return {
-                "html": "eval \"string\"",
-                "tooltip": "eval \"string\"",
+                "html": "<p>eval &quot;string&quot;</p>",
+                "tooltip": "eval &quot;string&quot;",
                 "url": ""
             };
 
         case "entergiven":
             return {
-                "html": "given()",
+                "html": "<p>given()</p>",
                 "tooltip": "given()",
                 "url": ""
             };
 
         case "enteriter":
             return {
-                "html": "foreach loop entry",
+                "html": "<p>foreach loop entry</p>",
                 "tooltip": "foreach loop entry",
                 "url": ""
             };
 
         case "enterloop":
             return {
-                "html": "loop entry",
+                "html": "<p>loop entry</p>",
                 "tooltip": "loop entry",
                 "url": ""
             };
 
         case "entersub":
             return {
-                "html": "subroutine entry",
+                "html": "<p>subroutine entry</p>",
                 "tooltip": "subroutine entry",
                 "url": ""
             };
 
         case "entertry":
             return {
-                "html": "eval {block}",
+                "html": "<p>eval {block}</p>",
                 "tooltip": "eval {block}",
                 "url": ""
             };
 
         case "entertrycatch":
             return {
-                "html": "try {block}",
+                "html": "<p>try {block}</p>",
                 "tooltip": "try {block}",
                 "url": ""
             };
 
         case "enterwhen":
             return {
-                "html": "when()",
+                "html": "<p>when()</p>",
                 "tooltip": "when()",
                 "url": ""
             };
 
         case "enterwrite":
             return {
-                "html": "write",
+                "html": "<p>write</p>",
                 "tooltip": "write",
                 "url": ""
             };
 
         case "eof":
             return {
-                "html": "eof",
+                "html": "<p>eof</p>",
                 "tooltip": "eof",
                 "url": ""
             };
 
         case "eprotoent":
             return {
-                "html": "endprotoent",
+                "html": "<p>endprotoent</p>",
                 "tooltip": "endprotoent",
                 "url": ""
             };
 
         case "epwent":
             return {
-                "html": "endpwent",
+                "html": "<p>endpwent</p>",
                 "tooltip": "endpwent",
                 "url": ""
             };
 
         case "eq":
             return {
-                "html": "numeric eq (==)",
+                "html": "<p>numeric eq (==)</p>",
                 "tooltip": "numeric eq (==)",
                 "url": ""
             };
 
         case "eservent":
             return {
-                "html": "endservent",
+                "html": "<p>endservent</p>",
                 "tooltip": "endservent",
                 "url": ""
             };
 
         case "exec":
             return {
-                "html": "exec",
+                "html": "<p>exec</p>",
                 "tooltip": "exec",
                 "url": ""
             };
 
         case "exists":
             return {
-                "html": "exists",
+                "html": "<p>exists</p>",
                 "tooltip": "exists",
                 "url": ""
             };
 
         case "exit":
             return {
-                "html": "exit",
+                "html": "<p>exit</p>",
                 "tooltip": "exit",
                 "url": ""
             };
 
         case "exp":
             return {
-                "html": "exp",
+                "html": "<p>exp</p>",
                 "tooltip": "exp",
                 "url": ""
             };
 
         case "fc":
             return {
-                "html": "fc",
+                "html": "<p>fc</p>",
                 "tooltip": "fc",
                 "url": ""
             };
 
         case "fcntl":
             return {
-                "html": "fcntl",
+                "html": "<p>fcntl</p>",
                 "tooltip": "fcntl",
                 "url": ""
             };
 
         case "fileno":
             return {
-                "html": "fileno",
+                "html": "<p>fileno</p>",
                 "tooltip": "fileno",
                 "url": ""
             };
 
         case "flip":
             return {
-                "html": "range (or flip)",
+                "html": "<p>range (or flip)</p>",
                 "tooltip": "range (or flip)",
                 "url": ""
             };
 
         case "flock":
             return {
-                "html": "flock",
+                "html": "<p>flock</p>",
                 "tooltip": "flock",
                 "url": ""
             };
 
         case "floor":
             return {
-                "html": "floor",
+                "html": "<p>floor</p>",
                 "tooltip": "floor",
                 "url": ""
             };
 
         case "flop":
             return {
-                "html": "range (or flop)",
+                "html": "<p>range (or flop)</p>",
                 "tooltip": "range (or flop)",
                 "url": ""
             };
 
         case "fork":
             return {
-                "html": "fork",
+                "html": "<p>fork</p>",
                 "tooltip": "fork",
                 "url": ""
             };
 
         case "formline":
             return {
-                "html": "formline",
+                "html": "<p>formline</p>",
                 "tooltip": "formline",
                 "url": ""
             };
 
         case "ftatime":
             return {
-                "html": "-A",
+                "html": "<p>-A</p>",
                 "tooltip": "-A",
                 "url": ""
             };
 
         case "ftbinary":
             return {
-                "html": "-B",
+                "html": "<p>-B</p>",
                 "tooltip": "-B",
                 "url": ""
             };
 
         case "ftblk":
             return {
-                "html": "-b",
+                "html": "<p>-b</p>",
                 "tooltip": "-b",
                 "url": ""
             };
 
         case "ftchr":
             return {
-                "html": "-c",
+                "html": "<p>-c</p>",
                 "tooltip": "-c",
                 "url": ""
             };
 
         case "ftctime":
             return {
-                "html": "-C",
+                "html": "<p>-C</p>",
                 "tooltip": "-C",
                 "url": ""
             };
 
         case "ftdir":
             return {
-                "html": "-d",
+                "html": "<p>-d</p>",
                 "tooltip": "-d",
                 "url": ""
             };
 
         case "fteexec":
             return {
-                "html": "-x",
+                "html": "<p>-x</p>",
                 "tooltip": "-x",
                 "url": ""
             };
 
         case "fteowned":
             return {
-                "html": "-o",
+                "html": "<p>-o</p>",
                 "tooltip": "-o",
                 "url": ""
             };
 
         case "fteread":
             return {
-                "html": "-r",
+                "html": "<p>-r</p>",
                 "tooltip": "-r",
                 "url": ""
             };
 
         case "ftewrite":
             return {
-                "html": "-w",
+                "html": "<p>-w</p>",
                 "tooltip": "-w",
                 "url": ""
             };
 
         case "ftfile":
             return {
-                "html": "-f",
+                "html": "<p>-f</p>",
                 "tooltip": "-f",
                 "url": ""
             };
 
         case "ftis":
             return {
-                "html": "-e",
+                "html": "<p>-e</p>",
                 "tooltip": "-e",
                 "url": ""
             };
 
         case "ftlink":
             return {
-                "html": "-l",
+                "html": "<p>-l</p>",
                 "tooltip": "-l",
                 "url": ""
             };
 
         case "ftmtime":
             return {
-                "html": "-M",
+                "html": "<p>-M</p>",
                 "tooltip": "-M",
                 "url": ""
             };
 
         case "ftpipe":
             return {
-                "html": "-p",
+                "html": "<p>-p</p>",
                 "tooltip": "-p",
                 "url": ""
             };
 
         case "ftrexec":
             return {
-                "html": "-X",
+                "html": "<p>-X</p>",
                 "tooltip": "-X",
                 "url": ""
             };
 
         case "ftrowned":
             return {
-                "html": "-O",
+                "html": "<p>-O</p>",
                 "tooltip": "-O",
                 "url": ""
             };
 
         case "ftrread":
             return {
-                "html": "-R",
+                "html": "<p>-R</p>",
                 "tooltip": "-R",
                 "url": ""
             };
 
         case "ftrwrite":
             return {
-                "html": "-W",
+                "html": "<p>-W</p>",
                 "tooltip": "-W",
                 "url": ""
             };
 
         case "ftsgid":
             return {
-                "html": "-g",
+                "html": "<p>-g</p>",
                 "tooltip": "-g",
                 "url": ""
             };
 
         case "ftsize":
             return {
-                "html": "-s",
+                "html": "<p>-s</p>",
                 "tooltip": "-s",
                 "url": ""
             };
 
         case "ftsock":
             return {
-                "html": "-S",
+                "html": "<p>-S</p>",
                 "tooltip": "-S",
                 "url": ""
             };
 
         case "ftsuid":
             return {
-                "html": "-u",
+                "html": "<p>-u</p>",
                 "tooltip": "-u",
                 "url": ""
             };
 
         case "ftsvtx":
             return {
-                "html": "-k",
+                "html": "<p>-k</p>",
                 "tooltip": "-k",
                 "url": ""
             };
 
         case "fttext":
             return {
-                "html": "-T",
+                "html": "<p>-T</p>",
                 "tooltip": "-T",
                 "url": ""
             };
 
         case "fttty":
             return {
-                "html": "-t",
+                "html": "<p>-t</p>",
                 "tooltip": "-t",
                 "url": ""
             };
 
         case "ftzero":
             return {
-                "html": "-z",
+                "html": "<p>-z</p>",
                 "tooltip": "-z",
                 "url": ""
             };
 
         case "ge":
             return {
-                "html": "numeric ge (>=)",
-                "tooltip": "numeric ge (>=)",
+                "html": "<p>numeric ge (&gt;=)</p>",
+                "tooltip": "numeric ge (&gt;=)",
                 "url": ""
             };
 
         case "gelem":
             return {
-                "html": "glob elem",
+                "html": "<p>glob elem</p>",
                 "tooltip": "glob elem",
                 "url": ""
             };
 
         case "getc":
             return {
-                "html": "getc",
+                "html": "<p>getc</p>",
                 "tooltip": "getc",
                 "url": ""
             };
 
         case "getlogin":
             return {
-                "html": "getlogin",
+                "html": "<p>getlogin</p>",
                 "tooltip": "getlogin",
                 "url": ""
             };
 
         case "getpeername":
             return {
-                "html": "getpeername",
+                "html": "<p>getpeername</p>",
                 "tooltip": "getpeername",
                 "url": ""
             };
 
         case "getpgrp":
             return {
-                "html": "getpgrp",
+                "html": "<p>getpgrp</p>",
                 "tooltip": "getpgrp",
                 "url": ""
             };
 
         case "getppid":
             return {
-                "html": "getppid",
+                "html": "<p>getppid</p>",
                 "tooltip": "getppid",
                 "url": ""
             };
 
         case "getpriority":
             return {
-                "html": "getpriority",
+                "html": "<p>getpriority</p>",
                 "tooltip": "getpriority",
                 "url": ""
             };
 
         case "getsockname":
             return {
-                "html": "getsockname",
+                "html": "<p>getsockname</p>",
                 "tooltip": "getsockname",
                 "url": ""
             };
 
         case "ggrent":
             return {
-                "html": "getgrent",
+                "html": "<p>getgrent</p>",
                 "tooltip": "getgrent",
                 "url": ""
             };
 
         case "ggrgid":
             return {
-                "html": "getgrgid",
+                "html": "<p>getgrgid</p>",
                 "tooltip": "getgrgid",
                 "url": ""
             };
 
         case "ggrnam":
             return {
-                "html": "getgrnam",
+                "html": "<p>getgrnam</p>",
                 "tooltip": "getgrnam",
                 "url": ""
             };
 
         case "ghbyaddr":
             return {
-                "html": "gethostbyaddr",
+                "html": "<p>gethostbyaddr</p>",
                 "tooltip": "gethostbyaddr",
                 "url": ""
             };
 
         case "ghbyname":
             return {
-                "html": "gethostbyname",
+                "html": "<p>gethostbyname</p>",
                 "tooltip": "gethostbyname",
                 "url": ""
             };
 
         case "ghostent":
             return {
-                "html": "gethostent",
+                "html": "<p>gethostent</p>",
                 "tooltip": "gethostent",
                 "url": ""
             };
 
         case "glob":
             return {
-                "html": "glob",
+                "html": "<p>glob</p>",
                 "tooltip": "glob",
                 "url": ""
             };
 
         case "gmtime":
             return {
-                "html": "gmtime",
+                "html": "<p>gmtime</p>",
                 "tooltip": "gmtime",
                 "url": ""
             };
 
         case "gnbyaddr":
             return {
-                "html": "getnetbyaddr",
+                "html": "<p>getnetbyaddr</p>",
                 "tooltip": "getnetbyaddr",
                 "url": ""
             };
 
         case "gnbyname":
             return {
-                "html": "getnetbyname",
+                "html": "<p>getnetbyname</p>",
                 "tooltip": "getnetbyname",
                 "url": ""
             };
 
         case "gnetent":
             return {
-                "html": "getnetent",
+                "html": "<p>getnetent</p>",
                 "tooltip": "getnetent",
                 "url": ""
             };
 
         case "goto":
             return {
-                "html": "goto",
+                "html": "<p>goto</p>",
                 "tooltip": "goto",
                 "url": ""
             };
 
         case "gpbyname":
             return {
-                "html": "getprotobyname",
+                "html": "<p>getprotobyname</p>",
                 "tooltip": "getprotobyname",
                 "url": ""
             };
 
         case "gpbynumber":
             return {
-                "html": "getprotobynumber",
+                "html": "<p>getprotobynumber</p>",
                 "tooltip": "getprotobynumber",
                 "url": ""
             };
 
         case "gprotoent":
             return {
-                "html": "getprotoent",
+                "html": "<p>getprotoent</p>",
                 "tooltip": "getprotoent",
                 "url": ""
             };
 
         case "gpwent":
             return {
-                "html": "getpwent",
+                "html": "<p>getpwent</p>",
                 "tooltip": "getpwent",
                 "url": ""
             };
 
         case "gpwnam":
             return {
-                "html": "getpwnam",
+                "html": "<p>getpwnam</p>",
                 "tooltip": "getpwnam",
                 "url": ""
             };
 
         case "gpwuid":
             return {
-                "html": "getpwuid",
+                "html": "<p>getpwuid</p>",
                 "tooltip": "getpwuid",
                 "url": ""
             };
 
         case "grepstart":
             return {
-                "html": "grep",
+                "html": "<p>grep</p>",
                 "tooltip": "grep",
                 "url": ""
             };
 
         case "grepwhile":
             return {
-                "html": "grep iterator",
+                "html": "<p>grep iterator</p>",
                 "tooltip": "grep iterator",
                 "url": ""
             };
 
         case "gsbyname":
             return {
-                "html": "getservbyname",
+                "html": "<p>getservbyname</p>",
                 "tooltip": "getservbyname",
                 "url": ""
             };
 
         case "gsbyport":
             return {
-                "html": "getservbyport",
+                "html": "<p>getservbyport</p>",
                 "tooltip": "getservbyport",
                 "url": ""
             };
 
         case "gservent":
             return {
-                "html": "getservent",
+                "html": "<p>getservent</p>",
                 "tooltip": "getservent",
                 "url": ""
             };
 
         case "gsockopt":
             return {
-                "html": "getsockopt",
+                "html": "<p>getsockopt</p>",
                 "tooltip": "getsockopt",
                 "url": ""
             };
 
         case "gt":
             return {
-                "html": "numeric gt (>)",
-                "tooltip": "numeric gt (>)",
+                "html": "<p>numeric gt (&gt;)</p>",
+                "tooltip": "numeric gt (&gt;)",
                 "url": ""
             };
 
         case "gv":
             return {
-                "html": "glob value",
+                "html": "<p>glob value</p>",
                 "tooltip": "glob value",
                 "url": ""
             };
 
         case "gvsv":
             return {
-                "html": "scalar variable",
+                "html": "<p>scalar variable</p>",
                 "tooltip": "scalar variable",
                 "url": ""
             };
 
         case "helem":
             return {
-                "html": "hash element",
+                "html": "<p>hash element</p>",
                 "tooltip": "hash element",
                 "url": ""
             };
 
         case "helemexistsor":
             return {
-                "html": "hash element exists or",
+                "html": "<p>hash element exists or</p>",
                 "tooltip": "hash element exists or",
                 "url": ""
             };
 
         case "hex":
             return {
-                "html": "hex",
+                "html": "<p>hex</p>",
                 "tooltip": "hex",
                 "url": ""
             };
 
         case "hintseval":
             return {
-                "html": "eval hints",
+                "html": "<p>eval hints</p>",
                 "tooltip": "eval hints",
                 "url": ""
             };
 
         case "hslice":
             return {
-                "html": "hash slice",
+                "html": "<p>hash slice</p>",
                 "tooltip": "hash slice",
                 "url": ""
             };
 
         case "i_add":
             return {
-                "html": "integer addition (+)",
+                "html": "<p>integer addition (+)</p>",
                 "tooltip": "integer addition (+)",
                 "url": ""
             };
 
         case "i_divide":
             return {
-                "html": "integer division (/)",
+                "html": "<p>integer division (/)</p>",
                 "tooltip": "integer division (/)",
                 "url": ""
             };
 
         case "i_eq":
             return {
-                "html": "integer eq (==)",
+                "html": "<p>integer eq (==)</p>",
                 "tooltip": "integer eq (==)",
                 "url": ""
             };
 
         case "i_ge":
             return {
-                "html": "integer ge (>=)",
-                "tooltip": "integer ge (>=)",
+                "html": "<p>integer ge (&gt;=)</p>",
+                "tooltip": "integer ge (&gt;=)",
                 "url": ""
             };
 
         case "i_gt":
             return {
-                "html": "integer gt (>)",
-                "tooltip": "integer gt (>)",
+                "html": "<p>integer gt (&gt;)</p>",
+                "tooltip": "integer gt (&gt;)",
                 "url": ""
             };
 
         case "i_le":
             return {
-                "html": "integer le (<=)",
-                "tooltip": "integer le (<=)",
+                "html": "<p>integer le (&lt;=)</p>",
+                "tooltip": "integer le (&lt;=)",
                 "url": ""
             };
 
         case "i_lt":
             return {
-                "html": "integer lt (<)",
-                "tooltip": "integer lt (<)",
+                "html": "<p>integer lt (&lt;)</p>",
+                "tooltip": "integer lt (&lt;)",
                 "url": ""
             };
 
         case "i_modulo":
             return {
-                "html": "integer modulus (%)",
+                "html": "<p>integer modulus (%)</p>",
                 "tooltip": "integer modulus (%)",
                 "url": ""
             };
 
         case "i_multiply":
             return {
-                "html": "integer multiplication (*)",
+                "html": "<p>integer multiplication (*)</p>",
                 "tooltip": "integer multiplication (*)",
                 "url": ""
             };
 
         case "i_ncmp":
             return {
-                "html": "integer comparison (<=>)",
-                "tooltip": "integer comparison (<=>)",
+                "html": "<p>integer comparison (&lt;=&gt;)</p>",
+                "tooltip": "integer comparison (&lt;=&gt;)",
                 "url": ""
             };
 
         case "i_ne":
             return {
-                "html": "integer ne (!=)",
+                "html": "<p>integer ne (!=)</p>",
                 "tooltip": "integer ne (!=)",
                 "url": ""
             };
 
         case "i_negate":
             return {
-                "html": "integer negation (-)",
+                "html": "<p>integer negation (-)</p>",
                 "tooltip": "integer negation (-)",
                 "url": ""
             };
 
         case "i_postdec":
             return {
-                "html": "integer postdecrement (--)",
+                "html": "<p>integer postdecrement (--)</p>",
                 "tooltip": "integer postdecrement (--)",
                 "url": ""
             };
 
         case "i_postinc":
             return {
-                "html": "integer postincrement (++)",
+                "html": "<p>integer postincrement (++)</p>",
                 "tooltip": "integer postincrement (++)",
                 "url": ""
             };
 
         case "i_predec":
             return {
-                "html": "integer predecrement (--)",
+                "html": "<p>integer predecrement (--)</p>",
                 "tooltip": "integer predecrement (--)",
                 "url": ""
             };
 
         case "i_preinc":
             return {
-                "html": "integer preincrement (++)",
+                "html": "<p>integer preincrement (++)</p>",
                 "tooltip": "integer preincrement (++)",
                 "url": ""
             };
 
         case "i_subtract":
             return {
-                "html": "integer subtraction (-)",
+                "html": "<p>integer subtraction (-)</p>",
                 "tooltip": "integer subtraction (-)",
                 "url": ""
             };
 
         case "index":
             return {
-                "html": "index",
+                "html": "<p>index</p>",
                 "tooltip": "index",
                 "url": ""
             };
 
         case "initfield":
             return {
-                "html": "initialise field",
+                "html": "<p>initialise field</p>",
                 "tooltip": "initialise field",
                 "url": ""
             };
 
         case "int":
             return {
-                "html": "int",
+                "html": "<p>int</p>",
                 "tooltip": "int",
                 "url": ""
             };
 
         case "introcv":
             return {
-                "html": "private subroutine",
+                "html": "<p>private subroutine</p>",
                 "tooltip": "private subroutine",
                 "url": ""
             };
 
         case "ioctl":
             return {
-                "html": "ioctl",
+                "html": "<p>ioctl</p>",
                 "tooltip": "ioctl",
                 "url": ""
             };
 
         case "is_bool":
             return {
-                "html": "boolean type test",
+                "html": "<p>boolean type test</p>",
                 "tooltip": "boolean type test",
                 "url": ""
             };
 
         case "is_tainted":
             return {
-                "html": "is_tainted",
+                "html": "<p>is_tainted</p>",
                 "tooltip": "is_tainted",
                 "url": ""
             };
 
         case "is_weak":
             return {
-                "html": "weakref type test",
+                "html": "<p>weakref type test</p>",
                 "tooltip": "weakref type test",
                 "url": ""
             };
 
         case "isa":
             return {
-                "html": "derived class test",
+                "html": "<p>derived class test</p>",
                 "tooltip": "derived class test",
                 "url": ""
             };
 
         case "iter":
             return {
-                "html": "foreach loop iterator",
+                "html": "<p>foreach loop iterator</p>",
                 "tooltip": "foreach loop iterator",
                 "url": ""
             };
 
         case "join":
             return {
-                "html": "join or string",
+                "html": "<p>join or string</p>",
                 "tooltip": "join or string",
                 "url": ""
             };
 
         case "keys":
             return {
-                "html": "keys",
+                "html": "<p>keys</p>",
                 "tooltip": "keys",
                 "url": ""
             };
 
         case "kill":
             return {
-                "html": "kill",
+                "html": "<p>kill</p>",
                 "tooltip": "kill",
                 "url": ""
             };
 
         case "kvaslice":
             return {
-                "html": "index/value array slice",
+                "html": "<p>index/value array slice</p>",
                 "tooltip": "index/value array slice",
                 "url": ""
             };
 
         case "kvhslice":
             return {
-                "html": "key/value hash slice",
+                "html": "<p>key/value hash slice</p>",
                 "tooltip": "key/value hash slice",
                 "url": ""
             };
 
         case "last":
             return {
-                "html": "last",
+                "html": "<p>last</p>",
                 "tooltip": "last",
                 "url": ""
             };
 
         case "lc":
             return {
-                "html": "lc",
+                "html": "<p>lc</p>",
                 "tooltip": "lc",
                 "url": ""
             };
 
         case "lcfirst":
             return {
-                "html": "lcfirst",
+                "html": "<p>lcfirst</p>",
                 "tooltip": "lcfirst",
                 "url": ""
             };
 
         case "le":
             return {
-                "html": "numeric le (<=)",
-                "tooltip": "numeric le (<=)",
+                "html": "<p>numeric le (&lt;=)</p>",
+                "tooltip": "numeric le (&lt;=)",
                 "url": ""
             };
 
         case "leave":
             return {
-                "html": "block exit",
+                "html": "<p>block exit</p>",
                 "tooltip": "block exit",
                 "url": ""
             };
 
         case "leaveeval":
             return {
-                "html": "eval \"string\" exit",
-                "tooltip": "eval \"string\" exit",
+                "html": "<p>eval &quot;string&quot; exit</p>",
+                "tooltip": "eval &quot;string&quot; exit",
                 "url": ""
             };
 
         case "leavegiven":
             return {
-                "html": "leave given block",
+                "html": "<p>leave given block</p>",
                 "tooltip": "leave given block",
                 "url": ""
             };
 
         case "leaveloop":
             return {
-                "html": "loop exit",
+                "html": "<p>loop exit</p>",
                 "tooltip": "loop exit",
                 "url": ""
             };
 
         case "leavesub":
             return {
-                "html": "subroutine exit",
+                "html": "<p>subroutine exit</p>",
                 "tooltip": "subroutine exit",
                 "url": ""
             };
 
         case "leavesublv":
             return {
-                "html": "lvalue subroutine return",
+                "html": "<p>lvalue subroutine return</p>",
                 "tooltip": "lvalue subroutine return",
                 "url": ""
             };
 
         case "leavetry":
             return {
-                "html": "eval {block} exit",
+                "html": "<p>eval {block} exit</p>",
                 "tooltip": "eval {block} exit",
                 "url": ""
             };
 
         case "leavetrycatch":
             return {
-                "html": "try {block} exit",
+                "html": "<p>try {block} exit</p>",
                 "tooltip": "try {block} exit",
                 "url": ""
             };
 
         case "leavewhen":
             return {
-                "html": "leave when block",
+                "html": "<p>leave when block</p>",
                 "tooltip": "leave when block",
                 "url": ""
             };
 
         case "leavewrite":
             return {
-                "html": "write exit",
+                "html": "<p>write exit</p>",
                 "tooltip": "write exit",
                 "url": ""
             };
 
         case "left_shift":
             return {
-                "html": "left bitshift (<<)",
-                "tooltip": "left bitshift (<<)",
+                "html": "<p>left bitshift (&lt;&lt;)</p>",
+                "tooltip": "left bitshift (&lt;&lt;)",
                 "url": ""
             };
 
         case "length":
             return {
-                "html": "length",
+                "html": "<p>length</p>",
                 "tooltip": "length",
                 "url": ""
             };
 
         case "lineseq":
             return {
-                "html": "line sequence",
+                "html": "<p>line sequence</p>",
                 "tooltip": "line sequence",
                 "url": ""
             };
 
         case "link":
             return {
-                "html": "link",
+                "html": "<p>link</p>",
                 "tooltip": "link",
                 "url": ""
             };
 
         case "list":
             return {
-                "html": "list",
+                "html": "<p>list</p>",
                 "tooltip": "list",
                 "url": ""
             };
 
         case "listen":
             return {
-                "html": "listen",
+                "html": "<p>listen</p>",
                 "tooltip": "listen",
                 "url": ""
             };
 
         case "localtime":
             return {
-                "html": "localtime",
+                "html": "<p>localtime</p>",
                 "tooltip": "localtime",
                 "url": ""
             };
 
         case "lock":
             return {
-                "html": "lock",
+                "html": "<p>lock</p>",
                 "tooltip": "lock",
                 "url": ""
             };
 
         case "log":
             return {
-                "html": "log",
+                "html": "<p>log</p>",
                 "tooltip": "log",
                 "url": ""
             };
 
         case "lslice":
             return {
-                "html": "list slice",
+                "html": "<p>list slice</p>",
                 "tooltip": "list slice",
                 "url": ""
             };
 
         case "lstat":
             return {
-                "html": "lstat",
+                "html": "<p>lstat</p>",
                 "tooltip": "lstat",
                 "url": ""
             };
 
         case "lt":
             return {
-                "html": "numeric lt (<)",
-                "tooltip": "numeric lt (<)",
+                "html": "<p>numeric lt (&lt;)</p>",
+                "tooltip": "numeric lt (&lt;)",
                 "url": ""
             };
 
         case "lvavref":
             return {
-                "html": "lvalue array reference",
+                "html": "<p>lvalue array reference</p>",
                 "tooltip": "lvalue array reference",
                 "url": ""
             };
 
         case "lvref":
             return {
-                "html": "lvalue ref assignment",
+                "html": "<p>lvalue ref assignment</p>",
                 "tooltip": "lvalue ref assignment",
                 "url": ""
             };
 
         case "lvrefslice":
             return {
-                "html": "lvalue ref assignment",
+                "html": "<p>lvalue ref assignment</p>",
                 "tooltip": "lvalue ref assignment",
                 "url": ""
             };
 
         case "mapstart":
             return {
-                "html": "map",
+                "html": "<p>map</p>",
                 "tooltip": "map",
                 "url": ""
             };
 
         case "mapwhile":
             return {
-                "html": "map iterator",
+                "html": "<p>map iterator</p>",
                 "tooltip": "map iterator",
                 "url": ""
             };
 
         case "match":
             return {
-                "html": "pattern match (m//)",
+                "html": "<p>pattern match (m//)</p>",
                 "tooltip": "pattern match (m//)",
                 "url": ""
             };
 
         case "method":
             return {
-                "html": "method lookup",
+                "html": "<p>method lookup</p>",
                 "tooltip": "method lookup",
                 "url": ""
             };
 
         case "method_named":
             return {
-                "html": "method with known name",
+                "html": "<p>method with known name</p>",
                 "tooltip": "method with known name",
                 "url": ""
             };
 
         case "method_redir":
             return {
-                "html": "redirect method with known name",
+                "html": "<p>redirect method with known name</p>",
                 "tooltip": "redirect method with known name",
                 "url": ""
             };
 
         case "method_redir_super":
             return {
-                "html": "redirect super method with known name",
+                "html": "<p>redirect super method with known name</p>",
                 "tooltip": "redirect super method with known name",
                 "url": ""
             };
 
         case "method_super":
             return {
-                "html": "super with known name",
+                "html": "<p>super with known name</p>",
                 "tooltip": "super with known name",
                 "url": ""
             };
 
         case "methstart":
             return {
-                "html": "method start",
+                "html": "<p>method start</p>",
                 "tooltip": "method start",
                 "url": ""
             };
 
         case "mkdir":
             return {
-                "html": "mkdir",
+                "html": "<p>mkdir</p>",
                 "tooltip": "mkdir",
                 "url": ""
             };
 
         case "modulo":
             return {
-                "html": "modulus (%)",
+                "html": "<p>modulus (%)</p>",
                 "tooltip": "modulus (%)",
                 "url": ""
             };
 
         case "msgctl":
             return {
-                "html": "msgctl",
+                "html": "<p>msgctl</p>",
                 "tooltip": "msgctl",
                 "url": ""
             };
 
         case "msgget":
             return {
-                "html": "msgget",
+                "html": "<p>msgget</p>",
                 "tooltip": "msgget",
                 "url": ""
             };
 
         case "msgrcv":
             return {
-                "html": "msgrcv",
+                "html": "<p>msgrcv</p>",
                 "tooltip": "msgrcv",
                 "url": ""
             };
 
         case "msgsnd":
             return {
-                "html": "msgsnd",
+                "html": "<p>msgsnd</p>",
                 "tooltip": "msgsnd",
                 "url": ""
             };
 
         case "multiconcat":
             return {
-                "html": "concatenation (.) or string",
+                "html": "<p>concatenation (.) or string</p>",
                 "tooltip": "concatenation (.) or string",
                 "url": ""
             };
 
         case "multideref":
             return {
-                "html": "array or hash lookup",
+                "html": "<p>array or hash lookup</p>",
                 "tooltip": "array or hash lookup",
                 "url": ""
             };
 
         case "multiparam":
             return {
-                "html": "signature processing",
+                "html": "<p>signature processing</p>",
                 "tooltip": "signature processing",
                 "url": ""
             };
 
         case "multiply":
             return {
-                "html": "multiplication (*)",
+                "html": "<p>multiplication (*)</p>",
                 "tooltip": "multiplication (*)",
                 "url": ""
             };
 
         case "nbit_and":
             return {
-                "html": "numeric bitwise and (&)",
-                "tooltip": "numeric bitwise and (&)",
+                "html": "<p>numeric bitwise and (&amp;)</p>",
+                "tooltip": "numeric bitwise and (&amp;)",
                 "url": ""
             };
 
         case "nbit_or":
             return {
-                "html": "numeric bitwise or (|)",
+                "html": "<p>numeric bitwise or (|)</p>",
                 "tooltip": "numeric bitwise or (|)",
                 "url": ""
             };
 
         case "nbit_xor":
             return {
-                "html": "numeric bitwise xor (^)",
+                "html": "<p>numeric bitwise xor (^)</p>",
                 "tooltip": "numeric bitwise xor (^)",
                 "url": ""
             };
 
         case "ncmp":
             return {
-                "html": "numeric comparison (<=>)",
-                "tooltip": "numeric comparison (<=>)",
+                "html": "<p>numeric comparison (&lt;=&gt;)</p>",
+                "tooltip": "numeric comparison (&lt;=&gt;)",
                 "url": ""
             };
 
         case "ncomplement":
             return {
-                "html": "numeric 1's complement (~)",
-                "tooltip": "numeric 1's complement (~)",
+                "html": "<p>numeric 1&#x27;s complement (~)</p>",
+                "tooltip": "numeric 1&#x27;s complement (~)",
                 "url": ""
             };
 
         case "ne":
             return {
-                "html": "numeric ne (!=)",
+                "html": "<p>numeric ne (!=)</p>",
                 "tooltip": "numeric ne (!=)",
                 "url": ""
             };
 
         case "negate":
             return {
-                "html": "negation (-)",
+                "html": "<p>negation (-)</p>",
                 "tooltip": "negation (-)",
                 "url": ""
             };
 
         case "next":
             return {
-                "html": "next",
+                "html": "<p>next</p>",
                 "tooltip": "next",
                 "url": ""
             };
 
         case "nextstate":
             return {
-                "html": "next statement",
+                "html": "<p>next statement</p>",
                 "tooltip": "next statement",
                 "url": ""
             };
 
         case "not":
             return {
-                "html": "not",
+                "html": "<p>not</p>",
                 "tooltip": "not",
                 "url": ""
             };
 
         case "null":
             return {
-                "html": "null operation",
+                "html": "<p>null operation</p>",
                 "tooltip": "null operation",
                 "url": ""
             };
 
         case "oct":
             return {
-                "html": "oct",
+                "html": "<p>oct</p>",
                 "tooltip": "oct",
                 "url": ""
             };
 
         case "once":
             return {
-                "html": "once",
+                "html": "<p>once</p>",
                 "tooltip": "once",
                 "url": ""
             };
 
         case "open":
             return {
-                "html": "open",
+                "html": "<p>open</p>",
                 "tooltip": "open",
                 "url": ""
             };
 
         case "open_dir":
             return {
-                "html": "opendir",
+                "html": "<p>opendir</p>",
                 "tooltip": "opendir",
                 "url": ""
             };
 
         case "or":
             return {
-                "html": "logical or (||)",
+                "html": "<p>logical or (||)</p>",
                 "tooltip": "logical or (||)",
                 "url": ""
             };
 
         case "orassign":
             return {
-                "html": "logical or assignment (||=)",
+                "html": "<p>logical or assignment (||=)</p>",
                 "tooltip": "logical or assignment (||=)",
                 "url": ""
             };
 
         case "ord":
             return {
-                "html": "ord",
+                "html": "<p>ord</p>",
                 "tooltip": "ord",
                 "url": ""
             };
 
         case "pack":
             return {
-                "html": "pack",
+                "html": "<p>pack</p>",
                 "tooltip": "pack",
                 "url": ""
             };
 
         case "padany":
             return {
-                "html": "private value",
+                "html": "<p>private value</p>",
                 "tooltip": "private value",
                 "url": ""
             };
 
         case "padav":
             return {
-                "html": "private array",
+                "html": "<p>private array</p>",
                 "tooltip": "private array",
                 "url": ""
             };
 
         case "padcv":
             return {
-                "html": "private subroutine",
+                "html": "<p>private subroutine</p>",
                 "tooltip": "private subroutine",
                 "url": ""
             };
 
         case "padhv":
             return {
-                "html": "private hash",
+                "html": "<p>private hash</p>",
                 "tooltip": "private hash",
                 "url": ""
             };
 
         case "padrange":
             return {
-                "html": "list of private variables",
+                "html": "<p>list of private variables</p>",
                 "tooltip": "list of private variables",
                 "url": ""
             };
 
         case "padsv":
             return {
-                "html": "private variable",
+                "html": "<p>private variable</p>",
                 "tooltip": "private variable",
                 "url": ""
             };
 
         case "padsv_store":
             return {
-                "html": "padsv scalar assignment",
+                "html": "<p>padsv scalar assignment</p>",
                 "tooltip": "padsv scalar assignment",
                 "url": ""
             };
 
         case "paramstore":
             return {
-                "html": "signature parameter default expression",
+                "html": "<p>signature parameter default expression</p>",
                 "tooltip": "signature parameter default expression",
                 "url": ""
             };
 
         case "paramtest":
             return {
-                "html": "signature argument value test",
+                "html": "<p>signature argument value test</p>",
                 "tooltip": "signature argument value test",
                 "url": ""
             };
 
         case "pipe_op":
             return {
-                "html": "pipe",
+                "html": "<p>pipe</p>",
                 "tooltip": "pipe",
                 "url": ""
             };
 
         case "pop":
             return {
-                "html": "pop",
+                "html": "<p>pop</p>",
                 "tooltip": "pop",
                 "url": ""
             };
 
         case "poptry":
             return {
-                "html": "pop try",
+                "html": "<p>pop try</p>",
                 "tooltip": "pop try",
                 "url": ""
             };
 
         case "pos":
             return {
-                "html": "match position",
+                "html": "<p>match position</p>",
                 "tooltip": "match position",
                 "url": ""
             };
 
         case "postdec":
             return {
-                "html": "postdecrement (--)",
+                "html": "<p>postdecrement (--)</p>",
                 "tooltip": "postdecrement (--)",
                 "url": ""
             };
 
         case "postinc":
             return {
-                "html": "postincrement (++)",
+                "html": "<p>postincrement (++)</p>",
                 "tooltip": "postincrement (++)",
                 "url": ""
             };
 
         case "pow":
             return {
-                "html": "exponentiation (**)",
+                "html": "<p>exponentiation (**)</p>",
                 "tooltip": "exponentiation (**)",
                 "url": ""
             };
 
         case "predec":
             return {
-                "html": "predecrement (--)",
+                "html": "<p>predecrement (--)</p>",
                 "tooltip": "predecrement (--)",
                 "url": ""
             };
 
         case "preinc":
             return {
-                "html": "preincrement (++)",
+                "html": "<p>preincrement (++)</p>",
                 "tooltip": "preincrement (++)",
                 "url": ""
             };
 
         case "print":
             return {
-                "html": "print",
+                "html": "<p>print</p>",
                 "tooltip": "print",
                 "url": ""
             };
 
         case "prototype":
             return {
-                "html": "subroutine prototype",
+                "html": "<p>subroutine prototype</p>",
                 "tooltip": "subroutine prototype",
                 "url": ""
             };
 
         case "prtf":
             return {
-                "html": "printf",
+                "html": "<p>printf</p>",
                 "tooltip": "printf",
                 "url": ""
             };
 
         case "push":
             return {
-                "html": "push",
+                "html": "<p>push</p>",
                 "tooltip": "push",
                 "url": ""
             };
 
         case "pushdefer":
             return {
-                "html": "push defer {} block",
+                "html": "<p>push defer {} block</p>",
                 "tooltip": "push defer {} block",
                 "url": ""
             };
 
         case "pushmark":
             return {
-                "html": "pushmark",
+                "html": "<p>pushmark</p>",
                 "tooltip": "pushmark",
                 "url": ""
             };
 
         case "qr":
             return {
-                "html": "pattern quote (qr//)",
+                "html": "<p>pattern quote (qr//)</p>",
                 "tooltip": "pattern quote (qr//)",
                 "url": ""
             };
 
         case "quotemeta":
             return {
-                "html": "quotemeta",
+                "html": "<p>quotemeta</p>",
                 "tooltip": "quotemeta",
                 "url": ""
             };
 
         case "rand":
             return {
-                "html": "rand",
+                "html": "<p>rand</p>",
                 "tooltip": "rand",
                 "url": ""
             };
 
         case "range":
             return {
-                "html": "flipflop",
+                "html": "<p>flipflop</p>",
                 "tooltip": "flipflop",
                 "url": ""
             };
 
         case "rcatline":
             return {
-                "html": "append I/O operator",
+                "html": "<p>append I/O operator</p>",
                 "tooltip": "append I/O operator",
                 "url": ""
             };
 
         case "read":
             return {
-                "html": "read",
+                "html": "<p>read</p>",
                 "tooltip": "read",
                 "url": ""
             };
 
         case "readdir":
             return {
-                "html": "readdir",
+                "html": "<p>readdir</p>",
                 "tooltip": "readdir",
                 "url": ""
             };
 
         case "readline":
             return {
-                "html": "<HANDLE>",
-                "tooltip": "<HANDLE>",
+                "html": "<p>&lt;HANDLE&gt;</p>",
+                "tooltip": "&lt;HANDLE&gt;",
                 "url": ""
             };
 
         case "readlink":
             return {
-                "html": "readlink",
+                "html": "<p>readlink</p>",
                 "tooltip": "readlink",
                 "url": ""
             };
 
         case "recv":
             return {
-                "html": "recv",
+                "html": "<p>recv</p>",
                 "tooltip": "recv",
                 "url": ""
             };
 
         case "redo":
             return {
-                "html": "redo",
+                "html": "<p>redo</p>",
                 "tooltip": "redo",
                 "url": ""
             };
 
         case "ref":
             return {
-                "html": "reference-type operator",
+                "html": "<p>reference-type operator</p>",
                 "tooltip": "reference-type operator",
                 "url": ""
             };
 
         case "refaddr":
             return {
-                "html": "refaddr",
+                "html": "<p>refaddr</p>",
                 "tooltip": "refaddr",
                 "url": ""
             };
 
         case "refassign":
             return {
-                "html": "lvalue ref assignment",
+                "html": "<p>lvalue ref assignment</p>",
                 "tooltip": "lvalue ref assignment",
                 "url": ""
             };
 
         case "refgen":
             return {
-                "html": "reference constructor",
+                "html": "<p>reference constructor</p>",
                 "tooltip": "reference constructor",
                 "url": ""
             };
 
         case "reftype":
             return {
-                "html": "reftype",
+                "html": "<p>reftype</p>",
                 "tooltip": "reftype",
                 "url": ""
             };
 
         case "regcmaybe":
             return {
-                "html": "regexp internal guard",
+                "html": "<p>regexp internal guard</p>",
                 "tooltip": "regexp internal guard",
                 "url": ""
             };
 
         case "regcomp":
             return {
-                "html": "regexp compilation",
+                "html": "<p>regexp compilation</p>",
                 "tooltip": "regexp compilation",
                 "url": ""
             };
 
         case "regcreset":
             return {
-                "html": "regexp internal reset",
+                "html": "<p>regexp internal reset</p>",
                 "tooltip": "regexp internal reset",
                 "url": ""
             };
 
         case "rename":
             return {
-                "html": "rename",
+                "html": "<p>rename</p>",
                 "tooltip": "rename",
                 "url": ""
             };
 
         case "repeat":
             return {
-                "html": "repeat (x)",
+                "html": "<p>repeat (x)</p>",
                 "tooltip": "repeat (x)",
                 "url": ""
             };
 
         case "require":
             return {
-                "html": "require",
+                "html": "<p>require</p>",
                 "tooltip": "require",
                 "url": ""
             };
 
         case "reset":
             return {
-                "html": "symbol reset",
+                "html": "<p>symbol reset</p>",
                 "tooltip": "symbol reset",
                 "url": ""
             };
 
         case "return":
             return {
-                "html": "return",
+                "html": "<p>return</p>",
                 "tooltip": "return",
                 "url": ""
             };
 
         case "reverse":
             return {
-                "html": "reverse",
+                "html": "<p>reverse</p>",
                 "tooltip": "reverse",
                 "url": ""
             };
 
         case "rewinddir":
             return {
-                "html": "rewinddir",
+                "html": "<p>rewinddir</p>",
                 "tooltip": "rewinddir",
                 "url": ""
             };
 
         case "right_shift":
             return {
-                "html": "right bitshift (>>)",
-                "tooltip": "right bitshift (>>)",
+                "html": "<p>right bitshift (&gt;&gt;)</p>",
+                "tooltip": "right bitshift (&gt;&gt;)",
                 "url": ""
             };
 
         case "rindex":
             return {
-                "html": "rindex",
+                "html": "<p>rindex</p>",
                 "tooltip": "rindex",
                 "url": ""
             };
 
         case "rmdir":
             return {
-                "html": "rmdir",
+                "html": "<p>rmdir</p>",
                 "tooltip": "rmdir",
                 "url": ""
             };
 
         case "runcv":
             return {
-                "html": "__SUB__",
+                "html": "<p>__SUB__</p>",
                 "tooltip": "__SUB__",
                 "url": ""
             };
 
         case "rv2av":
             return {
-                "html": "array dereference",
+                "html": "<p>array dereference</p>",
                 "tooltip": "array dereference",
                 "url": ""
             };
 
         case "rv2cv":
             return {
-                "html": "subroutine dereference",
+                "html": "<p>subroutine dereference</p>",
                 "tooltip": "subroutine dereference",
                 "url": ""
             };
 
         case "rv2gv":
             return {
-                "html": "ref-to-glob cast",
+                "html": "<p>ref-to-glob cast</p>",
                 "tooltip": "ref-to-glob cast",
                 "url": ""
             };
 
         case "rv2hv":
             return {
-                "html": "hash dereference",
+                "html": "<p>hash dereference</p>",
                 "tooltip": "hash dereference",
                 "url": ""
             };
 
         case "rv2sv":
             return {
-                "html": "scalar dereference",
+                "html": "<p>scalar dereference</p>",
                 "tooltip": "scalar dereference",
                 "url": ""
             };
 
         case "sassign":
             return {
-                "html": "scalar assignment",
+                "html": "<p>scalar assignment</p>",
                 "tooltip": "scalar assignment",
                 "url": ""
             };
 
         case "say":
             return {
-                "html": "say",
+                "html": "<p>say</p>",
                 "tooltip": "say",
                 "url": ""
             };
 
         case "sbit_and":
             return {
-                "html": "string bitwise and (&.)",
-                "tooltip": "string bitwise and (&.)",
+                "html": "<p>string bitwise and (&amp;.)</p>",
+                "tooltip": "string bitwise and (&amp;.)",
                 "url": ""
             };
 
         case "sbit_or":
             return {
-                "html": "string bitwise or (|.)",
+                "html": "<p>string bitwise or (|.)</p>",
                 "tooltip": "string bitwise or (|.)",
                 "url": ""
             };
 
         case "sbit_xor":
             return {
-                "html": "string bitwise xor (^.)",
+                "html": "<p>string bitwise xor (^.)</p>",
                 "tooltip": "string bitwise xor (^.)",
                 "url": ""
             };
 
         case "scalar":
             return {
-                "html": "scalar",
+                "html": "<p>scalar</p>",
                 "tooltip": "scalar",
                 "url": ""
             };
 
         case "schomp":
             return {
-                "html": "scalar chomp",
+                "html": "<p>scalar chomp</p>",
                 "tooltip": "scalar chomp",
                 "url": ""
             };
 
         case "schop":
             return {
-                "html": "scalar chop",
+                "html": "<p>scalar chop</p>",
                 "tooltip": "scalar chop",
                 "url": ""
             };
 
         case "scmp":
             return {
-                "html": "string comparison (cmp)",
+                "html": "<p>string comparison (cmp)</p>",
                 "tooltip": "string comparison (cmp)",
                 "url": ""
             };
 
         case "scomplement":
             return {
-                "html": "string 1's complement (~)",
-                "tooltip": "string 1's complement (~)",
+                "html": "<p>string 1&#x27;s complement (~)</p>",
+                "tooltip": "string 1&#x27;s complement (~)",
                 "url": ""
             };
 
         case "scope":
             return {
-                "html": "block",
+                "html": "<p>block</p>",
                 "tooltip": "block",
                 "url": ""
             };
 
         case "seek":
             return {
-                "html": "seek",
+                "html": "<p>seek</p>",
                 "tooltip": "seek",
                 "url": ""
             };
 
         case "seekdir":
             return {
-                "html": "seekdir",
+                "html": "<p>seekdir</p>",
                 "tooltip": "seekdir",
                 "url": ""
             };
 
         case "select":
             return {
-                "html": "select",
+                "html": "<p>select</p>",
                 "tooltip": "select",
                 "url": ""
             };
 
         case "semctl":
             return {
-                "html": "semctl",
+                "html": "<p>semctl</p>",
                 "tooltip": "semctl",
                 "url": ""
             };
 
         case "semget":
             return {
-                "html": "semget",
+                "html": "<p>semget</p>",
                 "tooltip": "semget",
                 "url": ""
             };
 
         case "semop":
             return {
-                "html": "semop",
+                "html": "<p>semop</p>",
                 "tooltip": "semop",
                 "url": ""
             };
 
         case "send":
             return {
-                "html": "send",
+                "html": "<p>send</p>",
                 "tooltip": "send",
                 "url": ""
             };
 
         case "seq":
             return {
-                "html": "string eq",
+                "html": "<p>string eq</p>",
                 "tooltip": "string eq",
                 "url": ""
             };
 
         case "setpgrp":
             return {
-                "html": "setpgrp",
+                "html": "<p>setpgrp</p>",
                 "tooltip": "setpgrp",
                 "url": ""
             };
 
         case "setpriority":
             return {
-                "html": "setpriority",
+                "html": "<p>setpriority</p>",
                 "tooltip": "setpriority",
                 "url": ""
             };
 
         case "sge":
             return {
-                "html": "string ge",
+                "html": "<p>string ge</p>",
                 "tooltip": "string ge",
                 "url": ""
             };
 
         case "sgrent":
             return {
-                "html": "setgrent",
+                "html": "<p>setgrent</p>",
                 "tooltip": "setgrent",
                 "url": ""
             };
 
         case "sgt":
             return {
-                "html": "string gt",
+                "html": "<p>string gt</p>",
                 "tooltip": "string gt",
                 "url": ""
             };
 
         case "shift":
             return {
-                "html": "shift",
+                "html": "<p>shift</p>",
                 "tooltip": "shift",
                 "url": ""
             };
 
         case "shmctl":
             return {
-                "html": "shmctl",
+                "html": "<p>shmctl</p>",
                 "tooltip": "shmctl",
                 "url": ""
             };
 
         case "shmget":
             return {
-                "html": "shmget",
+                "html": "<p>shmget</p>",
                 "tooltip": "shmget",
                 "url": ""
             };
 
         case "shmread":
             return {
-                "html": "shmread",
+                "html": "<p>shmread</p>",
                 "tooltip": "shmread",
                 "url": ""
             };
 
         case "shmwrite":
             return {
-                "html": "shmwrite",
+                "html": "<p>shmwrite</p>",
                 "tooltip": "shmwrite",
                 "url": ""
             };
 
         case "shostent":
             return {
-                "html": "sethostent",
+                "html": "<p>sethostent</p>",
                 "tooltip": "sethostent",
                 "url": ""
             };
 
         case "shutdown":
             return {
-                "html": "shutdown",
+                "html": "<p>shutdown</p>",
                 "tooltip": "shutdown",
                 "url": ""
             };
 
         case "sin":
             return {
-                "html": "sin",
+                "html": "<p>sin</p>",
                 "tooltip": "sin",
                 "url": ""
             };
 
         case "sle":
             return {
-                "html": "string le",
+                "html": "<p>string le</p>",
                 "tooltip": "string le",
                 "url": ""
             };
 
         case "sleep":
             return {
-                "html": "sleep",
+                "html": "<p>sleep</p>",
                 "tooltip": "sleep",
                 "url": ""
             };
 
         case "slt":
             return {
-                "html": "string lt",
+                "html": "<p>string lt</p>",
                 "tooltip": "string lt",
                 "url": ""
             };
 
         case "smartmatch":
             return {
-                "html": "smart match",
+                "html": "<p>smart match</p>",
                 "tooltip": "smart match",
                 "url": ""
             };
 
         case "sne":
             return {
-                "html": "string ne",
+                "html": "<p>string ne</p>",
                 "tooltip": "string ne",
                 "url": ""
             };
 
         case "snetent":
             return {
-                "html": "setnetent",
+                "html": "<p>setnetent</p>",
                 "tooltip": "setnetent",
                 "url": ""
             };
 
         case "socket":
             return {
-                "html": "socket",
+                "html": "<p>socket</p>",
                 "tooltip": "socket",
                 "url": ""
             };
 
         case "sockpair":
             return {
-                "html": "socketpair",
+                "html": "<p>socketpair</p>",
                 "tooltip": "socketpair",
                 "url": ""
             };
 
         case "sort":
             return {
-                "html": "sort",
+                "html": "<p>sort</p>",
                 "tooltip": "sort",
                 "url": ""
             };
 
         case "splice":
             return {
-                "html": "splice",
+                "html": "<p>splice</p>",
                 "tooltip": "splice",
                 "url": ""
             };
 
         case "split":
             return {
-                "html": "split",
+                "html": "<p>split</p>",
                 "tooltip": "split",
                 "url": ""
             };
 
         case "sprintf":
             return {
-                "html": "sprintf",
+                "html": "<p>sprintf</p>",
                 "tooltip": "sprintf",
                 "url": ""
             };
 
         case "sprotoent":
             return {
-                "html": "setprotoent",
+                "html": "<p>setprotoent</p>",
                 "tooltip": "setprotoent",
                 "url": ""
             };
 
         case "spwent":
             return {
-                "html": "setpwent",
+                "html": "<p>setpwent</p>",
                 "tooltip": "setpwent",
                 "url": ""
             };
 
         case "sqrt":
             return {
-                "html": "sqrt",
+                "html": "<p>sqrt</p>",
                 "tooltip": "sqrt",
                 "url": ""
             };
 
         case "srand":
             return {
-                "html": "srand",
+                "html": "<p>srand</p>",
                 "tooltip": "srand",
                 "url": ""
             };
 
         case "srefgen":
             return {
-                "html": "single ref constructor",
+                "html": "<p>single ref constructor</p>",
                 "tooltip": "single ref constructor",
                 "url": ""
             };
 
         case "sselect":
             return {
-                "html": "select system call",
+                "html": "<p>select system call</p>",
                 "tooltip": "select system call",
                 "url": ""
             };
 
         case "sservent":
             return {
-                "html": "setservent",
+                "html": "<p>setservent</p>",
                 "tooltip": "setservent",
                 "url": ""
             };
 
         case "ssockopt":
             return {
-                "html": "setsockopt",
+                "html": "<p>setsockopt</p>",
                 "tooltip": "setsockopt",
                 "url": ""
             };
 
         case "stat":
             return {
-                "html": "stat",
+                "html": "<p>stat</p>",
                 "tooltip": "stat",
                 "url": ""
             };
 
         case "stringify":
             return {
-                "html": "string",
+                "html": "<p>string</p>",
                 "tooltip": "string",
                 "url": ""
             };
 
         case "stub":
             return {
-                "html": "stub",
+                "html": "<p>stub</p>",
                 "tooltip": "stub",
                 "url": ""
             };
 
         case "study":
             return {
-                "html": "study",
+                "html": "<p>study</p>",
                 "tooltip": "study",
                 "url": ""
             };
 
         case "subst":
             return {
-                "html": "substitution (s///)",
+                "html": "<p>substitution (s///)</p>",
                 "tooltip": "substitution (s///)",
                 "url": ""
             };
 
         case "substcont":
             return {
-                "html": "substitution iterator",
+                "html": "<p>substitution iterator</p>",
                 "tooltip": "substitution iterator",
                 "url": ""
             };
 
         case "substr":
             return {
-                "html": "substr",
+                "html": "<p>substr</p>",
                 "tooltip": "substr",
                 "url": ""
             };
 
         case "substr_left":
             return {
-                "html": "substr left",
+                "html": "<p>substr left</p>",
                 "tooltip": "substr left",
                 "url": ""
             };
 
         case "subtract":
             return {
-                "html": "subtraction (-)",
+                "html": "<p>subtraction (-)</p>",
                 "tooltip": "subtraction (-)",
                 "url": ""
             };
 
         case "symlink":
             return {
-                "html": "symlink",
+                "html": "<p>symlink</p>",
                 "tooltip": "symlink",
                 "url": ""
             };
 
         case "syscall":
             return {
-                "html": "syscall",
+                "html": "<p>syscall</p>",
                 "tooltip": "syscall",
                 "url": ""
             };
 
         case "sysopen":
             return {
-                "html": "sysopen",
+                "html": "<p>sysopen</p>",
                 "tooltip": "sysopen",
                 "url": ""
             };
 
         case "sysread":
             return {
-                "html": "sysread",
+                "html": "<p>sysread</p>",
                 "tooltip": "sysread",
                 "url": ""
             };
 
         case "sysseek":
             return {
-                "html": "sysseek",
+                "html": "<p>sysseek</p>",
                 "tooltip": "sysseek",
                 "url": ""
             };
 
         case "system":
             return {
-                "html": "system",
+                "html": "<p>system</p>",
                 "tooltip": "system",
                 "url": ""
             };
 
         case "syswrite":
             return {
-                "html": "syswrite",
+                "html": "<p>syswrite</p>",
                 "tooltip": "syswrite",
                 "url": ""
             };
 
         case "tell":
             return {
-                "html": "tell",
+                "html": "<p>tell</p>",
                 "tooltip": "tell",
                 "url": ""
             };
 
         case "telldir":
             return {
-                "html": "telldir",
+                "html": "<p>telldir</p>",
                 "tooltip": "telldir",
                 "url": ""
             };
 
         case "tie":
             return {
-                "html": "tie",
+                "html": "<p>tie</p>",
                 "tooltip": "tie",
                 "url": ""
             };
 
         case "tied":
             return {
-                "html": "tied",
+                "html": "<p>tied</p>",
                 "tooltip": "tied",
                 "url": ""
             };
 
         case "time":
             return {
-                "html": "time",
+                "html": "<p>time</p>",
                 "tooltip": "time",
                 "url": ""
             };
 
         case "tms":
             return {
-                "html": "times",
+                "html": "<p>times</p>",
                 "tooltip": "times",
                 "url": ""
             };
 
         case "trans":
             return {
-                "html": "transliteration (tr///)",
+                "html": "<p>transliteration (tr///)</p>",
                 "tooltip": "transliteration (tr///)",
                 "url": ""
             };
 
         case "transr":
             return {
-                "html": "transliteration (tr///)",
+                "html": "<p>transliteration (tr///)</p>",
                 "tooltip": "transliteration (tr///)",
                 "url": ""
             };
 
         case "truncate":
             return {
-                "html": "truncate",
+                "html": "<p>truncate</p>",
                 "tooltip": "truncate",
                 "url": ""
             };
 
         case "uc":
             return {
-                "html": "uc",
+                "html": "<p>uc</p>",
                 "tooltip": "uc",
                 "url": ""
             };
 
         case "ucfirst":
             return {
-                "html": "ucfirst",
+                "html": "<p>ucfirst</p>",
                 "tooltip": "ucfirst",
                 "url": ""
             };
 
         case "umask":
             return {
-                "html": "umask",
+                "html": "<p>umask</p>",
                 "tooltip": "umask",
                 "url": ""
             };
 
         case "undef":
             return {
-                "html": "undef operator",
+                "html": "<p>undef operator</p>",
                 "tooltip": "undef operator",
                 "url": ""
             };
 
         case "unlink":
             return {
-                "html": "unlink",
+                "html": "<p>unlink</p>",
                 "tooltip": "unlink",
                 "url": ""
             };
 
         case "unpack":
             return {
-                "html": "unpack",
+                "html": "<p>unpack</p>",
                 "tooltip": "unpack",
                 "url": ""
             };
 
         case "unshift":
             return {
-                "html": "unshift",
+                "html": "<p>unshift</p>",
                 "tooltip": "unshift",
                 "url": ""
             };
 
         case "unstack":
             return {
-                "html": "iteration finalizer",
+                "html": "<p>iteration finalizer</p>",
                 "tooltip": "iteration finalizer",
                 "url": ""
             };
 
         case "untie":
             return {
-                "html": "untie",
+                "html": "<p>untie</p>",
                 "tooltip": "untie",
                 "url": ""
             };
 
         case "unweaken":
             return {
-                "html": "reference unweaken",
+                "html": "<p>reference unweaken</p>",
                 "tooltip": "reference unweaken",
                 "url": ""
             };
 
         case "utime":
             return {
-                "html": "utime",
+                "html": "<p>utime</p>",
                 "tooltip": "utime",
                 "url": ""
             };
 
         case "values":
             return {
-                "html": "values",
+                "html": "<p>values</p>",
                 "tooltip": "values",
                 "url": ""
             };
 
         case "vec":
             return {
-                "html": "vec",
+                "html": "<p>vec</p>",
                 "tooltip": "vec",
                 "url": ""
             };
 
         case "wait":
             return {
-                "html": "wait",
+                "html": "<p>wait</p>",
                 "tooltip": "wait",
                 "url": ""
             };
 
         case "waitpid":
             return {
-                "html": "waitpid",
+                "html": "<p>waitpid</p>",
                 "tooltip": "waitpid",
                 "url": ""
             };
 
         case "wantarray":
             return {
-                "html": "wantarray",
+                "html": "<p>wantarray</p>",
                 "tooltip": "wantarray",
                 "url": ""
             };
 
         case "warn":
             return {
-                "html": "warn",
+                "html": "<p>warn</p>",
                 "tooltip": "warn",
                 "url": ""
             };
 
         case "weaken":
             return {
-                "html": "reference weaken",
+                "html": "<p>reference weaken</p>",
                 "tooltip": "reference weaken",
                 "url": ""
             };
 
         case "xor":
             return {
-                "html": "logical xor",
+                "html": "<p>logical xor</p>",
                 "tooltip": "logical xor",
                 "url": ""
             };

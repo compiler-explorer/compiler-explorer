@@ -87,6 +87,7 @@ const TEST_MATRIX: Record<PropertyKey, [string, string, string, string][]> = {
             'https://llvm.org/docs/LangRef.html#ret-instruction',
         ],
     ],
+    perl: [['ncmp', 'numeric comparison (&lt;=&gt;)', '<p>numeric comparison (&lt;=&gt;)</p>', '']],
     ptx: [
         [
             'add',
