@@ -6,6 +6,7 @@ import os
 import sys
 import urllib
 import re
+import html
 from urllib import request
 from urllib import parse
 
@@ -60,8 +61,8 @@ def parse(f):
             instructions.append(Instruction(
                 opcode_name,
                 [opcode_name],
-                opcode_desc,
-                opcode_desc,
+                html.escape(opcode_desc),
+                '<p>' + html.escape(opcode_desc) + '</p>',
             ))
     return instructions
 
