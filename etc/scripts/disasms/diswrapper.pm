@@ -64,7 +64,20 @@ CHECK {
 	    }
 	}
     }
-    my $walker = compile('-concise', '-main', @names);
+    my @args;
+    for my $arg (@ARGV) {
+	if ($arg =~ /^-(?:concise|terse|linenoise|debug|
+			  basic|exec|tree|
+			  compact|loose|
+			  base[0-9]+|bigendian|littleendian|
+			  src)$/x) {
+	    push @args, $arg;
+	}
+	else {
+	    print STDERR "Unsupported argument: $arg\n";
+	}
+    }
+    my $walker = compile('-main', @args, @names);
     $walker->();
 
     open my $fh, ">", $filename
