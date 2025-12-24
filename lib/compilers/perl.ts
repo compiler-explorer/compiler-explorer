@@ -82,7 +82,7 @@ export class PerlCompiler extends BaseCompiler {
     }
 
     override optionsForFilter(filters: ParseFiltersAndOutputOptions, outputFilename: string) {
-        return ['-I', this.disasmLibPath, '-M' + this.disasmModule + '=' + outputFilename];
+        return ['-I', this.disasmLibPath, '-M' + this.disasmModule + '=' + outputFilename, '-c'];
     }
 
     override getArgumentParserClass() {
