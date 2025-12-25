@@ -51,8 +51,10 @@ export class PerlCompiler extends BaseCompiler {
 
     override async processAsm(result) {
         // only nextstates have line numbers
-        // state op parameters are (stash seq_no file:lineno)
-        const nextstateRe = /^(?:-|\w+)\s+<;> (?:ex-)?(?:next|db)state\([\w:]+ \d+ ([^\s:]+):(\d+)\)/;
+        // state op parameters are (optlabel stash seq_no file:lineno)
+        // I miss /x
+        const nextstateRe =
+            /^(?:-|\w+)\s+<;> (?:ex-)?(?:next|db)state\((?:[^:\s]+: )?[^:\s]+(?:::[^:\s]+)* \d+ ([^\s:]+):(\d+)\)/;
         const functionTopRe = /:$/;
 
         const bytecodeLines = result.asm.split('\n');

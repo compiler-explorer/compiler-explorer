@@ -45,6 +45,7 @@ CHECK {
 
     open my $fh, ">", $filename
 	or die "Cannot create $filename: $!";
+    binmode $fh, ":utf8";
     walk_output($fh);
 
     my @args;
