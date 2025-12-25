@@ -47,6 +47,7 @@ export const InstructionSetsList = [
     'mos6502',
     'mrisc32',
     'msp430',
+    'perl',
     'powerpc',
     'ptx',
     'python',
