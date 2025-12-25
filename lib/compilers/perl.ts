@@ -53,7 +53,7 @@ export class PerlCompiler extends BaseCompiler {
         // only nextstates have line numbers
         // state op parameters are (stash seq_no file:lineno)
         const nextstateRe = /^(?:-|\w+)\s+<;> (?:ex-)?(?:next|db)state\([\w:]+ \d+ ([^\s:]+):(\d+)\)/;
-        const functionTopRe = /^(?:main program|main::\w+):/;
+        const functionTopRe = /:$/;
 
         const bytecodeLines = result.asm.split('\n');
 
