@@ -357,6 +357,7 @@ export class Editor extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Edit
         this.eventHub.on('editorSetDecoration', this.onEditorSetDecoration, this);
         this.eventHub.on('editorDisplayFlow', this.onEditorDisplayFlow, this);
         this.eventHub.on('editorLinkLine', this.onEditorLinkLine, this);
+        this.eventHub.on('editorApplyQuickfix', this.onEditorApplyQuickfix, this);
         this.eventHub.on('conformanceViewOpen', this.onConformanceViewOpen, this);
         this.eventHub.on('conformanceViewClose', this.onConformanceViewClose, this);
         this.eventHub.on('newSource', this.onNewSource, this);
@@ -1114,13 +1115,7 @@ export class Editor extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Edit
         );
     }
 
-    updateSource(newSource: string): void {
-        // Create something that looks like an edit operation for the whole text
-        const operation = {
-            range: this.editor.getModel()?.getFullModelRange(),
-            forceMoveMarkers: true,
-            text: newSource,
-        };
+    applyEdit(operation: monaco.editor.IIdentifiedSingleEditOperation): void {
         const nullFn = () => {
             return null;
         };
@@ -1132,6 +1127,16 @@ export class Editor extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Edit
         // @ts-expect-error: See above comment maybe
         this.editor.getModel()?.pushEditOperations(viewState?.cursorState ?? null, [operation], nullFn);
         this.numberUsedLines();
+    }
+
+    updateSource(newSource: string): void {
+        // Create something that looks like an edit operation for the whole text
+        const operation = {
+            range: this.editor.getModel()!.getFullModelRange(),
+            forceMoveMarkers: true,
+            text: newSource,
+        };
+        this.applyEdit(operation);
 
         if (!this.awaitingInitialResults) {
             if (this.selection) {
@@ -1752,6 +1757,12 @@ export class Editor extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Edit
                 }, 5000);
             }
             this.updateDecorations();
+        }
+    }
+
+    onEditorApplyQuickfix(editorId: number, range: monaco.IRange, text: string | null): void {
+        if (editorId === this.id) {
+            this.applyEdit({forceMoveMarkers: true, range, text});
         }
     }
 
