@@ -250,7 +250,7 @@ describe('Rust compiler output', () => {
         expect(utils.parseRustOutput('Unrelated\nLine one\n --> bob.rs:1:0\nUnrelated', 'bob.rs')).toEqual([
             {text: 'Unrelated'},
             {
-                tag: {file: 'bob.rs', column: 0, line: 1, text: 'Line one', severity: 3, fixes: []},
+                tag: {file: 'bob.rs', column: 0, line: 1, text: 'Line one', severity: 3},
                 text: 'Line one',
             },
             {
@@ -261,7 +261,7 @@ describe('Rust compiler output', () => {
         ]);
         expect(utils.parseRustOutput('Line one\n --> bob.rs:1:5', 'bob.rs')).toEqual([
             {
-                tag: {file: 'bob.rs', column: 5, line: 1, text: 'Line one', severity: 3, fixes: []},
+                tag: {file: 'bob.rs', column: 5, line: 1, text: 'Line one', severity: 3},
                 text: 'Line one',
             },
             {
@@ -271,7 +271,7 @@ describe('Rust compiler output', () => {
         ]);
         expect(utils.parseRustOutput('Multiple spaces\n   --> bob.rs:1:5', 'bob.rs')).toEqual([
             {
-                tag: {file: 'bob.rs', column: 5, line: 1, text: 'Multiple spaces', severity: 3, fixes: []},
+                tag: {file: 'bob.rs', column: 5, line: 1, text: 'Multiple spaces', severity: 3},
                 text: 'Multiple spaces',
             },
             {
@@ -284,7 +284,7 @@ describe('Rust compiler output', () => {
     it('replaces all references to input source', () => {
         expect(utils.parseRustOutput('error: Error in bob.rs\n --> bob.rs:1:42', 'bob.rs')).toEqual([
             {
-                tag: {file: 'bob.rs', column: 42, line: 1, text: 'error: Error in <source>', severity: 3, fixes: []},
+                tag: {file: 'bob.rs', column: 42, line: 1, text: 'error: Error in <source>', severity: 3},
                 text: 'error: Error in <source>',
             },
             {
@@ -297,7 +297,7 @@ describe('Rust compiler output', () => {
     it('treats <stdin> as if it were the compiler source', () => {
         expect(utils.parseRustOutput('error: <stdin> is sad\n --> <stdin>:120:25', 'bob.rs')).toEqual([
             {
-                tag: {file: 'bob.rs', column: 25, line: 120, text: 'error: <source> is sad', severity: 3, fixes: []},
+                tag: {file: 'bob.rs', column: 25, line: 120, text: 'error: <source> is sad', severity: 3},
                 text: 'error: <source> is sad',
             },
             {
@@ -319,7 +319,6 @@ describe('Rust compiler output', () => {
                     column: 27,
                     text: 'error[E0425]: cannot find value `x` in this scope',
                     severity: 3,
-                    fixes: [],
                 },
                 text: 'error[\x1B]8;;https://doc.rust-lang.org/error_codes/E0425.html\x07E0425\x1B]8;;\x07]: cannot find value `x` in this scope',
             },
@@ -343,6 +342,25 @@ describe('Rust compiler output', () => {
                     column: 27,
                     text: 'error',
                     severity: 3,
+                },
+                text: 'error',
+            },
+            {
+                tag: {
+                    line: 42,
+                    column: 27,
+                    text: '',
+                    severity: 3,
+                },
+                text: ' --> <source>:42:27',
+            },
+            {
+                text: '15  + use std::collections::HashMap;',
+                tag: {
+                    line: 42,
+                    column: 27,
+                    text: 'error',
+                    severity: 3,
                     fixes: [
                         {
                             title: 'Add import for `std::collections::HashMap`',
@@ -358,6 +376,21 @@ describe('Rust compiler output', () => {
                         },
                     ],
                 },
+            },
+        ]);
+
+        expect(
+            utils.parseRustOutput(
+                'error\n --> <source>:42:27\n   = help: add `#![feature(num_midpoint_signed)]` to the crate attributes to enable',
+            ),
+        ).toEqual([
+            {
+                tag: {
+                    line: 42,
+                    column: 27,
+                    text: 'error',
+                    severity: 3,
+                },
                 text: 'error',
             },
             {
@@ -369,15 +402,8 @@ describe('Rust compiler output', () => {
                 },
                 text: ' --> <source>:42:27',
             },
-            {text: '15  + use std::collections::HashMap;'},
-        ]);
-
-        expect(
-            utils.parseRustOutput(
-                'error\n --> <source>:42:27\n   = help: add `#![feature(num_midpoint_signed)]` to the crate attributes to enable',
-            ),
-        ).toEqual([
             {
+                text: '   = help: add `#![feature(num_midpoint_signed)]` to the crate attributes to enable',
                 tag: {
                     line: 42,
                     column: 27,
@@ -398,18 +424,7 @@ describe('Rust compiler output', () => {
                         },
                     ],
                 },
-                text: 'error',
             },
-            {
-                tag: {
-                    line: 42,
-                    column: 27,
-                    text: '',
-                    severity: 3,
-                },
-                text: ' --> <source>:42:27',
-            },
-            {text: '   = help: add `#![feature(num_midpoint_signed)]` to the crate attributes to enable'},
         ]);
     });
 
@@ -435,7 +450,6 @@ warning: 2 warnings emitted`,
                     file: 'example.rs',
                     severity: 2,
                     text: 'warning: function `f1` is never used',
-                    fixes: [],
                 },
             },
             {
@@ -457,7 +471,6 @@ warning: 2 warnings emitted`,
                     file: 'm.rs',
                     severity: 2,
                     text: 'warning: function `f2` is never used',
-                    fixes: [],
                 },
             },
             {

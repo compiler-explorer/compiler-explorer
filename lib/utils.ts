@@ -314,7 +314,6 @@ export function parseRustOutput(lines: string, inputFilename?: string, pathPrefi
                         column,
                         text,
                         severity: parseSeverity(text),
-                        fixes: [],
                     };
                     result.push(currentDiagnostic);
                 }
@@ -328,13 +327,17 @@ export function parseRustOutput(lines: string, inputFilename?: string, pathPrefi
                 };
             }
 
-            if (currentDiagnostic?.tag?.fixes !== undefined) {
-                for (const {re, makeFix} of quickfixes) {
-                    const match = filteredLine.match(re);
-                    if (match) {
-                        currentDiagnostic.tag.fixes.push(makeFix(match));
-                    }
+            const fixes = quickfixes.flatMap(({re, makeFix}) => {
+                const match = filteredLine.match(re);
+                if (match) {
+                    return [makeFix(match)];
+                } else {
+                    return [];
                 }
+            });
+
+            if (currentDiagnostic?.tag && fixes.length !== 0) {
+                lineObj.tag = {...currentDiagnostic.tag, fixes};
             }
 
             result.push(lineObj);

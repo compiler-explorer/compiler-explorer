@@ -24,10 +24,12 @@
 
 import {Container} from 'golden-layout';
 import $ from 'jquery';
+import * as monaco from 'monaco-editor';
 import _ from 'underscore';
 import {escapeHTML} from '../../shared/common-utils.js';
 import {CompilationResult} from '../../types/compilation/compilation.interfaces.js';
 import {CompilerInfo} from '../../types/compiler.interfaces.js';
+import {Fix} from '../../types/resultline/resultline.interfaces.js';
 import * as AnsiToHtml from '../ansi-to-html.js';
 import {Hub} from '../hub.js';
 import {updateAndCalcTopBarHeight} from '../utils.js';
@@ -172,7 +174,13 @@ export class Output extends Pane<OutputState> {
             if (obj.text === '') {
                 this.add('<br/>');
             } else {
-                this.add(this.normalAnsiToHtml.toHtml(obj.text), lineNumber, columnNumber, obj.tag?.file);
+                this.add(
+                    this.normalAnsiToHtml.toHtml(obj.text),
+                    lineNumber,
+                    columnNumber,
+                    obj.tag?.file,
+                    obj.tag?.fixes,
+                );
             }
         }
     }
@@ -275,11 +283,22 @@ export class Output extends Pane<OutputState> {
         }
     }
 
-    add(msg: string, lineNum?: number, column?: number, filename?: string) {
+    emitEditorApplyQuickfix(filename: string, range: monaco.IRange, text: string | null): void {
+        if (this.compilerInfo.editorId) {
+            this.eventHub.emit('editorApplyQuickfix', this.compilerInfo.editorId, range, text);
+        } else if (filename) {
+            const editorId = this.getEditorIdByFilename(filename);
+            if (editorId) {
+                this.eventHub.emit('editorApplyQuickfix', editorId, range, text);
+            }
+        }
+    }
+
+    add(msg: string, lineNum?: number, column?: number, filename?: string, fixes?: Fix[]) {
         const elem = $('<div/>').appendTo(this.contentRoot);
         if (lineNum && column && filename) {
             elem.empty();
-            $('<span class="linked-compiler-output-line"></span>')
+            const span = $('<span class="linked-compiler-output-line"></span>')
                 .html(msg)
                 .on('click', e => {
                     this.emitEditorLinkLine(lineNum, column, filename, true);
@@ -288,15 +307,48 @@ export class Output extends Pane<OutputState> {
                     e.preventDefault();
                     return false;
                 })
-                .on('click', '.diagnostic-url', e => {
-                    e.stopPropagation();
-                })
                 .on('mouseover', () => {
                     this.emitEditorLinkLine(lineNum, column, filename, false);
                 })
-                .appendTo(elem);
+                .on('click', '.diagnostic-url', e => {
+                    e.stopPropagation();
+                });
+
+            if (fixes) {
+                this.addQuickfixHandlers(span, msg, fixes, filename);
+            }
+
+            span.appendTo(elem);
         } else {
             elem.html(msg);
+        }
+    }
+
+    private addQuickfixHandlers(span: JQuery<HTMLElement>, msg: string, fixes: Fix[], filename: string): void {
+        if (fixes.length === 0) {
+            return;
+        }
+
+        span.attr('title', fixes[0].title).addClass('quickfix-action');
+        for (const fix of fixes) {
+            span.on('click', e => {
+                for (const {text, line, endline, column, endcolumn} of fix.edits) {
+                    if (line && endline && column && endcolumn) {
+                        this.emitEditorApplyQuickfix(
+                            filename,
+                            {
+                                startLineNumber: line,
+                                startColumn: column,
+                                endLineNumber: endline,
+                                endColumn: endcolumn,
+                            },
+                            text,
+                        );
+                    }
+                }
+                $(e.delegateTarget).replaceWith($('<span></span>').html(msg));
+                return false;
+            });
         }
     }
 
