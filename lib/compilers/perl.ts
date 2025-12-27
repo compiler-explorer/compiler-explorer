@@ -80,7 +80,7 @@ export class PerlCompiler extends BaseCompiler {
             bytecodeResult.push({text: line, source: sourceLoc});
         }
 
-        return {asm: bytecodeResult};
+        return {asm: bytecodeResult, languageId: 'perl-concise'};
     }
 
     override optionsForFilter(filters: ParseFiltersAndOutputOptions, outputFilename: string) {
