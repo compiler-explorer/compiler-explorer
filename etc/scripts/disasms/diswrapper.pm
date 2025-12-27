@@ -33,6 +33,17 @@ my $filename;
 
 # avoid modern perl features so it can work with old, old perls
 # tested with 5.12, 5.18, 5.40.0, 5.42.0
+
+my $fix_encoding = sub {
+    # work around a bug in B which doesn't (hopefully "didn't" soon)
+    # correctly mark the label strings as Unicode
+    my $val = shift;
+    utf8::decode($val); # get back to the (bad) characters written
+    utf8::decode($val); # get back to the correct characters
+    utf8::encode($val); # and encode them again
+    return $val;
+};
+
 sub import {
     shift; # class
     $filename = shift
@@ -43,9 +54,9 @@ CHECK {
     $filename
 	or die "diswrapper: Usage -Mdiswrapper,outputfilename";
 
-    open my $fh, ">", $filename
-	or die "Cannot create $filename: $!";
-    binmode $fh, ":utf8";
+    my $buf;
+    open my $fh, ">:utf8", \$buf
+	or die "Cannot open scalar: $!";
     walk_output($fh);
 
     my @args;
@@ -164,7 +175,35 @@ CHECK {
     }
 
     close $fh
-	or die "Cannot close $filename: $!";
+	or die "Cannot close scalar: $!";
+
+    # I should fix this by 5.44.0
+    if ("$[" < 5.044) {
+	# workaround https://github.com/Perl/perl5/issues/24040
+	my @lines = split /\n/, $buf;
+	for my $line (@lines) {
+	    # COP label not encoded properly
+	    $line =~ s{^((?:-|\w+)\s+<;>\s+ # label and class
+                        (?:ex-)?(?:next|db)state # opcode
+                        \()  # start of arguments
+                        ([^\s:]+:) # and the label we need to fix
+                      }
+	      { $1 . $fix_encoding->($2) }ex;
+	    # goto label not encoded properly
+	    $line =~ s{^((?:-|\w+)\s+<">\s+ # label and class
+                       goto\(")  # opcode and start of arguments
+                       ([^\s"]+) # and the label we need to fix
+                      }
+	      { $1 . $fix_encoding->($2) }ex;
+	}
+	$buf = join("\n", @lines);
+    }
+
+    open $fh, ">", $filename
+	or die "Cannot create $filename: $!\n";
+    print $fh $buf;
+    close $fh
+	or die "Cannot close $filename; $!\n";
 }
 
 1;
