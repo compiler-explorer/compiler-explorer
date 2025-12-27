@@ -186,6 +186,7 @@ export type CompilationResult = {
     downloads?: BuildEnvDownloadInfo[];
     gccDumpOutput?;
     languageId?: string;
+    asmKeywordTypes?: string[];
     result?: CompilationResult; // cmake inner result
 
     ppOutput?: PPOutput;

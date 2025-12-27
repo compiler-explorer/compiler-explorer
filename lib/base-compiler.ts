@@ -3240,6 +3240,7 @@ export class BaseCompiler {
                     result.parsingTime = res.parsingTime;
                     result.filteredCount = res.filteredCount;
                     if (res.languageId) result.languageId = res.languageId;
+                    if (res.asmKeywordTypes) result.asmKeywordTypes = res.asmKeywordTypes;
                     if (result.objdumpTime) {
                         const dumpAndParseTime =
                             Number.parseInt(result.objdumpTime, 10) + Number.parseInt(result.parsingTime, 10);
