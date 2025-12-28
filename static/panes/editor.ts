@@ -354,7 +354,6 @@ export class Editor extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Edit
         this.eventHub.on('compiling', this.onCompiling, this);
         this.eventHub.on('executeResult', this.onExecuteResponse, this);
         this.eventHub.on('selectLine', this.onSelectLine, this);
-        this.eventHub.on('editorSetDecoration', this.onEditorSetDecoration, this);
         this.eventHub.on('editorDisplayFlow', this.onEditorDisplayFlow, this);
         this.eventHub.on('editorLinkLine', this.onEditorLinkLine, this);
         this.eventHub.on('conformanceViewOpen', this.onConformanceViewOpen, this);
@@ -1262,7 +1261,7 @@ export class Editor extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Edit
         });
 
         if (before.hoverShowSource && !after.hoverShowSource) {
-            this.onEditorSetDecoration(this.id, -1, false);
+            this.onEditorLinkLine(this.id, -1, -1, -1, false);
         }
 
         if (after.useVim && !before.useVim) {
@@ -1719,6 +1718,8 @@ export class Editor extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Edit
                 this.pushRevealJump();
                 this.hub.activateTabForContainer(this.container);
                 this.editor.revealLineInCenter(lineNum);
+                this.editor.focus();
+                this.editor.setPosition({column: columnBegin >= 0 ? columnBegin : 0, lineNumber: lineNum});
             }
             this.decorations.linkedCode = [];
             if (lineNum && lineNum !== -1) {
@@ -1750,29 +1751,6 @@ export class Editor extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Edit
                     this.clearLinkedLine();
                     this.fadeTimeoutId = null;
                 }, 5000);
-            }
-            this.updateDecorations();
-        }
-    }
-
-    onEditorSetDecoration(id: number, lineNum: number, reveal: boolean, column?: number): void {
-        if (Number(id) === this.id) {
-            if (reveal && lineNum) {
-                this.pushRevealJump();
-                this.editor.revealLineInCenter(lineNum);
-                this.editor.focus();
-                this.editor.setPosition({column: column || 0, lineNumber: lineNum});
-            }
-            this.decorations.linkedCode = [];
-            if (lineNum && lineNum !== -1) {
-                this.decorations.linkedCode.push({
-                    range: new monaco.Range(lineNum, 1, lineNum, 1),
-                    options: {
-                        isWholeLine: true,
-                        linesDecorationsClassName: 'linked-code-decoration-margin',
-                        inlineClassName: 'linked-code-decoration-inline',
-                    },
-                });
             }
             this.updateDecorations();
         }
