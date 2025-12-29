@@ -1,12 +1,12 @@
 import fs from 'node:fs';
-
+import path from 'node:path';
 import type {ParsedAsmResult} from '../../types/asmresult/asmresult.interfaces.js';
+import {ExecutionOptions} from '../../types/compilation/compilation.interfaces.js';
 import {CompilerInfo} from '../../types/compiler.interfaces.js';
 import type {TypicalExecutionFunc, UnprocessedExecResult} from '../../types/execution/execution.interfaces.js';
 import type {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces.js';
 import {CompilationEnvironment} from '../compilation-env.js';
 import {logger} from '../logger.js';
-
 import {IExternalParser} from './external-parser.interface.js';
 
 export class PlainParser implements IExternalParser {
@@ -48,8 +48,9 @@ export class PlainParser implements IExternalParser {
     }
 
     public async parseAssembly(filepath: string, filters: ParseFiltersAndOutputOptions): Promise<ParsedAsmResult> {
-        const execOptions = {
+        const execOptions: ExecutionOptions = {
             env: this.envInfo.getEnv(this.compilerInfo.needsMulti),
+            customCwd: path.dirname(filepath),
         };
 
         const args = [...this.parserArgs, filepath];

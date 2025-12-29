@@ -1,4 +1,5 @@
 import path from 'node:path';
+import Semver from 'semver';
 import {splitArguments} from '../../shared/common-utils.js';
 import type {
     ActiveTool,
@@ -31,13 +32,23 @@ export class MicroPythonCompiler extends BaseCompiler {
         libraries: SelectedLibraryVersion[],
         overrides: ConfiguredOverrides,
     ) {
-        return [
-            ...['-o', outputFilename],
-            ...(filters.dontMaskFilenames ? [] : ['-s', this.compileFilename]),
-            ...(this.compiler.options ? splitArguments(this.compiler.options) : []),
-            ...userOptions,
-            ...['--', inputFilename],
-        ];
+        if (Semver.eq(this.compiler.semver, '1.20.0')) {
+            return [
+                ...['-o', outputFilename],
+                ...(filters.dontMaskFilenames ? [] : ['-s', this.compileFilename]),
+                ...(this.compiler.options ? splitArguments(this.compiler.options) : []),
+                ...userOptions,
+                ...[inputFilename],
+            ];
+        } else {
+            return [
+                ...['-o', outputFilename],
+                ...(filters.dontMaskFilenames ? [] : ['-s', this.compileFilename]),
+                ...(this.compiler.options ? splitArguments(this.compiler.options) : []),
+                ...userOptions,
+                ...['--', inputFilename],
+            ];
+        }
     }
 
     override async compile(
