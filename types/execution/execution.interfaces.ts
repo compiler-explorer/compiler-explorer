@@ -1,3 +1,4 @@
+import {ExecutionOptions} from '../compilation/compilation.interfaces.js';
 import {ResultLine} from '../resultline/resultline.interfaces.js';
 
 export type FilenameTransformFunc = (filename: string) => string;
@@ -17,7 +18,7 @@ export type UnprocessedExecResult = {
 export type TypicalExecutionFunc = (
     executable: string,
     args: string[],
-    execOptions: object,
+    execOptions: ExecutionOptions,
 ) => Promise<UnprocessedExecResult>;
 
 export type BasicExecutionResult = {
