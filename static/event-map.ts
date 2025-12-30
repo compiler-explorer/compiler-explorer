@@ -22,6 +22,7 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
+import * as monaco from 'monaco-editor';
 import {ClangirBackendOptions} from '../types/compilation/clangir.interfaces.js';
 import {CompilationResult} from '../types/compilation/compilation.interfaces.js';
 import {LLVMIrBackendOptions} from '../types/compilation/ir.interfaces.js';
@@ -80,6 +81,7 @@ export type EventMap = {
     editorClose: (editorId: number) => void;
     editorDisplayFlow: (editorId: number, flow: MessageWithLocation[]) => void;
     editorLinkLine: (editorId: number, lineNumber: number, colBegin: number, colEnd: number, reveal: boolean) => void;
+    editorApplyQuickfix: (editorId: number, range: monaco.IRange, text: string | null) => void;
     editorOpen: (editorId: number) => void;
     editorSetDecoration: (editorId: number, lineNumber: number, reveal: boolean, column?: number) => void;
     executeResult: (executorId: number, compiler: any, result: any, language: Language) => void;
