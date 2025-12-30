@@ -325,9 +325,8 @@ export class CompilerFinder {
             },
             externalparser: {
                 id: props('externalparser', ''),
-                props: (name: string, def: any) => {
-                    return props(`externalparser.${name}`, def);
-                },
+                exe: props('externalparser.exe', ''),
+                args: props('externalparser.args', ''),
             },
             license: {
                 link: props<string>('licenseLink'),
@@ -595,12 +594,6 @@ export class CompilerFinder {
             if (compiler.buildenvsetup) {
                 compiler.buildenvsetup.props = (propName, def) => {
                     return this.compilerProps(langId, 'buildenvsetup.' + propName, def);
-                };
-            }
-
-            if (compiler.externalparser) {
-                compiler.externalparser.props = (propName: string, def: any) => {
-                    return this.compilerProps(langId, 'externalparser.' + propName, def);
                 };
             }
 

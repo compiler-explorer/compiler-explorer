@@ -11,7 +11,7 @@ import {IExternalParser} from './external-parser.interface.js';
 
 export class PlainParser implements IExternalParser {
     protected readonly parserPath: string;
-    protected readonly parserArgs: string;
+    protected readonly parserArgs: string[];
     protected readonly execFunc: TypicalExecutionFunc;
     protected compilerInfo: CompilerInfo;
     protected envInfo;
@@ -19,11 +19,14 @@ export class PlainParser implements IExternalParser {
     constructor(compilerInfo: CompilerInfo, envInfo: CompilationEnvironment, execFunc: TypicalExecutionFunc) {
         this.compilerInfo = compilerInfo;
         this.envInfo = envInfo;
-        this.parserPath = compilerInfo.externalparser.props('exe', '');
-        this.parserArgs = compilerInfo.externalparser.props('args', '').split('|');
+        this.parserPath = compilerInfo.externalparser.exe;
+        this.parserArgs = (compilerInfo.externalparser.args || '').split('|');
         if (!fs.existsSync(this.parserPath)) {
-            logger.error(`External parser ${this.parserPath} does not exist`);
-            process.exit(1);
+            const msg = `External parser for compiler ${compilerInfo.id} does not exist: "${this.parserPath}"`;
+            logger.error(msg);
+            // Delay exit to allow async log transports (e.g., Loki) to flush
+            setTimeout(() => process.exit(1), 5000);
+            throw new Error(msg);
         }
         this.execFunc = execFunc;
     }
