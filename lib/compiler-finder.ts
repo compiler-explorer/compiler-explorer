@@ -319,6 +319,12 @@ export class CompilerFinder {
             hidden: props('hidden', false),
             buildenvsetup: {
                 id: props('buildenvsetup', ''),
+                // NB: This props function can't be serialized to JSON. For prediscovered compilers,
+                // it gets recreated in loadPrediscovered() but only has language-level context,
+                // not group-level. This works because buildenvsetup properties are defined at
+                // the language level (e.g., c++.buildenvsetup.host). If group-level properties
+                // are ever needed, they should be stored directly like externalparser.exe/args.
+                // See #7150 for a potential long-term fix to the properties system.
                 props: (name, def) => {
                     return props(`buildenvsetup.${name}`, def);
                 },
