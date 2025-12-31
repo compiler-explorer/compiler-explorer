@@ -83,7 +83,6 @@ export type EventMap = {
     editorLinkLine: (editorId: number, lineNumber: number, colBegin: number, colEnd: number, reveal: boolean) => void;
     editorApplyQuickfix: (editorId: number, range: monaco.IRange, text: string | null) => void;
     editorOpen: (editorId: number) => void;
-    editorSetDecoration: (editorId: number, lineNumber: number, reveal: boolean, column?: number) => void;
     executeResult: (executorId: number, compiler: any, result: any, language: Language) => void;
     executor: (
         executorId: number,
