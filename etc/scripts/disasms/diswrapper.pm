@@ -61,6 +61,7 @@ CHECK {
 
     my @args;
     my $order = "basic";
+    my $seen_unknown = 0;
     for my $arg (@ARGV) {
 	if ($arg =~ /^-(basic|exec|tree)$/) {
 	    $order = $1;
@@ -74,7 +75,12 @@ CHECK {
 	}
 	else {
 	    print STDERR "Unsupported argument: $arg\n";
+	    ++$seen_unknown;
 	}
+    }
+    if ($seen_unknown) {
+	print STDERR "Most B::Concise options are accepted, see\n";
+	print STDERR "https://perldoc.perl.org/B::Concise#OPTIONS\n";
     }
     my $walker = compile('-main', @args);
     $walker->();
