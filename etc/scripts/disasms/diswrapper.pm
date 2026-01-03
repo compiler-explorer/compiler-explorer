@@ -94,6 +94,8 @@ CHECK {
 	    my ($prefix, $cvobj) = @_;
 
 	    my $padlist = $cvobj->PADLIST;
+	    UNIVERSAL::isa($padlist, "B::NULL")
+		and return;
 	    my $padnames = $padlist->ARRAYelt(0);
 	    my $padvals = $padlist->ARRAYelt(1);
 
