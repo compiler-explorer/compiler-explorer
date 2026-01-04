@@ -514,15 +514,16 @@ export class Tool extends MonacoPane<monaco.editor.IStandaloneCodeEditor, ToolSt
         }
     }
 
-    add(msg: string, lineNum?: number, column?: number, flow?: number) {
+    add(msg: string, lineNum?: number, maybeColumn?: number, flow?: number) {
         const elem = $('<div/>').appendTo(this.plainContentRoot);
         if (lineNum && this.compilerInfo.editorId) {
+            const column = maybeColumn ?? -1;
             elem.empty();
             const editorId = unwrap(this.compilerInfo.editorId);
             $('<span class="linked-compiler-output-line"></span>')
                 .html(msg)
                 .on('click', e => {
-                    this.eventHub.emit('editorSetDecoration', editorId, lineNum, true, column);
+                    this.eventHub.emit('editorLinkLine', editorId, lineNum, column, column + 1, true);
                     if (flow) {
                         // TODO(jeremy-rifkin): Flow's type does not match what the event expects.
                         this.eventHub.emit('editorDisplayFlow', editorId, flow as any);
@@ -530,7 +531,9 @@ export class Tool extends MonacoPane<monaco.editor.IStandaloneCodeEditor, ToolSt
                     e.preventDefault();
                     return false;
                 })
-                .on('mouseover', () => this.eventHub.emit('editorSetDecoration', editorId, lineNum, false, column))
+                .on('mouseover', () =>
+                    this.eventHub.emit('editorLinkLine', editorId, lineNum, column, column + 1, false),
+                )
                 .appendTo(elem);
         } else {
             elem.html(msg);

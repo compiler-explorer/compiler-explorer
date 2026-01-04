@@ -745,4 +745,12 @@ textarea.form-control {
     color: #ffda6a !important;
 }
 
+.quickfix-action::after {
+    background: color.adjust(#333, $lightness: 15%);
+}
+
+.quickfix-action:hover:after {
+    background: color.adjust(#333, $lightness: 25%);
+}
+
 } // End html[data-theme='dark']

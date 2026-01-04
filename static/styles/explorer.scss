@@ -705,6 +705,24 @@ kbd {
     color: var(--terminal-bright-blue) !important;
 }
 
+.quickfix-action:hover {
+    font-style: italic;
+}
+
+.quickfix-action::after {
+    font-style: normal;
+    content: '💡';
+    border: 1px solid var(--terminal-bright-blue);
+    margin-left: 3em;
+    border-radius: 5px;
+    padding: 3px;
+    background: rgba(0, 0, 0, 0.2);
+}
+
+.quickfix-action:hover:after {
+    background: rgba(0, 0, 0, 0.15);
+}
+
 .lm_content {
     overflow: visible;
 }

@@ -89,6 +89,7 @@ levels:
       - name: Daniel Jennings
       - name: 3dB Labs
         url: https://www.3db-labs.com/
+      - name: Doug Patti
   - name: Patreons
     description: 'Thanks to all my patrons:'
     sponsors:
@@ -535,3 +536,5 @@ levels:
       - Ariel
       - Whaaag
       - David Poole
+      - Avery Clapp
+      - Dirk Toewe
