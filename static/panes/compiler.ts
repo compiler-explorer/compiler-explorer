@@ -1612,6 +1612,14 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
             }
         }
 
+        // Show language-specific hint when no assembly is generated and compilation succeeded
+        if (!asm.length && result.code === 0 && this.currentLangId && this.currentLangId in languages) {
+            const hint = languages[this.currentLangId].noAsmHint;
+            if (hint) {
+                msg += '\n\n' + hint;
+            }
+        }
+
         editorModel?.setValue(msg);
 
         // restore a previous scroll if there was one
