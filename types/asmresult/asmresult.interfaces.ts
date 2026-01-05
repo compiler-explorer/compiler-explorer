@@ -5,12 +5,6 @@ export type AsmResultSource = {
     mainsource?: boolean;
 };
 
-export type AsmResultLink = {
-    offset: number;
-    length: number;
-    to: number;
-};
-
 export type AsmResultLabelRange = {
     startCol: number;
     endCol: number;
@@ -28,7 +22,6 @@ export type ParsedAsmResultLine = {
     address?: number;
     disassembly?: string;
     source?: AsmResultSource | null;
-    links?: AsmResultLink[];
     labels?: AsmResultLabel[];
 };
 
