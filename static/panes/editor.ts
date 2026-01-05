@@ -1263,6 +1263,7 @@ export class Editor extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Edit
             fontLigatures: this.settings.editorsFLigatures,
             wordWrap: this.settings.wordWrap ? 'bounded' : 'off',
             wordWrapColumn: this.editor.getLayoutInfo().viewportColumn, // Ensure the column count is up to date
+            lineNumbers: this.settings.relativeLineNumbers ? 'relative' : 'on',
         });
 
         if (before.hoverShowSource && !after.hoverShowSource) {
