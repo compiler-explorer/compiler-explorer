@@ -43,7 +43,6 @@ export interface SiteSettings {
     autoIndent: boolean;
     allowStoreCodeDebug: boolean;
     alwaysEnableAllSchemes: boolean;
-    asmTabWidth: number;
     colouriseAsm: boolean;
     colourScheme: ColourScheme;
     compileOnChange: boolean;
@@ -433,13 +432,6 @@ export class Settings {
                 max: 80,
             }),
             4,
-        );
-        this.add(
-            new Numeric(this.root.find('.asmTabWidth'), 'asmTabWidth', {
-                min: 1,
-                max: 80,
-            }),
-            12,
         );
     }
 
