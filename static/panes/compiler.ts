@@ -397,7 +397,6 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
                         indentation: false,
                     },
                     vimInUse: false,
-                    tabSize: this.settings.asmTabWidth,
                 },
                 this.settings,
             ),
@@ -3484,7 +3483,6 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
             fontFamily: this.settings.editorsFFont,
             codeLensFontFamily: this.settings.editorsFFont,
             fontLigatures: this.settings.editorsFLigatures,
-            tabSize: this.settings.asmTabWidth,
         });
     }
 
