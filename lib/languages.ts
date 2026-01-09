@@ -729,6 +729,18 @@ const definitions: Record<LanguageKey, LanguageDefinition> = {
         previewFilter: null,
         monacoDisassembly: null,
     },
+    perl: {
+        name: 'Perl',
+        monaco: 'perl',
+        extensions: ['.pl', '.pm'],
+        alias: [],
+        logoFilename: 'perl.svg',
+        logoFilenameDark: null,
+        formatter: null,
+        previewFilter: null,
+        monacoDisassembly: null,
+        digitSeparator: '_',
+    },
     pony: {
         name: 'Pony',
         monaco: 'pony',

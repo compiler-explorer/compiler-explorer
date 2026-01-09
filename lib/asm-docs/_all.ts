@@ -29,6 +29,7 @@ export {EvmDocumentationProvider} from './evm.js';
 export {JavaDocumentationProvider} from './java.js';
 export {LLVMDocumentationProvider} from './llvm.js';
 export {Mos6502DocumentationProvider} from './mos6502.js';
+export {PerlDocumentationProvider} from './perl.js';
 export {PowerDocumentationProvider} from './power.js';
 export {PTXDocumentationProvider} from './ptx.js';
 export {PythonDocumentationProvider} from './python.js';

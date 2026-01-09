@@ -41,6 +41,7 @@ export type ParsedAsmResult = {
     objdumpTime?: number;
     execTime?: number;
     languageId?: string;
+    asmKeywordTypes?: string[];
 };
 
 export type IRResultLine = ParsedAsmResultLine & {
