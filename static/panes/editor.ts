@@ -1129,13 +1129,16 @@ export class Editor extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Edit
     }
 
     updateSource(newSource: string): void {
-        // Create something that looks like an edit operation for the whole text
-        const operation = {
-            range: this.editor.getModel()!.getFullModelRange(),
-            forceMoveMarkers: true,
-            text: newSource,
-        };
-        this.applyEdit(operation);
+        const model = this.editor.getModel();
+        if (model) {
+            // Create something that looks like an edit operation for the whole text
+            const operation = {
+                range: model.getFullModelRange(),
+                forceMoveMarkers: true,
+                text: newSource,
+            };
+            this.applyEdit(operation);
+        }
 
         if (!this.awaitingInitialResults) {
             if (this.selection) {
