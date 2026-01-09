@@ -155,7 +155,8 @@ CHECK {
 	# lexical subs from the top level
 	$add_lex->("main program", main_cv);
 	# search the main package for subs to dump
-	for my $name (keys %::) {
+	# sort for a stable order
+	for my $name (sort keys %::) {
 	    my $glob = B::svref_2object(\*{"::$name"});
 	    $glob->is_empty
 		and next; # no GP
