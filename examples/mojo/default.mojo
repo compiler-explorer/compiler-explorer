@@ -1,2 +1,6 @@
-fn square(n: Int) -> Int:
-  return n * n
+@export
+fn multiply[m: Int](n: Int) -> Int:
+  return m * n
+
+fn main():
+  _ = multiply[3](5)
