@@ -48,8 +48,7 @@ export class CarbonCompiler extends BaseCompiler {
         userOptions: string[],
         staticLibLinks: string[],
     ): string[] {
-        return ['compile'].concat(
-            options,
+        return options.concat(
             userOptions,
             [this.filename(inputFilename)],
             // We don't support libraries in Carbon, so drop all the `-L` args
@@ -66,13 +65,24 @@ export class CarbonCompiler extends BaseCompiler {
         return args;
     }
 
-    async linkExecutable(options: string[], execOptions: ExecutionOptionsWithEnv) {
-        // Rely on the fact we definitely put a `--output=` in the options.
+    private getOutputPathFileFromOptions(options: string[]): string {
+        // `--output=<filename>` was added in optionsForFilter().
         const outputArg = unwrap(options.filter(opt => opt.startsWith('--output='))[0]);
         const outputFile = outputArg.split('=', 2)[1];
-        const renamedFile = outputFile + '.tmp';
-        await fs.rename(outputFile, renamedFile);
-        return await this.exec(this.compiler.exe, ['link', outputArg, renamedFile], execOptions);
+        return outputFile;
+    }
+
+    private removePrebuiltRuntimesFromOptions(options: string[]): [string, string[]] {
+        const findArg = opt => opt.startsWith('--prebuilt-runtimes=');
+        const runtimesOpt = unwrap(options.filter(findArg)[0]);
+        const otherOptions = options.filter(opt => !findArg(opt));
+        return [runtimesOpt, otherOptions];
+    }
+
+    async moveFileToTemp(sourceFilePath: string): Promise<string> {
+        const tempFilePath = sourceFilePath + '.tmp';
+        await fs.rename(sourceFilePath, tempFilePath);
+        return tempFilePath;
     }
 
     override async runCompiler(
@@ -82,14 +92,26 @@ export class CarbonCompiler extends BaseCompiler {
         execOptions: ExecutionOptionsWithEnv,
         filters?: ParseFiltersAndOutputOptions,
     ): Promise<CompilationResult> {
-        const result = await super.runCompiler(compiler, options, inputFilename, execOptions, filters);
-        if (result.code !== 0) return result;
-        if (filters?.binary) {
-            const linkResult = await this.linkExecutable(options, execOptions);
-            if (linkResult.code !== 0) {
-                return {...result, ...this.transformToCompilationResult(linkResult, inputFilename)};
-            }
+        // `options` are all fed into the compile step except for `--prebuilt-runtimes` which is
+        // used for linking.
+        const [runtimesOpt, otherOptions] = this.removePrebuiltRuntimesFromOptions(options);
+        const compileOptions = ['compile'].concat(otherOptions);
+        const result = await super.runCompiler(compiler, compileOptions, inputFilename, execOptions, filters);
+        if (result.code !== 0) {
+            return result;
         }
+
+        // The output of runCompiler is either an asm file or object file. It is an object file if
+        // we want to produce a binary, in which case we link it into a binary, overwriting the output
+        // path of the compile step.
+        if (filters?.binary) {
+            const compileOutputFilePath = this.getOutputPathFileFromOptions(options);
+            const objectFilePath = await this.moveFileToTemp(compileOutputFilePath);
+            const linkOptions = [runtimesOpt, 'link', `--output=${compileOutputFilePath}`, objectFilePath];
+            const linkResult = await this.exec(this.compiler.exe, linkOptions, execOptions);
+            return {...result, ...this.transformToCompilationResult(linkResult, inputFilename)};
+        }
+
         return result;
     }
 }
