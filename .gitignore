@@ -24,6 +24,7 @@
 /nbproject
 *.vscode
 *.code-workspace
+/.zed
 
 # random bits
 f.out
