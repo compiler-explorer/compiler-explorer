@@ -468,8 +468,8 @@ expression `/[\u007F-\uFFFF]/g` that allows mapping these characters.
 
 ### `GET /noscript/clientstate/<base64>` - Opens the noscript version of the website in a given state
 
-This is the noscript equivalent of `/clientstate/<base64>`. It opens the noscript (JavaScript-free) version of the
-website with a given state. The base64-encoded ClientState JSON works the same way as the regular `/clientstate/`
+This is the noscript equivalent of `/clientstate/<base64>`. It opens the noscript version of the website with a given
+state. The base64-encoded ClientState JSON works the same way as the regular `/clientstate/`
 endpoint.
 
 # Implementations
