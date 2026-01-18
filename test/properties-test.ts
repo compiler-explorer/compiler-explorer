@@ -180,3 +180,29 @@ describe('Properties blob parsing', () => {
         expect(props.mybool).toBe(false);
     });
 });
+
+describe('Properties append syntax', () => {
+    it('should append to existing string properties with +=', () => {
+        const props = properties.parseProperties('list=a:b\n' + 'list+=:c:d\n', '<test props>');
+        expect(props.list).toEqual('a:b:c:d');
+    });
+
+    it('should skip += on undefined property and log error', () => {
+        const props = properties.parseProperties('newprop+=value\n', '<test props>');
+        expect(props.newprop).toBeUndefined();
+    });
+
+    it('should handle multiple += operations', () => {
+        const props = properties.parseProperties(
+            'items=first\n' + 'items+=second\n' + 'items+=third\n',
+            '<test props>',
+        );
+        expect(props.items).toEqual('firstsecondthird');
+    });
+
+    it('should skip += on boolean properties and log error', () => {
+        const props = properties.parseProperties('flag=true\n' + 'flag+=more\n', '<test props>');
+        // Append skipped, original value preserved
+        expect(props.flag).toBe(true);
+    });
+});
