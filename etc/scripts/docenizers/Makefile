@@ -19,7 +19,8 @@ all: $(UV_DEPS) \
  $(GEN_DIR)/asm-docs-riscv64.ts \
  $(GEN_DIR)/asm-docs-ptx.ts \
  $(GEN_DIR)/asm-docs-sass.ts \
- $(GEN_DIR)/asm-docs-python.ts
+ $(GEN_DIR)/asm-docs-python.ts \
+ $(GEN_DIR)/asm-docs-perl.ts
 
 # Install uv if not available system-wide
 $(CURDIR)/.uv/uv:
@@ -61,6 +62,8 @@ $(GEN_DIR)/asm-docs-sass.ts: docenizer-ptx-sass.py $(UV_DEPS)
 $(GEN_DIR)/asm-docs-python.ts: docenizer-python.py $(UV_DEPS)
 	$(UV_BIN) run python3 $< -o $@
 $(GEN_DIR)/asm-docs-riscv64.ts: docenizer-riscv64.py $(UV_DEPS)
+	$(UV_BIN) run python3 $< -o $@
+$(GEN_DIR)/asm-docs-perl.ts: docenizer-perl.py $(UV_DEPS)
 	$(UV_BIN) run python3 $< -o $@
 
 .PHONY: clean
