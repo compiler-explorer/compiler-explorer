@@ -179,6 +179,11 @@ describe('Properties blob parsing', () => {
         expect(props.etc).toEqual(123);
         expect(props.mybool).toBe(false);
     });
+
+    it('should trim both leading and trailing whitespace for = assignment', () => {
+        const props = properties.parseProperties('spaced=   value   \n', '<test props>');
+        expect(props.spaced).toEqual('value');
+    });
 });
 
 describe('Properties append syntax', () => {
@@ -204,5 +209,11 @@ describe('Properties append syntax', () => {
         const props = properties.parseProperties('flag=true\n' + 'flag+=more\n', '<test props>');
         // Append skipped, original value preserved
         expect(props.flag).toBe(true);
+    });
+
+    it('should preserve leading whitespace for += but trim trailing', () => {
+        const props = properties.parseProperties('opts=-Wall\n' + 'opts+= -Wextra   \n', '<test props>');
+        // Leading space preserved, trailing trimmed
+        expect(props.opts).toEqual('-Wall -Wextra');
     });
 });

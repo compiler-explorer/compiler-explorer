@@ -104,7 +104,9 @@ export function parseProperties(
         }
         const prop = split[1].trim();
         const operator = split[2];
-        let val: string | number | boolean = split[3].trim();
+        // For += operator, preserve leading whitespace but trim trailing
+        // For = operator, trim both leading and trailing whitespace
+        let val: string | number | boolean = operator === '+=' ? split[3].trimEnd() : split[3].trim();
         // hack to avoid applying toProperty to version properties
         // so that they're not parsed as numbers
         if (!prop.endsWith('.version') && !prop.endsWith('.semver')) {
