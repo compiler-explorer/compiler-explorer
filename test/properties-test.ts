@@ -217,3 +217,33 @@ describe('Properties append syntax', () => {
         expect(props.opts).toEqual('-Wall -Wextra');
     });
 });
+
+describe('Cross-file += interaction', () => {
+    let crossFileProps: PropertyGetter;
+
+    beforeAll(() => {
+        properties.reset();
+        properties.initialize('test/example-config/', ['crossfile-base', 'crossfile-tip']);
+        crossFileProps = properties.propsFor('crossfile');
+    });
+
+    afterAll(() => {
+        properties.reset();
+    });
+
+    it('should not allow += in tip file to append to property defined only in base file', () => {
+        // += in crossfile.crossfile-tip.properties tries to append to appendTarget
+        // But appendTarget is not defined in that file, only in crossfile-base
+        // So the += fails (logs error), and the base file's original value is returned
+        expect(crossFileProps('appendTarget')).toEqual('base-value');
+    });
+
+    it('should allow = to override base value then += to append in same file', () => {
+        // In crossfile.crossfile-tip.properties:
+        //   overrideTarget=tip-value      (overrides base-value from base file)
+        //   overrideTarget+= appended     (appends to the value defined above)
+        // The tip file first redefines the property with =, then appends with +=
+        // This is the correct way to "extend" a base property
+        expect(crossFileProps('overrideTarget')).toEqual('tip-value appended');
+    });
+});
