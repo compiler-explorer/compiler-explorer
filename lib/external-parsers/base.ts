@@ -24,10 +24,13 @@ export class ExternalParserBase implements IExternalParser {
         this.compilerInfo = compilerInfo;
         this.envInfo = envInfo;
         this.objdumperPath = compilerInfo.objdumper;
-        this.parserPath = compilerInfo.externalparser.props('exe', '');
+        this.parserPath = compilerInfo.externalparser.exe;
         if (!fs.existsSync(this.parserPath)) {
-            logger.error(`External parser ${this.parserPath} does not exist`);
-            process.exit(1);
+            const msg = `External parser for compiler ${compilerInfo.id} does not exist: "${this.parserPath}"`;
+            logger.error(msg);
+            // Delay exit to allow async log transports (e.g., Loki) to flush
+            setTimeout(() => process.exit(1), 5000);
+            throw new Error(msg);
         }
         this.execFunc = execFunc;
     }

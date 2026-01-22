@@ -51,6 +51,12 @@ export class NoScriptHandler {
                 this.renderNoScriptLayout(undefined, req, res);
             })
             .get('/noscript/z/:id', cached, csp, this.storedStateHandlerNoScript.bind(this))
+            .get(
+                /^\/noscript\/clientstate\/(?<clientstatebase64>.*)/,
+                cached,
+                csp,
+                this.clientStateHandlerNoScript.bind(this),
+            )
             .get('/noscript/sponsors', cached, csp, (req, res) => {
                 res.render(
                     'noscript/sponsors',
@@ -100,6 +106,22 @@ export class NoScriptHandler {
                     message: `ID "${id}" could not be found`,
                 });
             });
+    }
+
+    clientStateHandlerNoScript(req: express.Request, res: express.Response, next: express.NextFunction) {
+        try {
+            const buffer = Buffer.from(req.params.clientstatebase64, 'base64');
+            const config = JSON.parse(buffer.toString());
+            const clientstate = new ClientState(config);
+
+            this.renderNoScriptLayout(clientstate, req, res);
+        } catch (err) {
+            logger.warn(`Could not parse clientstate: ${err}`);
+            next({
+                statusCode: 400,
+                message: 'Invalid client state data in URL',
+            });
+        }
     }
 
     createDefaultState(wantedLanguage: LanguageKey) {

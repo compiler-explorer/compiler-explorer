@@ -162,13 +162,13 @@ describe('compiler-discovery module', () => {
                 id: 'gcc1',
                 lang: 'c++' as unknown as LanguageKey,
                 buildenvsetup: {id: '', props: vi.fn()},
-                externalparser: {id: ''},
+                externalparser: {id: '', exe: '', args: ''},
             },
             {
                 id: 'gcc2',
                 lang: 'c++' as unknown as LanguageKey,
                 buildenvsetup: {id: 'setup1', props: vi.fn()},
-                externalparser: {id: 'parser1'},
+                externalparser: {id: 'parser1', exe: '/path/to/parser', args: ''},
             },
         ];
 
@@ -185,7 +185,7 @@ describe('compiler-discovery module', () => {
                 id: 'gcc2',
                 lang: 'c++',
                 buildenvsetup: {id: 'setup1'},
-                externalparser: {id: 'parser1'},
+                externalparser: {id: 'parser1', exe: '/path/to/parser', args: ''},
                 cachedPossibleArguments: ['arg1', 'arg2'],
             },
         ];

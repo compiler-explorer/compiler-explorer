@@ -354,9 +354,9 @@ export class Editor extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Edit
         this.eventHub.on('compiling', this.onCompiling, this);
         this.eventHub.on('executeResult', this.onExecuteResponse, this);
         this.eventHub.on('selectLine', this.onSelectLine, this);
-        this.eventHub.on('editorSetDecoration', this.onEditorSetDecoration, this);
         this.eventHub.on('editorDisplayFlow', this.onEditorDisplayFlow, this);
         this.eventHub.on('editorLinkLine', this.onEditorLinkLine, this);
+        this.eventHub.on('editorApplyQuickfix', this.onEditorApplyQuickfix, this);
         this.eventHub.on('conformanceViewOpen', this.onConformanceViewOpen, this);
         this.eventHub.on('conformanceViewClose', this.onConformanceViewClose, this);
         this.eventHub.on('newSource', this.onNewSource, this);
@@ -449,18 +449,22 @@ export class Editor extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Edit
 
     onEscapeKey(): void {
         if ((this.editor as any).vimInUse) {
-            const currentState = monacoVim.VimMode.Vim.maybeInitVimState_(this.vimMode);
+            // The Vim property exists at runtime but isn't in the type definitions
+            const Vim = (monacoVim.VimMode as any).Vim;
+            const currentState = Vim.maybeInitVimState_(this.vimMode);
             if (currentState.insertMode) {
-                monacoVim.VimMode.Vim.exitInsertMode(this.vimMode);
+                Vim.exitInsertMode(this.vimMode);
             } else if (currentState.visualMode) {
-                monacoVim.VimMode.Vim.exitVisualMode(this.vimMode, false);
+                Vim.exitVisualMode(this.vimMode, false);
             }
         }
     }
 
     onInsertKey(event: JQuery.TriggeredEvent<Document, undefined, Document, Document>): void {
         if ((this.editor as any).vimInUse) {
-            const currentState = monacoVim.VimMode.Vim.maybeInitVimState_(this.vimMode);
+            // The Vim property exists at runtime but isn't in the type definitions
+            const Vim = (monacoVim.VimMode as any).Vim;
+            const currentState = Vim.maybeInitVimState_(this.vimMode);
             if (!currentState.insertMode) {
                 const insertEvent = {
                     preventDefault: event.preventDefault,
@@ -1110,13 +1114,7 @@ export class Editor extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Edit
         );
     }
 
-    updateSource(newSource: string): void {
-        // Create something that looks like an edit operation for the whole text
-        const operation = {
-            range: this.editor.getModel()?.getFullModelRange(),
-            forceMoveMarkers: true,
-            text: newSource,
-        };
+    applyEdit(operation: monaco.editor.IIdentifiedSingleEditOperation): void {
         const nullFn = () => {
             return null;
         };
@@ -1128,6 +1126,16 @@ export class Editor extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Edit
         // @ts-expect-error: See above comment maybe
         this.editor.getModel()?.pushEditOperations(viewState?.cursorState ?? null, [operation], nullFn);
         this.numberUsedLines();
+    }
+
+    updateSource(newSource: string): void {
+        // Create something that looks like an edit operation for the whole text
+        const operation = {
+            range: this.editor.getModel()!.getFullModelRange(),
+            forceMoveMarkers: true,
+            text: newSource,
+        };
+        this.applyEdit(operation);
 
         if (!this.awaitingInitialResults) {
             if (this.selection) {
@@ -1255,10 +1263,11 @@ export class Editor extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Edit
             fontLigatures: this.settings.editorsFLigatures,
             wordWrap: this.settings.wordWrap ? 'bounded' : 'off',
             wordWrapColumn: this.editor.getLayoutInfo().viewportColumn, // Ensure the column count is up to date
+            lineNumbers: this.settings.relativeLineNumbers ? 'relative' : 'on',
         });
 
         if (before.hoverShowSource && !after.hoverShowSource) {
-            this.onEditorSetDecoration(this.id, -1, false);
+            this.onEditorLinkLine(this.id, -1, -1, -1, false);
         }
 
         if (after.useVim && !before.useVim) {
@@ -1715,6 +1724,8 @@ export class Editor extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Edit
                 this.pushRevealJump();
                 this.hub.activateTabForContainer(this.container);
                 this.editor.revealLineInCenter(lineNum);
+                this.editor.focus();
+                this.editor.setPosition({column: columnBegin >= 0 ? columnBegin : 0, lineNumber: lineNum});
             }
             this.decorations.linkedCode = [];
             if (lineNum && lineNum !== -1) {
@@ -1751,26 +1762,9 @@ export class Editor extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Edit
         }
     }
 
-    onEditorSetDecoration(id: number, lineNum: number, reveal: boolean, column?: number): void {
-        if (Number(id) === this.id) {
-            if (reveal && lineNum) {
-                this.pushRevealJump();
-                this.editor.revealLineInCenter(lineNum);
-                this.editor.focus();
-                this.editor.setPosition({column: column || 0, lineNumber: lineNum});
-            }
-            this.decorations.linkedCode = [];
-            if (lineNum && lineNum !== -1) {
-                this.decorations.linkedCode.push({
-                    range: new monaco.Range(lineNum, 1, lineNum, 1),
-                    options: {
-                        isWholeLine: true,
-                        linesDecorationsClassName: 'linked-code-decoration-margin',
-                        inlineClassName: 'linked-code-decoration-inline',
-                    },
-                });
-            }
-            this.updateDecorations();
+    onEditorApplyQuickfix(editorId: number, range: monaco.IRange, text: string | null): void {
+        if (editorId === this.id) {
+            this.applyEdit({forceMoveMarkers: true, range, text});
         }
     }
 

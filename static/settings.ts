@@ -76,6 +76,7 @@ export interface SiteSettings {
     useSpaces: boolean;
     useVim: boolean;
     wordWrap: boolean;
+    relativeLineNumbers: boolean;
 }
 
 class BaseSetting {
@@ -308,6 +309,7 @@ export class Settings {
             ['.useSpaces', 'useSpaces', true],
             ['.useVim', 'useVim', false],
             ['.wordWrap', 'wordWrap', false],
+            ['.relativeLineNumbers', 'relativeLineNumbers', false],
         ];
 
         for (const [selector, name, defaultValue] of checkboxes) {

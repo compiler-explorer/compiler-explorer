@@ -77,7 +77,7 @@ for (const instruction of info) {
     console.log(`        case '${instruction.name.toUpperCase()}':`);
     console.log('            return {');
     console.log(`                url: \`${instruction.url}\`,`);
-    console.log(`                html: \`${instruction.html.replaceAll('\n', '').replaceAll('`', '\\`')}\`,`);
+    console.log(`                html: \`${instruction.html.replaceAll('`', '\\`')}\`,`);
     console.log(`                tooltip: \`${instruction.tooltip.replaceAll('\n', '').replaceAll('`', '\\`')}\`,`);
     console.log('            };');
 }

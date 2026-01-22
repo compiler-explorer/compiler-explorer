@@ -107,6 +107,7 @@ export {LLCCompiler} from './llc.js';
 export {LLVMmcaTool} from './llvm-mca.js';
 export {LLVMMOSCompiler} from './llvm-mos.js';
 export {MadPascalCompiler} from './madpascal.js';
+export {MicroPythonCompiler} from './micropython.js';
 export {MLIRCompiler} from './mlir.js';
 export {MojoCompiler} from './mojo.js';
 export {MovfuscatorCompiler} from './movfuscator.js';

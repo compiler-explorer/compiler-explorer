@@ -1,4 +1,4 @@
-// Copyright (c) 2022, Compiler Explorer Authors
+// Copyright (c) 2025, Compiler Explorer Authors
 // All rights reserved.
 //
 // Redistribution and use in source and binary forms, with or without
@@ -22,11 +22,6 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-export {BinutilsObjdumper} from './binutils.js';
-export {Da65Objdumper} from './da65.js';
-export {DefaultObjdumper} from './default.js';
-export {ElfToolChainObjdumper} from './elftoolchain.js';
-export {GoldenGateObjdumper} from './goldengate.js';
-export {LlvmObjdumper} from './llvm.js';
-export {PlainObjdumper} from './plain.js';
-export {VcObjdumper} from './vc.js';
+export const AssemblySyntaxesList = ['att', 'intel'] as const;
+
+export type AssemblySyntax = (typeof AssemblySyntaxesList)[number];

@@ -165,9 +165,8 @@ export class PolkaVMAsmParser implements IAsmParser {
         filters: ParseFiltersAndOutputOptions,
     ): void {
         if (!filters.commentOnly) {
-            const comment = line.match(this.headerCommentRe)
-                ? match.input?.trim()!
-                : this.indentation + match.input?.trim()!;
+            const trimmedInput = match.input?.trim() ?? '';
+            const comment = line.match(this.headerCommentRe) ? trimmedInput : this.indentation + trimmedInput;
             parsedAsm.push({
                 text: comment,
                 source: null,

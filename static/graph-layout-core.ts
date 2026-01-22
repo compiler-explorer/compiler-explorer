@@ -440,8 +440,14 @@ export class GraphLayoutCore {
     }
 
     setupRowsAndColumns() {
-        this.rowCount = Math.max(...this.blocks.map(block => block.row)) + 1; // one more row for zero offset
-        this.columnCount = Math.max(...this.blocks.map(block => block.col)) + 2; // blocks are two-wide
+        // Handle empty blocks case - Math.max() with empty array returns -Infinity
+        if (this.blocks.length === 0) {
+            this.rowCount = 0;
+            this.columnCount = 0;
+        } else {
+            this.rowCount = Math.max(...this.blocks.map(block => block.row)) + 1; // one more row for zero offset
+            this.columnCount = Math.max(...this.blocks.map(block => block.col)) + 2; // blocks are two-wide
+        }
         this.blockRows = Array(this.rowCount)
             .fill(0)
             .map(() => ({
