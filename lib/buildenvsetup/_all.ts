@@ -25,4 +25,5 @@
 export {BuildEnvSetupCeConanDirect} from './ceconan.js';
 export {BuildEnvSetupCeConanCircleDirect} from './ceconan-circle.js';
 export {BuildEnvSetupCeConanFortranDirect} from './ceconan-fortran.js';
+export {BuildEnvSetupCeConanGoDirect} from './ceconan-go.js';
 export {BuildEnvSetupCeConanRustDirect} from './ceconan-rust.js';
