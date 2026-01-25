@@ -265,4 +265,64 @@ bar=baz
             expect(result.suspiciousPaths).toHaveLength(1);
         });
     });
+
+    describe('orphaned compiler detection', () => {
+        it('should report compilers listed but no .exe defined', () => {
+            const content = `
+compilers=gcc:clang
+compiler.gcc.exe=/opt/compiler-explorer/gcc/bin/gcc
+`;
+            const parsed = parsePropertiesFileRaw(content, 'test.properties');
+            const result = validateRawFile(parsed);
+
+            expect(result.orphanedCompilerExe).toContainEqual(expect.objectContaining({id: 'clang'}));
+        });
+
+        it('should report compilers with .exe but not listed', () => {
+            const content = `
+compilers=gcc
+compiler.gcc.exe=/opt/compiler-explorer/gcc/bin/gcc
+compiler.clang.exe=/opt/compiler-explorer/clang/bin/clang
+`;
+            const parsed = parsePropertiesFileRaw(content, 'test.properties');
+            const result = validateRawFile(parsed);
+
+            expect(result.orphanedCompilerExe).toContainEqual(expect.objectContaining({id: 'clang'}));
+        });
+
+        it('should not report when compilers match', () => {
+            const content = `
+compilers=gcc:clang
+compiler.gcc.exe=/opt/compiler-explorer/gcc/bin/gcc
+compiler.clang.exe=/opt/compiler-explorer/clang/bin/clang
+`;
+            const parsed = parsePropertiesFileRaw(content, 'test.properties');
+            const result = validateRawFile(parsed);
+
+            expect(result.orphanedCompilerExe).toHaveLength(0);
+        });
+
+        it('should ignore remote compiler references (with @)', () => {
+            const content = `
+compilers=gcc:remote@host
+compiler.gcc.exe=/opt/compiler-explorer/gcc/bin/gcc
+`;
+            const parsed = parsePropertiesFileRaw(content, 'test.properties');
+            const result = validateRawFile(parsed);
+
+            expect(result.orphanedCompilerExe).toHaveLength(0);
+        });
+
+        it('should handle alias expanding compilers', () => {
+            const content = `
+compilers=gcc:oldgcc
+compiler.gcc.exe=/opt/compiler-explorer/gcc/bin/gcc
+alias=oldgcc
+`;
+            const parsed = parsePropertiesFileRaw(content, 'test.properties');
+            const result = validateRawFile(parsed);
+
+            expect(result.orphanedCompilerExe).toHaveLength(0);
+        });
+    });
 });
