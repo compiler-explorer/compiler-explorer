@@ -198,4 +198,71 @@ bar=baz
             expect(result.typoCompilers).toHaveLength(0);
         });
     });
+
+    describe('suspicious path detection', () => {
+        it('should flag paths outside standard locations', () => {
+            const content = `compiler.gcc.exe=/usr/bin/gcc`;
+            const parsed = parsePropertiesFileRaw(content, 'test.amazon.properties');
+            const result = validateRawFile(parsed, {checkSuspiciousPaths: true});
+
+            expect(result.suspiciousPaths).toHaveLength(1);
+            expect(result.suspiciousPaths[0].text).toBe('/usr/bin/gcc');
+        });
+
+        it('should accept /opt/compiler-explorer paths', () => {
+            const content = `compiler.gcc.exe=/opt/compiler-explorer/gcc-12/bin/gcc`;
+            const parsed = parsePropertiesFileRaw(content, 'test.amazon.properties');
+            const result = validateRawFile(parsed, {checkSuspiciousPaths: true});
+
+            expect(result.suspiciousPaths).toHaveLength(0);
+        });
+
+        it('should accept Z:/compilers paths (Windows)', () => {
+            const content = `compiler.msvc.exe=Z:/compilers/msvc/cl.exe`;
+            const parsed = parsePropertiesFileRaw(content, 'test.amazon.properties');
+            const result = validateRawFile(parsed, {checkSuspiciousPaths: true});
+
+            expect(result.suspiciousPaths).toHaveLength(0);
+        });
+
+        it('should not check paths in .defaults.properties files', () => {
+            const content = `compiler.gcc.exe=/usr/bin/gcc`;
+            const parsed = parsePropertiesFileRaw(content, 'c.defaults.properties');
+            const result = validateRawFile(parsed, {checkSuspiciousPaths: true});
+
+            expect(result.suspiciousPaths).toHaveLength(0);
+        });
+
+        it('should not check paths in .local.properties files', () => {
+            const content = `compiler.gcc.exe=/usr/bin/gcc`;
+            const parsed = parsePropertiesFileRaw(content, 'c.local.properties');
+            const result = validateRawFile(parsed, {checkSuspiciousPaths: true});
+
+            expect(result.suspiciousPaths).toHaveLength(0);
+        });
+
+        it('should not check paths when option is disabled', () => {
+            const content = `compiler.gcc.exe=/usr/bin/gcc`;
+            const parsed = parsePropertiesFileRaw(content, 'test.amazon.properties');
+            const result = validateRawFile(parsed, {checkSuspiciousPaths: false});
+
+            expect(result.suspiciousPaths).toHaveLength(0);
+        });
+
+        it('should flag suspicious formatter paths', () => {
+            const content = `formatter.clangformat.exe=/usr/bin/clang-format`;
+            const parsed = parsePropertiesFileRaw(content, 'test.amazon.properties');
+            const result = validateRawFile(parsed, {checkSuspiciousPaths: true});
+
+            expect(result.suspiciousPaths).toHaveLength(1);
+        });
+
+        it('should flag suspicious tool paths', () => {
+            const content = `tools.readelf.exe=/usr/bin/readelf`;
+            const parsed = parsePropertiesFileRaw(content, 'test.amazon.properties');
+            const result = validateRawFile(parsed, {checkSuspiciousPaths: true});
+
+            expect(result.suspiciousPaths).toHaveLength(1);
+        });
+    });
 });
