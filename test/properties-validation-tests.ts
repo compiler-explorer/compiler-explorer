@@ -398,4 +398,108 @@ compiler.gcc.exe=/opt/compiler-explorer/gcc/bin/gcc
             expect(result.duplicatedCompilerRefs).toHaveLength(0);
         });
     });
+
+    describe('orphaned formatter detection', () => {
+        it('should report formatters listed but not defined', () => {
+            const content = `
+formatters=clangformat:rustfmt
+formatter.clangformat.exe=/opt/compiler-explorer/clang-format
+`;
+            const parsed = parsePropertiesFileRaw(content, 'test.properties');
+            const result = validateRawFile(parsed);
+
+            expect(result.orphanedFormatterExe).toContainEqual(expect.objectContaining({id: 'rustfmt'}));
+        });
+
+        it('should report formatters defined but not listed', () => {
+            const content = `
+formatters=clangformat
+formatter.clangformat.exe=/opt/compiler-explorer/clang-format
+formatter.rustfmt.exe=/opt/compiler-explorer/rustfmt
+`;
+            const parsed = parsePropertiesFileRaw(content, 'test.properties');
+            const result = validateRawFile(parsed);
+
+            expect(result.orphanedFormatterExe).toContainEqual(expect.objectContaining({id: 'rustfmt'}));
+        });
+    });
+
+    describe('orphaned tool detection', () => {
+        it('should report tools listed but not defined', () => {
+            const content = `
+tools=readelf:nm
+tools.readelf.exe=/usr/bin/readelf
+`;
+            const parsed = parsePropertiesFileRaw(content, 'test.properties');
+            const result = validateRawFile(parsed);
+
+            expect(result.orphanedToolExe).toContainEqual(expect.objectContaining({id: 'nm'}));
+        });
+
+        it('should report tools defined but not listed', () => {
+            const content = `
+tools=readelf
+tools.readelf.exe=/usr/bin/readelf
+tools.nm.exe=/usr/bin/nm
+`;
+            const parsed = parsePropertiesFileRaw(content, 'test.properties');
+            const result = validateRawFile(parsed);
+
+            expect(result.orphanedToolExe).toContainEqual(expect.objectContaining({id: 'nm'}));
+        });
+    });
+
+    describe('orphaned library detection', () => {
+        it('should report libs listed but versions not defined', () => {
+            const content = `
+libs=boost:fmt
+libs.boost.versions=1.80
+libs.boost.versions.1.80.version=1.80.0
+`;
+            const parsed = parsePropertiesFileRaw(content, 'test.properties');
+            const result = validateRawFile(parsed);
+
+            expect(result.orphanedLibIds).toContainEqual(expect.objectContaining({id: 'fmt'}));
+        });
+
+        it('should report lib versions listed but not defined', () => {
+            const content = `
+libs=boost
+libs.boost.versions=1.80:1.81
+libs.boost.versions.1.80.version=1.80.0
+`;
+            const parsed = parsePropertiesFileRaw(content, 'test.properties');
+            const result = validateRawFile(parsed);
+
+            expect(result.orphanedLibVersions).toContainEqual(expect.objectContaining({id: 'boost 1.81'}));
+        });
+    });
+
+    describe('invalid default compiler detection', () => {
+        it('should report default compiler not in list', () => {
+            const content = `
+compilers=gcc:clang
+defaultCompiler=msvc
+compiler.gcc.exe=/opt/compiler-explorer/gcc
+compiler.clang.exe=/opt/compiler-explorer/clang
+`;
+            const parsed = parsePropertiesFileRaw(content, 'test.properties');
+            const result = validateRawFile(parsed);
+
+            expect(result.invalidDefaultCompiler).toContainEqual(expect.objectContaining({id: 'msvc'}));
+        });
+
+        it('should accept valid default compiler', () => {
+            const content = `
+compilers=gcc:clang
+defaultCompiler=gcc
+compiler.gcc.exe=/opt/compiler-explorer/gcc
+compiler.clang.exe=/opt/compiler-explorer/clang
+`;
+            const parsed = parsePropertiesFileRaw(content, 'test.properties');
+            const result = validateRawFile(parsed);
+
+            expect(result.invalidDefaultCompiler).toHaveLength(0);
+        });
+    });
 });
