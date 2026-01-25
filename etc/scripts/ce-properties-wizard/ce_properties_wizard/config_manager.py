@@ -1170,7 +1170,7 @@ class ConfigManager:
             except OSError:
                 pass  # Ignore cleanup errors
 
-    def validate_with_propscheck(self, language: str) -> tuple[bool, str]:
+    def validate_properties(self, language: str) -> tuple[bool, str]:
         """Validate properties file using npm run test:props."""
         file_path = self.get_properties_path(language)
         if not file_path.exists():
@@ -1192,8 +1192,6 @@ class ConfigManager:
                 env["CHECK_LOCAL_PROPS"] = "true"
 
             cmd = ["npm", "run", "test:props", "--silent"]
-
-            print(f"DEBUG: Running validation: {' '.join(cmd)}")
             result = subprocess.run(
                 cmd,
                 capture_output=True,

@@ -77,7 +77,7 @@ export interface RawValidatorOptions {
     checkSuspiciousPaths?: boolean;
 }
 
-// Regex patterns translated from propscheck.py
+// Regex patterns for property file validation
 const PATTERNS = {
     property: /^([^#\s][^=]*)=(.*)$/,
     compilersList: /^compilers=(.*)$/,
