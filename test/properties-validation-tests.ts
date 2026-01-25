@@ -325,4 +325,51 @@ alias=oldgcc
             expect(result.orphanedCompilerExe).toHaveLength(0);
         });
     });
+
+    describe('orphaned group detection', () => {
+        it('should report groups referenced but not defined', () => {
+            const content = `compilers=&mygroup`;
+            const parsed = parsePropertiesFileRaw(content, 'test.properties');
+            const result = validateRawFile(parsed);
+
+            expect(result.orphanedGroups).toContainEqual(expect.objectContaining({id: 'mygroup'}));
+        });
+
+        it('should accept groups that are defined', () => {
+            const content = `
+compilers=&mygroup
+group.mygroup.compilers=gcc
+compiler.gcc.exe=/opt/compiler-explorer/gcc/bin/gcc
+`;
+            const parsed = parsePropertiesFileRaw(content, 'test.properties');
+            const result = validateRawFile(parsed);
+
+            expect(result.orphanedGroups).toHaveLength(0);
+        });
+
+        it('should report groups defined but not referenced', () => {
+            const content = `
+compilers=gcc
+compiler.gcc.exe=/opt/compiler-explorer/gcc/bin/gcc
+group.unused.compilers=clang
+`;
+            const parsed = parsePropertiesFileRaw(content, 'test.properties');
+            const result = validateRawFile(parsed);
+
+            expect(result.orphanedGroups).toContainEqual(expect.objectContaining({id: 'unused'}));
+        });
+
+        it('should handle nested group references', () => {
+            const content = `
+compilers=&outer
+group.outer.compilers=&inner
+group.inner.compilers=gcc
+compiler.gcc.exe=/opt/compiler-explorer/gcc/bin/gcc
+`;
+            const parsed = parsePropertiesFileRaw(content, 'test.properties');
+            const result = validateRawFile(parsed);
+
+            expect(result.orphanedGroups).toHaveLength(0);
+        });
+    });
 });
