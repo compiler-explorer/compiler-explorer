@@ -26,9 +26,8 @@ import zlib from 'node:zlib';
 
 import express from 'express';
 
-import {isString} from '../../shared/common-utils.js';
 import {Language} from '../../types/languages.interfaces.js';
-import {assert, unwrap} from '../assert.js';
+import {unwrap, unwrapString} from '../assert.js';
 import {ClientState} from '../clientstate.js';
 import {ClientStateGoldenifier, ClientStateNormalizer} from '../clientstate-normalizer.js';
 import {logger} from '../logger.js';
@@ -83,8 +82,8 @@ export class RouteAPI {
     }
 
     storedCodeHandler(req: express.Request, res: express.Response, next: express.NextFunction) {
-        const id = req.params.id;
-        const sessionid = Number.parseInt(req.params.session, 10);
+        const id = unwrapString(req.params.id);
+        const sessionid = Number.parseInt(unwrapString(req.params.session), 10);
         this.storageHandler
             .expandId(id)
             .then(result => {
@@ -118,7 +117,7 @@ export class RouteAPI {
     }
 
     storedStateHandler(req: express.Request, res: express.Response, next: express.NextFunction) {
-        const id = req.params.id;
+        const id = unwrapString(req.params.id);
         this.storageHandler
             .expandId(id)
             .then(result => {
@@ -152,8 +151,10 @@ export class RouteAPI {
     }
 
     unstoredStateHandler(req: express.Request, res: express.Response, next: express.NextFunction) {
+        let clientstatebase64: string | undefined;
         try {
-            const buffer = Buffer.from(req.params.clientstatebase64, 'base64');
+            clientstatebase64 = unwrapString(req.params.clientstatebase64);
+            const buffer = Buffer.from(clientstatebase64, 'base64');
             const state = extractJsonFromBufferAndInflateIfRequired(buffer);
             const config = this.getGoldenLayoutFromClientState(new ClientState(state));
             const metadata = this.getMetaDataFromLink(req, null, config);
@@ -162,7 +163,7 @@ export class RouteAPI {
         } catch (err) {
             logger.debug('Failed to parse client state from URL', {
                 error: err instanceof Error ? err.message : String(err),
-                clientstatebase64: req.params.clientstatebase64?.substring(0, 100),
+                clientstatebase64: clientstatebase64?.substring(0, 100),
             });
             next({
                 statusCode: 400,
@@ -174,13 +175,11 @@ export class RouteAPI {
     simpleLayoutHandler(req: express.Request, res: express.Response) {
         const state = new ClientState();
         const session = state.findOrCreateSession(1);
-        assert(isString(req.query.lang));
-        session.language = req.query.lang;
-        assert(isString(req.query.code));
-        session.source = req.query.code;
+        session.language = unwrapString(req.query.lang);
+        session.source = unwrapString(req.query.code);
         const compiler = session.findOrCreateCompiler(1);
-        compiler.id = req.query.compiler as string;
-        compiler.options = (req.query.compiler_flags as string) || '';
+        compiler.id = unwrapString(req.query.compiler);
+        compiler.options = unwrapString(req.query.compiler_flags) || '';
 
         this.renderClientState(state, null, req, res);
     }
@@ -197,7 +196,7 @@ export class RouteAPI {
     }
 
     storedStateHandlerResetLayout(req: express.Request, res: express.Response, next: express.NextFunction) {
-        const id = req.params.id;
+        const id = unwrapString(req.params.id);
         this.storageHandler
             .expandId(id)
             .then(result => {

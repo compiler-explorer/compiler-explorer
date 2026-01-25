@@ -24,8 +24,8 @@
 
 import express from 'express';
 import _ from 'underscore';
-
 import {Source} from '../../../types/source.interfaces.js';
+import {unwrapString} from '../../assert.js';
 import {cached, cors} from '../middleware.js';
 
 import {HttpController} from './controller.interfaces.js';
@@ -44,7 +44,7 @@ export class SourceController implements HttpController {
      * Handle request to `/source/<source>/list` endpoint
      */
     public async listEntries(req: express.Request, res: express.Response) {
-        const source = this.getSourceForHandler(req.params.source);
+        const source = this.getSourceForHandler(unwrapString(req.params.source));
         if (source === null) {
             res.sendStatus(404);
             return;
@@ -57,12 +57,12 @@ export class SourceController implements HttpController {
      * Handle request to `/source/<source>/load/<language>/<filename>` endpoint
      */
     public async loadEntry(req: express.Request, res: express.Response) {
-        const source = this.getSourceForHandler(req.params.source);
+        const source = this.getSourceForHandler(unwrapString(req.params.source));
         if (source === null) {
             res.sendStatus(404);
             return;
         }
-        const entry = await source.load(req.params.language, req.params.filename);
+        const entry = await source.load(unwrapString(req.params.language), unwrapString(req.params.filename));
         res.json(entry);
     }
 
