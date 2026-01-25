@@ -171,4 +171,31 @@ bar=baz
             expect(result.emptyListElements).toHaveLength(1);
         });
     });
+
+    describe('typo detection', () => {
+        it('should detect compilers. instead of compiler.', () => {
+            const content = `compilers.gcc.exe=/path/to/gcc`;
+            const parsed = parsePropertiesFileRaw(content, 'test.properties');
+            const result = validateRawFile(parsed);
+
+            expect(result.typoCompilers).toHaveLength(1);
+            expect(result.typoCompilers[0].text).toContain('compilers.gcc');
+        });
+
+        it('should not flag valid compiler. properties', () => {
+            const content = `compiler.gcc.exe=/path/to/gcc`;
+            const parsed = parsePropertiesFileRaw(content, 'test.properties');
+            const result = validateRawFile(parsed);
+
+            expect(result.typoCompilers).toHaveLength(0);
+        });
+
+        it('should not flag compilers= list', () => {
+            const content = `compilers=gcc:clang`;
+            const parsed = parsePropertiesFileRaw(content, 'test.properties');
+            const result = validateRawFile(parsed);
+
+            expect(result.typoCompilers).toHaveLength(0);
+        });
+    });
 });
