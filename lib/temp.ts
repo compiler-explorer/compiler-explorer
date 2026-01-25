@@ -60,22 +60,26 @@ export function resetStats() {
 }
 
 /**
- * Create a temporary directory, always in the operating systems' temporary directory.
- * @param prefix a prefix for the directory name
+ * Create a temporary directory. If the prefix is an absolute path, use it directly;
+ * otherwise create the directory in the operating system's temporary directory.
+ * @param prefix a prefix for the directory name, or an absolute path prefix
  */
 export async function mkdir(prefix: string) {
-    const result = await fs.promises.mkdtemp(path.join(os.tmpdir(), prefix));
+    const baseDir = path.isAbsolute(prefix) ? prefix : path.join(os.tmpdir(), prefix);
+    const result = await fs.promises.mkdtemp(baseDir);
     ++stats.numCreated;
     pendingRemoval.push(result);
     return result;
 }
 
 /**
- * Synchronously create a temporary directory, always in the operating systems' temporary directory.
- * @param prefix a prefix for the directory name
+ * Synchronously create a temporary directory. If the prefix is an absolute path, use it directly;
+ * otherwise create the directory in the operating system's temporary directory.
+ * @param prefix a prefix for the directory name, or an absolute path prefix
  */
 export function mkdirSync(prefix: string) {
-    const result = fs.mkdtempSync(path.join(os.tmpdir(), prefix));
+    const baseDir = path.isAbsolute(prefix) ? prefix : path.join(os.tmpdir(), prefix);
+    const result = fs.mkdtempSync(baseDir);
     ++stats.numCreated;
     pendingRemoval.push(result);
     return result;
