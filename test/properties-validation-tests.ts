@@ -549,6 +549,17 @@ compiler.clang.exe=/opt/compiler-explorer/clang
 
             expect(result.invalidDefaultCompiler).toHaveLength(0);
         });
+
+        it('should report default compiler when there is no compilers list', () => {
+            const content = `
+defaultCompiler=gcc
+compiler.gcc.exe=/opt/compiler-explorer/gcc
+`;
+            const parsed = parsePropertiesFileRaw(content, 'test.properties');
+            const result = validateRawFile(parsed);
+
+            expect(result.invalidDefaultCompiler).toContainEqual(expect.objectContaining({id: 'gcc'}));
+        });
     });
 
     describe('disabled allowlist', () => {
@@ -647,6 +658,46 @@ someOtherProperty=value
             expect(result.noCompilersList).toBe(false);
         });
 
+        it('should not flag execution. files', () => {
+            const content = `
+compiler.gcc.exe=/opt/compiler-explorer/gcc/bin/gcc
+`;
+            const parsed = parsePropertiesFileRaw(content, 'execution.amazon.properties');
+            const result = validateRawFile(parsed);
+
+            expect(result.noCompilersList).toBe(false);
+        });
+
+        it('should not flag aws. files', () => {
+            const content = `
+someProperty=value
+`;
+            const parsed = parsePropertiesFileRaw(content, 'aws.properties');
+            const result = validateRawFile(parsed);
+
+            expect(result.noCompilersList).toBe(false);
+        });
+
+        it('should not flag asm-docs. files', () => {
+            const content = `
+someProperty=value
+`;
+            const parsed = parsePropertiesFileRaw(content, 'asm-docs.properties');
+            const result = validateRawFile(parsed);
+
+            expect(result.noCompilersList).toBe(false);
+        });
+
+        it('should not flag builtin. files', () => {
+            const content = `
+someProperty=value
+`;
+            const parsed = parsePropertiesFileRaw(content, 'builtin.amazon.properties');
+            const result = validateRawFile(parsed);
+
+            expect(result.noCompilersList).toBe(false);
+        });
+
         it('should not flag files with no compiler definitions', () => {
             const content = `
 someProperty=value
@@ -721,7 +772,7 @@ describe('Real config validation', () => {
             .filter(f => {
                 if (!f.endsWith('.properties')) return false;
                 if (f.endsWith('.local.properties')) return checkLocal;
-                return f.endsWith('.amazon.properties');
+                return true; // All .properties files except .local.properties (unless CHECK_LOCAL_PROPS=true)
             })
             .map(filename => {
                 const content = fs.readFileSync(path.join(configDir, filename), 'utf8');
@@ -834,5 +885,248 @@ describe('Real config validation', () => {
         }
 
         expect(filesWithMissingList, `Files missing compilers list: ${filesWithMissingList.join(', ')}`).toEqual([]);
+    });
+
+    it('should have no orphaned compilers (exe)', () => {
+        const filesWithOrphans: Array<{file: string; orphans: string[]}> = [];
+
+        for (const {filename, parsed} of propertyFiles) {
+            const result = validateRawFile(parsed);
+            const filtered = filterDisabled(result, parsed.disabledIds);
+
+            if (filtered.orphanedCompilerExe.length > 0) {
+                filesWithOrphans.push({
+                    file: filename,
+                    orphans: filtered.orphanedCompilerExe.map(o => o.id ?? o.text),
+                });
+            }
+        }
+
+        expect(filesWithOrphans, `Files with orphaned compiler .exe: ${JSON.stringify(filesWithOrphans)}`).toEqual([]);
+    });
+
+    it('should have no orphaned compilers (ID)', () => {
+        const filesWithOrphans: Array<{file: string; orphans: string[]}> = [];
+
+        for (const {filename, parsed} of propertyFiles) {
+            const result = validateRawFile(parsed);
+            const filtered = filterDisabled(result, parsed.disabledIds);
+
+            if (filtered.orphanedCompilerId.length > 0) {
+                filesWithOrphans.push({
+                    file: filename,
+                    orphans: filtered.orphanedCompilerId.map(o => o.id ?? o.text),
+                });
+            }
+        }
+
+        expect(filesWithOrphans, `Files with orphaned compiler IDs: ${JSON.stringify(filesWithOrphans)}`).toEqual([]);
+    });
+
+    it('should have no orphaned groups', () => {
+        const filesWithOrphans: Array<{file: string; orphans: string[]}> = [];
+
+        for (const {filename, parsed} of propertyFiles) {
+            const result = validateRawFile(parsed);
+            const filtered = filterDisabled(result, parsed.disabledIds);
+
+            if (filtered.orphanedGroups.length > 0) {
+                filesWithOrphans.push({
+                    file: filename,
+                    orphans: filtered.orphanedGroups.map(o => o.id ?? o.text),
+                });
+            }
+        }
+
+        expect(filesWithOrphans, `Files with orphaned groups: ${JSON.stringify(filesWithOrphans)}`).toEqual([]);
+    });
+
+    it('should have no orphaned formatters (exe)', () => {
+        const filesWithOrphans: Array<{file: string; orphans: string[]}> = [];
+
+        for (const {filename, parsed} of propertyFiles) {
+            const result = validateRawFile(parsed);
+            const filtered = filterDisabled(result, parsed.disabledIds);
+
+            if (filtered.orphanedFormatterExe.length > 0) {
+                filesWithOrphans.push({
+                    file: filename,
+                    orphans: filtered.orphanedFormatterExe.map(o => o.id ?? o.text),
+                });
+            }
+        }
+
+        expect(filesWithOrphans, `Files with orphaned formatter .exe: ${JSON.stringify(filesWithOrphans)}`).toEqual([]);
+    });
+
+    it('should have no orphaned formatters (ID)', () => {
+        const filesWithOrphans: Array<{file: string; orphans: string[]}> = [];
+
+        for (const {filename, parsed} of propertyFiles) {
+            const result = validateRawFile(parsed);
+            const filtered = filterDisabled(result, parsed.disabledIds);
+
+            if (filtered.orphanedFormatterId.length > 0) {
+                filesWithOrphans.push({
+                    file: filename,
+                    orphans: filtered.orphanedFormatterId.map(o => o.id ?? o.text),
+                });
+            }
+        }
+
+        expect(filesWithOrphans, `Files with orphaned formatter IDs: ${JSON.stringify(filesWithOrphans)}`).toEqual([]);
+    });
+
+    it('should have no orphaned tools (exe)', () => {
+        const filesWithOrphans: Array<{file: string; orphans: string[]}> = [];
+
+        for (const {filename, parsed} of propertyFiles) {
+            const result = validateRawFile(parsed);
+            const filtered = filterDisabled(result, parsed.disabledIds);
+
+            if (filtered.orphanedToolExe.length > 0) {
+                filesWithOrphans.push({
+                    file: filename,
+                    orphans: filtered.orphanedToolExe.map(o => o.id ?? o.text),
+                });
+            }
+        }
+
+        expect(filesWithOrphans, `Files with orphaned tool .exe: ${JSON.stringify(filesWithOrphans)}`).toEqual([]);
+    });
+
+    it('should have no orphaned tools (ID)', () => {
+        const filesWithOrphans: Array<{file: string; orphans: string[]}> = [];
+
+        for (const {filename, parsed} of propertyFiles) {
+            const result = validateRawFile(parsed);
+            const filtered = filterDisabled(result, parsed.disabledIds);
+
+            if (filtered.orphanedToolId.length > 0) {
+                filesWithOrphans.push({
+                    file: filename,
+                    orphans: filtered.orphanedToolId.map(o => o.id ?? o.text),
+                });
+            }
+        }
+
+        expect(filesWithOrphans, `Files with orphaned tool IDs: ${JSON.stringify(filesWithOrphans)}`).toEqual([]);
+    });
+
+    it('should have no orphaned lib IDs', () => {
+        const filesWithOrphans: Array<{file: string; orphans: string[]}> = [];
+
+        for (const {filename, parsed} of propertyFiles) {
+            const result = validateRawFile(parsed);
+            const filtered = filterDisabled(result, parsed.disabledIds);
+
+            if (filtered.orphanedLibIds.length > 0) {
+                filesWithOrphans.push({
+                    file: filename,
+                    orphans: filtered.orphanedLibIds.map(o => o.id ?? o.text),
+                });
+            }
+        }
+
+        expect(filesWithOrphans, `Files with orphaned lib IDs: ${JSON.stringify(filesWithOrphans)}`).toEqual([]);
+    });
+
+    it('should have no orphaned lib versions', () => {
+        const filesWithOrphans: Array<{file: string; orphans: string[]}> = [];
+
+        for (const {filename, parsed} of propertyFiles) {
+            const result = validateRawFile(parsed);
+            const filtered = filterDisabled(result, parsed.disabledIds);
+
+            if (filtered.orphanedLibVersions.length > 0) {
+                filesWithOrphans.push({
+                    file: filename,
+                    orphans: filtered.orphanedLibVersions.map(o => o.id ?? o.text),
+                });
+            }
+        }
+
+        expect(filesWithOrphans, `Files with orphaned lib versions: ${JSON.stringify(filesWithOrphans)}`).toEqual([]);
+    });
+
+    it('should have no duplicated compiler references', () => {
+        const filesWithDuplicates: Array<{file: string; duplicates: string[]}> = [];
+
+        for (const {filename, parsed} of propertyFiles) {
+            const result = validateRawFile(parsed);
+            const filtered = filterDisabled(result, parsed.disabledIds);
+
+            if (filtered.duplicatedCompilerRefs.length > 0) {
+                filesWithDuplicates.push({
+                    file: filename,
+                    duplicates: filtered.duplicatedCompilerRefs.map(d => d.id ?? d.text),
+                });
+            }
+        }
+
+        expect(
+            filesWithDuplicates,
+            `Files with duplicated compiler references: ${JSON.stringify(filesWithDuplicates)}`,
+        ).toEqual([]);
+    });
+
+    it('should have no duplicated group references', () => {
+        const filesWithDuplicates: Array<{file: string; duplicates: string[]}> = [];
+
+        for (const {filename, parsed} of propertyFiles) {
+            const result = validateRawFile(parsed);
+            const filtered = filterDisabled(result, parsed.disabledIds);
+
+            if (filtered.duplicatedGroupRefs.length > 0) {
+                filesWithDuplicates.push({
+                    file: filename,
+                    duplicates: filtered.duplicatedGroupRefs.map(d => d.id ?? d.text),
+                });
+            }
+        }
+
+        expect(
+            filesWithDuplicates,
+            `Files with duplicated group references: ${JSON.stringify(filesWithDuplicates)}`,
+        ).toEqual([]);
+    });
+
+    it('should have no invalid default compilers', () => {
+        const filesWithInvalid: Array<{file: string; invalids: string[]}> = [];
+
+        for (const {filename, parsed} of propertyFiles) {
+            const result = validateRawFile(parsed);
+            const filtered = filterDisabled(result, parsed.disabledIds);
+
+            if (filtered.invalidDefaultCompiler.length > 0) {
+                filesWithInvalid.push({
+                    file: filename,
+                    invalids: filtered.invalidDefaultCompiler.map(i => i.id ?? i.text),
+                });
+            }
+        }
+
+        expect(filesWithInvalid, `Files with invalid default compiler: ${JSON.stringify(filesWithInvalid)}`).toEqual(
+            [],
+        );
+    });
+
+    it('should have no suspicious paths in amazon properties', () => {
+        const filesWithSuspicious: Array<{file: string; paths: string[]}> = [];
+        const amazonFiles = propertyFiles.filter(f => f.filename.includes('amazon'));
+
+        for (const {filename, parsed} of amazonFiles) {
+            const result = validateRawFile(parsed, {checkSuspiciousPaths: true});
+            const filtered = filterDisabled(result, parsed.disabledIds);
+
+            if (filtered.suspiciousPaths.length > 0) {
+                filesWithSuspicious.push({
+                    file: filename,
+                    paths: filtered.suspiciousPaths.map(p => `${p.id}: ${p.text}`),
+                });
+            }
+        }
+
+        expect(filesWithSuspicious, `Files with suspicious paths: ${JSON.stringify(filesWithSuspicious)}`).toEqual([]);
     });
 });

@@ -101,6 +101,29 @@ const PATTERNS = {
     disabled: /^#\s*Disabled?:?\s*(.*)$/i,
 };
 
+// File patterns that are allowed to have no compilers list.
+// These are non-language config files from the Python propscheck.py implementation.
+const ALLOWED_EMPTY_COMPILERS_PATTERNS = [
+    'execution.',
+    'compiler-explorer.',
+    'aws.',
+    'asm-docs.',
+    'builtin.',
+    '.defaults.',
+];
+
+// Path prefixes considered valid for production config files.
+// Anything outside these paths will be flagged as suspicious.
+const VALID_PATH_PREFIXES = ['/opt/compiler-explorer', 'Z:/compilers'];
+
+// Specific paths that are always allowed (e.g., system tools used in production).
+const ALLOWED_SYSTEM_PATHS = ['/usr/bin/ldd'];
+
+function isSuspiciousPath(path: string): boolean {
+    if (ALLOWED_SYSTEM_PATHS.includes(path)) return false;
+    return !VALID_PATH_PREFIXES.some(prefix => path.startsWith(prefix));
+}
+
 /**
  * Parse a colon-separated list of compiler/group references.
  * Handles group references (&groupname), remote references (id@host), and regular IDs.
@@ -118,9 +141,6 @@ export function parsePropertiesFileRaw(content: string, filename: string): Parse
     const properties: ParsedProperty[] = [];
     const disabledIds = new Set<string>();
     const parseErrors: ValidationIssue[] = [];
-
-    // By default, consider /usr/bin/ldd valid as it's in several configs
-    disabledIds.add('/usr/bin/ldd');
 
     // Use the main parser to collect format errors
     const parseResult = parseProperties(content, filename, {collectErrors: true});
@@ -313,7 +333,7 @@ export function validateRawFile(
             // Check suspicious path
             if (checkSuspicious) {
                 const path = compilerExeMatch[2];
-                if (!path.startsWith('/opt/compiler-explorer') && !path.startsWith('Z:/compilers')) {
+                if (isSuspiciousPath(path)) {
                     result.suspiciousPaths.push({line, text: path, id: compilerExeMatch[1]});
                 }
             }
@@ -356,7 +376,7 @@ export function validateRawFile(
 
             if (checkSuspicious) {
                 const path = formatterExeMatch[2];
-                if (!path.startsWith('/opt/compiler-explorer') && !path.startsWith('Z:/compilers')) {
+                if (isSuspiciousPath(path)) {
                     result.suspiciousPaths.push({line, text: path, id: formatterExeMatch[1]});
                 }
             }
@@ -384,7 +404,7 @@ export function validateRawFile(
 
             if (checkSuspicious) {
                 const path = toolExeMatch[2];
-                if (!path.startsWith('/opt/compiler-explorer') && !path.startsWith('Z:/compilers')) {
+                if (isSuspiciousPath(path)) {
                     result.suspiciousPaths.push({line, text: path, id: toolExeMatch[1]});
                 }
             }
@@ -544,7 +564,10 @@ export function validateRawFile(
     }
 
     // Invalid default compiler (default not in listed)
-    if (defaultCompiler && listedCompilers.size > 0 && !listedCompilers.has(defaultCompiler.id)) {
+    // If defaultCompiler is set but doesn't appear in the compilers list, it's invalid
+    // This matches Python behaviour where bad_default = default_compiler - listed_compilers
+    // Skip if defaultCompiler is empty (some files have defaultCompiler= with no value)
+    if (defaultCompiler?.id && !listedCompilers.has(defaultCompiler.id)) {
         result.invalidDefaultCompiler.push({
             line: defaultCompiler.line,
             text: defaultCompiler.id,
@@ -554,10 +577,8 @@ export function validateRawFile(
 
     // Check for missing compilers= in language files
     // A language file (e.g., c++.amazon.properties) should have either compilers= or group definitions
-    const isLanguageFile =
-        !parsed.filename.includes('.defaults.') &&
-        !parsed.filename.includes('compiler-explorer.') &&
-        parsed.filename.endsWith('.properties');
+    const isAllowedEmpty = ALLOWED_EMPTY_COMPILERS_PATTERNS.some(pattern => parsed.filename.includes(pattern));
+    const isLanguageFile = !isAllowedEmpty && parsed.filename.endsWith('.properties');
 
     if (isLanguageFile) {
         const hasCompilersList = parsed.properties.some(p => p.key === 'compilers');
