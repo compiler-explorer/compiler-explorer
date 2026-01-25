@@ -74,14 +74,42 @@ export function get(base: string, property: string, defaultValue?: unknown): unk
 
 export type RawPropertiesGetter = typeof get;
 
-export function parseProperties(blob: string, name: string): Record<string, PropertyValue> {
+export interface PropertyParseError {
+    line: number;
+    text: string;
+}
+
+export interface ParsePropertiesOptions {
+    // If true, collect parse errors instead of logging them
+    collectErrors?: boolean;
+}
+
+export interface ParsePropertiesResult {
+    props: Record<string, PropertyValue>;
+    errors: PropertyParseError[];
+}
+
+export function parseProperties(blob: string, name: string): Record<string, PropertyValue>;
+export function parseProperties(blob: string, name: string, options: {collectErrors: true}): ParsePropertiesResult;
+export function parseProperties(
+    blob: string,
+    name: string,
+    options?: ParsePropertiesOptions,
+): Record<string, PropertyValue> | ParsePropertiesResult {
     const props: Record<string, PropertyValue> = {};
+    const errors: PropertyParseError[] = [];
+    const collectErrors = options?.collectErrors ?? false;
+
     for (const [index, lineOrig] of blob.split('\n').entries()) {
         const line = lineOrig.replace(/#.*/, '').trim();
         if (!line) continue;
         const split = line.match(/([^=]+)=(.*)/);
         if (!split) {
-            logger.error(`Bad line: ${line} in ${name}: ${index + 1}`);
+            if (collectErrors) {
+                errors.push({line: index + 1, text: lineOrig.trim()});
+            } else {
+                logger.error(`Bad line: ${line} in ${name}: ${index + 1}`);
+            }
             continue;
         }
         const prop = split[1].trim();
@@ -93,6 +121,10 @@ export function parseProperties(blob: string, name: string): Record<string, Prop
         }
         props[prop] = val;
         debug(`${prop} = ${val}`);
+    }
+
+    if (collectErrors) {
+        return {props, errors};
     }
     return props;
 }

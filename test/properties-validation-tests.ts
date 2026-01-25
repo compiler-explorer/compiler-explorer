@@ -104,6 +104,19 @@ foo=bar
 
             expect(parsed.properties[0].value).toBe('-O2 -DFOO=bar');
         });
+
+        it('should collect parse errors for invalid lines', () => {
+            const content = `
+foo=bar
+this is not valid
+baz=qux
+`;
+            const parsed = parsePropertiesFileRaw(content, 'test.properties');
+
+            expect(parsed.parseErrors).toHaveLength(1);
+            expect(parsed.parseErrors[0].line).toBe(3);
+            expect(parsed.parseErrors[0].text).toBe('this is not valid');
+        });
     });
 
     describe('duplicate key detection', () => {
@@ -178,6 +191,32 @@ bar=baz
             const result = validateRawFile(parsed);
 
             expect(result.emptyListElements).toHaveLength(1);
+        });
+    });
+
+    describe('invalid property format detection', () => {
+        it('should report lines without equals sign', () => {
+            const content = `
+foo=bar
+this is not valid
+baz=qux
+`;
+            const parsed = parsePropertiesFileRaw(content, 'test.properties');
+            const result = validateRawFile(parsed);
+
+            expect(result.invalidPropertyFormat).toHaveLength(1);
+            expect(result.invalidPropertyFormat[0].text).toBe('this is not valid');
+        });
+
+        it('should not report valid properties', () => {
+            const content = `
+foo=bar
+baz=qux
+`;
+            const parsed = parsePropertiesFileRaw(content, 'test.properties');
+            const result = validateRawFile(parsed);
+
+            expect(result.invalidPropertyFormat).toHaveLength(0);
         });
     });
 
@@ -554,6 +593,71 @@ compilers=orphan
         });
     });
 
+    describe('no compilers list detection', () => {
+        it('should flag language files with compiler definitions but no compilers=', () => {
+            const content = `
+compiler.gcc.exe=/opt/compiler-explorer/gcc/bin/gcc
+compiler.gcc.name=GCC
+`;
+            const parsed = parsePropertiesFileRaw(content, 'c++.amazon.properties');
+            const result = validateRawFile(parsed);
+
+            expect(result.noCompilersList).toBe(true);
+        });
+
+        it('should not flag files with compilers=', () => {
+            const content = `
+compilers=gcc
+compiler.gcc.exe=/opt/compiler-explorer/gcc/bin/gcc
+`;
+            const parsed = parsePropertiesFileRaw(content, 'c++.amazon.properties');
+            const result = validateRawFile(parsed);
+
+            expect(result.noCompilersList).toBe(false);
+        });
+
+        it('should not flag files with group definitions', () => {
+            const content = `
+group.mygroup.compilers=gcc
+compiler.gcc.exe=/opt/compiler-explorer/gcc/bin/gcc
+`;
+            const parsed = parsePropertiesFileRaw(content, 'c++.amazon.properties');
+            const result = validateRawFile(parsed);
+
+            expect(result.noCompilersList).toBe(false);
+        });
+
+        it('should not flag defaults files', () => {
+            const content = `
+compiler.gcc.exe=/opt/compiler-explorer/gcc/bin/gcc
+`;
+            const parsed = parsePropertiesFileRaw(content, 'c++.defaults.properties');
+            const result = validateRawFile(parsed);
+
+            expect(result.noCompilersList).toBe(false);
+        });
+
+        it('should not flag compiler-explorer config files', () => {
+            const content = `
+someOtherProperty=value
+`;
+            const parsed = parsePropertiesFileRaw(content, 'compiler-explorer.amazon.properties');
+            const result = validateRawFile(parsed);
+
+            expect(result.noCompilersList).toBe(false);
+        });
+
+        it('should not flag files with no compiler definitions', () => {
+            const content = `
+someProperty=value
+`;
+            const parsed = parsePropertiesFileRaw(content, 'c++.amazon.properties');
+            const result = validateRawFile(parsed);
+
+            expect(result.noCompilersList).toBe(false);
+        });
+    });
+
     describe('cross-file compiler ID validation', () => {
         it('should detect compiler IDs defined in multiple files', () => {
             const file1Content = `
@@ -699,5 +803,36 @@ describe('Real config validation', () => {
             const duplicates = Object.fromEntries(result.duplicateCompilerIds);
             expect.fail(`Duplicate compiler IDs found: ${JSON.stringify(duplicates, null, 2)}`);
         }
+    });
+
+    it('should have no invalid property format errors', () => {
+        const filesWithErrors: Array<{file: string; errors: string[]}> = [];
+
+        for (const {filename, parsed} of propertyFiles) {
+            const result = validateRawFile(parsed);
+
+            if (result.invalidPropertyFormat.length > 0) {
+                filesWithErrors.push({
+                    file: filename,
+                    errors: result.invalidPropertyFormat.map(e => `Line ${e.line}: ${e.text}`),
+                });
+            }
+        }
+
+        expect(filesWithErrors, `Files with invalid property format: ${JSON.stringify(filesWithErrors)}`).toEqual([]);
+    });
+
+    it('should have no language files missing compilers list', () => {
+        const filesWithMissingList: string[] = [];
+
+        for (const {filename, parsed} of propertyFiles) {
+            const result = validateRawFile(parsed);
+
+            if (result.noCompilersList) {
+                filesWithMissingList.push(filename);
+            }
+        }
+
+        expect(filesWithMissingList, `Files missing compilers list: ${filesWithMissingList.join(', ')}`).toEqual([]);
     });
 });
