@@ -23,8 +23,8 @@
 // POSSIBILITY OF SUCH DAMAGE.
 
 import express from 'express';
-
 import {getDocumentationProviderTypeByKey} from '../../asm-docs/index.js';
+import {unwrapString} from '../../assert.js';
 import {cached, cors} from '../middleware.js';
 
 import {HttpController} from './controller.interfaces.js';
@@ -41,11 +41,11 @@ export class AssemblyDocumentationController implements HttpController {
      */
     public async getOpcodeDocumentation(req: express.Request, res: express.Response) {
         try {
-            const Provider = getDocumentationProviderTypeByKey(req.params.arch);
+            const Provider = getDocumentationProviderTypeByKey(unwrapString(req.params.arch));
             const provider = new Provider();
             // If there is no opcode, we should just fail with 404 anyways... Assumes that no assembly language has
             // a __unknown_opcode instruction.
-            const instruction = (req.params.opcode || '__UNKNOWN_OPCODE').toUpperCase();
+            const instruction = (unwrapString(req.params.opcode) || '__UNKNOWN_OPCODE').toUpperCase();
             const information = provider.getInstructionInformation(instruction);
             if (information === null) {
                 res.status(404).send({error: `Unknown opcode '${instruction}'`});
