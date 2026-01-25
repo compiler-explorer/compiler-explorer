@@ -93,7 +93,7 @@ const PATTERNS = {
     toolsList: /^tools=(.+)$/,
     toolExe: /^tools\.([^.]+)\.exe=(.*)$/,
     toolId: /^tools\.([^.]+)\./,
-    emptyList: /^.*(compilers|formatters|versions|tools|alias|exclude|libPath)=(.*::|:.*|.*:)$/,
+    emptyList: /^.*(compilers|formatters|versions|tools|alias|exclude|libPath)=(.*::.*|:.*|.*:)$/,
     disabled: /^#\s*Disabled?:?\s*(.*)$/i,
 };
 
