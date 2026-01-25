@@ -606,7 +606,7 @@ compiler.gcc.semver=12.0
     });
 });
 
-describe.skipIf(process.env.SKIP_EXPENSIVE_TESTS === 'true')('Real config validation', () => {
+describe('Real config validation', () => {
     const configDir = 'etc/config';
     let amazonFiles: Array<{filename: string; parsed: ReturnType<typeof parsePropertiesFileRaw>}> = [];
 
