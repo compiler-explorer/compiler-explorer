@@ -61,6 +61,7 @@ const plugins: Webpack.WebpackPluginInstance[] = [
             'cpp',
             'go',
             'pascal',
+            'perl',
             'python',
             'rust',
             'swift',

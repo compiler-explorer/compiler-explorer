@@ -155,6 +155,10 @@ export class InstructionSets {
                 target: [],
                 path: [],
             },
+            perl: {
+                target: [],
+                path: [],
+            },
             python: {
                 target: [],
                 path: [],

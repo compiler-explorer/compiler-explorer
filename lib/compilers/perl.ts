@@ -32,24 +32,30 @@ import {resolvePathFromAppRoot} from '../utils.js';
 
 import {BaseParser} from './argument-parsers.js';
 
-export class PythonCompiler extends BaseCompiler {
-    private readonly disasmScriptPath: string;
+export class PerlCompiler extends BaseCompiler {
+    private readonly disasmLibPath: string;
+    private readonly disasmModule: string;
 
     static get key() {
-        return 'python';
+        return 'perl';
     }
 
     constructor(compilerInfo: PreliminaryCompilerInfo, env: CompilationEnvironment) {
         super(compilerInfo, env);
         this.compiler.demangler = '';
         this.demanglerClass = null;
-        this.disasmScriptPath =
-            this.compilerProps<string>('disasmScript') ||
-            resolvePathFromAppRoot('etc', 'scripts', 'disasms', 'dis_all.py');
+        this.disasmLibPath =
+            this.compilerProps<string>('disasmLibPath') || resolvePathFromAppRoot('etc', 'scripts', 'disasms');
+        this.disasmModule = this.compilerProps<string>('disasmModule') || 'diswrapper';
     }
 
     override async processAsm(result) {
-        const lineRe = /^\s{0,4}(\d+)(.*)/;
+        // only nextstates have line numbers
+        // state op parameters are (optlabel stash seq_no file:lineno)
+        // I miss /x
+        const nextstateRe =
+            /^(?:-|\w+)\s+<;> (?:ex-)?(?:next|db)state\((?:[^:\s]+: )?[^:\s]+(?:::[^:\s]+)* \d+ ([^\s:]+):(\d+)\)/;
+        const functionTopRe = /:$/;
 
         const bytecodeLines = result.asm.split('\n');
 
@@ -58,13 +64,13 @@ export class PythonCompiler extends BaseCompiler {
         let sourceLoc: AsmResultSource | null = null;
 
         for (const line of bytecodeLines) {
-            const match = line.match(lineRe);
+            const match = line.match(nextstateRe);
 
             if (match) {
-                const lineno = Number.parseInt(match[1], 10);
+                const lineno = Number.parseInt(match[2], 10);
                 sourceLoc = {line: lineno, file: null};
                 lastLineNo = lineno;
-            } else if (line) {
+            } else if (line && !line.match(functionTopRe)) {
                 sourceLoc = {line: lastLineNo, file: null};
             } else {
                 sourceLoc = {line: null, file: null};
@@ -74,11 +80,15 @@ export class PythonCompiler extends BaseCompiler {
             bytecodeResult.push({text: line, source: sourceLoc});
         }
 
-        return {asm: bytecodeResult};
+        return {
+            asm: bytecodeResult,
+            languageId: 'perl-concise',
+            asmKeywordTypes: ['keyword.perl-concise'],
+        };
     }
 
     override optionsForFilter(filters: ParseFiltersAndOutputOptions, outputFilename: string) {
-        return ['-I', this.disasmScriptPath, '--outputfile', outputFilename, '--inputfile'];
+        return ['-I', this.disasmLibPath, '-M' + this.disasmModule + '=' + outputFilename, '-c'];
     }
 
     override getArgumentParserClass() {
