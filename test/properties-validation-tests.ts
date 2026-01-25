@@ -608,12 +608,17 @@ compiler.gcc.semver=12.0
 
 describe('Real config validation', () => {
     const configDir = 'etc/config';
-    let amazonFiles: Array<{filename: string; parsed: ReturnType<typeof parsePropertiesFileRaw>}> = [];
+    const checkLocal = process.env.CHECK_LOCAL_PROPS === 'true';
+    let propertyFiles: Array<{filename: string; parsed: ReturnType<typeof parsePropertiesFileRaw>}> = [];
 
     beforeAll(() => {
         const files = fs.readdirSync(configDir);
-        amazonFiles = files
-            .filter(f => f.endsWith('.amazon.properties'))
+        propertyFiles = files
+            .filter(f => {
+                if (!f.endsWith('.properties')) return false;
+                if (f.endsWith('.local.properties')) return checkLocal;
+                return f.endsWith('.amazon.properties');
+            })
             .map(filename => {
                 const content = fs.readFileSync(path.join(configDir, filename), 'utf8');
                 return {
@@ -624,17 +629,17 @@ describe('Real config validation', () => {
     });
 
     afterAll(() => {
-        amazonFiles = [];
+        propertyFiles = [];
     });
 
-    it('should have amazon property files to validate', () => {
-        expect(amazonFiles.length).toBeGreaterThan(0);
+    it('should have property files to validate', () => {
+        expect(propertyFiles.length).toBeGreaterThan(0);
     });
 
-    it('should have no duplicate keys in amazon property files', () => {
+    it('should have no duplicate keys in property files', () => {
         const filesWithDuplicates: Array<{file: string; duplicates: string[]}> = [];
 
-        for (const {filename, parsed} of amazonFiles) {
+        for (const {filename, parsed} of propertyFiles) {
             const result = validateRawFile(parsed);
             const filtered = filterDisabled(result, parsed.disabledIds);
 
@@ -652,7 +657,7 @@ describe('Real config validation', () => {
     it('should have no empty list elements', () => {
         const filesWithEmpty: Array<{file: string; issues: string[]}> = [];
 
-        for (const {filename, parsed} of amazonFiles) {
+        for (const {filename, parsed} of propertyFiles) {
             const result = validateRawFile(parsed);
 
             if (result.emptyListElements.length > 0) {
@@ -669,7 +674,7 @@ describe('Real config validation', () => {
     it('should have no typo compilers (compilers. instead of compiler.)', () => {
         const filesWithTypos: Array<{file: string; typos: string[]}> = [];
 
-        for (const {filename, parsed} of amazonFiles) {
+        for (const {filename, parsed} of propertyFiles) {
             const result = validateRawFile(parsed);
             const filtered = filterDisabled(result, parsed.disabledIds);
 
@@ -685,7 +690,10 @@ describe('Real config validation', () => {
     });
 
     it('should have no duplicate compiler IDs across amazon property files', () => {
-        const result = validateCrossFileCompilerIds(amazonFiles);
+        // Cross-file duplicate check only applies to amazon files
+        // Local files are expected to override/mirror amazon config
+        const amazonOnly = propertyFiles.filter(f => f.filename.includes('amazon'));
+        const result = validateCrossFileCompilerIds(amazonOnly);
 
         if (result.duplicateCompilerIds.size > 0) {
             const duplicates = Object.fromEntries(result.duplicateCompilerIds);
