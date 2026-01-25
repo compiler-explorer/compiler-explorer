@@ -76,4 +76,31 @@ describe('Creates and tracks temporary directories', () => {
         await temp.cleanup();
         expect(temp.getStats()).toEqual({numCreated: 1, numActive: 0, numRemoved: 0, numAlreadyGone: 1});
     });
+
+    it('uses absolute paths directly when provided', async () => {
+        const customBase = await fs.mkdtemp(path.join(osTemp, 'custom-base-'));
+        try {
+            const absolutePrefix = path.join(customBase, 'myprefix');
+            const newTemp = await temp.mkdir(absolutePrefix);
+            expect(newTemp).toContain(customBase);
+            expect(newTemp).toContain('myprefix');
+            expect(newTemp).not.toContain(path.join(osTemp, customBase));
+            expect(await utils.dirExists(newTemp)).toBe(true);
+        } finally {
+            await fs.rm(customBase, {recursive: true, force: true});
+        }
+    });
+
+    it('uses absolute paths directly for mkdirSync', async () => {
+        const customBase = await fs.mkdtemp(path.join(osTemp, 'custom-base-'));
+        try {
+            const absolutePrefix = path.join(customBase, 'syncprefix');
+            const newTemp = temp.mkdirSync(absolutePrefix);
+            expect(newTemp).toContain(customBase);
+            expect(newTemp).toContain('syncprefix');
+            expect(await utils.dirExists(newTemp)).toBe(true);
+        } finally {
+            await fs.rm(customBase, {recursive: true, force: true});
+        }
+    });
 });
