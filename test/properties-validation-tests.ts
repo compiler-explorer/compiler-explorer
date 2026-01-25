@@ -24,7 +24,13 @@
 
 import {describe, expect, it} from 'vitest';
 
-import {parseCompilersList, parsePropertiesFileRaw, validateRawFile} from '../lib/properties-validator.js';
+import {
+    filterDisabled,
+    parseCompilersList,
+    parsePropertiesFileRaw,
+    validateCrossFileCompilerIds,
+    validateRawFile,
+} from '../lib/properties-validator.js';
 
 describe('Properties Validator', () => {
     describe('parseCompilersList', () => {
@@ -500,6 +506,99 @@ compiler.clang.exe=/opt/compiler-explorer/clang
             const result = validateRawFile(parsed);
 
             expect(result.invalidDefaultCompiler).toHaveLength(0);
+        });
+    });
+
+    describe('disabled allowlist', () => {
+        it('should filter disabled IDs from orphaned compilers', () => {
+            const content = `
+# Disabled: orphan
+compilers=gcc:orphan
+compiler.gcc.exe=/opt/compiler-explorer/gcc
+`;
+            const parsed = parsePropertiesFileRaw(content, 'test.properties');
+            const result = validateRawFile(parsed);
+            const filtered = filterDisabled(result, parsed.disabledIds);
+
+            expect(result.orphanedCompilerExe).toContainEqual(expect.objectContaining({id: 'orphan'}));
+            expect(filtered.orphanedCompilerExe).not.toContainEqual(expect.objectContaining({id: 'orphan'}));
+        });
+
+        it('should handle multiple disabled IDs', () => {
+            const content = `
+# Disabled: orphan1 orphan2
+compilers=gcc:orphan1:orphan2
+compiler.gcc.exe=/opt/compiler-explorer/gcc
+`;
+            const parsed = parsePropertiesFileRaw(content, 'test.properties');
+            const result = validateRawFile(parsed);
+            const filtered = filterDisabled(result, parsed.disabledIds);
+
+            expect(result.orphanedCompilerExe).toContainEqual(expect.objectContaining({id: 'orphan1'}));
+            expect(result.orphanedCompilerExe).toContainEqual(expect.objectContaining({id: 'orphan2'}));
+            expect(filtered.orphanedCompilerExe).not.toContainEqual(expect.objectContaining({id: 'orphan1'}));
+            expect(filtered.orphanedCompilerExe).not.toContainEqual(expect.objectContaining({id: 'orphan2'}));
+        });
+
+        it('should support Disable: variant spelling', () => {
+            const content = `
+# Disable: orphan
+compilers=orphan
+`;
+            const parsed = parsePropertiesFileRaw(content, 'test.properties');
+
+            expect(parsed.disabledIds).toContain('orphan');
+        });
+    });
+
+    describe('cross-file compiler ID validation', () => {
+        it('should detect compiler IDs defined in multiple files', () => {
+            const file1Content = `
+compiler.gcc.exe=/opt/compiler-explorer/gcc-12/bin/gcc
+compiler.gcc.name=GCC 12
+`;
+            const file2Content = `
+compiler.gcc.exe=/opt/compiler-explorer/gcc-13/bin/gcc
+compiler.gcc.name=GCC 13
+`;
+            const parsed1 = parsePropertiesFileRaw(file1Content, 'c++.amazon.properties');
+            const parsed2 = parsePropertiesFileRaw(file2Content, 'c.amazon.properties');
+
+            const result = validateCrossFileCompilerIds([
+                {filename: 'c++.amazon.properties', parsed: parsed1},
+                {filename: 'c.amazon.properties', parsed: parsed2},
+            ]);
+
+            expect(result.duplicateCompilerIds.has('gcc')).toBe(true);
+            expect(result.duplicateCompilerIds.get('gcc')).toHaveLength(2);
+        });
+
+        it('should not flag unique compiler IDs across files', () => {
+            const file1Content = `compiler.gcc.exe=/opt/compiler-explorer/gcc/bin/gcc`;
+            const file2Content = `compiler.clang.exe=/opt/compiler-explorer/clang/bin/clang`;
+
+            const parsed1 = parsePropertiesFileRaw(file1Content, 'c++.amazon.properties');
+            const parsed2 = parsePropertiesFileRaw(file2Content, 'c.amazon.properties');
+
+            const result = validateCrossFileCompilerIds([
+                {filename: 'c++.amazon.properties', parsed: parsed1},
+                {filename: 'c.amazon.properties', parsed: parsed2},
+            ]);
+
+            expect(result.duplicateCompilerIds.size).toBe(0);
+        });
+
+        it('should not count same ID multiple times within single file', () => {
+            const content = `
+compiler.gcc.exe=/opt/compiler-explorer/gcc/bin/gcc
+compiler.gcc.name=GCC
+compiler.gcc.semver=12.0
+`;
+            const parsed = parsePropertiesFileRaw(content, 'c++.amazon.properties');
+
+            const result = validateCrossFileCompilerIds([{filename: 'c++.amazon.properties', parsed}]);
+
+            expect(result.duplicateCompilerIds.size).toBe(0);
         });
     });
 });
