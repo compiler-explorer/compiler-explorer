@@ -372,4 +372,30 @@ compiler.gcc.exe=/opt/compiler-explorer/gcc/bin/gcc
             expect(result.orphanedGroups).toHaveLength(0);
         });
     });
+
+    describe('duplicated reference detection', () => {
+        it('should detect duplicate compiler references in same list', () => {
+            const content = `compilers=gcc:clang:gcc`;
+            const parsed = parsePropertiesFileRaw(content, 'test.properties');
+            const result = validateRawFile(parsed);
+
+            expect(result.duplicatedCompilerRefs).toContainEqual(expect.objectContaining({id: 'gcc'}));
+        });
+
+        it('should detect duplicate group references', () => {
+            const content = `compilers=&mygroup:&mygroup`;
+            const parsed = parsePropertiesFileRaw(content, 'test.properties');
+            const result = validateRawFile(parsed);
+
+            expect(result.duplicatedGroupRefs).toContainEqual(expect.objectContaining({id: 'mygroup'}));
+        });
+
+        it('should not flag unique references', () => {
+            const content = `compilers=gcc:clang:msvc`;
+            const parsed = parsePropertiesFileRaw(content, 'test.properties');
+            const result = validateRawFile(parsed);
+
+            expect(result.duplicatedCompilerRefs).toHaveLength(0);
+        });
+    });
 });
