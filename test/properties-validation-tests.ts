@@ -22,7 +22,10 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import {describe, expect, it} from 'vitest';
+import fs from 'node:fs';
+import path from 'node:path';
+
+import {afterAll, beforeAll, describe, expect, it} from 'vitest';
 
 import {
     filterDisabled,
@@ -600,5 +603,93 @@ compiler.gcc.semver=12.0
 
             expect(result.duplicateCompilerIds.size).toBe(0);
         });
+    });
+});
+
+describe.skipIf(process.env.SKIP_EXPENSIVE_TESTS === 'true')('Real config validation', () => {
+    const configDir = 'etc/config';
+    let amazonFiles: Array<{filename: string; parsed: ReturnType<typeof parsePropertiesFileRaw>}> = [];
+
+    beforeAll(() => {
+        const files = fs.readdirSync(configDir);
+        amazonFiles = files
+            .filter(f => f.endsWith('.amazon.properties'))
+            .map(filename => {
+                const content = fs.readFileSync(path.join(configDir, filename), 'utf8');
+                return {
+                    filename,
+                    parsed: parsePropertiesFileRaw(content, filename),
+                };
+            });
+    });
+
+    afterAll(() => {
+        amazonFiles = [];
+    });
+
+    it('should have amazon property files to validate', () => {
+        expect(amazonFiles.length).toBeGreaterThan(0);
+    });
+
+    it('should have no duplicate keys in amazon property files', () => {
+        const filesWithDuplicates: Array<{file: string; duplicates: string[]}> = [];
+
+        for (const {filename, parsed} of amazonFiles) {
+            const result = validateRawFile(parsed);
+            const filtered = filterDisabled(result, parsed.disabledIds);
+
+            if (filtered.duplicateKeys.length > 0) {
+                filesWithDuplicates.push({
+                    file: filename,
+                    duplicates: filtered.duplicateKeys.map(d => d.id ?? d.text),
+                });
+            }
+        }
+
+        expect(filesWithDuplicates, `Files with duplicate keys: ${JSON.stringify(filesWithDuplicates)}`).toEqual([]);
+    });
+
+    it('should have no empty list elements', () => {
+        const filesWithEmpty: Array<{file: string; issues: string[]}> = [];
+
+        for (const {filename, parsed} of amazonFiles) {
+            const result = validateRawFile(parsed);
+
+            if (result.emptyListElements.length > 0) {
+                filesWithEmpty.push({
+                    file: filename,
+                    issues: result.emptyListElements.map(e => e.text),
+                });
+            }
+        }
+
+        expect(filesWithEmpty, `Files with empty list elements: ${JSON.stringify(filesWithEmpty)}`).toEqual([]);
+    });
+
+    it('should have no typo compilers (compilers. instead of compiler.)', () => {
+        const filesWithTypos: Array<{file: string; typos: string[]}> = [];
+
+        for (const {filename, parsed} of amazonFiles) {
+            const result = validateRawFile(parsed);
+            const filtered = filterDisabled(result, parsed.disabledIds);
+
+            if (filtered.typoCompilers.length > 0) {
+                filesWithTypos.push({
+                    file: filename,
+                    typos: filtered.typoCompilers.map(t => t.text),
+                });
+            }
+        }
+
+        expect(filesWithTypos, `Files with typo compilers: ${JSON.stringify(filesWithTypos)}`).toEqual([]);
+    });
+
+    it('should have no duplicate compiler IDs across amazon property files', () => {
+        const result = validateCrossFileCompilerIds(amazonFiles);
+
+        if (result.duplicateCompilerIds.size > 0) {
+            const duplicates = Object.fromEntries(result.duplicateCompilerIds);
+            expect.fail(`Duplicate compiler IDs found: ${JSON.stringify(duplicates, null, 2)}`);
+        }
     });
 });
