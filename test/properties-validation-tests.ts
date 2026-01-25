@@ -121,4 +121,54 @@ bar=baz
             expect(result.duplicateKeys).toHaveLength(0);
         });
     });
+
+    describe('empty list element detection', () => {
+        it('should detect double colons in compilers list', () => {
+            const content = `compilers=gcc::clang`;
+            const parsed = parsePropertiesFileRaw(content, 'test.properties');
+            const result = validateRawFile(parsed);
+
+            expect(result.emptyListElements).toHaveLength(1);
+        });
+
+        it('should detect leading colons', () => {
+            const content = `compilers=:gcc`;
+            const parsed = parsePropertiesFileRaw(content, 'test.properties');
+            const result = validateRawFile(parsed);
+
+            expect(result.emptyListElements).toHaveLength(1);
+        });
+
+        it('should detect trailing colons', () => {
+            const content = `compilers=gcc:`;
+            const parsed = parsePropertiesFileRaw(content, 'test.properties');
+            const result = validateRawFile(parsed);
+
+            expect(result.emptyListElements).toHaveLength(1);
+        });
+
+        it('should not report valid compilers list', () => {
+            const content = `compilers=gcc:clang:msvc`;
+            const parsed = parsePropertiesFileRaw(content, 'test.properties');
+            const result = validateRawFile(parsed);
+
+            expect(result.emptyListElements).toHaveLength(0);
+        });
+
+        it('should detect empty elements in formatters list', () => {
+            const content = `formatters=clangformat::rustfmt`;
+            const parsed = parsePropertiesFileRaw(content, 'test.properties');
+            const result = validateRawFile(parsed);
+
+            expect(result.emptyListElements).toHaveLength(1);
+        });
+
+        it('should detect empty elements in tools list', () => {
+            const content = `tools=readelf:nm:`;
+            const parsed = parsePropertiesFileRaw(content, 'test.properties');
+            const result = validateRawFile(parsed);
+
+            expect(result.emptyListElements).toHaveLength(1);
+        });
+    });
 });
