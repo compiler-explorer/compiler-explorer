@@ -151,8 +151,9 @@ export class RouteAPI {
     }
 
     unstoredStateHandler(req: express.Request, res: express.Response, next: express.NextFunction) {
-        const clientstatebase64 = unwrapString(req.params.clientstatebase64);
+        let clientstatebase64: string | undefined;
         try {
+            clientstatebase64 = unwrapString(req.params.clientstatebase64);
             const buffer = Buffer.from(clientstatebase64, 'base64');
             const state = extractJsonFromBufferAndInflateIfRequired(buffer);
             const config = this.getGoldenLayoutFromClientState(new ClientState(state));
