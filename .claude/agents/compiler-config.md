@@ -25,7 +25,7 @@ etc/scripts/ce-properties-wizard/run.sh /path/to/compiler
 etc/scripts/ce-properties-wizard/run.sh /path/to/compiler --yes
 ```
 
-The wizard automatically detects compiler type, version, language, and generates appropriate configuration. It also validates the result with `propscheck.py`.
+The wizard automatically detects compiler type, version, language, and generates appropriate configuration. It also validates the result with `npm run test:props`.
 
 **Fall back to manual configuration when:**
 - The compiler requires a new/custom `compilerType` (new compiler class in `lib/compilers/`)
@@ -128,9 +128,9 @@ compiler.gsnapshot.alias=g7snapshot:greflection-trunk
 
 ## Validation
 
-After making changes, you can validate properties files:
+After making changes, validate properties files:
 ```bash
-python3 etc/scripts/util/propscheck.py --config-dir etc/config --check-local
+npm run test:props
 ```
 
 ## Key Principles

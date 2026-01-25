@@ -28,8 +28,6 @@ jobs:
           npm run lint-check
           npm run test -- --coverage
           npm run ts-check
-          python3 ./etc/scripts/util/propscheck.py
-          python3 ./etc/scripts/util/propschecktest.py
           python3 ./etc/scripts/test_numba_wrapper.py
           uv run --directory etc/scripts/gh_tool pytest -v
       - uses: codecov/codecov-action@v5
