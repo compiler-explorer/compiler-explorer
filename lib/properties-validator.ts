@@ -31,6 +31,8 @@
  * - Semantic validation: Checking consistency using loaded CompilerProps
  */
 
+import {parseProperties} from './properties.js';
+
 export interface ValidationIssue {
     line: number;
     text: string;
@@ -47,6 +49,7 @@ export interface ParsedPropertiesFile {
     filename: string;
     properties: ParsedProperty[];
     disabledIds: Set<string>;
+    parseErrors: ValidationIssue[];
 }
 
 export interface RawFileValidationResult {
@@ -67,6 +70,7 @@ export interface RawFileValidationResult {
     orphanedLibIds: ValidationIssue[];
     orphanedLibVersions: ValidationIssue[];
     invalidDefaultCompiler: ValidationIssue[];
+    noCompilersList: boolean;
 }
 
 export interface RawValidatorOptions {
@@ -108,14 +112,23 @@ export function parseCompilersList(value: string): string[] {
 
 /**
  * Parse a properties file content into a structured format with line numbers.
+ * Uses the main properties parser for error detection.
  */
 export function parsePropertiesFileRaw(content: string, filename: string): ParsedPropertiesFile {
     const properties: ParsedProperty[] = [];
     const disabledIds = new Set<string>();
+    const parseErrors: ValidationIssue[] = [];
 
     // By default, consider /usr/bin/ldd valid as it's in several configs
     disabledIds.add('/usr/bin/ldd');
 
+    // Use the main parser to collect format errors
+    const parseResult = parseProperties(content, filename, {collectErrors: true});
+    for (const error of parseResult.errors) {
+        parseErrors.push({line: error.line, text: error.text});
+    }
+
+    // Also collect our own structured properties with line numbers
     const lines = content.split('\n');
     for (let i = 0; i < lines.length; i++) {
         const lineNumber = i + 1;
@@ -147,7 +160,7 @@ export function parsePropertiesFileRaw(content: string, filename: string): Parse
         }
     }
 
-    return {filename, properties, disabledIds};
+    return {filename, properties, disabledIds, parseErrors};
 }
 
 /**
@@ -161,7 +174,7 @@ export function validateRawFile(
         duplicateKeys: [],
         emptyListElements: [],
         typoCompilers: [],
-        invalidPropertyFormat: [],
+        invalidPropertyFormat: [...parsed.parseErrors], // Copy parse errors from library
         suspiciousPaths: [],
         duplicatedCompilerRefs: [],
         duplicatedGroupRefs: [],
@@ -175,6 +188,7 @@ export function validateRawFile(
         orphanedLibIds: [],
         orphanedLibVersions: [],
         invalidDefaultCompiler: [],
+        noCompilersList: false,
     };
 
     // Track what we've seen
@@ -538,6 +552,24 @@ export function validateRawFile(
         });
     }
 
+    // Check for missing compilers= in language files
+    // A language file (e.g., c++.amazon.properties) should have either compilers= or group definitions
+    const isLanguageFile =
+        !parsed.filename.includes('.defaults.') &&
+        !parsed.filename.includes('compiler-explorer.') &&
+        parsed.filename.endsWith('.properties');
+
+    if (isLanguageFile) {
+        const hasCompilersList = parsed.properties.some(p => p.key === 'compilers');
+        const hasGroups = seenGroups.size > 0 || listedGroups.size > 0;
+        const hasCompilerDefinitions = seenCompilersExe.size > 0 || seenCompilersId.size > 0;
+
+        // If the file defines compilers but has no compilers= or groups, flag it
+        if (hasCompilerDefinitions && !hasCompilersList && !hasGroups) {
+            result.noCompilersList = true;
+        }
+    }
+
     return result;
 }
 
@@ -567,6 +599,7 @@ export function filterDisabled(result: RawFileValidationResult, disabledIds: Set
         orphanedLibIds: filterIssues(result.orphanedLibIds),
         orphanedLibVersions: filterIssues(result.orphanedLibVersions),
         invalidDefaultCompiler: filterIssues(result.invalidDefaultCompiler),
+        noCompilersList: result.noCompilersList, // boolean, not filterable
     };
 }
 
@@ -591,7 +624,8 @@ export function hasIssues(result: RawFileValidationResult): boolean {
         result.orphanedToolId.length > 0 ||
         result.orphanedLibIds.length > 0 ||
         result.orphanedLibVersions.length > 0 ||
-        result.invalidDefaultCompiler.length > 0
+        result.invalidDefaultCompiler.length > 0 ||
+        result.noCompilersList
     );
 }
 
@@ -627,6 +661,9 @@ export function formatValidationResult(filename: string, result: RawFileValidati
     formatIssues('Orphaned lib IDs', result.orphanedLibIds);
     formatIssues('Orphaned lib versions', result.orphanedLibVersions);
     formatIssues('Invalid default compiler', result.invalidDefaultCompiler);
+    if (result.noCompilersList) {
+        lines.push('No compilers list: File defines compilers but has no compilers= or group definitions');
+    }
 
     return lines.join('\n');
 }
