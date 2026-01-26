@@ -159,7 +159,7 @@ export function parsePropertiesFileRaw(content: string, filename: string): Parse
         // Check for Disabled: comments
         const disabledMatch = text.match(PATTERNS.disabled);
         if (disabledMatch) {
-            const ids = disabledMatch[1].split(/\s+/).filter(id => id.trim());
+            const ids = disabledMatch[1].split(/\s+/).filter(id => id.trim() !== '');
             for (const id of ids) {
                 disabledIds.add(id);
             }
