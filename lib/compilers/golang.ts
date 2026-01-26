@@ -26,16 +26,25 @@ import fs from 'node:fs/promises';
 import path from 'node:path';
 
 import _ from 'underscore';
-import type {ExecutionOptionsWithEnv} from '../../types/compilation/compilation.interfaces.js';
+import type {CacheKey, ExecutionOptionsWithEnv} from '../../types/compilation/compilation.interfaces.js';
 import type {PreliminaryCompilerInfo} from '../../types/compiler.interfaces.js';
 import type {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces.js';
 import type {ResultLine} from '../../types/resultline/resultline.interfaces.js';
 import {unwrap} from '../assert.js';
 import {BaseCompiler} from '../base-compiler.js';
+import type {BuildEnvDownloadInfo} from '../buildenvsetup/buildenv.interfaces.js';
 import {CompilationEnvironment} from '../compilation-env.js';
+import {logger} from '../logger.js';
 import * as utils from '../utils.js';
 
 import {GolangParser} from './argument-parsers.js';
+
+interface GoLibraryMetadata {
+    module: string;
+    version: string;
+    go_mod_require: string;
+    go_sum: string;
+}
 
 // Each arch has a list of jump instructions in
 // Go source src/cmd/asm/internal/arch.
@@ -57,6 +66,7 @@ type GoEnv = {
 
 export class GolangCompiler extends BaseCompiler {
     private readonly GOENV: GoEnv;
+    private hasLibraries = false;
 
     static get key() {
         return 'golang';
@@ -107,6 +117,137 @@ export class GolangCompiler extends BaseCompiler {
         return undefined;
     }
 
+    override async setupBuildEnvironment(
+        key: CacheKey,
+        dirPath: string,
+        binary: boolean,
+    ): Promise<BuildEnvDownloadInfo[]> {
+        this.hasLibraries = key.libraries && key.libraries.length > 0;
+        return super.setupBuildEnvironment(key, dirPath, binary);
+    }
+
+    protected async findDownloadedLibraries(dirPath: string): Promise<string[]> {
+        const libraries: string[] = [];
+        try {
+            const entries = await fs.readdir(dirPath, {withFileTypes: true});
+            for (const entry of entries) {
+                if (entry.isDirectory()) {
+                    const metadataPath = path.join(dirPath, entry.name, 'metadata.json');
+                    if (await utils.fileExists(metadataPath)) {
+                        libraries.push(entry.name);
+                    }
+                }
+            }
+        } catch {
+            // Directory doesn't exist or can't be read
+        }
+        return libraries;
+    }
+
+    protected async readLibraryMetadata(dirPath: string, libId: string): Promise<GoLibraryMetadata | null> {
+        try {
+            const metadataPath = path.join(dirPath, libId, 'metadata.json');
+            const content = await fs.readFile(metadataPath, 'utf-8');
+            return JSON.parse(content) as GoLibraryMetadata;
+        } catch (e) {
+            logger.warn(`Failed to read metadata for Go library ${libId}: ${e}`);
+            return null;
+        }
+    }
+
+    protected async mergeGocache(cachePath: string, libCacheDeltaPath: string): Promise<void> {
+        if (!(await utils.dirExists(libCacheDeltaPath))) return;
+        await fs.cp(libCacheDeltaPath, cachePath, {recursive: true, force: false});
+    }
+
+    protected async setupModuleSources(goPath: string, libPath: string): Promise<void> {
+        const moduleSourcesPath = path.join(libPath, 'module_sources');
+        if (!(await utils.dirExists(moduleSourcesPath))) return;
+
+        const pkgModPath = path.join(goPath, 'pkg', 'mod');
+        await fs.mkdir(pkgModPath, {recursive: true});
+        await fs.cp(moduleSourcesPath, pkgModPath, {recursive: true, force: false});
+    }
+
+    protected async generateGoMod(inputDir: string, libraries: string[], dirPath: string): Promise<void> {
+        const goModPath = path.join(inputDir, 'go.mod');
+        const goSumPath = path.join(inputDir, 'go.sum');
+
+        let goModContent = '';
+        let goSumContent = '';
+
+        // Check if user provided their own go.mod
+        const existingGoMod = await utils.fileExists(goModPath);
+        if (existingGoMod) {
+            goModContent = await fs.readFile(goModPath, 'utf-8');
+        } else {
+            goModContent = 'module example\n\ngo 1.21\n';
+        }
+
+        // Collect require statements and sum entries from all libraries
+        const requireStatements: string[] = [];
+        const sumEntries: string[] = [];
+
+        for (const libId of libraries) {
+            const metadata = await this.readLibraryMetadata(dirPath, libId);
+            if (metadata) {
+                if (metadata.go_mod_require) {
+                    requireStatements.push(metadata.go_mod_require);
+                }
+                if (metadata.go_sum) {
+                    sumEntries.push(metadata.go_sum);
+                }
+            }
+        }
+
+        // Append require statements to go.mod
+        if (requireStatements.length > 0) {
+            if (!goModContent.includes('require (')) {
+                goModContent += '\nrequire (\n';
+                goModContent += requireStatements.map(r => `\t${r}`).join('\n');
+                goModContent += '\n)\n';
+            } else {
+                // Insert before the closing paren of require block
+                goModContent = goModContent.replace(
+                    /require \(([^)]*)\)/,
+                    (match, inner) => `require (${inner}\n${requireStatements.map(r => `\t${r}`).join('\n')}\n)`,
+                );
+            }
+        }
+
+        await fs.writeFile(goModPath, goModContent);
+
+        // Write go.sum
+        if (sumEntries.length > 0) {
+            goSumContent = sumEntries.join('\n') + '\n';
+            await fs.writeFile(goSumPath, goSumContent);
+        }
+    }
+
+    protected async setupGoLibraries(
+        inputDir: string,
+        cachePath: string,
+        goPath: string,
+        dirPath: string,
+    ): Promise<void> {
+        const libraries = await this.findDownloadedLibraries(dirPath);
+        if (libraries.length === 0) return;
+
+        for (const libId of libraries) {
+            const libPath = path.join(dirPath, libId);
+
+            // Merge cache_delta into GOCACHE
+            const cacheDeltaPath = path.join(libPath, 'cache_delta');
+            await this.mergeGocache(cachePath, cacheDeltaPath);
+
+            // Copy module_sources to GOPATH/pkg/mod
+            await this.setupModuleSources(goPath, libPath);
+        }
+
+        // Generate go.mod and go.sum
+        await this.generateGoMod(inputDir, libraries, dirPath);
+    }
+
     override async runCompiler(
         compiler: string,
         options: string[],
@@ -119,21 +260,38 @@ export class GolangCompiler extends BaseCompiler {
         }
 
         const inputDir = path.dirname(inputFilename);
+        const dirPath = inputDir;
         const tempCachePath = path.join(inputDir, 'cache');
+        const goPath = path.join(inputDir, 'gopath');
 
         execOptions.env = {
             ...execOptions.env,
             GOCACHE: tempCachePath,
+            GOPATH: goPath,
         };
+
+        // Force offline compilation when libraries are selected
+        if (this.hasLibraries) {
+            execOptions.env.GOPROXY = 'off';
+        }
 
         const sourceCachePath = await this.getSourceCachePath();
         if (sourceCachePath) {
             try {
                 await fs.mkdir(tempCachePath, {recursive: true});
-
                 await fs.cp(sourceCachePath, tempCachePath, {recursive: true, force: false});
             } catch {
                 // Cache setup failed, continue without cache
+            }
+        }
+
+        // Set up Go libraries if any were downloaded
+        if (this.hasLibraries) {
+            try {
+                await fs.mkdir(goPath, {recursive: true});
+                await this.setupGoLibraries(inputDir, tempCachePath, goPath, dirPath);
+            } catch (e) {
+                logger.warn(`Failed to set up Go libraries: ${e}`);
             }
         }
 
@@ -283,6 +441,11 @@ export class GolangCompiler extends BaseCompiler {
     }
 
     override getSharedLibraryPathsAsArguments() {
+        return [];
+    }
+
+    override getIncludeArguments(libraries: object[]): string[] {
+        // Go uses the module system, not include flags
         return [];
     }
 
