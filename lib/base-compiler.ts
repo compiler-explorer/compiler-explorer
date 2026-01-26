@@ -1128,8 +1128,11 @@ export class BaseCompiler {
 
     changeOptionsBasedOnOverrides(options: string[], overrides: ConfiguredOverrides): string[] {
         const overriddenToolchainPath = this.getOverridenToolchainPath(overrides);
-        const sysrootPath =
-            overriddenToolchainPath ?? (this.toolchainPath ? getSysrootByToolchainPath(this.toolchainPath) : undefined);
+        const sysrootPath = overriddenToolchainPath
+            ? getSysrootByToolchainPath(overriddenToolchainPath)
+            : this.toolchainPath
+              ? getSysrootByToolchainPath(this.toolchainPath)
+              : undefined;
         const targetOverride = overrides.find(ov => ov.name === CompilerOverrideType.arch);
         const hasNeedForSysRoot =
             targetOverride && targetOverride.name !== CompilerOverrideType.env && !targetOverride.value.includes('x86');
