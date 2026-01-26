@@ -42,7 +42,7 @@ The wizard will:
 - Generate appropriate compiler IDs and display names
 - Add the compiler to the correct properties file
 - Suggest appropriate groups for organization
-- Validate the configuration with `propscheck.py`
+- Validate the configuration
 
 For more options and examples, see the [ce-properties-wizard README](../etc/scripts/ce-properties-wizard/README.md).
 

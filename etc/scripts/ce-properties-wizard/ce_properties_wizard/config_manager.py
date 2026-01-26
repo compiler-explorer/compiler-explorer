@@ -1170,38 +1170,41 @@ class ConfigManager:
             except OSError:
                 pass  # Ignore cleanup errors
 
-    def validate_with_propscheck(self, language: str) -> tuple[bool, str]:
-        """Validate properties file with propscheck.py."""
-        propscheck_path = self.config_dir.parent / "scripts" / "util" / "propscheck.py"
-        if not propscheck_path.exists():
-            return True, "Warning: propscheck.py not found, skipping validation"
-
+    def validate_properties(self, language: str) -> tuple[bool, str]:
+        """Validate properties file using npm run test:props."""
         file_path = self.get_properties_path(language)
         if not file_path.exists():
             return True, f"No {self.env} properties file to validate"
 
+        # Find project root (where package.json is)
+        project_root = self.config_dir.parent.parent
+        package_json = project_root / "package.json"
+        if not package_json.exists():
+            return True, "Warning: package.json not found, skipping validation"
+
         import subprocess
+        import os
 
         try:
-            # propscheck.py takes --config-dir parameter and --check-local for local properties files
-            # Use the same Python interpreter that's running this script
-            import sys
-            cmd = [sys.executable, str(propscheck_path), "--config-dir", str(self.config_dir)]
+            # Set CHECK_LOCAL_PROPS=true to include local property files in validation
+            env = os.environ.copy()
             if self.env == "local":
-                cmd.append("--check-local")
-            else:
-                # For other environments, we might need to add specific flags or just run without --check-local
-                # This depends on how propscheck.py handles non-local environments
-                cmd.append("--check-local")  # Keep this for now, may need adjustment
+                env["CHECK_LOCAL_PROPS"] = "true"
 
-            print(f"DEBUG: Running propscheck command: {' '.join(cmd)}")
-            result = subprocess.run(cmd, capture_output=True, text=True, timeout=10)
+            cmd = ["npm", "run", "test:props", "--silent"]
+            result = subprocess.run(
+                cmd,
+                capture_output=True,
+                text=True,
+                timeout=30,
+                cwd=str(project_root),
+                env=env,
+            )
 
             if result.returncode == 0:
                 return True, "Properties validated successfully"
             else:
                 error_output = result.stdout + result.stderr
-                # Always return the validation output so we can learn from the issues
                 return False, f"Validation issues detected:\n{error_output}"
 
         except subprocess.TimeoutExpired:
