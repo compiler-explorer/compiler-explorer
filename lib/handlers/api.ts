@@ -257,10 +257,10 @@ export class ApiHandler {
             const tool = toolsForLanguageObj[key];
             return {
                 id: key,
-                name: tool.name,
+                name: tool.tool.name,
                 type: tool.type,
-                languageId: tool.languageId || languageId,
-                allowStdin: tool.stdinHint !== 'disabled',
+                languageId: tool.tool.languageId || languageId,
+                allowStdin: tool.tool.stdinHint !== 'disabled',
             };
         });
     }
