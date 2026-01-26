@@ -34,6 +34,7 @@ import {
 } from '../lib/toolchain-utils.js';
 import {ToolEnv} from '../lib/tooling/base-tool.interface.js';
 import {CompilerDropinTool} from '../lib/tooling/compiler-dropin-tool.js';
+import {CompilationInfo} from '../types/compilation/compilation.interfaces.js';
 import {ToolInfo} from '../types/tool.interfaces.js';
 
 describe('CompilerDropInTool', () => {
@@ -46,7 +47,7 @@ describe('CompilerDropInTool', () => {
                 options: '--gcc-toolchain=/opt/compiler-explorer/gcc-7.2.0',
             },
             options: [],
-        };
+        } as unknown as CompilationInfo;
         const includeflags: string[] = [];
         const args: string[] = [];
         const sourcefile = 'example.cpp';
@@ -67,7 +68,7 @@ describe('CompilerDropInTool', () => {
                 options: '',
             },
             options: [],
-        };
+        } as unknown as CompilationInfo;
         const includeflags: string[] = [];
         const args: string[] = [];
         const sourcefile = 'example.cpp';
@@ -88,7 +89,7 @@ describe('CompilerDropInTool', () => {
                 options: '',
             },
             options: [],
-        };
+        } as unknown as CompilationInfo;
         const includeflags: string[] = [];
         const args: string[] = [];
         const sourcefile = 'example.cpp';
@@ -110,7 +111,7 @@ describe('CompilerDropInTool', () => {
                 options: '--gxx-name=/opt/compiler-explorer/gcc-8.2.0/bin/g++',
             },
             options: [],
-        };
+        } as unknown as CompilationInfo;
         const includeflags: string[] = [];
         const args: string[] = [];
         const sourcefile = 'example.cpp';
@@ -134,7 +135,7 @@ describe('CompilerDropInTool', () => {
                 internalIncludePaths: ['/opt/compiler-explorer/windows/19.14.26423/include'],
             },
             options: [],
-        };
+        } as unknown as CompilationInfo;
         const includeflags: string[] = [];
         const args = ['/MD', '/STD:c++latest', '/Ox'];
         const sourcefile = 'example.cpp';
@@ -153,7 +154,7 @@ describe('CompilerDropInTool', () => {
                 internalIncludePaths: ['/opt/compiler-explorer/clang-concepts-trunk/something/etc/include'],
             },
             options: [],
-        };
+        } as unknown as CompilationInfo;
         const includeflags: string[] = [];
         const args: string[] = [];
         const sourcefile = 'example.cpp';
@@ -172,7 +173,7 @@ describe('CompilerDropInTool', () => {
                 internalIncludePaths: ['/opt/compiler-explorer/clang-concepts-trunk/something/etc/include'],
             },
             options: [],
-        };
+        } as unknown as CompilationInfo;
         const includeflags: string[] = [];
         const args: string[] = [];
         const sourcefile = 'example.cpp';
