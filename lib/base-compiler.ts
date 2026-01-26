@@ -189,7 +189,7 @@ export class BaseCompiler {
     protected env: CompilationEnvironment;
     protected compilerProps: PropertyGetter;
     protected alwaysResetLdPath: any;
-    protected delayCleanupTemp: any;
+    protected delayCleanupTemp: boolean;
     protected stubRe: RegExp;
     protected stubText: string;
     protected compilerWrapper: any;
@@ -197,7 +197,7 @@ export class BaseCompiler {
     protected llvmIr: LlvmIrParser;
     protected llvmPassDumpParser: LlvmPassDumpParser;
     protected llvmAst: LlvmAstParser;
-    protected toolchainPath: any;
+    protected toolchainPath: string | undefined;
     public possibleArguments: CompilerArguments;
     protected possibleTools: ITool[];
     protected demanglerClass: typeof BaseDemangler | null = null;
@@ -1099,7 +1099,7 @@ export class BaseCompiler {
         );
     }
 
-    getDefaultOrOverridenToolchainPath(overrides: ConfiguredOverrides): string {
+    getDefaultOrOverridenToolchainPath(overrides: ConfiguredOverrides): string | undefined {
         for (const override of overrides) {
             if (override.name !== CompilerOverrideType.env && override.value) {
                 const possible = this.compiler.possibleOverrides?.find(ov => ov.name === override.name);
@@ -1112,7 +1112,7 @@ export class BaseCompiler {
         return this.toolchainPath;
     }
 
-    getOverridenToolchainPath(overrides: ConfiguredOverrides): string | false {
+    getOverridenToolchainPath(overrides: ConfiguredOverrides): string | undefined {
         for (const override of overrides) {
             if (override.name !== CompilerOverrideType.env && override.value) {
                 const possible = this.compiler.possibleOverrides?.find(ov => ov.name === override.name);
@@ -1122,13 +1122,13 @@ export class BaseCompiler {
             }
         }
 
-        return false;
+        return undefined;
     }
 
     changeOptionsBasedOnOverrides(options: string[], overrides: ConfiguredOverrides): string[] {
         const overriddenToolchainPath = this.getOverridenToolchainPath(overrides);
-        const sysrootPath: string | false =
-            overriddenToolchainPath ?? getSysrootByToolchainPath(overriddenToolchainPath);
+        const sysrootPath =
+            overriddenToolchainPath ?? (this.toolchainPath ? getSysrootByToolchainPath(this.toolchainPath) : undefined);
         const targetOverride = overrides.find(ov => ov.name === CompilerOverrideType.arch);
         const hasNeedForSysRoot =
             targetOverride && targetOverride.name !== CompilerOverrideType.env && !targetOverride.value.includes('x86');
@@ -1245,7 +1245,7 @@ export class BaseCompiler {
     protected getLibLinkInfo(
         filters: ParseFiltersAndOutputOptions,
         libraries: SelectedLibraryVersion[],
-        toolchainPath: string,
+        toolchainPath: string | undefined,
         dirPath: string,
     ) {
         let libLinks: string[] = [];
@@ -2684,7 +2684,7 @@ export class BaseCompiler {
         execParams: ExecutionOptionsWithEnv,
         dirPath: string,
         libsAndOptions: LibsAndOptions,
-        toolchainPath: string,
+        toolchainPath: string | undefined,
     ): ExecutionOptionsWithEnv {
         const cmakeExecParams = Object.assign({}, execParams);
 
