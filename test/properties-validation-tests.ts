@@ -31,9 +31,15 @@ import {
     filterDisabled,
     parseCompilersList,
     parsePropertiesFileRaw,
+    type RawFileValidationResult,
+    type RawValidatorOptions,
     validateCrossFileCompilerIds,
     validateRawFile,
 } from '../lib/properties-validator.js';
+
+function validate(content: string, filename = 'test.properties', options?: RawValidatorOptions) {
+    return validateRawFile(parsePropertiesFileRaw(content, filename), options);
+}
 
 describe('Properties Validator', () => {
     describe('parseCompilersList', () => {
@@ -121,443 +127,244 @@ baz=qux
 
     describe('duplicate key detection', () => {
         it('should report duplicate keys', () => {
-            const content = `
-foo=bar
-foo=baz
-`;
-            const parsed = parsePropertiesFileRaw(content, 'test.properties');
-            const result = validateRawFile(parsed);
-
+            const result = validate('foo=bar\nfoo=baz');
             expect(result.duplicateKeys).toHaveLength(1);
             expect(result.duplicateKeys[0].id).toBe('foo');
         });
 
         it('should not report unique keys as duplicates', () => {
-            const content = `
-foo=bar
-bar=baz
-`;
-            const parsed = parsePropertiesFileRaw(content, 'test.properties');
-            const result = validateRawFile(parsed);
-
-            expect(result.duplicateKeys).toHaveLength(0);
+            expect(validate('foo=bar\nbar=baz').duplicateKeys).toHaveLength(0);
         });
     });
 
     describe('empty list element detection', () => {
-        it('should detect double colons in compilers list', () => {
-            const content = `compilers=gcc::clang`;
-            const parsed = parsePropertiesFileRaw(content, 'test.properties');
-            const result = validateRawFile(parsed);
-
-            expect(result.emptyListElements).toHaveLength(1);
-        });
-
-        it('should detect leading colons', () => {
-            const content = `compilers=:gcc`;
-            const parsed = parsePropertiesFileRaw(content, 'test.properties');
-            const result = validateRawFile(parsed);
-
-            expect(result.emptyListElements).toHaveLength(1);
-        });
-
-        it('should detect trailing colons', () => {
-            const content = `compilers=gcc:`;
-            const parsed = parsePropertiesFileRaw(content, 'test.properties');
-            const result = validateRawFile(parsed);
-
-            expect(result.emptyListElements).toHaveLength(1);
+        it.each([
+            ['double colons in compilers', 'compilers=gcc::clang'],
+            ['leading colons', 'compilers=:gcc'],
+            ['trailing colons', 'compilers=gcc:'],
+            ['empty elements in formatters', 'formatters=clangformat::rustfmt'],
+            ['empty elements in tools', 'tools=readelf:nm:'],
+        ])('should detect %s', (_, content) => {
+            expect(validate(content).emptyListElements).toHaveLength(1);
         });
 
         it('should not report valid compilers list', () => {
-            const content = `compilers=gcc:clang:msvc`;
-            const parsed = parsePropertiesFileRaw(content, 'test.properties');
-            const result = validateRawFile(parsed);
-
-            expect(result.emptyListElements).toHaveLength(0);
-        });
-
-        it('should detect empty elements in formatters list', () => {
-            const content = `formatters=clangformat::rustfmt`;
-            const parsed = parsePropertiesFileRaw(content, 'test.properties');
-            const result = validateRawFile(parsed);
-
-            expect(result.emptyListElements).toHaveLength(1);
-        });
-
-        it('should detect empty elements in tools list', () => {
-            const content = `tools=readelf:nm:`;
-            const parsed = parsePropertiesFileRaw(content, 'test.properties');
-            const result = validateRawFile(parsed);
-
-            expect(result.emptyListElements).toHaveLength(1);
+            expect(validate('compilers=gcc:clang:msvc').emptyListElements).toHaveLength(0);
         });
     });
 
     describe('invalid property format detection', () => {
         it('should report lines without equals sign', () => {
-            const content = `
-foo=bar
-this is not valid
-baz=qux
-`;
-            const parsed = parsePropertiesFileRaw(content, 'test.properties');
-            const result = validateRawFile(parsed);
-
+            const result = validate('foo=bar\nthis is not valid\nbaz=qux');
             expect(result.invalidPropertyFormat).toHaveLength(1);
             expect(result.invalidPropertyFormat[0].text).toBe('this is not valid');
         });
 
         it('should not report valid properties', () => {
-            const content = `
-foo=bar
-baz=qux
-`;
-            const parsed = parsePropertiesFileRaw(content, 'test.properties');
-            const result = validateRawFile(parsed);
-
-            expect(result.invalidPropertyFormat).toHaveLength(0);
+            expect(validate('foo=bar\nbaz=qux').invalidPropertyFormat).toHaveLength(0);
         });
     });
 
     describe('typo detection', () => {
         it('should detect compilers. instead of compiler.', () => {
-            const content = `compilers.gcc.exe=/path/to/gcc`;
-            const parsed = parsePropertiesFileRaw(content, 'test.properties');
-            const result = validateRawFile(parsed);
-
+            const result = validate('compilers.gcc.exe=/path/to/gcc');
             expect(result.typoCompilers).toHaveLength(1);
             expect(result.typoCompilers[0].text).toContain('compilers.gcc');
         });
 
-        it('should not flag valid compiler. properties', () => {
-            const content = `compiler.gcc.exe=/path/to/gcc`;
-            const parsed = parsePropertiesFileRaw(content, 'test.properties');
-            const result = validateRawFile(parsed);
-
-            expect(result.typoCompilers).toHaveLength(0);
-        });
-
-        it('should not flag compilers= list', () => {
-            const content = `compilers=gcc:clang`;
-            const parsed = parsePropertiesFileRaw(content, 'test.properties');
-            const result = validateRawFile(parsed);
-
-            expect(result.typoCompilers).toHaveLength(0);
+        it.each([
+            ['valid compiler. properties', 'compiler.gcc.exe=/path/to/gcc'],
+            ['compilers= list', 'compilers=gcc:clang'],
+        ])('should not flag %s', (_, content) => {
+            expect(validate(content).typoCompilers).toHaveLength(0);
         });
     });
 
     describe('suspicious path detection', () => {
         it('should flag paths outside standard locations', () => {
-            const content = `compiler.gcc.exe=/usr/bin/gcc`;
-            const parsed = parsePropertiesFileRaw(content, 'test.amazon.properties');
-            const result = validateRawFile(parsed, {checkSuspiciousPaths: true});
-
+            const result = validate('compiler.gcc.exe=/usr/bin/gcc', 'test.amazon.properties', {
+                checkSuspiciousPaths: true,
+            });
             expect(result.suspiciousPaths).toHaveLength(1);
             expect(result.suspiciousPaths[0].text).toBe('/usr/bin/gcc');
         });
 
-        it('should accept /opt/compiler-explorer paths', () => {
-            const content = `compiler.gcc.exe=/opt/compiler-explorer/gcc-12/bin/gcc`;
-            const parsed = parsePropertiesFileRaw(content, 'test.amazon.properties');
-            const result = validateRawFile(parsed, {checkSuspiciousPaths: true});
-
-            expect(result.suspiciousPaths).toHaveLength(0);
+        it.each([
+            ['/opt/compiler-explorer paths', 'compiler.gcc.exe=/opt/compiler-explorer/gcc-12/bin/gcc'],
+            ['Z:/compilers paths (Windows)', 'compiler.msvc.exe=Z:/compilers/msvc/cl.exe'],
+        ])('should accept %s', (_, content) => {
+            expect(
+                validate(content, 'test.amazon.properties', {checkSuspiciousPaths: true}).suspiciousPaths,
+            ).toHaveLength(0);
         });
 
-        it('should accept Z:/compilers paths (Windows)', () => {
-            const content = `compiler.msvc.exe=Z:/compilers/msvc/cl.exe`;
-            const parsed = parsePropertiesFileRaw(content, 'test.amazon.properties');
-            const result = validateRawFile(parsed, {checkSuspiciousPaths: true});
-
-            expect(result.suspiciousPaths).toHaveLength(0);
-        });
-
-        it('should not check paths in .defaults.properties files', () => {
-            const content = `compiler.gcc.exe=/usr/bin/gcc`;
-            const parsed = parsePropertiesFileRaw(content, 'c.defaults.properties');
-            const result = validateRawFile(parsed, {checkSuspiciousPaths: true});
-
-            expect(result.suspiciousPaths).toHaveLength(0);
-        });
-
-        it('should not check paths in .local.properties files', () => {
-            const content = `compiler.gcc.exe=/usr/bin/gcc`;
-            const parsed = parsePropertiesFileRaw(content, 'c.local.properties');
-            const result = validateRawFile(parsed, {checkSuspiciousPaths: true});
-
-            expect(result.suspiciousPaths).toHaveLength(0);
+        it.each([
+            ['.defaults.properties files', 'c.defaults.properties'],
+            ['.local.properties files', 'c.local.properties'],
+        ])('should not check paths in %s', (_, filename) => {
+            expect(
+                validate('compiler.gcc.exe=/usr/bin/gcc', filename, {checkSuspiciousPaths: true}).suspiciousPaths,
+            ).toHaveLength(0);
         });
 
         it('should not check paths when option is disabled', () => {
-            const content = `compiler.gcc.exe=/usr/bin/gcc`;
-            const parsed = parsePropertiesFileRaw(content, 'test.amazon.properties');
-            const result = validateRawFile(parsed, {checkSuspiciousPaths: false});
-
-            expect(result.suspiciousPaths).toHaveLength(0);
+            expect(
+                validate('compiler.gcc.exe=/usr/bin/gcc', 'test.amazon.properties', {checkSuspiciousPaths: false})
+                    .suspiciousPaths,
+            ).toHaveLength(0);
         });
 
-        it('should flag suspicious formatter paths', () => {
-            const content = `formatter.clangformat.exe=/usr/bin/clang-format`;
-            const parsed = parsePropertiesFileRaw(content, 'test.amazon.properties');
-            const result = validateRawFile(parsed, {checkSuspiciousPaths: true});
-
-            expect(result.suspiciousPaths).toHaveLength(1);
-        });
-
-        it('should flag suspicious tool paths', () => {
-            const content = `tools.readelf.exe=/usr/bin/readelf`;
-            const parsed = parsePropertiesFileRaw(content, 'test.amazon.properties');
-            const result = validateRawFile(parsed, {checkSuspiciousPaths: true});
-
-            expect(result.suspiciousPaths).toHaveLength(1);
+        it.each([
+            ['formatter paths', 'formatter.clangformat.exe=/usr/bin/clang-format'],
+            ['tool paths', 'tools.readelf.exe=/usr/bin/readelf'],
+        ])('should flag suspicious %s', (_, content) => {
+            expect(
+                validate(content, 'test.amazon.properties', {checkSuspiciousPaths: true}).suspiciousPaths,
+            ).toHaveLength(1);
         });
     });
 
     describe('orphaned compiler detection', () => {
         it('should report compilers listed but no .exe defined', () => {
-            const content = `
-compilers=gcc:clang
-compiler.gcc.exe=/opt/compiler-explorer/gcc/bin/gcc
-`;
-            const parsed = parsePropertiesFileRaw(content, 'test.properties');
-            const result = validateRawFile(parsed);
-
+            const result = validate(`compilers=gcc:clang\ncompiler.gcc.exe=/opt/compiler-explorer/gcc/bin/gcc`);
             expect(result.orphanedCompilerExe).toContainEqual(expect.objectContaining({id: 'clang'}));
         });
 
         it('should report compilers with .exe but not listed', () => {
-            const content = `
-compilers=gcc
-compiler.gcc.exe=/opt/compiler-explorer/gcc/bin/gcc
-compiler.clang.exe=/opt/compiler-explorer/clang/bin/clang
-`;
-            const parsed = parsePropertiesFileRaw(content, 'test.properties');
-            const result = validateRawFile(parsed);
-
+            const result = validate(
+                `compilers=gcc\ncompiler.gcc.exe=/opt/compiler-explorer/gcc/bin/gcc\ncompiler.clang.exe=/opt/compiler-explorer/clang/bin/clang`,
+            );
             expect(result.orphanedCompilerExe).toContainEqual(expect.objectContaining({id: 'clang'}));
         });
 
         it('should not report when compilers match', () => {
-            const content = `
-compilers=gcc:clang
-compiler.gcc.exe=/opt/compiler-explorer/gcc/bin/gcc
-compiler.clang.exe=/opt/compiler-explorer/clang/bin/clang
-`;
-            const parsed = parsePropertiesFileRaw(content, 'test.properties');
-            const result = validateRawFile(parsed);
-
+            const result = validate(
+                `compilers=gcc:clang\ncompiler.gcc.exe=/opt/compiler-explorer/gcc/bin/gcc\ncompiler.clang.exe=/opt/compiler-explorer/clang/bin/clang`,
+            );
             expect(result.orphanedCompilerExe).toHaveLength(0);
         });
 
         it('should ignore remote compiler references (with @)', () => {
-            const content = `
-compilers=gcc:remote@host
-compiler.gcc.exe=/opt/compiler-explorer/gcc/bin/gcc
-`;
-            const parsed = parsePropertiesFileRaw(content, 'test.properties');
-            const result = validateRawFile(parsed);
-
+            const result = validate(`compilers=gcc:remote@host\ncompiler.gcc.exe=/opt/compiler-explorer/gcc/bin/gcc`);
             expect(result.orphanedCompilerExe).toHaveLength(0);
         });
 
         it('should handle alias expanding compilers', () => {
-            const content = `
-compilers=gcc:oldgcc
-compiler.gcc.exe=/opt/compiler-explorer/gcc/bin/gcc
-alias=oldgcc
-`;
-            const parsed = parsePropertiesFileRaw(content, 'test.properties');
-            const result = validateRawFile(parsed);
-
+            const result = validate(
+                `compilers=gcc:oldgcc\ncompiler.gcc.exe=/opt/compiler-explorer/gcc/bin/gcc\nalias=oldgcc`,
+            );
             expect(result.orphanedCompilerExe).toHaveLength(0);
         });
     });
 
     describe('orphaned group detection', () => {
         it('should report groups referenced but not defined', () => {
-            const content = `compilers=&mygroup`;
-            const parsed = parsePropertiesFileRaw(content, 'test.properties');
-            const result = validateRawFile(parsed);
-
-            expect(result.orphanedGroups).toContainEqual(expect.objectContaining({id: 'mygroup'}));
+            expect(validate('compilers=&mygroup').orphanedGroups).toContainEqual(
+                expect.objectContaining({id: 'mygroup'}),
+            );
         });
 
         it('should accept groups that are defined', () => {
-            const content = `
-compilers=&mygroup
-group.mygroup.compilers=gcc
-compiler.gcc.exe=/opt/compiler-explorer/gcc/bin/gcc
-`;
-            const parsed = parsePropertiesFileRaw(content, 'test.properties');
-            const result = validateRawFile(parsed);
-
+            const result = validate(
+                `compilers=&mygroup\ngroup.mygroup.compilers=gcc\ncompiler.gcc.exe=/opt/compiler-explorer/gcc/bin/gcc`,
+            );
             expect(result.orphanedGroups).toHaveLength(0);
         });
 
         it('should report groups defined but not referenced', () => {
-            const content = `
-compilers=gcc
-compiler.gcc.exe=/opt/compiler-explorer/gcc/bin/gcc
-group.unused.compilers=clang
-`;
-            const parsed = parsePropertiesFileRaw(content, 'test.properties');
-            const result = validateRawFile(parsed);
-
+            const result = validate(
+                `compilers=gcc\ncompiler.gcc.exe=/opt/compiler-explorer/gcc/bin/gcc\ngroup.unused.compilers=clang`,
+            );
             expect(result.orphanedGroups).toContainEqual(expect.objectContaining({id: 'unused'}));
         });
 
         it('should handle nested group references', () => {
-            const content = `
-compilers=&outer
-group.outer.compilers=&inner
-group.inner.compilers=gcc
-compiler.gcc.exe=/opt/compiler-explorer/gcc/bin/gcc
-`;
-            const parsed = parsePropertiesFileRaw(content, 'test.properties');
-            const result = validateRawFile(parsed);
-
+            const result = validate(
+                `compilers=&outer\ngroup.outer.compilers=&inner\ngroup.inner.compilers=gcc\ncompiler.gcc.exe=/opt/compiler-explorer/gcc/bin/gcc`,
+            );
             expect(result.orphanedGroups).toHaveLength(0);
         });
     });
 
     describe('duplicated reference detection', () => {
         it('should detect duplicate compiler references in same list', () => {
-            const content = `compilers=gcc:clang:gcc`;
-            const parsed = parsePropertiesFileRaw(content, 'test.properties');
-            const result = validateRawFile(parsed);
-
-            expect(result.duplicatedCompilerRefs).toContainEqual(expect.objectContaining({id: 'gcc'}));
+            expect(validate('compilers=gcc:clang:gcc').duplicatedCompilerRefs).toContainEqual(
+                expect.objectContaining({id: 'gcc'}),
+            );
         });
 
         it('should detect duplicate group references', () => {
-            const content = `compilers=&mygroup:&mygroup`;
-            const parsed = parsePropertiesFileRaw(content, 'test.properties');
-            const result = validateRawFile(parsed);
-
-            expect(result.duplicatedGroupRefs).toContainEqual(expect.objectContaining({id: 'mygroup'}));
+            expect(validate('compilers=&mygroup:&mygroup').duplicatedGroupRefs).toContainEqual(
+                expect.objectContaining({id: 'mygroup'}),
+            );
         });
 
         it('should not flag unique references', () => {
-            const content = `compilers=gcc:clang:msvc`;
-            const parsed = parsePropertiesFileRaw(content, 'test.properties');
-            const result = validateRawFile(parsed);
-
-            expect(result.duplicatedCompilerRefs).toHaveLength(0);
+            expect(validate('compilers=gcc:clang:msvc').duplicatedCompilerRefs).toHaveLength(0);
         });
     });
 
     describe('orphaned formatter detection', () => {
         it('should report formatters listed but not defined', () => {
-            const content = `
-formatters=clangformat:rustfmt
-formatter.clangformat.exe=/opt/compiler-explorer/clang-format
-`;
-            const parsed = parsePropertiesFileRaw(content, 'test.properties');
-            const result = validateRawFile(parsed);
-
+            const result = validate(
+                `formatters=clangformat:rustfmt\nformatter.clangformat.exe=/opt/compiler-explorer/clang-format`,
+            );
             expect(result.orphanedFormatterExe).toContainEqual(expect.objectContaining({id: 'rustfmt'}));
         });
 
         it('should report formatters defined but not listed', () => {
-            const content = `
-formatters=clangformat
-formatter.clangformat.exe=/opt/compiler-explorer/clang-format
-formatter.rustfmt.exe=/opt/compiler-explorer/rustfmt
-`;
-            const parsed = parsePropertiesFileRaw(content, 'test.properties');
-            const result = validateRawFile(parsed);
-
+            const result = validate(
+                `formatters=clangformat\nformatter.clangformat.exe=/opt/compiler-explorer/clang-format\nformatter.rustfmt.exe=/opt/compiler-explorer/rustfmt`,
+            );
             expect(result.orphanedFormatterExe).toContainEqual(expect.objectContaining({id: 'rustfmt'}));
         });
     });
 
     describe('orphaned tool detection', () => {
         it('should report tools listed but not defined', () => {
-            const content = `
-tools=readelf:nm
-tools.readelf.exe=/usr/bin/readelf
-`;
-            const parsed = parsePropertiesFileRaw(content, 'test.properties');
-            const result = validateRawFile(parsed);
-
+            const result = validate(`tools=readelf:nm\ntools.readelf.exe=/usr/bin/readelf`);
             expect(result.orphanedToolExe).toContainEqual(expect.objectContaining({id: 'nm'}));
         });
 
         it('should report tools defined but not listed', () => {
-            const content = `
-tools=readelf
-tools.readelf.exe=/usr/bin/readelf
-tools.nm.exe=/usr/bin/nm
-`;
-            const parsed = parsePropertiesFileRaw(content, 'test.properties');
-            const result = validateRawFile(parsed);
-
+            const result = validate(`tools=readelf\ntools.readelf.exe=/usr/bin/readelf\ntools.nm.exe=/usr/bin/nm`);
             expect(result.orphanedToolExe).toContainEqual(expect.objectContaining({id: 'nm'}));
         });
     });
 
     describe('orphaned library detection', () => {
         it('should report libs listed but versions not defined', () => {
-            const content = `
-libs=boost:fmt
-libs.boost.versions=1.80
-libs.boost.versions.1.80.version=1.80.0
-`;
-            const parsed = parsePropertiesFileRaw(content, 'test.properties');
-            const result = validateRawFile(parsed);
-
+            const result = validate(
+                `libs=boost:fmt\nlibs.boost.versions=1.80\nlibs.boost.versions.1.80.version=1.80.0`,
+            );
             expect(result.orphanedLibIds).toContainEqual(expect.objectContaining({id: 'fmt'}));
         });
 
         it('should report lib versions listed but not defined', () => {
-            const content = `
-libs=boost
-libs.boost.versions=1.80:1.81
-libs.boost.versions.1.80.version=1.80.0
-`;
-            const parsed = parsePropertiesFileRaw(content, 'test.properties');
-            const result = validateRawFile(parsed);
-
+            const result = validate(
+                `libs=boost\nlibs.boost.versions=1.80:1.81\nlibs.boost.versions.1.80.version=1.80.0`,
+            );
             expect(result.orphanedLibVersions).toContainEqual(expect.objectContaining({id: 'boost 1.81'}));
         });
     });
 
     describe('invalid default compiler detection', () => {
         it('should report default compiler not in list', () => {
-            const content = `
-compilers=gcc:clang
-defaultCompiler=msvc
-compiler.gcc.exe=/opt/compiler-explorer/gcc
-compiler.clang.exe=/opt/compiler-explorer/clang
-`;
-            const parsed = parsePropertiesFileRaw(content, 'test.properties');
-            const result = validateRawFile(parsed);
-
+            const result = validate(
+                `compilers=gcc:clang\ndefaultCompiler=msvc\ncompiler.gcc.exe=/opt/compiler-explorer/gcc\ncompiler.clang.exe=/opt/compiler-explorer/clang`,
+            );
             expect(result.invalidDefaultCompiler).toContainEqual(expect.objectContaining({id: 'msvc'}));
         });
 
         it('should accept valid default compiler', () => {
-            const content = `
-compilers=gcc:clang
-defaultCompiler=gcc
-compiler.gcc.exe=/opt/compiler-explorer/gcc
-compiler.clang.exe=/opt/compiler-explorer/clang
-`;
-            const parsed = parsePropertiesFileRaw(content, 'test.properties');
-            const result = validateRawFile(parsed);
-
+            const result = validate(
+                `compilers=gcc:clang\ndefaultCompiler=gcc\ncompiler.gcc.exe=/opt/compiler-explorer/gcc\ncompiler.clang.exe=/opt/compiler-explorer/clang`,
+            );
             expect(result.invalidDefaultCompiler).toHaveLength(0);
         });
 
         it('should report default compiler when there is no compilers list', () => {
-            const content = `
-defaultCompiler=gcc
-compiler.gcc.exe=/opt/compiler-explorer/gcc
-`;
-            const parsed = parsePropertiesFileRaw(content, 'test.properties');
-            const result = validateRawFile(parsed);
-
+            const result = validate(`defaultCompiler=gcc\ncompiler.gcc.exe=/opt/compiler-explorer/gcc`);
             expect(result.invalidDefaultCompiler).toContainEqual(expect.objectContaining({id: 'gcc'}));
         });
     });
@@ -606,106 +413,40 @@ compilers=orphan
 
     describe('no compilers list detection', () => {
         it('should flag language files with compiler definitions but no compilers=', () => {
-            const content = `
-compiler.gcc.exe=/opt/compiler-explorer/gcc/bin/gcc
-compiler.gcc.name=GCC
-`;
-            const parsed = parsePropertiesFileRaw(content, 'c++.amazon.properties');
-            const result = validateRawFile(parsed);
-
-            expect(result.noCompilersList).toBe(true);
+            expect(
+                validate(
+                    `compiler.gcc.exe=/opt/compiler-explorer/gcc/bin/gcc\ncompiler.gcc.name=GCC`,
+                    'c++.amazon.properties',
+                ).noCompilersList,
+            ).toBe(true);
         });
 
         it('should not flag files with compilers=', () => {
-            const content = `
-compilers=gcc
-compiler.gcc.exe=/opt/compiler-explorer/gcc/bin/gcc
-`;
-            const parsed = parsePropertiesFileRaw(content, 'c++.amazon.properties');
-            const result = validateRawFile(parsed);
-
-            expect(result.noCompilersList).toBe(false);
+            expect(
+                validate(`compilers=gcc\ncompiler.gcc.exe=/opt/compiler-explorer/gcc/bin/gcc`, 'c++.amazon.properties')
+                    .noCompilersList,
+            ).toBe(false);
         });
 
         it('should not flag files with group definitions', () => {
-            const content = `
-group.mygroup.compilers=gcc
-compiler.gcc.exe=/opt/compiler-explorer/gcc/bin/gcc
-`;
-            const parsed = parsePropertiesFileRaw(content, 'c++.amazon.properties');
-            const result = validateRawFile(parsed);
-
-            expect(result.noCompilersList).toBe(false);
+            expect(
+                validate(
+                    `group.mygroup.compilers=gcc\ncompiler.gcc.exe=/opt/compiler-explorer/gcc/bin/gcc`,
+                    'c++.amazon.properties',
+                ).noCompilersList,
+            ).toBe(false);
         });
 
-        it('should not flag defaults files', () => {
-            const content = `
-compiler.gcc.exe=/opt/compiler-explorer/gcc/bin/gcc
-`;
-            const parsed = parsePropertiesFileRaw(content, 'c++.defaults.properties');
-            const result = validateRawFile(parsed);
-
-            expect(result.noCompilersList).toBe(false);
-        });
-
-        it('should not flag compiler-explorer config files', () => {
-            const content = `
-someOtherProperty=value
-`;
-            const parsed = parsePropertiesFileRaw(content, 'compiler-explorer.amazon.properties');
-            const result = validateRawFile(parsed);
-
-            expect(result.noCompilersList).toBe(false);
-        });
-
-        it('should not flag execution. files', () => {
-            const content = `
-compiler.gcc.exe=/opt/compiler-explorer/gcc/bin/gcc
-`;
-            const parsed = parsePropertiesFileRaw(content, 'execution.amazon.properties');
-            const result = validateRawFile(parsed);
-
-            expect(result.noCompilersList).toBe(false);
-        });
-
-        it('should not flag aws. files', () => {
-            const content = `
-someProperty=value
-`;
-            const parsed = parsePropertiesFileRaw(content, 'aws.properties');
-            const result = validateRawFile(parsed);
-
-            expect(result.noCompilersList).toBe(false);
-        });
-
-        it('should not flag asm-docs. files', () => {
-            const content = `
-someProperty=value
-`;
-            const parsed = parsePropertiesFileRaw(content, 'asm-docs.properties');
-            const result = validateRawFile(parsed);
-
-            expect(result.noCompilersList).toBe(false);
-        });
-
-        it('should not flag builtin. files', () => {
-            const content = `
-someProperty=value
-`;
-            const parsed = parsePropertiesFileRaw(content, 'builtin.amazon.properties');
-            const result = validateRawFile(parsed);
-
-            expect(result.noCompilersList).toBe(false);
-        });
-
-        it('should not flag files with no compiler definitions', () => {
-            const content = `
-someProperty=value
-`;
-            const parsed = parsePropertiesFileRaw(content, 'c++.amazon.properties');
-            const result = validateRawFile(parsed);
-
-            expect(result.noCompilersList).toBe(false);
+        it.each([
+            ['defaults files', 'compiler.gcc.exe=/opt/compiler-explorer/gcc/bin/gcc', 'c++.defaults.properties'],
+            ['compiler-explorer config files', 'someOtherProperty=value', 'compiler-explorer.amazon.properties'],
+            ['execution. files', 'compiler.gcc.exe=/opt/compiler-explorer/gcc/bin/gcc', 'execution.amazon.properties'],
+            ['aws. files', 'someProperty=value', 'aws.properties'],
+            ['asm-docs. files', 'someProperty=value', 'asm-docs.properties'],
+            ['builtin. files', 'someProperty=value', 'builtin.amazon.properties'],
+            ['files with no compiler definitions', 'someProperty=value', 'c++.amazon.properties'],
+        ])('should not flag %s', (_, content, filename) => {
+            expect(validate(content, filename).noCompilersList).toBe(false);
         });
     });
 
@@ -766,20 +507,38 @@ describe('Real config validation', () => {
     const checkLocal = process.env.CHECK_LOCAL_PROPS === 'true';
     let propertyFiles: Array<{filename: string; parsed: ReturnType<typeof parsePropertiesFileRaw>}> = [];
 
+    type ArrayFields = {
+        [K in keyof RawFileValidationResult]: RawFileValidationResult[K] extends Array<unknown> ? K : never;
+    }[keyof RawFileValidationResult];
+
+    function collectIssues(
+        files: typeof propertyFiles,
+        field: ArrayFields,
+        useFiltered = false,
+        options?: RawValidatorOptions,
+    ) {
+        return files.flatMap(({filename, parsed}) => {
+            const result = validateRawFile(parsed, options);
+            const source = useFiltered ? filterDisabled(result, parsed.disabledIds) : result;
+            const issues = source[field];
+            if (issues.length > 0) {
+                return [{file: filename, issues: issues.map(i => i.id ?? i.text)}];
+            }
+            return [];
+        });
+    }
+
     beforeAll(() => {
         const files = fs.readdirSync(configDir);
         propertyFiles = files
             .filter(f => {
                 if (!f.endsWith('.properties')) return false;
                 if (f.endsWith('.local.properties')) return checkLocal;
-                return true; // All .properties files except .local.properties (unless CHECK_LOCAL_PROPS=true)
+                return true;
             })
             .map(filename => {
                 const content = fs.readFileSync(path.join(configDir, filename), 'utf8');
-                return {
-                    filename,
-                    parsed: parsePropertiesFileRaw(content, filename),
-                };
+                return {filename, parsed: parsePropertiesFileRaw(content, filename)};
             });
     });
 
@@ -791,342 +550,49 @@ describe('Real config validation', () => {
         expect(propertyFiles.length).toBeGreaterThan(0);
     });
 
-    it('should have no duplicate keys in property files', () => {
-        const filesWithDuplicates: Array<{file: string; duplicates: string[]}> = [];
+    const validationChecks: Array<{name: string; field: ArrayFields; useFiltered?: boolean}> = [
+        {name: 'duplicate keys', field: 'duplicateKeys', useFiltered: true},
+        {name: 'empty list elements', field: 'emptyListElements'},
+        {name: 'typo compilers', field: 'typoCompilers', useFiltered: true},
+        {name: 'invalid property format', field: 'invalidPropertyFormat'},
+        {name: 'orphaned compilers (exe)', field: 'orphanedCompilerExe', useFiltered: true},
+        {name: 'orphaned compilers (ID)', field: 'orphanedCompilerId', useFiltered: true},
+        {name: 'orphaned groups', field: 'orphanedGroups', useFiltered: true},
+        {name: 'orphaned formatters (exe)', field: 'orphanedFormatterExe', useFiltered: true},
+        {name: 'orphaned formatters (ID)', field: 'orphanedFormatterId', useFiltered: true},
+        {name: 'orphaned tools (exe)', field: 'orphanedToolExe', useFiltered: true},
+        {name: 'orphaned tools (ID)', field: 'orphanedToolId', useFiltered: true},
+        {name: 'orphaned lib IDs', field: 'orphanedLibIds', useFiltered: true},
+        {name: 'orphaned lib versions', field: 'orphanedLibVersions', useFiltered: true},
+        {name: 'duplicated compiler references', field: 'duplicatedCompilerRefs', useFiltered: true},
+        {name: 'duplicated group references', field: 'duplicatedGroupRefs', useFiltered: true},
+        {name: 'invalid default compilers', field: 'invalidDefaultCompiler', useFiltered: true},
+    ];
 
-        for (const {filename, parsed} of propertyFiles) {
-            const result = validateRawFile(parsed);
-            const filtered = filterDisabled(result, parsed.disabledIds);
-
-            if (filtered.duplicateKeys.length > 0) {
-                filesWithDuplicates.push({
-                    file: filename,
-                    duplicates: filtered.duplicateKeys.map(d => d.id ?? d.text),
-                });
-            }
-        }
-
-        expect(filesWithDuplicates, `Files with duplicate keys: ${JSON.stringify(filesWithDuplicates)}`).toEqual([]);
-    });
-
-    it('should have no empty list elements', () => {
-        const filesWithEmpty: Array<{file: string; issues: string[]}> = [];
-
-        for (const {filename, parsed} of propertyFiles) {
-            const result = validateRawFile(parsed);
-
-            if (result.emptyListElements.length > 0) {
-                filesWithEmpty.push({
-                    file: filename,
-                    issues: result.emptyListElements.map(e => e.text),
-                });
-            }
-        }
-
-        expect(filesWithEmpty, `Files with empty list elements: ${JSON.stringify(filesWithEmpty)}`).toEqual([]);
-    });
-
-    it('should have no typo compilers (compilers. instead of compiler.)', () => {
-        const filesWithTypos: Array<{file: string; typos: string[]}> = [];
-
-        for (const {filename, parsed} of propertyFiles) {
-            const result = validateRawFile(parsed);
-            const filtered = filterDisabled(result, parsed.disabledIds);
-
-            if (filtered.typoCompilers.length > 0) {
-                filesWithTypos.push({
-                    file: filename,
-                    typos: filtered.typoCompilers.map(t => t.text),
-                });
-            }
-        }
-
-        expect(filesWithTypos, `Files with typo compilers: ${JSON.stringify(filesWithTypos)}`).toEqual([]);
+    it.each(validationChecks)('should have no $name', ({field, useFiltered}) => {
+        const filesWithIssues = collectIssues(propertyFiles, field, useFiltered);
+        expect(filesWithIssues, `Files with ${field}`).toEqual([]);
     });
 
     it('should have no duplicate compiler IDs across amazon property files', () => {
-        // Cross-file duplicate check only applies to amazon files
-        // Local files are expected to override/mirror amazon config
         const amazonOnly = propertyFiles.filter(f => f.filename.includes('amazon'));
         const result = validateCrossFileCompilerIds(amazonOnly);
-
         if (result.duplicateCompilerIds.size > 0) {
             const duplicates = Object.fromEntries(result.duplicateCompilerIds);
             expect.fail(`Duplicate compiler IDs found: ${JSON.stringify(duplicates, null, 2)}`);
         }
     });
 
-    it('should have no invalid property format errors', () => {
-        const filesWithErrors: Array<{file: string; errors: string[]}> = [];
-
-        for (const {filename, parsed} of propertyFiles) {
-            const result = validateRawFile(parsed);
-
-            if (result.invalidPropertyFormat.length > 0) {
-                filesWithErrors.push({
-                    file: filename,
-                    errors: result.invalidPropertyFormat.map(e => `Line ${e.line}: ${e.text}`),
-                });
-            }
-        }
-
-        expect(filesWithErrors, `Files with invalid property format: ${JSON.stringify(filesWithErrors)}`).toEqual([]);
-    });
-
     it('should have no language files missing compilers list', () => {
-        const filesWithMissingList: string[] = [];
-
-        for (const {filename, parsed} of propertyFiles) {
-            const result = validateRawFile(parsed);
-
-            if (result.noCompilersList) {
-                filesWithMissingList.push(filename);
-            }
-        }
-
-        expect(filesWithMissingList, `Files missing compilers list: ${filesWithMissingList.join(', ')}`).toEqual([]);
-    });
-
-    it('should have no orphaned compilers (exe)', () => {
-        const filesWithOrphans: Array<{file: string; orphans: string[]}> = [];
-
-        for (const {filename, parsed} of propertyFiles) {
-            const result = validateRawFile(parsed);
-            const filtered = filterDisabled(result, parsed.disabledIds);
-
-            if (filtered.orphanedCompilerExe.length > 0) {
-                filesWithOrphans.push({
-                    file: filename,
-                    orphans: filtered.orphanedCompilerExe.map(o => o.id ?? o.text),
-                });
-            }
-        }
-
-        expect(filesWithOrphans, `Files with orphaned compiler .exe: ${JSON.stringify(filesWithOrphans)}`).toEqual([]);
-    });
-
-    it('should have no orphaned compilers (ID)', () => {
-        const filesWithOrphans: Array<{file: string; orphans: string[]}> = [];
-
-        for (const {filename, parsed} of propertyFiles) {
-            const result = validateRawFile(parsed);
-            const filtered = filterDisabled(result, parsed.disabledIds);
-
-            if (filtered.orphanedCompilerId.length > 0) {
-                filesWithOrphans.push({
-                    file: filename,
-                    orphans: filtered.orphanedCompilerId.map(o => o.id ?? o.text),
-                });
-            }
-        }
-
-        expect(filesWithOrphans, `Files with orphaned compiler IDs: ${JSON.stringify(filesWithOrphans)}`).toEqual([]);
-    });
-
-    it('should have no orphaned groups', () => {
-        const filesWithOrphans: Array<{file: string; orphans: string[]}> = [];
-
-        for (const {filename, parsed} of propertyFiles) {
-            const result = validateRawFile(parsed);
-            const filtered = filterDisabled(result, parsed.disabledIds);
-
-            if (filtered.orphanedGroups.length > 0) {
-                filesWithOrphans.push({
-                    file: filename,
-                    orphans: filtered.orphanedGroups.map(o => o.id ?? o.text),
-                });
-            }
-        }
-
-        expect(filesWithOrphans, `Files with orphaned groups: ${JSON.stringify(filesWithOrphans)}`).toEqual([]);
-    });
-
-    it('should have no orphaned formatters (exe)', () => {
-        const filesWithOrphans: Array<{file: string; orphans: string[]}> = [];
-
-        for (const {filename, parsed} of propertyFiles) {
-            const result = validateRawFile(parsed);
-            const filtered = filterDisabled(result, parsed.disabledIds);
-
-            if (filtered.orphanedFormatterExe.length > 0) {
-                filesWithOrphans.push({
-                    file: filename,
-                    orphans: filtered.orphanedFormatterExe.map(o => o.id ?? o.text),
-                });
-            }
-        }
-
-        expect(filesWithOrphans, `Files with orphaned formatter .exe: ${JSON.stringify(filesWithOrphans)}`).toEqual([]);
-    });
-
-    it('should have no orphaned formatters (ID)', () => {
-        const filesWithOrphans: Array<{file: string; orphans: string[]}> = [];
-
-        for (const {filename, parsed} of propertyFiles) {
-            const result = validateRawFile(parsed);
-            const filtered = filterDisabled(result, parsed.disabledIds);
-
-            if (filtered.orphanedFormatterId.length > 0) {
-                filesWithOrphans.push({
-                    file: filename,
-                    orphans: filtered.orphanedFormatterId.map(o => o.id ?? o.text),
-                });
-            }
-        }
-
-        expect(filesWithOrphans, `Files with orphaned formatter IDs: ${JSON.stringify(filesWithOrphans)}`).toEqual([]);
-    });
-
-    it('should have no orphaned tools (exe)', () => {
-        const filesWithOrphans: Array<{file: string; orphans: string[]}> = [];
-
-        for (const {filename, parsed} of propertyFiles) {
-            const result = validateRawFile(parsed);
-            const filtered = filterDisabled(result, parsed.disabledIds);
-
-            if (filtered.orphanedToolExe.length > 0) {
-                filesWithOrphans.push({
-                    file: filename,
-                    orphans: filtered.orphanedToolExe.map(o => o.id ?? o.text),
-                });
-            }
-        }
-
-        expect(filesWithOrphans, `Files with orphaned tool .exe: ${JSON.stringify(filesWithOrphans)}`).toEqual([]);
-    });
-
-    it('should have no orphaned tools (ID)', () => {
-        const filesWithOrphans: Array<{file: string; orphans: string[]}> = [];
-
-        for (const {filename, parsed} of propertyFiles) {
-            const result = validateRawFile(parsed);
-            const filtered = filterDisabled(result, parsed.disabledIds);
-
-            if (filtered.orphanedToolId.length > 0) {
-                filesWithOrphans.push({
-                    file: filename,
-                    orphans: filtered.orphanedToolId.map(o => o.id ?? o.text),
-                });
-            }
-        }
-
-        expect(filesWithOrphans, `Files with orphaned tool IDs: ${JSON.stringify(filesWithOrphans)}`).toEqual([]);
-    });
-
-    it('should have no orphaned lib IDs', () => {
-        const filesWithOrphans: Array<{file: string; orphans: string[]}> = [];
-
-        for (const {filename, parsed} of propertyFiles) {
-            const result = validateRawFile(parsed);
-            const filtered = filterDisabled(result, parsed.disabledIds);
-
-            if (filtered.orphanedLibIds.length > 0) {
-                filesWithOrphans.push({
-                    file: filename,
-                    orphans: filtered.orphanedLibIds.map(o => o.id ?? o.text),
-                });
-            }
-        }
-
-        expect(filesWithOrphans, `Files with orphaned lib IDs: ${JSON.stringify(filesWithOrphans)}`).toEqual([]);
-    });
-
-    it('should have no orphaned lib versions', () => {
-        const filesWithOrphans: Array<{file: string; orphans: string[]}> = [];
-
-        for (const {filename, parsed} of propertyFiles) {
-            const result = validateRawFile(parsed);
-            const filtered = filterDisabled(result, parsed.disabledIds);
-
-            if (filtered.orphanedLibVersions.length > 0) {
-                filesWithOrphans.push({
-                    file: filename,
-                    orphans: filtered.orphanedLibVersions.map(o => o.id ?? o.text),
-                });
-            }
-        }
-
-        expect(filesWithOrphans, `Files with orphaned lib versions: ${JSON.stringify(filesWithOrphans)}`).toEqual([]);
-    });
-
-    it('should have no duplicated compiler references', () => {
-        const filesWithDuplicates: Array<{file: string; duplicates: string[]}> = [];
-
-        for (const {filename, parsed} of propertyFiles) {
-            const result = validateRawFile(parsed);
-            const filtered = filterDisabled(result, parsed.disabledIds);
-
-            if (filtered.duplicatedCompilerRefs.length > 0) {
-                filesWithDuplicates.push({
-                    file: filename,
-                    duplicates: filtered.duplicatedCompilerRefs.map(d => d.id ?? d.text),
-                });
-            }
-        }
-
-        expect(
-            filesWithDuplicates,
-            `Files with duplicated compiler references: ${JSON.stringify(filesWithDuplicates)}`,
-        ).toEqual([]);
-    });
-
-    it('should have no duplicated group references', () => {
-        const filesWithDuplicates: Array<{file: string; duplicates: string[]}> = [];
-
-        for (const {filename, parsed} of propertyFiles) {
-            const result = validateRawFile(parsed);
-            const filtered = filterDisabled(result, parsed.disabledIds);
-
-            if (filtered.duplicatedGroupRefs.length > 0) {
-                filesWithDuplicates.push({
-                    file: filename,
-                    duplicates: filtered.duplicatedGroupRefs.map(d => d.id ?? d.text),
-                });
-            }
-        }
-
-        expect(
-            filesWithDuplicates,
-            `Files with duplicated group references: ${JSON.stringify(filesWithDuplicates)}`,
-        ).toEqual([]);
-    });
-
-    it('should have no invalid default compilers', () => {
-        const filesWithInvalid: Array<{file: string; invalids: string[]}> = [];
-
-        for (const {filename, parsed} of propertyFiles) {
-            const result = validateRawFile(parsed);
-            const filtered = filterDisabled(result, parsed.disabledIds);
-
-            if (filtered.invalidDefaultCompiler.length > 0) {
-                filesWithInvalid.push({
-                    file: filename,
-                    invalids: filtered.invalidDefaultCompiler.map(i => i.id ?? i.text),
-                });
-            }
-        }
-
-        expect(filesWithInvalid, `Files with invalid default compiler: ${JSON.stringify(filesWithInvalid)}`).toEqual(
-            [],
-        );
+        const filesWithMissingList = propertyFiles
+            .filter(({parsed}) => validateRawFile(parsed).noCompilersList)
+            .map(({filename}) => filename);
+        expect(filesWithMissingList, `Files missing compilers list`).toEqual([]);
     });
 
     it('should have no suspicious paths in amazon properties', () => {
-        const filesWithSuspicious: Array<{file: string; paths: string[]}> = [];
         const amazonFiles = propertyFiles.filter(f => f.filename.includes('amazon'));
-
-        for (const {filename, parsed} of amazonFiles) {
-            const result = validateRawFile(parsed, {checkSuspiciousPaths: true});
-            const filtered = filterDisabled(result, parsed.disabledIds);
-
-            if (filtered.suspiciousPaths.length > 0) {
-                filesWithSuspicious.push({
-                    file: filename,
-                    paths: filtered.suspiciousPaths.map(p => `${p.id}: ${p.text}`),
-                });
-            }
-        }
-
-        expect(filesWithSuspicious, `Files with suspicious paths: ${JSON.stringify(filesWithSuspicious)}`).toEqual([]);
+        const filesWithIssues = collectIssues(amazonFiles, 'suspiciousPaths', true, {checkSuspiciousPaths: true});
+        expect(filesWithIssues, 'Files with suspicious paths').toEqual([]);
     });
 });
