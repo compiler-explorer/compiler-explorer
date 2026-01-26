@@ -121,7 +121,7 @@ import {Packager} from './packager.js';
 import type {IAsmParser} from './parsers/asm-parser.interfaces.js';
 import {AsmParser} from './parsers/asm-parser.js';
 import {LlvmPassDumpParser} from './parsers/llvm-pass-dump-parser.js';
-import type {PropertyGetter, PropertyValue} from './properties.interfaces.js';
+import type {PropertyGetter} from './properties.interfaces.js';
 import {HeaptrackWrapper} from './runtime-tools/heaptrack-wrapper.js';
 import {LibSegFaultHelper} from './runtime-tools/libsegfault-helper.js';
 import * as StackUsage from './stack-usage-transformer.js';
@@ -188,11 +188,11 @@ export class BaseCompiler {
     protected compileFilename: string;
     protected env: CompilationEnvironment;
     protected compilerProps: PropertyGetter;
-    protected alwaysResetLdPath: PropertyValue;
+    protected alwaysResetLdPath: boolean;
     protected delayCleanupTemp: any;
     protected stubRe: RegExp;
     protected stubText: string;
-    protected compilerWrapper: PropertyValue;
+    protected compilerWrapper: string | undefined;
     protected asm: IAsmParser;
     protected llvmIr: LlvmIrParser;
     protected llvmPassDumpParser: LlvmPassDumpParser;
@@ -233,12 +233,12 @@ export class BaseCompiler {
         this.compilerProps = this.env.getCompilerPropsForLanguage(this.lang.id);
         this.compiler.supportsIntel = !!this.compiler.intelAsm;
 
-        this.alwaysResetLdPath = this.env.ceProps('alwaysResetLdPath');
+        this.alwaysResetLdPath = this.env.ceProps('alwaysResetLdPath', false);
         this.delayCleanupTemp = this.env.ceProps('delayCleanupTemp', false);
         this.isCompilationWorker = this.env.ceProps('compilequeue.is_worker', false);
         this.stubRe = new RegExp(this.compilerProps('stubRe', ''));
         this.stubText = this.compilerProps('stubText', '');
-        this.compilerWrapper = this.compilerProps('compiler-wrapper');
+        this.compilerWrapper = this.compilerProps<string>('compiler-wrapper');
 
         const executionEnvironmentClassStr = this.compilerProps<string>('executionEnvironmentClass', 'local');
         this.executionEnvironmentClass = getExecutionEnvironmentByKey(executionEnvironmentClassStr);
