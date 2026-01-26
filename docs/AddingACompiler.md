@@ -102,6 +102,8 @@ compiler.clang5.exe=/usr/bin/clang5
 Note about group properties: Properties defined for a group in one configuration file (e.g., `defaults`) will not be carried 
 forward if that group is redefined in a higher-priority configuration file (e.g., `amazon`) without that property.
 
+You can also use the `+=` operator to append to existing string properties. See [Configuration.md](Configuration.md#property-append-syntax) for details.
+
 ### Configuration keys
 
 | Key Name             | Type       | Description                                                                                                                                                        |
