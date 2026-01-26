@@ -53,6 +53,7 @@ export function parsePortNumberForOptions(value: string): number {
 export interface CompilerExplorerOptions {
     env: string[];
     rootDir: string;
+    propertiesDirs?: string[];
     host?: string;
     port: number;
     propDebug?: boolean;
@@ -91,6 +92,7 @@ export function parseCommandLine(argv: string[]): CompilerExplorerOptions {
         .description('Interactively investigate compiler output')
         .option('--env <environments...>', 'Environment(s) to use', ['dev'])
         .option('--root-dir <dir>', 'Root directory for config files', './etc')
+        .option('--properties-dirs <dirs...>', 'Additional directories to load .properties files from')
         .option('--host <hostname>', 'Hostname to listen on')
         .option('--port <port>', 'Port to listen on', parsePortNumberForOptions, 10240)
         .option('--prop-debug', 'Debug properties')
@@ -181,6 +183,7 @@ export function convertOptionsToAppArguments(
 ): AppArguments {
     return {
         rootDir: options.rootDir,
+        propertiesDirs: options.propertiesDirs,
         env: options.env,
         hostname: options.host,
         port: options.port,
