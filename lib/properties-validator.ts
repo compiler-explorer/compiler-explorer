@@ -116,7 +116,8 @@ const ALLOWED_EMPTY_COMPILERS_PATTERNS = [
 // Anything outside these paths will be flagged as suspicious.
 const VALID_PATH_PREFIXES = ['/opt/compiler-explorer', 'Z:/compilers'];
 
-// Specific paths that are always allowed (e.g., system tools used in production).
+// Specific system paths that are always allowed. /usr/bin/ldd is used as a tool
+// in many language configs to show shared library dependencies of compiled executables.
 const ALLOWED_SYSTEM_PATHS = ['/usr/bin/ldd'];
 
 function isSuspiciousPath(path: string): boolean {
