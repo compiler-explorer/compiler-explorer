@@ -80,36 +80,26 @@ export interface PropertyParseError {
 }
 
 export interface ParsePropertiesOptions {
-    // If true, collect parse errors instead of logging them
-    collectErrors?: boolean;
+    // Callback for parse errors. Defaults to logging via logger.error().
+    onError?: (error: PropertyParseError, filename: string) => void;
 }
 
-export interface ParsePropertiesResult {
-    props: Record<string, PropertyValue>;
-    errors: PropertyParseError[];
-}
-
-export function parseProperties(blob: string, name: string): Record<string, PropertyValue>;
-export function parseProperties(blob: string, name: string, options: {collectErrors: true}): ParsePropertiesResult;
 export function parseProperties(
     blob: string,
     name: string,
     options?: ParsePropertiesOptions,
-): Record<string, PropertyValue> | ParsePropertiesResult {
+): Record<string, PropertyValue> {
     const props: Record<string, PropertyValue> = {};
-    const errors: PropertyParseError[] = [];
-    const collectErrors = options?.collectErrors ?? false;
+    const onError =
+        options?.onError ??
+        ((error, filename) => logger.error(`Bad line: ${error.text} in ${filename}: ${error.line}`));
 
     for (const [index, lineOrig] of blob.split('\n').entries()) {
         const line = lineOrig.replace(/#.*/, '').trim();
         if (!line) continue;
         const split = line.match(/([^=]+)=(.*)/);
         if (!split) {
-            if (collectErrors) {
-                errors.push({line: index + 1, text: lineOrig.trim()});
-            } else {
-                logger.error(`Bad line: ${line} in ${name}: ${index + 1}`);
-            }
+            onError({line: index + 1, text: lineOrig.trim()}, name);
             continue;
         }
         const prop = split[1].trim();
@@ -123,9 +113,6 @@ export function parseProperties(
         debug(`${prop} = ${val}`);
     }
 
-    if (collectErrors) {
-        return {props, errors};
-    }
     return props;
 }
 

@@ -142,11 +142,10 @@ export function parsePropertiesFileRaw(content: string, filename: string): Parse
     const disabledIds = new Set<string>();
     const parseErrors: ValidationIssue[] = [];
 
-    // Use the main parser to collect format errors
-    const parseResult = parseProperties(content, filename, {collectErrors: true});
-    for (const error of parseResult.errors) {
-        parseErrors.push({line: error.line, text: error.text});
-    }
+    // Use the main parser to collect format errors via callback
+    parseProperties(content, filename, {
+        onError: error => parseErrors.push({line: error.line, text: error.text}),
+    });
 
     // Also collect our own structured properties with line numbers
     const lines = content.split('\n');
