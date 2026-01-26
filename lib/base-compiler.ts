@@ -105,7 +105,7 @@ import {BaseExecutionTriple} from './execution/base-execution-triple.js';
 import {IExecutionEnvironment} from './execution/execution-env.interfaces.js';
 import {RemoteExecutionQuery} from './execution/execution-query.js';
 import {matchesCurrentHost} from './execution/execution-triple.js';
-import {getExecutionEnvironmentByKey} from './execution/index.js';
+import {getExecutionEnvironmentByKey, LocalExecutionEnvironment} from './execution/index.js';
 import {RemoteExecutionEnvironment} from './execution/remote-execution-env.js';
 import {IExternalParser} from './external-parsers/external-parser.interface.js';
 import {getExternalParserByKey} from './external-parsers/index.js';
@@ -115,7 +115,7 @@ import {languages} from './languages.js';
 import {LlvmAstParser} from './llvm-ast.js';
 import {LlvmIrParser} from './llvm-ir.js';
 import {logger} from './logger.js';
-import {getObjdumperTypeByKey} from './objdumper/index.js';
+import {BaseObjdumper, getObjdumperTypeByKey} from './objdumper/index.js';
 import {ClientOptionsType, OptionsHandlerLibrary, VersionInfo} from './options-handler.js';
 import {Packager} from './packager.js';
 import type {IAsmParser} from './parsers/asm-parser.interfaces.js';
@@ -201,7 +201,7 @@ export class BaseCompiler {
     public possibleArguments: CompilerArguments;
     protected possibleTools: ITool[];
     protected demanglerClass: typeof BaseDemangler | null = null;
-    protected objdumperClass: any;
+    protected objdumperClass!: new () => BaseObjdumper;
     public outputFilebase: string;
     protected mtime: Date | null = null;
     protected cmakeBaseEnv: Record<string, string>;
@@ -215,7 +215,7 @@ export class BaseCompiler {
         help: 'Time spent on objdump and parsing of objdumps',
         labelNames: [],
     });
-    protected executionEnvironmentClass: any;
+    protected executionEnvironmentClass: typeof LocalExecutionEnvironment;
     protected readonly argParser: BaseParser;
     protected readonly isCompilationWorker: boolean;
 
@@ -686,7 +686,7 @@ export class BaseCompiler {
 
             if (objResult.code === 0) {
                 result.objdumpTime = objResult.objdumpTime;
-                result.asm = this.postProcessObjdumpOutput(objResult.asm);
+                result.asm = this.postProcessObjdumpOutput(objResult.asm ?? '');
             } else {
                 logger.error(`Error executing objdump ${this.compiler.objdumper}`, objResult);
                 result.asm = `<No output: objdump returned ${objResult.code}>`;
