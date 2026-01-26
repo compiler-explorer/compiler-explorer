@@ -43,12 +43,12 @@ export class CompilerDropinTool extends BaseTool {
         this.addOptionsToToolArgs = false;
     }
 
-    getToolchainPath(compilationInfo: Record<any, any>): string | false {
+    getToolchainPath(compilationInfo: CompilationInfo): string | false {
         return getToolchainPath(compilationInfo.compiler.exe, compilationInfo.compiler.options);
     }
 
     getOrderedArguments(
-        compilationInfo: Record<any, any>,
+        compilationInfo: CompilationInfo,
         includeflags: string[],
         libOptions: string[],
         args?: string[],

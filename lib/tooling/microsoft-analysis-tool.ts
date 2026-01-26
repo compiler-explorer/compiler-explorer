@@ -25,6 +25,7 @@
 import path from 'node:path';
 
 import {splitArguments} from '../../shared/common-utils.js';
+import {CompilationInfo} from '../../types/compilation/compilation.interfaces.js';
 import {ToolInfo} from '../../types/tool.interfaces.js';
 import {unwrap} from '../assert.js';
 import {logger} from '../logger.js';
@@ -44,7 +45,7 @@ export class MicrosoftAnalysisTool extends BaseTool {
         this.addOptionsToToolArgs = false;
     }
 
-    async runCompilerTool(compilationInfo: Record<any, any>, inputFilepath?: string, args?: string[], stdin?: string) {
+    async runCompilerTool(compilationInfo: CompilationInfo, inputFilepath?: string, args?: string[], stdin?: string) {
         const execOptions = this.getDefaultExecOptions();
         if (inputFilepath) execOptions.customCwd = path.dirname(inputFilepath);
         execOptions.input = stdin;
@@ -77,7 +78,7 @@ export class MicrosoftAnalysisTool extends BaseTool {
     }
 
     override async runTool(
-        compilationInfo: Record<any, any>,
+        compilationInfo: CompilationInfo,
         inputFilepath?: string,
         args?: string[],
         stdin?: string,

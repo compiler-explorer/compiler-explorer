@@ -179,7 +179,7 @@ export class SonarTool extends BaseTool {
     }
 
     buildCompilationCMD(
-        compilationInfo: Record<any, any>,
+        compilationInfo: CompilationInfo,
         inputFilePath: string,
         supportedLibraries?: Record<string, OptionsHandlerLibrary>,
     ) {
