@@ -253,6 +253,11 @@ export abstract class Pane<S> {
     }
 
     abstract resize(): void;
+
+    protected hasActiveSelection(): boolean {
+        const selection = window.getSelection();
+        return !!(selection && !selection.isCollapsed);
+    }
 }
 
 /**

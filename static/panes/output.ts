@@ -301,6 +301,9 @@ export class Output extends Pane<OutputState> {
             const span = $('<span class="linked-compiler-output-line"></span>')
                 .html(msg)
                 .on('click', e => {
+                    if (this.hasActiveSelection()) {
+                        return;
+                    }
                     this.emitEditorLinkLine(lineNum, column, filename, true);
                     // do not bring user to the top of index.html
                     // http://stackoverflow.com/questions/3252730
@@ -332,6 +335,9 @@ export class Output extends Pane<OutputState> {
         span.attr('title', fixes[0].title).addClass('quickfix-action');
         for (const fix of fixes) {
             span.on('click', e => {
+                if (this.hasActiveSelection()) {
+                    return;
+                }
                 for (const {text, line, endline, column, endcolumn} of fix.edits) {
                     if (line && endline && column && endcolumn) {
                         this.emitEditorApplyQuickfix(
