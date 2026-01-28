@@ -24,6 +24,7 @@
 
 import express from 'express';
 
+import {unwrapString} from '../../assert.js';
 import {FormattingService} from '../../formatting-service.js';
 import {cached, cors, jsonOnly} from '../middleware.js';
 
@@ -41,10 +42,11 @@ export class FormattingController implements HttpController {
 
     /** Handle requests to /api/format/:tool */
     public async format(req: express.Request, res: express.Response) {
-        const formatter = this.formattingService.getFormatterById(req.params.tool);
+        const tool = unwrapString(req.params.tool);
+        const formatter = this.formattingService.getFormatterById(tool);
         // Ensure the target formatter exists
         if (formatter === null) {
-            res.status(422).json({exit: 2, answer: `Unknown format tool '${req.params.tool}'`});
+            res.status(422).json({exit: 2, answer: `Unknown format tool '${tool}'`});
             return;
         }
         // Ensure there is source code to format

@@ -38,7 +38,8 @@ type DefKeys =
     | 'logoFilenameDark'
     | 'monacoDisassembly'
     | 'tooltip'
-    | 'digitSeparator';
+    | 'digitSeparator'
+    | 'noAsmHint';
 type LanguageDefinition = Pick<Language, DefKeys>;
 
 const definitions: Record<LanguageKey, LanguageDefinition> = {
@@ -64,6 +65,9 @@ const definitions: Record<LanguageKey, LanguageDefinition> = {
         previewFilter: /^\s*#include/,
         monacoDisassembly: null,
         digitSeparator: "'",
+        noAsmHint:
+            '# Tip: Inline or template functions may not generate code.\n' +
+            '# Use __attribute__((noinline)) or instantiate templates explicitly.',
     },
     ada: {
         name: 'Ada',
@@ -725,6 +729,18 @@ const definitions: Record<LanguageKey, LanguageDefinition> = {
         previewFilter: null,
         monacoDisassembly: null,
     },
+    perl: {
+        name: 'Perl',
+        monaco: 'perl',
+        extensions: ['.pl', '.pm'],
+        alias: [],
+        logoFilename: 'perl.svg',
+        logoFilenameDark: null,
+        formatter: null,
+        previewFilter: null,
+        monacoDisassembly: null,
+        digitSeparator: '_',
+    },
     pony: {
         name: 'Pony',
         monaco: 'pony',
@@ -804,6 +820,10 @@ const definitions: Record<LanguageKey, LanguageDefinition> = {
         previewFilter: null,
         monacoDisassembly: null,
         digitSeparator: '_',
+        noAsmHint:
+            '# Tip: Small functions may be inlined and not appear in output.\n' +
+            '# Use #[inline(never)] or #[unsafe(no_mangle)] to prevent this.\n' +
+            '# For main(), declare it as pub fn main() to see it in output.',
     },
     sail: {
         name: 'Sail',

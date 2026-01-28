@@ -100,4 +100,10 @@ export class MojoCompiler extends BaseCompiler {
     override getArgumentParserClass() {
         return MojoParser;
     }
+
+    override getDefaultExecOptions() {
+        const execOptions = super.getDefaultExecOptions();
+        execOptions.env.MODULAR_CRASH_REPORTING_ENABLED = 'false';
+        return execOptions;
+    }
 }

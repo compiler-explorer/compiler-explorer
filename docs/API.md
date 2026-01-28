@@ -466,6 +466,12 @@ To avoid problems in reading base64 by the API, some characters must be kept in 
 API, it is necessary to replace these characters with their respective unicodes. A suggestion is to use the Regex
 expression `/[\u007F-\uFFFF]/g` that allows mapping these characters.
 
+### `GET /noscript/clientstate/<base64>` - Opens the noscript version of the website in a given state
+
+This is the noscript equivalent of `/clientstate/<base64>`. It opens the noscript version of the website with a given
+state. The base64-encoded ClientState JSON works the same way as the regular `/clientstate/`
+endpoint.
+
 # Implementations
 
 Here are some examples of projects using the Compiler Explorer API:

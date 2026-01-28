@@ -139,7 +139,11 @@ export type CompilerInfo = {
     disabledFilters: string[];
     optArg?: string;
     stackUsageArg?: string;
-    externalparser: any;
+    externalparser: {
+        id: string;
+        exe: string;
+        args: string;
+    };
     removeEmptyGccDump?: boolean;
     irArg?: string[];
     minIrArgs?: string[];

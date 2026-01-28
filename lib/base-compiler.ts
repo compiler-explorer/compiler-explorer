@@ -105,9 +105,9 @@ import {BaseExecutionTriple} from './execution/base-execution-triple.js';
 import {IExecutionEnvironment} from './execution/execution-env.interfaces.js';
 import {RemoteExecutionQuery} from './execution/execution-query.js';
 import {matchesCurrentHost} from './execution/execution-triple.js';
-import {getExecutionEnvironmentByKey} from './execution/index.js';
+import {getExecutionEnvironmentByKey, LocalExecutionEnvironment} from './execution/index.js';
 import {RemoteExecutionEnvironment} from './execution/remote-execution-env.js';
-import {ExternalParserBase} from './external-parsers/base.js';
+import {IExternalParser} from './external-parsers/external-parser.interface.js';
 import {getExternalParserByKey} from './external-parsers/index.js';
 import {ParsedRequest} from './handlers/compile.js';
 import {InstructionSets} from './instructionsets.js';
@@ -115,7 +115,7 @@ import {languages} from './languages.js';
 import {LlvmAstParser} from './llvm-ast.js';
 import {LlvmIrParser} from './llvm-ir.js';
 import {logger} from './logger.js';
-import {getObjdumperTypeByKey} from './objdumper/index.js';
+import {BaseObjdumper, getObjdumperTypeByKey} from './objdumper/index.js';
 import {ClientOptionsType, OptionsHandlerLibrary, VersionInfo} from './options-handler.js';
 import {Packager} from './packager.js';
 import type {IAsmParser} from './parsers/asm-parser.interfaces.js';
@@ -188,11 +188,11 @@ export class BaseCompiler {
     protected compileFilename: string;
     protected env: CompilationEnvironment;
     protected compilerProps: PropertyGetter;
-    protected alwaysResetLdPath: any;
+    protected alwaysResetLdPath: boolean;
     protected delayCleanupTemp: any;
     protected stubRe: RegExp;
     protected stubText: string;
-    protected compilerWrapper: any;
+    protected compilerWrapper: string | undefined;
     protected asm: IAsmParser;
     protected llvmIr: LlvmIrParser;
     protected llvmPassDumpParser: LlvmPassDumpParser;
@@ -201,12 +201,12 @@ export class BaseCompiler {
     public possibleArguments: CompilerArguments;
     protected possibleTools: ITool[];
     protected demanglerClass: typeof BaseDemangler | null = null;
-    protected objdumperClass: any;
+    protected objdumperClass!: new () => BaseObjdumper;
     public outputFilebase: string;
     protected mtime: Date | null = null;
     protected cmakeBaseEnv: Record<string, string>;
     protected buildenvsetup: null | any;
-    protected externalparser: null | ExternalParserBase;
+    protected externalparser: null | IExternalParser;
     protected supportedLibraries?: Record<string, OptionsHandlerLibrary>;
     protected packager: Packager;
     protected defaultRpathFlag = '-Wl,-rpath,';
@@ -215,7 +215,7 @@ export class BaseCompiler {
         help: 'Time spent on objdump and parsing of objdumps',
         labelNames: [],
     });
-    protected executionEnvironmentClass: any;
+    protected executionEnvironmentClass: typeof LocalExecutionEnvironment;
     protected readonly argParser: BaseParser;
     protected readonly isCompilationWorker: boolean;
 
@@ -233,12 +233,12 @@ export class BaseCompiler {
         this.compilerProps = this.env.getCompilerPropsForLanguage(this.lang.id);
         this.compiler.supportsIntel = !!this.compiler.intelAsm;
 
-        this.alwaysResetLdPath = this.env.ceProps('alwaysResetLdPath');
+        this.alwaysResetLdPath = this.env.ceProps('alwaysResetLdPath', false);
         this.delayCleanupTemp = this.env.ceProps('delayCleanupTemp', false);
         this.isCompilationWorker = this.env.ceProps('compilequeue.is_worker', false);
         this.stubRe = new RegExp(this.compilerProps('stubRe', ''));
         this.stubText = this.compilerProps('stubText', '');
-        this.compilerWrapper = this.compilerProps('compiler-wrapper');
+        this.compilerWrapper = this.compilerProps<string>('compiler-wrapper');
 
         const executionEnvironmentClassStr = this.compilerProps<string>('executionEnvironmentClass', 'local');
         this.executionEnvironmentClass = getExecutionEnvironmentByKey(executionEnvironmentClassStr);
@@ -686,7 +686,7 @@ export class BaseCompiler {
 
             if (objResult.code === 0) {
                 result.objdumpTime = objResult.objdumpTime;
-                result.asm = this.postProcessObjdumpOutput(objResult.asm);
+                result.asm = this.postProcessObjdumpOutput(objResult.asm ?? '');
             } else {
                 logger.error(`Error executing objdump ${this.compiler.objdumper}`, objResult);
                 result.asm = `<No output: objdump returned ${objResult.code}>`;
@@ -2867,7 +2867,7 @@ export class BaseCompiler {
                         stderr: [],
                         okToCache: false,
                         code: cmakeStepResult.code,
-                        asm: [{text: '<Build failed>'}],
+                        asm: '<CMake configure step failed>',
                     };
                     result.result.compilationOptions = this.getUsedEnvironmentVariableFlags(makeExecParams);
                     compilationTimeHistogram.observe((performance.now() - start) / 1000);
@@ -2890,7 +2890,7 @@ export class BaseCompiler {
                         stderr: [],
                         okToCache: false,
                         code: makeStepResult.code,
-                        asm: [{text: '<Build failed>'}],
+                        asm: '<CMake build step failed>',
                     };
                     compilationTimeHistogram.observe((performance.now() - start) / 1000);
                     return result;
@@ -3240,6 +3240,7 @@ export class BaseCompiler {
                     result.parsingTime = res.parsingTime;
                     result.filteredCount = res.filteredCount;
                     if (res.languageId) result.languageId = res.languageId;
+                    if (res.asmKeywordTypes) result.asmKeywordTypes = res.asmKeywordTypes;
                     if (result.objdumpTime) {
                         const dumpAndParseTime =
                             Number.parseInt(result.objdumpTime, 10) + Number.parseInt(result.parsingTime, 10);

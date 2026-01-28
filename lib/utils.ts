@@ -255,6 +255,7 @@ export function parseOutput(
 }
 
 export function parseRustOutput(lines: string, inputFilename?: string, pathPrefix?: string) {
+    const inputBasename = inputFilename ? path.basename(inputFilename) : undefined;
     const quickfixes: {re: RegExp; makeFix: (match: string[]) => Fix}[] = [
         {
             re: / *help: add `#!\[feature\((.*?)\)]`/,
@@ -288,7 +289,7 @@ export function parseRustOutput(lines: string, inputFilename?: string, pathPrefi
         },
     ];
 
-    const re = /^\s+-->\s+<source>[(:](\d+)(:?,?(\d+):?)?[):]*\s*(.*)/;
+    const re = /^\s+-->\s+(?<filename>.*):(?<line>\d+):(?<column>\d+)/;
     const result: ResultLine[] = [];
     let currentDiagnostic: ResultLine | undefined;
     eachLine(lines, line => {
@@ -298,24 +299,27 @@ export function parseRustOutput(lines: string, inputFilename?: string, pathPrefi
             const filteredLine = filterEscapeSequences(line);
             const match = filteredLine.match(re);
 
-            if (match) {
-                const line = Number.parseInt(match[1], 10);
-                const column = Number.parseInt(match[3] || '0', 10);
+            if (match?.groups) {
+                const file =
+                    match.groups.filename === '<source>' ? inputBasename : path.basename(match.groups.filename);
+                const line = Number.parseInt(match.groups.line, 10);
+                const column = Number.parseInt(match.groups.column, 10);
 
                 currentDiagnostic = result.pop();
                 if (currentDiagnostic !== undefined) {
                     const text = filterEscapeSequences(currentDiagnostic.text);
                     currentDiagnostic.tag = {
+                        file,
                         line,
                         column,
                         text,
                         severity: parseSeverity(text),
-                        fixes: [],
                     };
                     result.push(currentDiagnostic);
                 }
 
                 lineObj.tag = {
+                    file,
                     line,
                     column,
                     text: '', // Left empty so that it does not show up in the editor
@@ -323,13 +327,17 @@ export function parseRustOutput(lines: string, inputFilename?: string, pathPrefi
                 };
             }
 
-            if (currentDiagnostic?.tag?.fixes !== undefined) {
-                for (const {re, makeFix} of quickfixes) {
-                    const match = filteredLine.match(re);
-                    if (match) {
-                        currentDiagnostic.tag.fixes.push(makeFix(match));
-                    }
+            const fixes = quickfixes.flatMap(({re, makeFix}) => {
+                const match = filteredLine.match(re);
+                if (match) {
+                    return [makeFix(match)];
+                } else {
+                    return [];
                 }
+            });
+
+            if (currentDiagnostic?.tag && fixes.length !== 0) {
+                lineObj.tag = {...currentDiagnostic.tag, fixes};
             }
 
             result.push(lineObj);

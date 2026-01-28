@@ -1,3 +1,4 @@
+// Copyright (c) 2026, Compiler Explorer Authors
 // Copyright (c) 2019, Sebastian Rath
 // All rights reserved.
 //

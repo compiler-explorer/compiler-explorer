@@ -51,6 +51,7 @@ mixin input(cls, type, text, style)
               +checkbox("enableCommunityAds", "Show community events")
             #keybindings.tab-pane(role="group")
               +checkbox("useVim", "Vim editor mode")
+              +checkbox("relativeLineNumbers", "Show relative line numbers (useful for vim motions)")
               .the-save-option-to-auto-share
                 mb-3
                   label.form-label(for="settings-checkbox-enableCtrlS")
