@@ -29,37 +29,14 @@ import path from 'node:path';
 import {describe, expect, it} from 'vitest';
 
 import {unwrap} from '../lib/assert.js';
-import {BaseCompiler} from '../lib/base-compiler.js';
-import {CompilationEnvironment} from '../lib/compilation-env.js';
 import {CppDemangler, Win32Demangler} from '../lib/demangler/index.js';
 import {LLVMIRDemangler} from '../lib/demangler/llvm.js';
 import {PrefixTree} from '../lib/demangler/prefix-tree.js';
-import * as exec from '../lib/exec.js';
-import * as properties from '../lib/properties.js';
 import {SymbolStore} from '../lib/symbol-store.js';
 import * as utils from '../lib/utils.js';
-import {makeFakeCompilerInfo, processAsm, resolvePathFromTestRoot} from './utils.js';
+import {DummyCompiler, processAsm, resolvePathFromTestRoot} from './utils.js';
 
 const cppfiltpath = 'c++filt';
-
-class DummyCompiler extends BaseCompiler {
-    constructor() {
-        const env = {
-            ceProps: properties.fakeProps({}),
-            getCompilerPropsForLanguage: () => {
-                return (prop, def) => def;
-            },
-        } as unknown as CompilationEnvironment;
-
-        // using c++ as the compiler needs at least one language
-        const compiler = makeFakeCompilerInfo({lang: 'c++', exe: 'gcc'});
-
-        super(compiler, env);
-    }
-    override exec(command, args, options) {
-        return exec.execute(command, args, options);
-    }
-}
 
 class DummyCppDemangler extends CppDemangler {
     public override collectLabels = super.collectLabels;
