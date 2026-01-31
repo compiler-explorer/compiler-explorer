@@ -74,14 +74,32 @@ export function get(base: string, property: string, defaultValue?: unknown): unk
 
 export type RawPropertiesGetter = typeof get;
 
-export function parseProperties(blob: string, name: string): Record<string, PropertyValue> {
+export interface PropertyParseError {
+    line: number;
+    text: string;
+}
+
+export interface ParsePropertiesOptions {
+    // Callback for parse errors. Defaults to logging via logger.error().
+    onError?: (error: PropertyParseError, filename: string) => void;
+}
+
+export function parseProperties(
+    blob: string,
+    name: string,
+    options?: ParsePropertiesOptions,
+): Record<string, PropertyValue> {
     const props: Record<string, PropertyValue> = {};
+    const onError =
+        options?.onError ??
+        ((error, filename) => logger.error(`Bad line: ${error.text} in ${filename}: ${error.line}`));
+
     for (const [index, lineOrig] of blob.split('\n').entries()) {
         const line = lineOrig.replace(/#.*/, '').trim();
         if (!line) continue;
         const split = line.match(/([^=]+)=(.*)/);
         if (!split) {
-            logger.error(`Bad line: ${line} in ${name}: ${index + 1}`);
+            onError({line: index + 1, text: lineOrig.trim()}, name);
             continue;
         }
         const prop = split[1].trim();
@@ -94,6 +112,7 @@ export function parseProperties(blob: string, name: string): Record<string, Prop
         props[prop] = val;
         debug(`${prop} = ${val}`);
     }
+
     return props;
 }
 

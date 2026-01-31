@@ -148,6 +148,7 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "test-min": "cross-env SKIP_EXPENSIVE_TESTS=true vitest run",
+    "test:props": "vitest run --reporter=dot properties-validation-tests.ts",
     "check": "npm run ts-check && npm run lint-check && npm run check-frontend-imports && npm run test-min -- --reporter dot",
     "check-frontend-imports": "node ./etc/scripts/check-frontend-imports.js",
     "dev": "cross-env NODE_ENV=DEV node --no-warnings=ExperimentalWarning --import=tsx app.ts",

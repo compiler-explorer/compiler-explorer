@@ -9,7 +9,7 @@ An interactive command-line tool for adding custom compilers to your local Compi
 - **Interactive Mode**: Guided prompts for configuration
 - **Automation Support**: Command-line flags for scripting
 - **Group Management**: Automatically adds compilers to appropriate groups
-- **Validation**: Validates generated properties with `propscheck.py`
+- **Validation**: Validates generated properties
 - **Safe Updates**: Only adds/updates, never removes existing configurations
 
 ## Requirements
@@ -309,7 +309,7 @@ If the wizard can't detect your compiler type, it will prompt you to select one 
 Ensure you have write permissions to the `etc/config` directory.
 
 ### Validation failures
-If `propscheck.py` reports errors, check the generated properties file for syntax issues.
+If validation reports errors, check the generated properties file for syntax issues. You can run `npm run test:props` to validate all property files.
 
 ## Development
 
