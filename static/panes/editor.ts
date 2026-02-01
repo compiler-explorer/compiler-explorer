@@ -30,6 +30,7 @@ import * as monacoVim from 'monaco-vim';
 import TomSelect from 'tom-select';
 import _ from 'underscore';
 import * as BootstrapUtils from '../bootstrap-utils.js';
+
 import * as colour from '../colour.js';
 import * as Components from '../components.js';
 import {createDragSource} from '../components.js';

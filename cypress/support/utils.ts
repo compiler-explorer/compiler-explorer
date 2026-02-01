@@ -24,7 +24,15 @@ export function clearAllIntercepts() {
 }
 
 /**
- * Sets content in Monaco editor using a synthetic paste event
+ * Sets content in Monaco editor using keyboard input.
+ *
+ * Previous versions used a synthetic ClipboardEvent('paste') dispatched to
+ * the textarea, but Monaco 0.53+ may use the native EditContext API instead
+ * of a textarea for input handling, which ignores synthetic paste events.
+ *
+ * Using Cypress's cy.type() simulates real keyboard input at the browser
+ * level, which works regardless of Monaco's internal input method.
+ *
  * @param content - The code content to set
  * @param editorIndex - Which editor to target (default: 0 for first editor)
  */
@@ -32,28 +40,16 @@ export function setMonacoEditorContent(content: string, editorIndex = 0) {
     // Wait for Monaco editor to be visible in DOM
     cy.get('.monaco-editor').should('be.visible');
 
-    // Select all and delete existing content
-    cy.get('.monaco-editor textarea').eq(editorIndex).focus().type('{ctrl}a{del}', {force: true});
+    // Select all existing content and delete it, then type the new content.
+    // Escape special Cypress characters in the content (braces are used for
+    // special keys like {enter}), so we need to wrap literal braces.
+    const escaped = content.replace(/\{/g, '{{}').replace(/\n/g, '{enter}');
 
-    // Trigger a paste event with our content
     cy.get('.monaco-editor textarea')
         .eq(editorIndex)
-        .then(($element: JQuery<HTMLTextAreaElement>) => {
-            const el = $element[0];
-
-            // Create and dispatch a paste event with our data
-            const pasteEvent = new ClipboardEvent('paste', {
-                bubbles: true,
-                cancelable: true,
-                clipboardData: new DataTransfer(),
-            });
-
-            // Add our text to the clipboard data
-            pasteEvent.clipboardData?.setData('text/plain', content);
-
-            // Dispatch the event
-            el.dispatchEvent(pasteEvent);
-        });
+        .focus()
+        .type('{ctrl}a{del}', {force: true})
+        .type(escaped, {force: true, delay: 0});
 
     // Wait for compilation to complete after content change (if compiler exists)
     cy.get('body').then(($body: JQuery<HTMLElement>) => {
