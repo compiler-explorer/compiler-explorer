@@ -1,5 +1,16 @@
 import '../../static/global';
 
+// Disable the native EditContext API before Monaco initialises.  Monaco 0.53+
+// uses EditContext when available (Chrome 133+), replacing the hidden textarea
+// with a <div> that receives input through the EditContext interface.  Synthetic
+// paste events dispatched via ClipboardEvent no longer reach the editor through
+// that path, which breaks Cypress helpers that rely on pasting content into the
+// textarea.  Removing the constructor forces Monaco to fall back to its textarea
+// input handler.
+Cypress.on('window:before:load', (win: Cypress.AUTWindow) => {
+    Object.defineProperty(win, 'EditContext', {value: undefined, writable: true, configurable: true});
+});
+
 export function stubConsoleOutput(win: Cypress.AUTWindow) {
     cy.stub(win.console, 'log').as('consoleLog');
     cy.stub(win.console, 'warn').as('consoleWarn');
