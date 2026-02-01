@@ -411,8 +411,8 @@ export class AsmParser extends AsmRegex implements IAsmParser {
         this.source6502DbgEnd = /^\s*\.dbg\s+line[^,]/;
         this.sourceStab = /^\s*\.stabn\s+(\d+),0,(\d+),.*/;
         this.stdInLooking = /<stdin>|^-$|example\.[^/]+$|<source>/;
-        this.startBlock = /\.cfi_startproc/;
-        this.endBlock = /\.(cfi_endproc|data|text|section)/;
+        this.startBlock = /\.cfi_startproc\b/;
+        this.endBlock = /\.(cfi_endproc|data|text|section)\b/;
         this.blockComments = /^[\t ]*\/\*(\*(?!\/)|[^*])*\*\/\s*/gm;
     }
 
