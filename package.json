@@ -156,7 +156,7 @@
     "debug": "cross-env NODE_ENV=DEV node --no-warnings=ExperimentalWarning --import=tsx app.ts --debug",
     "start": "npm run webpack && cross-env NODE_ENV=LOCAL node --no-warnings=ExperimentalWarning --import=tsx app.ts",
     "sentry": "npx -p @sentry/cli sentry-cli",
-    "update-browserslist": "npx browserslist@latest -- --update-db",
+    "update-browserslist": "npx update-browserslist-db@latest",
     "prepare": "husky",
     "ts-compile": "tsc",
     "ts-check": "npm-run-all ts-check:*",
