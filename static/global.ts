@@ -34,5 +34,7 @@ declare global {
         hasUIBeenReset: boolean;
         PRODUCTION: boolean;
         onSponsorClick: (sponsorUrl: string) => void;
+        // Exposed for Cypress integration tests (e.g. setMonacoEditorContent)
+        monaco?: typeof import('monaco-editor');
     }
 }

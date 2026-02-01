@@ -30,6 +30,12 @@ import * as monacoVim from 'monaco-vim';
 import TomSelect from 'tom-select';
 import _ from 'underscore';
 import * as BootstrapUtils from '../bootstrap-utils.js';
+
+// Expose monaco on window only during Cypress integration tests
+if ('Cypress' in window) {
+    window.monaco = monaco;
+}
+
 import * as colour from '../colour.js';
 import * as Components from '../components.js';
 import {createDragSource} from '../components.js';
