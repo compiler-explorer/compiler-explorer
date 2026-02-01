@@ -24,7 +24,15 @@ export function clearAllIntercepts() {
 }
 
 /**
- * Sets content in Monaco editor using a synthetic paste event
+ * Sets content in Monaco editor using its programmatic API.
+ *
+ * Previous versions used a synthetic ClipboardEvent('paste') dispatched to
+ * the textarea, but Monaco 0.53+ may use the native EditContext API instead
+ * of a textarea for input handling, which ignores synthetic paste events.
+ *
+ * The monaco API is exposed on `window.monaco` from editor.ts, allowing
+ * tests to use `model.setValue()` directly.
+ *
  * @param content - The code content to set
  * @param editorIndex - Which editor to target (default: 0 for first editor)
  */
@@ -32,28 +40,20 @@ export function setMonacoEditorContent(content: string, editorIndex = 0) {
     // Wait for Monaco editor to be visible in DOM
     cy.get('.monaco-editor').should('be.visible');
 
-    // Select all and delete existing content
-    cy.get('.monaco-editor textarea').eq(editorIndex).focus().type('{ctrl}a{del}', {force: true});
-
-    // Trigger a paste event with our content
-    cy.get('.monaco-editor textarea')
-        .eq(editorIndex)
-        .then(($element: JQuery<HTMLTextAreaElement>) => {
-            const el = $element[0];
-
-            // Create and dispatch a paste event with our data
-            const pasteEvent = new ClipboardEvent('paste', {
-                bubbles: true,
-                cancelable: true,
-                clipboardData: new DataTransfer(),
-            });
-
-            // Add our text to the clipboard data
-            pasteEvent.clipboardData?.setData('text/plain', content);
-
-            // Dispatch the event
-            el.dispatchEvent(pasteEvent);
-        });
+    cy.window().then((win: Cypress.AUTWindow) => {
+        const monacoApi = (win as any).monaco;
+        if (!monacoApi) {
+            throw new Error('window.monaco is not available — is the editor loaded?');
+        }
+        const editors = monacoApi.editor.getEditors();
+        if (!editors[editorIndex]) {
+            throw new Error(`No Monaco editor at index ${editorIndex} (found ${editors.length})`);
+        }
+        const model = editors[editorIndex].getModel();
+        if (model) {
+            model.setValue(content);
+        }
+    });
 
     // Wait for compilation to complete after content change (if compiler exists)
     cy.get('body').then(($body: JQuery<HTMLElement>) => {
