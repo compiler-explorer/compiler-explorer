@@ -48,6 +48,8 @@ describe('LabelProcessor tests', () => {
         mipsLabelDefinition: /^\$[\w$.]+:/,
         labelFindNonMips: /[.A-Z_a-z][\w$.]*/g,
         labelFindMips: /[$.A-Z_a-z][\w$.]*/g,
+        startBlock: /\.cfi_startproc\b/,
+        endBlock: /\.(cfi_endproc|data|text|section)\b/,
         fixLabelIndentation: (line: string) => line.replace(/^\s+/, ''),
     };
 
