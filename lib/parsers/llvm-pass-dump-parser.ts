@@ -30,7 +30,6 @@ import {
 import {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces.js';
 import {ResultLine} from '../../types/resultline/resultline.interfaces.js';
 import {assert} from '../assert.js';
-import {PropertyGetter} from '../properties.interfaces.js';
 
 // Note(jeremy-rifkin):
 // For now this filters out a bunch of metadata we aren't interested in
@@ -79,15 +78,7 @@ export class LlvmPassDumpParser {
     machineFunctionBegin: RegExp;
     functionEnd: RegExp;
     machineFunctionEnd: RegExp;
-    //label: RegExp;
-    //instruction: RegExp;
-
-    constructor(compilerProps: PropertyGetter) {
-        //this.maxIrLines = 5000;
-        //if (compilerProps) {
-        //    this.maxIrLines = compilerProps('maxLinesOfAsm', this.maxIrLines);
-        //}
-
+    constructor() {
         this.filters = [
             /^; ModuleID = '.+'$/, // module id line
             /^(source_filename|target datalayout|target triple) = ".+"$/, // module metadata
@@ -138,9 +129,6 @@ export class LlvmPassDumpParser {
         this.functionEnd = /^}$/;
         // Machine functions end like "# End machine code for function _Z3fooi."
         this.machineFunctionEnd = /^# End machine code for function ([\w$.]+).$/;
-        // Either "123:" with a possible comment or something like "bb.3 (%ir-block.13):"
-        //this.label = /^(?:\d+:(\s+;.+)?|\w+.+:)$/;
-        //this.instruction = /^\s+.+$/;
     }
 
     breakdownOutputIntoPassDumps(ir: ResultLine[]) {
@@ -149,10 +137,6 @@ export class LlvmPassDumpParser {
         let pass: PassDump | null = null;
         let lastWasBlank = false; // skip duplicate blank lines
         for (const line of ir) {
-            // stop once the machine code passes start, can't handle these yet
-            //if (this.machineCodeDumpHeader.test(line.text)) {
-            //    break;
-            //}
             const irMatch = line.text.match(this.irDumpHeader);
             const machineMatch = line.text.match(this.machineCodeDumpHeader);
             const cirMatch = line.text.match(this.cirDumpHeader);
@@ -249,8 +233,6 @@ export class LlvmPassDumpParser {
                             // may be a blank line
                             continue;
                         }
-                        ///console.log('ignoring ------>', line.text);
-                        // ignore
                         continue;
                     }
                     func.lines.push(line);
@@ -291,7 +273,6 @@ export class LlvmPassDumpParser {
             }
             if (functionEntries.length === 0) {
                 // This can happen as a result of "Printing <null> Function"
-                //throw 'Internal error during breakdownOutput (2)';
             } else if (functionEntries.length === 1) {
                 const name = functionEntries[0][0];
                 if (name !== '<loop>') {
@@ -320,7 +301,6 @@ export class LlvmPassDumpParser {
         }
         passDumpsByFunction['<Full Module>'] = [];
         // I'm assuming loop dumps should correspond to the previous function dumped
-        //const functions = Object.keys(passDumpsByFunction);
         let previousFunction: string | null = null;
         for (const pass of passDumps) {
             const {header, affectedFunction, machine, lines} = pass;
@@ -418,10 +398,6 @@ export class LlvmPassDumpParser {
                 pass.irChanged = pass.before.map(x => x.text).join('\n') !== pass.after.map(x => x.text).join('\n');
                 passes.push(pass);
             }
-            //console.dir(passes, {
-            //    depth: 5,
-            //    maxArrayLength: 100000
-            //});
             assert(!(function_name in final_output), 'xxx');
             final_output[function_name] = passes;
         }

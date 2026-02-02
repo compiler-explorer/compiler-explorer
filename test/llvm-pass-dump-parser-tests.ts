@@ -25,12 +25,7 @@
 import {beforeAll, describe, expect, it} from 'vitest';
 
 import {LlvmPassDumpParser} from '../lib/parsers/llvm-pass-dump-parser.js';
-import * as properties from '../lib/properties.js';
 import {ResultLine} from '../types/resultline/resultline.interfaces.js';
-
-const languages = {
-    'c++': {id: 'c++'},
-};
 
 function deepCopy(obj: ResultLine[]): ResultLine[] {
     return JSON.parse(JSON.stringify(obj));
@@ -40,9 +35,7 @@ describe('llvm-pass-dump-parser filter', () => {
     let llvmPassDumpParser: LlvmPassDumpParser;
 
     beforeAll(() => {
-        const fakeProps = new properties.CompilerProps(languages, properties.fakeProps({}));
-        const compilerProps = (fakeProps.get as any).bind(fakeProps, 'c++');
-        llvmPassDumpParser = new LlvmPassDumpParser(compilerProps);
+        llvmPassDumpParser = new LlvmPassDumpParser();
     });
     // biome-ignore format: keep as-is for readability
     const rawFuncIR: ResultLine[] = [
@@ -126,9 +119,7 @@ describe('llvm-pass-dump-parser Old style IR Dump header', () => {
     let llvmPassDumpParser: LlvmPassDumpParser;
 
     beforeAll(() => {
-        const fakeProps = new properties.CompilerProps(languages, properties.fakeProps({}));
-        const compilerProps = (fakeProps.get as any).bind(fakeProps, 'c++');
-        llvmPassDumpParser = new LlvmPassDumpParser(compilerProps);
+        llvmPassDumpParser = new LlvmPassDumpParser();
     });
 
     const rawFuncIR = [
@@ -172,9 +163,7 @@ describe('llvm-pass-dump-parser New style IR Dump header', () => {
     let llvmPassDumpParser: LlvmPassDumpParser;
 
     beforeAll(() => {
-        const fakeProps = new properties.CompilerProps(languages, properties.fakeProps({}));
-        const compilerProps = (fakeProps.get as any).bind(fakeProps, 'c++');
-        llvmPassDumpParser = new LlvmPassDumpParser(compilerProps);
+        llvmPassDumpParser = new LlvmPassDumpParser();
     });
 
     const rawFuncIR = [
