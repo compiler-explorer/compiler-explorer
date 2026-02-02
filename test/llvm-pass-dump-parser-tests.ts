@@ -203,7 +203,6 @@ describe('llvm-pass-dump-parser New style IR Dump header', () => {
     });
 });
 
-// breakdownPassDumpsIntoFunctions
 describe('breakdownPassDumpsIntoFunctions', () => {
     let parser: LlvmPassDumpParser;
 
@@ -343,7 +342,6 @@ describe('breakdownPassDumpsIntoFunctions', () => {
     });
 });
 
-// breakdownIntoPassDumpsByFunction
 describe('breakdownIntoPassDumpsByFunction', () => {
     let parser: LlvmPassDumpParser;
 
@@ -486,7 +484,6 @@ describe('breakdownIntoPassDumpsByFunction', () => {
     });
 });
 
-// matchPassDumps
 describe('matchPassDumps', () => {
     let parser: LlvmPassDumpParser;
 
@@ -753,7 +750,6 @@ describe('matchPassDumps', () => {
     });
 });
 
-// associateFullDumpsWithFunctions (full module mode)
 describe('associateFullDumpsWithFunctions', () => {
     let parser: LlvmPassDumpParser;
 
@@ -914,7 +910,6 @@ describe('associateFullDumpsWithFunctions', () => {
     });
 });
 
-// breakdownOutputIntoPassDumps — additional header formats
 describe('breakdownOutputIntoPassDumps additional headers', () => {
     let parser: LlvmPassDumpParser;
 
@@ -1019,7 +1014,6 @@ describe('breakdownOutputIntoPassDumps additional headers', () => {
     });
 });
 
-// End-to-end process()
 describe('process() end-to-end', () => {
     let parser: LlvmPassDumpParser;
 
