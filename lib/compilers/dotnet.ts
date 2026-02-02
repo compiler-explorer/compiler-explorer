@@ -24,6 +24,7 @@
 
 import fs from 'node:fs/promises';
 import path from 'node:path';
+
 import type {
     CompilationResult,
     ExecutionOptions,
@@ -225,7 +226,13 @@ class DotNetCompiler extends BaseCompiler {
     async getRefAssembliesAndAnalyzers(dotnetPath: string, compilerInfo: DotNetCompilerInfo, lang: LanguageKey) {
         const packDir = path.join(path.dirname(dotnetPath), 'packs', 'Microsoft.NETCore.App.Ref');
         const packVersion = (await fs.readdir(packDir))[0];
-        const refDir = path.join(packDir, packVersion, 'ref', compilerInfo.targetFramework);
+        let refDir = path.join(packDir, packVersion, 'ref', compilerInfo.targetFramework);
+        if (!(await utils.dirExists(refDir))) {
+            // During the transition of major versions, we may have a short window where the pack version hasn't been updated
+            const parts = compilerInfo.sdkVersion.split('.');
+            const previousTargetFramework = `net${Number(parts[0]) - 1}.${parts[1]}`;
+            refDir = path.join(packDir, packVersion, 'ref', previousTargetFramework);
+        }
         const refAssemblies = (await fs.readdir(refDir)).filter(f => f.endsWith('.dll')).map(f => path.join(refDir, f));
         const analyzers: string[] = [];
         const analyzersDir = path.join(

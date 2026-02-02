@@ -23,6 +23,7 @@
 // POSSIBILITY OF SUCH DAMAGE.
 
 import $ from 'jquery';
+
 import {assert, unwrapString} from '../shared/assert.js';
 import {isString, keys} from '../shared/common-utils.js';
 import {LanguageKey} from '../types/languages.interfaces.js';

@@ -35,7 +35,6 @@ import {PropertyGetter} from '../properties.interfaces.js';
 import {CompilerProps} from '../properties.js';
 import {S3Bucket} from '../s3-handler.js';
 import {anonymizeIp} from '../utils.js';
-
 import {ExpandedShortLink, StorageBase, StoredObject} from './base.js';
 
 /*

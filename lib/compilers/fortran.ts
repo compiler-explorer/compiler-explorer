@@ -29,7 +29,6 @@ import type {CompilationResult, ExecutionOptionsWithEnv} from '../../types/compi
 import {SelectedLibraryVersion} from '../../types/libraries/libraries.interfaces.js';
 import {BaseCompiler} from '../base-compiler.js';
 import * as utils from '../utils.js';
-
 import {GccFortranParser} from './argument-parsers.js';
 
 export class FortranCompiler extends BaseCompiler {

@@ -28,6 +28,7 @@ import {LRUCache} from 'lru-cache';
 import * as monaco from 'monaco-editor';
 import {editor} from 'monaco-editor';
 import _ from 'underscore';
+
 import {AssemblyInstructionInfo} from '../../types/assembly-docs.interfaces.js';
 import {
     ActiveTool,
@@ -72,6 +73,7 @@ import {PPOptions} from './pp-view.interfaces.js';
 import IEditorMouseEvent = editor.IEditorMouseEvent;
 
 import fileSaver from 'file-saver';
+
 import {unwrap, unwrapString} from '../../shared/assert.js';
 import {escapeHTML, splitArguments} from '../../shared/common-utils.js';
 import {ClangirBackendOptions} from '../../types/compilation/clangir.interfaces.js';
@@ -248,6 +250,7 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
     private isLabelCtxKey: monaco.editor.IContextKey<boolean>;
     private revealJumpStackHasElementsCtxKey: monaco.editor.IContextKey<boolean>;
     private isAsmKeywordCtxKey: monaco.editor.IContextKey<boolean>;
+    private asmKeywordTypes: string[];
     private lineHasLinkedSourceCtxKey: monaco.editor.IContextKey<boolean>;
 
     private flagsViewOpen: boolean;
@@ -1593,6 +1596,7 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
                 }
                 monaco.editor.setModelLanguage(editorModel, monacoDisassembly);
             }
+            this.asmKeywordTypes = result.asmKeywordTypes || ['keyword.asm', 'keyword.llvm-ir', 'operators.llvm-ir'];
         }
         let msg = '<No assembly generated>';
         if (asm.length) {
@@ -3662,11 +3666,7 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
 
     isWordAsmKeyword(lineNumber: number, word: monaco.editor.IWordAtPosition): boolean {
         return this.getLineTokens(lineNumber).some(t => {
-            return (
-                t.offset + 1 === word.startColumn &&
-                // if this list of monaco token-types ever gets longer, it's best to refactor this
-                ['keyword.asm', 'keyword.llvm-ir', 'operators.llvm-ir'].includes(t.type)
-            );
+            return t.offset + 1 === word.startColumn && this.asmKeywordTypes.includes(t.type);
         });
     }
 

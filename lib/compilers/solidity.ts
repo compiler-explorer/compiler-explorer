@@ -29,7 +29,6 @@ import Semver from 'semver';
 
 import {BaseCompiler} from '../base-compiler.js';
 import {asSafeVer} from '../utils.js';
-
 import {ClangParser} from './argument-parsers.js';
 
 export class SolidityCompiler extends BaseCompiler {

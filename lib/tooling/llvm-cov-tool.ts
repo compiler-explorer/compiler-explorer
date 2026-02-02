@@ -25,7 +25,6 @@
 import path from 'node:path';
 
 import {CompilationInfo, ExecutionOptions} from '../../types/compilation/compilation.interfaces.js';
-
 import {BaseTool} from './base-tool.js';
 
 export class LLVMCovTool extends BaseTool {

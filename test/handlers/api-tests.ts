@@ -29,10 +29,12 @@ import {beforeAll, describe, expect, it} from 'vitest';
 import {CompilationEnvironment} from '../../lib/compilation-env.js';
 import {ApiHandler} from '../../lib/handlers/api.js';
 import {CompileHandler} from '../../lib/handlers/compile.js';
+import {ClientOptionsHandler} from '../../lib/options-handler.js';
 import {CompilerProps, fakeProps} from '../../lib/properties.js';
 import {StorageNull} from '../../lib/storage/index.js';
 import {CompilerInfo} from '../../types/compiler.interfaces.js';
 import {Language, LanguageKey} from '../../types/languages.interfaces.js';
+import {ToolInfo} from '../../types/tool.interfaces.js';
 import {makeFakeCompilerInfo, makeFakeLanguage} from '../utils.js';
 
 const languages: Partial<Record<LanguageKey, Language>> = {
@@ -162,5 +164,86 @@ describe('API handling', () => {
             .set('Accept', 'application/json')
             .expect('Content-Type', /json/)
             .expect(200, [languages['c++'], languages.pascal]);
+    });
+});
+
+describe('API tools endpoint', () => {
+    let app: express.Express;
+
+    beforeAll(() => {
+        app = express();
+        const apiHandler = new ApiHandler(
+            {
+                handle: res => res.send('compile'),
+                handleCmake: res => res.send('cmake'),
+                handlePopularArguments: res => res.send('ok'),
+                handleOptimizationArguments: res => res.send('ok'),
+            } as unknown as CompileHandler,
+            fakeProps({}),
+            new StorageNull('/', new CompilerProps(languages, fakeProps({}))),
+            'default',
+            {ceProps: (key, def) => def} as CompilationEnvironment,
+        );
+        app.use(express.json());
+        app.use('/api', apiHandler.handle);
+        apiHandler.setCompilers(compilers);
+        apiHandler.setLanguages(languages);
+
+        // Create mock tool that mimics BaseTool structure
+        // BaseTool stores tool info in `tool` property, with `id` and `type` exposed at class level
+        const mockToolInfo: ToolInfo = {
+            id: 'clangtidy',
+            name: 'Clang-Tidy',
+            type: 'postcompilation',
+            exe: '/usr/bin/clang-tidy',
+            exclude: [],
+            options: [],
+            languageId: 'c++',
+            stdinHint: 'enabled',
+            compilerLanguage: 'c++',
+        };
+        const mockTool = {
+            tool: mockToolInfo,
+            id: mockToolInfo.id,
+            type: mockToolInfo.type || 'independent',
+        };
+
+        // Set up options with mock tools
+        apiHandler.setOptions({
+            options: {
+                tools: {
+                    'c++': {
+                        clangtidy: mockTool,
+                    },
+                },
+            },
+        } as unknown as ClientOptionsHandler);
+    });
+
+    it('should include name field in tools response (GH #8399)', async () => {
+        const res = await request(app)
+            .get('/api/tools/c++')
+            .set('Accept', 'application/json')
+            .expect('Content-Type', /json/)
+            .expect(200);
+
+        expect(res.body).toHaveLength(1);
+        expect(res.body[0]).toEqual({
+            id: 'clangtidy',
+            name: 'Clang-Tidy',
+            type: 'postcompilation',
+            languageId: 'c++',
+            allowStdin: true,
+        });
+    });
+
+    it('should return empty array for language with no tools', async () => {
+        const res = await request(app)
+            .get('/api/tools/pascal')
+            .set('Accept', 'application/json')
+            .expect('Content-Type', /json/)
+            .expect(200);
+
+        expect(res.body).toEqual([]);
     });
 });

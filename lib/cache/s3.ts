@@ -22,15 +22,15 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import {StorageClass} from '@aws-sdk/client-s3';
 import {Buffer} from 'buffer';
+
+import {StorageClass} from '@aws-sdk/client-s3';
 
 import type {GetResult} from '../../types/cache.interfaces.js';
 import {logger} from '../logger.js';
 import type {S3HandlerOptions} from '../s3-handler.interfaces.js';
 import {S3Bucket} from '../s3-handler.js';
 import {SentryCapture} from '../sentry.js';
-
 import {BaseCache} from './base.js';
 
 function messageFor(e: any) {

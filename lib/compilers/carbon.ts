@@ -23,6 +23,7 @@
 // POSSIBILITY OF SUCH DAMAGE.
 
 import fs from 'node:fs/promises';
+
 import type {ParsedAsmResult} from '../../types/asmresult/asmresult.interfaces.js';
 import {CompilationResult, ExecutionOptionsWithEnv} from '../../types/compilation/compilation.interfaces.js';
 import type {PreliminaryCompilerInfo} from '../../types/compiler.interfaces.js';

@@ -28,7 +28,6 @@ import {Writable} from 'node:stream';
 import {LEVEL, MESSAGE} from 'triple-beam';
 import winston from 'winston';
 import LokiTransport from 'winston-loki';
-
 import {Papertrail} from 'winston-papertrail';
 import TransportStream, {TransportStreamOptions} from 'winston-transport';
 /**

@@ -163,9 +163,9 @@ def cli(
             config_mgr.reorganize_existing_file(reorganize)
             print_success(f"Reorganized {file_path}")
 
-            # Validate with propscheck
-            print_info("Validating with propscheck.py...")
-            valid, message = config_mgr.validate_with_propscheck(reorganize)
+            # Validate properties
+            print_info("Validating properties...")
+            valid, message = config_mgr.validate_properties(reorganize)
             if valid:
                 print_success(message)
             else:
@@ -516,9 +516,9 @@ def cli(
         config_mgr.add_compiler(detected_info)
         print_success("Configuration updated successfully!")
 
-        # Validate with propscheck
-        print_info("Validating with propscheck.py...")
-        valid, message = config_mgr.validate_with_propscheck(detected_info.language)
+        # Validate properties
+        print_info("Validating properties...")
+        valid, message = config_mgr.validate_properties(detected_info.language)
         if valid:
             print_success(message)
         else:

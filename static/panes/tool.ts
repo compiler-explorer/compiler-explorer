@@ -27,6 +27,7 @@ import {Container} from 'golden-layout';
 import $ from 'jquery';
 import * as monaco from 'monaco-editor';
 import _ from 'underscore';
+
 import {unwrap, unwrapString} from '../../shared/assert.js';
 import {CompilationResult} from '../../types/compilation/compilation.interfaces.js';
 import {CompilerInfo} from '../../types/compiler.interfaces.js';
@@ -523,6 +524,9 @@ export class Tool extends MonacoPane<monaco.editor.IStandaloneCodeEditor, ToolSt
             $('<span class="linked-compiler-output-line"></span>')
                 .html(msg)
                 .on('click', e => {
+                    if (this.hasActiveSelection()) {
+                        return;
+                    }
                     this.eventHub.emit('editorLinkLine', editorId, lineNum, column, column + 1, true);
                     if (flow) {
                         // TODO(jeremy-rifkin): Flow's type does not match what the event expects.

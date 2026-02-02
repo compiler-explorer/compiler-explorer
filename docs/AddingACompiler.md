@@ -42,7 +42,7 @@ The wizard will:
 - Generate appropriate compiler IDs and display names
 - Add the compiler to the correct properties file
 - Suggest appropriate groups for organization
-- Validate the configuration with `propscheck.py`
+- Validate the configuration
 
 For more options and examples, see the [ce-properties-wizard README](../etc/scripts/ce-properties-wizard/README.md).
 
@@ -148,6 +148,12 @@ Test locally, and for many compilers that's probably all you need to do. Some co
 (like the intel asm setting, or the version flag). For a completely new compiler, you might need to define a whole new
 `compilerType`. Doing so is beyond this document's scope at present, but take a look inside `lib/compilers/` to get some
 idea what might need to be done.
+
+### Generating configuration from compile_commands.json
+
+If your project uses CMake or another build system that generates a `compile_commands.json` file, you can use the
+community-maintained [compilecommands_to_compilerexplorer](https://github.com/pseyfert/compilecommands_to_compilerexplorer)
+tool to automatically extract compiler paths and include directories into a `.local.properties` file.
 
 ## Adding a new compiler running remotely to your locally built compiler explorer
 

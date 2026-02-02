@@ -25,6 +25,7 @@
 import {Container} from 'golden-layout';
 import $ from 'jquery';
 import _ from 'underscore';
+
 import {escapeHTML} from '../../shared/common-utils.js';
 import {
     BypassCache,
@@ -502,6 +503,9 @@ export class Executor extends Pane<ExecutorState> {
             $('<span class="linked-compiler-output-line"></span>')
                 .html(msg)
                 .on('click', e => {
+                    if (this.hasActiveSelection()) {
+                        return;
+                    }
                     const editorId = this.getEditorIdByFilename(filename ?? '');
                     if (editorId) {
                         this.eventHub.emit('editorLinkLine', editorId, lineNum, column ?? 0, (column ?? 0) + 1, true);

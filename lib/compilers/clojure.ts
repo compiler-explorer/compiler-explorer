@@ -24,7 +24,9 @@
 
 import fs from 'node:fs/promises';
 import path from 'node:path';
+
 import _ from 'underscore';
+
 import type {CompilationResult, ExecutionOptionsWithEnv} from '../../types/compilation/compilation.interfaces.js';
 import type {PreliminaryCompilerInfo} from '../../types/compiler.interfaces.js';
 import type {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces.js';

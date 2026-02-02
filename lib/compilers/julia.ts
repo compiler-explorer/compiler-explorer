@@ -31,7 +31,6 @@ import type {ParseFiltersAndOutputOptions} from '../../types/features/filters.in
 import {BaseCompiler} from '../base-compiler.js';
 import {CompilationEnvironment} from '../compilation-env.js';
 import * as utils from '../utils.js';
-
 import {JuliaParser} from './argument-parsers.js';
 
 export class JuliaCompiler extends BaseCompiler {

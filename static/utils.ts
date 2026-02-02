@@ -23,6 +23,7 @@
 // POSSIBILITY OF SUCH DAMAGE.
 
 import bigInt from 'big-integer';
+
 import {addDigitSeparator} from '../shared/common-utils.js';
 
 /**

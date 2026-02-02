@@ -25,7 +25,6 @@
 import {NoSuchKey, S3} from '@aws-sdk/client-s3';
 
 import type {GetResult} from '../types/cache.interfaces.js';
-
 import {awsCredentials} from './aws.js';
 import type {S3HandlerOptions} from './s3-handler.interfaces.js';
 
