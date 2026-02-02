@@ -23,6 +23,7 @@
 // POSSIBILITY OF SUCH DAMAGE.
 
 import type {Router} from 'express';
+
 import type {AppArguments} from '../app.interfaces.js';
 import {CompilationEnvironment} from '../compilation-env.js';
 import {CompileHandler} from '../handlers/compile.js';

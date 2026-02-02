@@ -34,7 +34,6 @@ import {CompilationEnvironment} from '../compilation-env.js';
 import {logger} from '../logger.js';
 import {AsmParserZ88dk} from '../parsers/asm-parser-z88dk.js';
 import * as utils from '../utils.js';
-
 import {Z88dkParser} from './argument-parsers.js';
 
 export class z88dkCompiler extends BaseCompiler {

@@ -38,7 +38,6 @@ import {getRemoteId} from '../shared/remote-utils.js';
 import {UrlTestCases} from '../shared/url-testcases.js';
 import {CompilerInfo} from '../types/compiler.interfaces.js';
 import {LanguageKey} from '../types/languages.interfaces.js';
-
 import {makeFakeCompilerInfo} from './utils.js';
 
 const languages = {

@@ -23,9 +23,7 @@
 // POSSIBILITY OF SUCH DAMAGE.
 
 import $ from 'jquery';
-
 import * as monaco from 'monaco-editor';
-
 import * as rust from 'monaco-editor/esm/vs/basic-languages/rust/rust';
 
 // We need to patch the existing rust definition to fix hexadecimal literal highlighting

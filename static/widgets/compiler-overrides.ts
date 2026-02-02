@@ -23,6 +23,7 @@
 // POSSIBILITY OF SUCH DAMAGE.
 
 import $ from 'jquery';
+
 import {assert, unwrap} from '../../shared/assert.js';
 import {
     CompilerOverrideType,

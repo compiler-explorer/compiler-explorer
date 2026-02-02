@@ -24,6 +24,7 @@
 
 import {Chart, ChartData, defaults} from 'chart.js';
 import $ from 'jquery';
+
 import {unwrap} from '../../shared/assert.js';
 import {isString} from '../../shared/common-utils.js';
 import {CompilationResult} from '../../types/compilation/compilation.interfaces.js';

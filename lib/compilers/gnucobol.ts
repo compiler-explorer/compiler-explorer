@@ -30,7 +30,6 @@ import type {ParseFiltersAndOutputOptions} from '../../types/features/filters.in
 import {SelectedLibraryVersion} from '../../types/libraries/libraries.interfaces.js';
 import {BaseCompiler} from '../base-compiler.js';
 import {CompilationEnvironment} from '../compilation-env.js';
-
 import {GnuCobolParser} from './argument-parsers.js';
 
 export class GnuCobolCompiler extends BaseCompiler {

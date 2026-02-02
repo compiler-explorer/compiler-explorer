@@ -24,7 +24,6 @@
 
 import type {UnprocessedExecResult} from '../../types/execution/execution.interfaces.js';
 import * as exec from '../exec.js';
-
 import type {FormatOptions, FormatterInfo} from './base.interfaces.js';
 
 export abstract class BaseFormatter {

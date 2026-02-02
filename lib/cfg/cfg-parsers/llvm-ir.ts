@@ -25,7 +25,6 @@
 import {assert, unwrap} from '../../assert.js';
 import {SentryCapture} from '../../sentry.js';
 import {BaseInstructionSetInfo} from '../instruction-sets/base.js';
-
 import {AssemblyLine, BaseCFGParser, Edge, Node, Range} from './base.js';
 
 export type BBRange = {

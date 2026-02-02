@@ -23,8 +23,10 @@
 // POSSIBILITY OF SUCH DAMAGE.
 
 import EventEmitter from 'events';
+
 import $ from 'jquery';
 import {editor} from 'monaco-editor';
+
 import {options} from '../options.js';
 import {Settings} from '../settings.js';
 

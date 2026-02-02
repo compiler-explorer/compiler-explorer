@@ -30,7 +30,6 @@ import {CompilationQueue} from '../../compilation-queue.js';
 import {logger} from '../../logger.js';
 import {SentryCapture} from '../../sentry.js';
 import {ICompileHandler} from '../compile.interfaces.js';
-
 import {HttpController} from './controller.interfaces.js';
 
 export class HealthcheckController implements HttpController {

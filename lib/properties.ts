@@ -29,7 +29,6 @@ import _ from 'underscore';
 
 import {isString} from '../shared/common-utils.js';
 import type {LanguageKey} from '../types/languages.interfaces.js';
-
 import {logger} from './logger.js';
 import type {PropertyGetter, PropertyValue, Widen} from './properties.interfaces.js';
 import {toProperty} from './utils.js';

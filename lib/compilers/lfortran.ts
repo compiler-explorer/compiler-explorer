@@ -26,7 +26,6 @@ import type {CompilationResult, ExecutionOptionsWithEnv} from '../../types/compi
 import {PreliminaryCompilerInfo} from '../../types/compiler.interfaces.js';
 import type {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces.js';
 import {CompilationEnvironment} from '../compilation-env.js';
-
 import {FortranCompiler} from './fortran.js';
 
 export class LFortranCompiler extends FortranCompiler {

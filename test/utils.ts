@@ -27,6 +27,7 @@ import path from 'node:path';
 import {fileURLToPath} from 'node:url';
 
 import {afterEach, expect, onTestFinished} from 'vitest';
+
 import * as temp from '../lib/temp.js';
 
 // Check if expensive tests should be skipped (e.g., during pre-commit hooks)

@@ -24,7 +24,6 @@
 
 import type {Keyable} from '../keyed-type.interfaces.js';
 import {makeKeyedTypeGetter} from '../keyed-type.js';
-
 import * as all from './_all.js';
 import type {FormatterInfo} from './base.interfaces.js';
 import {BaseFormatter} from './base.js';

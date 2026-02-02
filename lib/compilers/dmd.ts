@@ -29,7 +29,6 @@ import type {PreliminaryCompilerInfo} from '../../types/compiler.interfaces.js';
 import type {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces.js';
 import {BaseCompiler} from '../base-compiler.js';
 import {CompilationEnvironment} from '../compilation-env.js';
-
 import {ClangParser} from './argument-parsers.js';
 
 export class DMDCompiler extends BaseCompiler {

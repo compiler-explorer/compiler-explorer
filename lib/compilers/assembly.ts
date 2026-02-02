@@ -40,7 +40,6 @@ import {BaseCompiler} from '../base-compiler.js';
 import {CompilationEnvironment} from '../compilation-env.js';
 import {AsmRaw} from '../parsers/asm-raw.js';
 import {fileExists} from '../utils.js';
-
 import {BaseParser} from './argument-parsers.js';
 
 export class AssemblyCompiler extends BaseCompiler {

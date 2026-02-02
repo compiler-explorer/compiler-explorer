@@ -26,12 +26,12 @@ import fs from 'node:fs/promises';
 import path from 'node:path';
 
 import {beforeAll, describe, expect, it} from 'vitest';
+
 import {FPCCompiler} from '../lib/compilers/pascal.js';
 import * as pascalUtils from '../lib/compilers/pascal-utils.js';
 import {PascalWinCompiler} from '../lib/compilers/pascal-win.js';
 import {PascalDemangler} from '../lib/demangler/index.js';
 import * as utils from '../lib/utils.js';
-
 import {FiledataPair} from '../types/compilation/compilation.interfaces.js';
 import {makeCompilationEnvironment} from './utils.js';
 

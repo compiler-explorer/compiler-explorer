@@ -26,7 +26,6 @@ import Semver from 'semver';
 
 import type {CompilerOutputOptions, ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces.js';
 import {asSafeVer} from '../utils.js';
-
 import {ClangCompiler} from './clang.js';
 
 export class ZigCC extends ClangCompiler {

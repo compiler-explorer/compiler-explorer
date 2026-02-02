@@ -24,6 +24,7 @@
 
 import express, {type NextFunction, type Request, type Response} from 'express';
 import {afterEach, beforeEach, describe, expect, it, vi} from 'vitest';
+
 import {createRenderHandlers} from '../../lib/app/rendering.js';
 import {PugRequireHandler, ServerDependencies, ServerOptions} from '../../lib/app/server.interfaces.js';
 import {AppArguments} from '../../lib/app.interfaces.js';

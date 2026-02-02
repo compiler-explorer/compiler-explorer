@@ -27,7 +27,6 @@ import express from 'express';
 import {unwrapString} from '../../assert.js';
 import {FormattingService} from '../../formatting-service.js';
 import {cached, cors, jsonOnly} from '../middleware.js';
-
 import {HttpController} from './controller.interfaces.js';
 
 export class FormattingController implements HttpController {
