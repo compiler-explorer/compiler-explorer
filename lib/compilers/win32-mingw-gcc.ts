@@ -28,7 +28,6 @@ import {BuildResult, BypassCache, CacheKey, CompilationResult} from '../../types
 import {ExecutableExecutionOptions} from '../../types/execution/execution.interfaces.js';
 import {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces.js';
 import {copyNeededDlls} from '../binaries/win-utils.js';
-
 import {GCCCompiler} from './gcc.js';
 
 export class Win32MingWGcc extends GCCCompiler {

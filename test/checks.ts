@@ -23,6 +23,7 @@
 // POSSIBILITY OF SUCH DAMAGE.
 
 import fs from 'node:fs';
+
 import _ from 'underscore';
 import {afterAll, beforeAll, describe, expect, it} from 'vitest';
 

@@ -27,7 +27,6 @@ import _ from 'underscore';
 import {EdgeColor} from '../../../types/compilation/cfg.interfaces.js';
 import {logger} from '../../logger.js';
 import {BaseInstructionSetInfo, InstructionType} from '../instruction-sets/base.js';
-
 import {AssemblyLine, BaseCFGParser, BBRange, CanonicalBB, Edge, Range} from './base.js';
 
 // This currently only covers the default arm64 output. To support dex2oat's

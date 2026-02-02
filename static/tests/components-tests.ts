@@ -23,6 +23,7 @@
 // POSSIBILITY OF SUCH DAMAGE.
 
 import {describe, expect, it} from 'vitest';
+
 import {
     COMPILER_COMPONENT_NAME,
     DIFF_VIEW_COMPONENT_NAME,

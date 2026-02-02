@@ -24,6 +24,7 @@
 
 import type {Request, Response} from 'express';
 import {afterEach, beforeEach, describe, expect, it, vi} from 'vitest';
+
 import {isMobileViewer, LegacyGoogleUrlHandler} from '../../lib/app/url-handlers.js';
 
 describe('Url Handlers', () => {

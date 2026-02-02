@@ -23,6 +23,7 @@
 // POSSIBILITY OF SUCH DAMAGE.
 
 import path from 'node:path';
+
 import {beforeEach, describe, expect, it} from 'vitest';
 
 import {assert, check_path, removeFileProtocol, setBaseDirectory, unwrap, unwrapString} from '../lib/assert.js';

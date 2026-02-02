@@ -23,6 +23,7 @@
 // POSSIBILITY OF SUCH DAMAGE.
 
 import {describe, expect, it} from 'vitest';
+
 import {LabelContext, LabelProcessor} from '../lib/parsers/label-processor.js';
 import {ParsedAsmResultLine} from '../types/asmresult/asmresult.interfaces.js';
 

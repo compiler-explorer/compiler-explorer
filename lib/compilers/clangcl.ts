@@ -29,7 +29,6 @@ import type {PreliminaryCompilerInfo} from '../../types/compiler.interfaces.js';
 import type {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces.js';
 import {unwrap} from '../assert.js';
 import {CompilationEnvironment} from '../compilation-env.js';
-
 import {Win32Compiler} from './win32.js';
 
 export class ClangCLCompiler extends Win32Compiler {

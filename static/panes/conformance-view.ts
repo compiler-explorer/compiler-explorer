@@ -25,6 +25,7 @@
 import {Container} from 'golden-layout';
 import $ from 'jquery';
 import _ from 'underscore';
+
 import {unwrapString} from '../../shared/assert.js';
 import {escapeHTML, unique} from '../../shared/common-utils.js';
 import {CompilationResult} from '../../types/compilation/compilation.interfaces.js';

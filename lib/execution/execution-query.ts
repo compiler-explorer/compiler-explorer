@@ -26,7 +26,6 @@ import {BuildResult} from '../../types/compilation/compilation.interfaces.js';
 import {BinaryInfoLinux} from '../binaries/binary-utils.js';
 import {logger} from '../logger.js';
 import {PropertyGetter} from '../properties.interfaces.js';
-
 import {BaseExecutionTriple, ExecutionSpecialty} from './base-execution-triple.js';
 
 async function retrieveAllRemoteExecutionArchs(ceProps: PropertyGetter, envs: string[]): Promise<string[]> {

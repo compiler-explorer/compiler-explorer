@@ -23,6 +23,7 @@
 // POSSIBILITY OF SUCH DAMAGE.
 
 import url from 'node:url';
+
 import type {NextFunction, Request, Response} from 'express';
 
 import {unwrapString} from '../assert.js';

@@ -24,6 +24,7 @@
 
 import lzstring from 'lz-string';
 import _ from 'underscore';
+
 import * as urlSerialization from '../shared/url-serialization.js';
 import * as Components from './components.js';
 

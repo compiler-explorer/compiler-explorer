@@ -31,7 +31,6 @@ import {
 import {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces.js';
 import {assert} from '../assert.js';
 import * as utils from '../utils.js';
-
 import {AsmParser} from './asm-parser.js';
 import {AsmRegex} from './asmregex.js';
 

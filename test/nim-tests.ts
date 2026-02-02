@@ -30,7 +30,6 @@ import {unwrap} from '../lib/assert.js';
 import {CompilationEnvironment} from '../lib/compilation-env.js';
 import {NimCompiler} from '../lib/compilers/nim.js';
 import {LanguageKey} from '../types/languages.interfaces.js';
-
 import {makeCompilationEnvironment, makeFakeCompilerInfo} from './utils.js';
 
 const languages = {

@@ -29,7 +29,6 @@ import path from 'node:path';
 import {describe, expect, it} from 'vitest';
 
 import {generateStructure} from '../lib/cfg/cfg.js';
-
 import {CompilerInfo} from '../types/compiler.interfaces.js';
 import {makeFakeCompilerInfo, resolvePathFromTestRoot} from './utils.js';
 
