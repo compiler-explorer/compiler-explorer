@@ -24,6 +24,7 @@
 
 import GoldenLayout, {ContentItem} from 'golden-layout';
 import _ from 'underscore';
+
 import {LanguageKey} from '../types/languages.interfaces.js';
 import {CompilerService} from './compiler-service.js';
 import {

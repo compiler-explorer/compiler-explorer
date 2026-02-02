@@ -26,7 +26,6 @@ import path from 'node:path';
 
 import type {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces.js';
 import {BaseCompiler} from '../base-compiler.js';
-
 import {ErlangParser} from './argument-parsers.js';
 
 export class ErlangAsmCompiler extends BaseCompiler {

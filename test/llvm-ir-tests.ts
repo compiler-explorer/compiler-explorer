@@ -26,7 +26,6 @@ import {beforeAll, describe, expect, it} from 'vitest';
 
 import {LLCCompiler} from '../lib/compilers/llc.js';
 import {OptCompiler} from '../lib/compilers/opt.js';
-
 import {makeCompilationEnvironment} from './utils.js';
 
 const languages = {

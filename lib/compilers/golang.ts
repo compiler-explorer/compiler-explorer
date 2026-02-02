@@ -26,6 +26,7 @@ import fs from 'node:fs/promises';
 import path from 'node:path';
 
 import _ from 'underscore';
+
 import type {ExecutionOptionsWithEnv} from '../../types/compilation/compilation.interfaces.js';
 import type {PreliminaryCompilerInfo} from '../../types/compiler.interfaces.js';
 import type {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces.js';
@@ -34,7 +35,6 @@ import {unwrap} from '../assert.js';
 import {BaseCompiler} from '../base-compiler.js';
 import {CompilationEnvironment} from '../compilation-env.js';
 import * as utils from '../utils.js';
-
 import {GolangParser} from './argument-parsers.js';
 
 // Each arch has a list of jump instructions in

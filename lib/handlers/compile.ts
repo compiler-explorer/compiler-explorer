@@ -25,6 +25,7 @@
 import fs from 'node:fs/promises';
 import path from 'node:path';
 import process from 'node:process';
+
 import * as Sentry from '@sentry/node';
 import express from 'express';
 import Server from 'http-proxy';
@@ -59,7 +60,6 @@ import {SentryCapture} from '../sentry.js';
 import {KnownBuildMethod} from '../stats.js';
 import * as temp from '../temp.js';
 import * as utils from '../utils.js';
-
 import {
     CompileRequestJsonBody,
     CompileRequestQueryArgs,

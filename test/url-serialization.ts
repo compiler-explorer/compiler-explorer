@@ -1,4 +1,5 @@
 import {describe, expect, it} from 'vitest';
+
 import * as urlSerialization from '../shared/url-serialization.js';
 
 describe('URL Serialization', () => {

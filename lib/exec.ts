@@ -28,9 +28,11 @@ import os from 'node:os';
 import path from 'node:path';
 import {Stream} from 'node:stream';
 import buffer from 'buffer';
+
 import treeKill from 'tree-kill';
 import _ from 'underscore';
 import which from 'which';
+
 import {splitArguments} from '../shared/common-utils.js';
 import type {ExecutionOptions} from '../types/compilation/compilation.interfaces.js';
 import type {FilenameTransformFunc, UnprocessedExecResult} from '../types/execution/execution.interfaces.js';

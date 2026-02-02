@@ -23,7 +23,6 @@
 // POSSIBILITY OF SUCH DAMAGE.
 
 import * as monaco from 'monaco-editor';
-
 import * as swift from 'monaco-editor/esm/vs/basic-languages/swift/swift';
 
 function definition(): monaco.languages.IMonarchLanguage {

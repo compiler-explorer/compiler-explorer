@@ -29,6 +29,7 @@ import * as monaco from 'monaco-editor';
 import scrollIntoView from 'scroll-into-view-if-needed';
 import TomSelect from 'tom-select';
 import _ from 'underscore';
+
 import {unwrap, unwrapString} from '../../shared/assert.js';
 import {escapeHTML} from '../../shared/common-utils.js';
 import {CompilationResult} from '../../types/compilation/compilation.interfaces.js';

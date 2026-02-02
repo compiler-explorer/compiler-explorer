@@ -23,6 +23,7 @@
 // POSSIBILITY OF SUCH DAMAGE.
 
 import './utils.js';
+
 import {beforeAll, describe, expect, it} from 'vitest';
 
 import {CompilerFinder} from '../lib/compiler-finder.js';

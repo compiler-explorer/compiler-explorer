@@ -1,6 +1,7 @@
 import path from 'node:path';
 
 import Semver from 'semver';
+
 import type {PreliminaryCompilerInfo} from '../../types/compiler.interfaces.js';
 import type {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces.js';
 import {BaseCompiler} from '../base-compiler.js';

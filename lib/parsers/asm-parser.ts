@@ -33,7 +33,6 @@ import {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfa
 import {assert} from '../assert.js';
 import {PropertyGetter} from '../properties.interfaces.js';
 import * as utils from '../utils.js';
-
 import {IAsmParser} from './asm-parser.interfaces.js';
 import {AsmRegex} from './asmregex.js';
 import {LabelContext, LabelProcessor} from './label-processor.js';

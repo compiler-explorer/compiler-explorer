@@ -27,6 +27,7 @@ import ClipboardJS from 'clipboard';
 import GoldenLayout from 'golden-layout';
 import $ from 'jquery';
 import _ from 'underscore';
+
 import {unwrap} from '../shared/assert.js';
 import {serialiseState} from '../shared/url-serialization.js';
 import * as BootstrapUtils from './bootstrap-utils.js';

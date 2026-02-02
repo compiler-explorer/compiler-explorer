@@ -25,6 +25,7 @@
 import os from 'node:os';
 import path from 'node:path';
 import process from 'node:process';
+
 import PromClient from 'prom-client';
 import urljoin from 'url-join';
 

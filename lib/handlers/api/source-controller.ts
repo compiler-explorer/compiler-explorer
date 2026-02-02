@@ -24,10 +24,10 @@
 
 import express from 'express';
 import _ from 'underscore';
+
 import {Source} from '../../../types/source.interfaces.js';
 import {unwrapString} from '../../assert.js';
 import {cached, cors} from '../middleware.js';
-
 import {HttpController} from './controller.interfaces.js';
 
 export class SourceController implements HttpController {

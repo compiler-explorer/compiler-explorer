@@ -26,7 +26,6 @@ import path from 'node:path';
 
 import type {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces.js';
 import {BaseCompiler} from '../base-compiler.js';
-
 import {WasmtimeParser} from './argument-parsers.js';
 
 export class WasmtimeCompiler extends BaseCompiler {

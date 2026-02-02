@@ -24,7 +24,6 @@
 
 import type {ResultLine} from '../../types/resultline/resultline.interfaces.js';
 import {parseRustOutput} from '../utils.js';
-
 import {BaseTool} from './base-tool.js';
 
 export class MiriTool extends BaseTool {

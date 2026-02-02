@@ -23,12 +23,12 @@
 // POSSIBILITY OF SUCH DAMAGE.
 
 import path from 'node:path';
+
 import {splitArguments} from '../../shared/common-utils.js';
 import {CompilationInfo} from '../../types/compilation/compilation.interfaces.js';
 import {ToolInfo, ToolResult} from '../../types/tool.interfaces.js';
 import {OptionsHandlerLibrary} from '../options-handler.js';
 import {getToolchainPath} from '../toolchain-utils.js';
-
 import {ToolEnv} from './base-tool.interface.js';
 import {BaseTool} from './base-tool.js';
 

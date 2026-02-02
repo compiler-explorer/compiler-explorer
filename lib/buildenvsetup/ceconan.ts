@@ -27,6 +27,7 @@ import os from 'node:os';
 import path from 'node:path';
 import {Readable} from 'node:stream';
 import zlib from 'node:zlib';
+
 import tar from 'tar-stream';
 import _ from 'underscore';
 
@@ -36,7 +37,6 @@ import {CompilationEnvironment} from '../compilation-env.js';
 import {logger} from '../logger.js';
 import {VersionInfo} from '../options-handler.js';
 import * as utils from '../utils.js';
-
 import {BuildEnvSetupBase} from './base.js';
 import type {BuildEnvDownloadInfo} from './buildenv.interfaces.js';
 

@@ -24,6 +24,7 @@
 
 import fs from 'node:fs/promises';
 import path from 'node:path';
+
 import Semver from 'semver';
 import _ from 'underscore';
 
@@ -43,7 +44,6 @@ import {BaseCompiler, SimpleOutputFilenameCompiler} from '../base-compiler.js';
 import {CompilationEnvironment} from '../compilation-env.js';
 import {logger} from '../logger.js';
 import * as utils from '../utils.js';
-
 import {JavaParser} from './argument-parsers.js';
 
 export class JavaCompiler extends BaseCompiler implements SimpleOutputFilenameCompiler {

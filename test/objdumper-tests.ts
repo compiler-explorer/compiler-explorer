@@ -25,7 +25,6 @@
 import {describe, expect, it} from 'vitest';
 
 import {DefaultObjdumper} from '../lib/objdumper/default.js';
-
 import type {ExecutionOptions} from '../types/compilation/compilation.interfaces.js';
 import type {UnprocessedExecResult} from '../types/execution/execution.interfaces.js';
 

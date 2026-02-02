@@ -25,6 +25,7 @@
 import {Container} from 'golden-layout';
 import $ from 'jquery';
 import _ from 'underscore';
+
 import {escapeHTML} from '../../shared/common-utils.js';
 import {
     BypassCache,

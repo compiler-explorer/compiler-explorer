@@ -24,7 +24,6 @@
 
 import {CompilationResult} from '../../types/compilation/compilation.interfaces.js';
 import type {CompilerInfo} from '../../types/compiler.interfaces.js';
-
 import {AssemblyLine, BaseCFGParser, Edge, getParserByKey, Node} from './cfg-parsers/index.js';
 import {OatCFGParser} from './cfg-parsers/oat.js';
 import {getInstructionSetByKey} from './instruction-sets/index.js';

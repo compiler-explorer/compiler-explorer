@@ -27,6 +27,7 @@ import http from 'node:http';
 import https from 'node:https';
 import path from 'node:path';
 import {promisify} from 'node:util';
+
 import _ from 'underscore';
 import urljoin from 'url-join';
 
@@ -36,7 +37,6 @@ import {InstructionSet, InstructionSetsList} from '../types/instructionsets.js';
 import type {Language, LanguageKey} from '../types/languages.interfaces.js';
 import {Tool, ToolInfo} from '../types/tool.interfaces.js';
 import {AppArguments} from './app.interfaces.js';
-
 import {assert, unwrap, unwrapString} from './assert.js';
 import {CompileHandler} from './handlers/compile.js';
 import {logger} from './logger.js';

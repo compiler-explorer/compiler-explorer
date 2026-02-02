@@ -30,7 +30,6 @@ import {BaseCompiler} from '../base-compiler.js';
 import {logger} from '../logger.js';
 import {SPIRVAsmParser} from '../parsers/asm-parser-spirv.js';
 import * as utils from '../utils.js';
-
 import {GlslangParser} from './argument-parsers.js';
 
 export class GLSLCompiler extends BaseCompiler {
