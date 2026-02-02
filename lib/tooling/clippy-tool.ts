@@ -29,7 +29,6 @@ import type {ResultLine} from '../../types/resultline/resultline.interfaces.js';
 import {assert} from '../assert.js';
 import type {OptionsHandlerLibrary} from '../options-handler.js';
 import {parseRustOutput} from '../utils.js';
-
 import {BaseTool} from './base-tool.js';
 
 export class ClippyTool extends BaseTool {

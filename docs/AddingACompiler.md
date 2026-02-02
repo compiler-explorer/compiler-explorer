@@ -149,6 +149,12 @@ Test locally, and for many compilers that's probably all you need to do. Some co
 `compilerType`. Doing so is beyond this document's scope at present, but take a look inside `lib/compilers/` to get some
 idea what might need to be done.
 
+### Generating configuration from compile_commands.json
+
+If your project uses CMake or another build system that generates a `compile_commands.json` file, you can use the
+community-maintained [compilecommands_to_compilerexplorer](https://github.com/pseyfert/compilecommands_to_compilerexplorer)
+tool to automatically extract compiler paths and include directories into a `.local.properties` file.
+
 ## Adding a new compiler running remotely to your locally built compiler explorer
 
 If you would like to have both gcc and MSVC running in the "same" compiler explorer, one option would be running gcc on

@@ -23,7 +23,6 @@
 // POSSIBILITY OF SUCH DAMAGE.
 
 import type {GetResult} from '../../types/cache.interfaces.js';
-
 import {BaseCache} from './base.js';
 
 export class NullCache extends BaseCache {

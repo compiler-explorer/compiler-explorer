@@ -23,7 +23,6 @@
 // POSSIBILITY OF SUCH DAMAGE.
 
 import {logger} from '../logger.js';
-
 import {Cache} from './base.interfaces.js';
 import {InMemoryCache} from './in-memory.js';
 import {MultiCache} from './multi.js';

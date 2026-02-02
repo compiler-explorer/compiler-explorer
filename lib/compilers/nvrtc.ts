@@ -33,7 +33,6 @@ import {BaseCompiler} from '../base-compiler.js';
 import {CompilationEnvironment} from '../compilation-env.js';
 import {PTXAsmParser} from '../parsers/asm-parser-ptx.js';
 import {asSafeVer} from '../utils.js';
-
 import {ClangParser} from './argument-parsers.js';
 
 export class NvrtcCompiler extends BaseCompiler {

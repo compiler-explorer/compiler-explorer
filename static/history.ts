@@ -23,6 +23,7 @@
 // POSSIBILITY OF SUCH DAMAGE.
 
 import _ from 'underscore';
+
 import {localStorage} from './local.js';
 import {SharingBase} from './sharing.js';
 

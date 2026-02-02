@@ -23,10 +23,10 @@
 // POSSIBILITY OF SUCH DAMAGE.
 
 import express from 'express';
+
 import {getDocumentationProviderTypeByKey} from '../../asm-docs/index.js';
 import {unwrapString} from '../../assert.js';
 import {cached, cors} from '../middleware.js';
-
 import {HttpController} from './controller.interfaces.js';
 
 export class AssemblyDocumentationController implements HttpController {

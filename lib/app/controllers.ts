@@ -23,6 +23,7 @@
 // POSSIBILITY OF SUCH DAMAGE.
 
 import express from 'express';
+
 import {CompilationQueue} from '../compilation-queue.js';
 import {FormattingService} from '../formatting-service.js';
 import {AssemblyDocumentationController} from '../handlers/api/assembly-documentation-controller.js';

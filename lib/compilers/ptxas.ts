@@ -32,7 +32,6 @@ import {BaseCompiler} from '../base-compiler.js';
 import {CompilationEnvironment} from '../compilation-env.js';
 import {SassAsmParser} from '../parsers/asm-parser-sass.js';
 import * as utils from '../utils.js';
-
 import {BaseParser} from './argument-parsers.js';
 
 export class PtxAssembler extends BaseCompiler {

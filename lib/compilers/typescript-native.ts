@@ -34,7 +34,6 @@ import type {ParseFiltersAndOutputOptions} from '../../types/features/filters.in
 import {BaseCompiler} from '../base-compiler.js';
 import {CompilationEnvironment} from '../compilation-env.js';
 import {asSafeVer, changeExtension} from '../utils.js';
-
 import {TypeScriptNativeParser} from './argument-parsers.js';
 
 export class TypeScriptNativeCompiler extends BaseCompiler {

@@ -37,7 +37,6 @@ import {CompilationEnvironment} from '../compilation-env.js';
 import {PTXAsmParser} from '../parsers/asm-parser-ptx.js';
 import {SassAsmParser} from '../parsers/asm-parser-sass.js';
 import {asSafeVer} from '../utils.js';
-
 import {ClangParser} from './argument-parsers.js';
 
 export class NvccCompiler extends BaseCompiler {

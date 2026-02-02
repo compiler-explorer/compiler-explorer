@@ -27,7 +27,6 @@ import path from 'node:path';
 import type {ExecutionOptionsWithEnv} from '../../types/compilation/compilation.interfaces.js';
 import type {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces.js';
 import {BaseCompiler} from '../base-compiler.js';
-
 import {MrustcParser} from './argument-parsers.js';
 
 export class MrustcCompiler extends BaseCompiler {

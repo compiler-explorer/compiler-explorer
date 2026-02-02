@@ -1,5 +1,6 @@
 import fs from 'node:fs';
 import path from 'node:path';
+
 import type {ParsedAsmResult} from '../../types/asmresult/asmresult.interfaces.js';
 import {ExecutionOptions} from '../../types/compilation/compilation.interfaces.js';
 import {CompilerInfo} from '../../types/compiler.interfaces.js';

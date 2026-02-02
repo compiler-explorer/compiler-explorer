@@ -35,7 +35,6 @@ import {BaseCompiler} from '../base-compiler.js';
 import {CompilationEnvironment} from '../compilation-env.js';
 import {DartAsmParser} from '../parsers/asm-parser-dart.js';
 import * as utils from '../utils.js';
-
 import {BaseParser} from './argument-parsers.js';
 
 export class DartCompiler extends BaseCompiler {

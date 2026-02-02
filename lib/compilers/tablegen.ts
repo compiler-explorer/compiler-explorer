@@ -1,7 +1,6 @@
 import {CompilerOverrideType} from '../../types/compilation/compiler-overrides.interfaces.js';
 import type {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces.js';
 import {BaseCompiler} from '../base-compiler.js';
-
 import {TableGenParser} from './argument-parsers.js';
 
 export class TableGenCompiler extends BaseCompiler {

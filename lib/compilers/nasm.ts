@@ -25,7 +25,6 @@
 import type {ConfiguredOverrides} from '../../types/compilation/compiler-overrides.interfaces.js';
 import type {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces.js';
 import {SelectedLibraryVersion} from '../../types/libraries/libraries.interfaces.js';
-
 import {AssemblyCompiler} from './assembly.js';
 
 export class NasmCompiler extends AssemblyCompiler {

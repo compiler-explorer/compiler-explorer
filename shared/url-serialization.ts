@@ -23,6 +23,7 @@
 // POSSIBILITY OF SUCH DAMAGE.
 
 import lzstring from 'lz-string';
+
 import * as rison from './rison.js';
 
 /**

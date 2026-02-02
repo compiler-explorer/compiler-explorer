@@ -23,6 +23,7 @@
 // POSSIBILITY OF SUCH DAMAGE.
 
 import {describe, expect, it} from 'vitest';
+
 import {deserialiseState} from '../url.js';
 
 describe('Historical URL Backward Compatibility', () => {

@@ -23,6 +23,7 @@
 // POSSIBILITY OF SUCH DAMAGE.
 
 import process from 'node:process';
+
 import express from 'express';
 import PromClient from 'prom-client';
 import systemdSocket from 'systemd-socket';
