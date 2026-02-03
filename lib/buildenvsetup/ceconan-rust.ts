@@ -30,7 +30,6 @@ import {CacheKey} from '../../types/compilation/compilation.interfaces.js';
 import {CompilerInfo} from '../../types/compiler.interfaces.js';
 import {CompilationEnvironment} from '../compilation-env.js';
 import {VersionInfo} from '../options-handler.js';
-
 import {ExecCompilerCachedFunc} from './base.js';
 import {BuildEnvSetupCeConanDirect} from './ceconan.js';
 

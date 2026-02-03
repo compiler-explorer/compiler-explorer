@@ -28,6 +28,7 @@ import {LRUCache} from 'lru-cache';
 import * as monaco from 'monaco-editor';
 import {editor} from 'monaco-editor';
 import _ from 'underscore';
+
 import {AssemblyInstructionInfo} from '../../types/assembly-docs.interfaces.js';
 import {
     ActiveTool,
@@ -72,6 +73,7 @@ import {PPOptions} from './pp-view.interfaces.js';
 import IEditorMouseEvent = editor.IEditorMouseEvent;
 
 import fileSaver from 'file-saver';
+
 import {unwrap, unwrapString} from '../../shared/assert.js';
 import {escapeHTML, splitArguments} from '../../shared/common-utils.js';
 import {ClangirBackendOptions} from '../../types/compilation/clangir.interfaces.js';

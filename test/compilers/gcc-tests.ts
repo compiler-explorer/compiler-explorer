@@ -1,5 +1,6 @@
 import fs from 'node:fs/promises';
 import path from 'node:path';
+
 import {describe, expect, it} from 'vitest';
 
 import {GCCCompiler} from '../../lib/compilers/index.js';

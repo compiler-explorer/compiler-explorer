@@ -28,7 +28,6 @@ import type {PreliminaryCompilerInfo} from '../../types/compiler.interfaces.js';
 import type {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces.js';
 import {CompilationEnvironment} from '../compilation-env.js';
 import {asSafeVer} from '../utils.js';
-
 import {ScalaParser} from './argument-parsers.js';
 import {JavaCompiler} from './java.js';
 

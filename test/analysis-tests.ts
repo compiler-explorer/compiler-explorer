@@ -29,7 +29,6 @@ import {AnalysisTool, LLVMmcaTool} from '../lib/compilers/index.js';
 import {ToolEnv} from '../lib/tooling/base-tool.interface.js';
 import {LLVMMcaTool as LLVMMcaTooling} from '../lib/tooling/llvm-mca-tool.js';
 import {ToolInfo} from '../types/tool.interfaces.js';
-
 import {
     makeCompilationEnvironment,
     makeFakeCompilerInfo,

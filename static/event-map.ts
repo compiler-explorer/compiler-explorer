@@ -23,6 +23,7 @@
 // POSSIBILITY OF SUCH DAMAGE.
 
 import * as monaco from 'monaco-editor';
+
 import {ClangirBackendOptions} from '../types/compilation/clangir.interfaces.js';
 import {CompilationResult} from '../types/compilation/compilation.interfaces.js';
 import {LLVMIrBackendOptions} from '../types/compilation/ir.interfaces.js';

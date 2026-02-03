@@ -34,7 +34,6 @@ import {CompilationEnvironment} from '../compilation-env.js';
 import {logger} from '../logger.js';
 import {VersionInfo} from '../options-handler.js';
 import * as utils from '../utils.js';
-
 import type {BuildEnvDownloadInfo} from './buildenv.interfaces.js';
 
 export type ExecCompilerCachedFunc = (

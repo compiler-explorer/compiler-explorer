@@ -23,6 +23,7 @@
 // POSSIBILITY OF SUCH DAMAGE.
 
 import {describe, expect, it} from 'vitest';
+
 import {AsmParser} from '../lib/parsers/asm-parser.js';
 import {MlirAsmParser} from '../lib/parsers/asm-parser-mlir.js';
 import {PolkaVMAsmParser} from '../lib/parsers/asm-parser-polkavm.js';

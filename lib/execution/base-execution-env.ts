@@ -50,7 +50,6 @@ import {propsFor} from '../properties.js';
 import {HeaptrackWrapper} from '../runtime-tools/heaptrack-wrapper.js';
 import * as temp from '../temp.js';
 import * as utils from '../utils.js';
-
 import {ExecutablePackageCacheMiss, IExecutionEnvironment} from './execution-env.interfaces.js';
 
 export class LocalExecutionEnvironment implements IExecutionEnvironment {

@@ -24,7 +24,6 @@
 
 import type {CompilationResult} from '../types/compilation/compilation.interfaces.js';
 import type {ResultLine} from '../types/resultline/resultline.interfaces.js';
-
 import type {PropertyGetter} from './properties.interfaces.js';
 
 type Point = {

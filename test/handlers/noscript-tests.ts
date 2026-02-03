@@ -25,6 +25,7 @@
 import express from 'express';
 import request from 'supertest';
 import {beforeAll, describe, expect, it} from 'vitest';
+
 import {NoScriptHandler} from '../../lib/handlers/noscript.js';
 import type {ClientOptionsHandler} from '../../lib/options-handler.js';
 import type {StorageBase} from '../../lib/storage/index.js';

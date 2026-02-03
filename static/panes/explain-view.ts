@@ -25,6 +25,7 @@
 import {Container} from 'golden-layout';
 import $ from 'jquery';
 import {LRUCache} from 'lru-cache';
+
 import {capitaliseFirst} from '../../shared/common-utils.js';
 import {CompilationResult} from '../../types/compilation/compilation.interfaces.js';
 import {CompilerInfo} from '../../types/compiler.interfaces.js';

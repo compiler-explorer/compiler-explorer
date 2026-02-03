@@ -24,6 +24,7 @@
 
 import fs from 'node:fs/promises';
 import path from 'node:path';
+
 import _ from 'underscore';
 
 import {CompilationResult} from '../../types/compilation/compilation.interfaces.js';
@@ -33,7 +34,6 @@ import {unwrap} from '../assert.js';
 import {BaseCompiler} from '../base-compiler.js';
 import {CompilationEnvironment} from '../compilation-env.js';
 import * as utils from '../utils.js';
-
 import {NimParser} from './argument-parsers.js';
 
 const NimCommands = ['compile', 'compileToC', 'c', 'compileToCpp', 'cpp', 'cc', 'compileToOC', 'objc', 'js', 'check'];

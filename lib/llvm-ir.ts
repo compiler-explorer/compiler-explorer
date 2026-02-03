@@ -26,7 +26,6 @@ import {isString} from '../shared/common-utils.js';
 import type {IRResultLine, ParsedAsmResult} from '../types/asmresult/asmresult.interfaces.js';
 import {LLVMIrBackendOptions} from '../types/compilation/ir.interfaces.js';
 import {ParseFiltersAndOutputOptions} from '../types/features/filters.interfaces.js';
-
 import {LLVMIRDemangler} from './demangler/llvm.js';
 import {PropertyGetter} from './properties.interfaces.js';
 import * as utils from './utils.js';
