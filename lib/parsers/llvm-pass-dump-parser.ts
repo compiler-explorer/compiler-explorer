@@ -249,31 +249,18 @@ export class LlvmPassDumpParser {
         return pass;
     }
 
-    /**
-     * Resolves loop references ('<loop>' or '%'-prefixed names) to the previously seen function name.
-     * Returns the resolved name and updated previousFunction tracking state.
-     */
-    private resolveLoopFunction(
-        name: string,
-        previousFunction: string | null,
-    ): {resolved: string; previousFunction: string | null} {
-        if (name === '<loop>' || name.startsWith('%')) {
-            assert(previousFunction !== null, 'Loop dump without preceding dump');
-            return {resolved: previousFunction, previousFunction};
-        }
-        return {resolved: name, previousFunction: name};
-    }
-
     breakdownIntoPassDumpsByFunction(passDumps: SplitPassDump[]) {
         // Currently we have an array of passes with a map of functions altered in each pass
         // We want to transpose to a map of functions with an array of passes on the function
         const passDumpsByFunction: Record<string, PassDump[]> = {};
+        // I'm assuming loop dumps should correspond to the previous function dumped
         let previousFunction: string | null = null;
         for (const pass of passDumps) {
             const {header, machine, functions} = pass;
             const functionEntries = Object.entries(functions);
             for (const [funcName, lines] of functionEntries) {
-                const {resolved: name} = this.resolveLoopFunction(funcName, previousFunction);
+                const name: string | null = funcName === '<loop>' ? previousFunction : funcName;
+                assert(name !== null, 'Loop dump without preceding dump');
                 if (!(name in passDumpsByFunction)) {
                     passDumpsByFunction[name] = [];
                 }
@@ -313,15 +300,16 @@ export class LlvmPassDumpParser {
             }
         }
         passDumpsByFunction['<Full Module>'] = [];
+        // I'm assuming loop dumps should correspond to the previous function dumped
         let previousFunction: string | null = null;
         for (const pass of passDumps) {
             const {header, affectedFunction, machine, lines} = pass;
             if (affectedFunction) {
-                const {resolved: fn, previousFunction: updatedPrev} = this.resolveLoopFunction(
-                    affectedFunction,
-                    previousFunction,
-                );
-                previousFunction = updatedPrev;
+                let fn = affectedFunction;
+                if (affectedFunction.startsWith('%')) {
+                    assert(previousFunction !== null, 'Loop dump without preceding dump');
+                    fn = previousFunction;
+                }
                 assert(fn in passDumpsByFunction);
                 for (const entry of [passDumpsByFunction[fn], passDumpsByFunction['<Full Module>']]) {
                     entry.push({
@@ -331,6 +319,7 @@ export class LlvmPassDumpParser {
                         lines,
                     });
                 }
+                previousFunction = fn;
             } else {
                 // applies to everything
                 for (const entry of Object.values(passDumpsByFunction)) {
