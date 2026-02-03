@@ -29,6 +29,7 @@ import _ from 'underscore';
 
 import type {ParsedAsmResult, ParsedAsmResultLine} from '../../types/asmresult/asmresult.interfaces.js';
 import {CompilationResult, ExecutionOptionsWithEnv} from '../../types/compilation/compilation.interfaces.js';
+import {CompilerOverrideOption, CompilerOverrideType} from '../../types/compilation/compiler-overrides.interfaces.js';
 import type {
     OptPipelineBackendOptions,
     OptPipelineOutput,
@@ -37,7 +38,7 @@ import type {PreliminaryCompilerInfo} from '../../types/compiler.interfaces.js';
 import type {UnprocessedExecResult} from '../../types/execution/execution.interfaces.js';
 import type {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces.js';
 import type {SelectedLibraryVersion} from '../../types/libraries/libraries.interfaces.js';
-import {BaseCompiler} from '../base-compiler.js';
+import {BaseCompiler, c_value_placeholder} from '../base-compiler.js';
 import {CompilationEnvironment} from '../compilation-env.js';
 import {logger} from '../logger.js';
 import {Dex2OatPassDumpParser} from '../parsers/dex2oat-pass-dump-parser.js';
@@ -61,6 +62,8 @@ const BOOTCLASSPATH_LOCATIONS = [
 ] as const;
 
 export class Dex2OatCompiler extends BaseCompiler {
+    readonly fullOutputFlag = '--full-output';
+
     static get key() {
         return 'dex2oat';
     }
@@ -80,7 +83,6 @@ export class Dex2OatCompiler extends BaseCompiler {
 
     insnSetArgRegex: RegExp;
     compilerFilterArgRegex: RegExp;
-    fullOutputArgRegex: RegExp;
 
     versionPrefixRegex: RegExp;
     latestVersionRegex: RegExp;
@@ -138,7 +140,6 @@ export class Dex2OatCompiler extends BaseCompiler {
 
         // Whether the full dex2oat output should be displayed instead of just
         // the parsed and formatted methods.
-        this.fullOutputArgRegex = /^--full-output$/;
         this.fullOutput = false;
 
         // The underlying D8 version+exe.
@@ -229,12 +230,12 @@ export class Dex2OatCompiler extends BaseCompiler {
                 useDefaultInsnSet = false;
             } else if (this.compilerFilterArgRegex.test(option)) {
                 useDefaultCompilerFilter = false;
-            } else if (this.fullOutputArgRegex.test(option)) {
+            } else if (option === this.fullOutputFlag) {
                 this.fullOutput = true;
             }
         }
         // Remove '--full-output' because it isn't a real dex2oat option.
-        userOptions = userOptions.filter(option => !this.fullOutputArgRegex.test(option));
+        userOptions = userOptions.filter(option => option !== this.fullOutputFlag);
 
         const files = await fs.readdir(d8DirPath);
         const dexFile = files.find(f => f.endsWith('.dex'));
@@ -796,5 +797,31 @@ export class Dex2OatCompiler extends BaseCompiler {
                 compileTime: compileEnd - compileStart,
             };
         }
+    }
+
+    override async getTargetsAsOverrideValues(): Promise<CompilerOverrideOption[]> {
+        return ['arm', 'arm64', 'x86', 'x86_64', 'riscv64'].map(target => ({
+            name: target,
+            value: target,
+        }));
+    }
+
+    override getTargetFlags(): string[] {
+        return [`--instruction-set=${c_value_placeholder}`];
+    }
+
+    override async populatePossibleOverrides(): Promise<void> {
+        super.populatePossibleOverrides();
+
+        this.compiler.possibleOverrides?.push({
+            name: CompilerOverrideType.full_output,
+            display_title: 'Show full output',
+            description: 'Show the full output of the object dump tool instead of only the assembly',
+            flags: ['<value>'],
+            values: [
+                {name: 'Yes', value: this.fullOutputFlag},
+                {name: 'No', value: ''},
+            ],
+        });
     }
 }

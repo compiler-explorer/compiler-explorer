@@ -31,6 +31,7 @@ export enum CompilerOverrideType {
     edition = 'edition',
     stdver = 'stdver',
     action = 'action',
+    full_output = 'full_output',
 }
 
 export type CompilerOverrideTypes = Set<CompilerOverrideType>;
