@@ -96,19 +96,35 @@ export function parseProperties(
     for (const [index, lineOrig] of blob.split('\n').entries()) {
         const line = lineOrig.replace(/#.*/, '').trim();
         if (!line) continue;
-        const split = line.match(/([^=]+)=(.*)/);
+        const split = line.match(/([^=+]+)(\+?=)(.*)/);
         if (!split) {
             onError({line: index + 1, text: lineOrig.trim()}, name);
             continue;
         }
         const prop = split[1].trim();
-        let val: string | number | boolean = split[2].trim();
+        const operator = split[2];
+        // For += operator, preserve leading whitespace but trim trailing
+        // For = operator, trim both leading and trailing whitespace
+        let val: string | number | boolean = operator === '+=' ? split[3].trimEnd() : split[3].trim();
         // hack to avoid applying toProperty to version properties
         // so that they're not parsed as numbers
         if (!prop.endsWith('.version') && !prop.endsWith('.semver')) {
             val = toProperty(val);
         }
-        props[prop] = val;
+        if (operator === '+=') {
+            if (!(prop in props)) {
+                logger.error(`Cannot append to undefined property ${prop} in ${name}: ${index + 1}`);
+                continue;
+            }
+            const existing = props[prop];
+            if (typeof existing !== 'string' || typeof val !== 'string') {
+                logger.error(`Cannot append to non-string property ${prop} in ${name}: ${index + 1}`);
+                continue;
+            }
+            props[prop] = existing + val;
+        } else {
+            props[prop] = val;
+        }
         debug(`${prop} = ${val}`);
     }
 

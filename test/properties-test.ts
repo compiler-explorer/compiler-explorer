@@ -179,4 +179,71 @@ describe('Properties blob parsing', () => {
         expect(props.etc).toEqual(123);
         expect(props.mybool).toBe(false);
     });
+
+    it('should trim both leading and trailing whitespace for = assignment', () => {
+        const props = properties.parseProperties('spaced=   value   \n', '<test props>');
+        expect(props.spaced).toEqual('value');
+    });
+});
+
+describe('Properties append syntax', () => {
+    it('should append to existing string properties with +=', () => {
+        const props = properties.parseProperties('list=a:b\n' + 'list+=:c:d\n', '<test props>');
+        expect(props.list).toEqual('a:b:c:d');
+    });
+
+    it('should skip += on undefined property and log error', () => {
+        const props = properties.parseProperties('newprop+=value\n', '<test props>');
+        expect(props.newprop).toBeUndefined();
+    });
+
+    it('should handle multiple += operations', () => {
+        const props = properties.parseProperties(
+            'items=first\n' + 'items+=second\n' + 'items+=third\n',
+            '<test props>',
+        );
+        expect(props.items).toEqual('firstsecondthird');
+    });
+
+    it('should skip += on boolean properties and log error', () => {
+        const props = properties.parseProperties('flag=true\n' + 'flag+=more\n', '<test props>');
+        // Append skipped, original value preserved
+        expect(props.flag).toBe(true);
+    });
+
+    it('should preserve leading whitespace for += but trim trailing', () => {
+        const props = properties.parseProperties('opts=-Wall\n' + 'opts+= -Wextra   \n', '<test props>');
+        // Leading space preserved, trailing trimmed
+        expect(props.opts).toEqual('-Wall -Wextra');
+    });
+});
+
+describe('Cross-file += interaction', () => {
+    let crossFileProps: PropertyGetter;
+
+    beforeAll(() => {
+        properties.reset();
+        properties.initialize('test/example-config/', ['crossfile-base', 'crossfile-tip']);
+        crossFileProps = properties.propsFor('crossfile');
+    });
+
+    afterAll(() => {
+        properties.reset();
+    });
+
+    it('should not allow += in tip file to append to property defined only in base file', () => {
+        // += in crossfile.crossfile-tip.properties tries to append to appendTarget
+        // But appendTarget is not defined in that file, only in crossfile-base
+        // So the += fails (logs error), and the base file's original value is returned
+        expect(crossFileProps('appendTarget')).toEqual('base-value');
+    });
+
+    it('should allow = to override base value then += to append in same file', () => {
+        // In crossfile.crossfile-tip.properties:
+        //   overrideTarget=tip-value      (overrides base-value from base file)
+        //   overrideTarget+= appended     (appends to the value defined above)
+        // The tip file first redefines the property with =, then appends with +=
+        // This is the correct way to "extend" a base property
+        expect(crossFileProps('overrideTarget')).toEqual('tip-value appended');
+    });
 });
