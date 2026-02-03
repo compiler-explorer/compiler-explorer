@@ -43,7 +43,7 @@ export class CompilerDropinTool extends BaseTool {
         this.addOptionsToToolArgs = false;
     }
 
-    getToolchainPath(compilationInfo: CompilationInfo): string | false {
+    getToolchainPath(compilationInfo: CompilationInfo): string | undefined {
         return getToolchainPath(compilationInfo.compiler.exe, compilationInfo.compiler.options);
     }
 
