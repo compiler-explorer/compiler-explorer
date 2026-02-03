@@ -190,9 +190,40 @@ export class Dex2OatCompiler extends BaseCompiler {
         }
         const d8DirPath = path.dirname(inputFilename);
         const d8OutputFilename = d8Compiler.getOutputFilename(d8DirPath);
+
+        if (!execOptions) {
+            execOptions = this.getDefaultExecOptions();
+        }
+
+        let useDefaultInsnSet = true;
+        let useDefaultCompilerFilter = true;
+        let d8Flags: string | undefined;
+
+        // The items in 'options' before the source file are user inputs.
+        const sourceFileOptionIndex = options.findIndex(option => {
+            return option.endsWith('.java') || option.endsWith('.kt');
+        });
+        const userOptions: string[] = [];
+        for (let i = 0; i < sourceFileOptionIndex; ++i) {
+            const option = options[i];
+            if (this.insnSetArgRegex.test(option)) {
+                useDefaultInsnSet = false;
+                userOptions.push(option);
+            } else if (this.compilerFilterArgRegex.test(option)) {
+                useDefaultCompilerFilter = false;
+                userOptions.push(option);
+            } else if (option === this.fullOutputFlag) {
+                this.fullOutput = true;
+            } else if (option === '--d8-flags') {
+                d8Flags = options[++i];
+            } else {
+                userOptions.push(option);
+            }
+        }
+
         const d8Options = _.compact(
             d8Compiler.prepareArguments(
-                [''], //options
+                d8Flags?.split(' ') ?? [],
                 d8Compiler.getDefaultFilters(),
                 {}, // backendOptions
                 inputFilename,
@@ -212,30 +243,6 @@ export class Dex2OatCompiler extends BaseCompiler {
         if (compileResult.code !== 0) {
             return compileResult;
         }
-
-        if (!execOptions) {
-            execOptions = this.getDefaultExecOptions();
-        }
-
-        let useDefaultInsnSet = true;
-        let useDefaultCompilerFilter = true;
-
-        // The items in 'options' before the source file are user inputs.
-        const sourceFileOptionIndex = options.findIndex(option => {
-            return option.endsWith('.java') || option.endsWith('.kt');
-        });
-        let userOptions = options.slice(0, sourceFileOptionIndex);
-        for (const option of userOptions) {
-            if (this.insnSetArgRegex.test(option)) {
-                useDefaultInsnSet = false;
-            } else if (this.compilerFilterArgRegex.test(option)) {
-                useDefaultCompilerFilter = false;
-            } else if (option === this.fullOutputFlag) {
-                this.fullOutput = true;
-            }
-        }
-        // Remove '--full-output' because it isn't a real dex2oat option.
-        userOptions = userOptions.filter(option => option !== this.fullOutputFlag);
 
         const files = await fs.readdir(d8DirPath);
         const dexFile = files.find(f => f.endsWith('.dex'));
@@ -814,6 +821,7 @@ export class Dex2OatCompiler extends BaseCompiler {
         super.populatePossibleOverrides();
 
         this.compiler.possibleOverrides?.push({
+            type: 'options',
             name: CompilerOverrideType.full_output,
             display_title: 'Show full output',
             description: 'Show the full output of the object dump tool instead of only the assembly',
@@ -822,6 +830,15 @@ export class Dex2OatCompiler extends BaseCompiler {
                 {name: 'Yes', value: this.fullOutputFlag},
                 {name: 'No', value: ''},
             ],
+        });
+
+        this.compiler.possibleOverrides?.push({
+            type: 'string',
+            name: CompilerOverrideType.d8_flags,
+            display_title: 'd8 Flags',
+            description: 'This compiler uses d8 as a frontend translator. Change the flags of d8.',
+            flags: ['--d8-flags', c_value_placeholder],
+            default: '--release',
         });
     }
 }

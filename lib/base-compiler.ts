@@ -3861,6 +3861,7 @@ but nothing was dumped. Possible causes are:
         const targets = await this.getTargetsAsOverrideValues();
         if (targets.length > 0) {
             this.compiler.possibleOverrides?.push({
+                type: 'options',
                 name: CompilerOverrideType.arch,
                 display_title: 'Target architecture',
                 description: c_default_target_description,
@@ -3876,6 +3877,7 @@ but nothing was dumped. Possible causes are:
             if (possibleToolchains.length > 0) {
                 const flag = getToolchainFlagFromOptions(compilerOptions);
                 this.compiler.possibleOverrides?.push({
+                    type: 'options',
                     name: CompilerOverrideType.toolchain,
                     display_title: 'Toolchain',
                     description: c_default_toolchain_description,
@@ -3888,6 +3890,7 @@ but nothing was dumped. Possible causes are:
         const stdVersions = await this.getPossibleStdversAsOverrideValues();
         if (stdVersions.length > 0) {
             this.compiler.possibleOverrides?.push({
+                type: 'options',
                 name: CompilerOverrideType.stdver,
                 display_title: 'Std version',
                 description: this.getStdVerOverrideDescription(),
