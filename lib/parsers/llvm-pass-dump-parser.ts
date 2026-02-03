@@ -30,7 +30,6 @@ import {
 import {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces.js';
 import {ResultLine} from '../../types/resultline/resultline.interfaces.js';
 import {assert} from '../assert.js';
-import {PropertyGetter} from '../properties.interfaces.js';
 
 // Note(jeremy-rifkin):
 // For now this filters out a bunch of metadata we aren't interested in
@@ -67,27 +66,19 @@ type SplitPassDump = {
 };
 
 export class LlvmPassDumpParser {
-    filters: RegExp[];
-    lineFilters: RegExp[];
-    debugInfoFilters: RegExp[];
-    debugInfoLineFilters: RegExp[];
-    metadataLineFilters: RegExp[];
-    irDumpHeader: RegExp;
-    machineCodeDumpHeader: RegExp;
-    cirDumpHeader: RegExp;
-    functionDefine: RegExp;
-    machineFunctionBegin: RegExp;
-    functionEnd: RegExp;
-    machineFunctionEnd: RegExp;
-    //label: RegExp;
-    //instruction: RegExp;
-
-    constructor(compilerProps: PropertyGetter) {
-        //this.maxIrLines = 5000;
-        //if (compilerProps) {
-        //    this.maxIrLines = compilerProps('maxLinesOfAsm', this.maxIrLines);
-        //}
-
+    readonly filters: RegExp[];
+    readonly lineFilters: RegExp[];
+    readonly debugInfoFilters: RegExp[];
+    readonly debugInfoLineFilters: RegExp[];
+    readonly metadataLineFilters: RegExp[];
+    readonly irDumpHeader: RegExp;
+    readonly machineCodeDumpHeader: RegExp;
+    readonly cirDumpHeader: RegExp;
+    readonly functionDefine: RegExp;
+    readonly machineFunctionBegin: RegExp;
+    readonly functionEnd: RegExp;
+    readonly machineFunctionEnd: RegExp;
+    constructor() {
         this.filters = [
             /^; ModuleID = '.+'$/, // module id line
             /^(source_filename|target datalayout|target triple) = ".+"$/, // module metadata
@@ -138,30 +129,23 @@ export class LlvmPassDumpParser {
         this.functionEnd = /^}$/;
         // Machine functions end like "# End machine code for function _Z3fooi."
         this.machineFunctionEnd = /^# End machine code for function ([\w$.]+).$/;
-        // Either "123:" with a possible comment or something like "bb.3 (%ir-block.13):"
-        //this.label = /^(?:\d+:(\s+;.+)?|\w+.+:)$/;
-        //this.instruction = /^\s+.+$/;
     }
 
     breakdownOutputIntoPassDumps(ir: ResultLine[]) {
         // break down output by "*** IR Dump After XYZ ***" markers
-        const raw_passes: PassDump[] = [];
-        let pass: PassDump | null = null;
+        const rawPasses: PassDump[] = [];
+        let currentPass: PassDump | null = null;
         let lastWasBlank = false; // skip duplicate blank lines
         for (const line of ir) {
-            // stop once the machine code passes start, can't handle these yet
-            //if (this.machineCodeDumpHeader.test(line.text)) {
-            //    break;
-            //}
             const irMatch = line.text.match(this.irDumpHeader);
             const machineMatch = line.text.match(this.machineCodeDumpHeader);
             const cirMatch = line.text.match(this.cirDumpHeader);
             const header = irMatch || machineMatch || cirMatch;
             if (header) {
-                if (pass !== null) {
-                    raw_passes.push(pass);
+                if (currentPass !== null) {
+                    rawPasses.push(currentPass);
                 }
-                pass = {
+                currentPass = {
                     header: header[1],
                     // in dump full module mode some headers are annotated for what function (or loop) they operate on
                     // if we aren't in full module mode or this is a header that isn't function/loop specific this will
@@ -172,22 +156,22 @@ export class LlvmPassDumpParser {
                 };
                 lastWasBlank = true; // skip leading newlines after the header
             } else {
-                assert(pass);
+                assert(currentPass);
                 if (line.text.trim() === '') {
                     if (!lastWasBlank) {
-                        pass.lines.push(line);
+                        currentPass.lines.push(line);
                     }
                     lastWasBlank = true;
                 } else {
-                    pass.lines.push(line);
+                    currentPass.lines.push(line);
                     lastWasBlank = false;
                 }
             }
         }
-        if (pass !== null) {
-            raw_passes.push(pass);
+        if (currentPass !== null) {
+            rawPasses.push(currentPass);
         }
-        return raw_passes;
+        return rawPasses;
     }
 
     breakdownPassDumpsIntoFunctions(dump: PassDump) {
@@ -249,8 +233,6 @@ export class LlvmPassDumpParser {
                             // may be a blank line
                             continue;
                         }
-                        ///console.log('ignoring ------>', line.text);
-                        // ignore
                         continue;
                     }
                     func.lines.push(line);
@@ -276,8 +258,8 @@ export class LlvmPassDumpParser {
         for (const pass of passDumps) {
             const {header, machine, functions} = pass;
             const functionEntries = Object.entries(functions);
-            for (const [function_name, lines] of functionEntries) {
-                const name: string | null = function_name === '<loop>' ? previousFunction : function_name;
+            for (const [funcName, lines] of functionEntries) {
+                const name: string | null = funcName === '<loop>' ? previousFunction : funcName;
                 assert(name !== null, 'Loop dump without preceding dump');
                 if (!(name in passDumpsByFunction)) {
                     passDumpsByFunction[name] = [];
@@ -291,7 +273,6 @@ export class LlvmPassDumpParser {
             }
             if (functionEntries.length === 0) {
                 // This can happen as a result of "Printing <null> Function"
-                //throw 'Internal error during breakdownOutput (2)';
             } else if (functionEntries.length === 1) {
                 const name = functionEntries[0][0];
                 if (name !== '<loop>') {
@@ -320,29 +301,28 @@ export class LlvmPassDumpParser {
         }
         passDumpsByFunction['<Full Module>'] = [];
         // I'm assuming loop dumps should correspond to the previous function dumped
-        //const functions = Object.keys(passDumpsByFunction);
         let previousFunction: string | null = null;
         for (const pass of passDumps) {
             const {header, affectedFunction, machine, lines} = pass;
             if (affectedFunction) {
                 let fn = affectedFunction;
                 if (affectedFunction.startsWith('%')) {
-                    assert(previousFunction !== null);
+                    assert(previousFunction !== null, 'Loop dump without preceding dump');
                     fn = previousFunction;
                 }
                 assert(fn in passDumpsByFunction);
-                [passDumpsByFunction[fn], passDumpsByFunction['<Full Module>']].map(entry =>
+                for (const entry of [passDumpsByFunction[fn], passDumpsByFunction['<Full Module>']]) {
                     entry.push({
                         header: `${header} (${fn})`,
                         affectedFunction: fn,
                         machine,
                         lines,
-                    }),
-                );
+                    });
+                }
                 previousFunction = fn;
             } else {
                 // applies to everything
-                for (const [_, entry] of Object.entries(passDumpsByFunction)) {
+                for (const entry of Object.values(passDumpsByFunction)) {
                     entry.push({
                         header,
                         affectedFunction: undefined,
@@ -359,8 +339,8 @@ export class LlvmPassDumpParser {
     matchPassDumps(passDumpsByFunction: Record<string, PassDump[]>) {
         // We have all the passes for each function, now we will go through each function and match the before/after
         // dumps
-        const final_output: OptPipelineResults = {};
-        for (const [function_name, passDumps] of Object.entries(passDumpsByFunction)) {
+        const finalOutput: OptPipelineResults = {};
+        for (const [funcName, passDumps] of Object.entries(passDumpsByFunction)) {
             // I had a fantastic chunk2 method to iterate the passes in chunks of 2 but I've been foiled by an edge
             // case: At least the "Delete dead loops" may only print a before dump and no after dump
             const passes: Pass[] = [];
@@ -373,36 +353,36 @@ export class LlvmPassDumpParser {
                     before: [],
                     irChanged: true,
                 };
-                const current_dump = passDumps[i];
-                const next_dump = i < passDumps.length - 1 ? passDumps[i + 1] : null;
-                if (current_dump.header.startsWith('IR Dump After ')) {
+                const currentDump = passDumps[i];
+                const nextDump = i < passDumps.length - 1 ? passDumps[i + 1] : null;
+                if (currentDump.header.startsWith('IR Dump After ')) {
                     // An after dump without a before dump - I don't think this can happen but we'll handle just in case
-                    pass.name = current_dump.header.slice('IR Dump After '.length);
-                    pass.after = current_dump.lines;
+                    pass.name = currentDump.header.slice('IR Dump After '.length);
+                    pass.after = currentDump.lines;
                     i++;
-                } else if (current_dump.header.startsWith('IR Dump Before ')) {
-                    if (next_dump?.header.startsWith('IR Dump After ')) {
+                } else if (currentDump.header.startsWith('IR Dump Before ')) {
+                    if (nextDump?.header.startsWith('IR Dump After ')) {
                         assert(
-                            passesMatch(current_dump.header, next_dump.header),
+                            passesMatch(currentDump.header, nextDump.header),
                             '',
-                            current_dump.header,
-                            next_dump.header,
+                            currentDump.header,
+                            nextDump.header,
                         );
-                        assert(current_dump.machine === next_dump.machine);
-                        pass.name = current_dump.header.slice('IR Dump Before '.length);
-                        pass.before = current_dump.lines;
-                        pass.after = next_dump.lines;
+                        assert(currentDump.machine === nextDump.machine);
+                        pass.name = currentDump.header.slice('IR Dump Before '.length);
+                        pass.before = currentDump.lines;
+                        pass.after = nextDump.lines;
                         i += 2;
                     } else {
                         // Before with no after - this can happen with Delete dead loops
-                        pass.name = current_dump.header.slice('IR Dump Before '.length);
-                        pass.before = current_dump.lines;
+                        pass.name = currentDump.header.slice('IR Dump Before '.length);
+                        pass.before = currentDump.lines;
                         i++;
                     }
                 } else {
-                    assert(false, 'Unexpected pass header', current_dump.header);
+                    assert(false, 'Unexpected pass header', currentDump.header);
                 }
-                pass.machine = current_dump.machine;
+                pass.machine = currentDump.machine;
 
                 // The first machine pass outputs the same MIR before and after,
                 // making it seem like it did nothing.
@@ -418,26 +398,22 @@ export class LlvmPassDumpParser {
                 pass.irChanged = pass.before.map(x => x.text).join('\n') !== pass.after.map(x => x.text).join('\n');
                 passes.push(pass);
             }
-            //console.dir(passes, {
-            //    depth: 5,
-            //    maxArrayLength: 100000
-            //});
-            assert(!(function_name in final_output), 'xxx');
-            final_output[function_name] = passes;
+            assert(!(funcName in finalOutput), 'xxx');
+            finalOutput[funcName] = passes;
         }
-        return final_output;
+        return finalOutput;
     }
 
     breakdownOutput(ir: ResultLine[], optPipelineOptions: OptPipelineBackendOptions) {
         // break down output by "*** IR Dump After XYZ ***" markers
-        const raw_passes = this.breakdownOutputIntoPassDumps(ir);
+        const rawPasses = this.breakdownOutputIntoPassDumps(ir);
         if (optPipelineOptions.fullModule) {
-            const passDumpsByFunction = this.associateFullDumpsWithFunctions(raw_passes);
+            const passDumpsByFunction = this.associateFullDumpsWithFunctions(rawPasses);
             // Match before / after pass dumps and we're done
             return this.matchPassDumps(passDumpsByFunction);
         }
         // Further break down by functions in each dump
-        const passDumps = raw_passes.map(this.breakdownPassDumpsIntoFunctions.bind(this));
+        const passDumps = rawPasses.map(this.breakdownPassDumpsIntoFunctions.bind(this));
         // Transform array of passes containing multiple functions into a map from functions to arrays of passes on
         // those functions
         const passDumpsByFunction = this.breakdownIntoPassDumpsByFunction(passDumps);
@@ -491,7 +467,7 @@ export class LlvmPassDumpParser {
                     this.cirDumpHeader.test(line.text),
             ),
         );
-        const preprocessed_lines = this.applyIrFilters(ir, optPipelineOptions);
-        return this.breakdownOutput(preprocessed_lines, optPipelineOptions);
+        const preprocessedLines = this.applyIrFilters(ir, optPipelineOptions);
+        return this.breakdownOutput(preprocessedLines, optPipelineOptions);
     }
 }

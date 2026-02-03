@@ -260,7 +260,7 @@ export class BaseCompiler {
         this.asm = new AsmParser(this.compilerProps);
         const irDemangler = new LLVMIRDemangler(this.compiler.demangler, this);
         this.llvmIr = new LlvmIrParser(this.compilerProps, irDemangler);
-        this.llvmPassDumpParser = new LlvmPassDumpParser(this.compilerProps);
+        this.llvmPassDumpParser = new LlvmPassDumpParser();
         this.llvmAst = new LlvmAstParser(this.compilerProps);
 
         this.toolchainPath = getToolchainPath(this.compiler.exe, this.compiler.options);
