@@ -67,6 +67,7 @@ export class CompilerOverridesWidget {
     private onChangeCallback: CompilerOverridesChangeCallback;
     private configured: ConfiguredOverrides = [];
     private compiler: CompilerInfo | undefined;
+    private dirtyOverrides = new Set<string>(); // Overrides that the user has touched.
 
     constructor(dropdownButton: JQuery, onChangeCallback: CompilerOverridesChangeCallback) {
         this.popupDomRoot = $('#overrides-selection');
@@ -328,6 +329,7 @@ export class CompilerOverridesWidget {
                 }
             }
 
+            this.dirtyOverrides.add(possibleOverride.name);
             this.configured = this.loadStateFromUI();
             this.loadFavoritesIntoUI();
         });
@@ -373,6 +375,7 @@ export class CompilerOverridesWidget {
         }
 
         textarea.off('input').on('input', () => {
+            this.dirtyOverrides.add(possibleOverride.name);
             this.configured = this.loadStateFromUI();
         });
 
@@ -380,22 +383,26 @@ export class CompilerOverridesWidget {
     }
 
     set(configured: ConfiguredOverrides) {
-        this.configured = configured;
-        this.updateButton();
-    }
-
-    setDefaults() {
         this.configured = [];
 
-        if (this.compiler?.possibleOverrides) {
-            for (const ov of this.compiler.possibleOverrides) {
-                if (ov.name !== CompilerOverrideType.env && ov.default) {
-                    this.configured.push({
-                        name: ov.name,
-                        value: ov.default,
-                    });
-                }
+        // Only keep the overrides that apply to this compiler. Set the overrides to the their
+        // defaults if they are not configured.
+        for (const ov of this.compiler?.possibleOverrides ?? []) {
+            if (ov.name === CompilerOverrideType.env) continue;
+            const config = configured.find(config => config.name === ov.name);
+            if (config) {
+                this.configured.push(config);
+            } else if (!this.dirtyOverrides.has(ov.name) && ov.default) {
+                this.configured.push({
+                    name: ov.name,
+                    value: ov.default,
+                });
             }
+        }
+
+        const config = configured.find(config => config.name === CompilerOverrideType.env);
+        if (config) {
+            this.configured.push(config);
         }
 
         this.updateButton();
