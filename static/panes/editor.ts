@@ -64,6 +64,9 @@ import IModelDeltaDecoration = editor.IModelDeltaDecoration;
 
 import {getStaticImage} from '../utils';
 
+// Expose monaco on window for integration tests (e.g. Cypress)
+window.monaco = monaco;
+
 const loadSave = new loadSaveLib.LoadSave();
 const languages = options.languages;
 
