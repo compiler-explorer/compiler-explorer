@@ -40,3 +40,4 @@ newrelic_agent.log
 .aider*
 
 etc/scripts/ce-properties-wizard/ce_properties_wizard/__pycache__
+# Test commit from mattgodbolt-molty
