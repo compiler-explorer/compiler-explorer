@@ -25,6 +25,7 @@
 import fs from 'node:fs';
 import https from 'node:https';
 import path from 'node:path';
+
 import semverParser from 'semver';
 import _ from 'underscore';
 import urlJoin from 'url-join';
@@ -34,7 +35,7 @@ import {getRemoteId} from '../shared/remote-utils.js';
 import {CompilerInfo, Remote} from '../types/compiler.interfaces.js';
 import type {LanguageKey} from '../types/languages.interfaces.js';
 import type {Source} from '../types/source.interfaces.js';
-import type {ToolTypeKey} from '../types/tool.interfaces.js';
+import type {Tool, ToolTypeKey} from '../types/tool.interfaces.js';
 import {AppArguments} from './app.interfaces.js';
 import {logger} from './logger.js';
 import {ClientOptionsSource} from './options-handler.interfaces.js';
@@ -83,7 +84,7 @@ export type ClientOptionsType = {
     compilers: CompilerInfo[];
     libs: Record<string, Record<string, OptionsHandlerLibrary>>;
     remoteLibs: Record<any, any>;
-    tools: Record<any, any>;
+    tools: Record<LanguageKey, Record<string, Tool>>;
     defaultLibs: Record<LanguageKey, string>;
     defaultCompiler: Record<LanguageKey, string>;
     compileOptions: Record<LanguageKey, string>;

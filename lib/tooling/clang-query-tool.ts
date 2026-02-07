@@ -27,7 +27,6 @@ import path from 'node:path';
 
 import {CompilationInfo} from '../../types/compilation/compilation.interfaces.js';
 import {ToolInfo} from '../../types/tool.interfaces.js';
-
 import {ToolEnv} from './base-tool.interface.js';
 import {BaseTool} from './base-tool.js';
 

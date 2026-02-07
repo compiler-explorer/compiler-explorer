@@ -39,6 +39,7 @@
 import $ from 'jquery';
 
 import 'bootstrap';
+
 import {Dropdown, Modal, Popover, Toast} from 'bootstrap';
 
 // Private event listener tracking map

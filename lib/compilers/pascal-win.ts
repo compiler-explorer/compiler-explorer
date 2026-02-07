@@ -38,7 +38,6 @@ import {CompilationEnvironment} from '../compilation-env.js';
 import {MapFileReaderDelphi} from '../mapfiles/map-file-delphi.js';
 import {PELabelReconstructor} from '../pe32-support.js';
 import * as utils from '../utils.js';
-
 import * as pascalUtils from './pascal-utils.js';
 
 export class PascalWinCompiler extends BaseCompiler {

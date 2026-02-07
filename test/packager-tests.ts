@@ -28,7 +28,6 @@ import path from 'node:path';
 import {describe, expect, it} from 'vitest';
 
 import {Packager} from '../lib/packager.js';
-
 import {newTempDir} from './utils.js';
 
 async function writeTestFile(filepath: string) {

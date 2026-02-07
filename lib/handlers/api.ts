@@ -28,7 +28,7 @@ import _ from 'underscore';
 import {isString, unique} from '../../shared/common-utils.js';
 import {CompilerInfo} from '../../types/compiler.interfaces.js';
 import {Language, LanguageKey} from '../../types/languages.interfaces.js';
-import {assert, unwrap} from '../assert.js';
+import {assert, unwrap, unwrapString} from '../assert.js';
 import {ClientStateNormalizer} from '../clientstate-normalizer.js';
 import {CompilationEnvironment} from '../compilation-env.js';
 import {IExecutionEnvironment} from '../execution/execution-env.interfaces.js';
@@ -39,7 +39,6 @@ import {PropertyGetter} from '../properties.interfaces.js';
 import {SentryCapture} from '../sentry.js';
 import {BaseShortener, getShortenerTypeByKey} from '../shortener/index.js';
 import {StorageBase} from '../storage/index.js';
-
 import {CompileHandler} from './compile.js';
 
 function methodNotAllowed(req: express.Request, res: express.Response) {
@@ -140,7 +139,7 @@ export class ApiHandler {
     }
 
     shortlinkInfoHandler(req: express.Request, res: express.Response, next: express.NextFunction) {
-        const id = req.params.id;
+        const id = unwrapString(req.params.id);
         this.storageHandler
             .expandId(id)
             .then(result => {
@@ -257,10 +256,10 @@ export class ApiHandler {
             const tool = toolsForLanguageObj[key];
             return {
                 id: key,
-                name: tool.name,
+                name: tool.tool.name,
                 type: tool.type,
-                languageId: tool.languageId || languageId,
-                allowStdin: tool.stdinHint !== 'disabled',
+                languageId: tool.tool.languageId || languageId,
+                allowStdin: tool.tool.stdinHint !== 'disabled',
             };
         });
     }
@@ -314,7 +313,7 @@ export class ApiHandler {
 
         try {
             const env: IExecutionEnvironment = new LocalExecutionEnvironment(this.compilationEnvironment);
-            await env.downloadExecutablePackage(req.params.hash);
+            await env.downloadExecutablePackage(unwrapString(req.params.hash));
             const execResult = await env.execute(req.body.ExecutionParams);
             logger.debug('execResult', execResult);
             res.send(execResult);

@@ -36,7 +36,6 @@ import type {BuildEnvDownloadInfo} from '../buildenvsetup/buildenv.interfaces.js
 import {CompilationEnvironment} from '../compilation-env.js';
 import {logger} from '../logger.js';
 import * as utils from '../utils.js';
-
 import {GolangParser} from './argument-parsers.js';
 
 interface GoLibraryMetadata {

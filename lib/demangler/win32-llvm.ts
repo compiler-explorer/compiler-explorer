@@ -24,7 +24,6 @@
 
 import {unwrap} from '../assert.js';
 import * as utils from '../utils.js';
-
 import {Win32Demangler} from './win32.js';
 
 export class LLVMWin32Demangler extends Win32Demangler {

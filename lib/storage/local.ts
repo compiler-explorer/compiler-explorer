@@ -25,11 +25,11 @@
 import fsSync from 'node:fs';
 import fs from 'node:fs/promises';
 import path from 'node:path';
+
 import _ from 'underscore';
 
 import {logger} from '../logger.js';
 import {CompilerProps} from '../properties.js';
-
 import {ExpandedShortLink, StorageBase, StoredObject} from './base.js';
 
 const MIN_STORED_ID_LENGTH = 6;

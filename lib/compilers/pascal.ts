@@ -24,6 +24,7 @@
 
 import fs from 'node:fs/promises';
 import path from 'node:path';
+
 import _ from 'underscore';
 
 import type {
@@ -38,7 +39,6 @@ import {unwrap} from '../assert.js';
 import {BaseCompiler} from '../base-compiler.js';
 import {CompilationEnvironment} from '../compilation-env.js';
 import * as utils from '../utils.js';
-
 import {PascalParser} from './argument-parsers.js';
 import * as pascalUtils from './pascal-utils.js';
 

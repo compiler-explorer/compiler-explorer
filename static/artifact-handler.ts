@@ -23,7 +23,9 @@
 // POSSIBILITY OF SUCH DAMAGE.
 
 import {Buffer} from 'buffer';
+
 import $ from 'jquery';
+
 import {assert, unwrap} from '../shared/assert.js';
 import {CompilationResult} from '../types/compilation/compilation.interfaces.js';
 import {Artifact, ArtifactType} from '../types/tool.interfaces.js';

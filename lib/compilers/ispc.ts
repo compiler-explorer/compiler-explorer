@@ -23,6 +23,7 @@
 // POSSIBILITY OF SUCH DAMAGE.
 
 import fs from 'node:fs/promises';
+
 import Semver from 'semver';
 
 import {
@@ -41,7 +42,6 @@ import {BaseCompiler} from '../base-compiler.js';
 import {CompilationEnvironment} from '../compilation-env.js';
 import * as utils from '../utils.js';
 import {asSafeVer} from '../utils.js';
-
 import {ISPCParser} from './argument-parsers.js';
 
 export class ISPCCompiler extends BaseCompiler {

@@ -26,7 +26,6 @@ import {Buffer} from 'buffer';
 
 import type {GetResult} from '../../types/cache.interfaces.js';
 import {unwrap} from '../assert.js';
-
 import {BaseCache} from './base.js';
 
 // A write-through multiple cache.

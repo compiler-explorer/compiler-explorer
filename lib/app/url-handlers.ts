@@ -23,8 +23,10 @@
 // POSSIBILITY OF SUCH DAMAGE.
 
 import url from 'node:url';
+
 import type {NextFunction, Request, Response} from 'express';
 
+import {unwrapString} from '../assert.js';
 import {logger} from '../logger.js';
 import {PropertyGetter} from '../properties.interfaces.js';
 import {ShortLinkResolver} from '../shortener/google.js';
@@ -63,7 +65,7 @@ export class LegacyGoogleUrlHandler {
      * @param next - Express next function
      */
     async handle(req: Request, res: Response, next: NextFunction) {
-        const id = req.params.id;
+        const id = unwrapString(req.params.id);
         const googleUrl = `https://goo.gl/${encodeURIComponent(id)}`;
 
         try {

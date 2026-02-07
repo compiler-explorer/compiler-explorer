@@ -1,5 +1,7 @@
 import path from 'node:path';
+
 import Semver from 'semver';
+
 import {splitArguments} from '../../shared/common-utils.js';
 import type {
     ActiveTool,

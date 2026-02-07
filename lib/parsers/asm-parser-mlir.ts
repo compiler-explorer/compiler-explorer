@@ -25,7 +25,6 @@
 import {AsmResultSource, ParsedAsmResult, ParsedAsmResultLine} from '../../types/asmresult/asmresult.interfaces.js';
 import {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces.js';
 import * as utils from '../utils.js';
-
 import {AsmParser} from './asm-parser.js';
 
 export class MlirAsmParser extends AsmParser {

@@ -48,6 +48,7 @@ export const InstructionSetsList = [
     'mpy',
     'mrisc32',
     'msp430',
+    'perl',
     'powerpc',
     'ptx',
     'python',

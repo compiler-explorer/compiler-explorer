@@ -28,7 +28,6 @@ import {InstructionSet} from '../../types/instructionsets.js';
 import {OSType} from '../binaries/binary-utils.js';
 import {logger} from '../logger.js';
 import * as utils from '../utils.js';
-
 import {BaseExecutionTriple, ExecutionSpecialty} from './base-execution-triple.js';
 
 let _host_specialty = ExecutionSpecialty.cpu;

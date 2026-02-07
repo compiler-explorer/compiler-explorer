@@ -29,6 +29,7 @@ import express from 'express';
 import morgan from 'morgan';
 import sanitize from 'sanitize-filename';
 
+import {unwrapString} from '../assert.js';
 import {cached, csp} from '../handlers/middleware.js';
 import {logger, makeLogStream} from '../logger.js';
 import {ClientOptionsSource} from '../options-handler.interfaces.js';
@@ -212,7 +213,7 @@ export function setupBasicRoutes(
         })
         .use('/bits/:bits.html', cached, csp, (req, res) => {
             res.render(
-                `bits/${sanitize(req.params.bits)}`,
+                `bits/${sanitize(unwrapString(req.params.bits))}`,
                 renderConfig(
                     {
                         embedded: false,

@@ -23,7 +23,6 @@
 // POSSIBILITY OF SUCH DAMAGE.
 
 import type {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces.js';
-
 import {AnalysisTool} from './analysis-tool.js';
 import {BaseParser} from './argument-parsers.js';
 

@@ -24,10 +24,9 @@
 
 import express from 'express';
 
-import {isString} from '../../shared/common-utils.js';
 import {LanguageKey} from '../../types/languages.interfaces.js';
 import {isMobileViewer} from '../app/url-handlers.js';
-import {assert} from '../assert.js';
+import {unwrapString} from '../assert.js';
 import {ClientState} from '../clientstate.js';
 import {ClientStateNormalizer} from '../clientstate-normalizer.js';
 import {logger} from '../logger.js';
@@ -77,7 +76,7 @@ export class NoScriptHandler {
     }
 
     storedStateHandlerNoScript(req: express.Request, res: express.Response, next: express.NextFunction) {
-        const id = req.params.id;
+        const id = unwrapString(req.params.id);
         this.storageHandler
             .expandId(id)
             .then(result => {
@@ -110,7 +109,7 @@ export class NoScriptHandler {
 
     clientStateHandlerNoScript(req: express.Request, res: express.Response, next: express.NextFunction) {
         try {
-            const buffer = Buffer.from(req.params.clientstatebase64, 'base64');
+            const buffer = Buffer.from(unwrapString(req.params.clientstatebase64), 'base64');
             const config = JSON.parse(buffer.toString());
             const clientstate = new ClientState(config);
 
@@ -149,13 +148,11 @@ export class NoScriptHandler {
     renderNoScriptLayout(state: ClientState | undefined, req: express.Request, res: express.Response) {
         let wantedLanguage = 'c++';
         if (req.params?.language) {
-            wantedLanguage = req.params.language;
+            wantedLanguage = unwrapString(req.params.language);
         } else {
             if (this.defaultLanguage) wantedLanguage = this.defaultLanguage;
             if (req.query.language) {
-                const lang = req.query.language;
-                assert(isString(lang));
-                wantedLanguage = lang;
+                wantedLanguage = unwrapString(req.query.language);
             }
         }
 

@@ -29,6 +29,7 @@ import path from 'node:path';
 import * as PromClient from 'prom-client';
 import _ from 'underscore';
 import {parseAllDocuments} from 'yaml';
+
 import {splitArguments, unique} from '../shared/common-utils.js';
 import {OptRemark} from '../static/panes/opt-view.interfaces.js';
 import {PPOptions} from '../static/panes/pp-view.interfaces.js';
@@ -105,7 +106,7 @@ import {BaseExecutionTriple} from './execution/base-execution-triple.js';
 import {IExecutionEnvironment} from './execution/execution-env.interfaces.js';
 import {RemoteExecutionQuery} from './execution/execution-query.js';
 import {matchesCurrentHost} from './execution/execution-triple.js';
-import {getExecutionEnvironmentByKey} from './execution/index.js';
+import {getExecutionEnvironmentByKey, LocalExecutionEnvironment} from './execution/index.js';
 import {RemoteExecutionEnvironment} from './execution/remote-execution-env.js';
 import {IExternalParser} from './external-parsers/external-parser.interface.js';
 import {getExternalParserByKey} from './external-parsers/index.js';
@@ -115,7 +116,7 @@ import {languages} from './languages.js';
 import {LlvmAstParser} from './llvm-ast.js';
 import {LlvmIrParser} from './llvm-ir.js';
 import {logger} from './logger.js';
-import {getObjdumperTypeByKey} from './objdumper/index.js';
+import {BaseObjdumper, getObjdumperTypeByKey} from './objdumper/index.js';
 import {ClientOptionsType, OptionsHandlerLibrary, VersionInfo} from './options-handler.js';
 import {Packager} from './packager.js';
 import type {IAsmParser} from './parsers/asm-parser.interfaces.js';
@@ -188,20 +189,20 @@ export class BaseCompiler {
     protected compileFilename: string;
     protected env: CompilationEnvironment;
     protected compilerProps: PropertyGetter;
-    protected alwaysResetLdPath: any;
-    protected delayCleanupTemp: any;
+    protected alwaysResetLdPath: boolean;
+    protected delayCleanupTemp: boolean;
     protected stubRe: RegExp;
     protected stubText: string;
-    protected compilerWrapper: any;
+    protected compilerWrapper: string | undefined;
     protected asm: IAsmParser;
     protected llvmIr: LlvmIrParser;
     protected llvmPassDumpParser: LlvmPassDumpParser;
     protected llvmAst: LlvmAstParser;
-    protected toolchainPath: any;
+    protected toolchainPath: string | undefined;
     public possibleArguments: CompilerArguments;
     protected possibleTools: ITool[];
     protected demanglerClass: typeof BaseDemangler | null = null;
-    protected objdumperClass: any;
+    protected objdumperClass!: new () => BaseObjdumper;
     public outputFilebase: string;
     protected mtime: Date | null = null;
     protected cmakeBaseEnv: Record<string, string>;
@@ -215,7 +216,7 @@ export class BaseCompiler {
         help: 'Time spent on objdump and parsing of objdumps',
         labelNames: [],
     });
-    protected executionEnvironmentClass: any;
+    protected executionEnvironmentClass: typeof LocalExecutionEnvironment;
     protected readonly argParser: BaseParser;
     protected readonly isCompilationWorker: boolean;
 
@@ -233,12 +234,12 @@ export class BaseCompiler {
         this.compilerProps = this.env.getCompilerPropsForLanguage(this.lang.id);
         this.compiler.supportsIntel = !!this.compiler.intelAsm;
 
-        this.alwaysResetLdPath = this.env.ceProps('alwaysResetLdPath');
+        this.alwaysResetLdPath = this.env.ceProps('alwaysResetLdPath', false);
         this.delayCleanupTemp = this.env.ceProps('delayCleanupTemp', false);
         this.isCompilationWorker = this.env.ceProps('compilequeue.is_worker', false);
         this.stubRe = new RegExp(this.compilerProps('stubRe', ''));
         this.stubText = this.compilerProps('stubText', '');
-        this.compilerWrapper = this.compilerProps('compiler-wrapper');
+        this.compilerWrapper = this.compilerProps<string>('compiler-wrapper');
 
         const executionEnvironmentClassStr = this.compilerProps<string>('executionEnvironmentClass', 'local');
         this.executionEnvironmentClass = getExecutionEnvironmentByKey(executionEnvironmentClassStr);
@@ -259,7 +260,7 @@ export class BaseCompiler {
         this.asm = new AsmParser(this.compilerProps);
         const irDemangler = new LLVMIRDemangler(this.compiler.demangler, this);
         this.llvmIr = new LlvmIrParser(this.compilerProps, irDemangler);
-        this.llvmPassDumpParser = new LlvmPassDumpParser(this.compilerProps);
+        this.llvmPassDumpParser = new LlvmPassDumpParser();
         this.llvmAst = new LlvmAstParser(this.compilerProps);
 
         this.toolchainPath = getToolchainPath(this.compiler.exe, this.compiler.options);
@@ -686,7 +687,7 @@ export class BaseCompiler {
 
             if (objResult.code === 0) {
                 result.objdumpTime = objResult.objdumpTime;
-                result.asm = this.postProcessObjdumpOutput(objResult.asm);
+                result.asm = this.postProcessObjdumpOutput(objResult.asm ?? '');
             } else {
                 logger.error(`Error executing objdump ${this.compiler.objdumper}`, objResult);
                 result.asm = `<No output: objdump returned ${objResult.code}>`;
@@ -1099,7 +1100,7 @@ export class BaseCompiler {
         );
     }
 
-    getDefaultOrOverridenToolchainPath(overrides: ConfiguredOverrides): string {
+    getDefaultOrOverridenToolchainPath(overrides: ConfiguredOverrides): string | undefined {
         for (const override of overrides) {
             if (override.name !== CompilerOverrideType.env && override.value) {
                 const possible = this.compiler.possibleOverrides?.find(ov => ov.name === override.name);
@@ -1112,7 +1113,7 @@ export class BaseCompiler {
         return this.toolchainPath;
     }
 
-    getOverridenToolchainPath(overrides: ConfiguredOverrides): string | false {
+    getOverridenToolchainPath(overrides: ConfiguredOverrides): string | undefined {
         for (const override of overrides) {
             if (override.name !== CompilerOverrideType.env && override.value) {
                 const possible = this.compiler.possibleOverrides?.find(ov => ov.name === override.name);
@@ -1122,13 +1123,16 @@ export class BaseCompiler {
             }
         }
 
-        return false;
+        return undefined;
     }
 
     changeOptionsBasedOnOverrides(options: string[], overrides: ConfiguredOverrides): string[] {
         const overriddenToolchainPath = this.getOverridenToolchainPath(overrides);
-        const sysrootPath: string | false =
-            overriddenToolchainPath ?? getSysrootByToolchainPath(overriddenToolchainPath);
+        const sysrootPath = overriddenToolchainPath
+            ? getSysrootByToolchainPath(overriddenToolchainPath)
+            : this.toolchainPath
+              ? getSysrootByToolchainPath(this.toolchainPath)
+              : undefined;
         const targetOverride = overrides.find(ov => ov.name === CompilerOverrideType.arch);
         const hasNeedForSysRoot =
             targetOverride && targetOverride.name !== CompilerOverrideType.env && !targetOverride.value.includes('x86');
@@ -1245,7 +1249,7 @@ export class BaseCompiler {
     protected getLibLinkInfo(
         filters: ParseFiltersAndOutputOptions,
         libraries: SelectedLibraryVersion[],
-        toolchainPath: string,
+        toolchainPath: string | undefined,
         dirPath: string,
     ) {
         let libLinks: string[] = [];
@@ -2684,7 +2688,7 @@ export class BaseCompiler {
         execParams: ExecutionOptionsWithEnv,
         dirPath: string,
         libsAndOptions: LibsAndOptions,
-        toolchainPath: string,
+        toolchainPath: string | undefined,
     ): ExecutionOptionsWithEnv {
         const cmakeExecParams = Object.assign({}, execParams);
 
@@ -3240,6 +3244,7 @@ export class BaseCompiler {
                     result.parsingTime = res.parsingTime;
                     result.filteredCount = res.filteredCount;
                     if (res.languageId) result.languageId = res.languageId;
+                    if (res.asmKeywordTypes) result.asmKeywordTypes = res.asmKeywordTypes;
                     if (result.objdumpTime) {
                         const dumpAndParseTime =
                             Number.parseInt(result.objdumpTime, 10) + Number.parseInt(result.parsingTime, 10);

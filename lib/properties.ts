@@ -29,7 +29,6 @@ import _ from 'underscore';
 
 import {isString} from '../shared/common-utils.js';
 import type {LanguageKey} from '../types/languages.interfaces.js';
-
 import {logger} from './logger.js';
 import type {PropertyGetter, PropertyValue, Widen} from './properties.interfaces.js';
 import {toProperty} from './utils.js';
@@ -74,26 +73,61 @@ export function get(base: string, property: string, defaultValue?: unknown): unk
 
 export type RawPropertiesGetter = typeof get;
 
-export function parseProperties(blob: string, name: string): Record<string, PropertyValue> {
+export interface PropertyParseError {
+    line: number;
+    text: string;
+}
+
+export interface ParsePropertiesOptions {
+    // Callback for parse errors. Defaults to logging via logger.error().
+    onError?: (error: PropertyParseError, filename: string) => void;
+}
+
+export function parseProperties(
+    blob: string,
+    name: string,
+    options?: ParsePropertiesOptions,
+): Record<string, PropertyValue> {
     const props: Record<string, PropertyValue> = {};
+    const onError =
+        options?.onError ??
+        ((error, filename) => logger.error(`Bad line: ${error.text} in ${filename}: ${error.line}`));
+
     for (const [index, lineOrig] of blob.split('\n').entries()) {
         const line = lineOrig.replace(/#.*/, '').trim();
         if (!line) continue;
-        const split = line.match(/([^=]+)=(.*)/);
+        const split = line.match(/([^=+]+)(\+?=)(.*)/);
         if (!split) {
-            logger.error(`Bad line: ${line} in ${name}: ${index + 1}`);
+            onError({line: index + 1, text: lineOrig.trim()}, name);
             continue;
         }
         const prop = split[1].trim();
-        let val: string | number | boolean = split[2].trim();
+        const operator = split[2];
+        // For += operator, preserve leading whitespace but trim trailing
+        // For = operator, trim both leading and trailing whitespace
+        let val: string | number | boolean = operator === '+=' ? split[3].trimEnd() : split[3].trim();
         // hack to avoid applying toProperty to version properties
         // so that they're not parsed as numbers
         if (!prop.endsWith('.version') && !prop.endsWith('.semver')) {
             val = toProperty(val);
         }
-        props[prop] = val;
+        if (operator === '+=') {
+            if (!(prop in props)) {
+                logger.error(`Cannot append to undefined property ${prop} in ${name}: ${index + 1}`);
+                continue;
+            }
+            const existing = props[prop];
+            if (typeof existing !== 'string' || typeof val !== 'string') {
+                logger.error(`Cannot append to non-string property ${prop} in ${name}: ${index + 1}`);
+                continue;
+            }
+            props[prop] = existing + val;
+        } else {
+            props[prop] = val;
+        }
         debug(`${prop} = ${val}`);
     }
+
     return props;
 }
 

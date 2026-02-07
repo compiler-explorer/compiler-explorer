@@ -1,3 +1,4 @@
+// Copyright (c) 2026, Compiler Explorer Authors
 // Copyright (c) 2019, Sebastian Rath
 // All rights reserved.
 //
@@ -28,7 +29,6 @@ import type {ParseFiltersAndOutputOptions} from '../../types/features/filters.in
 import {BaseCompiler} from '../base-compiler.js';
 import {CompilationEnvironment} from '../compilation-env.js';
 import {resolvePathFromAppRoot} from '../utils.js';
-
 import {BaseParser} from './argument-parsers.js';
 
 export class PythonCompiler extends BaseCompiler {
