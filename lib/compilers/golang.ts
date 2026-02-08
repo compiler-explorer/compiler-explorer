@@ -26,6 +26,7 @@ import fs from 'node:fs/promises';
 import path from 'node:path';
 
 import _ from 'underscore';
+
 import type {CacheKey, ExecutionOptionsWithEnv} from '../../types/compilation/compilation.interfaces.js';
 import type {PreliminaryCompilerInfo} from '../../types/compiler.interfaces.js';
 import type {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces.js';
@@ -66,6 +67,7 @@ type GoEnv = {
 export class GolangCompiler extends BaseCompiler {
     private readonly GOENV: GoEnv;
     private hasLibraries = false;
+    private verboseBuild = false;
 
     static get key() {
         return 'golang';
@@ -269,6 +271,8 @@ export class GolangCompiler extends BaseCompiler {
             GOPATH: goPath,
         };
 
+        this.verboseBuild = options.some(opt => opt === '-v' || opt === '-x');
+
         // Force offline compilation when libraries are selected
         if (this.hasLibraries) {
             execOptions.env.GOPROXY = 'off';
@@ -434,7 +438,9 @@ export class GolangCompiler extends BaseCompiler {
         }
         const logging = this.extractLogging(out);
         result.asm = this.convertNewGoL(out);
-        result.stderr = [];
+        result.stderr = this.verboseBuild
+            ? out.filter(obj => !obj.text.match(LINE_RE) && !obj.text.match(UNKNOWN_RE) && !obj.text.match(LOGGING_RE))
+            : [];
         result.stdout = utils.parseOutput(logging, result.inputFilename);
         return Promise.all([result, [], []]);
     }
@@ -455,10 +461,10 @@ export class GolangCompiler extends BaseCompiler {
         }
 
         if (filters.binary) {
-            return ['build', '-o', outputFilename, '-gcflags=' + unwrap(userOptions).join(' ')];
+            return ['build', '-trimpath', '-o', outputFilename, '-gcflags=' + unwrap(userOptions).join(' ')];
         }
         // Add userOptions to -gcflags to preserve previous behavior.
-        return ['build', '-o', outputFilename, '-gcflags=-S ' + unwrap(userOptions).join(' ')];
+        return ['build', '-trimpath', '-o', outputFilename, '-gcflags=-S ' + unwrap(userOptions).join(' ')];
     }
 
     override filterUserOptions(userOptions: string[]) {

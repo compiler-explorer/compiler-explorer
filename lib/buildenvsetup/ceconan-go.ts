@@ -54,8 +54,21 @@ export class BuildEnvSetupCeConanGoDirect extends BuildEnvSetupCeConanDirect {
     }
 
     override getTarget(key: CacheKey) {
-        const goarch = this.compiler.goarch || 'amd64';
-        return goarch.toString();
+        const goarch = (this.compiler.goarch || 'amd64').toString();
+        return BuildEnvSetupCeConanGoDirect.goArchToConanArch(goarch);
+    }
+
+    static goArchToConanArch(goarch: string): string {
+        switch (goarch) {
+            case 'amd64':
+                return 'x86_64';
+            case '386':
+                return 'x86';
+            case 'arm64':
+                return 'aarch64';
+            default:
+                return goarch;
+        }
     }
 
     override hasBinariesToLink(details: VersionInfo) {
