@@ -43,6 +43,12 @@ import _ from 'underscore';
 // We re-assign this
 let jsCookie = JsCookie;
 
+// TODO: Remove this polyfill when golden-layout is upgraded or forked.
+// Golden-layout 1.5.9 uses $.trim() which was removed in jQuery 4.0.
+// Their package.json incorrectly specifies "jquery": "*" instead of constraining to <4.0.
+// See: https://github.com/nicklockwood/goldenlayout/issues/648 (maybe)
+$.trim = (str: string) => (str == null ? '' : String.prototype.trim.call(str));
+
 import {unwrap} from '../shared/assert.js';
 import * as utils from '../shared/common-utils.js';
 import {unrisonify} from '../shared/url-serialization.js';
