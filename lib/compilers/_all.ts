@@ -30,6 +30,7 @@ export {AvrGcc6502Compiler} from './avrgcc6502.js';
 export {BeebAsmCompiler} from './beebasm.js';
 export {C2RustCompiler} from './c2rust.js';
 export {C3Compiler} from './c3c.js';
+export {Ca65Compiler} from './ca65.js';
 export {CarbonCompiler, CarbonExplorerCompiler} from './carbon.js';
 export {Cc65Compiler} from './cc65.js';
 export {CerberusCompiler} from './cerberus.js';
