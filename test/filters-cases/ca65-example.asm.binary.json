@@ -1,0 +1,52 @@
+{
+  "asm": [
+    {
+      "text": "                     .segment \"CODE\""
+    },
+    {
+      "text": "                     ; Simple 6502 program"
+    },
+    {
+      "text": "000000: A9 00        lda #$00"
+    },
+    {
+      "text": "000002: 8D 00 D0     sta $D000"
+    },
+    {
+      "text": "                     .macro inc16 addr"
+    },
+    {
+      "text": "                     inc addr"
+    },
+    {
+      "text": "                     bne :+"
+    },
+    {
+      "text": "                     inc addr+1"
+    },
+    {
+      "text": "                     :"
+    },
+    {
+      "text": "                     .endmacro"
+    },
+    {
+      "text": "                     counter: .word $0000"
+    },
+    {
+      "text": "                     inc counter"
+    },
+    {
+      "text": "000008: D0 02        bne :+"
+    },
+    {
+      "text": "                     inc counter+1"
+    },
+    {
+      "text": "                     :"
+    },
+    {
+      "text": "00000D: 60           rts"
+    }
+  ]
+}

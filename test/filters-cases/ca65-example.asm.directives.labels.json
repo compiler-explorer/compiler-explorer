@@ -1,0 +1,105 @@
+{
+  "asm": [
+    {
+      "labels": [],
+      "source": null,
+      "text": "000000r 1               .segment \"CODE\""
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "000000r 1               "
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "000000r 1               ; Simple 6502 program"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "000000r 1  A9 00           lda #$00"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "000002r 1  8D 00 D0        sta $D000"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "000005r 1               "
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "000005r 1               .macro inc16 addr"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "000005r 1                   inc addr"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "000005r 1                   bne :+"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "000005r 1                   inc addr+1"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "000005r 1               :"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "000005r 1               .endmacro"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "000005r 1               "
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "000005r 1               counter: .word $0000"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "000005r 2                   inc counter"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "000008r 2  D0 02           bne :+"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "00000Ar 2                   inc counter+1"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "00000Dr 2               :"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "00000Dr 1               "
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "00000Dr 1  60              rts"
+    }
+  ],
+  "labelDefinitions": {}
+}
