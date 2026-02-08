@@ -28,6 +28,7 @@ export class TableGenCompiler extends BaseCompiler {
         const possibleActions = await this.argParser.getPossibleActions();
         if (possibleActions.length > 0) {
             this.compiler.possibleOverrides?.push({
+                type: 'options',
                 name: CompilerOverrideType.action,
                 display_title: 'Action',
                 description:
