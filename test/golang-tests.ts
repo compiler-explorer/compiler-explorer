@@ -127,6 +127,48 @@ describe('GO environment variables', () => {
     });
 });
 
+describe('GO optionsForFilter', () => {
+    beforeAll(() => {
+        ce = makeCompilationEnvironment({languages});
+    });
+
+    it('Includes -trimpath for Go >= 1.13', () => {
+        const compiler = new GolangCompiler(
+            makeFakeCompilerInfo({exe: '/dev/null', lang: languages.go.id, semver: '1.21.0'}),
+            ce,
+        );
+        const options = compiler.optionsForFilter({binary: false} as any, '/tmp/output', []);
+        expect(options).toContain('-trimpath');
+    });
+
+    it('Excludes -trimpath for Go < 1.13', () => {
+        const compiler = new GolangCompiler(
+            makeFakeCompilerInfo({exe: '/dev/null', lang: languages.go.id, semver: '1.12.0'}),
+            ce,
+        );
+        const options = compiler.optionsForFilter({binary: false} as any, '/tmp/output', []);
+        expect(options).not.toContain('-trimpath');
+    });
+
+    it('Includes -trimpath for Go 1.13 exactly', () => {
+        const compiler = new GolangCompiler(
+            makeFakeCompilerInfo({exe: '/dev/null', lang: languages.go.id, semver: '1.13.0'}),
+            ce,
+        );
+        const options = compiler.optionsForFilter({binary: false} as any, '/tmp/output', []);
+        expect(options).toContain('-trimpath');
+    });
+
+    it('Excludes -trimpath for Go 1.12 in binary mode', () => {
+        const compiler = new GolangCompiler(
+            makeFakeCompilerInfo({exe: '/dev/null', lang: languages.go.id, semver: '1.12.0'}),
+            ce,
+        );
+        const options = compiler.optionsForFilter({binary: true} as any, '/tmp/output', []);
+        expect(options).not.toContain('-trimpath');
+    });
+});
+
 describe('GO library support', () => {
     let tempDir: string;
     let compiler: GolangCompiler;

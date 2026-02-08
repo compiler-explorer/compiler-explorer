@@ -25,6 +25,7 @@
 import fs from 'node:fs/promises';
 import path from 'node:path';
 
+import Semver from 'semver';
 import _ from 'underscore';
 
 import type {CacheKey, ExecutionOptionsWithEnv} from '../../types/compilation/compilation.interfaces.js';
@@ -37,6 +38,7 @@ import type {BuildEnvDownloadInfo} from '../buildenvsetup/buildenv.interfaces.js
 import {CompilationEnvironment} from '../compilation-env.js';
 import {logger} from '../logger.js';
 import * as utils from '../utils.js';
+import {asSafeVer} from '../utils.js';
 import {GolangParser} from './argument-parsers.js';
 
 interface GoLibraryMetadata {
@@ -460,11 +462,14 @@ export class GolangCompiler extends BaseCompiler {
             return ['tool', '6g', '-g', '-o', outputFilename, '-S'];
         }
 
+        // -trimpath was introduced in Go 1.13
+        const trimpath = Semver.gte(asSafeVer(this.compiler.semver), '1.13.0', true) ? ['-trimpath'] : [];
+
         if (filters.binary) {
-            return ['build', '-trimpath', '-o', outputFilename, '-gcflags=' + unwrap(userOptions).join(' ')];
+            return ['build', ...trimpath, '-o', outputFilename, '-gcflags=' + unwrap(userOptions).join(' ')];
         }
         // Add userOptions to -gcflags to preserve previous behavior.
-        return ['build', '-trimpath', '-o', outputFilename, '-gcflags=-S ' + unwrap(userOptions).join(' ')];
+        return ['build', ...trimpath, '-o', outputFilename, '-gcflags=-S ' + unwrap(userOptions).join(' ')];
     }
 
     override filterUserOptions(userOptions: string[]) {
