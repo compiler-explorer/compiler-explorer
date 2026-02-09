@@ -31,6 +31,8 @@ export enum CompilerOverrideType {
     edition = 'edition',
     stdver = 'stdver',
     action = 'action',
+    full_output = 'full_output',
+    d8_flags = 'd8-flags',
 }
 
 export type CompilerOverrideTypes = Set<CompilerOverrideType>;
@@ -42,16 +44,25 @@ export type CompilerOverrideOption = {
 
 export type CompilerOverrideOptions = Array<CompilerOverrideOption>;
 
-export type CompilerOverrideNameAndOptions = {
+type CompilerOverrideBase = {
+    type: string;
     name: CompilerOverrideType;
     display_title: string;
     description: string;
     flags: string[];
-    values: CompilerOverrideOptions;
     default?: string;
 };
 
-export type AllCompilerOverrideOptions = Array<CompilerOverrideNameAndOptions>;
+export type CompilerOverrideNameAndOptions = CompilerOverrideBase & {
+    type: 'options';
+    values: CompilerOverrideOptions;
+};
+
+export type CompilerOverrideString = CompilerOverrideBase & {
+    type: 'string';
+};
+
+export type AllCompilerOverrideOptions = Array<CompilerOverrideNameAndOptions | CompilerOverrideString>;
 
 export type EnvVarOverride = {
     name: string;

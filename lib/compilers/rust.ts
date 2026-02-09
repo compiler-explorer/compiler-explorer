@@ -133,6 +133,7 @@ export class RustCompiler extends BaseCompiler {
             }
 
             this.compiler.possibleOverrides?.push({
+                type: 'options',
                 name: CompilerOverrideType.edition,
                 display_title: 'Edition',
                 description:
