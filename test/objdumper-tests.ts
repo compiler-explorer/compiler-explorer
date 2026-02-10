@@ -22,11 +22,15 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import {describe, expect, it} from 'vitest';
+import {beforeAll, describe, expect, it} from 'vitest';
 
+import {BaseCompiler} from '../lib/base-compiler.js';
 import {DefaultObjdumper} from '../lib/objdumper/default.js';
-import type {ExecutionOptions} from '../types/compilation/compilation.interfaces.js';
+import {LlvmObjdumper} from '../lib/objdumper/llvm.js';
+import type {CompilationResult, ExecutionOptions} from '../types/compilation/compilation.interfaces.js';
+import type {CompilerInfo} from '../types/compiler.interfaces.js';
 import type {UnprocessedExecResult} from '../types/execution/execution.interfaces.js';
+import {makeCompilationEnvironment, makeFakeCompilerInfo} from './utils.js';
 
 describe('Objdumper', () => {
     describe('BaseObjdumper', () => {
@@ -120,5 +124,82 @@ describe('Objdumper', () => {
             expect(args).toContain('intel'); // intelAsm
             expect(args).toContain('--custom-arg');
         });
+    });
+});
+
+class TestableCompiler extends BaseCompiler {
+    public testGetObjdumperForResult(result: CompilationResult) {
+        return this.getObjdumperForResult(result);
+    }
+}
+
+const languages = {
+    'c++': {id: 'c++'},
+} as const;
+
+describe('Cross-architecture objdumper selection', () => {
+    let ce: ReturnType<typeof makeCompilationEnvironment>;
+
+    beforeAll(() => {
+        ce = makeCompilationEnvironment({languages});
+    });
+
+    function makeCompiler(overrides: Partial<CompilerInfo>) {
+        return new TestableCompiler(
+            makeFakeCompilerInfo({
+                exe: '/usr/bin/gcc',
+                lang: 'c++',
+                ldPath: [],
+                remote: {target: 'foo', path: 'bar', cmakePath: 'cmake', basePath: '/'},
+                objdumper: 'objdump',
+                objdumperType: 'default',
+                llvmObjdumper: '',
+                ...overrides,
+            }),
+            ce,
+        );
+    }
+
+    it('should return default objdumper for x86 targets', () => {
+        const compiler = makeCompiler({llvmObjdumper: 'llvm-objdump'});
+        const result = compiler.testGetObjdumperForResult({instructionSet: 'amd64'} as CompilationResult);
+        expect(result).not.toBeNull();
+        expect(result!.exe).toBe('objdump');
+    });
+
+    it('should return llvm-objdump for non-x86 targets when configured', () => {
+        const compiler = makeCompiler({llvmObjdumper: 'llvm-objdump'});
+        const result = compiler.testGetObjdumperForResult({instructionSet: 'aarch64'} as CompilationResult);
+        expect(result).not.toBeNull();
+        expect(result!.exe).toBe('llvm-objdump');
+        expect(result!.cls).toBe(LlvmObjdumper);
+    });
+
+    it('should return default objdumper for non-x86 targets when llvmObjdumper is not configured', () => {
+        const compiler = makeCompiler({llvmObjdumper: ''});
+        const result = compiler.testGetObjdumperForResult({instructionSet: 'aarch64'} as CompilationResult);
+        expect(result).not.toBeNull();
+        expect(result!.exe).toBe('objdump');
+    });
+
+    it('should return default objdumper when instructionSet is not set', () => {
+        const compiler = makeCompiler({llvmObjdumper: 'llvm-objdump'});
+        const result = compiler.testGetObjdumperForResult({} as CompilationResult);
+        expect(result).not.toBeNull();
+        expect(result!.exe).toBe('objdump');
+    });
+
+    it('should return null when no objdumper is configured', () => {
+        const compiler = makeCompiler({objdumper: '', objdumperType: ''});
+        const result = compiler.testGetObjdumperForResult({instructionSet: 'aarch64'} as CompilationResult);
+        expect(result).toBeNull();
+    });
+
+    it('should return llvm-objdump for arm targets', () => {
+        const compiler = makeCompiler({llvmObjdumper: 'llvm-objdump'});
+        const result = compiler.testGetObjdumperForResult({instructionSet: 'arm32'} as CompilationResult);
+        expect(result).not.toBeNull();
+        expect(result!.exe).toBe('llvm-objdump');
+        expect(result!.cls).toBe(LlvmObjdumper);
     });
 });
