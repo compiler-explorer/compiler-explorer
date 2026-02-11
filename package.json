@@ -20,7 +20,7 @@
   "dependencies": {
     "@aws-sdk/client-dynamodb": "^3.953.0",
     "@aws-sdk/client-ec2": "^3.975.0",
-    "@aws-sdk/client-s3": "^3.975.0",
+    "@aws-sdk/client-s3": "^3.987.0",
     "@aws-sdk/client-sqs": "^3.975.0",
     "@aws-sdk/client-ssm": "^3.975.0",
     "@aws-sdk/credential-providers": "^3.975.0",
