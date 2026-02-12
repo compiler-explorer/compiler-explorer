@@ -640,6 +640,17 @@ const definitions: Record<LanguageKey, LanguageDefinition> = {
         previewFilter: null,
         monacoDisassembly: null,
     },
+    nvvm: {
+        name: 'NVVM IR',
+        monaco: 'llvm-ir',
+        extensions: ['.ll'],
+        alias: [],
+        logoFilename: 'cuda.svg',
+        logoFilenameDark: 'cuda-dark.svg',
+        formatter: null,
+        previewFilter: null,
+        monacoDisassembly: null,
+    },
     numba: {
         name: 'Numba',
         monaco: 'python',

@@ -121,6 +121,7 @@ export {NumbaCompiler} from './numba.js';
 export {NvccCompiler} from './nvcc.js';
 export {NvcppCompiler} from './nvcpp.js';
 export {NvrtcCompiler} from './nvrtc.js';
+export {NVVMCompiler} from './nvvm.js';
 export {OCamlCompiler} from './ocaml.js';
 export {OdinCompiler} from './odin.js';
 export {OptCompiler} from './opt.js';
