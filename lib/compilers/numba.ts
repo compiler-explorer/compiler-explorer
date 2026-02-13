@@ -22,16 +22,26 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
+import fs from 'node:fs/promises';
+import path from 'node:path';
+
+import type {CompilationResult} from '../../types/compilation/compilation.interfaces.js';
+import type {
+    OptPipelineBackendOptions,
+    OptPipelineOutput,
+} from '../../types/compilation/opt-pipeline-output.interfaces.js';
 import type {PreliminaryCompilerInfo} from '../../types/compiler.interfaces.js';
 import type {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces.js';
 import {BaseCompiler} from '../base-compiler.js';
 import {CompilationEnvironment} from '../compilation-env.js';
 import {AsmParser} from '../parsers/asm-parser.js';
+import {NumbaPassDumpParser} from '../parsers/numba-pass-dump-parser.js';
 import {resolvePathFromAppRoot} from '../utils.js';
 import {BaseParser} from './argument-parsers.js';
 
 export class NumbaCompiler extends BaseCompiler {
     private compilerWrapperPath: string;
+    private passDumpParser: NumbaPassDumpParser;
 
     static get key() {
         return 'numba';
@@ -41,6 +51,13 @@ export class NumbaCompiler extends BaseCompiler {
         super(compilerInfo, env);
         this.compilerWrapperPath =
             this.compilerProps('compilerWrapper', '') || resolvePathFromAppRoot('etc', 'scripts', 'numba_wrapper.py');
+        this.passDumpParser = new NumbaPassDumpParser();
+        this.compiler.optPipeline = {
+            groupName: 'Function',
+            supportedOptions: [],
+            supportedFilters: [],
+            monacoLanguage: 'python',
+        };
     }
 
     override async processAsm(result, filters, options: string[]) {
@@ -79,6 +96,64 @@ export class NumbaCompiler extends BaseCompiler {
             item.text = line;
         }
         return result;
+    }
+
+    override async generateOptPipeline(
+        inputFilename: string,
+        options: string[],
+        filters: ParseFiltersAndOutputOptions,
+        optPipelineOptions: OptPipelineBackendOptions,
+    ): Promise<OptPipelineOutput | undefined> {
+        const pipelineDir = await this.newTempDir();
+        const inputFile = this.filename(inputFilename);
+        const pipelineFile = path.join(pipelineDir, path.basename(inputFile));
+        await fs.copyFile(inputFile, pipelineFile);
+
+        const execOptions = this.getDefaultExecOptions();
+        execOptions.maxOutput = 1024 * 1024 * 1024;
+        execOptions.env.NUMBA_DEBUG_PRINT_AFTER = 'all';
+
+        const compileStart = performance.now();
+        const output = await this.runCompiler(this.compiler.exe, options, pipelineFile, execOptions);
+        const compileEnd = performance.now();
+
+        if (output.timedOut) {
+            return {
+                error: 'Invocation timed out',
+                results: {},
+                compileTime: output.execTime || compileEnd - compileStart,
+            };
+        }
+
+        if (output.code !== 0) {
+            return;
+        }
+
+        try {
+            const parseStart = performance.now();
+            const results = await this.processOptPipeline(output, filters, optPipelineOptions);
+            const parseEnd = performance.now();
+            return {
+                results,
+                compileTime: compileEnd - compileStart,
+                parseTime: parseEnd - parseStart,
+            };
+        } catch (e: any) {
+            return {
+                error: e.toString(),
+                results: {},
+                compileTime: compileEnd - compileStart,
+            };
+        }
+    }
+
+    override async processOptPipeline(
+        output: CompilationResult,
+        filters: ParseFiltersAndOutputOptions,
+        optPipelineOptions: OptPipelineBackendOptions,
+    ) {
+        // Numba writes pass dumps to stdout via print()
+        return this.passDumpParser.process(output.stdout, filters, optPipelineOptions);
     }
 
     override optionsForFilter(filters: ParseFiltersAndOutputOptions, outputFilename: string): string[] {
