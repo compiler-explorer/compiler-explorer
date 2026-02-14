@@ -172,3 +172,4 @@ From oldest to newest contributor, we would like to thank:
 - [Oguz Ulgen](https://github.com/oulgen)
 - [Josh Brice](https://github.com/jjb0123)
 - [Sean Garwood](https://github.com/sean-garwood)
+- [Victor Vianna](https://github.com/victorvianna)
