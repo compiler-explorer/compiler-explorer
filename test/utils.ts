@@ -33,8 +33,10 @@ import * as temp from '../lib/temp.js';
 // Check if expensive tests should be skipped (e.g., during pre-commit hooks)
 export const skipExpensiveTests = process.env.SKIP_EXPENSIVE_TESTS === 'true';
 
+import {BaseCompiler} from '../lib/base-compiler.js';
 import {CompilationEnvironment} from '../lib/compilation-env.js';
 import {CompilationQueue} from '../lib/compilation-queue.js';
+import * as exec from '../lib/exec.js';
 import {AsmParser} from '../lib/parsers/asm-parser.js';
 import {AsmParserCa65} from '../lib/parsers/asm-parser-ca65.js';
 import {CC65AsmParser} from '../lib/parsers/asm-parser-cc65.js';
@@ -42,6 +44,7 @@ import {AsmEWAVRParser} from '../lib/parsers/asm-parser-ewavr.js';
 import {PTXAsmParser} from '../lib/parsers/asm-parser-ptx.js';
 import {SassAsmParser} from '../lib/parsers/asm-parser-sass.js';
 import {VcAsmParser} from '../lib/parsers/asm-parser-vc.js';
+import * as properties from '../lib/properties.js';
 import {CompilerProps, fakeProps} from '../lib/properties.js';
 import {LLVMIrBackendOptions} from '../types/compilation/ir.interfaces.js';
 import {CompilerInfo} from '../types/compiler.interfaces.js';
@@ -139,4 +142,23 @@ export function processAsm(filename: string, filters: ParseFiltersAndOutputOptio
         parser = testParser;
     }
     return parser.process(file, filters);
+}
+
+export class DummyCompiler extends BaseCompiler {
+    constructor() {
+        const env = {
+            ceProps: properties.fakeProps({}),
+            getCompilerPropsForLanguage: () => {
+                return (prop, def) => def;
+            },
+        } as unknown as CompilationEnvironment;
+
+        // using c++ as the compiler needs at least one language
+        const compiler = makeFakeCompilerInfo({lang: 'c++', exe: 'gcc'});
+
+        super(compiler, env);
+    }
+    override exec(command, args, options) {
+        return exec.execute(command, args, options);
+    }
 }
