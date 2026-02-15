@@ -69,7 +69,7 @@ export class LlvmIrParser {
         }
 
         this.debugReference = /!dbg (!\d+)/;
-        this.metaNodeRe = /^(!\d+) = (?:distinct )?!DI([A-Za-z]+)\(([^)]+?)\)/;
+        this.metaNodeRe = /^(!\d+) = (?:distinct )?!DI([A-Za-z]+)\(([^)]*?)\)/;
         this.otherMetaDirective = /^(!\d+) = (?:distinct )?!{.*}/;
         this.namedMetaDirective = /^(![.A-Z_a-z-]+) = (?:distinct )?!{.*}/;
         this.metaNodeOptionsRe = /(\w+): (!?\d+|\w+|""|"(?:[^"]|\\")*[^\\]")/gi;

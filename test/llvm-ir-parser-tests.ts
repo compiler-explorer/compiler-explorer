@@ -99,6 +99,13 @@ describe('llvm-ir parseMetaNode', () => {
             directory: '/home/compiler-explorer',
         });
     });
+
+    it('should parse meta nodes without operands', () => {
+        expect(llvmIrParser.parseMetaNode('!123 = distinct !DIAssignID()')).toEqual({
+            metaType: 'AssignID',
+            metaId: '!123',
+        });
+    });
 });
 
 describe('llvm-ir getSourceLineNumber', () => {
