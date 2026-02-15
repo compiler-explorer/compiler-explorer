@@ -107,6 +107,7 @@ export {LFortranCompiler} from './lfortran.js';
 export {LLCCompiler} from './llc.js';
 export {LLVMmcaTool} from './llvm-mca.js';
 export {LLVMMOSCompiler} from './llvm-mos.js';
+export {M68kCompiler} from './m68k.js';
 export {MadPascalCompiler} from './madpascal.js';
 export {MicroPythonCompiler} from './micropython.js';
 export {MLIRCompiler} from './mlir.js';
