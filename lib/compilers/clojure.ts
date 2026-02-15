@@ -123,6 +123,8 @@ export class ClojureCompiler extends JavaCompiler {
         if (!execOptions.customCwd) {
             execOptions.customCwd = path.dirname(inputFilename);
         }
+        const tmpDir = path.dirname(inputFilename);
+        execOptions.env.CLJ_CACHE = tmpDir;
 
         // The items in 'options' before the source file are user inputs.
         const sourceFileOptionIndex = options.findIndex(option => {
