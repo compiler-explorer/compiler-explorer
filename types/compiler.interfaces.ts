@@ -59,6 +59,7 @@ export type CompilerInfo = {
     objdumper: string;
     objdumperType: string;
     objdumperArgs: string[];
+    llvmObjdumper: string;
     intelAsm: string;
     supportsAsmDocs: boolean;
     instructionSet: InstructionSet | null;

@@ -271,6 +271,7 @@ export class CompilerFinder {
             objdumper: props('objdumper', ''),
             objdumperType: props('objdumperType', ''),
             objdumperArgs: splitArrayPropsOrEmpty('objdumperArgs', '|'),
+            llvmObjdumper: props('llvmObjdumper', ''),
             intelAsm: props('intelAsm', ''),
             supportsAsmDocs: props('supportsAsmDocs', true),
             instructionSet: instructionSet === '' ? null : instructionSet,
