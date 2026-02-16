@@ -72,6 +72,7 @@ export type OptionsHandlerLibrary = {
     examples: string[];
     options: string[];
     packagedheaders?: boolean;
+    lookupname?: string;
 };
 
 // TODO: Is this the same as Options in static/options.interfaces.ts?
@@ -297,6 +298,10 @@ export class ClientOptionsHandler implements ClientOptionsSource {
                         options: splitArguments(this.compilerProps(lang, libBaseName + '.options', '')),
                         packagedheaders: this.compilerProps<boolean>(lang, libBaseName + '.packagedheaders', false),
                     };
+                    const libLookupname = this.compilerProps<string>(lang, libBaseName + '.lookupname');
+                    if (libLookupname) {
+                        libraries[lang][lib].lookupname = libLookupname;
+                    }
                     const listedVersions = `${this.compilerProps(lang, libBaseName + '.versions')}`;
                     if (listedVersions) {
                         for (const version of listedVersions.split(':')) {
@@ -332,12 +337,14 @@ export class ClientOptionsHandler implements ClientOptionsSource {
                             const lookupname = this.compilerProps(lang, libVersionName + '.lookupname');
                             if (lookupname) {
                                 versionObject.lookupname = lookupname;
+                            } else if (libraries[lang][lib].lookupname) {
+                                versionObject.lookupname = libraries[lang][lib].lookupname;
                             }
 
                             const includes = this.compilerProps<string>(lang, libVersionName + '.path');
                             if (includes) {
                                 versionObject.path = includes.split(path.delimiter);
-                            } else if (version !== 'autodetect') {
+                            } else if (version !== 'autodetect' && !versionObject.packagedheaders) {
                                 logger.warn(`Library ${lib} ${version} (${lang}) has no include paths`);
                             }
 

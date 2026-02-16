@@ -117,6 +117,7 @@ import {LlvmAstParser} from './llvm-ast.js';
 import {LlvmIrParser} from './llvm-ir.js';
 import {logger} from './logger.js';
 import {BaseObjdumper, getObjdumperTypeByKey} from './objdumper/index.js';
+import {LlvmObjdumper} from './objdumper/llvm.js';
 import {ClientOptionsType, OptionsHandlerLibrary, VersionInfo} from './options-handler.js';
 import {Packager} from './packager.js';
 import type {IAsmParser} from './parsers/asm-parser.interfaces.js';
@@ -636,6 +637,19 @@ export class BaseCompiler {
         return output;
     }
 
+    protected getObjdumperForResult(result: CompilationResult): {exe: string; cls: new () => BaseObjdumper} | null {
+        if (!this.compiler.objdumper || !this.objdumperClass) return null;
+
+        if (this.compiler.llvmObjdumper && result.instructionSet) {
+            const hostArchitectures = new Set(['amd64', 'x86']);
+            if (!hostArchitectures.has(result.instructionSet)) {
+                return {exe: this.compiler.llvmObjdumper, cls: LlvmObjdumper};
+            }
+        }
+
+        return {exe: this.compiler.objdumper, cls: this.objdumperClass};
+    }
+
     async objdump(
         outputFilename: string,
         result: any,
@@ -653,7 +667,13 @@ export class BaseCompiler {
             return result;
         }
 
-        const objdumper = new this.objdumperClass();
+        const objdumperInfo = this.getObjdumperForResult(result);
+        if (!objdumperInfo) {
+            result.asm = '<No objdumper configured>';
+            return result;
+        }
+
+        const objdumper = new objdumperInfo.cls();
         const args = objdumper.getArgs(
             objdumpInputFile,
             demangle,
@@ -679,7 +699,7 @@ export class BaseCompiler {
             };
 
             const objResult = await objdumper.executeObjdump(
-                this.compiler.objdumper,
+                objdumperInfo.exe,
                 args,
                 execOptions,
                 this.exec.bind(this),
@@ -689,7 +709,7 @@ export class BaseCompiler {
                 result.objdumpTime = objResult.objdumpTime;
                 result.asm = this.postProcessObjdumpOutput(objResult.asm ?? '');
             } else {
-                logger.error(`Error executing objdump ${this.compiler.objdumper}`, objResult);
+                logger.error(`Error executing objdump ${objdumperInfo.exe}`, objResult);
                 result.asm = `<No output: objdump returned ${objResult.code}>`;
             }
         }
@@ -3861,6 +3881,7 @@ but nothing was dumped. Possible causes are:
         const targets = await this.getTargetsAsOverrideValues();
         if (targets.length > 0) {
             this.compiler.possibleOverrides?.push({
+                type: 'options',
                 name: CompilerOverrideType.arch,
                 display_title: 'Target architecture',
                 description: c_default_target_description,
@@ -3876,6 +3897,7 @@ but nothing was dumped. Possible causes are:
             if (possibleToolchains.length > 0) {
                 const flag = getToolchainFlagFromOptions(compilerOptions);
                 this.compiler.possibleOverrides?.push({
+                    type: 'options',
                     name: CompilerOverrideType.toolchain,
                     display_title: 'Toolchain',
                     description: c_default_toolchain_description,
@@ -3888,6 +3910,7 @@ but nothing was dumped. Possible causes are:
         const stdVersions = await this.getPossibleStdversAsOverrideValues();
         if (stdVersions.length > 0) {
             this.compiler.possibleOverrides?.push({
+                type: 'options',
                 name: CompilerOverrideType.stdver,
                 display_title: 'Std version',
                 description: this.getStdVerOverrideDescription(),
