@@ -83,6 +83,30 @@ compiler.gcc720.name=GCC 7.2.0
 compiler.gcc720.exe=/usr/bin/gcc-7.2.0
 ```
 
+### Compiler ID stability on the public site
+
+> **This section applies to the public [godbolt.org](https://godbolt.org) site** (i.e. the `*.amazon.properties` files
+> and the [infra](https://github.com/compiler-explorer/infra) install configuration). If you run your own instance of
+> Compiler Explorer, you are free to manage IDs however you like.
+
+On the public site, compiler IDs are permanent. Saved sessions, shortlinks, and embedded widgets all reference compilers
+by their ID. If an ID is removed or reassigned to a different compiler version, those existing links will break or
+silently produce different results.
+
+**When updating to newer versions:** always add the new version alongside existing ones — never replace them. For
+example, if Go 1.24.2 exists as `gl1242`, and 1.24.13 is released, add a new `gl12413` entry. Do not change `gl1242`
+to point at 1.24.13.
+
+**If a compiler genuinely cannot be kept** (e.g. the upstream project has restructured and the binary no longer works),
+use the `alias` property on a representative replacement compiler so that the old ID still resolves to something
+sensible. This is preferable to a broken link.
+
+The same principle applies to the infra install configuration: never remove entries from the `targets` lists in the YAML
+files, only add new ones.
+
+> **Note:** In rare cases, language maintainers who are actively involved with CE may choose to accept the breakage for
+> lesser-used languages. This is the exception, not the rule — when in doubt, keep the old entry.
+
 In addition to the `name` and `exe` per-compiler configuration keys, there are also some other options. Most of them
 default to sensible values for GCC-like compilers.
 
