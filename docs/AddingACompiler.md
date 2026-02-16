@@ -98,6 +98,14 @@ replacement so the old ID still resolves to something reasonable.
 
 The same goes for the infra repo: don't remove entries from the `targets` lists in the YAML files.
 
+Some languages use a convention where cross-architecture IDs represent the latest patch of a given major.minor series
+rather than a specific patch version. For example, Go's cross-architecture entries (e.g. `386_gl124`, `arm_gl124`) are
+updated in-place when a new patch release comes out (1.24.2 → 1.24.13). For the primary (amd64) entries, Go uses IDs
+that include the full patch version (e.g. `gl1242`), and when a new patch comes out, the old ID is replaced with a new
+one (e.g. `gl12413`). When doing this, add an `alias` on the new compiler pointing to the old ID so that existing
+shared links still resolve. If you're updating a language that already follows this pattern, it's fine to continue
+doing so.
+
 In rare cases, language maintainers who are actively involved with CE have chosen to accept the breakage for
 lesser-used languages. This is the exception; when in doubt, keep the old entry.
 
