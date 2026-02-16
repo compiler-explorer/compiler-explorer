@@ -83,6 +83,24 @@ compiler.gcc720.name=GCC 7.2.0
 compiler.gcc720.exe=/usr/bin/gcc-7.2.0
 ```
 
+### Don't remove or rename compilers on the public site
+
+This applies to the public [godbolt.org](https://godbolt.org) configuration (the `*.amazon.properties` files and the
+[infra](https://github.com/compiler-explorer/infra) install targets).
+
+Shortlinks, saved sessions, and embedded widgets all refer to compilers by ID. If you remove an ID or point it at a
+different version, those links break, or worse, silently show different output. So: when adding a newer patch release,
+add it next to the existing one. For example, if Go 1.24.2 is `gl1242` and 1.24.13 comes out, add `gl12413` as a new
+entry. Don't change what `gl1242` points to.
+
+If a compiler really can't be kept around (say the upstream binary no longer works), use `alias` on a suitable
+replacement so the old ID still resolves to something reasonable.
+
+The same goes for the infra repo: don't remove entries from the `targets` lists in the YAML files.
+
+In rare cases, language maintainers who are actively involved with CE have chosen to accept the breakage for
+lesser-used languages. This is the exception; when in doubt, keep the old entry.
+
 In addition to the `name` and `exe` per-compiler configuration keys, there are also some other options. Most of them
 default to sensible values for GCC-like compilers.
 
