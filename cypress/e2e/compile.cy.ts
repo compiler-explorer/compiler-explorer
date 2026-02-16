@@ -31,20 +31,35 @@ import {
 } from '../support/utils';
 
 /**
+ * Find a GoldenLayout pane by matching text in its tab title.
+ * Each pane lives in an .lm_item.lm_stack with a .lm_title span in its header.
+ * Returns the .lm_content element within the matching stack.
+ */
+function findPane(titleMatch: string) {
+    return cy.contains('.lm_title', titleMatch).closest('.lm_item.lm_stack').find('.lm_content');
+}
+
+/**
  * Get the compiler pane's Monaco editor.
- * Uses the data-cy attribute on the compiler toolbar to find the right pane,
- * rather than relying on fragile DOM ordering.
+ * The compiler tab title contains the compiler name and "(Editor #N)".
  */
 function compilerOutput() {
-    return cy.get('[data-cy="new-compiler-dropdown-btn"]').closest('.lm_content').find('.monaco-editor');
+    return findPane('Editor #').find('.monaco-editor');
 }
 
 /**
  * Get the source editor pane's Monaco editor.
- * Uses the data-cy attribute on the editor toolbar to find the right pane.
+ * The editor tab title contains "source" (e.g. "C++ source #1").
  */
 function sourceEditor() {
-    return cy.get('[data-cy="new-editor-dropdown-btn"]').closest('.lm_content').find('.monaco-editor');
+    return findPane('source').find('.monaco-editor');
+}
+
+/**
+ * Get the compiler pane's content area (for finding toolbar elements like filters and options).
+ */
+function compilerPane() {
+    return findPane('Editor #');
 }
 
 /** Wait for the page to load with both source and compiler editors visible. */
@@ -149,11 +164,7 @@ describe('Compiler options', () => {
     });
 
     it('should apply -D flag and recompile', () => {
-        cy.get('[data-cy="new-compiler-dropdown-btn"]')
-            .closest('.lm_content')
-            .find('input.options')
-            .clear()
-            .type('-DCYPRESS_TEST{enter}');
+        compilerPane().find('input.options').clear().type('-DCYPRESS_TEST{enter}');
 
         monacoEditorTextShouldContain(compilerOutput(), 'cypress_test_active');
         monacoEditorTextShouldNotContain(compilerOutput(), 'cypress_test_inactive');
@@ -169,11 +180,8 @@ describe('Output filters', () => {
         // By default, directives are filtered out.
         compilerOutput().find('.view-lines').should('not.contain.text', '.cfi_startproc');
 
-        // Toggle directives filter off (scoped to compiler pane)
-        cy.get('[data-cy="new-compiler-dropdown-btn"]')
-            .closest('.lm_content')
-            .find('button[title="Compiler output filters"]')
-            .click();
+        // Toggle directives filter off
+        compilerPane().find('button[title="Compiler output filters"]').click();
         cy.get('button[data-bind="directives"]').first().click();
 
         // Now directives should appear
@@ -182,10 +190,7 @@ describe('Output filters', () => {
 
     it('should show comment-only lines when comment filter is toggled off', () => {
         // Toggle the comment filter off
-        cy.get('[data-cy="new-compiler-dropdown-btn"]')
-            .closest('.lm_content')
-            .find('button[title="Compiler output filters"]')
-            .click();
+        compilerPane().find('button[title="Compiler output filters"]').click();
         cy.get('button[data-bind="commentOnly"]').first().click();
 
         // GCC emits comment lines like "# GNU C++17..." at the top of assembly output.
