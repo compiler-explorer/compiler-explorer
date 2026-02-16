@@ -45,7 +45,6 @@ import '../formatter-registry';
 import '../modes/_all';
 
 import {Container} from 'golden-layout';
-import type {escape_html} from 'tom-select/dist/types/utils.js';
 
 import {assert, unwrap} from '../../shared/assert.js';
 import {escapeHTML, isString} from '../../shared/common-utils.js';
@@ -1922,7 +1921,12 @@ export class Editor extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Edit
         this.hub.removeEditor(this.id);
     }
 
-    getSelectizeRenderHtml(language: Language, escapeHtml: typeof escape_html, width: number, height: number): string {
+    getSelectizeRenderHtml(
+        language: Language,
+        escapeHtml: (str: string) => string,
+        width: number,
+        height: number,
+    ): string {
         return `
         <div class='d-flex' style='align-items: center'>
           <div class='me-1 d-flex' style='align-items: center; width: ${width}px; height: ${height}px'>
@@ -1956,11 +1960,11 @@ export class Editor extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Edit
         `;
     }
 
-    renderSelectizeOption(data: Language, escapeHtml: typeof escape_html) {
+    renderSelectizeOption(data: Language, escapeHtml: (str: string) => string) {
         return this.getSelectizeRenderHtml(data, escapeHtml, 23, 23);
     }
 
-    renderSelectizeItem(data: Language, escapeHtml: typeof escape_html) {
+    renderSelectizeItem(data: Language, escapeHtml: (str: string) => string) {
         return this.getSelectizeRenderHtml(data, escapeHtml, 20, 20);
     }
 
