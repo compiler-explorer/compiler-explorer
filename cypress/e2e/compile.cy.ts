@@ -41,16 +41,11 @@ describe('Basic compilation', () => {
 
     it('should compile the default code on load and show assembly', () => {
         // The default code (square function) compiles automatically on page load.
-        // Wait for the compiler pane to have a Monaco editor with assembly output.
         // There should be at least 2 Monaco editors: source + compiler output.
         cy.get('.monaco-editor', {timeout: 10000}).should('have.length.at.least', 2);
 
-        // The compiler output should contain x86 assembly instructions.
-        // `imul` is what g++ emits for `num * num` at default optimisation.
-        cy.get('.monaco-editor')
-            .eq(1)
-            .find('.view-lines', {timeout: 10000})
-            .should('contain.text', 'square');
+        // The compiler output should contain the function name in assembly labels.
+        cy.get('.monaco-editor').eq(1).find('.view-lines', {timeout: 10000}).should('contain.text', 'square');
     });
 
     it('should recompile when the source code changes', () => {
@@ -62,9 +57,64 @@ describe('Basic compilation', () => {
         setMonacoEditorContent('int cube(int n) { return n * n * n; }');
 
         // The compiler output should update to show the new function name
+        cy.get('.monaco-editor').eq(1).find('.view-lines', {timeout: 10000}).should('contain.text', 'cube');
+    });
+});
+
+describe('Source-assembly line linking', () => {
+    beforeEach(() => {
+        cy.visit('/', {
+            onBeforeLoad: win => {
+                stubConsoleOutput(win);
+            },
+        });
+        // Use two distinct functions so we can verify correct line mapping
+        setMonacoEditorContent(
+            [
+                'int square(int num) {',
+                '    return num * num;',
+                '}',
+                '',
+                'int add(int a, int b) {',
+                '    return a + b;',
+                '}',
+            ].join('\n'),
+        );
+        // Wait for compilation to produce output containing both functions
+        cy.get('.monaco-editor', {timeout: 10000}).should('have.length.at.least', 2);
+        cy.get('.monaco-editor').eq(1).find('.view-lines', {timeout: 10000}).should('contain.text', 'square');
+        cy.get('.monaco-editor').eq(1).find('.view-lines').should('contain.text', 'add');
+    });
+
+    afterEach(() => {
+        return cy.window().then(_win => {
+            assertNoConsoleOutput();
+        });
+    });
+
+    it('should highlight assembly lines when hovering over source code', () => {
+        // Hover over a source line containing code (line 2: "return num * num;").
+        // Monaco picks up mousemove events on .view-line elements within the editor.
+        cy.get('.monaco-editor')
+            .first()
+            .find('.view-line')
+            .eq(1) // Line 2 (0-indexed)
+            .trigger('mousemove', {force: true});
+
+        // The compiler pane should now show linked-code decorations
+        cy.get('.monaco-editor').eq(1).find('.linked-code-decoration-margin', {timeout: 5000}).should('exist');
+    });
+
+    it('should highlight source lines when hovering over assembly', () => {
+        // Hover over an assembly line in the compiler output.
+        // Skip line 0 (likely a label) and hover over an instruction line.
         cy.get('.monaco-editor')
             .eq(1)
-            .find('.view-lines', {timeout: 10000})
-            .should('contain.text', 'cube');
+            .find('.view-line')
+            .eq(2) // An instruction line
+            .trigger('mousemove', {force: true});
+
+        // The source editor should now show linked-code decorations
+        cy.get('.monaco-editor').first().find('.linked-code-decoration-margin', {timeout: 5000}).should('exist');
     });
 });
