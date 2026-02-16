@@ -1,4 +1,4 @@
-// Copyright (c) 2025, Compiler Explorer Authors
+// Copyright (c) 2026, Compiler Explorer Authors
 // All rights reserved.
 //
 // Redistribution and use in source and binary forms, with or without
@@ -40,50 +40,49 @@ function sourceEditor() {
     return cy.get('.monaco-editor').first();
 }
 
+/** Wait for the page to load with both source and compiler editors visible. */
+function waitForEditors() {
+    cy.get('.monaco-editor', {timeout: 10000}).should('have.length.at.least', 2);
+}
+
+/** Common setup: visit page, stub console, wait for editors. */
+function setupAndWaitForCompilation() {
+    waitForEditors();
+    monacoEditorTextShouldContain(compilerOutput(), 'square');
+}
+
+// All tests share the same visit + console stub/assert pattern.
+beforeEach(() => {
+    cy.visit('/', {
+        onBeforeLoad: win => {
+            stubConsoleOutput(win);
+        },
+    });
+});
+
+afterEach(() => {
+    return cy.window().then(_win => {
+        assertNoConsoleOutput();
+    });
+});
+
 describe('Basic compilation', () => {
-    beforeEach(() => {
-        cy.visit('/', {
-            onBeforeLoad: win => {
-                stubConsoleOutput(win);
-            },
-        });
-    });
-
-    afterEach(() => {
-        return cy.window().then(_win => {
-            assertNoConsoleOutput();
-        });
-    });
-
     it('should compile the default code on load and show assembly', () => {
-        // The default code (square function) compiles automatically on page load.
-        // There should be at least 2 Monaco editors: source + compiler output.
-        cy.get('.monaco-editor', {timeout: 10000}).should('have.length.at.least', 2);
-
-        // The compiler output should contain the function name in assembly labels.
+        waitForEditors();
         monacoEditorTextShouldContain(compilerOutput(), 'square');
     });
 
     it('should recompile when the source code changes', () => {
-        // Wait for initial compilation to finish
-        cy.get('.monaco-editor', {timeout: 10000}).should('have.length.at.least', 2);
-        monacoEditorTextShouldContain(compilerOutput(), 'square');
+        setupAndWaitForCompilation();
 
-        // Change the code to a different function
         setMonacoEditorContent('int cube(int n) { return n * n * n; }');
 
-        // The compiler output should update to show the new function name
         monacoEditorTextShouldContain(compilerOutput(), 'cube');
     });
 });
 
 describe('Source-assembly line linking', () => {
     beforeEach(() => {
-        cy.visit('/', {
-            onBeforeLoad: win => {
-                stubConsoleOutput(win);
-            },
-        });
         // Use two distinct functions so we can verify correct line mapping
         setMonacoEditorContent(
             [
@@ -96,16 +95,9 @@ describe('Source-assembly line linking', () => {
                 '}',
             ].join('\n'),
         );
-        // Wait for compilation to produce output containing both functions
-        cy.get('.monaco-editor', {timeout: 10000}).should('have.length.at.least', 2);
+        waitForEditors();
         monacoEditorTextShouldContain(compilerOutput(), 'square');
         monacoEditorTextShouldContain(compilerOutput(), 'add');
-    });
-
-    afterEach(() => {
-        return cy.window().then(_win => {
-            assertNoConsoleOutput();
-        });
     });
 
     it('should highlight assembly lines when hovering over source code', () => {
@@ -122,7 +114,6 @@ describe('Source-assembly line linking', () => {
 
     it('should highlight source lines when hovering over assembly', () => {
         // Hover over an assembly line in the compiler output.
-        // Skip line 0 (likely a label) and hover over an instruction line.
         compilerOutput()
             .find('.view-line')
             .eq(2) // An instruction line
@@ -135,11 +126,6 @@ describe('Source-assembly line linking', () => {
 
 describe('Compiler options', () => {
     beforeEach(() => {
-        cy.visit('/', {
-            onBeforeLoad: win => {
-                stubConsoleOutput(win);
-            },
-        });
         // Use code with a preprocessor conditional so we can verify -D takes effect
         setMonacoEditorContent(
             [
@@ -150,89 +136,49 @@ describe('Compiler options', () => {
                 '#endif',
             ].join('\n'),
         );
-        // Wait for initial compilation (without -D, should see the #else branch)
-        cy.get('.monaco-editor', {timeout: 10000}).should('have.length.at.least', 2);
+        waitForEditors();
         monacoEditorTextShouldContain(compilerOutput(), 'cypress_test_inactive');
     });
 
-    afterEach(() => {
-        return cy.window().then(_win => {
-            assertNoConsoleOutput();
-        });
-    });
-
     it('should apply -D flag and recompile', () => {
-        // Type -DCYPRESS_TEST into the compiler options field
         cy.get('input.options').first().clear().type('-DCYPRESS_TEST{enter}');
 
-        // Now the #ifdef branch should be active
         monacoEditorTextShouldContain(compilerOutput(), 'cypress_test_active');
-        // And the #else branch should be gone
         monacoEditorTextShouldNotContain(compilerOutput(), 'cypress_test_inactive');
     });
 });
 
 describe('Output filters', () => {
     beforeEach(() => {
-        cy.visit('/', {
-            onBeforeLoad: win => {
-                stubConsoleOutput(win);
-            },
-        });
-        // Wait for compilation of default code
-        cy.get('.monaco-editor', {timeout: 10000}).should('have.length.at.least', 2);
-        monacoEditorTextShouldContain(compilerOutput(), 'square');
-    });
-
-    afterEach(() => {
-        return cy.window().then(_win => {
-            assertNoConsoleOutput();
-        });
+        setupAndWaitForCompilation();
     });
 
     it('should show directives when directive filter is toggled off', () => {
-        // By default, directives are filtered out. The assembly should NOT contain directives.
+        // By default, directives are filtered out.
         compilerOutput().find('.view-lines').should('not.contain.text', '.cfi_startproc');
 
-        // Open the filter dropdown and toggle directives off
+        // Toggle directives filter off
         cy.get('button[title="Compiler output filters"]').first().click();
         cy.get('button[data-bind="directives"]').first().click();
 
-        // Now directives should appear in the output
+        // Now directives should appear
         compilerOutput().find('.view-lines', {timeout: 10000}).should('contain.text', '.cfi_startproc');
     });
 
     it('should show comment-only lines when comment filter is toggled off', () => {
-        // By default, comment-only lines are filtered out.
         // Toggle the comment filter off
         cy.get('button[title="Compiler output filters"]').first().click();
         cy.get('button[data-bind="commentOnly"]').first().click();
 
         // GCC emits comment lines like "# GNU C++17..." at the top of assembly output.
-        // With comments filtered (default), these are hidden. With filter off, they appear.
         monacoEditorTextShouldContain(compilerOutput(), 'GNU C++');
     });
 });
 
 describe('Compilation errors', () => {
-    beforeEach(() => {
-        cy.visit('/', {
-            onBeforeLoad: win => {
-                stubConsoleOutput(win);
-            },
-        });
-    });
-
-    afterEach(() => {
-        return cy.window().then(_win => {
-            assertNoConsoleOutput();
-        });
-    });
-
     it('should display compilation failure message for invalid code', () => {
         setMonacoEditorContent('int main() { this is not valid c++; }');
 
-        // The compiler pane shows "<Compilation failed>" when compilation fails.
         monacoEditorTextShouldContain(compilerOutput(), 'Compilation failed');
     });
 });
