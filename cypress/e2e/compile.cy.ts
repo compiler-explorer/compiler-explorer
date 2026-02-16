@@ -22,7 +22,23 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import {assertNoConsoleOutput, setMonacoEditorContent, stubConsoleOutput} from '../support/utils';
+import {
+    assertNoConsoleOutput,
+    monacoEditorTextShouldContain,
+    monacoEditorTextShouldNotContain,
+    setMonacoEditorContent,
+    stubConsoleOutput,
+} from '../support/utils';
+
+/** Helper to get the compiler output editor (second Monaco editor on the page). */
+function compilerOutput() {
+    return cy.get('.monaco-editor').eq(1);
+}
+
+/** Helper to get the source editor (first Monaco editor on the page). */
+function sourceEditor() {
+    return cy.get('.monaco-editor').first();
+}
 
 describe('Basic compilation', () => {
     beforeEach(() => {
@@ -45,19 +61,19 @@ describe('Basic compilation', () => {
         cy.get('.monaco-editor', {timeout: 10000}).should('have.length.at.least', 2);
 
         // The compiler output should contain the function name in assembly labels.
-        cy.get('.monaco-editor').eq(1).find('.view-lines', {timeout: 10000}).should('contain.text', 'square');
+        monacoEditorTextShouldContain(compilerOutput(), 'square');
     });
 
     it('should recompile when the source code changes', () => {
         // Wait for initial compilation to finish
         cy.get('.monaco-editor', {timeout: 10000}).should('have.length.at.least', 2);
-        cy.get('.monaco-editor').eq(1).find('.view-lines', {timeout: 10000}).should('contain.text', 'square');
+        monacoEditorTextShouldContain(compilerOutput(), 'square');
 
         // Change the code to a different function
         setMonacoEditorContent('int cube(int n) { return n * n * n; }');
 
         // The compiler output should update to show the new function name
-        cy.get('.monaco-editor').eq(1).find('.view-lines', {timeout: 10000}).should('contain.text', 'cube');
+        monacoEditorTextShouldContain(compilerOutput(), 'cube');
     });
 });
 
@@ -82,8 +98,8 @@ describe('Source-assembly line linking', () => {
         );
         // Wait for compilation to produce output containing both functions
         cy.get('.monaco-editor', {timeout: 10000}).should('have.length.at.least', 2);
-        cy.get('.monaco-editor').eq(1).find('.view-lines', {timeout: 10000}).should('contain.text', 'square');
-        cy.get('.monaco-editor').eq(1).find('.view-lines').should('contain.text', 'add');
+        monacoEditorTextShouldContain(compilerOutput(), 'square');
+        monacoEditorTextShouldContain(compilerOutput(), 'add');
     });
 
     afterEach(() => {
@@ -95,27 +111,25 @@ describe('Source-assembly line linking', () => {
     it('should highlight assembly lines when hovering over source code', () => {
         // Hover over a source line containing code (line 2: "return num * num;").
         // Monaco picks up mousemove events on .view-line elements within the editor.
-        cy.get('.monaco-editor')
-            .first()
+        sourceEditor()
             .find('.view-line')
             .eq(1) // Line 2 (0-indexed)
             .trigger('mousemove', {force: true});
 
         // The compiler pane should now show linked-code decorations
-        cy.get('.monaco-editor').eq(1).find('.linked-code-decoration-margin', {timeout: 5000}).should('exist');
+        compilerOutput().find('.linked-code-decoration-margin', {timeout: 5000}).should('exist');
     });
 
     it('should highlight source lines when hovering over assembly', () => {
         // Hover over an assembly line in the compiler output.
         // Skip line 0 (likely a label) and hover over an instruction line.
-        cy.get('.monaco-editor')
-            .eq(1)
+        compilerOutput()
             .find('.view-line')
             .eq(2) // An instruction line
             .trigger('mousemove', {force: true});
 
         // The source editor should now show linked-code decorations
-        cy.get('.monaco-editor').first().find('.linked-code-decoration-margin', {timeout: 5000}).should('exist');
+        sourceEditor().find('.linked-code-decoration-margin', {timeout: 5000}).should('exist');
     });
 });
 
@@ -138,10 +152,7 @@ describe('Compiler options', () => {
         );
         // Wait for initial compilation (without -D, should see the #else branch)
         cy.get('.monaco-editor', {timeout: 10000}).should('have.length.at.least', 2);
-        cy.get('.monaco-editor')
-            .eq(1)
-            .find('.view-lines', {timeout: 10000})
-            .should('contain.text', 'cypress_test_inactive');
+        monacoEditorTextShouldContain(compilerOutput(), 'cypress_test_inactive');
     });
 
     afterEach(() => {
@@ -155,12 +166,9 @@ describe('Compiler options', () => {
         cy.get('input.options').first().clear().type('-DCYPRESS_TEST{enter}');
 
         // Now the #ifdef branch should be active
-        cy.get('.monaco-editor')
-            .eq(1)
-            .find('.view-lines', {timeout: 10000})
-            .should('contain.text', 'cypress_test_active');
+        monacoEditorTextShouldContain(compilerOutput(), 'cypress_test_active');
         // And the #else branch should be gone
-        cy.get('.monaco-editor').eq(1).find('.view-lines').should('not.contain.text', 'cypress_test_inactive');
+        monacoEditorTextShouldNotContain(compilerOutput(), 'cypress_test_inactive');
     });
 });
 
@@ -173,7 +181,7 @@ describe('Output filters', () => {
         });
         // Wait for compilation of default code
         cy.get('.monaco-editor', {timeout: 10000}).should('have.length.at.least', 2);
-        cy.get('.monaco-editor').eq(1).find('.view-lines', {timeout: 10000}).should('contain.text', 'square');
+        monacoEditorTextShouldContain(compilerOutput(), 'square');
     });
 
     afterEach(() => {
@@ -184,14 +192,14 @@ describe('Output filters', () => {
 
     it('should show directives when directive filter is toggled off', () => {
         // By default, directives are filtered out. The assembly should NOT contain directives.
-        cy.get('.monaco-editor').eq(1).find('.view-lines').should('not.contain.text', '.cfi_startproc');
+        compilerOutput().find('.view-lines').should('not.contain.text', '.cfi_startproc');
 
         // Open the filter dropdown and toggle directives off
         cy.get('button[title="Compiler output filters"]').first().click();
         cy.get('button[data-bind="directives"]').first().click();
 
         // Now directives should appear in the output
-        cy.get('.monaco-editor').eq(1).find('.view-lines', {timeout: 10000}).should('contain.text', '.cfi_startproc');
+        compilerOutput().find('.view-lines', {timeout: 10000}).should('contain.text', '.cfi_startproc');
     });
 
     it('should show comment-only lines when comment filter is toggled off', () => {
@@ -202,15 +210,7 @@ describe('Output filters', () => {
 
         // GCC emits comment lines like "# GNU C++17..." at the top of assembly output.
         // With comments filtered (default), these are hidden. With filter off, they appear.
-        // Note: Monaco uses non-breaking spaces (U+00A0) in rendered text, so we normalise
-        // before comparing by replacing all \u00a0 with regular spaces.
-        cy.get('.monaco-editor')
-            .eq(1)
-            .find('.view-lines', {timeout: 10000})
-            .should($el => {
-                const text = $el.text().replaceAll('\u00a0', ' ');
-                expect(text).to.include('GNU C++');
-            });
+        monacoEditorTextShouldContain(compilerOutput(), 'GNU C++');
     });
 });
 
@@ -233,13 +233,6 @@ describe('Compilation errors', () => {
         setMonacoEditorContent('int main() { this is not valid c++; }');
 
         // The compiler pane shows "<Compilation failed>" when compilation fails.
-        // Monaco uses non-breaking spaces (U+00A0), so we normalise before checking.
-        cy.get('.monaco-editor')
-            .eq(1)
-            .find('.view-lines', {timeout: 10000})
-            .should($el => {
-                const text = $el.text().replaceAll('\u00a0', ' ');
-                expect(text).to.include('Compilation failed');
-            });
+        monacoEditorTextShouldContain(compilerOutput(), 'Compilation failed');
     });
 });
