@@ -205,3 +205,88 @@ describe('Compilation errors', () => {
         monacoEditorTextShouldContain(compilerOutput(), 'Compilation failed');
     });
 });
+
+describe('Output pane', () => {
+    it('should show clean output for valid code', () => {
+        setupAndWaitForCompilation();
+
+        // Open the Output pane via the compiler toolbar button
+        cy.get('[data-cy="new-output-pane-btn"]').first().click();
+
+        // The Output pane should appear with a "Compiler returned: 0" message
+        findPane('Output').find('.content', {timeout: 5000}).should('contain.text', 'Compiler returned: 0');
+    });
+
+    it('should show error details for invalid code', () => {
+        setupAndWaitForCompilation();
+
+        // Open Output pane first while code is valid
+        cy.get('[data-cy="new-output-pane-btn"]').first().click();
+        findPane('Output').find('.content', {timeout: 5000}).should('contain.text', 'Compiler returned: 0');
+
+        // Now break the code
+        setMonacoEditorContent('int main() { this is not valid c++; }');
+
+        // The Output pane should now contain actual error messages from the compiler
+        findPane('Output').find('.content', {timeout: 10000}).should('contain.text', 'error:');
+        // And a non-zero return code
+        findPane('Output').find('.content').should('not.contain.text', 'Compiler returned: 0');
+    });
+
+    it('should show stderr with source location for errors', () => {
+        // Start with broken code
+        setMonacoEditorContent('int main() { return missing_variable; }');
+
+        // Open Output pane
+        waitForEditors();
+        cy.get('[data-cy="new-output-pane-btn"]').first().click();
+
+        // Should contain a source location reference and the undeclared identifier
+        findPane('Output').find('.content', {timeout: 10000}).should('contain.text', 'missing_variable');
+    });
+});
+
+describe('Editor interactions', () => {
+    it('should add a second source editor', () => {
+        setupAndWaitForCompilation();
+
+        // Click the "Add new..." dropdown on the editor pane and add a new editor
+        findPane('source').find('[data-cy="new-editor-dropdown-btn"]').click();
+        cy.get('[data-cy="new-add-editor-btn"]').first().click();
+
+        // There should now be two editor tabs with "source" in the title
+        cy.get('.lm_title').filter(':contains("source")').should('have.length', 2);
+    });
+
+    it('should add a second compiler', () => {
+        setupAndWaitForCompilation();
+
+        // Add a new compiler from the editor pane dropdown
+        findPane('source').find('[data-cy="new-editor-dropdown-btn"]').click();
+        cy.get('[data-cy="new-add-compiler-btn"]').first().click();
+
+        // There should now be two compiler tabs
+        cy.get('.lm_title').filter(':contains("Editor #")').should('have.length', 2);
+    });
+
+    it('should compile independently in a second compiler', () => {
+        setupAndWaitForCompilation();
+
+        // Add a second compiler
+        findPane('source').find('[data-cy="new-editor-dropdown-btn"]').click();
+        cy.get('[data-cy="new-add-compiler-btn"]').first().click();
+
+        // Both compiler panes should show assembly output for the default code
+        cy.get('.lm_title').filter(':contains("Editor #")').should('have.length', 2);
+
+        // Each compiler pane should contain the square function
+        cy.get('.lm_title')
+            .filter(':contains("Editor #")')
+            .each($title => {
+                cy.wrap($title)
+                    .closest('.lm_item.lm_stack')
+                    .find('.lm_content .monaco-editor .view-lines', {timeout: 10000})
+                    .should('contain.text', 'square');
+            });
+    });
+});
