@@ -161,7 +161,7 @@ function buildKnownGoodState() {
 
     // Chunk panes into rows of 8 for a more reasonable layout
     const panesPerRow = 8;
-    const rows = [];
+    const rows: {type: string; content: ReturnType<typeof stack>[]}[] = [];
     for (let i = 0; i < allPanes.length; i += panesPerRow) {
         rows.push({
             type: 'row',

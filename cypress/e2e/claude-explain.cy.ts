@@ -156,8 +156,8 @@ describe('Claude Explain feature', () => {
 
     afterEach(() => {
         // Clear all Cypress intercepts to prevent O(n²) accumulation
-        cy.state('routes', []);
-        cy.state('aliases', {});
+        (cy as any).state('routes', []);
+        (cy as any).state('aliases', {});
 
         // Clear storage and state but avoid aggressive DOM manipulation
         cy.window().then(win => {
@@ -166,7 +166,7 @@ describe('Claude Explain feature', () => {
             win.sessionStorage.clear();
 
             // Reset compiler explorer options
-            win.compilerExplorerOptions = {};
+            win.compilerExplorerOptions = {} as any;
 
             // Instead of force-closing tabs, let natural cleanup happen
             // The next beforeEach will reload the page anyway
@@ -397,7 +397,7 @@ describe('Claude Explain feature', () => {
             }).as('getOptions');
 
             let explainCallCount = 0;
-            cy.intercept('POST', 'http://test.localhost/fake-api/explain', (req: Cypress.Interception) => {
+            cy.intercept('POST', 'http://test.localhost/fake-api/explain', req => {
                 explainCallCount++;
                 req.reply({
                     status: 'success',
@@ -470,7 +470,7 @@ describe('Claude Explain feature', () => {
             mockClaudeExplainAPIWithOptions();
 
             let callCount = 0;
-            cy.intercept('POST', 'http://test.localhost/fake-api/explain', (req: Cypress.Interception) => {
+            cy.intercept('POST', 'http://test.localhost/fake-api/explain', req => {
                 callCount++;
                 const isBypassCache = req.body.bypassCache === true;
                 req.reply({
@@ -512,7 +512,7 @@ describe('Claude Explain feature', () => {
             mockClaudeExplainAPIWithOptions();
 
             let explainCount = 0;
-            cy.intercept('POST', 'http://test.localhost/fake-api/explain', (req: Cypress.Interception) => {
+            cy.intercept('POST', 'http://test.localhost/fake-api/explain', req => {
                 explainCount++;
                 req.reply({
                     status: 'success',
@@ -578,8 +578,8 @@ describe('Claude Explain feature', () => {
             // Get the current URL (which includes state)
             cy.url().then((url: string) => {
                 // Clear intercepts from previous test
-                cy.state('routes', []);
-                cy.state('aliases', {});
+                (cy as any).state('routes', []);
+                (cy as any).state('aliases', {});
 
                 // Set up mocks BEFORE visiting
                 mockClaudeExplainAPI();

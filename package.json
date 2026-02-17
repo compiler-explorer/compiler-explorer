@@ -164,6 +164,7 @@
     "ts-check:frontend": "tsc -p ./tsconfig.frontend.json --noEmit",
     "ts-check:tests": "tsc -p ./tsconfig.tests.json --noEmit",
     "ts-check:frontend-tests": "tsc -p ./tsconfig.frontend.tests.json --noEmit",
+    "ts-check:cypress": "tsc -p ./cypress/tsconfig.json --noEmit",
     "webpack": "node --no-warnings=ExperimentalWarning --import=tsx ./node_modules/webpack-cli/bin/cli.js --node-env=production --config webpack.config.esm.ts"
   },
   "license": "BSD-2-Clause",
