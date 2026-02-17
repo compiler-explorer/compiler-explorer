@@ -31,12 +31,12 @@ import {
 } from '../support/utils';
 
 /**
- * Find a GoldenLayout pane by matching text in its tab title.
+ * Find a GoldenLayout pane by matching text in its visible tab title.
  * Each pane lives in an .lm_item.lm_stack with a .lm_title span in its header.
  * Returns the .lm_content element within the matching stack.
  */
 function findPane(titleMatch: string) {
-    return cy.contains('.lm_title', titleMatch).closest('.lm_item.lm_stack').find('.lm_content');
+    return cy.contains('span.lm_title:visible', titleMatch).closest('.lm_item.lm_stack').find('.lm_content');
 }
 
 /**
@@ -68,7 +68,10 @@ function waitForEditors() {
     compilerOutput().should('be.visible');
 }
 
-/** Common setup: visit page, stub console, wait for editors. */
+/**
+ * Wait for editors and verify the default code has compiled successfully.
+ * Assumes the file-level beforeEach has already visited the page and stubbed the console.
+ */
 function setupAndWaitForCompilation() {
     waitForEditors();
     monacoEditorTextShouldContain(compilerOutput(), 'square');
@@ -182,7 +185,7 @@ describe('Output filters', () => {
 
         // Toggle directives filter off
         compilerPane().find('button[title="Compiler output filters"]').click();
-        cy.get('button[data-bind="directives"]').first().click();
+        cy.get('button[data-bind="directives"]:visible').first().click();
 
         // Now directives should appear
         compilerOutput().find('.view-lines', {timeout: 10000}).should('contain.text', '.cfi_startproc');
@@ -191,7 +194,7 @@ describe('Output filters', () => {
     it('should show comment-only lines when comment filter is toggled off', () => {
         // Toggle the comment filter off
         compilerPane().find('button[title="Compiler output filters"]').click();
-        cy.get('button[data-bind="commentOnly"]').first().click();
+        cy.get('button[data-bind="commentOnly"]:visible').first().click();
 
         // GCC emits comment lines like "# GNU C++17..." at the top of assembly output.
         monacoEditorTextShouldContain(compilerOutput(), 'GNU C++');
@@ -212,7 +215,7 @@ describe('Output pane', () => {
         setupAndWaitForCompilation();
 
         // Open the Output pane via the compiler toolbar button
-        cy.get('[data-cy="new-output-pane-btn"]').first().click();
+        cy.get('[data-cy="new-output-pane-btn"]:visible').first().click();
 
         // The Output pane should appear with a "Compiler returned: 0" message
         findPane('Output').find('.content', {timeout: 5000}).should('contain.text', 'Compiler returned: 0');
@@ -222,7 +225,7 @@ describe('Output pane', () => {
         setupAndWaitForCompilation();
 
         // Open Output pane first while code is valid
-        cy.get('[data-cy="new-output-pane-btn"]').first().click();
+        cy.get('[data-cy="new-output-pane-btn"]:visible').first().click();
         findPane('Output').find('.content', {timeout: 5000}).should('contain.text', 'Compiler returned: 0');
 
         // Now break the code
@@ -240,7 +243,7 @@ describe('Output pane', () => {
 
         // Open Output pane
         waitForEditors();
-        cy.get('[data-cy="new-output-pane-btn"]').first().click();
+        cy.get('[data-cy="new-output-pane-btn"]:visible').first().click();
 
         // Should contain a source location reference and the undeclared identifier
         findPane('Output').find('.content', {timeout: 10000}).should('contain.text', 'missing_variable');
@@ -253,10 +256,10 @@ describe('Editor interactions', () => {
 
         // Click the "Add new..." dropdown on the editor pane and add a new editor
         findPane('source').find('[data-cy="new-editor-dropdown-btn"]').click();
-        cy.get('[data-cy="new-add-editor-btn"]').first().click();
+        cy.get('[data-cy="new-add-editor-btn"]:visible').first().click();
 
         // There should now be two editor tabs with "source" in the title
-        cy.get('.lm_title').filter(':contains("source")').should('have.length', 2);
+        cy.get('span.lm_title:visible').filter(':contains("source")').should('have.length', 2);
     });
 
     it('should add a second compiler', () => {
@@ -264,10 +267,10 @@ describe('Editor interactions', () => {
 
         // Add a new compiler from the editor pane dropdown
         findPane('source').find('[data-cy="new-editor-dropdown-btn"]').click();
-        cy.get('[data-cy="new-add-compiler-btn"]').first().click();
+        cy.get('[data-cy="new-add-compiler-btn"]:visible').first().click();
 
         // There should now be two compiler tabs
-        cy.get('.lm_title').filter(':contains("Editor #")').should('have.length', 2);
+        cy.get('span.lm_title:visible').filter(':contains("Editor #")').should('have.length', 2);
     });
 
     it('should show assembly in both compilers for the same source', () => {
@@ -275,13 +278,13 @@ describe('Editor interactions', () => {
 
         // Add a second compiler
         findPane('source').find('[data-cy="new-editor-dropdown-btn"]').click();
-        cy.get('[data-cy="new-add-compiler-btn"]').first().click();
+        cy.get('[data-cy="new-add-compiler-btn"]:visible').first().click();
 
         // Both compiler panes should show assembly output for the default code
-        cy.get('.lm_title').filter(':contains("Editor #")').should('have.length', 2);
+        cy.get('span.lm_title:visible').filter(':contains("Editor #")').should('have.length', 2);
 
         // Each compiler pane should contain the square function
-        cy.get('.lm_title')
+        cy.get('span.lm_title:visible')
             .filter(':contains("Editor #")')
             .each($title => {
                 cy.wrap($title)

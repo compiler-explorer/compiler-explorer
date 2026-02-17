@@ -15,7 +15,7 @@ export function assertNoConsoleOutput() {
 /**
  * Asserts that a Monaco editor's view-lines contain the given text.
  *
- * Retries automatically until the timeout (default from Cypress config).
+ * Retries automatically until the timeout (default: 10000ms).
  * Handles Monaco's non-breaking space rendering internally.
  *
  * @param monacoEditorSelector - A Cypress chainable pointing to a .monaco-editor element
