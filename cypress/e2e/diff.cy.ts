@@ -47,6 +47,19 @@ function waitForEditors() {
 }
 
 /**
+ * Get the last visible compiler tab's content area.
+ * Useful for targeting the most recently added compiler pane.
+ */
+function lastCompilerContent() {
+    return cy
+        .get('span.lm_title:visible')
+        .filter(':contains("Editor #")')
+        .last()
+        .closest('.lm_item.lm_stack')
+        .find('.lm_content');
+}
+
+/**
  * Source code with conditional compilation for producing distinct outputs
  * in two compiler panes, making diff view show meaningful differences.
  * Uses different function names so we can assert the diff shows both variants.
@@ -96,28 +109,16 @@ describe('Diff view', () => {
 
         // Wait for second compiler to appear and compile
         cy.get('span.lm_title:visible').filter(':contains("Editor #")').should('have.length', 2);
-        cy.get('span.lm_title:visible')
-            .filter(':contains("Editor #")')
-            .last()
-            .closest('.lm_item.lm_stack')
-            .find('.lm_content .monaco-editor .view-lines', {timeout: 10000})
+        lastCompilerContent()
+            .find('.monaco-editor .view-lines', {timeout: 10000})
             .should('contain.text', 'mul_variant');
 
         // Set -DUSE_ADD on the second compiler to get the add_variant function
-        cy.get('span.lm_title:visible')
-            .filter(':contains("Editor #")')
-            .last()
-            .closest('.lm_item.lm_stack')
-            .find('.lm_content input.options')
-            .clear()
-            .type('-DUSE_ADD');
+        lastCompilerContent().find('input.options').clear().type('-DUSE_ADD');
 
         // Wait for recompilation — second compiler should now show add_variant
-        cy.get('span.lm_title:visible')
-            .filter(':contains("Editor #")')
-            .last()
-            .closest('.lm_item.lm_stack')
-            .find('.lm_content .monaco-editor .view-lines', {timeout: 10000})
+        lastCompilerContent()
+            .find('.monaco-editor .view-lines', {timeout: 10000})
             .should('contain.text', 'add_variant');
 
         // Open diff view
