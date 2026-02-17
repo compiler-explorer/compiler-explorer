@@ -19,7 +19,7 @@ export function clearAllIntercepts() {
     // Clear any existing intercepts by visiting a clean page and resetting
     cy.window().then((win: Cypress.AUTWindow) => {
         // Reset any cached state
-        win.compilerExplorerOptions = {};
+        win.compilerExplorerOptions = {} as any;
     });
 }
 
