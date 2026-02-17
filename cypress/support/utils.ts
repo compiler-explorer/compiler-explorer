@@ -13,20 +13,6 @@ export function assertNoConsoleOutput() {
 }
 
 /**
- * Gets the text content of a Monaco editor's view-lines, normalised for assertions.
- *
- * Monaco renders non-breaking spaces (U+00A0) instead of regular spaces in its
- * view-line elements. This helper extracts the text and replaces all \u00a0 with
- * regular spaces so that normal string matching works as expected.
- *
- * @param monacoEditorSelector - A Cypress chainable pointing to a .monaco-editor element
- * @returns A Cypress chainable yielding the normalised text string
- */
-export function getMonacoEditorText(monacoEditorSelector: Cypress.Chainable<JQuery<HTMLElement>>) {
-    return monacoEditorSelector.find('.view-lines').then($el => $el.text().replaceAll('\u00a0', ' '));
-}
-
-/**
  * Asserts that a Monaco editor's view-lines contain the given text.
  *
  * Retries automatically until the timeout (default from Cypress config).

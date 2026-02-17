@@ -136,11 +136,11 @@ describe('Source-assembly line linking', () => {
     });
 
     it('should highlight source lines when hovering over assembly', () => {
-        // Hover over an assembly line in the compiler output.
-        compilerOutput()
-            .find('.view-line')
-            .eq(2) // An instruction line
-            .trigger('mousemove', {force: true});
+        // Hover over an assembly line containing an actual instruction (not a label).
+        // Labels like "square(int):" don't have source mappings, so we target an
+        // instruction line instead. Using content matching avoids brittleness if
+        // the compiler changes its output layout.
+        compilerOutput().contains('.view-line', 'ret').first().trigger('mousemove', {force: true});
 
         // The source editor should now show linked-code decorations
         sourceEditor().find('.linked-code-decoration-margin', {timeout: 5000}).should('exist');
@@ -200,6 +200,7 @@ describe('Output filters', () => {
 
 describe('Compilation errors', () => {
     it('should display compilation failure message for invalid code', () => {
+        waitForEditors();
         setMonacoEditorContent('int main() { this is not valid c++; }');
 
         monacoEditorTextShouldContain(compilerOutput(), 'Compilation failed');
@@ -230,7 +231,7 @@ describe('Output pane', () => {
         // The Output pane should now contain actual error messages from the compiler
         findPane('Output').find('.content', {timeout: 10000}).should('contain.text', 'error:');
         // And a non-zero return code
-        findPane('Output').find('.content').should('not.contain.text', 'Compiler returned: 0');
+        findPane('Output').find('.content', {timeout: 10000}).should('not.contain.text', 'Compiler returned: 0');
     });
 
     it('should show stderr with source location for errors', () => {
@@ -269,7 +270,7 @@ describe('Editor interactions', () => {
         cy.get('.lm_title').filter(':contains("Editor #")').should('have.length', 2);
     });
 
-    it('should compile independently in a second compiler', () => {
+    it('should show assembly in both compilers for the same source', () => {
         setupAndWaitForCompilation();
 
         // Add a second compiler
