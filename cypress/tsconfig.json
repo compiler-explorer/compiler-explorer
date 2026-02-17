@@ -6,9 +6,9 @@
     "module": "es2015",
     "moduleResolution": "bundler",
     /* Code generation */
-    "typeRoots": ["../node_modules/@types"],
+    "typeRoots": ["../node_modules/@types", "../node_modules"],
     /* https://github.com/cypress-io/cypress/issues/26203#issuecomment-1571861397 */
     "sourceMap": false,
-    "types": ["cypress"]
+    "types": ["cypress", "node"]
   }
 }
