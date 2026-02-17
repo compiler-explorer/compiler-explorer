@@ -13,6 +13,45 @@ export function assertNoConsoleOutput() {
 }
 
 /**
+ * Asserts that a Monaco editor's view-lines contain the given text.
+ *
+ * Retries automatically until the timeout (default: 10000ms).
+ * Handles Monaco's non-breaking space rendering internally.
+ *
+ * @param monacoEditorSelector - A Cypress chainable pointing to a .monaco-editor element
+ * @param expectedText - The text substring to look for
+ * @param timeout - Optional timeout in ms (default: 10000)
+ */
+export function monacoEditorTextShouldContain(
+    monacoEditorSelector: Cypress.Chainable<JQuery<HTMLElement>>,
+    expectedText: string,
+    timeout = 10000,
+) {
+    monacoEditorSelector.find('.view-lines', {timeout}).should($el => {
+        const text = $el.text().replaceAll('\u00a0', ' ');
+        expect(text).to.include(expectedText);
+    });
+}
+
+/**
+ * Asserts that a Monaco editor's view-lines do NOT contain the given text.
+ *
+ * @param monacoEditorSelector - A Cypress chainable pointing to a .monaco-editor element
+ * @param unexpectedText - The text substring that should be absent
+ * @param timeout - Optional timeout in ms (default: 10000)
+ */
+export function monacoEditorTextShouldNotContain(
+    monacoEditorSelector: Cypress.Chainable<JQuery<HTMLElement>>,
+    unexpectedText: string,
+    timeout = 10000,
+) {
+    monacoEditorSelector.find('.view-lines', {timeout}).should($el => {
+        const text = $el.text().replaceAll('\u00a0', ' ');
+        expect(text).to.not.include(unexpectedText);
+    });
+}
+
+/**
  * Clear all network intercepts to prevent accumulation
  */
 export function clearAllIntercepts() {
