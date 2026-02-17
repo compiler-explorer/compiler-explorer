@@ -49,10 +49,13 @@ function waitForEditors() {
 }
 
 /**
- * Get all visible compiler pane content areas, ordered by their tab title.
- * Each compiler tab has a title like "x86-64 gcc (Editor #1, Compiler #1)".
+ * Get all visible compiler tab title elements (`span.lm_title`) corresponding
+ * to compiler editors (those whose title contains "Editor #").
+ *
+ * Note: The returned elements reflect the DOM order; callers must apply their
+ * own sorting if a specific ordering by title is required.
  */
-function allCompilerPanes() {
+function allCompilerTabs() {
     return cy.get('span.lm_title:visible').filter(':contains("Editor #")');
 }
 
@@ -109,7 +112,7 @@ describe('Multi-compiler panes', () => {
         findPane('source').find('[data-cy="new-editor-dropdown-btn"]').click();
         cy.get('[data-cy="new-add-compiler-btn"]:visible').first().click();
 
-        allCompilerPanes().should('have.length', 2);
+        allCompilerTabs().should('have.length', 2);
     });
 
     it('should produce different output with different -D flags', () => {
@@ -119,11 +122,11 @@ describe('Multi-compiler panes', () => {
         // Add second compiler
         findPane('source').find('[data-cy="new-editor-dropdown-btn"]').click();
         cy.get('[data-cy="new-add-compiler-btn"]:visible').first().click();
-        allCompilerPanes().should('have.length', 2);
+        allCompilerTabs().should('have.length', 2);
 
         // Set -DVARIANT_A on the second compiler pane.
         // The second compiler tab will be the last one, so we target its options input.
-        allCompilerPanes()
+        allCompilerTabs()
             .last()
             .then($tab => {
                 compilerPaneFromTab($tab).find('input.options').clear().type('-DVARIANT_A');
@@ -135,7 +138,7 @@ describe('Multi-compiler panes', () => {
             });
 
         // First compiler should still show default_func (unchanged)
-        allCompilerPanes()
+        allCompilerTabs()
             .first()
             .then($tab => {
                 compilerEditorFromTab($tab).then($editor => {
@@ -154,10 +157,10 @@ describe('Multi-compiler panes', () => {
         cy.get('[data-cy="new-add-compiler-btn"]:visible').first().click();
 
         // Should now have two compiler panes
-        allCompilerPanes().should('have.length', 2);
+        allCompilerTabs().should('have.length', 2);
 
         // The cloned compiler should also show variant_a_func (inherits options)
-        allCompilerPanes()
+        allCompilerTabs()
             .last()
             .then($tab => {
                 compilerEditorFromTab($tab).then($editor => {
@@ -170,9 +173,9 @@ describe('Multi-compiler panes', () => {
         // Add second compiler with -DVARIANT_A
         findPane('source').find('[data-cy="new-editor-dropdown-btn"]').click();
         cy.get('[data-cy="new-add-compiler-btn"]:visible').first().click();
-        allCompilerPanes().should('have.length', 2);
+        allCompilerTabs().should('have.length', 2);
 
-        allCompilerPanes()
+        allCompilerTabs()
             .last()
             .then($tab => {
                 compilerPaneFromTab($tab).find('input.options').clear().type('-DVARIANT_A');
@@ -190,7 +193,7 @@ describe('Multi-compiler panes', () => {
         );
 
         // First compiler (no flags) should show changed_default
-        allCompilerPanes()
+        allCompilerTabs()
             .first()
             .then($tab => {
                 compilerEditorFromTab($tab).then($editor => {
@@ -199,7 +202,7 @@ describe('Multi-compiler panes', () => {
             });
 
         // Second compiler (-DVARIANT_A) should show changed_a
-        allCompilerPanes()
+        allCompilerTabs()
             .last()
             .then($tab => {
                 compilerEditorFromTab($tab).then($editor => {

@@ -49,12 +49,13 @@ function waitForEditors() {
 /**
  * Source code with conditional compilation for producing distinct outputs
  * in two compiler panes, making diff view show meaningful differences.
+ * Uses different function names so we can assert the diff shows both variants.
  */
 const DIFF_SOURCE = [
     '#ifdef USE_ADD',
-    'int compute(int a, int b) { return a + b; }',
+    'int add_variant(int a, int b) { return a + b; }',
     '#else',
-    'int compute(int a, int b) { return a * b; }',
+    'int mul_variant(int a, int b) { return a * b; }',
     '#endif',
 ].join('\n');
 
@@ -86,8 +87,8 @@ describe('Diff view', () => {
         waitForEditors();
         setMonacoEditorContent(DIFF_SOURCE);
 
-        // Wait for first compiler to compile
-        monacoEditorTextShouldContain(findPane('Editor #').find('.monaco-editor'), 'compute');
+        // Wait for first compiler to compile (no flag → mul_variant)
+        monacoEditorTextShouldContain(findPane('Editor #').find('.monaco-editor'), 'mul_variant');
 
         // Add second compiler
         findPane('source').find('[data-cy="new-editor-dropdown-btn"]').click();
@@ -100,9 +101,9 @@ describe('Diff view', () => {
             .last()
             .closest('.lm_item.lm_stack')
             .find('.lm_content .monaco-editor .view-lines', {timeout: 10000})
-            .should('contain.text', 'compute');
+            .should('contain.text', 'mul_variant');
 
-        // Set -DUSE_ADD on the second compiler
+        // Set -DUSE_ADD on the second compiler to get the add_variant function
         cy.get('span.lm_title:visible')
             .filter(':contains("Editor #")')
             .last()
@@ -111,13 +112,13 @@ describe('Diff view', () => {
             .clear()
             .type('-DUSE_ADD');
 
-        // Wait for recompilation with new flag
+        // Wait for recompilation — second compiler should now show add_variant
         cy.get('span.lm_title:visible')
             .filter(':contains("Editor #")')
             .last()
             .closest('.lm_item.lm_stack')
             .find('.lm_content .monaco-editor .view-lines', {timeout: 10000})
-            .should('contain.text', 'compute');
+            .should('contain.text', 'add_variant');
 
         // Open diff view
         cy.get('#addDropdown').click();
@@ -125,7 +126,15 @@ describe('Diff view', () => {
         cy.contains('span.lm_title:visible', 'Diff', {timeout: 5000}).should('exist');
 
         // The diff pane auto-selects the two compilers when there are exactly two.
-        // Verify the diff editor shows the compute function.
-        findPane('Diff').find('.view-lines', {timeout: 10000}).should('contain.text', 'compute');
+        // The diff should show content from both variants — the LHS has mul_variant,
+        // the RHS has add_variant. Verify at least one is visible in the diff editor.
+        findPane('Diff')
+            .find('.view-lines', {timeout: 10000})
+            .should($el => {
+                const text = $el.text().replaceAll('\u00a0', ' ');
+                const hasLhs = text.includes('mul_variant');
+                const hasRhs = text.includes('add_variant');
+                expect(hasLhs || hasRhs, 'diff should contain at least one variant function name').to.be.true;
+            });
     });
 });
