@@ -164,7 +164,7 @@ describe('Compiler options', () => {
     });
 
     it('should apply -D flag and recompile', () => {
-        compilerPane().find('input.options').clear().type('-DCYPRESS_TEST{enter}');
+        compilerPane().find('input.options').clear().type('-DCYPRESS_TEST');
 
         monacoEditorTextShouldContain(compilerOutput(), 'cypress_test_active');
         monacoEditorTextShouldNotContain(compilerOutput(), 'cypress_test_inactive');
