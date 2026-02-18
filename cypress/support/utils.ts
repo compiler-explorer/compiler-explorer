@@ -24,10 +24,6 @@
 
 import '../../static/global';
 
-// ──────────────────────────────────────────────────────────────────────────────
-// Console output stubbing / assertion
-// ──────────────────────────────────────────────────────────────────────────────
-
 export function stubConsoleOutput(win: Cypress.AUTWindow) {
     cy.stub(win.console, 'log').as('consoleLog');
     cy.stub(win.console, 'warn').as('consoleWarn');
@@ -39,10 +35,6 @@ export function assertNoConsoleOutput() {
     cy.get('@consoleWarn').should('not.be.called');
     cy.get('@consoleError').should('not.be.called');
 }
-
-// ──────────────────────────────────────────────────────────────────────────────
-// Page visit helpers
-// ──────────────────────────────────────────────────────────────────────────────
 
 /**
  * Visit the app and stub console output. Use this as the standard
@@ -56,22 +48,13 @@ export function visitPage() {
     });
 }
 
-// ──────────────────────────────────────────────────────────────────────────────
-// GoldenLayout pane discovery
-// ──────────────────────────────────────────────────────────────────────────────
-
 /**
  * Find a GoldenLayout pane by matching text in its visible tab title.
- * Each pane lives in an `.lm_item.lm_stack` with a `.lm_title` span in its header.
  * Returns the `.lm_content` element within the matching stack.
  */
 export function findPane(titleMatch: string) {
     return cy.contains('span.lm_title:visible', titleMatch).closest('.lm_item.lm_stack').find('.lm_content');
 }
-
-// ──────────────────────────────────────────────────────────────────────────────
-// Source editor helpers
-// ──────────────────────────────────────────────────────────────────────────────
 
 /** Get the source editor pane's Monaco editor (matched by "source" in the tab title). */
 export function sourceEditor() {
@@ -90,15 +73,8 @@ export function waitForEditors() {
 }
 
 /**
- * Sets content in a Monaco editor via the editor API.
- *
- * Uses `window.monaco.editor.getEditors()` to locate the live editor
- * instance and calls `model.setValue()` directly, bypassing DOM input
- * handling entirely. This is resilient to changes in Monaco's input
- * strategy (textarea vs EditContext).
- *
- * @param content - The code content to set
- * @param editorIndex - Which editor to target (default: 0 for first)
+ * Sets content in a Monaco editor via the editor API, bypassing DOM input handling.
+ * Waits for any compilation to complete afterwards.
  */
 export function setMonacoEditorContent(content: string, editorIndex = 0) {
     cy.get('.monaco-editor').should('be.visible');
@@ -111,7 +87,6 @@ export function setMonacoEditorContent(content: string, editorIndex = 0) {
         model!.setValue(content);
     });
 
-    // Wait for compilation to complete after content change (if compiler exists)
     cy.get('body').then(($body: JQuery<HTMLElement>) => {
         if ($body.find('.compiler-wrapper').length > 0) {
             cy.get('.compiler-wrapper').should('not.have.class', 'compiling');
@@ -119,14 +94,7 @@ export function setMonacoEditorContent(content: string, editorIndex = 0) {
     });
 }
 
-// ──────────────────────────────────────────────────────────────────────────────
-// Monaco text assertions
-// ──────────────────────────────────────────────────────────────────────────────
-
-/**
- * Asserts that a Monaco editor's view-lines contain the given text.
- * Handles Monaco's non-breaking space (U+00A0) rendering internally.
- */
+/** Asserts that a Monaco editor's view-lines contain the given text. Normalises U+00A0. */
 export function monacoEditorTextShouldContain(
     monacoEditorSelector: Cypress.Chainable<JQuery<HTMLElement>>,
     expectedText: string,
@@ -138,9 +106,7 @@ export function monacoEditorTextShouldContain(
     });
 }
 
-/**
- * Asserts that a Monaco editor's view-lines do NOT contain the given text.
- */
+/** Asserts that a Monaco editor's view-lines do NOT contain the given text. */
 export function monacoEditorTextShouldNotContain(
     monacoEditorSelector: Cypress.Chainable<JQuery<HTMLElement>>,
     unexpectedText: string,
@@ -152,14 +118,7 @@ export function monacoEditorTextShouldNotContain(
     });
 }
 
-// ──────────────────────────────────────────────────────────────────────────────
-// Compiler pane helpers
-// ──────────────────────────────────────────────────────────────────────────────
-
-/**
- * Get the first compiler pane's Monaco editor.
- * The compiler tab title contains "Editor #" (e.g. "x86-64 gcc (Editor #1, Compiler #1)").
- */
+/** Get the first compiler pane's Monaco editor (tab title contains "Editor #"). */
 export function compilerOutput() {
     return findPane('Editor #').find('.monaco-editor');
 }
@@ -175,32 +134,22 @@ export function setupAndWaitForCompilation() {
     monacoEditorTextShouldContain(compilerOutput(), 'square');
 }
 
-/**
- * Get all visible compiler tab title elements (`span.lm_title`) whose title
- * contains "Editor #". Returns elements in DOM order.
- */
+/** Get all visible compiler tab title elements whose title contains "Editor #". */
 export function allCompilerTabs() {
     return cy.get('span.lm_title:visible').filter(':contains("Editor #")');
 }
 
-/**
- * Get the Monaco editor within a specific compiler pane, given its tab element.
- */
+/** Get the Monaco editor within a specific compiler pane, given its tab element. */
 export function compilerEditorFromTab($tab: JQuery<HTMLElement>) {
     return cy.wrap($tab).closest('.lm_item.lm_stack').find('.lm_content .monaco-editor');
 }
 
-/**
- * Get the content area of a specific compiler pane, given its tab element.
- */
+/** Get the content area of a specific compiler pane, given its tab element. */
 export function compilerPaneFromTab($tab: JQuery<HTMLElement>) {
     return cy.wrap($tab).closest('.lm_item.lm_stack').find('.lm_content');
 }
 
-/**
- * Get the last visible compiler tab's content area.
- * Useful for targeting the most recently added compiler pane.
- */
+/** Get the last visible compiler tab's content area (the most recently added compiler pane). */
 export function lastCompilerContent() {
     return cy
         .get('span.lm_title:visible')
@@ -209,10 +158,6 @@ export function lastCompilerContent() {
         .closest('.lm_item.lm_stack')
         .find('.lm_content');
 }
-
-// ──────────────────────────────────────────────────────────────────────────────
-// Adding panes
-// ──────────────────────────────────────────────────────────────────────────────
 
 /** Add a new compiler from the source editor's "Add new" dropdown. */
 export function addCompilerFromEditor() {
@@ -238,10 +183,7 @@ export function conformancePane() {
     return cy.get('.conformance-wrapper:visible').closest('.lm_content');
 }
 
-/**
- * Add a compiler to the conformance view and select it from the TomSelect picker.
- * Clicks "Add compiler", opens the TomSelect dropdown, and picks the first option.
- */
+/** Add a compiler to the conformance view and select it from the TomSelect picker. */
 export function addConformanceCompiler() {
     conformancePane().find('button.add-compiler').click();
     conformancePane().find('.ts-control').last().click();
@@ -254,10 +196,6 @@ export function openDiffView() {
     cy.get('#add-diff:visible').click();
     cy.contains('span.lm_title:visible', 'Diff', {timeout: 5000}).should('exist');
 }
-
-// ──────────────────────────────────────────────────────────────────────────────
-// Legacy / compatibility
-// ──────────────────────────────────────────────────────────────────────────────
 
 /**
  * @deprecated This function doesn't actually clear intercepts despite its name.
