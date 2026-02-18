@@ -1,3 +1,27 @@
+// Copyright (c) 2026, Compiler Explorer Authors
+// All rights reserved.
+//
+// Redistribution and use in source and binary forms, with or without
+// modification, are permitted provided that the following conditions are met:
+//
+//     * Redistributions of source code must retain the above copyright notice,
+//       this list of conditions and the following disclaimer.
+//     * Redistributions in binary form must reproduce the above copyright
+//       notice, this list of conditions and the following disclaimer in the
+//       documentation and/or other materials provided with the distribution.
+//
+// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+// AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+// IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+// ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
+// LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+// CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+// SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+// INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+// CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+// ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+// POSSIBILITY OF SUCH DAMAGE.
+
 import '../../static/global';
 
 export function stubConsoleOutput(win: Cypress.AUTWindow) {
@@ -13,15 +37,64 @@ export function assertNoConsoleOutput() {
 }
 
 /**
- * Asserts that a Monaco editor's view-lines contain the given text.
- *
- * Retries automatically until the timeout (default: 10000ms).
- * Handles Monaco's non-breaking space rendering internally.
- *
- * @param monacoEditorSelector - A Cypress chainable pointing to a .monaco-editor element
- * @param expectedText - The text substring to look for
- * @param timeout - Optional timeout in ms (default: 10000)
+ * Visit the app and stub console output. Use this as the standard
+ * `beforeEach` for any test that needs a fresh page load.
  */
+export function visitPage() {
+    cy.visit('/', {
+        onBeforeLoad: win => {
+            stubConsoleOutput(win);
+        },
+    });
+}
+
+/**
+ * Find a GoldenLayout pane by matching text in its visible tab title.
+ * Returns the `.lm_content` element within the matching stack.
+ */
+export function findPane(titleMatch: string) {
+    return cy.contains('span.lm_title:visible', titleMatch).closest('.lm_item.lm_stack').find('.lm_content');
+}
+
+/** Get the source editor pane's Monaco editor (matched by "source" in the tab title). */
+export function sourceEditor() {
+    return findPane('source').find('.monaco-editor');
+}
+
+/** Wait for the page to load with the source editor (and, if present, the first compiler output) visible. */
+export function waitForEditors() {
+    sourceEditor().should('be.visible');
+
+    cy.get('body').then(($body: JQuery<HTMLElement>) => {
+        if ($body.find('.compiler-wrapper').length > 0) {
+            cy.get('.compiler-wrapper').first().should('be.visible');
+        }
+    });
+}
+
+/**
+ * Sets content in a Monaco editor via the editor API, bypassing DOM input handling.
+ * Waits for any compilation to complete afterwards.
+ */
+export function setMonacoEditorContent(content: string, editorIndex = 0) {
+    cy.get('.monaco-editor').should('be.visible');
+
+    cy.window().then((win: Cypress.AUTWindow) => {
+        const editors = win.monaco.editor.getEditors();
+        expect(editors.length, 'at least one Monaco editor should exist').to.be.greaterThan(editorIndex);
+        const model = editors[editorIndex].getModel();
+        expect(model, 'Monaco editor model should exist (editor may have been disposed)').to.not.be.null;
+        model!.setValue(content);
+    });
+
+    cy.get('body').then(($body: JQuery<HTMLElement>) => {
+        if ($body.find('.compiler-wrapper').length > 0) {
+            cy.get('.compiler-wrapper').should('not.have.class', 'compiling');
+        }
+    });
+}
+
+/** Asserts that a Monaco editor's view-lines contain the given text. Normalises U+00A0. */
 export function monacoEditorTextShouldContain(
     monacoEditorSelector: Cypress.Chainable<JQuery<HTMLElement>>,
     expectedText: string,
@@ -33,13 +106,7 @@ export function monacoEditorTextShouldContain(
     });
 }
 
-/**
- * Asserts that a Monaco editor's view-lines do NOT contain the given text.
- *
- * @param monacoEditorSelector - A Cypress chainable pointing to a .monaco-editor element
- * @param unexpectedText - The text substring that should be absent
- * @param timeout - Optional timeout in ms (default: 10000)
- */
+/** Asserts that a Monaco editor's view-lines do NOT contain the given text. */
 export function monacoEditorTextShouldNotContain(
     monacoEditorSelector: Cypress.Chainable<JQuery<HTMLElement>>,
     unexpectedText: string,
@@ -51,42 +118,91 @@ export function monacoEditorTextShouldNotContain(
     });
 }
 
-/**
- * Clear all network intercepts to prevent accumulation
- */
-export function clearAllIntercepts() {
-    // Clear any existing intercepts by visiting a clean page and resetting
-    cy.window().then((win: Cypress.AUTWindow) => {
-        // Reset any cached state
-        win.compilerExplorerOptions = {} as any;
-    });
+/** Get the first compiler pane's Monaco editor (tab title contains "Editor #"). */
+export function compilerOutput() {
+    return findPane('Editor #').find('.monaco-editor');
+}
+
+/** Get the first compiler pane's content area (for toolbar elements like filters and options). */
+export function compilerPane() {
+    return findPane('Editor #');
+}
+
+/** Wait for editors and verify the default code has compiled (looks for "square" in output). */
+export function setupAndWaitForCompilation() {
+    waitForEditors();
+    monacoEditorTextShouldContain(compilerOutput(), 'square');
+}
+
+/** Get all visible compiler tab title elements whose title contains "Editor #". */
+export function allCompilerTabs() {
+    return cy.get('span.lm_title:visible').filter(':contains("Editor #")');
+}
+
+/** Get the Monaco editor within a specific compiler pane, given its tab element. */
+export function compilerEditorFromTab($tab: JQuery<HTMLElement>) {
+    return cy.wrap($tab).closest('.lm_item.lm_stack').find('.lm_content .monaco-editor');
+}
+
+/** Get the content area of a specific compiler pane, given its tab element. */
+export function compilerPaneFromTab($tab: JQuery<HTMLElement>) {
+    return cy.wrap($tab).closest('.lm_item.lm_stack').find('.lm_content');
+}
+
+/** Get the last visible compiler tab's content area (the most recently added compiler pane). */
+export function lastCompilerContent() {
+    return cy
+        .get('span.lm_title:visible')
+        .filter(':contains("Editor #")')
+        .last()
+        .closest('.lm_item.lm_stack')
+        .find('.lm_content');
+}
+
+/** Add a new compiler from the source editor's "Add new" dropdown. */
+export function addCompilerFromEditor() {
+    findPane('source').find('[data-cy="new-editor-dropdown-btn"]').click();
+    cy.get('[data-cy="new-add-compiler-btn"]:visible').first().click();
+}
+
+/** Clone/add a compiler from the compiler pane's "Add new" dropdown. */
+export function addCompilerFromCompilerPane() {
+    cy.get('[data-cy="new-compiler-dropdown-btn"]:visible').first().click();
+    cy.get('[data-cy="new-add-compiler-btn"]:visible').first().click();
+}
+
+/** Open the conformance view from the source editor's "Add new" dropdown. */
+export function openConformanceView() {
+    findPane('source').find('[data-cy="new-editor-dropdown-btn"]').click();
+    cy.get('[data-cy="new-conformance-btn"]:visible').first().click();
+    cy.get('.conformance-wrapper:visible', {timeout: 5000}).should('exist');
+}
+
+/** Get the conformance view's content area. */
+export function conformancePane() {
+    return cy.get('.conformance-wrapper:visible').closest('.lm_content');
+}
+
+/** Add a compiler to the conformance view and select it from the TomSelect picker. */
+export function addConformanceCompiler() {
+    conformancePane().find('button.add-compiler').click();
+    conformancePane().find('.ts-control').last().click();
+    cy.get('.ts-dropdown .ts-dropdown-content .option:visible').first().click();
+}
+
+/** Open the diff view from the top-level "Add..." menu. */
+export function openDiffView() {
+    cy.get('#addDropdown').click();
+    cy.get('#add-diff:visible').click();
+    cy.contains('span.lm_title:visible', 'Diff', {timeout: 5000}).should('exist');
 }
 
 /**
- * Sets content in a Monaco editor via the editor API.
- *
- * Uses `window.monaco.editor.getEditors()` to locate the live editor
- * instance and calls `model.setValue()` directly, bypassing DOM input
- * handling entirely.  This is resilient to changes in Monaco's input
- * strategy (textarea vs EditContext).
- *
- * @param content - The code content to set
- * @param editorIndex - Which editor to target (default: 0 for first)
+ * @deprecated This function doesn't actually clear intercepts despite its name.
+ * Retained for backward compatibility with claude-explain.cy.ts.
  */
-export function setMonacoEditorContent(content: string, editorIndex = 0) {
-    cy.get('.monaco-editor').should('be.visible');
-
+export function clearAllIntercepts() {
     cy.window().then((win: Cypress.AUTWindow) => {
-        const editors = win.monaco.editor.getEditors();
-        expect(editors.length, 'at least one Monaco editor should exist').to.be.greaterThan(editorIndex);
-        editors[editorIndex].getModel()?.setValue(content);
-    });
-
-    // Wait for compilation to complete after content change (if compiler exists)
-    cy.get('body').then(($body: JQuery<HTMLElement>) => {
-        if ($body.find('.compiler-wrapper').length > 0) {
-            cy.get('.compiler-wrapper').should('not.have.class', 'compiling');
-        }
-        // If no compiler wrapper exists yet, that's fine - compilation will happen when compiler is added
+        win.compilerExplorerOptions = {} as any;
     });
 }

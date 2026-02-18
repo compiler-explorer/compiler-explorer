@@ -23,62 +23,30 @@
 // POSSIBILITY OF SUCH DAMAGE.
 
 import {
+    addCompilerFromEditor,
     assertNoConsoleOutput,
+    findPane,
+    lastCompilerContent,
     monacoEditorTextShouldContain,
+    openDiffView,
     setMonacoEditorContent,
-    stubConsoleOutput,
+    visitPage,
+    waitForEditors,
 } from '../support/utils';
-
-/**
- * Find a GoldenLayout pane by matching text in its visible tab title.
- * Returns the .lm_content element within the matching stack.
- */
-function findPane(titleMatch: string) {
-    return cy.contains('span.lm_title:visible', titleMatch).closest('.lm_item.lm_stack').find('.lm_content');
-}
-
-function sourceEditor() {
-    return findPane('source').find('.monaco-editor');
-}
-
-function waitForEditors() {
-    sourceEditor().should('be.visible');
-    findPane('Editor #').find('.monaco-editor').should('be.visible');
-}
-
-/**
- * Get the last visible compiler tab's content area.
- * Useful for targeting the most recently added compiler pane.
- */
-function lastCompilerContent() {
-    return cy
-        .get('span.lm_title:visible')
-        .filter(':contains("Editor #")')
-        .last()
-        .closest('.lm_item.lm_stack')
-        .find('.lm_content');
-}
 
 /**
  * Source code with conditional compilation for producing distinct outputs
  * in two compiler panes, making diff view show meaningful differences.
  * Uses different function names so we can assert the diff shows both variants.
  */
-const DIFF_SOURCE = [
-    '#ifdef USE_ADD',
-    'int add_variant(int a, int b) { return a + b; }',
-    '#else',
-    'int mul_variant(int a, int b) { return a * b; }',
-    '#endif',
-].join('\n');
+const DIFF_SOURCE = `\
+#ifdef USE_ADD
+int add_variant(int a, int b) { return a + b; }
+#else
+int mul_variant(int a, int b) { return a * b; }
+#endif`;
 
-beforeEach(() => {
-    cy.visit('/', {
-        onBeforeLoad: win => {
-            stubConsoleOutput(win);
-        },
-    });
-});
+beforeEach(visitPage);
 
 afterEach(() => {
     return cy.window().then(_win => {
@@ -89,46 +57,31 @@ afterEach(() => {
 describe('Diff view', () => {
     it('should open a diff view pane from the Add menu', () => {
         waitForEditors();
-
-        cy.get('#addDropdown').click();
-        cy.get('#add-diff:visible').click();
-
-        cy.contains('span.lm_title:visible', 'Diff', {timeout: 5000}).should('exist');
+        openDiffView();
     });
 
     it('should show diff content with two compiler panes', () => {
         waitForEditors();
         setMonacoEditorContent(DIFF_SOURCE);
-
-        // Wait for first compiler to compile (no flag → mul_variant)
         monacoEditorTextShouldContain(findPane('Editor #').find('.monaco-editor'), 'mul_variant');
 
         // Add second compiler
-        findPane('source').find('[data-cy="new-editor-dropdown-btn"]').click();
-        cy.get('[data-cy="new-add-compiler-btn"]:visible').first().click();
-
-        // Wait for second compiler to appear and compile
+        addCompilerFromEditor();
         cy.get('span.lm_title:visible').filter(':contains("Editor #")').should('have.length', 2);
         lastCompilerContent()
             .find('.monaco-editor .view-lines', {timeout: 10000})
             .should('contain.text', 'mul_variant');
 
-        // Set -DUSE_ADD on the second compiler to get the add_variant function
+        // Set -DUSE_ADD on the second compiler
         lastCompilerContent().find('input.options').clear().type('-DUSE_ADD');
-
-        // Wait for recompilation — second compiler should now show add_variant
         lastCompilerContent()
             .find('.monaco-editor .view-lines', {timeout: 10000})
             .should('contain.text', 'add_variant');
 
-        // Open diff view
-        cy.get('#addDropdown').click();
-        cy.get('#add-diff:visible').click();
-        cy.contains('span.lm_title:visible', 'Diff', {timeout: 5000}).should('exist');
+        // Open diff view — auto-selects the two compilers
+        openDiffView();
 
-        // The diff pane auto-selects the two compilers when there are exactly two.
-        // The diff should show content from both variants — the LHS has mul_variant,
-        // the RHS has add_variant. Verify at least one is visible in the diff editor.
+        // Verify the diff shows content from at least one variant
         findPane('Diff')
             .find('.view-lines', {timeout: 10000})
             .should($el => {

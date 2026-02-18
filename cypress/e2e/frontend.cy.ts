@@ -179,7 +179,7 @@ describe('Known good state test', () => {
     beforeEach(() => {
         const state = buildKnownGoodState();
         const hash = serialiseState(state);
-        cy.visit(`http://localhost:10240/#${hash}`, {
+        cy.visit(`/#${hash}`, {
             onBeforeLoad: win => {
                 stubConsoleOutput(win);
             },
