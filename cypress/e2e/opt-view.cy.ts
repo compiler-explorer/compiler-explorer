@@ -22,15 +22,7 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import {
-    assertNoConsoleOutput,
-    compilerPane,
-    findPane,
-    openOptRemarks,
-    setMonacoEditorContent,
-    visitPage,
-    waitForEditors,
-} from '../support/utils';
+import {assertNoConsoleOutput, findPane, openOptRemarks, visitPage, waitForEditors} from '../support/utils';
 
 function optPane() {
     return findPane('Opt');
@@ -51,17 +43,7 @@ describe('Optimisation remarks', () => {
         optPane().should('exist');
     });
 
-    it('should show optimisation remarks with -O2', () => {
-        setMonacoEditorContent(`\
-int sum(int* arr, int n) {
-    int total = 0;
-    for (int i = 0; i < n; i++)
-        total += arr[i];
-    return total;
-}`);
-        waitForEditors();
-        compilerPane().find('input.options').clear().type('-O2');
-        openOptRemarks();
-        optPane().find('.opt-line', {timeout: 15000}).should('have.length.greaterThan', 0);
-    });
+    // TODO: Testing actual opt remark content requires a scriptable/canned compiler
+    // so we can guarantee remarks are produced regardless of GCC version.
+    // See discussion about a minimal test harness compiler.
 });
