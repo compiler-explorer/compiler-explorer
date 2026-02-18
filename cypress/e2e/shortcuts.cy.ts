@@ -27,13 +27,22 @@ import {
     compilerOutput,
     compilerPane,
     monacoEditorTextShouldContain,
+    monacoEditorTextShouldNotContain,
     setMonacoEditorContent,
     sourceEditor,
-    visitPage,
+    stubConsoleOutput,
     waitForEditors,
 } from '../support/utils';
 
-beforeEach(visitPage);
+beforeEach(() => {
+    cy.visit('/', {
+        onBeforeLoad: win => {
+            stubConsoleOutput(win);
+            // Disable auto-compile so we can test that Ctrl+Enter explicitly triggers it
+            win.localStorage.setItem('settings', JSON.stringify({compileOnChange: false}));
+        },
+    });
+});
 
 afterEach(() => {
     return cy.window().then(_win => {
@@ -42,7 +51,7 @@ afterEach(() => {
 });
 
 describe('Keyboard shortcuts', () => {
-    it('should recompile with Ctrl+Enter', () => {
+    it('should recompile with Ctrl+Enter when compileOnChange is disabled', () => {
         waitForEditors();
         setMonacoEditorContent(`\
 #ifdef SHORTCUT_TEST
@@ -50,14 +59,15 @@ int shortcut_active(void) { return 1; }
 #else
 int shortcut_inactive(void) { return 0; }
 #endif`);
-        monacoEditorTextShouldContain(compilerOutput(), 'shortcut_inactive');
 
-        // Set -D flag in compiler options
+        // With compileOnChange off, changing options should NOT recompile
         compilerPane().find('input.options').clear().type('-DSHORTCUT_TEST');
 
-        // Ctrl+Enter in the source editor should trigger recompilation
-        sourceEditor().click();
-        cy.get('body').type('{ctrl}{enter}');
+        // Output should still show the old compilation result (no -D flag)
+        monacoEditorTextShouldNotContain(compilerOutput(), 'shortcut_active');
+
+        // Ctrl+Enter should trigger recompilation
+        sourceEditor().find('textarea').type('{ctrl}{enter}', {force: true});
 
         monacoEditorTextShouldContain(compilerOutput(), 'shortcut_active');
     });

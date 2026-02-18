@@ -62,11 +62,6 @@ int sum(int* arr, int n) {
         waitForEditors();
         compilerPane().find('input.options').clear().type('-O2');
         openOptRemarks();
-        optPane()
-            .find('.opt-view-body', {timeout: 15000})
-            .should($el => {
-                const text = $el.text();
-                expect(text.length, 'opt remarks should contain some content').to.be.greaterThan(0);
-            });
+        optPane().find('.opt-line', {timeout: 15000}).should('have.length.greaterThan', 0);
     });
 });

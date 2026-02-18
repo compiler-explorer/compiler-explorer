@@ -24,11 +24,14 @@
 
 import {
     assertNoConsoleOutput,
+    compilerOutput,
     findPane,
+    monacoEditorTextShouldContain,
     openExecutor,
     setMonacoEditorContent,
     setupAndWaitForCompilation,
     visitPage,
+    waitForEditors,
 } from '../support/utils';
 
 function executorPane() {
@@ -51,26 +54,29 @@ describe('Executor', () => {
     });
 
     it('should show program stdout', () => {
+        waitForEditors();
         setMonacoEditorContent(`\
 #include <cstdio>
 int main() { printf("hello from cypress"); return 0; }`);
-        setupAndWaitForCompilation();
+        monacoEditorTextShouldContain(compilerOutput(), 'main');
         openExecutor();
         executorPane().find('.execution-stdout', {timeout: 15000}).should('contain.text', 'hello from cypress');
     });
 
     it('should show non-zero exit code', () => {
+        waitForEditors();
         setMonacoEditorContent('int main() { return 42; }');
-        setupAndWaitForCompilation();
+        monacoEditorTextShouldContain(compilerOutput(), 'main');
         openExecutor();
         executorPane().find('.execution-output', {timeout: 15000}).should('contain.text', 'Program returned: 42');
     });
 
     it('should show stderr output', () => {
+        waitForEditors();
         setMonacoEditorContent(`\
 #include <cstdio>
 int main() { fprintf(stderr, "error output"); return 0; }`);
-        setupAndWaitForCompilation();
+        monacoEditorTextShouldContain(compilerOutput(), 'main');
         openExecutor();
         executorPane().find('.execution-output', {timeout: 15000}).should('contain.text', 'error output');
     });
