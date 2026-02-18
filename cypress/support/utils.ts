@@ -78,9 +78,15 @@ export function sourceEditor() {
     return findPane('source').find('.monaco-editor');
 }
 
-/** Wait for the page to load with the source editor visible. */
+/** Wait for the page to load with the source editor (and, if present, the first compiler output) visible. */
 export function waitForEditors() {
     sourceEditor().should('be.visible');
+
+    cy.get('body').then(($body: JQuery<HTMLElement>) => {
+        if ($body.find('.compiler-wrapper').length > 0) {
+            cy.get('.compiler-wrapper').first().should('be.visible');
+        }
+    });
 }
 
 /**
@@ -100,7 +106,9 @@ export function setMonacoEditorContent(content: string, editorIndex = 0) {
     cy.window().then((win: Cypress.AUTWindow) => {
         const editors = win.monaco.editor.getEditors();
         expect(editors.length, 'at least one Monaco editor should exist').to.be.greaterThan(editorIndex);
-        editors[editorIndex].getModel()?.setValue(content);
+        const model = editors[editorIndex].getModel();
+        expect(model, 'Monaco editor model should exist (editor may have been disposed)').to.not.be.null;
+        model!.setValue(content);
     });
 
     // Wait for compilation to complete after content change (if compiler exists)
