@@ -171,6 +171,36 @@ export function addCompilerFromCompilerPane() {
     cy.get('[data-cy="new-add-compiler-btn"]:visible').first().click();
 }
 
+/**
+ * Open a pane from the compiler toolbar's "Add new" dropdown by its data-cy button id.
+ * The buttonId should match the data-cy attribute without the "new-" prefix and "-btn" suffix,
+ * e.g. "create-executor" for `data-cy="new-create-executor-btn"`.
+ */
+export function openPaneFromCompiler(buttonId: string) {
+    compilerPane().find('[data-cy="new-compiler-dropdown-btn"]:visible').first().click();
+    cy.get(`[data-cy="new-${buttonId}-btn"]:visible`).first().click();
+}
+
+/** Open the executor pane from the compiler's "Add new" dropdown. */
+export function openExecutor() {
+    openPaneFromCompiler('create-executor');
+}
+
+/** Open the GCC Tree/RTL dump pane from the compiler's "Add new" dropdown. */
+export function openGccDump() {
+    openPaneFromCompiler('view-gccdump');
+}
+
+/** Open the preprocessor pane from the compiler's "Add new" dropdown. */
+export function openPreprocessor() {
+    openPaneFromCompiler('view-pp');
+}
+
+/** Open the optimisation remarks pane from the compiler's "Add new" dropdown. */
+export function openOptRemarks() {
+    openPaneFromCompiler('view-optimization');
+}
+
 /** Open the conformance view from the source editor's "Add new" dropdown. */
 export function openConformanceView() {
     findPane('source').find('[data-cy="new-editor-dropdown-btn"]').click();
