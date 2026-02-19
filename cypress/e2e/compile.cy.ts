@@ -93,6 +93,9 @@ describe('Compiler options', () => {
     });
 });
 
+// Note: output filter tests (directives, comments) are omitted because the CypressCompiler
+// bypasses BaseCompiler's filter pipeline. Filter logic is covered by unit tests.
+
 describe('Compilation errors', () => {
     it('should display compilation failure in output pane', () => {
         waitForEditors();
@@ -123,6 +126,17 @@ describe('Output pane', () => {
 int main() { return missing_variable; }`);
 
         findPane('Output').find('.content', {timeout: 10000}).should('contain.text', 'missing_variable');
+    });
+
+    it('should show stderr with source location for errors', () => {
+        setMonacoEditorContent(`\
+// FAKE: exitcode 1
+// FAKE: stderr example.cpp:3:12: error: 'missing_variable' was not declared in this scope
+int main() { return missing_variable; }`);
+        waitForEditors();
+        cy.get('[data-cy="new-output-pane-btn"]:visible').first().click();
+        findPane('Output').find('.content', {timeout: 10000}).should('contain.text', 'missing_variable');
+        findPane('Output').find('.content').should('contain.text', 'example.cpp');
     });
 });
 
