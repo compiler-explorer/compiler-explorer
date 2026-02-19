@@ -34,22 +34,25 @@ import type {SelectedLibraryVersion} from '../../types/libraries/libraries.inter
 import {BaseCompiler} from '../base-compiler.js';
 
 /**
- * A fake compiler for Cypress E2E tests that never executes a real binary.
- * Parses directives from source comments to produce deterministic results.
+ * A fake compiler for Cypress E2E tests. Never executes a real binary.
  *
- * ## Directives (in source comments)
+ * By default, echoes source lines back as "assembly", with each output line
+ * mapped to its corresponding source line (so line highlighting works).
  *
- *   // @cypress-fake: asm push rbp; mov rbp, rsp; ret
- *   // @cypress-fake: stdout Hello from cypress
- *   // @cypress-fake: stderr Some warning
- *   // @cypress-fake: exitcode 42
- *   // @cypress-fake: pp #expanded preprocessor output
- *   // @cypress-fake: opt missed loop not vectorised
- *   // @cypress-fake: gccdump-pass 001t.original
- *   // @cypress-fake: gccdump ;; Function square
+ * Control output via magic comments in the source:
  *
- * Without directives, generates assembly from function names found in source.
- * Handles #ifdef/#else/#endif with -D flags.
+ *   // FAKE: asm mov eax, 1
+ *   // FAKE: asm ret
+ *   // FAKE: stdout Hello world
+ *   // FAKE: stderr warning: something
+ *   // FAKE: exitcode 42
+ *   // FAKE: pp #define FOO 1
+ *   // FAKE: opt missed: loop not vectorised
+ *   // FAKE: gccdump-pass 001t.original
+ *   // FAKE: gccdump ;; Function main
+ *
+ * When asm directives are present, they replace the default echo behaviour.
+ * Each asm directive line maps back to the source line the comment was on.
  *
  * Properties: compilerType=cypress-compiler, exe=/bin/true, version=1.0.0
  */
@@ -70,14 +73,12 @@ export class CypressCompiler extends BaseCompiler {
         _files: FiledataPair[],
     ): Promise<CompilationResult> {
         const directives = this.parseDirectives(source);
-        const defines = this.extractDefines(options);
-        const processed = this.applyPreprocessor(source, defines);
 
         if (backendOptions.executorRequest) {
             return this.buildExecutionResult(directives);
         }
 
-        const asmLines = directives.asm.length > 0 ? directives.asm : this.generateDefaultAsm(processed, filters);
+        const asm = directives.asm.length > 0 ? directives.asm : this.echoSource(source);
 
         const result: CompilationResult = {
             code: directives.exitcode,
@@ -89,19 +90,19 @@ export class CypressCompiler extends BaseCompiler {
             compilationOptions: options,
             downloads: [],
             tools: [],
-            asm: asmLines.map((text, i) => ({
+            asm: asm.map(({text, sourceLine}) => ({
                 text,
-                source: {file: null, line: i < asmLines.length - 1 ? Math.floor(i / 2) + 1 : null, mainsource: true},
+                source: sourceLine ? {file: null, line: sourceLine, mainsource: true} : null,
                 labels: [],
             })),
             languageId: 'c++',
         };
 
         if (backendOptions.producePp) {
-            result.ppOutput =
-                directives.pp.length > 0
-                    ? {numberOfLinesFiltered: 0, output: directives.pp.join('\n')}
-                    : {numberOfLinesFiltered: 0, output: this.generateDefaultPp(processed, defines)};
+            result.ppOutput = {
+                numberOfLinesFiltered: 0,
+                output: directives.pp.length > 0 ? directives.pp.join('\n') : `// Preprocessed\n${source}`,
+            };
         }
 
         if (backendOptions.produceOptInfo) {
@@ -113,23 +114,18 @@ export class CypressCompiler extends BaseCompiler {
                 displayString: text,
                 Pass: 'fake-pass',
                 Name: 'fake-remark',
-                Function: 'test_function',
+                Function: 'main',
                 DebugLoc: {File: 'example.cpp', Line: i + 1, Column: 1},
                 Args: [{String: text}],
             }));
         }
 
         if (backendOptions.produceGccDump) {
-            const passes =
-                directives.gccdumpPasses.length > 0
-                    ? directives.gccdumpPasses
-                    : ['001t.original', '002t.gimple', '003t.eh'];
+            const passes = directives.gccdumpPasses.length > 0 ? directives.gccdumpPasses : ['001t.original'];
             result.gccDumpOutput = {
                 all: passes.map(name => ({name, header: name})),
                 currentPassOutput:
-                    directives.gccdump.length > 0
-                        ? directives.gccdump.join('\n')
-                        : this.generateDefaultGccDump(processed),
+                    directives.gccdump.length > 0 ? directives.gccdump.join('\n') : ';; Function main\n(nop)',
                 selectedPass: passes[0],
                 treeDumpEnabled: true,
                 rtlDumpEnabled: true,
@@ -140,9 +136,16 @@ export class CypressCompiler extends BaseCompiler {
         return result;
     }
 
+    private echoSource(source: string): Array<{text: string; sourceLine: number | null}> {
+        return source.split('\n').map((text, i) => ({
+            text,
+            sourceLine: text.trim() ? i + 1 : null,
+        }));
+    }
+
     private parseDirectives(source: string) {
         const directives = {
-            asm: [] as string[],
+            asm: [] as Array<{text: string; sourceLine: number}>,
             stdout: [] as string[],
             stderr: [] as string[],
             exitcode: 0,
@@ -151,13 +154,15 @@ export class CypressCompiler extends BaseCompiler {
             gccdumpPasses: [] as string[],
             gccdump: [] as string[],
         };
-        for (const line of source.split('\n')) {
-            const match = line.match(/\/\/\s*@cypress-fake:\s*(\S+)\s*(.*)/);
+
+        const lines = source.split('\n');
+        for (let i = 0; i < lines.length; i++) {
+            const match = lines[i].match(/\/\/\s*FAKE:\s*(\S+)\s*(.*)/);
             if (!match) continue;
             const [, directive, value] = match;
             switch (directive) {
                 case 'asm':
-                    directives.asm.push(...value.split(';').map(s => s.trim()));
+                    directives.asm.push({text: value, sourceLine: i + 1});
                     break;
                 case 'stdout':
                     directives.stdout.push(value);
@@ -183,83 +188,6 @@ export class CypressCompiler extends BaseCompiler {
             }
         }
         return directives;
-    }
-
-    private extractDefines(options: string[]): Map<string, string> {
-        const defines = new Map<string, string>();
-        for (const opt of options) {
-            const match = opt.match(/^-D(\w+)(?:=(.*))?$/);
-            if (match) defines.set(match[1], match[2] ?? '1');
-        }
-        return defines;
-    }
-
-    private applyPreprocessor(source: string, defines: Map<string, string>): string {
-        const lines = source.split('\n');
-        const output: string[] = [];
-        const stack: boolean[] = [];
-        let active = true;
-        for (const line of lines) {
-            const ifdefMatch = line.match(/^\s*#ifdef\s+(\w+)/);
-            const ifndefMatch = line.match(/^\s*#ifndef\s+(\w+)/);
-            const elifMatch = line.match(/^\s*#elif\s+defined\((\w+)\)/);
-            const directive = line.match(/^\s*#(else|endif)/);
-            if (ifdefMatch) {
-                stack.push(active);
-                active = active && defines.has(ifdefMatch[1]);
-            } else if (ifndefMatch) {
-                stack.push(active);
-                active = active && !defines.has(ifndefMatch[1]);
-            } else if (elifMatch) {
-                active = (stack[stack.length - 1] ?? true) && defines.has(elifMatch[1]);
-            } else if (directive) {
-                if (directive[1] === 'else') {
-                    active = (stack[stack.length - 1] ?? true) && !active;
-                } else {
-                    active = stack.pop() ?? true;
-                }
-            } else if (active && !line.match(/^\s*#/)) {
-                output.push(line);
-            }
-        }
-        return output.join('\n');
-    }
-
-    private extractFunctionNames(source: string): string[] {
-        const funcRegex = /\b(?:int|void|bool|char|float|double|auto|long|short|unsigned)\s+(\w+)\s*\(/g;
-        const names: string[] = [];
-        let match;
-        while ((match = funcRegex.exec(source)) !== null) names.push(match[1]);
-        return names.length > 0 ? names : ['main'];
-    }
-
-    private generateDefaultAsm(source: string, filters: ParseFiltersAndOutputOptions): string[] {
-        const functions = this.extractFunctionNames(source);
-        const lines: string[] = [];
-        for (const fn of functions) {
-            if (!filters.directives) {
-                lines.push(`.globl ${fn}`, `.type ${fn}, @function`);
-            }
-            lines.push(`${fn}:`, '  push rbp', '  mov rbp, rsp', '  xor eax, eax', '  pop rbp', '  ret');
-        }
-        return lines;
-    }
-
-    private generateDefaultPp(source: string, defines: Map<string, string>): string {
-        const lines = ['// Preprocessor output from fake compiler'];
-        for (const [key, value] of defines) lines.push(`// #define ${key} ${value}`);
-        lines.push(source);
-        return lines.join('\n');
-    }
-
-    private generateDefaultGccDump(source: string): string {
-        const fn = this.extractFunctionNames(source)[0] || 'main';
-        return [
-            `;; Function ${fn}`,
-            '(note 1 0 2 NOTE_INSN_DELETED)',
-            '(insn 2 1 3 (set (reg:SI 0 eax) (const_int 0)))',
-            '(insn 3 2 0 (use (reg:SI 0 eax)))',
-        ].join('\n');
     }
 
     private buildExecutionResult(directives: ReturnType<CypressCompiler['parseDirectives']>): CompilationResult {
