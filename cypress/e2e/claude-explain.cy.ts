@@ -496,8 +496,10 @@ describe('Claude Explain feature', () => {
 
     describe('Compilation state handling', () => {
         it('should handle compilation failures', () => {
-            // Add invalid code
-            setMonacoEditorContent('this is not valid C++ code');
+            // Add code that triggers a compilation failure via the fake compiler
+            setMonacoEditorContent(
+                '// FAKE: exitcode 1\n// FAKE: stderr error: invalid code\nthis is not valid C++ code',
+            );
 
             openClaudeExplainPaneWithOptions();
 
