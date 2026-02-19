@@ -177,7 +177,7 @@ export function addCompilerFromCompilerPane() {
  * e.g. "create-executor" for `data-cy="new-create-executor-btn"`.
  */
 export function openPaneFromCompiler(buttonId: string) {
-    compilerPane().find('[data-cy="new-compiler-dropdown-btn"]').click();
+    compilerPane().find('[data-cy="new-compiler-dropdown-btn"]:visible').first().click();
     cy.get(`[data-cy="new-${buttonId}-btn"]:visible`).first().click();
 }
 
