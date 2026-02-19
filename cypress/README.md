@@ -6,13 +6,15 @@ This directory contains end-to-end tests for Compiler Explorer using Cypress.
 
 ### Starting Compiler Explorer for Testing
 
-First, start a local Compiler Explorer instance with a clean configuration:
+First, start a local Compiler Explorer instance with the fake compiler configuration:
 
 ```bash
-npm run dev -- --language c++ --no-local
+npm run dev -- --language c++ --env cypress --no-local
 ```
 
-The `--no-local` flag is important as it ensures your setup is clean of any local properties.
+The `--env cypress` flag loads the `CypressCompiler` — a fake compiler that never executes a real binary, making tests
+deterministic and runnable without GCC/Clang installed. The `--no-local` flag ensures your setup is clean of any local
+properties. See [UsingCypress.md](../docs/UsingCypress.md) for details on how the fake compiler works.
 
 ### Running Cypress Tests
 
