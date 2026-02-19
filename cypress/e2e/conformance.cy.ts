@@ -55,9 +55,12 @@ describe('Conformance view', () => {
         conformancePane().find('.fa-check-circle', {timeout: 10000}).should('exist');
     });
 
-    it('should show a fail indicator for code with static_assert failure', () => {
+    it('should show a fail indicator for code with a non-zero exit code', () => {
         waitForEditors();
-        setMonacoEditorContent('static_assert(false, "deliberate failure");');
+        setMonacoEditorContent(`\
+// FAKE: exitcode 1
+// FAKE: stderr error: deliberate failure
+int broken() {}`);
         openConformanceView();
         addConformanceCompiler();
         conformancePane().find('.fa-times-circle', {timeout: 10000}).should('exist');
@@ -70,28 +73,26 @@ describe('Conformance view', () => {
         addConformanceCompiler();
         conformancePane().find('.fa-check-circle', {timeout: 10000}).should('exist');
 
-        setMonacoEditorContent('static_assert(false, "now it fails");');
+        setMonacoEditorContent(`\
+// FAKE: exitcode 1
+// FAKE: stderr error: now it fails
+int broken() {}`);
         conformancePane().find('.fa-times-circle', {timeout: 10000}).should('exist');
     });
 
     it('should support multiple compilers with different options', () => {
         waitForEditors();
-        setMonacoEditorContent(`\
-#ifdef FAIL_ME
-static_assert(false, "conditional failure");
-#else
-int all_good(int x) { return x; }
-#endif`);
+        setMonacoEditorContent('int all_good(int x) { return x; }');
 
         openConformanceView();
 
-        // First compiler — should pass (no -D flag)
+        // First compiler — should pass (no flags)
         addConformanceCompiler();
         conformancePane().find('.fa-check-circle', {timeout: 10000}).should('exist');
 
-        // Second compiler with -DFAIL_ME — should fail
+        // Second compiler with --fake-exitcode=1 — should fail
         addConformanceCompiler();
-        conformancePane().find('.conformance-options').last().clear().type('-DFAIL_ME');
+        conformancePane().find('.conformance-options').last().clear().type('--fake-exitcode=1');
 
         conformancePane().find('.fa-check-circle', {timeout: 10000}).should('exist');
         conformancePane().find('.fa-times-circle', {timeout: 10000}).should('exist');

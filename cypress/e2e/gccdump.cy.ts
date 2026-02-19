@@ -27,8 +27,10 @@ import {
     findPane,
     monacoEditorTextShouldContain,
     openGccDump,
+    setMonacoEditorContent,
     setupAndWaitForCompilation,
     visitPage,
+    waitForEditors,
 } from '../support/utils';
 
 function gccDumpPane() {
@@ -51,17 +53,27 @@ describe('GCC Tree/RTL dump', () => {
     });
 
     it('should show a pass picker with available passes', () => {
-        setupAndWaitForCompilation();
+        waitForEditors();
+        setMonacoEditorContent(`\
+// FAKE: gccdump-pass 001t.original
+// FAKE: gccdump-pass 002t.gimple
+// FAKE: gccdump ;; Function main
+int main() { return 0; }`);
         openGccDump();
         cy.get('.gccdump-pass-picker + .ts-wrapper .ts-control', {timeout: 10000}).should('be.visible').click();
         cy.get('.ts-dropdown .option:visible', {timeout: 10000}).should('have.length.greaterThan', 0);
     });
 
     it('should display tree dump content when a pass is selected', () => {
-        setupAndWaitForCompilation();
+        waitForEditors();
+        setMonacoEditorContent(`\
+// FAKE: gccdump-pass 001t.original
+// FAKE: gccdump ;; Function main
+// FAKE: gccdump (nop)
+int main() { return 0; }`);
         openGccDump();
         cy.get('.gccdump-pass-picker + .ts-wrapper .ts-control', {timeout: 10000}).should('be.visible').click();
         cy.get('.ts-dropdown .option:visible', {timeout: 10000}).first().click();
-        monacoEditorTextShouldContain(gccDumpPane().find('.monaco-editor'), 'square');
+        monacoEditorTextShouldContain(gccDumpPane().find('.monaco-editor'), 'Function main');
     });
 });

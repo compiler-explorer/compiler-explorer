@@ -61,6 +61,18 @@ export class CypressCompiler extends BaseCompiler {
         return 'cypress-compiler';
     }
 
+    override async initialise() {
+        // Skip real binary execution entirely — set capabilities directly
+        this.compiler.version = '1.0.0 (fake)';
+        this.compiler.fullVersion = '1.0.0 (fake)';
+        this.compiler.supportsPpView = true;
+        this.compiler.supportsOptOutput = true;
+        this.compiler.supportsGccDump = true;
+        this.compiler.supportsCfg = true;
+        this.compiler.supportsExecute = true;
+        return this;
+    }
+
     override async compile(
         source: string,
         options: string[],
@@ -73,12 +85,13 @@ export class CypressCompiler extends BaseCompiler {
         _files: FiledataPair[],
     ): Promise<CompilationResult> {
         const directives = this.parseDirectives(source);
+        this.applyOptionOverrides(options, directives);
 
         if (backendOptions.executorRequest) {
             return this.buildExecutionResult(directives);
         }
 
-        const asm = directives.asm.length > 0 ? directives.asm : this.echoSource(source);
+        const asm = directives.asm.length > 0 ? directives.asm : this.echoSource(source, options);
 
         const result: CompilationResult = {
             code: directives.exitcode,
@@ -136,16 +149,43 @@ export class CypressCompiler extends BaseCompiler {
         return result;
     }
 
-    private echoSource(source: string): Array<{text: string; sourceLine: number | null}> {
-        return source.split('\n').map((text, i) => ({
-            text,
-            sourceLine: text.trim() ? i + 1 : null,
-        }));
+    private echoSource(source: string, options: string[]): Array<{text: string; sourceLine: number | null}> {
+        const result: Array<{text: string; sourceLine: number | null}> = [];
+        const displayOptions = options.filter(o => !o.startsWith('--fake-'));
+        if (displayOptions.length > 0) {
+            result.push({text: `; Options: ${displayOptions.join(' ')}`, sourceLine: null});
+        }
+        for (const [i, line] of source.split('\n').entries()) {
+            result.push({text: line, sourceLine: line.trim() ? i + 1 : null});
+        }
+        return result;
+    }
+
+    private applyOptionOverrides(options: string[], directives: ReturnType<CypressCompiler['parseDirectives']>) {
+        for (const opt of options) {
+            const match = opt.match(/^--fake-(\w+)=(.*)$/);
+            if (!match) continue;
+            const [, key, value] = match;
+            switch (key) {
+                case 'exitcode':
+                    directives.exitcode = parseInt(value, 10);
+                    break;
+                case 'stdout':
+                    directives.stdout.push(value);
+                    break;
+                case 'stderr':
+                    directives.stderr.push(value);
+                    break;
+                case 'asm':
+                    directives.asm.push({text: value, sourceLine: null});
+                    break;
+            }
+        }
     }
 
     private parseDirectives(source: string) {
         const directives = {
-            asm: [] as Array<{text: string; sourceLine: number}>,
+            asm: [] as Array<{text: string; sourceLine: number | null}>,
             stdout: [] as string[],
             stderr: [] as string[],
             exitcode: 0,
@@ -193,6 +233,7 @@ export class CypressCompiler extends BaseCompiler {
     private buildExecutionResult(directives: ReturnType<CypressCompiler['parseDirectives']>): CompilationResult {
         return {
             code: 0,
+            didExecute: true,
             timedOut: false,
             stdout: [],
             stderr: [],

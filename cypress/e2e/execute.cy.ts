@@ -56,8 +56,8 @@ describe('Executor', () => {
     it('should show program stdout', () => {
         waitForEditors();
         setMonacoEditorContent(`\
-#include <cstdio>
-int main() { printf("hello from cypress"); return 0; }`);
+// FAKE: stdout hello from cypress
+int main() { return 0; }`);
         monacoEditorTextShouldContain(compilerOutput(), 'main');
         openExecutor();
         executorPane().find('.execution-stdout', {timeout: 15000}).should('contain.text', 'hello from cypress');
@@ -65,7 +65,9 @@ int main() { printf("hello from cypress"); return 0; }`);
 
     it('should show non-zero exit code', () => {
         waitForEditors();
-        setMonacoEditorContent('int main() { return 42; }');
+        setMonacoEditorContent(`\
+// FAKE: exitcode 42
+int main() { return 42; }`);
         monacoEditorTextShouldContain(compilerOutput(), 'main');
         openExecutor();
         executorPane().find('.execution-output', {timeout: 15000}).should('contain.text', 'Program returned: 42');
@@ -74,10 +76,10 @@ int main() { printf("hello from cypress"); return 0; }`);
     it('should show stderr output', () => {
         waitForEditors();
         setMonacoEditorContent(`\
-#include <cstdio>
-int main() { fprintf(stderr, "error output"); return 0; }`);
+// FAKE: stderr error output from test
+int main() { return 0; }`);
         monacoEditorTextShouldContain(compilerOutput(), 'main');
         openExecutor();
-        executorPane().find('.execution-output', {timeout: 15000}).should('contain.text', 'error output');
+        executorPane().find('.execution-output', {timeout: 15000}).should('contain.text', 'error output from test');
     });
 });

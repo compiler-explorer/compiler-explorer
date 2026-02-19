@@ -26,7 +26,6 @@ import {
     assertNoConsoleOutput,
     findPane,
     monacoEditorTextShouldContain,
-    monacoEditorTextShouldNotContain,
     openPreprocessor,
     setMonacoEditorContent,
     setupAndWaitForCompilation,
@@ -53,36 +52,27 @@ describe('Preprocessor output', () => {
         ppPane().should('exist');
     });
 
-    it('should show expanded #define substitution', () => {
+    it('should show canned preprocessor output', () => {
+        waitForEditors();
         setMonacoEditorContent(`\
-#define MAGIC 42
+// FAKE: pp #define MAGIC 42
+// FAKE: pp int get_magic() { return 42; }
 int get_magic() { return MAGIC; }`);
-        waitForEditors();
         openPreprocessor();
-        monacoEditorTextShouldContain(ppPane().find('.monaco-editor'), '42');
-    });
-
-    it('should expand macros from #include', () => {
-        setMonacoEditorContent(`\
-#include <climits>
-int max_int() { return INT_MAX; }`);
-        waitForEditors();
-        openPreprocessor();
-        monacoEditorTextShouldContain(ppPane().find('.monaco-editor'), 'max_int');
-        monacoEditorTextShouldNotContain(ppPane().find('.monaco-editor'), 'INT_MAX');
+        monacoEditorTextShouldContain(ppPane().find('.monaco-editor'), 'return 42');
     });
 
     it('should update when source changes', () => {
-        setMonacoEditorContent(`\
-#define VALUE_A 100
-int a() { return VALUE_A; }`);
         waitForEditors();
+        setMonacoEditorContent(`\
+// FAKE: pp int a() { return 100; }
+int a() { return VALUE_A; }`);
         openPreprocessor();
-        monacoEditorTextShouldContain(ppPane().find('.monaco-editor'), '100');
+        monacoEditorTextShouldContain(ppPane().find('.monaco-editor'), 'return 100');
 
         setMonacoEditorContent(`\
-#define VALUE_B 999
+// FAKE: pp int b() { return 999; }
 int b() { return VALUE_B; }`);
-        monacoEditorTextShouldContain(ppPane().find('.monaco-editor'), '999');
+        monacoEditorTextShouldContain(ppPane().find('.monaco-editor'), 'return 999');
     });
 });
