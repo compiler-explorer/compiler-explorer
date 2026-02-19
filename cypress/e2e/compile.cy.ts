@@ -30,6 +30,7 @@ import {
     compilerPane,
     findPane,
     monacoEditorTextShouldContain,
+    monacoEditorTextShouldNotContain,
     setMonacoEditorContent,
     setupAndWaitForCompilation,
     sourceEditor,
@@ -93,6 +94,32 @@ describe('Compiler options', () => {
     });
 });
 
+describe('Output filters', () => {
+    it('should toggle the directives filter', () => {
+        setupAndWaitForCompilation();
+
+        // Directives filter is on by default — output should include "directives" in filters line
+        monacoEditorTextShouldContain(compilerOutput(), 'directives');
+
+        // Toggle it off
+        compilerPane().find('button[title="Compiler output filters"]').click();
+        cy.get('button[data-bind="directives"]:visible').first().click();
+
+        monacoEditorTextShouldNotContain(compilerOutput(), 'directives');
+    });
+
+    it('should toggle the comments filter', () => {
+        setupAndWaitForCompilation();
+
+        monacoEditorTextShouldContain(compilerOutput(), 'commentOnly');
+
+        compilerPane().find('button[title="Compiler output filters"]').click();
+        cy.get('button[data-bind="commentOnly"]:visible').first().click();
+
+        monacoEditorTextShouldNotContain(compilerOutput(), 'commentOnly');
+    });
+});
+
 describe('Compilation errors', () => {
     it('should display compilation failure in output pane', () => {
         waitForEditors();
@@ -123,6 +150,17 @@ describe('Output pane', () => {
 int main() { return missing_variable; }`);
 
         findPane('Output').find('.content', {timeout: 10000}).should('contain.text', 'missing_variable');
+    });
+
+    it('should show stderr with source location for errors', () => {
+        setMonacoEditorContent(`\
+// FAKE: exitcode 1
+// FAKE: stderr example.cpp:3:12: error: 'missing_variable' was not declared in this scope
+int main() { return missing_variable; }`);
+        waitForEditors();
+        cy.get('[data-cy="new-output-pane-btn"]:visible').first().click();
+        findPane('Output').find('.content', {timeout: 10000}).should('contain.text', 'missing_variable');
+        findPane('Output').find('.content').should('contain.text', 'example.cpp');
     });
 });
 

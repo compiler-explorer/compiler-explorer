@@ -54,7 +54,17 @@ import {BaseCompiler} from '../base-compiler.js';
  * When asm directives are present, they replace the default echo behaviour.
  * Each asm directive line maps back to the source line the comment was on.
  *
- * Properties: compilerType=cypress-compiler, exe=/bin/true, version=1.0.0
+ * Control via compiler options (useful when multiple compilers share the same source):
+ *
+ *   --fake-exitcode=42
+ *   --fake-stdout=Hello world
+ *   --fake-stderr=error: something
+ *   --fake-asm=mov eax, 1
+ *
+ * Source directives and option overrides are additive. Non-fake options are
+ * echoed as '; Options: ...' in the default asm output.
+ *
+ * Properties: compilerType=cypress-compiler, exe=/bin/true
  */
 export class CypressCompiler extends BaseCompiler {
     static get key() {
@@ -91,7 +101,7 @@ export class CypressCompiler extends BaseCompiler {
             return this.buildExecutionResult(directives);
         }
 
-        const asm = directives.asm.length > 0 ? directives.asm : this.echoSource(source, options);
+        const asm = directives.asm.length > 0 ? directives.asm : this.echoSource(source, options, filters);
 
         const result: CompilationResult = {
             code: directives.exitcode,
@@ -108,7 +118,7 @@ export class CypressCompiler extends BaseCompiler {
                 source: sourceLine ? {file: null, line: sourceLine, mainsource: true} : null,
                 labels: [],
             })),
-            languageId: 'c++',
+            languageId: this.compiler.lang ?? 'c++',
         };
 
         if (backendOptions.producePp) {
@@ -149,11 +159,21 @@ export class CypressCompiler extends BaseCompiler {
         return result;
     }
 
-    private echoSource(source: string, options: string[]): Array<{text: string; sourceLine: number | null}> {
+    private echoSource(
+        source: string,
+        options: string[],
+        filters: ParseFiltersAndOutputOptions,
+    ): Array<{text: string; sourceLine: number | null}> {
         const result: Array<{text: string; sourceLine: number | null}> = [];
         const displayOptions = options.filter(o => !o.startsWith('--fake-'));
         if (displayOptions.length > 0) {
             result.push({text: `; Options: ${displayOptions.join(' ')}`, sourceLine: null});
+        }
+        const activeFilters = Object.entries(filters)
+            .filter(([, v]) => v)
+            .map(([k]) => k);
+        if (activeFilters.length > 0) {
+            result.push({text: `; Filters: ${activeFilters.join(' ')}`, sourceLine: null});
         }
         for (const [i, line] of source.split('\n').entries()) {
             result.push({text: line, sourceLine: line.trim() ? i + 1 : null});
@@ -167,9 +187,11 @@ export class CypressCompiler extends BaseCompiler {
             if (!match) continue;
             const [, key, value] = match;
             switch (key) {
-                case 'exitcode':
-                    directives.exitcode = parseInt(value, 10);
+                case 'exitcode': {
+                    const parsed = parseInt(value, 10);
+                    if (!Number.isNaN(parsed)) directives.exitcode = parsed;
                     break;
+                }
                 case 'stdout':
                     directives.stdout.push(value);
                     break;
@@ -210,9 +232,11 @@ export class CypressCompiler extends BaseCompiler {
                 case 'stderr':
                     directives.stderr.push(value);
                     break;
-                case 'exitcode':
-                    directives.exitcode = parseInt(value, 10);
+                case 'exitcode': {
+                    const parsed = parseInt(value, 10);
+                    if (!Number.isNaN(parsed)) directives.exitcode = parsed;
                     break;
+                }
                 case 'pp':
                     directives.pp.push(value);
                     break;
@@ -242,7 +266,7 @@ export class CypressCompiler extends BaseCompiler {
             downloads: [],
             tools: [],
             asm: [],
-            languageId: 'c++',
+            languageId: this.compiler.lang ?? 'c++',
             execResult: {
                 didExecute: true,
                 code: directives.exitcode,
@@ -260,7 +284,7 @@ export class CypressCompiler extends BaseCompiler {
                     executableFilename: '',
                     tools: [],
                     asm: [],
-                    languageId: 'c++',
+                    languageId: this.compiler.lang ?? 'c++',
                 },
             },
         };
