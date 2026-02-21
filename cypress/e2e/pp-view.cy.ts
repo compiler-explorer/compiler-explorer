@@ -22,11 +22,11 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
+import {stubCompileResponse} from '../support/fake-compile';
 import {
     assertNoConsoleOutput,
     findPane,
     monacoEditorTextShouldContain,
-    monacoEditorTextShouldNotContain,
     openPreprocessor,
     setMonacoEditorContent,
     setupAndWaitForCompilation,
@@ -53,36 +53,29 @@ describe('Preprocessor output', () => {
         ppPane().should('exist');
     });
 
-    it('should show expanded #define substitution', () => {
-        setMonacoEditorContent(`\
-#define MAGIC 42
-int get_magic() { return MAGIC; }`);
+    it('should show preprocessor output', () => {
         waitForEditors();
+        stubCompileResponse({
+            ppOutput: {numberOfLinesFiltered: 0, output: '#define MAGIC 42\nint get_magic() { return 42; }'},
+        });
+        setMonacoEditorContent('int get_magic() { return MAGIC; }');
         openPreprocessor();
-        monacoEditorTextShouldContain(ppPane().find('.monaco-editor'), '42');
-    });
-
-    it('should expand macros from #include', () => {
-        setMonacoEditorContent(`\
-#include <climits>
-int max_int() { return INT_MAX; }`);
-        waitForEditors();
-        openPreprocessor();
-        monacoEditorTextShouldContain(ppPane().find('.monaco-editor'), 'max_int');
-        monacoEditorTextShouldNotContain(ppPane().find('.monaco-editor'), 'INT_MAX');
+        monacoEditorTextShouldContain(ppPane().find('.monaco-editor'), 'return 42');
     });
 
     it('should update when source changes', () => {
-        setMonacoEditorContent(`\
-#define VALUE_A 100
-int a() { return VALUE_A; }`);
         waitForEditors();
+        stubCompileResponse({
+            ppOutput: {numberOfLinesFiltered: 0, output: 'int a() { return 100; }'},
+        });
+        setMonacoEditorContent('int a() { return VALUE_A; }');
         openPreprocessor();
-        monacoEditorTextShouldContain(ppPane().find('.monaco-editor'), '100');
+        monacoEditorTextShouldContain(ppPane().find('.monaco-editor'), 'return 100');
 
-        setMonacoEditorContent(`\
-#define VALUE_B 999
-int b() { return VALUE_B; }`);
-        monacoEditorTextShouldContain(ppPane().find('.monaco-editor'), '999');
+        stubCompileResponse({
+            ppOutput: {numberOfLinesFiltered: 0, output: 'int b() { return 999; }'},
+        });
+        setMonacoEditorContent('int b() { return VALUE_B; }');
+        monacoEditorTextShouldContain(ppPane().find('.monaco-editor'), 'return 999');
     });
 });

@@ -22,11 +22,13 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
+import {setupFakeCompiler} from '../support/fake-compile';
 import {setMonacoEditorContent} from '../support/utils';
 
 // TODO: all these tests ought to be able to use `should(have.text, ...)`.
 describe('Monaco Editor Utilities', () => {
     beforeEach(() => {
+        setupFakeCompiler();
         cy.visit('/');
     });
 
