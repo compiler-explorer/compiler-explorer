@@ -58,6 +58,8 @@ export class LlvmIrParser {
     private functionAttrs: RegExp;
     private commentOnly: RegExp;
     private commentAtEOL: RegExp;
+    private declareLine: RegExp;
+    private libraryFunctionDefine: RegExp;
 
     constructor(
         compilerProps: PropertyGetter,
@@ -86,6 +88,12 @@ export class LlvmIrParser {
 
         // Issue #5923: make sure the comment mark `;` is outside quotes
         this.commentAtEOL = /\s*;(?=(?:[^"]|"[^"]*")*$).*$/;
+
+        // External function declarations (issue #6319)
+        this.declareLine = /^declare\s+/;
+
+        // Compiler-generated library function thunks, e.g. @jfptr_* in Julia (issue #6320)
+        this.libraryFunctionDefine = /^define\s+.*@(?:jfptr_|\w+_thunk_)/;
     }
 
     getFileName(debugInfo: Record<string, MetaNode>, scope: string): string | null {
@@ -189,8 +197,24 @@ export class LlvmIrParser {
             filters.push(this.commentOnly);
             lineFilters.push(this.commentAtEOL);
         }
+        if (options.filterDeclarations) {
+            filters.push(this.declareLine);
+        }
 
+        let inFilteredFunctionBody = false;
         for (const line of irLines) {
+            // Block-level filtering for library function thunks (e.g. @jfptr_* in Julia)
+            if (options.filterLibraryFunctions) {
+                if (!inFilteredFunctionBody && this.libraryFunctionDefine.test(line)) {
+                    inFilteredFunctionBody = true;
+                }
+                if (inFilteredFunctionBody) {
+                    if (line.trim() === '}') {
+                        inFilteredFunctionBody = false;
+                    }
+                    continue;
+                }
+            }
             if (line.trim().length === 0) {
                 // Avoid multiple successive empty lines.
                 if (!prevLineEmpty) {
@@ -269,6 +293,8 @@ export class LlvmIrParser {
                 filterIRMetadata: !!filters.directives,
                 filterAttributes: false,
                 filterComments: !!filters.commentOnly,
+                filterDeclarations: false,
+                filterLibraryFunctions: false,
                 demangle: !!filters.demangle,
                 // discard value names is handled earlier
             });

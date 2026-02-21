@@ -131,6 +131,8 @@ export class TritonCompiler extends BaseCompiler {
                         filterIRMetadata: false,
                         filterAttributes: false,
                         filterComments: false,
+                        filterDeclarations: false,
+                        filterLibraryFunctions: false,
                         noDiscardValueNames: false,
                         demangle: false,
                     });
