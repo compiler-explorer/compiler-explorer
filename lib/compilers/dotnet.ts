@@ -162,7 +162,7 @@ class DotNetCompiler extends BaseCompiler {
             if (!currentOption) {
                 continue;
             }
-            if (currentOption === '--compopt' || currentOption === '--compiler-options') {
+            if (currentOption === '-compopt' || currentOption === '--compiler-options') {
                 const value = options.shift();
                 if (value) {
                     compilerOptions.push(value);
@@ -603,7 +603,7 @@ do()
                 break;
             }
 
-            if (currentOption === '--compopt' || currentOption === '--compiler-options') {
+            if (currentOption === '-compopt' || currentOption === '--compiler-options') {
                 options.shift(); // skip the value for this option, we don't need it
                 continue;
             }
