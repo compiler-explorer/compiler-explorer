@@ -135,6 +135,61 @@ export class NvccCompiler extends BaseCompiler {
         return Promise.all([asmPromise, optPromise, []]);
     }
 
+    /**
+     * Strip `#APP`/`#NO_APP` inline-assembly blocks that contain a `.nv_fatbin`
+     * section from the host-side x86 assembly.  These blocks hold the raw CUDA
+     * fat binary blob (the `fatbinData` label followed by hundreds of `.quad`
+     * hex lines) which is never useful to inspect in the asm view.
+     *
+     * Only blocks that contain `.nv_fatbin` are removed; any `#APP`/`#NO_APP`
+     * blocks originating from genuine user inline-assembly are left intact.
+     */
+    protected removeNvccFatbinaryBlob(asm: string): string {
+        const lines = asm.split('\n');
+        const result: string[] = [];
+        let inAppBlock = false;
+        let hasFatBin = false;
+        let appBuffer: string[] = [];
+
+        for (const line of lines) {
+            const trimmed = line.trim();
+            if (trimmed === '#APP') {
+                inAppBlock = true;
+                hasFatBin = false;
+                appBuffer = [line];
+            } else if (trimmed === '#NO_APP') {
+                inAppBlock = false;
+                if (!hasFatBin) {
+                    // Not a fat-binary block — keep it
+                    appBuffer.push(line);
+                    result.push(...appBuffer);
+                }
+                appBuffer = [];
+            } else if (inAppBlock) {
+                if (line.includes('.nv_fatbin')) {
+                    hasFatBin = true;
+                }
+                appBuffer.push(line);
+            } else {
+                result.push(line);
+            }
+        }
+
+        // Handle (malformed) unclosed #APP block: keep it
+        if (appBuffer.length > 0) {
+            result.push(...appBuffer);
+        }
+
+        return result.join('\n');
+    }
+
+    override async processAsm(result, filters: ParseFiltersAndOutputOptions, options: string[]) {
+        if (filters.labels && typeof result.asm === 'string') {
+            result = {...result, asm: this.removeNvccFatbinaryBlob(result.asm)};
+        }
+        return super.processAsm(result, filters, options);
+    }
+
     override async extractDeviceCode(
         result: CompilationResult,
         filters: ParseFiltersAndOutputOptions,
