@@ -1171,7 +1171,7 @@ export class Editor extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Edit
     }
 
     formatCurrentText(): void {
-        const previousSource = this.getSource() ?? '';
+        const previousSource = this.getSource()!;
         const lang = this.currentLanguage;
 
         const formatter = lang?.formatter;

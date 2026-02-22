@@ -27,8 +27,7 @@
  * HTTP backend.
  *
  * All CE-specific backend requests go through this interface. The real
- * implementation (HttpBackendApi) is used by default; tests supply a
- * different implementation to avoid any network traffic.
+ * implementation (HttpBackendApi) is used by default and is module-private.
  *
  * All modules call getBackendApi() to obtain the current instance. No
  * explicit initialisation is required for normal operation.
@@ -67,12 +66,8 @@ export interface BackendApi {
     shortenUrl(body: Record<string, unknown>): Promise<{url: string}>;
 }
 
-export class HttpBackendApi implements BackendApi {
-    private readonly baseUrl: string;
-
-    constructor() {
-        this.baseUrl = window.location.origin + window.httpRoot;
-    }
+class HttpBackendApi implements BackendApi {
+    constructor(private readonly baseUrl: string) {}
 
     async compile(compilerId: string, request: Record<string, unknown>): Promise<CompilationResult> {
         return new Promise((resolve, reject) => {
@@ -131,7 +126,7 @@ export class HttpBackendApi implements BackendApi {
             },
             body: JSON.stringify(_.pick(req, 'source', 'base', 'tabWidth', 'useSpaces')),
         });
-        if (!response.ok) throw new Error(`Formatting request failed: HTTP ${response.status}`);
+        if (!response.ok) throw new Error(`Formatting request failed: ${response.status} ${response.statusText}`);
         return response.json() as Promise<FormattingResponse>;
     }
 
@@ -194,13 +189,9 @@ export class HttpBackendApi implements BackendApi {
     }
 }
 
-let _api: BackendApi | undefined;
+const _api: BackendApi = new HttpBackendApi(window.location.origin + window.httpRoot);
 
-/**
- * Obtain the backend API instance. Defaults to HttpBackendApi if not
- * overridden.
- */
+/** Obtain the backend API instance. */
 export function getBackendApi(): BackendApi {
-    if (!_api) _api = new HttpBackendApi();
     return _api;
 }
