@@ -23,17 +23,16 @@
 // POSSIBILITY OF SUCH DAMAGE.
 
 /**
- * BackendApi — a single injectable seam between the CE frontend and its
- * HTTP backend.
+ * BackendApi — a single seam between the CE frontend and its HTTP backend.
  *
- * All CE-specific backend requests go through this interface. The real
- * implementation (HttpBackendApi) is used by default and is module-private.
+ * All CE-specific backend requests go through this interface. The default
+ * implementation (HttpBackendApi) is module-private and uses native fetch.
  *
  * All modules call getBackendApi() to obtain the current instance. No
- * explicit initialisation is required for normal operation.
+ * explicit initialisation is required for normal operation. A future PR will
+ * add an override mechanism so tests can substitute a fake implementation.
  */
 
-import $ from 'jquery';
 import _ from 'underscore';
 
 import {CompilationResult} from '../../types/compilation/compilation.interfaces.js';
@@ -43,9 +42,6 @@ import {
     AssemblyDocumentationResponse,
 } from '../../types/features/assembly-documentation.interfaces.js';
 import {FormattingRequest, FormattingResponse} from './formatting.interfaces.js';
-
-import jqXHR = JQuery.jqXHR;
-import ErrorTextStatus = JQuery.Ajax.ErrorTextStatus;
 
 export interface BackendApi {
     /** POST /api/compiler/:id/compile */
@@ -70,66 +66,33 @@ export interface BackendApi {
 class HttpBackendApi implements BackendApi {
     constructor(private readonly baseUrl: string) {}
 
-    async compile(compilerId: string, request: Record<string, unknown>): Promise<CompilationResult> {
-        return new Promise((resolve, reject) => {
-            $.ajax({
-                type: 'POST',
-                url: `${this.baseUrl}api/compiler/${encodeURIComponent(compilerId)}/compile`,
-                dataType: 'json',
-                contentType: 'application/json',
-                data: JSON.stringify(request),
-                success: resolve,
-                error: (jqXhr, textStatus, errorThrown) => {
-                    reject(HttpBackendApi.makeError(request, jqXhr, textStatus, errorThrown));
-                },
-            });
+    private async postJson<T>(url: string, body: unknown): Promise<T> {
+        const response = await fetch(url, {
+            method: 'POST',
+            headers: {Accept: 'application/json', 'Content-Type': 'application/json'},
+            body: JSON.stringify(body),
         });
+        if (!response.ok) throw new Error(`Request failed: ${response.status} ${response.statusText}`);
+        return response.json() as Promise<T>;
+    }
+
+    async compile(compilerId: string, request: Record<string, unknown>): Promise<CompilationResult> {
+        return this.postJson(`${this.baseUrl}api/compiler/${encodeURIComponent(compilerId)}/compile`, request);
     }
 
     async compileCMake(compilerId: string, request: Record<string, unknown>): Promise<CompilationResult> {
-        return new Promise((resolve, reject) => {
-            $.ajax({
-                type: 'POST',
-                url: `${this.baseUrl}api/compiler/${encodeURIComponent(compilerId)}/cmake`,
-                dataType: 'json',
-                contentType: 'application/json',
-                data: JSON.stringify(request),
-                success: resolve,
-                error: (jqXhr, textStatus, errorThrown) => {
-                    reject(HttpBackendApi.makeError(request, jqXhr, textStatus, errorThrown));
-                },
-            });
-        });
+        return this.postJson(`${this.baseUrl}api/compiler/${encodeURIComponent(compilerId)}/cmake`, request);
     }
 
     async popularArguments(compilerId: string, usedOptions: string): Promise<PossibleArguments> {
-        return new Promise((resolve, reject) => {
-            $.ajax({
-                type: 'POST',
-                url: `${this.baseUrl}api/popularArguments/${compilerId}`,
-                dataType: 'json',
-                contentType: 'application/json',
-                data: JSON.stringify({usedOptions, presplit: false}),
-                success: resolve,
-                error: (jqXhr, textStatus, errorThrown) => {
-                    reject(HttpBackendApi.makeError(compilerId, jqXhr, textStatus, errorThrown));
-                },
-            });
-        });
+        return this.postJson(`${this.baseUrl}api/popularArguments/${compilerId}`, {usedOptions, presplit: false});
     }
 
     async formatCode(req: FormattingRequest): Promise<FormattingResponse> {
-        const response = await fetch(`${this.baseUrl}api/format/${req.formatterId}`, {
-            method: 'POST',
-            credentials: 'include',
-            headers: {
-                Accept: 'application/json',
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify(_.pick(req, 'source', 'base', 'tabWidth', 'useSpaces')),
-        });
-        if (!response.ok) throw new Error(`Formatting request failed: ${response.status} ${response.statusText}`);
-        return response.json() as Promise<FormattingResponse>;
+        return this.postJson(
+            `${this.baseUrl}api/format/${req.formatterId}`,
+            _.pick(req, 'source', 'base', 'tabWidth', 'useSpaces'),
+        );
     }
 
     async getAssemblyDocumentation(req: AssemblyDocumentationRequest): Promise<AssemblyDocumentationResponse> {
@@ -138,8 +101,6 @@ class HttpBackendApi implements BackendApi {
             headers: {Accept: 'application/json'},
         });
         if (!response.ok) {
-            // Try to extract a structured error message; fall back to HTTP status if the
-            // response body is not JSON (e.g. a proxy returning an HTML error page).
             let errMessage = `HTTP ${response.status}`;
             try {
                 const errBody = (await response.json()) as {error?: string};
@@ -153,53 +114,7 @@ class HttpBackendApi implements BackendApi {
     }
 
     async shortenUrl(body: Record<string, unknown>): Promise<{url: string}> {
-        return new Promise((resolve, reject) => {
-            $.ajax({
-                type: 'POST',
-                url: `${this.baseUrl}api/shortener`,
-                dataType: 'json',
-                contentType: 'application/json',
-                data: JSON.stringify(body),
-                success: resolve,
-                error: (jqXhr, textStatus, errorThrown) => {
-                    reject(HttpBackendApi.makeError(body, jqXhr, textStatus, errorThrown));
-                },
-                cache: true,
-            });
-        });
-    }
-
-    private static makeError(request: unknown, xhr: jqXHR, textStatus: ErrorTextStatus, errorThrown: string): Error {
-        let message = errorThrown;
-        if (!message) {
-            switch (textStatus) {
-                case 'timeout':
-                    message = 'Request timed out';
-                    break;
-                case 'abort':
-                    message = 'Request was aborted';
-                    break;
-                case 'error':
-                    switch (xhr.status) {
-                        case 500:
-                            message = 'Request failed: internal server error';
-                            break;
-                        case 504:
-                            message = 'Request failed: gateway timeout';
-                            break;
-                        default:
-                            message = 'Request failed: HTTP error code ' + xhr.status;
-                            break;
-                    }
-                    break;
-                default:
-                    message = 'Error sending request';
-                    break;
-            }
-        }
-        const err = new Error(message);
-        (err as any).request = request;
-        return err;
+        return this.postJson(`${this.baseUrl}api/shortener`, body);
     }
 }
 

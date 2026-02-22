@@ -416,7 +416,7 @@ export class Sharing extends SharingBase {
         const root = window.httpRoot;
         switch (currentBind) {
             case LinkType.Short:
-                Sharing.getShortLink(config, root, done);
+                Sharing.getShortLink(config, done);
                 return;
             case LinkType.Full:
                 done(null, window.location.origin + root + '#' + serialiseState(config), false);
@@ -435,7 +435,7 @@ export class Sharing extends SharingBase {
         }
     }
 
-    private static getShortLink(config: any, _root: string, done: CallableFunction): void {
+    private static getShortLink(config: any, done: CallableFunction): void {
         const useExternalShortener = options.urlShortenService !== 'default';
         const body = {config: useExternalShortener ? serialiseState(config) : config};
         getBackendApi()
@@ -444,8 +444,9 @@ export class Sharing extends SharingBase {
                 const pushState = useExternalShortener ? null : result.url;
                 done(null, result.url, pushState, true);
             })
-            .catch((err: Error) => {
-                done(err.message, null, false);
+            .catch((err: unknown) => {
+                const message = err instanceof Error ? err.message : String(err);
+                done(message, null, false);
             });
     }
 

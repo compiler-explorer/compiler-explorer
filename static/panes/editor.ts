@@ -1171,7 +1171,9 @@ export class Editor extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Edit
     }
 
     formatCurrentText(): void {
-        const previousSource = this.getSource()!;
+        const previousSource = this.getSource();
+        if (previousSource === undefined) return;
+
         const lang = this.currentLanguage;
 
         const formatter = lang?.formatter;
@@ -1193,10 +1195,17 @@ export class Editor extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Edit
             })
             .then(result => {
                 if (result.exit === 0) {
+                    if (result.answer === undefined) {
+                        this.alertSystem.notify('We encountered an error formatting your code: no answer returned', {
+                            group: 'formatting',
+                            alertClass: 'notification-error',
+                        });
+                        return;
+                    }
                     if (this.doesMatchEditor(previousSource)) {
-                        this.updateSource(result.answer!);
+                        this.updateSource(result.answer);
                     } else {
-                        this.confirmOverwrite(this.updateSource.bind(this, result.answer!));
+                        this.confirmOverwrite(this.updateSource.bind(this, result.answer));
                     }
                 } else {
                     this.alertSystem.notify('We encountered an error formatting your code: ' + result.answer, {
@@ -1205,8 +1214,9 @@ export class Editor extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Edit
                     });
                 }
             })
-            .catch((err: Error) => {
-                this.alertSystem.notify('We ran into some issues while formatting your code: ' + err.message, {
+            .catch((err: unknown) => {
+                const message = err instanceof Error ? err.message : String(err);
+                this.alertSystem.notify('We ran into some issues while formatting your code: ' + message, {
                     group: 'formatting',
                     alertClass: 'notification-error',
                 });
