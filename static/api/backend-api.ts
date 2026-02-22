@@ -33,6 +33,7 @@
  * explicit initialisation is required for normal operation.
  */
 
+import $ from 'jquery';
 import _ from 'underscore';
 
 import {CompilationResult} from '../../types/compilation/compilation.interfaces.js';
@@ -107,6 +108,7 @@ class HttpBackendApi implements BackendApi {
                 type: 'POST',
                 url: `${this.baseUrl}api/popularArguments/${compilerId}`,
                 dataType: 'json',
+                contentType: 'application/json',
                 data: JSON.stringify({usedOptions, presplit: false}),
                 success: resolve,
                 error: (jqXhr, textStatus, errorThrown) => {
@@ -135,9 +137,19 @@ class HttpBackendApi implements BackendApi {
             credentials: 'omit',
             headers: {Accept: 'application/json'},
         });
-        const body = (await response.json()) as AssemblyDocumentationResponse & {error?: string};
-        if (!response.ok) throw new Error(body.error ?? `HTTP ${response.status}`);
-        return body;
+        if (!response.ok) {
+            // Try to extract a structured error message; fall back to HTTP status if the
+            // response body is not JSON (e.g. a proxy returning an HTML error page).
+            let errMessage = `HTTP ${response.status}`;
+            try {
+                const errBody = (await response.json()) as {error?: string};
+                if (errBody.error) errMessage = errBody.error;
+            } catch {
+                // Non-JSON error body; use the HTTP status message above.
+            }
+            throw new Error(errMessage);
+        }
+        return response.json() as Promise<AssemblyDocumentationResponse>;
     }
 
     async shortenUrl(body: Record<string, unknown>): Promise<{url: string}> {
@@ -149,7 +161,9 @@ class HttpBackendApi implements BackendApi {
                 contentType: 'application/json',
                 data: JSON.stringify(body),
                 success: resolve,
-                error: err => reject(new Error(err.statusText || 'URL shortening failed')),
+                error: (jqXhr, textStatus, errorThrown) => {
+                    reject(HttpBackendApi.makeError(body, jqXhr, textStatus, errorThrown));
+                },
                 cache: true,
             });
         });
