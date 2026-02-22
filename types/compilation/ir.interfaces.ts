@@ -27,8 +27,8 @@ export type LLVMIrBackendOptions = {
     filterIRMetadata: boolean;
     filterAttributes: boolean;
     filterComments: boolean;
-    filterDeclarations: boolean;
-    filterLibraryFunctions: boolean;
+    filterDeclarations?: boolean;
+    filterLibraryFunctions?: boolean;
     noDiscardValueNames?: boolean;
     demangle: boolean;
     showOptimized?: boolean;
