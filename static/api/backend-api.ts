@@ -29,8 +29,8 @@
  * implementation (HttpBackendApi) is module-private and uses native fetch.
  *
  * All modules call getBackendApi() to obtain the current instance. No
- * explicit initialisation is required for normal operation. A future PR will
- * add an override mechanism so tests can substitute a fake implementation.
+ * explicit initialisation is required for normal operation. Tests can call
+ * setBackendApi() to substitute a fake implementation.
  */
 
 import _ from 'underscore';
@@ -72,7 +72,28 @@ class HttpBackendApi implements BackendApi {
             headers: {Accept: 'application/json', 'Content-Type': 'application/json'},
             body: JSON.stringify(body),
         });
-        if (!response.ok) throw new Error(`Request failed: ${response.status} ${response.statusText}`);
+        if (!response.ok) {
+            let errMessage = `Request failed: ${response.status} ${response.statusText}`;
+            try {
+                const errBody = (await response.json()) as {
+                    answer?: string;
+                    error?: string;
+                    message?: string;
+                };
+                if (errBody && typeof errBody === 'object') {
+                    const detailedMessage =
+                        (typeof errBody.answer === 'string' && errBody.answer) ||
+                        (typeof errBody.error === 'string' && errBody.error) ||
+                        (typeof errBody.message === 'string' && errBody.message);
+                    if (detailedMessage) {
+                        errMessage = detailedMessage;
+                    }
+                }
+            } catch {
+                // Non-JSON error body; keep the generic HTTP status message.
+            }
+            throw new Error(errMessage);
+        }
         return response.json() as Promise<T>;
     }
 
@@ -118,9 +139,19 @@ class HttpBackendApi implements BackendApi {
     }
 }
 
-const _api: BackendApi = new HttpBackendApi(window.location.origin + window.httpRoot);
+let _api: BackendApi = new HttpBackendApi(window.location.origin + window.httpRoot);
 
 /** Obtain the backend API instance. */
 export function getBackendApi(): BackendApi {
     return _api;
+}
+
+/**
+ * Override the backend API instance.
+ *
+ * Intended primarily for tests, to allow injecting a fake BackendApi
+ * implementation. Production code should normally use the default instance.
+ */
+export function setBackendApi(api: BackendApi): void {
+    _api = api;
 }
