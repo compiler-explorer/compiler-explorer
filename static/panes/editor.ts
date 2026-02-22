@@ -1194,9 +1194,9 @@ export class Editor extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Edit
             .then(result => {
                 if (result.exit === 0) {
                     if (this.doesMatchEditor(previousSource)) {
-                        this.updateSource(result.answer ?? '');
+                        this.updateSource(result.answer!);
                     } else {
-                        this.confirmOverwrite(this.updateSource.bind(this, result.answer ?? ''));
+                        this.confirmOverwrite(this.updateSource.bind(this, result.answer!));
                     }
                 } else {
                     this.alertSystem.notify('We encountered an error formatting your code: ' + result.answer, {

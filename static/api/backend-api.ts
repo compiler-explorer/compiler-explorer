@@ -27,11 +27,11 @@
  * HTTP backend.
  *
  * All CE-specific backend requests go through this interface. The real
- * implementation (HttpBackendApi) makes the actual fetch/$.ajax calls.
- * Tests supply a different implementation to avoid any network traffic.
+ * implementation (HttpBackendApi) is used by default; tests supply a
+ * different implementation to avoid any network traffic.
  *
- * Initialisation: Hub calls setBackendApi(new HttpBackendApi()) at startup.
- * All other modules call getBackendApi() to obtain the current instance.
+ * All modules call getBackendApi() to obtain the current instance. No
+ * explicit initialisation is required for normal operation.
  */
 
 import _ from 'underscore';
@@ -61,7 +61,7 @@ export interface BackendApi {
     formatCode(req: FormattingRequest): Promise<FormattingResponse>;
 
     /** GET /api/asm/:instructionSet/:opcode */
-    getAssemblyDoc(req: AssemblyDocumentationRequest): Promise<AssemblyDocumentationResponse>;
+    getAssemblyDocumentation(req: AssemblyDocumentationRequest): Promise<AssemblyDocumentationResponse>;
 
     /** POST /api/shortener */
     shortenUrl(body: Record<string, unknown>): Promise<{url: string}>;
@@ -135,7 +135,7 @@ export class HttpBackendApi implements BackendApi {
         return response.json() as Promise<FormattingResponse>;
     }
 
-    async getAssemblyDoc(req: AssemblyDocumentationRequest): Promise<AssemblyDocumentationResponse> {
+    async getAssemblyDocumentation(req: AssemblyDocumentationRequest): Promise<AssemblyDocumentationResponse> {
         const response = await fetch(`${this.baseUrl}api/asm/${req.instructionSet}/${req.opcode}`, {
             credentials: 'omit',
             headers: {Accept: 'application/json'},
@@ -197,17 +197,10 @@ export class HttpBackendApi implements BackendApi {
 let _api: BackendApi | undefined;
 
 /**
- * Register the backend API implementation. Called once by Hub at startup
- * before any panes are created.
- */
-export function setBackendApi(api: BackendApi): void {
-    _api = api;
-}
-
-/**
- * Obtain the current backend API. Available after Hub calls setBackendApi().
+ * Obtain the backend API instance. Defaults to HttpBackendApi if not
+ * overridden.
  */
 export function getBackendApi(): BackendApi {
-    if (!_api) throw new Error('BackendApi not initialised — call setBackendApi() first');
+    if (!_api) _api = new HttpBackendApi();
     return _api;
 }

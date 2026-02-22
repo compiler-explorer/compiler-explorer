@@ -25,7 +25,7 @@
 import * as monaco from 'monaco-editor';
 
 import {unwrap} from '../shared/assert.js';
-import {getFormattedCode} from './api/api.js';
+import {getBackendApi} from './api/backend-api.js';
 import {FormattingRequest} from './api/formatting.interfaces.js';
 import {Settings} from './settings.js';
 import {Alert} from './widgets/alert.js';
@@ -41,7 +41,7 @@ const onFormatError = (cause: string, source: string) => {
 };
 
 const doFormatRequest = async (options: FormattingRequest) => {
-    const result = await getFormattedCode(options);
+    const result = await getBackendApi().formatCode(options);
     if (result.exit === 0) {
         return unwrap(result.answer);
     }
