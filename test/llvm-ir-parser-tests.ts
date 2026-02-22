@@ -27,6 +27,7 @@ import {beforeAll, describe, expect, it} from 'vitest';
 import {LLVMIRDemangler} from '../lib/demangler/llvm.js';
 import {LlvmIrParser} from '../lib/llvm-ir.js';
 import * as properties from '../lib/properties.js';
+import type {LLVMIrBackendOptions} from '../types/compilation/ir.interfaces.js';
 
 const languages = {
     'c++': {id: 'c++'},
@@ -227,5 +228,114 @@ describe('llvm-ir getFileName', () => {
     it('should not return source filename', () => {
         expect(llvmIrParser.getFileName(debugInfo, '!20')).toBe(null);
         expect(llvmIrParser.getFileName(debugInfo, '!21')).toBe(null);
+    });
+});
+
+describe('llvm-ir processIr filters', () => {
+    let llvmIrParser: LlvmIrParser;
+    let compilerProps;
+
+    const noFilters: LLVMIrBackendOptions = {
+        filterDebugInfo: false,
+        filterIRMetadata: false,
+        filterAttributes: false,
+        filterComments: false,
+        filterDeclarations: false,
+        filterLibraryFunctions: false,
+        demangle: false,
+    };
+
+    beforeAll(() => {
+        const fakeProps = new properties.CompilerProps(languages, properties.fakeProps({}));
+        compilerProps = (fakeProps.get as any).bind(fakeProps, 'c++');
+        llvmIrParser = new LlvmIrParser(compilerProps, undefined as unknown as LLVMIRDemangler);
+    });
+
+    const irWithDeclarations = [
+        'define i32 @foo() {',
+        '  ret i32 0',
+        '}',
+        '',
+        'declare i32 @external_func(i32)',
+        'declare void @llvm.memcpy.p0.p0.i64(ptr, ptr, i64, i1)',
+    ].join('\n');
+
+    describe('filterDeclarations', () => {
+        it('should keep declare lines when filter is off', async () => {
+            const result = await llvmIrParser.processIr(irWithDeclarations, {...noFilters});
+            const texts = result.asm.map(l => l.text);
+            expect(texts).toContain('declare i32 @external_func(i32)');
+            expect(texts).toContain('declare void @llvm.memcpy.p0.p0.i64(ptr, ptr, i64, i1)');
+        });
+
+        it('should remove declare lines when filter is on', async () => {
+            const result = await llvmIrParser.processIr(irWithDeclarations, {
+                ...noFilters,
+                filterDeclarations: true,
+            });
+            const texts = result.asm.map(l => l.text);
+            expect(texts).not.toContain('declare i32 @external_func(i32)');
+            expect(texts).not.toContain('declare void @llvm.memcpy.p0.p0.i64(ptr, ptr, i64, i1)');
+        });
+
+        it('should preserve non-declare lines when filter is on', async () => {
+            const result = await llvmIrParser.processIr(irWithDeclarations, {
+                ...noFilters,
+                filterDeclarations: true,
+            });
+            const texts = result.asm.map(l => l.text);
+            expect(texts).toContain('define i32 @foo() {');
+            expect(texts).toContain('  ret i32 0');
+        });
+    });
+
+    // Real-world Julia IR: the compiler emits @jfptr_<name>_<id> dispatch wrappers alongside
+    // every function. These are foreign-pointer thunks used for dynamic dispatch and are not
+    // user code. Example taken from the pattern described in #6320 (see godbolt.org/z/Prf3W87oP).
+    const irWithLibraryFunctions = [
+        'define nonnull {}* @julia_square_generic_2345({}** %0, i32 %1) {',
+        'top:',
+        '  ret {}* null',
+        '}',
+        '',
+        'define nonnull {}* @jfptr_square_generic_2345({}** %0, i32 %1) {',
+        'top:',
+        '  %2 = call nonnull {}* @julia_square_generic_2345({}** %0, i32 %1)',
+        '  ret {}* %2',
+        '}',
+        '',
+        'define nonnull {}* @julia_square_intrinsic_2346({}** %0, i32 %1) {',
+        'top:',
+        '  ret {}* null',
+        '}',
+    ].join('\n');
+
+    describe('filterLibraryFunctions', () => {
+        it('should keep jfptr_ functions when filter is off', async () => {
+            const result = await llvmIrParser.processIr(irWithLibraryFunctions, {...noFilters});
+            const texts = result.asm.map(l => l.text);
+            expect(texts).toContain('define nonnull {}* @jfptr_square_generic_2345({}** %0, i32 %1) {');
+            expect(texts).toContain('  %2 = call nonnull {}* @julia_square_generic_2345({}** %0, i32 %1)');
+        });
+
+        it('should remove the entire jfptr_ function body when filter is on', async () => {
+            const result = await llvmIrParser.processIr(irWithLibraryFunctions, {
+                ...noFilters,
+                filterLibraryFunctions: true,
+            });
+            const texts = result.asm.map(l => l.text);
+            expect(texts).not.toContain('define nonnull {}* @jfptr_square_generic_2345({}** %0, i32 %1) {');
+            expect(texts).not.toContain('  %2 = call nonnull {}* @julia_square_generic_2345({}** %0, i32 %1)');
+        });
+
+        it('should preserve user-defined functions when filter is on', async () => {
+            const result = await llvmIrParser.processIr(irWithLibraryFunctions, {
+                ...noFilters,
+                filterLibraryFunctions: true,
+            });
+            const texts = result.asm.map(l => l.text);
+            expect(texts).toContain('define nonnull {}* @julia_square_generic_2345({}** %0, i32 %1) {');
+            expect(texts).toContain('define nonnull {}* @julia_square_intrinsic_2346({}** %0, i32 %1) {');
+        });
     });
 });
