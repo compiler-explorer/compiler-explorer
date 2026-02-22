@@ -92,8 +92,11 @@ export class LlvmIrParser {
         // External function declarations (issue #6319)
         this.declareLine = /^declare\s+/;
 
-        // Compiler-generated library function thunks, e.g. @jfptr_* in Julia (issue #6320)
-        this.libraryFunctionDefine = /^define\s+.*@(?:jfptr_|\w+_thunk_)/;
+        // Julia foreign-pointer thunks: auto-generated dispatch wrappers of the form @jfptr_<name>_<id>.
+        // These are not user code and clutter the IR view. See: #6320
+        // TODO: consider making this list configurable per compiler/language to support
+        // other runtimes that generate similar boilerplate (e.g. C++ vtable thunks, Rust shims).
+        this.libraryFunctionDefine = /^define\s+.*@jfptr_/;
     }
 
     getFileName(debugInfo: Record<string, MetaNode>, scope: string): string | null {

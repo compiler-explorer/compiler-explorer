@@ -289,18 +289,24 @@ describe('llvm-ir processIr filters', () => {
         });
     });
 
+    // Real-world Julia IR: the compiler emits @jfptr_<name>_<id> dispatch wrappers alongside
+    // every function. These are foreign-pointer thunks used for dynamic dispatch and are not
+    // user code. Example taken from the pattern described in #6320 (see godbolt.org/z/Prf3W87oP).
     const irWithLibraryFunctions = [
-        'define i32 @user_func() {',
-        '  ret i32 0',
+        'define nonnull {}* @julia_square_generic_2345({}** %0, i32 %1) {',
+        'top:',
+        '  ret {}* null',
         '}',
         '',
-        'define i64 @jfptr_cos_12345(i64 %0) {',
-        '  %2 = call i64 @cos_impl(i64 %0)',
-        '  ret i64 %2',
+        'define nonnull {}* @jfptr_square_generic_2345({}** %0, i32 %1) {',
+        'top:',
+        '  %2 = call nonnull {}* @julia_square_generic_2345({}** %0, i32 %1)',
+        '  ret {}* %2',
         '}',
         '',
-        'define i32 @another_user_func() {',
-        '  ret i32 1',
+        'define nonnull {}* @julia_square_intrinsic_2346({}** %0, i32 %1) {',
+        'top:',
+        '  ret {}* null',
         '}',
     ].join('\n');
 
@@ -308,18 +314,18 @@ describe('llvm-ir processIr filters', () => {
         it('should keep jfptr_ functions when filter is off', async () => {
             const result = await llvmIrParser.processIr(irWithLibraryFunctions, {...noFilters});
             const texts = result.asm.map(l => l.text);
-            expect(texts).toContain('define i64 @jfptr_cos_12345(i64 %0) {');
-            expect(texts).toContain('  %2 = call i64 @cos_impl(i64 %0)');
+            expect(texts).toContain('define nonnull {}* @jfptr_square_generic_2345({}** %0, i32 %1) {');
+            expect(texts).toContain('  %2 = call nonnull {}* @julia_square_generic_2345({}** %0, i32 %1)');
         });
 
-        it('should remove entire jfptr_ function body when filter is on', async () => {
+        it('should remove the entire jfptr_ function body when filter is on', async () => {
             const result = await llvmIrParser.processIr(irWithLibraryFunctions, {
                 ...noFilters,
                 filterLibraryFunctions: true,
             });
             const texts = result.asm.map(l => l.text);
-            expect(texts).not.toContain('define i64 @jfptr_cos_12345(i64 %0) {');
-            expect(texts).not.toContain('  %2 = call i64 @cos_impl(i64 %0)');
+            expect(texts).not.toContain('define nonnull {}* @jfptr_square_generic_2345({}** %0, i32 %1) {');
+            expect(texts).not.toContain('  %2 = call nonnull {}* @julia_square_generic_2345({}** %0, i32 %1)');
         });
 
         it('should preserve user-defined functions when filter is on', async () => {
@@ -328,8 +334,8 @@ describe('llvm-ir processIr filters', () => {
                 filterLibraryFunctions: true,
             });
             const texts = result.asm.map(l => l.text);
-            expect(texts).toContain('define i32 @user_func() {');
-            expect(texts).toContain('define i32 @another_user_func() {');
+            expect(texts).toContain('define nonnull {}* @julia_square_generic_2345({}** %0, i32 %1) {');
+            expect(texts).toContain('define nonnull {}* @julia_square_intrinsic_2346({}** %0, i32 %1) {');
         });
     });
 });
