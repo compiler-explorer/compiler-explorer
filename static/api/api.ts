@@ -22,42 +22,23 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import _ from 'underscore';
+/**
+ * Convenience re-exports for callers that import individual API functions.
+ * These delegate to the BackendApi instance registered via setBackendApi().
+ */
 
 import {
     AssemblyDocumentationRequest,
     AssemblyDocumentationResponse,
 } from '../../types/features/assembly-documentation.interfaces.js';
+import {getBackendApi} from './backend-api.js';
 import {FormattingRequest, FormattingResponse} from './formatting.interfaces.js';
 
-/** Type wrapper allowing .json() to resolve to a concrete type */
-interface TypedResponse<T> extends Response {
-    json(): Promise<T>;
-}
-
-/** Lightweight fetch() wrapper for CE API urls */
-const request = async <R>(uri: string, options?: RequestInit): Promise<TypedResponse<R>> =>
-    fetch(`${window.location.origin}${window.httpRoot}api${uri}`, {
-        ...options,
-        credentials: 'include',
-        headers: {
-            ...options?.headers,
-            Accept: 'application/json',
-        },
-    });
-
 /** GET /api/asm/:arch/:instruction */
-export const getAssemblyDocumentation = async (options: AssemblyDocumentationRequest) =>
-    await request<AssemblyDocumentationResponse>(`/asm/${options.instructionSet}/${options.opcode}`, {
-        credentials: 'omit',
-    });
+export const getAssemblyDocumentation = (
+    options: AssemblyDocumentationRequest,
+): Promise<AssemblyDocumentationResponse> => getBackendApi().getAssemblyDoc(options);
 
 /** POST /api/format/:formatter */
-export const getFormattedCode = async (options: FormattingRequest) =>
-    await request<FormattingResponse>(`/format/${options.formatterId}`, {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(_.pick(options, 'source', 'base', 'tabWidth', 'useSpaces')),
-    });
+export const getFormattedCode = (options: FormattingRequest): Promise<FormattingResponse> =>
+    getBackendApi().formatCode(options);

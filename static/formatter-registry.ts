@@ -41,16 +41,11 @@ const onFormatError = (cause: string, source: string) => {
 };
 
 const doFormatRequest = async (options: FormattingRequest) => {
-    const res = await getFormattedCode(options);
-    const body = await res.json();
-    if (res.status === 200 && body.exit === 0) {
-        // API sent 200 and we have a valid response
-        return unwrap(body.answer);
+    const result = await getFormattedCode(options);
+    if (result.exit === 0) {
+        return unwrap(result.answer);
     }
-    // We had an error (either HTTP request error, or API error)
-    // Figure out which it is, show it to the user, and reject the promise
-    const cause = body.answer ?? res.statusText;
-    throw new Error(cause);
+    throw new Error(result.answer ?? 'Formatting failed');
 };
 
 /**

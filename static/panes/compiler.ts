@@ -3518,15 +3518,9 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
             throw new Error(cached.data as string);
         }
 
-        const response = await getAssemblyDocumentation({opcode, instructionSet});
-        const body = await response.json();
-        if (response.status === 200) {
-            OpcodeCache.set(cacheName, {found: true, data: body});
-            return addAttWarningIfNeeded(body);
-        }
-        const error = (body as any).error;
-        OpcodeCache.set(cacheName, {found: false, data: error});
-        throw new Error(error);
+        const body = await getAssemblyDocumentation({opcode, instructionSet});
+        OpcodeCache.set(cacheName, {found: true, data: body});
+        return addAttWarningIfNeeded(body);
     }
 
     override onDidChangeCursorSelection(e) {

@@ -31,6 +31,7 @@ import * as monacoVim from 'monaco-vim';
 import TomSelect from 'tom-select';
 import _ from 'underscore';
 
+import {getBackendApi} from '../api/backend-api.js';
 import * as BootstrapUtils from '../bootstrap-utils.js';
 import * as colour from '../colour.js';
 import * as Components from '../components.js';
@@ -77,7 +78,6 @@ export class Editor extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Edit
     private id: number;
     private ourCompilers: Record<string, boolean>;
     private ourExecutors: Record<number, boolean>;
-    private httpRoot: string;
     private asmByCompiler: Record<string, ResultLine[] | undefined>;
     private defaultFileByCompiler: Record<number, string>;
     private busyCompilers: Record<number, boolean>;
@@ -504,7 +504,6 @@ export class Editor extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Edit
     override initializeGlobalDependentProperties(): void {
         super.initializeGlobalDependentProperties();
 
-        this.httpRoot = window.httpRoot;
         this.langKeys = Object.keys(languages) as LanguageKey[];
     }
 
@@ -1172,10 +1171,11 @@ export class Editor extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Edit
     }
 
     formatCurrentText(): void {
-        const previousSource = this.getSource();
+        const previousSource = this.getSource() ?? '';
         const lang = this.currentLanguage;
 
-        if (!Object.prototype.hasOwnProperty.call(lang, 'formatter')) {
+        const formatter = lang?.formatter;
+        if (!formatter) {
             this.alertSystem.notify('This language does not support in-editor formatting', {
                 group: 'formatting',
                 alertClass: 'notification-error',
@@ -1183,48 +1183,34 @@ export class Editor extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Edit
             return;
         }
 
-        $.ajax({
-            type: 'POST',
-            url: window.location.origin + this.httpRoot + 'api/format/' + lang?.formatter,
-            dataType: 'json', // Expected
-            contentType: 'application/json', // Sent
-            data: JSON.stringify({
+        getBackendApi()
+            .formatCode({
+                formatterId: formatter,
                 source: previousSource,
                 base: this.settings.formatBase,
-            }),
-            success: result => {
+                tabWidth: this.settings.tabWidth,
+                useSpaces: this.settings.useSpaces,
+            })
+            .then(result => {
                 if (result.exit === 0) {
                     if (this.doesMatchEditor(previousSource)) {
-                        this.updateSource(result.answer);
+                        this.updateSource(result.answer ?? '');
                     } else {
-                        this.confirmOverwrite(this.updateSource.bind(this, result.answer));
+                        this.confirmOverwrite(this.updateSource.bind(this, result.answer ?? ''));
                     }
                 } else {
-                    // Ops, the formatter itself failed!
                     this.alertSystem.notify('We encountered an error formatting your code: ' + result.answer, {
                         group: 'formatting',
                         alertClass: 'notification-error',
                     });
                 }
-            },
-            error: (xhr, e_status, error) => {
-                // Hopefully we have not exploded!
-                if (xhr.responseText) {
-                    try {
-                        const res = JSON.parse(xhr.responseText);
-                        error = res.answer || error;
-                    } catch {
-                        // continue regardless of error
-                    }
-                }
-                error = error || 'Unknown error';
-                this.alertSystem.notify('We ran into some issues while formatting your code: ' + error, {
+            })
+            .catch((err: Error) => {
+                this.alertSystem.notify('We ran into some issues while formatting your code: ' + err.message, {
                     group: 'formatting',
                     alertClass: 'notification-error',
                 });
-            },
-            cache: true,
-        });
+            });
     }
 
     override resize(): void {

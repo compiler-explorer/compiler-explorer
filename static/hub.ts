@@ -26,6 +26,7 @@ import GoldenLayout, {ContentItem} from 'golden-layout';
 import _ from 'underscore';
 
 import {LanguageKey} from '../types/languages.interfaces.js';
+import {HttpBackendApi, setBackendApi} from './api/backend-api.js';
 import {CompilerService} from './compiler-service.js';
 import {
     AST_VIEW_COMPONENT_NAME,
@@ -130,6 +131,7 @@ export class Hub {
         this.lastOpenedLangId = null;
         this.subdomainLangId = subLangId;
         this.defaultLangId = defaultLangId;
+        setBackendApi(new HttpBackendApi());
         this.compilerService = new CompilerService(this.layout.eventHub);
 
         layout.registerComponent(EDITOR_COMPONENT_NAME, (c: GLC, s: any) => this.codeEditorFactory(c, s));
