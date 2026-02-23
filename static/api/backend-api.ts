@@ -33,8 +33,6 @@
  * setBackendApi() to substitute a fake implementation.
  */
 
-import _ from 'underscore';
-
 import {CompilationResult} from '../../types/compilation/compilation.interfaces.js';
 import {PossibleArguments} from '../../types/compiler-arguments.interfaces.js';
 import {
@@ -63,6 +61,21 @@ export interface BackendApi {
     shortenUrl(body: Record<string, unknown>): Promise<{url: string}>;
 }
 
+/** Extract a human-readable error message from a non-ok fetch Response. */
+async function parseErrorBody(response: Response): Promise<string> {
+    try {
+        const body = (await response.json()) as {answer?: string; error?: string; message?: string};
+        return (
+            (typeof body.answer === 'string' && body.answer) ||
+            (typeof body.error === 'string' && body.error) ||
+            (typeof body.message === 'string' && body.message) ||
+            `${response.status} ${response.statusText}`
+        );
+    } catch {
+        return `${response.status} ${response.statusText}`;
+    }
+}
+
 class HttpBackendApi implements BackendApi {
     constructor(private readonly baseUrl: string) {}
 
@@ -72,28 +85,7 @@ class HttpBackendApi implements BackendApi {
             headers: {Accept: 'application/json', 'Content-Type': 'application/json'},
             body: JSON.stringify(body),
         });
-        if (!response.ok) {
-            let errMessage = `Request failed: ${response.status} ${response.statusText}`;
-            try {
-                const errBody = (await response.json()) as {
-                    answer?: string;
-                    error?: string;
-                    message?: string;
-                };
-                if (errBody && typeof errBody === 'object') {
-                    const detailedMessage =
-                        (typeof errBody.answer === 'string' && errBody.answer) ||
-                        (typeof errBody.error === 'string' && errBody.error) ||
-                        (typeof errBody.message === 'string' && errBody.message);
-                    if (detailedMessage) {
-                        errMessage = detailedMessage;
-                    }
-                }
-            } catch {
-                // Non-JSON error body; keep the generic HTTP status message.
-            }
-            throw new Error(errMessage);
-        }
+        if (!response.ok) throw new Error(await parseErrorBody(response));
         return response.json() as Promise<T>;
     }
 
@@ -110,10 +102,8 @@ class HttpBackendApi implements BackendApi {
     }
 
     async formatCode(req: FormattingRequest): Promise<FormattingResponse> {
-        return this.postJson(
-            `${this.baseUrl}api/format/${req.formatterId}`,
-            _.pick(req, 'source', 'base', 'tabWidth', 'useSpaces'),
-        );
+        const {formatterId, source, base, tabWidth, useSpaces} = req;
+        return this.postJson(`${this.baseUrl}api/format/${formatterId}`, {source, base, tabWidth, useSpaces});
     }
 
     async getAssemblyDocumentation(req: AssemblyDocumentationRequest): Promise<AssemblyDocumentationResponse> {
@@ -121,16 +111,7 @@ class HttpBackendApi implements BackendApi {
             credentials: 'omit',
             headers: {Accept: 'application/json'},
         });
-        if (!response.ok) {
-            let errMessage = `HTTP ${response.status}`;
-            try {
-                const errBody = (await response.json()) as {error?: string};
-                if (errBody.error) errMessage = errBody.error;
-            } catch {
-                // Non-JSON error body; use the HTTP status message above.
-            }
-            throw new Error(errMessage);
-        }
+        if (!response.ok) throw new Error(await parseErrorBody(response));
         return response.json() as Promise<AssemblyDocumentationResponse>;
     }
 

@@ -162,36 +162,27 @@ export class CompilerService {
         return this.findCompilerInList(compilers, compilerId);
     }
 
-    public async submit(request: Record<string, any>) {
+    private async submitToCompiler(
+        request: Record<string, any>,
+        compileFn: (compilerId: string, req: Record<string, unknown>) => Promise<CompilationResult>,
+    ) {
         request.allowStoreCodeDebug = this.allowStoreCodeDebug;
         const jsonRequest = JSON.stringify(request);
         if (options.doCache && !request.bypassCache) {
             const cachedResult = this.cache.get(jsonRequest);
-            if (cachedResult) {
-                return {request, result: cachedResult, localCacheHit: true};
-            }
+            if (cachedResult) return {request, result: cachedResult, localCacheHit: true};
         }
-        const result = await getBackendApi().compile(request.compiler as string, request);
-        if (result?.okToCache && options.doCache) {
-            this.cache.set(jsonRequest, result);
-        }
+        const result = await compileFn(request.compiler as string, request);
+        if (result?.okToCache && options.doCache) this.cache.set(jsonRequest, result);
         return {request, result, localCacheHit: false};
     }
 
-    public async submitCMake(request: Record<string, any>) {
-        request.allowStoreCodeDebug = this.allowStoreCodeDebug;
-        const jsonRequest = JSON.stringify(request);
-        if (options.doCache && !request.bypassCache) {
-            const cachedResult = this.cache.get(jsonRequest);
-            if (cachedResult) {
-                return {request, result: cachedResult, localCacheHit: true};
-            }
-        }
-        const result = await getBackendApi().compileCMake(request.compiler as string, request);
-        if (result?.okToCache && options.doCache) {
-            this.cache.set(jsonRequest, result);
-        }
-        return {request, result, localCacheHit: false};
+    public submit(request: Record<string, any>) {
+        return this.submitToCompiler(request, (id, req) => getBackendApi().compile(id, req));
+    }
+
+    public submitCMake(request: Record<string, any>) {
+        return this.submitToCompiler(request, (id, req) => getBackendApi().compileCMake(id, req));
     }
 
     public async requestPopularArguments(compilerId: string, usedOptions: string) {
