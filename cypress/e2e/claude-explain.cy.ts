@@ -22,6 +22,7 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
+import {setupFakeCompiler, stubCompileResponse} from '../support/fake-compile';
 import {clearAllIntercepts, setMonacoEditorContent, stubConsoleOutput} from '../support/utils';
 
 // Claude Explain specific test utilities
@@ -70,7 +71,8 @@ function setupClaudeExplainEnvironment() {
         'blockedProduction',
     );
 
-    // Set up configuration
+    // Set up fake compiler and configuration
+    setupFakeCompiler();
     cy.visit('/', {
         onBeforeLoad: (win: any) => {
             stubConsoleOutput(win);
@@ -496,7 +498,8 @@ describe('Claude Explain feature', () => {
 
     describe('Compilation state handling', () => {
         it('should handle compilation failures', () => {
-            // Add invalid code
+            // Stub a compilation failure and add invalid code
+            stubCompileResponse({code: 1, stderr: [{text: 'error: invalid code'}]});
             setMonacoEditorContent('this is not valid C++ code');
 
             openClaudeExplainPaneWithOptions();
@@ -591,6 +594,7 @@ describe('Claude Explain feature', () => {
                 }).as('blockedProduction');
 
                 // Visit the URL with configuration
+                setupFakeCompiler();
                 cy.visit(url, {
                     onBeforeLoad: (win: any) => {
                         win.compilerExplorerOptions = win.compilerExplorerOptions || {};

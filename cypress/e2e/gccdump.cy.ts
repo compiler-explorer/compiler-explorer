@@ -22,6 +22,7 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
+import {stubCompileResponse} from '../support/fake-compile';
 import {
     assertNoConsoleOutput,
     findPane,
@@ -51,6 +52,19 @@ describe('GCC Tree/RTL dump', () => {
     });
 
     it('should show a pass picker with available passes', () => {
+        stubCompileResponse({
+            gccDumpOutput: {
+                all: [
+                    {name: '001t.original', header: '001t.original'},
+                    {name: '002t.gimple', header: '002t.gimple'},
+                ],
+                currentPassOutput: ';; Function main\n(nop)',
+                selectedPass: '001t.original',
+                treeDumpEnabled: true,
+                rtlDumpEnabled: true,
+                ipaDumpEnabled: true,
+            },
+        });
         setupAndWaitForCompilation();
         openGccDump();
         cy.get('.gccdump-pass-picker + .ts-wrapper .ts-control', {timeout: 10000}).should('be.visible').click();
@@ -58,10 +72,20 @@ describe('GCC Tree/RTL dump', () => {
     });
 
     it('should display tree dump content when a pass is selected', () => {
+        stubCompileResponse({
+            gccDumpOutput: {
+                all: [{name: '001t.original', header: '001t.original'}],
+                currentPassOutput: ';; Function main\n(nop)',
+                selectedPass: '001t.original',
+                treeDumpEnabled: true,
+                rtlDumpEnabled: true,
+                ipaDumpEnabled: true,
+            },
+        });
         setupAndWaitForCompilation();
         openGccDump();
         cy.get('.gccdump-pass-picker + .ts-wrapper .ts-control', {timeout: 10000}).should('be.visible').click();
         cy.get('.ts-dropdown .option:visible', {timeout: 10000}).first().click();
-        monacoEditorTextShouldContain(gccDumpPane().find('.monaco-editor'), 'square');
+        monacoEditorTextShouldContain(gccDumpPane().find('.monaco-editor'), 'Function main');
     });
 });
