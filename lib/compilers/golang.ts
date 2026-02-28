@@ -490,6 +490,10 @@ export class GolangCompiler extends BaseCompiler {
             ...this.GOENV,
         };
 
+        // Go's -gcflags=-S outputs assembly to stderr, which can easily exceed the default 1MB limit
+        // and cause the process to be killed before error messages are captured.
+        options.maxOutput = 1024 * 1024 * 1024;
+
         return options;
     }
 

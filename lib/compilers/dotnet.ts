@@ -151,7 +151,25 @@ class DotNetCompiler extends BaseCompiler {
         execOptions: ExecutionOptionsWithEnv,
     ) {
         const compilerInfo = await this.getCompilerInfo(this.lang.id);
-        return await this.buildToDll(compiler, compilerInfo, inputFilename, execOptions, true);
+        const compilerOptions = this.extractCompilerOptions(options);
+        return await this.buildToDll(compiler, compilerInfo, inputFilename, execOptions, compilerOptions, true);
+    }
+
+    extractCompilerOptions(options: string[]): string[] {
+        const compilerOptions: string[] = [];
+        while (options.length > 0) {
+            const currentOption = options.shift();
+            if (!currentOption) {
+                continue;
+            }
+            if (currentOption === '-compopt' || currentOption === '--compiler-options') {
+                const value = options.shift();
+                if (value) {
+                    compilerOptions.push(value);
+                }
+            }
+        }
+        return compilerOptions;
     }
 
     async buildToDll(
@@ -159,6 +177,7 @@ class DotNetCompiler extends BaseCompiler {
         compilerInfo: DotNetCompilerInfo,
         inputFilename: string,
         execOptions: ExecutionOptionsWithEnv,
+        compilerOptions: string[],
         buildToBinary?: boolean,
     ): Promise<CompilationResult> {
         const programDir = path.dirname(inputFilename);
@@ -176,6 +195,7 @@ class DotNetCompiler extends BaseCompiler {
                     inputFilename,
                     outputFilename,
                     execOptions,
+                    compilerOptions,
                     buildToBinary,
                 );
                 break;
@@ -187,6 +207,7 @@ class DotNetCompiler extends BaseCompiler {
                     inputFilename,
                     outputFilename,
                     execOptions,
+                    compilerOptions,
                     buildToBinary,
                 );
                 break;
@@ -198,6 +219,7 @@ class DotNetCompiler extends BaseCompiler {
                     inputFilename,
                     outputFilename,
                     execOptions,
+                    compilerOptions,
                     buildToBinary,
                 );
                 break;
@@ -208,6 +230,7 @@ class DotNetCompiler extends BaseCompiler {
                     inputFilename,
                     outputFilename,
                     execOptions,
+                    compilerOptions,
                     buildToBinary,
                 );
                 break;
@@ -305,6 +328,7 @@ class DotNetCompiler extends BaseCompiler {
         inputFilename: string,
         outputFilename: string,
         execOptions: ExecutionOptionsWithEnv,
+        compilerOptions: string[],
         buildToBinary?: boolean,
     ) {
         const {refAssemblies, analyzers} = await this.getRefAssembliesAndAnalyzers(dotnetPath, compilerInfo, 'csharp');
@@ -329,6 +353,7 @@ class DotNetCompiler extends BaseCompiler {
             '-deterministic+',
             `-langversion:${this.langVersion}`,
             '-warnaserror+:NU1605,SYSLIB0011',
+            ...compilerOptions,
         ];
         for (const analyzer of analyzers) {
             options.push(`-analyzer:${analyzer}`);
@@ -364,6 +389,7 @@ using System.Reflection;
         inputFilename: string,
         outputFilename: string,
         execOptions: ExecutionOptionsWithEnv,
+        compilerOptions: string[],
         buildToBinary?: boolean,
     ) {
         const {refAssemblies, analyzers} = await this.getRefAssembliesAndAnalyzers(dotnetPath, compilerInfo, 'vb');
@@ -391,6 +417,7 @@ System.Diagnostics,System.Linq,System.Xml.Linq,System.Threading.Tasks`,
             '-deterministic+',
             `-langversion:${this.langVersion}`,
             '-warnaserror+:NU1605,SYSLIB0011',
+            ...compilerOptions,
         ];
         for (const analyzer of analyzers) {
             options.push(`-analyzer:${analyzer}`);
@@ -434,6 +461,7 @@ Imports System.Reflection
         inputFilename: string,
         outputFilename: string,
         execOptions: ExecutionOptionsWithEnv,
+        compilerOptions: string[],
         buildToBinary?: boolean,
     ) {
         const {refAssemblies} = await this.getRefAssembliesAndAnalyzers(dotnetPath, compilerInfo, 'fsharp');
@@ -454,6 +482,7 @@ Imports System.Reflection
             '--nocopyfsharpcore',
             '--deterministic+',
             '--simpleresolution',
+            ...compilerOptions,
         ];
         for (const refAssembly of refAssemblies) {
             options.push(`-r:${refAssembly}`);
@@ -501,6 +530,7 @@ do()
         inputFilename: string,
         outputFilename: string,
         execOptions: ExecutionOptionsWithEnv,
+        compilerOptions: string[],
         buildToBinary?: boolean,
     ) {
         const assemblyInfo = `.assembly extern DisassemblyLoader { }
@@ -523,6 +553,7 @@ do()
             assemblyInfoPath,
             `-include:${programDir}`,
             `-output:${outputFilename}`,
+            ...compilerOptions,
         ];
         return await super.runCompiler(ilasmPath, options, inputFilename, execOptions);
     }
@@ -548,6 +579,7 @@ do()
         const isIlSpy = this.compiler.group === 'dotnetilspy';
         const isCoreRun = this.compiler.group === 'dotnetcoreclr';
         const toolOptions: string[] = [];
+        const compilerOptions = this.extractCompilerOptions([...options]);
 
         let overrideDiffable = false;
         let overrideDisasm = false;
@@ -569,6 +601,11 @@ do()
             // options before the input filename are user options
             if (currentOption.includes(path.basename(inputFilename))) {
                 break;
+            }
+
+            if (currentOption === '-compopt' || currentOption === '--compiler-options') {
+                options.shift(); // skip the value for this option, we don't need it
+                continue;
             }
 
             if ((isCoreRun || isMono) && (currentOption === '-e' || currentOption === '--env')) {
@@ -679,6 +716,7 @@ do()
             compilerInfo,
             inputFilename,
             execOptions,
+            compilerOptions,
             filters.binary,
         );
         if (compilerResult.code !== 0) {

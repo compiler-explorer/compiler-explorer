@@ -26,7 +26,7 @@ import express from 'express';
 
 import {unwrapString} from '../../assert.js';
 import {FormattingService} from '../../formatting-service.js';
-import {cached, cors, jsonOnly} from '../middleware.js';
+import {cached, jsonOnly} from '../middleware.js';
 import {HttpController} from './controller.interfaces.js';
 
 export class FormattingController implements HttpController {
@@ -34,8 +34,8 @@ export class FormattingController implements HttpController {
 
     createRouter(): express.Router {
         const router = express.Router();
-        router.post('/api/format/:tool', cors, cached, jsonOnly, this.format.bind(this));
-        router.get('/api/formats', cors, cached, this.getFormatters.bind(this));
+        router.post('/api/format/:tool', cached, jsonOnly, this.format.bind(this));
+        router.get('/api/formats', cached, this.getFormatters.bind(this));
         return router;
     }
 

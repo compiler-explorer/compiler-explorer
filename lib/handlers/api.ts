@@ -68,17 +68,9 @@ export class ApiHandler {
         this.handle = express.Router();
         this.compilationEnvironment = compilationEnvironment;
         const cacheHeader = `public, max-age=${ceProps('apiMaxAgeSecs', 24 * 60 * 60)}`;
-        this.handle.use((req, res, next) => {
-            res.header({
-                'Access-Control-Allow-Origin': '*',
-                'Access-Control-Allow-Headers': 'Origin, X-Requested-With, Content-Type, Accept',
-                'Cache-Control': cacheHeader,
-            });
-            if (req.method === 'OPTIONS') {
-                res.sendStatus(200);
-            } else {
-                next();
-            }
+        this.handle.use((_, res, next) => {
+            res.header('Cache-Control', cacheHeader);
+            next();
         });
         this.handle.route('/compilers').get(this.handleCompilers.bind(this)).all(methodNotAllowed);
 
