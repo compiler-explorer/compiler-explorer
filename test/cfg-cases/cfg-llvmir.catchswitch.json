@@ -1,0 +1,394 @@
+{
+  "asm": [
+    {
+      "text": "@typeinfo for int = external constant ptr"
+    },
+    {
+      "text": ""
+    },
+    {
+      "text": "define hidden void @foo()() personality ptr @__gxx_wasm_personality_v0 {",
+      "scope": "!6",
+      "source": {
+        "file": null,
+        "line": 3
+      }
+    },
+    {
+      "text": "entry:"
+    },
+    {
+      "text": "  %exn.slot = alloca ptr, align 4"
+    },
+    {
+      "text": "  %x = alloca i32, align 4"
+    },
+    {
+      "text": "  invoke void @bar(int)(i32 noundef 1)"
+    },
+    {
+      "text": "          to label %invoke.cont unwind label %catch.dispatch",
+      "scope": "!11",
+      "source": {
+        "file": null,
+        "line": 5,
+        "column": 9
+      }
+    },
+    {
+      "text": ""
+    },
+    {
+      "text": "catch.dispatch:"
+    },
+    {
+      "text": "  %0 = catchswitch within none [label %catch.start] unwind to caller",
+      "scope": "!13",
+      "source": {
+        "file": null,
+        "line": 6,
+        "column": 5
+      }
+    },
+    {
+      "text": ""
+    },
+    {
+      "text": "catch.start:"
+    },
+    {
+      "text": "  %1 = catchpad within %0 [ptr @typeinfo for int]",
+      "scope": "!13",
+      "source": {
+        "file": null,
+        "line": 6,
+        "column": 5
+      }
+    },
+    {
+      "text": "  %2 = call ptr @llvm.wasm.get.exception(token %1)",
+      "scope": "!13",
+      "source": {
+        "file": null,
+        "line": 6,
+        "column": 5
+      }
+    },
+    {
+      "text": "  store ptr %2, ptr %exn.slot, align 4",
+      "scope": "!13",
+      "source": {
+        "file": null,
+        "line": 6,
+        "column": 5
+      }
+    },
+    {
+      "text": "  %3 = call i32 @llvm.wasm.get.ehselector(token %1)",
+      "scope": "!13",
+      "source": {
+        "file": null,
+        "line": 6,
+        "column": 5
+      }
+    },
+    {
+      "text": "  %4 = call i32 @llvm.eh.typeid.for.p0(ptr @typeinfo for int) #5",
+      "scope": "!13",
+      "source": {
+        "file": null,
+        "line": 6,
+        "column": 5
+      }
+    },
+    {
+      "text": "  %matches = icmp eq i32 %3, %4",
+      "scope": "!13",
+      "source": {
+        "file": null,
+        "line": 6,
+        "column": 5
+      }
+    },
+    {
+      "text": "  br i1 %matches, label %catch, label %rethrow",
+      "scope": "!13",
+      "source": {
+        "file": null,
+        "line": 6,
+        "column": 5
+      }
+    },
+    {
+      "text": ""
+    },
+    {
+      "text": "catch:"
+    },
+    {
+      "text": "  %exn = load ptr, ptr %exn.slot, align 4",
+      "scope": "!13",
+      "source": {
+        "file": null,
+        "line": 6,
+        "column": 5
+      }
+    },
+    {
+      "text": "  %5 = call ptr @__cxa_begin_catch(ptr %exn) [ \"funclet\"(token %1) ]",
+      "scope": "!13",
+      "source": {
+        "file": null,
+        "line": 6,
+        "column": 5
+      }
+    },
+    {
+      "text": "  %6 = load i32, ptr %5, align 4",
+      "scope": "!13",
+      "source": {
+        "file": null,
+        "line": 6,
+        "column": 5
+      }
+    },
+    {
+      "text": "  store i32 %6, ptr %x, align 4",
+      "scope": "!13",
+      "source": {
+        "file": null,
+        "line": 6,
+        "column": 5
+      }
+    },
+    {
+      "text": "  call void @__cxa_end_catch() [ \"funclet\"(token %1) ]",
+      "scope": "!17",
+      "source": {
+        "file": null,
+        "line": 7,
+        "column": 5
+      }
+    },
+    {
+      "text": "  catchret from %1 to label %catchret.dest",
+      "scope": "!17",
+      "source": {
+        "file": null,
+        "line": 7,
+        "column": 5
+      }
+    },
+    {
+      "text": ""
+    },
+    {
+      "text": "catchret.dest:"
+    },
+    {
+      "text": "  br label %try.cont",
+      "scope": "!17",
+      "source": {
+        "file": null,
+        "line": 7,
+        "column": 5
+      }
+    },
+    {
+      "text": ""
+    },
+    {
+      "text": "rethrow:"
+    },
+    {
+      "text": "  call void @llvm.wasm.rethrow() [ \"funclet\"(token %1) ]",
+      "scope": "!17",
+      "source": {
+        "file": null,
+        "line": 7,
+        "column": 5
+      }
+    },
+    {
+      "text": "  unreachable",
+      "scope": "!17",
+      "source": {
+        "file": null,
+        "line": 7,
+        "column": 5
+      }
+    },
+    {
+      "text": ""
+    },
+    {
+      "text": "try.cont:"
+    },
+    {
+      "text": "  ret void",
+      "scope": "!19",
+      "source": {
+        "file": null,
+        "line": 8,
+        "column": 1
+      }
+    },
+    {
+      "text": ""
+    },
+    {
+      "text": "invoke.cont:"
+    },
+    {
+      "text": "  br label %try.cont",
+      "scope": "!13",
+      "source": {
+        "file": null,
+        "line": 6,
+        "column": 5
+      }
+    },
+    {
+      "text": "}"
+    },
+    {
+      "text": ""
+    },
+    {
+      "text": "declare void @bar(int)(i32 noundef) #1"
+    },
+    {
+      "text": ""
+    },
+    {
+      "text": "declare i32 @__gxx_wasm_personality_v0(...)"
+    },
+    {
+      "text": ""
+    },
+    {
+      "text": "declare ptr @llvm.wasm.get.exception(token) #2"
+    },
+    {
+      "text": ""
+    },
+    {
+      "text": "declare i32 @llvm.wasm.get.ehselector(token) #2"
+    },
+    {
+      "text": ""
+    },
+    {
+      "text": "declare i32 @llvm.eh.typeid.for.p0(ptr) #3"
+    },
+    {
+      "text": ""
+    },
+    {
+      "text": "declare ptr @__cxa_begin_catch(ptr)"
+    },
+    {
+      "text": ""
+    },
+    {
+      "text": "declare void @__cxa_end_catch()"
+    },
+    {
+      "text": ""
+    },
+    {
+      "text": "declare void @llvm.wasm.rethrow() #4"
+    },
+    {
+      "text": ""
+    }
+  ],
+  "cfg": {
+    "foo()": {
+      "nodes": [
+        {
+          "id": "entry",
+          "label": "foo()\n\nentry:\n  %exn.slot = alloca ptr, align 4\n  %x = alloca i32, align 4\n  invoke void @bar(int)(i32 noundef 1)\n          to label %invoke.cont unwind label %catch.dispatch"
+        },
+        {
+          "id": "catch.dispatch",
+          "label": "catch.dispatch:\n  %0 = catchswitch within none [label %catch.start] unwind to caller"
+        },
+        {
+          "id": "catch.start",
+          "label": "catch.start:\n  %1 = catchpad within %0 [ptr @typeinfo for int]\n  %2 = call ptr @llvm.wasm.get.exception(token %1)\n  store ptr %2, ptr %exn.slot, align 4\n  %3 = call i32 @llvm.wasm.get.ehselector(token %1)\n  %4 = call i32 @llvm.eh.typeid.for.p0(ptr @typeinfo for int) #5\n  %matches = icmp eq i32 %3, %4\n  br i1 %matches, label %catch, label %rethrow"
+        },
+        {
+          "id": "catch",
+          "label": "catch:\n  %exn = load ptr, ptr %exn.slot, align 4\n  %5 = call ptr @__cxa_begin_catch(ptr %exn) [ \"funclet\"(token %1) ]\n  %6 = load i32, ptr %5, align 4\n  store i32 %6, ptr %x, align 4\n  call void @__cxa_end_catch() [ \"funclet\"(token %1) ]\n  catchret from %1 to label %catchret.dest"
+        },
+        {
+          "id": "catchret.dest",
+          "label": "catchret.dest:\n  br label %try.cont"
+        },
+        {
+          "id": "rethrow",
+          "label": "rethrow:\n  call void @llvm.wasm.rethrow() [ \"funclet\"(token %1) ]\n  unreachable"
+        },
+        {
+          "id": "try.cont",
+          "label": "try.cont:\n  ret void"
+        },
+        {
+          "id": "invoke.cont",
+          "label": "invoke.cont:\n  br label %try.cont"
+        }
+      ],
+      "edges": [
+        {
+          "from": "entry",
+          "to": "invoke.cont",
+          "arrows": "to",
+          "color": "green"
+        },
+        {
+          "from": "entry",
+          "to": "catch.dispatch",
+          "arrows": "to",
+          "color": "grey"
+        },
+        {
+          "from": "catch.dispatch",
+          "to": "catch.start",
+          "arrows": "to",
+          "color": "blue"
+        },
+        {
+          "from": "catch.start",
+          "to": "catch",
+          "arrows": "to",
+          "color": "green"
+        },
+        {
+          "from": "catch.start",
+          "to": "rethrow",
+          "arrows": "to",
+          "color": "red"
+        },
+        {
+          "from": "catch",
+          "to": "catchret.dest",
+          "arrows": "to",
+          "color": "blue"
+        },
+        {
+          "from": "catchret.dest",
+          "to": "try.cont",
+          "arrows": "to",
+          "color": "blue"
+        },
+        {
+          "from": "invoke.cont",
+          "to": "try.cont",
+          "arrows": "to",
+          "color": "blue"
+        }
+      ]
+    }
+  }
+}
