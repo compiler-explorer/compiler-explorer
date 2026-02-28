@@ -22,7 +22,7 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import {AsmResultLink, ParsedAsmResult, ParsedAsmResultLine} from '../../types/asmresult/asmresult.interfaces.js';
+import {ParsedAsmResult, ParsedAsmResultLine} from '../../types/asmresult/asmresult.interfaces.js';
 import {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces.js';
 import {AsmRegex} from './asmregex.js';
 
@@ -32,7 +32,6 @@ export class AsmRaw extends AsmRegex {
         const asmLines = asm.split('\n');
         const asmOpcodeRe = /^\s*([\da-f]+):\s*(([\da-f]{2} ?)+)\s*(.*)/;
         const labelRe = /^([\da-f]+)\s+<([^>]+)>:$/;
-        const destRe = /.*\s([\da-f]+)\s+<([^>]+)>$/;
         const source = null;
 
         if (asmLines.length === 1 && asmLines[0][0] === '<') {
@@ -56,18 +55,7 @@ export class AsmRaw extends AsmRegex {
                 const address = Number.parseInt(match[1], 16);
                 const opcodes = match[2].split(' ').filter(Boolean);
                 const disassembly = ' ' + AsmRegex.filterAsmLine(match[4], filters);
-                let links: AsmResultLink[] | undefined;
-                const destMatch = line.match(destRe);
-                if (destMatch) {
-                    links = [
-                        {
-                            offset: disassembly.indexOf(destMatch[1]),
-                            length: destMatch[1].length,
-                            to: Number.parseInt(destMatch[1], 16),
-                        },
-                    ];
-                }
-                result.push({opcodes: opcodes, address: address, text: disassembly, source: source, links: links});
+                result.push({opcodes: opcodes, address: address, text: disassembly, source: source});
             }
         }
 
