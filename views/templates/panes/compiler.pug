@@ -23,6 +23,9 @@ mixin newPaneButton(classId, text, title, icon)
                 span.argtitle Detailed Compiler Flags
                 span.argdescription Open a new window to edit verbose compiler flags
     include ../../font-size
+    .btn-group.btn-group-sm.wrap(role="group")
+      button.btn.btn-sm.btn-light.wrap-lines(type="button" title="Wrap lines" data-bind="wrap" aria-pressed="false" aria-label="Wrap lines")
+        span Wrap lines
     .btn-group.btn-group-sm.filters(role="group")
       button.btn.btn-sm.btn-light.dropdown-toggle(type="button" title="Compiler output options" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false" aria-label="Change how the compiler's output is generated")
         span.fas.fa-cog
