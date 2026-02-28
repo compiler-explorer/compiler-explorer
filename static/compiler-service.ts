@@ -23,27 +23,22 @@
 // POSSIBILITY OF SUCH DAMAGE.
 
 import {EventEmitter} from 'golden-layout';
-import $ from 'jquery';
 import {LRUCache} from 'lru-cache';
 import _ from 'underscore';
 
-import {ResultLine} from '../types/resultline/resultline.interfaces.js';
-import {options} from './options.js';
-
-import jqXHR = JQuery.jqXHR;
-import ErrorTextStatus = JQuery.Ajax.ErrorTextStatus;
-
 import {CompilationResult, FiledataPair} from '../types/compilation/compilation.interfaces.js';
 import {CompilerInfo} from '../types/compiler.interfaces.js';
+import {ResultLine} from '../types/resultline/resultline.interfaces.js';
+import {getBackendApi} from './api/backend-api.js';
 import {CompilationStatus} from './compiler-service.interfaces.js';
 import {IncludeDownloads, SourceAndFiles} from './download-service.js';
+import {options} from './options.js';
 import {SentryCapture} from './sentry.js';
 import {SiteSettings} from './settings.js';
 
 const ASCII_COLORS_RE = new RegExp(/\x1B\[[\d;]*m(.\[K)?/g);
 
 export class CompilerService {
-    private readonly base = window.httpRoot;
     private allowStoreCodeDebug: boolean;
     private cache: LRUCache<string, CompilationResult>;
     private readonly compilersByLang: Record<string, Record<string, CompilerInfo>>;
@@ -167,148 +162,32 @@ export class CompilerService {
         return this.findCompilerInList(compilers, compilerId);
     }
 
-    private static handleRequestError(
-        request: any,
-        reject: (reason?: any) => void,
-        xhr: jqXHR,
-        textStatus: ErrorTextStatus,
-        errorThrown: string,
+    private async submitToCompiler(
+        request: Record<string, any>,
+        compileFn: (compilerId: string, req: Record<string, unknown>) => Promise<CompilationResult>,
     ) {
-        let error = errorThrown;
-        if (!error) {
-            switch (textStatus) {
-                case 'timeout':
-                    error = 'Request timed out';
-                    break;
-                case 'abort':
-                    error = 'Request was aborted';
-                    break;
-                case 'error':
-                    switch (xhr.status) {
-                        case 500:
-                            error = 'Request failed: internal server error';
-                            break;
-                        case 504:
-                            error = 'Request failed: gateway timeout';
-                            break;
-                        default:
-                            error = 'Request failed: HTTP error code ' + xhr.status;
-                            break;
-                    }
-                    break;
-                default:
-                    error = 'Error sending request';
-                    break;
-            }
-        }
-        const requestError = new Error(error);
-        // Attach request context to the error for debugging
-        (requestError as any).request = request;
-        reject(requestError);
-    }
-
-    private getBaseUrl() {
-        return window.location.origin + this.base;
-    }
-
-    public async submit(request: Record<string, any>) {
         request.allowStoreCodeDebug = this.allowStoreCodeDebug;
         const jsonRequest = JSON.stringify(request);
         if (options.doCache && !request.bypassCache) {
             const cachedResult = this.cache.get(jsonRequest);
-            if (cachedResult) {
-                return {
-                    request: request,
-                    result: cachedResult,
-                    localCacheHit: true,
-                };
-            }
+            if (cachedResult) return {request, result: cachedResult, localCacheHit: true};
         }
-        return new Promise((resolve, reject) => {
-            const compilerId = encodeURIComponent(request.compiler);
-            $.ajax({
-                type: 'POST',
-                url: `${this.getBaseUrl()}api/compiler/${compilerId}/compile`,
-                dataType: 'json',
-                contentType: 'application/json',
-                data: jsonRequest,
-                success: result => {
-                    if (result?.okToCache && options.doCache) {
-                        this.cache.set(jsonRequest, result);
-                    }
-                    resolve({
-                        request: request,
-                        result: result,
-                        localCacheHit: false,
-                    });
-                },
-                error: (jqXHR, textStatus, errorThrown) => {
-                    CompilerService.handleRequestError(request, reject, jqXHR, textStatus, errorThrown);
-                },
-            });
-        });
+        const result = await compileFn(request.compiler as string, request);
+        if (result?.okToCache && options.doCache) this.cache.set(jsonRequest, result);
+        return {request, result, localCacheHit: false};
+    }
+
+    public submit(request: Record<string, any>) {
+        return this.submitToCompiler(request, (id, req) => getBackendApi().compile(id, req));
     }
 
     public submitCMake(request: Record<string, any>) {
-        request.allowStoreCodeDebug = this.allowStoreCodeDebug;
-        const jsonRequest = JSON.stringify(request);
-        if (options.doCache && !request.bypassCache) {
-            const cachedResult = this.cache.get(jsonRequest);
-            if (cachedResult) {
-                return Promise.resolve({
-                    request: request,
-                    result: cachedResult,
-                    localCacheHit: true,
-                });
-            }
-        }
-        return new Promise((resolve, reject) => {
-            const compilerId = encodeURIComponent(request.compiler);
-            $.ajax({
-                type: 'POST',
-                url: `${this.getBaseUrl()}api/compiler/${compilerId}/cmake`,
-                dataType: 'json',
-                contentType: 'application/json',
-                data: jsonRequest,
-                success: result => {
-                    if (result?.okToCache && options.doCache) {
-                        this.cache.set(jsonRequest, result);
-                    }
-                    resolve({
-                        request: request,
-                        result: result,
-                        localCacheHit: false,
-                    });
-                },
-                error: (jqXHR, textStatus, errorThrown) => {
-                    CompilerService.handleRequestError(request, reject, jqXHR, textStatus, errorThrown);
-                },
-            });
-        });
+        return this.submitToCompiler(request, (id, req) => getBackendApi().compileCMake(id, req));
     }
 
-    public requestPopularArguments(compilerId: string, usedOptions: string) {
-        return new Promise((resolve, reject) => {
-            $.ajax({
-                type: 'POST',
-                url: `${this.getBaseUrl()}api/popularArguments/${compilerId}`,
-                dataType: 'json',
-                data: JSON.stringify({
-                    usedOptions: usedOptions,
-                    presplit: false,
-                }),
-                success: result => {
-                    resolve({
-                        request: compilerId,
-                        result: result,
-                        localCacheHit: false,
-                    });
-                },
-                error: (jqXHR, textStatus, errorThrown) => {
-                    CompilerService.handleRequestError(compilerId, reject, jqXHR, textStatus, errorThrown);
-                },
-            });
-        });
+    public async requestPopularArguments(compilerId: string, usedOptions: string) {
+        const result = await getBackendApi().popularArguments(compilerId, usedOptions);
+        return {request: compilerId, result, localCacheHit: false};
     }
 
     public async expandToFiles(source: string): Promise<SourceAndFiles> {

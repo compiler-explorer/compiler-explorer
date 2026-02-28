@@ -25,7 +25,7 @@
 import * as monaco from 'monaco-editor';
 
 import {unwrap} from '../shared/assert.js';
-import {getFormattedCode} from './api/api.js';
+import {getBackendApi} from './api/backend-api.js';
 import {FormattingRequest} from './api/formatting.interfaces.js';
 import {Settings} from './settings.js';
 import {Alert} from './widgets/alert.js';
@@ -41,16 +41,11 @@ const onFormatError = (cause: string, source: string) => {
 };
 
 const doFormatRequest = async (options: FormattingRequest) => {
-    const res = await getFormattedCode(options);
-    const body = await res.json();
-    if (res.status === 200 && body.exit === 0) {
-        // API sent 200 and we have a valid response
-        return unwrap(body.answer);
+    const result = await getBackendApi().formatCode(options);
+    if (result.exit === 0) {
+        return unwrap(result.answer);
     }
-    // We had an error (either HTTP request error, or API error)
-    // Figure out which it is, show it to the user, and reject the promise
-    const cause = body.answer ?? res.statusText;
-    throw new Error(cause);
+    throw new Error(result.answer ?? 'Formatting failed');
 };
 
 /**
