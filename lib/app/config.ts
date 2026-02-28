@@ -143,9 +143,10 @@ export function loadConfiguration(appArgs: AppArguments): AppConfiguration {
     // Create property hierarchy based on environment
     const propHierarchy = createPropertyHierarchy(appArgs.env, appArgs.useLocalProps);
 
-    // Initialize properties from config directory
+    // Initialize properties from config directory and any additional directories
     const configDir = path.join(appArgs.rootDir, 'config');
-    props.initialize(configDir, propHierarchy);
+    const directories = [configDir, ...(appArgs.propertiesDirs || [])];
+    props.initialize(directories, propHierarchy);
 
     // Get compiler explorer properties
     const ceProps = props.propsFor('compiler-explorer');

@@ -37,7 +37,7 @@ describe('Properties', () => {
     let compilerProps;
 
     beforeAll(() => {
-        properties.initialize('test/example-config/', ['test', 'overridden-base', 'overridden-tip']);
+        properties.initialize(['test/example-config/'], ['test', 'overridden-base', 'overridden-tip']);
         casesProps = properties.propsFor('cases');
         overridingProps = properties.propsFor('overwrite');
         compilerProps = new properties.CompilerProps(

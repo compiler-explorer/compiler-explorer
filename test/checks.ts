@@ -36,7 +36,7 @@ describe('Live site checks', () => {
     let compilerProps: properties.CompilerProps;
 
     beforeAll(() => {
-        properties.initialize('etc/config/', ['amazon']);
+        properties.initialize(['etc/config/'], ['amazon']);
         ceProps = properties.propsFor('compiler-explorer');
         compilerProps = new properties.CompilerProps(languages, ceProps);
     });
