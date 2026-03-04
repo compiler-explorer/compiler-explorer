@@ -673,10 +673,7 @@ export class Editor extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Edit
             } else if (this.settings.enableCtrlS === '3') {
                 this.handleCtrlSDoNothing();
             } else if (this.settings.enableCtrlS === '4') {
-                this.maybeEmitChange();
-                if (!this.settings.compileOnChange) {
-                    this.eventHub.emit('requestCompilation', this.id, false);
-                }
+                this.triggerManualCompile();
             }
         }
     }
@@ -930,6 +927,17 @@ export class Editor extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Edit
         }
     }
 
+    // Trigger a manual compilation, as if the user pressed Ctrl+Enter.
+    // maybeEmitChange() alone is not enough when compileOnChange is disabled — in that
+    // case onEditorChange() intentionally skips compilation, so we must also emit
+    // requestCompilation. The guard prevents a double-compile when compileOnChange is on.
+    triggerManualCompile(): void {
+        this.maybeEmitChange();
+        if (!this.settings.compileOnChange) {
+            this.eventHub.emit('requestCompilation', this.id, false);
+        }
+    }
+
     override registerEditorActions(): void {
         this.editor.addAction({
             id: 'compile',
@@ -939,11 +947,7 @@ export class Editor extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Edit
             contextMenuGroupId: 'navigation',
             contextMenuOrder: 1.5,
             run: () => {
-                this.maybeEmitChange();
-                // If compileOnChange is disabled, we need to request compilation manually.
-                if (!this.settings.compileOnChange) {
-                    this.eventHub.emit('requestCompilation', this.id, false);
-                }
+                this.triggerManualCompile();
             },
         });
 
