@@ -672,6 +672,11 @@ export class Editor extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Edit
                 this.runFormatDocumentAction();
             } else if (this.settings.enableCtrlS === '3') {
                 this.handleCtrlSDoNothing();
+            } else if (this.settings.enableCtrlS === '4') {
+                this.maybeEmitChange();
+                if (!this.settings.compileOnChange) {
+                    this.eventHub.emit('requestCompilation', this.id, false);
+                }
             }
         }
     }

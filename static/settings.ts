@@ -394,6 +394,7 @@ export class Settings {
             {label: 'false', desc: 'Create Short Link'},
             {label: '2', desc: 'Reformat code'},
             {label: '3', desc: 'Do nothing'},
+            {label: '4', desc: 'Compile'},
         ];
         addSelector('.enableCtrlS', 'enableCtrlS', enableCtrlSData, 'true');
     }
