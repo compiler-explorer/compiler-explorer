@@ -264,9 +264,11 @@ export class Editor extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Edit
     }
 
     // If compilerId is undefined, every compiler will be pinged
-    maybeEmitChange(force?: boolean, compilerId?: number): void {
+    // Returns true if a change was emitted (i.e. the source differed from the last emission,
+    // or force was true), false if nothing was sent.
+    maybeEmitChange(force?: boolean, compilerId?: number): boolean {
         const source = this.getSource();
-        if (!force && source === this.lastChangeEmitted) return;
+        if (!force && source === this.lastChangeEmitted) return false;
 
         if (this.settings.formatOnCompile) {
             this.runFormatDocumentAction();
@@ -281,6 +283,7 @@ export class Editor extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Edit
             this.currentLanguage?.id ?? '',
             compilerId,
         );
+        return true;
     }
 
     // Not using the normal getCurrentState/updateState pattern because the editor does not conform to its own interface
@@ -928,12 +931,13 @@ export class Editor extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Edit
     }
 
     // Trigger a manual compilation, as if the user pressed Ctrl+Enter.
-    // maybeEmitChange() alone is not enough when compileOnChange is disabled — in that
-    // case onEditorChange() intentionally skips compilation, so we must also emit
-    // requestCompilation. The guard prevents a double-compile when compileOnChange is on.
+    // maybeEmitChange() emits 'editorChange', which onEditorChange() in the compiler pane
+    // will act on only when compileOnChange is enabled. So if no change was emitted (source
+    // unchanged) or compileOnChange is off, we must explicitly request compilation to ensure
+    // the user's intent is honoured.
     triggerManualCompile(): void {
-        this.maybeEmitChange();
-        if (!this.settings.compileOnChange) {
+        const emitted = this.maybeEmitChange();
+        if (!emitted || !this.settings.compileOnChange) {
             this.eventHub.emit('requestCompilation', this.id, false);
         }
     }
