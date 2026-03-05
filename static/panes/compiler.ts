@@ -182,6 +182,9 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
     private recentInstructionSet: InstructionSet | null;
     private currentLangId: string | null;
     private filters: Toggles;
+    private toggleWrapButton: Toggles;
+    private wrapButton: JQuery<HTMLElement>;
+    private wrapTitle = '';
     private optButton: JQuery<HTMLButtonElement>;
     private stackUsageButton: JQuery<HTMLButtonElement>;
     private flagsButton?: JQuery<HTMLButtonElement>;
@@ -2464,6 +2467,13 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
         super.registerButtons(state);
         this.filters = new Toggles(this.domRoot.find('.filters'), patchOldFilters(state.filters));
 
+        this.toggleWrapButton = new Toggles(this.domRoot.find('.wrap'), {wrap: state.wrap ?? false});
+        this.wrapButton = this.domRoot.find('.wrap-lines');
+        this.wrapTitle = this.wrapButton.prop('title');
+        const initialWrap = !!state.wrap;
+        this.editor.updateOptions({wordWrap: initialWrap ? 'on' : 'off'});
+        this.wrapButton.prop('title', (initialWrap ? '[ON] ' : '[OFF] ') + this.wrapTitle);
+
         this.optButton = this.domRoot.find('.btn.view-optimization');
         this.stackUsageButton = this.domRoot.find('.btn.view-stack-usage');
         this.flagsButton = this.domRoot.find('div.populararguments div.dropdown-menu button');
@@ -2923,6 +2933,18 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
         this.updateState();
     }
 
+    onToggleWrapChange(): void {
+        const state = this.toggleWrapButton.get();
+        if (state.wrap) {
+            this.editor.updateOptions({wordWrap: 'on'});
+            this.wrapButton.prop('title', '[ON] ' + this.wrapTitle);
+        } else {
+            this.editor.updateOptions({wordWrap: 'off'});
+            this.wrapButton.prop('title', '[OFF] ' + this.wrapTitle);
+        }
+        this.updateState();
+    }
+
     // Disable only for registerCallbacks as there are more and more callbacks.
 
     override registerCallbacks(): void {
@@ -3034,6 +3056,7 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
 
     initCallbacks(): void {
         this.filters.on('change', this.onFilterChange.bind(this));
+        this.toggleWrapButton.on('change', this.onToggleWrapChange.bind(this));
 
         this.fullTimingInfo.off('click').on('click', () => {
             TimingWidget.displayCompilationTiming(this.lastResult, this.lastTimeTaken);
@@ -3242,6 +3265,7 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
             flagsViewOpen: this.flagsViewOpen,
             overrides: this.compilerShared.getOverrides(),
             runtimeTools: this.compilerShared.getRuntimeTools(),
+            wrap: this.toggleWrapButton.get().wrap,
         };
         this.paneRenaming.addState(state);
         this.fontScale.addState(state);
