@@ -113,7 +113,8 @@
     (with-open [out (io/writer (io/output-stream compile-filename))]
       (when missing-namespace?
         (let [ns-form (str "(ns " namespace ")")]
-          (println "Injecting namespace form on first line:" ns-form)
+          ;; Don't log injection - any text output results in compilation error indicator in UI
+          ;; (println "Injecting namespace form on first line:" ns-form)
           (.write out ns-form)))
       (io/copy input-file out))
 
