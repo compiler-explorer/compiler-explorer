@@ -176,10 +176,10 @@ export class LibsWidget {
         this.initButtons();
         this.onChangeCallback = onChangeCallback;
         this.availableLibs = {};
-        this.updateAvailableLibs(possibleLibs, true);
-        this.loadState(state);
-
-        this.fullRefresh();
+        this.updateAvailableLibs(possibleLibs, true).then(() => {
+            this.loadState(state);
+            this.fullRefresh();
+        });
 
         const searchInput = this.domRoot.find('.lib-search-input');
 

@@ -3208,6 +3208,7 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
     }
 
     sendCompiler(): void {
+        if (!this.compiler) return;
         this.eventHub.emit(
             'compiler',
             this.id,
