@@ -70,6 +70,7 @@ import {options} from './options.js';
 import {Presentation} from './presentation.js';
 import {Printerinator} from './print-view.js';
 import {setupRealDark, takeUsersOutOfRealDark} from './real-dark.js';
+import {languagesService} from './services/languages.service.js';
 import {Settings, SiteSettings} from './settings.js';
 import {initialiseSharing} from './sharing.js';
 import {Themer} from './themes.js';
@@ -500,16 +501,17 @@ function earlyGetDefaultLangSetting() {
     return Settings.getStoredSettings().defaultLanguage;
 }
 
-function getDefaultLangId(subLangId: LanguageKey | undefined, options: CompilerExplorerOptions) {
+function getDefaultLangId(subLangId: LanguageKey | undefined) {
     let defaultLangId = subLangId;
     if (!defaultLangId) {
+        const languages = languagesService.getLanguagesOrFail();
         const defaultLangSetting = earlyGetDefaultLangSetting();
-        if (defaultLangSetting && defaultLangSetting in options.languages) {
+        if (defaultLangSetting && defaultLangSetting in languages) {
             defaultLangId = defaultLangSetting;
-        } else if ('c++' in options.languages) {
+        } else if ('c++' in languages) {
             defaultLangId = 'c++';
         } else {
-            defaultLangId = utils.keys(options.languages)[0];
+            defaultLangId = utils.keys(languages)[0];
         }
     }
     return defaultLangId;
@@ -553,17 +555,19 @@ function sizeCheckNavHideables() {
     updateAndCalcTopBarHeight($('body'), nav, hideables);
 }
 
-function start() {
+async function start() {
     takeUsersOutOfRealDark();
 
     initializeResetLayoutLink();
+
+    await languagesService.getLanguages();
 
     const hostnameParts = window.location.hostname.split('.');
     let subLangId: LanguageKey | undefined;
     // Only set the subdomain lang id if it makes sense to do so
     if (hostnameParts.length > 0) {
         const subdomainPart = hostnameParts[0];
-        const langBySubdomain = Object.values(options.languages).find(
+        const langBySubdomain = Object.values(languagesService.getLanguagesOrFail()).find(
             lang => lang.id === subdomainPart || lang.alias.includes(subdomainPart),
         );
         if (langBySubdomain) {
@@ -571,7 +575,7 @@ function start() {
         }
     }
 
-    const defaultLangId = getDefaultLangId(subLangId, options);
+    const defaultLangId = getDefaultLangId(subLangId);
 
     // Cookie domains are matched as a RE against the window location. This allows a flexible
     // way that works across multiple domains (e.g. godbolt.org and compiler-explorer.com).

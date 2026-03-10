@@ -22,10 +22,6 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import {CompilerInfo} from '../types/compiler.interfaces.js';
-import {Language, LanguageKey} from '../types/languages.interfaces.js';
-import {Tool} from '../types/tool.interfaces.js';
-
 export type LibraryVersion = {
     alias: string[];
     hidden: boolean;
@@ -53,18 +49,10 @@ export type LibsPerRemote = Record<string, LanguageLibs>;
 
 // TODO: Is this the same as OptionsType in lib/options-handler.ts?
 export type Options = {
-    libs: Libs;
-    remoteLibs: LibsPerRemote;
-    languages: Partial<Record<LanguageKey, Language>>;
-    compilers: CompilerInfo[];
-    defaultCompiler: Record<LanguageKey, string>;
-    defaultLibs: Record<LanguageKey, string | null>;
     defaultFontScale: number;
     sentryDsn?: string;
     release?: string;
     sentryEnvironment?: string;
-    compileOptions: Record<LanguageKey, string>;
-    tools: Record<LanguageKey, Record<string, Tool>>;
     slides?: any[];
     cookieDomainRe: string;
     motdUrl: string;

@@ -165,6 +165,7 @@ export class ApiHandler {
             const newLangObj: Language = Object.assign({}, lang);
             if (this.options) {
                 newLangObj.defaultCompiler = this.options.options.defaultCompiler[unwrap(lang).id];
+                newLangObj.defaultLibs = this.options.options.defaultLibs[unwrap(lang).id];
             }
             return newLangObj;
         });
@@ -252,6 +253,11 @@ export class ApiHandler {
                 type: tool.type,
                 languageId: tool.tool.languageId || languageId,
                 allowStdin: tool.tool.stdinHint !== 'disabled',
+                args: tool.tool.args,
+                monacoStdin: tool.tool.monacoStdin,
+                icon: tool.tool.icon,
+                darkIcon: tool.tool.darkIcon,
+                stdinHint: tool.tool.stdinHint,
             };
         });
     }
