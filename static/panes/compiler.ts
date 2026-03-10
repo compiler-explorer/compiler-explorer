@@ -365,6 +365,7 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
             this.compile();
         }
 
+        this.needsCompile = true;
         if (!this.hub.deferred) {
             this.undefer();
         }

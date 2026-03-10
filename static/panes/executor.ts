@@ -194,6 +194,7 @@ export class Executor extends Pane<ExecutorState> {
             this.compile();
         }
 
+        this.needsCompile = true;
         if (!this.hub.deferred) {
             this.undefer();
         }
