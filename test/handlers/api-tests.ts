@@ -234,6 +234,7 @@ describe('API tools endpoint', () => {
             type: 'postcompilation',
             languageId: 'c++',
             allowStdin: true,
+            stdinHint: 'enabled',
         });
     });
 

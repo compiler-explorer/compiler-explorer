@@ -57,8 +57,7 @@ html(lang="en")
         include templates/templates
 
     block scripts
-        script(src=`${httpRoot}client-options.js?hash=${optionsHash}`)
-        div#config(extraOptions=encodeURIComponent(compilerExplorerOptions), httpRoot=httpRoot, staticRoot=staticRoot)
+        div#config(extraOptions=encodeURIComponent(compilerExplorerOptions), httpRoot=httpRoot, staticRoot=staticRoot, optionsHash=optionsHash)
         script(src=require("runtime.js"))
         script(src=require("vendor.js"))
         script(src=require("main.js"))
