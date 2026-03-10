@@ -194,8 +194,8 @@ export class Executor extends Pane<ExecutorState> {
             this.compile();
         }
 
-        this.needsCompile = true;
         if (!this.hub.deferred) {
+            this.eventHub.emit('executorOpen', this.id, this.sourceEditorId ?? false);
             this.undefer();
         }
     }

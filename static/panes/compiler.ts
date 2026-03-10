@@ -365,8 +365,11 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
             this.compile();
         }
 
-        this.needsCompile = true;
         if (!this.hub.deferred) {
+            // Re-emit compilerOpen so the editor resends the source via editorChange.
+            // The initial compilerOpen fires synchronously before postInit completes,
+            // so the editorChange arrives before currentLangId is set and gets ignored.
+            this.eventHub.emit('compilerOpen', this.id, this.sourceEditorId ?? 0, this.sourceTreeId ?? 0);
             this.undefer();
         }
     }
