@@ -303,6 +303,13 @@ describe('Options handler', () => {
             },
         });
     });
+    it('should auto-discover libs when libs= is not set', () => {
+        const libs = optionsHandler.parseLibraries({fake: ''});
+        const libIds = Object.keys(libs.fake).sort();
+        expect(libIds).toEqual(['fakelib', 'fs', 'someotherlib']);
+        expect(libs.fake.fakelib.name).toEqual('fake lib');
+        expect(Object.keys(libs.fake.fakelib.versions).sort()).toEqual(['noPaths', 'onePath', 'twoPaths']);
+    });
     it('should order compilers as expected', () => {
         const compilers = [
             fakeCompilerInfo('a1', languages.fake.id, 'a', '0.0.1', true),

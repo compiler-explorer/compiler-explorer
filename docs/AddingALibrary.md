@@ -16,10 +16,14 @@ files (for C++, other languages follow the obvious pattern). For a comprehensive
 see [Configuration.md](Configuration.md).
 
 Within the file, configuration is a set of key and value pairs, separated by an `=`. Whitespace is _not_ trimmed. Lines
-starting with `#` are considered comments and not parsed. The list of libraries is set by the `libs` key and is a list
-of library identifiers, separated by colons. The identifier itself is not important, but must be unique to that library.
+starting with `#` are considered comments and not parsed.
 
-An example configuration:
+Library identifiers are automatically discovered from the property keys in the file. Any key matching `libs.ID.*` will
+register `ID` as a library. You can also explicitly list libraries using the `libs` key with a colon-separated list of
+identifiers, but this is optional. If `libs=` is present, only the listed libraries will be used; if absent, all
+libraries defined via `libs.ID.*` keys will be discovered automatically.
+
+An example configuration using explicit listing:
 
 ```INI
 libs=kvasir:boost:rangesv3
@@ -27,7 +31,7 @@ libs=kvasir:boost:rangesv3
 
 This says there are three libraries with identifiers `kvasir`, `boost` and `rangesv3`. CE will look for the key named
 `libs.ID.versions`, `libs.ID.name` and the optionals `libs.ID.url` & `libs.ID.description`. The `ID` is the identifier
-(The one we just set) of the library being looked up. The `name` key expects the human-readable name of the library
+of the library being looked up. The `name` key expects the human-readable name of the library
 (Note that you can use spaces here!). The `versions` key expects another list, akin to the libs key itself. This time,
 you have to define the available versions for each library. The `url` key expects an unescaped url, where users can go
 to learn more about the library (This is usually the project's homepage, or in its absence, the GitHub repo). The
