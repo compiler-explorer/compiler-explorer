@@ -536,16 +536,19 @@ export function validateRawFile(
         }
     }
 
-    // Orphaned libs
-    for (const [id, line] of listedLibsIds) {
-        if (!seenLibsIds.has(id)) {
-            result.orphanedLibIds.push({line, text: id, id});
+    // Orphaned libs (only check if libs= is explicitly declared)
+    const hasExplicitLibsList = parsed.properties.some(p => p.key === 'libs');
+    if (hasExplicitLibsList) {
+        for (const [id, line] of listedLibsIds) {
+            if (!seenLibsIds.has(id)) {
+                result.orphanedLibIds.push({line, text: id, id});
+            }
         }
-    }
-    for (const id of seenLibsIds) {
-        if (!listedLibsIds.has(id)) {
-            const line = parsed.properties.find(p => p.key.startsWith(`libs.${id}.`))?.line ?? 0;
-            result.orphanedLibIds.push({line, text: id, id});
+        for (const id of seenLibsIds) {
+            if (!listedLibsIds.has(id)) {
+                const line = parsed.properties.find(p => p.key.startsWith(`libs.${id}.`))?.line ?? 0;
+                result.orphanedLibIds.push({line, text: id, id});
+            }
         }
     }
 

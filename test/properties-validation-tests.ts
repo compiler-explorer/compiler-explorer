@@ -346,6 +346,11 @@ baz=qux
             );
             expect(result.orphanedLibVersions).toContainEqual(expect.objectContaining({id: 'boost 1.81'}));
         });
+
+        it('should not report orphaned lib IDs when libs= is not present', () => {
+            const result = validate(`libs.boost.versions=1.80\nlibs.boost.versions.1.80.version=1.80.0`);
+            expect(result.orphanedLibIds).toEqual([]);
+        });
     });
 
     describe('invalid default compiler detection', () => {

@@ -1,4 +1,3 @@
-@export
 fn multiply[m: Int](n: Int) -> Int:
   return m * n
 
