@@ -96,7 +96,7 @@ export function parseProperties(
     for (const [index, lineOrig] of blob.split('\n').entries()) {
         const line = lineOrig.replace(/#.*/, '').trim();
         if (!line) continue;
-        const split = line.match(/([^=+]+)(\+?=)(.*)/);
+        const split = line.match(/(.+?)(\+?=)(.*)/);
         if (!split) {
             onError({line: index + 1, text: lineOrig.trim()}, name);
             continue;
