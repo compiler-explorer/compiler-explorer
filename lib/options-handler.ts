@@ -130,6 +130,7 @@ export type ClientOptionsType = {
  */
 export class ClientOptionsHandler implements ClientOptionsSource {
     compilerProps: CompilerProps['get'];
+    compilerPropsInstance: CompilerProps;
     ceProps: PropertyGetter;
     supportsBinary: Record<LanguageKey, boolean>;
     supportsBinaryObject: Record<LanguageKey, boolean>;
@@ -151,6 +152,7 @@ export class ClientOptionsHandler implements ClientOptionsSource {
      */
     constructor(fileSources: Source[], compilerProps: CompilerProps, defArgs: AppArguments) {
         this.compilerProps = compilerProps.get.bind(compilerProps);
+        this.compilerPropsInstance = compilerProps;
         this.ceProps = compilerProps.ceProps;
         const ceProps = compilerProps.ceProps;
         const sources = _.sortBy(
@@ -278,13 +280,27 @@ export class ClientOptionsHandler implements ClientOptionsSource {
         return tools;
     }
 
+    discoverLibIdsFromProperties(lang: string): string[] {
+        const allKeys = this.compilerPropsInstance.getKeysStartingWith(lang, 'libs.');
+        const libIds = new Set<string>();
+        for (const key of allKeys) {
+            const match = key.match(/^libs\.([^.]+)\./);
+            if (match) {
+                libIds.add(match[1]);
+            }
+        }
+        return [...libIds].sort();
+    }
+
     parseLibraries(baseLibs: Record<string, string>) {
         // Record language -> {Record lib name -> lib}
         const libraries: Record<string, Record<string, OptionsHandlerLibrary>> = {};
         for (const [lang, forLang] of Object.entries(baseLibs)) {
-            if (lang && forLang) {
+            if (!lang) continue;
+            const libIds = forLang ? forLang.split(':') : this.discoverLibIdsFromProperties(lang);
+            if (libIds.length > 0) {
                 libraries[lang] = {};
-                for (const lib of forLang.split(':')) {
+                for (const lib of libIds) {
                     const libBaseName = `libs.${lib}`;
                     libraries[lang][lib] = {
                         name: this.compilerProps<string>(lang, libBaseName + '.name'),
