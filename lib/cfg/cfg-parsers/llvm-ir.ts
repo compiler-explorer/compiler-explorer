@@ -47,7 +47,7 @@ export class LlvmIrCfgParser extends BaseCFGParser {
         super(instructionSetInfo);
         this.functionDefinition = /^define .+ @("?[^"]+"?)\(/;
         this.labelRe = /^("?[\w$.-]+"?):\s*(;.*)?$/;
-        this.labelReference = /%"?([^, ]+)"?/g;
+        this.labelReference = /%([-a-zA-Z$._0-9]+|"[^"]*")/g;
     }
 
     override filterData(asmArr: AssemblyLine[]) {
