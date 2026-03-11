@@ -1832,14 +1832,10 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
             this.deviceButton.trigger('click');
         }
 
-        if (this.compiler)
-            this.eventHub.emit(
-                'compileResult',
-                this.id,
-                this.compiler,
-                result,
-                languagesService.getLanguagesOrFail()[this.currentLangId ?? ''],
-            );
+        if (this.compiler) {
+            const languages = languagesService.getLanguagesOrFail();
+            this.eventHub.emit('compileResult', this.id, this.compiler, result, languages[this.currentLangId ?? '']);
+        }
     }
 
     onCompileResponse(request: any, result: any, cached: boolean): void {
@@ -3302,9 +3298,8 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
     }
 
     getLanguageName(): string {
-        const lang = languagesService.getLanguagesOrFail()[this.currentLangId ?? ''];
-
-        return lang?.name ?? '?';
+        const languages = languagesService.getLanguagesOrFail();
+        return languages[this.currentLangId ?? '']?.name ?? '?';
     }
 
     override getDefaultPaneName(): string {
@@ -3331,12 +3326,13 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
     resendResult(): boolean {
         if (this.lastResult) {
             if (this.compiler) {
+                const languages = languagesService.getLanguagesOrFail();
                 this.eventHub.emit(
                     'compileResult',
                     this.id,
                     this.compiler,
                     this.lastResult,
-                    this.currentLangId ? languagesService.getLanguagesOrFail()[this.currentLangId] : undefined,
+                    this.currentLangId ? languages[this.currentLangId] : undefined,
                 );
             }
             return true;
@@ -3625,7 +3621,8 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
                 currentWord.endColumn,
             );
             const lang = this.compiler?.lang;
-            const language = lang === undefined ? undefined : languagesService.getLanguagesOrFail()[lang];
+            const languages = languagesService.getLanguagesOrFail();
+            const language = lang === undefined ? undefined : languages[lang];
             const numericToolTip = utils.getNumericToolTip(word, language?.digitSeparator);
             if (numericToolTip) {
                 this.decorations.numericToolTip = [
@@ -3771,13 +3768,14 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
             (this.sourceEditorId && this.sourceEditorId === editorId) ||
             (this.sourceTreeId && this.sourceTreeId === treeId)
         ) {
+            const languages = languagesService.getLanguagesOrFail();
             const oldLangId = this.currentLangId ?? '';
             this.currentLangId = newLangId;
             // Store the current selected stuff to come back to it later in the same session (Not state stored!)
             this.infoByLang[oldLangId] = {
                 compiler: this.compiler?.id
                     ? this.compiler.id
-                    : (languagesService.getLanguagesOrFail()[oldLangId as LanguageKey]?.defaultCompiler ?? ''),
+                    : (languages[oldLangId as LanguageKey]?.defaultCompiler ?? ''),
                 options: this.options,
             };
 

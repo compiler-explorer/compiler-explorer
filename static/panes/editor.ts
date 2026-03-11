@@ -69,10 +69,6 @@ window.monaco = monaco;
 
 const loadSave = new loadSaveLib.LoadSave();
 
-function languages() {
-    return languagesService.getLanguagesOrFail();
-}
-
 type ResultLineWithSourcePane = ResultLine & {
     sourcePane: string;
 };
@@ -126,14 +122,15 @@ export class Editor extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Edit
         this.alertSystem = new Alert();
         this.alertSystem.prefixMessage = 'Editor #' + this.id;
 
-        if ((state.lang as any) === undefined && Object.keys(languages()).length > 0) {
+        const languages = languagesService.getLanguagesOrFail();
+        if ((state.lang as any) === undefined && Object.keys(languages).length > 0) {
             if (!this.currentLanguage) {
                 // Primarily a diagnostic for urls created outside CE. Addresses #4817.
                 this.alertSystem.notify('No language specified for editor', {});
             } else {
                 this.alertSystem.notify('No language specified for editor, using ' + this.currentLanguage.id, {});
             }
-        } else if (!(state.lang in languages()) && Object.keys(languages()).length > 0) {
+        } else if (!(state.lang in languages) && Object.keys(languages).length > 0) {
             this.alertSystem.alert('State Error', 'Unknown language specified for editor', {isError: true});
         }
 
@@ -325,7 +322,7 @@ export class Editor extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Edit
     }
 
     getLanguageFromState(state: MonacoPaneState & EditorState): Language | undefined {
-        const langs = languages();
+        const langs = languagesService.getLanguagesOrFail();
         let newLanguage = langs[this.langKeys[0]];
         this.waitingForLanguage = Boolean(state.source && !state.lang);
         if (this.settings.defaultLanguage && this.settings.defaultLanguage in langs) {
@@ -509,7 +506,7 @@ export class Editor extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Edit
         super.initializeGlobalDependentProperties();
 
         this.httpRoot = window.httpRoot;
-        this.langKeys = Object.keys(languages()) as LanguageKey[];
+        this.langKeys = Object.keys(languagesService.getLanguagesOrFail()) as LanguageKey[];
     }
 
     override initializeStateDependentProperties(state: MonacoPaneState & EditorState): void {
@@ -564,7 +561,7 @@ export class Editor extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Edit
             labelField: 'name',
             searchField: ['name'],
             placeholder: '🔍 Select a language...',
-            options: [...Object.values(languages())],
+            options: [...Object.values(languagesService.getLanguagesOrFail())],
             items: this.currentLanguage?.id ? [this.currentLanguage.id] : [],
             dropdownParent: 'body',
             plugins: ['dropdown_input'],
@@ -898,7 +895,7 @@ export class Editor extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Edit
             setTimeout(() => this.changeLanguage(newLang), 0);
         } else {
             if (newLang === 'cmake') {
-                this.selectize.addOption(unwrap(languages().cmake));
+                this.selectize.addOption(unwrap(languagesService.getLanguagesOrFail().cmake));
             }
             this.selectize.setValue(newLang);
         }
@@ -1854,10 +1851,11 @@ export class Editor extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Edit
     }
 
     onLanguageChange(newLangId: LanguageKey, firstTime?: boolean): void {
-        if (newLangId in languages()) {
+        const languages = languagesService.getLanguagesOrFail();
+        if (newLangId in languages) {
             if (firstTime || newLangId !== this.currentLanguage?.id) {
                 const oldLangId = this.currentLanguage?.id;
-                this.currentLanguage = languages()[newLangId];
+                this.currentLanguage = languages[newLangId];
                 if (!this.waitingForLanguage && !this.settings.keepSourcesOnLangChange && newLangId !== 'cmake') {
                     this.editorSourceByLang[oldLangId ?? ''] = this.getSource();
                     this.updateEditorCode();
@@ -1917,9 +1915,10 @@ export class Editor extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Edit
 
     // Called every time we change language, so we get the relevant code
     updateEditorCode(): void {
+        const languages = languagesService.getLanguagesOrFail();
         this.setSource(
             this.editorSourceByLang[this.currentLanguage?.id ?? ''] ||
-                languagesService.getLanguagesOrFail()[this.currentLanguage?.id ?? '']?.example,
+                languages[this.currentLanguage?.id ?? '']?.example,
         );
     }
 

@@ -442,7 +442,8 @@ export class MultifileService {
     }
 
     private static getDefaultMainSourceFilename(langId) {
-        const lang = languagesService.getLanguagesOrFail()[langId];
+        const languages = languagesService.getLanguagesOrFail();
+        const lang = languages[langId];
         const ext0 = lang.extensions[0];
         return 'example' + ext0;
     }

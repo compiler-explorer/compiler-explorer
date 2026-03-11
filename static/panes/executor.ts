@@ -714,14 +714,10 @@ export class Executor extends Pane<ExecutorState> {
 
         this.setCompilationOptionsPopover(result.buildResult ? result.buildResult.compilationOptions.join(' ') : '');
 
-        if (this.currentLangId)
-            this.eventHub.emit(
-                'executeResult',
-                this.id,
-                this.compiler,
-                result,
-                languagesService.getLanguagesOrFail()[this.currentLangId],
-            );
+        if (this.currentLangId) {
+            const languages = languagesService.getLanguagesOrFail();
+            this.eventHub.emit('executeResult', this.id, this.compiler, result, languages[this.currentLangId]);
+        }
 
         this.offerFilesIfPossible(result);
     }
@@ -746,13 +742,8 @@ export class Executor extends Pane<ExecutorState> {
 
     resendResult(): boolean {
         if (!$.isEmptyObject(this.lastResult)) {
-            this.eventHub.emit(
-                'executeResult',
-                this.id,
-                this.compiler,
-                this.lastResult,
-                languagesService.getLanguagesOrFail()[this.currentLangId],
-            );
+            const languages = languagesService.getLanguagesOrFail();
+            this.eventHub.emit('executeResult', this.id, this.compiler, this.lastResult, languages[this.currentLangId]);
             return true;
         }
         return false;
@@ -1165,7 +1156,8 @@ export class Executor extends Pane<ExecutorState> {
     }
 
     getLanguageName(): string {
-        const lang = this.currentLangId ? languagesService.getLanguagesOrFail()[this.currentLangId] : undefined;
+        const languages = languagesService.getLanguagesOrFail();
+        const lang = this.currentLangId ? languages[this.currentLangId] : undefined;
         return lang ? lang.name : '?';
     }
 
@@ -1279,13 +1271,12 @@ export class Executor extends Pane<ExecutorState> {
 
     onLanguageChange(editorId: number | boolean, newLangId: string): void {
         if (this.sourceEditorId === editorId && this.currentLangId) {
+            const languages = languagesService.getLanguagesOrFail();
             const oldLangId = this.currentLangId;
             this.currentLangId = newLangId;
             // Store the current selected stuff to come back to it later in the same session (Not state stored!)
             this.infoByLang[oldLangId] = {
-                compiler: this.compiler?.id
-                    ? this.compiler.id
-                    : (languagesService.getLanguagesOrFail()[oldLangId]?.defaultCompiler ?? ''),
+                compiler: this.compiler?.id ? this.compiler.id : (languages[oldLangId]?.defaultCompiler ?? ''),
                 options: this.options,
                 execArgs: this.executionArguments,
                 execStdin: this.executionStdin,
