@@ -14,10 +14,10 @@ pydantic = "^2.5.0"
 colorama = "^0.4.6"
 
 [tool.poetry.group.dev.dependencies]
-pytest = "^7.4.3"
-black = "^24.3.0"
-ruff = "^0.1.6"
-pytype = "^2023.11.21"
+pytest = "^9.0.0"
+black = "^26.3.0"
+ruff = "^0.15.0"
+pytype = "^2024.10.11"
 
 [tool.poetry.scripts]
 ce-props-wizard = "ce_properties_wizard.main:cli"
@@ -32,6 +32,8 @@ target-version = ['py310']
 
 [tool.ruff]
 line-length = 120
+
+[tool.ruff.lint]
 select = ["E", "F", "I", "N", "W"]
 
 [tool.pytype]
