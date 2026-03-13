@@ -5,23 +5,23 @@ This script migrates Compiler Explorer shortlinks from local file storage to AWS
 ## Prerequisites
 
 - Python 3.8+
-- Poetry (for dependency management)
+- [uv](https://docs.astral.sh/uv/) (for dependency management)
 - AWS credentials configured (via AWS CLI, environment variables, or IAM role)
 
 ## Installation
 
-Install dependencies using Poetry:
+Install dependencies using uv:
 
 ```bash
 cd etc/scripts/shortlinkmigration
-poetry install
+uv sync
 ```
 
 ## Usage
 
 ### Dry Run (recommended first)
 ```bash
-poetry run python migrate_shortlinks.py \
+uv run python migrate_shortlinks.py \
     --local-storage-dir ./lib/storage/data/ \
     --s3-bucket storage.godbolt.org \
     --s3-prefix ce/ \
@@ -32,7 +32,7 @@ poetry run python migrate_shortlinks.py \
 
 ### Actual Migration
 ```bash
-poetry run python migrate_shortlinks.py \
+uv run python migrate_shortlinks.py \
     --local-storage-dir ./lib/storage/data/ \
     --s3-bucket storage.godbolt.org \
     --s3-prefix ce/ \
@@ -42,7 +42,7 @@ poetry run python migrate_shortlinks.py \
 
 ### With Verification
 ```bash
-poetry run python migrate_shortlinks.py \
+uv run python migrate_shortlinks.py \
     --local-storage-dir ./lib/storage/data/ \
     --s3-bucket storage.godbolt.org \
     --s3-prefix ce/ \
@@ -71,7 +71,7 @@ poetry run python migrate_shortlinks.py \
 2. **Sorting**: Sorts files by creation time to preserve chronological order
 3. **Deduplication**: Checks if content already exists in DynamoDB
 4. **Collision Handling**: Extends subhash length if collisions occur (local uses 6+ chars, S3 uses 9+ chars)
-5. **Migration**: 
+5. **Migration**:
    - Uploads config to S3: `{prefix}/{fullHash}`
    - Creates DynamoDB entry with metadata
 6. **Verification**: Optionally verifies random samples
