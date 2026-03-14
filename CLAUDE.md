@@ -15,6 +15,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Important Workflow Requirements
 - ⚠️ NEVER BYPASS PRE-COMMIT HOOKS! NEVER use `git commit -n` or `--no-verify` ⚠️
+- ⚠️ NEVER amend commits (`git commit --amend`) or force push (`git push --force` / `--force-with-lease`) ⚠️
 - ALWAYS run `make pre-commit` or at minimum `npm run ts-check` and `npm run lint` before committing
 - The full process must always be:
   1. Make changes
