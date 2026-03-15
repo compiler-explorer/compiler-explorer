@@ -30,6 +30,7 @@ import _ from 'underscore';
 
 import {unwrap} from '../shared/assert.js';
 import {serialiseState} from '../shared/url-serialization.js';
+import {getBackendApi} from './api/backend-api.js';
 import * as BootstrapUtils from './bootstrap-utils.js';
 import {sessionThenLocalStorage} from './local.js';
 import {options} from './options.js';
@@ -415,7 +416,7 @@ export class Sharing extends SharingBase {
         const root = window.httpRoot;
         switch (currentBind) {
             case LinkType.Short:
-                Sharing.getShortLink(config, root, done);
+                Sharing.getShortLink(config, done);
                 return;
             case LinkType.Full:
                 done(null, window.location.origin + root + '#' + serialiseState(config), false);
@@ -434,27 +435,19 @@ export class Sharing extends SharingBase {
         }
     }
 
-    private static getShortLink(config: any, root: string, done: CallableFunction): void {
+    private static getShortLink(config: any, done: CallableFunction): void {
         const useExternalShortener = options.urlShortenService !== 'default';
-        const data = JSON.stringify({
-            config: useExternalShortener ? serialiseState(config) : config,
-        });
-        $.ajax({
-            type: 'POST',
-            url: window.location.origin + root + 'api/shortener',
-            dataType: 'json', // Expected
-            contentType: 'application/json', // Sent
-            data: data,
-            success: (result: any) => {
+        const body = {config: useExternalShortener ? serialiseState(config) : config};
+        getBackendApi()
+            .shortenUrl(body)
+            .then(result => {
                 const pushState = useExternalShortener ? null : result.url;
                 done(null, result.url, pushState, true);
-            },
-            error: err => {
-                // Notify the user that we ran into trouble?
-                done(err.statusText, null, false);
-            },
-            cache: true,
-        });
+            })
+            .catch((err: unknown) => {
+                const message = err instanceof Error ? err.message : String(err);
+                done(message, null, false);
+            });
     }
 
     private static getEmbeddedHtml(

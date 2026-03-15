@@ -42,7 +42,7 @@ import {
 import {OptPipelineBackendOptions} from '../../types/compilation/opt-pipeline-output.interfaces.js';
 import {CompilerInfo} from '../../types/compiler.interfaces.js';
 import {ResultLine} from '../../types/resultline/resultline.interfaces.js';
-import {getAssemblyDocumentation} from '../api/api.js';
+import {getBackendApi} from '../api/backend-api.js';
 import * as BootstrapUtils from '../bootstrap-utils.js';
 import * as codeLensHandler from '../codelens-handler.js';
 import * as colour from '../colour.js';
@@ -3518,15 +3518,15 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
             throw new Error(cached.data as string);
         }
 
-        const response = await getAssemblyDocumentation({opcode, instructionSet});
-        const body = await response.json();
-        if (response.status === 200) {
+        try {
+            const body = await getBackendApi().getAssemblyDocumentation({opcode, instructionSet});
             OpcodeCache.set(cacheName, {found: true, data: body});
             return addAttWarningIfNeeded(body);
+        } catch (err) {
+            const message = err instanceof Error ? err.message : String(err);
+            OpcodeCache.set(cacheName, {found: false, data: message});
+            throw err;
         }
-        const error = (body as any).error;
-        OpcodeCache.set(cacheName, {found: false, data: error});
-        throw new Error(error);
     }
 
     override onDidChangeCursorSelection(e) {
