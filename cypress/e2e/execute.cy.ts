@@ -22,6 +22,7 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
+import {stubExecutorResponse} from '../support/fake-compile';
 import {
     assertNoConsoleOutput,
     compilerOutput,
@@ -55,9 +56,8 @@ describe('Executor', () => {
 
     it('should show program stdout', () => {
         waitForEditors();
-        setMonacoEditorContent(`\
-#include <cstdio>
-int main() { printf("hello from cypress"); return 0; }`);
+        stubExecutorResponse({stdout: [{text: 'hello from cypress'}]});
+        setMonacoEditorContent('int main() { return 0; }');
         monacoEditorTextShouldContain(compilerOutput(), 'main');
         openExecutor();
         executorPane().find('.execution-stdout', {timeout: 15000}).should('contain.text', 'hello from cypress');
@@ -65,6 +65,7 @@ int main() { printf("hello from cypress"); return 0; }`);
 
     it('should show non-zero exit code', () => {
         waitForEditors();
+        stubExecutorResponse({code: 42});
         setMonacoEditorContent('int main() { return 42; }');
         monacoEditorTextShouldContain(compilerOutput(), 'main');
         openExecutor();
@@ -73,11 +74,10 @@ int main() { printf("hello from cypress"); return 0; }`);
 
     it('should show stderr output', () => {
         waitForEditors();
-        setMonacoEditorContent(`\
-#include <cstdio>
-int main() { fprintf(stderr, "error output"); return 0; }`);
+        stubExecutorResponse({stderr: [{text: 'error output from test'}]});
+        setMonacoEditorContent('int main() { return 0; }');
         monacoEditorTextShouldContain(compilerOutput(), 'main');
         openExecutor();
-        executorPane().find('.execution-output', {timeout: 15000}).should('contain.text', 'error output');
+        executorPane().find('.execution-output', {timeout: 15000}).should('contain.text', 'error output from test');
     });
 });
