@@ -27,8 +27,8 @@ import {type AssemblyInstructionInfo} from '../types/assembly-docs.interfaces.js
 const AssemblySyntaxesList = ['att', 'intel'] as const;
 export type AssemblySyntax = (typeof AssemblySyntaxesList)[number];
 
-const ATT_SYNTAX_WARNING = 'WARNING: The information shown pertains to Intel syntax.';
-const CARDINALITY_REGEX = /\b(?:first|second|third)\s+operands?\b/i;
+export const ATT_SYNTAX_WARNING = 'WARNING: The information shown pertains to Intel syntax.';
+const CARDINALITY_REGEX = /\b(?:first|second|third|fourth|last)\s+operands?\b/i;
 const SOURCE_DEST_REGEX = /\b(?:source|destination)\b/i;
 
 export function addAttSyntaxWarningIfNeeded(
@@ -39,9 +39,8 @@ export function addAttSyntaxWarningIfNeeded(
 
     const referencesCardinality = (text: string): boolean =>
         CARDINALITY_REGEX.test(text) && SOURCE_DEST_REGEX.test(text);
-    const shouldWarn = (): boolean => referencesCardinality(data.tooltip) || referencesCardinality(data.html);
 
-    return shouldWarn()
+    return referencesCardinality(data.tooltip) || referencesCardinality(data.html)
         ? {
               ...data,
               tooltip: '***' + ATT_SYNTAX_WARNING + '***\n\n' + data.tooltip,
