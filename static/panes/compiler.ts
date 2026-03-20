@@ -84,7 +84,7 @@ import {InstructionSet} from '../../types/instructionsets.js';
 import {LanguageKey} from '../../types/languages.interfaces.js';
 import {Tool} from '../../types/tool.interfaces.js';
 import {ArtifactHandler} from '../artifact-handler.js';
-import {AssemblySyntax} from '../assembly-syntax.js';
+import {type AssemblySyntax, addAttSyntaxWarning} from '../assembly-syntax.js';
 import {ICompilerShared} from '../compiler-shared.interfaces.js';
 import {CompilerShared} from '../compiler-shared.js';
 import {SourceAndFiles} from '../download-service.js';
@@ -147,8 +147,6 @@ type Assembly = {
 const COMPILING_PLACEHOLDER = '<Compiling...>';
 
 // Disable max line count only for the constructor. Turns out, it needs to do quite a lot of things
-
-const attSyntaxWarningMessage = 'WARNING: The information shown pertains to Intel syntax.';
 
 export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, CompilerState> {
     private compilerService: CompilerService;
@@ -3490,26 +3488,6 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
         });
     }
 
-    private static addAttWarningIfNeeded(
-        data: AssemblyInstructionInfo,
-        syntax: AssemblySyntax,
-    ): AssemblyInstructionInfo {
-        const warningNeeded = () => {
-            if (syntax !== 'att') return false;
-            const cardinalityPattern = /(first|second|third) operands?/;
-            const shouldWarn = cardinalityPattern.test(data.tooltip) || cardinalityPattern.test(data.html);
-            return shouldWarn;
-        };
-        if (warningNeeded()) {
-            return {
-                ...data,
-                tooltip: '***' + attSyntaxWarningMessage + '***\n\n' + data.tooltip,
-                html: '<b><em>' + attSyntaxWarningMessage + '</em></b><br><br>' + data.html,
-            };
-        }
-        return data;
-    }
-
     public static async getAsmInfo(
         opcode: string,
         instructionSet: InstructionSet,
@@ -3521,7 +3499,7 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
         if (cached) {
             if (cached.found) {
                 const cachedData = cached.data as AssemblyInstructionInfo;
-                const data = Compiler.addAttWarningIfNeeded(cachedData, syntax);
+                const data = addAttSyntaxWarning(cachedData, syntax);
                 return data;
             }
             throw new Error(cached.data as string);
@@ -3531,7 +3509,7 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
         const body = await response.json();
         if (response.status === 200) {
             OpcodeCache.set(cacheName, {found: true, data: body});
-            return Compiler.addAttWarningIfNeeded(body, syntax);
+            return addAttSyntaxWarning(body, syntax);
         }
         const error = (body as any).error;
         OpcodeCache.set(cacheName, {found: false, data: error});
