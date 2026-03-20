@@ -84,7 +84,7 @@ import {InstructionSet} from '../../types/instructionsets.js';
 import {LanguageKey} from '../../types/languages.interfaces.js';
 import {Tool} from '../../types/tool.interfaces.js';
 import {ArtifactHandler} from '../artifact-handler.js';
-import {type AssemblySyntax, addAttSyntaxWarning} from '../assembly-syntax.js';
+import {type AssemblySyntax, addAttSyntaxWarningIfNeeded} from '../assembly-syntax.js';
 import {ICompilerShared} from '../compiler-shared.interfaces.js';
 import {CompilerShared} from '../compiler-shared.js';
 import {SourceAndFiles} from '../download-service.js';
@@ -3499,7 +3499,7 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
         if (cached) {
             if (cached.found) {
                 const cachedData = cached.data as AssemblyInstructionInfo;
-                const data = addAttSyntaxWarning(cachedData, syntax);
+                const data = addAttSyntaxWarningIfNeeded(cachedData, syntax);
                 return data;
             }
             throw new Error(cached.data as string);
@@ -3509,7 +3509,7 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
         const body = await response.json();
         if (response.status === 200) {
             OpcodeCache.set(cacheName, {found: true, data: body});
-            return addAttSyntaxWarning(body, syntax);
+            return addAttSyntaxWarningIfNeeded(body, syntax);
         }
         const error = (body as any).error;
         OpcodeCache.set(cacheName, {found: false, data: error});

@@ -31,16 +31,21 @@ const ATT_SYNTAX_WARNING = 'WARNING: The information shown pertains to Intel syn
 const CARDINALITY_REGEX = /\b(?:first|second|third)\s+operands?\b/i;
 const SOURCE_DEST_REGEX = /\b(?:source|destination)\b/i;
 
-function needsAttWarning(text: string): boolean {
-    return CARDINALITY_REGEX.test(text) && SOURCE_DEST_REGEX.test(text);
-}
-
-export function addAttSyntaxWarning(data: AssemblyInstructionInfo, syntax: AssemblySyntax): AssemblyInstructionInfo {
+export function addAttSyntaxWarningIfNeeded(
+    data: AssemblyInstructionInfo,
+    syntax: AssemblySyntax,
+): AssemblyInstructionInfo {
     if (syntax !== 'att') return data;
-    if (!needsAttWarning(data.tooltip) && !needsAttWarning(data.html)) return data;
-    return {
-        ...data,
-        tooltip: '***' + ATT_SYNTAX_WARNING + '***\n\n' + data.tooltip,
-        html: '<b><em>' + ATT_SYNTAX_WARNING + '</em></b><br><br>' + data.html,
-    };
+
+    const referencesCardinality = (text: string): boolean =>
+        CARDINALITY_REGEX.test(text) && SOURCE_DEST_REGEX.test(text);
+    const shouldWarn = (): boolean => referencesCardinality(data.tooltip) || referencesCardinality(data.html);
+
+    return shouldWarn()
+        ? {
+              ...data,
+              tooltip: '***' + ATT_SYNTAX_WARNING + '***\n\n' + data.tooltip,
+              html: '<b><em>' + ATT_SYNTAX_WARNING + '</em></b><br><br>' + data.html,
+          }
+        : data;
 }
