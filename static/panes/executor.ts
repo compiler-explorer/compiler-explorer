@@ -35,7 +35,6 @@ import {
     FiledataPair,
 } from '../../types/compilation/compilation.interfaces.js';
 import {CompilerInfo} from '../../types/compiler.interfaces.js';
-import {Language} from '../../types/languages.interfaces.js';
 import {ResultLine} from '../../types/resultline/resultline.interfaces.js';
 import {Filter as AnsiToHtml} from '../ansi-to-html.js';
 import {ArtifactHandler} from '../artifact-handler.js';
@@ -48,7 +47,7 @@ import {SourceAndFiles} from '../download-service.js';
 import {Hub} from '../hub.js';
 import * as LibUtils from '../lib-utils.js';
 import {LanguageLibs} from '../options.interfaces.js';
-import {options} from '../options.js';
+import {languagesService} from '../services/languages.service.js';
 import {Settings, SiteSettings} from '../settings.js';
 import * as utils from '../utils.js';
 import {Alert} from '../widgets/alert.js';
@@ -63,8 +62,6 @@ import {LangInfo} from './compiler-request.interfaces.js';
 import {ExecutorState} from './executor.interfaces.js';
 import {PaneState} from './pane.interfaces.js';
 import {Pane} from './pane.js';
-
-const languages = options.languages;
 
 type CompilationStatus = Omit<CompilerServiceCompilationStatus, 'compilerOut'> & {
     didExecute?: boolean;
@@ -167,6 +164,19 @@ export class Executor extends Pane<ExecutorState> {
         this.initButtons(state);
 
         this.fontScale = new FontScale(this.domRoot, state, 'pre.content');
+
+        this.compilerShared = new CompilerShared(this.domRoot, this.onCompilerOverridesChange.bind(this));
+        this.compilerShared.updateState(state);
+        this.initCallbacks();
+        // Handle initial settings
+        this.onSettingsChange(this.settings);
+
+        this.postInit(state);
+    }
+
+    private async postInit(state: PaneState & ExecutorState) {
+        await this.initLangAndCompiler(state);
+
         this.compilerPicker = new CompilerPicker(
             this.domRoot,
             this.hub,
@@ -177,11 +187,6 @@ export class Executor extends Pane<ExecutorState> {
         );
 
         this.initLibraries(state);
-        this.compilerShared = new CompilerShared(this.domRoot, this.onCompilerOverridesChange.bind(this));
-        this.compilerShared.updateState(state);
-        this.initCallbacks();
-        // Handle initial settings
-        this.onSettingsChange(this.settings);
         this.updateCompilerInfo();
         this.updateState();
 
@@ -190,6 +195,7 @@ export class Executor extends Pane<ExecutorState> {
         }
 
         if (!this.hub.deferred) {
+            this.eventHub.emit('executorOpen', this.id, this.sourceEditorId ?? false);
             this.undefer();
         }
     }
@@ -206,8 +212,7 @@ export class Executor extends Pane<ExecutorState> {
     override initializeStateDependentProperties(state: PaneState & ExecutorState) {
         this.sourceTreeId = state.tree ?? null;
         this.settings = Settings.getStoredSettings();
-        this.initLangAndCompiler(state);
-        this.options = state.options || options.compileOptions[this.currentLangId];
+        this.options = state.options || '';
         this.executionArguments = state.execArgs || '';
         this.executionStdin = state.execStdin || '';
         this.paneRenaming = new PaneRenaming(this, state, this.hub);
@@ -233,10 +238,10 @@ export class Executor extends Pane<ExecutorState> {
         return null;
     }
 
-    initLangAndCompiler(state: PaneState & ExecutorState): void {
+    async initLangAndCompiler(state: PaneState & ExecutorState): Promise<void> {
         const langId = state.lang ?? null;
         const compilerId = state.compiler;
-        const result = this.hub.compilerService.processFromLangAndCompiler(langId, compilerId);
+        const result = await this.hub.compilerService.processFromLangAndCompiler(langId, compilerId);
         this.compiler = result?.compiler ?? null;
         this.currentLangId = result?.langId ?? '';
         this.updateLibraries();
@@ -709,8 +714,10 @@ export class Executor extends Pane<ExecutorState> {
 
         this.setCompilationOptionsPopover(result.buildResult ? result.buildResult.compilationOptions.join(' ') : '');
 
-        if (this.currentLangId)
+        if (this.currentLangId) {
+            const languages = languagesService.getLanguagesOrFail();
             this.eventHub.emit('executeResult', this.id, this.compiler, result, languages[this.currentLangId]);
+        }
 
         this.offerFilesIfPossible(result);
     }
@@ -735,6 +742,7 @@ export class Executor extends Pane<ExecutorState> {
 
     resendResult(): boolean {
         if (!$.isEmptyObject(this.lastResult)) {
+            const languages = languagesService.getLanguagesOrFail();
             this.eventHub.emit('executeResult', this.id, this.compiler, this.lastResult, languages[this.currentLangId]);
             return true;
         }
@@ -873,14 +881,14 @@ export class Executor extends Pane<ExecutorState> {
         this.compile();
     }
 
-    initLibraries(state: PaneState & ExecutorState): void {
+    async initLibraries(state: PaneState & ExecutorState): Promise<void> {
         this.libsWidget = new LibsWidget(
             this.currentLangId,
             this.compiler,
             this.libsButton,
             state,
             this.onLibsChanged.bind(this),
-            LibUtils.getSupportedLibraries(
+            await LibUtils.getSupportedLibraries(
                 this.compiler ? this.compiler.libsArr : [],
                 this.currentLangId,
                 this.compiler?.remote ?? undefined,
@@ -1074,8 +1082,8 @@ export class Executor extends Pane<ExecutorState> {
         this.resize();
     }
 
-    onCompilerChange(value: string): void {
-        this.compiler = this.hub.compilerService.findCompiler(this.currentLangId, value);
+    async onCompilerChange(value: string): Promise<void> {
+        this.compiler = await this.hub.compilerService.findCompiler(this.currentLangId, value);
         this.updateLibraries();
         this.updateState();
         this.compile();
@@ -1148,7 +1156,8 @@ export class Executor extends Pane<ExecutorState> {
     }
 
     getLanguageName(): string {
-        const lang = this.currentLangId ? (options.languages[this.currentLangId] as Language | undefined) : undefined;
+        const languages = languagesService.getLanguagesOrFail();
+        const lang = this.currentLangId ? languages[this.currentLangId] : undefined;
         return lang ? lang.name : '?';
     }
 
@@ -1245,11 +1254,11 @@ export class Executor extends Pane<ExecutorState> {
         }
     }
 
-    updateLibraries(): void {
+    async updateLibraries(): Promise<void> {
         if (this.libsWidget) {
             let filteredLibraries: LanguageLibs = {};
             if (this.compiler) {
-                filteredLibraries = LibUtils.getSupportedLibraries(
+                filteredLibraries = await LibUtils.getSupportedLibraries(
                     this.compiler.libsArr,
                     this.currentLangId || '',
                     this.compiler.remote ?? undefined,
@@ -1262,28 +1271,30 @@ export class Executor extends Pane<ExecutorState> {
 
     onLanguageChange(editorId: number | boolean, newLangId: string): void {
         if (this.sourceEditorId === editorId && this.currentLangId) {
+            const languages = languagesService.getLanguagesOrFail();
             const oldLangId = this.currentLangId;
             this.currentLangId = newLangId;
             // Store the current selected stuff to come back to it later in the same session (Not state stored!)
             this.infoByLang[oldLangId] = {
-                compiler: this.compiler?.id ? this.compiler.id : options.defaultCompiler[oldLangId],
+                compiler: this.compiler?.id ? this.compiler.id : (languages[oldLangId]?.defaultCompiler ?? ''),
                 options: this.options,
                 execArgs: this.executionArguments,
                 execStdin: this.executionStdin,
             };
             const info = this.infoByLang[this.currentLangId];
-            this.initLangAndCompiler({compilerName: '', id: 0, lang: newLangId, compiler: info?.compiler ?? ''});
-            this.updateCompilersSelector(info);
-            this.updateCompilerUI();
-            this.updateState();
+            this.initLangAndCompiler({compilerName: '', id: 0, lang: newLangId, compiler: info?.compiler ?? ''}).then(
+                () => {
+                    this.updateCompilersSelector(info);
+                    this.updateCompilerUI();
+                    this.updateState();
+                },
+            );
         }
     }
 
-    getCurrentLangCompilers(): CompilerInfo[] {
-        const allCompilers: Record<string, CompilerInfo> | undefined = this.hub.compilerService.getCompilersForLang(
-            this.currentLangId,
-        );
-        if (!allCompilers) return [];
+    async getCurrentLangCompilers(): Promise<CompilerInfo[]> {
+        const allCompilers = await this.hub.compilerService.getCompilersForLang(this.currentLangId);
+        if (!allCompilers || Object.keys(allCompilers).length === 0) return [];
 
         const hasAtLeastOneExecuteSupported = Object.values(allCompilers).some(compiler =>
             this.compilerIsVisible(compiler),

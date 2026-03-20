@@ -86,7 +86,25 @@ export function createRenderHandlers(
 
         const options: RenderConfig = _.extend({}, allExtraOptions, clientOptionsHandler.get());
         options.optionsHash = clientOptionsHandler.getHash();
-        options.compilerExplorerOptions = JSON.stringify(allExtraOptions);
+        const {
+            compilers,
+            languages,
+            libs,
+            remoteLibs,
+            tools,
+            defaultLibs,
+            defaultCompiler,
+            defaultSource,
+            compileOptions,
+            supportsBinary,
+            supportsBinaryObject,
+            sources,
+            githubEnabled,
+            showSponsors,
+            gitReleaseCommit,
+            ...clientOptions
+        } = clientOptionsHandler.get();
+        options.compilerExplorerOptions = JSON.stringify(_.extend({}, clientOptions, allExtraOptions));
         options.extraBodyClass = options.embedded ? 'embedded' : extraBodyClass;
         options.httpRoot = httpRoot;
         options.staticRoot = staticRoot;

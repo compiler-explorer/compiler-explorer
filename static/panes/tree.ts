@@ -39,14 +39,12 @@ import {EventHub} from '../event-hub.js';
 import {Hub} from '../hub.js';
 import {LineColouring} from '../line-colouring.js';
 import {MultifileFile, MultifileService, MultifileServiceState} from '../multifile-service.js';
-import {options} from '../options.js';
+import {languagesService} from '../services/languages.service.js';
 import {Settings, SiteSettings} from '../settings.js';
 import * as utils from '../utils.js';
 import {Alert} from '../widgets/alert.js';
 import {PaneRenaming} from '../widgets/pane-renaming.js';
 import {Toggles} from '../widgets/toggles.js';
-
-const languages = options.languages;
 
 export interface TreeState extends MultifileServiceState {
     id: number;
@@ -101,14 +99,10 @@ export class Tree {
         this.hideable = this.domRoot.find('.hideable');
         this.topBar = this.domRoot.find('.top-bar.mainbar');
 
-        this.langKeys = Object.keys(languages);
+        this.langKeys = Object.keys(languagesService.getLanguagesOrFail());
 
         this.cmakeArgsInput = this.domRoot.find('.cmake-arguments');
         this.customOutputFilenameInput = this.domRoot.find('.cmake-customOutputFilename');
-
-        const usableLanguages = Object.values(languages).filter(language => {
-            return hub.compilerService.getCompilersForLang(language.id);
-        });
 
         if (!(state.compilerLanguageId as any)) {
             state.compilerLanguageId = this.settings.defaultLanguage ?? 'c++';
@@ -133,13 +127,14 @@ export class Tree {
             valueField: 'id',
             labelField: 'name',
             searchField: ['name'],
-            options: usableLanguages,
+            options: Object.values(languagesService.getLanguagesOrFail()),
             items: [this.multifileService.getLanguageId()],
             dropdownParent: 'body',
             plugins: ['input_autogrow'],
             maxOptions: 1000,
             onChange: (val: any) => this.onLanguageChange(val),
         });
+
         this.selectize.on('dropdown_close', () => {
             // scroll back to the selection on the next open
             const selection = this.selectize.getOption(this.multifileService.getLanguageId());
@@ -244,7 +239,7 @@ export class Tree {
     }
 
     private onLanguageChange(newLangId: LanguageKey) {
-        if (newLangId in languages) {
+        if (newLangId in languagesService.getLanguagesOrFail()) {
             this.multifileService.setLanguageId(newLangId);
             this.eventHub.emit('languageChange', false, newLangId, this.id);
         }
