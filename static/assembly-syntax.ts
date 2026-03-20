@@ -22,6 +22,29 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-export const AssemblySyntaxesList = ['att', 'intel'] as const;
+import {type AssemblyInstructionInfo} from '../types/assembly-docs.interfaces.js';
 
+const AssemblySyntaxesList = ['att', 'intel'] as const;
 export type AssemblySyntax = (typeof AssemblySyntaxesList)[number];
+
+export const ATT_SYNTAX_WARNING = 'WARNING: The information shown pertains to Intel syntax.';
+const CARDINALITY_REGEX = /\b(?:first|second|third|fourth|last)\s+operands?\b/i;
+const SOURCE_DEST_REGEX = /\b(?:source|destination)\b/i;
+
+export function addAttSyntaxWarningIfNeeded(
+    data: AssemblyInstructionInfo,
+    syntax: AssemblySyntax,
+): AssemblyInstructionInfo {
+    if (syntax !== 'att') return data;
+
+    const referencesCardinality = (text: string): boolean =>
+        CARDINALITY_REGEX.test(text) && SOURCE_DEST_REGEX.test(text);
+
+    return referencesCardinality(data.tooltip) || referencesCardinality(data.html)
+        ? {
+              ...data,
+              tooltip: '***' + ATT_SYNTAX_WARNING + '***\n\n' + data.tooltip,
+              html: '<b><em>' + ATT_SYNTAX_WARNING + '</em></b><br><br>' + data.html,
+          }
+        : data;
+}
