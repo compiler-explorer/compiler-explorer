@@ -38,11 +38,11 @@ export function addAttSyntaxWarningIfNeeded(
 ): AssemblyInstructionInfo {
     if (syntax !== 'att') return data;
 
-    const referencesCardinalityOfOperands = (text: string): boolean =>
+    const referencesCardinalityOfSrcDstOperands = (text: string): boolean =>
         CARDINALITY_REGEX.test(text) && OPERAND_REGEX.test(text) && SOURCE_DEST_REGEX.test(text);
 
     // TODO: split so warn only shows in tooltip or html containing ref to cardinality of operands
-    return referencesCardinalityOfOperands(data.tooltip) || referencesCardinalityOfOperands(data.html)
+    return referencesCardinalityOfSrcDstOperands(data.tooltip) || referencesCardinalityOfSrcDstOperands(data.html)
         ? {
               ...data,
               tooltip: '***' + ATT_SYNTAX_WARNING + '***\n\n' + data.tooltip,
@@ -51,6 +51,6 @@ export function addAttSyntaxWarningIfNeeded(
         : data;
 }
 
-export function determineAssemblySyntax(supportsIntel: boolean, intelFilterEnabled: boolean = true): AssemblySyntax {
+export function determineAssemblySyntax(supportsIntel: boolean = false, intelFilterEnabled: boolean = true): AssemblySyntax {
     return supportsIntel && !intelFilterEnabled ? 'att' : 'intel';
 }
