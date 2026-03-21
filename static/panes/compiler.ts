@@ -2830,12 +2830,9 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
         );
     }
 
-    // Only x86/x64 compilers (supportsIntel) can emit AT&T syntax.
-    // Non-x86 architectures default to 'intel' so they never trigger the AT&T warning.
+    // Non-x86 compilers (supportsIntel=false) always return 'intel' to suppress the AT&T warning.
     asmSyntax(): AssemblySyntax {
-        const isAtt =
-            this.compiler?.supportsIntel && !(this.filters.isSet('intel') && this.compiler.intelAsm.includes('intel'));
-        return isAtt ? 'att' : 'intel';
+        return this.compiler?.supportsIntel && !this.filters.isSet('intel') ? 'att' : 'intel';
     }
 
     handlePopularArgumentsResult(result: Record<string, {description: string}> | null): void {
