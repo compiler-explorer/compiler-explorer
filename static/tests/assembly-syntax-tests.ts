@@ -152,12 +152,9 @@ describe(addAttSyntaxWarningIfNeeded, () => {
 });
 
 describe('determineAssemblySyntax', () => {
-    it('returns intel if supportsIntel is undefined', () => {
-        expect(determineAssemblySyntax(undefined, false)).toBe('intel');
-        expect(determineAssemblySyntax(undefined, true)).toBe('intel');
-        expect(determineAssemblySyntax(undefined, undefined)).toBe('intel');
-    })
     it.each([
+        ['intel', undefined, false],
+        ['intel', undefined, true],
         ['intel', false, false],
         ['intel', false, true],
         ['att', true, false],

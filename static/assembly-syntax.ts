@@ -51,6 +51,6 @@ export function addAttSyntaxWarningIfNeeded(
         : data;
 }
 
-export function determineAssemblySyntax(supportsIntel: boolean = false, intelFilterEnabled: boolean = true): AssemblySyntax {
+export function determineAssemblySyntax(supportsIntel: boolean = false, intelFilterEnabled: boolean): AssemblySyntax {
     return supportsIntel && !intelFilterEnabled ? 'att' : 'intel';
 }
