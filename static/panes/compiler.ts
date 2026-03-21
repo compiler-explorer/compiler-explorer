@@ -2831,7 +2831,7 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
     }
 
     asmSyntax(): AssemblySyntax {
-        return determineAssemblySyntax(this.compiler?.supportsIntel ?? false, this.filters.isSet('intel'));
+        return determineAssemblySyntax(this.compiler?.supportsIntel, this.filters.isSet('intel'));
     }
 
     handlePopularArgumentsResult(result: Record<string, {description: string}> | null): void {
