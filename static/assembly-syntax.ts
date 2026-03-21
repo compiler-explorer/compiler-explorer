@@ -28,7 +28,6 @@ const AssemblySyntaxesList = ['att', 'intel'] as const;
 export type AssemblySyntax = (typeof AssemblySyntaxesList)[number];
 
 export const ATT_SYNTAX_WARNING = 'WARNING: The information shown pertains to Intel syntax.';
-const CARDINALITY_REGEX = /\b(?:first|second|third|fourth|last)\s+operands?\b/i;
 const SOURCE_DEST_REGEX = /\b(?:source|destination)\b/i;
 
 export function addAttSyntaxWarningIfNeeded(
