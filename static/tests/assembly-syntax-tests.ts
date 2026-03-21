@@ -152,18 +152,13 @@ describe(addAttSyntaxWarningIfNeeded, () => {
     });
 });
 
-describe.each([
-    [false, false, "intel"],
-    [false, true, "intel"],
-    [true, false, "att"],
-    [true, true, "intel"],
-])(
-    "determineAssemblySyntax(supportsIntel: %s, intelFilterEnabled: %s) returns %s",
-    (supportsIntel, intelFilterEnabled, expected) => {
-        it(`returns ${expected} when supportsIntel is ${supportsIntel} and intel asm syntax filter is ${intelFilterEnabled ? "en" : "dis"}abled`, () => {
-            expect(
-                determineAssemblySyntax(supportsIntel, intelFilterEnabled),
-            ).toBe(expected);
-        });
-    },
-);
+describe('determineAssemblySyntax', () => {
+    it.each([
+        [false, false, 'intel'],
+        [false, true, 'intel'],
+        [true, false, 'att'],
+        [true, true, 'intel'],
+    ])('returns %s when supportsIntel is %s and intel asm syntax filter is %s', (supportsIntel, intelFilterEnabled, expected) => {
+        expect(determineAssemblySyntax(supportsIntel as boolean, intelFilterEnabled as boolean)).toBe(expected);
+    });
+});
