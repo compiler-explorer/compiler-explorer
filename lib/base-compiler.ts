@@ -383,6 +383,8 @@ export class BaseCompiler {
             env.FC = this.compiler.exe;
         } else if (this.lang.id === 'cuda') {
             env.CUDACXX = this.compiler.exe;
+        } else if (this.lang.id === 'assembly') {
+            env.AS = this.compiler.exe;
         } else {
             env.CC = this.compiler.exe;
         }
@@ -2746,6 +2748,9 @@ export class BaseCompiler {
     }
 
     getExtraCMakeArgs(key: ParsedRequest): string[] {
+        if (this.lang.id === 'assembly' && this.compiler.exe) {
+            return [`-DCMAKE_ASM_COMPILER=${this.compiler.exe}`];
+        }
         return [];
     }
 
