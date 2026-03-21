@@ -25,7 +25,7 @@
 import {describe, expect, it} from 'vitest';
 
 import {type AssemblyInstructionInfo} from '../../types/assembly-docs.interfaces.js';
-import {ATT_SYNTAX_WARNING, addAttSyntaxWarningIfNeeded} from '../assembly-syntax.js';
+import {ATT_SYNTAX_WARNING, addAttSyntaxWarningIfNeeded, determineAssemblySyntax} from '../assembly-syntax.js';
 
 function makeInfo(tooltip: string, html: string): AssemblyInstructionInfo {
     return {tooltip, html, url: 'https://example.com'};
@@ -111,5 +111,23 @@ describe('addAttSyntaxWarningIfNeeded', () => {
         const data = makeInfo('The first operand is the destination', '<p>The first operand is the destination</p>');
         const result = addAttSyntaxWarningIfNeeded(data, 'att');
         expect(result.url).toBe('https://example.com');
+    });
+});
+
+describe('determineAssemblySyntax', () => {
+    it('returns intel for non-x86 compiler with Intel filter off', () => {
+        expect(determineAssemblySyntax(false, false)).toBe('intel');
+    });
+
+    it('returns intel for non-x86 compiler with Intel filter on (stale toggle)', () => {
+        expect(determineAssemblySyntax(false, true)).toBe('intel');
+    });
+
+    it('returns att for x86 compiler with Intel filter off', () => {
+        expect(determineAssemblySyntax(true, false)).toBe('att');
+    });
+
+    it('returns intel for x86 compiler with Intel filter on', () => {
+        expect(determineAssemblySyntax(true, true)).toBe('intel');
     });
 });
