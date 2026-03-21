@@ -22,112 +22,157 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import {describe, expect, it} from 'vitest';
+import { describe, expect, it } from "vitest";
 
-import {type AssemblyInstructionInfo} from '../../types/assembly-docs.interfaces.js';
-import {ATT_SYNTAX_WARNING, addAttSyntaxWarningIfNeeded, determineAssemblySyntax} from '../assembly-syntax.js';
+import { type AssemblyInstructionInfo } from "../../types/assembly-docs.interfaces.js";
+import {
+    ATT_SYNTAX_WARNING,
+    addAttSyntaxWarningIfNeeded,
+    determineAssemblySyntax,
+} from "../assembly-syntax.js";
 
-function makeInfo(tooltip: string, html: string): AssemblyInstructionInfo {
-    return {tooltip, html, url: 'https://example.com'};
+function makeInfo(tooltip: string, html?: string): AssemblyInstructionInfo {
+    html = html ?? `<p>${tooltip}</p>`;
+    return { tooltip, html, url: "https://example.com" };
 }
 
-describe('addAttSyntaxWarningIfNeeded', () => {
-    it('does not warn for intel syntax', () => {
-        const data = makeInfo('first operand is the destination', 'first operand is the destination');
-        const result = addAttSyntaxWarningIfNeeded(data, 'intel');
-        expect(result).toEqual(data);
+describe(addAttSyntaxWarningIfNeeded, () => {
+    describe("warns when syntax is att and", () => {
+        it("tooltip references cardinality operand and source/destination", () => {
+            const data = makeInfo(
+                "first operand (destination)",
+                "<p>Simple description</p>",
+            );
+            const result = addAttSyntaxWarningIfNeeded(data, "att");
+
+            expect(result.tooltip).toContain(ATT_SYNTAX_WARNING);
+            expect(result.html).toContain(ATT_SYNTAX_WARNING);
+        });
+
+        it("html references cardinality operand and source/destination", () => {
+            const data = makeInfo(
+                "Simple tooltip",
+                "<p>second operand (source)</p>",
+            );
+            const result = addAttSyntaxWarningIfNeeded(data, "att");
+
+            expect(result.tooltip).toContain(ATT_SYNTAX_WARNING);
+            expect(result.html).toContain(ATT_SYNTAX_WARNING);
+        });
+
+        it("both tooltip and html reference cardinality and source/destination", () => {
+            const text =
+                "copies the first operand (source) to the second operand (destination)";
+            const data = makeInfo(text);
+            const result = addAttSyntaxWarningIfNeeded(data, "att");
+            expect(result.tooltip).toContain(ATT_SYNTAX_WARNING);
+            expect(result.html).toContain(ATT_SYNTAX_WARNING);
+        });
+    });
+    describe("does not warn when", () => {
+        it("intel syntax and references cardinal destination", () => {
+            const data = makeInfo("first operand (destination)");
+            const result = addAttSyntaxWarningIfNeeded(data, "intel");
+            expect(result).toEqual(data);
+        });
+
+        it("att syntax and no cardinality references exist", () => {
+            const data = makeInfo(
+                "Decrements the stack pointer and then stores the source operand on the top of the stack",
+            );
+            const result = addAttSyntaxWarningIfNeeded(data, "att");
+
+            expect(result.tooltip).not.toContain(ATT_SYNTAX_WARNING);
+            expect(result.html).not.toContain(ATT_SYNTAX_WARNING);
+        });
+
+        it("cardinality is present but source/destination is absent", () => {
+            const data = makeInfo(
+                "Performs a signed multiplication of two operands",
+            );
+            const result = addAttSyntaxWarningIfNeeded(data, "att");
+
+            expect(result.tooltip).not.toContain(ATT_SYNTAX_WARNING);
+        });
+
+        it("source/destination is present but cardinality is absent", () => {
+            const data = makeInfo(
+                "Loads the value from the top of the stack to the location specified with the destination operand (or explicit opcode) and then increments the stack pointer.",
+            );
+            const result = addAttSyntaxWarningIfNeeded(data, "att");
+            expect(result.tooltip).not.toContain(ATT_SYNTAX_WARNING);
+        });
     });
 
-    it('does not warn for att syntax when no cardinality references exist', () => {
-        const data = makeInfo('Adds two values', '<p>Adds two values</p>');
-        const result = addAttSyntaxWarningIfNeeded(data, 'att');
+    it("does not cross-contaminate: tooltip cardinality + html source/dest alone should not warn", () => {
+        const data = makeInfo(
+            "The first operand is foo",
+            "<p>Copies bar to the destination register</p>",
+        );
+        const result = addAttSyntaxWarningIfNeeded(data, "att");
         expect(result.tooltip).not.toContain(ATT_SYNTAX_WARNING);
         expect(result.html).not.toContain(ATT_SYNTAX_WARNING);
     });
 
-    it('does not warn when cardinality is present but source/destination is absent', () => {
-        const data = makeInfo('The first operand is added to the result', '<p>The first operand is added</p>');
-        const result = addAttSyntaxWarningIfNeeded(data, 'att');
-        expect(result.tooltip).not.toContain(ATT_SYNTAX_WARNING);
-    });
-
-    it('does not warn when source/destination is present but cardinality is absent', () => {
-        const data = makeInfo('Copies from source to destination', '<p>Copies source to destination</p>');
-        const result = addAttSyntaxWarningIfNeeded(data, 'att');
-        expect(result.tooltip).not.toContain(ATT_SYNTAX_WARNING);
-    });
-
-    it('warns when tooltip references cardinality operand and source/destination', () => {
-        const data = makeInfo('The first operand is the destination register', '<p>Simple description</p>');
-        const result = addAttSyntaxWarningIfNeeded(data, 'att');
-        expect(result.tooltip).toContain(ATT_SYNTAX_WARNING);
-        expect(result.html).toContain(ATT_SYNTAX_WARNING);
-    });
-
-    it('warns when html references cardinality operand and source/destination', () => {
-        const data = makeInfo('Simple tooltip', '<p>The second operand is the source register</p>');
-        const result = addAttSyntaxWarningIfNeeded(data, 'att');
-        expect(result.tooltip).toContain(ATT_SYNTAX_WARNING);
-        expect(result.html).toContain(ATT_SYNTAX_WARNING);
-    });
-
-    it('warns when both tooltip and html match', () => {
-        const text = 'The first operand is the source, the second operand is the destination';
-        const data = makeInfo(text, text);
-        const result = addAttSyntaxWarningIfNeeded(data, 'att');
-        expect(result.tooltip).toContain(ATT_SYNTAX_WARNING);
-        expect(result.html).toContain(ATT_SYNTAX_WARNING);
-    });
-
-    it('does not cross-contaminate: tooltip cardinality + html source/dest alone should not warn', () => {
-        const data = makeInfo('The first operand is shifted left', '<p>Copies data to the destination register</p>');
-        const result = addAttSyntaxWarningIfNeeded(data, 'att');
-        expect(result.tooltip).not.toContain(ATT_SYNTAX_WARNING);
-        expect(result.html).not.toContain(ATT_SYNTAX_WARNING);
-    });
-
-    it('handles fourth operand references', () => {
-        const data = makeInfo('The fourth operand specifies the destination mask', '<p>VBLENDVPS description</p>');
-        const result = addAttSyntaxWarningIfNeeded(data, 'att');
+    it("handles fourth operand references", () => {
+        const data = makeInfo(
+            "The fourth operand specifies the destination mask",
+            "<p>VBLENDVPS description</p>",
+        );
+        const result = addAttSyntaxWarningIfNeeded(data, "att");
         expect(result.tooltip).toContain(ATT_SYNTAX_WARNING);
     });
 
-    it('handles last operand references', () => {
-        const data = makeInfo('The last operand is the source register', '<p>Description</p>');
-        const result = addAttSyntaxWarningIfNeeded(data, 'att');
+    it("handles last operand references", () => {
+        const data = makeInfo(
+            "The last operand is the source register",
+            "<p>Description</p>",
+        );
+        const result = addAttSyntaxWarningIfNeeded(data, "att");
         expect(result.tooltip).toContain(ATT_SYNTAX_WARNING);
     });
 
-    it('does not mutate the original data object', () => {
-        const data = makeInfo('The first operand is the destination', '<p>The first operand is the destination</p>');
-        const originalTooltip = data.tooltip;
-        const originalHtml = data.html;
-        addAttSyntaxWarningIfNeeded(data, 'att');
-        expect(data.tooltip).toBe(originalTooltip);
-        expect(data.html).toBe(originalHtml);
-    });
+    describe("purity", () => {
+        it("does not mutate the original data object regardless of syntax", () => {
+            const data = makeInfo(
+                "The first operand is the destination",
+                "<p>The first operand is the destination</p>",
+            );
+            const originalTooltip = data.tooltip;
+            const originalHtml = data.html;
 
-    it('preserves the url field unchanged', () => {
-        const data = makeInfo('The first operand is the destination', '<p>The first operand is the destination</p>');
-        const result = addAttSyntaxWarningIfNeeded(data, 'att');
-        expect(result.url).toBe('https://example.com');
+            addAttSyntaxWarningIfNeeded(data, "att");
+            expect(data.tooltip).toBe(originalTooltip);
+            expect(data.html).toBe(originalHtml);
+        });
+
+        it("preserves the url field regardless of syntax", () => {
+            let result: AssemblyInstructionInfo;
+            const data: AssemblyInstructionInfo = makeInfo(
+                "The first operand (destination)",
+                "<p>The first operand (destination)</p>",
+            );
+
+            result = addAttSyntaxWarningIfNeeded(data, "att");
+            expect(result.url).toBe("https://example.com");
+            result = addAttSyntaxWarningIfNeeded(data, "intel");
+            expect(result.url).toBe("https://example.com");
+        });
     });
 });
 
-describe('determineAssemblySyntax', () => {
-    it('returns intel for non-x86 compiler with Intel filter off', () => {
-        expect(determineAssemblySyntax(false, false)).toBe('intel');
-    });
-
-    it('returns intel for non-x86 compiler with Intel filter on (stale toggle)', () => {
-        expect(determineAssemblySyntax(false, true)).toBe('intel');
-    });
-
-    it('returns att for x86 compiler with Intel filter off', () => {
-        expect(determineAssemblySyntax(true, false)).toBe('att');
-    });
-
-    it('returns intel for x86 compiler with Intel filter on', () => {
-        expect(determineAssemblySyntax(true, true)).toBe('intel');
-    });
-});
+describe.each([
+    [false, false, "intel"],
+    [false, true, "intel"],
+    [true, false, "att"],
+    [true, true, "intel"],
+])(
+    "determineAssemblySyntax(supportsIntel: %s, intelFilterEnabled: %s) returns %s",
+    (supportsIntel, intelFilterEnabled, expected) => {
+        it(`returns ${expected} when supportsIntel is ${supportsIntel} and intel asm syntax filter is ${intelFilterEnabled ? "en" : "dis"}abled`, () => {
+            expect(
+                determineAssemblySyntax(supportsIntel, intelFilterEnabled),
+            ).toBe(expected);
+        });
+    },
+);
