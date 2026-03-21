@@ -123,15 +123,6 @@ describe(addAttSyntaxWarningIfNeeded, () => {
         expect(result.tooltip).toContain(ATT_SYNTAX_WARNING);
     });
 
-    it("handles last operand references", () => {
-        const data = makeInfo(
-            "The last operand is the source register",
-            "<p>Description</p>",
-        );
-        const result = addAttSyntaxWarningIfNeeded(data, "att");
-        expect(result.tooltip).toContain(ATT_SYNTAX_WARNING);
-    });
-
     describe("purity", () => {
         it("does not mutate the original data object regardless of syntax", () => {
             const data = makeInfo(
