@@ -1,4 +1,4 @@
-// Copyright (c) 2021, Compiler Explorer Authors
+// Copyright (c) 2026, Compiler Explorer Authors
 // All rights reserved.
 //
 // Redistribution and use in source and binary forms, with or without
@@ -22,57 +22,21 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import './ada-mode';
-import './asm6502-mode';
-import './asm-mode';
-import './asmruby-mode';
-import './c3-mode';
-import './carbon-mode';
-import './clean-mode';
-import './cmake-mode';
-import './cobol-mode';
-import './cppcircle-mode';
-import './cpp-for-opencl-mode';
-import './cppfront-mode';
-import './cppp-mode';
-import './cppx-blue-mode';
-import './cppx-gold-mode';
-import './crystal-mode';
-import './cuda-mode';
-import './d-mode';
-import './no-highlight-mode';
-import './erlang-mode';
-import './fortran-mode';
-import './gccdump-rtl-gimple-mode';
-import './glsl-mode';
-import './haskell-mode';
-import './hlsl-mode';
-import './hook-mode';
-import './hylo-mode';
-import './ispc-mode';
-import './jakt-mode';
-import './llvm-ir-mode';
-import './metal-mode';
-import './mlir-mode';
-import './modula2-mode';
-import './mojo-mode';
-import './nc-mode';
-import './nim-mode';
-import './nix-mode';
-import './ocaml-mode';
-import './odin-mode';
-import './openclc-mode';
-import './ptx-mode';
-import './perl-concise-mode';
-import './rust-mode';
-import './sail-mode';
-import './slang-mode';
-import './spice-mode';
-import './spirv-mode';
-import './sway-mode';
-import './tablegen-mode';
-import './v-mode';
-import './vala-mode';
-import './wat-mode';
-import './yul-mode';
-import './zig-mode';
+import type {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces.js';
+import {BaseCompiler} from '../base-compiler.js';
+
+export class MetalCompiler extends BaseCompiler {
+    static get key() {
+        return 'metal';
+    }
+
+    constructor(info: any, env: any) {
+        super(info, env);
+
+        this.compiler.supportsIntel = false;
+    }
+
+    override optionsForFilter(_filters: ParseFiltersAndOutputOptions, outputFilename: string): string[] {
+        return ['-S', '-emit-llvm', '-g', '-o', outputFilename];
+    }
+}
