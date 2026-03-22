@@ -14,7 +14,8 @@
       "!static/policies/*.html",
       "!lib/storage/data/**/*",
       "!lib/asm-docs/generated/**/*",
-      "!test/**/*.json"
+      "!test/**/*.json",
+      "!static/webpack-patches"
     ]
   },
   "overrides": [
