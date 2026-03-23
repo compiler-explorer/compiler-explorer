@@ -11,7 +11,7 @@ built, there are some caveats, best practices and good to knows. Consult the bot
 The easiest way to add a library to Compiler Explorer is to use the
 [CE Library Wizard](https://github.com/compiler-explorer/ce-library-wizard), a CLI tool that automates the entire
 process — including forking repos, updating configuration files, and creating pull requests. It supports C, C++, Rust,
-Fortran, and Go.
+Fortran, and Go. Note: the wizard currently only runs on Linux.
 
 ```bash
 git clone https://github.com/compiler-explorer/ce-library-wizard.git
