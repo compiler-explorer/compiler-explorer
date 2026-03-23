@@ -13,8 +13,8 @@ The easiest way to add a library to Compiler Explorer is to use the
 process — including forking repos, updating configuration files, and creating pull requests. It supports C, C++, Rust,
 Fortran, and Go.
 
-*Note: the wizard currently only runs on Linux and requires Git and the
-[GitHub CLI](https://cli.github.com/).*
+*Note: the wizard currently only runs on Linux and requires Git, the
+[GitHub CLI](https://cli.github.com/), and CMake (for libraries that use CMake).*
 
 ```bash
 git clone https://github.com/compiler-explorer/ce-library-wizard.git
