@@ -23,9 +23,11 @@
 // POSSIBILITY OF SUCH DAMAGE.
 
 import type {Router} from 'express';
+
 import type {AppArguments} from '../app.interfaces.js';
 import {CompilationEnvironment} from '../compilation-env.js';
 import {CompileHandler} from '../handlers/compile.js';
+import {cors} from '../handlers/middleware.js';
 import {NoScriptHandler} from '../handlers/noscript.js';
 import {RouteAPI} from '../handlers/route-api.js';
 import {ClientOptionsHandler} from '../options-handler.js';
@@ -86,6 +88,14 @@ export function setupRoutesAndApi(
         defArgs: appArgs,
         renderConfig,
         renderGoldenLayout,
+    });
+
+    router.use('/api', cors, (req, res, next) => {
+        if (req.method === 'OPTIONS') {
+            res.sendStatus(200);
+        } else {
+            next();
+        }
     });
 
     // Set up controllers

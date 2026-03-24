@@ -25,6 +25,7 @@
 import {describe, expect, it} from 'vitest';
 
 import './utils.js';
+
 import {SymbolStore} from '../lib/symbol-store.js';
 
 describe('SymbolStore', () => {

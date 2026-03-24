@@ -23,7 +23,6 @@
 // POSSIBILITY OF SUCH DAMAGE.
 
 import {makeDefaultedKeyedTypeGetter} from '../../keyed-type.js';
-
 import * as all from './_all.js';
 import {BaseInstructionSetInfo} from './base.js';
 

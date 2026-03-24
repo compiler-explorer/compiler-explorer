@@ -25,7 +25,6 @@
 import type {PreliminaryCompilerInfo} from '../../types/compiler.interfaces.js';
 import type {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces.js';
 import {CompilationEnvironment} from '../compilation-env.js';
-
 import {GCCCompiler} from './gcc.js';
 
 export class GCCRSCompiler extends GCCCompiler {

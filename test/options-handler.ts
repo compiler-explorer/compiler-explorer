@@ -38,7 +38,6 @@ import {getRemoteId} from '../shared/remote-utils.js';
 import {UrlTestCases} from '../shared/url-testcases.js';
 import {CompilerInfo} from '../types/compiler.interfaces.js';
 import {LanguageKey} from '../types/languages.interfaces.js';
-
 import {makeFakeCompilerInfo} from './utils.js';
 
 const languages = {
@@ -303,6 +302,13 @@ describe('Options handler', () => {
                 },
             },
         });
+    });
+    it('should auto-discover libs when libs= is not set', () => {
+        const libs = optionsHandler.parseLibraries({fake: ''});
+        const libIds = Object.keys(libs.fake).sort();
+        expect(libIds).toEqual(['fakelib', 'fs', 'someotherlib']);
+        expect(libs.fake.fakelib.name).toEqual('fake lib');
+        expect(Object.keys(libs.fake.fakelib.versions).sort()).toEqual(['noPaths', 'onePath', 'twoPaths']);
     });
     it('should order compilers as expected', () => {
         const compilers = [

@@ -23,6 +23,7 @@
 // POSSIBILITY OF SUCH DAMAGE.
 
 import type {Express} from 'express';
+
 import type {AppArguments} from '../app.interfaces.js';
 import type {PropertyGetter} from '../properties.interfaces.js';
 import type {AppConfiguration} from './config.interfaces.js';

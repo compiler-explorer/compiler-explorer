@@ -23,6 +23,7 @@
 // POSSIBILITY OF SUCH DAMAGE.
 
 import './utils.js';
+
 import {DescribeInstancesCommand, EC2, Instance} from '@aws-sdk/client-ec2';
 import {GetParametersCommand, SSM} from '@aws-sdk/client-ssm';
 import {mockClient} from 'aws-sdk-client-mock';

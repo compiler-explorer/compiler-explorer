@@ -25,7 +25,6 @@
 import path from 'node:path';
 
 import {BaseCompiler} from '../base-compiler.js';
-
 import {ZksolcParser} from './argument-parsers.js';
 
 export class SolidityZKsyncCompiler extends BaseCompiler {

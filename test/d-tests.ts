@@ -28,7 +28,6 @@ import {CompilationEnvironment} from '../lib/compilation-env.js';
 import {DMDCompiler} from '../lib/compilers/dmd.js';
 import {LDCCompiler} from '../lib/compilers/ldc.js';
 import {LanguageKey} from '../types/languages.interfaces.js';
-
 import {makeCompilationEnvironment, makeFakeCompilerInfo} from './utils.js';
 
 const languages = {

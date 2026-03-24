@@ -23,6 +23,7 @@
 // POSSIBILITY OF SUCH DAMAGE.
 
 import {WebSocket} from 'ws';
+
 import {CompilationResult} from '../../types/compilation/compilation.interfaces.js';
 import {BasicExecutionResult} from '../../types/execution/execution.interfaces.js';
 import {logger} from '../logger.js';

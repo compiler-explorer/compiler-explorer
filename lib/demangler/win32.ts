@@ -28,7 +28,6 @@ import {assert, unwrap} from '../assert.js';
 import {BaseCompiler} from '../base-compiler.js';
 import {logger} from '../logger.js';
 import * as utils from '../utils.js';
-
 import {CppDemangler} from './cpp.js';
 
 export class Win32Demangler extends CppDemangler {

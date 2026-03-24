@@ -33,7 +33,6 @@ import {unwrap} from '../assert.js';
 import {BaseCompiler} from '../base-compiler.js';
 import {CompilationEnvironment} from '../compilation-env.js';
 import {CrystalAsmParser} from '../parsers/asm-parser-crystal.js';
-
 import {CrystalParser} from './argument-parsers.js';
 
 export class CrystalCompiler extends BaseCompiler {

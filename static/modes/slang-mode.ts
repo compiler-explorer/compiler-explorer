@@ -23,7 +23,6 @@
 // POSSIBILITY OF SUCH DAMAGE.
 
 import $ from 'jquery';
-
 import * as monaco from 'monaco-editor';
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 import * as cpp from 'monaco-editor/esm/vs/basic-languages/cpp/cpp';

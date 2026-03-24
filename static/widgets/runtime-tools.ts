@@ -23,6 +23,7 @@
 // POSSIBILITY OF SUCH DAMAGE.
 
 import $ from 'jquery';
+
 import {assert} from '../../shared/assert.js';
 import {CompilerInfo} from '../../types/compiler.interfaces.js';
 import {

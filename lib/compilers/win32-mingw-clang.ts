@@ -28,7 +28,6 @@ import {BuildResult, BypassCache, CacheKey, CompilationResult} from '../../types
 import {ExecutableExecutionOptions} from '../../types/execution/execution.interfaces.js';
 import {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces.js';
 import {copyNeededDlls} from '../binaries/win-utils.js';
-
 import {ClangCompiler} from './clang.js';
 
 export class Win32MingWClang extends ClangCompiler {

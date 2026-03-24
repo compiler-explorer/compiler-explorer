@@ -25,6 +25,7 @@
 import fs from 'node:fs';
 import https from 'node:https';
 import path from 'node:path';
+
 import semverParser from 'semver';
 import _ from 'underscore';
 import urlJoin from 'url-join';
@@ -71,6 +72,7 @@ export type OptionsHandlerLibrary = {
     examples: string[];
     options: string[];
     packagedheaders?: boolean;
+    lookupname?: string;
 };
 
 // TODO: Is this the same as Options in static/options.interfaces.ts?
@@ -128,6 +130,7 @@ export type ClientOptionsType = {
  */
 export class ClientOptionsHandler implements ClientOptionsSource {
     compilerProps: CompilerProps['get'];
+    compilerPropsInstance: CompilerProps;
     ceProps: PropertyGetter;
     supportsBinary: Record<LanguageKey, boolean>;
     supportsBinaryObject: Record<LanguageKey, boolean>;
@@ -149,6 +152,7 @@ export class ClientOptionsHandler implements ClientOptionsSource {
      */
     constructor(fileSources: Source[], compilerProps: CompilerProps, defArgs: AppArguments) {
         this.compilerProps = compilerProps.get.bind(compilerProps);
+        this.compilerPropsInstance = compilerProps;
         this.ceProps = compilerProps.ceProps;
         const ceProps = compilerProps.ceProps;
         const sources = _.sortBy(
@@ -276,13 +280,27 @@ export class ClientOptionsHandler implements ClientOptionsSource {
         return tools;
     }
 
+    discoverLibIdsFromProperties(lang: string): string[] {
+        const allKeys = this.compilerPropsInstance.getKeysStartingWith(lang, 'libs.');
+        const libIds = new Set<string>();
+        for (const key of allKeys) {
+            const match = key.match(/^libs\.([^.]+)\./);
+            if (match) {
+                libIds.add(match[1]);
+            }
+        }
+        return [...libIds].sort();
+    }
+
     parseLibraries(baseLibs: Record<string, string>) {
         // Record language -> {Record lib name -> lib}
         const libraries: Record<string, Record<string, OptionsHandlerLibrary>> = {};
         for (const [lang, forLang] of Object.entries(baseLibs)) {
-            if (lang && forLang) {
+            if (!lang) continue;
+            const libIds = forLang ? forLang.split(':') : this.discoverLibIdsFromProperties(lang);
+            if (libIds.length > 0) {
                 libraries[lang] = {};
-                for (const lib of forLang.split(':')) {
+                for (const lib of libIds) {
                     const libBaseName = `libs.${lib}`;
                     libraries[lang][lib] = {
                         name: this.compilerProps<string>(lang, libBaseName + '.name'),
@@ -296,6 +314,10 @@ export class ClientOptionsHandler implements ClientOptionsSource {
                         options: splitArguments(this.compilerProps(lang, libBaseName + '.options', '')),
                         packagedheaders: this.compilerProps<boolean>(lang, libBaseName + '.packagedheaders', false),
                     };
+                    const libLookupname = this.compilerProps<string>(lang, libBaseName + '.lookupname');
+                    if (libLookupname) {
+                        libraries[lang][lib].lookupname = libLookupname;
+                    }
                     const listedVersions = `${this.compilerProps(lang, libBaseName + '.versions')}`;
                     if (listedVersions) {
                         for (const version of listedVersions.split(':')) {
@@ -331,12 +353,14 @@ export class ClientOptionsHandler implements ClientOptionsSource {
                             const lookupname = this.compilerProps(lang, libVersionName + '.lookupname');
                             if (lookupname) {
                                 versionObject.lookupname = lookupname;
+                            } else if (libraries[lang][lib].lookupname) {
+                                versionObject.lookupname = libraries[lang][lib].lookupname;
                             }
 
                             const includes = this.compilerProps<string>(lang, libVersionName + '.path');
                             if (includes) {
                                 versionObject.path = includes.split(path.delimiter);
-                            } else if (version !== 'autodetect') {
+                            } else if (version !== 'autodetect' && !versionObject.packagedheaders) {
                                 logger.warn(`Library ${lib} ${version} (${lang}) has no include paths`);
                             }
 

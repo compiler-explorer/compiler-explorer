@@ -23,6 +23,7 @@
 // POSSIBILITY OF SUCH DAMAGE.
 
 import {beforeEach, describe, expect, it} from 'vitest';
+
 import {AsmParser} from '../lib/parsers/asm-parser.js';
 import {VcAsmParser} from '../lib/parsers/asm-parser-vc.js';
 

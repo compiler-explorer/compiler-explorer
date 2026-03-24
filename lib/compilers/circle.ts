@@ -27,7 +27,6 @@ import path from 'node:path';
 import {ExecutionOptionsWithEnv} from '../../types/compilation/compilation.interfaces.js';
 import {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces.js';
 import {BaseCompiler} from '../base-compiler.js';
-
 import {CircleParser} from './argument-parsers.js';
 
 export class CircleCompiler extends BaseCompiler {

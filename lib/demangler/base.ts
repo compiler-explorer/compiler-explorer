@@ -31,7 +31,6 @@ import {logger} from '../logger.js';
 import {AsmRegex} from '../parsers/asmregex.js';
 import {SymbolStore} from '../symbol-store.js';
 import * as utils from '../utils.js';
-
 import {PrefixTree} from './prefix-tree.js';
 
 export class BaseDemangler extends AsmRegex {

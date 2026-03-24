@@ -1,0 +1,64 @@
+{
+  "asm": [
+    {
+      "text": "                     .segment \"CODE\""
+    },
+    {
+      "text": "                     ; Simple 6502 test with macros"
+    },
+    {
+      "text": "                     .macro inc16 addr"
+    },
+    {
+      "text": "                     inc addr"
+    },
+    {
+      "text": "                     bne :+"
+    },
+    {
+      "text": "                     inc addr+1"
+    },
+    {
+      "text": "                     :"
+    },
+    {
+      "text": "                     .endmacro"
+    },
+    {
+      "text": "                     .proc main"
+    },
+    {
+      "text": "000000: A9 00        lda #$00"
+    },
+    {
+      "text": "000002: 8D 00 D0     sta $D000"
+    },
+    {
+      "text": "                     inc16 counter"
+    },
+    {
+      "text": "000005: EE rr rr     >  inc addr"
+    },
+    {
+      "text": "000008: D0 03        >  bne :++"
+    },
+    {
+      "text": "00000A: EE rr rr     >  inc addr+1"
+    },
+    {
+      "text": "                     > :"
+    },
+    {
+      "text": "00000D: 60           rts"
+    },
+    {
+      "text": "                     .endproc"
+    },
+    {
+      "text": "                     .segment \"BSS\""
+    },
+    {
+      "text": "000000: xx xx        counter: .res 2"
+    }
+  ]
+}

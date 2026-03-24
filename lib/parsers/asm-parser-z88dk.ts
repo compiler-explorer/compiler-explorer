@@ -8,7 +8,6 @@ import {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfa
 import {assert} from '../assert.js';
 import {PropertyGetter} from '../properties.interfaces.js';
 import * as utils from '../utils.js';
-
 import {AsmParser} from './asm-parser.js';
 import {AsmRegex} from './asmregex.js';
 

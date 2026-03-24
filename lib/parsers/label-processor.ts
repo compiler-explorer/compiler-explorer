@@ -80,6 +80,8 @@ export type LabelContext = {
     mipsLabelDefinition: RegExp;
     labelFindNonMips: RegExp;
     labelFindMips: RegExp;
+    startBlock: RegExp;
+    endBlock: RegExp;
     fixLabelIndentation: (line: string) => string;
 };
 
@@ -125,18 +127,16 @@ export class LabelProcessor {
     }
 
     private updateAssemblyContext(line: string, context: LabelContext, state: FindLabelsState): void {
-        const startBlock = /\.cfi_startproc/;
-        const endBlock = /\.cfi_endproc/;
-
         const trimmedLine = line.trim();
         if (context.startAppBlock.test(trimmedLine) || context.startAsmNesting.test(trimmedLine)) {
             state.inCustomAssembly++;
         } else if (context.endAppBlock.test(trimmedLine) || context.endAsmNesting.test(trimmedLine)) {
             state.inCustomAssembly--;
-        } else if (startBlock.test(line)) {
+        } else if (context.startBlock.test(line)) {
             state.inFunction = true;
-        } else if (endBlock.test(line)) {
+        } else if (context.endBlock.test(line)) {
             state.inFunction = false;
+            state.currentLabelSet = [];
         } else if (context.cudaBeginDef.test(line)) {
             state.inNvccCode = true;
         } else {

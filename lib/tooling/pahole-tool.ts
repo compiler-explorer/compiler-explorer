@@ -24,7 +24,6 @@
 
 import {CompilationInfo} from '../../types/compilation/compilation.interfaces.js';
 import * as utils from '../utils.js';
-
 import {BaseTool} from './base-tool.js';
 
 export class PaholeTool extends BaseTool {

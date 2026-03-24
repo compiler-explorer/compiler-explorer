@@ -23,7 +23,6 @@
 // POSSIBILITY OF SUCH DAMAGE.
 
 import {InstructionSet} from '../../../types/instructionsets.js';
-
 import {BaseInstructionSetInfo, InstructionType} from './base.js';
 
 export class LlvmIrInstructionSetInfo extends BaseInstructionSetInfo {

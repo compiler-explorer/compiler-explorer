@@ -32,7 +32,6 @@ import {CompilationEnvironment} from '../compilation-env.js';
 import {MapFileReaderVS} from '../mapfiles/map-file-vs.js';
 import {VcAsmParser} from '../parsers/asm-parser-vc.js';
 import {PELabelReconstructor} from '../pe32-support.js';
-
 import {VCParser} from './argument-parsers.js';
 
 export class WineVcCompiler extends BaseCompiler {

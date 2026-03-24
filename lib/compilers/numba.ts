@@ -28,7 +28,6 @@ import {BaseCompiler} from '../base-compiler.js';
 import {CompilationEnvironment} from '../compilation-env.js';
 import {AsmParser} from '../parsers/asm-parser.js';
 import {resolvePathFromAppRoot} from '../utils.js';
-
 import {BaseParser} from './argument-parsers.js';
 
 export class NumbaCompiler extends BaseCompiler {

@@ -24,6 +24,7 @@
 
 import GoldenLayout from 'golden-layout';
 import $ from 'jquery';
+
 import {assert, unwrap, unwrapString} from '../../shared/assert.js';
 import {escapeHTML} from '../../shared/common-utils.js';
 import {serialiseState} from '../../shared/url-serialization.js';

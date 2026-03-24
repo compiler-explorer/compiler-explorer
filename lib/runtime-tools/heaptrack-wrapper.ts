@@ -39,7 +39,6 @@ import {CompilationEnvironment} from '../compilation-env.js';
 import {executeDirect} from '../exec.js';
 import {logger} from '../logger.js';
 import {PropertyGetter} from '../properties.interfaces.js';
-
 import {BaseRuntimeTool} from './base-runtime-tool.js';
 
 const O_NONBLOCK = fsConstants.O_NONBLOCK;

@@ -28,7 +28,6 @@ import type {PreliminaryCompilerInfo} from '../../types/compiler.interfaces.js';
 import type {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces.js';
 import {SelectedLibraryVersion} from '../../types/libraries/libraries.interfaces.js';
 import {CompilationEnvironment} from '../compilation-env.js';
-
 import {RustCompiler} from './rust.js';
 
 export class RustcCgGCCCompiler extends RustCompiler {

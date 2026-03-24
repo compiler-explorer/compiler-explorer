@@ -29,6 +29,7 @@ import path from 'node:path';
 import * as PromClient from 'prom-client';
 import _ from 'underscore';
 import {parseAllDocuments} from 'yaml';
+
 import {splitArguments, unique} from '../shared/common-utils.js';
 import {OptRemark} from '../static/panes/opt-view.interfaces.js';
 import {PPOptions} from '../static/panes/pp-view.interfaces.js';
@@ -116,6 +117,7 @@ import {LlvmAstParser} from './llvm-ast.js';
 import {LlvmIrParser} from './llvm-ir.js';
 import {logger} from './logger.js';
 import {BaseObjdumper, getObjdumperTypeByKey} from './objdumper/index.js';
+import {LlvmObjdumper} from './objdumper/llvm.js';
 import {ClientOptionsType, OptionsHandlerLibrary, VersionInfo} from './options-handler.js';
 import {Packager} from './packager.js';
 import type {IAsmParser} from './parsers/asm-parser.interfaces.js';
@@ -189,7 +191,7 @@ export class BaseCompiler {
     protected env: CompilationEnvironment;
     protected compilerProps: PropertyGetter;
     protected alwaysResetLdPath: boolean;
-    protected delayCleanupTemp: any;
+    protected delayCleanupTemp: boolean;
     protected stubRe: RegExp;
     protected stubText: string;
     protected compilerWrapper: string | undefined;
@@ -197,7 +199,7 @@ export class BaseCompiler {
     protected llvmIr: LlvmIrParser;
     protected llvmPassDumpParser: LlvmPassDumpParser;
     protected llvmAst: LlvmAstParser;
-    protected toolchainPath: any;
+    protected toolchainPath: string | undefined;
     public possibleArguments: CompilerArguments;
     protected possibleTools: ITool[];
     protected demanglerClass: typeof BaseDemangler | null = null;
@@ -259,7 +261,7 @@ export class BaseCompiler {
         this.asm = new AsmParser(this.compilerProps);
         const irDemangler = new LLVMIRDemangler(this.compiler.demangler, this);
         this.llvmIr = new LlvmIrParser(this.compilerProps, irDemangler);
-        this.llvmPassDumpParser = new LlvmPassDumpParser(this.compilerProps);
+        this.llvmPassDumpParser = new LlvmPassDumpParser();
         this.llvmAst = new LlvmAstParser(this.compilerProps);
 
         this.toolchainPath = getToolchainPath(this.compiler.exe, this.compiler.options);
@@ -381,6 +383,8 @@ export class BaseCompiler {
             env.FC = this.compiler.exe;
         } else if (this.lang.id === 'cuda') {
             env.CUDACXX = this.compiler.exe;
+        } else if (this.lang.id === 'assembly') {
+            env.AS = this.compiler.exe;
         } else {
             env.CC = this.compiler.exe;
         }
@@ -635,6 +639,19 @@ export class BaseCompiler {
         return output;
     }
 
+    protected getObjdumperForResult(result: CompilationResult): {exe: string; cls: new () => BaseObjdumper} | null {
+        if (!this.compiler.objdumper || !this.objdumperClass) return null;
+
+        if (this.compiler.llvmObjdumper && result.instructionSet) {
+            const hostArchitectures = new Set(['amd64', 'x86']);
+            if (!hostArchitectures.has(result.instructionSet)) {
+                return {exe: this.compiler.llvmObjdumper, cls: LlvmObjdumper};
+            }
+        }
+
+        return {exe: this.compiler.objdumper, cls: this.objdumperClass};
+    }
+
     async objdump(
         outputFilename: string,
         result: any,
@@ -652,7 +669,13 @@ export class BaseCompiler {
             return result;
         }
 
-        const objdumper = new this.objdumperClass();
+        const objdumperInfo = this.getObjdumperForResult(result);
+        if (!objdumperInfo) {
+            result.asm = '<No objdumper configured>';
+            return result;
+        }
+
+        const objdumper = new objdumperInfo.cls();
         const args = objdumper.getArgs(
             objdumpInputFile,
             demangle,
@@ -678,7 +701,7 @@ export class BaseCompiler {
             };
 
             const objResult = await objdumper.executeObjdump(
-                this.compiler.objdumper,
+                objdumperInfo.exe,
                 args,
                 execOptions,
                 this.exec.bind(this),
@@ -688,7 +711,7 @@ export class BaseCompiler {
                 result.objdumpTime = objResult.objdumpTime;
                 result.asm = this.postProcessObjdumpOutput(objResult.asm ?? '');
             } else {
-                logger.error(`Error executing objdump ${this.compiler.objdumper}`, objResult);
+                logger.error(`Error executing objdump ${objdumperInfo.exe}`, objResult);
                 result.asm = `<No output: objdump returned ${objResult.code}>`;
             }
         }
@@ -1099,7 +1122,7 @@ export class BaseCompiler {
         );
     }
 
-    getDefaultOrOverridenToolchainPath(overrides: ConfiguredOverrides): string {
+    getDefaultOrOverridenToolchainPath(overrides: ConfiguredOverrides): string | undefined {
         for (const override of overrides) {
             if (override.name !== CompilerOverrideType.env && override.value) {
                 const possible = this.compiler.possibleOverrides?.find(ov => ov.name === override.name);
@@ -1112,7 +1135,7 @@ export class BaseCompiler {
         return this.toolchainPath;
     }
 
-    getOverridenToolchainPath(overrides: ConfiguredOverrides): string | false {
+    getOverridenToolchainPath(overrides: ConfiguredOverrides): string | undefined {
         for (const override of overrides) {
             if (override.name !== CompilerOverrideType.env && override.value) {
                 const possible = this.compiler.possibleOverrides?.find(ov => ov.name === override.name);
@@ -1122,13 +1145,16 @@ export class BaseCompiler {
             }
         }
 
-        return false;
+        return undefined;
     }
 
     changeOptionsBasedOnOverrides(options: string[], overrides: ConfiguredOverrides): string[] {
         const overriddenToolchainPath = this.getOverridenToolchainPath(overrides);
-        const sysrootPath: string | false =
-            overriddenToolchainPath ?? getSysrootByToolchainPath(overriddenToolchainPath);
+        const sysrootPath = overriddenToolchainPath
+            ? getSysrootByToolchainPath(overriddenToolchainPath)
+            : this.toolchainPath
+              ? getSysrootByToolchainPath(this.toolchainPath)
+              : undefined;
         const targetOverride = overrides.find(ov => ov.name === CompilerOverrideType.arch);
         const hasNeedForSysRoot =
             targetOverride && targetOverride.name !== CompilerOverrideType.env && !targetOverride.value.includes('x86');
@@ -1245,7 +1271,7 @@ export class BaseCompiler {
     protected getLibLinkInfo(
         filters: ParseFiltersAndOutputOptions,
         libraries: SelectedLibraryVersion[],
-        toolchainPath: string,
+        toolchainPath: string | undefined,
         dirPath: string,
     ) {
         let libLinks: string[] = [];
@@ -2684,7 +2710,7 @@ export class BaseCompiler {
         execParams: ExecutionOptionsWithEnv,
         dirPath: string,
         libsAndOptions: LibsAndOptions,
-        toolchainPath: string,
+        toolchainPath: string | undefined,
     ): ExecutionOptionsWithEnv {
         const cmakeExecParams = Object.assign({}, execParams);
 
@@ -2722,6 +2748,9 @@ export class BaseCompiler {
     }
 
     getExtraCMakeArgs(key: ParsedRequest): string[] {
+        if (this.lang.id === 'assembly' && this.compiler.exe) {
+            return [`-DCMAKE_ASM_COMPILER=${this.compiler.exe}`];
+        }
         return [];
     }
 
@@ -3857,6 +3886,7 @@ but nothing was dumped. Possible causes are:
         const targets = await this.getTargetsAsOverrideValues();
         if (targets.length > 0) {
             this.compiler.possibleOverrides?.push({
+                type: 'options',
                 name: CompilerOverrideType.arch,
                 display_title: 'Target architecture',
                 description: c_default_target_description,
@@ -3872,6 +3902,7 @@ but nothing was dumped. Possible causes are:
             if (possibleToolchains.length > 0) {
                 const flag = getToolchainFlagFromOptions(compilerOptions);
                 this.compiler.possibleOverrides?.push({
+                    type: 'options',
                     name: CompilerOverrideType.toolchain,
                     display_title: 'Toolchain',
                     description: c_default_toolchain_description,
@@ -3884,6 +3915,7 @@ but nothing was dumped. Possible causes are:
         const stdVersions = await this.getPossibleStdversAsOverrideValues();
         if (stdVersions.length > 0) {
             this.compiler.possibleOverrides?.push({
+                type: 'options',
                 name: CompilerOverrideType.stdver,
                 display_title: 'Std version',
                 description: this.getStdVerOverrideDescription(),

@@ -8,7 +8,6 @@ import type {ParseFiltersAndOutputOptions} from '../../types/features/filters.in
 import {CompilationEnvironment} from '../compilation-env.js';
 import {logger} from '../logger.js';
 import {maskRootdir} from '../utils.js';
-
 import {IExternalParser} from './external-parser.interface.js';
 
 const starterScriptName = 'dump-and-parse.sh';

@@ -24,6 +24,7 @@
 
 import IntervalTree from '@flatten-js/interval-tree';
 import cloneDeep from 'lodash.clonedeep';
+
 import {AnnotatedCfgDescriptor, AnnotatedNodeDescriptor, EdgeColor} from '../types/compilation/cfg.interfaces.js';
 import {zip} from './utils.js';
 

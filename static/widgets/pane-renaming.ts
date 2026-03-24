@@ -24,6 +24,7 @@
 
 import {Tab} from 'golden-layout';
 import $ from 'jquery';
+
 import {Hub} from '../hub.js';
 import {Alert} from './alert.js';
 

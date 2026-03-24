@@ -161,7 +161,7 @@ function buildKnownGoodState() {
 
     // Chunk panes into rows of 8 for a more reasonable layout
     const panesPerRow = 8;
-    const rows = [];
+    const rows: {type: string; content: ReturnType<typeof stack>[]}[] = [];
     for (let i = 0; i < allPanes.length; i += panesPerRow) {
         rows.push({
             type: 'row',
@@ -179,7 +179,7 @@ describe('Known good state test', () => {
     beforeEach(() => {
         const state = buildKnownGoodState();
         const hash = serialiseState(state);
-        cy.visit(`http://localhost:10240/#${hash}`, {
+        cy.visit(`/#${hash}`, {
             onBeforeLoad: win => {
                 stubConsoleOutput(win);
             },

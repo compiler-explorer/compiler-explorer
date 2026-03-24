@@ -40,7 +40,7 @@ Since then, it has become a public website serving over
 [3,000,000 compilations per week](https://stats.compiler-explorer.com).
 
 You can financially support [this project on Patreon](https://patreon.com/mattgodbolt),
-[GitHub](https://github.com/sponsors/mattgodbolt/),
+[GitHub](https://github.com/sponsors/compiler-explorer/),
 [Paypal](https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=KQWQZ7GPY2GZ6&item_name=Compiler+Explorer+development&currency_code=USD&source=url),
 or by buying cool gear on the [Compiler Explorer store](https://shop.compiler-explorer.com).
 

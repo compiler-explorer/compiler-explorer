@@ -29,7 +29,6 @@ import {CompilationInfo} from '../../types/compilation/compilation.interfaces.js
 import {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces.js';
 import {IAsmParser} from '../parsers/asm-parser.interfaces.js';
 import * as utils from '../utils.js';
-
 import {BaseTool} from './base-tool.js';
 
 export class OSACATool extends BaseTool {

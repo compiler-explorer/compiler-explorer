@@ -66,7 +66,11 @@ in JSON.
 
 ### `POST /api/compiler/<compiler-id>/compile` - perform a compilation
 
-To specify a compilation request as a JSON document, post it as the appropriate type and send an object of the form:
+To specify a compilation request as a JSON document, post it as the appropriate type.  Using the networking tab from your
+browser is a good way to see specific details like how to get AST or LLVM ir.   Configure your page to have all the
+information you want, open the network tab, hit the recompile button, and look at the captured `compile` target.
+
+A simple example:
 
 ```JSON
 {

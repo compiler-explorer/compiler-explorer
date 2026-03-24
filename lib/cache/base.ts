@@ -29,7 +29,6 @@ import {Counter} from 'prom-client';
 import type {CacheableValue, GetResult} from '../../types/cache.interfaces.js';
 import {logger} from '../logger.js';
 import {getHash} from '../utils.js';
-
 import {Cache, CacheStats} from './base.interfaces.js';
 
 const HashVersion = 'Compiler Explorer Cache Version 1';

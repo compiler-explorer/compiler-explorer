@@ -28,7 +28,6 @@ import fs from 'node:fs/promises';
 import {CompilationInfo} from '../../types/compilation/compilation.interfaces.js';
 import {InstructionSets} from '../instructionsets.js';
 import * as utils from '../utils.js';
-
 import {BaseTool} from './base-tool.js';
 
 export class LLVMMcaTool extends BaseTool {

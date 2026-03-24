@@ -1,0 +1,145 @@
+{
+  "asm": [
+    {
+      "labels": [],
+      "source": null,
+      "text": "ca65 V2.19 - Git f166ca8"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "Main file   : /tmp/ca65-test.s"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "Current file: /tmp/ca65-test.s"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ""
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "000000r 1               .segment \"CODE\""
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "000000r 1               "
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "000000r 1               ; Simple 6502 test with macros"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "000000r 1               .macro inc16 addr"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "000000r 1                   inc addr"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "000000r 1                   bne :+"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "000000r 1                   inc addr+1"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "000000r 1               :"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "000000r 1               .endmacro"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "000000r 1               "
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "000000r 1               .proc main"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "000000r 1  A9 00            lda #$00"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "000002r 1  8D 00 D0         sta $D000"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "000005r 1                   inc16 counter"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "000005r 0  EE rr rr     >  inc addr"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "000008r 0  D0 03        >  bne :++"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "00000Ar 0  EE rr rr     >  inc addr+1"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "00000Dr 0               > :"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "00000Dr 1  60               rts"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "00000Er 1               .endproc"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "00000Er 1               "
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "00000Er 1               .segment \"BSS\""
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "000000r 1  xx xx        counter: .res 2"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "000000r 1               "
+    }
+  ],
+  "labelDefinitions": {}
+}

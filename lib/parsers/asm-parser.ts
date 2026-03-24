@@ -33,7 +33,6 @@ import {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfa
 import {assert} from '../assert.js';
 import {PropertyGetter} from '../properties.interfaces.js';
 import * as utils from '../utils.js';
-
 import {IAsmParser} from './asm-parser.interfaces.js';
 import {AsmRegex} from './asmregex.js';
 import {LabelContext, LabelProcessor} from './label-processor.js';
@@ -101,6 +100,7 @@ export class AsmParser extends AsmRegex implements IAsmParser {
     protected source6502DbgEnd: RegExp;
     protected sourceStab: RegExp;
     protected stdInLooking: RegExp;
+    protected startBlock: RegExp;
     protected endBlock: RegExp;
     protected blockComments: RegExp;
 
@@ -410,7 +410,8 @@ export class AsmParser extends AsmRegex implements IAsmParser {
         this.source6502DbgEnd = /^\s*\.dbg\s+line[^,]/;
         this.sourceStab = /^\s*\.stabn\s+(\d+),0,(\d+),.*/;
         this.stdInLooking = /<stdin>|^-$|example\.[^/]+$|<source>/;
-        this.endBlock = /\.(cfi_endproc|data|text|section)/;
+        this.startBlock = /\.cfi_startproc\b/;
+        this.endBlock = /\.(cfi_endproc|data|text|section)\b/;
         this.blockComments = /^[\t ]*\/\*(\*(?!\/)|[^*])*\*\/\s*/gm;
     }
 
@@ -458,6 +459,8 @@ export class AsmParser extends AsmRegex implements IAsmParser {
             mipsLabelDefinition: this.mipsLabelDefinition,
             labelFindNonMips: this.labelFindNonMips,
             labelFindMips: this.labelFindMips,
+            startBlock: this.startBlock,
+            endBlock: this.endBlock,
             fixLabelIndentation: this.fixLabelIndentation.bind(this),
         };
     }

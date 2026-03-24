@@ -23,7 +23,6 @@
 // POSSIBILITY OF SUCH DAMAGE.
 
 import {PropertyGetter} from '../properties.interfaces.js';
-
 import {VcAsmParser} from './asm-parser-vc.js';
 
 export class Vc6AsmParser extends VcAsmParser {

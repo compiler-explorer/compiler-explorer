@@ -42,7 +42,7 @@ The wizard will:
 - Generate appropriate compiler IDs and display names
 - Add the compiler to the correct properties file
 - Suggest appropriate groups for organization
-- Validate the configuration with `propscheck.py`
+- Validate the configuration
 
 For more options and examples, see the [ce-properties-wizard README](../etc/scripts/ce-properties-wizard/README.md).
 
@@ -83,6 +83,32 @@ compiler.gcc720.name=GCC 7.2.0
 compiler.gcc720.exe=/usr/bin/gcc-7.2.0
 ```
 
+### Don't remove or rename compilers on the public site
+
+This applies to the public [godbolt.org](https://godbolt.org) configuration (the `*.amazon.properties` files and the
+[infra](https://github.com/compiler-explorer/infra) install targets).
+
+Shortlinks, saved sessions, and embedded widgets all refer to compilers by ID. If you remove an ID or point it at a
+different version, those links break, or worse, silently show different output. So: when adding a newer patch release,
+add it next to the existing one. For example, if Go 1.24.2 is `gl1242` and 1.24.13 comes out, add `gl12413` as a new
+entry. Don't change what `gl1242` points to.
+
+If a compiler really can't be kept around (say the upstream binary no longer works), use `alias` on a suitable
+replacement so the old ID still resolves to something reasonable.
+
+The same goes for the infra repo: don't remove entries from the `targets` lists in the YAML files.
+
+Some languages use a convention where cross-architecture IDs represent the latest patch of a given major.minor series
+rather than a specific patch version. For example, Go's cross-architecture entries (e.g. `386_gl124`, `arm_gl124`) are
+updated in-place when a new patch release comes out (1.24.2 → 1.24.13). For the primary (amd64) entries, Go uses IDs
+that include the full patch version (e.g. `gl1242`), and when a new patch comes out, the old ID is replaced with a new
+one (e.g. `gl12413`). When doing this, add an `alias` on the new compiler pointing to the old ID so that existing
+shared links still resolve. If you're updating a language that already follows this pattern, it's fine to continue
+doing so.
+
+In rare cases, language maintainers who are actively involved with CE have chosen to accept the breakage for
+lesser-used languages. This is the exception; when in doubt, keep the old entry.
+
 In addition to the `name` and `exe` per-compiler configuration keys, there are also some other options. Most of them
 default to sensible values for GCC-like compilers.
 
@@ -101,6 +127,8 @@ compiler.clang5.exe=/usr/bin/clang5
 
 Note about group properties: Properties defined for a group in one configuration file (e.g., `defaults`) will not be carried 
 forward if that group is redefined in a higher-priority configuration file (e.g., `amazon`) without that property.
+
+You can also use the `+=` operator to append to existing string properties. See [Configuration.md](Configuration.md#property-append-syntax) for details.
 
 ### Configuration keys
 
@@ -148,6 +176,12 @@ Test locally, and for many compilers that's probably all you need to do. Some co
 (like the intel asm setting, or the version flag). For a completely new compiler, you might need to define a whole new
 `compilerType`. Doing so is beyond this document's scope at present, but take a look inside `lib/compilers/` to get some
 idea what might need to be done.
+
+### Generating configuration from compile_commands.json
+
+If your project uses CMake or another build system that generates a `compile_commands.json` file, you can use the
+community-maintained [compilecommands_to_compilerexplorer](https://github.com/pseyfert/compilecommands_to_compilerexplorer)
+tool to automatically extract compiler paths and include directories into a `.local.properties` file.
 
 ## Adding a new compiler running remotely to your locally built compiler explorer
 

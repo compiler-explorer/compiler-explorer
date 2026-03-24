@@ -38,7 +38,6 @@ import {MultiCache} from '../lib/cache/multi.js';
 import {NullCache} from '../lib/cache/null.js';
 import {OnDiskCache} from '../lib/cache/on-disk.js';
 import {S3Cache} from '../lib/cache/s3.js';
-
 import {newTempDir} from './utils.js';
 
 function basicTests(factory: () => BaseCache) {

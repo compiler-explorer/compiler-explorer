@@ -28,7 +28,6 @@ import {describe, expect, it} from 'vitest';
 
 import {Sponsor} from '../lib/sponsors.interfaces.js';
 import {loadSponsorsFromString, makeIconSets, parse} from '../lib/sponsors.js';
-
 import {resolvePathFromTestRoot} from './utils.js';
 
 describe('Sponsors', () => {

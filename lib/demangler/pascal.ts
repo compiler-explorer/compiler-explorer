@@ -26,7 +26,6 @@ import type {ParsedAsmResult} from '../../types/asmresult/asmresult.interfaces.j
 import type {ExecutionOptions} from '../../types/compilation/compilation.interfaces.js';
 import {BaseCompiler} from '../base-compiler.js';
 import {SymbolStore} from '../symbol-store.js';
-
 import {BaseDemangler} from './base.js';
 
 export class PascalDemangler extends BaseDemangler {

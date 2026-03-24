@@ -24,6 +24,7 @@
 
 import fs from 'node:fs/promises';
 import path from 'node:path';
+
 import semverParser from 'semver';
 
 import type {CompilationResult} from '../../types/compilation/compilation.interfaces.js';
@@ -35,7 +36,6 @@ import {BaseCompiler} from '../base-compiler.js';
 import {CompilationEnvironment} from '../compilation-env.js';
 import {logger} from '../logger.js';
 import * as utils from '../utils.js';
-
 import {LDCParser} from './argument-parsers.js';
 
 export class LDCCompiler extends BaseCompiler {

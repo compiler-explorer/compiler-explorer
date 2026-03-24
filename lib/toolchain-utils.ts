@@ -33,7 +33,7 @@ export const clang_style_toolchain_flag = '--gcc-toolchain=';
 export const icc_style_toolchain_flag = '--gxx-name=';
 export const clang_style_sysroot_flag = '--sysroot=';
 
-export function getToolchainPathWithOptionsArr(compilerExe: string | null, options: string[]): string | false {
+export function getToolchainPathWithOptionsArr(compilerExe: string | null, options: string[]): string | undefined {
     const existingChain = options.find(elem => elem.includes(clang_style_toolchain_flag));
     if (existingChain) return existingChain.substring(16);
 
@@ -44,10 +44,10 @@ export function getToolchainPathWithOptionsArr(compilerExe: string | null, optio
     if (typeof compilerExe === 'string' && (compilerExe.includes('/g++') || compilerExe.endsWith('-g++'))) {
         return path.resolve(path.dirname(compilerExe), '..');
     }
-    return false;
+    return undefined;
 }
 
-export function getToolchainPath(compilerExe: string | null, compilerOptions?: string): string | false {
+export function getToolchainPath(compilerExe: string | null, compilerOptions?: string): string | undefined {
     const options = compilerOptions ? splitArguments(compilerOptions) : [];
     return getToolchainPathWithOptionsArr(compilerExe, options);
 }

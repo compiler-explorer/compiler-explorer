@@ -25,6 +25,7 @@
 import GoldenLayout from 'golden-layout';
 import $ from 'jquery';
 import {editor} from 'monaco-editor';
+
 import {isString} from '../shared/common-utils.js';
 import {options} from './options.js';
 import {SiteSettings} from './settings.js';

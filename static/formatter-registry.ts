@@ -23,6 +23,7 @@
 // POSSIBILITY OF SUCH DAMAGE.
 
 import * as monaco from 'monaco-editor';
+
 import {unwrap} from '../shared/assert.js';
 import {getFormattedCode} from './api/api.js';
 import {FormattingRequest} from './api/formatting.interfaces.js';

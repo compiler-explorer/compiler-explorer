@@ -12,12 +12,29 @@ files follow a simple key-value format:
 key=value
 ```
 
+Leading and trailing whitespace around the value is trimmed.
+
 Comments are lines that start with a hash character, and are not processed:
 
 ```
 # This is a comment
 key=value # This is also a comment
 ```
+
+### Property Append Syntax
+
+You can append to an existing string property using the `+=` operator.
+Leading whitespace in the appended value is preserved, while trailing whitespace is trimmed.
+
+```
+base.options=-Wall
+base.options+= -Wextra
+```
+
+This results in `base.options` having the value `-Wall -Wextra`.
+
+> [!NOTE]
+> The `+=` operator only works for string properties that have already been defined.
 
 ### File Naming Convention
 

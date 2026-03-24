@@ -23,9 +23,7 @@
 // POSSIBILITY OF SUCH DAMAGE.
 
 import $ from 'jquery';
-
 import * as monaco from 'monaco-editor';
-
 import * as cpp from 'monaco-editor/esm/vs/basic-languages/cpp/cpp';
 
 // We need to ensure we use proper keywords for the Monaco Editor matcher. Note how

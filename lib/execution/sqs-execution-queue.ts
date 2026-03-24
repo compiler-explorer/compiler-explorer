@@ -30,7 +30,6 @@ import {CompilationEnvironment} from '../compilation-env.js';
 import {logger} from '../logger.js';
 import {PropertyGetter} from '../properties.interfaces.js';
 import {getHash} from '../utils.js';
-
 import {LocalExecutionEnvironment} from './_all.js';
 import {BaseExecutionTriple} from './base-execution-triple.js';
 import {PersistentEventsSender} from './events-websocket.js';

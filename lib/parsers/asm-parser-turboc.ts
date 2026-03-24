@@ -26,7 +26,6 @@ import {AsmResultSource, ParsedAsmResult, ParsedAsmResultLine} from '../../types
 import {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces.js';
 import {PropertyGetter} from '../properties.interfaces.js';
 import * as utils from '../utils.js';
-
 import {AsmParser} from './asm-parser.js';
 
 export class TurboCAsmParser extends AsmParser {

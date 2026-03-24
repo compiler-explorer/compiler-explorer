@@ -23,10 +23,9 @@
 // POSSIBILITY OF SUCH DAMAGE.
 
 import $ from 'jquery';
-
 import * as monaco from 'monaco-editor';
-
 import * as cpp from 'monaco-editor/esm/vs/basic-languages/cpp/cpp';
+
 import cppp from './cppp-mode.js';
 
 // circle is c++ with a few extra '@'-prefixed keywords.

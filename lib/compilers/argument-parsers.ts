@@ -24,6 +24,7 @@
 
 import fs from 'node:fs/promises';
 import path from 'node:path';
+
 import * as Sentry from '@sentry/node';
 import _ from 'underscore';
 
@@ -34,7 +35,6 @@ import {BaseCompiler} from '../base-compiler.js';
 import {logger} from '../logger.js';
 import * as props from '../properties.js';
 import * as utils from '../utils.js';
-
 import {JuliaCompiler} from './julia.js';
 
 export class BaseParser {

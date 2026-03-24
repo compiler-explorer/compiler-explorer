@@ -25,7 +25,6 @@
 import {ParsedAsmResult} from '../../types/asmresult/asmresult.interfaces.js';
 import {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces.js';
 import * as utils from '../utils.js';
-
 import {IAsmParser} from './asm-parser.interfaces.js';
 
 type InlineLabel = {name: string; range: {startCol: number; endCol: number}};

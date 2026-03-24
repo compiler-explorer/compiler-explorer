@@ -56,8 +56,6 @@ export class CompilerShared implements ICompilerShared {
 
         if (state.overrides) {
             this.overridesWidget.set(state.overrides);
-        } else {
-            this.overridesWidget.setDefaults();
         }
 
         if (this.runtimeToolsWidget) {

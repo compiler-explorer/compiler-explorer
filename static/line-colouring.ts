@@ -23,6 +23,7 @@
 // POSSIBILITY OF SUCH DAMAGE.
 
 import _ from 'underscore';
+
 import {ResultLine} from '../types/resultline/resultline.interfaces.js';
 import {MultifileService} from './multifile-service.js';
 

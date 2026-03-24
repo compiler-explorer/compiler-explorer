@@ -32,7 +32,6 @@ import {addArtifactToResult} from '../artifact-utils.js';
 import {CompilationEnvironment} from '../compilation-env.js';
 import {ParsedRequest} from '../handlers/compile.js';
 import * as utils from '../utils.js';
-
 import {ClangCompiler} from './clang.js';
 
 export class LLVMMOSCompiler extends ClangCompiler {

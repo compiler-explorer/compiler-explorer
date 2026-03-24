@@ -25,7 +25,6 @@
 import {AsmResultLabel, ParsedAsmResult, ParsedAsmResultLine} from '../../types/asmresult/asmresult.interfaces.js';
 import {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces.js';
 import {PropertyGetter} from '../properties.interfaces.js';
-
 import {AsmParser} from './asm-parser.js';
 
 export class CC65AsmParser extends AsmParser {

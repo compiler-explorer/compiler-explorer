@@ -26,11 +26,11 @@ import crypto from 'node:crypto';
 import fs from 'node:fs';
 import path from 'node:path';
 import {Buffer} from 'buffer';
+
 import {LRUCache} from 'lru-cache';
 
 import type {GetResult} from '../../types/cache.interfaces.js';
 import {logger} from '../logger.js';
-
 import {BaseCache} from './base.js';
 
 // With thanks to https://gist.github.com/kethinov/6658166

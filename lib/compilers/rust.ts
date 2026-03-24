@@ -24,6 +24,7 @@
 
 import {readdirSync} from 'node:fs';
 import path from 'node:path';
+
 import {SemVer} from 'semver';
 import _ from 'underscore';
 
@@ -132,6 +133,7 @@ export class RustCompiler extends BaseCompiler {
             }
 
             this.compiler.possibleOverrides?.push({
+                type: 'options',
                 name: CompilerOverrideType.edition,
                 display_title: 'Edition',
                 description:

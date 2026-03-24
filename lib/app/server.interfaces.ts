@@ -23,6 +23,7 @@
 // POSSIBILITY OF SUCH DAMAGE.
 
 import type {Express, Request, Response, Router} from 'express';
+
 import type {GoldenLayoutRootStruct} from '../clientstate-normalizer.js';
 import type {HttpController} from '../handlers/api/controller.interfaces.js';
 import type {ShortLinkMetaData} from '../handlers/handler.interfaces.js';

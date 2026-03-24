@@ -26,6 +26,7 @@ import {EventEmitter} from 'golden-layout';
 import $ from 'jquery';
 import {LRUCache} from 'lru-cache';
 import _ from 'underscore';
+
 import {ResultLine} from '../types/resultline/resultline.interfaces.js';
 import {options} from './options.js';
 

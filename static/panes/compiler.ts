@@ -28,6 +28,7 @@ import {LRUCache} from 'lru-cache';
 import * as monaco from 'monaco-editor';
 import {editor} from 'monaco-editor';
 import _ from 'underscore';
+
 import {AssemblyInstructionInfo} from '../../types/assembly-docs.interfaces.js';
 import {
     ActiveTool,
@@ -72,6 +73,7 @@ import {PPOptions} from './pp-view.interfaces.js';
 import IEditorMouseEvent = editor.IEditorMouseEvent;
 
 import fileSaver from 'file-saver';
+
 import {unwrap, unwrapString} from '../../shared/assert.js';
 import {escapeHTML, splitArguments} from '../../shared/common-utils.js';
 import {ClangirBackendOptions} from '../../types/compilation/clangir.interfaces.js';
@@ -82,7 +84,7 @@ import {InstructionSet} from '../../types/instructionsets.js';
 import {LanguageKey} from '../../types/languages.interfaces.js';
 import {Tool} from '../../types/tool.interfaces.js';
 import {ArtifactHandler} from '../artifact-handler.js';
-import {AssemblySyntax} from '../assembly-syntax.js';
+import {type AssemblySyntax, addAttSyntaxWarningIfNeeded} from '../assembly-syntax.js';
 import {ICompilerShared} from '../compiler-shared.interfaces.js';
 import {CompilerShared} from '../compiler-shared.js';
 import {SourceAndFiles} from '../download-service.js';
@@ -145,8 +147,6 @@ type Assembly = {
 const COMPILING_PLACEHOLDER = '<Compiling...>';
 
 // Disable max line count only for the constructor. Turns out, it needs to do quite a lot of things
-
-const attSyntaxWarning = '***WARNING: The information shown pertains to Intel syntax.***';
 
 export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, CompilerState> {
     private compilerService: CompilerService;
@@ -2830,10 +2830,12 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
         );
     }
 
+    // Only x86/x64 compilers (supportsIntel) can emit AT&T syntax.
+    // Non-x86 architectures default to 'intel' so they never trigger the AT&T warning.
     asmSyntax(): AssemblySyntax {
-        return this.compiler?.supportsIntel && this.filters.isSet('intel') && this.compiler.intelAsm.includes('intel')
-            ? 'intel'
-            : 'att';
+        const isAtt =
+            this.compiler?.supportsIntel && !(this.filters.isSet('intel') && this.compiler.intelAsm.includes('intel'));
+        return isAtt ? 'att' : 'intel';
     }
 
     handlePopularArgumentsResult(result: Record<string, {description: string}> | null): void {
@@ -3496,22 +3498,9 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
         const cacheName = `asm/${instructionSet}/${opcode}`;
         const cached = OpcodeCache.get(cacheName);
 
-        // Helper to add AT&T syntax warning to opcode data without mutating cache
-        const addAttWarningIfNeeded = (data: AssemblyInstructionInfo): AssemblyInstructionInfo => {
-            if (syntax === 'att') {
-                return {
-                    ...data,
-                    tooltip: attSyntaxWarning + '\n\n' + data.tooltip,
-                    html: attSyntaxWarning + '<br><br>' + data.html,
-                };
-            }
-            return data;
-        };
-
         if (cached) {
             if (cached.found) {
-                const cachedData = cached.data as AssemblyInstructionInfo;
-                return addAttWarningIfNeeded(cachedData);
+                return addAttSyntaxWarningIfNeeded(cached.data as AssemblyInstructionInfo, syntax);
             }
             throw new Error(cached.data as string);
         }
@@ -3520,7 +3509,7 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
         const body = await response.json();
         if (response.status === 200) {
             OpcodeCache.set(cacheName, {found: true, data: body});
-            return addAttWarningIfNeeded(body);
+            return addAttSyntaxWarningIfNeeded(body, syntax);
         }
         const error = (body as any).error;
         OpcodeCache.set(cacheName, {found: false, data: error});
@@ -3682,13 +3671,12 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
             );
         }
 
-        function appendInfo(url: string, syntax: AssemblySyntax): string {
+        function appendInfo(url: string): string {
             return (
                 '<br><br>For more information, visit <a href="' +
                 url +
                 '" target="_blank" rel="noopener noreferrer">the ' +
                 opcode +
-                (syntax === 'att' ? syntaxWarning() : '') +
                 ' documentation <sup><small class="fas fa-external-link-alt opens-new-window"' +
                 ' title="Opens in a new window"></small></sup></a>.' +
                 '<br>If the documentation for this opcode is wrong or broken in some way, ' +
@@ -3700,10 +3688,6 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
             );
         }
 
-        function syntaxWarning(): string {
-            return `<br><br><b>${attSyntaxWarning}</b>`;
-        }
-
         try {
             if (this.compiler?.supportsAsmDocs) {
                 const asmSyntax = this.asmSyntax();
@@ -3713,7 +3697,7 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
                     asmSyntax,
                 );
                 if (asmHelp) {
-                    this.alertSystem.alert(opcode + ' help', asmHelp.html + appendInfo(asmHelp.url, asmSyntax), {
+                    this.alertSystem.alert(opcode + ' help', asmHelp.html + appendInfo(asmHelp.url), {
                         onClose: () => {
                             ed.focus();
                             ed.setPosition(pos);

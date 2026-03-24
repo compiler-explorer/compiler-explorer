@@ -27,7 +27,6 @@ import {beforeAll, describe, expect, it} from 'vitest';
 import {CompilationEnvironment} from '../lib/compilation-env.js';
 import {ClojureCompiler} from '../lib/compilers/index.js';
 import {CompilerInfo} from '../types/compiler.interfaces.js';
-
 import {makeCompilationEnvironment} from './utils.js';
 
 const languages = {

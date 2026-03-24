@@ -25,7 +25,6 @@
 import {assert, unwrap} from '../../assert.js';
 import {SentryCapture} from '../../sentry.js';
 import {BaseInstructionSetInfo} from '../instruction-sets/base.js';
-
 import {AssemblyLine, BaseCFGParser, Edge, Node, Range} from './base.js';
 
 export type BBRange = {
@@ -48,7 +47,7 @@ export class LlvmIrCfgParser extends BaseCFGParser {
         super(instructionSetInfo);
         this.functionDefinition = /^define .+ @("?[^"]+"?)\(/;
         this.labelRe = /^("?[\w$.-]+"?):\s*(;.*)?$/;
-        this.labelReference = /%"?([^, ]+)"?/g;
+        this.labelReference = /%([-a-zA-Z$._0-9]+|"[^"]*")/g;
     }
 
     override filterData(asmArr: AssemblyLine[]) {

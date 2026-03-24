@@ -23,6 +23,7 @@
 // POSSIBILITY OF SUCH DAMAGE.
 
 import $ from 'jquery';
+
 import {assert, unwrapString} from '../shared/assert.js';
 import {isString, keys} from '../shared/common-utils.js';
 import {LanguageKey} from '../types/languages.interfaces.js';
@@ -393,6 +394,7 @@ export class Settings {
             {label: 'false', desc: 'Create Short Link'},
             {label: '2', desc: 'Reformat code'},
             {label: '3', desc: 'Do nothing'},
+            {label: '4', desc: 'Compile'},
         ];
         addSelector('.enableCtrlS', 'enableCtrlS', enableCtrlSData, 'true');
     }

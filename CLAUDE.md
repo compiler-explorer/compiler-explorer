@@ -15,6 +15,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Important Workflow Requirements
 - ⚠️ NEVER BYPASS PRE-COMMIT HOOKS! NEVER use `git commit -n` or `--no-verify` ⚠️
+- ⚠️ NEVER amend commits (`git commit --amend`) or force push (`git push --force` / `--force-with-lease`) ⚠️
 - ALWAYS run `make pre-commit` or at minimum `npm run ts-check` and `npm run lint` before committing
 - The full process must always be:
   1. Make changes
@@ -93,12 +94,13 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
   - **SDK Integration**: Supports Windows SDK path specification via `--sdk-path` for non-interactive use
   - **Architecture Matching**: Correctly maps compiler architecture (x64, x86, arm64) to tool paths
 - **Group Management**: Automatically creates and manages compiler groups with appropriate properties
-- **Validation**: Integrates with `propscheck.py` and discovery validation to ensure configurations work
+- **Validation**: Integrates with properties validation tests and discovery validation to ensure configurations work
 - **Safe Operations**: Creates backups and preserves existing configurations, only adding new content
 
 ### Properties Validation
-- **Propscheck Script**: Use `python3 etc/scripts/util/propscheck.py --config-dir etc/config --check-local` to validate all property files
+- **Validation Tests**: Use `npm run test:props` to validate all property files
 - Run after modifying any `.properties` files to check for duplicates, misconfigurations, and other issues
+- Validation logic is in `lib/properties-validator.ts` with tests in `test/properties-validation-tests.ts`
 
 ## Testing Guidelines
 - Use Vitest for unit tests (compatible with Jest syntax)

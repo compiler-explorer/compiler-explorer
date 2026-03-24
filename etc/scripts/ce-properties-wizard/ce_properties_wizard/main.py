@@ -163,9 +163,9 @@ def cli(
             config_mgr.reorganize_existing_file(reorganize)
             print_success(f"Reorganized {file_path}")
 
-            # Validate with propscheck
-            print_info("Validating with propscheck.py...")
-            valid, message = config_mgr.validate_with_propscheck(reorganize)
+            # Validate properties
+            print_info("Validating properties...")
+            valid, message = config_mgr.validate_properties(reorganize)
             if valid:
                 print_success(message)
             else:
@@ -332,12 +332,14 @@ def cli(
                     "windows_sdk_path",
                     message="Windows SDK base path (optional)",
                     default="",
-                    validate=lambda _, x: x == "" or os.path.isdir(x.replace("\\", "/"))
+                    validate=lambda _, x: x == "" or os.path.isdir(x.replace("\\", "/")),
                 )
                 sdk_answers = inquirer.prompt([sdk_question])
                 if sdk_answers and sdk_answers["windows_sdk_path"].strip():
                     # Apply the user-provided SDK path
-                    detected_info = detector.set_windows_sdk_path(detected_info, sdk_answers["windows_sdk_path"].strip())
+                    detected_info = detector.set_windows_sdk_path(
+                        detected_info, sdk_answers["windows_sdk_path"].strip()
+                    )
                     print_success(f"Windows SDK paths added from: {sdk_answers['windows_sdk_path']}")
 
         # Interactive prompts for missing information
@@ -516,9 +518,9 @@ def cli(
         config_mgr.add_compiler(detected_info)
         print_success("Configuration updated successfully!")
 
-        # Validate with propscheck
-        print_info("Validating with propscheck.py...")
-        valid, message = config_mgr.validate_with_propscheck(detected_info.language)
+        # Validate properties
+        print_info("Validating properties...")
+        valid, message = config_mgr.validate_properties(detected_info.language)
         if valid:
             print_success(message)
         else:

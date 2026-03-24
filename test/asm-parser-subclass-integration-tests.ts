@@ -23,6 +23,7 @@
 // POSSIBILITY OF SUCH DAMAGE.
 
 import {describe, expect, it} from 'vitest';
+
 import {AsmParser} from '../lib/parsers/asm-parser.js';
 import {AsmEWAVRParser} from '../lib/parsers/asm-parser-ewavr.js';
 import {SPIRVAsmParser} from '../lib/parsers/asm-parser-spirv.js';

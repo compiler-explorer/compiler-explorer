@@ -9,12 +9,12 @@ An interactive command-line tool for adding custom compilers to your local Compi
 - **Interactive Mode**: Guided prompts for configuration
 - **Automation Support**: Command-line flags for scripting
 - **Group Management**: Automatically adds compilers to appropriate groups
-- **Validation**: Validates generated properties with `propscheck.py`
+- **Validation**: Validates generated properties
 - **Safe Updates**: Only adds/updates, never removes existing configurations
 
 ## Requirements
 
-The wizard requires Python 3.10+ and Poetry. The run scripts handle all setup automatically.
+The wizard requires Python 3.10+ and [uv](https://docs.astral.sh/uv/). The run scripts handle all setup automatically.
 
 ## Usage
 
@@ -309,7 +309,7 @@ If the wizard can't detect your compiler type, it will prompt you to select one 
 Ensure you have write permissions to the `etc/config` directory.
 
 ### Validation failures
-If `propscheck.py` reports errors, check the generated properties file for syntax issues.
+If validation reports errors, check the generated properties file for syntax issues. You can run `npm run test:props` to validate all property files.
 
 ## Development
 
@@ -317,6 +317,6 @@ To contribute to the wizard:
 
 1. Format code: `./run.sh --format`
 2. Check formatting: `./run.sh --format --check`
-3. Run tests: `poetry run pytest` (after `poetry install`)
+3. Run tests: `uv run pytest` (after `uv sync --all-extras`)
 
 The `--format` flag runs black, ruff, and pytype formatters on the codebase.

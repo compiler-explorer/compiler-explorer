@@ -26,7 +26,6 @@ import path from 'node:path';
 
 import {BasicExecutionResult, ExecutableExecutionOptions} from '../../types/execution/execution.interfaces.js';
 import * as utils from '../utils.js';
-
 import {LocalExecutionEnvironment} from './base-execution-env.js';
 
 export const AssemblyName = 'CompilerExplorer';

@@ -28,7 +28,6 @@ import {ResultLine} from '../../types/resultline/resultline.interfaces.js';
 import {logger} from '../logger.js';
 import {SymbolStore} from '../symbol-store.js';
 import * as utils from '../utils.js';
-
 import {BaseDemangler} from './base.js';
 import {PrefixTree} from './prefix-tree.js';
 

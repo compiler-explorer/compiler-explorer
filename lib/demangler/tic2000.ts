@@ -23,7 +23,6 @@
 // POSSIBILITY OF SUCH DAMAGE.
 
 import {BaseCompiler} from '../base-compiler.js';
-
 import {CppDemangler} from './cpp.js';
 
 export class TiC2000Demangler extends CppDemangler {

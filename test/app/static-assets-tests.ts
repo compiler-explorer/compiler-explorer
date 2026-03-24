@@ -23,6 +23,7 @@
 // POSSIBILITY OF SUCH DAMAGE.
 
 import {describe, expect, it, vi} from 'vitest';
+
 import {createDefaultPugRequireHandler, getFaviconFilename} from '../../lib/app/static-assets.js';
 
 // Mock the logger

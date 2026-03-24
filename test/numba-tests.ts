@@ -29,7 +29,6 @@ import {BaseParser} from '../lib/compilers/argument-parsers.js';
 import {decode_symbols, NumbaCompiler} from '../lib/compilers/numba.js';
 import type {AsmResultSource} from '../types/asmresult/asmresult.interfaces.js';
 import type {LanguageKey} from '../types/languages.interfaces.js';
-
 import {makeCompilationEnvironment, makeFakeCompilerInfo} from './utils.js';
 
 describe('Numba', () => {

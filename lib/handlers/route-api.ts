@@ -35,7 +35,6 @@ import {SentryCapture} from '../sentry.js';
 import {ExpandedShortLink} from '../storage/base.js';
 import {StorageBase} from '../storage/index.js';
 import * as utils from '../utils.js';
-
 import {ApiHandler} from './api.js';
 import {HandlerConfig, ShortLinkMetaData} from './handler.interfaces.js';
 import {cached, csp} from './middleware.js';

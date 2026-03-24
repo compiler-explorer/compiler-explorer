@@ -27,6 +27,7 @@ import {Container} from 'golden-layout';
 import $ from 'jquery';
 import TomSelect from 'tom-select';
 import _ from 'underscore';
+
 import {assert, unwrap, unwrapString} from '../../shared/assert.js';
 import {escapeHTML} from '../../shared/common-utils.js';
 import {LanguageKey} from '../../types/languages.interfaces.js';

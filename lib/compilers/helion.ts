@@ -27,7 +27,6 @@ import type {ParseFiltersAndOutputOptions} from '../../types/features/filters.in
 import {BaseCompiler} from '../base-compiler.js';
 import {CompilationEnvironment} from '../compilation-env.js';
 import {resolvePathFromAppRoot} from '../utils.js';
-
 import {BaseParser} from './argument-parsers.js';
 
 export class HelionCompiler extends BaseCompiler {

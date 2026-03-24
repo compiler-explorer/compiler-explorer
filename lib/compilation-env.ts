@@ -23,13 +23,12 @@
 // POSSIBILITY OF SUCH DAMAGE.
 
 import child_process from 'node:child_process';
-
 import fs from 'node:fs/promises';
+
 import _ from 'underscore';
 
 import type {CacheableValue} from '../types/cache.interfaces.js';
 import {CompilerOverrideOptions} from '../types/compilation/compiler-overrides.interfaces.js';
-
 import {LanguageKey} from '../types/languages.interfaces.js';
 import {unwrap} from './assert.js';
 import {BaseCompiler} from './base-compiler.js';

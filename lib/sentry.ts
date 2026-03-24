@@ -25,7 +25,6 @@
 import * as Sentry from '@sentry/node';
 
 import {parse} from '../shared/stacktrace.js';
-
 import {logger} from './logger.js';
 import {PropertyGetter} from './properties.interfaces.js';
 

@@ -25,7 +25,6 @@
 import _ from 'underscore';
 
 import type {ResultLine} from '../../../types/resultline/resultline.interfaces.js';
-
 import {BaseCFGParser} from './base.js';
 
 export class ClangCFGParser extends BaseCFGParser {

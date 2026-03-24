@@ -34,7 +34,6 @@ import {BaseCompiler, c_value_placeholder} from '../base-compiler.js';
 import {CompilationEnvironment} from '../compilation-env.js';
 import {MadsAsmParser} from '../parsers/asm-parser-mads.js';
 import * as utils from '../utils.js';
-
 import {MadpascalParser} from './argument-parsers.js';
 
 export class MadPascalCompiler extends BaseCompiler {

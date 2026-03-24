@@ -27,7 +27,6 @@ import path from 'node:path';
 import type {PreliminaryCompilerInfo} from '../../types/compiler.interfaces.js';
 import {BaseCompiler} from '../base-compiler.js';
 import {CompilationEnvironment} from '../compilation-env.js';
-
 import {SwiftParser} from './argument-parsers.js';
 
 export class SwiftCompiler extends BaseCompiler {

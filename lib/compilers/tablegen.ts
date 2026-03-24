@@ -1,7 +1,6 @@
 import {CompilerOverrideType} from '../../types/compilation/compiler-overrides.interfaces.js';
 import type {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces.js';
 import {BaseCompiler} from '../base-compiler.js';
-
 import {TableGenParser} from './argument-parsers.js';
 
 export class TableGenCompiler extends BaseCompiler {
@@ -29,6 +28,7 @@ export class TableGenCompiler extends BaseCompiler {
         const possibleActions = await this.argParser.getPossibleActions();
         if (possibleActions.length > 0) {
             this.compiler.possibleOverrides?.push({
+                type: 'options',
                 name: CompilerOverrideType.action,
                 display_title: 'Action',
                 description:

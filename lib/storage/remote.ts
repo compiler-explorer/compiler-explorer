@@ -26,7 +26,6 @@ import * as express from 'express';
 
 import {logger} from '../logger.js';
 import {CompilerProps} from '../properties.js';
-
 import {ExpandedShortLink, StorageBase} from './base.js';
 
 export class StorageRemote extends StorageBase {

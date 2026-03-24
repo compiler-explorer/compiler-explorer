@@ -25,7 +25,6 @@
 import type {PreliminaryCompilerInfo} from '../../types/compiler.interfaces.js';
 import {CompilationEnvironment} from '../compilation-env.js';
 import {Vc6AsmParser} from '../parsers/asm-parser-vc6.js';
-
 import {VCParser} from './argument-parsers.js';
 import {Win32Compiler} from './win32.js';
 

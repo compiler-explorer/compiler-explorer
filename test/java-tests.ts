@@ -31,7 +31,6 @@ import {JavaCompiler} from '../lib/compilers/index.js';
 import * as utils from '../lib/utils.js';
 import {ParsedAsmResultLine} from '../types/asmresult/asmresult.interfaces.js';
 import {CompilerInfo} from '../types/compiler.interfaces.js';
-
 import {makeCompilationEnvironment} from './utils.js';
 
 const languages = {

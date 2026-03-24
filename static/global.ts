@@ -34,5 +34,6 @@ declare global {
         hasUIBeenReset: boolean;
         PRODUCTION: boolean;
         onSponsorClick: (sponsorUrl: string) => void;
+        monaco: typeof import('monaco-editor');
     }
 }

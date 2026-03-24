@@ -33,7 +33,6 @@ import type {PreliminaryCompilerInfo} from '../../types/compiler.interfaces.js';
 import {unwrap} from '../assert.js';
 import {CompilationEnvironment} from '../compilation-env.js';
 import {VcAsmParser} from '../parsers/asm-parser-vc.js';
-
 import {Win32VcCompiler} from './win32-vc.js';
 
 export class WslVcCompiler extends Win32VcCompiler {

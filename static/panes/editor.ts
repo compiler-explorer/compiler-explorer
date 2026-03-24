@@ -23,12 +23,14 @@
 // POSSIBILITY OF SUCH DAMAGE.
 
 import {Buffer} from 'buffer';
+
 import $ from 'jquery';
 import * as monaco from 'monaco-editor';
 import {editor} from 'monaco-editor';
 import * as monacoVim from 'monaco-vim';
 import TomSelect from 'tom-select';
 import _ from 'underscore';
+
 import * as BootstrapUtils from '../bootstrap-utils.js';
 import * as colour from '../colour.js';
 import * as Components from '../components.js';
@@ -41,8 +43,9 @@ import {Alert} from '../widgets/alert.js';
 import * as loadSaveLib from '../widgets/load-save.js';
 import '../formatter-registry';
 import '../modes/_all';
+
 import {Container} from 'golden-layout';
-import type {escape_html} from 'tom-select/dist/types/utils.js';
+
 import {assert, unwrap} from '../../shared/assert.js';
 import {escapeHTML, isString} from '../../shared/common-utils.js';
 import {CompilationResult} from '../../types/compilation/compilation.interfaces.js';
@@ -59,6 +62,9 @@ import {MonacoPane} from './pane.js';
 import IModelDeltaDecoration = editor.IModelDeltaDecoration;
 
 import {getStaticImage} from '../utils';
+
+// Expose monaco on window for integration tests (e.g. Cypress)
+window.monaco = monaco;
 
 const loadSave = new loadSaveLib.LoadSave();
 const languages = options.languages;
@@ -258,9 +264,11 @@ export class Editor extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Edit
     }
 
     // If compilerId is undefined, every compiler will be pinged
-    maybeEmitChange(force?: boolean, compilerId?: number): void {
+    // Returns true if a change was emitted (i.e. the source differed from the last emission,
+    // or force was true), false if nothing was sent.
+    maybeEmitChange(force?: boolean, compilerId?: number): boolean {
         const source = this.getSource();
-        if (!force && source === this.lastChangeEmitted) return;
+        if (!force && source === this.lastChangeEmitted) return false;
 
         if (this.settings.formatOnCompile) {
             this.runFormatDocumentAction();
@@ -275,6 +283,7 @@ export class Editor extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Edit
             this.currentLanguage?.id ?? '',
             compilerId,
         );
+        return true;
     }
 
     // Not using the normal getCurrentState/updateState pattern because the editor does not conform to its own interface
@@ -666,6 +675,8 @@ export class Editor extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Edit
                 this.runFormatDocumentAction();
             } else if (this.settings.enableCtrlS === '3') {
                 this.handleCtrlSDoNothing();
+            } else if (this.settings.enableCtrlS === '4') {
+                this.triggerManualCompile();
             }
         }
     }
@@ -919,6 +930,18 @@ export class Editor extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Edit
         }
     }
 
+    // Trigger a manual compilation, as if the user pressed Ctrl+Enter.
+    // maybeEmitChange() emits 'editorChange', which onEditorChange() in the compiler pane
+    // will act on only when compileOnChange is enabled. So if no change was emitted (source
+    // unchanged) or compileOnChange is off, we must explicitly request compilation to ensure
+    // the user's intent is honoured.
+    triggerManualCompile(): void {
+        const emitted = this.maybeEmitChange();
+        if (!emitted || !this.settings.compileOnChange) {
+            this.eventHub.emit('requestCompilation', this.id, false);
+        }
+    }
+
     override registerEditorActions(): void {
         this.editor.addAction({
             id: 'compile',
@@ -928,11 +951,7 @@ export class Editor extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Edit
             contextMenuGroupId: 'navigation',
             contextMenuOrder: 1.5,
             run: () => {
-                this.maybeEmitChange();
-                // If compileOnChange is disabled, we need to request compilation manually.
-                if (!this.settings.compileOnChange) {
-                    this.eventHub.emit('requestCompilation', this.id, false);
-                }
+                this.triggerManualCompile();
             },
         });
 
@@ -1915,7 +1934,12 @@ export class Editor extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Edit
         this.hub.removeEditor(this.id);
     }
 
-    getSelectizeRenderHtml(language: Language, escapeHtml: typeof escape_html, width: number, height: number): string {
+    getSelectizeRenderHtml(
+        language: Language,
+        escapeHtml: (str: string) => string,
+        width: number,
+        height: number,
+    ): string {
         return `
         <div class='d-flex' style='align-items: center'>
           <div class='me-1 d-flex' style='align-items: center; width: ${width}px; height: ${height}px'>
@@ -1949,11 +1973,11 @@ export class Editor extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Edit
         `;
     }
 
-    renderSelectizeOption(data: Language, escapeHtml: typeof escape_html) {
+    renderSelectizeOption(data: Language, escapeHtml: (str: string) => string) {
         return this.getSelectizeRenderHtml(data, escapeHtml, 23, 23);
     }
 
-    renderSelectizeItem(data: Language, escapeHtml: typeof escape_html) {
+    renderSelectizeItem(data: Language, escapeHtml: (str: string) => string) {
         return this.getSelectizeRenderHtml(data, escapeHtml, 20, 20);
     }
 

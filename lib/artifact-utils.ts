@@ -27,7 +27,6 @@ import path from 'node:path';
 
 import {BufferOkFunc, BuildResult, CompilationResult} from '../types/compilation/compilation.interfaces.js';
 import {Artifact, ArtifactType} from '../types/tool.interfaces.js';
-
 import {HeaptrackWrapper} from './runtime-tools/heaptrack-wrapper.js';
 import * as utils from './utils.js';
 

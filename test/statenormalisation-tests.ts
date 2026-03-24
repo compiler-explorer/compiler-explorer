@@ -25,6 +25,7 @@
 import fs from 'node:fs';
 
 import {describe, expect, it} from 'vitest';
+
 import {ClientState} from '../lib/clientstate.js';
 import {ClientStateGoldenifier, ClientStateNormalizer} from '../lib/clientstate-normalizer.js';
 

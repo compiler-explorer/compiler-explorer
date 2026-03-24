@@ -1,0 +1,437 @@
+{
+  "asm": [
+    {
+      "labels": [],
+      "source": null,
+      "text": ".Ltext0:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "#APP"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "fatbinData:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".quad 0x00100001ba55ed50,0x0000000000000fa8,0x0000005001010002,0x0000000000000d08"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".quad 0x0000000000000000,0x0000003400010007,0x0000000f00000040,0x0000000000000011"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".quad 0x0000000000000000,0x0000000000000000,0x6178652f7070612f,0x0075632e656c706d"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".quad 0x33010102464c457f,0x0000000000000007,0x0000007800be0002,0x0000000000000000"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".quad 0x0000000000000c60,0x0000000000000920,0x0038004000340534,0x0001000d00400003"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".quad 0x7472747368732e00,0x747274732e006261,0x746d79732e006261,0x746d79732e006261"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".quad 0x78646e68735f6261,0x7466752e766e2e00,0x2e007972746e652e,0x006f666e692e766e"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".quad 0x5a5f2e747865742e,0x5065726175717336,0x692e766e2e006969,0x73365a5f2e6f666e"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".quad 0x6969506572617571,0x6168732e766e2e00,0x73365a5f2e646572,0x6969506572617571"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".quad 0x6e6f632e766e2e00,0x5f2e30746e617473,0x657261757173365a,0x6265642e00696950"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".quad 0x00656e696c5f6775,0x6265642e6c65722e,0x00656e696c5f6775,0x756265645f766e2e"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".quad 0x735f656e696c5f67,0x6c65722e00737361,0x756265645f766e2e,0x735f656e696c5f67"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".quad 0x5f766e2e00737361,0x74705f6775626564,0x2e00007478745f78,0x6261747274736873"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".quad 0x6261747274732e00,0x6261746d79732e00,0x6261746d79732e00,0x2e0078646e68735f"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".quad 0x652e7466752e766e,0x766e2e007972746e,0x5a5f006f666e692e,0x5065726175717336"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ""
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "#NO_APP"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "_ZL26__cudaUnregisterBinaryUtilv:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LFE1304:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "main:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LFB1305:"
+    },
+    {
+      "labels": [],
+      "source": {
+        "column": 1,
+        "file": null,
+        "line": 23
+      },
+      "text": "        subq    $8, %rsp"
+    },
+    {
+      "labels": [],
+      "source": {
+        "column": 1,
+        "file": null,
+        "line": 23
+      },
+      "text": "        movl    $0, %edi"
+    },
+    {
+      "labels": [],
+      "source": {
+        "column": 1,
+        "file": null,
+        "line": 23
+      },
+      "text": "        movl    $0, %esi"
+    },
+    {
+      "labels": [],
+      "source": {
+        "column": 1,
+        "file": null,
+        "line": 23
+      },
+      "text": "        call    _Z6squarePii"
+    },
+    {
+      "labels": [],
+      "source": {
+        "column": 1,
+        "file": null,
+        "line": 23
+      },
+      "text": "        xorl    %eax, %eax"
+    },
+    {
+      "labels": [],
+      "source": {
+        "column": 1,
+        "file": null,
+        "line": 23
+      },
+      "text": "        addq    $8, %rsp"
+    },
+    {
+      "labels": [],
+      "source": {
+        "column": 1,
+        "file": null,
+        "line": 23
+      },
+      "text": "        ret"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LFE1305:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LC0:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .string \"_Z6squarePii\""
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "_ZL24__sti____cudaRegisterAllv:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LFB1329:"
+    },
+    {
+      "labels": [],
+      "source": {
+        "column": 44,
+        "file": null,
+        "line": 2
+      },
+      "text": "        subq    $8, %rsp"
+    },
+    {
+      "labels": [],
+      "source": {
+        "column": 44,
+        "file": null,
+        "line": 2
+      },
+      "text": "        movl    $_ZL15__fatDeviceText, %edi"
+    },
+    {
+      "labels": [],
+      "source": {
+        "column": 44,
+        "file": null,
+        "line": 2
+      },
+      "text": "        call    __cudaRegisterFatBinary"
+    },
+    {
+      "labels": [],
+      "source": {
+        "column": 44,
+        "file": null,
+        "line": 2
+      },
+      "text": "        movq    %rax, %rdi"
+    },
+    {
+      "labels": [],
+      "source": {
+        "column": 44,
+        "file": null,
+        "line": 2
+      },
+      "text": "        movq    %rax, _ZL20__cudaFatCubinHandle(%rip)"
+    },
+    {
+      "labels": [],
+      "source": {
+        "column": 44,
+        "file": null,
+        "line": 2
+      },
+      "text": "        pushq   $0"
+    },
+    {
+      "labels": [],
+      "source": {
+        "column": 44,
+        "file": null,
+        "line": 2
+      },
+      "text": "        movl    $0, %r9d"
+    },
+    {
+      "labels": [],
+      "source": {
+        "column": 44,
+        "file": null,
+        "line": 2
+      },
+      "text": "        movl    $-1, %r8d"
+    },
+    {
+      "labels": [
+        {
+          "name": ".LC0",
+          "range": {
+            "endCol": 22,
+            "startCol": 18
+          }
+        }
+      ],
+      "source": {
+        "column": 44,
+        "file": null,
+        "line": 2
+      },
+      "text": "        movl    $.LC0, %ecx"
+    },
+    {
+      "labels": [],
+      "source": {
+        "column": 44,
+        "file": null,
+        "line": 2
+      },
+      "text": "        movq    %rcx, %rdx"
+    },
+    {
+      "labels": [],
+      "source": {
+        "column": 44,
+        "file": null,
+        "line": 2
+      },
+      "text": "        movl    $_Z6squarePii, %esi"
+    },
+    {
+      "labels": [],
+      "source": {
+        "column": 44,
+        "file": null,
+        "line": 2
+      },
+      "text": "        call    __cudaRegisterFunction"
+    },
+    {
+      "labels": [],
+      "source": {
+        "column": 44,
+        "file": null,
+        "line": 2
+      },
+      "text": "        addq    $8, %rsp"
+    },
+    {
+      "labels": [],
+      "source": {
+        "column": 44,
+        "file": null,
+        "line": 2
+      },
+      "text": "        movq    _ZL20__cudaFatCubinHandle(%rip), %rdi"
+    },
+    {
+      "labels": [],
+      "source": {
+        "column": 44,
+        "file": null,
+        "line": 2
+      },
+      "text": "        call    __cudaRegisterFatBinaryEnd"
+    },
+    {
+      "labels": [],
+      "source": {
+        "column": 44,
+        "file": null,
+        "line": 2
+      },
+      "text": "        movl    $_ZL26__cudaUnregisterBinaryUtilv, %edi"
+    },
+    {
+      "labels": [],
+      "source": {
+        "column": 44,
+        "file": null,
+        "line": 2
+      },
+      "text": "        call    atexit"
+    },
+    {
+      "labels": [],
+      "source": {
+        "column": 44,
+        "file": null,
+        "line": 2
+      },
+      "text": "        addq    $8, %rsp"
+    },
+    {
+      "labels": [],
+      "source": {
+        "column": 44,
+        "file": null,
+        "line": 2
+      },
+      "text": "        ret"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LFE1329:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "_ZL15__fatDeviceText:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .long   1180844977"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .long   1"
+    },
+    {
+      "labels": [
+        {
+          "name": "fatbinData",
+          "range": {
+            "endCol": 27,
+            "startCol": 17
+          }
+        }
+      ],
+      "source": null,
+      "text": "        .quad   fatbinData"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .quad   0"
+    }
+  ],
+  "labelDefinitions": {
+    ".LC0": 33,
+    "_ZL15__fatDeviceText": 57,
+    "_ZL24__sti____cudaRegisterAllv": 35,
+    "_ZL26__cudaUnregisterBinaryUtilv": 21,
+    "fatbinData": 3,
+    "main": 23
+  }
+}

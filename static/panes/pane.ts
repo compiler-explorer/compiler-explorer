@@ -25,6 +25,7 @@
 import {Container} from 'golden-layout';
 import * as monaco from 'monaco-editor';
 import _ from 'underscore';
+
 import {unwrap} from '../../shared/assert.js';
 import {escapeHTML} from '../../shared/common-utils.js';
 import {CompilationResult} from '../../types/compilation/compilation.interfaces.js';
@@ -253,6 +254,11 @@ export abstract class Pane<S> {
     }
 
     abstract resize(): void;
+
+    protected hasActiveSelection(): boolean {
+        const selection = window.getSelection();
+        return !!(selection && !selection.isCollapsed);
+    }
 }
 
 /**

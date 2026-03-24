@@ -29,7 +29,6 @@ import {AsmParser} from '../lib/parsers/asm-parser.js';
 import {VcAsmParser} from '../lib/parsers/asm-parser-vc.js';
 import {AsmParserZ88dk} from '../lib/parsers/asm-parser-z88dk.js';
 import {AsmRegex} from '../lib/parsers/asmregex.js';
-
 import {makeFakeParseFiltersAndOutputOptions} from './utils.js';
 
 describe('ASM CL parser', () => {

@@ -23,6 +23,7 @@
 // POSSIBILITY OF SUCH DAMAGE.
 
 import {describe, expect, it} from 'vitest';
+
 import {LabelContext, LabelProcessor} from '../lib/parsers/label-processor.js';
 import {ParsedAsmResultLine} from '../types/asmresult/asmresult.interfaces.js';
 
@@ -48,6 +49,8 @@ describe('LabelProcessor tests', () => {
         mipsLabelDefinition: /^\$[\w$.]+:/,
         labelFindNonMips: /[.A-Z_a-z][\w$.]*/g,
         labelFindMips: /[$.A-Z_a-z][\w$.]*/g,
+        startBlock: /\.cfi_startproc\b/,
+        endBlock: /\.(cfi_endproc|data|text|section)\b/,
         fixLabelIndentation: (line: string) => line.replace(/^\s+/, ''),
     };
 

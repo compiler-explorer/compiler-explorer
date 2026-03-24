@@ -27,7 +27,6 @@ import {Buffer} from 'buffer';
 import {LRUCache} from 'lru-cache';
 
 import type {GetResult} from '../../types/cache.interfaces.js';
-
 import {BaseCache} from './base.js';
 
 export class InMemoryCache extends BaseCache {
