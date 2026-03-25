@@ -302,7 +302,7 @@ class ConfigManager:
         match = re.search(r"^(.+/VC/Tools/MSVC/[^/]+)/bin/Host[^/]+/([^/]+)/cl\.exe$", normalized_path, re.IGNORECASE)
         if match:
             msvc_tools_dir = match.group(1)  # e.g., D:/efs/compilers/msvc-2020-ce/VC/Tools/MSVC/14.34.31933
-            target_arch = match.group(2)     # e.g., x64
+            target_arch = match.group(2)  # e.g., x64
 
             # Go up to VC/Tools and look for Llvm/{target_arch}/bin/llvm-objdump.exe
             vc_tools_dir = "/".join(msvc_tools_dir.split("/")[:-2])  # Remove /MSVC/version to get VC/Tools
@@ -346,6 +346,7 @@ class ConfigManager:
 
         # Use Path objects for robust cross-platform path comparison
         from pathlib import Path
+
         input_path = Path(compiler_exe)
 
         # Look for any compiler with the same exe path
@@ -400,7 +401,7 @@ class ConfigManager:
             target_instruction_set = detect_instruction_set_from_target(compiler.target, compiler.exe)
         else:
             target_instruction_set = detect_instruction_set_from_target(None, compiler.exe)
-            
+
         # Debug output
         self._debug_log(f"DEBUG: Compiler type: {compiler.compiler_type}")
         self._debug_log(f"DEBUG: Detected instruction set: {target_instruction_set}")
@@ -444,31 +445,45 @@ class ConfigManager:
             # Match instruction set (highest priority - architecture must match)
             if target_instruction_set and group_info["instruction_set"] == target_instruction_set:
                 score += 200
-                self._debug_log(f"DEBUG: Group {group_name} instruction set match (+200): {group_info['instruction_set']} == {target_instruction_set}")
+                self._debug_log(
+                    f"DEBUG: Group {group_name} instruction set match (+200): {group_info['instruction_set']} == {target_instruction_set}"
+                )
 
             # Special architecture matching for MSVC (when instruction sets match)
             if compiler.compiler_type == "win32-vc" and "cl.exe" in compiler.exe.lower():
-                if ("hostx64\\x64" in compiler.exe.lower() or "/hostx64/x64" in compiler.exe.lower()) and "x64" in group_name:
+                if (
+                    "hostx64\\x64" in compiler.exe.lower() or "/hostx64/x64" in compiler.exe.lower()
+                ) and "x64" in group_name:
                     score += 150
                     self._debug_log(f"DEBUG: Group {group_name} MSVC x64 path match (+150)")
-                elif ("hostx86\\x86" in compiler.exe.lower() or "/hostx86/x86" in compiler.exe.lower()) and "x86" in group_name:
+                elif (
+                    "hostx86\\x86" in compiler.exe.lower() or "/hostx86/x86" in compiler.exe.lower()
+                ) and "x86" in group_name:
                     score += 150
                     self._debug_log(f"DEBUG: Group {group_name} MSVC x86 path match (+150)")
-                elif ("hostx64\\arm64" in compiler.exe.lower() or "/hostx64/arm64" in compiler.exe.lower()) and "arm64" in group_name:
+                elif (
+                    "hostx64\\arm64" in compiler.exe.lower() or "/hostx64/arm64" in compiler.exe.lower()
+                ) and "arm64" in group_name:
                     score += 150
                     self._debug_log(f"DEBUG: Group {group_name} MSVC arm64 path match (+150)")
 
             # Match compiler type (high priority)
             if group_info["compiler_type"] == compiler.compiler_type:
                 score += 100
-                self._debug_log(f"DEBUG: Group {group_name} compiler type match (+100): {group_info['compiler_type']} == {compiler.compiler_type}")
+                self._debug_log(
+                    f"DEBUG: Group {group_name} compiler type match (+100): {group_info['compiler_type']} == {compiler.compiler_type}"
+                )
             elif group_info["compiler_categories"] == compiler.compiler_type:
                 score += 100
-                self._debug_log(f"DEBUG: Group {group_name} compiler categories match (+100): {group_info['compiler_categories']} == {compiler.compiler_type}")
+                self._debug_log(
+                    f"DEBUG: Group {group_name} compiler categories match (+100): {group_info['compiler_categories']} == {compiler.compiler_type}"
+                )
             elif compiler.compiler_type and compiler.compiler_type.lower() in group_name.lower():
                 score += 80
-                self._debug_log(f"DEBUG: Group {group_name} name contains compiler type (+80): {compiler.compiler_type} in {group_name}")
-                
+                self._debug_log(
+                    f"DEBUG: Group {group_name} name contains compiler type (+80): {compiler.compiler_type} in {group_name}"
+                )
+
             self._debug_log(f"DEBUG: Group {group_name} total score: {score}")
 
             # Match target architecture in group name (medium priority)
@@ -1075,6 +1090,7 @@ class ConfigManager:
             # Run npm run dev with discovery-only, including environment if not local
             # On Windows, we might need to use npm.cmd instead of npm
             import platform
+
             npm_cmd = "npm.cmd" if platform.system() == "Windows" else "npm"
             cmd = [npm_cmd, "run", "dev", "--", "--language", language]
             if self.env != "local":
@@ -1159,7 +1175,10 @@ class ConfigManager:
         except Exception as e:
             # On Windows, if subprocess fails due to npm not being found, make discovery optional
             import platform
-            if platform.system() == "Windows" and ("The system cannot find the file specified" in str(e) or "WinError 2" in str(e)):
+
+            if platform.system() == "Windows" and (
+                "The system cannot find the file specified" in str(e) or "WinError 2" in str(e)
+            ):
                 return True, f"Discovery validation skipped on Windows (npm not found): {str(e)}", None
             return False, f"Discovery validation error: {str(e)}", None
         finally:
@@ -1182,8 +1201,8 @@ class ConfigManager:
         if not package_json.exists():
             return True, "Warning: package.json not found, skipping validation"
 
-        import subprocess
         import os
+        import subprocess
 
         try:
             # Set CHECK_LOCAL_PROPS=true to include local property files in validation
