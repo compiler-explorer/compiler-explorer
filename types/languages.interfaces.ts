@@ -80,6 +80,7 @@ export type LanguageKey =
     | 'nim'
     | 'nix'
     | 'numba'
+    | 'nvvm'
     | 'ocaml'
     | 'odin'
     | 'objc'
