@@ -46,6 +46,34 @@ declare module '*.png' {
     export default src;
 }
 
+declare module '*.css' {
+    const content: string;
+    export default content;
+}
+
+declare module '*.scss' {
+    const content: string;
+    export default content;
+}
+
+declare module 'monaco-editor/esm/vs/basic-languages/cpp/cpp' {
+    import type {languages} from 'monaco-editor';
+    export const conf: languages.LanguageConfiguration;
+    export const language: languages.IMonarchLanguage;
+}
+
+declare module 'monaco-editor/esm/vs/basic-languages/swift/swift' {
+    import type {languages} from 'monaco-editor';
+    export const conf: languages.LanguageConfiguration;
+    export const language: languages.IMonarchLanguage;
+}
+
+declare module 'monaco-editor/esm/vs/basic-languages/rust/rust' {
+    import type {languages} from 'monaco-editor';
+    export const conf: languages.LanguageConfiguration;
+    export const language: languages.IMonarchLanguage;
+}
+
 declare module 'lodash.clonedeep' {
     const cloneDeep: <T>(value: T) => T;
     export = cloneDeep;

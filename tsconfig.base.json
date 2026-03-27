@@ -2,7 +2,7 @@
   "compilerOptions": {
     /* Code generation */
     "sourceMap": true,
-    "downlevelIteration": true,
+    "ignoreDeprecations": "6.0",
     "importHelpers": true,
     /* Module resolution */
     "esModuleInterop": true,
