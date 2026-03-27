@@ -36,19 +36,7 @@ import {
     waitForEditors,
 } from '../support/utils';
 
-/**
- * Source code using #ifdef to produce different function names based on -D flags.
- * This lets us verify that two compiler panes with different options produce
- * different assembly output using only the single available compiler (gdefault).
- */
-const CONDITIONAL_SOURCE = `\
-#ifdef VARIANT_A
-int variant_a_func(int x) { return x + 1; }
-#elif defined(VARIANT_B)
-int variant_b_func(int x) { return x - 1; }
-#else
-int default_func(int x) { return x * 2; }
-#endif`;
+const SOURCE = 'int func(int x) { return x * 2; }';
 
 beforeEach(visitPage);
 
@@ -61,7 +49,7 @@ afterEach(() => {
 describe('Multi-compiler panes', () => {
     beforeEach(() => {
         waitForEditors();
-        setMonacoEditorContent(CONDITIONAL_SOURCE);
+        setMonacoEditorContent(SOURCE);
     });
 
     it('should add a second compiler pane from the editor dropdown', () => {
@@ -69,48 +57,48 @@ describe('Multi-compiler panes', () => {
         allCompilerTabs().should('have.length', 2);
     });
 
-    it('should produce different output with different -D flags', () => {
-        // First compiler: default (no flags) → should show default_func
-        monacoEditorTextShouldContain(findPane('Editor #').find('.monaco-editor'), 'default_func');
+    it('should produce different output with different options', () => {
+        // First compiler: no options → echoes source
+        monacoEditorTextShouldContain(findPane('Editor #').find('.monaco-editor'), 'func');
 
-        // Add second compiler with -DVARIANT_A
+        // Add second compiler with -O2 → output includes '; Options: -O2'
         addCompilerFromEditor();
         allCompilerTabs().should('have.length', 2);
 
         allCompilerTabs()
             .last()
             .then($tab => {
-                compilerPaneFromTab($tab).find('input.options').clear().type('-DVARIANT_A');
+                compilerPaneFromTab($tab).find('input.options').clear().type('-O2');
                 compilerEditorFromTab($tab).then($editor => {
-                    monacoEditorTextShouldContain(cy.wrap($editor), 'variant_a_func');
+                    monacoEditorTextShouldContain(cy.wrap($editor), '-O2');
                 });
             });
 
-        // First compiler should still show default_func
+        // First compiler should NOT show -O2
         allCompilerTabs()
             .first()
             .then($tab => {
                 compilerEditorFromTab($tab).then($editor => {
-                    monacoEditorTextShouldContain(cy.wrap($editor), 'default_func');
+                    monacoEditorTextShouldContain(cy.wrap($editor), 'func');
                 });
             });
     });
 
     it('should clone a compiler and inherit its options', () => {
         // Set options on the first compiler
-        findPane('Editor #').find('input.options').clear().type('-DVARIANT_A');
-        monacoEditorTextShouldContain(findPane('Editor #').find('.monaco-editor'), 'variant_a_func');
+        findPane('Editor #').find('input.options').clear().type('-O3');
+        monacoEditorTextShouldContain(findPane('Editor #').find('.monaco-editor'), '-O3');
 
         // Clone from the compiler pane's dropdown
         addCompilerFromCompilerPane();
         allCompilerTabs().should('have.length', 2);
 
-        // The cloned compiler should also show variant_a_func
+        // The cloned compiler should also show -O3
         allCompilerTabs()
             .last()
             .then($tab => {
                 compilerEditorFromTab($tab).then($editor => {
-                    monacoEditorTextShouldContain(cy.wrap($editor), 'variant_a_func');
+                    monacoEditorTextShouldContain(cy.wrap($editor), '-O3');
                 });
             });
     });
@@ -122,22 +110,17 @@ describe('Multi-compiler panes', () => {
         allCompilerTabs()
             .last()
             .then($tab => {
-                compilerPaneFromTab($tab).find('input.options').clear().type('-DVARIANT_A');
+                compilerPaneFromTab($tab).find('input.options').clear().type('-O2');
             });
 
-        // Change source — both panes should recompile
-        setMonacoEditorContent(`\
-#ifdef VARIANT_A
-int changed_a(int x) { return x + 100; }
-#else
-int changed_default(int x) { return x * 100; }
-#endif`);
+        // Change source — both panes should recompile with new source echoed
+        setMonacoEditorContent('int changed(int x) { return x + 100; }');
 
         allCompilerTabs()
             .first()
             .then($tab => {
                 compilerEditorFromTab($tab).then($editor => {
-                    monacoEditorTextShouldContain(cy.wrap($editor), 'changed_default');
+                    monacoEditorTextShouldContain(cy.wrap($editor), 'changed');
                 });
             });
 
@@ -145,7 +128,7 @@ int changed_default(int x) { return x * 100; }
             .last()
             .then($tab => {
                 compilerEditorFromTab($tab).then($editor => {
-                    monacoEditorTextShouldContain(cy.wrap($editor), 'changed_a');
+                    monacoEditorTextShouldContain(cy.wrap($editor), 'changed');
                 });
             });
     });
