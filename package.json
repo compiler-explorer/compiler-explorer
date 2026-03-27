@@ -125,12 +125,12 @@
     "supertest": "^7.2.2",
     "terser-webpack-plugin": "^5.4.0",
     "ts-loader": "^9.5.4",
-    "typescript": "^5.9.3",
+    "typescript": "^6.0.2",
     "vitest": "^4.0.1",
     "vitest-fetch-mock": "^0.4.5",
     "webpack": "^5.105.4",
-    "webpack-cli": "^6.0.1",
-    "webpack-dev-middleware": "^7.4.5",
+    "webpack-cli": "^7.0.2",
+    "webpack-dev-middleware": "^8.0.2",
     "webpack-manifest-plugin": "^6.0.1"
   },
   "optionalDependencies": {
@@ -165,7 +165,7 @@
     "ts-check:tests": "tsc -p ./tsconfig.tests.json --noEmit",
     "ts-check:frontend-tests": "tsc -p ./tsconfig.frontend.tests.json --noEmit",
     "ts-check:cypress": "tsc -p ./cypress/tsconfig.json --noEmit",
-    "webpack": "node --no-warnings=ExperimentalWarning --import=tsx ./node_modules/webpack-cli/bin/cli.js --node-env=production --config webpack.config.esm.ts"
+    "webpack": "node --no-warnings=ExperimentalWarning --import=tsx ./node_modules/webpack-cli/bin/cli.js --config-node-env=production --config webpack.config.esm.ts"
   },
   "license": "BSD-2-Clause",
   "packageManager": "npm@11.2.0"
