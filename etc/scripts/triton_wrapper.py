@@ -147,7 +147,7 @@ def setup_triton(
        requirs such patching to work.
 
     This function is a collection of hacks. It has been tested to work with Triton versions:
-    2.3.0, 2.3.1, 3.0.0, 3.1.0, 3.2.0, 3.3.0, 3.3.1, 3.4.0.
+    2.3.0, 2.3.1, 3.0.0, 3.1.0, 3.2.0, 3.3.0, 3.3.1, 3.4.0, 3.5.0, 3.5.1, 3.6.0.
     """
 
     os.environ["TRITON_ALWAYS_COMPILE"] = "1"
