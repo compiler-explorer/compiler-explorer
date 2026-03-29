@@ -148,8 +148,9 @@ export class OptPipeline extends MonacoPane<monaco.editor.IStandaloneDiffEditor,
         const langId = state.lang;
         const compilerId = state.compiler;
         if (langId && compilerId) {
-            const result = this.hub.compilerService.processFromLangAndCompiler(langId, compilerId);
-            this.compiler = result?.compiler ?? null;
+            this.hub.compilerService.processFromLangAndCompiler(langId, compilerId).then(result => {
+                this.compiler = result?.compiler ?? null;
+            });
         } else {
             // With older state that's missing `lang` and `compiler`,
             // we fallback to previous functionality (the compiler info is

@@ -38,7 +38,7 @@ import {ComponentConfig, NewToolSettings, TOOL_INPUT_VIEW_COMPONENT_NAME, ToolSt
 import * as Components from '../components.js';
 import {Hub} from '../hub.js';
 import * as monacoConfig from '../monaco-config.js';
-import {options as ceoptions} from '../options.js';
+import {toolsService} from '../services/tools.service.js';
 import * as utils from '../utils.js';
 import {Toggles} from '../widgets/toggles.js';
 import {MonacoPaneState} from './pane.interfaces.js';
@@ -181,9 +181,9 @@ export class Tool extends MonacoPane<monaco.editor.IStandaloneCodeEditor, ToolSt
         }
     }
 
-    onLanguageChange(editorId: number | boolean, newLangId: LanguageKey) {
+    async onLanguageChange(editorId: number | boolean, newLangId: LanguageKey) {
         if (this.compilerInfo.editorId && this.compilerInfo.editorId === editorId) {
-            const tools = ceoptions.tools[newLangId];
+            const tools = await toolsService.getToolsForLang(newLangId);
             this.toggleUsable(!!tools?.[this.toolId]);
         }
     }
