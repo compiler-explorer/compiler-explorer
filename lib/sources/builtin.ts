@@ -29,29 +29,37 @@ import path from 'node:path';
 import type {Source, SourceApiEntry, SourceEntry} from '../../types/source.interfaces.js';
 import * as props from '../properties.js';
 
-const EXAMPLES_PATH = props.get('builtin', 'sourcePath', './examples/') as string;
+let ALL_EXAMPLES: SourceEntry[] | null = null;
 const NAME_SUBSTUTION_PATTERN = /_/g;
-const ALL_EXAMPLES: SourceEntry[] = fs.readdirSync(EXAMPLES_PATH).flatMap(folder => {
-    // Recurse through the language folders
-    const folderPath = path.join(EXAMPLES_PATH, folder);
-    return fs.readdirSync(folderPath).map(file => {
-        // Recurse through the source files
-        const filePath = path.join(folderPath, file);
-        const fileName = path.parse(filePath).name;
-        return {
-            lang: folder,
-            name: fileName.replaceAll(NAME_SUBSTUTION_PATTERN, ' '),
-            path: filePath,
-            file: fileName,
-        };
-    });
-});
+
+function getExamples(): SourceEntry[] {
+    if (ALL_EXAMPLES === null) {
+        const examplesPath = props.get('builtin', 'sourcePath', './examples/') as string;
+        ALL_EXAMPLES = fs.readdirSync(examplesPath).flatMap(folder => {
+            // Recurse through the language folders
+            const folderPath = path.join(examplesPath, folder);
+            return fs.readdirSync(folderPath).map(file => {
+                // Recurse through the source files
+                const filePath = path.join(folderPath, file);
+                const fileName = path.parse(filePath).name;
+                return {
+                    lang: folder,
+                    name: fileName.replaceAll(NAME_SUBSTUTION_PATTERN, ' '),
+                    path: filePath,
+                    file: fileName,
+                };
+            });
+        });
+    }
+    return ALL_EXAMPLES;
+}
 
 export const builtin: Source = {
     name: 'Examples',
     urlpart: 'builtin',
     async load(language: string, filename: string): Promise<{file: string}> {
-        const example = ALL_EXAMPLES.find(e => e.lang === language && e.file === filename);
+        const examples = getExamples();
+        const example = examples.find(e => e.lang === language && e.file === filename);
         if (example === undefined) {
             return {file: 'No path found'};
         }
@@ -62,7 +70,8 @@ export const builtin: Source = {
         }
     },
     async list(): Promise<SourceApiEntry[]> {
-        return ALL_EXAMPLES.map(e => ({
+        const examples = getExamples();
+        return examples.map(e => ({
             lang: e.lang,
             name: e.name,
             file: e.file,
