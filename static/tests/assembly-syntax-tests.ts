@@ -41,28 +41,32 @@ function makeInfo(tooltip: string, html?: string): AssemblyInstructionInfo {
 describe(addAttSyntaxWarningIfNeeded, () => {
     describe('warns when syntax is att and', () => {
         const attSyntax: AssemblySyntax = 'att';
-        it('only tooltip references cardinality operand and source/destination', () => {
+        it('appends warning to tooltip and not html when only tooltip references cardinality operand and source/destination', () => {
             const data = makeInfo('first operand (destination)', '<p>Simple description</p>');
             const result = addAttSyntaxWarningIfNeeded(data, attSyntax);
 
-            // TODO: only show on tooltip
             expect(result.tooltip).toContain(ATT_SYNTAX_WARNING);
-            expect(result.html).toContain(ATT_SYNTAX_WARNING);
+            expect(result.html).not.toContain(ATT_SYNTAX_WARNING);
         });
-
-        it('only html references cardinality operand and source/destination', () => {
+        it('appends warning to html and not tooltip only html references cardinality operand and source/destination', () => {
             const data = makeInfo('Simple tooltip', '<p>second operand (source)</p>');
             const result = addAttSyntaxWarningIfNeeded(data, attSyntax);
 
-            // TODO: only show on html
-            expect(result.tooltip).toContain(ATT_SYNTAX_WARNING);
+            expect(result.tooltip).not.toContain(ATT_SYNTAX_WARNING);
             expect(result.html).toContain(ATT_SYNTAX_WARNING);
         });
-
         it('both tooltip and html reference cardinality and source/destination', () => {
             const text = 'copies the first operand (source) to the second operand (destination)';
             const data = makeInfo(text);
             const result = addAttSyntaxWarningIfNeeded(data, attSyntax);
+            expect(result.tooltip).toContain(ATT_SYNTAX_WARNING);
+            expect(result.html).toContain(ATT_SYNTAX_WARNING);
+        });
+        it('handles third and fourth operand references', () => {
+            const haddpsDescription =
+                'Adds single precision floating-point values in the third and fourth dword of the destination operand and stores the result in the second dword of the destination operand.';
+            const data = makeInfo(haddpsDescription);
+            const result = addAttSyntaxWarningIfNeeded(data, 'att');
             expect(result.tooltip).toContain(ATT_SYNTAX_WARNING);
             expect(result.html).toContain(ATT_SYNTAX_WARNING);
         });
@@ -87,7 +91,6 @@ describe(addAttSyntaxWarningIfNeeded, () => {
                 expect(result.tooltip).not.toContain(ATT_SYNTAX_WARNING);
                 expect(result.html).not.toContain(ATT_SYNTAX_WARNING);
             });
-
             it('cardinality is present but source/destination is absent', () => {
                 const data = makeInfo('Performs a signed multiplication of two operands');
                 const result = addAttSyntaxWarningIfNeeded(data, attSyntax);
@@ -95,7 +98,6 @@ describe(addAttSyntaxWarningIfNeeded, () => {
                 expect(result.tooltip).not.toContain(ATT_SYNTAX_WARNING);
                 expect(result.html).not.toContain(ATT_SYNTAX_WARNING);
             });
-
             it('source/destination is present but cardinality is absent', () => {
                 const popDesc =
                     'Loads the value from the top of the stack to the location specified with the destination operand (or explicit opcode) and then increments the stack pointer.';
@@ -104,27 +106,21 @@ describe(addAttSyntaxWarningIfNeeded, () => {
                 expect(result.tooltip).not.toContain(ATT_SYNTAX_WARNING);
                 expect(result.html).not.toContain(ATT_SYNTAX_WARNING);
             });
-        });
-
-        it('does not warn if tooltip contains "operand" and html contains "destination"', () => {
-            const data = makeInfo('The first operand is foo', '<p>Copies bar to the destination register</p>');
-            const result = addAttSyntaxWarningIfNeeded(data, 'att');
-            expect(result.tooltip).not.toContain(ATT_SYNTAX_WARNING);
-            expect(result.html).not.toContain(ATT_SYNTAX_WARNING);
-        });
-        it('does not warn if tooltip contains "source" and html contains "operand"', () => {
-            const data = makeInfo('The source operand is foo', '<p>Copies bar to the last destination register</p>');
-            const result = addAttSyntaxWarningIfNeeded(data, 'att');
-            expect(result.tooltip).not.toContain(ATT_SYNTAX_WARNING);
-            expect(result.html).not.toContain(ATT_SYNTAX_WARNING);
-        });
-        it('handles third and fourth operand references', () => {
-            const haddpsDescription =
-                'Adds single precision floating-point values in the third and fourth dword of the destination operand and stores the result in the second dword of the destination operand.';
-            const data = makeInfo(haddpsDescription);
-            const result = addAttSyntaxWarningIfNeeded(data, 'att');
-            expect(result.tooltip).toContain(ATT_SYNTAX_WARNING);
-            expect(result.html).toContain(ATT_SYNTAX_WARNING);
+            it('tooltip contains "operand" and html contains "destination"', () => {
+                const data = makeInfo('The first operand is foo', '<p>Copies bar to the destination register</p>');
+                const result = addAttSyntaxWarningIfNeeded(data, 'att');
+                expect(result.tooltip).not.toContain(ATT_SYNTAX_WARNING);
+                expect(result.html).not.toContain(ATT_SYNTAX_WARNING);
+            });
+            it('tooltip contains "source" and html contains "operand"', () => {
+                const data = makeInfo(
+                    'The source operand is foo',
+                    '<p>Copies bar to the last destination register</p>',
+                );
+                const result = addAttSyntaxWarningIfNeeded(data, 'att');
+                expect(result.tooltip).not.toContain(ATT_SYNTAX_WARNING);
+                expect(result.html).not.toContain(ATT_SYNTAX_WARNING);
+            });
         });
     });
 
@@ -138,7 +134,6 @@ describe(addAttSyntaxWarningIfNeeded, () => {
             expect(data.tooltip).toBe(originalTooltip);
             expect(data.html).toBe(originalHtml);
         });
-
         it('preserves the url field regardless of syntax', () => {
             let result: AssemblyInstructionInfo;
             const data = makeInfo('the first operand (destination)');

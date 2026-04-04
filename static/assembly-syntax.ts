@@ -41,14 +41,14 @@ export function addAttSyntaxWarningIfNeeded(
     const referencesCardinalityOfSrcDstOperands = (text: string): boolean =>
         CARDINALITY_REGEX.test(text) && OPERAND_REGEX.test(text) && SOURCE_DEST_REGEX.test(text);
 
-    // TODO: split so warn only shows in tooltip or html containing ref to cardinality of operands
-    return referencesCardinalityOfSrcDstOperands(data.tooltip) || referencesCardinalityOfSrcDstOperands(data.html)
-        ? {
-              ...data,
-              tooltip: '***' + ATT_SYNTAX_WARNING + '***\n\n' + data.tooltip,
-              html: '<b><em>' + ATT_SYNTAX_WARNING + '</em></b><br><br>' + data.html,
-          }
-        : data;
+    const tooltipRefs = referencesCardinalityOfSrcDstOperands(data.tooltip);
+    const htmlRefs = referencesCardinalityOfSrcDstOperands(data.html);
+    if (!tooltipRefs && !htmlRefs) return data;
+    return {
+        ...data,
+        ...(tooltipRefs && {tooltip: '***' + ATT_SYNTAX_WARNING + '***\n\n' + data.tooltip}),
+        ...(htmlRefs && {html: '<b><em>' + ATT_SYNTAX_WARNING + '</em></b><br><br>' + data.html}),
+    };
 }
 
 export function determineAssemblySyntax(supportsIntel: boolean = false, intelFilterEnabled: boolean): AssemblySyntax {
