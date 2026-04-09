@@ -22,6 +22,7 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
+import fs from 'node:fs';
 import process from 'node:process';
 
 import express from 'express';
@@ -96,21 +97,50 @@ function setupStandardHttpListening(webServer: express.Express, appArgs: AppArgu
     }
 }
 
-/**
- * Set up startup metrics
- */
+function getSystemUptimeSeconds(): number | null {
+    try {
+        const contents = fs.readFileSync('/proc/uptime', 'utf8');
+        const systemUptimeSeconds = parseFloat(contents.split(' ')[0]);
+        return Number.isFinite(systemUptimeSeconds) ? systemUptimeSeconds : null;
+    } catch {
+        return null;
+    }
+}
+
 function setupStartupMetrics(): void {
+    const nodeUptimeSeconds = process.uptime();
+    const systemUptimeSeconds = getSystemUptimeSeconds();
+
+    // Total time from OS boot to CE serving requests. On Linux, /proc/uptime gives
+    // the system uptime; subtracting Node's own uptime gives boot-to-Node-start time.
+    // This captures the full startup chain (OS boot → start.sh → Node → CE ready)
+    // which is what matters for health check grace period sizing.
+    const totalStartupSeconds = systemUptimeSeconds !== null ? systemUptimeSeconds : nodeUptimeSeconds;
+
     try {
         const startupGauge = new PromClient.Gauge({
             name: 'ce_startup_seconds',
-            help: 'Time taken from process start to serving requests',
+            help: 'Time from OS boot to CE serving requests (uses /proc/uptime on Linux, falls back to Node process uptime)',
         });
-        startupGauge.set(process.uptime());
+        startupGauge.set(totalStartupSeconds);
+
+        if (systemUptimeSeconds !== null) {
+            const nodeOnlyGauge = new PromClient.Gauge({
+                name: 'ce_node_startup_seconds',
+                help: 'Time from Node process start to CE serving requests',
+            });
+            nodeOnlyGauge.set(nodeUptimeSeconds);
+        }
     } catch (err: unknown) {
         const error = err as Error;
         logger.warn(`Error setting up startup metric: ${error.message}`);
     }
-    const startupDurationMs = Math.floor(process.uptime() * 1000);
-    logger.info(`  Startup duration: ${startupDurationMs}ms`);
+
+    const nodeStartupDurationMs = Math.floor(nodeUptimeSeconds * 1000);
+    const totalStartupDurationMs = Math.floor(totalStartupSeconds * 1000);
+    logger.info(`  Startup duration (Node): ${nodeStartupDurationMs}ms`);
+    if (systemUptimeSeconds !== null) {
+        logger.info(`  Startup duration (total from boot): ${totalStartupDurationMs}ms`);
+    }
     logger.info('=======================================');
 }
