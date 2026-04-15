@@ -6467,6 +6467,20 @@ export function getAsmOpcode(opcode: string | undefined): AssemblyInstructionInf
                 "url": "https://five-embeddev.github.io/riscv-docs-html/"
             };
 
+        case "SGT":
+            return {
+                "html": "<div><span class=\"opcode\"><b>SGT</b> rd, rs, rt</span><br><div><b>Equivalent ASM:</b><pre>slt rd, rt, rs</pre></div><br><div><b>ISA</b>: (pseudo)</div></div>",
+                "tooltip": "Psuedo Instruction.\n\nEquivalent ASM:\n\nslt rd, rt, rs\n\n",
+                "url": "https://five-embeddev.github.io/riscv-docs-html/"
+            };
+
+        case "SGTU":
+            return {
+                "html": "<div><span class=\"opcode\"><b>SGTU</b> rd, rs, rt</span><br><div><b>Equivalent ASM:</b><pre>sltu rd, rt, rs</pre></div><br><div><b>ISA</b>: (pseudo)</div></div>",
+                "tooltip": "Psuedo Instruction.\n\nEquivalent ASM:\n\nsltu rd, rt, rs\n\n",
+                "url": "https://five-embeddev.github.io/riscv-docs-html/"
+            };
+
 
     }
 }

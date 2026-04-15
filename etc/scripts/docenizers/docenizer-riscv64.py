@@ -130,7 +130,34 @@ export function getAsmOpcode(opcode: string | undefined): AssemblyInstructionInf
             if record.opcode_alias:
                 output.write(f'        case "{record.opcode_alias}":\n')
             output.write(f'            return {str(record)[:-1]}            }};\n\n')
-        
+
+        # Pseudoinstructions missing from the upstream YAML data
+        extra_pseudos = [
+            {
+                "opcode": "SGT",
+                "args": "rd, rs, rt",
+                "equivalent": "slt rd, rt, rs",
+            },
+            {
+                "opcode": "SGTU",
+                "args": "rd, rs, rt",
+                "equivalent": "sltu rd, rt, rs",
+            },
+        ]
+        for pseudo in extra_pseudos:
+            op = pseudo["opcode"]
+            args = pseudo["args"]
+            equiv = pseudo["equivalent"]
+            html = (
+                f'<div><span class="opcode"><b>{op}</b> {args}</span>'
+                f'<br><div><b>Equivalent ASM:</b><pre>{equiv}</pre></div>'
+                f'<br><div><b>ISA</b>: (pseudo)</div></div>'
+            )
+            tooltip = f"Psuedo Instruction.\n\nEquivalent ASM:\n\n{equiv}\n\n"
+            info = json.dumps({"html": html, "tooltip": tooltip, "url": htmlhost}, indent=16, separators=(',', ': '), sort_keys=True)
+            output.write(f'        case "{op}":\n')
+            output.write(f'            return {info[:-1]}            }};\n\n')
+
         output.write("""
     }
 }
