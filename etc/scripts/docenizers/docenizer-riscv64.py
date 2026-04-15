@@ -153,7 +153,7 @@ export function getAsmOpcode(opcode: string | undefined): AssemblyInstructionInf
                 f'<br><div><b>Equivalent ASM:</b><pre>{equiv}</pre></div>'
                 f'<br><div><b>ISA</b>: (pseudo)</div></div>'
             )
-            tooltip = f"Pseudo Instruction.\n\nEquivalent ASM:\n\n{equiv}\n\n"
+            tooltip = f"Psuedo Instruction.\n\nEquivalent ASM:\n\n{equiv}\n\n"
             info = json.dumps({"html": html, "tooltip": tooltip, "url": htmlhost}, indent=16, separators=(',', ': '), sort_keys=True)
             output.write(f'        case "{op}":\n')
             output.write(f'            return {info[:-1]}            }};\n\n')
