@@ -1,11 +1,4 @@
-// To run this in Carbon Explorer you'll need to uncomment the following line:
-// package sample api;
-
+// Type your code here, or load an example.
 fn Square(x: i32) -> i32 {
   return x * x;
-}
-
-// To run this in Carbon Explorer you'll need to rename this "Main()".
-fn Run() -> i32 {
-  return Square(12);
 }
