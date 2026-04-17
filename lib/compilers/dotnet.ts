@@ -846,7 +846,7 @@ do()
 
         await fs.writeFile(
             outputPath,
-            `// ${isMono ? 'mono' : 'coreclr'} ${await this.getRuntimeVersion()}\n\n${result.stdout
+            `// ${isMono ? 'mono' : 'coreclr'} ${await this.getRuntimeVersion()}${result.stdout
                 .map(o => o.text)
                 .reduce((a, n) => `${a}\n${n}`, '')}`,
         );
@@ -876,7 +876,7 @@ do()
 
         await fs.writeFile(
             outputPath,
-            `// ilspy ${await this.getRuntimeVersion()}\n\n${result.stdout
+            `// ilspy ${await this.getRuntimeVersion()}${result.stdout
                 .map(o => o.text)
                 .reduce((a, n) => `${a}\n${n}`, '')}`,
         );
@@ -892,7 +892,7 @@ do()
 
         await fs.writeFile(
             outputPath,
-            `// ildasm ${await this.getRuntimeVersion()}\n\n${result.stdout
+            `// ildasm ${await this.getRuntimeVersion()}${result.stdout
                 .map(o => o.text)
                 .reduce((a, n) => `${a}\n${n}`, '')}`,
         );
@@ -940,7 +940,7 @@ do()
 
         await fs.writeFile(
             outputPath,
-            `// crossgen2 ${await this.getRuntimeVersion()}\n\n${result.stdout
+            `// crossgen2 ${await this.getRuntimeVersion()}${result.stdout
                 .map(o => o.text)
                 .reduce((a, n) => `${a}\n${n}`, '')}`,
         );
@@ -981,8 +981,6 @@ do()
             '--scanreflection',
             '--nosinglewarnassembly:CompilerExplorer',
             '--generateunmanagedentrypoints:System.Private.CoreLib',
-            '--notrimwarn',
-            '--noaotwarn',
         ].concat(options);
 
         if (!buildToBinary) {
@@ -994,7 +992,7 @@ do()
 
         await fs.writeFile(
             outputPath,
-            `// ilc ${await this.getRuntimeVersion()}\n\n${result.stdout
+            `// ilc ${await this.getRuntimeVersion()}${result.stdout
                 .map(o => o.text)
                 .reduce((a, n) => `${a}\n${n}`, '')}`,
         );
@@ -1012,7 +1010,18 @@ do()
             executable = this.compiler.executionWrapper;
         }
 
+        const isCoreClr = this.compiler.group === 'dotnetcoreclr';
         const isMono = this.compiler.group === 'dotnetmono';
+
+        if (!isCoreClr && !isMono) {
+            return {
+                ...utils.getEmptyExecutionResult(),
+                stdout: [],
+                stderr: utils.parseOutput('Execution is only supported for CoreCLR and Mono compilers'),
+                code: -1,
+            };
+        }
+
         const compilerInfo = await this.getCompilerInfo(this.lang.id);
         const extraConfiguration: DotnetExtraConfiguration = {
             buildConfig: this.buildConfig,
