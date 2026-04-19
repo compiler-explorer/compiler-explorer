@@ -63,16 +63,7 @@ export class RustcCgGCCCompiler extends RustCompiler {
     }
 
     override optionsForFilter(filters: ParseFiltersAndOutputOptions, outputFilename: string, userOptions?: string[]) {
-        // these options are direcly taken from rustc_codegen_gcc doc.
-        // See https://github.com/rust-lang/rustc_codegen_gcc
-        const toolroot = path.resolve(path.dirname(this.compiler.exe), '..');
-
-        let options = [
-            '-Z',
-            'codegen-backend=' + path.join(toolroot, 'lib', 'librustc_codegen_gcc.so'),
-            '--sysroot',
-            path.join(toolroot, 'sysroot'),
-        ];
+        let options = ['-Zcodegen-backend=gcc'];
 
         // rust.js makes the asumption that LLVM is used. This may go away when cranelift is available.
         // Until this is the case and the super() class is refactored, simply ditch -Cllvm arg.

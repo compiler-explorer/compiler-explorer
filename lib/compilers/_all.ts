@@ -143,6 +143,7 @@ export {ResolcCompiler} from './resolc.js';
 export {RGACompiler} from './rga.js';
 export {RubyCompiler} from './ruby.js';
 export {RustCompiler} from './rust.js';
+export {RustcCgCraneliftCompiler} from './rustc-cg-cranelift.js';
 export {RustcCgGCCCompiler} from './rustc-cg-gcc.js';
 export {SailCompiler} from './sail.js';
 export {ScalaCompiler} from './scala.js';
