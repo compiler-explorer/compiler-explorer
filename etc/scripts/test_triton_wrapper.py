@@ -48,6 +48,9 @@ CONFIGS = [
     for backend in ["cuda", "hip"]
     for opt_pipeline in [True, False]
     for version_tuple in [
+        (3, 6, 0),
+        (3, 5, 1),
+        (3, 5, 0),
         (3, 4, 0),
         (3, 3, 1),
         (3, 3, 0),
