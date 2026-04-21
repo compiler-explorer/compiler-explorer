@@ -112,6 +112,9 @@ const TEST_MATRIX: Record<PropertyKey, [string, string, string, string][]> = {
             'https://docs.nvidia.com/cuda/cuda-binary-utilities/index.html#instruction-set-reference',
         ],
     ],
+    riscv64: [
+        ['SGT', 'Psuedo Instruction.', '<b>SGT</b> rd, rs, rt', 'https://five-embeddev.github.io/riscv-docs-html/'],
+    ],
     wdc65c816: [
         [
             'jsl',

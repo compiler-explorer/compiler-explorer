@@ -209,7 +209,8 @@ export class MultifileService {
             this.compilerLanguageId === 'c++' ||
             this.compilerLanguageId === 'c' ||
             this.compilerLanguageId === 'fortran' ||
-            this.compilerLanguageId === 'cuda'
+            this.compilerLanguageId === 'cuda' ||
+            this.compilerLanguageId === 'assembly'
         );
     }
 
