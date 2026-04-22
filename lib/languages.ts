@@ -606,6 +606,17 @@ const definitions: Record<LanguageKey, LanguageDefinition> = {
         previewFilter: null,
         monacoDisassembly: null,
     },
+    metal: {
+        name: 'Metal',
+        monaco: 'metal',
+        extensions: ['.metal'],
+        alias: [],
+        logoFilename: 'metal.png',
+        logoFilenameDark: null,
+        formatter: null,
+        previewFilter: null,
+        monacoDisassembly: 'llvm-ir',
+    },
     modula2: {
         name: 'Modula-2',
         monaco: 'modula2',

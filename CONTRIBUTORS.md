@@ -173,3 +173,4 @@ From oldest to newest contributor, we would like to thank:
 - [Josh Brice](https://github.com/jjb0123)
 - [Sean Garwood](https://github.com/sean-garwood)
 - [Victor Vianna](https://github.com/victorvianna)
+- [Tim Jones](https://github.com/tgjones)
