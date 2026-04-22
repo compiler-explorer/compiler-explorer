@@ -22,6 +22,8 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
+import path from 'node:path';
+
 import _ from 'underscore';
 
 import type {ExecutionOptions} from '../../types/compilation/compilation.interfaces.js';
@@ -87,6 +89,15 @@ export class NorcroftCompiler extends BaseCompiler {
         inputFilename: string,
         execOptions: ExecutionOptions & {env: Record<string, string>},
     ) {
+        if (!execOptions) {
+            execOptions = this.getDefaultExecOptions();
+        }
+        if (!execOptions.customCwd) {
+            // ncc resolves relative paths against its cwd; without this it
+            // runs in the server's cwd and can't find the source file.
+            execOptions.customCwd = path.dirname(inputFilename);
+        }
+
         const result = await this.exec(compiler, options, execOptions);
 
         // Norcroft diagnostics look like:
