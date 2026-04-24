@@ -27,15 +27,37 @@ import {z} from 'zod';
 
 import type {LanguageKey} from '../../../types/languages.interfaces.js';
 import type {ApiHandler} from '../../handlers/api.js';
+import {applyCap, applyMatch} from '../utils.js';
+
+const DEFAULT_MAX_RESULTS = 100;
 
 export function registerLibrariesTool(server: McpServer, apiHandler: ApiHandler): void {
     server.tool(
         'list_libraries',
         'List available libraries for a given programming language',
-        {language: z.string().describe('Language ID (e.g. "c++", "rust")')},
-        async ({language}) => {
-            const libraries = apiHandler.getLibrariesAsArray(language as LanguageKey);
-            return {content: [{type: 'text', text: JSON.stringify(libraries, null, 2)}]};
+        {
+            language: z.string().describe('Language ID (e.g. "c++", "rust")'),
+            match: z.string().optional().describe('Case-insensitive substring filter applied to library id and name'),
+            maxResults: z
+                .number()
+                .int()
+                .positive()
+                .optional()
+                .describe(`Maximum entries to return (default ${DEFAULT_MAX_RESULTS}); raise to override truncation`),
+        },
+        async ({language, match, maxResults}) => {
+            const all = apiHandler.getLibrariesAsArray(language as LanguageKey);
+            const filtered = applyMatch(all, match, lib => [lib.id, lib.name ?? '']);
+            const capped = applyCap(filtered, maxResults ?? DEFAULT_MAX_RESULTS);
+            const result = {
+                libraries: capped.items,
+                total: capped.total,
+                ...(capped.truncated && {
+                    truncated: true,
+                    hint: "Result was capped. Use 'match' to filter (case-insensitive substring on id and name) or raise 'maxResults'.",
+                }),
+            };
+            return {content: [{type: 'text', text: JSON.stringify(result, null, 2)}]};
         },
     );
 }

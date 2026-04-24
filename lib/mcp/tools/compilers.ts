@@ -26,25 +26,46 @@ import type {McpServer} from '@modelcontextprotocol/sdk/server/mcp.js';
 import {z} from 'zod';
 
 import type {ApiHandler} from '../../handlers/api.js';
+import {applyCap, applyMatch} from '../utils.js';
+
+const DEFAULT_MAX_RESULTS = 100;
 
 export function registerCompilersTool(server: McpServer, apiHandler: ApiHandler): void {
     server.tool(
         'list_compilers',
         'List available compilers, optionally filtered by language',
-        {language: z.string().optional().describe('Language ID to filter by (e.g. "c++", "rust", "python")')},
-        async ({language}) => {
-            let compilers = apiHandler.compilers;
-            if (language) {
-                compilers = compilers.filter(c => c.lang === language);
-            }
-            const result = compilers.map(c => ({
-                id: c.id,
-                name: c.name,
-                lang: c.lang,
-                compilerType: c.compilerType,
-                semver: c.semver,
-                instructionSet: c.instructionSet,
-            }));
+        {
+            language: z.string().optional().describe('Language ID to filter by (e.g. "c++", "rust", "python")'),
+            match: z.string().optional().describe('Case-insensitive substring filter applied to compiler id and name'),
+            maxResults: z
+                .number()
+                .int()
+                .positive()
+                .optional()
+                .describe(`Maximum entries to return (default ${DEFAULT_MAX_RESULTS}); raise to override truncation`),
+        },
+        async ({language, match, maxResults}) => {
+            const filtered = applyMatch(
+                language ? apiHandler.compilers.filter(c => c.lang === language) : apiHandler.compilers,
+                match,
+                c => [c.id, c.name],
+            );
+            const capped = applyCap(filtered, maxResults ?? DEFAULT_MAX_RESULTS);
+            const result = {
+                compilers: capped.items.map(c => ({
+                    id: c.id,
+                    name: c.name,
+                    lang: c.lang,
+                    compilerType: c.compilerType,
+                    semver: c.semver,
+                    instructionSet: c.instructionSet,
+                })),
+                total: capped.total,
+                ...(capped.truncated && {
+                    truncated: true,
+                    hint: "Result was capped. Use 'match' to filter (case-insensitive substring on id and name) or raise 'maxResults'.",
+                }),
+            };
             return {content: [{type: 'text', text: JSON.stringify(result, null, 2)}]};
         },
     );

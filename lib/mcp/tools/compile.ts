@@ -27,12 +27,12 @@ import {z} from 'zod';
 
 import {BypassCache} from '../../../types/compilation/compilation.interfaces.js';
 import type {LanguageKey} from '../../../types/languages.interfaces.js';
-import type {ResultLine} from '../../../types/resultline/resultline.interfaces.js';
 import {CompileHandler} from '../../handlers/compile.js';
+import {truncateLines} from '../utils.js';
 
-function textify(lines: ResultLine[] | null | undefined): string {
-    return (lines || []).map(line => line.text).join('\n');
-}
+const DEFAULT_MAX_ASM_LINES = 500;
+const DEFAULT_MAX_STDOUT_LINES = 100;
+const DEFAULT_MAX_STDERR_LINES = 100;
 
 export function registerCompileTool(server: McpServer, compileHandler: CompileHandler): void {
     server.tool(
@@ -66,8 +66,38 @@ export function registerCompileTool(server: McpServer, compileHandler: CompileHa
                 )
                 .optional()
                 .describe('Libraries to link'),
+            maxAsmLines: z
+                .number()
+                .int()
+                .positive()
+                .optional()
+                .describe(`Cap assembly output to this many lines (default ${DEFAULT_MAX_ASM_LINES})`),
+            maxStdoutLines: z
+                .number()
+                .int()
+                .positive()
+                .optional()
+                .describe(`Cap stdout (compile + execute) to this many lines (default ${DEFAULT_MAX_STDOUT_LINES})`),
+            maxStderrLines: z
+                .number()
+                .int()
+                .positive()
+                .optional()
+                .describe(`Cap stderr (compile + execute) to this many lines (default ${DEFAULT_MAX_STDERR_LINES})`),
         },
-        async ({source, language, compiler: compilerId, options, execute, stdin, filters, libraries}) => {
+        async ({
+            source,
+            language,
+            compiler: compilerId,
+            options,
+            execute,
+            stdin,
+            filters,
+            libraries,
+            maxAsmLines,
+            maxStdoutLines,
+            maxStderrLines,
+        }) => {
             const baseCompiler = compileHandler.findCompiler(language as LanguageKey, compilerId);
             if (!baseCompiler) {
                 return {
@@ -111,20 +141,46 @@ export function registerCompileTool(server: McpServer, compileHandler: CompileHa
                     [],
                 );
 
+                const asmCap = maxAsmLines ?? DEFAULT_MAX_ASM_LINES;
+                const stdoutCap = maxStdoutLines ?? DEFAULT_MAX_STDOUT_LINES;
+                const stderrCap = maxStderrLines ?? DEFAULT_MAX_STDERR_LINES;
+
+                const asm = truncateLines(result.asm, asmCap);
+                const stdout = truncateLines(result.stdout, stdoutCap);
+                const stderr = truncateLines(result.stderr, stderrCap);
+
                 const output: Record<string, unknown> = {
                     code: result.code,
-                    asm: textify(result.asm),
-                    stdout: textify(result.stdout),
-                    stderr: textify(result.stderr),
+                    asm: asm.text,
+                    stdout: stdout.text,
+                    stderr: stderr.text,
+                    ...(asm.truncated && {asmTruncated: true, asmTotalLines: asm.totalLines}),
+                    ...(stdout.truncated && {stdoutTruncated: true, stdoutTotalLines: stdout.totalLines}),
+                    ...(stderr.truncated && {stderrTruncated: true, stderrTotalLines: stderr.totalLines}),
                 };
 
                 if (result.execResult) {
+                    const execStdout = truncateLines(result.execResult.stdout, stdoutCap);
+                    const execStderr = truncateLines(result.execResult.stderr, stderrCap);
                     output.execResult = {
                         code: result.execResult.code,
-                        stdout: textify(result.execResult.stdout),
-                        stderr: textify(result.execResult.stderr),
+                        stdout: execStdout.text,
+                        stderr: execStderr.text,
                         didExecute: result.execResult.didExecute,
+                        ...(execStdout.truncated && {
+                            stdoutTruncated: true,
+                            stdoutTotalLines: execStdout.totalLines,
+                        }),
+                        ...(execStderr.truncated && {
+                            stderrTruncated: true,
+                            stderrTotalLines: execStderr.totalLines,
+                        }),
                     };
+                }
+
+                if (asm.truncated || stdout.truncated || stderr.truncated) {
+                    output.hint =
+                        'Some output was capped. Raise maxAsmLines / maxStdoutLines / maxStderrLines to retrieve more.';
                 }
 
                 return {content: [{type: 'text', text: JSON.stringify(output, null, 2)}]};

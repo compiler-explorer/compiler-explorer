@@ -29,8 +29,12 @@ import {beforeEach, describe, expect, it, vi} from 'vitest';
 import type {ApiHandler} from '../../lib/handlers/api.js';
 import type {CompileHandler} from '../../lib/handlers/compile.js';
 import {setupMcpEndpoint} from '../../lib/mcp/index.js';
+import {registerCompileTool} from '../../lib/mcp/tools/compile.js';
+import {registerCompilersTool} from '../../lib/mcp/tools/compilers.js';
+import {registerLibrariesTool} from '../../lib/mcp/tools/libraries.js';
 import {registerShortlinkTools} from '../../lib/mcp/tools/shortlinks.js';
 import type {StorageBase, StoredObject} from '../../lib/storage/base.js';
+import type {CompilerInfo} from '../../types/compiler.interfaces.js';
 
 function makeFakeApiHandler(): ApiHandler {
     return {
@@ -179,5 +183,177 @@ describe('MCP shortlink tool', () => {
         const result = await toolHandlers.get_shortlink_info({id: 'https://example.org/z/abc123'});
         expect(storageHandler.expandId).toHaveBeenCalledWith('abc123');
         expect(result.content[0].text).toBe(JSON.stringify({sessions: []}, null, 2));
+    });
+});
+
+function makeFakeServer(): {fakeServer: any; toolHandlers: Record<string, (args: any) => Promise<any>>} {
+    const toolHandlers: Record<string, (args: any) => Promise<any>> = {};
+    const fakeServer = {
+        tool: (name: string, _description: string, _schema: unknown, handler: (args: any) => Promise<any>) => {
+            toolHandlers[name] = handler;
+        },
+    };
+    return {fakeServer, toolHandlers};
+}
+
+function makeCompiler(id: string, lang = 'c++'): CompilerInfo {
+    return {
+        id,
+        name: id.toUpperCase(),
+        lang,
+        compilerType: '',
+        semver: '',
+        instructionSet: 'amd64',
+    } as unknown as CompilerInfo;
+}
+
+describe('MCP list_compilers tool', () => {
+    it('returns all compilers under the cap with total count', async () => {
+        const {fakeServer, toolHandlers} = makeFakeServer();
+        const apiHandler = {compilers: [makeCompiler('g142'), makeCompiler('clang20')]} as unknown as ApiHandler;
+        registerCompilersTool(fakeServer, apiHandler);
+
+        const result = await toolHandlers.list_compilers({});
+        const parsed = JSON.parse(result.content[0].text);
+        expect(parsed.total).toBe(2);
+        expect(parsed.truncated).toBeUndefined();
+        expect(parsed.compilers.map((c: any) => c.id)).toEqual(['g142', 'clang20']);
+    });
+
+    it('filters by language before applying match', async () => {
+        const {fakeServer, toolHandlers} = makeFakeServer();
+        const apiHandler = {
+            compilers: [makeCompiler('g142', 'c++'), makeCompiler('rustc', 'rust'), makeCompiler('clang20', 'c++')],
+        } as unknown as ApiHandler;
+        registerCompilersTool(fakeServer, apiHandler);
+
+        const result = await toolHandlers.list_compilers({language: 'c++', match: 'CLANG'});
+        const parsed = JSON.parse(result.content[0].text);
+        expect(parsed.compilers).toEqual([
+            {id: 'clang20', name: 'CLANG20', lang: 'c++', compilerType: '', semver: '', instructionSet: 'amd64'},
+        ]);
+    });
+
+    it('truncates results above the cap and includes a hint', async () => {
+        const {fakeServer, toolHandlers} = makeFakeServer();
+        const apiHandler = {
+            compilers: Array.from({length: 250}, (_, i) => makeCompiler(`g${i}`)),
+        } as unknown as ApiHandler;
+        registerCompilersTool(fakeServer, apiHandler);
+
+        const result = await toolHandlers.list_compilers({});
+        const parsed = JSON.parse(result.content[0].text);
+        expect(parsed.compilers).toHaveLength(100);
+        expect(parsed.total).toBe(250);
+        expect(parsed.truncated).toBe(true);
+        expect(parsed.hint).toMatch(/match/);
+    });
+
+    it('honours an explicit maxResults override', async () => {
+        const {fakeServer, toolHandlers} = makeFakeServer();
+        const apiHandler = {
+            compilers: Array.from({length: 250}, (_, i) => makeCompiler(`g${i}`)),
+        } as unknown as ApiHandler;
+        registerCompilersTool(fakeServer, apiHandler);
+
+        const result = await toolHandlers.list_compilers({maxResults: 300});
+        const parsed = JSON.parse(result.content[0].text);
+        expect(parsed.compilers).toHaveLength(250);
+        expect(parsed.truncated).toBeUndefined();
+    });
+});
+
+describe('MCP list_libraries tool', () => {
+    function makeApiHandlerWithLibs(libs: {id: string; name: string}[]): ApiHandler {
+        return {getLibrariesAsArray: () => libs} as unknown as ApiHandler;
+    }
+
+    it('filters libraries by match substring', async () => {
+        const {fakeServer, toolHandlers} = makeFakeServer();
+        const apiHandler = makeApiHandlerWithLibs([
+            {id: 'fmt', name: '{fmt}'},
+            {id: 'boost', name: 'Boost'},
+            {id: 'eigen', name: 'Eigen'},
+        ]);
+        registerLibrariesTool(fakeServer, apiHandler);
+
+        const result = await toolHandlers.list_libraries({language: 'c++', match: 'BOOST'});
+        const parsed = JSON.parse(result.content[0].text);
+        expect(parsed.libraries.map((l: any) => l.id)).toEqual(['boost']);
+        expect(parsed.total).toBe(1);
+    });
+
+    it('truncates above the cap', async () => {
+        const {fakeServer, toolHandlers} = makeFakeServer();
+        const libs = Array.from({length: 150}, (_, i) => ({id: `lib${i}`, name: `Library ${i}`}));
+        const apiHandler = makeApiHandlerWithLibs(libs);
+        registerLibrariesTool(fakeServer, apiHandler);
+
+        const result = await toolHandlers.list_libraries({language: 'c++'});
+        const parsed = JSON.parse(result.content[0].text);
+        expect(parsed.libraries).toHaveLength(100);
+        expect(parsed.total).toBe(150);
+        expect(parsed.truncated).toBe(true);
+    });
+});
+
+describe('MCP compile tool', () => {
+    function makeCompileHandler(asm: string[], stdout: string[] = [], stderr: string[] = []): CompileHandler {
+        const fakeBaseCompiler = {
+            getDefaultFilters: () => ({}),
+            compile: vi.fn().mockResolvedValue({
+                code: 0,
+                asm: asm.map(text => ({text})),
+                stdout: stdout.map(text => ({text})),
+                stderr: stderr.map(text => ({text})),
+            }),
+        };
+        return {
+            findCompiler: () => fakeBaseCompiler,
+        } as unknown as CompileHandler;
+    }
+
+    it('returns full output below caps without truncation markers', async () => {
+        const {fakeServer, toolHandlers} = makeFakeServer();
+        const compileHandler = makeCompileHandler(['mov rax, 1', 'ret'], ['hi'], []);
+        registerCompileTool(fakeServer, compileHandler);
+
+        const result = await toolHandlers.compile({source: 'x', language: 'c++', compiler: 'g142'});
+        const parsed = JSON.parse(result.content[0].text);
+        expect(parsed.asm).toBe('mov rax, 1\nret');
+        expect(parsed.asmTruncated).toBeUndefined();
+        expect(parsed.asmTotalLines).toBeUndefined();
+        expect(parsed.hint).toBeUndefined();
+    });
+
+    it('truncates assembly above maxAsmLines and reports total', async () => {
+        const {fakeServer, toolHandlers} = makeFakeServer();
+        const lines = Array.from({length: 1200}, (_, i) => `line${i}`);
+        const compileHandler = makeCompileHandler(lines);
+        registerCompileTool(fakeServer, compileHandler);
+
+        const result = await toolHandlers.compile({source: 'x', language: 'c++', compiler: 'g142'});
+        const parsed = JSON.parse(result.content[0].text);
+        expect(parsed.asm.split('\n')).toHaveLength(500);
+        expect(parsed.asmTruncated).toBe(true);
+        expect(parsed.asmTotalLines).toBe(1200);
+        expect(parsed.hint).toMatch(/maxAsmLines/);
+    });
+
+    it('honours an explicit maxAsmLines override', async () => {
+        const {fakeServer, toolHandlers} = makeFakeServer();
+        const lines = Array.from({length: 1200}, (_, i) => `line${i}`);
+        const compileHandler = makeCompileHandler(lines);
+        registerCompileTool(fakeServer, compileHandler);
+
+        const result = await toolHandlers.compile({
+            source: 'x',
+            language: 'c++',
+            compiler: 'g142',
+            maxAsmLines: 2000,
+        });
+        const parsed = JSON.parse(result.content[0].text);
+        expect(parsed.asm.split('\n')).toHaveLength(1200);
+        expect(parsed.asmTruncated).toBeUndefined();
     });
 });
