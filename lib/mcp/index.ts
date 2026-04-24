@@ -24,7 +24,8 @@
 
 import {McpServer} from '@modelcontextprotocol/sdk/server/mcp.js';
 import {StreamableHTTPServerTransport} from '@modelcontextprotocol/sdk/server/streamableHttp.js';
-import express, {type Router} from 'express';
+import type express from 'express';
+import {type Router} from 'express';
 
 import type {ApiHandler} from '../handlers/api.js';
 import type {CompileHandler} from '../handlers/compile.js';
@@ -42,6 +43,7 @@ function createMcpServer(
     apiHandler: ApiHandler,
     storageHandler: StorageBase,
     baseUrl: string,
+    req: express.Request,
 ): McpServer {
     const server = new McpServer(
         {
@@ -60,7 +62,7 @@ function createMcpServer(
     registerLanguagesTool(server, apiHandler);
     registerLibrariesTool(server, apiHandler);
     registerAsmDocsTool(server);
-    registerShortlinkTools(server, storageHandler, baseUrl);
+    registerShortlinkTools(server, storageHandler, baseUrl, req);
 
     return server;
 }
@@ -71,10 +73,12 @@ export function setupMcpEndpoint(
     apiHandler: ApiHandler,
     storageHandler: StorageBase,
 ): void {
-    router.post('/mcp', express.json(), async (req, res) => {
+    // express.json() is installed globally on the router by setupBasicRoutes (server-config.ts)
+    // with the configured bodyParserLimit, so by the time we get here req.body is already parsed.
+    router.post('/mcp', async (req, res) => {
         try {
             const baseUrl = `${req.protocol}://${req.get('host')}`;
-            const server = createMcpServer(compileHandler, apiHandler, storageHandler, baseUrl);
+            const server = createMcpServer(compileHandler, apiHandler, storageHandler, baseUrl, req);
             const transport = new StreamableHTTPServerTransport({
                 sessionIdGenerator: undefined,
             });

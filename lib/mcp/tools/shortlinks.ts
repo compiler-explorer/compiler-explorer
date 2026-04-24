@@ -23,6 +23,7 @@
 // POSSIBILITY OF SUCH DAMAGE.
 
 import type {McpServer} from '@modelcontextprotocol/sdk/server/mcp.js';
+import type express from 'express';
 import {z} from 'zod';
 
 import {ClientStateNormalizer} from '../../clientstate-normalizer.js';
@@ -30,7 +31,12 @@ import {logger} from '../../logger.js';
 import type {StorageBase} from '../../storage/base.js';
 import {getSafeHash} from '../../storage/base.js';
 
-export function registerShortlinkTools(server: McpServer, storageHandler: StorageBase, baseUrl: string): void {
+export function registerShortlinkTools(
+    server: McpServer,
+    storageHandler: StorageBase,
+    baseUrl: string,
+    req: express.Request,
+): void {
     server.tool(
         'generate_short_url',
         'Create a Compiler Explorer short URL for sharing code with compiler settings',
@@ -78,8 +84,7 @@ export function registerShortlinkTools(server: McpServer, storageHandler: Storag
                             fullHash: configHash,
                             config: configStr,
                         },
-                        // storeItem needs a req for some implementations but S3 storage doesn't use it
-                        {} as any,
+                        req,
                     );
                 }
                 const url = `${baseUrl}${storageHandler.httpRootDir}z/${result.uniqueSubHash}`;
