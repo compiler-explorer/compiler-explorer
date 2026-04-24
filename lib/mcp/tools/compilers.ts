@@ -1,4 +1,4 @@
-// Copyright (c) 2020, Compiler Explorer Authors
+// Copyright (C) 2026 Hudson River Trading LLC <opensource@hudson-trading.com>
 // All rights reserved.
 //
 // Redistribution and use in source and binary forms, with or without
@@ -22,10 +22,30 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import {makeKeyedTypeGetter} from '../keyed-type.js';
-import * as all from './_all.js';
+import type {McpServer} from '@modelcontextprotocol/sdk/server/mcp.js';
+import {z} from 'zod';
 
-export * from './_all.js';
-export {encodeBuffer, getSafeHash, isCleanText, StorageBase} from './base.js';
+import type {ApiHandler} from '../../handlers/api.js';
 
-export const getStorageTypeByKey = makeKeyedTypeGetter('storage', all);
+export function registerCompilersTool(server: McpServer, apiHandler: ApiHandler): void {
+    server.tool(
+        'list_compilers',
+        'List available compilers, optionally filtered by language',
+        {language: z.string().optional().describe('Language ID to filter by (e.g. "c++", "rust", "python")')},
+        async ({language}) => {
+            let compilers = apiHandler.compilers;
+            if (language) {
+                compilers = compilers.filter(c => c.lang === language);
+            }
+            const result = compilers.map(c => ({
+                id: c.id,
+                name: c.name,
+                lang: c.lang,
+                compilerType: c.compilerType,
+                semver: c.semver,
+                instructionSet: c.instructionSet,
+            }));
+            return {content: [{type: 'text', text: JSON.stringify(result, null, 2)}]};
+        },
+    );
+}

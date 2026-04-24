@@ -49,69 +49,66 @@ export type StoredObject = {
     fullHash: string;
     config: string;
 };
+export function encodeBuffer(buffer: Buffer): string {
+    return utils.base32Encode(buffer);
+}
+
+export function isCleanText(text: string) {
+    const lowercased = text.toLowerCase();
+    return !profanities.some(badWord => lowercased.includes(badWord));
+}
+
+function getRawConfigHash(config: any) {
+    return encodeBuffer(utils.getBinaryHash(JSON.stringify(config), FILE_HASH_VERSION));
+}
+
+export function getSafeHash(config: any) {
+    // Keep rehashing until a usable text is found
+    let configHash = getRawConfigHash(config);
+    let tries = 1;
+    while (!isCleanText(configHash.substring(0, USABLE_HASH_CHECK_LENGTH))) {
+        // Shake up the hash a bit by adding, or incrementing a nonce value.
+        config.nonce = tries;
+        logger.info(`Unusable text found in full hash ${configHash} - Trying again (${tries})`);
+        if (tries <= MAX_TRIES) {
+            configHash = getRawConfigHash(config);
+            ++tries;
+        } else {
+            logger.warn(`Gave up trying to find clean text for ${configHash}`);
+            break;
+        }
+    }
+    // And stringify it for the rest of the request
+    config = JSON.stringify(config);
+    return {config, configHash};
+}
+
+function configFor(req: express.Request) {
+    if (req.body.config) {
+        return req.body.config;
+    }
+    if (req.body.sessions) {
+        return req.body;
+    }
+    return null;
+}
+
 export abstract class StorageBase {
     constructor(
-        protected readonly httpRootDir: string,
+        public readonly httpRootDir: string,
         protected readonly compilerProps: CompilerProps | PropertyGetter,
     ) {}
 
-    /**
-     * Encode a buffer as a URL-safe string.
-     */
-    static encodeBuffer(buffer: Buffer): string {
-        return utils.base32Encode(buffer);
-    }
-
-    static isCleanText(text: string) {
-        const lowercased = text.toLowerCase();
-        return !profanities.some(badWord => lowercased.includes(badWord));
-    }
-
-    static getRawConfigHash(config: any) {
-        return StorageBase.encodeBuffer(utils.getBinaryHash(JSON.stringify(config), FILE_HASH_VERSION));
-    }
-
-    static getSafeHash(config: any) {
-        // Keep rehashing until a usable text is found
-        let configHash = StorageBase.getRawConfigHash(config);
-        let tries = 1;
-        while (!StorageBase.isCleanText(configHash.substring(0, USABLE_HASH_CHECK_LENGTH))) {
-            // Shake up the hash a bit by adding, or incrementing a nonce value.
-            config.nonce = tries;
-            logger.info(`Unusable text found in full hash ${configHash} - Trying again (${tries})`);
-            if (tries <= MAX_TRIES) {
-                configHash = StorageBase.getRawConfigHash(config);
-                ++tries;
-            } else {
-                logger.warn(`Gave up trying to find clean text for ${configHash}`);
-                break;
-            }
-        }
-        // And stringify it for the rest of the request
-        config = JSON.stringify(config);
-        return {config, configHash};
-    }
-
-    static configFor(req: express.Request) {
-        if (req.body.config) {
-            return req.body.config;
-        }
-        if (req.body.sessions) {
-            return req.body;
-        }
-        return null;
-    }
-
     handler(req: express.Request, res: express.Response) {
         // Get the desired config and check for profanities in its hash
-        const origConfig = StorageBase.configFor(req);
+        const origConfig = configFor(req);
         if (!origConfig) {
             logger.error('No configuration found');
             res.status(500);
             res.send('Missing config parameter');
             return;
         }
-        const {config, configHash} = StorageBase.getSafeHash(origConfig);
+        const {config, configHash} = getSafeHash(origConfig);
         this.findUniqueSubhash(configHash)
             .then(result => {
                 logger.info(

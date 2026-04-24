@@ -1,4 +1,4 @@
-// Copyright (c) 2020, Compiler Explorer Authors
+// Copyright (C) 2026 Hudson River Trading LLC <opensource@hudson-trading.com>
 // All rights reserved.
 //
 // Redistribution and use in source and binary forms, with or without
@@ -22,10 +22,20 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import {makeKeyedTypeGetter} from '../keyed-type.js';
-import * as all from './_all.js';
+import type {McpServer} from '@modelcontextprotocol/sdk/server/mcp.js';
+import {z} from 'zod';
 
-export * from './_all.js';
-export {encodeBuffer, getSafeHash, isCleanText, StorageBase} from './base.js';
+import type {LanguageKey} from '../../../types/languages.interfaces.js';
+import type {ApiHandler} from '../../handlers/api.js';
 
-export const getStorageTypeByKey = makeKeyedTypeGetter('storage', all);
+export function registerLibrariesTool(server: McpServer, apiHandler: ApiHandler): void {
+    server.tool(
+        'list_libraries',
+        'List available libraries for a given programming language',
+        {language: z.string().describe('Language ID (e.g. "c++", "rust")')},
+        async ({language}) => {
+            const libraries = apiHandler.getLibrariesAsArray(language as LanguageKey);
+            return {content: [{type: 'text', text: JSON.stringify(libraries, null, 2)}]};
+        },
+    );
+}

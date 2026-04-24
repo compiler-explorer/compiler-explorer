@@ -52,14 +52,14 @@ export class ApiHandler {
     private options: ClientOptionsHandler | null = null;
     public readonly handle: express.Router;
     public readonly shortener: BaseShortener;
-    private release = {
+    public release = {
         gitReleaseName: '',
         releaseBuildNumber: '',
     };
     private readonly compilationEnvironment: CompilationEnvironment;
 
     constructor(
-        compileHandler: CompileHandler,
+        public readonly compileHandler: CompileHandler,
         ceProps: PropertyGetter,
         private readonly storageHandler: StorageBase,
         urlShortenService: string,
@@ -160,7 +160,11 @@ export class ApiHandler {
     }
 
     handleLanguages(req: express.Request, res: express.Response) {
-        const availableLanguages = this.usedLangIds.map(val => {
+        this.outputList(this.getAvailableLanguages(), 'Id', req, res);
+    }
+
+    getAvailableLanguages(): Language[] {
+        return this.usedLangIds.map(val => {
             const lang = this.languages[val];
             const newLangObj: Language = Object.assign({}, lang);
             if (this.options) {
@@ -168,8 +172,6 @@ export class ApiHandler {
             }
             return newLangObj;
         });
-
-        this.outputList(availableLanguages, 'Id', req, res);
     }
 
     filterCompilerProperties(list: CompilerInfo[] | Language[], selectedFields: string[]) {

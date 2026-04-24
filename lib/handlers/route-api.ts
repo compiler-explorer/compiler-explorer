@@ -31,6 +31,7 @@ import {unwrap, unwrapString} from '../assert.js';
 import {ClientState} from '../clientstate.js';
 import {ClientStateGoldenifier, ClientStateNormalizer} from '../clientstate-normalizer.js';
 import {logger} from '../logger.js';
+import {setupMcpEndpoint} from '../mcp/index.js';
 import {SentryCapture} from '../sentry.js';
 import {ExpandedShortLink} from '../storage/base.js';
 import {StorageBase} from '../storage/index.js';
@@ -71,6 +72,7 @@ export class RouteAPI {
     initializeRoutes() {
         if (this.apiHandler) {
             this.router.use('/api', this.apiHandler.handle);
+            setupMcpEndpoint(this.router, this.apiHandler.compileHandler, this.apiHandler, this.storageHandler);
         }
         this.router
             .get('/z/:id', cached, csp, this.storedStateHandler.bind(this))
