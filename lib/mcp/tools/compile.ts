@@ -77,13 +77,17 @@ export function registerCompileTool(server: McpServer, compileHandler: CompileHa
                 .int()
                 .positive()
                 .optional()
-                .describe(`Cap stdout (compile + execute) to this many lines (default ${DEFAULT_MAX_STDOUT_LINES})`),
+                .describe(
+                    `Cap each stdout stream (compile and execute, separately) to this many lines (default ${DEFAULT_MAX_STDOUT_LINES})`,
+                ),
             maxStderrLines: z
                 .number()
                 .int()
                 .positive()
                 .optional()
-                .describe(`Cap stderr (compile + execute) to this many lines (default ${DEFAULT_MAX_STDERR_LINES})`),
+                .describe(
+                    `Cap each stderr stream (compile and execute, separately) to this many lines (default ${DEFAULT_MAX_STDERR_LINES})`,
+                ),
         },
         async ({
             source,

@@ -91,24 +91,68 @@ describe('MCP endpoint', () => {
         expect(res.status).toBeGreaterThanOrEqual(400);
     });
 
-    it('responds to a tools/list JSON-RPC call with the registered tools', async () => {
-        const res = await request(app)
-            .post('/mcp')
-            .set('Accept', 'application/json, text/event-stream')
-            .set('Content-Type', 'application/json')
-            .send({
-                jsonrpc: '2.0',
-                id: 1,
-                method: 'initialize',
-                params: {
-                    protocolVersion: '2024-11-05',
-                    capabilities: {},
-                    clientInfo: {name: 'test', version: '0.0.0'},
-                },
-            });
+    it('accepts the initialize handshake', async () => {
+        const res = await postJsonRpc(app, {
+            jsonrpc: '2.0',
+            id: 1,
+            method: 'initialize',
+            params: {
+                protocolVersion: '2024-11-05',
+                capabilities: {},
+                clientInfo: {name: 'test', version: '0.0.0'},
+            },
+        });
         expect(res.status).toBe(200);
+        const body = parseMcpResponse(res);
+        expect(body.result.serverInfo.name).toBe('compiler-explorer');
+    });
+
+    it('lists every registered tool when asked for tools/list', async () => {
+        // Initialize first; the SDK requires it even in stateless mode.
+        await postJsonRpc(app, {
+            jsonrpc: '2.0',
+            id: 1,
+            method: 'initialize',
+            params: {
+                protocolVersion: '2024-11-05',
+                capabilities: {},
+                clientInfo: {name: 'test', version: '0.0.0'},
+            },
+        });
+        const res = await postJsonRpc(app, {jsonrpc: '2.0', id: 2, method: 'tools/list'});
+        expect(res.status).toBe(200);
+        const body = parseMcpResponse(res);
+        const toolNames = body.result.tools.map((t: {name: string}) => t.name).sort();
+        expect(toolNames).toEqual([
+            'compile',
+            'generate_short_url',
+            'get_shortlink_info',
+            'list_compilers',
+            'list_languages',
+            'list_libraries',
+            'lookup_asm_instruction',
+        ]);
     });
 });
+
+function postJsonRpc(app: express.Express, payload: object) {
+    return request(app)
+        .post('/mcp')
+        .set('Accept', 'application/json, text/event-stream')
+        .set('Content-Type', 'application/json')
+        .send(payload);
+}
+
+// The streamable-HTTP transport returns either a plain JSON body or an
+// `event: message\ndata: {...}` SSE frame depending on the negotiated content
+// type. Normalise both shapes for assertions.
+function parseMcpResponse(res: {headers: Record<string, string>; body: any; text: string}): any {
+    const contentType = res.headers['content-type'] || '';
+    if (contentType.includes('application/json')) return res.body;
+    const dataLine = res.text.split('\n').find(l => l.startsWith('data:'));
+    if (!dataLine) throw new Error(`No data: line in SSE response: ${res.text}`);
+    return JSON.parse(dataLine.slice('data:'.length).trim());
+}
 
 describe('MCP shortlink tool', () => {
     let toolHandlers: Record<string, (args: any) => Promise<any>>;
