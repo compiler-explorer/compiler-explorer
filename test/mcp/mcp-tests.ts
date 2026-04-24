@@ -339,6 +339,20 @@ describe('MCP list_libraries tool', () => {
         expect(parsed.total).toBe(150);
         expect(parsed.truncated).toBe(true);
     });
+
+    it('returns a structured isError response when getLibrariesAsArray throws', async () => {
+        const {fakeServer, toolHandlers} = makeFakeServer();
+        const apiHandler = {
+            getLibrariesAsArray: () => {
+                throw new Error('options not loaded yet');
+            },
+        } as unknown as ApiHandler;
+        registerLibrariesTool(fakeServer, apiHandler);
+
+        const result = await toolHandlers.list_libraries({language: 'c++'});
+        expect(result.isError).toBe(true);
+        expect(result.content[0].text).toMatch(/not available/i);
+    });
 });
 
 describe('MCP compile tool', () => {

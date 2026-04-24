@@ -62,8 +62,11 @@ function getRawConfigHash(config: any) {
     return encodeBuffer(utils.getBinaryHash(JSON.stringify(config), FILE_HASH_VERSION));
 }
 
-export function getSafeHash(config: any) {
-    // Keep rehashing until a usable text is found
+export function getSafeHash(inputConfig: any) {
+    // Shallow-clone so the nonce-rehashing loop doesn't mutate the caller's
+    // object. The nonce is added at the top level only, so a shallow copy is
+    // enough; the returned `config` string includes it via JSON.stringify.
+    let config: any = {...inputConfig};
     let configHash = getRawConfigHash(config);
     let tries = 1;
     while (!isCleanText(configHash.substring(0, USABLE_HASH_CHECK_LENGTH))) {

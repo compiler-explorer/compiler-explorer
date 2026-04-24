@@ -29,6 +29,7 @@ import {type Router} from 'express';
 
 import type {ApiHandler} from '../handlers/api.js';
 import type {CompileHandler} from '../handlers/compile.js';
+import {cors} from '../handlers/middleware.js';
 import {logger} from '../logger.js';
 import type {StorageBase} from '../storage/index.js';
 import {registerAsmDocsTool} from './tools/asm-docs.js';
@@ -62,6 +63,13 @@ function createMcpServer(
     registerLanguagesTool(server, apiHandler);
     registerLibrariesTool(server, apiHandler);
     registerAsmDocsTool(server);
+    // req is the original /mcp POST request and is captured by tool callbacks
+    // (notably the shortlink tool, which threads it into storeItem for S3 audit
+    // metadata). This is safe in stateless mode (sessionIdGenerator: undefined):
+    // each POST is a complete cycle and `await transport.handleRequest(...)`
+    // resolves before the handler exits, so req is valid throughout the closure
+    // lifetime. If sessions or streaming are ever added, re-evaluate whether the
+    // tools should snapshot req fields up-front instead.
     registerShortlinkTools(server, storageHandler, baseUrl, req);
 
     return server;
@@ -75,7 +83,7 @@ export function setupMcpEndpoint(
 ): void {
     // express.json() is installed globally on the router by setupBasicRoutes (server-config.ts)
     // with the configured bodyParserLimit, so by the time we get here req.body is already parsed.
-    router.post('/mcp', async (req, res) => {
+    router.post('/mcp', cors, async (req, res) => {
         try {
             const baseUrl = `${req.protocol}://${req.get('host')}`;
             const server = createMcpServer(compileHandler, apiHandler, storageHandler, baseUrl, req);
@@ -96,11 +104,15 @@ export function setupMcpEndpoint(
         }
     });
 
-    router.get('/mcp', (_req, res) => {
+    router.options('/mcp', cors, (_req, res) => {
+        res.sendStatus(200);
+    });
+
+    router.get('/mcp', cors, (_req, res) => {
         res.status(405).set('Allow', 'POST').send('Method Not Allowed');
     });
 
-    router.delete('/mcp', (_req, res) => {
+    router.delete('/mcp', cors, (_req, res) => {
         res.status(405).set('Allow', 'POST').send('Method Not Allowed');
     });
 

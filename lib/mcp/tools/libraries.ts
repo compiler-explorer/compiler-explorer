@@ -27,6 +27,7 @@ import {z} from 'zod';
 
 import type {LanguageKey} from '../../../types/languages.interfaces.js';
 import type {ApiHandler} from '../../handlers/api.js';
+import {logger} from '../../logger.js';
 import {applyCap, applyMatch} from '../utils.js';
 
 const DEFAULT_MAX_RESULTS = 100;
@@ -46,7 +47,20 @@ export function registerLibrariesTool(server: McpServer, apiHandler: ApiHandler)
                 .describe(`Maximum entries to return (default ${DEFAULT_MAX_RESULTS}); raise to override truncation`),
         },
         async ({language, match, maxResults}) => {
-            const all = apiHandler.getLibrariesAsArray(language as LanguageKey);
+            // getLibrariesAsArray throws via unwrap() if options aren't loaded yet
+            // (brief startup window before setOptions runs). Mirror the HTTP
+            // handler's behaviour: return a structured MCP error rather than
+            // letting the SDK surface an opaque internal error.
+            let all: ReturnType<ApiHandler['getLibrariesAsArray']>;
+            try {
+                all = apiHandler.getLibrariesAsArray(language as LanguageKey);
+            } catch (e) {
+                logger.warn(`MCP list_libraries failed for ${language}:`, e);
+                return {
+                    content: [{type: 'text', text: 'Library metadata is not available yet.'}],
+                    isError: true,
+                };
+            }
             const filtered = applyMatch(all, match, lib => [lib.id, lib.name ?? '']);
             const capped = applyCap(filtered, maxResults ?? DEFAULT_MAX_RESULTS);
             const result = {
