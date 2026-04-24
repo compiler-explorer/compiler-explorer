@@ -159,9 +159,11 @@ export function registerCompileTool(server: McpServer, compileHandler: CompileHa
                     ...(stderr.truncated && {stderrTruncated: true, stderrTotalLines: stderr.totalLines}),
                 };
 
+                let execTruncated = false;
                 if (result.execResult) {
                     const execStdout = truncateLines(result.execResult.stdout, stdoutCap);
                     const execStderr = truncateLines(result.execResult.stderr, stderrCap);
+                    execTruncated = execStdout.truncated || execStderr.truncated;
                     output.execResult = {
                         code: result.execResult.code,
                         stdout: execStdout.text,
@@ -178,7 +180,7 @@ export function registerCompileTool(server: McpServer, compileHandler: CompileHa
                     };
                 }
 
-                if (asm.truncated || stdout.truncated || stderr.truncated) {
+                if (asm.truncated || stdout.truncated || stderr.truncated || execTruncated) {
                     output.hint =
                         'Some output was capped. Raise maxAsmLines / maxStdoutLines / maxStderrLines to retrieve more.';
                 }

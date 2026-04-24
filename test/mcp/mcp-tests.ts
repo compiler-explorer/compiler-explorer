@@ -298,7 +298,14 @@ describe('MCP list_libraries tool', () => {
 });
 
 describe('MCP compile tool', () => {
-    function makeCompileHandler(asm: string[], stdout: string[] = [], stderr: string[] = []): CompileHandler {
+    type ExecResult = {code: number; stdout: string[]; stderr: string[]; didExecute: boolean};
+
+    function makeCompileHandler(
+        asm: string[],
+        stdout: string[] = [],
+        stderr: string[] = [],
+        execResult?: ExecResult,
+    ): CompileHandler {
         const fakeBaseCompiler = {
             getDefaultFilters: () => ({}),
             compile: vi.fn().mockResolvedValue({
@@ -306,6 +313,12 @@ describe('MCP compile tool', () => {
                 asm: asm.map(text => ({text})),
                 stdout: stdout.map(text => ({text})),
                 stderr: stderr.map(text => ({text})),
+                execResult: execResult && {
+                    code: execResult.code,
+                    stdout: execResult.stdout.map(text => ({text})),
+                    stderr: execResult.stderr.map(text => ({text})),
+                    didExecute: execResult.didExecute,
+                },
             }),
         };
         return {
@@ -355,5 +368,23 @@ describe('MCP compile tool', () => {
         const parsed = JSON.parse(result.content[0].text);
         expect(parsed.asm.split('\n')).toHaveLength(1200);
         expect(parsed.asmTruncated).toBeUndefined();
+    });
+
+    it('sets the hint when only execResult output is truncated', async () => {
+        const {fakeServer, toolHandlers} = makeFakeServer();
+        const execStdout = Array.from({length: 250}, (_, i) => `out${i}`);
+        const compileHandler = makeCompileHandler([], [], [], {
+            code: 0,
+            stdout: execStdout,
+            stderr: [],
+            didExecute: true,
+        });
+        registerCompileTool(fakeServer, compileHandler);
+
+        const result = await toolHandlers.compile({source: 'x', language: 'c++', compiler: 'g142', execute: true});
+        const parsed = JSON.parse(result.content[0].text);
+        expect(parsed.execResult.stdoutTruncated).toBe(true);
+        expect(parsed.execResult.stdoutTotalLines).toBe(250);
+        expect(parsed.hint).toMatch(/maxStdoutLines/);
     });
 });
