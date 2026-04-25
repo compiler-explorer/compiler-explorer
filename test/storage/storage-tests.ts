@@ -24,22 +24,22 @@
 
 import {describe, expect, it} from 'vitest';
 
-import {StorageBase} from '../../lib/storage/index.js';
+import {encodeBuffer, getSafeHash, isCleanText} from '../../lib/storage/index.js';
 
 describe('Hash tests', () => {
     // afterEach(() => restore());
     it('should never generate invalid characters', () => {
         for (let i = 0; i < 256; ++i) {
             const buf = Buffer.of(i);
-            const as64 = StorageBase.encodeBuffer(buf);
+            const as64 = encodeBuffer(buf);
             expect(as64).not.toContain('/');
             expect(as64).not.toContain('+');
         }
     });
     const badResult = 'R0Buttabcdefghio1327698asdhjkJJklQp'.toLowerCase(); // Butt hash, see https://github.com/compiler-explorer/compiler-explorer/issues/1297
     it('should detect profanities in hashes', () => {
-        expect(StorageBase.isCleanText('I am the very model of a major general')).toBe(true);
-        expect(StorageBase.isCleanText(badResult)).toBe(false);
+        expect(isCleanText('I am the very model of a major general')).toBe(true);
+        expect(isCleanText(badResult)).toBe(false);
     });
     // it('should avoid profanities and illegible characters in hashes', () => {
     //     const testCase = {some: 'test'};
@@ -51,7 +51,7 @@ describe('Hash tests', () => {
     //         .returns(badResult) // force nonce to update a couple of times
     //         .returns(goodResult);
     //     replace(StorageBase, 'encodeBuffer', callback);
-    //     const {config, configHash} = StorageBase.getSafeHash(testCase);
+    //     const {config, configHash} = getSafeHash(testCase);
     //     configHash.should.not.equal(badResult);
     //     configHash.should.equal(goodResult);
     //     const asObj = JSON.parse(config);
@@ -61,7 +61,7 @@ describe('Hash tests', () => {
 
     it('should not modify ok hashes', () => {
         const testCase = {some: 'test'};
-        const {config} = StorageBase.getSafeHash(testCase);
+        const {config} = getSafeHash(testCase);
         const asObj = JSON.parse(config);
         expect(asObj).not.toHaveProperty('nonce');
     });
