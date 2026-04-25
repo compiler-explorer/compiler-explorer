@@ -160,11 +160,15 @@ export class ApiHandler {
     }
 
     handleLanguages(req: express.Request, res: express.Response) {
-        const availableLanguages = this.usedLangIds.map(val => {
+        // Always expose cmake to the frontend even if no compiler reports it as
+        // its language, so IDE/tree mode (CMakeLists.txt) can resolve it.
+        const langIds = unique([...this.usedLangIds, ...(this.languages.cmake ? (['cmake'] as LanguageKey[]) : [])]);
+        const availableLanguages = langIds.map(val => {
             const lang = this.languages[val];
             const newLangObj: Language = Object.assign({}, lang);
             if (this.options) {
                 newLangObj.defaultCompiler = this.options.options.defaultCompiler[unwrap(lang).id];
+                newLangObj.defaultLibs = this.options.options.defaultLibs[unwrap(lang).id];
             }
             return newLangObj;
         });
@@ -252,6 +256,11 @@ export class ApiHandler {
                 type: tool.type,
                 languageId: tool.tool.languageId || languageId,
                 allowStdin: tool.tool.stdinHint !== 'disabled',
+                args: tool.tool.args,
+                monacoStdin: tool.tool.monacoStdin,
+                icon: tool.tool.icon,
+                darkIcon: tool.tool.darkIcon,
+                stdinHint: tool.tool.stdinHint,
             };
         });
     }
