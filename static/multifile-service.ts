@@ -444,8 +444,9 @@ export class MultifileService {
 
     private static getDefaultMainSourceFilename(langId) {
         const languages = languagesService.getLanguagesOrFail();
-        const lang = languages[langId];
-        const ext0 = lang.extensions[0];
+        // Language may be missing if the link was shared from an instance with
+        // a language no longer configured here. Fall back to a c++-style name.
+        const ext0 = languages[langId]?.extensions[0] ?? '.cpp';
         return 'example' + ext0;
     }
 

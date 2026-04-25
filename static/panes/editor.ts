@@ -895,7 +895,8 @@ export class Editor extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Edit
             setTimeout(() => this.changeLanguage(newLang), 0);
         } else {
             if (newLang === 'cmake') {
-                this.selectize.addOption(unwrap(languagesService.getLanguagesOrFail().cmake));
+                const cmakeLang = languagesService.getLanguagesOrFail().cmake;
+                if (cmakeLang) this.selectize.addOption(cmakeLang);
             }
             this.selectize.setValue(newLang);
         }

@@ -160,7 +160,10 @@ export class ApiHandler {
     }
 
     handleLanguages(req: express.Request, res: express.Response) {
-        const availableLanguages = this.usedLangIds.map(val => {
+        // Always expose cmake to the frontend even if no compiler reports it as
+        // its language, so IDE/tree mode (CMakeLists.txt) can resolve it.
+        const langIds = unique([...this.usedLangIds, ...(this.languages.cmake ? (['cmake'] as LanguageKey[]) : [])]);
+        const availableLanguages = langIds.map(val => {
             const lang = this.languages[val];
             const newLangObj: Language = Object.assign({}, lang);
             if (this.options) {

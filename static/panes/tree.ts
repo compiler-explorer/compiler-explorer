@@ -104,8 +104,10 @@ export class Tree {
         this.cmakeArgsInput = this.domRoot.find('.cmake-arguments');
         this.customOutputFilenameInput = this.domRoot.find('.cmake-customOutputFilename');
 
-        if (!(state.compilerLanguageId as any)) {
-            state.compilerLanguageId = this.settings.defaultLanguage ?? 'c++';
+        const availableLangs = languagesService.getLanguagesOrFail();
+        if (!(state.compilerLanguageId as any) || !(state.compilerLanguageId in availableLangs)) {
+            const fallbackLang = this.settings.defaultLanguage ?? 'c++';
+            state.compilerLanguageId = (fallbackLang in availableLangs ? fallbackLang : 'c++') as LanguageKey;
         }
 
         this.multifileService = new MultifileService(this.hub, this.alertSystem, state);
