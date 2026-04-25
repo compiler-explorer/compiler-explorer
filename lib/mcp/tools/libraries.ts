@@ -30,7 +30,7 @@ import type {ApiHandler} from '../../handlers/api.js';
 import {logger} from '../../logger.js';
 import {applyCap, applyMatch} from '../utils.js';
 
-const DEFAULT_MAX_RESULTS = 100;
+const DEFAULT_MAX_RESULTS = 25;
 
 export function registerLibrariesTool(server: McpServer, apiHandler: ApiHandler): void {
     server.tool(
@@ -38,13 +38,24 @@ export function registerLibrariesTool(server: McpServer, apiHandler: ApiHandler)
         'List available libraries for a given programming language',
         {
             language: z.string().describe('Language ID (e.g. "c++", "rust")'),
-            match: z.string().optional().describe('Case-insensitive substring filter applied to library id and name'),
+            match: z
+                .string()
+                .optional()
+                .describe(
+                    'Case-insensitive substring filter on library id and name. Be specific: a broad term ' +
+                        'that matches hundreds of libraries triggers lean mode (id+name only). ' +
+                        'Prefer a library name or family like "boost", "fmt", or an exact id.',
+                ),
             maxResults: z
                 .number()
                 .int()
                 .positive()
                 .optional()
-                .describe(`Maximum entries to return (default ${DEFAULT_MAX_RESULTS}); raise to override truncation`),
+                .describe(
+                    `Maximum entries to return in the full response shape (default ${DEFAULT_MAX_RESULTS}). ` +
+                        'When the filtered count exceeds this, the response degrades to lean mode (id+name only) ' +
+                        'and returns ALL matches; raise this if you need full per-entry detail (versions, url) across many results.',
+                ),
         },
         async ({language, match, maxResults}) => {
             // getLibrariesAsArray throws via unwrap() if options aren't loaded yet
@@ -62,16 +73,8 @@ export function registerLibrariesTool(server: McpServer, apiHandler: ApiHandler)
                 };
             }
             const filtered = applyMatch(all, match, lib => [lib.id, lib.name ?? '']);
-            const capped = applyCap(filtered, maxResults ?? DEFAULT_MAX_RESULTS);
-            const result = {
-                libraries: capped.items,
-                total: capped.total,
-                ...(capped.truncated && {
-                    truncated: true,
-                    hint: "Result was capped. Use 'match' to filter (case-insensitive substring on id and name) or raise 'maxResults'.",
-                }),
-            };
-            return {content: [{type: 'text', text: JSON.stringify(result, null, 2)}]};
+            const {items, ...meta} = applyCap(filtered, maxResults ?? DEFAULT_MAX_RESULTS, lib => lib, 'libraries');
+            return {content: [{type: 'text', text: JSON.stringify({libraries: items, ...meta}, null, 2)}]};
         },
     );
 }

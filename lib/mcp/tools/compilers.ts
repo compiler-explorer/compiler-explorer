@@ -28,7 +28,7 @@ import {z} from 'zod';
 import type {ApiHandler} from '../../handlers/api.js';
 import {applyCap, applyMatch} from '../utils.js';
 
-const DEFAULT_MAX_RESULTS = 100;
+const DEFAULT_MAX_RESULTS = 25;
 
 export function registerCompilersTool(server: McpServer, apiHandler: ApiHandler): void {
     server.tool(
@@ -36,13 +36,24 @@ export function registerCompilersTool(server: McpServer, apiHandler: ApiHandler)
         'List available compilers, optionally filtered by language',
         {
             language: z.string().optional().describe('Language ID to filter by (e.g. "c++", "rust", "python")'),
-            match: z.string().optional().describe('Case-insensitive substring filter applied to compiler id and name'),
+            match: z
+                .string()
+                .optional()
+                .describe(
+                    'Case-insensitive substring filter on compiler id and name. Be specific: broad terms ' +
+                        '(e.g. "gcc", "clang") match hundreds of compilers and trigger lean mode (id+name only). ' +
+                        'Prefer "gcc 13", "clang 17", "arm64 gcc", or an exact id like "g132".',
+                ),
             maxResults: z
                 .number()
                 .int()
                 .positive()
                 .optional()
-                .describe(`Maximum entries to return (default ${DEFAULT_MAX_RESULTS}); raise to override truncation`),
+                .describe(
+                    `Maximum entries to return in the full response shape (default ${DEFAULT_MAX_RESULTS}). ` +
+                        'When the filtered count exceeds this, the response degrades to lean mode (id+name only) ' +
+                        'and returns ALL matches; raise this if you need full per-entry detail across many results.',
+                ),
         },
         async ({language, match, maxResults}) => {
             const filtered = applyMatch(
@@ -50,23 +61,20 @@ export function registerCompilersTool(server: McpServer, apiHandler: ApiHandler)
                 match,
                 c => [c.id, c.name],
             );
-            const capped = applyCap(filtered, maxResults ?? DEFAULT_MAX_RESULTS);
-            const result = {
-                compilers: capped.items.map(c => ({
+            const {items, ...meta} = applyCap(
+                filtered,
+                maxResults ?? DEFAULT_MAX_RESULTS,
+                c => ({
                     id: c.id,
                     name: c.name,
                     lang: c.lang,
                     compilerType: c.compilerType,
                     semver: c.semver,
                     instructionSet: c.instructionSet,
-                })),
-                total: capped.total,
-                ...(capped.truncated && {
-                    truncated: true,
-                    hint: "Result was capped. Use 'match' to filter (case-insensitive substring on id and name) or raise 'maxResults'.",
                 }),
-            };
-            return {content: [{type: 'text', text: JSON.stringify(result, null, 2)}]};
+                'compilers',
+            );
+            return {content: [{type: 'text', text: JSON.stringify({compilers: items, ...meta}, null, 2)}]};
         },
     );
 }

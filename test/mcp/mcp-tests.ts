@@ -252,7 +252,7 @@ function makeCompiler(id: string, lang = 'c++'): CompilerInfo {
 }
 
 describe('MCP list_compilers tool', () => {
-    it('returns all compilers under the cap with total count', async () => {
+    it('returns full per-entry detail when under the cap', async () => {
         const {fakeServer, toolHandlers} = makeFakeServer();
         const apiHandler = {compilers: [makeCompiler('g142'), makeCompiler('clang20')]} as unknown as ApiHandler;
         registerCompilersTool(fakeServer, apiHandler);
@@ -260,8 +260,15 @@ describe('MCP list_compilers tool', () => {
         const result = await toolHandlers.list_compilers({});
         const parsed = JSON.parse(result.content[0].text);
         expect(parsed.total).toBe(2);
-        expect(parsed.truncated).toBeUndefined();
-        expect(parsed.compilers.map((c: any) => c.id)).toEqual(['g142', 'clang20']);
+        expect(parsed.leanMode).toBeUndefined();
+        expect(parsed.compilers[0]).toEqual({
+            id: 'g142',
+            name: 'G142',
+            lang: 'c++',
+            compilerType: '',
+            semver: '',
+            instructionSet: 'amd64',
+        });
     });
 
     it('filters by language before applying match', async () => {
@@ -278,32 +285,37 @@ describe('MCP list_compilers tool', () => {
         ]);
     });
 
-    it('truncates results above the cap and includes a hint', async () => {
+    it('degrades to lean mode when the filtered set exceeds the cap', async () => {
         const {fakeServer, toolHandlers} = makeFakeServer();
         const apiHandler = {
-            compilers: Array.from({length: 250}, (_, i) => makeCompiler(`g${i}`)),
+            compilers: Array.from({length: 80}, (_, i) => makeCompiler(`g${i}`)),
         } as unknown as ApiHandler;
         registerCompilersTool(fakeServer, apiHandler);
 
         const result = await toolHandlers.list_compilers({});
         const parsed = JSON.parse(result.content[0].text);
-        expect(parsed.compilers).toHaveLength(100);
-        expect(parsed.total).toBe(250);
-        expect(parsed.truncated).toBe(true);
-        expect(parsed.hint).toMatch(/match/);
+        // Lean mode returns ALL matches with id+name only.
+        expect(parsed.compilers).toHaveLength(80);
+        expect(parsed.total).toBe(80);
+        expect(parsed.leanMode).toBe(true);
+        expect(parsed.compilers[0]).toEqual({id: 'g0', name: 'G0'});
+        expect(parsed.compilers[0].compilerType).toBeUndefined();
+        expect(parsed.hint).toMatch(/Refine your filter/);
+        expect(parsed.hint).toMatch(/exact id/);
     });
 
-    it('honours an explicit maxResults override', async () => {
+    it('keeps full shape when maxResults is raised above the filtered count', async () => {
         const {fakeServer, toolHandlers} = makeFakeServer();
         const apiHandler = {
-            compilers: Array.from({length: 250}, (_, i) => makeCompiler(`g${i}`)),
+            compilers: Array.from({length: 80}, (_, i) => makeCompiler(`g${i}`)),
         } as unknown as ApiHandler;
         registerCompilersTool(fakeServer, apiHandler);
 
-        const result = await toolHandlers.list_compilers({maxResults: 300});
+        const result = await toolHandlers.list_compilers({maxResults: 200});
         const parsed = JSON.parse(result.content[0].text);
-        expect(parsed.compilers).toHaveLength(250);
-        expect(parsed.truncated).toBeUndefined();
+        expect(parsed.compilers).toHaveLength(80);
+        expect(parsed.leanMode).toBeUndefined();
+        expect(parsed.compilers[0].instructionSet).toBe('amd64');
     });
 });
 
@@ -327,17 +339,20 @@ describe('MCP list_libraries tool', () => {
         expect(parsed.total).toBe(1);
     });
 
-    it('truncates above the cap', async () => {
+    it('degrades to lean mode above the cap', async () => {
         const {fakeServer, toolHandlers} = makeFakeServer();
-        const libs = Array.from({length: 150}, (_, i) => ({id: `lib${i}`, name: `Library ${i}`}));
-        const apiHandler = makeApiHandlerWithLibs(libs);
+        const libs = Array.from({length: 50}, (_, i) => ({id: `lib${i}`, name: `Library ${i}`, versions: ['1.0']}));
+        const apiHandler = makeApiHandlerWithLibs(libs as any);
         registerLibrariesTool(fakeServer, apiHandler);
 
         const result = await toolHandlers.list_libraries({language: 'c++'});
         const parsed = JSON.parse(result.content[0].text);
-        expect(parsed.libraries).toHaveLength(100);
-        expect(parsed.total).toBe(150);
-        expect(parsed.truncated).toBe(true);
+        expect(parsed.libraries).toHaveLength(50);
+        expect(parsed.total).toBe(50);
+        expect(parsed.leanMode).toBe(true);
+        expect(parsed.libraries[0]).toEqual({id: 'lib0', name: 'Library 0'});
+        expect(parsed.libraries[0].versions).toBeUndefined();
+        expect(parsed.hint).toMatch(/exact id/);
     });
 
     it('returns a structured isError response when getLibrariesAsArray throws', async () => {

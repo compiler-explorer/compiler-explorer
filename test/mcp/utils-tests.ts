@@ -60,24 +60,56 @@ describe('applyMatch', () => {
 });
 
 describe('applyCap', () => {
-    it('returns all when under cap', () => {
-        expect(applyCap(items, 10)).toEqual({items, total: 4, truncated: false});
+    type Compiler = {id: string; name: string; lang: string; version: string};
+    const compilers: Compiler[] = [
+        {id: 'g142', name: 'GCC 14.2', lang: 'c++', version: '14.2.0'},
+        {id: 'g141', name: 'GCC 14.1', lang: 'c++', version: '14.1.0'},
+        {id: 'clang20', name: 'Clang 20', lang: 'c++', version: '20.0.0'},
+    ];
+    const fullMap = (c: Compiler) => ({id: c.id, name: c.name, lang: c.lang, version: c.version});
+
+    it('returns full-mapped items when count is under cap', () => {
+        const result = applyCap(compilers, 10, fullMap, 'compilers');
+        expect(result.items).toHaveLength(3);
+        expect(result.items[0]).toEqual({id: 'g142', name: 'GCC 14.2', lang: 'c++', version: '14.2.0'});
+        expect(result.total).toBe(3);
+        expect(result.leanMode).toBeUndefined();
+        expect(result.hint).toBeUndefined();
     });
 
-    it('returns all when exactly at cap', () => {
-        expect(applyCap(items, 4)).toEqual({items, total: 4, truncated: false});
+    it('returns full-mapped items when count exactly matches cap', () => {
+        const result = applyCap(compilers, 3, fullMap, 'compilers');
+        expect(result.items).toHaveLength(3);
+        expect(result.leanMode).toBeUndefined();
     });
 
-    it('truncates and reports total when over cap', () => {
-        const result = applyCap(items, 2);
-        expect(result.items).toHaveLength(2);
-        expect(result.total).toBe(4);
-        expect(result.truncated).toBe(true);
+    it('degrades to default lean shape (id+name) when count exceeds cap', () => {
+        const result = applyCap(compilers, 1, fullMap, 'compilers');
+        expect(result.items).toHaveLength(3);
+        expect(result.items[0]).toEqual({id: 'g142', name: 'GCC 14.2'});
+        expect(result.total).toBe(3);
+        expect(result.leanMode).toBe(true);
+        expect(result.hint).toMatch(/3 compilers/);
+        expect(result.hint).toMatch(/cap of 1/);
     });
 
-    it('preserves order when truncating', () => {
-        const result = applyCap(items, 2);
-        expect(result.items.map(i => i.id)).toEqual(['g142', 'g141']);
+    it('uses a custom leanMap when provided', () => {
+        const result = applyCap(
+            compilers,
+            1,
+            fullMap,
+            'compilers',
+            c => ({onlyId: c.id}) as unknown as {id: string; name: string},
+        );
+        expect(result.items).toHaveLength(3);
+        expect(result.items[0]).toEqual({onlyId: 'g142'});
+        expect(result.leanMode).toBe(true);
+    });
+
+    it('handles missing name in default lean shape', () => {
+        const items = [{id: 'libfoo'}, {id: 'libbar'}];
+        const result = applyCap(items, 1, x => x, 'libraries');
+        expect(result.items[0]).toEqual({id: 'libfoo', name: ''});
     });
 });
 

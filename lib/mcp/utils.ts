@@ -30,17 +30,49 @@ export function applyMatch<T>(items: T[], pattern: string | undefined, extract: 
     return items.filter(item => extract(item).some(field => field.toLowerCase().includes(needle)));
 }
 
-export type CappedList<T> = {
-    items: T[];
+export type LeanShape = {id: string; name: string};
+
+export type CappedResult<F, L = LeanShape> = {
+    items: F[] | L[];
     total: number;
-    truncated: boolean;
+    leanMode?: true;
+    hint?: string;
 };
 
-export function applyCap<T>(items: T[], maxResults: number): CappedList<T> {
+const defaultLeanMap = <T extends {id: string; name?: string}>(item: T): LeanShape => ({
+    id: item.id,
+    name: item.name ?? '',
+});
+
+/**
+ * Below `maxResults` returns items mapped through `fullMap` (the full-detail
+ * shape). At or above the cap, degrades to lean mode: maps every item through
+ * `leanMap` (defaults to `{id, name}`) and returns ALL of them with a
+ * `leanMode: true` marker plus an LLM-facing hint suggesting refinement.
+ *
+ * Lean mode trades per-entry richness for fitting the entire match-set into
+ * one response so the LLM can pick by exact id rather than guessing how to
+ * narrow a partial result.
+ */
+export function applyCap<T extends {id: string; name?: string}, F, L = LeanShape>(
+    items: T[],
+    maxResults: number,
+    fullMap: (item: T) => F,
+    entityName: string,
+    leanMap?: (item: T) => L,
+): CappedResult<F, L> {
     if (items.length <= maxResults) {
-        return {items, total: items.length, truncated: false};
+        return {items: items.map(fullMap), total: items.length};
     }
-    return {items: items.slice(0, maxResults), total: items.length, truncated: true};
+    const lean = leanMap ?? (defaultLeanMap as unknown as (item: T) => L);
+    return {
+        items: items.map(lean),
+        total: items.length,
+        leanMode: true,
+        hint:
+            `${items.length} ${entityName} exceeded the full-detail cap of ${maxResults}; showing id and name only. ` +
+            'Refine your filter (e.g. add a version or architecture) or query again with the exact id for full details.',
+    };
 }
 
 export type TruncatedLines = {
