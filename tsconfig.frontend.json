@@ -4,6 +4,7 @@
     /* Module resolution */
     "target": "es5",
     /* Code generation */
+    "downlevelIteration": true,
     "inlineSources": true,
     "strictPropertyInitialization": false,
     "lib": ["dom", "es5", "dom.iterable"]
