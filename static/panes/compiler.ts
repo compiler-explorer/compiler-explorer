@@ -2462,6 +2462,8 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
         super.registerButtons(state);
         this.filters = new Toggles(this.domRoot.find('.filters'), patchOldFilters(state.filters));
 
+        this.editor.updateOptions({wordWrap: state.filters?.wrap ? 'on' : 'off'});
+
         this.optButton = this.domRoot.find('.btn.view-optimization');
         this.stackUsageButton = this.domRoot.find('.btn.view-stack-usage');
         this.flagsButton = this.domRoot.find('div.populararguments div.dropdown-menu button');
@@ -3212,6 +3214,7 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
     }
 
     onFilterChange(): void {
+        this.editor.updateOptions({wordWrap: this.filters.get().wrap ? 'on' : 'off'});
         this.updateState();
         this.compile();
         this.updateButtons();
