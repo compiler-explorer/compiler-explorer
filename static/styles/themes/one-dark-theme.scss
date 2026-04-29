@@ -737,6 +737,10 @@ textarea.form-control {
     }
 }
 
+select.compiler-picker {
+    background-color: $light;
+}
+
 /* Override arrow specifically with the same selector as TomSelect uses */
 .ts-wrapper:not(.form-control, .form-select).single .ts-control {
     background-image: dropdown-arrow-svg(#999) !important;
