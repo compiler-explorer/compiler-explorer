@@ -31,7 +31,7 @@ export type ToolEntry = {
     languageId: string;
     allowStdin: boolean;
     args?: string;
-    monacoStdin?: string;
+    monacoStdin?: boolean;
     icon?: string;
     darkIcon?: string;
     stdinHint?: string;

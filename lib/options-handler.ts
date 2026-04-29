@@ -261,7 +261,7 @@ export class ClientOptionsHandler implements ClientOptionsSource {
                                     toolBaseName + '.languageId',
                                 ) as LanguageKey,
                                 stdinHint: this.compilerProps<string>(lang, toolBaseName + '.stdinHint'),
-                                monacoStdin: this.compilerProps<string>(lang, toolBaseName + '.monacoStdin'),
+                                monacoStdin: this.compilerProps<boolean>(lang, toolBaseName + '.monacoStdin'),
                                 icon: this.compilerProps<string>(lang, toolBaseName + '.icon'),
                                 darkIcon: this.compilerProps<string>(lang, toolBaseName + '.darkIcon'),
                                 compilerLanguage: lang as LanguageKey,
