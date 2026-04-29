@@ -56,7 +56,7 @@ export class LanguagesService {
         return this.cache;
     }
 
-    private static readonly languageFields = [
+    private static readonly languageFields: (keyof Language)[] = [
         'id',
         'name',
         'extensions',
@@ -73,11 +73,11 @@ export class LanguagesService {
         'digitSeparator',
         'defaultCompiler',
         'defaultLibs',
-    ].join(',');
+    ];
 
     private async fetchLanguages(): Promise<LanguageMap> {
         const response = await fetch(
-            `${window.httpRoot}api/languages?fields=${LanguagesService.languageFields}&hash=${optionsHash}`,
+            `${window.httpRoot}api/languages?fields=${LanguagesService.languageFields.join(',')}&hash=${optionsHash}`,
             {headers: {Accept: 'application/json'}},
         );
         const languages: Language[] = await response.json();

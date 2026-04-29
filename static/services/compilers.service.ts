@@ -42,7 +42,7 @@ export class CompilersService {
         return promise;
     }
 
-    private static readonly compilerFields = [
+    private static readonly compilerFields: (keyof CompilerInfo)[] = [
         'id',
         'name',
         'version',
@@ -100,11 +100,11 @@ export class CompilersService {
         'supportsDemangle',
         'supportsVerboseDemangling',
         'supportsFiltersInBinary',
-    ].join(',');
+    ];
 
     private async fetchCompilersForLang(langId: string): Promise<Record<string, CompilerInfo>> {
         const response = await fetch(
-            `${window.httpRoot}api/compilers/${encodeURIComponent(langId)}?fields=${CompilersService.compilerFields}&hash=${optionsHash}`,
+            `${window.httpRoot}api/compilers/${encodeURIComponent(langId)}?fields=${CompilersService.compilerFields.join(',')}&hash=${optionsHash}`,
             {headers: {Accept: 'application/json'}},
         );
         const compilers: CompilerInfo[] = await response.json();
