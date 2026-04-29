@@ -58,7 +58,8 @@
         "noStaticOnlyClass": "off",
         "noForEach": "off",
         "useLiteralKeys": "off",
-        "noThisInStatic": "off"
+        "noThisInStatic": "off",
+        "useOptionalChain": "off"
       }
     }
   },
