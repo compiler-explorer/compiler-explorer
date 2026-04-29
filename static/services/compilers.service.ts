@@ -24,6 +24,7 @@
 
 import {CompilerInfo} from '../../types/compiler.interfaces.js';
 import {optionsHash} from '../options.js';
+import {SentryCapture} from '../sentry.js';
 
 export class CompilersService {
     private readonly loadPromises = new Map<string, Promise<Record<string, CompilerInfo>>>();
@@ -33,6 +34,10 @@ export class CompilersService {
         if (!promise) {
             promise = this.fetchCompilersForLang(langId);
             this.loadPromises.set(langId, promise);
+            promise.catch(e => {
+                SentryCapture(e, `fetchCompilersForLang(${langId})`);
+                this.loadPromises.delete(langId);
+            });
         }
         return promise;
     }

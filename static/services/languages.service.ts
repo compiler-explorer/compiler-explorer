@@ -24,6 +24,7 @@
 
 import {Language, LanguageKey} from '../../types/languages.interfaces.js';
 import {optionsHash} from '../options.js';
+import {SentryCapture} from '../sentry.js';
 
 export type LanguageMap = Partial<Record<LanguageKey, Language>>;
 
@@ -33,8 +34,15 @@ export class LanguagesService {
 
     async getLanguages(): Promise<LanguageMap> {
         if (!this.loadPromise) {
-            this.loadPromise = this.fetchLanguages();
-            this.cache = await this.loadPromise;
+            const promise = this.fetchLanguages();
+            this.loadPromise = promise;
+            try {
+                this.cache = await promise;
+            } catch (e) {
+                SentryCapture(e, 'fetchLanguages');
+                if (this.loadPromise === promise) this.loadPromise = null;
+                throw e;
+            }
         }
         return this.loadPromise;
     }

@@ -25,6 +25,7 @@
 import {getRemoteId} from '../../shared/remote-utils.js';
 import {LanguageLibs} from '../options.interfaces.js';
 import {optionsHash} from '../options.js';
+import {SentryCapture} from '../sentry.js';
 
 export class LibsService {
     private readonly loadPromises = new Map<string, Promise<LanguageLibs>>();
@@ -34,6 +35,10 @@ export class LibsService {
         if (!promise) {
             promise = this.fetchLibsForLang(langId);
             this.loadPromises.set(langId, promise);
+            promise.catch(e => {
+                SentryCapture(e, `fetchLibsForLang(${langId})`);
+                this.loadPromises.delete(langId);
+            });
         }
         return promise;
     }
@@ -63,7 +68,8 @@ export class LibsService {
             const response = await fetch(url, {headers: {Accept: 'application/json'}});
             const libsArr = await response.json();
             return this.libArrayToRecord(libsArr);
-        } catch {
+        } catch (e) {
+            SentryCapture(e, `fetchRemoteLibs(${langId}, ${remoteUrl})`);
             return {};
         }
     }

@@ -23,6 +23,7 @@
 // POSSIBILITY OF SUCH DAMAGE.
 
 import {optionsHash} from '../options.js';
+import {SentryCapture} from '../sentry.js';
 
 export type ToolEntry = {
     id: string;
@@ -50,7 +51,13 @@ export class ToolsService {
         if (!promise) {
             promise = this.fetchToolsForLang(langId);
             this.loadPromises.set(langId, promise);
-            promise.then(result => this.cache.set(langId, result));
+            promise.then(
+                result => this.cache.set(langId, result),
+                e => {
+                    SentryCapture(e, `fetchToolsForLang(${langId})`);
+                    this.loadPromises.delete(langId);
+                },
+            );
         }
         return promise;
     }
