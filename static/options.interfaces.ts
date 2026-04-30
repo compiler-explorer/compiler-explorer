@@ -47,12 +47,12 @@ export type Libs = Record<string, LanguageLibs>;
 
 export type LibsPerRemote = Record<string, LanguageLibs>;
 
-// TODO: Is this the same as OptionsType in lib/options-handler.ts?
 export type Options = {
     defaultFontScale: number;
     sentryDsn?: string;
     release?: string;
     sentryEnvironment?: string;
+    gitReleaseCommit?: string;
     slides?: any[];
     cookieDomainRe: string;
     motdUrl: string;
@@ -69,8 +69,15 @@ export type Options = {
             key: string;
         };
     };
+    sharingEnabled: boolean;
+    urlShortenService: string;
     supportsExecute: boolean;
     supportsLibraryCodeFilter: boolean;
+    localStoragePrefix?: string;
+    doCache: boolean;
+    thirdPartyIntegrationEnabled: boolean;
+    statusTrackingEnabled: boolean;
+    compilerVersionsUrl?: string;
     cvCompilerCountMax: number;
     explainApiEndpoint: string;
 };
