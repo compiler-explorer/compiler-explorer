@@ -41,6 +41,7 @@ import {
 import {CompilerInfo} from '../../types/compiler.interfaces.js';
 import {Hub} from '../hub.js';
 import {extendConfig} from '../monaco-config.js';
+import {SentryCapture} from '../sentry.js';
 import * as utils from '../utils.js';
 import {Toggles} from '../widgets/toggles.js';
 import {OptPipelineViewState} from './opt-pipeline.interfaces.js';
@@ -145,18 +146,24 @@ export class OptPipeline extends MonacoPane<monaco.editor.IStandaloneDiffEditor,
     }
 
     override initializeStateDependentProperties(state: OptPipelineViewState & MonacoPaneState) {
-        const langId = state.lang;
-        const compilerId = state.compiler;
-        if (langId && compilerId) {
-            this.hub.compilerService.processFromLangAndCompiler(langId, compilerId).then(result => {
-                this.compiler = result?.compiler ?? null;
-            });
-        } else {
-            // With older state that's missing `lang` and `compiler`,
-            // we fallback to previous functionality (the compiler info is
-            // currently only used to tweak the UI for newer languages that did
-            // not offer this view previously).
-            this.compiler = null;
+        // The compiler value is fetched async via postInit. Reads of `this.compiler`
+        // during synchronous construction (createEditor → getMonacoLanguage,
+        // updateButtons) will see null and fall back to defaults; postInit re-applies
+        // the correct values once the fetch resolves.
+        this.compiler = null;
+        const {lang: langId, compiler: compilerId} = state;
+        if (langId && compilerId) this.postInit(langId, compilerId);
+    }
+
+    private async postInit(langId: string, compilerId: string) {
+        try {
+            const result = await this.hub.compilerService.processFromLangAndCompiler(langId, compilerId);
+            this.compiler = result?.compiler ?? null;
+            this.updateGroupName();
+            this.updateButtons();
+            this.updateEditor();
+        } catch (e) {
+            SentryCapture(e, 'OptPipeline.postInit');
         }
     }
 
