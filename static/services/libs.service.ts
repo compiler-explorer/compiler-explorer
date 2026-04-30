@@ -22,6 +22,8 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
+import urljoin from 'url-join';
+
 import {getRemoteId} from '../../shared/remote-utils.js';
 import {LanguageLibs} from '../options.interfaces.js';
 import {optionsHash} from '../options.js';
@@ -63,7 +65,7 @@ export class LibsService {
     }
 
     private async fetchRemoteLibs(langId: string, remoteUrl: string): Promise<LanguageLibs> {
-        const url = `${remoteUrl}api/libraries/${encodeURIComponent(langId)}`;
+        const url = urljoin(remoteUrl, 'api/libraries', encodeURIComponent(langId));
         try {
             const response = await fetch(url, {headers: {Accept: 'application/json'}});
             const libsArr = await response.json();
@@ -77,12 +79,8 @@ export class LibsService {
     private libArrayToRecord(libsArr: any[]): LanguageLibs {
         const libs: LanguageLibs = {};
         for (const lib of libsArr) {
-            const versions = lib.versions;
-            lib.versions = {};
-            for (const version of versions) {
-                lib.versions[version.id] = version;
-            }
-            libs[lib.id] = lib;
+            const versions = Object.fromEntries(lib.versions.map((v: any) => [v.id, v]));
+            libs[lib.id] = {...lib, versions};
         }
         return libs;
     }
