@@ -56,6 +56,8 @@ import * as LibUtils from '../lib-utils.js';
 import * as monacoConfig from '../monaco-config.js';
 import {LanguageLibs} from '../options.interfaces.js';
 import {options} from '../options.js';
+import {languagesService} from '../services/languages.service.js';
+import {toolsService} from '../services/tools.service.js';
 import {SiteSettings} from '../settings.js';
 import * as utils from '../utils.js';
 import {Alert} from '../widgets/alert.js';
@@ -82,7 +84,6 @@ import {YulBackendOptions} from '../../types/compilation/yul.interfaces.js';
 import {CompilerOutputOptions} from '../../types/features/filters.interfaces.js';
 import {InstructionSet} from '../../types/instructionsets.js';
 import {LanguageKey} from '../../types/languages.interfaces.js';
-import {Tool} from '../../types/tool.interfaces.js';
 import {ArtifactHandler} from '../artifact-handler.js';
 import {type AssemblySyntax, addAttSyntaxWarningIfNeeded, determineAssemblySyntax} from '../assembly-syntax.js';
 import {ICompilerShared} from '../compiler-shared.interfaces.js';
@@ -115,8 +116,6 @@ function patchOldFilters(filters: Partial<Record<string, boolean>> | undefined):
     });
     return filters as Record<string, boolean>;
 }
-
-const languages = options.languages;
 
 type LinkedCode = {
     range: monaco.Range;
@@ -298,7 +297,6 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
         this.infoByLang = {};
         this.deferCompiles = true;
         this.needsCompile = false;
-        this.initLangAndCompiler(state);
 
         this.source = '';
         this.assembly = [];
@@ -334,6 +332,19 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
         // MonacoPane's registerButtons is not called late enough, we still need to init some buttons with new data
         this.initPanerButtons();
 
+        this.compilerShared = new CompilerShared(this.domRoot, this.onCompilerOverridesChange.bind(this));
+        this.compilerShared.updateState(state);
+        // MonacoPane's registerCallbacks is not called late enough either
+        this.initCallbacks();
+        // Handle initial settings
+        this.onSettingsChange(this.settings);
+
+        this.postInit(state);
+    }
+
+    private async postInit(state: MonacoPaneState & CompilerState) {
+        await this.initLangAndCompiler(state);
+
         this.compilerPicker = new CompilerPicker(
             this.domRoot,
             this.hub,
@@ -342,12 +353,6 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
             this.onCompilerChange.bind(this),
         );
         this.initLibraries(state);
-        this.compilerShared = new CompilerShared(this.domRoot, this.onCompilerOverridesChange.bind(this));
-        this.compilerShared.updateState(state);
-        // MonacoPane's registerCallbacks is not called late enough either
-        this.initCallbacks();
-        // Handle initial settings
-        this.onSettingsChange(this.settings);
         this.sendCompiler();
         this.updateCompilerInfo();
         this.updateButtons();
@@ -358,6 +363,10 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
         }
 
         if (!this.hub.deferred) {
+            // Re-emit compilerOpen so the editor resends the source via editorChange.
+            // The initial compilerOpen fires synchronously before postInit completes,
+            // so the editorChange arrives before currentLangId is set and gets ignored.
+            this.eventHub.emit('compilerOpen', this.id, this.sourceEditorId ?? 0, this.sourceTreeId ?? 0);
             this.undefer();
         }
     }
@@ -370,7 +379,7 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
         } else {
             this.sourceEditorId = state.source || 1;
         }
-        this.options = state.options || (options.compileOptions[this.currentLangId ?? ''] ?? '');
+        this.options = state.options || '';
 
         this.deviceViewOpen = !!state.deviceViewOpen;
         this.flagsViewOpen = state.flagsViewOpen || false;
@@ -423,10 +432,10 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
         return null;
     }
 
-    initLangAndCompiler(state: Pick<MonacoPaneState & CompilerState, 'lang' | 'compiler'>): void {
+    async initLangAndCompiler(state: Pick<MonacoPaneState & CompilerState, 'lang' | 'compiler'>): Promise<void> {
         const langId = state.lang;
         const compilerId = state.compiler;
-        const result = this.compilerService.processFromLangAndCompiler(langId ?? null, compilerId);
+        const result = await this.compilerService.processFromLangAndCompiler(langId ?? null, compilerId);
         this.compiler = result?.compiler ?? null;
         this.currentLangId = result?.langId ?? null;
         this.updateLibraries();
@@ -1585,9 +1594,10 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
                 monaco.editor.setModelLanguage(editorModel, result.languageId);
             } else {
                 let monacoDisassembly = 'asm';
-                if (this.currentLangId && this.currentLangId in languages) {
+                const langs = languagesService.getLanguagesOrFail();
+                if (this.currentLangId && this.currentLangId in langs) {
                     // TS compiler trips if you try to fold this condition in one if
-                    const disasam = languages[this.currentLangId].monacoDisassembly;
+                    const disasam = langs[this.currentLangId].monacoDisassembly;
                     if (disasam !== null) {
                         monacoDisassembly = disasam;
                     }
@@ -1615,8 +1625,9 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
         }
 
         // Show language-specific hint when no assembly is generated and compilation succeeded
-        if (!asm.length && result.code === 0 && this.currentLangId && this.currentLangId in languages) {
-            const hint = languages[this.currentLangId].noAsmHint;
+        const langs2 = languagesService.getLanguagesOrFail();
+        if (!asm.length && result.code === 0 && this.currentLangId && this.currentLangId in langs2) {
+            const hint = langs2[this.currentLangId].noAsmHint;
             if (hint) {
                 msg += '\n\n' + hint;
             }
@@ -1818,8 +1829,10 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
             this.deviceButton.trigger('click');
         }
 
-        if (this.compiler)
+        if (this.compiler) {
+            const languages = languagesService.getLanguagesOrFail();
             this.eventHub.emit('compileResult', this.id, this.compiler, result, languages[this.currentLangId ?? '']);
+        }
     }
 
     onCompileResponse(request: any, result: any, cached: boolean): void {
@@ -2537,14 +2550,14 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
         this.compile();
     }
 
-    initLibraries(state: WidgetState): void {
+    async initLibraries(state: WidgetState): Promise<void> {
         this.libsWidget = new LibsWidget(
             this.currentLangId ?? '',
             this.compiler,
             this.libsButton,
             state,
             this.onLibsChanged.bind(this),
-            LibUtils.getSupportedLibraries(
+            await LibUtils.getSupportedLibraries(
                 this.compiler ? this.compiler.libsArr : [],
                 this.currentLangId ?? '',
                 this.compiler?.remote,
@@ -2552,11 +2565,11 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
         );
     }
 
-    updateLibraries(): void {
+    async updateLibraries(): Promise<void> {
         if (this.libsWidget) {
             let filteredLibraries: LanguageLibs = {};
             if (this.compiler) {
-                filteredLibraries = LibUtils.getSupportedLibraries(
+                filteredLibraries = await LibUtils.getSupportedLibraries(
                     this.compiler.libsArr,
                     this.currentLangId ?? '',
                     this.compiler.remote,
@@ -2567,9 +2580,9 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
         }
     }
 
-    isSupportedTool(tool: Tool): boolean {
+    isSupportedTool(toolType: string | undefined): boolean {
         if (this.sourceTreeId) {
-            return tool.tool.type === 'postcompilation';
+            return toolType === 'postcompilation';
         }
         return true;
     }
@@ -2577,22 +2590,24 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
     supportsTool(toolId: string): boolean {
         if (!this.compiler) return false;
 
-        return !!Object.values(this.compiler.tools).find(tool => {
-            return tool.tool.id === toolId && this.isSupportedTool(tool);
-        });
+        const compilerToolIds = this.compiler.tools as unknown as string[];
+        if (!compilerToolIds.includes(toolId)) return false;
+        const langTools = toolsService.getCachedToolsForLang(this.currentLangId ?? '');
+        return this.isSupportedTool(langTools?.[toolId]?.type);
     }
 
     initToolButton(hideToolDropdown: () => void, button: JQuery<HTMLElement>, toolId: string): void {
         const createToolView = () => {
             let args = '';
             let monacoStdin = false;
-            const langTools = options.tools[this.currentLangId ?? ''];
-            if (langTools?.[toolId]?.tool) {
-                if (langTools[toolId].tool.args !== undefined) {
-                    args = langTools[toolId].tool.args;
+            const langTools = toolsService.getCachedToolsForLang(this.currentLangId ?? '');
+            const tool = langTools?.[toolId];
+            if (tool) {
+                if (tool.args !== undefined) {
+                    args = tool.args;
                 }
-                if (langTools[toolId].tool.monacoStdin !== undefined) {
-                    monacoStdin = langTools[toolId].tool.monacoStdin;
+                if (tool.monacoStdin !== undefined) {
+                    monacoStdin = !!tool.monacoStdin;
                 }
             }
             return Components.getToolViewWith(
@@ -2621,7 +2636,7 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
         button.addClass('new-pane-button');
     }
 
-    initToolButtons(): void {
+    async initToolButtons(): Promise<void> {
         this.toolsMenu = this.domRoot.find('.new-tool-dropdown');
         const hideToolDropdown = () => {
             if (this.toolsMenu) BootstrapUtils.hideDropdown(this.toolsMenu);
@@ -2629,6 +2644,10 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
         this.toolsMenu.empty();
 
         if (!this.compiler) return;
+
+        if (this.currentLangId) {
+            await toolsService.getToolsForLang(this.currentLangId);
+        }
 
         const addTool = (toolName: string, title: string, toolIcon?: string, toolIconDark?: string) => {
             const btn = $("<button class='dropdown-item btn btn-light btn-sm'>");
@@ -2658,13 +2677,15 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
             }
         };
 
-        const tools = Object.values(this.compiler.tools);
-        if (tools.length === 0) {
+        const compilerToolIds = this.compiler.tools as unknown as string[];
+        if (compilerToolIds.length === 0) {
             addTool('none', 'No tools available');
         } else {
-            tools.forEach(tool => {
-                if (this.isSupportedTool(tool)) {
-                    addTool(tool.tool.id, tool.tool.name || tool.tool.id, tool.tool.icon, tool.tool.darkIcon);
+            const langTools = toolsService.getCachedToolsForLang(this.currentLangId ?? '');
+            compilerToolIds.forEach(toolId => {
+                const meta = langTools?.[toolId];
+                if (this.isSupportedTool(meta?.type)) {
+                    addTool(toolId, meta?.name || toolId, meta?.icon, meta?.darkIcon);
                 }
             });
         }
@@ -3165,8 +3186,8 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
         this.resize();
     }
 
-    onCompilerChange(value: string): void {
-        this.compiler = this.compilerService.findCompiler(this.currentLangId ?? '', value);
+    async onCompilerChange(value: string): Promise<void> {
+        this.compiler = await this.compilerService.findCompiler(this.currentLangId ?? '', value);
 
         this.deferCompiles = true;
         this.needsCompile = true;
@@ -3181,6 +3202,7 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
     }
 
     sendCompiler(): void {
+        if (!this.compiler) return;
         this.eventHub.emit(
             'compiler',
             this.id,
@@ -3274,9 +3296,8 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
     }
 
     getLanguageName(): string {
-        const lang = options.languages[this.currentLangId ?? ''];
-
-        return lang?.name ?? '?';
+        const languages = languagesService.getLanguagesOrFail();
+        return languages[this.currentLangId ?? '']?.name ?? '?';
     }
 
     override getDefaultPaneName(): string {
@@ -3303,6 +3324,7 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
     resendResult(): boolean {
         if (this.lastResult) {
             if (this.compiler) {
+                const languages = languagesService.getLanguagesOrFail();
                 this.eventHub.emit(
                     'compileResult',
                     this.id,
@@ -3584,6 +3606,7 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
                 currentWord.endColumn,
             );
             const lang = this.compiler?.lang;
+            const languages = languagesService.getLanguagesOrFail();
             const language = lang === undefined ? undefined : languages[lang];
             const numericToolTip = utils.getNumericToolTip(word, language?.digitSeparator);
             if (numericToolTip) {
@@ -3725,26 +3748,30 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
             (this.sourceEditorId && this.sourceEditorId === editorId) ||
             (this.sourceTreeId && this.sourceTreeId === treeId)
         ) {
+            const languages = languagesService.getLanguagesOrFail();
             const oldLangId = this.currentLangId ?? '';
             this.currentLangId = newLangId;
             // Store the current selected stuff to come back to it later in the same session (Not state stored!)
             this.infoByLang[oldLangId] = {
-                compiler: this.compiler?.id ? this.compiler.id : options.defaultCompiler[oldLangId as LanguageKey],
+                compiler: this.compiler?.id
+                    ? this.compiler.id
+                    : (languages[oldLangId as LanguageKey]?.defaultCompiler ?? ''),
                 options: this.options,
             };
 
             const info = this.infoByLang[this.currentLangId] || {};
             this.deferCompiles = true;
-            this.initLangAndCompiler({lang: newLangId, compiler: info.compiler});
-            this.updateCompilersSelector(info);
-            this.updateState();
-            this.updateCompilerUI();
-            this.setAssembly({asm: this.fakeAsm('')});
-            // this is a workaround to delay compilation further until the Editor sends a compile request
-            this.needsCompile = false;
+            this.initLangAndCompiler({lang: newLangId, compiler: info.compiler}).then(() => {
+                this.updateCompilersSelector(info);
+                this.updateState();
+                this.updateCompilerUI();
+                this.setAssembly({asm: this.fakeAsm('')});
+                // this is a workaround to delay compilation further until the Editor sends a compile request
+                this.needsCompile = false;
 
-            this.undefer();
-            this.sendCompiler();
+                this.undefer();
+                this.sendCompiler();
+            });
         }
     }
 

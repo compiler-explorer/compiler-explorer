@@ -22,17 +22,11 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import {getRemoteId} from '../shared/remote-utils.js';
 import {Remote} from '../types/compiler.interfaces.js';
 import {LanguageLibs, Library} from './options.interfaces.js';
-import {options} from './options.js';
+import {libsService} from './services/libs.service.js';
 
 const LIB_MATCH_RE = /([\w-]*)\.([\w-]*)/i;
-
-function getRemoteLibraries(language: string, remoteUrl: string): LanguageLibs {
-    const remoteId = getRemoteId(remoteUrl, language);
-    return options.remoteLibs[remoteId];
-}
 
 function copyAndFilterLibraries(allLibraries: LanguageLibs, filter: string[]) {
     const filterLibAndVersion = filter.map(lib => {
@@ -62,19 +56,14 @@ function copyAndFilterLibraries(allLibraries: LanguageLibs, filter: string[]) {
     return copiedLibraries;
 }
 
-export function getSupportedLibraries(
+export async function getSupportedLibraries(
     supportedLibrariesArr: string[] | undefined,
     langId: string,
     remote?: Remote,
-): LanguageLibs {
-    if (!remote) {
-        const allLibs = options.libs[langId];
-        if (supportedLibrariesArr && supportedLibrariesArr.length > 0) {
-            return copyAndFilterLibraries(allLibs, supportedLibrariesArr);
-        }
-        return allLibs;
-    }
-    const allLibs = getRemoteLibraries(langId, remote.target + remote.basePath);
+): Promise<LanguageLibs> {
+    const allLibs = remote
+        ? await libsService.getRemoteLibs(langId, remote.target + remote.basePath)
+        : await libsService.getLibsForLang(langId);
     if (supportedLibrariesArr && supportedLibrariesArr.length > 0) {
         return copyAndFilterLibraries(allLibs, supportedLibrariesArr);
     }

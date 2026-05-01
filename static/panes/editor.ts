@@ -38,6 +38,7 @@ import {createDragSource} from '../components.js';
 import * as monacoConfig from '../monaco-config.js';
 import {options} from '../options.js';
 import * as quickFixesHandler from '../quick-fixes-handler.js';
+import {languagesService} from '../services/languages.service.js';
 import {SiteSettings} from '../settings.js';
 import {Alert} from '../widgets/alert.js';
 import * as loadSaveLib from '../widgets/load-save.js';
@@ -67,7 +68,6 @@ import {getStaticImage} from '../utils';
 window.monaco = monaco;
 
 const loadSave = new loadSaveLib.LoadSave();
-const languages = options.languages;
 
 type ResultLineWithSourcePane = ResultLine & {
     sourcePane: string;
@@ -122,6 +122,7 @@ export class Editor extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Edit
         this.alertSystem = new Alert();
         this.alertSystem.prefixMessage = 'Editor #' + this.id;
 
+        const languages = languagesService.getLanguagesOrFail();
         if ((state.lang as any) === undefined && Object.keys(languages).length > 0) {
             if (!this.currentLanguage) {
                 // Primarily a diagnostic for urls created outside CE. Addresses #4817.
@@ -321,24 +322,21 @@ export class Editor extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Edit
     }
 
     getLanguageFromState(state: MonacoPaneState & EditorState): Language | undefined {
-        let newLanguage = languages[this.langKeys[0]];
+        const langs = languagesService.getLanguagesOrFail();
+        let newLanguage = langs[this.langKeys[0]];
         this.waitingForLanguage = Boolean(state.source && !state.lang);
-        if (this.settings.defaultLanguage && this.settings.defaultLanguage in languages) {
-            newLanguage = languages[this.settings.defaultLanguage];
-        } else if (this.hub.defaultLangId in languages) {
+        if (this.settings.defaultLanguage && this.settings.defaultLanguage in langs) {
+            newLanguage = langs[this.settings.defaultLanguage];
+        } else if (this.hub.defaultLangId in langs) {
             // the first time the user visits the site (or particular domain), this.settings might not be set yet
             //  use the hub's default lang if possible
-            newLanguage = languages[this.hub.defaultLangId];
+            newLanguage = langs[this.hub.defaultLangId];
         }
 
-        if (state.lang in languages) {
-            newLanguage = languages[state.lang];
-        } else if (
-            this.settings.newEditorLastLang &&
-            this.hub.lastOpenedLangId &&
-            this.hub.lastOpenedLangId in languages
-        ) {
-            newLanguage = languages[this.hub.lastOpenedLangId];
+        if (state.lang in langs) {
+            newLanguage = langs[state.lang];
+        } else if (this.settings.newEditorLastLang && this.hub.lastOpenedLangId && this.hub.lastOpenedLangId in langs) {
+            newLanguage = langs[this.hub.lastOpenedLangId];
         }
 
         return newLanguage;
@@ -508,7 +506,7 @@ export class Editor extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Edit
         super.initializeGlobalDependentProperties();
 
         this.httpRoot = window.httpRoot;
-        this.langKeys = Object.keys(languages) as LanguageKey[];
+        this.langKeys = Object.keys(languagesService.getLanguagesOrFail()) as LanguageKey[];
     }
 
     override initializeStateDependentProperties(state: MonacoPaneState & EditorState): void {
@@ -548,19 +546,13 @@ export class Editor extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Edit
             }
         });
 
-        // Ensure that the button is disabled if we don't have anything to select
-        // Note that is might be disabled for other reasons beforehand
-        if (this.langKeys.length <= 1) {
-            this.languageBtn.prop('disabled', true);
-        }
-
-        const usableLanguages = Object.values(languages).filter(language => {
-            return this.hub.compilerService.getCompilersForLang(language.id);
-        });
-
         this.languageInfoButton = this.domRoot.find('.language-info');
         BootstrapUtils.initPopover(this.languageInfoButton);
         this.languageBtn = this.domRoot.find('.change-language');
+
+        if (this.langKeys.length <= 1) {
+            this.languageBtn.prop('disabled', true);
+        }
         const changeLanguageButton = this.languageBtn[0];
         assert(changeLanguageButton instanceof HTMLSelectElement);
         this.selectize = new TomSelect(changeLanguageButton, {
@@ -569,7 +561,7 @@ export class Editor extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Edit
             labelField: 'name',
             searchField: ['name'],
             placeholder: '🔍 Select a language...',
-            options: [...usableLanguages],
+            options: [...Object.values(languagesService.getLanguagesOrFail())],
             items: this.currentLanguage?.id ? [this.currentLanguage.id] : [],
             dropdownParent: 'body',
             plugins: ['dropdown_input'],
@@ -817,7 +809,7 @@ export class Editor extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Edit
         return null;
     }
 
-    updateOpenInQuickBench(): void {
+    async updateOpenInQuickBench(): Promise<void> {
         if (options.thirdPartyIntegrationEnabled) {
             type QuickBenchState = {
                 text?: string;
@@ -833,11 +825,11 @@ export class Editor extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Edit
 
             const compilers = this.getCompilerStates();
 
-            compilers.forEach(compiler => {
+            for (const compiler of compilers) {
                 let knownCompiler = false;
 
                 const compilerExtInfo = unwrap(
-                    this.hub.compilerService.findCompiler(this.currentLanguage?.id ?? '', compiler.compiler),
+                    await this.hub.compilerService.findCompiler(this.currentLanguage?.id ?? '', compiler.compiler),
                 );
                 const semver = this.cleanupSemVer(compilerExtInfo.semver);
                 let groupOrName = compilerExtInfo.baseName || compilerExtInfo.groupName || compilerExtInfo.name;
@@ -888,7 +880,7 @@ export class Editor extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Edit
                         quickBenchState.lib = 'llvm';
                     }
                 }
-            });
+            }
 
             const link =
                 'https://quick-bench.com/#' +
@@ -903,7 +895,8 @@ export class Editor extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Edit
             setTimeout(() => this.changeLanguage(newLang), 0);
         } else {
             if (newLang === 'cmake') {
-                this.selectize.addOption(unwrap(languages.cmake));
+                const cmakeLang = languagesService.getLanguagesOrFail().cmake;
+                if (cmakeLang) this.selectize.addOption(cmakeLang);
             }
             this.selectize.setValue(newLang);
         }
@@ -1364,7 +1357,7 @@ export class Editor extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Edit
         this.eventHub.emit('colours', this.id, colours, this.settings.colourScheme);
     }
 
-    onCompilerOpen(compilerId: number, editorId: number, treeId: number | boolean): void {
+    async onCompilerOpen(compilerId: number, editorId: number, treeId: number | boolean): Promise<void> {
         if (editorId === this.id) {
             // On any compiler open, rebroadcast our state in case they need to know it.
             if (this.waitingForLanguage) {
@@ -1373,11 +1366,12 @@ export class Editor extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Edit
                     c => c.id === compilerId,
                 );
                 if (glCompiler) {
-                    const selected = options.compilers.find(compiler => {
-                        return compiler.id === glCompiler.originalCompilerId;
-                    });
-                    if (selected) {
-                        this.changeLanguage(selected.lang);
+                    const result = await this.hub.compilerService.processFromLangAndCompiler(
+                        null,
+                        glCompiler.originalCompilerId,
+                    );
+                    if (result?.compiler) {
+                        this.changeLanguage(result.compiler.lang);
                     }
                 }
             }
@@ -1858,6 +1852,7 @@ export class Editor extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Edit
     }
 
     onLanguageChange(newLangId: LanguageKey, firstTime?: boolean): void {
+        const languages = languagesService.getLanguagesOrFail();
         if (newLangId in languages) {
             if (firstTime || newLangId !== this.currentLanguage?.id) {
                 const oldLangId = this.currentLanguage?.id;
@@ -1921,6 +1916,7 @@ export class Editor extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Edit
 
     // Called every time we change language, so we get the relevant code
     updateEditorCode(): void {
+        const languages = languagesService.getLanguagesOrFail();
         this.setSource(
             this.editorSourceByLang[this.currentLanguage?.id ?? ''] ||
                 languages[this.currentLanguage?.id ?? '']?.example,

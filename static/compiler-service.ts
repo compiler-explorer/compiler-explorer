@@ -38,6 +38,8 @@ import {CompilerInfo} from '../types/compiler.interfaces.js';
 import {CompilationStatus} from './compiler-service.interfaces.js';
 import {IncludeDownloads, SourceAndFiles} from './download-service.js';
 import {SentryCapture} from './sentry.js';
+import {compilersService} from './services/compilers.service.js';
+import {languagesService} from './services/languages.service.js';
 import {SiteSettings} from './settings.js';
 
 const ASCII_COLORS_RE = new RegExp(/\x1B\[[\d;]*m(.\[K)?/g);
@@ -46,7 +48,6 @@ export class CompilerService {
     private readonly base = window.httpRoot;
     private allowStoreCodeDebug: boolean;
     private cache: LRUCache<string, CompilationResult>;
-    private readonly compilersByLang: Record<string, Record<string, CompilerInfo>>;
 
     constructor(eventHub: EventEmitter) {
         this.allowStoreCodeDebug = true;
@@ -55,36 +56,30 @@ export class CompilerService {
             sizeCalculation: n => JSON.stringify(n).length,
         });
 
-        this.compilersByLang = {};
-
-        for (const compiler of options.compilers) {
-            if (!(compiler.lang in this.compilersByLang)) this.compilersByLang[compiler.lang] = {};
-            this.compilersByLang[compiler.lang][compiler.id] = compiler;
-        }
-
         eventHub.on(
             'settingsChange',
             (newSettings: SiteSettings) => (this.allowStoreCodeDebug = newSettings.allowStoreCodeDebug),
         );
     }
 
-    private getDefaultCompilerForLang(langId: string) {
-        return options.defaultCompiler[langId];
+    private async getDefaultCompilerForLang(langId: string): Promise<string> {
+        const languages = await languagesService.getLanguages();
+        return languages[langId]?.defaultCompiler ?? '';
     }
 
-    public processFromLangAndCompiler(
+    public async processFromLangAndCompiler(
         langId: string | null,
         compilerId: string,
-    ): {langId: string | null; compiler: CompilerInfo | null} | null {
+    ): Promise<{langId: string | null; compiler: CompilerInfo | null} | null> {
         try {
             if (langId) {
                 if (!compilerId) {
-                    compilerId = this.getDefaultCompilerForLang(langId);
+                    compilerId = await this.getDefaultCompilerForLang(langId);
                 }
 
-                const foundCompiler = this.findCompiler(langId, compilerId);
+                const foundCompiler = await this.findCompiler(langId, compilerId);
                 if (!foundCompiler) {
-                    const compilers = Object.values(this.getCompilersForLang(langId) ?? {});
+                    const compilers = Object.values((await this.getCompilersForLang(langId)) ?? {});
                     if (compilers.length > 0) {
                         return {
                             compiler: compilers[0],
@@ -92,7 +87,6 @@ export class CompilerService {
                         };
                     }
                     return {
-                        // There were no compilers, so return null, the selection will show up empty
                         compiler: null,
                         langId: langId,
                     };
@@ -103,38 +97,35 @@ export class CompilerService {
                 };
             }
             if (compilerId) {
-                const matchingCompilers = Object.values(options.languages).map(lang => {
-                    const compiler = this.findCompiler(lang.id, compilerId);
+                for (const lang of Object.values(languagesService.getLanguagesOrFail())) {
+                    const compiler = await this.findCompiler(lang.id, compilerId);
                     if (compiler) {
                         return {
                             langId: lang.id,
                             compiler: compiler,
                         };
                     }
-                    return null;
-                });
-                // Ensure that if no compiler is present, we return null instead of undefined
-                return matchingCompilers.find(compiler => compiler !== null) ?? null;
+                }
+                return null;
             }
-            const languages = Object.values(options.languages);
+            const languages = Object.values(languagesService.getLanguagesOrFail());
             if (languages.length > 0) {
                 const firstLang = languages[0];
                 return this.processFromLangAndCompiler(firstLang.id, compilerId);
             }
-            // TODO: What now? No languages loaded
             return null;
         } catch (e) {
             SentryCapture(e, 'processFromLangAndCompiler');
         }
-        // TODO: What now? Found no compilers!
         return {
             langId: langId,
             compiler: null,
         };
     }
 
-    public getGroupsInUse(langId: string): {value: string; label: string}[] {
-        return _.uniq(Object.values(this.getCompilersForLang(langId) ?? {}), false, compiler => compiler.group)
+    public async getGroupsInUse(langId: string): Promise<{value: string; label: string}[]> {
+        const compilers = (await this.getCompilersForLang(langId)) ?? {};
+        return _.uniq(Object.values(compilers), false, compiler => compiler.group)
             .map(compiler => {
                 return {value: compiler.group, label: compiler.groupName || compiler.group};
             })
@@ -145,8 +136,8 @@ export class CompilerService {
             );
     }
 
-    getCompilersForLang(langId: string): Record<string, CompilerInfo> | undefined {
-        return langId in this.compilersByLang ? this.compilersByLang[langId] : undefined;
+    async getCompilersForLang(langId: string): Promise<Record<string, CompilerInfo>> {
+        return compilersService.getCompilersForLang(langId);
     }
 
     private findCompilerInList(compilers: Record<string, CompilerInfo>, compilerId: string) {
@@ -161,9 +152,9 @@ export class CompilerService {
         return null;
     }
 
-    findCompiler(langId: string, compilerId: string): CompilerInfo | null {
+    async findCompiler(langId: string, compilerId: string): Promise<CompilerInfo | null> {
         if (!compilerId) return null;
-        const compilers = this.getCompilersForLang(langId) ?? {};
+        const compilers = await this.getCompilersForLang(langId);
         return this.findCompilerInList(compilers, compilerId);
     }
 
