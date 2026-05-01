@@ -32,6 +32,20 @@ import {SentryCapture} from '../sentry.js';
 export class LibsService {
     private readonly loadPromises = new Map<string, Promise<LanguageLibs>>();
 
+    private static readonly libFields: string[] = [
+        'id',
+        'name',
+        'description',
+        'url',
+        'versions.id',
+        'versions.version',
+        'versions.alias',
+        'versions.lookupname',
+        'versions.lookupversion',
+        'versions.hidden',
+        'versions.$order',
+    ];
+
     async getLibsForLang(langId: string): Promise<LanguageLibs> {
         let promise = this.loadPromises.get(langId);
         if (!promise) {
@@ -57,7 +71,7 @@ export class LibsService {
 
     private async fetchLibsForLang(langId: string): Promise<LanguageLibs> {
         const response = await fetch(
-            `${window.httpRoot}api/libraries/${encodeURIComponent(langId)}?hash=${optionsHash}`,
+            `${window.httpRoot}api/libraries/${encodeURIComponent(langId)}?fields=${LibsService.libFields.join(',')}&hash=${optionsHash}`,
             {headers: {Accept: 'application/json'}},
         );
         const libsArr = await response.json();
@@ -65,7 +79,11 @@ export class LibsService {
     }
 
     private async fetchRemoteLibs(langId: string, remoteUrl: string): Promise<LanguageLibs> {
-        const url = urljoin(remoteUrl, 'api/libraries', encodeURIComponent(langId));
+        const url = urljoin(
+            remoteUrl,
+            'api/libraries',
+            `${encodeURIComponent(langId)}?fields=${LibsService.libFields.join(',')}`,
+        );
         try {
             const response = await fetch(url, {headers: {Accept: 'application/json'}});
             const libsArr = await response.json();

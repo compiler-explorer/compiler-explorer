@@ -84,7 +84,6 @@ import {YulBackendOptions} from '../../types/compilation/yul.interfaces.js';
 import {CompilerOutputOptions} from '../../types/features/filters.interfaces.js';
 import {InstructionSet} from '../../types/instructionsets.js';
 import {LanguageKey} from '../../types/languages.interfaces.js';
-import {Tool} from '../../types/tool.interfaces.js';
 import {ArtifactHandler} from '../artifact-handler.js';
 import {type AssemblySyntax, addAttSyntaxWarningIfNeeded, determineAssemblySyntax} from '../assembly-syntax.js';
 import {ICompilerShared} from '../compiler-shared.interfaces.js';
@@ -2581,9 +2580,9 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
         }
     }
 
-    isSupportedTool(tool: Tool): boolean {
+    isSupportedTool(toolType: string | undefined): boolean {
         if (this.sourceTreeId) {
-            return tool.tool.type === 'postcompilation';
+            return toolType === 'postcompilation';
         }
         return true;
     }
@@ -2591,9 +2590,10 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
     supportsTool(toolId: string): boolean {
         if (!this.compiler) return false;
 
-        return !!Object.values(this.compiler.tools).find(tool => {
-            return tool.tool.id === toolId && this.isSupportedTool(tool);
-        });
+        const compilerToolIds = this.compiler.tools as unknown as string[];
+        if (!compilerToolIds.includes(toolId)) return false;
+        const langTools = toolsService.getCachedToolsForLang(this.currentLangId ?? '');
+        return this.isSupportedTool(langTools?.[toolId]?.type);
     }
 
     initToolButton(hideToolDropdown: () => void, button: JQuery<HTMLElement>, toolId: string): void {
@@ -2677,13 +2677,15 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
             }
         };
 
-        const tools = Object.values(this.compiler.tools);
-        if (tools.length === 0) {
+        const compilerToolIds = this.compiler.tools as unknown as string[];
+        if (compilerToolIds.length === 0) {
             addTool('none', 'No tools available');
         } else {
-            tools.forEach(tool => {
-                if (this.isSupportedTool(tool)) {
-                    addTool(tool.tool.id, tool.tool.name || tool.tool.id, tool.tool.icon, tool.tool.darkIcon);
+            const langTools = toolsService.getCachedToolsForLang(this.currentLangId ?? '');
+            compilerToolIds.forEach(toolId => {
+                const meta = langTools?.[toolId];
+                if (this.isSupportedTool(meta?.type)) {
+                    addTool(toolId, meta?.name || toolId, meta?.icon, meta?.darkIcon);
                 }
             });
         }

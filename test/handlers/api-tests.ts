@@ -248,3 +248,158 @@ describe('API tools endpoint', () => {
         expect(res.body).toEqual([]);
     });
 });
+
+describe('API compilers tools slimming', () => {
+    let app: express.Express;
+
+    beforeAll(() => {
+        app = express();
+        const apiHandler = new ApiHandler(
+            {
+                handle: res => res.send('compile'),
+                handleCmake: res => res.send('cmake'),
+                handlePopularArguments: res => res.send('ok'),
+                handleOptimizationArguments: res => res.send('ok'),
+            } as unknown as CompileHandler,
+            fakeProps({}),
+            new StorageNull('/', new CompilerProps(languages, fakeProps({}))),
+            'default',
+            {ceProps: (key, def) => def} as CompilationEnvironment,
+        );
+        app.use(express.json());
+        app.use('/api', apiHandler.handle);
+
+        const mockToolInfo: ToolInfo = {
+            id: 'clangtidy',
+            name: 'Clang-Tidy',
+            type: 'postcompilation',
+            exe: '/secret/path/to/clang-tidy',
+            exclude: [],
+            options: [],
+            languageId: 'c++',
+            stdinHint: 'enabled',
+            compilerLanguage: 'c++',
+        };
+        const mockTool = {tool: mockToolInfo, id: mockToolInfo.id, type: 'postcompilation'};
+
+        apiHandler.setCompilers([
+            makeFakeCompilerInfo({
+                id: 'gcc900',
+                name: 'GCC 9.0.0',
+                lang: 'c++',
+                tools: {clangtidy: mockTool},
+            }),
+        ]);
+        apiHandler.setLanguages(languages);
+    });
+
+    it('should expose only tool IDs and not nested tool fields like exe', async () => {
+        const res = await request(app)
+            .get('/api/compilers?fields=id,tools')
+            .set('Accept', 'application/json')
+            .expect('Content-Type', /json/)
+            .expect(200);
+
+        expect(res.body).toEqual([{id: 'gcc900', tools: ['clangtidy']}]);
+        expect(JSON.stringify(res.body)).not.toContain('/secret/path/to/clang-tidy');
+    });
+});
+
+describe('API libraries field filtering', () => {
+    let app: express.Express;
+
+    beforeAll(() => {
+        app = express();
+        const apiHandler = new ApiHandler(
+            {
+                handle: res => res.send('compile'),
+                handleCmake: res => res.send('cmake'),
+                handlePopularArguments: res => res.send('ok'),
+                handleOptimizationArguments: res => res.send('ok'),
+            } as unknown as CompileHandler,
+            fakeProps({}),
+            new StorageNull('/', new CompilerProps(languages, fakeProps({}))),
+            'default',
+            {ceProps: (key, def) => def} as CompilationEnvironment,
+        );
+        app.use(express.json());
+        app.use('/api', apiHandler.handle);
+        apiHandler.setLanguages(languages);
+
+        apiHandler.setOptions({
+            options: {
+                libs: {
+                    'c++': {
+                        boost: {
+                            name: 'Boost',
+                            description: 'Free peer-reviewed portable C++ source libraries.',
+                            url: 'https://www.boost.org/',
+                            versions: {
+                                '178': {
+                                    version: '1.78.0',
+                                    alias: ['1_78'],
+                                    lookupname: 'boost',
+                                    lookupversion: '1.78',
+                                    hidden: false,
+                                    $order: 0,
+                                    staticliblink: ['boost_secret_link'],
+                                    liblink: [],
+                                    libpath: ['/secret/lib/path'],
+                                    path: ['/secret/include/path'],
+                                    options: [],
+                                    dependencies: [],
+                                },
+                            },
+                        },
+                    },
+                },
+            },
+        } as unknown as ClientOptionsHandler);
+    });
+
+    it('returns the full shape when fields is omitted (backwards compatible)', async () => {
+        const res = await request(app)
+            .get('/api/libraries/c++')
+            .set('Accept', 'application/json')
+            .expect('Content-Type', /json/)
+            .expect(200);
+
+        expect(res.body).toHaveLength(1);
+        expect(res.body[0].id).toBe('boost');
+        expect(res.body[0].versions[0]).toMatchObject({
+            id: '178',
+            version: '1.78.0',
+            staticliblink: ['boost_secret_link'],
+            libpath: ['/secret/lib/path'],
+        });
+    });
+
+    it('filters top-level fields when fields is provided', async () => {
+        const res = await request(app)
+            .get('/api/libraries/c++?fields=id,name')
+            .set('Accept', 'application/json')
+            .expect('Content-Type', /json/)
+            .expect(200);
+
+        expect(res.body).toEqual([{id: 'boost', name: 'Boost'}]);
+    });
+
+    it('filters version fields via dotted paths and omits leaky fields', async () => {
+        const res = await request(app)
+            .get('/api/libraries/c++?fields=id,versions.id,versions.version,versions.alias')
+            .set('Accept', 'application/json')
+            .expect('Content-Type', /json/)
+            .expect(200);
+
+        expect(res.body).toEqual([
+            {
+                id: 'boost',
+                versions: [{id: '178', version: '1.78.0', alias: ['1_78']}],
+            },
+        ]);
+        const body = JSON.stringify(res.body);
+        expect(body).not.toContain('boost_secret_link');
+        expect(body).not.toContain('/secret/lib/path');
+        expect(body).not.toContain('/secret/include/path');
+    });
+});

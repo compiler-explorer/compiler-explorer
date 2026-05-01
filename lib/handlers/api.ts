@@ -221,26 +221,52 @@ export class ApiHandler {
         res.send(header + body);
     }
 
-    getLibrariesAsArray(languageId: LanguageKey) {
+    getLibrariesAsArray(languageId: LanguageKey, fields?: string[]) {
         const libsForLanguageObj = unwrap(this.options).options.libs[languageId];
         if (!libsForLanguageObj) return [];
 
+        // Field filtering supports dotted paths for nested version fields
+        // (e.g. `versions.id,versions.version`). Bare `versions` includes the
+        // full version objects. Omitting `fields` returns the legacy full shape.
+        const VERSION_PREFIX = 'versions.';
+        let topLevelFields: string[] | undefined;
+        let versionFields: string[] | undefined;
+        if (fields && fields.length > 0) {
+            topLevelFields = [];
+            versionFields = [];
+            let allVersionFields = false;
+            for (const f of fields) {
+                if (f.startsWith(VERSION_PREFIX)) {
+                    versionFields.push(f.slice(VERSION_PREFIX.length));
+                } else if (f === 'versions') {
+                    allVersionFields = true;
+                    topLevelFields.push(f);
+                } else {
+                    topLevelFields.push(f);
+                }
+            }
+            if (allVersionFields) {
+                versionFields = undefined;
+            } else if (versionFields.length > 0 && !topLevelFields.includes('versions')) {
+                topLevelFields.push('versions');
+            }
+        }
+
         return Object.keys(libsForLanguageObj).map(key => {
-            const language = libsForLanguageObj[key];
-            const versionArr = Object.keys(language.versions).map(key => {
-                return {
-                    ...language.versions[key],
-                    id: key,
-                };
+            const library = libsForLanguageObj[key];
+            const versionArr = Object.keys(library.versions).map(versionKey => {
+                const fullVersion = {...library.versions[versionKey], id: versionKey};
+                return versionFields ? _.pick(fullVersion, versionFields) : fullVersion;
             });
 
-            return {
+            const fullLib = {
                 id: key,
-                name: language.name,
-                description: language.description,
-                url: language.url,
+                name: library.name,
+                description: library.description,
+                url: library.url,
                 versions: versionArr,
             };
+            return topLevelFields ? _.pick(fullLib, topLevelFields) : fullLib;
         });
     }
 
@@ -268,7 +294,9 @@ export class ApiHandler {
     handleLangLibraries(req: express.Request, res: express.Response, next: express.NextFunction) {
         if (this.options) {
             if (req.params.language) {
-                res.send(this.getLibrariesAsArray(req.params.language as LanguageKey));
+                const fieldsParam = req.query.fields;
+                const fields = isString(fieldsParam) ? fieldsParam.split(',') : undefined;
+                res.send(this.getLibrariesAsArray(req.params.language as LanguageKey, fields));
             } else {
                 next({
                     statusCode: 404,
@@ -341,7 +369,16 @@ export class ApiHandler {
             filteredCompilers = this.compilers.filter(compiler => compiler.lang === req.params.language);
         }
 
-        this.outputList(filteredCompilers, 'Compiler Name', req, res);
+        // Avoid leaking nested tool fields like `tool.exe` over the API: expose
+        // only the supported tool IDs. Per-tool metadata is served separately
+        // via /api/tools/:language.
+        const slimmedCompilers = filteredCompilers.map(compiler =>
+            compiler.tools
+                ? {...compiler, tools: Object.keys(compiler.tools) as unknown as CompilerInfo['tools']}
+                : compiler,
+        );
+
+        this.outputList(slimmedCompilers, 'Compiler Name', req, res);
     }
 
     handleReleaseName(req: express.Request, res: express.Response) {

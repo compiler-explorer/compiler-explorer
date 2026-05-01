@@ -511,6 +511,16 @@ export class ClientOptionsHandler implements ClientOptionsSource {
             }
         }
 
+        // Mirror $order onto the input compilers so other consumers (notably
+        // the api handler used by lazy-load) see the same ordering as the
+        // deep-copied client options here.
+        for (let i = 0; i < compilers.length; i++) {
+            const order = copiedCompilers[i].$order;
+            if (order !== undefined) {
+                compilers[i].$order = order;
+            }
+        }
+
         this.options.compilers = copiedCompilers;
         this.options.remoteLibs = this.remoteLibs;
         this._updateOptionsHash();

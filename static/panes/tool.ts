@@ -415,9 +415,10 @@ export class Tool extends MonacoPane<monaco.editor.IStandaloneCodeEditor, ToolSt
         try {
             if (id !== this.compilerInfo.compilerId) return;
 
-            const foundTool = _.find(compiler.tools, tool => tool.tool.id === this.toolId);
+            const compilerToolIds = compiler.tools as unknown as string[];
+            const compilerSupportsTool = compilerToolIds.includes(this.toolId);
 
-            this.toggleUsable(!!foundTool);
+            this.toggleUsable(compilerSupportsTool);
 
             // any for now for typing reasons... TODO(jeremy-rifkin)
             let toolResult: any = null;
@@ -427,9 +428,9 @@ export class Tool extends MonacoPane<monaco.editor.IStandaloneCodeEditor, ToolSt
                 toolResult = _.find(result.result.tools, tool => tool.id === this.toolId);
             }
 
-            // any for now for typing reasons... TODO(jeremy-rifkin)
-            let toolInfo: any = null;
-            toolInfo = _.find(compiler.tools, tool => tool.tool.id === this.toolId);
+            const toolInfo = compilerSupportsTool
+                ? toolsService.getCachedToolsForLang(compiler.lang)?.[this.toolId]
+                : undefined;
 
             if (toolInfo) {
                 this.toggleStdin.prop('disabled', false);
@@ -437,9 +438,9 @@ export class Tool extends MonacoPane<monaco.editor.IStandaloneCodeEditor, ToolSt
                 if (this.monacoStdin && !this.monacoEditorOpen && !this.monacoEditorHasBeenAutoOpened) {
                     this.monacoEditorHasBeenAutoOpened = true;
                     this.openMonacoEditor();
-                } else if (!this.monacoStdin && toolInfo.tool.stdinHint) {
-                    this.localStdinField.prop('placeholder', toolInfo.tool.stdinHint);
-                    if (toolInfo.tool.stdinHint === 'disabled') {
+                } else if (!this.monacoStdin && toolInfo.stdinHint) {
+                    this.localStdinField.prop('placeholder', toolInfo.stdinHint);
+                    if (toolInfo.stdinHint === 'disabled') {
                         this.toggleStdin.prop('disabled', true);
                     } else {
                         this.showPanel(this.toggleStdin, this.panelStdin);
