@@ -84,7 +84,7 @@ import {InstructionSet} from '../../types/instructionsets.js';
 import {LanguageKey} from '../../types/languages.interfaces.js';
 import {Tool} from '../../types/tool.interfaces.js';
 import {ArtifactHandler} from '../artifact-handler.js';
-import {type AssemblySyntax, addAttSyntaxWarningIfNeeded} from '../assembly-syntax.js';
+import {type AssemblySyntax, addAttSyntaxWarningIfNeeded, determineAssemblySyntax} from '../assembly-syntax.js';
 import {ICompilerShared} from '../compiler-shared.interfaces.js';
 import {CompilerShared} from '../compiler-shared.js';
 import {SourceAndFiles} from '../download-service.js';
@@ -2830,12 +2830,8 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
         );
     }
 
-    // Only x86/x64 compilers (supportsIntel) can emit AT&T syntax.
-    // Non-x86 architectures default to 'intel' so they never trigger the AT&T warning.
     asmSyntax(): AssemblySyntax {
-        const isAtt =
-            this.compiler?.supportsIntel && !(this.filters.isSet('intel') && this.compiler.intelAsm.includes('intel'));
-        return isAtt ? 'att' : 'intel';
+        return determineAssemblySyntax(this.compiler?.supportsIntel, this.filters.isSet('intel'));
     }
 
     handlePopularArgumentsResult(result: Record<string, {description: string}> | null): void {

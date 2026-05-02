@@ -179,6 +179,9 @@ export class Opt extends MonacoPane<monaco.editor.IStandaloneCodeEditor, OptStat
                 domNode.classList.add('view-line', 'opt-line', optType.toLowerCase());
                 this.editor.applyFontInfo(domNode);
                 domNode.innerText = displayString;
+                domNode.style.zIndex = '20';
+                domNode.style.userSelect = 'text';
+                domNode.oncontextmenu = e => e.stopPropagation();
 
                 // let the browser calculate the height that the text needs
                 domNode.style.visibility = 'hidden';

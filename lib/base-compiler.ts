@@ -1554,9 +1554,9 @@ export class BaseCompiler {
         const output = await this.runCompiler(this.compiler.exe, newOptions, this.filename(inputFilename), execOptions);
         const compileEnd = performance.now();
 
-        if (output.code) {
+        if (output.truncated) {
             return {
-                error: `Invocation failed: ${utils.resultLinesToText(output.stderr)}${utils.resultLinesToText(output.stdout)}}`,
+                error: 'Exceeded max output limit',
                 results: {},
                 compileTime: output.execTime || compileEnd - compileStart,
             };
@@ -1570,9 +1570,9 @@ export class BaseCompiler {
             };
         }
 
-        if (output.truncated) {
+        if (output.code) {
             return {
-                error: 'Exceeded max output limit',
+                error: `Invocation failed: ${utils.resultLinesToText(output.stderr)}${utils.resultLinesToText(output.stdout)}}`,
                 results: {},
                 compileTime: output.execTime || compileEnd - compileStart,
             };
