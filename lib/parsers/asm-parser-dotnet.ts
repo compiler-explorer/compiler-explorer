@@ -27,6 +27,7 @@ import {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfa
 import * as utils from '../utils.js';
 import {IAsmParser} from './asm-parser.interfaces.js';
 import type {DotNetMethodKey, DotNetMethodSourceMapping, DotNetSourceMapping} from './pdb-parser-dotnet.js';
+import {getCanonicalTypeSignature} from './pdb-parser-dotnet.js';
 
 type InlineLabel = {name: string; range: {startCol: number; endCol: number}};
 
@@ -219,14 +220,28 @@ export class DotNetAsmParser implements IAsmParser {
                 continue;
             }
 
-            const candidateParameters = candidate.parameters.map(parameter =>
-                substituteMetadataGenericParameters(parameter, requestedMethod),
-            );
-            const candidateReturnType = substituteMetadataGenericParameters(candidate.returnType, requestedMethod);
+            const candidateParameters =
+                candidate.parameterTypes?.map(parameter => [
+                    getCanonicalTypeSignature(parameter, requestedMethod).text,
+                    getCanonicalTypeSignature(parameter, requestedMethod, false, false).text,
+                ]) ??
+                candidate.parameters.map(parameter => [
+                    substituteMetadataGenericParameters(parameter, requestedMethod),
+                ]);
+            const candidateReturnTypes = candidate.returnTypeSignature
+                ? [
+                      getCanonicalTypeSignature(candidate.returnTypeSignature, requestedMethod).text,
+                      getCanonicalTypeSignature(candidate.returnTypeSignature, requestedMethod, false, false).text,
+                  ]
+                : [substituteMetadataGenericParameters(candidate.returnType, requestedMethod)];
 
             if (
-                candidateParameters.every((parameter, index) => parameter === requestedMethod.parameters[index]) &&
-                candidateReturnType === requestedMethod.returnType
+                candidateParameters.every((parameters, index) =>
+                    parameters.includes(requestedMethod.parameters[index]),
+                ) &&
+                candidateReturnTypes
+                    .map(returnType => (returnType === 'void' ? '' : returnType))
+                    .includes(requestedMethod.returnType)
             ) {
                 return methodSourceMapping;
             }

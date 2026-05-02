@@ -31,7 +31,16 @@ export type DotNetMethodKey = {
     methodName: string;
     methodArguments: string[];
     parameters: string[];
+    parameterTypes?: DotNetTypeSignature[];
     returnType: string;
+    returnTypeSignature?: DotNetTypeSignature;
+};
+export type DotNetTypeSignature = {
+    name: string;
+    arguments: DotNetTypeSignature[];
+    suffix: string;
+    typeKind: 'generic' | 'reference' | 'value';
+    genericParameter?: string;
 };
 type DotNetTypeKey = {
     name: string;
@@ -57,6 +66,73 @@ export type DotNetMethodSourceMapping = {
 export type DotNetSourceMapping = DotNetMethodSourceMapping[];
 
 const hiddenSequencePoint = 0xfeefee;
+const sharedGenericReferenceType = 'System.__Canon';
+
+function formatTypeSignature(type: DotNetTypeSignature): string {
+    if (type.name === '') {
+        return `${formatTypeSignature(type.arguments[0])}${type.suffix}`;
+    }
+
+    if (type.arguments.length === 0) {
+        return type.name;
+    }
+
+    return `${type.name}[${type.arguments.map(formatTypeSignature).join(',')}]${type.suffix}`;
+}
+
+export function getCanonicalTypeSignature(
+    type: DotNetTypeSignature,
+    requestedMethod: DotNetMethodKey,
+    isGenericArgument = false,
+    collapseSharedGenericReferences = true,
+): {text: string; containsSharedGenericReference: boolean} {
+    if (type.genericParameter) {
+        const isMethodParameter = type.genericParameter.startsWith('!!');
+        const index = Number.parseInt(type.genericParameter.substring(isMethodParameter ? 2 : 1), 10);
+        const text =
+            (isMethodParameter ? requestedMethod.methodArguments[index] : requestedMethod.typeArguments[index]) ??
+            type.genericParameter;
+        return {text, containsSharedGenericReference: text === sharedGenericReferenceType};
+    }
+
+    if (type.name === '') {
+        const elementType = getCanonicalTypeSignature(
+            type.arguments[0],
+            requestedMethod,
+            true,
+            collapseSharedGenericReferences,
+        );
+        if (collapseSharedGenericReferences && isGenericArgument && elementType.containsSharedGenericReference) {
+            return {text: sharedGenericReferenceType, containsSharedGenericReference: true};
+        }
+        return {
+            text: `${elementType.text}${type.suffix}`,
+            containsSharedGenericReference: elementType.containsSharedGenericReference,
+        };
+    }
+
+    if (type.arguments.length === 0) {
+        return {text: formatTypeSignature(type), containsSharedGenericReference: false};
+    }
+
+    const argumentsText = type.arguments.map(argument =>
+        getCanonicalTypeSignature(argument, requestedMethod, true, collapseSharedGenericReferences),
+    );
+    const containsSharedGenericReference = argumentsText.some(argument => argument.containsSharedGenericReference);
+    if (
+        collapseSharedGenericReferences &&
+        isGenericArgument &&
+        type.typeKind === 'reference' &&
+        containsSharedGenericReference
+    ) {
+        return {text: sharedGenericReferenceType, containsSharedGenericReference};
+    }
+
+    return {
+        text: `${type.name}[${argumentsText.map(argument => argument.text).join(',')}]${type.suffix}`,
+        containsSharedGenericReference,
+    };
+}
 
 type MetadataStreams = Record<string, {offset: number; size: number}>;
 type RowCounts = Record<number, number>;
@@ -122,8 +198,6 @@ const codedIndexes: Record<string, {tagBits: number; tables: number[]}> = {
     TypeOrMethodDef: {tagBits: 1, tables: [0x02, 0x06]},
 };
 
-// .NET metadata and PDB parsing based on ECMA-335 and the Portable PDB specification.
-// The parser only implements the features necessary to extract source mappings for JIT-compiled code.
 export class DotNetPdbParser {
     constructor(
         private readonly assembly: Buffer,
@@ -532,8 +606,8 @@ export class DotNetPdbParser {
     private parseElementType(
         blob: Buffer,
         offsetRef: {offset: number},
-        resolveType: (encoded: number) => string,
-    ): string {
+        resolveType: (encoded: number) => DotNetTypeSignature,
+    ): DotNetTypeSignature {
         while (blob[offsetRef.offset] === 0x1f || blob[offsetRef.offset] === 0x20) {
             offsetRef.offset++;
             this.readCompressedUInt(blob, offsetRef);
@@ -544,44 +618,50 @@ export class DotNetPdbParser {
 
         switch (type) {
             case 0x01: // Void
-                return 'void';
+                return {name: 'void', arguments: [], suffix: '', typeKind: 'value'};
             case 0x02: // Boolean
-                return 'bool';
+                return {name: 'bool', arguments: [], suffix: '', typeKind: 'value'};
             case 0x03: // Char
-                return 'char';
+                return {name: 'char', arguments: [], suffix: '', typeKind: 'value'};
             case 0x04: // SByte
-                return 'sbyte';
+                return {name: 'sbyte', arguments: [], suffix: '', typeKind: 'value'};
             case 0x05: // Byte
-                return 'byte';
+                return {name: 'byte', arguments: [], suffix: '', typeKind: 'value'};
             case 0x06: // Int16
-                return 'short';
+                return {name: 'short', arguments: [], suffix: '', typeKind: 'value'};
             case 0x07: // UInt16
-                return 'ushort';
+                return {name: 'ushort', arguments: [], suffix: '', typeKind: 'value'};
             case 0x08: // Int32
-                return 'int';
+                return {name: 'int', arguments: [], suffix: '', typeKind: 'value'};
             case 0x09: // UInt32
-                return 'uint';
+                return {name: 'uint', arguments: [], suffix: '', typeKind: 'value'};
             case 0x0a: // Int64
-                return 'long';
+                return {name: 'long', arguments: [], suffix: '', typeKind: 'value'};
             case 0x0b: // UInt64
-                return 'ulong';
+                return {name: 'ulong', arguments: [], suffix: '', typeKind: 'value'};
             case 0x0c: // Single
-                return 'float';
+                return {name: 'float', arguments: [], suffix: '', typeKind: 'value'};
             case 0x0d: // Double
-                return 'double';
+                return {name: 'double', arguments: [], suffix: '', typeKind: 'value'};
             case 0x0e: // String
-                return 'System.String';
+                return {name: 'System.String', arguments: [], suffix: '', typeKind: 'reference'};
             case 0x0f: // Pointer
                 this.parseElementType(blob, offsetRef, resolveType); // Pointer signatures are omitted in JIT disasm, ignoring the parsed pointed-to type here
-                return 'ptr';
+                return {name: 'ptr', arguments: [], suffix: '', typeKind: 'value'};
             case 0x10: // ByReference
                 this.parseElementType(blob, offsetRef, resolveType); // ByRef signatures are omitted in JIT disasm, ignoring the parsed referenced type here
-                return 'byref';
+                return {name: 'byref', arguments: [], suffix: '', typeKind: 'value'};
             case 0x11: // ValueType
             case 0x12: // Class
-                return resolveType(this.readCompressedUInt(blob, offsetRef).value);
+                {
+                    const resolved = resolveType(this.readCompressedUInt(blob, offsetRef).value);
+                    return {...resolved, typeKind: type === 0x11 ? 'value' : 'reference'};
+                }
             case 0x13: // GenericTypeParameter
-                return `!${this.readCompressedUInt(blob, offsetRef).value}`;
+                {
+                    const name = `!${this.readCompressedUInt(blob, offsetRef).value}`;
+                    return {name, arguments: [], suffix: '', typeKind: 'generic', genericParameter: name};
+                }
             case 0x14: // Array
                 {
                     const elementType = this.parseElementType(blob, offsetRef, resolveType);
@@ -594,33 +674,51 @@ export class DotNetPdbParser {
                     for (let i = 0; i < lowerBoundCount; i++) {
                         this.readCompressedSignedInt(blob, offsetRef);
                     }
-                    return `${elementType}[${','.repeat(Math.max(rank - 1, 0))}]`;
+                    return {
+                        name: '',
+                        arguments: [elementType],
+                        suffix: `[${','.repeat(Math.max(rank - 1, 0))}]`,
+                        typeKind: 'reference',
+                    };
                 }
             case 0x15: // GenericTypeInstance
                 {
                     const genericType = this.parseElementType(blob, offsetRef, resolveType);
                     const argumentCount = this.readCompressedUInt(blob, offsetRef).value;
-                    const argumentsText: string[] = [];
+                    const argumentsText: DotNetTypeSignature[] = [];
                     for (let i = 0; i < argumentCount; i++) {
                         argumentsText.push(this.parseElementType(blob, offsetRef, resolveType));
                     }
-                    return `${this.stripMetadataGenericArity(genericType, argumentCount)}[${argumentsText.join(',')}]`;
+                    return {
+                        name: this.stripMetadataGenericArity(genericType.name, argumentCount),
+                        arguments: argumentsText,
+                        suffix: '',
+                        typeKind: genericType.typeKind,
+                    };
                 }
             case 0x16: // TypedByReference
-                return 'System.TypedReference';
+                return {name: 'System.TypedReference', arguments: [], suffix: '', typeKind: 'value'};
             case 0x18: // IntPtr
-                return 'nint';
+                return {name: 'nint', arguments: [], suffix: '', typeKind: 'value'};
             case 0x19: // UIntPtr
-                return 'nuint';
+                return {name: 'nuint', arguments: [], suffix: '', typeKind: 'value'};
             case 0x1c: // Object
-                return 'System.Object';
+                return {name: 'System.Object', arguments: [], suffix: '', typeKind: 'reference'};
             case 0x1b: // FunctionPointer
                 this.parseMethodSignature(blob, resolveType, offsetRef); // Function pointer signatures are omitted in JIT disasm, ignoring the parsed signature here
-                return 'ptr';
+                return {name: 'ptr', arguments: [], suffix: '', typeKind: 'value'};
             case 0x1d: // SZArray
-                return `${this.parseElementType(blob, offsetRef, resolveType)}[]`;
+                return {
+                    name: '',
+                    arguments: [this.parseElementType(blob, offsetRef, resolveType)],
+                    suffix: '[]',
+                    typeKind: 'reference',
+                };
             case 0x1e: // GenericMethodParameter
-                return `!!${this.readCompressedUInt(blob, offsetRef).value}`;
+                {
+                    const name = `!!${this.readCompressedUInt(blob, offsetRef).value}`;
+                    return {name, arguments: [], suffix: '', typeKind: 'generic', genericParameter: name};
+                }
             case 0x41: // Sentinel
                 return this.parseElementType(blob, offsetRef, resolveType);
             case 0x45: // Pinned
@@ -632,7 +730,7 @@ export class DotNetPdbParser {
 
     private parseMethodSignature(
         blob: Buffer,
-        resolveType: (encoded: number) => string,
+        resolveType: (encoded: number) => DotNetTypeSignature,
         offsetRef: {offset: number} = {offset: 0},
     ) {
         const callingConvention = blob.readUInt8(offsetRef.offset);
@@ -644,7 +742,7 @@ export class DotNetPdbParser {
         const parameterCount = this.readCompressedUInt(blob, offsetRef).value;
         const returnType = this.parseElementType(blob, offsetRef, resolveType);
 
-        const parameters: string[] = [];
+        const parameters: DotNetTypeSignature[] = [];
         for (let i = 0; i < parameterCount; i++) {
             parameters.push(this.parseElementType(blob, offsetRef, resolveType));
         }
@@ -736,16 +834,17 @@ export class DotNetPdbParser {
             const enclosingType = nestedTypes[rowId]
                 ? resolveTypeDef(nestedTypes[rowId])
                 : {genericParameterCount: 0, name: ''};
-            const ownGenericParameterCount =
-                typeGenericParameterCounts[rowId] ?? this.fallbackMetadataNameGenericArity(typeDef.name);
-            const typeNameWithoutArity = this.stripMetadataGenericArity(typeDef.name, ownGenericParameterCount);
+            const metadataNameGenericArity = this.fallbackMetadataNameGenericArity(typeDef.name);
+            const genericParameterCount =
+                typeGenericParameterCounts[rowId] ?? enclosingType.genericParameterCount + metadataNameGenericArity;
+            const typeNameWithoutArity = this.stripMetadataGenericArity(typeDef.name, metadataNameGenericArity);
             const typeName = enclosingType.name
                 ? `${enclosingType.name}+${typeNameWithoutArity}`
                 : typeDef.namespaceName
                   ? `${typeDef.namespaceName}.${typeNameWithoutArity}`
                   : typeNameWithoutArity;
             resolvedTypeDefs[rowId] = {
-                genericParameterCount: enclosingType.genericParameterCount + ownGenericParameterCount,
+                genericParameterCount,
                 name: typeName,
             };
             return resolvedTypeDefs[rowId];
@@ -786,16 +885,23 @@ export class DotNetPdbParser {
                       : typeRef.name;
             return resolvedTypeRefs[rowId];
         };
-        const enumUnderlyingTypes: Record<number, string> = {};
-        const resolvedTypeSpecs: Record<number, string> = {};
-        const resolveType = (encoded: number) => {
+        const enumUnderlyingTypes: Record<number, DotNetTypeSignature> = {};
+        const resolvedTypeSpecs: Record<number, DotNetTypeSignature> = {};
+        const resolveType = (encoded: number): DotNetTypeSignature => {
             const tag = encoded & 0x03;
             const rowId = encoded >> 2;
             if (tag === 0) {
-                return enumUnderlyingTypes[rowId] ?? resolvedTypeDefsByRow[rowId].name;
+                return (
+                    enumUnderlyingTypes[rowId] ?? {
+                        name: resolvedTypeDefsByRow[rowId].name,
+                        arguments: [],
+                        suffix: '',
+                        typeKind: 'reference',
+                    }
+                );
             }
             if (tag === 1) {
-                return resolveTypeRef(rowId);
+                return {name: resolveTypeRef(rowId), arguments: [], suffix: '', typeKind: 'reference'};
             }
             if (tag === 2) {
                 resolvedTypeSpecs[rowId] ??= this.parseElementType(
@@ -809,7 +915,10 @@ export class DotNetPdbParser {
         };
         for (let i = 0; i < sortedTypeDefs.length; i++) {
             const typeDefRowId = sortedTypeDefs[i];
-            if (typeDefs[typeDefRowId].extends === 0 || resolveType(typeDefs[typeDefRowId].extends) !== 'System.Enum') {
+            if (
+                typeDefs[typeDefRowId].extends === 0 ||
+                formatTypeSignature(resolveType(typeDefs[typeDefRowId].extends)) !== 'System.Enum'
+            ) {
                 continue;
             }
 
@@ -843,6 +952,7 @@ export class DotNetPdbParser {
                 this.getBlob(tables, this.readIndex(assembly, signatureOffset, blob)),
                 resolveType,
             );
+            const returnTypeText = formatTypeSignature(returnType);
 
             methodInfos[rowId] = {
                 methodArguments: this.genericParameterArguments(
@@ -850,8 +960,10 @@ export class DotNetPdbParser {
                     '!!',
                 ),
                 methodName,
-                parameters,
-                returnType: returnType === 'void' ? '' : returnType,
+                parameters: parameters.map(formatTypeSignature),
+                parameterTypes: parameters,
+                returnType: returnTypeText === 'void' ? '' : returnTypeText,
+                returnTypeSignature: returnType,
                 typeArguments: this.genericParameterArguments(type.genericParameterCount, '!'),
                 typeName: type.name,
             };
