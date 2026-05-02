@@ -572,9 +572,11 @@ export class DotNetPdbParser {
             case 0x0e: // String
                 return 'System.String';
             case 0x0f: // Pointer
-                return `${this.parseElementType(blob, offsetRef, resolveType)}*`;
+                this.parseElementType(blob, offsetRef, resolveType); // Pointer signatures are omitted in JIT disasm, ignoring the parsed pointed-to type here
+                return 'ptr';
             case 0x10: // ByReference
-                return `${this.parseElementType(blob, offsetRef, resolveType)}&`;
+                this.parseElementType(blob, offsetRef, resolveType); // ByRef signatures are omitted in JIT disasm, ignoring the parsed referenced type here
+                return 'byref';
             case 0x11: // ValueType
             case 0x12: // Class
                 return resolveType(this.readCompressedUInt(blob, offsetRef).value);
