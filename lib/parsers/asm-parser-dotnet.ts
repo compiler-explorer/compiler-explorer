@@ -31,7 +31,7 @@ import {getCanonicalTypeSignature} from './pdb-parser-dotnet.js';
 
 type InlineLabel = {name: string; range: {startCol: number; endCol: number}};
 
-function formatDotNetMethodKey(method: DotNetMethodKey) {
+function formatMethodKey(method: DotNetMethodKey) {
     const typeName =
         method.typeArguments.length === 0 ? method.typeName : `${method.typeName}[${method.typeArguments.join(',')}]`;
     const methodKeyName =
@@ -187,7 +187,7 @@ export class DotNetAsmParser implements IAsmParser {
         this.sourceMapping = sourceMapping;
         this.sourceMappingByName = new Map(
             sourceMapping.map(methodSourceMapping => [
-                formatDotNetMethodKey(methodSourceMapping.method),
+                formatMethodKey(methodSourceMapping.method),
                 methodSourceMapping,
             ]),
         );
@@ -199,7 +199,7 @@ export class DotNetAsmParser implements IAsmParser {
             return undefined;
         }
 
-        const exactMapping = this.sourceMappingByName.get(formatDotNetMethodKey(requestedMethod));
+        const exactMapping = this.sourceMappingByName.get(formatMethodKey(requestedMethod));
         if (exactMapping) {
             return exactMapping;
         }
