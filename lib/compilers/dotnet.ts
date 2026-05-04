@@ -39,7 +39,10 @@ import {CompilationEnvironment} from '../compilation-env.js';
 import {AssemblyName, DotnetExtraConfiguration} from '../execution/dotnet-execution-env.js';
 import {IExecutionEnvironment} from '../execution/execution-env.interfaces.js';
 import {DotNetAsmParser} from '../parsers/asm-parser-dotnet.js';
+import {DotNetPdbParser, type DotNetSourceMapping} from '../parsers/pdb-parser-dotnet.js';
 import * as utils from '../utils.js';
+
+type DotNetCompilationResult = CompilationResult & {dotnetSourceMapping?: DotNetSourceMapping};
 
 class DotNetCompiler extends BaseCompiler {
     private readonly sdkBaseDir: string;
@@ -346,7 +349,7 @@ class DotNetCompiler extends BaseCompiler {
             '-warn:9',
             '-highentropyva+',
             '-nullable:enable',
-            '-debug-',
+            '-debug:portable',
             '-optimize+',
             '-warnaserror-',
             '-utf8output',
@@ -410,7 +413,7 @@ System.Diagnostics,System.Linq,System.Xml.Linq,System.Threading.Tasks`,
             '-errorreport:prompt',
             '-rootnamespace:CompilerExplorer',
             '-highentropyva+',
-            '-debug-',
+            '-debug:portable',
             '-optimize+',
             '-warnaserror-',
             '-utf8output',
@@ -477,6 +480,7 @@ Imports System.Reflection
             '--warnaserror:3239',
             '--fullpaths',
             '--flaterrors',
+            '--debug:portable',
             '--highentropyva+',
             '--targetprofile:netcore',
             '--nocopyfsharpcore',
@@ -549,6 +553,7 @@ do()
             '-nologo',
             '-quiet',
             '-optimize',
+            '-debug:OPT',
             buildToBinary ? '-exe' : '-dll',
             assemblyInfoPath,
             `-include:${programDir}`,
@@ -619,7 +624,7 @@ do()
                     if (normalizedName === 'DOTNET_JITDISASM') {
                         overrideDisasm = true;
                     }
-                    if (normalizedName === 'DOTNET_JITDISASMASSEMBILES') {
+                    if (normalizedName === 'DOTNET_JITDISASMASSEMBLIES') {
                         overrideAssembly = true;
                     }
                     if (normalizedName === 'DOTNET_JITDIFFABLEDASM' || normalizedName === 'DOTNET_JITDISASMDIFFABLE') {
@@ -651,7 +656,7 @@ do()
                             if (normalizedValue.startsWith('JITDISASM=')) {
                                 overrideDisasm = true;
                             }
-                            if (normalizedValue.startsWith('JITDISASMASSEMBILES=')) {
+                            if (normalizedValue.startsWith('JITDISASMASSEMBLIES=')) {
                                 overrideAssembly = true;
                             }
                             if (
@@ -709,9 +714,18 @@ do()
             }
         }
 
+        const mapDebugInfo = (isCoreRun && !isMono) || isCrossgen2 || isAot;
+
+        if (mapDebugInfo) {
+            if (needCodegenOptions) {
+                toolOptions.push('--codegenopt', 'JitDisasmWithDebugInfo=1');
+            }
+            envVarFileContents.push('DOTNET_JitDisasmWithDebugInfo=1');
+        }
+
         this.setCompilerExecOptions(execOptions, programDir);
 
-        const compilerResult = await this.buildToDll(
+        const compilerResult: DotNetCompilationResult = await this.buildToDll(
             compiler,
             compilerInfo,
             inputFilename,
@@ -721,6 +735,16 @@ do()
         );
         if (compilerResult.code !== 0) {
             return compilerResult;
+        }
+
+        if (mapDebugInfo) {
+            const pdbPath = utils.changeExtension(programDllPath, '.pdb');
+            if (await utils.fileExists(pdbPath)) {
+                compilerResult.dotnetSourceMapping = new DotNetPdbParser(
+                    await fs.readFile(programDllPath),
+                    await fs.readFile(pdbPath),
+                ).parse();
+            }
         }
 
         if (isIlDasm) {
@@ -793,6 +817,10 @@ do()
         }
 
         return compilerResult;
+    }
+
+    override async processAsm(result: DotNetCompilationResult, filters: ParseFiltersAndOutputOptions) {
+        return new DotNetAsmParser(result.dotnetSourceMapping).process(result.asm as string, filters);
     }
 
     override optionsForFilter(filters: ParseFiltersAndOutputOptions) {
