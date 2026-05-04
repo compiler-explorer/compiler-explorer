@@ -3,17 +3,8 @@ name: Check Infra Settings
 on:
   pull_request:
     paths:
-      - 'etc/config/c.amazon.properties'
-      - 'etc/config/c.amazonwin.properties'
-      - 'etc/config/c++.amazon.properties'
-      - 'etc/config/c++.amazonwin.properties'
-      - 'etc/config/cuda.amazon.properties'
-      - 'etc/config/d.amazon.properties'
-      - 'etc/config/fortran.amazon.properties'
-      - 'etc/config/go.amazon.properties'
-      - 'etc/config/rust.amazon.properties'
-      - 'etc/config/sway.amazon.properties'
-      - 'etc/config/zig.amazon.properties'
+      - 'etc/config/*.amazon.properties'
+      - 'etc/config/*.amazonwin.properties'
 
 jobs:
   check:
