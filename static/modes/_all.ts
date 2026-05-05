@@ -23,6 +23,7 @@
 // POSSIBILITY OF SUCH DAMAGE.
 
 import './ada-mode';
+import './algol68-mode';
 import './asm6502-mode';
 import './asm-mode';
 import './asmruby-mode';
