@@ -54,7 +54,31 @@ export function definition(): monaco.languages.IMonarchLanguage {
                 [/}/, {token: 'comment', next: '@pop'}],
                 [/./, 'comment'],
             ],
-            comments: [[/{/, {token: 'comment', next: '@comments_2'}]],
+            // Algol 68 comment forms: { ... } (in source grammar),
+            // plus COMMENT ... COMMENT, co ... co, # ... #, ¢ ... ¢ (added by hand).
+            comments: [
+                [/{/, {token: 'comment', next: '@comments_2'}],
+                [/\bcomment\b/, {token: 'comment', next: '@comment_keyword'}],
+                [/\bco\b/, {token: 'comment', next: '@comment_co'}],
+                [/#/, {token: 'comment', next: '@comment_hash'}],
+                [/¢/, {token: 'comment', next: '@comment_cent'}],
+            ],
+            comment_keyword: [
+                [/\bcomment\b/, {token: 'comment', next: '@pop'}],
+                [/./, 'comment'],
+            ],
+            comment_co: [
+                [/\bco\b/, {token: 'comment', next: '@pop'}],
+                [/./, 'comment'],
+            ],
+            comment_hash: [
+                [/#/, {token: 'comment', next: '@pop'}],
+                [/./, 'comment'],
+            ],
+            comment_cent: [
+                [/¢/, {token: 'comment', next: '@pop'}],
+                [/./, 'comment'],
+            ],
             strings_3: [
                 [/'.|'\((u[0-9a-f]{4}|U[0-9a-f]{8})(,(u[0-9a-f]{4}|U[0-9a-f]{8})+)*\)/, 'string.escape'],
                 [/"/, {token: 'string', next: '@pop'}],
