@@ -42,13 +42,22 @@ export function definition(): monaco.languages.IMonarchLanguage {
                 {include: '@operators'},
                 {include: '@identifiers'},
             ],
-            block_comment_content_1: [{include: '@block_comment_content'}, [/}/, {token: '', next: '@pop'}]],
+            block_comment_content_1: [
+                {include: '@block_comment_content'},
+                [/}/, {token: '', next: '@pop'}],
+                [/./, 'comment'],
+            ],
             block_comment_content: [[/{/, {token: '', next: '@block_comment_content_1'}]],
-            comments_2: [{include: '@block_comment_content'}, [/}/, {token: 'comment', next: '@pop'}]],
+            comments_2: [
+                {include: '@block_comment_content'},
+                [/}/, {token: 'comment', next: '@pop'}],
+                [/./, 'comment'],
+            ],
             comments: [[/{/, {token: 'comment', next: '@comments_2'}]],
             strings_3: [
                 [/'.|'\((u[0-9a-f]{4}|U[0-9a-f]{8})(,(u[0-9a-f]{4}|U[0-9a-f]{8})+)*\)/, 'string.escape'],
                 [/"/, {token: 'string', next: '@pop'}],
+                [/./, 'string'],
             ],
             strings: [[/"/, {token: 'string', next: '@strings_3'}]],
             numbers: [

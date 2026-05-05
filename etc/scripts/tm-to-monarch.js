@@ -80,13 +80,13 @@ const states = {};
 let stateCounter = 0;
 const warnings = [];
 
-function processPatterns(patterns, ownerName) {
+function processPatterns(patterns, ownerName, ambientToken) {
   const rules = [];
-  for (const p of patterns || []) rules.push(...convertPattern(p, ownerName));
+  for (const p of patterns || []) rules.push(...convertPattern(p, ownerName, ambientToken));
   return rules;
 }
 
-function convertPattern(p, ownerName) {
+function convertPattern(p, ownerName, ambientToken) {
   if (p.include) {
     let name = p.include;
     if (name.startsWith('#')) name = name.slice(1);
@@ -107,13 +107,20 @@ function convertPattern(p, ownerName) {
     const beginAction = buildRangeAction(p.beginCaptures, p.name, '@' + stateName);
     const endAction   = buildRangeAction(p.endCaptures,   p.name, '@pop');
 
-    const innerRules = processPatterns(p.patterns, stateName);
+    // In TextMate, a begin/end range with `name` (or `contentName`) gives that
+    // scope to everything between the markers. Inherit it as the ambient token
+    // for nested states that don't specify their own.
+    const ownToken = mapScope(p.contentName || p.name);
+    const inherited = ownToken || ambientToken || '';
+
+    const innerRules = processPatterns(p.patterns, stateName, inherited);
     innerRules.push(['rule', convertRegex(p.end), endAction]);
+    if (inherited) innerRules.push(['rule', '.', inherited]);
     states[stateName] = innerRules;
 
     return [['rule', convertRegex(p.begin), beginAction]];
   }
-  if (p.patterns) return processPatterns(p.patterns, ownerName);
+  if (p.patterns) return processPatterns(p.patterns, ownerName, ambientToken);
   return [];
 }
 
@@ -157,6 +164,78 @@ function buildRangeAction(captures, fallbackName, next) {
   return arr;
 }
 
+// Walk include chains to find every push (next: '@X') reachable from a state.
+function expandedRules(name, seen = new Set()) {
+  if (seen.has(name)) return [];
+  seen.add(name);
+  const out = [];
+  for (const r of states[name] || []) {
+    if (r.include) {
+      out.push(...expandedRules(r.include.replace(/^@/, ''), seen));
+    } else {
+      out.push(r);
+    }
+  }
+  return out;
+}
+
+function ambientOf(name) {
+  for (const r of states[name] || []) {
+    if (Array.isArray(r) && r[1] === '.' && typeof r[2] === 'string' && r[2]) return r[2];
+  }
+  return null;
+}
+
+// True if state `name` is the target of any push (`next: '@name'`).
+// Include-only states aren't push targets — adding a catch-all to one would
+// shadow the includer's own end/pop rule.
+function isPushTarget(name) {
+  for (const other of Object.keys(states)) {
+    for (const r of states[other] || []) {
+      if (Array.isArray(r) && r[2] && typeof r[2] === 'object' && r[2].next === '@' + name) return true;
+    }
+  }
+  return false;
+}
+
+// Walk caller chains (push or include) to gather all ambient tokens that the
+// parser could be carrying when execution reaches `name`. Passthrough states
+// (no own ambient) are followed transitively; cycles are guarded.
+function effectiveAmbients(name, visited = new Set()) {
+  if (visited.has(name)) return new Set();
+  visited.add(name);
+  const own = ambientOf(name);
+  if (own) return new Set([own]);
+  const result = new Set();
+  for (const other of Object.keys(states)) {
+    if (other === name) continue;
+    let isCaller = false;
+    for (const r of expandedRules(other)) {
+      if (Array.isArray(r) && r[2] && typeof r[2] === 'object' && r[2].next === '@' + name) { isCaller = true; break; }
+    }
+    if (!isCaller) {
+      for (const r of states[other] || []) {
+        if (r.include === '@' + name) { isCaller = true; break; }
+      }
+    }
+    if (isCaller) for (const a of effectiveAmbients(other, visited)) result.add(a);
+  }
+  return result;
+}
+
+function propagateAmbient() {
+  for (const name of Object.keys(states)) {
+    if (name === 'root') continue;
+    if (ambientOf(name)) continue;
+    if (!isPushTarget(name)) continue;
+    const candidates = effectiveAmbients(name);
+    if (candidates.size === 1) {
+      const [t] = candidates;
+      if (t) states[name].push(['rule', '.', t]);
+    }
+  }
+}
+
 function printAction(a) {
   if (typeof a === 'string') return JSON.stringify(a);
   if (Array.isArray(a)) return '[' + a.map(printAction).join(', ') + ']';
@@ -186,6 +265,7 @@ function main() {
   for (const [name, def] of Object.entries(grammar.repository || {})) {
     states[name] = processPatterns(def.patterns || [def], name);
   }
+  propagateAmbient();
 
   const out = [];
   out.push(`// Generated from ${path} by tm-to-monarch.js`);
