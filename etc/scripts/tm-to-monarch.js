@@ -72,8 +72,9 @@ function convertRegex(re) {
     .replace(/\\[Zz]/g, '$');
 }
 
+let regexFlags = '';
 function makeRegexLiteral(re) {
-  return '/' + re.replace(/\//g, '\\/') + '/';
+  return '/' + re.replace(/\//g, '\\/') + '/' + regexFlags;
 }
 
 const states = {};
@@ -250,10 +251,16 @@ function printRule(rule, indent) {
 }
 
 function main() {
-  const path = process.argv[2];
-  const langId = process.argv[3];
+  const argv = process.argv.slice(2);
+  const positional = [];
+  for (const a of argv) {
+    if (a === '-i' || a === '--case-insensitive') regexFlags = 'i';
+    else positional.push(a);
+  }
+  const path = positional[0];
+  const langId = positional[1];
   if (!path) {
-    console.error('usage: tm-to-monarch.js grammar.tmLanguage.json [language-id]');
+    console.error('usage: tm-to-monarch.js [-i|--case-insensitive] grammar.tmLanguage.json [language-id]');
     process.exit(1);
   }
   const grammar = JSON.parse(fs.readFileSync(path, 'utf8'));
