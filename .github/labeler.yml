@@ -14,8 +14,9 @@
 'lang-algol68':
   - changed-files:
       - any-glob-to-any-file:
-          - 'lib/compilers/gac.ts'
+          - 'lib/compilers/ga68.ts'
           - 'etc/config/algol68.*.properties'
+          - 'static/modes/algol68-mode.ts'
 
 'lang-android-java':
   - changed-files:
