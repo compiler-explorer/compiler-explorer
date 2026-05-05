@@ -72,9 +72,27 @@ function convertRegex(re) {
     .replace(/\\[Zz]/g, '$');
 }
 
-let regexFlags = '';
+let ignoreCase = false;
 function makeRegexLiteral(re) {
-  return '/' + re.replace(/\//g, '\\/') + '/' + regexFlags;
+  // Walk char-by-char so backslash escapes (`\d`, `\/`, `\\`) are preserved
+  // intact, and only *unescaped* slashes get the `\/` escape needed for a
+  // JS regex literal. Naive String.replace can't tell those apart.
+  let out = '';
+  for (let i = 0; i < re.length; i++) {
+    const c = re[i];
+    if (c === '\\' && i + 1 < re.length) {
+      out += c + re[i + 1];
+      i++;
+    } else if (c === '/') {
+      out += '\\/';
+    } else {
+      out += c;
+    }
+  }
+  if (re.endsWith('\\') && !re.endsWith('\\\\')) {
+    warnings.push(`regex ends with a stray backslash: ${re}`);
+  }
+  return '/' + out + '/';
 }
 
 const states = {};
@@ -254,7 +272,7 @@ function main() {
   const argv = process.argv.slice(2);
   const positional = [];
   for (const a of argv) {
-    if (a === '-i' || a === '--case-insensitive') regexFlags = 'i';
+    if (a === '-i' || a === '--case-insensitive') ignoreCase = true;
     else positional.push(a);
   }
   const path = positional[0];
@@ -288,6 +306,7 @@ function main() {
   out.push(`    return {`);
   out.push(`        defaultToken: '',`);
   out.push(`        tokenPostfix: ${JSON.stringify(postfix)},`);
+  if (ignoreCase) out.push(`        ignoreCase: true,`);
   out.push(`        tokenizer: {`);
   for (const [name, rules] of Object.entries(states)) {
     out.push(`            ${name}: [`);

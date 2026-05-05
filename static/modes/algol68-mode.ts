@@ -31,6 +31,7 @@ export function definition(): monaco.languages.IMonarchLanguage {
     return {
         defaultToken: '',
         tokenPostfix: '.algol68',
+        ignoreCase: true,
         tokenizer: {
             root: [
                 {include: '@comments'},
@@ -65,28 +66,28 @@ export function definition(): monaco.languages.IMonarchLanguage {
                 [/\b\d+\b/, 'number'],
             ],
             bits: [
-                [/\b(?:16r)[ 0-9a-f]+\b/, 'number.hex'],
-                [/\b(?:8r)[ 0-7]+\b/, 'number.octal'],
-                [/\b(?:4r)[ 0-3]+\b/, 'number'],
-                [/\b(?:2r)[ 0-1]+\b/, 'number.binary'],
+                [/\b16r[ 0-9a-f]+\b/, 'number.hex'],
+                [/\b8r[ 0-7]+\b/, 'number.octal'],
+                [/\b4r[ 0-3]+\b/, 'number'],
+                [/\b2r[ 0-1]+\b/, 'number.binary'],
             ],
             keywords: [
-                [/\b(?:case|do|elif|else|for|from|go\s*to|if|while)\b/i, 'keyword'],
+                [/\b(?:case|do|elif|else|for|from|go\s*to|if|while)\b/, 'keyword'],
                 [
-                    /\b(?:access|at|begin|by|co|comment|def|egg|empty|end|esac|exit|fed|fi|flex|format|in|mode|module|nest|od|of|op|ouse|out|par|pr|pragmat|prio|proc|skip|then|to)\b/i,
+                    /\b(?:access|at|begin|by|co|comment|def|egg|empty|end|esac|exit|fed|fi|flex|format|in|mode|module|nest|od|of|op|ouse|out|par|pr|pragmat|prio|proc|skip|then|to)\b/,
                     'keyword',
                 ],
-                [/\b(?:false|nil|true)\b/i, 'keyword'],
+                [/\b(?:false|nil|true)\b/, 'keyword'],
             ],
             types: [
-                [/\b(?:bits|bool|bytes|channel|char|compl|file|int|real|sema|string|struct|union|void)\b/i, 'type'],
-                [/\b(?:flex|heap|loc|long|ref|short)\b/i, 'keyword'],
+                [/\b(?:bits|bool|bytes|channel|char|compl|file|int|real|sema|string|struct|union|void)\b/, 'type'],
+                [/\b(?:flex|heap|loc|long|ref|short)\b/, 'keyword'],
             ],
             operators: [
                 [/:=/, 'operator'],
                 [/<=|>=|\/=|:=:|:\/=:|=|<|>/, 'operator'],
-                [/\+|-|\*|\/|\b(?:OVER|MOD)\b/i, 'operator'],
-                [/\b(?:AND|OR|NOT)\b|&/i, 'operator'],
+                [/\+|-|\*|\/|\b(?:OVER|MOD)\b/, 'operator'],
+                [/\b(?:AND|OR|NOT)\b|&/, 'operator'],
             ],
             identifiers: [
                 [/\b(?:[A-Z]_?(?:[A-Za-z0-9]_?)*)\b/, 'identifier'],
