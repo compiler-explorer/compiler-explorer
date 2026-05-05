@@ -244,6 +244,8 @@ export type CompilationResult = {
     popularArguments?: PossibleArguments;
 
     s3Key?: string; // Cache key hash for S3 storage reference
+
+    networkError?: boolean; // True when the result was produced by a network/transport failure (not a compiler error)
 };
 
 export type ExecutionOptions = {

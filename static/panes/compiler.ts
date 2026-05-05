@@ -1504,12 +1504,23 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
             .catch(x => {
                 clearTimeout(progress);
                 let message = 'Unknown error';
+                const isNetworkError = (x as any)?.isNetworkError === true;
                 if (typeof x === 'string' || x instanceof String) {
                     message = x.toString();
                 } else if (x) {
                     message = x.error || x.code || message;
                 }
-                this.onCMakeResponse(request, this.errorResult('<Compilation failed: ' + message + '>'), false);
+                const result: CompilationResult = isNetworkError
+                    ? {
+                          timedOut: false,
+                          asm: this.fakeAsm(message),
+                          code: -1,
+                          stdout: [],
+                          stderr: [{text: message}],
+                          networkError: true,
+                      }
+                    : this.errorResult('<Compilation failed: ' + message + '>');
+                this.onCMakeResponse(request, result, false);
             });
     }
 
@@ -1538,15 +1549,26 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
             .catch(e => {
                 clearTimeout(progress);
                 let message = 'Unknown error';
+                const isNetworkError = (e as any)?.isNetworkError === true;
                 if (typeof e === 'string' || e instanceof String) {
                     message = e.toString();
                 } else if (e) {
                     message = e.error || e.code || e.message;
-                    if (e.stack) {
+                    if (e.stack && !isNetworkError) {
                         console.log(e);
                     }
                 }
-                onCompilerResponse(request, this.errorResult('<Compilation failed: ' + message + '>'), false);
+                const result: CompilationResult = isNetworkError
+                    ? {
+                          timedOut: false,
+                          asm: this.fakeAsm(message),
+                          code: -1,
+                          stdout: [],
+                          stderr: [{text: message}],
+                          networkError: true,
+                      }
+                    : this.errorResult('<Compilation failed: ' + message + '>');
+                onCompilerResponse(request, result, false);
             });
     }
 
