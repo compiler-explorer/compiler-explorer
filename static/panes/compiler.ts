@@ -1554,6 +1554,8 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
                     message = e.toString();
                 } else if (e) {
                     message = e.error || e.code || e.message;
+                    // Network errors have a stack (from new Error()) but logging them is
+                    // not useful since they are expected during connectivity loss
                     if (e.stack && !isNetworkError) {
                         console.log(e);
                     }
