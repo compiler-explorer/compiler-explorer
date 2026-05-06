@@ -34,6 +34,7 @@ import {
     replaceToolchainArg,
 } from '../lib/toolchain-utils.js';
 import {ToolEnv} from '../lib/tooling/base-tool.interface.js';
+import {BrontoRefactorTool} from '../lib/tooling/bronto-refactor-tool.js';
 import {CompilerDropinTool} from '../lib/tooling/compiler-dropin-tool.js';
 import {CompilationInfo} from '../types/compilation/compilation.interfaces.js';
 import {ToolInfo} from '../types/tool.interfaces.js';
@@ -242,5 +243,57 @@ describe('CompilerDropInTool', () => {
             '-fno-crash-diagnostics',
             '/app/example.cpp',
         ]);
+    });
+});
+
+describe('BrontoRefactorTool', () => {
+    function runTool(stdout: string, stderr: string) {
+        const tool = new BrontoRefactorTool({} as ToolInfo, {} as ToolEnv);
+        return tool.convertResult(
+            {
+                code: 0,
+                okToCache: true,
+                timedOut: false,
+                truncated: false,
+                stdout,
+                stderr,
+                filenameTransform: f => f,
+                execTime: 0,
+            },
+            'example.cpp',
+        );
+    }
+
+    // Output is refactored source code, not diagnostics. The default FileWithLine matcher
+    // would tag e.g. `r.fetch_add(2, ...)` as a `filename:line:` reference and surface it
+    // as an error in the editor.
+    it('Should not tag refactored source as diagnostics', () => {
+        const refactoredSource = [
+            '#include <atomic>',
+            'void foo(std::atomic<int>& r) {',
+            '  r.fetch_add(2, std::memory_order_relaxed);',
+            '  r.fetch_add(4, std::memory_order_relaxed);',
+            '}',
+        ].join('\n');
+
+        const result = runTool(refactoredSource, '');
+
+        const tagged = result.stdout.filter(line => line.tag);
+        expect(tagged).toEqual([]);
+    });
+
+    // Make sure dropping FileWithLineMessage didn't blunt the parser too much: real
+    // `<source>:N:M:` diagnostics on stderr should still be tagged via SourceWithLineMessage.
+    it('Should still tag real diagnostics from stderr', () => {
+        const result = runTool('', 'example.cpp:10:5: error: something went wrong\n');
+
+        expect(result.stderr).toHaveLength(1);
+        expect(result.stderr[0].tag).toEqual({
+            file: 'example.cpp',
+            line: 10,
+            column: 5,
+            text: 'error: something went wrong',
+            severity: 3,
+        });
     });
 });
