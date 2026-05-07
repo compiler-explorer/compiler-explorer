@@ -301,7 +301,8 @@ The `notification` field creates a tooltip linking to documentation. For GCC com
 Each compiler is also categorised by `releaseTrack`, exposed via the `/api/compilers?fields=all` endpoint and used by
 features like the MCP `list_compilers` `latestPerMajor` knob. The four values are:
 
-- **`stable`** — a numbered release (`gcc 14.2.0`, `rust 1.95.0`, ...). The default for anything with a real semver.
+- **`stable`** — a numbered release (`gcc 14.2.0`, `rust 1.95.0`, ...). The default for anything with a real semver
+  *without* a prerelease segment.
 - **`nightly`** — the canonical bleeding-edge build of an upstream project (`gcc snapshot`, `clang trunk`, `rust
   nightly`, `flang trunk`, `.NET main`, ...).
 - **`prerelease`** — a release-candidate / beta of an upcoming numbered release (`rust beta`, `dxc 1.8.2306-preview`).

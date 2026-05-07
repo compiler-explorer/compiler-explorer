@@ -155,6 +155,15 @@ export class CompilerFinder {
                                                 uriBase,
                                                 compiler.id,
                                             );
+                                            // Older CE remotes won't have releaseTrack. Backfill to keep the
+                                            // type contract intact for downstream consumers.
+                                            if (!compiler.releaseTrack || !isReleaseTrack(compiler.releaseTrack)) {
+                                                compiler.releaseTrack = inferReleaseTrack({
+                                                    isSemVer: compiler.isSemVer,
+                                                    isNightly: compiler.isNightly,
+                                                    semver: compiler.semver,
+                                                });
+                                            }
                                             return compiler;
                                         });
                                         resolve(compilers);
@@ -220,7 +229,16 @@ export class CompilerFinder {
         const baseName = props<string | undefined>('baseName');
         const semver = props('semver', '');
         const isNightly = !!props('isNightly', false);
-        const releaseTrackOverride = props('releaseTrack', '').trim();
+        // toProperty in lib/utils.ts coerces "true"/"false"/numeric strings to their typed
+        // equivalents, so a misconfigured `releaseTrack=true` would arrive here as a boolean
+        // and crash on .trim(). Reject any non-string raw value with a clear message before
+        // the assert path normally would.
+        const releaseTrackRaw = props('releaseTrack', '');
+        assert(
+            typeof releaseTrackRaw === 'string',
+            `Invalid releaseTrack value for ${compilerId}: expected a string, got ${typeof releaseTrackRaw} (${releaseTrackRaw})`,
+        );
+        const releaseTrackOverride = releaseTrackRaw.trim();
         let releaseTrack: ReleaseTrack;
         if (releaseTrackOverride === '') {
             releaseTrack = inferReleaseTrack({isSemVer, isNightly, semver});
