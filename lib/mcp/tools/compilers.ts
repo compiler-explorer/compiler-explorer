@@ -63,9 +63,11 @@ function pickLatest(
                     stableBuckets.set(groupKey, bucket);
                 }
                 const safe = asSafeVer(c.semver);
-                // Compilers tagged 'stable' that don't have a parseable numeric semver
-                // (rare — fallback path in the inferReleaseTrack heuristic) share a
-                // single bucket per group, last-one-wins. Not worth optimising further.
+                // Compilers tagged 'stable' but not isSemVer can only arise via an
+                // explicit `releaseTrack=stable` override on a non-semver compiler
+                // (the inferReleaseTrack heuristic itself never produces this combo
+                // for a non-empty semver). They share a single bucket per group,
+                // last-one-wins — rare enough not to be worth a more clever scheme.
                 const major = c.isSemVer ? semverParser.major(safe) : -1;
                 const existing = bucket.get(major);
                 if (!existing || semverParser.compare(safe, asSafeVer(existing.semver), true) > 0) {
@@ -108,7 +110,8 @@ export function registerCompilersTool(server: McpServer, apiHandler: ApiHandler)
                 .optional()
                 .describe(
                     'Case-insensitive AND-of-words filter on compiler id and name. The pattern is split on ' +
-                        'whitespace and punctuation, and every token must appear (in any order) in the id or name. ' +
+                        'whitespace and punctuation (each numeric run is its own token, so "14.1" tokenises into ' +
+                        '["14","1"]), and every token must appear (in any order) in the id or name. ' +
                         '"x86-64 gcc trunk" matches "x86-64 gcc (trunk)". Numeric tokens match whole-word, so ' +
                         '"gcc 14.1" matches "x86-64 gcc 14.1.0" but NOT "x86-64 gcc 14.10"; alphanumeric tokens ' +
                         'still substring-match, so "g14" finds "g142". Note: this is a literal text filter — ' +
