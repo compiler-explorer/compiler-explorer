@@ -34,7 +34,9 @@ const PRERELEASE_TAGS = new Set(['beta', 'alpha']);
 // upstream snapshot (e.g. IBM Advance Toolchain ppc64g8 = "power64 AT12.0", a stable
 // release that happens to incorporate a gcc snapshot). Compilers that need 'nightly'
 // classification with a (snapshot) semver should set releaseTrack=nightly explicitly.
-const NIGHTLY_TAGS = new Set(['nightly', 'main', 'master']);
+// 'tip' covers Go's `(tip)` convention (their canonical mainline). Only Go uses
+// 'tip' across CE configs, so no collision risk.
+const NIGHTLY_TAGS = new Set(['nightly', 'main', 'master', 'tip']);
 const RC_PATTERN = /^rc\d*$/;
 
 // Allowlist of recognised prerelease tokens for the semver-with-suffix path. Many CE

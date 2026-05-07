@@ -316,8 +316,8 @@ The rules are:
    - if `isNightly=true` → `nightly` (the maintainer's "rolling preview" signal wins)
    - otherwise → `prerelease`
 2. **Real numbered semver** without a prerelease segment → `stable`.
-3. semver contains `trunk`/`main`, or the bare tag (parens stripped) is one of `nightly`, `main`, `master`
-   → `nightly`. Catches `gcc snapshot` (`semver=(trunk)`), `clang trunk`, `rust nightly`, etc. Note that
+3. semver contains `trunk`/`main`, or the bare tag (parens stripped) is one of `nightly`, `main`, `master`, `tip`
+   → `nightly`. Catches `gcc snapshot` (`semver=(trunk)`), `clang trunk`, `rust nightly`, Go `(tip)`, etc. Note that
    `(snapshot)` is **not** in this list because CE configs use it both for genuine nightlies and descriptively on
    stable releases built from an upstream snapshot (e.g. IBM Advance Toolchain `power64 AT12.0`); compilers with
    `semver=(snapshot)` that should classify as nightly need an explicit `releaseTrack=nightly` override.

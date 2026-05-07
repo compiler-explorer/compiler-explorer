@@ -65,6 +65,11 @@ describe('inferReleaseTrack', () => {
             expect(inferReleaseTrack({isSemVer: false, isNightly: true, semver: '(nightly)'})).toBe('nightly');
         });
 
+        it('"(tip)" tag (Go gltip variants — Go calls their mainline "tip")', () => {
+            expect(inferReleaseTrack({isSemVer: false, isNightly: true, semver: '(tip)'})).toBe('nightly');
+            expect(inferReleaseTrack({isSemVer: false, isNightly: true, semver: 'tip'})).toBe('nightly');
+        });
+
         it('isNightly with empty semver — the canonical "just a nightly" pattern', () => {
             // Catches the common case where a maintainer flags isNightly=true but doesn't
             // bother to write a semver at all (wasm32clang, flangtrunk, dotnettrunk*,
