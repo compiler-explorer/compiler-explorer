@@ -24,10 +24,24 @@
 
 import type {ResultLine} from '../../types/resultline/resultline.interfaces.js';
 
+// Replace anything that isn't an alphanumeric or '+' (kept for "c++") with whitespace,
+// then collapse runs of whitespace. Lets "x86-64 gcc trunk" match "x86-64 gcc (trunk)".
+function normalise(s: string): string {
+    return s
+        .toLowerCase()
+        .replace(/[^a-z0-9+]+/g, ' ')
+        .replace(/\s+/g, ' ')
+        .trim();
+}
+
 export function applyMatch<T>(items: T[], pattern: string | undefined, extract: (item: T) => string[]): T[] {
     if (!pattern) return items;
-    const needle = pattern.toLowerCase();
-    return items.filter(item => extract(item).some(field => field.toLowerCase().includes(needle)));
+    const tokens = normalise(pattern).split(' ').filter(Boolean);
+    if (tokens.length === 0) return items;
+    return items.filter(item => {
+        const haystack = normalise(extract(item).join(' '));
+        return tokens.every(token => haystack.includes(token));
+    });
 }
 
 export type LeanShape = {id: string; name: string};
@@ -45,14 +59,13 @@ const defaultLeanMap = <T extends {id: string; name?: string}>(item: T): LeanSha
 });
 
 /**
- * Below `maxResults` returns items mapped through `fullMap` (the full-detail
- * shape). At or above the cap, degrades to lean mode: maps every item through
- * `leanMap` (defaults to `{id, name}`) and returns ALL of them with a
- * `leanMode: true` marker plus an LLM-facing hint suggesting refinement.
+ * Caller-requested lean mode (`forceLean: true`) returns all items mapped through
+ * `leanMap` (defaults to `{id, name}`) — useful for browsing the catalog index
+ * before drilling down by exact id, without first overflowing the response.
  *
- * Lean mode trades per-entry richness for fitting the entire match-set into
- * one response so the LLM can pick by exact id rather than guessing how to
- * narrow a partial result.
+ * Otherwise, below `maxResults` returns items mapped through `fullMap` (the
+ * full-detail shape). At or above the cap, degrades to lean mode automatically
+ * with a `leanMode: true` marker plus an LLM-facing hint suggesting refinement.
  */
 export function applyCap<T extends {id: string; name?: string}, F, L = LeanShape>(
     items: T[],
@@ -60,18 +73,27 @@ export function applyCap<T extends {id: string; name?: string}, F, L = LeanShape
     fullMap: (item: T) => F,
     entityName: string,
     leanMap?: (item: T) => L,
+    forceLean = false,
 ): CappedResult<F, L> {
+    const lean = leanMap ?? (defaultLeanMap as unknown as (item: T) => L);
+    if (forceLean) {
+        return {
+            items: items.map(lean),
+            total: items.length,
+            leanMode: true,
+        };
+    }
     if (items.length <= maxResults) {
         return {items: items.map(fullMap), total: items.length};
     }
-    const lean = leanMap ?? (defaultLeanMap as unknown as (item: T) => L);
     return {
         items: items.map(lean),
         total: items.length,
         leanMode: true,
         hint:
             `${items.length} ${entityName} exceeded the full-detail cap of ${maxResults}; showing id and name only. ` +
-            'Refine your filter (e.g. add a version or architecture) or query again with the exact id for full details.',
+            'Refine your filter (e.g. add a version or architecture), use `lean: true` explicitly to confirm ' +
+            'this shape, or query again with the exact id for full details.',
     };
 }
 

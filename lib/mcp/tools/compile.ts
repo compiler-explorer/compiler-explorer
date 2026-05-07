@@ -43,7 +43,14 @@ export function registerCompileTool(server: McpServer, compileHandler: CompileHa
             language: z.string().describe('Language ID (e.g. "c++", "c", "rust", "python")'),
             compiler: z.string().describe('Compiler ID (e.g. "g142", "clang_trunk", "rustc")'),
             options: z.string().optional().describe('Compiler flags (e.g. "-O2 -std=c++20 -Wall")'),
-            execute: z.boolean().optional().describe('Whether to also execute the compiled program'),
+            execute: z
+                .boolean()
+                .optional()
+                .describe(
+                    'Execute the compiled program instead of returning assembly. When true, `asm` is empty and ' +
+                        "top-level `stdout`/`stderr` contain the program's runtime output; compile diagnostics move " +
+                        'into `buildResult.stdout`/`buildResult.stderr`.',
+                ),
             stdin: z.string().optional().describe('Standard input for execution (requires execute=true)'),
             filters: z
                 .object({
@@ -60,8 +67,13 @@ export function registerCompileTool(server: McpServer, compileHandler: CompileHa
             libraries: z
                 .array(
                     z.object({
-                        id: z.string().describe('Library ID'),
-                        version: z.string().describe('Library version'),
+                        id: z.string().describe('Library ID from list_libraries (e.g. "boost", "fmt")'),
+                        version: z
+                            .string()
+                            .describe(
+                                'Library version id from list_libraries (e.g. "188" for Boost 1.88.0, ' +
+                                    'NOT the human "1.88.0" string)',
+                            ),
                     }),
                 )
                 .optional()
@@ -163,6 +175,30 @@ export function registerCompileTool(server: McpServer, compileHandler: CompileHa
                     ...(stderr.truncated && {stderrTruncated: true, stderrTotalLines: stderr.totalLines}),
                 };
 
+                // In execute mode, the top-level stdout/stderr is the program's runtime output (or a
+                // generic "Build failed" wrapper). The actual compile diagnostics live on buildResult.
+                // Surface them whenever present so an agent can debug execute-mode build failures —
+                // the silent "Build failed" with empty stderr was the worst friction point reported.
+                let buildTruncated = false;
+                if (result.buildResult) {
+                    const buildStdout = truncateLines(result.buildResult.stdout, stdoutCap);
+                    const buildStderr = truncateLines(result.buildResult.stderr, stderrCap);
+                    buildTruncated = buildStdout.truncated || buildStderr.truncated;
+                    output.buildResult = {
+                        code: result.buildResult.code,
+                        stdout: buildStdout.text,
+                        stderr: buildStderr.text,
+                        ...(buildStdout.truncated && {
+                            stdoutTruncated: true,
+                            stdoutTotalLines: buildStdout.totalLines,
+                        }),
+                        ...(buildStderr.truncated && {
+                            stderrTruncated: true,
+                            stderrTotalLines: buildStderr.totalLines,
+                        }),
+                    };
+                }
+
                 let execTruncated = false;
                 if (result.execResult) {
                     const execStdout = truncateLines(result.execResult.stdout, stdoutCap);
@@ -184,7 +220,7 @@ export function registerCompileTool(server: McpServer, compileHandler: CompileHa
                     };
                 }
 
-                if (asm.truncated || stdout.truncated || stderr.truncated || execTruncated) {
+                if (asm.truncated || stdout.truncated || stderr.truncated || execTruncated || buildTruncated) {
                     output.hint =
                         'Some output was capped. Raise maxAsmLines / maxStdoutLines / maxStderrLines to retrieve more.';
                 }

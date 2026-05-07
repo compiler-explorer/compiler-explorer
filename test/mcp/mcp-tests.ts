@@ -240,7 +240,7 @@ function makeFakeServer(): {fakeServer: any; toolHandlers: Record<string, (args:
     return {fakeServer, toolHandlers};
 }
 
-function makeCompiler(id: string, lang = 'c++'): CompilerInfo {
+function makeCompiler(id: string, lang = 'c++', extra: Partial<CompilerInfo> = {}): CompilerInfo {
     return {
         id,
         name: id.toUpperCase(),
@@ -248,6 +248,7 @@ function makeCompiler(id: string, lang = 'c++'): CompilerInfo {
         compilerType: '',
         semver: '',
         instructionSet: 'amd64',
+        ...extra,
     } as unknown as CompilerInfo;
 }
 
@@ -317,6 +318,64 @@ describe('MCP list_compilers tool', () => {
         expect(parsed.leanMode).toBeUndefined();
         expect(parsed.compilers[0].instructionSet).toBe('amd64');
     });
+
+    it('returns the catalog index when lean: true is set explicitly', async () => {
+        const {fakeServer, toolHandlers} = makeFakeServer();
+        const apiHandler = {
+            compilers: [makeCompiler('g142'), makeCompiler('clang20')],
+        } as unknown as ApiHandler;
+        registerCompilersTool(fakeServer, apiHandler);
+
+        const result = await toolHandlers.list_compilers({lean: true});
+        const parsed = JSON.parse(result.content[0].text);
+        expect(parsed.compilers).toEqual([
+            {id: 'g142', name: 'G142'},
+            {id: 'clang20', name: 'CLANG20'},
+        ]);
+        expect(parsed.leanMode).toBe(true);
+        expect(parsed.hint).toBeUndefined();
+    });
+
+    it('returns one compiler per (instructionSet, semver major) when latestPerMajor is set', async () => {
+        const {fakeServer, toolHandlers} = makeFakeServer();
+        const apiHandler = {
+            compilers: [
+                makeCompiler('g141', 'c++', {isSemVer: true, semver: '14.1', instructionSet: 'amd64'}),
+                makeCompiler('g142', 'c++', {isSemVer: true, semver: '14.2', instructionSet: 'amd64'}),
+                makeCompiler('g151', 'c++', {isSemVer: true, semver: '15.1', instructionSet: 'amd64'}),
+                makeCompiler('g152', 'c++', {isSemVer: true, semver: '15.2', instructionSet: 'amd64'}),
+                makeCompiler('g161', 'c++', {isSemVer: true, semver: '16.1', instructionSet: 'amd64'}),
+                makeCompiler('garm142', 'c++', {isSemVer: true, semver: '14.2', instructionSet: 'aarch64'}),
+                makeCompiler('gtrunk', 'c++', {isSemVer: true, semver: 'trunk', instructionSet: 'amd64'}),
+            ],
+        } as unknown as ApiHandler;
+        registerCompilersTool(fakeServer, apiHandler);
+
+        const result = await toolHandlers.list_compilers({latestPerMajor: true});
+        const parsed = JSON.parse(result.content[0].text);
+        const ids = parsed.compilers.map((c: any) => c.id).sort();
+        // amd64: 14.2 (newest 14.x), 15.2 (newest 15.x), 16.1 (only 16.x), gtrunk (sentinel max);
+        // aarch64: 14.2 (only entry).
+        expect(ids).toEqual(['g142', 'g152', 'g161', 'garm142', 'gtrunk'].sort());
+    });
+
+    it('reports compilers dropped from latestPerMajor due to missing semver', async () => {
+        const {fakeServer, toolHandlers} = makeFakeServer();
+        const apiHandler = {
+            compilers: [
+                makeCompiler('g142', 'c++', {isSemVer: true, semver: '14.2'}),
+                makeCompiler('msvc1944', 'c++', {isSemVer: false, semver: ''}),
+                makeCompiler('icc202', 'c++', {isSemVer: false, semver: ''}),
+            ],
+        } as unknown as ApiHandler;
+        registerCompilersTool(fakeServer, apiHandler);
+
+        const result = await toolHandlers.list_compilers({latestPerMajor: true});
+        const parsed = JSON.parse(result.content[0].text);
+        expect(parsed.compilers.map((c: any) => c.id)).toEqual(['g142']);
+        expect(parsed.droppedNonSemver).toBe(2);
+        expect(parsed.latestHint).toMatch(/semver/);
+    });
 });
 
 describe('MCP list_libraries tool', () => {
@@ -355,6 +414,21 @@ describe('MCP list_libraries tool', () => {
         expect(parsed.hint).toMatch(/exact id/);
     });
 
+    it('returns the catalog index when lean: true is set explicitly', async () => {
+        const {fakeServer, toolHandlers} = makeFakeServer();
+        const libs = Array.from({length: 5}, (_, i) => ({id: `lib${i}`, name: `Library ${i}`, versions: ['1.0']}));
+        const apiHandler = makeApiHandlerWithLibs(libs as any);
+        registerLibrariesTool(fakeServer, apiHandler);
+
+        const result = await toolHandlers.list_libraries({language: 'c++', lean: true});
+        const parsed = JSON.parse(result.content[0].text);
+        expect(parsed.libraries).toHaveLength(5);
+        expect(parsed.leanMode).toBe(true);
+        expect(parsed.libraries[0]).toEqual({id: 'lib0', name: 'Library 0'});
+        expect(parsed.libraries[0].versions).toBeUndefined();
+        expect(parsed.hint).toBeUndefined();
+    });
+
     it('returns a structured isError response when getLibrariesAsArray throws', async () => {
         const {fakeServer, toolHandlers} = makeFakeServer();
         const apiHandler = {
@@ -373,16 +447,20 @@ describe('MCP list_libraries tool', () => {
 describe('MCP compile tool', () => {
     type ExecResult = {code: number; stdout: string[]; stderr: string[]; didExecute: boolean};
 
+    type BuildResultShape = {code: number; stdout: string[]; stderr: string[]};
+
     function makeCompileHandler(
         asm: string[],
         stdout: string[] = [],
         stderr: string[] = [],
         execResult?: ExecResult,
+        topLevelCode = 0,
+        buildResult?: BuildResultShape,
     ): CompileHandler {
         const fakeBaseCompiler = {
             getDefaultFilters: () => ({}),
             compile: vi.fn().mockResolvedValue({
-                code: 0,
+                code: topLevelCode,
                 asm: asm.map(text => ({text})),
                 stdout: stdout.map(text => ({text})),
                 stderr: stderr.map(text => ({text})),
@@ -391,6 +469,11 @@ describe('MCP compile tool', () => {
                     stdout: execResult.stdout.map(text => ({text})),
                     stderr: execResult.stderr.map(text => ({text})),
                     didExecute: execResult.didExecute,
+                },
+                buildResult: buildResult && {
+                    code: buildResult.code,
+                    stdout: buildResult.stdout.map(text => ({text})),
+                    stderr: buildResult.stderr.map(text => ({text})),
                 },
             }),
         };
@@ -441,6 +524,53 @@ describe('MCP compile tool', () => {
         const parsed = JSON.parse(result.content[0].text);
         expect(parsed.asm.split('\n')).toHaveLength(1200);
         expect(parsed.asmTruncated).toBeUndefined();
+    });
+
+    it('surfaces buildResult.stdout/stderr so execute-mode build failures are not silent', async () => {
+        const {fakeServer, toolHandlers} = makeFakeServer();
+        // Mirror the shape base-compiler returns when execute=true and the build fails:
+        // top-level stderr is the generic "Build failed" wrapper, and the actual diagnostic
+        // is on buildResult.
+        const compileHandler = makeCompileHandler([], [], ['Build failed'], undefined, -1, {
+            code: 1,
+            stdout: [],
+            stderr: ["error: 'foo' was not declared in this scope"],
+        });
+        registerCompileTool(fakeServer, compileHandler);
+
+        const result = await toolHandlers.compile({
+            source: 'x',
+            language: 'c++',
+            compiler: 'g142',
+            execute: true,
+        });
+        const parsed = JSON.parse(result.content[0].text);
+        expect(parsed.code).toBe(-1);
+        expect(parsed.stderr).toBe('Build failed');
+        expect(parsed.buildResult.code).toBe(1);
+        expect(parsed.buildResult.stderr).toMatch(/not declared in this scope/);
+    });
+
+    it('truncates buildResult streams and sets the hint', async () => {
+        const {fakeServer, toolHandlers} = makeFakeServer();
+        const longStderr = Array.from({length: 250}, (_, i) => `err${i}`);
+        const compileHandler = makeCompileHandler([], [], ['Build failed'], undefined, -1, {
+            code: 1,
+            stdout: [],
+            stderr: longStderr,
+        });
+        registerCompileTool(fakeServer, compileHandler);
+
+        const result = await toolHandlers.compile({
+            source: 'x',
+            language: 'c++',
+            compiler: 'g142',
+            execute: true,
+        });
+        const parsed = JSON.parse(result.content[0].text);
+        expect(parsed.buildResult.stderrTruncated).toBe(true);
+        expect(parsed.buildResult.stderrTotalLines).toBe(250);
+        expect(parsed.hint).toMatch(/maxStderrLines/);
     });
 
     it('sets the hint when only execResult output is truncated', async () => {

@@ -57,6 +57,35 @@ describe('applyMatch', () => {
     it('returns empty when nothing matches', () => {
         expect(applyMatch(items, 'rust', extract)).toEqual([]);
     });
+
+    it('treats punctuation as whitespace so parens do not break matches', () => {
+        const compilers = [
+            {id: 'gcc-trunk-x64', name: 'x86-64 gcc (trunk)'},
+            {id: 'gcc141', name: 'x86-64 gcc 14.1'},
+        ];
+        expect(applyMatch(compilers, 'x86-64 gcc trunk', i => [i.id, i.name])).toEqual([
+            {id: 'gcc-trunk-x64', name: 'x86-64 gcc (trunk)'},
+        ]);
+    });
+
+    it('matches tokens in any order', () => {
+        const compilers = [
+            {id: 'gcc141-arm64', name: 'arm64 gcc 14.1'},
+            {id: 'gcc141', name: 'x86-64 gcc 14.1'},
+        ];
+        expect(applyMatch(compilers, 'gcc arm64 14.1', i => [i.id, i.name])).toEqual([
+            {id: 'gcc141-arm64', name: 'arm64 gcc 14.1'},
+        ]);
+    });
+
+    it('requires every token to be present', () => {
+        const compilers = [{id: 'gcc141', name: 'x86-64 gcc 14.1'}];
+        expect(applyMatch(compilers, 'gcc rust', i => [i.id, i.name])).toEqual([]);
+    });
+
+    it('treats a punctuation-only pattern as no filter', () => {
+        expect(applyMatch(items, '(), .', extract)).toBe(items);
+    });
 });
 
 describe('applyCap', () => {
@@ -110,6 +139,14 @@ describe('applyCap', () => {
         const items = [{id: 'libfoo'}, {id: 'libbar'}];
         const result = applyCap(items, 1, x => x, 'libraries');
         expect(result.items[0]).toEqual({id: 'libfoo', name: ''});
+    });
+
+    it('forceLean returns lean shape regardless of count, with no hint', () => {
+        const result = applyCap(compilers, 100, fullMap, 'compilers', undefined, true);
+        expect(result.items).toHaveLength(3);
+        expect(result.items[0]).toEqual({id: 'g142', name: 'GCC 14.2'});
+        expect(result.leanMode).toBe(true);
+        expect(result.hint).toBeUndefined();
     });
 });
 

@@ -42,9 +42,11 @@ export function registerLibrariesTool(server: McpServer, apiHandler: ApiHandler)
                 .string()
                 .optional()
                 .describe(
-                    'Case-insensitive substring filter on library id and name. Be specific: a broad term ' +
-                        'that matches hundreds of libraries triggers lean mode (id+name only). ' +
-                        'Prefer a library name or family like "boost", "fmt", or an exact id.',
+                    'Case-insensitive AND-of-words filter on library id and name. The pattern is split on ' +
+                        'whitespace and punctuation, and every token must appear (in any order). ' +
+                        'Prefer a library name or family like "boost", "fmt", or an exact id. ' +
+                        'For broad searches the response degrades to lean mode (id+name only); use `lean: true` ' +
+                        'to opt into the catalog index up front.',
                 ),
             maxResults: z
                 .number()
@@ -56,8 +58,16 @@ export function registerLibrariesTool(server: McpServer, apiHandler: ApiHandler)
                         'When the filtered count exceeds this, the response degrades to lean mode (id+name only) ' +
                         'and returns ALL matches; raise this if you need full per-entry detail (versions, url) across many results.',
                 ),
+            lean: z
+                .boolean()
+                .optional()
+                .describe(
+                    'Return id+name only for every result, regardless of count. Use this to browse the catalog ' +
+                        'index without risking an oversized response, then call again with an exact `match` (e.g. ' +
+                        'the library id) to get full details including versions.',
+                ),
         },
-        async ({language, match, maxResults}) => {
+        async ({language, match, maxResults, lean}) => {
             // getLibrariesAsArray throws via unwrap() if options aren't loaded yet
             // (brief startup window before setOptions runs). Mirror the HTTP
             // handler's behaviour: return a structured MCP error rather than
@@ -73,7 +83,14 @@ export function registerLibrariesTool(server: McpServer, apiHandler: ApiHandler)
                 };
             }
             const filtered = applyMatch(all, match, lib => [lib.id, lib.name ?? '']);
-            const {items, ...meta} = applyCap(filtered, maxResults ?? DEFAULT_MAX_RESULTS, lib => lib, 'libraries');
+            const {items, ...meta} = applyCap(
+                filtered,
+                maxResults ?? DEFAULT_MAX_RESULTS,
+                lib => lib,
+                'libraries',
+                undefined,
+                lean === true,
+            );
             return {content: [{type: 'text', text: JSON.stringify({libraries: items, ...meta}, null, 2)}]};
         },
     );

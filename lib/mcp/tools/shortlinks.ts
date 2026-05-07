@@ -48,8 +48,13 @@ export function registerShortlinkTools(
             libraries: z
                 .array(
                     z.object({
-                        id: z.string(),
-                        version: z.string(),
+                        id: z.string().describe('Library ID from list_libraries (e.g. "boost", "fmt")'),
+                        version: z
+                            .string()
+                            .describe(
+                                'Library version id from list_libraries (e.g. "188" for Boost 1.88.0, ' +
+                                    'NOT the human "1.88.0" string)',
+                            ),
                     }),
                 )
                 .optional()
