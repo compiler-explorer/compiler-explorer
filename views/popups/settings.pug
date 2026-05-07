@@ -52,7 +52,8 @@ mixin input(cls, type, text, style)
             #keybindings.tab-pane(role="group")
               .mb-3
                 label.form-label(for="settings-select-keymap")
-                  | Keymap (requires refresh to take effect)&nbsp;
+                  | Keymap&nbsp;
+                  small.text-muted.fst-italic (requires refresh to take effect)&nbsp;
                   select.form-select.keymap(id="settings-select-keymap")
               +checkbox("useVim", "Vim editor mode")
               +checkbox("relativeLineNumbers", "Show relative line numbers (useful for vim motions)")
