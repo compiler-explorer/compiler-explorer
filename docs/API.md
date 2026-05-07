@@ -28,6 +28,10 @@ If you require different fields, you can specify them by adding `?fields=field1,
 
 To see all the available fields, you can use `?fields=all`. It is not recommended using this by default.
 
+One useful optional field is `releaseTrack`, which categorises each compiler as `stable`, `nightly`, `prerelease`, or
+`experimental`. See [AddingACompiler.md](AddingACompiler.md#release-track) for the categorisation rules and how to
+override them.
+
 ### `GET /api/compilers/<language-id>` - return a list of compilers with matching language
 
 Returns a list of compilers for the provided language id. In text form, there's a simple formatting of the ID of the
