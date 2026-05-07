@@ -1066,9 +1066,19 @@ export class Editor extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Edit
             this.runFormatDocumentAction();
         });
 
-        this.editor.addCommand(monaco.KeyMod.CtrlCmd | monaco.KeyCode.KeyD, () => {
-            unwrap(this.editor.getAction('editor.action.duplicateSelection')).run();
-        });
+        // Bindings that match JetBrains defaults but conflict with widely-used VS Code defaults
+        // (e.g. Ctrl+D for multi-cursor) are only registered under the JetBrains keymap.
+        if (this.settings.keymap === 'jetbrains') {
+            this.editor.addCommand(monaco.KeyMod.CtrlCmd | monaco.KeyCode.KeyD, () => {
+                unwrap(this.editor.getAction('editor.action.duplicateSelection')).run();
+            });
+            this.editor.addCommand(monaco.KeyMod.CtrlCmd | monaco.KeyCode.KeyY, () => {
+                unwrap(this.editor.getAction('editor.action.deleteLines')).run();
+            });
+            this.editor.addCommand(monaco.KeyMod.CtrlCmd | monaco.KeyMod.Shift | monaco.KeyCode.Slash, () => {
+                unwrap(this.editor.getAction('editor.action.blockComment')).run();
+            });
+        }
     }
 
     runFormatDocumentAction(): void {

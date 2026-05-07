@@ -50,6 +50,9 @@ mixin input(cls, type, text, style)
               +checkbox("newEditorLastLang", "Use last selected language when opening new Editors")
               +checkbox("enableCommunityAds", "Show community events")
             #keybindings.tab-pane(role="group")
+              .mb-3
+                label.form-label(for="settings-select-keymap") Keymap (requires refresh to take effect)
+                select.form-select.keymap(id="settings-select-keymap")
               +checkbox("useVim", "Vim editor mode")
               +checkbox("relativeLineNumbers", "Show relative line numbers (useful for vim motions)")
               .the-save-option-to-auto-share
