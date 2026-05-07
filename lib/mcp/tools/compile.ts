@@ -41,7 +41,9 @@ export function registerCompileTool(server: McpServer, compileHandler: CompileHa
         {
             source: z.string().describe('Source code to compile'),
             language: z.string().describe('Language ID (e.g. "c++", "c", "rust", "python")'),
-            compiler: z.string().describe('Compiler ID (e.g. "g142", "clang_trunk", "rustc")'),
+            compiler: z
+                .string()
+                .describe('Compiler ID from list_compilers (e.g. "g161", "clang_trunk", "r1950") — not a name'),
             options: z.string().optional().describe('Compiler flags (e.g. "-O2 -std=c++20 -Wall")'),
             execute: z
                 .boolean()

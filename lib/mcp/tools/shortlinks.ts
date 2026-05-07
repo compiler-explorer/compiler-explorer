@@ -43,7 +43,7 @@ export function registerShortlinkTools(
         {
             source: z.string().describe('Source code'),
             language: z.string().describe('Language ID (e.g. "c++", "c", "rust")'),
-            compiler: z.string().describe('Compiler ID (e.g. "g142", "clang_trunk")'),
+            compiler: z.string().describe('Compiler ID from list_compilers (e.g. "g161", "clang_trunk")'),
             options: z.string().optional().describe('Compiler flags (e.g. "-O2 -std=c++20")'),
             libraries: z
                 .array(

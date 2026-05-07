@@ -109,7 +109,9 @@ export function registerCompilersTool(server: McpServer, apiHandler: ApiHandler)
                 .describe(
                     'Case-insensitive AND-of-words filter on compiler id and name. The pattern is split on ' +
                         'whitespace and punctuation, and every token must appear (in any order) in the id or name. ' +
-                        '"x86-64 gcc trunk" matches "x86-64 gcc (trunk)". Note: this is a literal text filter — ' +
+                        '"x86-64 gcc trunk" matches "x86-64 gcc (trunk)". Numeric tokens match whole-word, so ' +
+                        '"gcc 14.1" matches "x86-64 gcc 14.1.0" but NOT "x86-64 gcc 14.10"; alphanumeric tokens ' +
+                        'still substring-match, so "g14" finds "g142". Note: this is a literal text filter — ' +
                         '"gcc 15" excludes gcc 16.x, so to find the newest version use `latestPerMajor: true` or ' +
                         'browse with `lean: true`. For broad searches that match hundreds of compilers, the ' +
                         'response degrades to lean mode (id+name only); refine further or use `lean: true` ' +

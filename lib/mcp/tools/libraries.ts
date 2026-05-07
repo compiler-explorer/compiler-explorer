@@ -43,10 +43,11 @@ export function registerLibrariesTool(server: McpServer, apiHandler: ApiHandler)
                 .optional()
                 .describe(
                     'Case-insensitive AND-of-words filter on library id and name. The pattern is split on ' +
-                        'whitespace and punctuation, and every token must appear (in any order). ' +
-                        'Prefer a library name or family like "boost", "fmt", or an exact id. ' +
-                        'For broad searches the response degrades to lean mode (id+name only); use `lean: true` ' +
-                        'to opt into the catalog index up front.',
+                        'whitespace and punctuation, and every token must appear (in any order). Numeric tokens ' +
+                        'match whole-word, so "boost 1.88" matches "Boost 1.88.0" but NOT "Boost 1.880"; ' +
+                        'alphanumeric tokens still substring-match. Prefer a library name or family like ' +
+                        '"boost", "fmt", or an exact id. For broad searches the response degrades to lean mode ' +
+                        '(id+name only); use `lean: true` to opt into the catalog index up front.',
                 ),
             maxResults: z
                 .number()
