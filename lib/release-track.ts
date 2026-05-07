@@ -49,21 +49,25 @@ export type ReleaseTrackInputs = {
  * Categorise a compiler by release track based on the metadata CE already collects.
  *
  * The decision tree (first match wins):
- *   1. Real numbered semver with a prerelease segment (e.g. "1.28.0-preview") →
- *      'prerelease'. Caught before rule 2 so genuine prereleases aren't mislabelled
- *      as 'stable'.
+ *   1. Real numbered semver with a prerelease segment (e.g. "1.28.0-preview"):
+ *      → 'nightly' if isNightly is also set (the maintainer's explicit signal that
+ *        this is a rolling preview rather than a one-off RC — e.g. micropython-preview).
+ *      → 'prerelease' otherwise (e.g. dxc 1.8.2306-preview, RC builds).
  *   2. Real numbered semver, no prerelease segment → 'stable'.
  *   3. asSafeVer maps to magic_semver.trunk (semver contains "trunk"/"main"), or the
- *      bare semver tag is "nightly" / "main" / "master" → 'nightly'.
- *   4. semver is a prerelease tag ("beta", "alpha", "rc", "rc1", ...) → 'prerelease'.
- *   5. isNightly with any other non-numeric semver (e.g. "(contracts)", "(modules)")
- *      → 'experimental' — branch builds for testing language proposals.
- *   6. Anything else → 'stable' as the safe fallback.
+ *      bare semver tag (after stripping outer parens) is in NIGHTLY_TAGS → 'nightly'.
+ *   4. semver tag is a prerelease tag ("beta", "alpha", "rc", "rc1", ...) → 'prerelease'.
+ *   5. isNightly with an empty semver → 'nightly'. The convention in CE configs is that
+ *      a parenthesised tag like "(contracts)" or "(modules)" names a *specific* feature
+ *      fork, while no semver at all means "the canonical nightly build, nothing fancy".
+ *      This catches mainstream nightlies (wasm32clang, flangtrunk, dotnettrunk*,
+ *      rustccggcc-master, ...) without needing per-compiler overrides.
+ *   6. isNightly with a non-empty, non-canonical tag → 'experimental' — typically the
+ *      c++ language-proposal forks like "(contracts)", "(modules)", "(P2034 lambdas)".
+ *   7. Anything else → 'stable' as the safe fallback.
  *
- * Cases the heuristic can't reach from structural fields alone (e.g. Rust's
- * `rustccggcc-master` / `mrustc-master`, where "master" lives in the compiler id
- * but not the semver) should set `compiler.releaseTrack=nightly` in the .properties
- * file — that's what the override is for.
+ * Cases the heuristic genuinely can't reach should set `compiler.releaseTrack=...` in
+ * the .properties file — but the rules above cover the common cases without overrides.
  */
 export function inferReleaseTrack(inputs: ReleaseTrackInputs): ReleaseTrack {
     const semver = inputs.semver.toLowerCase().trim();
@@ -72,10 +76,12 @@ export function inferReleaseTrack(inputs: ReleaseTrackInputs): ReleaseTrack {
     const isMagic = safe === magic_semver.trunk || safe === magic_semver.non_trunk;
 
     if (inputs.isSemVer && !isMagic) {
-        return semverParser.prerelease(safe) ? 'prerelease' : 'stable';
+        if (semverParser.prerelease(safe)) return inputs.isNightly ? 'nightly' : 'prerelease';
+        return 'stable';
     }
     if (safe === magic_semver.trunk || NIGHTLY_TAGS.has(tag)) return 'nightly';
     if (PRERELEASE_TAGS.has(tag) || RC_PATTERN.test(tag)) return 'prerelease';
+    if (inputs.isNightly && semver === '') return 'nightly';
     if (inputs.isNightly) return 'experimental';
     return 'stable';
 }

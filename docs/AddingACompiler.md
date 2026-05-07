@@ -309,13 +309,26 @@ features like the MCP `list_compilers` `latestPerMajor` knob. The four values ar
 - **`experimental`** — a feature-branch fork or proposal implementation that isn't on the release path. This covers
   most of the c++ paper-prototype compilers (`gcc-contracts-trunk`, `clang_p2996`, `clang_clangir`, ...).
 
-The track is normally inferred from `isSemVer`, `isNightly`, and `semver` — the heuristic recognises numeric semvers,
-the `(trunk)` / `(main)` / `(snapshot)` / `(nightly)` family, prerelease tags like `beta` / `rc1`, and falls back to
-`experimental` for any `isNightly=true` compiler whose semver is something more specific (`(contracts)`, `(modules)`,
-etc.).
+The track is normally inferred from `isSemVer`, `isNightly`, and `semver` — no extra config needed in the common case.
+The rules are:
 
-If the heuristic gets it wrong — usually because the relevant signal lives in the compiler id or display name rather
-than the structured fields — set the `releaseTrack` property explicitly. Per-compiler:
+1. **Real numbered semver** with a prerelease segment (`1.28.0-preview`, `1.0.0-rc1`):
+   - if `isNightly=true` → `nightly` (the maintainer's "rolling preview" signal wins)
+   - otherwise → `prerelease`
+2. **Real numbered semver** without a prerelease segment → `stable`.
+3. semver contains `trunk`/`main`, or the bare tag (parens stripped) is one of `nightly`, `main`, `master`, `snapshot`
+   → `nightly`. Catches `gcc snapshot` (`semver=(trunk)`), `clang trunk`, `rust nightly`, the powerpc clang `(snapshot)`
+   builds, etc.
+4. semver tag is `beta` / `alpha` / `rc` / `rc1` / ... → `prerelease`. Catches `rust beta`.
+5. **`isNightly=true` with an empty semver** → `nightly`. CE convention is that a parenthesised tag like `(contracts)`
+   names a *specific* feature fork, while no semver at all means "the canonical nightly build, nothing fancy". This
+   catches `wasm32clang`, `flangtrunk`, all the `dotnettrunk*` compilers, `rustccggcc-master`, etc. without per-compiler
+   overrides.
+6. `isNightly=true` with a non-canonical tag (`(contracts)`, `(modules)`, `(P2034 lambdas)`) → `experimental` —
+   compilers tracking a specific language proposal, distinct from the canonical nightly.
+7. Anything else → `stable` as the safe fallback.
+
+If the heuristic gets it wrong for some edge case, set the `releaseTrack` property explicitly. Per-compiler:
 
 ```ini
 compiler.rustccggcc-master.releaseTrack=nightly

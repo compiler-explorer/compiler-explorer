@@ -68,6 +68,15 @@ describe('inferReleaseTrack', () => {
             expect(inferReleaseTrack({isSemVer: false, isNightly: true, semver: '(master)'})).toBe('nightly');
             expect(inferReleaseTrack({isSemVer: false, isNightly: true, semver: '(nightly)'})).toBe('nightly');
         });
+
+        it('isNightly with empty semver — the canonical "just a nightly" pattern', () => {
+            // Catches the common case where a maintainer flags isNightly=true but doesn't
+            // bother to write a semver at all (wasm32clang, flangtrunk, dotnettrunk*,
+            // rustccggcc-master, etc.) — i.e. "nothing fancy, just the trunk build".
+            expect(inferReleaseTrack({isSemVer: false, isNightly: true, semver: ''})).toBe('nightly');
+            expect(inferReleaseTrack({isSemVer: true, isNightly: true, semver: ''})).toBe('nightly');
+            expect(inferReleaseTrack({isSemVer: false, isNightly: true, semver: '   '})).toBe('nightly');
+        });
     });
 
     describe('prerelease', () => {
@@ -87,11 +96,16 @@ describe('inferReleaseTrack', () => {
     });
 
     describe('prerelease — real semver with prerelease segment', () => {
-        it('1.x.y-preview (micropython, dxc)', () => {
-            expect(inferReleaseTrack({isSemVer: true, isNightly: true, semver: '1.28.0-preview'})).toBe('prerelease');
+        it('1.x.y-preview without isNightly (dxc-style RC of an upcoming version)', () => {
             expect(inferReleaseTrack({isSemVer: true, isNightly: false, semver: '1.8.2306-preview'})).toBe(
                 'prerelease',
             );
+        });
+
+        it('isNightly + prerelease segment promotes to nightly (micropython-preview is a rolling preview)', () => {
+            // The maintainer's explicit isNightly=true overrides the generic prerelease
+            // interpretation: -preview here means "rolling preview branch", not "RC".
+            expect(inferReleaseTrack({isSemVer: true, isNightly: true, semver: '1.28.0-preview'})).toBe('nightly');
         });
 
         it('semver -rc / -alpha / -beta segments', () => {
