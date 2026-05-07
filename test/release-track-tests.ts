@@ -59,10 +59,6 @@ describe('inferReleaseTrack', () => {
             expect(inferReleaseTrack({isSemVer: true, isNightly: true, semver: 'NIGHTLY'})).toBe('nightly');
         });
 
-        it('"(snapshot)" tag (powerpc clang and similar)', () => {
-            expect(inferReleaseTrack({isSemVer: false, isNightly: true, semver: '(snapshot)'})).toBe('nightly');
-        });
-
         it('parenthesised nightly tags', () => {
             expect(inferReleaseTrack({isSemVer: false, isNightly: true, semver: '(main)'})).toBe('nightly');
             expect(inferReleaseTrack({isSemVer: false, isNightly: true, semver: '(master)'})).toBe('nightly');
@@ -118,6 +114,21 @@ describe('inferReleaseTrack', () => {
             expect(inferReleaseTrack({isSemVer: false, isNightly: true, semver: ' BETA '})).toBe('prerelease');
             expect(inferReleaseTrack({isSemVer: false, isNightly: true, semver: 'RC1'})).toBe('prerelease');
             expect(inferReleaseTrack({isSemVer: false, isNightly: true, semver: 'Alpha'})).toBe('prerelease');
+        });
+    });
+
+    describe('"snapshot" is deliberately not a nightly tag', () => {
+        it('semver=(snapshot) without isNightly stays stable', () => {
+            // IBM Advance Toolchain pattern: ppc64g8/ppc64leg8 etc. are numbered AT
+            // releases (AT12.0, AT13.0) that happen to be built from upstream gcc
+            // snapshots. The (snapshot) tag is descriptive, not a nightly indicator.
+            expect(inferReleaseTrack({isSemVer: false, isNightly: false, semver: '(snapshot)'})).toBe('stable');
+        });
+
+        it('semver=(snapshot) with isNightly classifies as experimental — needs explicit override', () => {
+            // ppc64clang etc. are genuine clang trunk builds. The override
+            // mechanism (compiler.releaseTrack=nightly in .properties) handles them.
+            expect(inferReleaseTrack({isSemVer: false, isNightly: true, semver: '(snapshot)'})).toBe('experimental');
         });
     });
 

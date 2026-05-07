@@ -316,9 +316,11 @@ The rules are:
    - if `isNightly=true` → `nightly` (the maintainer's "rolling preview" signal wins)
    - otherwise → `prerelease`
 2. **Real numbered semver** without a prerelease segment → `stable`.
-3. semver contains `trunk`/`main`, or the bare tag (parens stripped) is one of `nightly`, `main`, `master`, `snapshot`
-   → `nightly`. Catches `gcc snapshot` (`semver=(trunk)`), `clang trunk`, `rust nightly`, the powerpc clang `(snapshot)`
-   builds, etc.
+3. semver contains `trunk`/`main`, or the bare tag (parens stripped) is one of `nightly`, `main`, `master`
+   → `nightly`. Catches `gcc snapshot` (`semver=(trunk)`), `clang trunk`, `rust nightly`, etc. Note that
+   `(snapshot)` is **not** in this list because CE configs use it both for genuine nightlies and descriptively on
+   stable releases built from an upstream snapshot (e.g. IBM Advance Toolchain `power64 AT12.0`); compilers with
+   `semver=(snapshot)` that should classify as nightly need an explicit `releaseTrack=nightly` override.
 4. semver tag is `beta` / `alpha` / `rc` / `rc1` / ... → `prerelease`. Catches `rust beta`.
 5. **`isNightly=true` with an empty semver** → `nightly`. CE convention is that a parenthesised tag like `(contracts)`
    names a *specific* feature fork, while no semver at all means "the canonical nightly build, nothing fancy". This

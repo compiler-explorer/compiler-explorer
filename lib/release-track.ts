@@ -28,7 +28,12 @@ import {RELEASE_TRACKS, type ReleaseTrack} from '../types/compiler.interfaces.js
 import {asSafeVer, magic_semver} from './utils.js';
 
 const PRERELEASE_TAGS = new Set(['beta', 'alpha']);
-const NIGHTLY_TAGS = new Set(['nightly', 'main', 'master', 'snapshot']);
+// Deliberately omit 'snapshot' — too ambiguous: CE configs use it both for genuine
+// nightly tracks (e.g. clspv main) AND descriptively on stable releases built from an
+// upstream snapshot (e.g. IBM Advance Toolchain ppc64g8 = "power64 AT12.0", a stable
+// release that happens to incorporate a gcc snapshot). Compilers that need 'nightly'
+// classification with a (snapshot) semver should set releaseTrack=nightly explicitly.
+const NIGHTLY_TAGS = new Set(['nightly', 'main', 'master']);
 const RC_PATTERN = /^rc\d*$/;
 
 // CE configs commonly write nightly tags inside parens, e.g. "(trunk)", "(snapshot)",
@@ -56,6 +61,7 @@ export type ReleaseTrackInputs = {
  *   2. Real numbered semver, no prerelease segment → 'stable'.
  *   3. asSafeVer maps to magic_semver.trunk (semver contains "trunk"/"main"), or the
  *      bare semver tag (after stripping outer parens) is in NIGHTLY_TAGS → 'nightly'.
+ *      Note: "snapshot" is NOT in NIGHTLY_TAGS — see the comment on that constant.
  *   4. semver tag is a prerelease tag ("beta", "alpha", "rc", "rc1", ...) → 'prerelease'.
  *   5. isNightly with an empty semver → 'nightly'. The convention in CE configs is that
  *      a parenthesised tag like "(contracts)" or "(modules)" names a *specific* feature
