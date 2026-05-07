@@ -53,6 +53,7 @@ export class CompilerPicker {
     popup: CompilerPickerPopup;
     toolbarPopoutButton: JQuery<HTMLElement>;
     popupTooltip: JQuery<HTMLElement>;
+    private initNonce: number = 0;
     constructor(
         domRoot: JQuery,
         hub: Hub,
@@ -94,12 +95,15 @@ export class CompilerPicker {
         this.tomSelect = null;
     }
 
-    private initialize(langId: string, compilerId: string) {
+    private async initialize(langId: string, compilerId: string) {
         this.lastLangId = langId;
         this.lastCompilerId = compilerId;
 
-        const groups = this.getGroups(langId);
-        const options = this.getOptions(langId, compilerId);
+        const nonce = ++this.initNonce;
+        const groups = await this.getGroups(langId);
+        const options = await this.getOptions(langId, compilerId);
+
+        if (nonce !== this.initNonce) return;
 
         this.tomSelect = new TomSelect(this.domNode, {
             sortField: CompilerService.getSelectizerOrder(),
@@ -212,9 +216,10 @@ export class CompilerPicker {
         this.popup.setLang(groups, options, langId);
     }
 
-    getOptions(langId: string, compilerId: string): (CompilerInfo & {$groups: string[]})[] {
+    async getOptions(langId: string, compilerId: string): Promise<(CompilerInfo & {$groups: string[]})[]> {
         const favorites = this.getFavorites();
-        return Object.values(this.compilerService.getCompilersForLang(langId) ?? {})
+        const compilers = await this.compilerService.getCompilersForLang(langId);
+        return Object.values(compilers)
             .filter(e => (this.compilerIsVisible(e) && !e.hidden) || e.id === compilerId)
             .map(e => {
                 const $groups = [e.group];
@@ -226,8 +231,8 @@ export class CompilerPicker {
             });
     }
 
-    getGroups(langId: string) {
-        const optgroups = this.compilerService.getGroupsInUse(langId);
+    async getGroups(langId: string) {
+        const optgroups = await this.compilerService.getGroupsInUse(langId);
         optgroups.unshift({
             value: CompilerPicker.favoriteGroupName,
             label: 'Favorites',

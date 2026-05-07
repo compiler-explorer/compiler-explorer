@@ -28,8 +28,10 @@ import {unwrapString} from '../../shared/assert.js';
 import * as BootstrapUtils from '../bootstrap-utils.js';
 import {localStorage} from '../local.js';
 import {Library, LibraryVersion} from '../options.interfaces.js';
-import {options} from '../options.js';
 import {SentryCapture} from '../sentry.js';
+import {compilersService} from '../services/compilers.service.js';
+import {languagesService} from '../services/languages.service.js';
+import {libsService} from '../services/libs.service.js';
 import {Alert} from './alert.js';
 import {Lib, WidgetState} from './libs-widget.interfaces.js';
 
@@ -100,19 +102,13 @@ class LibraryAnnotations {
     }
 }
 
-function getCompilerName(compilerId: string): string {
+async function getCompilerName(compilerId: string, langId: string): Promise<string> {
     if (compilerId === c_default_compiler_non_id) {
         return 'compiler';
     }
 
-    const compilerName = '';
-    for (const compiler of options.compilers) {
-        if (compiler.id === compilerId) {
-            return compiler.name;
-        }
-    }
-
-    return compilerName;
+    const compilers = await compilersService.getCompilersForLang(langId);
+    return compilers[compilerId]?.name ?? '';
 }
 
 function shortenMachineName(name: string): string {
@@ -136,6 +132,7 @@ export class LibsWidget {
 
     private currentLangId: string;
     private currentCompilerId: string;
+    private currentCompilerName: string = '';
 
     private dropdownButton: JQuery;
     private searchResults: JQuery;
@@ -170,6 +167,7 @@ export class LibsWidget {
         this.dropdownButton = dropdownButton;
         if (compiler) {
             this.currentCompilerId = compiler.id;
+            this.currentCompilerName = compiler.name ?? '';
         } else {
             this.currentCompilerId = c_default_compiler_non_id;
         }
@@ -178,10 +176,10 @@ export class LibsWidget {
         this.initButtons();
         this.onChangeCallback = onChangeCallback;
         this.availableLibs = {};
-        this.updateAvailableLibs(possibleLibs, true);
-        this.loadState(state);
-
-        this.fullRefresh();
+        this.updateAvailableLibs(possibleLibs, true).then(() => {
+            this.loadState(state);
+            this.fullRefresh();
+        });
 
         const searchInput = this.domRoot.find('.lib-search-input');
 
@@ -505,7 +503,7 @@ export class LibsWidget {
             '</div>';
         BootstrapUtils.initPopover(infoButton, {
             html: true,
-            title: 'Build info for ' + getCompilerName(this.currentCompilerId),
+            title: 'Build info for ' + (this.currentCompilerName || this.currentCompilerId),
             content: () => {
                 const nowts = Math.round(Date.now() / 1000);
                 const popupId = `build-info-content-${nowts}`;
@@ -633,8 +631,10 @@ export class LibsWidget {
         }
     }
 
-    initLangDefaultLibs() {
-        const defaultLibs = options.defaultLibs[this.currentLangId];
+    async initLangDefaultLibs() {
+        const languages = await languagesService.getLanguages();
+        const lang = languages[this.currentLangId];
+        const defaultLibs = lang?.defaultLibs;
         if (!defaultLibs) return;
         for (const libPair of defaultLibs.split(':')) {
             const pairSplits = libPair.split('.');
@@ -646,29 +646,26 @@ export class LibsWidget {
         }
     }
 
-    updateAvailableLibs(possibleLibs: CompilerLibs, isLangChanged: boolean) {
+    async updateAvailableLibs(possibleLibs: CompilerLibs, isLangChanged: boolean) {
         if (!(this.currentLangId in this.availableLibs)) {
             this.availableLibs[this.currentLangId] = {};
         }
 
         if (!(this.currentCompilerId in this.availableLibs[this.currentLangId])) {
             if (this.currentCompilerId === '_default_') {
-                this.availableLibs[this.currentLangId][this.currentCompilerId] = $.extend(
-                    true,
-                    {},
-                    options.libs[this.currentLangId],
-                );
+                const allLibs = await libsService.getLibsForLang(this.currentLangId);
+                this.availableLibs[this.currentLangId][this.currentCompilerId] = $.extend(true, {}, allLibs);
             } else {
                 this.availableLibs[this.currentLangId][this.currentCompilerId] = $.extend(true, {}, possibleLibs);
             }
         }
 
         if (isLangChanged) {
-            this.initLangDefaultLibs();
+            await this.initLangDefaultLibs();
         }
     }
 
-    setNewLangId(langId: string, compilerId: string, possibleLibs: CompilerLibs) {
+    async setNewLangId(langId: string, compilerId: string, possibleLibs: CompilerLibs) {
         const libsInUse = this.listUsedLibs();
 
         const isLangChanged = this.currentLangId !== langId;
@@ -677,12 +674,14 @@ export class LibsWidget {
 
         if (compilerId) {
             this.currentCompilerId = compilerId;
+            this.currentCompilerName = (await getCompilerName(compilerId, langId)) || compilerId;
         } else {
             this.currentCompilerId = '_default_';
+            this.currentCompilerName = '';
         }
 
         // Clear the dom Root so it gets rebuilt with the new language libraries
-        this.updateAvailableLibs(possibleLibs, isLangChanged);
+        await this.updateAvailableLibs(possibleLibs, isLangChanged);
 
         for (const libId in libsInUse) {
             this.markLibrary(libId, libsInUse[libId], true);
