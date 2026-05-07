@@ -32,7 +32,7 @@ import _ from 'underscore';
 import urljoin from 'url-join';
 
 import {basic_comparator, remove} from '../shared/common-utils.js';
-import type {CompilerInfo, PreliminaryCompilerInfo, ReleaseTrack} from '../types/compiler.interfaces.js';
+import type {CompilerInfo, PreliminaryCompilerInfo} from '../types/compiler.interfaces.js';
 import {InstructionSet, InstructionSetsList} from '../types/instructionsets.js';
 import type {Language, LanguageKey} from '../types/languages.interfaces.js';
 import {Tool, ToolInfo} from '../types/tool.interfaces.js';
@@ -43,7 +43,7 @@ import {logger} from './logger.js';
 import {ClientOptionsHandler} from './options-handler.js';
 import type {PropertyGetter} from './properties.interfaces.js';
 import {CompilerProps, getRawProperties} from './properties.js';
-import {inferReleaseTrack, isReleaseTrack} from './release-track.js';
+import {backfillReleaseTrack, resolveReleaseTrack} from './release-track.js';
 import {getPossibleGccToolchainsFromCompilerInfo} from './toolchain-utils.js';
 
 const sleep = promisify(setTimeout);
@@ -157,13 +157,7 @@ export class CompilerFinder {
                                             );
                                             // Older CE remotes won't have releaseTrack. Backfill to keep the
                                             // type contract intact for downstream consumers.
-                                            if (!compiler.releaseTrack || !isReleaseTrack(compiler.releaseTrack)) {
-                                                compiler.releaseTrack = inferReleaseTrack({
-                                                    isSemVer: compiler.isSemVer,
-                                                    isNightly: compiler.isNightly,
-                                                    semver: compiler.semver,
-                                                });
-                                            }
+                                            backfillReleaseTrack(compiler);
                                             return compiler;
                                         });
                                         resolve(compilers);
@@ -229,26 +223,7 @@ export class CompilerFinder {
         const baseName = props<string | undefined>('baseName');
         const semver = props('semver', '');
         const isNightly = !!props('isNightly', false);
-        // toProperty in lib/utils.ts coerces "true"/"false"/numeric strings to their typed
-        // equivalents, so a misconfigured `releaseTrack=true` would arrive here as a boolean
-        // and crash on .trim(). Reject any non-string raw value with a clear message before
-        // the assert path normally would.
-        const releaseTrackRaw = props('releaseTrack', '');
-        assert(
-            typeof releaseTrackRaw === 'string',
-            `Invalid releaseTrack value for ${compilerId}: expected a string, got ${typeof releaseTrackRaw} (${releaseTrackRaw})`,
-        );
-        const releaseTrackOverride = releaseTrackRaw.trim();
-        let releaseTrack: ReleaseTrack;
-        if (releaseTrackOverride === '') {
-            releaseTrack = inferReleaseTrack({isSemVer, isNightly, semver});
-        } else {
-            assert(
-                isReleaseTrack(releaseTrackOverride),
-                `Invalid releaseTrack "${releaseTrackOverride}" for ${compilerId}; expected one of stable|nightly|prerelease|experimental`,
-            );
-            releaseTrack = releaseTrackOverride;
-        }
+        const releaseTrack = resolveReleaseTrack(props('releaseTrack', ''), {isSemVer, isNightly, semver}, compilerId);
 
         const name = props<string>('name');
 
@@ -633,13 +608,7 @@ export class CompilerFinder {
             // written before this field existed will be missing it; a hand-edited
             // value that doesn't match ReleaseTrack would otherwise slip through and
             // break consumers that trust the type contract.
-            if (!compiler.releaseTrack || !isReleaseTrack(compiler.releaseTrack)) {
-                compiler.releaseTrack = inferReleaseTrack({
-                    isSemVer: compiler.isSemVer,
-                    isNightly: compiler.isNightly,
-                    semver: compiler.semver,
-                });
-            }
+            backfillReleaseTrack(compiler);
 
             if (compiler.buildenvsetup) {
                 compiler.buildenvsetup.props = (propName, def) => {

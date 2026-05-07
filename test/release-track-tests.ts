@@ -24,7 +24,7 @@
 
 import {describe, expect, it} from 'vitest';
 
-import {inferReleaseTrack, isReleaseTrack} from '../lib/release-track.js';
+import {backfillReleaseTrack, inferReleaseTrack, isReleaseTrack, resolveReleaseTrack} from '../lib/release-track.js';
 
 describe('inferReleaseTrack', () => {
     describe('stable', () => {
@@ -110,10 +110,41 @@ describe('inferReleaseTrack', () => {
             expect(inferReleaseTrack({isSemVer: true, isNightly: false, semver: '3.0.0-beta'})).toBe('prerelease');
         });
 
+        it('semver -dev / -pre segments', () => {
+            expect(inferReleaseTrack({isSemVer: true, isNightly: false, semver: '5.0.0-dev'})).toBe('prerelease');
+            expect(inferReleaseTrack({isSemVer: true, isNightly: false, semver: '5.0.0-pre1'})).toBe('prerelease');
+        });
+
         it('prerelease tags with whitespace and mixed case', () => {
             expect(inferReleaseTrack({isSemVer: false, isNightly: true, semver: ' BETA '})).toBe('prerelease');
             expect(inferReleaseTrack({isSemVer: false, isNightly: true, semver: 'RC1'})).toBe('prerelease');
             expect(inferReleaseTrack({isSemVer: false, isNightly: true, semver: 'Alpha'})).toBe('prerelease');
+        });
+    });
+
+    describe('stable — real semver with unrecognised suffix is NOT a prerelease', () => {
+        it('build flavour suffix (OCaml flambda)', () => {
+            // ocaml4071flambda etc. — "-flambda" is a build flavour, not a release-track signal.
+            expect(inferReleaseTrack({isSemVer: true, isNightly: false, semver: '4.07.1-flambda'})).toBe('stable');
+            expect(inferReleaseTrack({isSemVer: true, isNightly: false, semver: '4.14.0-flambda'})).toBe('stable');
+        });
+
+        it('distro revision suffix (Alire-packaged GNAT)', () => {
+            // gnatarm103, gnatriscv64112 etc. — "-2" is the distro revision number.
+            expect(inferReleaseTrack({isSemVer: true, isNightly: false, semver: '10.3.0-2'})).toBe('stable');
+            expect(inferReleaseTrack({isSemVer: true, isNightly: false, semver: '11.2.0-3'})).toBe('stable');
+        });
+
+        it('git hash suffix (cmake snapshots)', () => {
+            // cmake-3_29_20240506_g1ea8fa8 — "-g1ea8fa8" is a git short hash.
+            expect(inferReleaseTrack({isSemVer: true, isNightly: false, semver: '3.29.20240506-g1ea8fa8'})).toBe(
+                'stable',
+            );
+        });
+
+        it('vendor codename suffix (KVX ACB)', () => {
+            // kvxg750/ckvxg750 — "-cd1" is a vendor codename.
+            expect(inferReleaseTrack({isSemVer: true, isNightly: false, semver: '4.1.0-cd1'})).toBe('stable');
         });
     });
 
@@ -172,5 +203,77 @@ describe('isReleaseTrack', () => {
         expect(isReleaseTrack('STABLE')).toBe(false);
         expect(isReleaseTrack('stab')).toBe(false);
         expect(isReleaseTrack('release')).toBe(false);
+    });
+});
+
+describe('resolveReleaseTrack', () => {
+    const stableInputs = {isSemVer: true, isNightly: false, semver: '14.2.0'};
+
+    it('falls back to inference when override is empty', () => {
+        expect(resolveReleaseTrack('', stableInputs, 'gcc-test')).toBe('stable');
+    });
+
+    it('falls back to inference when override is whitespace only', () => {
+        expect(resolveReleaseTrack('   ', stableInputs, 'gcc-test')).toBe('stable');
+        expect(resolveReleaseTrack('\t\n', stableInputs, 'gcc-test')).toBe('stable');
+    });
+
+    it('a valid override beats the inferred value', () => {
+        // Inputs would infer 'stable' but override forces 'nightly'.
+        expect(resolveReleaseTrack('nightly', stableInputs, 'gcc-test')).toBe('nightly');
+        expect(resolveReleaseTrack('experimental', stableInputs, 'gcc-test')).toBe('experimental');
+    });
+
+    it('trims whitespace around a valid override', () => {
+        expect(resolveReleaseTrack('  nightly  ', stableInputs, 'gcc-test')).toBe('nightly');
+    });
+
+    it('rejects an unknown override string with a clear message', () => {
+        expect(() => resolveReleaseTrack('stabel', stableInputs, 'gcc-test')).toThrow(/stabel.*gcc-test/);
+        expect(() => resolveReleaseTrack('release', stableInputs, 'gcc-test')).toThrow(/gcc-test/);
+    });
+
+    it('rejects uppercase override values (case sensitive)', () => {
+        expect(() => resolveReleaseTrack('NIGHTLY', stableInputs, 'gcc-test')).toThrow(/NIGHTLY.*gcc-test/);
+    });
+
+    it('rejects non-string raw values (toProperty coerces "true"/"1" to bool/number)', () => {
+        // toProperty in lib/utils.ts coerces truthy/numeric strings; resolveReleaseTrack
+        // must reject these up-front rather than crashing on .trim().
+        expect(() => resolveReleaseTrack(true as unknown as string, stableInputs, 'gcc-test')).toThrow(
+            /expected a string/,
+        );
+        expect(() => resolveReleaseTrack(1 as unknown as string, stableInputs, 'gcc-test')).toThrow(
+            /expected a string/,
+        );
+        expect(() => resolveReleaseTrack(null as unknown as string, stableInputs, 'gcc-test')).toThrow(
+            /expected a string/,
+        );
+    });
+});
+
+describe('backfillReleaseTrack', () => {
+    it('keeps a valid existing releaseTrack', () => {
+        const c = {isSemVer: true, isNightly: false, semver: '14.2.0', releaseTrack: 'experimental' as const};
+        backfillReleaseTrack(c);
+        expect(c.releaseTrack).toBe('experimental');
+    });
+
+    it('infers when releaseTrack is missing', () => {
+        const c: any = {isSemVer: true, isNightly: false, semver: '14.2.0'};
+        backfillReleaseTrack(c);
+        expect(c.releaseTrack).toBe('stable');
+    });
+
+    it('re-infers when releaseTrack is invalid (defends against hand-edited JSON)', () => {
+        const c: any = {isSemVer: true, isNightly: true, semver: 'nightly', releaseTrack: 'stabel'};
+        backfillReleaseTrack(c);
+        expect(c.releaseTrack).toBe('nightly');
+    });
+
+    it('handles undefined releaseTrack the same as missing', () => {
+        const c: any = {isSemVer: true, isNightly: true, semver: '', releaseTrack: undefined};
+        backfillReleaseTrack(c);
+        expect(c.releaseTrack).toBe('nightly');
     });
 });
