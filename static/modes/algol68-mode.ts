@@ -145,7 +145,13 @@ function definition(): monaco.languages.IMonarchLanguage {
 
             whitespace: [
                 [/[ \t\r\n]+/, 'white'],
-                [/{[^{]*}/, 'comment'],
+                [/{/, 'comment', '@nestingcomment'],
+            ],
+
+            nestingcomment: [
+                [/[^{}]+/, 'comment'],
+                [/{/, 'comment', '@push'],
+                [/}/, 'comment', '@pop'],
             ],
 
             string: [
