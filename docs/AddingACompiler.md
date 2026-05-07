@@ -296,6 +296,39 @@ compiler.clang_p3334.notification=Experimental cross static; see <a href="https:
 The `notification` field creates a tooltip linking to documentation. For GCC compilers, also add `demangler`,
 `objdumper`, and `isNightly=true` properties, as necessary (check some of the other compilers around for inspiration).
 
+### Release track
+
+Each compiler is also categorised by `releaseTrack`, exposed via the `/api/compilers?fields=all` endpoint and used by
+features like the MCP `list_compilers` `latestPerMajor` knob. The four values are:
+
+- **`stable`** — a numbered release (`gcc 14.2.0`, `rust 1.95.0`, ...). The default for anything with a real semver.
+- **`nightly`** — the canonical bleeding-edge build of an upstream project (`gcc snapshot`, `clang trunk`, `rust
+  nightly`, `flang trunk`, `.NET main`, ...).
+- **`prerelease`** — a release-candidate / beta of an upcoming numbered release (`rust beta`, `dxc 1.8.2306-preview`).
+- **`experimental`** — a feature-branch fork or proposal implementation that isn't on the release path. This covers
+  most of the c++ paper-prototype compilers (`gcc-contracts-trunk`, `clang_p2996`, `clang_clangir`, ...).
+
+The track is normally inferred from `isSemVer`, `isNightly`, and `semver` — the heuristic recognises numeric semvers,
+the `(trunk)` / `(main)` / `(snapshot)` / `(nightly)` family, prerelease tags like `beta` / `rc1`, and falls back to
+`experimental` for any `isNightly=true` compiler whose semver is something more specific (`(contracts)`, `(modules)`,
+etc.).
+
+If the heuristic gets it wrong — usually because the relevant signal lives in the compiler id or display name rather
+than the structured fields — set the `releaseTrack` property explicitly. Per-compiler:
+
+```ini
+compiler.rustccggcc-master.releaseTrack=nightly
+```
+
+Or per-group, when every compiler in the group shares the same track:
+
+```ini
+group.wasmclang.releaseTrack=nightly
+```
+
+Valid values: `stable`, `nightly`, `prerelease`, `experimental`. An invalid value will fail compiler discovery loudly
+at startup rather than silently mislabelling the compiler.
+
 ## Putting it all together
 
 Hopefully that's enough to get an idea. The ideal case of a GCC-like compiler should be a pull request to add a couple
