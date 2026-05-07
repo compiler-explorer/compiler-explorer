@@ -58,6 +58,16 @@ describe('inferReleaseTrack', () => {
         it('case insensitive', () => {
             expect(inferReleaseTrack({isSemVer: true, isNightly: true, semver: 'NIGHTLY'})).toBe('nightly');
         });
+
+        it('"(snapshot)" tag (powerpc clang and similar)', () => {
+            expect(inferReleaseTrack({isSemVer: false, isNightly: true, semver: '(snapshot)'})).toBe('nightly');
+        });
+
+        it('parenthesised nightly tags', () => {
+            expect(inferReleaseTrack({isSemVer: false, isNightly: true, semver: '(main)'})).toBe('nightly');
+            expect(inferReleaseTrack({isSemVer: false, isNightly: true, semver: '(master)'})).toBe('nightly');
+            expect(inferReleaseTrack({isSemVer: false, isNightly: true, semver: '(nightly)'})).toBe('nightly');
+        });
     });
 
     describe('prerelease', () => {

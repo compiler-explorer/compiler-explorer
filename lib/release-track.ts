@@ -28,8 +28,16 @@ import {RELEASE_TRACKS, type ReleaseTrack} from '../types/compiler.interfaces.js
 import {asSafeVer, magic_semver} from './utils.js';
 
 const PRERELEASE_TAGS = new Set(['beta', 'alpha']);
-const NIGHTLY_TAGS = new Set(['nightly', 'main', 'master']);
+const NIGHTLY_TAGS = new Set(['nightly', 'main', 'master', 'snapshot']);
 const RC_PATTERN = /^rc\d*$/;
+
+// CE configs commonly write nightly tags inside parens, e.g. "(trunk)", "(snapshot)",
+// "(main)". Strip an outer paren wrapper so the tag-set membership tests can match
+// regardless of whether the maintainer wrote `semver=trunk` or `semver=(trunk)`.
+function stripParens(s: string): string {
+    const m = s.match(/^\((.*)\)$/);
+    return m ? m[1].trim() : s;
+}
 
 export type ReleaseTrackInputs = {
     isSemVer: boolean;
@@ -59,14 +67,15 @@ export type ReleaseTrackInputs = {
  */
 export function inferReleaseTrack(inputs: ReleaseTrackInputs): ReleaseTrack {
     const semver = inputs.semver.toLowerCase().trim();
+    const tag = stripParens(semver);
     const safe = asSafeVer(semver);
     const isMagic = safe === magic_semver.trunk || safe === magic_semver.non_trunk;
 
     if (inputs.isSemVer && !isMagic) {
         return semverParser.prerelease(safe) ? 'prerelease' : 'stable';
     }
-    if (safe === magic_semver.trunk || NIGHTLY_TAGS.has(semver)) return 'nightly';
-    if (PRERELEASE_TAGS.has(semver) || RC_PATTERN.test(semver)) return 'prerelease';
+    if (safe === magic_semver.trunk || NIGHTLY_TAGS.has(tag)) return 'nightly';
+    if (PRERELEASE_TAGS.has(tag) || RC_PATTERN.test(tag)) return 'prerelease';
     if (inputs.isNightly) return 'experimental';
     return 'stable';
 }
