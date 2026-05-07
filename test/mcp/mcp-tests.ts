@@ -248,6 +248,7 @@ function makeCompiler(id: string, lang = 'c++', extra: Partial<CompilerInfo> = {
         compilerType: '',
         semver: '',
         instructionSet: 'amd64',
+        releaseTrack: 'stable',
         ...extra,
     } as unknown as CompilerInfo;
 }
@@ -269,6 +270,7 @@ describe('MCP list_compilers tool', () => {
             compilerType: '',
             semver: '',
             instructionSet: 'amd64',
+            releaseTrack: 'stable',
         });
     });
 
@@ -282,7 +284,15 @@ describe('MCP list_compilers tool', () => {
         const result = await toolHandlers.list_compilers({language: 'c++', match: 'CLANG'});
         const parsed = JSON.parse(result.content[0].text);
         expect(parsed.compilers).toEqual([
-            {id: 'clang20', name: 'CLANG20', lang: 'c++', compilerType: '', semver: '', instructionSet: 'amd64'},
+            {
+                id: 'clang20',
+                name: 'CLANG20',
+                lang: 'c++',
+                compilerType: '',
+                semver: '',
+                instructionSet: 'amd64',
+                releaseTrack: 'stable',
+            },
         ]);
     });
 
@@ -336,17 +346,40 @@ describe('MCP list_compilers tool', () => {
         expect(parsed.hint).toBeUndefined();
     });
 
-    it('returns one compiler per (instructionSet, semver major) when latestPerMajor is set', async () => {
+    it('latestPerMajor: stable compilers grouped by (instructionSet, major), newest per major wins', async () => {
         const {fakeServer, toolHandlers} = makeFakeServer();
         const apiHandler = {
             compilers: [
-                makeCompiler('g141', 'c++', {isSemVer: true, semver: '14.1', instructionSet: 'amd64'}),
-                makeCompiler('g142', 'c++', {isSemVer: true, semver: '14.2', instructionSet: 'amd64'}),
-                makeCompiler('g151', 'c++', {isSemVer: true, semver: '15.1', instructionSet: 'amd64'}),
-                makeCompiler('g152', 'c++', {isSemVer: true, semver: '15.2', instructionSet: 'amd64'}),
-                makeCompiler('g161', 'c++', {isSemVer: true, semver: '16.1', instructionSet: 'amd64'}),
-                makeCompiler('garm142', 'c++', {isSemVer: true, semver: '14.2', instructionSet: 'aarch64'}),
-                makeCompiler('gtrunk', 'c++', {isSemVer: true, semver: 'trunk', instructionSet: 'amd64'}),
+                makeCompiler('g141', 'c++', {
+                    isSemVer: true,
+                    semver: '14.1',
+                    instructionSet: 'amd64',
+                    releaseTrack: 'stable',
+                }),
+                makeCompiler('g142', 'c++', {
+                    isSemVer: true,
+                    semver: '14.2',
+                    instructionSet: 'amd64',
+                    releaseTrack: 'stable',
+                }),
+                makeCompiler('g152', 'c++', {
+                    isSemVer: true,
+                    semver: '15.2',
+                    instructionSet: 'amd64',
+                    releaseTrack: 'stable',
+                }),
+                makeCompiler('g161', 'c++', {
+                    isSemVer: true,
+                    semver: '16.1',
+                    instructionSet: 'amd64',
+                    releaseTrack: 'stable',
+                }),
+                makeCompiler('garm142', 'c++', {
+                    isSemVer: true,
+                    semver: '14.2',
+                    instructionSet: 'aarch64',
+                    releaseTrack: 'stable',
+                }),
             ],
         } as unknown as ApiHandler;
         registerCompilersTool(fakeServer, apiHandler);
@@ -354,37 +387,96 @@ describe('MCP list_compilers tool', () => {
         const result = await toolHandlers.list_compilers({latestPerMajor: true});
         const parsed = JSON.parse(result.content[0].text);
         const ids = parsed.compilers.map((c: any) => c.id).sort();
-        // amd64: 14.2 (newest 14.x), 15.2 (newest 15.x), 16.1 (only 16.x), gtrunk (sentinel max);
-        // aarch64: 14.2 (only entry).
-        expect(ids).toEqual(['g142', 'g152', 'g161', 'garm142', 'gtrunk'].sort());
+        // amd64: 14.2 (beats 14.1), 15.2, 16.1; aarch64: 14.2 (only entry).
+        expect(ids).toEqual(['g142', 'g152', 'g161', 'garm142'].sort());
     });
 
-    it('keeps every distinct non-numeric semver track (e.g. rust nightly + beta)', async () => {
+    it('latestPerMajor: every nightly track is kept (no collapsing)', async () => {
         const {fakeServer, toolHandlers} = makeFakeServer();
         const apiHandler = {
             compilers: [
-                makeCompiler('r1950', 'rust', {isSemVer: true, semver: '1.95.0', instructionSet: 'amd64'}),
-                makeCompiler('r1940', 'rust', {isSemVer: true, semver: '1.94.0', instructionSet: 'amd64'}),
-                makeCompiler('nightly', 'rust', {isSemVer: true, semver: 'nightly', instructionSet: 'amd64'}),
-                makeCompiler('beta', 'rust', {isSemVer: true, semver: 'beta', instructionSet: 'amd64'}),
+                makeCompiler('gsnapshot', 'c++', {
+                    isSemVer: true,
+                    semver: '(trunk)',
+                    instructionSet: 'amd64',
+                    releaseTrack: 'nightly',
+                }),
+                makeCompiler('nightly', 'rust', {
+                    isSemVer: true,
+                    semver: 'nightly',
+                    instructionSet: 'amd64',
+                    releaseTrack: 'nightly',
+                }),
+                makeCompiler('rustccggcc-master', 'rust', {
+                    isSemVer: false,
+                    semver: '',
+                    instructionSet: 'amd64',
+                    releaseTrack: 'nightly',
+                }),
             ],
         } as unknown as ApiHandler;
         registerCompilersTool(fakeServer, apiHandler);
 
         const result = await toolHandlers.list_compilers({latestPerMajor: true});
         const parsed = JSON.parse(result.content[0].text);
-        // Without per-id bucketing for non-numeric semvers, nightly and beta would
-        // collapse into magic_semver.non_trunk and one would silently shadow the other.
-        expect(parsed.compilers.map((c: any) => c.id).sort()).toEqual(['beta', 'nightly', 'r1950'].sort());
+        expect(parsed.compilers.map((c: any) => c.id).sort()).toEqual(
+            ['gsnapshot', 'nightly', 'rustccggcc-master'].sort(),
+        );
     });
 
-    it('reports compilers dropped from latestPerMajor due to missing semver', async () => {
+    it('latestPerMajor: prerelease tracks (rust beta, dxc preview) are first-class', async () => {
         const {fakeServer, toolHandlers} = makeFakeServer();
         const apiHandler = {
             compilers: [
-                makeCompiler('g142', 'c++', {isSemVer: true, semver: '14.2'}),
-                makeCompiler('msvc1944', 'c++', {isSemVer: false, semver: ''}),
-                makeCompiler('icc202', 'c++', {isSemVer: false, semver: ''}),
+                makeCompiler('r1950', 'rust', {
+                    isSemVer: true,
+                    semver: '1.95.0',
+                    instructionSet: 'amd64',
+                    releaseTrack: 'stable',
+                }),
+                makeCompiler('beta', 'rust', {
+                    isSemVer: true,
+                    semver: 'beta',
+                    instructionSet: 'amd64',
+                    releaseTrack: 'prerelease',
+                }),
+                makeCompiler('dxc_preview', 'hlsl', {
+                    isSemVer: true,
+                    semver: '1.8.2306-preview',
+                    instructionSet: 'amd64',
+                    releaseTrack: 'prerelease',
+                }),
+            ],
+        } as unknown as ApiHandler;
+        registerCompilersTool(fakeServer, apiHandler);
+
+        const result = await toolHandlers.list_compilers({latestPerMajor: true});
+        const parsed = JSON.parse(result.content[0].text);
+        expect(parsed.compilers.map((c: any) => c.id).sort()).toEqual(['beta', 'dxc_preview', 'r1950'].sort());
+    });
+
+    it('latestPerMajor: experimental compilers skipped by default with a hint', async () => {
+        const {fakeServer, toolHandlers} = makeFakeServer();
+        const apiHandler = {
+            compilers: [
+                makeCompiler('g142', 'c++', {
+                    isSemVer: true,
+                    semver: '14.2',
+                    instructionSet: 'amd64',
+                    releaseTrack: 'stable',
+                }),
+                makeCompiler('gcontracts-trunk', 'c++', {
+                    isSemVer: true,
+                    semver: '(contracts)',
+                    instructionSet: 'amd64',
+                    releaseTrack: 'experimental',
+                }),
+                makeCompiler('gmodules-trunk', 'c++', {
+                    isSemVer: true,
+                    semver: '(modules)',
+                    instructionSet: 'amd64',
+                    releaseTrack: 'experimental',
+                }),
             ],
         } as unknown as ApiHandler;
         registerCompilersTool(fakeServer, apiHandler);
@@ -392,8 +484,36 @@ describe('MCP list_compilers tool', () => {
         const result = await toolHandlers.list_compilers({latestPerMajor: true});
         const parsed = JSON.parse(result.content[0].text);
         expect(parsed.compilers.map((c: any) => c.id)).toEqual(['g142']);
-        expect(parsed.droppedNonSemver).toBe(2);
-        expect(parsed.latestHint).toMatch(/semver/);
+        expect(parsed.droppedExperimental).toBe(2);
+        expect(parsed.latestHint).toMatch(/experimental/);
+        expect(parsed.latestHint).toMatch(/includeExperimental/);
+    });
+
+    it('latestPerMajor: includeExperimental: true brings the experimental forks back', async () => {
+        const {fakeServer, toolHandlers} = makeFakeServer();
+        const apiHandler = {
+            compilers: [
+                makeCompiler('g142', 'c++', {
+                    isSemVer: true,
+                    semver: '14.2',
+                    instructionSet: 'amd64',
+                    releaseTrack: 'stable',
+                }),
+                makeCompiler('gcontracts-trunk', 'c++', {
+                    isSemVer: true,
+                    semver: '(contracts)',
+                    instructionSet: 'amd64',
+                    releaseTrack: 'experimental',
+                }),
+            ],
+        } as unknown as ApiHandler;
+        registerCompilersTool(fakeServer, apiHandler);
+
+        const result = await toolHandlers.list_compilers({latestPerMajor: true, includeExperimental: true});
+        const parsed = JSON.parse(result.content[0].text);
+        expect(parsed.compilers.map((c: any) => c.id).sort()).toEqual(['g142', 'gcontracts-trunk'].sort());
+        expect(parsed.droppedExperimental).toBeUndefined();
+        expect(parsed.latestHint).toBeUndefined();
     });
 });
 

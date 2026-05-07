@@ -28,48 +28,65 @@ import {z} from 'zod';
 
 import type {CompilerInfo} from '../../../types/compiler.interfaces.js';
 import type {ApiHandler} from '../../handlers/api.js';
-import {asSafeVer, magic_semver} from '../../utils.js';
+import {asSafeVer} from '../../utils.js';
 import {applyCap, applyMatch} from '../utils.js';
 
 const DEFAULT_MAX_RESULTS = 25;
 
-// Pick the newest compiler per "version slot" within each (lang, instructionSet).
+// Distil the "what's the newest X" view of a compiler list.
 //
-// For real-semver compilers the slot is the semver major: gcc 14.1 / 14.2 share a slot
-// and 14.2 wins. asSafeVer maps "trunk"/"main" semvers to a sentinel max version, so the
-// canonical trunk (e.g. CE's gsnapshot, semver "(trunk)") gets its own slot above all
-// real majors and survives.
+// `releaseTrack` (added by PR #8685) lets us treat each track on its own terms:
+// - 'stable':       group by (lang, instructionSet, semver major); take the newest per major
+// - 'nightly':      include every entry (one canonical nightly per language/arch is the norm,
+//                   but distinct tracks like rust nightly + rust master both belong)
+// - 'prerelease':   include every entry (rust beta, dxc preview etc. are first-class)
+// - 'experimental': skip by default; include all when includeExperimental is set
 //
-// Other non-numeric semvers (rust nightly+beta, c++ experimental forks like "(contracts)",
-// "(modules)") all map to magic_semver.non_trunk by asSafeVer, so they would collapse
-// into a single slot. To avoid Rust nightly silently shadowing beta (or vice versa) we
-// give each such compiler its own per-id slot — every distinct release track is kept.
-//
-// Compilers without isSemVer are dropped entirely (their semver strings can't be ordered
-// meaningfully and they have no business in a "latest per major" view); the caller gets
-// a count via droppedNonSemver.
-function pickLatestPerMajor(compilers: CompilerInfo[]): {kept: CompilerInfo[]; droppedNonSemver: number} {
-    const semverCompilers = compilers.filter(c => c.isSemVer);
-    const droppedNonSemver = compilers.length - semverCompilers.length;
-    const groups = new Map<string, Map<string, CompilerInfo>>();
-    for (const c of semverCompilers) {
-        const safe = asSafeVer(c.semver);
-        const slot = safe === magic_semver.non_trunk ? `id:${c.id}` : `m:${semverParser.major(safe)}`;
-        const groupKey = `${c.lang}\0${c.instructionSet ?? ''}`;
-        let bucket = groups.get(groupKey);
-        if (!bucket) {
-            bucket = new Map();
-            groups.set(groupKey, bucket);
-        }
-        const existing = bucket.get(slot);
-        if (!existing || semverParser.compare(safe, asSafeVer(existing.semver), true) > 0) {
-            bucket.set(slot, c);
+// We also report droppedExperimental so the caller knows when there's a sea of feature
+// forks they're not seeing — the LLM-facing hint in the response surfaces this.
+function pickLatest(
+    compilers: CompilerInfo[],
+    includeExperimental: boolean,
+): {kept: CompilerInfo[]; droppedExperimental: number} {
+    let droppedExperimental = 0;
+    const stableBuckets = new Map<string, Map<number, CompilerInfo>>();
+    const nightlyAndPrerelease: CompilerInfo[] = [];
+    const experimentals: CompilerInfo[] = [];
+
+    for (const c of compilers) {
+        switch (c.releaseTrack) {
+            case 'stable': {
+                const groupKey = `${c.lang}\0${c.instructionSet ?? ''}`;
+                let bucket = stableBuckets.get(groupKey);
+                if (!bucket) {
+                    bucket = new Map();
+                    stableBuckets.set(groupKey, bucket);
+                }
+                const safe = asSafeVer(c.semver);
+                // Compilers tagged 'stable' that don't have a parseable numeric semver
+                // (rare — fallback path in the inferReleaseTrack heuristic) share a
+                // single bucket per group, last-one-wins. Not worth optimising further.
+                const major = c.isSemVer ? semverParser.major(safe) : -1;
+                const existing = bucket.get(major);
+                if (!existing || semverParser.compare(safe, asSafeVer(existing.semver), true) > 0) {
+                    bucket.set(major, c);
+                }
+                break;
+            }
+            case 'nightly':
+            case 'prerelease':
+                nightlyAndPrerelease.push(c);
+                break;
+            case 'experimental':
+                if (includeExperimental) experimentals.push(c);
+                else droppedExperimental += 1;
+                break;
         }
     }
+
     const kept: CompilerInfo[] = [];
-    for (const bucket of groups.values()) {
-        for (const c of bucket.values()) kept.push(c);
-    }
+    for (const bucket of stableBuckets.values()) for (const c of bucket.values()) kept.push(c);
+    kept.push(...nightlyAndPrerelease, ...experimentals);
     kept.sort((a, b) => {
         if (a.lang !== b.lang) return a.lang.localeCompare(b.lang);
         const aIs = a.instructionSet ?? '';
@@ -77,7 +94,7 @@ function pickLatestPerMajor(compilers: CompilerInfo[]): {kept: CompilerInfo[]; d
         if (aIs !== bIs) return aIs.localeCompare(bIs);
         return semverParser.compare(asSafeVer(b.semver), asSafeVer(a.semver), true);
     });
-    return {kept, droppedNonSemver};
+    return {kept, droppedExperimental};
 }
 
 export function registerCompilersTool(server: McpServer, apiHandler: ApiHandler): void {
@@ -120,21 +137,31 @@ export function registerCompilersTool(server: McpServer, apiHandler: ApiHandler)
                 .boolean()
                 .optional()
                 .describe(
-                    'Return only the newest compiler for each (language, instruction set, semver major) — the ' +
-                        'right way to ask "what is the newest GCC / Clang / etc". Compilers without semver ' +
-                        'metadata (e.g. some MSVC builds) are dropped from this view; the response includes a ' +
-                        'count of how many were excluded.',
+                    'Distil to "what is the newest X" — the right way to find e.g. the newest GCC. Returns: the ' +
+                        'newest stable per (language, instruction set, semver major); every nightly track (rust ' +
+                        'nightly, gcc snapshot, ...); every prerelease track (rust beta, dxc preview, ...). ' +
+                        'Experimental forks (gcc contracts/modules/coroutines branches, etc.) are skipped by ' +
+                        'default; pass `includeExperimental: true` to include them.',
+                ),
+            includeExperimental: z
+                .boolean()
+                .optional()
+                .describe(
+                    'Only meaningful with `latestPerMajor: true`. When true, also include experimental compilers ' +
+                        '(c++ language-proposal forks like gcc-contracts-trunk, llvm-mos platform variants) ' +
+                        'in the result. They are skipped by default because they bloat the answer to "what is ' +
+                        'the newest X" without being release-track-comparable.',
                 ),
         },
-        async ({language, match, maxResults, lean, latestPerMajor}) => {
+        async ({language, match, maxResults, lean, latestPerMajor, includeExperimental}) => {
             const byLang = language ? apiHandler.compilers.filter(c => c.lang === language) : apiHandler.compilers;
             const matched = applyMatch(byLang, match, c => [c.id, c.name]);
             let filtered = matched;
-            let droppedNonSemver = 0;
+            let droppedExperimental = 0;
             if (latestPerMajor) {
-                const picked = pickLatestPerMajor(matched);
+                const picked = pickLatest(matched, includeExperimental === true);
                 filtered = picked.kept;
-                droppedNonSemver = picked.droppedNonSemver;
+                droppedExperimental = picked.droppedExperimental;
             }
             const {items, ...meta} = applyCap(
                 filtered,
@@ -146,17 +173,18 @@ export function registerCompilersTool(server: McpServer, apiHandler: ApiHandler)
                     compilerType: c.compilerType,
                     semver: c.semver,
                     instructionSet: c.instructionSet,
+                    releaseTrack: c.releaseTrack,
                 }),
                 'compilers',
                 undefined,
                 lean === true,
             );
             const response: Record<string, unknown> = {compilers: items, ...meta};
-            if (latestPerMajor && droppedNonSemver > 0) {
-                response.droppedNonSemver = droppedNonSemver;
+            if (latestPerMajor && droppedExperimental > 0) {
+                response.droppedExperimental = droppedExperimental;
                 response.latestHint =
-                    `${droppedNonSemver} compiler(s) were excluded from latestPerMajor because they lack semver ` +
-                    'metadata. Drop `latestPerMajor` and use `match` to find them.';
+                    `${droppedExperimental} experimental compiler(s) were skipped (feature forks, niche targets). ` +
+                    'Pass `includeExperimental: true` to include them, or use `match` to find a specific one.';
             }
             return {content: [{type: 'text', text: JSON.stringify(response, null, 2)}]};
         },
