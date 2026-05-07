@@ -28,32 +28,42 @@ import {z} from 'zod';
 
 import type {CompilerInfo} from '../../../types/compiler.interfaces.js';
 import type {ApiHandler} from '../../handlers/api.js';
-import {asSafeVer} from '../../utils.js';
+import {asSafeVer, magic_semver} from '../../utils.js';
 import {applyCap, applyMatch} from '../utils.js';
 
 const DEFAULT_MAX_RESULTS = 25;
 
-// Pick the newest compiler per (lang, instructionSet, semver major). Drops compilers
-// that aren't isSemVer (their version strings can't be ordered meaningfully — caller
-// gets a hint listing how many were dropped). Within each (lang, instructionSet) group
-// we use CE's own semver helpers (asSafeVer + semverParser.compare), the same as how
-// CE itself sorts compiler dropdowns; trunk/main map to a sentinel max version.
+// Pick the newest compiler per "version slot" within each (lang, instructionSet).
+//
+// For real-semver compilers the slot is the semver major: gcc 14.1 / 14.2 share a slot
+// and 14.2 wins. asSafeVer maps "trunk"/"main" semvers to a sentinel max version, so the
+// canonical trunk (e.g. CE's gsnapshot, semver "(trunk)") gets its own slot above all
+// real majors and survives.
+//
+// Other non-numeric semvers (rust nightly+beta, c++ experimental forks like "(contracts)",
+// "(modules)") all map to magic_semver.non_trunk by asSafeVer, so they would collapse
+// into a single slot. To avoid Rust nightly silently shadowing beta (or vice versa) we
+// give each such compiler its own per-id slot — every distinct release track is kept.
+//
+// Compilers without isSemVer are dropped entirely (their semver strings can't be ordered
+// meaningfully and they have no business in a "latest per major" view); the caller gets
+// a count via droppedNonSemver.
 function pickLatestPerMajor(compilers: CompilerInfo[]): {kept: CompilerInfo[]; droppedNonSemver: number} {
     const semverCompilers = compilers.filter(c => c.isSemVer);
     const droppedNonSemver = compilers.length - semverCompilers.length;
-    const groups = new Map<string, Map<number, CompilerInfo>>();
+    const groups = new Map<string, Map<string, CompilerInfo>>();
     for (const c of semverCompilers) {
         const safe = asSafeVer(c.semver);
-        const major = semverParser.major(safe);
+        const slot = safe === magic_semver.non_trunk ? `id:${c.id}` : `m:${semverParser.major(safe)}`;
         const groupKey = `${c.lang}\0${c.instructionSet ?? ''}`;
         let bucket = groups.get(groupKey);
         if (!bucket) {
             bucket = new Map();
             groups.set(groupKey, bucket);
         }
-        const existing = bucket.get(major);
+        const existing = bucket.get(slot);
         if (!existing || semverParser.compare(safe, asSafeVer(existing.semver), true) > 0) {
-            bucket.set(major, c);
+            bucket.set(slot, c);
         }
     }
     const kept: CompilerInfo[] = [];

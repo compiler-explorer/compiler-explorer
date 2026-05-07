@@ -24,7 +24,7 @@
 
 import type {ResultLine} from '../../types/resultline/resultline.interfaces.js';
 
-// Replace anything that isn't an alphanumeric or '+' (kept for "c++") with whitespace,
+// Replace anything that isn't alphanumeric or '+' (kept for "c++") with whitespace,
 // then collapse runs of whitespace. Lets "x86-64 gcc trunk" match "x86-64 gcc (trunk)".
 function normalise(s: string): string {
     return s
@@ -34,13 +34,21 @@ function normalise(s: string): string {
         .trim();
 }
 
+// Numeric tokens match whole-word so "14.1" doesn't match "14.10" (the lone "1"
+// would be a substring of "10"). Alphanumeric tokens still match as substrings so
+// partial-id queries like "g14" continue to find "g142".
+const NUMERIC_TOKEN = /^\d+$/;
+
 export function applyMatch<T>(items: T[], pattern: string | undefined, extract: (item: T) => string[]): T[] {
     if (!pattern) return items;
     const tokens = normalise(pattern).split(' ').filter(Boolean);
     if (tokens.length === 0) return items;
     return items.filter(item => {
-        const haystack = normalise(extract(item).join(' '));
-        return tokens.every(token => haystack.includes(token));
+        const normalised = normalise(extract(item).join(' '));
+        const sentinelled = ` ${normalised} `;
+        return tokens.every(token =>
+            NUMERIC_TOKEN.test(token) ? sentinelled.includes(` ${token} `) : normalised.includes(token),
+        );
     });
 }
 

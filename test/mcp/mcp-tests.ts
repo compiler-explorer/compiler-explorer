@@ -359,6 +359,25 @@ describe('MCP list_compilers tool', () => {
         expect(ids).toEqual(['g142', 'g152', 'g161', 'garm142', 'gtrunk'].sort());
     });
 
+    it('keeps every distinct non-numeric semver track (e.g. rust nightly + beta)', async () => {
+        const {fakeServer, toolHandlers} = makeFakeServer();
+        const apiHandler = {
+            compilers: [
+                makeCompiler('r1950', 'rust', {isSemVer: true, semver: '1.95.0', instructionSet: 'amd64'}),
+                makeCompiler('r1940', 'rust', {isSemVer: true, semver: '1.94.0', instructionSet: 'amd64'}),
+                makeCompiler('nightly', 'rust', {isSemVer: true, semver: 'nightly', instructionSet: 'amd64'}),
+                makeCompiler('beta', 'rust', {isSemVer: true, semver: 'beta', instructionSet: 'amd64'}),
+            ],
+        } as unknown as ApiHandler;
+        registerCompilersTool(fakeServer, apiHandler);
+
+        const result = await toolHandlers.list_compilers({latestPerMajor: true});
+        const parsed = JSON.parse(result.content[0].text);
+        // Without per-id bucketing for non-numeric semvers, nightly and beta would
+        // collapse into magic_semver.non_trunk and one would silently shadow the other.
+        expect(parsed.compilers.map((c: any) => c.id).sort()).toEqual(['beta', 'nightly', 'r1950'].sort());
+    });
+
     it('reports compilers dropped from latestPerMajor due to missing semver', async () => {
         const {fakeServer, toolHandlers} = makeFakeServer();
         const apiHandler = {

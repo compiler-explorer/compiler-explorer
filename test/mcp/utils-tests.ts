@@ -86,6 +86,40 @@ describe('applyMatch', () => {
     it('treats a punctuation-only pattern as no filter', () => {
         expect(applyMatch(items, '(), .', extract)).toBe(items);
     });
+
+    it('numeric tokens match whole-word so 14.1 does not match 14.10', () => {
+        const compilers = [
+            {id: 'g141', name: 'GCC 14.1'},
+            {id: 'g1410', name: 'GCC 14.10'},
+        ];
+        expect(applyMatch(compilers, 'gcc 14.1', i => [i.id, i.name])).toEqual([{id: 'g141', name: 'GCC 14.1'}]);
+    });
+
+    it('numeric tokens still match the right whole word', () => {
+        const compilers = [
+            {id: 'g142', name: 'GCC 14.2'},
+            {id: 'g141', name: 'GCC 14.1'},
+            {id: 'g152', name: 'GCC 15.2'},
+        ];
+        expect(
+            applyMatch(compilers, 'gcc 14', i => [i.id, i.name])
+                .map(c => c.id)
+                .sort(),
+        ).toEqual(['g141', 'g142']);
+    });
+
+    it('alphanumeric tokens still match as substrings (so g14 finds g142)', () => {
+        const compilers = [
+            {id: 'g142', name: 'GCC 14.2'},
+            {id: 'g141', name: 'GCC 14.1'},
+            {id: 'clang20', name: 'Clang 20'},
+        ];
+        expect(
+            applyMatch(compilers, 'g14', i => [i.id, i.name])
+                .map(c => c.id)
+                .sort(),
+        ).toEqual(['g141', 'g142']);
+    });
 });
 
 describe('applyCap', () => {
