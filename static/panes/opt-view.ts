@@ -46,7 +46,7 @@ export class Opt extends MonacoPane<monaco.editor.IStandaloneCodeEditor, OptStat
     private wrapTitle: JQuery<HTMLElement>;
 
     // Keep optRemarks as state, to avoid triggering a recompile when options change
-    private optRemarks: OptRemark[];
+    private _optRemarks: OptRemark[];
     private optRemarkViewZoneIds: string[];
 
     constructor(hub: Hub, container: Container, state: OptState & MonacoPaneState) {
@@ -54,6 +54,15 @@ export class Opt extends MonacoPane<monaco.editor.IStandaloneCodeEditor, OptStat
         this.optRemarks = state.optOutput ?? [];
         this.optRemarkViewZoneIds = [];
         this.eventHub.emit('optViewOpened', this.compilerInfo.compilerId);
+    }
+
+    private get optRemarks() {
+        return this._optRemarks;
+    }
+
+    private set optRemarks(remarks: OptRemark[]) {
+        remarks.sort((l, r) => (l?.DebugLoc?.Line ?? 0) - (r?.DebugLoc?.Line ?? 0));
+        this._optRemarks = remarks;
     }
 
     override getInitialHTML(): string {
