@@ -32,7 +32,7 @@ import _ from 'underscore';
 import urljoin from 'url-join';
 
 import {basic_comparator, remove} from '../shared/common-utils.js';
-import type {CompilerInfo, PreliminaryCompilerInfo} from '../types/compiler.interfaces.js';
+import type {CompilerInfo, PreliminaryCompilerInfo, ReleaseTrack} from '../types/compiler.interfaces.js';
 import {InstructionSet, InstructionSetsList} from '../types/instructionsets.js';
 import type {Language, LanguageKey} from '../types/languages.interfaces.js';
 import {Tool, ToolInfo} from '../types/tool.interfaces.js';
@@ -43,6 +43,7 @@ import {logger} from './logger.js';
 import {ClientOptionsHandler} from './options-handler.js';
 import type {PropertyGetter} from './properties.interfaces.js';
 import {CompilerProps, getRawProperties} from './properties.js';
+import {inferReleaseTrack, isReleaseTrack} from './release-track.js';
 import {getPossibleGccToolchainsFromCompilerInfo} from './toolchain-utils.js';
 
 const sleep = promisify(setTimeout);
@@ -217,15 +218,26 @@ export class CompilerFinder {
 
         const isSemVer = props('isSemVer', false);
         const baseName = props<string | undefined>('baseName');
-        const semverVer = props('semver', '');
+        const semver = props('semver', '');
+        const isNightly = !!props('isNightly', false);
+        const releaseTrackOverride = props('releaseTrack', '').trim();
+        let releaseTrack: ReleaseTrack;
+        if (releaseTrackOverride === '') {
+            releaseTrack = inferReleaseTrack({isSemVer, isNightly, semver});
+        } else {
+            assert(
+                isReleaseTrack(releaseTrackOverride),
+                `Invalid releaseTrack "${releaseTrackOverride}" for ${compilerId}; expected one of stable|nightly|prerelease|experimental`,
+            );
+            releaseTrack = releaseTrackOverride;
+        }
 
         const name = props<string>('name');
 
         // If name set, display that as the name
         // If not, check if we have a baseName + semver and display that
         // Else display compilerId as its name
-        const displayName =
-            name === undefined ? (isSemVer && baseName ? `${baseName} ${semverVer}` : compilerId) : name;
+        const displayName = name === undefined ? (isSemVer && baseName ? `${baseName} ${semver}` : compilerId) : name;
 
         const baseOptions = props('baseOptions', '');
         const options = props('options', '');
@@ -311,9 +323,10 @@ export class CompilerFinder {
                 .map(x => path.normalize(x.replace('${exePath}', exePath))),
             envVars: envVars,
             notification: props('notification', ''),
-            isSemVer: isSemVer,
-            semver: semverVer,
-            isNightly: props('isNightly', false),
+            isSemVer,
+            semver,
+            isNightly,
+            releaseTrack,
             libsArr: this.getSupportedLibrariesArr(props),
             tools: _.omit(this.optionsHandler.get().tools[langId], tool => tool.isCompilerExcluded(compilerId, props)),
             unwiseOptions: splitArrayPropsOrEmpty('unwiseOptions', '|'),
@@ -597,6 +610,18 @@ export class CompilerFinder {
     async loadPrediscovered(compilers: CompilerInfo[]) {
         for (const compiler of compilers) {
             const langId = compiler.lang;
+
+            // Backfill releaseTrack on prediscovered JSON. Cached discovery output
+            // written before this field existed will be missing it; a hand-edited
+            // value that doesn't match ReleaseTrack would otherwise slip through and
+            // break consumers that trust the type contract.
+            if (!compiler.releaseTrack || !isReleaseTrack(compiler.releaseTrack)) {
+                compiler.releaseTrack = inferReleaseTrack({
+                    isSemVer: compiler.isSemVer,
+                    isNightly: compiler.isNightly,
+                    semver: compiler.semver,
+                });
+            }
 
             if (compiler.buildenvsetup) {
                 compiler.buildenvsetup.props = (propName, def) => {
