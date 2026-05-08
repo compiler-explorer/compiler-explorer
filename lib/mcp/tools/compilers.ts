@@ -27,6 +27,8 @@ import semverParser from 'semver';
 import {z} from 'zod';
 
 import type {CompilerInfo} from '../../../types/compiler.interfaces.js';
+import {RELEASE_TRACKS} from '../../../types/compiler.interfaces.js';
+import {InstructionSetsList} from '../../../types/instructionsets.js';
 import type {ApiHandler} from '../../handlers/api.js';
 import {asSafeVer} from '../../utils.js';
 import {applyCap, applyMatch} from '../utils.js';
@@ -106,27 +108,20 @@ export function registerCompilersTool(server: McpServer, apiHandler: ApiHandler)
         {
             language: z.string().optional().describe('Language ID to filter by (e.g. "c++", "rust", "python")'),
             instructionSet: z
-                .string()
+                .enum(InstructionSetsList)
                 .optional()
                 .describe(
-                    'Instruction set / target architecture to filter by (e.g. "amd64", "aarch64", "arm32", ' +
-                        '"riscv64", "wasm32", "ebpf"). Recommended for languages with many architectures: ' +
-                        '`{language: "c++", instructionSet: "amd64", latestPerMajor: true}` is the cleanest way to ' +
-                        'ask "what is the newest x86-64 GCC/Clang/etc."',
+                    'Target architecture filter. Combine with `latestPerMajor: true` for "newest X for arch Y" ' +
+                        '(e.g. `{language:"c++", instructionSet:"amd64", latestPerMajor:true}`).',
                 ),
             match: z
                 .string()
                 .optional()
                 .describe(
-                    'Case-insensitive AND-of-words filter on compiler id and name. The pattern is split on ' +
-                        'whitespace and punctuation (each numeric run is its own token, so "14.1" tokenises into ' +
-                        '["14","1"]), and every token must appear (in any order) in the id or name. ' +
-                        '"x86-64 gcc trunk" matches "x86-64 gcc (trunk)". Numeric tokens match whole-word, so ' +
-                        '"gcc 14.1" matches "x86-64 gcc 14.1.0" but NOT "x86-64 gcc 14.10"; alphanumeric tokens ' +
-                        'still substring-match, so "g14" finds "g142". Note: this is a literal text filter — ' +
-                        '"gcc 15" excludes gcc 16.x, so to find the newest version use `latestPerMajor: true`. ' +
-                        'For "what is the newest X for arch Y" the cleanest combination is ' +
-                        '`{language, instructionSet, latestPerMajor: true}` — no `match` needed.',
+                    'Case-insensitive AND-of-tokens filter on id and name. Punctuation splits tokens; numeric ' +
+                        'tokens match whole-word ("gcc 14.1" matches "14.1.0" not "14.10"); alphanumeric tokens ' +
+                        'substring-match ("g14" matches "g142"). Literal text only — for "newest version" use ' +
+                        '`latestPerMajor`; for "newest X on arch Y" prefer `instructionSet` + `latestPerMajor`.',
                 ),
             maxResults: z
                 .number()
@@ -134,36 +129,27 @@ export function registerCompilersTool(server: McpServer, apiHandler: ApiHandler)
                 .positive()
                 .optional()
                 .describe(
-                    `Maximum entries to return in the full response shape (default ${DEFAULT_MAX_RESULTS}). ` +
-                        'When the filtered count exceeds this, the response degrades to lean mode (id+name only) ' +
-                        'and returns ALL matches; raise this if you need full per-entry detail across many results.',
+                    `Cap full-detail entries (default ${DEFAULT_MAX_RESULTS}). Beyond the cap, degrades to lean ` +
+                        '(id+name only) with a refinement hint.',
                 ),
             lean: z
                 .boolean()
                 .optional()
-                .describe(
-                    'Return id+name only for every result, regardless of count. Use this to browse the catalog ' +
-                        'index without risking an oversized response, then call again with an exact `match` to get ' +
-                        'full details (compilerType, semver, instructionSet).',
-                ),
+                .describe('Force id+name only, regardless of count. Useful to browse the catalog before drilling in.'),
             latestPerMajor: z
                 .boolean()
                 .optional()
                 .describe(
-                    'Distil to "what is the newest X" — the right way to find e.g. the newest GCC. Returns: the ' +
-                        'newest stable per (language, instruction set, semver major); every nightly track (rust ' +
-                        'nightly, gcc snapshot, ...); every prerelease track (rust beta, dxc preview, ...). ' +
-                        'Experimental forks (gcc contracts/modules/coroutines branches, etc.) are skipped by ' +
-                        'default; pass `includeExperimental: true` to include them.',
+                    `"Newest X" filter. By release track (${RELEASE_TRACKS.join('/')}): newest stable per ` +
+                        '(language, instructionSet, semver major); all nightly + prerelease; experimental ' +
+                        'skipped unless `includeExperimental: true`.',
                 ),
             includeExperimental: z
                 .boolean()
                 .optional()
                 .describe(
-                    'Only meaningful with `latestPerMajor: true`. When true, also include experimental compilers ' +
-                        '(c++ language-proposal forks like gcc-contracts-trunk, llvm-mos platform variants) ' +
-                        'in the result. They are skipped by default because they bloat the answer to "what is ' +
-                        'the newest X" without being release-track-comparable.',
+                    'With `latestPerMajor: true`, also include experimental compilers (c++ proposal forks, ' +
+                        'llvm-mos platform variants). Off by default — bloats "newest X" answers.',
                 ),
         },
         async ({language, instructionSet, match, maxResults, lean, latestPerMajor, includeExperimental}) => {
@@ -188,7 +174,13 @@ export function registerCompilersTool(server: McpServer, apiHandler: ApiHandler)
                     compilerType: c.compilerType,
                     semver: c.semver,
                     instructionSet: c.instructionSet,
+                    // releaseTrack is one of: "stable" | "nightly" | "prerelease" | "experimental".
                     releaseTrack: c.releaseTrack,
+                    // supportsExecute / supportsBinary tell the caller whether `compile`
+                    // with execute=true is going to work for this compiler — saves a
+                    // failed call where the agent has to try and read the error.
+                    supportsExecute: c.supportsExecute ?? false,
+                    supportsBinary: c.supportsBinary ?? false,
                 }),
                 'compilers',
                 undefined,

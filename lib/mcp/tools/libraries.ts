@@ -42,12 +42,8 @@ export function registerLibrariesTool(server: McpServer, apiHandler: ApiHandler)
                 .string()
                 .optional()
                 .describe(
-                    'Case-insensitive AND-of-words filter on library id and name. The pattern is split on ' +
-                        'whitespace and punctuation, and every token must appear (in any order). Numeric tokens ' +
-                        'match whole-word, so "boost 1.88" matches "Boost 1.88.0" but NOT "Boost 1.880"; ' +
-                        'alphanumeric tokens still substring-match. Prefer a library name or family like ' +
-                        '"boost", "fmt", or an exact id. For broad searches the response degrades to lean mode ' +
-                        '(id+name only); use `lean: true` to opt into the catalog index up front.',
+                    'Case-insensitive AND-of-tokens filter on id and name. Numeric tokens match whole-word, ' +
+                        'alphanumeric substring. Prefer a library name like "boost"/"fmt" or an exact id.',
                 ),
             maxResults: z
                 .number()
@@ -55,18 +51,13 @@ export function registerLibrariesTool(server: McpServer, apiHandler: ApiHandler)
                 .positive()
                 .optional()
                 .describe(
-                    `Maximum entries to return in the full response shape (default ${DEFAULT_MAX_RESULTS}). ` +
-                        'When the filtered count exceeds this, the response degrades to lean mode (id+name only) ' +
-                        'and returns ALL matches; raise this if you need full per-entry detail (versions, url) across many results.',
+                    `Cap full-detail entries (default ${DEFAULT_MAX_RESULTS}). Beyond the cap, degrades to lean ` +
+                        '(id+name only) with a refinement hint.',
                 ),
             lean: z
                 .boolean()
                 .optional()
-                .describe(
-                    'Return id+name only for every result, regardless of count. Use this to browse the catalog ' +
-                        'index without risking an oversized response, then call again with an exact `match` (e.g. ' +
-                        'the library id) to get full details including versions.',
-                ),
+                .describe('Force id+name only, regardless of count. Useful to browse the catalog before drilling in.'),
         },
         async ({language, match, maxResults, lean}) => {
             // getLibrariesAsArray throws via unwrap() if options aren't loaded yet

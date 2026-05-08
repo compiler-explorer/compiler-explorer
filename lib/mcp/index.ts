@@ -58,7 +58,7 @@ function createMcpServer(
         },
     );
 
-    registerCompileTool(server, compileHandler);
+    registerCompileTool(server, compileHandler, apiHandler);
     registerCompilersTool(server, apiHandler);
     registerLanguagesTool(server, apiHandler);
     registerLibrariesTool(server, apiHandler);
@@ -70,7 +70,7 @@ function createMcpServer(
     // resolves before the handler exits, so req is valid throughout the closure
     // lifetime. If sessions or streaming are ever added, re-evaluate whether the
     // tools should snapshot req fields up-front instead.
-    registerShortlinkTools(server, storageHandler, baseUrl, req);
+    registerShortlinkTools(server, storageHandler, apiHandler, baseUrl, req);
 
     return server;
 }

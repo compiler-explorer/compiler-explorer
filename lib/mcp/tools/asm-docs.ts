@@ -25,7 +25,7 @@
 import type {McpServer} from '@modelcontextprotocol/sdk/server/mcp.js';
 import {z} from 'zod';
 
-import {getDocumentationProviderTypeByKey} from '../../asm-docs/index.js';
+import {availableAsmDocsKeys, getDocumentationProviderTypeByKey} from '../../asm-docs/index.js';
 
 export function registerAsmDocsTool(server: McpServer): void {
     server.tool(
@@ -33,8 +33,8 @@ export function registerAsmDocsTool(server: McpServer): void {
         'Look up documentation for an assembly instruction',
         {
             instruction_set: z
-                .string()
-                .describe('Instruction set architecture (e.g. "amd64", "aarch64", "arm32", "avr", "java")'),
+                .enum(availableAsmDocsKeys as [string, ...string[]])
+                .describe('Instruction set architecture (no default — must match the asm dialect being looked up).'),
             opcode: z.string().describe('Assembly instruction mnemonic (e.g. "MOV", "ADD", "JMP")'),
         },
         async ({instruction_set, opcode}) => {

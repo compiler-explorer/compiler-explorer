@@ -27,14 +27,16 @@ import {z} from 'zod';
 
 import {BypassCache} from '../../../types/compilation/compilation.interfaces.js';
 import type {LanguageKey} from '../../../types/languages.interfaces.js';
+import type {ApiHandler} from '../../handlers/api.js';
 import {CompileHandler} from '../../handlers/compile.js';
+import {normaliseLibraryVersion} from '../library-utils.js';
 import {truncateLines} from '../utils.js';
 
 const DEFAULT_MAX_ASM_LINES = 500;
 const DEFAULT_MAX_STDOUT_LINES = 100;
 const DEFAULT_MAX_STDERR_LINES = 100;
 
-export function registerCompileTool(server: McpServer, compileHandler: CompileHandler): void {
+export function registerCompileTool(server: McpServer, compileHandler: CompileHandler, apiHandler: ApiHandler): void {
     server.tool(
         'compile',
         'Compile source code and return assembly output, stdout, and stderr',
@@ -43,15 +45,18 @@ export function registerCompileTool(server: McpServer, compileHandler: CompileHa
             language: z.string().describe('Language ID (e.g. "c++", "c", "rust", "python")'),
             compiler: z
                 .string()
-                .describe('Compiler ID from list_compilers (e.g. "g161", "clang_trunk", "r1950") — not a name'),
+                .optional()
+                .describe(
+                    'Compiler ID from list_compilers (e.g. "g161"). If omitted, uses the language\'s ' +
+                        '`defaultCompiler` from list_languages.',
+                ),
             options: z.string().optional().describe('Compiler flags (e.g. "-O2 -std=c++20 -Wall")'),
             execute: z
                 .boolean()
                 .optional()
                 .describe(
-                    'Execute the compiled program instead of returning assembly. When true, `asm` is empty and ' +
-                        "top-level `stdout`/`stderr` contain the program's runtime output; compile diagnostics move " +
-                        'into `buildResult.stdout`/`buildResult.stderr`.',
+                    'Run the program instead of returning assembly. `asm` becomes empty; runtime output goes to ' +
+                        'top-level `stdout`/`stderr`; compile diagnostics move to `buildResult.stdout`/`stderr`.',
                 ),
             stdin: z.string().optional().describe('Standard input for execution (requires execute=true)'),
             filters: z
@@ -69,30 +74,25 @@ export function registerCompileTool(server: McpServer, compileHandler: CompileHa
             libraries: z
                 .array(
                     z.object({
-                        id: z.string().describe('Library ID from list_libraries (e.g. "boost", "fmt")'),
-                        version: z
-                            .string()
-                            .describe(
-                                'Library version id from list_libraries (e.g. "188" for Boost 1.88.0, ' +
-                                    'NOT the human "1.88.0" string)',
-                            ),
+                        id: z.string().describe('Library ID from list_libraries (e.g. "boost").'),
+                        version: z.string().describe('Version id ("188") OR human form ("1.88.0") — both accepted.'),
                     }),
                 )
                 .optional()
-                .describe('Libraries to link'),
+                .describe('Libraries to link.'),
             maxAsmLines: z
                 .number()
                 .int()
                 .positive()
                 .optional()
-                .describe(`Cap assembly output to this many lines (default ${DEFAULT_MAX_ASM_LINES})`),
+                .describe(`Cap asm output (default ${DEFAULT_MAX_ASM_LINES} lines).`),
             maxStdoutLines: z
                 .number()
                 .int()
                 .positive()
                 .optional()
                 .describe(
-                    `Cap each stdout stream (compile and execute, separately) to this many lines (default ${DEFAULT_MAX_STDOUT_LINES})`,
+                    `Cap each stdout stream — compile and execute separately (default ${DEFAULT_MAX_STDOUT_LINES}).`,
                 ),
             maxStderrLines: z
                 .number()
@@ -100,7 +100,7 @@ export function registerCompileTool(server: McpServer, compileHandler: CompileHa
                 .positive()
                 .optional()
                 .describe(
-                    `Cap each stderr stream (compile and execute, separately) to this many lines (default ${DEFAULT_MAX_STDERR_LINES})`,
+                    `Cap each stderr stream — compile and execute separately (default ${DEFAULT_MAX_STDERR_LINES}).`,
                 ),
         },
         async ({
@@ -116,13 +116,81 @@ export function registerCompileTool(server: McpServer, compileHandler: CompileHa
             maxStdoutLines,
             maxStderrLines,
         }) => {
-            const baseCompiler = compileHandler.findCompiler(language as LanguageKey, compilerId);
+            // Normalise library versions: accept either the version id ("188") or the
+            // human form ("1.88.0"). If the library is unknown or the version doesn't
+            // match either form, surface a clean error here rather than letting the
+            // compile pipeline fail opaquely deep inside the build.
+            const normalisedLibraries: Array<{id: string; version: string}> = [];
+            if (libraries && libraries.length > 0) {
+                let knownLibraries: ReturnType<ApiHandler['getLibrariesAsArray']>;
+                try {
+                    knownLibraries = apiHandler.getLibrariesAsArray(language as LanguageKey);
+                } catch {
+                    // Library metadata not loaded — fall back to passing through unchanged.
+                    knownLibraries = [];
+                }
+                for (const lib of libraries) {
+                    if (knownLibraries.length === 0) {
+                        normalisedLibraries.push(lib);
+                        continue;
+                    }
+                    const result = normaliseLibraryVersion(knownLibraries, lib.id, lib.version);
+                    if (result.ok) {
+                        normalisedLibraries.push({id: lib.id, version: result.version});
+                    } else if (result.reason === 'unknown-library') {
+                        return {
+                            content: [
+                                {
+                                    type: 'text',
+                                    text: `Library "${lib.id}" not found for language "${language}". Call list_libraries to find a valid library id.`,
+                                },
+                            ],
+                            isError: true,
+                        };
+                    } else {
+                        const sample = (result.available ?? [])
+                            .slice(0, 5)
+                            .map(v => `${v.id} (${v.version})`)
+                            .join(', ');
+                        return {
+                            content: [
+                                {
+                                    type: 'text',
+                                    text:
+                                        `Version "${lib.version}" not found for library "${lib.id}". ` +
+                                        `Pass either the version id or the human version. Available include: ${sample}` +
+                                        ((result.available ?? []).length > 5 ? ', ...' : '') +
+                                        '. Call list_libraries with `match: "' +
+                                        lib.id +
+                                        '"` for the full list.',
+                                },
+                            ],
+                            isError: true,
+                        };
+                    }
+                }
+            }
+
+            // Resolve language default if no compiler specified.
+            const resolvedCompilerId = compilerId ?? apiHandler.languages[language as LanguageKey]?.defaultCompiler;
+            if (!resolvedCompilerId) {
+                return {
+                    content: [
+                        {
+                            type: 'text',
+                            text: `No compiler specified and no default compiler available for language "${language}". Call list_languages to see available languages, or list_compilers to find a valid compiler id.`,
+                        },
+                    ],
+                    isError: true,
+                };
+            }
+            const baseCompiler = compileHandler.findCompiler(language as LanguageKey, resolvedCompilerId);
             if (!baseCompiler) {
                 return {
                     content: [
                         {
                             type: 'text',
-                            text: `Compiler "${compilerId}" not found for language "${language}"`,
+                            text: `Compiler "${resolvedCompilerId}" not found for language "${language}". Call list_compilers with this language to find a valid id.`,
                         },
                     ],
                     isError: true,

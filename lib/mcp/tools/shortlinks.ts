@@ -26,14 +26,40 @@ import type {McpServer} from '@modelcontextprotocol/sdk/server/mcp.js';
 import type express from 'express';
 import {z} from 'zod';
 
+import type {LanguageKey} from '../../../types/languages.interfaces.js';
 import {ClientStateNormalizer} from '../../clientstate-normalizer.js';
+import type {ApiHandler} from '../../handlers/api.js';
 import {logger} from '../../logger.js';
 import type {StorageBase} from '../../storage/base.js';
 import {getSafeHash} from '../../storage/base.js';
+import {normaliseLibraryVersion} from '../library-utils.js';
+
+// CE shortlinks save the canonical "config" shape used by the web app, where each
+// compiler entry uses {id, options, libs:[{id, ver}]}. The MCP `compile` tool accepts
+// {compiler, options, libraries:[{id, version}]}. Translate between the two so a
+// shortlink round-trip is friction-free for an LLM caller.
+type CompileReadyCompiler = {
+    compiler: string;
+    options: string;
+    libraries: Array<{id: string; version: string}>;
+};
+type SavedCompiler = {id?: string; options?: string; libs?: Array<{id?: string; ver?: string}>};
+type SavedSession = {language?: string; source?: string; compilers?: SavedCompiler[]};
+
+function toCompileReady(savedCompiler: SavedCompiler): CompileReadyCompiler {
+    return {
+        compiler: savedCompiler.id ?? '',
+        options: savedCompiler.options ?? '',
+        libraries: (savedCompiler.libs ?? [])
+            .filter(l => l.id !== undefined && l.ver !== undefined)
+            .map(l => ({id: l.id as string, version: l.ver as string})),
+    };
+}
 
 export function registerShortlinkTools(
     server: McpServer,
     storageHandler: StorageBase,
+    apiHandler: ApiHandler,
     baseUrl: string,
     req: express.Request,
 ): void {
@@ -48,20 +74,65 @@ export function registerShortlinkTools(
             libraries: z
                 .array(
                     z.object({
-                        id: z.string().describe('Library ID from list_libraries (e.g. "boost", "fmt")'),
-                        version: z
-                            .string()
-                            .describe(
-                                'Library version id from list_libraries (e.g. "188" for Boost 1.88.0, ' +
-                                    'NOT the human "1.88.0" string)',
-                            ),
+                        id: z.string().describe('Library ID from list_libraries.'),
+                        version: z.string().describe('Version id ("188") OR human form ("1.88.0").'),
                     }),
                 )
                 .optional()
-                .describe('Libraries to include'),
+                .describe('Libraries to include.'),
         },
         async ({source, language, compiler, options, libraries}) => {
             try {
+                // Normalise library versions before saving so the resulting shortlink
+                // always carries the canonical version id, regardless of which form
+                // the caller passed.
+                const storedLibs: Array<{id: string; ver: string}> = [];
+                if (libraries && libraries.length > 0) {
+                    let knownLibraries: ReturnType<ApiHandler['getLibrariesAsArray']>;
+                    try {
+                        knownLibraries = apiHandler.getLibrariesAsArray(language as LanguageKey);
+                    } catch {
+                        knownLibraries = [];
+                    }
+                    for (const lib of libraries) {
+                        if (knownLibraries.length === 0) {
+                            storedLibs.push({id: lib.id, ver: lib.version});
+                            continue;
+                        }
+                        const result = normaliseLibraryVersion(knownLibraries, lib.id, lib.version);
+                        if (result.ok) {
+                            storedLibs.push({id: lib.id, ver: result.version});
+                        } else if (result.reason === 'unknown-library') {
+                            return {
+                                content: [
+                                    {
+                                        type: 'text',
+                                        text: `Library "${lib.id}" not found for language "${language}". Call list_libraries to find a valid library id.`,
+                                    },
+                                ],
+                                isError: true,
+                            };
+                        } else {
+                            const sample = (result.available ?? [])
+                                .slice(0, 5)
+                                .map(v => `${v.id} (${v.version})`)
+                                .join(', ');
+                            return {
+                                content: [
+                                    {
+                                        type: 'text',
+                                        text:
+                                            `Version "${lib.version}" not found for library "${lib.id}". ` +
+                                            `Pass either the version id or the human version. Available include: ${sample}` +
+                                            ((result.available ?? []).length > 5 ? ', ...' : '') +
+                                            '.',
+                                    },
+                                ],
+                                isError: true,
+                            };
+                        }
+                    }
+                }
                 const config = {
                     sessions: [
                         {
@@ -72,7 +143,7 @@ export function registerShortlinkTools(
                                 {
                                     id: compiler,
                                     options: options || '',
-                                    libs: libraries || [],
+                                    libs: storedLibs,
                                 },
                             ],
                         },
@@ -93,7 +164,7 @@ export function registerShortlinkTools(
                     );
                 }
                 const url = `${baseUrl}${storageHandler.httpRootDir}z/${result.uniqueSubHash}`;
-                return {content: [{type: 'text', text: url}]};
+                return {content: [{type: 'text', text: JSON.stringify({url}, null, 2)}]};
             } catch (e) {
                 return {
                     content: [{type: 'text', text: `Failed to create short URL: ${(e as Error).message}`}],
@@ -105,7 +176,8 @@ export function registerShortlinkTools(
 
     server.tool(
         'get_shortlink_info',
-        'Retrieve source code and compiler configuration from a Compiler Explorer short URL',
+        'Retrieve source and compiler configuration from a CE short URL. Each compiler entry uses ' +
+            "the `compile` tool's shape ({compiler, options, libraries:[{id, version}]}) for direct round-tripping.",
         {
             id: z
                 .string()
@@ -120,14 +192,26 @@ export function registerShortlinkTools(
                 const result = await storageHandler.expandId(shortId);
                 const config = JSON.parse(result.config);
 
-                // Normalise old golden-layout format to modern sessions format
+                // Normalise old golden-layout format to modern sessions format.
+                let sessions: SavedSession[];
                 if (config.content) {
                     const normalizer = new ClientStateNormalizer();
                     normalizer.fromGoldenLayout(config);
-                    return {content: [{type: 'text', text: JSON.stringify(normalizer.normalized, null, 2)}]};
+                    sessions = (normalizer.normalized as {sessions?: SavedSession[]}).sessions ?? [];
+                } else {
+                    sessions = (config as {sessions?: SavedSession[]}).sessions ?? [];
                 }
 
-                return {content: [{type: 'text', text: JSON.stringify(config, null, 2)}]};
+                // Translate the saved-config compiler shape ({id, options, libs:[{id, ver}]})
+                // into the same shape `compile` accepts ({compiler, options, libraries:[{id, version}]}).
+                const friendly = {
+                    sessions: sessions.map(s => ({
+                        language: s.language,
+                        source: s.source,
+                        compilers: (s.compilers ?? []).map(toCompileReady),
+                    })),
+                };
+                return {content: [{type: 'text', text: JSON.stringify(friendly, null, 2)}]};
             } catch (e) {
                 logger.warn(`MCP shortlink expand failed for ${shortId}:`, e);
                 return {

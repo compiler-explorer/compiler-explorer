@@ -27,14 +27,24 @@ import type {McpServer} from '@modelcontextprotocol/sdk/server/mcp.js';
 import type {ApiHandler} from '../../handlers/api.js';
 
 export function registerLanguagesTool(server: McpServer, apiHandler: ApiHandler): void {
-    server.tool('list_languages', 'List all programming languages supported by Compiler Explorer', async () => {
-        const languages = apiHandler.getAvailableLanguages();
-        const result = languages.map(lang => ({
-            id: lang.id,
-            name: lang.name,
-            extensions: lang.extensions,
-            defaultCompiler: lang.defaultCompiler,
-        }));
-        return {content: [{type: 'text', text: JSON.stringify(result, null, 2)}]};
-    });
+    server.tool(
+        'list_languages',
+        'List supported languages. Each entry has `defaultCompiler` and `compilerCount`.',
+        async () => {
+            const languages = apiHandler.getAvailableLanguages();
+            // One pass over compilers gives us the per-language count without an N×M scan.
+            const countByLang = new Map<string, number>();
+            for (const c of apiHandler.compilers) {
+                countByLang.set(c.lang, (countByLang.get(c.lang) ?? 0) + 1);
+            }
+            const result = languages.map(lang => ({
+                id: lang.id,
+                name: lang.name,
+                extensions: lang.extensions,
+                defaultCompiler: lang.defaultCompiler,
+                compilerCount: countByLang.get(lang.id) ?? 0,
+            }));
+            return {content: [{type: 'text', text: JSON.stringify(result, null, 2)}]};
+        },
+    );
 }

@@ -31,6 +31,7 @@ import type {CompileHandler} from '../../lib/handlers/compile.js';
 import {setupMcpEndpoint} from '../../lib/mcp/index.js';
 import {registerCompileTool} from '../../lib/mcp/tools/compile.js';
 import {registerCompilersTool} from '../../lib/mcp/tools/compilers.js';
+import {registerLanguagesTool} from '../../lib/mcp/tools/languages.js';
 import {registerLibrariesTool} from '../../lib/mcp/tools/libraries.js';
 import {registerShortlinkTools} from '../../lib/mcp/tools/shortlinks.js';
 import type {StorageBase, StoredObject} from '../../lib/storage/base.js';
@@ -162,8 +163,8 @@ describe('MCP shortlink tool', () => {
     beforeEach(() => {
         toolHandlers = {};
         fakeServer = {
-            tool: (name: string, _description: string, _schema: unknown, handler: (args: any) => Promise<any>) => {
-                toolHandlers[name] = handler;
+            tool: (name: string, ..._rest: unknown[]) => {
+                toolHandlers[name] = _rest[_rest.length - 1] as (args: any) => Promise<any>;
             },
         };
         storageHandler = {
@@ -178,12 +179,16 @@ describe('MCP shortlink tool', () => {
         } as unknown as StorageBase;
     });
 
+    const fakeApiHandler = {
+        getLibrariesAsArray: () => [],
+    } as unknown as ApiHandler;
+
     it('passes the real express request through to storeItem', async () => {
         const req = {
             ip: '203.0.113.7',
             get: vi.fn().mockReturnValue(undefined),
         } as unknown as express.Request;
-        registerShortlinkTools(fakeServer, storageHandler, 'https://example.org', req);
+        registerShortlinkTools(fakeServer, storageHandler, fakeApiHandler, 'https://example.org', req);
 
         const result = await toolHandlers.generate_short_url({
             source: 'int main(){}',
@@ -198,7 +203,7 @@ describe('MCP shortlink tool', () => {
         // where someone passes a plain {} again.
         expect(typeof passedReq.get).toBe('function');
         expect(passedReq.ip).toBe('203.0.113.7');
-        expect(result.content[0].text).toBe('https://example.org/z/abc123');
+        expect(JSON.parse(result.content[0].text)).toEqual({url: 'https://example.org/z/abc123'});
     });
 
     it('skips storeItem when the hash is already present', async () => {
@@ -208,7 +213,7 @@ describe('MCP shortlink tool', () => {
             alreadyPresent: true,
         });
         const req = {ip: '127.0.0.1', get: vi.fn()} as unknown as express.Request;
-        registerShortlinkTools(fakeServer, storageHandler, 'https://example.org', req);
+        registerShortlinkTools(fakeServer, storageHandler, fakeApiHandler, 'https://example.org', req);
 
         const result = await toolHandlers.generate_short_url({
             source: 'int main(){}',
@@ -217,24 +222,66 @@ describe('MCP shortlink tool', () => {
         });
 
         expect(storageHandler.storeItem).not.toHaveBeenCalled();
-        expect(result.content[0].text).toBe('https://example.org/z/cached');
+        expect(JSON.parse(result.content[0].text)).toEqual({url: 'https://example.org/z/cached'});
     });
 
-    it('returns the expanded config for get_shortlink_info', async () => {
+    it('normalises library version to id when generating a short url', async () => {
         const req = {ip: '127.0.0.1', get: vi.fn()} as unknown as express.Request;
-        registerShortlinkTools(fakeServer, storageHandler, 'https://example.org', req);
+        const apiWithLibs = {
+            getLibrariesAsArray: () => [{id: 'boost', versions: [{id: '188', version: '1.88.0'}]}],
+        } as unknown as ApiHandler;
+        registerShortlinkTools(fakeServer, storageHandler, apiWithLibs, 'https://example.org', req);
+
+        // Pass the human form — should be normalised to the id before being saved.
+        await toolHandlers.generate_short_url({
+            source: 'int main(){}',
+            language: 'c++',
+            compiler: 'g161',
+            libraries: [{id: 'boost', version: '1.88.0'}],
+        });
+
+        const stored = (storageHandler.storeItem as any).mock.calls[0][0];
+        const config = JSON.parse(stored.config);
+        expect(config.sessions[0].compilers[0].libs).toEqual([{id: 'boost', ver: '188'}]);
+    });
+
+    it('returns the expanded config for get_shortlink_info in compile-ready shape', async () => {
+        const req = {ip: '127.0.0.1', get: vi.fn()} as unknown as express.Request;
+        // Saved config uses the legacy shape: compilers[].id / .libs[].ver
+        const handler = {
+            ...storageHandler,
+            expandId: vi.fn().mockResolvedValue({
+                config: JSON.stringify({
+                    sessions: [
+                        {
+                            language: 'c++',
+                            source: 'int main(){}',
+                            compilers: [{id: 'g161', options: '-O2', libs: [{id: 'boost', ver: '188'}]}],
+                        },
+                    ],
+                }),
+            }),
+        } as unknown as StorageBase;
+        registerShortlinkTools(fakeServer, handler, fakeApiHandler, 'https://example.org', req);
 
         const result = await toolHandlers.get_shortlink_info({id: 'https://example.org/z/abc123'});
-        expect(storageHandler.expandId).toHaveBeenCalledWith('abc123');
-        expect(result.content[0].text).toBe(JSON.stringify({sessions: []}, null, 2));
+        const parsed = JSON.parse(result.content[0].text);
+        // Renamed for compile-tool symmetry: id → compiler, libs[].ver → libraries[].version.
+        expect(parsed.sessions[0].compilers[0]).toEqual({
+            compiler: 'g161',
+            options: '-O2',
+            libraries: [{id: 'boost', version: '188'}],
+        });
     });
 });
 
 function makeFakeServer(): {fakeServer: any; toolHandlers: Record<string, (args: any) => Promise<any>>} {
     const toolHandlers: Record<string, (args: any) => Promise<any>> = {};
     const fakeServer = {
-        tool: (name: string, _description: string, _schema: unknown, handler: (args: any) => Promise<any>) => {
-            toolHandlers[name] = handler;
+        // The MCP SDK's server.tool overload accepts either (name, description, schema, handler)
+        // or (name, description, handler). Last argument is always the handler.
+        tool: (name: string, ..._rest: unknown[]) => {
+            toolHandlers[name] = _rest[_rest.length - 1] as (args: any) => Promise<any>;
         },
     };
     return {fakeServer, toolHandlers};
@@ -271,6 +318,8 @@ describe('MCP list_compilers tool', () => {
             semver: '',
             instructionSet: 'amd64',
             releaseTrack: 'stable',
+            supportsExecute: false,
+            supportsBinary: false,
         });
     });
 
@@ -292,6 +341,8 @@ describe('MCP list_compilers tool', () => {
                 semver: '',
                 instructionSet: 'amd64',
                 releaseTrack: 'stable',
+                supportsExecute: false,
+                supportsBinary: false,
             },
         ]);
     });
@@ -542,6 +593,19 @@ describe('MCP list_compilers tool', () => {
         expect(parsed.latestHint).toMatch(/includeExperimental/);
     });
 
+    it('list_compilers full shape exposes supportsExecute / supportsBinary', async () => {
+        const {fakeServer, toolHandlers} = makeFakeServer();
+        const apiHandler = {
+            compilers: [makeCompiler('g142', 'c++', {supportsExecute: true, supportsBinary: true})],
+        } as unknown as ApiHandler;
+        registerCompilersTool(fakeServer, apiHandler);
+
+        const result = await toolHandlers.list_compilers({});
+        const parsed = JSON.parse(result.content[0].text);
+        expect(parsed.compilers[0].supportsExecute).toBe(true);
+        expect(parsed.compilers[0].supportsBinary).toBe(true);
+    });
+
     it('latestPerMajor: includeExperimental: true brings the experimental forks back', async () => {
         const {fakeServer, toolHandlers} = makeFakeServer();
         const apiHandler = {
@@ -641,6 +705,14 @@ describe('MCP compile tool', () => {
 
     type BuildResultShape = {code: number; stdout: string[]; stderr: string[]};
 
+    // Most compile tests don't exercise the apiHandler paths (default-compiler resolution
+    // or library-version normalisation), so a stub that returns no languages / no
+    // libraries is enough. Tests that DO exercise those paths build their own.
+    const fakeApiForCompile = {
+        languages: {},
+        getLibrariesAsArray: () => [],
+    } as unknown as ApiHandler;
+
     function makeCompileHandler(
         asm: string[],
         stdout: string[] = [],
@@ -677,7 +749,7 @@ describe('MCP compile tool', () => {
     it('returns full output below caps without truncation markers', async () => {
         const {fakeServer, toolHandlers} = makeFakeServer();
         const compileHandler = makeCompileHandler(['mov rax, 1', 'ret'], ['hi'], []);
-        registerCompileTool(fakeServer, compileHandler);
+        registerCompileTool(fakeServer, compileHandler, fakeApiForCompile);
 
         const result = await toolHandlers.compile({source: 'x', language: 'c++', compiler: 'g142'});
         const parsed = JSON.parse(result.content[0].text);
@@ -691,7 +763,7 @@ describe('MCP compile tool', () => {
         const {fakeServer, toolHandlers} = makeFakeServer();
         const lines = Array.from({length: 1200}, (_, i) => `line${i}`);
         const compileHandler = makeCompileHandler(lines);
-        registerCompileTool(fakeServer, compileHandler);
+        registerCompileTool(fakeServer, compileHandler, fakeApiForCompile);
 
         const result = await toolHandlers.compile({source: 'x', language: 'c++', compiler: 'g142'});
         const parsed = JSON.parse(result.content[0].text);
@@ -705,7 +777,7 @@ describe('MCP compile tool', () => {
         const {fakeServer, toolHandlers} = makeFakeServer();
         const lines = Array.from({length: 1200}, (_, i) => `line${i}`);
         const compileHandler = makeCompileHandler(lines);
-        registerCompileTool(fakeServer, compileHandler);
+        registerCompileTool(fakeServer, compileHandler, fakeApiForCompile);
 
         const result = await toolHandlers.compile({
             source: 'x',
@@ -728,7 +800,7 @@ describe('MCP compile tool', () => {
             stdout: [],
             stderr: ["error: 'foo' was not declared in this scope"],
         });
-        registerCompileTool(fakeServer, compileHandler);
+        registerCompileTool(fakeServer, compileHandler, fakeApiForCompile);
 
         const result = await toolHandlers.compile({
             source: 'x',
@@ -751,7 +823,7 @@ describe('MCP compile tool', () => {
             stdout: [],
             stderr: longStderr,
         });
-        registerCompileTool(fakeServer, compileHandler);
+        registerCompileTool(fakeServer, compileHandler, fakeApiForCompile);
 
         const result = await toolHandlers.compile({
             source: 'x',
@@ -774,12 +846,112 @@ describe('MCP compile tool', () => {
             stderr: [],
             didExecute: true,
         });
-        registerCompileTool(fakeServer, compileHandler);
+        registerCompileTool(fakeServer, compileHandler, fakeApiForCompile);
 
         const result = await toolHandlers.compile({source: 'x', language: 'c++', compiler: 'g142', execute: true});
         const parsed = JSON.parse(result.content[0].text);
         expect(parsed.execResult.stdoutTruncated).toBe(true);
         expect(parsed.execResult.stdoutTotalLines).toBe(250);
         expect(parsed.hint).toMatch(/maxStdoutLines/);
+    });
+
+    it('resolves the language default compiler when none is given', async () => {
+        const {fakeServer, toolHandlers} = makeFakeServer();
+        const compileHandler = makeCompileHandler(['ret']);
+        const findCompilerSpy = vi.spyOn(compileHandler, 'findCompiler');
+        const apiHandler = {
+            languages: {'c++': {defaultCompiler: 'g161'}},
+            getLibrariesAsArray: () => [],
+        } as unknown as ApiHandler;
+        registerCompileTool(fakeServer, compileHandler, apiHandler);
+
+        const result = await toolHandlers.compile({source: 'x', language: 'c++'});
+        expect(result.isError).toBeUndefined();
+        expect(findCompilerSpy).toHaveBeenCalledWith('c++', 'g161');
+    });
+
+    it('errors clearly when no compiler is given and no default exists', async () => {
+        const {fakeServer, toolHandlers} = makeFakeServer();
+        const compileHandler = makeCompileHandler(['ret']);
+        const apiHandler = {languages: {}, getLibrariesAsArray: () => []} as unknown as ApiHandler;
+        registerCompileTool(fakeServer, compileHandler, apiHandler);
+
+        const result = await toolHandlers.compile({source: 'x', language: 'wat'});
+        expect(result.isError).toBe(true);
+        expect(result.content[0].text).toMatch(/No compiler specified.*language "wat"/);
+    });
+
+    it('normalises a human library version (1.88.0) to its id (188)', async () => {
+        const {fakeServer, toolHandlers} = makeFakeServer();
+        const compileHandler = makeCompileHandler(['ret']);
+        const findCompilerSpy = vi.spyOn(compileHandler, 'findCompiler');
+        const apiHandler = {
+            languages: {'c++': {defaultCompiler: 'g161'}},
+            getLibrariesAsArray: () => [{id: 'boost', versions: [{id: '188', version: '1.88.0'}]}],
+        } as unknown as ApiHandler;
+        registerCompileTool(fakeServer, compileHandler, apiHandler);
+
+        const result = await toolHandlers.compile({
+            source: 'x',
+            language: 'c++',
+            libraries: [{id: 'boost', version: '1.88.0'}],
+        });
+        expect(result.isError).toBeUndefined();
+        // The 4th arg (parseRequestReusable's body.options) is internal; just verify
+        // the call succeeded without error. The version normalisation happens before
+        // findCompiler, and findCompiler still sees the right compiler id.
+        expect(findCompilerSpy).toHaveBeenCalled();
+    });
+
+    it('errors clearly on an unknown library version (neither id nor human form)', async () => {
+        const {fakeServer, toolHandlers} = makeFakeServer();
+        const compileHandler = makeCompileHandler(['ret']);
+        const apiHandler = {
+            languages: {'c++': {defaultCompiler: 'g161'}},
+            getLibrariesAsArray: () => [
+                {
+                    id: 'boost',
+                    versions: [
+                        {id: '188', version: '1.88.0'},
+                        {id: '189', version: '1.89.0'},
+                    ],
+                },
+            ],
+        } as unknown as ApiHandler;
+        registerCompileTool(fakeServer, compileHandler, apiHandler);
+
+        const result = await toolHandlers.compile({
+            source: 'x',
+            language: 'c++',
+            libraries: [{id: 'boost', version: 'banana'}],
+        });
+        expect(result.isError).toBe(true);
+        expect(result.content[0].text).toMatch(/Version "banana" not found/);
+        expect(result.content[0].text).toMatch(/188 \(1\.88\.0\)/);
+    });
+});
+
+describe('MCP list_languages tool', () => {
+    it('includes a compilerCount per language', async () => {
+        const {fakeServer, toolHandlers} = makeFakeServer();
+        const apiHandler = {
+            getAvailableLanguages: () => [
+                {id: 'c++', name: 'C++', extensions: ['.cpp'], defaultCompiler: 'g161'},
+                {id: 'rust', name: 'Rust', extensions: ['.rs'], defaultCompiler: 'r1950'},
+                {id: 'cobol', name: 'COBOL', extensions: ['.cob'], defaultCompiler: ''},
+            ],
+            compilers: [
+                makeCompiler('g161', 'c++'),
+                makeCompiler('g152', 'c++'),
+                makeCompiler('r1950', 'rust'),
+                // No COBOL compilers — should report 0 not undefined.
+            ],
+        } as unknown as ApiHandler;
+        registerLanguagesTool(fakeServer, apiHandler);
+
+        const result = await toolHandlers.list_languages({});
+        const parsed = JSON.parse(result.content[0].text);
+        const byId = Object.fromEntries(parsed.map((l: any) => [l.id, l.compilerCount]));
+        expect(byId).toEqual({'c++': 2, rust: 1, cobol: 0});
     });
 });
