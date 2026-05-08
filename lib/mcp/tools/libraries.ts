@@ -42,8 +42,9 @@ export function registerLibrariesTool(server: McpServer, apiHandler: ApiHandler)
                 .string()
                 .optional()
                 .describe(
-                    'Case-insensitive AND-of-tokens filter on id and name. Numeric tokens match whole-word, ' +
-                        'alphanumeric substring. Prefer a library name like "boost"/"fmt" or an exact id.',
+                    'Case-insensitive AND-of-tokens filter on id, name, and version strings (so ' +
+                        '"boost 1.88" finds Boost when one of its versions matches 1.88.x). Numeric tokens ' +
+                        'match version-prefix; alphanumeric substring.',
                 ),
             maxResults: z
                 .number()
@@ -74,7 +75,16 @@ export function registerLibrariesTool(server: McpServer, apiHandler: ApiHandler)
                     isError: true,
                 };
             }
-            const filtered = applyMatch(all, match, lib => [lib.id, lib.name ?? '']);
+            // Include each version's `version` (human form, e.g. "1.88.0") and `id`
+            // (e.g. "188") in the haystack so a query like "boost 1.88" matches —
+            // the natural way an LLM phrases "find Boost 1.88" — without the agent
+            // having to first discover the library, then scan its versions array.
+            const filtered = applyMatch(all, match, lib => [
+                lib.id,
+                lib.name ?? '',
+                ...(lib.versions ?? []).map(v => v.version ?? ''),
+                ...(lib.versions ?? []).map(v => v.id),
+            ]);
             const {items, ...meta} = applyCap(
                 filtered,
                 maxResults ?? DEFAULT_MAX_RESULTS,

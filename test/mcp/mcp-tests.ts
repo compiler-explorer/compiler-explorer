@@ -696,6 +696,49 @@ describe('MCP list_libraries tool', () => {
         expect(parsed.hint).toBeUndefined();
     });
 
+    it('match also searches version strings (so "boost 1.88" finds the right library)', async () => {
+        const {fakeServer, toolHandlers} = makeFakeServer();
+        const apiHandler = {
+            getLibrariesAsArray: () => [
+                {
+                    id: 'boost',
+                    name: 'Boost',
+                    versions: [
+                        {id: '187', version: '1.87.0'},
+                        {id: '188', version: '1.88.0'},
+                    ],
+                },
+                {id: 'fmt', name: '{fmt}', versions: [{id: '1100', version: '11.0.0'}]},
+                {id: 'eigen', name: 'Eigen', versions: [{id: '340', version: '3.4.0'}]},
+            ],
+        } as unknown as ApiHandler;
+        registerLibrariesTool(fakeServer, apiHandler);
+
+        // The "natural" LLM query: combine the library family name with the desired
+        // version. Pre-fix this returned [] because match only saw {id, name}.
+        const result = await toolHandlers.list_libraries({language: 'c++', match: 'boost 1.88'});
+        const parsed = JSON.parse(result.content[0].text);
+        expect(parsed.libraries.map((l: any) => l.id)).toEqual(['boost']);
+        // The full library is returned (with all its versions) so the caller can
+        // see the matching version's id to pass into compile.
+        expect(parsed.libraries[0].versions).toHaveLength(2);
+    });
+
+    it('match against a version id ("188") also works', async () => {
+        const {fakeServer, toolHandlers} = makeFakeServer();
+        const apiHandler = {
+            getLibrariesAsArray: () => [
+                {id: 'boost', name: 'Boost', versions: [{id: '188', version: '1.88.0'}]},
+                {id: 'fmt', name: '{fmt}', versions: [{id: '1100', version: '11.0.0'}]},
+            ],
+        } as unknown as ApiHandler;
+        registerLibrariesTool(fakeServer, apiHandler);
+
+        const result = await toolHandlers.list_libraries({language: 'c++', match: '188'});
+        const parsed = JSON.parse(result.content[0].text);
+        expect(parsed.libraries.map((l: any) => l.id)).toEqual(['boost']);
+    });
+
     it('returns a structured isError response when getLibrariesAsArray throws', async () => {
         const {fakeServer, toolHandlers} = makeFakeServer();
         const apiHandler = {
