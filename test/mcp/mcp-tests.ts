@@ -80,6 +80,16 @@ describe('MCP endpoint', () => {
         await request(app).delete('/mcp').expect(405).expect('Allow', 'POST');
     });
 
+    it('OPTIONS preflight advertises Allow-Methods (browser clients need this for cross-origin POST)', async () => {
+        const res = await request(app).options('/mcp');
+        expect(res.status).toBe(200);
+        // Without these, a browser making a cross-origin POST with Content-Type:
+        // application/json fails preflight before the request is even sent.
+        expect(res.headers['access-control-allow-methods']).toMatch(/POST/);
+        expect(res.headers['access-control-allow-origin']).toBe('*');
+        expect(res.headers['access-control-allow-headers']).toMatch(/Content-Type/);
+    });
+
     it('returns a JSON-RPC error for malformed POST bodies', async () => {
         const res = await request(app)
             .post('/mcp')

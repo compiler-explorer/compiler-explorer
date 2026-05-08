@@ -32,20 +32,21 @@ import {filterEscapeSequences} from '../utils.js';
 // the agent to refine via match / language / instructionSet / latestPerMajor.
 const LEAN_HARD_CAP = 200;
 
-// Replace anything that isn't alphanumeric or '+' (kept for "c++") with whitespace,
-// then collapse runs of whitespace. Lets "x86-64 gcc trunk" match "x86-64 gcc (trunk)".
+// Replace anything that isn't alphanumeric, '+' (kept for "c++"), or '.' (kept so
+// dotted version tokens like "14.1" stay together) with whitespace, then collapse
+// runs of whitespace. Lets "x86-64 gcc trunk" match "x86-64 gcc (trunk)".
 function normalise(s: string): string {
     return s
         .toLowerCase()
-        .replace(/[^a-z0-9+]+/g, ' ')
+        .replace(/[^a-z0-9+.]+/g, ' ')
         .replace(/\s+/g, ' ')
         .trim();
 }
 
-// Numeric tokens match whole-word so "14.1" doesn't match "14.10" (the lone "1"
-// would be a substring of "10"). Alphanumeric tokens still match as substrings so
-// partial-id queries like "g14" continue to find "g142".
-const NUMERIC_TOKEN = /^\d+$/;
+// Numeric (or dotted-numeric) tokens get a stricter "version prefix" match so
+// "14.1" finds "14.1" and "14.1.x" but NOT "14.10" or "14.0.1". Alphanumeric
+// tokens still match as substrings so partial-id queries like "g14" find "g142".
+const NUMERIC_TOKEN = /^\d+(?:\.\d+)*$/;
 
 export function applyMatch<T>(items: T[], pattern: string | undefined, extract: (item: T) => string[]): T[] {
     if (!pattern) return items;
@@ -54,9 +55,13 @@ export function applyMatch<T>(items: T[], pattern: string | undefined, extract: 
     return items.filter(item => {
         const normalised = normalise(extract(item).join(' '));
         const sentinelled = ` ${normalised} `;
-        return tokens.every(token =>
-            NUMERIC_TOKEN.test(token) ? sentinelled.includes(` ${token} `) : normalised.includes(token),
-        );
+        return tokens.every(token => {
+            if (!NUMERIC_TOKEN.test(token)) return normalised.includes(token);
+            // Numeric/dotted-numeric: token must be followed by either a separator
+            // (whitespace) or another version segment (`.` then more digits). This
+            // makes "14.1" match "14.1" and "14.1.0" but not "14.10" or "14.0.1".
+            return sentinelled.includes(` ${token} `) || sentinelled.includes(` ${token}.`);
+        });
     });
 }
 

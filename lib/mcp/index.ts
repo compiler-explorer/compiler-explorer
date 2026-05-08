@@ -105,6 +105,12 @@ export function setupMcpEndpoint(
     });
 
     router.options('/mcp', cors, (_req, res) => {
+        // The shared `cors` middleware sets Allow-Origin and Allow-Headers but NOT
+        // Allow-Methods, which a browser preflight needs to permit POST with
+        // Content-Type: application/json. Add it here so browser-based MCP clients
+        // can call the endpoint cross-origin.
+        res.set('Access-Control-Allow-Methods', 'POST, OPTIONS');
+        res.set('Access-Control-Max-Age', '86400');
         res.sendStatus(200);
     });
 

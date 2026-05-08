@@ -84,7 +84,8 @@ describe('applyMatch', () => {
     });
 
     it('treats a punctuation-only pattern as no filter', () => {
-        expect(applyMatch(items, '(), .', extract)).toBe(items);
+        // '.' is preserved (so "14.1" stays atomic), so use brackets/commas only.
+        expect(applyMatch(items, '(),', extract)).toBe(items);
     });
 
     it('numeric tokens match whole-word so 14.1 does not match 14.10', () => {
@@ -119,6 +120,34 @@ describe('applyMatch', () => {
                 .map(c => c.id)
                 .sort(),
         ).toEqual(['g141', 'g142']);
+    });
+
+    it('"14.1" matches "14.1.0" (sub-version) but NOT "14.10" or "14.0.1"', () => {
+        // The previous implementation tokenised "14.1" as ["14", "1"] and matched
+        // any haystack containing both — including "14.0.1" — which broke the
+        // schema's documented contract. Dotted-numeric tokens are now atomic.
+        const compilers = [
+            {id: 'g141', name: 'GCC 14.1'},
+            {id: 'g141p', name: 'GCC 14.1.0'},
+            {id: 'g1410', name: 'GCC 14.10'},
+            {id: 'g14_0_1', name: 'GCC 14.0.1'},
+        ];
+        const matches = applyMatch(compilers, '14.1', i => [i.id, i.name])
+            .map(c => c.id)
+            .sort();
+        expect(matches).toEqual(['g141', 'g141p']);
+    });
+
+    it('a bare major like "14" matches "14" and any "14.x"', () => {
+        const compilers = [
+            {id: 'g14', name: 'GCC 14'},
+            {id: 'g141', name: 'GCC 14.1'},
+            {id: 'g15', name: 'GCC 15'},
+        ];
+        const matches = applyMatch(compilers, '14', i => [i.id, i.name])
+            .map(c => c.id)
+            .sort();
+        expect(matches).toEqual(['g14', 'g141']);
     });
 });
 
