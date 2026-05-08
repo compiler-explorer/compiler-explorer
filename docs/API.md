@@ -384,7 +384,8 @@ If JSON is present in the request's `Accept` header, the compilation results are
 ### `POST /api/shortener` - saves given state _forever_ to a shortlink and returns the unique id for the link
 
 The body of this post should be in the format of a [ClientState](../lib/clientstate.ts) Be sure that the Content-Type of
-your post is application/json
+your post is application/json. The body must be a JSON object (e.g. `{"sessions": [...]}`); a JSON string at the top
+level is not accepted.
 
 **⚠️ Important: Shell Escaping**
 

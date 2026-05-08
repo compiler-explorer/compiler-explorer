@@ -1,4 +1,4 @@
-// Copyright (c) 2021, Compiler Explorer Authors
+// Copyright (C) 2026 Hudson River Trading LLC <opensource@hudson-trading.com>
 // All rights reserved.
 //
 // Redistribution and use in source and binary forms, with or without
@@ -22,22 +22,29 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import {makeKeyedTypeGetter} from '../keyed-type.js';
-import * as all from './_all.js';
+import type {McpServer} from '@modelcontextprotocol/sdk/server/mcp.js';
 
-export * from './_all.js';
-export {BaseAssemblyDocumentationProvider} from './base.js';
+import type {ApiHandler} from '../../handlers/api.js';
 
-export const getDocumentationProviderTypeByKey = makeKeyedTypeGetter('documentation provider', all);
-
-// Flatten the static `key` of each provider (some providers expose multiple keys, e.g.
-// the ARM provider supplies both 'arm32' and 'aarch64'). Sorted for stable output.
-export const availableAsmDocsKeys: readonly string[] = (() => {
-    const keys = new Set<string>();
-    for (const provider of Object.values(all)) {
-        const k = (provider as {key?: string | string[]}).key;
-        if (Array.isArray(k)) for (const one of k) keys.add(one);
-        else if (typeof k === 'string') keys.add(k);
-    }
-    return [...keys].sort();
-})();
+export function registerLanguagesTool(server: McpServer, apiHandler: ApiHandler): void {
+    server.tool(
+        'list_languages',
+        'List supported languages. Each entry has `defaultCompiler` and `compilerCount`.',
+        async () => {
+            const languages = apiHandler.getAvailableLanguages();
+            // One pass over compilers gives us the per-language count without an N×M scan.
+            const countByLang = new Map<string, number>();
+            for (const c of apiHandler.compilers) {
+                countByLang.set(c.lang, (countByLang.get(c.lang) ?? 0) + 1);
+            }
+            const result = languages.map(lang => ({
+                id: lang.id,
+                name: lang.name,
+                extensions: lang.extensions,
+                defaultCompiler: lang.defaultCompiler,
+                compilerCount: countByLang.get(lang.id) ?? 0,
+            }));
+            return {content: [{type: 'text', text: JSON.stringify(result, null, 2)}]};
+        },
+    );
+}

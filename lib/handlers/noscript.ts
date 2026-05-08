@@ -31,7 +31,7 @@ import {ClientState} from '../clientstate.js';
 import {ClientStateNormalizer} from '../clientstate-normalizer.js';
 import {logger} from '../logger.js';
 import {ClientOptionsHandler} from '../options-handler.js';
-import {StorageBase} from '../storage/index.js';
+import {getSafeHash, StorageBase} from '../storage/index.js';
 import {RenderConfig} from './handler.interfaces.js';
 import {cached, csp} from './middleware.js';
 
@@ -254,7 +254,7 @@ export class NoScriptHandler {
     async generateShareableUrl(state: ClientState): Promise<string> {
         try {
             // Creating the stored object like the main handler does
-            const {config, configHash} = StorageBase.getSafeHash(state);
+            const {config, configHash} = getSafeHash(state);
 
             // Finding or create the unique subhash
             const result = await this.storageHandler.findUniqueSubhash(configHash);
