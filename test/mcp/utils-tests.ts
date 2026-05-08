@@ -182,6 +182,39 @@ describe('applyCap', () => {
         expect(result.leanMode).toBe(true);
         expect(result.hint).toBeUndefined();
     });
+
+    describe('lean hard cap', () => {
+        const big = Array.from({length: 250}, (_, i) => ({id: `c${i}`, name: `Compiler ${i}`}));
+
+        it('caps lean response at LEAN_HARD_CAP (200) when total exceeds it', () => {
+            // Auto-degrade path: small maxResults forces lean, big input triggers hard cap.
+            const result = applyCap(big, 25, x => x, 'compilers');
+            expect(result.items).toHaveLength(200);
+            expect(result.total).toBe(250);
+            expect(result.leanMode).toBe(true);
+            expect(result.hint).toMatch(/250 compilers matched/);
+            expect(result.hint).toMatch(/first 200/);
+            expect(result.hint).toMatch(/Refine with/);
+        });
+
+        it('caps lean response at LEAN_HARD_CAP when forceLean is set', () => {
+            const result = applyCap(big, 1000, x => x, 'compilers', undefined, true);
+            expect(result.items).toHaveLength(200);
+            expect(result.total).toBe(250);
+            expect(result.leanMode).toBe(true);
+            expect(result.hint).toMatch(/Lean response capped at 200 of 250/);
+        });
+
+        it('does not cap when total is at or below the hard cap', () => {
+            const small = Array.from({length: 200}, (_, i) => ({id: `c${i}`, name: `C${i}`}));
+            const result = applyCap(small, 25, x => x, 'compilers');
+            expect(result.items).toHaveLength(200);
+            expect(result.leanMode).toBe(true);
+            // Hint mentions the full-cap degradation but not truncation.
+            expect(result.hint).toMatch(/200 compilers exceeded the full-detail cap/);
+            expect(result.hint).not.toMatch(/first 200/);
+        });
+    });
 });
 
 describe('truncateLines', () => {
@@ -205,5 +238,18 @@ describe('truncateLines', () => {
 
     it('does not flag truncation at exact cap', () => {
         expect(truncateLines(lines, 4)).toEqual({text: 'a\nb\nc\nd', truncated: false, totalLines: 4});
+    });
+
+    it('strips ANSI colour codes from line text', () => {
+        // Real gcc diagnostic shape captured from a staging compile — colour escapes
+        // make the output noisy for an LLM consumer that doesn't have a terminal.
+        const ESC = '\x1B';
+        const ansiLines = [
+            {text: `${ESC}[01m${ESC}[K<source>:${ESC}[m${ESC}[K In function`},
+            {text: `${ESC}[01;31m${ESC}[Kerror: ${ESC}[m${ESC}[K'foo' was not declared`},
+        ];
+        const result = truncateLines(ansiLines, 10);
+        expect(result.text).toBe("<source>: In function\nerror: 'foo' was not declared");
+        expect(result.text).not.toContain(ESC);
     });
 });

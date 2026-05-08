@@ -23,6 +23,14 @@
 // POSSIBILITY OF SUCH DAMAGE.
 
 import type {ResultLine} from '../../types/resultline/resultline.interfaces.js';
+import {filterEscapeSequences} from '../utils.js';
+
+// Absolute upper bound on items returned in lean mode. Without this, calling
+// list_compilers without filters can return 1000+ entries (~88KB just for c++,
+// 23k+ lines globally) and overwhelm the LLM caller's response limit. With the
+// cap an unfiltered call still returns SOMETHING usable, plus a hint pushing
+// the agent to refine via match / language / instructionSet / latestPerMajor.
+const LEAN_HARD_CAP = 200;
 
 // Replace anything that isn't alphanumeric or '+' (kept for "c++") with whitespace,
 // then collapse runs of whitespace. Lets "x86-64 gcc trunk" match "x86-64 gcc (trunk)".
@@ -67,13 +75,18 @@ const defaultLeanMap = <T extends {id: string; name?: string}>(item: T): LeanSha
 });
 
 /**
- * Caller-requested lean mode (`forceLean: true`) returns all items mapped through
+ * Caller-requested lean mode (`forceLean: true`) returns items mapped through
  * `leanMap` (defaults to `{id, name}`) — useful for browsing the catalog index
  * before drilling down by exact id, without first overflowing the response.
  *
  * Otherwise, below `maxResults` returns items mapped through `fullMap` (the
  * full-detail shape). At or above the cap, degrades to lean mode automatically
  * with a `leanMode: true` marker plus an LLM-facing hint suggesting refinement.
+ *
+ * In every lean path the response is hard-capped at `LEAN_HARD_CAP` items so a
+ * very broad query still returns a useful (truncated) list rather than a
+ * megabyte of JSON the host MCP client will reject. The hint always carries the
+ * `total` so the caller knows refinement is needed.
  */
 export function applyCap<T extends {id: string; name?: string}, F, L = LeanShape>(
     items: T[],
@@ -84,24 +97,39 @@ export function applyCap<T extends {id: string; name?: string}, F, L = LeanShape
     forceLean = false,
 ): CappedResult<F, L> {
     const lean = leanMap ?? (defaultLeanMap as unknown as (item: T) => L);
-    if (forceLean) {
-        return {
-            items: items.map(lean),
-            total: items.length,
-            leanMode: true,
-        };
+    const total = items.length;
+    const exceedsFullCap = total > maxResults;
+    const useLean = forceLean || exceedsFullCap;
+
+    if (!useLean) {
+        return {items: items.map(fullMap), total};
     }
-    if (items.length <= maxResults) {
-        return {items: items.map(fullMap), total: items.length};
-    }
-    return {
-        items: items.map(lean),
-        total: items.length,
-        leanMode: true,
-        hint:
-            `${items.length} ${entityName} exceeded the full-detail cap of ${maxResults}; showing id and name only. ` +
+
+    const truncated = total > LEAN_HARD_CAP;
+    const kept = truncated ? items.slice(0, LEAN_HARD_CAP) : items;
+
+    let hint: string | undefined;
+    if (exceedsFullCap && truncated) {
+        hint =
+            `${total} ${entityName} matched and the response is too large to return in full; ` +
+            `showing the first ${LEAN_HARD_CAP} (id and name only). Refine with \`match\`, \`language\`, ` +
+            '`instructionSet`, or `latestPerMajor` to narrow the result.';
+    } else if (exceedsFullCap) {
+        hint =
+            `${total} ${entityName} exceeded the full-detail cap of ${maxResults}; showing id and name only. ` +
             'Refine your filter (e.g. add a version or architecture), use `lean: true` explicitly to confirm ' +
-            'this shape, or query again with the exact id for full details.',
+            'this shape, or query again with the exact id for full details.';
+    } else if (truncated) {
+        hint =
+            `Lean response capped at ${LEAN_HARD_CAP} of ${total} ${entityName}; refine your filter ` +
+            '(`match`, `language`, `instructionSet`) to see the rest.';
+    }
+
+    return {
+        items: kept.map(lean),
+        total,
+        leanMode: true,
+        ...(hint && {hint}),
     };
 }
 
@@ -115,8 +143,10 @@ export function truncateLines(lines: ResultLine[] | null | undefined, maxLines: 
     const all = lines || [];
     const truncated = all.length > maxLines;
     const kept = truncated ? all.slice(0, maxLines) : all;
+    // Strip ANSI escape sequences (gcc/clang colour their diagnostics; MCP
+    // consumers don't have terminals so the codes are pure noise).
     return {
-        text: kept.map(line => line.text).join('\n'),
+        text: kept.map(line => filterEscapeSequences(line.text)).join('\n'),
         truncated,
         totalLines: all.length,
     };

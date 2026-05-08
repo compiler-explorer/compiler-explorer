@@ -346,6 +346,59 @@ describe('MCP list_compilers tool', () => {
         expect(parsed.hint).toBeUndefined();
     });
 
+    it('filters by instructionSet before applying match', async () => {
+        const {fakeServer, toolHandlers} = makeFakeServer();
+        const apiHandler = {
+            compilers: [
+                makeCompiler('g142_amd64', 'c++', {instructionSet: 'amd64'}),
+                makeCompiler('g142_arm', 'c++', {instructionSet: 'aarch64'}),
+                makeCompiler('rustc', 'rust', {instructionSet: 'amd64'}),
+            ],
+        } as unknown as ApiHandler;
+        registerCompilersTool(fakeServer, apiHandler);
+
+        const result = await toolHandlers.list_compilers({language: 'c++', instructionSet: 'amd64'});
+        const parsed = JSON.parse(result.content[0].text);
+        expect(parsed.compilers.map((c: any) => c.id)).toEqual(['g142_amd64']);
+    });
+
+    it('instructionSet + latestPerMajor cleanly answers "newest x86-64 GCC"', async () => {
+        const {fakeServer, toolHandlers} = makeFakeServer();
+        const apiHandler = {
+            compilers: [
+                // amd64 entries — should appear
+                makeCompiler('g142', 'c++', {
+                    isSemVer: true,
+                    semver: '14.2',
+                    instructionSet: 'amd64',
+                    releaseTrack: 'stable',
+                }),
+                makeCompiler('g161', 'c++', {
+                    isSemVer: true,
+                    semver: '16.1',
+                    instructionSet: 'amd64',
+                    releaseTrack: 'stable',
+                }),
+                // arm64 entries — should be filtered out
+                makeCompiler('garm161', 'c++', {
+                    isSemVer: true,
+                    semver: '16.1',
+                    instructionSet: 'aarch64',
+                    releaseTrack: 'stable',
+                }),
+            ],
+        } as unknown as ApiHandler;
+        registerCompilersTool(fakeServer, apiHandler);
+
+        const result = await toolHandlers.list_compilers({
+            language: 'c++',
+            instructionSet: 'amd64',
+            latestPerMajor: true,
+        });
+        const parsed = JSON.parse(result.content[0].text);
+        expect(parsed.compilers.map((c: any) => c.id).sort()).toEqual(['g142', 'g161']);
+    });
+
     it('latestPerMajor: stable compilers grouped by (instructionSet, major), newest per major wins', async () => {
         const {fakeServer, toolHandlers} = makeFakeServer();
         const apiHandler = {

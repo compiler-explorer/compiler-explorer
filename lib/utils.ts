@@ -126,7 +126,7 @@ export function changeExtension(filename: string, newExtension: string): string 
 const ansiColoursRe = /\x1B\[[\d;]*[Km]/g;
 const terminalHyperlinkEscapeRe = /\x1B]8;;.*?(\x1B\\|\x07)(.*?)\x1B]8;;\1/g;
 
-function filterEscapeSequences(line: string): string {
+export function filterEscapeSequences(line: string): string {
     return line.replaceAll(ansiColoursRe, '').replaceAll(terminalHyperlinkEscapeRe, '$2');
 }
 

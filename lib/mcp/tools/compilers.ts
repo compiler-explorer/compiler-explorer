@@ -105,6 +105,15 @@ export function registerCompilersTool(server: McpServer, apiHandler: ApiHandler)
         'List available compilers, optionally filtered by language',
         {
             language: z.string().optional().describe('Language ID to filter by (e.g. "c++", "rust", "python")'),
+            instructionSet: z
+                .string()
+                .optional()
+                .describe(
+                    'Instruction set / target architecture to filter by (e.g. "amd64", "aarch64", "arm32", ' +
+                        '"riscv64", "wasm32", "ebpf"). Recommended for languages with many architectures: ' +
+                        '`{language: "c++", instructionSet: "amd64", latestPerMajor: true}` is the cleanest way to ' +
+                        'ask "what is the newest x86-64 GCC/Clang/etc."',
+                ),
             match: z
                 .string()
                 .optional()
@@ -115,10 +124,9 @@ export function registerCompilersTool(server: McpServer, apiHandler: ApiHandler)
                         '"x86-64 gcc trunk" matches "x86-64 gcc (trunk)". Numeric tokens match whole-word, so ' +
                         '"gcc 14.1" matches "x86-64 gcc 14.1.0" but NOT "x86-64 gcc 14.10"; alphanumeric tokens ' +
                         'still substring-match, so "g14" finds "g142". Note: this is a literal text filter — ' +
-                        '"gcc 15" excludes gcc 16.x, so to find the newest version use `latestPerMajor: true` or ' +
-                        'browse with `lean: true`. For broad searches that match hundreds of compilers, the ' +
-                        'response degrades to lean mode (id+name only); refine further or use `lean: true` ' +
-                        'explicitly.',
+                        '"gcc 15" excludes gcc 16.x, so to find the newest version use `latestPerMajor: true`. ' +
+                        'For "what is the newest X for arch Y" the cleanest combination is ' +
+                        '`{language, instructionSet, latestPerMajor: true}` — no `match` needed.',
                 ),
             maxResults: z
                 .number()
@@ -158,9 +166,11 @@ export function registerCompilersTool(server: McpServer, apiHandler: ApiHandler)
                         'the newest X" without being release-track-comparable.',
                 ),
         },
-        async ({language, match, maxResults, lean, latestPerMajor, includeExperimental}) => {
-            const byLang = language ? apiHandler.compilers.filter(c => c.lang === language) : apiHandler.compilers;
-            const matched = applyMatch(byLang, match, c => [c.id, c.name]);
+        async ({language, instructionSet, match, maxResults, lean, latestPerMajor, includeExperimental}) => {
+            let pool = apiHandler.compilers;
+            if (language) pool = pool.filter(c => c.lang === language);
+            if (instructionSet) pool = pool.filter(c => c.instructionSet === instructionSet);
+            const matched = applyMatch(pool, match, c => [c.id, c.name]);
             let filtered = matched;
             let droppedExperimental = 0;
             if (latestPerMajor) {
