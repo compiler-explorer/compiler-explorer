@@ -29,6 +29,7 @@ import {beforeEach, describe, expect, it, vi} from 'vitest';
 import type {ApiHandler} from '../../lib/handlers/api.js';
 import type {CompileHandler} from '../../lib/handlers/compile.js';
 import {setupMcpEndpoint} from '../../lib/mcp/index.js';
+import {registerAsmDocsTool} from '../../lib/mcp/tools/asm-docs.js';
 import {registerCompileTool} from '../../lib/mcp/tools/compile.js';
 import {registerCompilersTool} from '../../lib/mcp/tools/compilers.js';
 import {registerLanguagesTool} from '../../lib/mcp/tools/languages.js';
@@ -73,11 +74,11 @@ describe('MCP endpoint', () => {
     });
 
     it('returns 405 for GET', async () => {
-        await request(app).get('/mcp').expect(405).expect('Allow', 'POST');
+        await request(app).get('/mcp').expect(405).expect('Allow', 'POST, OPTIONS');
     });
 
     it('returns 405 for DELETE', async () => {
-        await request(app).delete('/mcp').expect(405).expect('Allow', 'POST');
+        await request(app).delete('/mcp').expect(405).expect('Allow', 'POST, OPTIONS');
     });
 
     it('OPTIONS preflight advertises Allow-Methods (browser clients need this for cross-origin POST)', async () => {
@@ -968,5 +969,39 @@ describe('MCP list_languages tool', () => {
         const parsed = JSON.parse(result.content[0].text);
         const byId = Object.fromEntries(parsed.map((l: any) => [l.id, l.compilerCount]));
         expect(byId).toEqual({'c++': 2, rust: 1, cobol: 0});
+    });
+});
+
+describe('MCP lookup_asm_instruction tool', () => {
+    it('returns documentation for a known opcode on a known instruction set', async () => {
+        const {fakeServer, toolHandlers} = makeFakeServer();
+        registerAsmDocsTool(fakeServer);
+
+        // MOV on amd64 is in the Intel docs that ship with CE.
+        const result = await toolHandlers.lookup_asm_instruction({instruction_set: 'amd64', opcode: 'MOV'});
+        expect(result.isError).toBeUndefined();
+        const parsed = JSON.parse(result.content[0].text);
+        expect(parsed).toHaveProperty('html');
+        expect(parsed).toHaveProperty('tooltip');
+    });
+
+    it('lowercase opcode is upper-cased before lookup', async () => {
+        const {fakeServer, toolHandlers} = makeFakeServer();
+        registerAsmDocsTool(fakeServer);
+
+        const result = await toolHandlers.lookup_asm_instruction({instruction_set: 'amd64', opcode: 'mov'});
+        expect(result.isError).toBeUndefined();
+    });
+
+    it('returns isError for an unknown opcode on a valid instruction set', async () => {
+        const {fakeServer, toolHandlers} = makeFakeServer();
+        registerAsmDocsTool(fakeServer);
+
+        const result = await toolHandlers.lookup_asm_instruction({
+            instruction_set: 'amd64',
+            opcode: 'NOTAREALOPCODE',
+        });
+        expect(result.isError).toBe(true);
+        expect(result.content[0].text).toMatch(/No documentation found/);
     });
 });

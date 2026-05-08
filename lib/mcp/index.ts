@@ -115,11 +115,11 @@ export function setupMcpEndpoint(
     });
 
     router.get('/mcp', cors, (_req, res) => {
-        res.status(405).set('Allow', 'POST').send('Method Not Allowed');
+        res.status(405).set('Allow', 'POST, OPTIONS').send('Method Not Allowed');
     });
 
     router.delete('/mcp', cors, (_req, res) => {
-        res.status(405).set('Allow', 'POST').send('Method Not Allowed');
+        res.status(405).set('Allow', 'POST, OPTIONS').send('Method Not Allowed');
     });
 
     logger.info('MCP endpoint registered at /mcp');
