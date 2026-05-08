@@ -25,6 +25,7 @@
 import * as express from 'express';
 import {profanities} from 'profanities';
 
+import {assert} from '../assert.js';
 import {logger} from '../logger.js';
 import {PropertyGetter} from '../properties.interfaces.js';
 import {CompilerProps} from '../properties.js';
@@ -62,7 +63,17 @@ function getRawConfigHash(config: any) {
     return encodeBuffer(utils.getBinaryHash(JSON.stringify(config), FILE_HASH_VERSION));
 }
 
-export function getSafeHash(inputConfig: any) {
+export function getSafeHash(inputConfig: Record<string, any>) {
+    // Reject anything that isn't a non-null object up-front. Spread of a string
+    // would silently produce a per-character map ({0: 'h', 1: 'i', ...}) and
+    // hash that instead of the original; spread of null/undefined would yield
+    // {} and hash an empty object. All in-tree call sites pass plain objects
+    // (or class instances without toJSON, which behave identically under
+    // JSON.stringify), so this is purely a defence against future drift.
+    assert(
+        inputConfig !== null && typeof inputConfig === 'object' && !Array.isArray(inputConfig),
+        `getSafeHash: expected a non-null object, got ${inputConfig === null ? 'null' : typeof inputConfig}`,
+    );
     // Shallow-clone so the nonce-rehashing loop doesn't mutate the caller's
     // object. The nonce is added at the top level only, so a shallow copy is
     // enough; the returned `config` string includes it via JSON.stringify.

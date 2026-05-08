@@ -65,4 +65,22 @@ describe('Hash tests', () => {
         const asObj = JSON.parse(config);
         expect(asObj).not.toHaveProperty('nonce');
     });
+
+    it('should reject non-object inputs', () => {
+        // Spread of a string would silently produce {0:'h',1:'i',...} and hash that.
+        // Spread of null/undefined would yield {} and hash an empty object. Reject loudly.
+        expect(() => getSafeHash('hello' as any)).toThrow(/expected a non-null object/);
+        expect(() => getSafeHash(null as any)).toThrow(/expected a non-null object/);
+        expect(() => getSafeHash(undefined as any)).toThrow(/expected a non-null object/);
+        expect(() => getSafeHash(42 as any)).toThrow(/expected a non-null object/);
+        expect(() => getSafeHash([1, 2, 3] as any)).toThrow(/expected a non-null object/);
+    });
+
+    it('should not mutate the input object', () => {
+        const testCase: any = {some: 'test'};
+        const before = JSON.stringify(testCase);
+        getSafeHash(testCase);
+        expect(JSON.stringify(testCase)).toBe(before);
+        expect(testCase).not.toHaveProperty('nonce');
+    });
 });
