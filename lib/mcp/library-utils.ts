@@ -29,6 +29,8 @@
 type LibraryVersion = {id: string; version: string};
 type Library = {id: string; versions: LibraryVersion[]};
 
+export type LibraryRequest = {id: string; version: string};
+
 export type NormaliseSuccess = {ok: true; version: string};
 export type NormaliseFailure = {
     ok: false;
@@ -56,4 +58,44 @@ export function normaliseLibraryVersion(libraries: Library[], libId: string, use
         reason: 'unknown-version',
         available: lib.versions.map(v => ({id: v.id, version: v.version})),
     };
+}
+
+/**
+ * Normalise a whole list of library requests in one go. Wraps `normaliseLibraryVersion`
+ * so the per-tool call sites stay short and the error messages stay consistent across
+ * tools. If `knownLibraries` is empty (library metadata not loaded yet), the requests
+ * are passed through untouched — the downstream pipeline will fail loudly enough.
+ */
+export function normaliseRequestLibraries(
+    knownLibraries: Library[],
+    language: string,
+    requests: LibraryRequest[],
+): {ok: true; libraries: LibraryRequest[]} | {ok: false; errorText: string} {
+    if (knownLibraries.length === 0) return {ok: true, libraries: requests};
+    const libraries: LibraryRequest[] = [];
+    for (const req of requests) {
+        const result = normaliseLibraryVersion(knownLibraries, req.id, req.version);
+        if (result.ok) {
+            libraries.push({id: req.id, version: result.version});
+        } else if (result.reason === 'unknown-library') {
+            return {
+                ok: false,
+                errorText: `Library "${req.id}" not found for language "${language}". Call list_libraries to find a valid library id.`,
+            };
+        } else {
+            const sample = (result.available ?? [])
+                .slice(0, 5)
+                .map(v => `${v.id} (${v.version})`)
+                .join(', ');
+            const more = (result.available ?? []).length > 5 ? ', ...' : '';
+            return {
+                ok: false,
+                errorText:
+                    `Version "${req.version}" not found for library "${req.id}". ` +
+                    `Pass either the version id or the human version. Available include: ${sample}${more}. ` +
+                    `Call list_libraries with \`match: "${req.id}"\` for the full list.`,
+            };
+        }
+    }
+    return {ok: true, libraries};
 }

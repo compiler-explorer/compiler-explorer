@@ -24,7 +24,7 @@
 
 import {describe, expect, it} from 'vitest';
 
-import {normaliseLibraryVersion} from '../../lib/mcp/library-utils.js';
+import {normaliseLibraryVersion, normaliseRequestLibraries} from '../../lib/mcp/library-utils.js';
 
 const libraries = [
     {
@@ -65,6 +65,47 @@ describe('normaliseLibraryVersion', () => {
             ]);
         } else {
             throw new Error('expected unknown-version failure');
+        }
+    });
+});
+
+describe('normaliseRequestLibraries', () => {
+    it('normalises a mix of id-form and human-form requests in one call', () => {
+        const result = normaliseRequestLibraries(libraries, 'c++', [
+            {id: 'boost', version: '188'},
+            {id: 'fmt', version: '11.0.0'},
+        ]);
+        expect(result).toEqual({
+            ok: true,
+            libraries: [
+                {id: 'boost', version: '188'},
+                {id: 'fmt', version: '1100'},
+            ],
+        });
+    });
+
+    it('passes requests through untouched when knownLibraries is empty', () => {
+        const requests = [{id: 'boost', version: 'whatever'}];
+        const result = normaliseRequestLibraries([], 'c++', requests);
+        expect(result).toEqual({ok: true, libraries: requests});
+    });
+
+    it('returns a clean error for an unknown library, naming list_libraries', () => {
+        const result = normaliseRequestLibraries(libraries, 'c++', [{id: 'banana', version: '1.0'}]);
+        expect(result.ok).toBe(false);
+        if (!result.ok) {
+            expect(result.errorText).toMatch(/Library "banana" not found/);
+            expect(result.errorText).toMatch(/list_libraries/);
+        }
+    });
+
+    it('returns a clean error for an unknown version, naming sample versions', () => {
+        const result = normaliseRequestLibraries(libraries, 'c++', [{id: 'boost', version: '99.0.0'}]);
+        expect(result.ok).toBe(false);
+        if (!result.ok) {
+            expect(result.errorText).toMatch(/Version "99.0.0" not found/);
+            expect(result.errorText).toMatch(/188 \(1\.88\.0\)/);
+            expect(result.errorText).toMatch(/match: "boost"/);
         }
     });
 });

@@ -50,9 +50,15 @@ export function registerAsmDocsTool(server: McpServer): void {
                     isError: true,
                 };
             } catch (e) {
+                // z.enum already rejects unknown instruction sets at validation, so a
+                // throw from here is an internal failure (e.g. the docs provider blew
+                // up while constructing or while parsing a malformed opcode).
                 return {
                     content: [
-                        {type: 'text', text: `Unknown instruction set: ${instruction_set}. ${(e as Error).message}`},
+                        {
+                            type: 'text',
+                            text: `Failed to look up ${opcode} on ${instruction_set}: ${(e as Error).message}`,
+                        },
                     ],
                     isError: true,
                 };

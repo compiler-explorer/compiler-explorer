@@ -29,7 +29,7 @@ import {BypassCache} from '../../../types/compilation/compilation.interfaces.js'
 import type {LanguageKey} from '../../../types/languages.interfaces.js';
 import type {ApiHandler} from '../../handlers/api.js';
 import {CompileHandler} from '../../handlers/compile.js';
-import {normaliseLibraryVersion} from '../library-utils.js';
+import {normaliseRequestLibraries} from '../library-utils.js';
 import {truncateLines} from '../utils.js';
 
 const DEFAULT_MAX_ASM_LINES = 500;
@@ -117,58 +117,21 @@ export function registerCompileTool(server: McpServer, compileHandler: CompileHa
             maxStderrLines,
         }) => {
             // Normalise library versions: accept either the version id ("188") or the
-            // human form ("1.88.0"). If the library is unknown or the version doesn't
-            // match either form, surface a clean error here rather than letting the
-            // compile pipeline fail opaquely deep inside the build.
-            const normalisedLibraries: Array<{id: string; version: string}> = [];
+            // human form ("1.88.0"). Surface unknown-library / unknown-version errors
+            // here, rather than letting the compile pipeline fail opaquely.
+            let normalisedLibraries: Array<{id: string; version: string}> = libraries ?? [];
             if (libraries && libraries.length > 0) {
                 let knownLibraries: ReturnType<ApiHandler['getLibrariesAsArray']>;
                 try {
                     knownLibraries = apiHandler.getLibrariesAsArray(language as LanguageKey);
                 } catch {
-                    // Library metadata not loaded — fall back to passing through unchanged.
                     knownLibraries = [];
                 }
-                for (const lib of libraries) {
-                    if (knownLibraries.length === 0) {
-                        normalisedLibraries.push(lib);
-                        continue;
-                    }
-                    const result = normaliseLibraryVersion(knownLibraries, lib.id, lib.version);
-                    if (result.ok) {
-                        normalisedLibraries.push({id: lib.id, version: result.version});
-                    } else if (result.reason === 'unknown-library') {
-                        return {
-                            content: [
-                                {
-                                    type: 'text',
-                                    text: `Library "${lib.id}" not found for language "${language}". Call list_libraries to find a valid library id.`,
-                                },
-                            ],
-                            isError: true,
-                        };
-                    } else {
-                        const sample = (result.available ?? [])
-                            .slice(0, 5)
-                            .map(v => `${v.id} (${v.version})`)
-                            .join(', ');
-                        return {
-                            content: [
-                                {
-                                    type: 'text',
-                                    text:
-                                        `Version "${lib.version}" not found for library "${lib.id}". ` +
-                                        `Pass either the version id or the human version. Available include: ${sample}` +
-                                        ((result.available ?? []).length > 5 ? ', ...' : '') +
-                                        '. Call list_libraries with `match: "' +
-                                        lib.id +
-                                        '"` for the full list.',
-                                },
-                            ],
-                            isError: true,
-                        };
-                    }
+                const result = normaliseRequestLibraries(knownLibraries, language, libraries);
+                if (!result.ok) {
+                    return {content: [{type: 'text', text: result.errorText}], isError: true};
                 }
+                normalisedLibraries = result.libraries;
             }
 
             // Resolve language default if no compiler specified.
@@ -205,7 +168,7 @@ export function registerCompileTool(server: McpServer, compileHandler: CompileHa
                         compilerOptions: {executorRequest: !!execute},
                         filters: filters || {},
                         tools: [],
-                        libraries: libraries || [],
+                        libraries: normalisedLibraries,
                         executeParameters: {
                             args: [],
                             stdin: stdin || '',

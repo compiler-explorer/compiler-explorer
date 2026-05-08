@@ -32,7 +32,7 @@ import type {ApiHandler} from '../../handlers/api.js';
 import {logger} from '../../logger.js';
 import type {StorageBase} from '../../storage/base.js';
 import {getSafeHash} from '../../storage/base.js';
-import {normaliseLibraryVersion} from '../library-utils.js';
+import {normaliseRequestLibraries} from '../library-utils.js';
 
 // CE shortlinks save the canonical "config" shape used by the web app, where each
 // compiler entry uses {id, options, libs:[{id, ver}]}. The MCP `compile` tool accepts
@@ -84,9 +84,8 @@ export function registerShortlinkTools(
         async ({source, language, compiler, options, libraries}) => {
             try {
                 // Normalise library versions before saving so the resulting shortlink
-                // always carries the canonical version id, regardless of which form
-                // the caller passed.
-                const storedLibs: Array<{id: string; ver: string}> = [];
+                // always carries the canonical version id regardless of input form.
+                let storedLibs: Array<{id: string; ver: string}> = [];
                 if (libraries && libraries.length > 0) {
                     let knownLibraries: ReturnType<ApiHandler['getLibrariesAsArray']>;
                     try {
@@ -94,44 +93,11 @@ export function registerShortlinkTools(
                     } catch {
                         knownLibraries = [];
                     }
-                    for (const lib of libraries) {
-                        if (knownLibraries.length === 0) {
-                            storedLibs.push({id: lib.id, ver: lib.version});
-                            continue;
-                        }
-                        const result = normaliseLibraryVersion(knownLibraries, lib.id, lib.version);
-                        if (result.ok) {
-                            storedLibs.push({id: lib.id, ver: result.version});
-                        } else if (result.reason === 'unknown-library') {
-                            return {
-                                content: [
-                                    {
-                                        type: 'text',
-                                        text: `Library "${lib.id}" not found for language "${language}". Call list_libraries to find a valid library id.`,
-                                    },
-                                ],
-                                isError: true,
-                            };
-                        } else {
-                            const sample = (result.available ?? [])
-                                .slice(0, 5)
-                                .map(v => `${v.id} (${v.version})`)
-                                .join(', ');
-                            return {
-                                content: [
-                                    {
-                                        type: 'text',
-                                        text:
-                                            `Version "${lib.version}" not found for library "${lib.id}". ` +
-                                            `Pass either the version id or the human version. Available include: ${sample}` +
-                                            ((result.available ?? []).length > 5 ? ', ...' : '') +
-                                            '.',
-                                    },
-                                ],
-                                isError: true,
-                            };
-                        }
+                    const result = normaliseRequestLibraries(knownLibraries, language, libraries);
+                    if (!result.ok) {
+                        return {content: [{type: 'text', text: result.errorText}], isError: true};
                     }
+                    storedLibs = result.libraries.map(l => ({id: l.id, ver: l.version}));
                 }
                 const config = {
                     sessions: [
@@ -176,8 +142,10 @@ export function registerShortlinkTools(
 
     server.tool(
         'get_shortlink_info',
-        'Retrieve source and compiler configuration from a CE short URL. Each compiler entry uses ' +
-            "the `compile` tool's shape ({compiler, options, libraries:[{id, version}]}) for direct round-tripping.",
+        'Retrieve source and compiler config from a CE short URL. Compiler entries are returned in the ' +
+            "`compile` tool's shape ({compiler, options, libraries:[{id, version}]}). Multi-pane shortlinks " +
+            '(executors, conformance views, CMake trees, per-compiler filters/tools) are flattened — only ' +
+            'the basic compile inputs survive.',
         {
             id: z
                 .string()
