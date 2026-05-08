@@ -65,7 +65,7 @@ export class InstructionSets {
             },
             hppa: {
                 target: ['hppa'],
-                path: ['/hppa-', '/hppa-unknown-linux-gnu-'],
+                path: ['/hppa-'],
             },
             kvx: {
                 target: ['kvx'],
