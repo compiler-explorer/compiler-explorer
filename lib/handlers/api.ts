@@ -174,6 +174,11 @@ export class ApiHandler {
         });
     }
 
+    /** Resolve the default compiler id for a language, or undefined if none configured. */
+    getDefaultCompilerFor(languageId: LanguageKey): string | undefined {
+        return this.options?.options.defaultCompiler[languageId];
+    }
+
     filterCompilerProperties(list: CompilerInfo[] | Language[], selectedFields: string[]) {
         return list.map(compiler => {
             return _.pick(compiler, selectedFields);

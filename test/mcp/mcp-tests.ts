@@ -709,7 +709,7 @@ describe('MCP compile tool', () => {
     // or library-version normalisation), so a stub that returns no languages / no
     // libraries is enough. Tests that DO exercise those paths build their own.
     const fakeApiForCompile = {
-        languages: {},
+        getDefaultCompilerFor: () => undefined,
         getLibrariesAsArray: () => [],
     } as unknown as ApiHandler;
 
@@ -860,7 +860,7 @@ describe('MCP compile tool', () => {
         const compileHandler = makeCompileHandler(['ret']);
         const findCompilerSpy = vi.spyOn(compileHandler, 'findCompiler');
         const apiHandler = {
-            languages: {'c++': {defaultCompiler: 'g161'}},
+            getDefaultCompilerFor: () => 'g161',
             getLibrariesAsArray: () => [],
         } as unknown as ApiHandler;
         registerCompileTool(fakeServer, compileHandler, apiHandler);
@@ -873,7 +873,10 @@ describe('MCP compile tool', () => {
     it('errors clearly when no compiler is given and no default exists', async () => {
         const {fakeServer, toolHandlers} = makeFakeServer();
         const compileHandler = makeCompileHandler(['ret']);
-        const apiHandler = {languages: {}, getLibrariesAsArray: () => []} as unknown as ApiHandler;
+        const apiHandler = {
+            getDefaultCompilerFor: () => undefined,
+            getLibrariesAsArray: () => [],
+        } as unknown as ApiHandler;
         registerCompileTool(fakeServer, compileHandler, apiHandler);
 
         const result = await toolHandlers.compile({source: 'x', language: 'wat'});
@@ -881,12 +884,14 @@ describe('MCP compile tool', () => {
         expect(result.content[0].text).toMatch(/No compiler specified.*language "wat"/);
     });
 
-    it('normalises a human library version (1.88.0) to its id (188)', async () => {
+    it('normalises a human library version (1.88.0) to its id (188) and reaches baseCompiler.compile', async () => {
         const {fakeServer, toolHandlers} = makeFakeServer();
         const compileHandler = makeCompileHandler(['ret']);
-        const findCompilerSpy = vi.spyOn(compileHandler, 'findCompiler');
+        // findCompiler returns the same fakeBaseCompiler each call; spy on its compile().
+        const baseCompiler = compileHandler.findCompiler('c++' as any, 'g161');
+        const compileSpy = vi.spyOn(baseCompiler!, 'compile');
         const apiHandler = {
-            languages: {'c++': {defaultCompiler: 'g161'}},
+            getDefaultCompilerFor: () => 'g161',
             getLibrariesAsArray: () => [{id: 'boost', versions: [{id: '188', version: '1.88.0'}]}],
         } as unknown as ApiHandler;
         registerCompileTool(fakeServer, compileHandler, apiHandler);
@@ -897,17 +902,17 @@ describe('MCP compile tool', () => {
             libraries: [{id: 'boost', version: '1.88.0'}],
         });
         expect(result.isError).toBeUndefined();
-        // The 4th arg (parseRequestReusable's body.options) is internal; just verify
-        // the call succeeded without error. The version normalisation happens before
-        // findCompiler, and findCompiler still sees the right compiler id.
-        expect(findCompilerSpy).toHaveBeenCalled();
+        // The 8th positional arg of baseCompiler.compile(...) is parsed libraries;
+        // human "1.88.0" should have been normalised to id "188" before reaching it.
+        const passedLibraries = compileSpy.mock.calls[0][7];
+        expect(passedLibraries).toEqual([{id: 'boost', version: '188'}]);
     });
 
     it('errors clearly on an unknown library version (neither id nor human form)', async () => {
         const {fakeServer, toolHandlers} = makeFakeServer();
         const compileHandler = makeCompileHandler(['ret']);
         const apiHandler = {
-            languages: {'c++': {defaultCompiler: 'g161'}},
+            getDefaultCompilerFor: () => 'g161',
             getLibrariesAsArray: () => [
                 {
                     id: 'boost',

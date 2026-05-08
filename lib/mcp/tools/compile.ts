@@ -135,7 +135,7 @@ export function registerCompileTool(server: McpServer, compileHandler: CompileHa
             }
 
             // Resolve language default if no compiler specified.
-            const resolvedCompilerId = compilerId ?? apiHandler.languages[language as LanguageKey]?.defaultCompiler;
+            const resolvedCompilerId = compilerId ?? apiHandler.getDefaultCompilerFor(language as LanguageKey);
             if (!resolvedCompilerId) {
                 return {
                     content: [
