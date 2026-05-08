@@ -58,7 +58,12 @@ function pickLatest(
     for (const c of compilers) {
         switch (c.releaseTrack) {
             case 'stable': {
-                const groupKey = `${c.lang}\0${c.instructionSet ?? ''}`;
+                // Bucket by (lang, instructionSet, group) so different compiler families
+                // that happen to share an arch tag (e.g. an upstream gcc release and a
+                // mis-tagged cross-compiler that share major 16) don't fight for the
+                // same slot. Without `group`, an HPPA cross-compiler tagged amd64 would
+                // hijack the x86-64 GCC slot for its semver-major.
+                const groupKey = `${c.lang}\0${c.instructionSet ?? ''}\0${c.group ?? ''}`;
                 let bucket = stableBuckets.get(groupKey);
                 if (!bucket) {
                     bucket = new Map();

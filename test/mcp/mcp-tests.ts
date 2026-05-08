@@ -461,6 +461,36 @@ describe('MCP list_compilers tool', () => {
         expect(parsed.compilers.map((c: any) => c.id).sort()).toEqual(['g142', 'g161']);
     });
 
+    it('latestPerMajor: distinct groups with the same arch+major do NOT compete (e.g. x86-64 gcc vs a mis-tagged HPPA gcc)', async () => {
+        const {fakeServer, toolHandlers} = makeFakeServer();
+        const apiHandler = {
+            compilers: [
+                makeCompiler('g161', 'c++', {
+                    isSemVer: true,
+                    semver: '16.1',
+                    instructionSet: 'amd64',
+                    releaseTrack: 'stable',
+                    group: 'gcc86',
+                }),
+                // Same lang+arch+major as g161 but different group ⇒ both should survive.
+                // (Guards against future re-introduction of mis-tagged cross-compilers
+                // hijacking the canonical-arch family's slot.)
+                makeCompiler('hppag1610', 'c++', {
+                    isSemVer: true,
+                    semver: '16.1.0',
+                    instructionSet: 'amd64',
+                    releaseTrack: 'stable',
+                    group: 'gcchppa',
+                }),
+            ],
+        } as unknown as ApiHandler;
+        registerCompilersTool(fakeServer, apiHandler);
+
+        const result = await toolHandlers.list_compilers({latestPerMajor: true});
+        const parsed = JSON.parse(result.content[0].text);
+        expect(parsed.compilers.map((c: any) => c.id).sort()).toEqual(['g161', 'hppag1610']);
+    });
+
     it('latestPerMajor: stable compilers grouped by (instructionSet, major), newest per major wins', async () => {
         const {fakeServer, toolHandlers} = makeFakeServer();
         const apiHandler = {
