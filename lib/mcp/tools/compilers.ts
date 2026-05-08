@@ -63,7 +63,7 @@ function pickLatest(
                 // mis-tagged cross-compiler that share major 16) don't fight for the
                 // same slot. Without `group`, an HPPA cross-compiler tagged amd64 would
                 // hijack the x86-64 GCC slot for its semver-major.
-                const groupKey = `${c.lang}\0${c.instructionSet ?? ''}\0${c.group ?? ''}`;
+                const groupKey = `${c.lang}\0${c.instructionSet ?? ''}\0${c.group}`;
                 let bucket = stableBuckets.get(groupKey);
                 if (!bucket) {
                     bucket = new Map();
