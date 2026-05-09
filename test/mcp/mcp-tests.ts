@@ -461,6 +461,36 @@ describe('MCP list_compilers tool', () => {
         expect(parsed.compilers.map((c: any) => c.id).sort()).toEqual(['g142', 'g161']);
     });
 
+    it('latestPerMajor: distinct groups with the same arch+major do NOT compete (e.g. x86-64 gcc vs a mis-tagged HPPA gcc)', async () => {
+        const {fakeServer, toolHandlers} = makeFakeServer();
+        const apiHandler = {
+            compilers: [
+                makeCompiler('g161', 'c++', {
+                    isSemVer: true,
+                    semver: '16.1',
+                    instructionSet: 'amd64',
+                    releaseTrack: 'stable',
+                    group: 'gcc86',
+                }),
+                // Same lang+arch+major as g161 but different group ⇒ both should survive.
+                // (Guards against future re-introduction of mis-tagged cross-compilers
+                // hijacking the canonical-arch family's slot.)
+                makeCompiler('hppag1610', 'c++', {
+                    isSemVer: true,
+                    semver: '16.1.0',
+                    instructionSet: 'amd64',
+                    releaseTrack: 'stable',
+                    group: 'gcchppa',
+                }),
+            ],
+        } as unknown as ApiHandler;
+        registerCompilersTool(fakeServer, apiHandler);
+
+        const result = await toolHandlers.list_compilers({latestPerMajor: true});
+        const parsed = JSON.parse(result.content[0].text);
+        expect(parsed.compilers.map((c: any) => c.id).sort()).toEqual(['g161', 'hppag1610']);
+    });
+
     it('latestPerMajor: stable compilers grouped by (instructionSet, major), newest per major wins', async () => {
         const {fakeServer, toolHandlers} = makeFakeServer();
         const apiHandler = {
@@ -694,6 +724,49 @@ describe('MCP list_libraries tool', () => {
         expect(parsed.libraries[0]).toEqual({id: 'lib0', name: 'Library 0'});
         expect(parsed.libraries[0].versions).toBeUndefined();
         expect(parsed.hint).toBeUndefined();
+    });
+
+    it('match also searches version strings (so "boost 1.88" finds the right library)', async () => {
+        const {fakeServer, toolHandlers} = makeFakeServer();
+        const apiHandler = {
+            getLibrariesAsArray: () => [
+                {
+                    id: 'boost',
+                    name: 'Boost',
+                    versions: [
+                        {id: '187', version: '1.87.0'},
+                        {id: '188', version: '1.88.0'},
+                    ],
+                },
+                {id: 'fmt', name: '{fmt}', versions: [{id: '1100', version: '11.0.0'}]},
+                {id: 'eigen', name: 'Eigen', versions: [{id: '340', version: '3.4.0'}]},
+            ],
+        } as unknown as ApiHandler;
+        registerLibrariesTool(fakeServer, apiHandler);
+
+        // The "natural" LLM query: combine the library family name with the desired
+        // version. Pre-fix this returned [] because match only saw {id, name}.
+        const result = await toolHandlers.list_libraries({language: 'c++', match: 'boost 1.88'});
+        const parsed = JSON.parse(result.content[0].text);
+        expect(parsed.libraries.map((l: any) => l.id)).toEqual(['boost']);
+        // The full library is returned (with all its versions) so the caller can
+        // see the matching version's id to pass into compile.
+        expect(parsed.libraries[0].versions).toHaveLength(2);
+    });
+
+    it('match against a version id ("188") also works', async () => {
+        const {fakeServer, toolHandlers} = makeFakeServer();
+        const apiHandler = {
+            getLibrariesAsArray: () => [
+                {id: 'boost', name: 'Boost', versions: [{id: '188', version: '1.88.0'}]},
+                {id: 'fmt', name: '{fmt}', versions: [{id: '1100', version: '11.0.0'}]},
+            ],
+        } as unknown as ApiHandler;
+        registerLibrariesTool(fakeServer, apiHandler);
+
+        const result = await toolHandlers.list_libraries({language: 'c++', match: '188'});
+        const parsed = JSON.parse(result.content[0].text);
+        expect(parsed.libraries.map((l: any) => l.id)).toEqual(['boost']);
     });
 
     it('returns a structured isError response when getLibrariesAsArray throws', async () => {
