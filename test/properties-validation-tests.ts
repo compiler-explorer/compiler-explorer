@@ -27,7 +27,10 @@ import path from 'node:path';
 
 import {afterAll, beforeAll, describe, expect, it} from 'vitest';
 
+import {instructionSetFromTargetString} from '../lib/instructionsets.js';
 import {
+    enumerateCompilers,
+    extractTargetTokens,
     filterDisabled,
     findCompilersWithoutInstructionSet,
     parseCompilersList,
@@ -618,5 +621,105 @@ describe('Real config validation', () => {
                 '`instructionSet=...` at compiler, group, or top-level defaults. ' +
                 `First 20:\n${summary}`,
         );
+    });
+
+    it('should have instructionSet matching any -target/-march in default options', () => {
+        // Catches the realistic regression where someone bumps a clang-target
+        // group's `-target` flag (or adds a new per-compiler `-target` override)
+        // without updating the corresponding `instructionSet=`. We allow the
+        // mismatch when `instructionSetFromTargetString` returns undefined —
+        // that means the target string is one we don't recognise (e.g. a
+        // vendor-specific triple), which is a separate concern from drift.
+        const mismatches: string[] = [];
+        for (const c of enumerateCompilers(propertyFiles)) {
+            const options = c.resolve('options');
+            if (!options) continue;
+            const declared = c.resolve('instructionSet');
+            for (const target of extractTargetTokens(options)) {
+                const inferred = instructionSetFromTargetString(target);
+                if (inferred && declared && inferred !== declared) {
+                    mismatches.push(
+                        `${c.lang}/${c.compilerId}: -target/-march "${target}" → ${inferred} ` +
+                            `but instructionSet=${declared} (groups: ${c.groupChain.join(',') || '<none>'})`,
+                    );
+                }
+            }
+        }
+        expect(
+            mismatches,
+            `Compilers whose target flag disagrees with instructionSet:\n${mismatches.join('\n')}`,
+        ).toEqual([]);
+    });
+});
+
+describe('findCompilersWithoutInstructionSet (synthetic)', () => {
+    function file(filename: string, content: string) {
+        return {filename, parsed: parsePropertiesFileRaw(content, filename)};
+    }
+
+    it('flags only compilers with no inheritance hit', () => {
+        const files = [
+            file('foo.defaults.properties', 'instructionSet=amd64\ncompilers=alpha:&beta:&gamma\n'),
+            file(
+                'foo.amazon.properties',
+                [
+                    'compiler.alpha.exe=/foo/alpha',
+                    'group.beta.compilers=beta1',
+                    'group.beta.instructionSet=aarch64',
+                    'compiler.beta1.exe=/foo/beta1',
+                    'group.gamma.compilers=gamma1',
+                    'compiler.gamma1.exe=/foo/gamma1',
+                    'compiler.gamma1.instructionSet=mips',
+                    '',
+                ].join('\n'),
+            ),
+            // Separate language with no top-level default → its compiler is missing.
+            file('bar.defaults.properties', 'compilers=&onlybar\n'),
+            file('bar.amazon.properties', 'group.onlybar.compilers=barc\ncompiler.barc.exe=/bar/barc\n'),
+        ];
+        const missing = findCompilersWithoutInstructionSet(files);
+        expect(missing).toEqual([{lang: 'bar', compilerId: 'barc', groupChain: ['onlybar']}]);
+    });
+
+    it('treats empty-string instructionSet as missing', () => {
+        const files = [
+            file(
+                'foo.defaults.properties',
+                'compilers=alpha\ncompiler.alpha.exe=/foo/alpha\ncompiler.alpha.instructionSet=\n',
+            ),
+        ];
+        const missing = findCompilersWithoutInstructionSet(files);
+        expect(missing).toEqual([{lang: 'foo', compilerId: 'alpha', groupChain: []}]);
+    });
+
+    it('walks nested &group references', () => {
+        const files = [
+            file('foo.defaults.properties', 'instructionSet=amd64\ncompilers=&outer\n'),
+            file(
+                'foo.amazon.properties',
+                [
+                    'group.outer.compilers=&inner',
+                    'group.inner.compilers=deep',
+                    'compiler.deep.exe=/foo/deep',
+                    // No instructionSet on deep, inner, or outer — falls through to top-level.
+                    '',
+                ].join('\n'),
+            ),
+        ];
+        expect(findCompilersWithoutInstructionSet(files)).toEqual([]);
+    });
+});
+
+describe('extractTargetTokens', () => {
+    it('extracts -target, --target=, and -march= values', () => {
+        expect(extractTargetTokens('-target arm-linux-gnueabihf')).toEqual(['arm-linux-gnueabihf']);
+        expect(extractTargetTokens('--target=riscv64-unknown-elf')).toEqual(['riscv64-unknown-elf']);
+        expect(extractTargetTokens('-march=avr -O2')).toEqual(['avr']);
+        expect(extractTargetTokens('-O2 -target wasm32 --target=foo -march=bar')).toEqual(['wasm32', 'foo', 'bar']);
+    });
+
+    it('returns nothing when no target/arch flags present', () => {
+        expect(extractTargetTokens('-O2 -fno-exceptions')).toEqual([]);
+        expect(extractTargetTokens('')).toEqual([]);
     });
 });

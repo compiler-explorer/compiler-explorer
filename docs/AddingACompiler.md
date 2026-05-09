@@ -154,7 +154,7 @@ You can also use the `+=` operator to append to existing string properties. See 
 | demanglerArgs        | String     | List of arguments passed to the demangler binary (separated by `\|` character)                                                                                     |
 | objdumper            | String     | Path to the object dump tool                                                                                                                                       |
 | objdumperArgs        | String     | List of arguments passed to the object dump tool (separated by `\|` character)                                                                                     |
-| instructionSet       | String     | The default set for the compiler, it will fall into that group of compilers (so you can filter by it) and get different instruction set documentation if available |
+| instructionSet       | String     | **Required.** Architecture this compiler emits (`amd64`, `aarch64`, `riscv64`, `evm`, `python`, …). Falls under the matching arch filter in the UI and selects the instruction-set documentation. Set per-compiler, per-group, or as a top-level default in `<lang>.defaults.properties`. Validated by `npm run test:props`; see `types/instructionsets.ts` for the full enum. |
 
 The `compilerType` option is special: it refers to the Javascript class in `lib/compilers/*.ts` which handles running
 and handling output for this compiler type.

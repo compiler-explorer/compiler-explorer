@@ -40,9 +40,15 @@ describe('instructionSetFromTargetString', () => {
         expect(instructionSetFromTargetString('wasm32-unknown-unknown')).toBe('wasm32');
     });
 
-    it('matches `-march=` style bare arch names', () => {
-        expect(instructionSetFromTargetString('aarch64')).toBe('aarch64');
-        expect(instructionSetFromTargetString('avr')).toBe('avr');
+    it('prefers aarch64 over arm32 for AArch64 architecture levels', () => {
+        // `-march=armv8-a` etc. are AArch64; the bare `'arm'` substring would
+        // mis-match arm32 if the table iteration didn't put aarch64 first.
+        expect(instructionSetFromTargetString('armv8-a')).toBe('aarch64');
+        expect(instructionSetFromTargetString('armv8.8-a+crypto+sve2')).toBe('aarch64');
+        expect(instructionSetFromTargetString('armv9-a')).toBe('aarch64');
+        // Bare `arm` (or arm-prefixed triples that aren't armv8/9) are still arm32.
+        expect(instructionSetFromTargetString('armv7-a')).toBe('arm32');
+        expect(instructionSetFromTargetString('arm')).toBe('arm32');
     });
 
     it('returns undefined for unrecognised target strings', () => {

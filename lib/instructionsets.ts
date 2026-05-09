@@ -42,8 +42,13 @@ import {InstructionSet} from '../types/instructionsets.js';
 //
 // Each value is a non-empty list of triple substrings that identify the
 // InstructionSet. The first entry is also the canonical `-mtriple=` value.
-const TARGET_SUBSTRINGS = {
-    aarch64: ['aarch64'],
+// Substring matching is `String.includes`, so each list omits prefixes
+// already covered by an earlier entry (e.g. `'ppc'` covers `ppc64`).
+const TARGET_SUBSTRINGS: Partial<Record<InstructionSet, readonly string[]>> = {
+    // `armv8`/`armv9` are AArch64 architecture levels (`-march=armv8-a` etc.) —
+    // distinguish from arm32 by listing them here so the iteration matches
+    // them before falling through to `arm32: ['arm']`.
+    aarch64: ['aarch64', 'armv8', 'armv9'],
     amd64: ['x86_64'],
     arm32: ['arm'],
     avr: ['avr'],
@@ -56,19 +61,19 @@ const TARGET_SUBSTRINGS = {
     m68k: ['m68k'],
     mips: ['mips'],
     msp430: ['msp430'],
-    powerpc: ['powerpc', 'ppc64', 'ppc'],
+    powerpc: ['powerpc', 'ppc'],
     riscv32: ['rv32', 'riscv32'],
     riscv64: ['rv64', 'riscv64'],
     s390x: ['s390x'],
     sh: ['sh'],
-    sparc: ['sparc', 'sparc64'],
+    sparc: ['sparc'],
     vax: ['vax'],
     wasm32: ['wasm32'],
     wasm64: ['wasm64'],
     xtensa: ['xtensa'],
     z180: ['z180'],
     z80: ['z80'],
-} as const satisfies Partial<Record<InstructionSet, readonly string[]>>;
+};
 
 // Returns the InstructionSet identified by a compiler-target string
 // (e.g. "aarch64-unknown-linux-gnu" → "aarch64"), or undefined if no known
@@ -89,6 +94,5 @@ export function instructionSetFromTargetString(target: string): InstructionSet |
 // nullable in the type even though config validation guarantees a value.
 export function tripleForInstructionSet(instructionSet: InstructionSet | null | undefined): string | null {
     if (!instructionSet) return null;
-    const entry = (TARGET_SUBSTRINGS as Partial<Record<InstructionSet, readonly string[]>>)[instructionSet];
-    return entry ? entry[0] : null;
+    return TARGET_SUBSTRINGS[instructionSet]?.[0] ?? null;
 }

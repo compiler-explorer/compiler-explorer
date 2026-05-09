@@ -190,7 +190,7 @@ Common configuration keys include:
 | versionFlag    | String  | Flag to pass to compiler to get version             |
 | demanglerArgs  | String  | Arguments for the demangler (pipe-separated)        |
 | objdumperArgs  | String  | Arguments for the object dumper (pipe-separated)    |
-| instructionSet | String  | Default instruction set for the compiler            |
+| instructionSet | String  | Required. Architecture this compiler emits (`amd64`, `aarch64`, `riscv64`, `evm`, `python`, …). Set per-compiler, per-group, or as a top-level default in `<lang>.defaults.properties`. Validated by `npm run test:props`. See `types/instructionsets.ts` for the full enum. |
 
 ## Variable Substitution
 

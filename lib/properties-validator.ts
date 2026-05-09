@@ -739,23 +739,15 @@ export interface MissingInstructionSet {
     groupChain: string[];
 }
 
-// Resolve a compiler's effective instructionSet by walking the same property
-// inheritance chain that compiler-finder uses: per-compiler override → each
-// nested group's setting (innermost first) → top-level. Returns the value, or
-// undefined when no level sets it.
-function resolveInheritedProperty(
-    lookup: (key: string) => string | undefined,
-    property: string,
-    compilerId: string,
-    groupChain: string[],
-): string | undefined {
-    const direct = lookup(`compiler.${compilerId}.${property}`);
-    if (direct !== undefined) return direct;
-    for (const g of groupChain) {
-        const v = lookup(`group.${g}.${property}`);
-        if (v !== undefined) return v;
-    }
-    return lookup(property);
+// Per-compiler context exposing the effective property lookup for one compiler
+// — the same compiler.X → group.G(s) → top-level inheritance chain that
+// compiler-finder uses. Yielded by `enumerateCompilers`; lets callers ask
+// for any property without re-walking the chain.
+export interface CompilerPropertyContext {
+    lang: string;
+    compilerId: string;
+    groupChain: string[];
+    resolve(property: string): string | undefined;
 }
 
 // Expand a compilers= list, recursing into &group references and recording the
@@ -768,7 +760,7 @@ function expandCompilersList(
     const raw = lookup(listKey);
     if (raw === undefined) return [];
     const out: Array<{compilerId: string; groupChain: string[]}> = [];
-    for (const entry of raw.split(':').filter(s => s !== '')) {
+    for (const entry of parseCompilersList(raw)) {
         if (entry.startsWith('&')) {
             const groupName = entry.slice(1);
             out.push(...expandCompilersList(lookup, `group.${groupName}.compilers`, [groupName, ...groupChain]));
@@ -779,13 +771,13 @@ function expandCompilersList(
     return out;
 }
 
-// For each language (group of `<lang>.<env>.properties` files), resolve every
-// compiler's effective `instructionSet` via inheritance and report those with
-// no resolved value. Used to guarantee we no longer rely on the runtime
-// inference heuristic for any production compiler.
-export function findCompilersWithoutInstructionSet(
+// Walk all language config files and yield one context per compiler, with a
+// `resolve` that follows the standard inheritance chain. Used by both the
+// instructionSet-presence check and the instructionSet-vs-`-target`
+// consistency check.
+export function* enumerateCompilers(
     files: Array<{filename: string; parsed: ParsedPropertiesFile}>,
-): MissingInstructionSet[] {
+): Generator<CompilerPropertyContext> {
     // Build per-language layered lookup. Each language's effective config is the
     // overlay of all its files; when an environment file (e.g. `c++.amazon`)
     // sets a key, it wins over the same key in the corresponding `c++.defaults`.
@@ -797,7 +789,6 @@ export function findCompilersWithoutInstructionSet(
         const m = filename.match(/^([^.]+(?:\.[^.]+)*?)\.([^.]+)\.properties$/);
         if (!m) continue;
         const [, lang, env] = m;
-        // Skip non-language config files.
         if (['execution', 'compiler-explorer', 'aws', 'asm-docs', 'builtin'].includes(lang)) continue;
         const props = new Map<string, string>();
         for (const p of parsed.properties) props.set(p.key, p.value);
@@ -805,7 +796,6 @@ export function findCompilersWithoutInstructionSet(
         langFiles.get(lang)!.push({env, props});
     }
 
-    const missing: MissingInstructionSet[] = [];
     for (const [lang, layers] of langFiles) {
         layers.sort((a, b) => (a.env === 'defaults' ? -1 : b.env === 'defaults' ? 1 : 0));
         const lookup = (key: string): string | undefined => {
@@ -814,12 +804,51 @@ export function findCompilersWithoutInstructionSet(
             }
             return undefined;
         };
-        for (const c of expandCompilersList(lookup, 'compilers')) {
-            const resolved = resolveInheritedProperty(lookup, 'instructionSet', c.compilerId, c.groupChain);
-            if (resolved === undefined || resolved === '') {
-                missing.push({lang, compilerId: c.compilerId, groupChain: c.groupChain});
-            }
+        for (const {compilerId, groupChain} of expandCompilersList(lookup, 'compilers')) {
+            const resolve = (property: string): string | undefined => {
+                const direct = lookup(`compiler.${compilerId}.${property}`);
+                if (direct !== undefined) return direct;
+                for (const g of groupChain) {
+                    const v = lookup(`group.${g}.${property}`);
+                    if (v !== undefined) return v;
+                }
+                return lookup(property);
+            };
+            yield {lang, compilerId, groupChain, resolve};
+        }
+    }
+}
+
+// Reports compilers whose effective `instructionSet` is unset. Backstops the
+// removal of the runtime inference heuristic (#8690).
+export function findCompilersWithoutInstructionSet(
+    files: Array<{filename: string; parsed: ParsedPropertiesFile}>,
+): MissingInstructionSet[] {
+    const missing: MissingInstructionSet[] = [];
+    for (const c of enumerateCompilers(files)) {
+        const resolved = c.resolve('instructionSet');
+        if (resolved === undefined || resolved === '') {
+            missing.push({lang: c.lang, compilerId: c.compilerId, groupChain: c.groupChain});
         }
     }
     return missing;
+}
+
+// Extract `-target X`, `--target=X`, and `-march=X` values from an options
+// string. Returns at most one entry per flag occurrence; consumers iterate
+// to handle the (rare) case of multiple `-target` flags.
+export function extractTargetTokens(options: string): string[] {
+    const out: string[] = [];
+    const tokens = options.split(/\s+/).filter(t => t !== '');
+    for (let i = 0; i < tokens.length; i++) {
+        const t = tokens[i];
+        if (t === '-target' || t === '--target') {
+            if (i + 1 < tokens.length) out.push(tokens[++i]);
+        } else if (t.startsWith('--target=')) {
+            out.push(t.slice('--target='.length));
+        } else if (t.startsWith('-march=')) {
+            out.push(t.slice('-march='.length));
+        }
+    }
+    return out;
 }
