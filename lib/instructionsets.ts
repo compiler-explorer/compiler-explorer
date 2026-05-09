@@ -63,6 +63,10 @@ export class InstructionSets {
                 target: ['ez80'],
                 path: [],
             },
+            hppa: {
+                target: ['hppa'],
+                path: ['/hppa-'],
+            },
             kvx: {
                 target: ['kvx'],
                 path: ['/kvx-', '/k1-'],
