@@ -732,3 +732,94 @@ export function validateCrossFileCompilerIds(
 
     return {duplicateCompilerIds};
 }
+
+export interface MissingInstructionSet {
+    lang: string;
+    compilerId: string;
+    groupChain: string[];
+}
+
+// Resolve a compiler's effective instructionSet by walking the same property
+// inheritance chain that compiler-finder uses: per-compiler override → each
+// nested group's setting (innermost first) → top-level. Returns the value, or
+// undefined when no level sets it.
+function resolveInheritedProperty(
+    lookup: (key: string) => string | undefined,
+    property: string,
+    compilerId: string,
+    groupChain: string[],
+): string | undefined {
+    const direct = lookup(`compiler.${compilerId}.${property}`);
+    if (direct !== undefined) return direct;
+    for (const g of groupChain) {
+        const v = lookup(`group.${g}.${property}`);
+        if (v !== undefined) return v;
+    }
+    return lookup(property);
+}
+
+// Expand a compilers= list, recursing into &group references and recording the
+// chain of groups that led to each compiler (innermost first).
+function expandCompilersList(
+    lookup: (key: string) => string | undefined,
+    listKey: string,
+    groupChain: string[] = [],
+): Array<{compilerId: string; groupChain: string[]}> {
+    const raw = lookup(listKey);
+    if (raw === undefined) return [];
+    const out: Array<{compilerId: string; groupChain: string[]}> = [];
+    for (const entry of raw.split(':').filter(s => s !== '')) {
+        if (entry.startsWith('&')) {
+            const groupName = entry.slice(1);
+            out.push(...expandCompilersList(lookup, `group.${groupName}.compilers`, [groupName, ...groupChain]));
+        } else if (!entry.includes('@')) {
+            out.push({compilerId: entry, groupChain});
+        }
+    }
+    return out;
+}
+
+// For each language (group of `<lang>.<env>.properties` files), resolve every
+// compiler's effective `instructionSet` via inheritance and report those with
+// no resolved value. Used to guarantee we no longer rely on the runtime
+// inference heuristic for any production compiler.
+export function findCompilersWithoutInstructionSet(
+    files: Array<{filename: string; parsed: ParsedPropertiesFile}>,
+): MissingInstructionSet[] {
+    // Build per-language layered lookup. Each language's effective config is the
+    // overlay of all its files; when an environment file (e.g. `c++.amazon`)
+    // sets a key, it wins over the same key in the corresponding `c++.defaults`.
+    // We mimic the runtime behaviour by walking files in `defaults` < others
+    // order — the actual hierarchy varies by deployment but defaults is always
+    // the lowest-priority layer.
+    const langFiles = new Map<string, Array<{env: string; props: Map<string, string>}>>();
+    for (const {filename, parsed} of files) {
+        const m = filename.match(/^([^.]+(?:\.[^.]+)*?)\.([^.]+)\.properties$/);
+        if (!m) continue;
+        const [, lang, env] = m;
+        // Skip non-language config files.
+        if (['execution', 'compiler-explorer', 'aws', 'asm-docs', 'builtin'].includes(lang)) continue;
+        const props = new Map<string, string>();
+        for (const p of parsed.properties) props.set(p.key, p.value);
+        if (!langFiles.has(lang)) langFiles.set(lang, []);
+        langFiles.get(lang)!.push({env, props});
+    }
+
+    const missing: MissingInstructionSet[] = [];
+    for (const [lang, layers] of langFiles) {
+        layers.sort((a, b) => (a.env === 'defaults' ? -1 : b.env === 'defaults' ? 1 : 0));
+        const lookup = (key: string): string | undefined => {
+            for (let i = layers.length - 1; i >= 0; i--) {
+                if (layers[i].props.has(key)) return layers[i].props.get(key);
+            }
+            return undefined;
+        };
+        for (const c of expandCompilersList(lookup, 'compilers')) {
+            const resolved = resolveInheritedProperty(lookup, 'instructionSet', c.compilerId, c.groupChain);
+            if (resolved === undefined || resolved === '') {
+                missing.push({lang, compilerId: c.compilerId, groupChain: c.groupChain});
+            }
+        }
+    }
+    return missing;
+}

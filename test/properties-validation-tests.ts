@@ -29,6 +29,7 @@ import {afterAll, beforeAll, describe, expect, it} from 'vitest';
 
 import {
     filterDisabled,
+    findCompilersWithoutInstructionSet,
     parseCompilersList,
     parsePropertiesFileRaw,
     type RawFileValidationResult,
@@ -599,5 +600,23 @@ describe('Real config validation', () => {
         const amazonFiles = propertyFiles.filter(f => f.filename.includes('amazon'));
         const filesWithIssues = collectIssues(amazonFiles, 'suspiciousPaths', true, {checkSuspiciousPaths: true});
         expect(filesWithIssues, 'Files with suspicious paths').toEqual([]);
+    });
+
+    it('should have an explicit instructionSet for every compiler', () => {
+        // Replaces the old runtime inference heuristic in lib/instructionsets.ts
+        // (removed alongside this validator). Every compiler must resolve an
+        // instructionSet via its own override, a containing group, or a
+        // top-level default in `<lang>.defaults.properties`.
+        const missing = findCompilersWithoutInstructionSet(propertyFiles);
+        if (missing.length === 0) return;
+        const summary = missing
+            .slice(0, 20)
+            .map(m => `  - ${m.lang}/${m.compilerId} (groups: ${m.groupChain.join(',') || '<none>'})`)
+            .join('\n');
+        expect.fail(
+            `${missing.length} compiler(s) have no resolved instructionSet. Add ` +
+                '`instructionSet=...` at compiler, group, or top-level defaults. ' +
+                `First 20:\n${summary}`,
+        );
     });
 });

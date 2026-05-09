@@ -146,8 +146,9 @@ export function registerCompilersTool(server: McpServer, apiHandler: ApiHandler)
                 .optional()
                 .describe(
                     `"Newest X" filter. By release track (${RELEASE_TRACKS.join('/')}): newest stable per ` +
-                        '(language, instructionSet, semver major); all nightly + prerelease; experimental ' +
-                        'skipped unless `includeExperimental: true`.',
+                        '(language, instructionSet, group, semver major) — `group` distinguishes families ' +
+                        'sharing an arch tag (e.g. upstream gcc vs. a vendor-patched fork); ' +
+                        'all nightly + prerelease; experimental skipped unless `includeExperimental: true`.',
                 ),
             includeExperimental: z
                 .boolean()
