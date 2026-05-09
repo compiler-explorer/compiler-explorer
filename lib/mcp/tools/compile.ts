@@ -103,6 +103,14 @@ export function registerCompileTool(server: McpServer, compileHandler: CompileHa
                     `Cap each stderr stream — compile and execute separately (default ${DEFAULT_MAX_STDERR_LINES}).`,
                 ),
         },
+        {
+            // The CE compile service is stateless from the connector's point of view: no
+            // user-visible data is mutated, and `execute=true` runs the program in an
+            // ephemeral sandbox whose effects don't escape the call. Hence readOnlyHint.
+            title: 'Compile (and optionally execute) source code',
+            readOnlyHint: true,
+            openWorldHint: false,
+        },
         async ({
             source,
             language,

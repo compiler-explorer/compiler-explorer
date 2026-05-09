@@ -152,6 +152,11 @@ export function registerCompilersTool(server: McpServer, apiHandler: ApiHandler)
                         'llvm-mos platform variants). Off by default — bloats "newest X" answers.',
                 ),
         },
+        {
+            title: 'List compilers',
+            readOnlyHint: true,
+            openWorldHint: false,
+        },
         async ({language, instructionSet, match, maxResults, lean, latestPerMajor, includeExperimental}) => {
             let pool = apiHandler.compilers;
             if (language) pool = pool.filter(c => c.lang === language);
