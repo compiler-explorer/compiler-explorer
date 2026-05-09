@@ -611,7 +611,7 @@ const definitions: Record<LanguageKey, LanguageDefinition> = {
         monaco: 'lua',
         extensions: ['.lua'],
         alias: [],
-        logoFilename: null, // TODO: add a Lua logo
+        logoFilename: 'lua.png',
         logoFilenameDark: null,
         formatter: null,
         previewFilter: null,
