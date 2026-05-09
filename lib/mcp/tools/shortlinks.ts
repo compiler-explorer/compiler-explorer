@@ -81,6 +81,16 @@ export function registerShortlinkTools(
                 .optional()
                 .describe('Libraries to include.'),
         },
+        {
+            // Persists a shortlink record to S3, hence not readOnly. It's additive only
+            // (never deletes / overwrites prior shortlinks) and dedupes by config hash,
+            // so repeat calls with the same input return the same URL — idempotent.
+            title: 'Generate Compiler Explorer short URL',
+            readOnlyHint: false,
+            destructiveHint: false,
+            idempotentHint: true,
+            openWorldHint: false,
+        },
         async ({source, language, compiler, options, libraries}) => {
             try {
                 // Normalise library versions before saving so the resulting shortlink
@@ -150,6 +160,11 @@ export function registerShortlinkTools(
             id: z
                 .string()
                 .describe('Short link ID or full URL (e.g. "G38YP7eW4" or "https://godbolt.org/z/G38YP7eW4")'),
+        },
+        {
+            title: 'Get Compiler Explorer short URL info',
+            readOnlyHint: true,
+            openWorldHint: false,
         },
         async ({id}) => {
             // Extract ID from URL if a full URL was provided

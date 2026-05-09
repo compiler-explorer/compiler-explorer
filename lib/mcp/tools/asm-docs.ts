@@ -37,6 +37,11 @@ export function registerAsmDocsTool(server: McpServer): void {
                 .describe('Instruction set architecture (no default — must match the asm dialect being looked up).'),
             opcode: z.string().describe('Assembly instruction mnemonic (e.g. "MOV", "ADD", "JMP")'),
         },
+        {
+            title: 'Look up assembly instruction',
+            readOnlyHint: true,
+            openWorldHint: false,
+        },
         async ({instruction_set, opcode}) => {
             try {
                 const Provider = getDocumentationProviderTypeByKey(instruction_set);

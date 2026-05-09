@@ -60,6 +60,11 @@ export function registerLibrariesTool(server: McpServer, apiHandler: ApiHandler)
                 .optional()
                 .describe('Force id+name only, regardless of count. Useful to browse the catalog before drilling in.'),
         },
+        {
+            title: 'List libraries',
+            readOnlyHint: true,
+            openWorldHint: false,
+        },
         async ({language, match, maxResults, lean}) => {
             // getLibrariesAsArray throws via unwrap() if options aren't loaded yet
             // (brief startup window before setOptions runs). Mirror the HTTP

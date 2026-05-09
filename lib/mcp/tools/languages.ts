@@ -30,6 +30,11 @@ export function registerLanguagesTool(server: McpServer, apiHandler: ApiHandler)
     server.tool(
         'list_languages',
         'List supported languages. Each entry has `defaultCompiler` and `compilerCount`.',
+        {
+            title: 'List languages',
+            readOnlyHint: true,
+            openWorldHint: false,
+        },
         async () => {
             const languages = apiHandler.getAvailableLanguages();
             // One pass over compilers gives us the per-language count without an N×M scan.
