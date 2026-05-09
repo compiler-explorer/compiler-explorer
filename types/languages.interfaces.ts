@@ -74,6 +74,7 @@ export type LanguageKey =
     | 'kotlin'
     | 'llvm'
     | 'llvm_mir'
+    | 'lua'
     | 'mlir'
     | 'modula2'
     | 'mojo'
