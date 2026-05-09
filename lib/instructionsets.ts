@@ -24,229 +24,71 @@
 
 import {InstructionSet} from '../types/instructionsets.js';
 
-type InstructionSetMethod = {
-    target: string[];
-    path: string[];
-};
+// Mapping between LLVM-style target strings and our InstructionSet enum.
+//
+// Used in two narrow places:
+//   1. `getInstructionSetFromCompilerArgs` — resolves a runtime
+//      `-target=foo` / `-march=foo` override to an InstructionSet so the asm
+//      view renders the right syntax.
+//   2. `tripleForInstructionSet` — picks an `-mtriple=foo` value to feed to
+//      llvm-mca.
+//
+// This is **not** a heuristic for inferring a compiler's default arch; that
+// is required to be explicitly declared via `instructionSet=...` in
+// properties (see `findCompilersWithoutInstructionSet`). InstructionSets
+// that never appear in compiler-target strings (`python`, `evm`, `java`,
+// etc.) intentionally have no entry — the asm view stays on whatever the
+// compiler's configured arch is.
+//
+// Each value is a non-empty list of triple substrings that identify the
+// InstructionSet. The first entry is also the canonical `-mtriple=` value.
+const TARGET_SUBSTRINGS = {
+    aarch64: ['aarch64'],
+    amd64: ['x86_64'],
+    arm32: ['arm'],
+    avr: ['avr'],
+    c6x: ['tic6x'],
+    ebpf: ['bpf'],
+    ez80: ['ez80'],
+    hppa: ['hppa'],
+    kvx: ['kvx'],
+    loongarch: ['loongarch'],
+    m68k: ['m68k'],
+    mips: ['mips'],
+    msp430: ['msp430'],
+    powerpc: ['powerpc', 'ppc64', 'ppc'],
+    riscv32: ['rv32', 'riscv32'],
+    riscv64: ['rv64', 'riscv64'],
+    s390x: ['s390x'],
+    sh: ['sh'],
+    sparc: ['sparc', 'sparc64'],
+    vax: ['vax'],
+    wasm32: ['wasm32'],
+    wasm64: ['wasm64'],
+    xtensa: ['xtensa'],
+    z180: ['z180'],
+    z80: ['z80'],
+} as const satisfies Partial<Record<InstructionSet, readonly string[]>>;
 
-export class InstructionSets {
-    private defaultInstructionset: InstructionSet = 'amd64';
-    private supported: Record<InstructionSet, InstructionSetMethod>;
-
-    constructor() {
-        this.supported = {
-            aarch64: {
-                target: ['aarch64'],
-                path: ['/aarch64-'],
-            },
-            arm32: {
-                target: ['arm'],
-                path: ['/arm-'],
-            },
-            avr: {
-                target: ['avr'],
-                path: ['/avr-'],
-            },
-            c6x: {
-                target: ['c6x'],
-                path: ['/tic6x-'],
-            },
-            dex: {
-                target: [],
-                path: [],
-            },
-            ebpf: {
-                target: ['bpf'],
-                path: ['/bpf-'],
-            },
-            ez80: {
-                target: ['ez80'],
-                path: [],
-            },
-            hppa: {
-                target: ['hppa'],
-                path: ['/hppa-'],
-            },
-            kvx: {
-                target: ['kvx'],
-                path: ['/kvx-', '/k1-'],
-            },
-            loongarch: {
-                target: ['loongarch'],
-                path: ['/loongarch64-'],
-            },
-            m68k: {
-                target: ['m68k'],
-                path: ['/m68k-'],
-            },
-            mips: {
-                target: ['mips'],
-                path: ['/mips', '/mipsel-', '/mips64el-', '/mips64-', '/nanomips-'],
-            },
-            mrisc32: {
-                target: ['mrisc32'],
-                path: [],
-            },
-            msp430: {
-                target: ['msp430'],
-                path: ['/msp430-'],
-            },
-            powerpc: {
-                target: ['powerpc', 'ppc64', 'ppc'],
-                path: ['/powerpc-', '/powerpc64-', '/powerpc64le-'],
-            },
-            riscv64: {
-                target: ['rv64', 'riscv64'],
-                path: ['/riscv64-'],
-            },
-            riscv32: {
-                target: ['rv32', 'riscv32'],
-                path: ['/riscv32-'],
-            },
-            sh: {
-                target: ['sh'],
-                path: ['/sh-'],
-            },
-            sparc: {
-                target: ['sparc', 'sparc64'],
-                path: ['/sparc-', '/sparc64-'],
-            },
-            s390x: {
-                target: ['s390x'],
-                path: ['/s390x-'],
-            },
-            vax: {
-                target: ['vax'],
-                path: ['/vax-'],
-            },
-            wasm32: {
-                target: ['wasm32'],
-                path: [],
-            },
-            wasm64: {
-                target: ['wasm64'],
-                path: [],
-            },
-            xtensa: {
-                target: ['xtensa'],
-                path: ['/xtensa-'],
-            },
-            z180: {
-                target: ['z180'],
-                path: [],
-            },
-            z80: {
-                target: ['z80'],
-                path: [],
-            },
-            6502: {
-                target: [],
-                path: [],
-            },
-            wdc65c816: {
-                target: [],
-                path: [],
-            },
-            core: {
-                target: [],
-                path: [],
-            },
-            java: {
-                target: [],
-                path: [],
-            },
-            llvm: {
-                target: [],
-                path: [],
-            },
-            perl: {
-                target: [],
-                path: [],
-            },
-            python: {
-                target: [],
-                path: [],
-            },
-            mpy: {
-                target: [],
-                path: [],
-            },
-            ptx: {
-                target: [],
-                path: [],
-            },
-            x86: {
-                target: [],
-                path: [],
-            },
-            amd64: {
-                target: ['x86_64'],
-                path: ['/x86_64'],
-            },
-            evm: {
-                target: [],
-                path: [],
-            },
-            eravm: {
-                target: [],
-                path: [],
-            },
-            mos6502: {
-                target: [],
-                path: [],
-            },
-            sass: {
-                target: [],
-                path: [],
-            },
-            beam: {
-                target: [],
-                path: [],
-            },
-            hook: {
-                target: [],
-                path: [],
-            },
-            spirv: {
-                target: [],
-                path: [],
-            },
-        };
-    }
-
-    // Return the first spelling of the target for the instruction set,
-    // or null if data is missing from the 'supported' table.
-    getInstructionSetTarget(instructionSet: InstructionSet): string | null {
-        if (!(instructionSet in this.supported)) return null;
-        if (this.supported[instructionSet].target.length === 0) return null;
-        return this.supported[instructionSet].target[0];
-    }
-
-    getCompilerInstructionSetHint(compilerArch: string | boolean, exe?: string): InstructionSet {
-        if (compilerArch && typeof compilerArch === 'string') {
-            for (const [instructionSet, method] of Object.entries(this.supported) as [
-                InstructionSet,
-                InstructionSetMethod,
-            ][]) {
-                for (const target of method.target) {
-                    if (compilerArch.includes(target)) {
-                        return instructionSet;
-                    }
-                }
-            }
-        } else {
-            for (const [instructionSet, method] of Object.entries(this.supported) as [
-                InstructionSet,
-                InstructionSetMethod,
-            ][]) {
-                for (const path of method.path) {
-                    if (exe?.includes(path)) {
-                        return instructionSet;
-                    }
-                }
-            }
+// Returns the InstructionSet identified by a compiler-target string
+// (e.g. "aarch64-unknown-linux-gnu" → "aarch64"), or undefined if no known
+// InstructionSet matches.
+export function instructionSetFromTargetString(target: string): InstructionSet | undefined {
+    for (const [iset, substrings] of Object.entries(TARGET_SUBSTRINGS) as [InstructionSet, readonly string[]][]) {
+        for (const substring of substrings) {
+            if (target.includes(substring)) return iset;
         }
-
-        return this.defaultInstructionset;
     }
+    return undefined;
+}
+
+// Returns the canonical `-mtriple=` string for an InstructionSet, or null
+// if the InstructionSet has no associated LLVM target triple (typical for
+// VM/IR formats like `python`, `java`, `evm`). Tolerates null/undefined
+// to ease use at call sites where the compiler's instructionSet may be
+// nullable in the type even though config validation guarantees a value.
+export function tripleForInstructionSet(instructionSet: InstructionSet | null | undefined): string | null {
+    if (!instructionSet) return null;
+    const entry = (TARGET_SUBSTRINGS as Partial<Record<InstructionSet, readonly string[]>>)[instructionSet];
+    return entry ? entry[0] : null;
 }

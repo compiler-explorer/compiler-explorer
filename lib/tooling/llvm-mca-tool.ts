@@ -26,7 +26,7 @@ import fs from 'node:fs/promises';
 
 // import {CompilationInfo} from '../../types/compilation/compilation.interfaces.js';
 import {CompilationInfo} from '../../types/compilation/compilation.interfaces.js';
-import {InstructionSets} from '../instructionsets.js';
+import {tripleForInstructionSet} from '../instructionsets.js';
 import * as utils from '../utils.js';
 import {BaseTool} from './base-tool.js';
 
@@ -49,8 +49,7 @@ export class LLVMMcaTool extends BaseTool {
     }
 
     override async runTool(compilationInfo: CompilationInfo, _inputFilepath?: string, args?: string[]) {
-        const isets = new InstructionSets();
-        let target = isets.getInstructionSetTarget(compilationInfo.compiler.instructionSet);
+        let target = tripleForInstructionSet(compilationInfo.compiler.instructionSet);
         const prependArgs: string[] = [];
 
         // Check if compiler target is overridden with --target=<foo> or -target <foo>.

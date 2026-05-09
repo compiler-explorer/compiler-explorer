@@ -85,7 +85,7 @@ import {moveArtifactsIntoResult} from './artifact-utils.js';
 import {assert, unwrap} from './assert.js';
 import {copyCopperSpicePlugins} from './binaries/copperspice-utils.js';
 import type {BuildEnvDownloadInfo} from './buildenvsetup/buildenv.interfaces.js';
-import {BuildEnvSetupBase, getBuildEnvTypeByKey} from './buildenvsetup/index.js';
+import {getBuildEnvTypeByKey} from './buildenvsetup/index.js';
 import {BaseCache} from './cache/base.js';
 import * as cfg from './cfg/cfg.js';
 import {CompilationEnvironment} from './compilation-env.js';
@@ -111,7 +111,7 @@ import {RemoteExecutionEnvironment} from './execution/remote-execution-env.js';
 import {IExternalParser} from './external-parsers/external-parser.interface.js';
 import {getExternalParserByKey} from './external-parsers/index.js';
 import {ParsedRequest} from './handlers/compile.js';
-import {InstructionSets} from './instructionsets.js';
+import {instructionSetFromTargetString} from './instructionsets.js';
 import {languages} from './languages.js';
 import {LlvmAstParser} from './llvm-ast.js';
 import {LlvmIrParser} from './llvm-ir.js';
@@ -291,22 +291,6 @@ export class BaseCompiler {
         if (!this.getRemote() && this.compiler.externalparser && this.compiler.externalparser.id) {
             const externalparserclass = getExternalParserByKey(this.compiler.externalparser.id);
             this.externalparser = new externalparserclass(this.compiler, this.env, this.exec);
-        }
-
-        if (!this.compiler.instructionSet) {
-            const isets = new InstructionSets();
-            if (this.buildenvsetup) {
-                this.compiler.instructionSet = isets.getCompilerInstructionSetHint(
-                    this.buildenvsetup.compilerArch,
-                    this.compiler.exe,
-                );
-            } else {
-                const temp = new BuildEnvSetupBase(this.compiler, this.env);
-                this.compiler.instructionSet = isets.getCompilerInstructionSetHint(
-                    temp.compilerArch,
-                    this.compiler.exe,
-                );
-            }
         }
 
         this.packager = new Packager();
@@ -570,17 +554,16 @@ export class BaseCompiler {
         try {
             const archHint = this.getTargetHintFromCompilerArgs(args);
             if (archHint) {
-                const isets = new InstructionSets();
-                return isets.getCompilerInstructionSetHint(archHint, this.compiler.exe);
+                const fromArgs = instructionSetFromTargetString(archHint);
+                if (fromArgs) return fromArgs;
             }
         } catch (e) {
             logger.debug('Unexpected error in getInstructionSetFromCompilerArgs(): ', e);
         }
 
-        if (this.compiler.instructionSet) {
-            return this.compiler.instructionSet;
-        }
-        return 'amd64';
+        // Fall back to the compiler's configured arch. Always set: enforced
+        // by `findCompilersWithoutInstructionSet` during config validation.
+        return this.compiler.instructionSet ?? 'amd64';
     }
 
     async runCompiler(

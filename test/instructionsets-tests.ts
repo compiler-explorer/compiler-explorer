@@ -24,37 +24,50 @@
 
 import {describe, expect, it} from 'vitest';
 
-import {InstructionSets} from '../lib/instructionsets.js';
+import {instructionSetFromTargetString, tripleForInstructionSet} from '../lib/instructionsets.js';
 
-describe('InstructionSets', () => {
-    it('should recognize aarch64 for clang target', () => {
-        const isets = new InstructionSets();
-
-        expect(
-            isets.getCompilerInstructionSetHint('aarch64-linux-gnu', '/opt/compiler-explorer/clang-11.0.1/bin/clang++'),
-        ).toBe('aarch64');
+describe('instructionSetFromTargetString', () => {
+    it('matches LLVM-style triples to InstructionSet', () => {
+        expect(instructionSetFromTargetString('aarch64-linux-gnu')).toBe('aarch64');
+        expect(instructionSetFromTargetString('arm-linux-gnueabihf')).toBe('arm32');
+        expect(instructionSetFromTargetString('x86_64-pc-windows-msvc')).toBe('amd64');
+        expect(instructionSetFromTargetString('riscv64-unknown-linux-gnu')).toBe('riscv64');
+        expect(instructionSetFromTargetString('riscv32-unknown-elf')).toBe('riscv32');
+        expect(instructionSetFromTargetString('powerpc64le-unknown-linux-gnu')).toBe('powerpc');
+        expect(instructionSetFromTargetString('mips64el-unknown-linux-gnuabi64')).toBe('mips');
+        expect(instructionSetFromTargetString('s390x-unknown-linux-gnu')).toBe('s390x');
+        expect(instructionSetFromTargetString('hppa-unknown-linux-gnu')).toBe('hppa');
+        expect(instructionSetFromTargetString('wasm32-unknown-unknown')).toBe('wasm32');
     });
 
-    it('should recognize gcc aarch64 from filepath', () => {
-        const isets = new InstructionSets();
-
-        expect(
-            isets.getCompilerInstructionSetHint(
-                false,
-                '/opt/compiler-explorer/arm64/gcc-12.1.0/aarch64-unknown-linux-gnu/bin/aarch64-unknown-linux-gnu-g++',
-            ),
-        ).toBe('aarch64');
+    it('matches `-march=` style bare arch names', () => {
+        expect(instructionSetFromTargetString('aarch64')).toBe('aarch64');
+        expect(instructionSetFromTargetString('avr')).toBe('avr');
     });
 
-    it('should default to amd64 when not apparent', () => {
-        const isets = new InstructionSets();
+    it('returns undefined for unrecognised target strings', () => {
+        expect(instructionSetFromTargetString('nonsense-target')).toBeUndefined();
+        expect(instructionSetFromTargetString('')).toBeUndefined();
+    });
+});
 
-        expect(isets.getCompilerInstructionSetHint(false, '/opt/compiler-explorer/gcc-12.2.0/bin/g++')).toBe('amd64');
+describe('tripleForInstructionSet', () => {
+    it('returns the canonical triple for known InstructionSets', () => {
+        expect(tripleForInstructionSet('aarch64')).toBe('aarch64');
+        expect(tripleForInstructionSet('amd64')).toBe('x86_64');
+        expect(tripleForInstructionSet('riscv64')).toBe('rv64');
+        expect(tripleForInstructionSet('powerpc')).toBe('powerpc');
+        expect(tripleForInstructionSet('hppa')).toBe('hppa');
     });
 
-    it('should recognize hppa from compiler target string', () => {
-        const isets = new InstructionSets();
+    it('returns null for InstructionSets with no LLVM triple', () => {
+        expect(tripleForInstructionSet('python')).toBeNull();
+        expect(tripleForInstructionSet('java')).toBeNull();
+        expect(tripleForInstructionSet('evm')).toBeNull();
+    });
 
-        expect(isets.getCompilerInstructionSetHint('hppa-unknown-linux-gnu')).toBe('hppa');
+    it('tolerates null/undefined input', () => {
+        expect(tripleForInstructionSet(null)).toBeNull();
+        expect(tripleForInstructionSet(undefined)).toBeNull();
     });
 });
