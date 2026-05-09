@@ -22,8 +22,6 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import path from 'node:path';
-
 import {beforeAll, describe, expect, it} from 'vitest';
 
 import {CompilationEnvironment} from '../lib/compilation-env.js';
@@ -32,21 +30,20 @@ import {languages} from '../lib/languages.js';
 import {LanguageKey} from '../types/languages.interfaces.js';
 import {makeCompilationEnvironment, makeFakeCompilerInfo} from './utils.js';
 
-// Subclass that exposes protected hooks so the tests can validate the
-// extension points alternative Lua implementations would use.
+// Subclass that exposes the protected disassembly hook so tests can validate
+// the extension point alternative Lua implementations would use.
 class TestLuaCompiler extends LuaCompiler {
-    public callResolveLuacExe(): string {
-        return this.resolveLuacExe();
-    }
-
-    public callGetDisassemblyArgs(userOptions: string[], inputFilename: string): string[] {
-        return this.getDisassemblyArgs(userOptions, inputFilename);
+    public callGetDisassemblyArgs(options: string[], inputFilename: string): string[] {
+        return this.getDisassemblyArgs(options, inputFilename);
     }
 }
 
 const testLanguages = {
     lua: {id: 'lua' as LanguageKey},
 };
+
+// Obviously-fake paths so nobody mistakes these for real install locations.
+const fakeLuacExe = '/fake/test/lua/bin/luac';
 
 describe('Lua language definition', () => {
     it('is registered with the expected metadata', () => {
@@ -65,9 +62,8 @@ describe('Lua language definition', () => {
 
 describe('LuaCompiler', () => {
     let ce: CompilationEnvironment;
-    const luaExe = path.join('/', 'opt', 'lua-5.4.7', 'bin', 'lua5.4');
     const info = {
-        exe: luaExe,
+        exe: fakeLuacExe,
         remote: {
             target: 'foo',
             path: 'bar',
@@ -89,23 +85,17 @@ describe('LuaCompiler', () => {
 
     it('emits no framework options for the lua filter', () => {
         const compiler = new TestLuaCompiler(makeFakeCompilerInfo(info), ce);
-        expect(compiler.optionsForFilter({} as any, '/tmp/output')).toEqual([]);
-    });
-
-    it('derives luac path from the configured lua binary by default', () => {
-        const compiler = new TestLuaCompiler(makeFakeCompilerInfo(info), ce);
-        expect(compiler.callResolveLuacExe()).toBe(path.join('/opt', 'lua-5.4.7', 'bin', 'luac5.4'));
-    });
-
-    it('derives luac path correctly when exe is just "lua"', () => {
-        const plainInfo = {...info, exe: '/usr/bin/lua'};
-        const compiler = new TestLuaCompiler(makeFakeCompilerInfo(plainInfo), ce);
-        expect(compiler.callResolveLuacExe()).toBe(path.join('/usr/bin', 'luac'));
+        expect(compiler.optionsForFilter({} as any, '/fake/test/output')).toEqual([]);
     });
 
     it('builds a luac listing command line for disassembly', () => {
         const compiler = new TestLuaCompiler(makeFakeCompilerInfo(info), ce);
-        expect(compiler.callGetDisassemblyArgs([], '/tmp/input.lua')).toEqual(['-l', '-l', '-p', '/tmp/input.lua']);
+        expect(compiler.callGetDisassemblyArgs([], '/fake/test/input.lua')).toEqual([
+            '-l',
+            '-l',
+            '-p',
+            '/fake/test/input.lua',
+        ]);
     });
 
     it('processAsm parses source line numbers from luac listing format', async () => {

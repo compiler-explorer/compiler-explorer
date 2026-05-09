@@ -26,8 +26,13 @@ import fs from 'node:fs/promises';
 import path from 'node:path';
 
 import type {AsmResultSource, ParsedAsmResultLine} from '../../types/asmresult/asmresult.interfaces.js';
-import type {CompilationResult, ExecutionOptionsWithEnv} from '../../types/compilation/compilation.interfaces.js';
+import type {
+    CacheKey,
+    CompilationResult,
+    ExecutionOptionsWithEnv,
+} from '../../types/compilation/compilation.interfaces.js';
 import type {PreliminaryCompilerInfo} from '../../types/compiler.interfaces.js';
+import type {ExecutableExecutionOptions} from '../../types/execution/execution.interfaces.js';
 import type {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces.js';
 import {BaseCompiler} from '../base-compiler.js';
 import {CompilationEnvironment} from '../compilation-env.js';
@@ -35,15 +40,14 @@ import {BaseParser} from './argument-parsers.js';
 
 // Compiler for the reference (PUC-Rio) Lua interpreter.
 //
-// Disassembly is produced by `luac -l -l -p` which writes a verbose bytecode
-// listing to stdout. Execution is handled by the framework using the configured
-// `lua` binary in interpreted mode.
+// The configured `compiler.exe` is expected to be `luac`; it is invoked with
+// `-l -l -p` to produce a verbose bytecode listing on stdout. Execution uses
+// the `lua` interpreter configured via the `interpreter` property.
 //
 // Alternative Lua implementations (e.g. LuaJIT) can extend this class and
-// override `getLuacExe`/`getDisassemblyArgs` to plug in a different bytecode
-// dumper.
+// override `getDisassemblyArgs` to plug in a different bytecode dumper.
 export class LuaCompiler extends BaseCompiler {
-    private readonly luacExe: string;
+    private readonly interpreterExe: string;
 
     static get key() {
         return 'lua';
@@ -53,7 +57,7 @@ export class LuaCompiler extends BaseCompiler {
         super(compilerInfo, env);
         this.compiler.demangler = '';
         this.demanglerClass = null;
-        this.luacExe = this.resolveLuacExe();
+        this.interpreterExe = this.compilerProps<string>('interpreter', '');
     }
 
     override getArgumentParserClass() {
@@ -65,25 +69,8 @@ export class LuaCompiler extends BaseCompiler {
         return [];
     }
 
-    override orderArguments(
-        options: string[],
-        inputFilename: string,
-        libIncludes: string[],
-        libOptions: string[],
-        libPaths: string[],
-        libLinks: string[],
-        userOptions: string[],
-        staticLibLinks: string[],
-    ) {
-        // Place input filename last so user options precede it; runCompiler
-        // recognises the input file by position when building luac arguments.
-        return options.concat(libIncludes, libOptions, libPaths, libLinks, userOptions, staticLibLinks, [
-            this.filename(inputFilename),
-        ]);
-    }
-
     override async runCompiler(
-        _compiler: string,
+        compiler: string,
         options: string[],
         inputFilename: string,
         execOptions: ExecutionOptionsWithEnv,
@@ -96,10 +83,8 @@ export class LuaCompiler extends BaseCompiler {
             execOptions.customCwd = path.dirname(inputFilename);
         }
 
-        const userOptions = this.extractUserOptions(options, inputFilename);
-        const luacArgs = this.getDisassemblyArgs(userOptions, inputFilename);
-
-        const result = await this.exec(this.luacExe, luacArgs, execOptions);
+        const luacArgs = this.getDisassemblyArgs(options, inputFilename);
+        const result = await this.exec(compiler, luacArgs, execOptions);
 
         const outputFilename = this.getOutputFilename(path.dirname(inputFilename), this.outputFilebase);
         await fs.writeFile(outputFilename, result.stdout);
@@ -110,6 +95,24 @@ export class LuaCompiler extends BaseCompiler {
             languageId: this.getCompilerResultLanguageId(filters),
             instructionSet: this.getInstructionSetFromCompilerArgs(luacArgs),
         };
+    }
+
+    override async handleInterpreting(
+        key: CacheKey,
+        executeParameters: ExecutableExecutionOptions,
+    ): Promise<CompilationResult> {
+        if (!this.interpreterExe) {
+            return super.handleInterpreting(key, executeParameters);
+        }
+        // `compiler.exe` points at luac for compilation; swap it to the lua
+        // interpreter for the duration of the script run.
+        const originalExe = this.compiler.exe;
+        this.compiler.exe = this.interpreterExe;
+        try {
+            return await super.handleInterpreting(key, executeParameters);
+        } finally {
+            this.compiler.exe = originalExe;
+        }
     }
 
     override async processAsm(result: {asm: string}) {
@@ -150,33 +153,10 @@ export class LuaCompiler extends BaseCompiler {
         return {asm: bytecodeResult};
     }
 
-    /**
-     * Locate the bytecode dumper. Defaults to the configured `luacExe` property
-     * if set, otherwise derives it from the lua executable's path by mapping
-     * `.../bin/lua[suffix]` to `.../bin/luac[suffix]`.
-     */
-    protected resolveLuacExe(): string {
-        const configured = this.compilerProps<string>('luacExe', '');
-        if (configured) {
-            return configured;
-        }
-
-        const dir = path.dirname(this.compiler.exe);
-        const base = path.basename(this.compiler.exe);
-        const luacBase = base.startsWith('luac') ? base : 'luac' + base.slice('lua'.length);
-        return path.join(dir, luacBase);
-    }
-
     /** Arguments passed to the bytecode dumper. */
-    protected getDisassemblyArgs(_userOptions: string[], inputFilename: string): string[] {
+    protected getDisassemblyArgs(_options: string[], inputFilename: string): string[] {
         // -l -l : verbose listing (constants, locals, upvalues)
         // -p    : parse only, do not write a bytecode file
         return ['-l', '-l', '-p', inputFilename];
-    }
-
-    /** Strip framework-injected entries from `options` and return user-supplied flags. */
-    private extractUserOptions(options: string[], inputFilename: string): string[] {
-        const inputBasename = this.filename(inputFilename);
-        return options.filter(opt => opt !== inputFilename && opt !== inputBasename);
     }
 }
