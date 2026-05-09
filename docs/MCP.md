@@ -30,8 +30,9 @@ claude mcp add --transport http compiler-explorer https://godbolt.org/mcp
 
 ## Tools
 
-All tools return JSON in a single `text` content block. Errors set `isError: true` and
-put a human-readable message in the same block.
+Successful responses are JSON in a single `text` content block. Error responses set
+`isError: true` and put a plain-text human-readable message in the same block (not
+a JSON envelope) — e.g. `Short link "abc" not found`, `Compilation error: ...`.
 
 ### `list_languages`
 
