@@ -834,14 +834,19 @@ export function* enumerateCompilers(
 }
 
 // Reports compilers whose effective `instructionSet` is unset. Backstops the
-// removal of the runtime inference heuristic (#8690).
+// removal of the runtime inference heuristic (#8690). Each compiler is
+// reported at most once even if reachable from multiple deployments.
 export function findCompilersWithoutInstructionSet(
     files: Array<{filename: string; parsed: ParsedPropertiesFile}>,
 ): MissingInstructionSet[] {
     const missing: MissingInstructionSet[] = [];
+    const seen = new Set<string>();
     for (const c of enumerateCompilers(files)) {
         const resolved = c.resolve('instructionSet');
         if (resolved === undefined || resolved === '') {
+            const key = `${c.lang}\0${c.compilerId}\0${c.groupChain.join(',')}`;
+            if (seen.has(key)) continue;
+            seen.add(key);
             missing.push({lang: c.lang, compilerId: c.compilerId, groupChain: c.groupChain});
         }
     }

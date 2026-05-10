@@ -708,6 +708,39 @@ describe('findCompilersWithoutInstructionSet (synthetic)', () => {
         ];
         expect(findCompilersWithoutInstructionSet(files)).toEqual([]);
     });
+
+    it('treats each deployment independently', () => {
+        // Different env files are separate deployments — gpu has its own
+        // `compilers=` list and doesn't inherit amazon's. A compiler missing
+        // a tag in gpu must be reported even if amazon's compilers all have one.
+        const files = [
+            file('foo.defaults.properties', 'compilers=alpha\n'),
+            file('foo.amazon.properties', 'compiler.alpha.exe=/a\ncompiler.alpha.instructionSet=amd64\n'),
+            file('foo.gpu.properties', 'compilers=beta\ncompiler.beta.exe=/b\n'),
+        ];
+        expect(findCompilersWithoutInstructionSet(files)).toEqual([{lang: 'foo', compilerId: 'beta', groupChain: []}]);
+    });
+
+    it('honours # Disabled: comments per-deployment', () => {
+        const files = [
+            file('foo.defaults.properties', 'compilers=alpha\n'),
+            file('foo.amazon.properties', ['# Disabled: alpha', 'compiler.alpha.exe=/a', ''].join('\n')),
+        ];
+        // alpha is disabled in amazon → not reported despite missing instructionSet.
+        expect(findCompilersWithoutInstructionSet(files)).toEqual([]);
+    });
+
+    it('dedupes a compiler reported in multiple deployments', () => {
+        // Same untagged compiler reachable from both env overlays — should
+        // appear once in the report, not twice.
+        const files = [
+            file('foo.defaults.properties', 'compilers=&shared\ngroup.shared.compilers=alpha\ncompiler.alpha.exe=/a\n'),
+            file('foo.amazon.properties', '# this overlay adds nothing\n'),
+            file('foo.gpu.properties', '# this overlay adds nothing\n'),
+        ];
+        const missing = findCompilersWithoutInstructionSet(files);
+        expect(missing).toEqual([{lang: 'foo', compilerId: 'alpha', groupChain: ['shared']}]);
+    });
 });
 
 describe('extractTargetTokens', () => {
