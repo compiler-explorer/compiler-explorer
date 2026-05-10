@@ -775,16 +775,21 @@ function expandCompilersList(
 // `resolve` that follows the standard inheritance chain. Used by both the
 // instructionSet-presence check and the instructionSet-vs-`-target`
 // consistency check.
+//
+// Each `<lang>.<env>.properties` (env != "defaults") is its own *deployment*:
+// godbolt.org uses `amazon`, the GPU instances use `gpu`, the Windows
+// instances use `amazonwin`, etc. They have separate `compilers=` lists and
+// don't see each other. We validate each deployment as `<lang>.defaults +
+// <lang>.<env>` independently, so a compiler reachable only from `c++.gpu`
+// is checked against the gpu+defaults overlay (not the amazon overlay).
+//
+// `disabledIds` collected from `# Disabled:` comments are honoured per-file:
+// a compiler explicitly disabled in any file in the deployment is skipped.
 export function* enumerateCompilers(
     files: Array<{filename: string; parsed: ParsedPropertiesFile}>,
 ): Generator<CompilerPropertyContext> {
-    // Build per-language layered lookup. Each language's effective config is the
-    // overlay of all its files; when an environment file (e.g. `c++.amazon`)
-    // sets a key, it wins over the same key in the corresponding `c++.defaults`.
-    // We mimic the runtime behaviour by walking files in `defaults` < others
-    // order — the actual hierarchy varies by deployment but defaults is always
-    // the lowest-priority layer.
-    const langFiles = new Map<string, Array<{env: string; props: Map<string, string>}>>();
+    type Layer = {env: string; props: Map<string, string>; disabled: Set<string>};
+    const langFiles = new Map<string, {defaults?: Layer; envs: Layer[]}>();
     for (const {filename, parsed} of files) {
         const m = filename.match(/^([^.]+(?:\.[^.]+)*?)\.([^.]+)\.properties$/);
         if (!m) continue;
@@ -792,29 +797,38 @@ export function* enumerateCompilers(
         if (['execution', 'compiler-explorer', 'aws', 'asm-docs', 'builtin'].includes(lang)) continue;
         const props = new Map<string, string>();
         for (const p of parsed.properties) props.set(p.key, p.value);
-        if (!langFiles.has(lang)) langFiles.set(lang, []);
-        langFiles.get(lang)!.push({env, props});
+        const layer: Layer = {env, props, disabled: parsed.disabledIds};
+        const slot = langFiles.get(lang) ?? {envs: []};
+        if (env === 'defaults') slot.defaults = layer;
+        else slot.envs.push(layer);
+        langFiles.set(lang, slot);
     }
 
-    for (const [lang, layers] of langFiles) {
-        layers.sort((a, b) => (a.env === 'defaults' ? -1 : b.env === 'defaults' ? 1 : 0));
-        const lookup = (key: string): string | undefined => {
-            for (let i = layers.length - 1; i >= 0; i--) {
-                if (layers[i].props.has(key)) return layers[i].props.get(key);
-            }
-            return undefined;
-        };
-        for (const {compilerId, groupChain} of expandCompilersList(lookup, 'compilers')) {
-            const resolve = (property: string): string | undefined => {
-                const direct = lookup(`compiler.${compilerId}.${property}`);
-                if (direct !== undefined) return direct;
-                for (const g of groupChain) {
-                    const v = lookup(`group.${g}.${property}`);
-                    if (v !== undefined) return v;
+    for (const [lang, {defaults, envs}] of langFiles) {
+        // For langs with no env files (defaults-only), validate just defaults.
+        const overlays = envs.length > 0 ? envs : defaults ? [defaults] : [];
+        for (const env of overlays) {
+            const stack: Layer[] = defaults && env !== defaults ? [defaults, env] : [env];
+            const lookup = (key: string): string | undefined => {
+                for (let i = stack.length - 1; i >= 0; i--) {
+                    if (stack[i].props.has(key)) return stack[i].props.get(key);
                 }
-                return lookup(property);
+                return undefined;
             };
-            yield {lang, compilerId, groupChain, resolve};
+            const isDisabled = (id: string) => stack.some(l => l.disabled.has(id));
+            for (const {compilerId, groupChain} of expandCompilersList(lookup, 'compilers')) {
+                if (isDisabled(compilerId) || groupChain.some(isDisabled)) continue;
+                const resolve = (property: string): string | undefined => {
+                    const direct = lookup(`compiler.${compilerId}.${property}`);
+                    if (direct !== undefined) return direct;
+                    for (const g of groupChain) {
+                        const v = lookup(`group.${g}.${property}`);
+                        if (v !== undefined) return v;
+                    }
+                    return lookup(property);
+                };
+                yield {lang, compilerId, groupChain, resolve};
+            }
         }
     }
 }
@@ -834,18 +848,23 @@ export function findCompilersWithoutInstructionSet(
     return missing;
 }
 
-// Extract `-target X`, `--target=X`, and `-march=X` values from an options
-// string. Returns at most one entry per flag occurrence; consumers iterate
-// to handle the (rare) case of multiple `-target` flags.
+// Extract target/arch override values from an options string. Recognises:
+//   `-target X` / `--target X` / `--target=X`         (clang/gcc)
+//   `-march=X`                                        (gcc/clang)
+//   `--targetarch X` / `--targetarch=X`               (.NET ilc/crossgen2)
+// Returns at most one entry per flag occurrence; consumers iterate to handle
+// the (rare) case of multiple flags.
 export function extractTargetTokens(options: string): string[] {
     const out: string[] = [];
     const tokens = options.split(/\s+/).filter(t => t !== '');
     for (let i = 0; i < tokens.length; i++) {
         const t = tokens[i];
-        if (t === '-target' || t === '--target') {
+        if (t === '-target' || t === '--target' || t === '--targetarch') {
             if (i + 1 < tokens.length) out.push(tokens[++i]);
         } else if (t.startsWith('--target=')) {
             out.push(t.slice('--target='.length));
+        } else if (t.startsWith('--targetarch=')) {
+            out.push(t.slice('--targetarch='.length));
         } else if (t.startsWith('-march=')) {
             out.push(t.slice('-march='.length));
         }

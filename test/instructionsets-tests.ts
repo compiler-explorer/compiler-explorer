@@ -51,6 +51,18 @@ describe('instructionSetFromTargetString', () => {
         expect(instructionSetFromTargetString('arm')).toBe('arm32');
     });
 
+    it('matches the .NET --targetarch short spellings', () => {
+        // ilc / crossgen2 use these short names rather than triples.
+        expect(instructionSetFromTargetString('x64')).toBe('amd64');
+        expect(instructionSetFromTargetString('arm64')).toBe('aarch64');
+        expect(instructionSetFromTargetString('loongarch64')).toBe('loongarch');
+        expect(instructionSetFromTargetString('riscv64')).toBe('riscv64');
+        expect(instructionSetFromTargetString('wasm')).toBe('wasm32');
+        expect(instructionSetFromTargetString('x86')).toBe('x86');
+        // wasm64 must still resolve to wasm64 (not wasm32 via the `wasm` alias).
+        expect(instructionSetFromTargetString('wasm64')).toBe('wasm64');
+    });
+
     it('returns undefined for unrecognised target strings', () => {
         expect(instructionSetFromTargetString('nonsense-target')).toBeUndefined();
         expect(instructionSetFromTargetString('')).toBeUndefined();

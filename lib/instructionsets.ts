@@ -44,12 +44,17 @@ import {InstructionSet} from '../types/instructionsets.js';
 // InstructionSet. The first entry is also the canonical `-mtriple=` value.
 // Substring matching is `String.includes`, so each list omits prefixes
 // already covered by an earlier entry (e.g. `'ppc'` covers `ppc64`).
+//
+// Iteration order is load-bearing: more-specific prefixes must come before
+// strict-substring ones (e.g. `aarch64` before `arm32`, `wasm64` before
+// `wasm32`). The TypeScript-preserved declaration order is what
+// `Object.entries` walks.
 const TARGET_SUBSTRINGS: Partial<Record<InstructionSet, readonly string[]>> = {
-    // `armv8`/`armv9` are AArch64 architecture levels (`-march=armv8-a` etc.) —
-    // distinguish from arm32 by listing them here so the iteration matches
-    // them before falling through to `arm32: ['arm']`.
-    aarch64: ['aarch64', 'armv8', 'armv9'],
-    amd64: ['x86_64'],
+    // AArch64: `armv8`/`armv9` are AArch64 architecture levels (`-march=armv8-a`).
+    // `arm64` is the .NET `--targetarch` spelling. Listed before `arm32`'s `'arm'`.
+    aarch64: ['aarch64', 'armv8', 'armv9', 'arm64'],
+    // `x64` is the .NET `--targetarch` spelling for amd64.
+    amd64: ['x86_64', 'x64'],
     arm32: ['arm'],
     avr: ['avr'],
     c6x: ['tic6x'],
@@ -68,8 +73,11 @@ const TARGET_SUBSTRINGS: Partial<Record<InstructionSet, readonly string[]>> = {
     sh: ['sh'],
     sparc: ['sparc'],
     vax: ['vax'],
-    wasm32: ['wasm32'],
+    // wasm64 must be checked before wasm32, otherwise the bare `wasm` alias
+    // (added below for .NET `--targetarch wasm`) would steal `wasm64-...`.
     wasm64: ['wasm64'],
+    wasm32: ['wasm32', 'wasm'],
+    x86: ['x86'],
     xtensa: ['xtensa'],
     z180: ['z180'],
     z80: ['z80'],

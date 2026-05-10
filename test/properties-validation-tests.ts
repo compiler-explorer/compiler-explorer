@@ -711,11 +711,14 @@ describe('findCompilersWithoutInstructionSet (synthetic)', () => {
 });
 
 describe('extractTargetTokens', () => {
-    it('extracts -target, --target=, and -march= values', () => {
+    it('extracts -target, --target=, -march=, and --targetarch values', () => {
         expect(extractTargetTokens('-target arm-linux-gnueabihf')).toEqual(['arm-linux-gnueabihf']);
         expect(extractTargetTokens('--target=riscv64-unknown-elf')).toEqual(['riscv64-unknown-elf']);
         expect(extractTargetTokens('-march=avr -O2')).toEqual(['avr']);
         expect(extractTargetTokens('-O2 -target wasm32 --target=foo -march=bar')).toEqual(['wasm32', 'foo', 'bar']);
+        // .NET ilc / crossgen2 spelling.
+        expect(extractTargetTokens('--targetarch arm64')).toEqual(['arm64']);
+        expect(extractTargetTokens('--targetarch=loongarch64')).toEqual(['loongarch64']);
     });
 
     it('returns nothing when no target/arch flags present', () => {
