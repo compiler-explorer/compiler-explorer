@@ -110,12 +110,18 @@ export function tripleForInstructionSet(instructionSet: InstructionSet | null | 
     return TARGET_SUBSTRINGS[instructionSet]?.[0] ?? null;
 }
 
-// Whether an InstructionSet is one CE recognises in compiler-target strings
-// (i.e. has an entry in TARGET_SUBSTRINGS). Bytecode / VM / IR formats like
-// `python`, `java`, `mpy`, `evm`, `beam`, `spirv`, etc. return false — for
-// those, a `-target=`/`-march=` flag in compile options doesn't determine
-// the output arch (it controls host build, optimisation hints, etc.).
-export function isHostArchInstructionSet(instructionSet: InstructionSet | null | undefined): boolean {
+// Whether an InstructionSet has an entry in `TARGET_SUBSTRINGS` — i.e. CE
+// knows how to recognise it inside a compiler-target string. The
+// instructionSet-vs-`-target` consistency check uses this to decide whether
+// a flag in compile options *could* be talking about this compiler's output
+// arch. Returns false for VM/bytecode formats (`python`, `java`, `mpy`,
+// `evm`, `beam`, `dex`, `hook`, `perl`, `ptx`, `sass`, `eravm`, `mos6502`,
+// `core`) where the asm view is fixed regardless of compile flags. Also
+// returns false for some real CPU archs (`6502`, `mrisc32`, `wdc65c816`)
+// that no current production config emits via `-target=`; if you add such
+// a config, extend `TARGET_SUBSTRINGS` first or the consistency check will
+// silently skip drift on those compilers.
+export function hasTargetStringMapping(instructionSet: InstructionSet | null | undefined): boolean {
     if (!instructionSet) return false;
     return instructionSet in TARGET_SUBSTRINGS;
 }

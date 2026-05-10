@@ -27,7 +27,7 @@ import path from 'node:path';
 
 import {afterAll, beforeAll, describe, expect, it} from 'vitest';
 
-import {instructionSetFromTargetString, isHostArchInstructionSet} from '../lib/instructionsets.js';
+import {hasTargetStringMapping, instructionSetFromTargetString} from '../lib/instructionsets.js';
 import {
     enumerateCompilers,
     extractTargetTokens,
@@ -41,6 +41,7 @@ import {
     validateRawFile,
 } from '../lib/properties-validator.js';
 import type {InstructionSet} from '../types/instructionsets.js';
+import {InstructionSetsList} from '../types/instructionsets.js';
 
 function validate(content: string, filename = 'test.properties', options?: RawValidatorOptions) {
     return validateRawFile(parsePropertiesFileRaw(content, filename), options);
@@ -606,6 +607,22 @@ describe('Real config validation', () => {
         expect(filesWithIssues, 'Files with suspicious paths').toEqual([]);
     });
 
+    it('should have only valid InstructionSet values configured', () => {
+        // Catches typos like `instructionSet=mos6052` (silently skipped by
+        // the consistency check below because it isn't in TARGET_SUBSTRINGS).
+        // compiler-finder.ts asserts this at runtime startup, but that only
+        // fires when the affected compiler is actually loaded.
+        const known = new Set<string>(InstructionSetsList);
+        const bad: string[] = [];
+        for (const c of enumerateCompilers(propertyFiles)) {
+            const declared = c.resolve('instructionSet');
+            if (declared && !known.has(declared)) {
+                bad.push(`${c.lang}/${c.compilerId}: instructionSet=${declared}`);
+            }
+        }
+        expect(bad, `Unknown instructionSet values:\n${bad.join('\n')}`).toEqual([]);
+    });
+
     it('should have an explicit instructionSet for every compiler', () => {
         // Replaces the old runtime inference heuristic in lib/instructionsets.ts
         // (removed alongside this validator). Every compiler must resolve an
@@ -643,7 +660,7 @@ describe('Real config validation', () => {
             if (!options) continue;
             const declared = c.resolve('instructionSet');
             // declared is `string | undefined`; the predicate tolerates both.
-            if (!isHostArchInstructionSet(declared as InstructionSet | undefined)) continue;
+            if (!hasTargetStringMapping(declared as InstructionSet | undefined)) continue;
             for (const target of extractTargetTokens(options)) {
                 const inferred = instructionSetFromTargetString(target);
                 if (inferred && declared && inferred !== declared) {
@@ -785,6 +802,21 @@ describe('extractTargetTokens', () => {
         expect(extractTargetTokens('"-march=host"')).toEqual(['host']);
         expect(extractTargetTokens("'-march=host'")).toEqual(['host']);
         expect(extractTargetTokens('-O2 "--target=aarch64-linux-gnu"')).toEqual(['aarch64-linux-gnu']);
+    });
+
+    it('documents quote-stripping limitations (intentional gaps)', () => {
+        // Leading-only quote: token doesn't start with a flag → invisible.
+        expect(extractTargetTokens('"-march=host')).toEqual([]);
+        // Trailing-only quote: flag IS extracted but value carries the
+        // stray quote. Worse than ideal but still surfaces drift.
+        expect(extractTargetTokens('-march=host"')).toEqual(['host"']);
+        // Whitespace inside quotes splits the token across the gap; the
+        // first half is `"-O2` (no recognised flag), the second half is
+        // `-march=host"` (extracted with dirty value).
+        expect(extractTargetTokens('"-O2 -march=host"')).toEqual(['host"']);
+        // Bare `"` is length-1 — the guard prevents shrinking to ''. No
+        // recognised flag, so nothing extracted.
+        expect(extractTargetTokens('"')).toEqual([]);
     });
 
     it('returns nothing when no target/arch flags present', () => {

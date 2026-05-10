@@ -25,8 +25,8 @@
 import {describe, expect, it} from 'vitest';
 
 import {
+    hasTargetStringMapping,
     instructionSetFromTargetString,
-    isHostArchInstructionSet,
     tripleForInstructionSet,
 } from '../lib/instructionsets.js';
 
@@ -109,26 +109,38 @@ describe('tripleForInstructionSet', () => {
     });
 });
 
-describe('isHostArchInstructionSet', () => {
-    it('returns true for real CPU architectures', () => {
-        expect(isHostArchInstructionSet('amd64')).toBe(true);
-        expect(isHostArchInstructionSet('aarch64')).toBe(true);
-        expect(isHostArchInstructionSet('riscv64')).toBe(true);
-        expect(isHostArchInstructionSet('hppa')).toBe(true);
-        expect(isHostArchInstructionSet('x86')).toBe(true);
+describe('hasTargetStringMapping', () => {
+    it('returns true for archs CE recognises in target strings', () => {
+        expect(hasTargetStringMapping('amd64')).toBe(true);
+        expect(hasTargetStringMapping('aarch64')).toBe(true);
+        expect(hasTargetStringMapping('riscv64')).toBe(true);
+        expect(hasTargetStringMapping('hppa')).toBe(true);
+        expect(hasTargetStringMapping('x86')).toBe(true);
     });
 
-    it('returns false for VM/IR/bytecode formats', () => {
-        expect(isHostArchInstructionSet('python')).toBe(false);
-        expect(isHostArchInstructionSet('java')).toBe(false);
-        expect(isHostArchInstructionSet('mpy')).toBe(false);
-        expect(isHostArchInstructionSet('evm')).toBe(false);
-        expect(isHostArchInstructionSet('beam')).toBe(false);
-        expect(isHostArchInstructionSet('spirv')).toBe(false);
+    it('returns false for VM/bytecode formats (output arch is fixed)', () => {
+        expect(hasTargetStringMapping('python')).toBe(false);
+        expect(hasTargetStringMapping('java')).toBe(false);
+        expect(hasTargetStringMapping('mpy')).toBe(false);
+        expect(hasTargetStringMapping('evm')).toBe(false);
+        expect(hasTargetStringMapping('beam')).toBe(false);
+        expect(hasTargetStringMapping('spirv')).toBe(false);
+    });
+
+    it('returns false for real CPU archs not yet in TARGET_SUBSTRINGS', () => {
+        // Pinning current behaviour: these are real CPUs but no production
+        // config exposes them via `-target=` strings, so the consistency
+        // check skips them. If you add a `-target=mos-...`-style override,
+        // extend `TARGET_SUBSTRINGS` first or the check will silently miss
+        // drift on these compilers.
+        expect(hasTargetStringMapping('6502')).toBe(false);
+        expect(hasTargetStringMapping('mos6502')).toBe(false);
+        expect(hasTargetStringMapping('mrisc32')).toBe(false);
+        expect(hasTargetStringMapping('wdc65c816')).toBe(false);
     });
 
     it('tolerates null/undefined input', () => {
-        expect(isHostArchInstructionSet(null)).toBe(false);
-        expect(isHostArchInstructionSet(undefined)).toBe(false);
+        expect(hasTargetStringMapping(null)).toBe(false);
+        expect(hasTargetStringMapping(undefined)).toBe(false);
     });
 });

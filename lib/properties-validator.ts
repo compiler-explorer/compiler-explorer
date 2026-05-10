@@ -866,8 +866,18 @@ export function extractTargetTokens(options: string): string[] {
     // python.amazon.properties' micropython group). CE doesn't shell-parse
     // properties values, but for the purpose of *finding* recognised flags
     // we strip surrounding single/double quotes from each whitespace token.
+    //
+    // Limitations (intentional — keeps the parser simple, no current config
+    // hits these and a real shell tokeniser is overkill):
+    //  - Mismatched/unbalanced quotes (`"-march=foo` or `-march=foo"`) are
+    //    NOT stripped; the flag is then invisible to the validator.
+    //  - Whitespace inside quoted strings (`options="-O2 -march=foo"`) splits
+    //    the token across the space; quote-stripping won't reassemble it.
+    //  - The `length >= 2` guard avoids a bare `"` token shrinking to `''`.
     const stripQuotes = (s: string) =>
-        (s.startsWith('"') && s.endsWith('"')) || (s.startsWith("'") && s.endsWith("'")) ? s.slice(1, -1) : s;
+        s.length >= 2 && ((s.startsWith('"') && s.endsWith('"')) || (s.startsWith("'") && s.endsWith("'")))
+            ? s.slice(1, -1)
+            : s;
     const tokens = options
         .split(/\s+/)
         .filter(t => t !== '')
