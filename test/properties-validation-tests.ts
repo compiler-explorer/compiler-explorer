@@ -27,7 +27,7 @@ import path from 'node:path';
 
 import {afterAll, beforeAll, describe, expect, it} from 'vitest';
 
-import {instructionSetFromTargetString} from '../lib/instructionsets.js';
+import {instructionSetFromTargetString, isHostArchInstructionSet} from '../lib/instructionsets.js';
 import {
     enumerateCompilers,
     extractTargetTokens,
@@ -40,6 +40,7 @@ import {
     validateCrossFileCompilerIds,
     validateRawFile,
 } from '../lib/properties-validator.js';
+import type {InstructionSet} from '../types/instructionsets.js';
 
 function validate(content: string, filename = 'test.properties', options?: RawValidatorOptions) {
     return validateRawFile(parsePropertiesFileRaw(content, filename), options);
@@ -626,15 +627,23 @@ describe('Real config validation', () => {
     it('should have instructionSet matching any -target/-march in default options', () => {
         // Catches the realistic regression where someone bumps a clang-target
         // group's `-target` flag (or adds a new per-compiler `-target` override)
-        // without updating the corresponding `instructionSet=`. We allow the
-        // mismatch when `instructionSetFromTargetString` returns undefined —
-        // that means the target string is one we don't recognise (e.g. a
-        // vendor-specific triple), which is a separate concern from drift.
+        // without updating the corresponding `instructionSet=`.
+        //
+        // We skip the check when:
+        //  - `instructionSetFromTargetString` returns undefined — the target
+        //    isn't one we recognise (e.g. a vendor-specific triple), so we
+        //    can't say if it disagrees.
+        //  - The declared instructionSet is a bytecode / VM / IR format
+        //    (`mpy`, `java`, `evm`, etc.). For those, runtime `-target`/
+        //    `-march` flags control host build or optimisation hints, not the
+        //    output arch — micropython's `-march=x64` is the canonical case.
         const mismatches: string[] = [];
         for (const c of enumerateCompilers(propertyFiles)) {
             const options = c.resolve('options');
             if (!options) continue;
             const declared = c.resolve('instructionSet');
+            // declared is `string | undefined`; the predicate tolerates both.
+            if (!isHostArchInstructionSet(declared as InstructionSet | undefined)) continue;
             for (const target of extractTargetTokens(options)) {
                 const inferred = instructionSetFromTargetString(target);
                 if (inferred && declared && inferred !== declared) {
@@ -767,6 +776,15 @@ describe('extractTargetTokens', () => {
         // .NET ilc / crossgen2 spelling.
         expect(extractTargetTokens('--targetarch arm64')).toEqual(['arm64']);
         expect(extractTargetTokens('--targetarch=loongarch64')).toEqual(['loongarch64']);
+    });
+
+    it('strips surrounding quotes from option tokens', () => {
+        // Some property files quote their options strings (e.g. micropython
+        // in `python.amazon.properties`). The validator should still see the
+        // flag inside.
+        expect(extractTargetTokens('"-march=host"')).toEqual(['host']);
+        expect(extractTargetTokens("'-march=host'")).toEqual(['host']);
+        expect(extractTargetTokens('-O2 "--target=aarch64-linux-gnu"')).toEqual(['aarch64-linux-gnu']);
     });
 
     it('returns nothing when no target/arch flags present', () => {

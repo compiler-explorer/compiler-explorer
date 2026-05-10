@@ -24,7 +24,11 @@
 
 import {describe, expect, it} from 'vitest';
 
-import {instructionSetFromTargetString, tripleForInstructionSet} from '../lib/instructionsets.js';
+import {
+    instructionSetFromTargetString,
+    isHostArchInstructionSet,
+    tripleForInstructionSet,
+} from '../lib/instructionsets.js';
 
 describe('instructionSetFromTargetString', () => {
     it('matches LLVM-style triples to InstructionSet', () => {
@@ -102,5 +106,29 @@ describe('tripleForInstructionSet', () => {
     it('tolerates null/undefined input', () => {
         expect(tripleForInstructionSet(null)).toBeNull();
         expect(tripleForInstructionSet(undefined)).toBeNull();
+    });
+});
+
+describe('isHostArchInstructionSet', () => {
+    it('returns true for real CPU architectures', () => {
+        expect(isHostArchInstructionSet('amd64')).toBe(true);
+        expect(isHostArchInstructionSet('aarch64')).toBe(true);
+        expect(isHostArchInstructionSet('riscv64')).toBe(true);
+        expect(isHostArchInstructionSet('hppa')).toBe(true);
+        expect(isHostArchInstructionSet('x86')).toBe(true);
+    });
+
+    it('returns false for VM/IR/bytecode formats', () => {
+        expect(isHostArchInstructionSet('python')).toBe(false);
+        expect(isHostArchInstructionSet('java')).toBe(false);
+        expect(isHostArchInstructionSet('mpy')).toBe(false);
+        expect(isHostArchInstructionSet('evm')).toBe(false);
+        expect(isHostArchInstructionSet('beam')).toBe(false);
+        expect(isHostArchInstructionSet('spirv')).toBe(false);
+    });
+
+    it('tolerates null/undefined input', () => {
+        expect(isHostArchInstructionSet(null)).toBe(false);
+        expect(isHostArchInstructionSet(undefined)).toBe(false);
     });
 });

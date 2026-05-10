@@ -109,3 +109,13 @@ export function tripleForInstructionSet(instructionSet: InstructionSet | null | 
     if (!instructionSet) return null;
     return TARGET_SUBSTRINGS[instructionSet]?.[0] ?? null;
 }
+
+// Whether an InstructionSet is one CE recognises in compiler-target strings
+// (i.e. has an entry in TARGET_SUBSTRINGS). Bytecode / VM / IR formats like
+// `python`, `java`, `mpy`, `evm`, `beam`, `spirv`, etc. return false — for
+// those, a `-target=`/`-march=` flag in compile options doesn't determine
+// the output arch (it controls host build, optimisation hints, etc.).
+export function isHostArchInstructionSet(instructionSet: InstructionSet | null | undefined): boolean {
+    if (!instructionSet) return false;
+    return instructionSet in TARGET_SUBSTRINGS;
+}

@@ -557,9 +557,9 @@ export class BaseCompiler {
             if (fromArgs) return fromArgs;
         }
         // Fall back to the compiler's configured arch. The validator
-        // (`findCompilersWithoutInstructionSet`) is a CI check, so a missing
-        // value isn't fatal at runtime; `compiler-finder` logs a warning when
-        // the field is empty so production misconfigs surface.
+        // (`findCompilersWithoutInstructionSet`) is a CI check, not a runtime
+        // guarantee — a missing value defaults silently to amd64, which is
+        // the host arch of essentially every CE installation.
         return this.compiler.instructionSet ?? 'amd64';
     }
 

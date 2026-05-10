@@ -862,7 +862,16 @@ export function findCompilersWithoutInstructionSet(
 // the (rare) case of multiple flags.
 export function extractTargetTokens(options: string): string[] {
     const out: string[] = [];
-    const tokens = options.split(/\s+/).filter(t => t !== '');
+    // A handful of property files quote their options strings (e.g.
+    // python.amazon.properties' micropython group). CE doesn't shell-parse
+    // properties values, but for the purpose of *finding* recognised flags
+    // we strip surrounding single/double quotes from each whitespace token.
+    const stripQuotes = (s: string) =>
+        (s.startsWith('"') && s.endsWith('"')) || (s.startsWith("'") && s.endsWith("'")) ? s.slice(1, -1) : s;
+    const tokens = options
+        .split(/\s+/)
+        .filter(t => t !== '')
+        .map(stripQuotes);
     for (let i = 0; i < tokens.length; i++) {
         const t = tokens[i];
         if (t === '-target' || t === '--target' || t === '--targetarch') {
