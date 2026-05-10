@@ -283,8 +283,8 @@ export class DotNetAsmParser implements IAsmParser {
         const sources: Array<AsmResultSource | null> = [];
         let currentMethodSourceMapping: DotNetMethodSourceMapping | undefined;
         let currentSource: AsmResultSource | null = null;
-        const inlineDebugInfoRe = /\bINL(?:RT|\d+)\s+@\s*(?:0x[0-9a-fA-F]+|\?\?\?)/;
-        const inlineRootOffsetRe = /INLRT\s+@\s*0x(?<offset>[0-9a-fA-F]+)/g;
+        const inlineDebugInfoRe = /\bINL(?:RT|\d+)\s+@\s*(?:0[xX][0-9a-fA-F]+|\?\?\?)/;
+        const inlineRootOffsetRe = /\bINLRT\s+@\s*0[xX](?<offset>[0-9a-fA-F]+)/g;
 
         for (const line in asmLines) {
             if (result.methodDef[line]) {
@@ -300,12 +300,14 @@ export class DotNetAsmParser implements IAsmParser {
             }
 
             const inlineRootOffsetMatches = Array.from(asmLines[line].matchAll(inlineRootOffsetRe));
-            const inlineRootOffsetMatch = inlineRootOffsetMatches.at(-1);
-            if (inlineRootOffsetMatch?.groups) {
+            const inlineRootOffset = inlineRootOffsetMatches.at(-1)?.groups?.offset;
+            if (inlineRootOffset !== undefined) {
                 lineSource = null;
+                // Inline chains may contain unknown child offsets, but a numeric INLRT still anchors the
+                // instruction to the root method's IL offset.
                 currentSource = this.getSourceForOffset(
                     currentMethodSourceMapping,
-                    Number.parseInt(inlineRootOffsetMatch.groups.offset, 16),
+                    Number.parseInt(inlineRootOffset, 16),
                 );
             } else if (inlineDebugInfoRe.test(asmLines[line])) {
                 // The IL location is unknown, so we can't get a precise source mapping for this instruction.
@@ -313,7 +315,7 @@ export class DotNetAsmParser implements IAsmParser {
             }
 
             const trimmedAsmLine = asmLines[line].trimStart();
-            if (!inlineRootOffsetMatch && trimmedAsmLine !== '' && !trimmedAsmLine.startsWith(';')) {
+            if (inlineRootOffset === undefined && trimmedAsmLine !== '' && !trimmedAsmLine.startsWith(';')) {
                 lineSource = currentSource;
             }
 

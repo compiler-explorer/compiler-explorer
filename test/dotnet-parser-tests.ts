@@ -695,6 +695,54 @@ const sourceMapping: DotNetSourceMapping = [
             54: source(119, 17),
         },
     },
+    {
+        method: {
+            typeName: 'MappingSample+<RunAsync>d__8',
+            typeArguments: ['!0', '!1', '!2'],
+            methodName: 'MoveNext',
+            methodArguments: [],
+            parameters: [],
+            parameterTypes: [],
+            returnType: '',
+            returnTypeSignature: valueType('void'),
+        },
+        offsets: {
+            24: source(104, 9),
+            54: source(106, 9),
+        },
+    },
+    {
+        method: {
+            typeName: 'MappingSample+<NormalizeAsync>d__10',
+            typeArguments: ['!0'],
+            methodName: 'MoveNext',
+            methodArguments: [],
+            parameters: [],
+            parameterTypes: [],
+            returnType: '',
+            returnTypeSignature: valueType('void'),
+        },
+        offsets: {
+            58: source(187, 29),
+            109: source(190, 13),
+        },
+    },
+    {
+        method: {
+            typeName: 'MappingSample+<Enumerate>d__9',
+            typeArguments: ['!0', '!1'],
+            methodName: 'MoveNext',
+            methodArguments: [],
+            parameters: [],
+            parameterTypes: [],
+            returnType: 'bool',
+            returnTypeSignature: valueType('bool'),
+        },
+        offsets: {
+            26: source(165, 14),
+            56: source(167, 13),
+        },
+    },
 ];
 
 const addDisasm = [
@@ -739,6 +787,15 @@ const inlineChainUnknownRootDisasm = [
     '       ret',
 ].join('\n');
 
+const inlineChainUnknownChildDisasm = [
+    '; Assembly listing for method MappingSample`1+<Enumerate>d__9`1[System.__Canon,int]:MoveNext():bool:this (FullOpts)',
+    'G_M49354_IG01:  ;; offset=0x0000',
+    '                            ; INL58 @ 0x009[E--] <- INL57 @ 0x020[E--] <- INL46 @ ??? <- INLRT @ 0x038[E--]',
+    '       mov      rcx, gword ptr [rbx+0x08]',
+    'G_M49354_IG02:  ;; offset=0x0007',
+    '       ret',
+].join('\n');
+
 const incrementDisasm = [
     '; Assembly listing for method Examples.Counter:Increment():this (FullOpts)',
     'G_M8093_IG01:  ;; offset=0x0000',
@@ -773,6 +830,39 @@ const complexSignatureDisasm = [
     '                            ; INLRT @ 0x036[E--]',
     '       mov      rax, rsi',
     'G_M48429_IG04:  ;; offset=0x0075',
+    '       ret',
+].join('\n');
+
+const iteratorStateMachineDisasm = [
+    '; Assembly listing for method MappingSample`1+<Enumerate>d__9`1[System.__Canon,int]:MoveNext():bool:this (FullOpts)',
+    'G_M49354_IG01:  ;; offset=0x0000',
+    '                            ; INLRT @ 0x01A[E--]',
+    '       xor      ecx, ecx',
+    '                            ; INLRT @ 0x038[E--]',
+    '       mov      rcx, gword ptr [rbx+0x08]',
+    'G_M49354_IG02:  ;; offset=0x0008',
+    '       ret',
+].join('\n');
+
+const asyncIteratorStateMachineDisasm = [
+    '; Assembly listing for method MappingSample`1+<NormalizeAsync>d__10[System.__Canon]:MoveNext():this (FullOpts)',
+    'G_M1647_IG01:  ;; offset=0x0000',
+    '                            ; INLRT @ 0x03A[E--]',
+    '       mov      rcx, gword ptr [rcx+0x10]',
+    '                            ; INLRT @ 0x06D[E--]',
+    '       mov      byte  ptr [rbp-0x28], 0',
+    'G_M1647_IG02:  ;; offset=0x0008',
+    '       ret',
+].join('\n');
+
+const asyncMethodStateMachineDisasm = [
+    '; Assembly listing for method MappingSample`1+<RunAsync>d__8`2[System.__Canon,IntParser,int]:MoveNext():this (FullOpts)',
+    'G_M33439_IG01:  ;; offset=0x0000',
+    '                            ; INLRT @ 0x018[E--]',
+    '       cmp      gword ptr [rsi], 0',
+    '                            ; INLRT @ 0x036[E--]',
+    '       xor      ecx, ecx',
+    'G_M33439_IG02:  ;; offset=0x0008',
     '       ret',
 ].join('\n');
 
@@ -823,6 +913,12 @@ describe('DotNetAsmParser', () => {
         expect(findLine(filteredResult, 'mov      eax, r8d')?.source).toBeNull();
     });
 
+    it('uses the root offset when only an intermediate inline frame has an unknown offset', () => {
+        const result = new DotNetAsmParser(sourceMapping).process(inlineChainUnknownChildDisasm, filters());
+
+        expect(findLine(result, 'mov      rcx, gword ptr [rbx+0x08]')?.source).toEqual(source(167, 13));
+    });
+
     it('matches instance void methods that end with this in JIT disassembly', () => {
         const result = new DotNetAsmParser(sourceMapping).process(incrementDisasm, filters());
 
@@ -837,6 +933,22 @@ describe('DotNetAsmParser', () => {
         expect(findLine(result, 'mov      gword ptr [rdi], rcx')?.source).toEqual(source(117, 17));
         expect(findLine(result, 'sub      ecx, dword ptr [rbx+0x18]')?.source).toEqual(source(118, 17));
         expect(findLine(result, 'mov      rax, rsi')?.source).toEqual(source(119, 17));
+    });
+
+    it('matches compiler-generated iterator and async state-machine MoveNext methods', () => {
+        const iteratorResult = new DotNetAsmParser(sourceMapping).process(iteratorStateMachineDisasm, filters());
+        const asyncIteratorResult = new DotNetAsmParser(sourceMapping).process(
+            asyncIteratorStateMachineDisasm,
+            filters(),
+        );
+        const asyncMethodResult = new DotNetAsmParser(sourceMapping).process(asyncMethodStateMachineDisasm, filters());
+
+        expect(findLine(iteratorResult, 'xor      ecx, ecx')?.source).toEqual(source(165, 14));
+        expect(findLine(iteratorResult, 'mov      rcx, gword ptr [rbx+0x08]')?.source).toEqual(source(167, 13));
+        expect(findLine(asyncIteratorResult, 'mov      rcx, gword ptr [rcx+0x10]')?.source).toEqual(source(187, 29));
+        expect(findLine(asyncIteratorResult, 'mov      byte  ptr [rbp-0x28], 0')?.source).toEqual(source(190, 13));
+        expect(findLine(asyncMethodResult, 'cmp      gword ptr [rsi], 0')?.source).toEqual(source(104, 9));
+        expect(findLine(asyncMethodResult, 'xor      ecx, ecx')?.source).toEqual(source(106, 9));
     });
 });
 
