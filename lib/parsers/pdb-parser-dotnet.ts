@@ -349,17 +349,10 @@ export class DotNetPdbParser {
     parse(): DotNetSourceMapping {
         const assemblyMethods = this.parseAssemblyMethods();
         const sequencePoints = this.parsePdbSequencePoints();
-        const sourceMapping: DotNetSourceMapping = [];
-
-        for (const methodRowId of Object.keys(sequencePoints).map(Number)) {
-            sourceMapping.push({method: assemblyMethods[methodRowId], offsets: sequencePoints[methodRowId]});
-        }
-
-        return sourceMapping;
-    }
-
-    private genericParameterArguments(count: number, prefix: '!' | '!!') {
-        return Array.from({length: count}, (_, index) => `${prefix}${index}`);
+        return Object.entries(sequencePoints).map(([methodRowId, offsets]) => ({
+            method: assemblyMethods[Number(methodRowId)],
+            offsets,
+        }));
     }
 
     private fallbackMetadataNameGenericArity(name: string) {
@@ -685,10 +678,9 @@ export class DotNetPdbParser {
                 {
                     const genericType = this.parseElementType(blob, offsetRef, resolveType);
                     const argumentCount = this.readCompressedUInt(blob, offsetRef).value;
-                    const argumentsText: DotNetTypeSignature[] = [];
-                    for (let i = 0; i < argumentCount; i++) {
-                        argumentsText.push(this.parseElementType(blob, offsetRef, resolveType));
-                    }
+                    const argumentsText = Array.from({length: argumentCount}, () =>
+                        this.parseElementType(blob, offsetRef, resolveType),
+                    );
                     return {
                         name: this.stripMetadataGenericArity(genericType.name, argumentCount),
                         arguments: argumentsText,
@@ -742,10 +734,9 @@ export class DotNetPdbParser {
         const parameterCount = this.readCompressedUInt(blob, offsetRef).value;
         const returnType = this.parseElementType(blob, offsetRef, resolveType);
 
-        const parameters: DotNetTypeSignature[] = [];
-        for (let i = 0; i < parameterCount; i++) {
-            parameters.push(this.parseElementType(blob, offsetRef, resolveType));
-        }
+        const parameters = Array.from({length: parameterCount}, () =>
+            this.parseElementType(blob, offsetRef, resolveType),
+        );
 
         return {genericParameterCount, parameters, returnType};
     }
@@ -955,16 +946,16 @@ export class DotNetPdbParser {
             const returnTypeText = formatTypeSignature(returnType);
 
             methodInfos[rowId] = {
-                methodArguments: this.genericParameterArguments(
-                    methodGenericParameterCounts[rowId] ?? signatureGenericParameterCount,
-                    '!!',
+                methodArguments: Array.from(
+                    {length: methodGenericParameterCounts[rowId] ?? signatureGenericParameterCount},
+                    (_, index) => `!!${index}`,
                 ),
                 methodName,
                 parameters: parameters.map(formatTypeSignature),
                 parameterTypes: parameters,
                 returnType: returnTypeText === 'void' ? '' : returnTypeText,
                 returnTypeSignature: returnType,
-                typeArguments: this.genericParameterArguments(type.genericParameterCount, '!'),
+                typeArguments: Array.from({length: type.genericParameterCount}, (_, index) => `!${index}`),
                 typeName: type.name,
             };
         }
