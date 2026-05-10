@@ -594,6 +594,9 @@ const complexDictionaryType = referenceType('System.Collections.Generic.Dictiona
     genericParameter('!0'),
     nestedInnerWithListType,
 ]);
+const asyncRunResultType = referenceType('Result', [
+    referenceType('System.ValueTuple', [valueType('int'), referenceType('System.String')]),
+]);
 
 const source = (line: number, column: number): AsmResultSource => ({file: null, line, column});
 
@@ -693,6 +696,25 @@ const sourceMapping: DotNetSourceMapping = [
             32: source(117, 17),
             40: source(118, 17),
             54: source(119, 17),
+        },
+    },
+    {
+        method: {
+            typeName: 'MappingSample',
+            typeArguments: ['!0'],
+            methodName: 'RunAsync',
+            methodArguments: ['!!0', '!!1'],
+            parameters: ['System.Collections.Generic.IEnumerable[System.String]', 'System.Threading.CancellationToken'],
+            parameterTypes: [
+                referenceType('System.Collections.Generic.IEnumerable', [referenceType('System.String')]),
+                valueType('System.Threading.CancellationToken'),
+            ],
+            returnType: 'System.Threading.Tasks.ValueTask[Result[System.ValueTuple[int,System.String]]]',
+            returnTypeSignature: referenceType('System.Threading.Tasks.ValueTask', [asyncRunResultType]),
+        },
+        offsets: {
+            0: source(214, 9),
+            16: source(216, 9),
         },
     },
     {
@@ -866,6 +888,17 @@ const asyncMethodStateMachineDisasm = [
     '       ret',
 ].join('\n');
 
+const runtimeAsyncMethodDisasm = [
+    '; Assembly listing for method MappingSample`1[System.__Canon]:RunAsync[IntParser,int](System.Collections.Generic.IEnumerable`1[System.String],System.Threading.CancellationToken):Result`1[System.ValueTuple`2[int,System.String]]:this (FullOpts)',
+    'G_M40702_IG01:  ;; offset=0x0000',
+    '                            ; INLRT @ 0x000[E--]',
+    '       call     CORINFO_HELP_GETSHARED_GCSTATIC_BASE',
+    '                            ; INLRT @ 0x010[E--]',
+    '       mov      rcx, gword ptr [rax+0x08]',
+    'G_M40702_IG02:  ;; offset=0x0008',
+    '       ret',
+].join('\n');
+
 describe('DotNetAsmParser', () => {
     it('maps source lines from debug-JIT INLRT offsets', () => {
         const result = new DotNetAsmParser(sourceMapping).process(addDisasm, filters());
@@ -949,6 +982,13 @@ describe('DotNetAsmParser', () => {
         expect(findLine(asyncIteratorResult, 'mov      byte  ptr [rbp-0x28], 0')?.source).toEqual(source(190, 13));
         expect(findLine(asyncMethodResult, 'cmp      gword ptr [rsi], 0')?.source).toEqual(source(104, 9));
         expect(findLine(asyncMethodResult, 'xor      ecx, ecx')?.source).toEqual(source(106, 9));
+    });
+
+    it('should not take the return type into account when matching methods', () => {
+        const result = new DotNetAsmParser(sourceMapping).process(runtimeAsyncMethodDisasm, filters());
+
+        expect(findLine(result, 'call     CORINFO_HELP_GETSHARED_GCSTATIC_BASE')?.source).toEqual(source(214, 9));
+        expect(findLine(result, 'mov      rcx, gword ptr [rax+0x08]')?.source).toEqual(source(216, 9));
     });
 });
 

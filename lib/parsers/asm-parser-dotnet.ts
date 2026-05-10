@@ -211,10 +211,6 @@ export class DotNetAsmParser implements IAsmParser {
             return exactMapping;
         }
 
-        if (requestedMethod.typeArguments.length === 0 && requestedMethod.methodArguments.length === 0) {
-            return undefined;
-        }
-
         for (const methodSourceMapping of this.sourceMapping) {
             const candidate = methodSourceMapping.method;
             if (
@@ -235,20 +231,9 @@ export class DotNetAsmParser implements IAsmParser {
                 candidate.parameters.map(parameter => [
                     substituteMetadataGenericParameters(parameter, requestedMethod),
                 ]);
-            const candidateReturnTypes = candidate.returnTypeSignature
-                ? [
-                      getCanonicalTypeSignature(candidate.returnTypeSignature, requestedMethod).text,
-                      getCanonicalTypeSignature(candidate.returnTypeSignature, requestedMethod, false, false).text,
-                  ]
-                : [substituteMetadataGenericParameters(candidate.returnType, requestedMethod)];
 
             if (
-                candidateParameters.every((parameters, index) =>
-                    parameters.includes(requestedMethod.parameters[index]),
-                ) &&
-                candidateReturnTypes
-                    .map(returnType => (returnType === 'void' ? '' : returnType))
-                    .includes(requestedMethod.returnType)
+                candidateParameters.every((parameters, index) => parameters.includes(requestedMethod.parameters[index]))
             ) {
                 return methodSourceMapping;
             }
