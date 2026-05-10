@@ -175,6 +175,7 @@ export class CompilerService {
         errorThrown: string,
     ) {
         let error = errorThrown;
+        let isNetworkError = false;
         if (!error) {
             switch (textStatus) {
                 case 'timeout':
@@ -184,16 +185,24 @@ export class CompilerService {
                     error = 'Request was aborted';
                     break;
                 case 'error':
-                    switch (xhr.status) {
-                        case 500:
-                            error = 'Request failed: internal server error';
-                            break;
-                        case 504:
-                            error = 'Request failed: gateway timeout';
-                            break;
-                        default:
-                            error = 'Request failed: HTTP error code ' + xhr.status;
-                            break;
+                    if (xhr.status === 0) {
+                        // HTTP status 0 means the request never reached the server (network failure)
+                        isNetworkError = true;
+                        error = navigator.onLine
+                            ? 'Could not reach Compiler Explorer. Check your internet connection and try again.'
+                            : 'Could not reach Compiler Explorer: your browser appears to be offline.';
+                    } else {
+                        switch (xhr.status) {
+                            case 500:
+                                error = 'Request failed: internal server error';
+                                break;
+                            case 504:
+                                error = 'Request failed: gateway timeout';
+                                break;
+                            default:
+                                error = 'Request failed: HTTP error code ' + xhr.status;
+                                break;
+                        }
                     }
                     break;
                 default:
@@ -204,6 +213,7 @@ export class CompilerService {
         const requestError = new Error(error);
         // Attach request context to the error for debugging
         (requestError as any).request = request;
+        (requestError as any).isNetworkError = isNetworkError;
         reject(requestError);
     }
 
