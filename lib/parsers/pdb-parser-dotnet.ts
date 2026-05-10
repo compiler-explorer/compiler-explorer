@@ -87,6 +87,7 @@ export function getCanonicalTypeSignature(
     collapseSharedGenericReferences = true,
 ): {text: string; containsSharedGenericReference: boolean} {
     if (type.genericParameter) {
+        // !n refers to the declaring type; !!n refers to the method.
         const isMethodParameter = type.genericParameter.startsWith('!!');
         const index = Number.parseInt(type.genericParameter.substring(isMethodParameter ? 2 : 1), 10);
         const text =
@@ -125,6 +126,7 @@ export function getCanonicalTypeSignature(
         type.typeKind === 'reference' &&
         containsSharedGenericReference
     ) {
+        // Shared generic JIT names collapse nested reference-type arguments to System.__Canon.
         return {text: sharedGenericReferenceType, containsSharedGenericReference};
     }
 
@@ -176,6 +178,7 @@ class BufferCursor {
     }
 }
 
+// ECMA-335 coded indexes pack a target-table tag into the low bits and a row id into the high bits.
 const codedIndexes: Record<string, {tagBits: number; tables: number[]}> = {
     CustomAttributeType: {tagBits: 3, tables: [0x06, 0x0a]},
     HasConstant: {tagBits: 2, tables: [0x04, 0x08, 0x17]},
@@ -208,6 +211,8 @@ export class DotNetPdbParser {
         const firstByte = buffer.readUInt8(offsetRef.offset);
         offsetRef.offset += 1;
 
+        // ECMA-335 compressed integers use 0xxxxxxx, 10xxxxxx, and 110xxxxx prefixes for
+        // 1-, 2-, and 4-byte encodings.
         if ((firstByte & 0x80) === 0) {
             return {value: firstByte, bytes: 1};
         }
@@ -233,6 +238,7 @@ export class DotNetPdbParser {
         }
 
         const signedBitCount = compressed.bytes === 1 ? 6 : compressed.bytes === 2 ? 13 : 28;
+        // Negative values are sign-extended from the payload width implied by the compressed size.
         return value - (1 << signedBitCount);
     }
 
@@ -242,6 +248,7 @@ export class DotNetPdbParser {
             return 0; // Portable PDBs start directly at the metadata root.
         }
 
+        // Assembly input is a PE file; the DOS header points to the PE header at offset 0x3c.
         if (buffer.length < 0x40 || buffer.readUInt16LE(0) !== 0x5a4d) {
             throw new Error('Metadata root not found');
         }
@@ -261,6 +268,7 @@ export class DotNetPdbParser {
 
         const optionalHeaderMagic = buffer.readUInt16LE(optionalHeaderOffset);
         const dataDirectoryOffset = optionalHeaderMagic === 0x20b ? 112 : optionalHeaderMagic === 0x10b ? 96 : -1;
+        // Data-directory entry 14 is the CLI header; it leads us to the managed metadata RVA.
         const cliHeaderDirectoryOffset = optionalHeaderOffset + dataDirectoryOffset + 14 * 8;
         if (dataDirectoryOffset === -1 || cliHeaderDirectoryOffset + 8 > sectionTableOffset) {
             throw new Error('Invalid PE optional header');
@@ -292,6 +300,7 @@ export class DotNetPdbParser {
             throw new Error('Invalid CLI header');
         }
 
+        // The CLI header stores the metadata directory at offset 8.
         const metadataRva = buffer.readUInt32LE(cliHeaderOffset + 8);
         const metadataRoot = rvaToFileOffset(metadataRva);
 
@@ -310,18 +319,20 @@ export class DotNetPdbParser {
             throw new Error('Invalid metadata signature');
         }
 
-        cursor.readUInt16();
-        cursor.readUInt16();
-        cursor.readUInt32();
+        cursor.readUInt16(); // MajorVersion
+        cursor.readUInt16(); // MinorVersion
+        cursor.readUInt32(); // Reserved
 
         const versionLength = cursor.readUInt32();
+        // Version string is null-padded and 4-byte aligned before the stream count.
         cursor.offset = (cursor.offset + versionLength + 3) & ~3;
 
-        cursor.readUInt16();
+        cursor.readUInt16(); // Flags
         const streamCount = cursor.readUInt16();
         const streams: MetadataStreams = {};
 
         for (let i = 0; i < streamCount; i++) {
+            // Each stream header is root-relative offset, byte size, and a 4-byte-aligned name.
             const offset = cursor.readUInt32();
             const size = cursor.readUInt32();
             const nameStart = cursor.offset;
@@ -349,15 +360,11 @@ export class DotNetPdbParser {
     parse(): DotNetSourceMapping {
         const assemblyMethods = this.parseAssemblyMethods();
         const sequencePoints = this.parsePdbSequencePoints();
+        // Assembly MethodDef rows and PDB MethodDebugInformation rows share the same row numbering.
         return Object.entries(sequencePoints).map(([methodRowId, offsets]) => ({
             method: assemblyMethods[Number(methodRowId)],
             offsets,
         }));
-    }
-
-    private fallbackMetadataNameGenericArity(name: string) {
-        const arity = name.match(/`(?<arity>\d+)$/);
-        return arity?.groups ? Number.parseInt(arity.groups.arity, 10) : 0;
     }
 
     private stripMetadataGenericArity(name: string, genericParameterCount: number) {
@@ -365,6 +372,8 @@ export class DotNetPdbParser {
             return name;
         }
 
+        // Strip the `N suffix from metadata generic type names.
+        // For example, List`1 becomes List, and Dictionary`2 becomes Dictionary.
         const arity = `\`${genericParameterCount}`;
         return name.endsWith(arity) ? name.substring(0, name.length - arity.length) : name;
     }
@@ -378,10 +387,12 @@ export class DotNetPdbParser {
         const largestRowCount = Math.max(
             ...definition.tables.map(table => rowCounts[table] ?? typeSystemTableRows?.[table] ?? 0),
         );
+        // A coded index must fit both the row id and the tag bits in either 16 or 32 bits.
         return largestRowCount < 1 << (16 - definition.tagBits) ? 2 : 4;
     }
 
     private tableRowSize(tableId: number, tables: MetadataTables) {
+        // The #~ heap-size flags decide whether heap indexes in table rows are 2 or 4 bytes.
         const strings = this.heapIndexSize(tables.heapSizes, 0x01);
         const guid = this.heapIndexSize(tables.heapSizes, 0x02);
         const blob = this.heapIndexSize(tables.heapSizes, 0x04);
@@ -505,6 +516,7 @@ export class DotNetPdbParser {
         const pdbStream = streams['#Pdb']!;
 
         const cursor = new BufferCursor(buffer, pdbStream.offset + 24); // 20-byte PDB id, then entry point token.
+        // Portable PDBs record which assembly type-system tables they reference, followed by row counts.
         const referencedTables = cursor.readBigUInt64();
         const rowCounts: RowCounts = {};
 
@@ -521,14 +533,15 @@ export class DotNetPdbParser {
         const tableStream = (streams['#~'] ?? streams['#-'])!;
 
         const cursor = new BufferCursor(buffer, tableStream.offset);
-        cursor.readUInt32();
-        cursor.readUInt8();
-        cursor.readUInt8();
+        cursor.readUInt32(); // Reserved
+        cursor.readUInt8(); // MajorVersion
+        cursor.readUInt8(); // MinorVersion
         const heapSizes = cursor.readUInt8();
-        cursor.readUInt8();
+        cursor.readUInt8(); // Reserved
         const validTables = cursor.readBigUInt64();
         cursor.readBigUInt64(); // Sorted table mask; row counts are keyed only by the valid table mask above.
 
+        // Row counts are present only for tables whose bit is set in the valid-table mask.
         const rowCounts: RowCounts = {};
         for (let tableId = 0; tableId < 64; tableId++) {
             if (((validTables >> BigInt(tableId)) & 1n) !== 0n) {
@@ -552,6 +565,7 @@ export class DotNetPdbParser {
                 continue;
             }
 
+            // Table rows are laid out consecutively after all row counts, in table-id order.
             tables.tableOffsets[tableId] = tableOffset;
             tableOffset += rowCount * this.tableRowSize(tableId, tables);
         }
@@ -560,11 +574,13 @@ export class DotNetPdbParser {
     }
 
     private readIndex(buffer: Buffer, offset: number, size: number) {
+        // Metadata indexes are either 2 or 4 bytes
         return size === 2 ? buffer.readUInt16LE(offset) : buffer.readUInt32LE(offset);
     }
 
     private getString(tables: MetadataTables, index: number) {
         if (index === 0) {
+            // Heap index zero is reserved as the empty string.
             return '';
         }
 
@@ -581,18 +597,21 @@ export class DotNetPdbParser {
 
     private getBlob(tables: MetadataTables, index: number) {
         if (index === 0) {
+            // Blob index zero is reserved as an empty blob.
             return Buffer.alloc(0);
         }
 
         const blobs = tables.streams['#Blob']!;
 
         const offsetRef = {offset: blobs.offset + index};
+        // Blob heap entries start with a compressed byte length.
         const length = this.readCompressedUInt(tables.buffer, offsetRef).value;
         return tables.buffer.subarray(offsetRef.offset, offsetRef.offset + length);
     }
 
     private rowOffset(tables: MetadataTables, tableId: number, rowId: number) {
         const offset = tables.tableOffsets[tableId];
+        // Convert a 1-based metadata row id to an absolute byte offset in the table stream.
         return offset + (rowId - 1) * this.tableRowSize(tableId, tables);
     }
 
@@ -601,6 +620,7 @@ export class DotNetPdbParser {
         offsetRef: {offset: number},
         resolveType: (encoded: number) => DotNetTypeSignature,
     ): DotNetTypeSignature {
+        // Skip required/optional custom modifiers and parse the modified type itself.
         while (blob[offsetRef.offset] === 0x1f || blob[offsetRef.offset] === 0x20) {
             offsetRef.offset++;
             this.readCompressedUInt(blob, offsetRef);
@@ -639,19 +659,23 @@ export class DotNetPdbParser {
             case 0x0e: // String
                 return {name: 'System.String', arguments: [], suffix: '', typeKind: 'reference'};
             case 0x0f: // Pointer
-                this.parseElementType(blob, offsetRef, resolveType); // Pointer signatures are omitted in JIT disasm, ignoring the parsed pointed-to type here
+                // Consume the pointed-to type to keep the cursor aligned; JIT method names print only ptr.
+                this.parseElementType(blob, offsetRef, resolveType);
                 return {name: 'ptr', arguments: [], suffix: '', typeKind: 'value'};
             case 0x10: // ByReference
-                this.parseElementType(blob, offsetRef, resolveType); // ByRef signatures are omitted in JIT disasm, ignoring the parsed referenced type here
+                // Consume the referenced type to keep the cursor aligned; JIT method names print only byref.
+                this.parseElementType(blob, offsetRef, resolveType);
                 return {name: 'byref', arguments: [], suffix: '', typeKind: 'value'};
             case 0x11: // ValueType
             case 0x12: // Class
                 {
+                    // Class/value signatures carry a TypeDefOrRef coded index.
                     const resolved = resolveType(this.readCompressedUInt(blob, offsetRef).value);
                     return {...resolved, typeKind: type === 0x11 ? 'value' : 'reference'};
                 }
             case 0x13: // GenericTypeParameter
                 {
+                    // Type generic parameters are placeholders until matched against a concrete JIT name.
                     const name = `!${this.readCompressedUInt(blob, offsetRef).value}`;
                     return {name, arguments: [], suffix: '', typeKind: 'generic', genericParameter: name};
                 }
@@ -659,6 +683,7 @@ export class DotNetPdbParser {
                 {
                     const elementType = this.parseElementType(blob, offsetRef, resolveType);
                     const rank = this.readCompressedUInt(blob, offsetRef).value;
+                    // Bounds are present in metadata but the JIT disassembly only prints rank, eg. [,].
                     const sizeCount = this.readCompressedUInt(blob, offsetRef).value;
                     for (let i = 0; i < sizeCount; i++) {
                         this.readCompressedUInt(blob, offsetRef);
@@ -676,6 +701,7 @@ export class DotNetPdbParser {
                 }
             case 0x15: // GenericTypeInstance
                 {
+                    // GENERICINST wraps the generic type followed by its concrete type arguments.
                     const genericType = this.parseElementType(blob, offsetRef, resolveType);
                     const argumentCount = this.readCompressedUInt(blob, offsetRef).value;
                     const argumentsText = Array.from({length: argumentCount}, () =>
@@ -697,7 +723,8 @@ export class DotNetPdbParser {
             case 0x1c: // Object
                 return {name: 'System.Object', arguments: [], suffix: '', typeKind: 'reference'};
             case 0x1b: // FunctionPointer
-                this.parseMethodSignature(blob, resolveType, offsetRef); // Function pointer signatures are omitted in JIT disasm, ignoring the parsed signature here
+                // Consume the full target signature; JIT method names print function pointers as ptr.
+                this.parseMethodSignature(blob, resolveType, offsetRef);
                 return {name: 'ptr', arguments: [], suffix: '', typeKind: 'value'};
             case 0x1d: // SZArray
                 return {
@@ -708,12 +735,15 @@ export class DotNetPdbParser {
                 };
             case 0x1e: // GenericMethodParameter
                 {
+                    // Method generic parameters are placeholders until matched against a concrete JIT name.
                     const name = `!!${this.readCompressedUInt(blob, offsetRef).value}`;
                     return {name, arguments: [], suffix: '', typeKind: 'generic', genericParameter: name};
                 }
             case 0x41: // Sentinel
+                // Varargs sentinel is not part of the type text we need for JIT matching.
                 return this.parseElementType(blob, offsetRef, resolveType);
             case 0x45: // Pinned
+                // Pinned is a local-signature modifier; preserve the underlying type only.
                 return this.parseElementType(blob, offsetRef, resolveType);
             default:
                 throw new Error(`Unsupported element type 0x${type.toString(16)}`);
@@ -725,6 +755,7 @@ export class DotNetPdbParser {
         resolveType: (encoded: number) => DotNetTypeSignature,
         offsetRef: {offset: number} = {offset: 0},
     ) {
+        // Method signatures start with the calling convention; bit 0x10 says a generic arity follows.
         const callingConvention = blob.readUInt8(offsetRef.offset);
         offsetRef.offset++;
 
@@ -760,9 +791,12 @@ export class DotNetPdbParser {
         const typeGenericParameterCounts: Record<number, number> = {};
         const methodGenericParameterCounts: Record<number, number> = {};
 
+        // TypeRef rows name external types referenced by signatures, for example System.String
+        // or System.Collections.Generic.Dictionary`2.
         for (let rowId = 1; rowId <= (tables.rowCounts[0x01] ?? 0); rowId++) {
             const offset = this.rowOffset(tables, 0x01, rowId);
             const resolutionScopeValue = this.readIndex(assembly, offset, resolutionScope);
+            // TypeRef layout: ResolutionScope, TypeName, TypeNamespace.
             const nameOffset = offset + resolutionScope;
             const namespaceOffset = nameOffset + strings;
             typeRefs[rowId] = {
@@ -772,8 +806,11 @@ export class DotNetPdbParser {
             };
         }
 
+        // TypeDef rows name types defined by the compiled assembly and define contiguous Field
+        // and MethodDef row ranges through their FieldList and MethodList columns.
         for (let rowId = 1; rowId <= (tables.rowCounts[0x02] ?? 0); rowId++) {
             const offset = this.rowOffset(tables, 0x02, rowId);
+            // TypeDef layout: Flags, TypeName, TypeNamespace, Extends, FieldList, MethodList.
             const nameOffset = offset + 4;
             const namespaceOffset = nameOffset + strings;
             const extendsOffset = namespaceOffset + strings;
@@ -788,8 +825,11 @@ export class DotNetPdbParser {
             };
         }
 
+        // Field rows are only consulted for enum value__ signatures so enum parameters can map
+        // to the primitive type printed by the JIT.
         for (let rowId = 1; rowId <= (tables.rowCounts[0x04] ?? 0); rowId++) {
             const offset = this.rowOffset(tables, 0x04, rowId);
+            // Field layout: Flags, Name, Signature.
             const nameOffset = offset + 2;
             const signatureOffset = nameOffset + strings;
             fields[rowId] = {
@@ -798,6 +838,7 @@ export class DotNetPdbParser {
             };
         }
 
+        // NestedClass rows let TypeDef names be reconstructed as Outer+Inner.
         for (let rowId = 1; rowId <= (tables.rowCounts[0x29] ?? 0); rowId++) {
             const offset = this.rowOffset(tables, 0x29, rowId);
             const nested = this.readIndex(assembly, offset, typeDefIndex);
@@ -805,17 +846,20 @@ export class DotNetPdbParser {
             nestedTypes[nested] = enclosing;
         }
 
+        // GenericParam rows tell us how many !n or !!n placeholders a type or method exposes.
         for (let rowId = 1; rowId <= (tables.rowCounts[0x2a] ?? 0); rowId++) {
             const offset = this.rowOffset(tables, 0x2a, rowId);
             const parameterNumber = assembly.readUInt16LE(offset);
             const owner = this.readIndex(assembly, offset + 4, typeOrMethodDef);
             const ownerRowId = owner >> 1;
+            // TypeOrMethodDef tag 0 owns type generic parameters; tag 1 owns method generic parameters.
             const ownerTag = owner & 0x01;
             const ownerCounts = ownerTag === 0 ? typeGenericParameterCounts : methodGenericParameterCounts;
             ownerCounts[ownerRowId] = Math.max(ownerCounts[ownerRowId] ?? 0, parameterNumber + 1);
         }
 
         const resolvedTypeDefs: Record<number, DotNetTypeKey> = {};
+        // Resolve nested type names and use GenericParam rows for generic arity.
         const resolveTypeDef = (rowId: number): DotNetTypeKey => {
             if (resolvedTypeDefs[rowId]) {
                 return resolvedTypeDefs[rowId];
@@ -825,10 +869,9 @@ export class DotNetPdbParser {
             const enclosingType = nestedTypes[rowId]
                 ? resolveTypeDef(nestedTypes[rowId])
                 : {genericParameterCount: 0, name: ''};
-            const metadataNameGenericArity = this.fallbackMetadataNameGenericArity(typeDef.name);
-            const genericParameterCount =
-                typeGenericParameterCounts[rowId] ?? enclosingType.genericParameterCount + metadataNameGenericArity;
-            const typeNameWithoutArity = this.stripMetadataGenericArity(typeDef.name, metadataNameGenericArity);
+            const genericParameterCount = typeGenericParameterCounts[rowId] ?? 0;
+            const ownGenericParameterCount = genericParameterCount - enclosingType.genericParameterCount;
+            const typeNameWithoutArity = this.stripMetadataGenericArity(typeDef.name, ownGenericParameterCount);
             const typeName = enclosingType.name
                 ? `${enclosingType.name}+${typeNameWithoutArity}`
                 : typeDef.namespaceName
@@ -854,6 +897,7 @@ export class DotNetPdbParser {
         for (let i = 0; i < sortedTypeDefs.length; i++) {
             const typeDefRowId = sortedTypeDefs[i];
             const start = typeDefs[typeDefRowId].methodList;
+            // MethodList is a start row; the next TypeDef's MethodList gives the exclusive end.
             const end = i + 1 < sortedTypeDefs.length ? typeDefs[sortedTypeDefs[i + 1]].methodList : methodCount + 1;
             for (let methodRowId = start; methodRowId < end; methodRowId++) {
                 methodDeclaringTypes[methodRowId] = resolvedTypeDefsByRow[typeDefRowId];
@@ -868,6 +912,7 @@ export class DotNetPdbParser {
             }
 
             const typeRef = typeRefs[rowId];
+            // A ResolutionScope tagged as TypeRef means this TypeRef is nested under another TypeRef.
             resolvedTypeRefs[rowId] =
                 (typeRef.resolutionScope & 0x03) === 3
                     ? `${resolveTypeRef(typeRef.resolutionScope >> 2)}+${typeRef.name}`
@@ -879,6 +924,7 @@ export class DotNetPdbParser {
         const enumUnderlyingTypes: Record<number, DotNetTypeSignature> = {};
         const resolvedTypeSpecs: Record<number, DotNetTypeSignature> = {};
         const resolveType = (encoded: number): DotNetTypeSignature => {
+            // TypeDefOrRef coded index tags: 0 = TypeDef, 1 = TypeRef, 2 = TypeSpec.
             const tag = encoded & 0x03;
             const rowId = encoded >> 2;
             if (tag === 0) {
@@ -895,6 +941,7 @@ export class DotNetPdbParser {
                 return {name: resolveTypeRef(rowId), arguments: [], suffix: '', typeKind: 'reference'};
             }
             if (tag === 2) {
+                // TypeSpec rows point back to signature blobs for constructed generic types.
                 resolvedTypeSpecs[rowId] ??= this.parseElementType(
                     this.getBlob(tables, this.readIndex(assembly, this.rowOffset(tables, 0x1b, rowId), blob)),
                     {offset: 0},
@@ -904,6 +951,8 @@ export class DotNetPdbParser {
             }
             throw new Error(`Unsupported TypeDefOrRef tag ${tag}`);
         };
+        // JIT signatures print enum parameters as their underlying primitive type, so precompute
+        // that substitution from System.Enum-derived TypeDefs.
         for (let i = 0; i < sortedTypeDefs.length; i++) {
             const typeDefRowId = sortedTypeDefs[i];
             if (
@@ -920,6 +969,7 @@ export class DotNetPdbParser {
                     : (tables.rowCounts[0x04] ?? 0) + 1;
             for (let fieldRowId = start; fieldRowId < end; fieldRowId++) {
                 if (fields[fieldRowId].name === 'value__') {
+                    // Field signatures start with their own calling-convention byte before the field type.
                     enumUnderlyingTypes[typeDefRowId] = this.parseElementType(
                         this.getBlob(tables, fields[fieldRowId].signature),
                         {offset: 1},
@@ -932,9 +982,11 @@ export class DotNetPdbParser {
         for (let rowId = 1; rowId <= methodCount; rowId++) {
             const offset = this.rowOffset(tables, 0x06, rowId);
             const type = methodDeclaringTypes[rowId];
+            // MethodDef layout: RVA, ImplFlags, Flags, Name, Signature, ParamList.
             const nameOffset = offset + 4 + 2 + 2;
             const signatureOffset = nameOffset + strings;
             const methodName = this.getString(tables, this.readIndex(assembly, nameOffset, strings));
+            // MethodDef.Signature is a blob index containing return type and parameter types.
             const {
                 genericParameterCount: signatureGenericParameterCount,
                 parameters,
@@ -970,10 +1022,12 @@ export class DotNetPdbParser {
         }
 
         const offsetRef = {offset: 0};
+        // Local signature token. Source mapping does not need local variables, but the blob starts with it.
         this.readCompressedUInt(blob, offsetRef);
 
         if (initialDocument === 0) {
-            this.readCompressedUInt(blob, offsetRef); // The first sequence point carries the document row when needed.
+            // The first sequence point carries the document row when MethodDebugInformation has none.
+            this.readCompressedUInt(blob, offsetRef);
         }
 
         let previousIlOffset = 0;
@@ -985,18 +1039,22 @@ export class DotNetPdbParser {
         while (offsetRef.offset < blob.length) {
             const deltaIlOffset = this.readCompressedUInt(blob, offsetRef).value;
             if (deltaIlOffset === 0 && hasPreviousIlOffset) {
-                this.readCompressedUInt(blob, offsetRef); // Document switch record.
+                // A zero IL delta after the first point is a document switch record, not a code span.
+                this.readCompressedUInt(blob, offsetRef);
                 continue;
             }
 
+            // IL offsets are delta-encoded after the first sequence point.
             const ilOffset = hasPreviousIlOffset ? previousIlOffset + deltaIlOffset : deltaIlOffset;
             const deltaLines = this.readCompressedUInt(blob, offsetRef).value;
+            // Same-line spans use unsigned column deltas; multi-line spans use signed deltas.
             const deltaColumns =
                 deltaLines === 0
                     ? this.readCompressedUInt(blob, offsetRef).value
                     : this.readCompressedSignedInt(blob, offsetRef);
 
             if (deltaLines === 0 && deltaColumns === 0) {
+                // Hidden sequence points suppress source mapping for this IL offset.
                 offsets[ilOffset] = null;
             } else {
                 const startLine = hasPreviousNonHiddenSource
@@ -1006,6 +1064,7 @@ export class DotNetPdbParser {
                     ? previousNonHiddenColumn + this.readCompressedSignedInt(blob, offsetRef)
                     : this.readCompressedUInt(blob, offsetRef).value;
 
+                // The Portable PDB hidden-line sentinel is another way to encode a hidden point.
                 if (startLine === hiddenSequencePoint) {
                     offsets[ilOffset] = null;
                 } else {
@@ -1034,6 +1093,7 @@ export class DotNetPdbParser {
         for (let methodRowId = 1; methodRowId <= (tables.rowCounts[0x31] ?? 0); methodRowId++) {
             const offset = this.rowOffset(tables, 0x31, methodRowId);
             const initialDocument = this.readIndex(pdb, offset, documentIndex);
+            // MethodDebugInformation rows are ordered by MethodDef row id and point to sequence-point blobs.
             const sequencePointsBlob = this.getBlob(tables, this.readIndex(pdb, offset + documentIndex, blob));
             methodSequencePoints[methodRowId] = this.decodeSequencePoints(sequencePointsBlob, initialDocument);
         }
