@@ -63,6 +63,17 @@ describe('instructionSetFromTargetString', () => {
         expect(instructionSetFromTargetString('wasm64')).toBe('wasm64');
     });
 
+    it('recognises classic i386/i486/i586/i686 spellings as x86', () => {
+        // GCC/LLVM 32-bit Intel triples don't contain the `x86` substring.
+        expect(instructionSetFromTargetString('i386')).toBe('x86');
+        expect(instructionSetFromTargetString('i486-pc-linux-gnu')).toBe('x86');
+        expect(instructionSetFromTargetString('i586')).toBe('x86');
+        expect(instructionSetFromTargetString('i686-pc-linux-gnu')).toBe('x86');
+        // amd64 still wins for x86_64 (iterates first; `x86_64` doesn't contain
+        // `i386` etc).
+        expect(instructionSetFromTargetString('x86_64-pc-linux-gnu')).toBe('amd64');
+    });
+
     it('returns undefined for unrecognised target strings', () => {
         expect(instructionSetFromTargetString('nonsense-target')).toBeUndefined();
         expect(instructionSetFromTargetString('')).toBeUndefined();
@@ -76,6 +87,10 @@ describe('tripleForInstructionSet', () => {
         expect(tripleForInstructionSet('riscv64')).toBe('rv64');
         expect(tripleForInstructionSet('powerpc')).toBe('powerpc');
         expect(tripleForInstructionSet('hppa')).toBe('hppa');
+        // 32-bit x86 must canonicalise to `i386` so `-mtriple=i386` is what
+        // llvm-mca-tool special-cases (`target?.startsWith('i386')`), not the
+        // invalid `-mtriple=x86`.
+        expect(tripleForInstructionSet('x86')).toBe('i386');
     });
 
     it('returns null for InstructionSets with no LLVM triple', () => {

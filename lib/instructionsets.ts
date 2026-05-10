@@ -77,7 +77,12 @@ const TARGET_SUBSTRINGS: Partial<Record<InstructionSet, readonly string[]>> = {
     // (added below for .NET `--targetarch wasm`) would steal `wasm64-...`.
     wasm64: ['wasm64'],
     wasm32: ['wasm32', 'wasm'],
-    x86: ['x86'],
+    // 32-bit Intel: classic LLVM/GCC triples spell the family `i386`/`i486`/
+    // `i586`/`i686` (no `x86` substring at all). The canonical `-mtriple=`
+    // value is `i386` — what `lib/tooling/llvm-mca-tool.ts` already
+    // special-cases with `target?.startsWith('i386')`. The bare `x86` alias
+    // catches `-march=x86` and the .NET `--targetarch x86`.
+    x86: ['i386', 'i486', 'i586', 'i686', 'x86'],
     xtensa: ['xtensa'],
     z180: ['z180'],
     z80: ['z80'],

@@ -551,18 +551,15 @@ export class BaseCompiler {
     }
 
     getInstructionSetFromCompilerArgs(args: string[]): InstructionSet {
-        try {
-            const archHint = this.getTargetHintFromCompilerArgs(args);
-            if (archHint) {
-                const fromArgs = instructionSetFromTargetString(archHint);
-                if (fromArgs) return fromArgs;
-            }
-        } catch (e) {
-            logger.debug('Unexpected error in getInstructionSetFromCompilerArgs(): ', e);
+        const archHint = this.getTargetHintFromCompilerArgs(args);
+        if (archHint) {
+            const fromArgs = instructionSetFromTargetString(archHint);
+            if (fromArgs) return fromArgs;
         }
-
-        // Fall back to the compiler's configured arch. Always set: enforced
-        // by `findCompilersWithoutInstructionSet` during config validation.
+        // Fall back to the compiler's configured arch. The validator
+        // (`findCompilersWithoutInstructionSet`) is a CI check, so a missing
+        // value isn't fatal at runtime; `compiler-finder` logs a warning when
+        // the field is empty so production misconfigs surface.
         return this.compiler.instructionSet ?? 'amd64';
     }
 

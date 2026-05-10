@@ -741,6 +741,21 @@ describe('findCompilersWithoutInstructionSet (synthetic)', () => {
         const missing = findCompilersWithoutInstructionSet(files);
         expect(missing).toEqual([{lang: 'foo', compilerId: 'alpha', groupChain: ['shared']}]);
     });
+
+    it('dedupes the same compiler reached via different group chains', () => {
+        // Each deployment puts `alpha` in a different group; both are missing
+        // an instructionSet. The dedupe key is (lang, compilerId), so it's
+        // reported once with the first chain seen.
+        const files = [
+            file('foo.defaults.properties', '# defaults-only overlay\n'),
+            file('foo.amazon.properties', 'compilers=&groupA\ngroup.groupA.compilers=alpha\ncompiler.alpha.exe=/a\n'),
+            file('foo.gpu.properties', 'compilers=&groupB\ngroup.groupB.compilers=alpha\n'),
+        ];
+        const missing = findCompilersWithoutInstructionSet(files);
+        expect(missing).toHaveLength(1);
+        expect(missing[0].lang).toBe('foo');
+        expect(missing[0].compilerId).toBe('alpha');
+    });
 });
 
 describe('extractTargetTokens', () => {
