@@ -255,17 +255,11 @@ export class CompilerFinder {
             instructionSet === '' || InstructionSetsList.includes(instructionSet),
             `Unexpected instruction set ${instructionSet} ${compilerId}`,
         );
-        if (instructionSet === '') {
-            // PR #8698 / issue #8690: every compiler should declare an
-            // explicit instructionSet (validated by `npm run test:props`).
-            // A missing value still falls through to amd64 at runtime so
-            // we don't crash compilation, but log it so the misconfig is
-            // visible in production where the test isn't running.
-            logger.warn(
-                `Compiler ${compilerId} has no instructionSet configured; defaulting to amd64. ` +
-                    'Add `instructionSet=...` to the compiler, group, or language defaults.',
-            );
-        }
+        // A missing instructionSet flows through as null and falls back to
+        // amd64 at runtime in `getInstructionSetFromCompilerArgs`. That
+        // matches the host arch of essentially every CE installation, so
+        // we don't log: production configs are guarded by the
+        // `findCompilersWithoutInstructionSet` test in `npm run test:props`.
         const compilerInfo: PreliminaryCompilerInfo = {
             id: compilerId,
             exe: exe,
