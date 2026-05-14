@@ -35,7 +35,7 @@ type ScanLabelsAndMethodsResult = {
     labelUsage: Record<number, InlineLabel>;
     methodDef: Record<number, string>;
     methodUsage: Record<number, InlineLabel>;
-    allAvailable: string[];
+    allAvailable: Set<string>;
 };
 
 function formatMethodKey(method: DotNetMethodKey) {
@@ -117,7 +117,13 @@ function parseJitGenericName(name: string, genericParameterPrefix: '!' | '!!') {
     if (genericArguments.length === 0) {
         let genericParameterIndex = 0;
         for (const arity of canonical.matchAll(/`(\d+)/g)) {
-            for (let index = 0; index < Number.parseInt(arity[1], 10); index++, genericParameterIndex++) {
+            const remainingArity = 1024 * 1024 - genericParameterIndex;
+            if (remainingArity <= 0) {
+                break;
+            }
+
+            const arityToAdd = Math.min(Number.parseInt(arity[1], 10), remainingArity);
+            for (let index = 0; index < arityToAdd; index++, genericParameterIndex++) {
                 genericArguments.push(`${genericParameterPrefix}${genericParameterIndex}`);
             }
         }
@@ -189,6 +195,7 @@ function splitParameters(parameters: string) {
 export class DotNetAsmParser implements IAsmParser {
     private readonly sourceMapping: DotNetSourceMapping;
     private readonly sourceMappingByName: Map<string, DotNetMethodSourceMapping>;
+    private readonly sourceMappingOffsetsByMethod = new Map<DotNetMethodSourceMapping, number[]>();
 
     constructor(sourceMapping: DotNetSourceMapping = []) {
         this.sourceMapping = sourceMapping;
@@ -242,6 +249,18 @@ export class DotNetAsmParser implements IAsmParser {
         return undefined;
     }
 
+    private getSourceMappingOffsets(methodSourceMapping: DotNetMethodSourceMapping) {
+        let offsets = this.sourceMappingOffsetsByMethod.get(methodSourceMapping);
+        if (offsets === undefined) {
+            offsets = Object.keys(methodSourceMapping.offsets)
+                .map(Number)
+                .sort((a, b) => a - b);
+            this.sourceMappingOffsetsByMethod.set(methodSourceMapping, offsets);
+        }
+
+        return offsets;
+    }
+
     private getSourceForOffset(methodSourceMapping: DotNetMethodSourceMapping | undefined, offset: number) {
         if (!methodSourceMapping) {
             return null;
@@ -251,17 +270,21 @@ export class DotNetAsmParser implements IAsmParser {
             return methodSourceMapping.offsets[offset];
         }
 
-        let bestOffset: number | undefined;
-        for (const candidate of Object.keys(methodSourceMapping.offsets)
-            .map(Number)
-            .sort((a, b) => a - b)) {
-            if (candidate > offset) {
-                break;
+        const offsets = this.getSourceMappingOffsets(methodSourceMapping);
+        let left = 0;
+        let right = offsets.length - 1;
+        let bestIndex = -1;
+        while (left <= right) {
+            const middle = Math.floor((left + right) / 2);
+            if (offsets[middle] > offset) {
+                right = middle - 1;
+            } else {
+                bestIndex = middle;
+                left = middle + 1;
             }
-            bestOffset = candidate;
         }
 
-        return bestOffset === undefined ? null : methodSourceMapping.offsets[bestOffset];
+        return bestIndex === -1 ? null : methodSourceMapping.offsets[offsets[bestIndex]];
     }
 
     private computeSourceMappingForAsmLines(asmLines: string[], result: ScanLabelsAndMethodsResult) {
@@ -284,8 +307,10 @@ export class DotNetAsmParser implements IAsmParser {
                 currentSource = null;
             }
 
-            const inlineRootOffsetMatches = Array.from(asmLines[line].matchAll(inlineRootOffsetRe));
-            const inlineRootOffset = inlineRootOffsetMatches.at(-1)?.groups?.offset;
+            let inlineRootOffset: string | undefined;
+            for (const inlineRootOffsetMatch of asmLines[line].matchAll(inlineRootOffsetRe)) {
+                inlineRootOffset = inlineRootOffsetMatch.groups?.offset;
+            }
             if (inlineRootOffset !== undefined) {
                 lineSource = null;
                 // Inline chains may contain unknown child offsets, but a numeric INLRT still anchors the
@@ -315,8 +340,8 @@ export class DotNetAsmParser implements IAsmParser {
         const methodDef: Record<number, string> = {};
         const labelUsage: Record<number, InlineLabel> = {};
         const methodUsage: Record<number, InlineLabel> = {};
-        const allAvailable: string[] = [];
-        const usedLabels: string[] = [];
+        const allAvailable = new Set<string>();
+        const usedLabels = new Set<string>();
 
         const methodRefRe = /^(call|jmp|tail\.jmp)\s+(.*)/;
         const labelRefRe = /^\w+\s+.*?(G_M\w+)/;
@@ -332,13 +357,13 @@ export class DotNetAsmParser implements IAsmParser {
                         methodSignature = methodSignature.substring(0, methodSignature.lastIndexOf('(')).trimEnd();
                     }
                     methodDef[line] = methodSignature;
-                    allAvailable.push(methodDef[line]);
+                    allAvailable.add(methodDef[line]);
                 } else {
                     labelDef[line] = {
                         name: trimmedLine.substring(0, trimmedLine.length - 1),
                         remove: false,
                     };
-                    allAvailable.push(labelDef[line].name);
+                    allAvailable.add(labelDef[line].name);
                 }
                 continue;
             }
@@ -351,7 +376,7 @@ export class DotNetAsmParser implements IAsmParser {
                     name,
                     range: {startCol: index, endCol: index + name.length},
                 };
-                usedLabels.push(name);
+                usedLabels.add(name);
             }
 
             const methodResult = trimmedLine.match(methodRefRe);
@@ -376,7 +401,7 @@ export class DotNetAsmParser implements IAsmParser {
 
         if (removeUnused) {
             for (const line in labelDef) {
-                if (!usedLabels.includes(labelDef[line].name)) {
+                if (!usedLabels.has(labelDef[line].name)) {
                     labelDef[line].remove = true;
                 }
             }
@@ -485,7 +510,7 @@ export class DotNetAsmParser implements IAsmParser {
 
             const labels: InlineLabel[] = [];
             const label = result.labelUsage[line] || result.methodUsage[line];
-            if (label && result.allAvailable.includes(label.name)) {
+            if (label && result.allAvailable.has(label.name)) {
                 labels.push(label);
             }
 
