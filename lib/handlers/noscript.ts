@@ -276,7 +276,7 @@ export class NoScriptHandler {
             // Fallback to direct encoding
             const stateString = JSON.stringify(state);
             const base64State = Buffer.from(stateString).toString('base64url');
-            return `/#${base64State}`;
+            return `clientstate/${base64State}`;
         }
     }
 }
