@@ -51,6 +51,7 @@ export type LanguageKey =
     | 'crystal'
     | 'csharp'
     | 'cuda'
+    | 'cutedsl'
     | 'd'
     | 'dart'
     | 'elixir'
