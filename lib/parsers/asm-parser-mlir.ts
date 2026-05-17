@@ -27,30 +27,90 @@ import {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfa
 import * as utils from '../utils.js';
 import {AsmParser} from './asm-parser.js';
 
+type MlirLocation =
+    | {
+          kind: 'source';
+          source: AsmResultSource;
+      }
+    | {
+          kind: 'alias';
+          target: string;
+      }
+    | {
+          kind: 'unknown';
+      };
+
 export class MlirAsmParser extends AsmParser {
     protected locDefRegex: RegExp;
     protected locDefUnknownRegex: RegExp;
+    protected locDefAliasRegex: RegExp;
+    protected locDefAnyRegex: RegExp;
     protected locRefRegex: RegExp;
     protected locRefRegexReplace: RegExp;
+    protected namedLocRefRegex: RegExp;
+    protected namedLocRefRegexReplace: RegExp;
     protected inlineLocRegex: RegExp;
     protected inlineLocRegexReplace: RegExp;
+    protected unknownLocRegexReplace: RegExp;
 
     constructor() {
         super();
 
         // Match location definitions like #loc1 = loc("/path/to/file":line:column)
-        this.locDefRegex = /^#(\w+)\s*=\s*loc\("([^"]+)":(\d+):(\d+)\)/;
+        this.locDefRegex = /^\s*#(\w+)\s*=\s*loc\("([^"]+)":(\d+):(\d+)\)/;
 
         // Match location definitions like #loc1 = loc(unknown)
-        this.locDefUnknownRegex = /^#(\w+)\s*=\s*loc\(unknown\)/;
+        this.locDefUnknownRegex = /^\s*#(\w+)\s*=\s*loc\(unknown\)/;
+
+        // Match location definitions like #loc1 = loc("name"(#loc2))
+        this.locDefAliasRegex = /^\s*#(\w+)\s*=\s*loc\("[^"]+"\(#(\w+)\)\)/;
+
+        // Match any location definition line, including nested named locations.
+        this.locDefAnyRegex = /^\s*#\w+\s*=\s*loc\(/;
 
         // Match location references like loc(#loc1)
         this.locRefRegex = /\s*loc\(#(\w+)\)/;
         this.locRefRegexReplace = new RegExp(this.locRefRegex.source, 'g');
 
+        // Match named location references like loc("pid"(#loc1))
+        this.namedLocRefRegex = /\s*loc\("[^"]+"\(#(\w+)\)\)/;
+        this.namedLocRefRegexReplace = new RegExp(this.namedLocRefRegex.source, 'g');
+
         // Match inline locations like loc("/path/to/file":line:column)
         this.inlineLocRegex = /\s*loc\("([^"]+)":(\d+):(\d+)\)/;
         this.inlineLocRegexReplace = new RegExp(this.inlineLocRegex.source, 'g');
+
+        this.unknownLocRegexReplace = /\s*loc\(unknown\)/g;
+    }
+
+    private getSource(file: string, lineNum: string, column: string): AsmResultSource {
+        return {
+            file: utils.maskRootdir(file),
+            line: Number.parseInt(lineNum, 10),
+            column: Number.parseInt(column, 10),
+            mainsource: true,
+        };
+    }
+
+    private resolveLocation(
+        locId: string,
+        locationMap: Map<string, MlirLocation>,
+        seenLocIds = new Set<string>(),
+    ): AsmResultSource | null {
+        if (seenLocIds.has(locId)) {
+            return null;
+        }
+        seenLocIds.add(locId);
+
+        const location = locationMap.get(locId);
+        if (!location || location.kind === 'unknown') {
+            return null;
+        }
+        if (location.kind === 'source') {
+            return location.source;
+        }
+
+        return this.resolveLocation(location.target, locationMap, seenLocIds);
     }
 
     override processAsm(asmResult: string, filters: ParseFiltersAndOutputOptions): ParsedAsmResult {
@@ -61,20 +121,30 @@ export class MlirAsmParser extends AsmParser {
         const startingLineCount = asmLines.length;
 
         // First pass: extract all location definitions
-        const locationMap = new Map<string, AsmResultSource>();
+        const locationMap = new Map<string, MlirLocation>();
         for (const line of asmLines) {
             const locMatch = line.match(this.locDefRegex);
             if (locMatch) {
-                const locId = locMatch[1];
-                const file = locMatch[2];
-                const lineNum = Number.parseInt(locMatch[3], 10);
-                const column = Number.parseInt(locMatch[4], 10);
+                locationMap.set(locMatch[1], {
+                    kind: 'source',
+                    source: this.getSource(locMatch[2], locMatch[3], locMatch[4]),
+                });
+                continue;
+            }
 
-                locationMap.set(locId, {
-                    file: utils.maskRootdir(file),
-                    line: lineNum,
-                    column: column,
-                    mainsource: true,
+            const locAliasMatch = line.match(this.locDefAliasRegex);
+            if (locAliasMatch) {
+                locationMap.set(locAliasMatch[1], {
+                    kind: 'alias',
+                    target: locAliasMatch[2],
+                });
+                continue;
+            }
+
+            const locUnknownMatch = line.match(this.locDefUnknownRegex);
+            if (locUnknownMatch) {
+                locationMap.set(locUnknownMatch[1], {
+                    kind: 'unknown',
                 });
             }
         }
@@ -82,7 +152,7 @@ export class MlirAsmParser extends AsmParser {
         // Second pass: process each line and associate with source information
         for (const line of asmLines) {
             // Skip location definition lines
-            if (this.locDefRegex.test(line) || this.locDefUnknownRegex.test(line)) {
+            if (this.locDefAnyRegex.test(line)) {
                 continue;
             }
 
@@ -102,28 +172,26 @@ export class MlirAsmParser extends AsmParser {
             // Check for location references like loc(#loc1)
             const locRefMatch = line.match(this.locRefRegex);
             if (locRefMatch) {
-                const locId = locRefMatch[1];
-                source = locationMap.get(locId) || null;
-                // Remove location reference from the displayed text
-                processedLine = processedLine.replace(this.locRefRegexReplace, '');
+                source = this.resolveLocation(locRefMatch[1], locationMap);
             } else {
-                // Check for inline locations like loc("/path/to/file":line:column)
-                const inlineLocMatch = line.match(this.inlineLocRegex);
-                if (inlineLocMatch) {
-                    const file = inlineLocMatch[1];
-                    const lineNum = Number.parseInt(inlineLocMatch[2], 10);
-                    const column = Number.parseInt(inlineLocMatch[3], 10);
-
-                    source = {
-                        file: utils.maskRootdir(file),
-                        line: lineNum,
-                        column: column,
-                        mainsource: true,
-                    };
+                // Check for named location references like loc("pid"(#loc1))
+                const namedLocRefMatch = line.match(this.namedLocRefRegex);
+                if (namedLocRefMatch) {
+                    source = this.resolveLocation(namedLocRefMatch[1], locationMap);
+                } else {
+                    // Check for inline locations like loc("/path/to/file":line:column)
+                    const inlineLocMatch = line.match(this.inlineLocRegex);
+                    if (inlineLocMatch) {
+                        source = this.getSource(inlineLocMatch[1], inlineLocMatch[2], inlineLocMatch[3]);
+                    }
                 }
-                // Remove inline location from the displayed text
-                processedLine = processedLine.replace(this.inlineLocRegexReplace, '');
             }
+
+            processedLine = processedLine
+                .replace(this.namedLocRefRegexReplace, '')
+                .replace(this.locRefRegexReplace, '')
+                .replace(this.inlineLocRegexReplace, '')
+                .replace(this.unknownLocRegexReplace, '');
 
             // Add the line to the result
             asm.push({
