@@ -22,15 +22,294 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import {ParsedAsmResult} from '../../types/asmresult/asmresult.interfaces.js';
+import {AsmResultSource, ParsedAsmResult} from '../../types/asmresult/asmresult.interfaces.js';
 import {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces.js';
 import * as utils from '../utils.js';
 import {IAsmParser} from './asm-parser.interfaces.js';
+import type {DotNetMethodKey, DotNetMethodSourceMapping, DotNetSourceMapping} from './pdb-parser-dotnet.js';
+import {getCanonicalTypeSignature} from './pdb-parser-dotnet.js';
 
 type InlineLabel = {name: string; range: {startCol: number; endCol: number}};
-type Source = {file: string; line: number};
+type ScanLabelsAndMethodsResult = {
+    labelDef: Record<number, {name: string; remove: boolean}>;
+    labelUsage: Record<number, InlineLabel>;
+    methodDef: Record<number, string>;
+    methodUsage: Record<number, InlineLabel>;
+    allAvailable: string[];
+};
+
+function formatMethodKey(method: DotNetMethodKey) {
+    const typeName =
+        method.typeArguments.length === 0 ? method.typeName : `${method.typeName}[${method.typeArguments.join(',')}]`;
+    const methodKeyName =
+        method.methodArguments.length === 0
+            ? method.methodName
+            : `${method.methodName}[${method.methodArguments.join(',')}]`;
+
+    return `${typeName}:${methodKeyName}(${method.parameters.join(',')})${
+        method.returnType && method.returnType !== 'void' ? `:${method.returnType}` : ''
+    }`;
+}
+
+function parseJitDisasmMethodKey(methodName: string): DotNetMethodKey | null {
+    const methodKeyText = methodName
+        .trim()
+        .replace(/:this$/, '')
+        .replace(/::/g, ':');
+    const methodMatch = methodKeyText.match(/^(?<typeAndMethod>.+)\((?<parameters>.*)\)(?::(?<returnType>.*))?$/);
+    if (!methodMatch?.groups) {
+        return null;
+    }
+
+    const methodSeparator = methodMatch.groups.typeAndMethod.lastIndexOf(':');
+    if (methodSeparator === -1) {
+        return null;
+    }
+
+    const type = parseJitGenericName(methodMatch.groups.typeAndMethod.substring(0, methodSeparator), '!');
+    const method = parseJitGenericName(methodMatch.groups.typeAndMethod.substring(methodSeparator + 1), '!!');
+
+    return {
+        typeName: type.name,
+        typeArguments: type.arguments.map(canonicalizeJitTypeName),
+        methodName: method.name,
+        methodArguments: method.arguments.map(canonicalizeJitTypeName),
+        parameters: splitParameters(methodMatch.groups.parameters).map(canonicalizeJitTypeName),
+        returnType: methodMatch.groups.returnType ? canonicalizeJitTypeName(methodMatch.groups.returnType) : '',
+    };
+}
+
+function genericArgumentEnd(text: string, start: number) {
+    let depth = 0;
+
+    for (let index = start; index < text.length; index++) {
+        if (text[index] === '[') {
+            depth++;
+        } else if (text[index] === ']') {
+            depth--;
+            if (depth === 0) {
+                return index;
+            }
+        }
+    }
+
+    return -1;
+}
+
+function parseJitGenericName(name: string, genericParameterPrefix: '!' | '!!') {
+    let canonical = '';
+    const genericArguments: string[] = [];
+
+    for (let index = 0; index < name.length; index++) {
+        const char = name[index];
+        if (char === '[' && name[index + 1] !== ']') {
+            const end = genericArgumentEnd(name, index);
+            if (end !== -1) {
+                genericArguments.push(...splitParameters(name.substring(index + 1, end)));
+                index = end;
+                continue;
+            }
+        }
+
+        canonical += char;
+    }
+
+    if (genericArguments.length === 0) {
+        let genericParameterIndex = 0;
+        for (const arity of canonical.matchAll(/`(\d+)/g)) {
+            for (let index = 0; index < Number.parseInt(arity[1], 10); index++, genericParameterIndex++) {
+                genericArguments.push(`${genericParameterPrefix}${genericParameterIndex}`);
+            }
+        }
+    }
+
+    return {name: canonical.replace(/`\d+/g, ''), arguments: genericArguments};
+}
+
+function canonicalizeJitTypeName(typeName: string) {
+    const suffix = typeName.match(/(?:\[[,\s]*\]|\*|&)+$/)?.[0] ?? '';
+    const typeWithoutSuffix = suffix ? typeName.substring(0, typeName.length - suffix.length) : typeName;
+
+    let canonical = '';
+    for (let index = 0; index < typeWithoutSuffix.length; index++) {
+        const char = typeWithoutSuffix[index];
+        if (char === '[' && typeWithoutSuffix[index + 1] !== ']') {
+            const end = genericArgumentEnd(typeWithoutSuffix, index);
+            if (end !== -1) {
+                canonical += `[${splitParameters(typeWithoutSuffix.substring(index + 1, end))
+                    .map(canonicalizeJitTypeName)
+                    .join(',')}]`;
+                index = end;
+                continue;
+            }
+        }
+
+        canonical += char;
+    }
+
+    return `${canonical.replace(/`\d+/g, '')}${suffix}`;
+}
+
+function substituteMetadataGenericParameters(typeName: string, requestedMethod: DotNetMethodKey) {
+    return typeName.replace(/!!(\d+)|!(\d+)/g, (genericParameter, methodIndex, typeIndex) => {
+        if (methodIndex !== undefined) {
+            return requestedMethod.methodArguments[Number.parseInt(methodIndex, 10)] ?? genericParameter;
+        }
+        return requestedMethod.typeArguments[Number.parseInt(typeIndex, 10)] ?? genericParameter;
+    });
+}
+
+function splitParameters(parameters: string) {
+    const result: string[] = [];
+    let depth = 0;
+    let current = '';
+
+    for (const char of parameters) {
+        if (char === '[' || char === '(') {
+            depth++;
+        } else if ((char === ']' || char === ')') && depth > 0) {
+            depth--;
+        }
+
+        if (char === ',' && depth === 0) {
+            result.push(current.trim());
+            current = '';
+        } else {
+            current += char;
+        }
+    }
+
+    if (current.trim()) {
+        result.push(current.trim());
+    }
+
+    return result;
+}
 
 export class DotNetAsmParser implements IAsmParser {
+    private readonly sourceMapping: DotNetSourceMapping;
+    private readonly sourceMappingByName: Map<string, DotNetMethodSourceMapping>;
+
+    constructor(sourceMapping: DotNetSourceMapping = []) {
+        this.sourceMapping = sourceMapping;
+        this.sourceMappingByName = new Map(
+            sourceMapping.map(methodSourceMapping => [
+                formatMethodKey(methodSourceMapping.method),
+                methodSourceMapping,
+            ]),
+        );
+    }
+
+    private getMethodSourceMapping(methodName: string) {
+        const requestedMethod = parseJitDisasmMethodKey(methodName);
+        if (!requestedMethod) {
+            return undefined;
+        }
+
+        const exactMapping = this.sourceMappingByName.get(formatMethodKey(requestedMethod));
+        if (exactMapping) {
+            return exactMapping;
+        }
+
+        for (const methodSourceMapping of this.sourceMapping) {
+            const candidate = methodSourceMapping.method;
+            if (
+                candidate.typeName !== requestedMethod.typeName ||
+                candidate.methodName !== requestedMethod.methodName ||
+                candidate.typeArguments.length !== requestedMethod.typeArguments.length ||
+                candidate.methodArguments.length !== requestedMethod.methodArguments.length ||
+                candidate.parameters.length !== requestedMethod.parameters.length
+            ) {
+                continue;
+            }
+
+            const candidateParameters =
+                candidate.parameterTypes?.map(parameter => [
+                    getCanonicalTypeSignature(parameter, requestedMethod).text,
+                    getCanonicalTypeSignature(parameter, requestedMethod, false, false).text,
+                ]) ??
+                candidate.parameters.map(parameter => [
+                    substituteMetadataGenericParameters(parameter, requestedMethod),
+                ]);
+
+            if (
+                candidateParameters.every((parameters, index) => parameters.includes(requestedMethod.parameters[index]))
+            ) {
+                return methodSourceMapping;
+            }
+        }
+
+        return undefined;
+    }
+
+    private getSourceForOffset(methodSourceMapping: DotNetMethodSourceMapping | undefined, offset: number) {
+        if (!methodSourceMapping) {
+            return null;
+        }
+
+        if (methodSourceMapping.offsets[offset] !== undefined) {
+            return methodSourceMapping.offsets[offset];
+        }
+
+        let bestOffset: number | undefined;
+        for (const candidate of Object.keys(methodSourceMapping.offsets)
+            .map(Number)
+            .sort((a, b) => a - b)) {
+            if (candidate > offset) {
+                break;
+            }
+            bestOffset = candidate;
+        }
+
+        return bestOffset === undefined ? null : methodSourceMapping.offsets[bestOffset];
+    }
+
+    private computeSourceMappingForAsmLines(asmLines: string[], result: ScanLabelsAndMethodsResult) {
+        const sources: Array<AsmResultSource | null> = [];
+        let currentMethodSourceMapping: DotNetMethodSourceMapping | undefined;
+        let currentSource: AsmResultSource | null = null;
+        const inlineDebugInfoRe = /\bINL(?:RT|\d+)\s+@\s*(?:0[xX][0-9a-fA-F]+|\?\?\?)/;
+        const inlineRootOffsetRe = /\bINLRT\s+@\s*0[xX](?<offset>[0-9a-fA-F]+)/g;
+
+        for (const line in asmLines) {
+            if (result.methodDef[line]) {
+                currentMethodSourceMapping = this.getMethodSourceMapping(result.methodDef[line]);
+                currentSource = null;
+            }
+
+            let lineSource: AsmResultSource | null = null;
+            if (result.labelDef[line]) {
+                // A JIT label starts a new native block. Require a fresh debug-info anchor
+                // before mapping instructions in that block to avoid source leaking across blocks.
+                currentSource = null;
+            }
+
+            const inlineRootOffsetMatches = Array.from(asmLines[line].matchAll(inlineRootOffsetRe));
+            const inlineRootOffset = inlineRootOffsetMatches.at(-1)?.groups?.offset;
+            if (inlineRootOffset !== undefined) {
+                lineSource = null;
+                // Inline chains may contain unknown child offsets, but a numeric INLRT still anchors the
+                // instruction to the root method's IL offset.
+                currentSource = this.getSourceForOffset(
+                    currentMethodSourceMapping,
+                    Number.parseInt(inlineRootOffset, 16),
+                );
+            } else if (inlineDebugInfoRe.test(asmLines[line])) {
+                // The IL location is unknown, so we can't get a precise source mapping for this instruction.
+                currentSource = null;
+            }
+
+            const trimmedAsmLine = asmLines[line].trimStart();
+            if (inlineRootOffset === undefined && trimmedAsmLine !== '' && !trimmedAsmLine.startsWith(';')) {
+                lineSource = currentSource;
+            }
+
+            sources.push(lineSource);
+        }
+
+        return sources;
+    }
+
     scanLabelsAndMethods(asmLines: string[], removeUnused: boolean) {
         const labelDef: Record<number, {name: string; remove: boolean}> = {};
         const methodDef: Record<number, string> = {};
@@ -39,8 +318,8 @@ export class DotNetAsmParser implements IAsmParser {
         const allAvailable: string[] = [];
         const usedLabels: string[] = [];
 
-        const methodRefRe = /^(call|jmp|tail\.jmp)\s+(.*)/g;
-        const labelRefRe = /^\w+\s+.*?(G_M\w+)/g;
+        const methodRefRe = /^(call|jmp|tail\.jmp)\s+(.*)/;
+        const labelRefRe = /^\w+\s+.*?(G_M\w+)/;
         const removeCommentAndWsRe = /^\s*(?<line>.*?)(\s*;.*)?\s*$/;
 
         for (const line in asmLines) {
@@ -64,20 +343,20 @@ export class DotNetAsmParser implements IAsmParser {
                 continue;
             }
 
-            const labelResult = trimmedLine.matchAll(labelRefRe).next();
-            if (!labelResult.done) {
-                const name = labelResult.value[1];
+            const labelResult = trimmedLine.match(labelRefRe);
+            if (labelResult) {
+                const name = labelResult[1];
                 const index = asmLines[line].indexOf(name) + 1;
                 labelUsage[line] = {
-                    name: labelResult.value[1],
+                    name,
                     range: {startCol: index, endCol: index + name.length},
                 };
-                usedLabels.push(labelResult.value[1]);
+                usedLabels.push(name);
             }
 
-            const methodResult = trimmedLine.matchAll(methodRefRe).next();
-            if (!methodResult.done) {
-                let name = methodResult.value[2];
+            const methodResult = trimmedLine.match(methodRefRe);
+            if (methodResult) {
+                let name = methodResult[2];
                 if (name.startsWith('[')) {
                     if (name.endsWith(']')) {
                         // cases like `call [Foo]`, `jmp [Foo]`, `tail.jmp [Foo]`
@@ -138,20 +417,58 @@ export class DotNetAsmParser implements IAsmParser {
 
         const asm: {
             text: string;
-            source: Source | null;
+            source: AsmResultSource | null;
             labels: InlineLabel[];
         }[] = [];
         let labelDefinitions: [string, number][] = [];
 
         let asmLines: string[] = this.cleanAsm(utils.splitLines(asmResult));
+        let result = this.scanLabelsAndMethods(asmLines, filters.labels!);
+        let sourceByLine = this.computeSourceMappingForAsmLines(asmLines, result);
         const startingLineCount = asmLines.length;
 
         if (filters.commentOnly) {
             const commentRe = /^\s*(;.*)$/;
-            asmLines = asmLines.flatMap(l => (commentRe.test(l) ? [] : [l]));
-        }
+            const filteredLines: string[] = [];
+            const filteredSources: Array<AsmResultSource | null> = [];
+            const lineMap: Record<number, number> = {};
 
-        const result = this.scanLabelsAndMethods(asmLines, filters.labels!);
+            for (const index in asmLines) {
+                if (!commentRe.test(asmLines[index])) {
+                    lineMap[index] = filteredLines.length;
+                    filteredLines.push(asmLines[index]);
+                    filteredSources.push(sourceByLine[index]);
+                }
+            }
+
+            asmLines = filteredLines;
+            sourceByLine = filteredSources;
+
+            const remappedResult: ScanLabelsAndMethodsResult = {
+                labelDef: {},
+                labelUsage: {},
+                methodDef: {},
+                methodUsage: {},
+                allAvailable: result.allAvailable,
+            };
+            for (const line in lineMap) {
+                const originalLine = Number.parseInt(line, 10);
+                const remappedLine = lineMap[originalLine];
+                if (result.labelDef[originalLine] !== undefined) {
+                    remappedResult.labelDef[remappedLine] = result.labelDef[originalLine];
+                }
+                if (result.labelUsage[originalLine] !== undefined) {
+                    remappedResult.labelUsage[remappedLine] = result.labelUsage[originalLine];
+                }
+                if (result.methodDef[originalLine] !== undefined) {
+                    remappedResult.methodDef[remappedLine] = result.methodDef[originalLine];
+                }
+                if (result.methodUsage[originalLine] !== undefined) {
+                    remappedResult.methodUsage[remappedLine] = result.methodUsage[originalLine];
+                }
+            }
+            result = remappedResult;
+        }
 
         for (const i in result.labelDef) {
             const label = result.labelDef[i];
@@ -168,21 +485,19 @@ export class DotNetAsmParser implements IAsmParser {
 
             const labels: InlineLabel[] = [];
             const label = result.labelUsage[line] || result.methodUsage[line];
-            if (label) {
-                if (result.allAvailable.includes(label.name)) {
-                    labels.push(label);
-                }
+            if (label && result.allAvailable.includes(label.name)) {
+                labels.push(label);
             }
 
             asm.push({
                 text: asmLines[line],
-                source: null,
+                source: sourceByLine[line],
                 labels,
             });
         }
 
         let lineOffset = 1;
-        labelDefinitions = labelDefinitions.sort((a, b) => (a[1] < b[1] ? -1 : 1));
+        labelDefinitions = labelDefinitions.sort((a, b) => a[1] - b[1]);
 
         for (const index in labelDefinitions) {
             if (result.labelDef[labelDefinitions[index][1]] && result.labelDef[labelDefinitions[index][1]].remove) {
@@ -196,7 +511,7 @@ export class DotNetAsmParser implements IAsmParser {
 
         const endTime = process.hrtime.bigint();
         return {
-            asm: asm,
+            asm,
             labelDefinitions: Object.fromEntries(labelDefinitions.filter(i => i[1] !== -1)),
             parsingTime: utils.deltaTimeNanoToMili(startTime, endTime),
             filteredCount: startingLineCount - asm.length,

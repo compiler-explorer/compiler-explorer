@@ -37,6 +37,7 @@ export const InstructionSetsList = [
     'eravm',
     'ez80',
     'hook',
+    'hppa',
     'core',
     'java',
     'kvx',

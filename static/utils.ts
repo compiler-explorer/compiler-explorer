@@ -26,6 +26,9 @@ import bigInt from 'big-integer';
 
 import {addDigitSeparator} from '../shared/common-utils.js';
 
+// Mirrors monaco-editor's own platform detection (vs/base/common/platform.js).
+export const isMacintosh = typeof navigator !== 'undefined' && navigator.userAgent.indexOf('Macintosh') >= 0;
+
 /**
  * Get an image relative to `/public` in the source root.
  */

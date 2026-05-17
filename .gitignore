@@ -10,9 +10,10 @@
 /asm-docs*
 /etc/scripts/asm-docs*
 
-# Python virtual environments and uv
-/etc/scripts/docenizers/.venv
-/etc/scripts/docenizers/.uv
+# Python virtual environments, uv, and build artifacts
+/etc/scripts/*/.venv
+/etc/scripts/*/.uv
+/etc/scripts/*/*.egg-info
 
 # user local customizations
 /etc/**/*.local.*
