@@ -88,7 +88,8 @@ export class PythonCFGParser extends BaseCFGParser {
     override async processFuncNames(bytecode: AssemblyLine[], fullRes?: CompilationResult): Promise<AssemblyLine[]> {
         // replace 'Disassembly of' with function name
         const res: ResultLine[] = [];
-        let src: string | null = null;
+        const src: string | null = fullRes?.inputFilename ? await fs.readFile(fullRes.inputFilename, 'utf8') : null;
+        const srcLines = src ? src.split('\n') : null;
 
         let funcIdx = 0;
 
@@ -98,11 +99,8 @@ export class PythonCFGParser extends BaseCFGParser {
             if (line.text.startsWith('Disassembly of')) {
                 const srcLineStr = line.text.match(/line (\d+)/)?.[1];
                 const srcLineNum = srcLineStr ? Number.parseInt(srcLineStr, 10) : null;
-                if (srcLineNum && fullRes?.inputFilename) {
-                    if (src === null) {
-                        src = await fs.readFile(fullRes.inputFilename, 'utf8');
-                    }
-                    const srcLine = src.split('\n')[srcLineNum - 1];
+                if (srcLineNum && srcLines) {
+                    const srcLine = srcLines[srcLineNum - 1];
                     funcName = srcLine?.match(/def (\w+)\(/)?.[1];
                 }
                 if (funcName) line.text = funcName;
