@@ -1655,6 +1655,10 @@ export class BaseCompiler {
         return utils.changeExtension(inputFilename, '.dump-cmm');
     }
 
+    getLeanCOutputFilename(outputFilename: string) {
+        return utils.changeExtension(outputFilename, '.c');
+    }
+
     getYulOutputFilename(defaultOutputFilename: string) {
         return utils.changeExtension(defaultOutputFilename, '.yul');
     }
@@ -1733,6 +1737,25 @@ export class BaseCompiler {
                 .map(line => ({
                     text: line,
                 }));
+        }
+        return [{text: 'Internal error; unable to open output path'}];
+    }
+
+    async processLeanCOutput(
+        outputFilename: string,
+        output: CompilationResult,
+        options?: {['clang-format']: boolean} | null,
+    ): Promise<ResultLine[]> {
+        if (output.code !== 0) {
+            return [{text: 'Failed to run compiler to get Lean C output'}];
+        }
+        const outpath = this.getLeanCOutputFilename(outputFilename);
+        if (await utils.fileExists(outpath)) {
+            let content = await fs.readFile(outpath, 'utf8');
+            if (options?.['clang-format']) {
+                content = await this.applyClangFormat(content);
+            }
+            return content.split('\n').map(line => ({text: line}));
         }
         return [{text: 'Internal error; unable to open output path'}];
     }
@@ -2503,6 +2526,7 @@ export class BaseCompiler {
         const makeHaskellCore = backendOptions.produceHaskellCore && this.compiler.supportsHaskellCoreView;
         const makeHaskellStg = backendOptions.produceHaskellStg && this.compiler.supportsHaskellStgView;
         const makeHaskellCmm = backendOptions.produceHaskellCmm && this.compiler.supportsHaskellCmmView;
+        const makeLeanC = !!backendOptions.produceLeanC && this.compiler.supportsLeanCView;
         const makeGccDump = backendOptions.produceGccDump?.opened && this.compiler.supportsGccDump;
         const makeYul = backendOptions.produceYul && this.compiler.supportsYulView;
 
@@ -2571,6 +2595,10 @@ export class BaseCompiler {
             ? await this.processHaskellExtraOutput(this.getHaskellCmmOutputFilename(inputFilename), asmResult)
             : undefined;
 
+        const leanCResult = makeLeanC
+            ? await this.processLeanCOutput(outputFilename, asmResult, backendOptions.produceLeanC)
+            : undefined;
+
         const yulResult = makeYul
             ? await this.processYulOutput(outputFilename, asmResult, backendOptions.produceYul)
             : undefined;
@@ -2624,6 +2652,7 @@ export class BaseCompiler {
         asmResult.haskellCoreOutput = haskellCoreResult;
         asmResult.haskellStgOutput = haskellStgResult;
         asmResult.haskellCmmOutput = haskellCmmResult;
+        asmResult.leanCOutput = leanCResult;
 
         asmResult.clojureMacroExpOutput = clojureMacroExpResult;
 
