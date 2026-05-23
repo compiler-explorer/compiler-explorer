@@ -228,7 +228,7 @@ export class RouteAPI {
     filterCode(req: express.Request, code: string, lang: Language) {
         let lines = code.split('\n');
         if (lang.previewFilter !== null) {
-            lines = lines.filter(line => !lang.previewFilter || !lang.previewFilter.test(line));
+            lines = lines.filter(line => !lang.previewFilter?.test(line));
         }
         return lines.join('\n');
     }
