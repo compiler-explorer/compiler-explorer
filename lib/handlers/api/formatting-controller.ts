@@ -49,7 +49,7 @@ export class FormattingController implements HttpController {
             return;
         }
         // Ensure there is source code to format
-        if (!req.body || !req.body.source) {
+        if (!req.body?.source) {
             res.status(400).json({exit: 0, answer: ''});
             return;
         }

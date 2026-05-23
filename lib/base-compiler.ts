@@ -839,11 +839,11 @@ export class BaseCompiler {
         return options;
     }
 
-    findLibVersion(selectedLib: SelectedLibraryVersion): false | VersionInfo {
-        if (!this.supportedLibraries) return false;
+    findLibVersion(selectedLib: SelectedLibraryVersion): null | VersionInfo {
+        if (!this.supportedLibraries) return null;
 
         const foundLib = _.find(this.supportedLibraries, (o, libId) => libId === selectedLib.id);
-        if (!foundLib) return false;
+        if (!foundLib) return null;
 
         const result: VersionInfo | undefined = _.find(
             foundLib.versions,
@@ -853,7 +853,7 @@ export class BaseCompiler {
             },
         );
 
-        if (!result) return false;
+        if (!result) return null;
 
         const copiedResult = structuredClone(result);
         copiedResult.name = foundLib.name;
@@ -3281,7 +3281,7 @@ export class BaseCompiler {
             }
             // TODO rephrase this so we don't need to reassign
             result = filters.demangle ? await this.postProcessAsm(result, filters) : result;
-            if (this.compiler.supportsCfg && backendOptions.produceCfg && backendOptions.produceCfg.asm) {
+            if (this.compiler.supportsCfg && backendOptions.produceCfg?.asm) {
                 const isLlvmIr =
                     this.compiler.instructionSet === 'llvm' ||
                     (options && this.isOutputLikelyLlvmIr(options)) ||
@@ -3453,7 +3453,7 @@ export class BaseCompiler {
             }
 
             const opt = doc.toJS();
-            if (!opt.DebugLoc || !opt.DebugLoc.File || !opt.DebugLoc.File.includes(compileFileName)) continue;
+            if (!opt.DebugLoc?.File?.includes(compileFileName)) continue;
 
             const strOpt = JSON.stringify(opt);
             if (!remarksSet.has(strOpt)) {
@@ -3817,7 +3817,7 @@ but nothing was dumped. Possible causes are:
     }
 
     async getTargetsAsOverrideValues(): Promise<CompilerOverrideOption[]> {
-        if (!this.buildenvsetup || !this.buildenvsetup.getCompilerArch()) {
+        if (!this.buildenvsetup?.getCompilerArch()) {
             const targets = await this.argParser.getPossibleTargets();
 
             return targets.map(target => {
