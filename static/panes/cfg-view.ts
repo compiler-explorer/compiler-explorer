@@ -557,7 +557,7 @@ export class Cfg extends Pane<CfgState> {
 
     resetView(resetZoom?: boolean) {
         // If we have selected a new function, or this is the first load, reset zoom and pan to the function entry
-        if (this.layout.blocks.length > 0) {
+        if (this.layout.blocks?.length > 0) {
             if (resetZoom) {
                 this.setZoom(1);
             }
