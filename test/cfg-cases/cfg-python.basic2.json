@@ -543,11 +543,19 @@
                 },
                 {
                     "id": "140",
-                    "label": "140:\n        >>  140 FOR_ITER                98 (to 340)\n            144 STORE_FAST               1 (page)\n  9         146 LOAD_FAST                1 (page)\n            148 LOAD_ATTR               13 (NULL|self + absolute)\n            168 CALL                     0\n            176 LOAD_ATTR               15 (NULL|self + open)\n            196 LOAD_CONST               4 ('r')\n            198 CALL                     1\n            206 BEFORE_WITH\n            208 STORE_FAST               2 (fp)\n 10         210 LOAD_GLOBAL             17 (NULL + BeautifulSoup)\n            220 LOAD_FAST                2 (fp)\n            222 LOAD_ATTR               19 (NULL|self + read)\n            242 CALL                     0\n            250 LOAD_CONST               5 ('html.parser')\n            252 CALL                     2\n            260 STORE_FAST               3 (soup)\n 11         262 LOAD_GLOBAL             21 (NULL + _cleanup)\n            272 LOAD_FAST                3 (soup)\n            274 CALL                     1\n            282 STORE_FAST               4 (clean_soup)\n 12         284 LOAD_FAST                4 (clean_soup)\n            286 GET_ITER"
+                    "label": "140:\n        >>  140 FOR_ITER                98 (to 340)"
+                },
+                {
+                    "id": "144",
+                    "label": "144:\n            144 STORE_FAST               1 (page)\n  9         146 LOAD_FAST                1 (page)\n            148 LOAD_ATTR               13 (NULL|self + absolute)\n            168 CALL                     0\n            176 LOAD_ATTR               15 (NULL|self + open)\n            196 LOAD_CONST               4 ('r')\n            198 CALL                     1\n            206 BEFORE_WITH\n            208 STORE_FAST               2 (fp)\n 10         210 LOAD_GLOBAL             17 (NULL + BeautifulSoup)\n            220 LOAD_FAST                2 (fp)\n            222 LOAD_ATTR               19 (NULL|self + read)\n            242 CALL                     0\n            250 LOAD_CONST               5 ('html.parser')\n            252 CALL                     2\n            260 STORE_FAST               3 (soup)\n 11         262 LOAD_GLOBAL             21 (NULL + _cleanup)\n            272 LOAD_FAST                3 (soup)\n            274 CALL                     1\n            282 STORE_FAST               4 (clean_soup)\n 12         284 LOAD_FAST                4 (clean_soup)\n            286 GET_ITER"
                 },
                 {
                     "id": "288",
-                    "label": "288:\n        >>  288 FOR_ITER                13 (to 318)\n            292 STORE_FAST               5 (tag)\n 13         294 LOAD_GLOBAL             23 (NULL + print)\n            304 LOAD_FAST                5 (tag)\n            306 CALL                     1\n            314 POP_TOP\n            316 JUMP_BACKWARD           15 (to 288)"
+                    "label": "288:\n        >>  288 FOR_ITER                13 (to 318)"
+                },
+                {
+                    "id": "292",
+                    "label": "292:\n            292 STORE_FAST               5 (tag)\n 13         294 LOAD_GLOBAL             23 (NULL + print)\n            304 LOAD_FAST                5 (tag)\n            306 CALL                     1\n            314 POP_TOP\n            316 JUMP_BACKWARD           15 (to 288)"
                 },
                 {
                     "id": "318",
@@ -571,7 +579,7 @@
                 },
                 {
                     "id": "362",
-                    "label": "362:\n        >>  362 COPY                     3\n            364 POP_EXCEPT\n            366 RERAISE                  1\nExceptionTable:\n  208 to 318 -> 344 [2] lasti\n  344 to 352 -> 362 [4] lasti"
+                    "label": "362:\n        >>  362 COPY                     3\n            364 POP_EXCEPT\n            366 RERAISE                  1"
                 }
             ],
             "edges": [
@@ -601,12 +609,36 @@
                 },
                 {
                     "from": "140",
+                    "to": "340",
+                    "arrows": "to",
+                    "color": "green"
+                },
+                {
+                    "from": "140",
+                    "to": "144",
+                    "arrows": "to",
+                    "color": "red"
+                },
+                {
+                    "from": "144",
                     "to": "288",
                     "arrows": "to",
                     "color": "grey"
                 },
                 {
                     "from": "288",
+                    "to": "318",
+                    "arrows": "to",
+                    "color": "green"
+                },
+                {
+                    "from": "288",
+                    "to": "292",
+                    "arrows": "to",
+                    "color": "red"
+                },
+                {
+                    "from": "292",
                     "to": "288",
                     "arrows": "to",
                     "color": "blue"

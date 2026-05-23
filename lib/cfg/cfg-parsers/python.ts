@@ -37,7 +37,9 @@ export class PythonCFGParser extends BaseCFGParser {
     }
 
     override isFunctionEnd(x: string) {
-        return x.startsWith('Disassembly of');
+        // After processFuncNames, function headers are renamed but still don't start with spaces.
+        // All Python bytecode instructions start with spaces, so any non-space-starting line is a function boundary.
+        return !x.startsWith(' ');
     }
 
     private isJmpTarget(inst: string) {
@@ -64,7 +66,23 @@ export class PythonCFGParser extends BaseCFGParser {
         ) {
             i++;
         }
-        return bytecode.slice(i).filter(x => x.text && x.text.trim() !== '');
+        // Filter out empty lines and ExceptionTable sections
+        let inExceptionTable = false;
+        return bytecode.slice(i).filter(x => {
+            if (!x.text || x.text.trim() === '') return false;
+            if (x.text.startsWith('ExceptionTable:')) {
+                inExceptionTable = true;
+                return false;
+            }
+            if (inExceptionTable) {
+                if (x.text.startsWith('Disassembly of') || x.text.startsWith('Function #')) {
+                    inExceptionTable = false;
+                    return true;
+                }
+                return false;
+            }
+            return true;
+        });
     }
 
     override async processFuncNames(bytecode: AssemblyLine[], fullRes?: CompilationResult): Promise<AssemblyLine[]> {
@@ -83,9 +101,9 @@ export class PythonCFGParser extends BaseCFGParser {
                 if (srcLineNum && fullRes?.inputFilename) {
                     if (src === null) {
                         src = await fs.readFile(fullRes.inputFilename, 'utf8');
-                        const srcLine = src.split('\n')[srcLineNum - 1];
-                        funcName = srcLine.match(/def (\w+)\(/)?.[1];
                     }
+                    const srcLine = src.split('\n')[srcLineNum - 1];
+                    funcName = srcLine?.match(/def (\w+)\(/)?.[1];
                 }
                 if (funcName) line.text = funcName;
                 else line.text = `Function #${funcIdx++}`;
