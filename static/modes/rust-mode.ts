@@ -42,7 +42,7 @@ function definition(): monaco.languages.IMonarchLanguage {
     for (let i = 0; i < rustPatched.tokenizer.numbers.length; i++) {
         const rule = rustPatched.tokenizer.numbers[i];
         if (Array.isArray(rule) && rule[0] instanceof RegExp && rule[0].toString() === expectedPattern.toString()) {
-            rustPatched.tokenizer.numbers[i] = fixedPattern;
+            rustPatched.tokenizer.numbers[i] = fixedPattern as any;
             patternFound = true;
             break;
         }
