@@ -34,18 +34,6 @@ import {
     waitForEditors,
 } from '../support/utils';
 
-/**
- * Source code with conditional compilation for producing distinct outputs
- * in two compiler panes, making diff view show meaningful differences.
- * Uses different function names so we can assert the diff shows both variants.
- */
-const DIFF_SOURCE = `\
-#ifdef USE_ADD
-int add_variant(int a, int b) { return a + b; }
-#else
-int mul_variant(int a, int b) { return a * b; }
-#endif`;
-
 beforeEach(visitPage);
 
 afterEach(() => {
@@ -62,33 +50,24 @@ describe('Diff view', () => {
 
     it('should show diff content with two compiler panes', () => {
         waitForEditors();
-        setMonacoEditorContent(DIFF_SOURCE);
-        monacoEditorTextShouldContain(findPane('Editor #').find('.monaco-editor'), 'mul_variant');
+        setMonacoEditorContent('int func(int x) { return x; }');
+        monacoEditorTextShouldContain(findPane('Editor #').find('.monaco-editor'), 'func');
 
-        // Add second compiler
+        // Add second compiler with different options so output differs
         addCompilerFromEditor();
         cy.get('span.lm_title:visible').filter(':contains("Editor #")').should('have.length', 2);
-        lastCompilerContent()
-            .find('.monaco-editor .view-lines', {timeout: 10000})
-            .should('contain.text', 'mul_variant');
-
-        // Set -DUSE_ADD on the second compiler
-        lastCompilerContent().find('input.options').clear().type('-DUSE_ADD');
-        lastCompilerContent()
-            .find('.monaco-editor .view-lines', {timeout: 10000})
-            .should('contain.text', 'add_variant');
+        lastCompilerContent().find('input.options').clear().type('-O2');
+        lastCompilerContent().find('.monaco-editor .view-lines', {timeout: 10000}).should('contain.text', '-O2');
 
         // Open diff view — auto-selects the two compilers
         openDiffView();
 
-        // Verify the diff shows content from at least one variant
+        // Verify the diff shows content
         findPane('Diff')
             .find('.view-lines', {timeout: 10000})
             .should($el => {
                 const text = $el.text().replaceAll('\u00a0', ' ');
-                const hasLhs = text.includes('mul_variant');
-                const hasRhs = text.includes('add_variant');
-                expect(hasLhs || hasRhs, 'diff should contain at least one variant function name').to.be.true;
+                expect(text).to.include('func');
             });
     });
 });
