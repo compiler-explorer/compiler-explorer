@@ -402,6 +402,17 @@ const definitions: Record<LanguageKey, LanguageDefinition> = {
         previewFilter: null,
         monacoDisassembly: null,
     },
+    doolang: {
+        name: 'Doolang',
+        monaco: 'doolang',
+        extensions: ['.doo'],
+        alias: ['doo'],
+        logoFilename: 'doolang.svg',
+        logoFilenameDark: null,
+        formatter: null,
+        previewFilter: null,
+        monacoDisassembly: 'llvm-ir',
+    },
     elixir: {
         name: 'Elixir',
         monaco: 'elixir',
