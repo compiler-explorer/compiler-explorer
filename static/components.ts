@@ -126,6 +126,23 @@ export function getCompilerForTree(treeId: number, lang: string): ComponentConfi
     };
 }
 
+/** Get a chained compiler component that takes its source from another compiler's output. */
+export function getChainedCompiler(
+    sourceCompilerId: number,
+    lang: string,
+    rootEditorId?: number,
+): ComponentConfig<typeof COMPILER_COMPONENT_NAME> {
+    return {
+        type: 'component',
+        componentName: COMPILER_COMPONENT_NAME,
+        componentState: {
+            sourceCompiler: sourceCompilerId,
+            lang,
+            rootEditorId,
+        },
+    };
+}
+
 /** Get an empty executor component. */
 export function getExecutor(editorId: number, lang: string): ComponentConfig<typeof EXECUTOR_COMPONENT_NAME> {
     return {
@@ -1212,7 +1229,8 @@ function validateComponentState(componentName: string, state: any): boolean {
             return (
                 (state.lang && state.source !== undefined) ||
                 (state.source !== undefined && state.compiler) ||
-                (state.lang && state.tree !== undefined)
+                (state.lang && state.tree !== undefined) ||
+                (state.sourceCompiler !== undefined && state.lang)
             );
 
         case EXECUTOR_COMPONENT_NAME:

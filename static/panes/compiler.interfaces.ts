@@ -30,6 +30,9 @@ import {MonacoPaneState} from './pane.interfaces.js';
 export type CompilerState = WidgetState & {
     tree?: number;
     source?: number;
+    sourceCompiler?: number;
+    chainOutputLang?: string;
+    rootEditorId?: number;
     compiler: string;
     options?: string;
     flagsViewOpen?: boolean;
