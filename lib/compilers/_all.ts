@@ -103,6 +103,7 @@ export {JavaCompiler} from './java.js';
 export {JuliaCompiler} from './julia.js';
 export {KotlinCompiler} from './kotlin.js';
 export {LDCCompiler} from './ldc.js';
+export {IntelFortranCompiler} from './intel-fortran.js';
 export {LFortranCompiler} from './lfortran.js';
 export {LLCCompiler} from './llc.js';
 export {LLVMmcaTool} from './llvm-mca.js';
