@@ -31,6 +31,7 @@ import CopyWebpackPlugin from 'copy-webpack-plugin';
 import CssMinimizerPlugin from 'css-minimizer-webpack-plugin';
 import MiniCssExtractPlugin from 'mini-css-extract-plugin';
 import MonacoEditorWebpackPlugin from 'monaco-editor-webpack-plugin';
+import {NormalModuleReplacementPlugin} from 'webpack';
 import TerserPlugin from 'terser-webpack-plugin';
 import Webpack from 'webpack';
 import {WebpackManifestPlugin} from 'webpack-manifest-plugin';
@@ -83,6 +84,21 @@ const plugins: Webpack.WebpackPluginInstance[] = [
         ],
         filename: isDev ? '[name].worker.js' : `[name]${webpackJsHack}worker.[contenthash].js`,
     }),
+    // Monaco 0.55 introduced a regression where all language contributions explicitly import
+    // all editor contributions (72 side-effect imports each). These duplicate what
+    // MonacoEditorWebpackPlugin already includes via its include-loader, which intentionally
+    // creates unique module IDs — so webpack bundles the code twice, adding ~7 MB to vendor.js.
+    // We replace the affected files with patched copies that strip the duplicate imports.
+    // Upstream bug: https://github.com/microsoft/monaco-editor/issues/5162
+    // CE issue: https://github.com/compiler-explorer/compiler-explorer/issues/8547
+    new NormalModuleReplacementPlugin(
+        /monaco-editor[/\\]esm[/\\]vs[/\\]language[/\\]typescript[/\\]monaco\.contribution\.js$/,
+        path.resolve(__dirname, 'static/webpack-patches/monaco-typescript-contribution.js'),
+    ),
+    new NormalModuleReplacementPlugin(
+        /monaco-editor[/\\]esm[/\\]vs[/\\]basic-languages[/\\]_\.contribution\.js$/,
+        path.resolve(__dirname, 'static/webpack-patches/monaco-basic-languages-contribution.js'),
+    ),
     new MiniCssExtractPlugin({
         filename: isDev ? '[name].css' : `[name]${webpackJsHack}[contenthash].css`,
     }),
