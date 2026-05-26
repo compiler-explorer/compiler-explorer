@@ -134,6 +134,12 @@
           - etc/config/cuda.*.properties
           - static/modes/cuda-mode.ts
 
+'lang-cutedsl':
+  - changed-files:
+      - any-glob-to-any-file:
+          - 'lib/compilers/cutedsl.ts'
+          - 'etc/config/cutedsl.*.properties'
+
 'lang-d':
   - changed-files:
       - any-glob-to-any-file:

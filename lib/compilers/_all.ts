@@ -57,6 +57,7 @@ export {CompCertCompiler} from './compcert.js';
 export {CppFrontCompiler} from './cppfront.js';
 export {CprocCompiler} from './cproc.js';
 export {CrystalCompiler} from './crystal.js';
+export {CuteDslCompiler} from './cutedsl.js';
 export {D8Compiler} from './d8.js';
 export {DartCompiler} from './dart.js';
 export {DefaultCompiler} from './default.js';
