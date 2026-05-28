@@ -1883,14 +1883,18 @@ export class BaseCompiler {
     fromInternalGccDumpName(internalDumpName: string, selectedPasses: string[]) {
         if (!selectedPasses) selectedPasses = ['ipa', 'tree', 'rtl'];
 
-        const internalNameRe = new RegExp('^\\s*(' + selectedPasses.join('|') + ')-([\\w_-]+).*ON$');
+        // #6744: the pass name (group 2) can contain a single space, for 'rtl pre'
+        const internalNameRe = new RegExp('^\\s*(' + selectedPasses.join('|') + ')-([\\w_-]+(?: [\\w_-]+)?).*ON$');
         const match = internalDumpName.match(internalNameRe);
-        if (match)
+        if (match) {
+            // for 'rtl pre', file_ext should be just 'pre'
+            const file_ext = match[2].includes(' ') ? match[2].split(' ')[1] : match[2];
             return {
-                filename_suffix: `${match[1][0]}.${match[2]}`,
+                filename_suffix: `${match[1][0]}.${file_ext}`,
                 name: match[2] + ' (' + match[1] + ')',
-                command_prefix: `-fdump-${match[1]}-${match[2]}`,
+                command_prefix: `-fdump-${match[1]}-${file_ext}`,
             };
+        }
         return null;
     }
 
