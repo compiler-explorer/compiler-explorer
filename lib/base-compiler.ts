@@ -1892,7 +1892,7 @@ export class BaseCompiler {
             return {
                 filename_suffix: `${match[1][0]}.${file_ext}`,
                 name: match[2] + ' (' + match[1] + ')',
-                command_prefix: `-fdump-${match[1]}-${match[2]}`,
+                command_prefix: `-fdump-${match[1]}-${file_ext}`,
             };
         }
         return null;
