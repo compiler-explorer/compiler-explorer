@@ -1732,7 +1732,7 @@ span.lib-info {
     max-width: 600px;
 }
 
-button.new-pane-button:disabled:after {
+.opens-singleton-pane:disabled:after {
     content: ' [already open]';
 }
 
