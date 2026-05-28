@@ -3106,8 +3106,6 @@ export class BaseCompiler {
     ) {
         const optionsError = this.checkOptions(options);
         if (optionsError) throw optionsError;
-        const sourceError = this.checkSource(source);
-        if (sourceError) throw sourceError;
 
         const libsAndOptions = {libraries, options};
         if (this.tryAutodetectLibraries(libsAndOptions)) {
@@ -3743,22 +3741,6 @@ but nothing was dumped. Possible causes are:
     checkOptions(options: string[]) {
         const error = this.env.findBadOptions(options);
         if (error.length > 0) return `Bad options: ${error.join(', ')}`;
-        return null;
-    }
-
-    // This check for arbitrary user-controlled preprocessor inclusions
-    // can be circumvented in more than one way. The goal here is to respond
-    // to simple attempts with a clear diagnostic; the service still needs to
-    // assume that malicious actors can make the compiler open arbitrary files.
-    checkSource(source: string) {
-        const re = /^\s*#\s*i(nclude|mport)(_next)?\s+["<]((\.{1,2}|\/)[^">]*)[">]/;
-        const failed: string[] = [];
-        for (const [index, line] of utils.splitLines(source).entries()) {
-            if (re.test(line)) {
-                failed.push(`<stdin>:${index + 1}:1: no absolute or relative includes please`);
-            }
-        }
-        if (failed.length > 0) return failed.join('\n');
         return null;
     }
 
