@@ -160,6 +160,15 @@ export type PPOutput = {
     output: string;
 };
 
+export type GccDumpOutput = {
+    all: GccDumpViewSelectedPass[];
+    selectedPass: GccDumpViewSelectedPass | null;
+    currentPassOutput: string;
+    syntaxHighlight: boolean;
+    /** Maps filename_suffix to dump content. Populated when all passes are dumped at once. */
+    passDumps?: Record<string, string>;
+};
+
 export type CompilationResult = {
     code: number;
     timedOut: boolean;
@@ -184,7 +193,7 @@ export type CompilationResult = {
     dirPath?: string;
     compilationOptions?: string[];
     downloads?: BuildEnvDownloadInfo[];
-    gccDumpOutput?;
+    gccDumpOutput?: GccDumpOutput;
     languageId?: string;
     asmKeywordTypes?: string[];
     result?: CompilationResult; // cmake inner result
