@@ -108,21 +108,30 @@ export async function setupStaticMiddleware(options: ServerOptions, router: Rout
     return createDefaultPugRequireHandler(options.staticRoot, staticManifest);
 }
 
-/**
- * Gets the appropriate favicon filename based on the environment
- * @param isDevMode - Whether the app is running in development mode
- * @param env - The environment names array
- * @returns The favicon filename to use
- */
-export function getFaviconFilename(isDevMode: boolean, env?: string[]): string {
-    if (isDevMode) {
-        return 'favicon-dev.ico';
+export function getFaviconFilename(extraBodyClass: string): string {
+    return extraBodyClass ? `favicon-${extraBodyClass}.ico` : 'favicon.ico';
+}
+
+export function getLogoOverlayFilename(extraBodyClass: string): string | undefined {
+    return extraBodyClass ? `site-logo-${extraBodyClass}.svg` : undefined;
+}
+
+export async function validateBrandingAssets(staticPath: string, extraBodyClass: string): Promise<void> {
+    if (!extraBodyClass) return;
+    const required = [getFaviconFilename(extraBodyClass), getLogoOverlayFilename(extraBodyClass)].filter(
+        (f): f is string => f !== undefined,
+    );
+    const missing: string[] = [];
+    for (const filename of required) {
+        try {
+            await fs.access(path.join(staticPath, filename));
+        } catch {
+            missing.push(filename);
+        }
     }
-    if (env?.includes('beta')) {
-        return 'favicon-beta.ico';
+    if (missing.length > 0) {
+        throw new Error(
+            `Missing branding assets for extraBodyClass='${extraBodyClass}' in ${staticPath}: ${missing.join(', ')}`,
+        );
     }
-    if (env?.includes('staging')) {
-        return 'favicon-staging.ico';
-    }
-    return 'favicon.ico';
 }
