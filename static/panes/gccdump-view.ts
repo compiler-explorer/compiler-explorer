@@ -392,10 +392,12 @@ export class GccDump extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Gcc
             if (this.selectedPass !== null && this.selectedPass in this.passDumps) {
                 const content = this.passDumps[this.selectedPass];
                 const hasMeaningfulContent = !/^\s*$/.test(content);
+                const passName = result.gccDumpOutput.selectedPass?.name ?? this.selectedPass;
                 displayContent = hasMeaningfulContent
                     ? content
-                    : `Pass '${this.selectedPass}' was requested\nbut nothing was dumped. Possible causes are:\n - pass is not valid in this (maybe you changed the compiler options);\n - pass is valid but did not emit anything (eg. it was not executed).`;
+                    : `Pass '${passName}' was requested\nbut nothing was dumped. Possible causes are:\n - pass is not valid in this (maybe you changed the compiler options);\n - pass is valid but did not emit anything (eg. it was not executed).`;
                 useSyntaxHighlight = hasMeaningfulContent;
+            }
             }
 
             const model = this.editor.getModel();
