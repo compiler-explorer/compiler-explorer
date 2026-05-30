@@ -52,6 +52,7 @@ import './hook-mode';
 import './hylo-mode';
 import './ispc-mode';
 import './jakt-mode';
+import './lean-mode';
 import './llvm-ir-mode';
 import './mlir-mode';
 import './modula2-mode';
