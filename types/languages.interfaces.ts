@@ -53,6 +53,7 @@ export type LanguageKey =
     | 'cuda'
     | 'd'
     | 'dart'
+    | 'doolang'
     | 'elixir'
     | 'erlang'
     | 'fortran'
