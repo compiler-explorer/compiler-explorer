@@ -9,6 +9,8 @@ export type LibraryVersion = {
     path: string[];
     options: string[];
     packagedheaders?: boolean;
+    sysroot?: string;
+    dynamicLinker?: string;
 };
 
 export type Library = {
