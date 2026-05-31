@@ -1884,7 +1884,7 @@ export class BaseCompiler {
         if (!selectedPasses) selectedPasses = ['ipa', 'tree', 'rtl'];
 
         // #6744: the pass name (group 2) can contain a single space, for 'rtl pre'
-        const internalNameRe = new RegExp('^\\s*(' + selectedPasses.join('|') + ')-([\\w_-]+(?: [\\w_-]+)?).*ON$');
+        const internalNameRe = new RegExp('^\\s*(' + selectedPasses.join('|') + ')-([\\w_-]+(?: [\\w_-]+)?)');
         const match = internalDumpName.match(internalNameRe);
         if (match) {
             // for 'rtl pre', file_ext should be just 'pre'
@@ -3568,6 +3568,7 @@ export class BaseCompiler {
             selectedPass: opts.pass ?? null,
             currentPassOutput: '<No pass selected>',
             syntaxHighlight: false,
+            passDumps: {} as Record<string, string>,
         };
         const treeDumpsNotInPasses: any[] = [];
 
@@ -3629,7 +3630,9 @@ export class BaseCompiler {
                     // don't add it to the drop down menu
                     if (f.length === 0) continue;
 
-                    if (opts.pass && opts.pass.name === selectizeObject.name) dumpFileName = path.join(rootDir, f[0]);
+                    const filePath = path.join(rootDir, f[0]);
+                    if (opts.pass && opts.pass.name === selectizeObject.name) dumpFileName = filePath;
+                    output.passDumps[selectizeObject.filename_suffix] = (await utils.tryReadTextFile(filePath)) ?? '';
                 }
 
                 output.all.push(selectizeObject);

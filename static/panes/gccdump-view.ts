@@ -77,6 +77,7 @@ export class GccDump extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Gcc
     inhibitPassSelect = false;
     cursorSelectionThrottledFunction: ((e: any) => void) & _.Cancelable;
     selectedPass: string | null = null;
+    passDumps: Record<string, string> = {};
 
     constructor(hub: Hub, container: Container, state: GccDumpViewState & MonacoPaneState) {
         super(hub, container, state);
@@ -313,7 +314,25 @@ export class GccDump extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Gcc
         }
 
         if (this.inhibitPassSelect !== true) {
-            this.eventHub.emit('gccDumpPassSelected', this.compilerInfo.compilerId, selectedPass, true);
+            const suffix = selectedPass.filename_suffix;
+            if (suffix !== null && suffix in this.passDumps) {
+                // All pass dumps are already cached — display directly without recompile.
+                const content = this.passDumps[suffix];
+                const hasMeaningfulContent = !/^\s*$/.test(content);
+                const model = this.editor.getModel();
+                if (model) {
+                    monaco.editor.setModelLanguage(model, hasMeaningfulContent ? 'gccdump-rtl-gimple' : 'plaintext');
+                }
+                this.showGccDumpResults(
+                    hasMeaningfulContent
+                        ? content
+                        : `Pass '${selectedPass.name}' was requested\nbut nothing was dumped. Possible causes are:\n - pass is not valid in this (maybe you changed the compiler options);\n - pass is valid but did not emit anything (eg. it was not executed).`,
+                );
+                this.eventHub.emit('gccDumpPassSelected', this.compilerInfo.compilerId, selectedPass, false);
+            } else {
+                // Pass dumps not cached (compiler doesn't support dumping all at once) — recompile.
+                this.eventHub.emit('gccDumpPassSelected', this.compilerInfo.compilerId, selectedPass, true);
+            }
         }
 
         // To keep shared URL compatible, we keep on storing only a string in the
@@ -355,16 +374,8 @@ export class GccDump extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Gcc
     override onCompileResult(id: number, compiler: CompilerInfo, result: CompilationResult) {
         if (this.compilerInfo.compilerId !== id) return;
 
-        const model = this.editor.getModel();
-        if (model) {
-            if (result.gccDumpOutput?.syntaxHighlight) {
-                monaco.editor.setModelLanguage(model, 'gccdump-rtl-gimple');
-            } else {
-                monaco.editor.setModelLanguage(model, 'plaintext');
-            }
-        }
         if (compiler.supportsGccDump && result.gccDumpOutput) {
-            const currOutput = result.gccDumpOutput.currentPassOutput;
+            this.passDumps = result.gccDumpOutput.passDumps ?? {};
 
             // if result contains empty selected pass, probably means
             // we requested an invalid/outdated pass.
@@ -373,7 +384,27 @@ export class GccDump extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Gcc
                 this.selectedPass = null;
             }
             this.updatePass(this.filters, this.selectize, result.gccDumpOutput);
-            this.showGccDumpResults(currOutput);
+
+            // When all pass dumps are cached, prefer showing the selected pass from the cache
+            // so that the display is consistent with client-side pass switching.
+            let displayContent = result.gccDumpOutput.currentPassOutput;
+            let useSyntaxHighlight = result.gccDumpOutput.syntaxHighlight;
+            if (this.selectedPass !== null && this.selectedPass in this.passDumps) {
+                const content = this.passDumps[this.selectedPass];
+                const hasMeaningfulContent = !/^\s*$/.test(content);
+                const passName = result.gccDumpOutput.selectedPass?.name ?? this.selectedPass;
+                displayContent = hasMeaningfulContent
+                    ? content
+                    : `Pass '${passName}' was requested\nbut nothing was dumped. Possible causes are:\n - pass is not valid in this (maybe you changed the compiler options);\n - pass is valid but did not emit anything (eg. it was not executed).`;
+                useSyntaxHighlight = hasMeaningfulContent;
+            }
+            }
+
+            const model = this.editor.getModel();
+            if (model) {
+                monaco.editor.setModelLanguage(model, useSyntaxHighlight ? 'gccdump-rtl-gimple' : 'plaintext');
+            }
+            this.showGccDumpResults(displayContent);
 
             // enable UI on first successful compilation or after an invalid compiler selection (eg. clang)
             if (!this.uiIsReady) {
@@ -381,11 +412,16 @@ export class GccDump extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Gcc
                 this.onUiReady();
             }
         } else {
+            this.passDumps = {};
             this.selectize.clear(true);
             this.selectedPass = null;
             this.updatePass(this.filters, this.selectize, null);
             this.uiIsReady = false;
             this.onUiNotReady();
+            const model = this.editor.getModel();
+            if (model) {
+                monaco.editor.setModelLanguage(model, 'plaintext');
+            }
             if (!compiler.supportsGccDump) {
                 this.showGccDumpResults('<Tree/RTL output is not supported for this compiler (GCC only)>');
             } else {
