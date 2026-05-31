@@ -27,8 +27,12 @@ import path from 'node:path';
 
 import {afterAll, beforeAll, describe, expect, it} from 'vitest';
 
+import {hasTargetStringMapping, instructionSetFromTargetString} from '../lib/instructionsets.js';
 import {
+    enumerateCompilers,
+    extractTargetTokens,
     filterDisabled,
+    findCompilersWithoutInstructionSet,
     parseCompilersList,
     parsePropertiesFileRaw,
     type RawFileValidationResult,
@@ -36,6 +40,8 @@ import {
     validateCrossFileCompilerIds,
     validateRawFile,
 } from '../lib/properties-validator.js';
+import type {InstructionSet} from '../types/instructionsets.js';
+import {InstructionSetsList} from '../types/instructionsets.js';
 
 function validate(content: string, filename = 'test.properties', options?: RawValidatorOptions) {
     return validateRawFile(parsePropertiesFileRaw(content, filename), options);
@@ -599,5 +605,222 @@ describe('Real config validation', () => {
         const amazonFiles = propertyFiles.filter(f => f.filename.includes('amazon'));
         const filesWithIssues = collectIssues(amazonFiles, 'suspiciousPaths', true, {checkSuspiciousPaths: true});
         expect(filesWithIssues, 'Files with suspicious paths').toEqual([]);
+    });
+
+    it('should have only valid InstructionSet values configured', () => {
+        // Catches typos like `instructionSet=mos6052` (silently skipped by
+        // the consistency check below because it isn't in TARGET_SUBSTRINGS).
+        // compiler-finder.ts asserts this at runtime startup, but that only
+        // fires when the affected compiler is actually loaded.
+        const known = new Set<string>(InstructionSetsList);
+        const bad: string[] = [];
+        for (const c of enumerateCompilers(propertyFiles)) {
+            const declared = c.resolve('instructionSet');
+            if (declared && !known.has(declared)) {
+                bad.push(`${c.lang}/${c.compilerId}: instructionSet=${declared}`);
+            }
+        }
+        expect(bad, `Unknown instructionSet values:\n${bad.join('\n')}`).toEqual([]);
+    });
+
+    it('should have an explicit instructionSet for every compiler', () => {
+        // Replaces the old runtime inference heuristic in lib/instructionsets.ts
+        // (removed alongside this validator). Every compiler must resolve an
+        // instructionSet via its own override, a containing group, or a
+        // top-level default in `<lang>.defaults.properties`.
+        const missing = findCompilersWithoutInstructionSet(propertyFiles);
+        if (missing.length === 0) return;
+        const summary = missing
+            .slice(0, 20)
+            .map(m => `  - ${m.lang}/${m.compilerId} (groups: ${m.groupChain.join(',') || '<none>'})`)
+            .join('\n');
+        expect.fail(
+            `${missing.length} compiler(s) have no resolved instructionSet. Add ` +
+                '`instructionSet=...` at compiler, group, or top-level defaults. ' +
+                `First 20:\n${summary}`,
+        );
+    });
+
+    it('should have instructionSet matching any -target/-march in default options', () => {
+        // Catches the realistic regression where someone bumps a clang-target
+        // group's `-target` flag (or adds a new per-compiler `-target` override)
+        // without updating the corresponding `instructionSet=`.
+        //
+        // We skip the check when:
+        //  - `instructionSetFromTargetString` returns undefined — the target
+        //    isn't one we recognise (e.g. a vendor-specific triple), so we
+        //    can't say if it disagrees.
+        //  - The declared instructionSet is a bytecode / VM / IR format
+        //    (`mpy`, `java`, `evm`, etc.). For those, runtime `-target`/
+        //    `-march` flags control host build or optimisation hints, not the
+        //    output arch — micropython's `-march=x64` is the canonical case.
+        const mismatches: string[] = [];
+        for (const c of enumerateCompilers(propertyFiles)) {
+            const options = c.resolve('options');
+            if (!options) continue;
+            const declared = c.resolve('instructionSet');
+            // declared is `string | undefined`; the predicate tolerates both.
+            if (!hasTargetStringMapping(declared as InstructionSet | undefined)) continue;
+            for (const target of extractTargetTokens(options)) {
+                const inferred = instructionSetFromTargetString(target);
+                if (inferred && declared && inferred !== declared) {
+                    mismatches.push(
+                        `${c.lang}/${c.compilerId}: -target/-march "${target}" → ${inferred} ` +
+                            `but instructionSet=${declared} (groups: ${c.groupChain.join(',') || '<none>'})`,
+                    );
+                }
+            }
+        }
+        expect(
+            mismatches,
+            `Compilers whose target flag disagrees with instructionSet:\n${mismatches.join('\n')}`,
+        ).toEqual([]);
+    });
+});
+
+describe('findCompilersWithoutInstructionSet (synthetic)', () => {
+    function file(filename: string, content: string) {
+        return {filename, parsed: parsePropertiesFileRaw(content, filename)};
+    }
+
+    it('flags only compilers with no inheritance hit', () => {
+        const files = [
+            file('foo.defaults.properties', 'instructionSet=amd64\ncompilers=alpha:&beta:&gamma\n'),
+            file(
+                'foo.amazon.properties',
+                [
+                    'compiler.alpha.exe=/foo/alpha',
+                    'group.beta.compilers=beta1',
+                    'group.beta.instructionSet=aarch64',
+                    'compiler.beta1.exe=/foo/beta1',
+                    'group.gamma.compilers=gamma1',
+                    'compiler.gamma1.exe=/foo/gamma1',
+                    'compiler.gamma1.instructionSet=mips',
+                    '',
+                ].join('\n'),
+            ),
+            // Separate language with no top-level default → its compiler is missing.
+            file('bar.defaults.properties', 'compilers=&onlybar\n'),
+            file('bar.amazon.properties', 'group.onlybar.compilers=barc\ncompiler.barc.exe=/bar/barc\n'),
+        ];
+        const missing = findCompilersWithoutInstructionSet(files);
+        expect(missing).toEqual([{lang: 'bar', compilerId: 'barc', groupChain: ['onlybar']}]);
+    });
+
+    it('treats empty-string instructionSet as missing', () => {
+        const files = [
+            file(
+                'foo.defaults.properties',
+                'compilers=alpha\ncompiler.alpha.exe=/foo/alpha\ncompiler.alpha.instructionSet=\n',
+            ),
+        ];
+        const missing = findCompilersWithoutInstructionSet(files);
+        expect(missing).toEqual([{lang: 'foo', compilerId: 'alpha', groupChain: []}]);
+    });
+
+    it('walks nested &group references', () => {
+        const files = [
+            file('foo.defaults.properties', 'instructionSet=amd64\ncompilers=&outer\n'),
+            file(
+                'foo.amazon.properties',
+                [
+                    'group.outer.compilers=&inner',
+                    'group.inner.compilers=deep',
+                    'compiler.deep.exe=/foo/deep',
+                    // No instructionSet on deep, inner, or outer — falls through to top-level.
+                    '',
+                ].join('\n'),
+            ),
+        ];
+        expect(findCompilersWithoutInstructionSet(files)).toEqual([]);
+    });
+
+    it('treats each deployment independently', () => {
+        // Different env files are separate deployments — gpu has its own
+        // `compilers=` list and doesn't inherit amazon's. A compiler missing
+        // a tag in gpu must be reported even if amazon's compilers all have one.
+        const files = [
+            file('foo.defaults.properties', 'compilers=alpha\n'),
+            file('foo.amazon.properties', 'compiler.alpha.exe=/a\ncompiler.alpha.instructionSet=amd64\n'),
+            file('foo.gpu.properties', 'compilers=beta\ncompiler.beta.exe=/b\n'),
+        ];
+        expect(findCompilersWithoutInstructionSet(files)).toEqual([{lang: 'foo', compilerId: 'beta', groupChain: []}]);
+    });
+
+    it('honours # Disabled: comments per-deployment', () => {
+        const files = [
+            file('foo.defaults.properties', 'compilers=alpha\n'),
+            file('foo.amazon.properties', ['# Disabled: alpha', 'compiler.alpha.exe=/a', ''].join('\n')),
+        ];
+        // alpha is disabled in amazon → not reported despite missing instructionSet.
+        expect(findCompilersWithoutInstructionSet(files)).toEqual([]);
+    });
+
+    it('dedupes a compiler reported in multiple deployments', () => {
+        // Same untagged compiler reachable from both env overlays — should
+        // appear once in the report, not twice.
+        const files = [
+            file('foo.defaults.properties', 'compilers=&shared\ngroup.shared.compilers=alpha\ncompiler.alpha.exe=/a\n'),
+            file('foo.amazon.properties', '# this overlay adds nothing\n'),
+            file('foo.gpu.properties', '# this overlay adds nothing\n'),
+        ];
+        const missing = findCompilersWithoutInstructionSet(files);
+        expect(missing).toEqual([{lang: 'foo', compilerId: 'alpha', groupChain: ['shared']}]);
+    });
+
+    it('dedupes the same compiler reached via different group chains', () => {
+        // Each deployment puts `alpha` in a different group; both are missing
+        // an instructionSet. The dedupe key is (lang, compilerId), so it's
+        // reported once with the first chain seen.
+        const files = [
+            file('foo.defaults.properties', '# defaults-only overlay\n'),
+            file('foo.amazon.properties', 'compilers=&groupA\ngroup.groupA.compilers=alpha\ncompiler.alpha.exe=/a\n'),
+            file('foo.gpu.properties', 'compilers=&groupB\ngroup.groupB.compilers=alpha\n'),
+        ];
+        const missing = findCompilersWithoutInstructionSet(files);
+        expect(missing).toHaveLength(1);
+        expect(missing[0].lang).toBe('foo');
+        expect(missing[0].compilerId).toBe('alpha');
+    });
+});
+
+describe('extractTargetTokens', () => {
+    it('extracts -target, --target=, -march=, and --targetarch values', () => {
+        expect(extractTargetTokens('-target arm-linux-gnueabihf')).toEqual(['arm-linux-gnueabihf']);
+        expect(extractTargetTokens('--target=riscv64-unknown-elf')).toEqual(['riscv64-unknown-elf']);
+        expect(extractTargetTokens('-march=avr -O2')).toEqual(['avr']);
+        expect(extractTargetTokens('-O2 -target wasm32 --target=foo -march=bar')).toEqual(['wasm32', 'foo', 'bar']);
+        // .NET ilc / crossgen2 spelling.
+        expect(extractTargetTokens('--targetarch arm64')).toEqual(['arm64']);
+        expect(extractTargetTokens('--targetarch=loongarch64')).toEqual(['loongarch64']);
+    });
+
+    it('strips surrounding quotes from option tokens', () => {
+        // Some property files quote their options strings (e.g. micropython
+        // in `python.amazon.properties`). The validator should still see the
+        // flag inside.
+        expect(extractTargetTokens('"-march=host"')).toEqual(['host']);
+        expect(extractTargetTokens("'-march=host'")).toEqual(['host']);
+        expect(extractTargetTokens('-O2 "--target=aarch64-linux-gnu"')).toEqual(['aarch64-linux-gnu']);
+    });
+
+    it('documents quote-stripping limitations (intentional gaps)', () => {
+        // Leading-only quote: token doesn't start with a flag → invisible.
+        expect(extractTargetTokens('"-march=host')).toEqual([]);
+        // Trailing-only quote: flag IS extracted but value carries the
+        // stray quote. Worse than ideal but still surfaces drift.
+        expect(extractTargetTokens('-march=host"')).toEqual(['host"']);
+        // Whitespace inside quotes splits the token across the gap; the
+        // first half is `"-O2` (no recognised flag), the second half is
+        // `-march=host"` (extracted with dirty value).
+        expect(extractTargetTokens('"-O2 -march=host"')).toEqual(['host"']);
+        // Bare `"` is length-1 — the guard prevents shrinking to ''. No
+        // recognised flag, so nothing extracted.
+        expect(extractTargetTokens('"')).toEqual([]);
+    });
+
+    it('returns nothing when no target/arch flags present', () => {
+        expect(extractTargetTokens('-O2 -fno-exceptions')).toEqual([]);
+        expect(extractTargetTokens('')).toEqual([]);
     });
 });
