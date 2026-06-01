@@ -115,7 +115,7 @@
     "file-loader": "^6.2.0",
     "happy-dom": "^20.9.0",
     "husky": "^9.1.7",
-    "lint-staged": "^16.4.0",
+    "lint-staged": "^17.0.7",
     "mini-css-extract-plugin": "^2.10.2",
     "mock-fs": "^5.5.0",
     "monaco-editor-webpack-plugin": "^7.1.1",
