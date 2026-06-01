@@ -53,7 +53,7 @@
     "lodash.clonedeep": "^4.5.0",
     "lru-cache": "^11.5.1",
     "lz-string": "^1.5.0",
-    "marked": "^17.0.6",
+    "marked": "^18.0.4",
     "monaco-editor": "^0.55.1",
     "monaco-vim": "^0.4.4",
     "morgan": "^1.10.1",
