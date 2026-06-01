@@ -14,7 +14,7 @@
   },
   "version": "0.0.3",
   "engines": {
-    "node": ">=22.0.0"
+    "node": ">=22.12.0"
   },
   "main": "./app.ts",
   "dependencies": {
@@ -37,11 +37,11 @@
     "buffer": "^6.0.3",
     "chart.js": "^4.5.1",
     "clipboard": "^2.0.11",
-    "commander": "^14.0.3",
+    "commander": "^15.0.0",
     "compression": "^1.8.1",
     "copy-webpack-plugin": "^14.0.0",
     "cross-env": "^10.1.0",
-    "enhanced-ms": "^4.3.0",
+    "enhanced-ms": "^5.0.0",
     "events": "^3.3.0",
     "express": "^5.2.1",
     "file-saver": "^2.0.5",
@@ -53,7 +53,7 @@
     "lodash.clonedeep": "^4.5.0",
     "lru-cache": "^11.5.1",
     "lz-string": "^1.5.0",
-    "marked": "^17.0.6",
+    "marked": "^18.0.4",
     "monaco-editor": "^0.55.1",
     "monaco-vim": "^0.4.4",
     "morgan": "^1.10.1",
@@ -83,7 +83,7 @@
     "winston-transport": "^4.9.0",
     "ws": "^8.21.0",
     "yaml": "^2.9.0",
-    "zod": "^3.25.76"
+    "zod": "^4.4.3"
   },
   "devDependencies": {
     "@biomejs/biome": "^2.4.16",
@@ -115,24 +115,24 @@
     "file-loader": "^6.2.0",
     "happy-dom": "^20.9.0",
     "husky": "^9.1.7",
-    "lint-staged": "^16.4.0",
+    "lint-staged": "^17.0.7",
     "mini-css-extract-plugin": "^2.10.2",
     "mock-fs": "^5.5.0",
     "monaco-editor-webpack-plugin": "^7.1.1",
     "nock": "^14.0.15",
     "npm-run-all": "^4.1.5",
     "sass": "^1.100.0",
-    "sass-loader": "^16.0.8",
+    "sass-loader": "^17.0.0",
     "source-map-loader": "^5.0.0",
     "supertest": "^7.2.2",
     "terser-webpack-plugin": "^5.6.1",
     "ts-loader": "^9.6.0",
-    "typescript": "^5.9.3",
+    "typescript": "^6.0.3",
     "vitest": "^4.0.1",
     "vitest-fetch-mock": "^0.4.5",
     "webpack": "^5.107.2",
-    "webpack-cli": "^6.0.1",
-    "webpack-dev-middleware": "^7.4.5",
+    "webpack-cli": "^7.0.3",
+    "webpack-dev-middleware": "^8.0.3",
     "webpack-manifest-plugin": "^6.0.1"
   },
   "optionalDependencies": {
@@ -167,7 +167,7 @@
     "ts-check:tests": "tsc -p ./tsconfig.tests.json --noEmit",
     "ts-check:frontend-tests": "tsc -p ./tsconfig.frontend.tests.json --noEmit",
     "ts-check:cypress": "tsc -p ./cypress/tsconfig.json --noEmit",
-    "webpack": "node --no-warnings=ExperimentalWarning --import=tsx ./node_modules/webpack-cli/bin/cli.js --node-env=production --config webpack.config.esm.ts"
+    "webpack": "node --no-warnings=ExperimentalWarning --import=tsx ./node_modules/webpack-cli/bin/cli.js --config-node-env=production --config webpack.config.esm.ts"
   },
   "license": "BSD-2-Clause",
   "packageManager": "npm@11.2.0"
