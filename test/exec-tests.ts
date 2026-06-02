@@ -83,9 +83,11 @@ describe('Execution tests', async () => {
                     timedOut: false,
                 });
             });
-            it('handles timouts', async () => {
+            it('handles timeouts', async () => {
+                // Start-Sleep actually blocks; the bare string "sleep 5" is just echoed by PowerShell and
+                // exits immediately, making the timeout a race against process startup (flaky on CI).
                 await expect(
-                    testExecOutput(exec.execute('powershell', ['-Command', '"sleep 5"'], {timeoutMs: 10})),
+                    testExecOutput(exec.execute('powershell', ['-Command', 'Start-Sleep -Seconds 5'], {timeoutMs: 10})),
                 ).resolves.toEqual({
                     code: 1,
                     okToCache: false,
@@ -134,7 +136,7 @@ describe('Execution tests', async () => {
                     timedOut: false,
                 });
             });
-            it('handles timouts', async () => {
+            it('handles timeouts', async () => {
                 await expect(testExecOutput(exec.execute('sleep', ['5'], {timeoutMs: 10}))).resolves.toEqual({
                     code: -1,
                     okToCache: false,
