@@ -130,7 +130,7 @@ function isSuspiciousPath(path: string): boolean {
  * Handles group references (&groupname), remote references (id@host), and regular IDs.
  */
 export function parseCompilersList(value: string): string[] {
-    if (!value || !value.trim()) return [];
+    if (!value?.trim()) return [];
     return value.split(':').filter(id => id.trim() !== '');
 }
 

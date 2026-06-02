@@ -4,6 +4,10 @@
     "sourceMap": true,
     "downlevelIteration": true,
     "importHelpers": true,
+    /* TS6 deprecates downlevelIteration and the frontend's es5 target; both still
+       function until TS7. Silence the deprecation errors until the es5->es2015
+       migration is tackled separately. */
+    "ignoreDeprecations": "6.0",
     /* Module resolution */
     "esModuleInterop": true,
     /* Other options */
