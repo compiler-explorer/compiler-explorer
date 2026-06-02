@@ -31,6 +31,7 @@ import urljoin from 'url-join';
 
 import {unwrap} from '../assert.js';
 import {logger} from '../logger.js';
+import {resolvePathFromAppRoot} from '../utils.js';
 import {PugRequireHandler, ServerOptions} from './server.interfaces.js';
 
 /**
@@ -114,6 +115,15 @@ export function getFaviconFilename(extraBodyClass: string): string {
 
 export function getLogoOverlayFilename(extraBodyClass: string): string | undefined {
     return extraBodyClass ? `site-logo-${extraBodyClass}.svg` : undefined;
+}
+
+/**
+ * Resolves the directory branding assets are actually served from. In dev mode the webpack
+ * dev middleware serves them from public/ (they aren't on disk in staticPath); in production
+ * webpack has copied public/ into staticPath (dist/static), so we validate there.
+ */
+export function getBrandingAssetDir(devMode: boolean, staticPath: string): string {
+    return devMode ? resolvePathFromAppRoot('public') : staticPath;
 }
 
 export async function validateBrandingAssets(staticPath: string, extraBodyClass: string): Promise<void> {

@@ -28,10 +28,12 @@ import {afterAll, beforeAll, describe, expect, it, vi} from 'vitest';
 
 import {
     createDefaultPugRequireHandler,
+    getBrandingAssetDir,
     getFaviconFilename,
     getLogoOverlayFilename,
     validateBrandingAssets,
 } from '../../lib/app/static-assets.js';
+import {resolvePathFromAppRoot} from '../../lib/utils.js';
 
 // Mock the logger
 vi.mock('../../lib/logger.js', () => ({
@@ -175,6 +177,28 @@ describe('Static assets', () => {
 
         it('throws when only one asset is missing', async () => {
             await expect(validateBrandingAssets(tmpDir, 'partial')).rejects.toThrow(/site-logo-partial\.svg/);
+        });
+    });
+
+    describe('getBrandingAssetDir', () => {
+        it('uses staticPath in production mode', () => {
+            expect(getBrandingAssetDir(false, '/dist/static')).toBe('/dist/static');
+        });
+
+        it('uses the public source dir in dev mode (assets are served from there, not staticPath)', () => {
+            // Regression: in dev the webpack middleware serves branding from public/, so validating
+            // staticPath (the source dir, which has no branding assets) spuriously crashes startup.
+            expect(getBrandingAssetDir(true, '/dist/static')).toBe(resolvePathFromAppRoot('public'));
+        });
+    });
+
+    describe('branding assets ship for every deployed environment', () => {
+        // Guards the dev path end-to-end: getBrandingAssetDir(devMode) points here and the real
+        // files must exist, so a missing asset or a wrong directory fails the build, not just prod.
+        const publicDir = getBrandingAssetDir(true, '/unused');
+
+        it.each(['dev', 'beta', 'staging'])('has favicon + logo overlay for %s', async extraBodyClass => {
+            await expect(validateBrandingAssets(publicDir, extraBodyClass)).resolves.toBeUndefined();
         });
     });
 });
