@@ -151,7 +151,7 @@ function parseSeverity(message: string): number {
 }
 
 const SOURCE_RE = /^\s*<source>[(:](\d+)(:?,?(\d+):?)?[):]*\s*(.*)/;
-const SOURCE_WITH_FILENAME = /^\s*([\w.]+)[(:](\d+)(:?,?(\d+):?)?[):]*\s*(.*)/;
+const SOURCE_WITH_FILENAME = /^\s*([\w.]*\.[\w.]+)[(:](\d+)(:?,?(\d+):?)?[):]*\s*(.*)/;
 const ATFILELINE_RE = /\s*at ([\w-/.]+):(\d+)/;
 
 export enum LineParseOption {
@@ -189,8 +189,6 @@ function applyParse_FileWithLine(lineObj: ResultLine, filteredLine: string) {
     const match = filteredLine.match(SOURCE_WITH_FILENAME);
     if (match) {
         const filename = match[1];
-        if (!filename.includes('.')) return;
-
         const message = match[5].trim();
         lineObj.tag = {
             file: filename,
