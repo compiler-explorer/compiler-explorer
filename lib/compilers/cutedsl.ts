@@ -93,7 +93,7 @@ export class CuteDslCompiler extends BaseCompiler {
     override async extractDeviceCode(
         result: CompilationResult,
         filters: ParseFiltersAndOutputOptions,
-        _compilationInfo: CompilationInfo,
+        compilationInfo: CompilationInfo,
     ) {
         const devices = {...result.devices};
         const {dirPath} = result;
@@ -101,9 +101,14 @@ export class CuteDslCompiler extends BaseCompiler {
             return result;
         }
 
+        const outputFilename = Path.basename(compilationInfo.outputFilename);
         const files = await fs.readdir(dirPath);
         await Promise.all(
             files.map(async filename => {
+                if (filename === outputFilename) {
+                    return;
+                }
+
                 const ext = Path.extname(filename);
                 const parser = this.parserMap[ext];
                 if (!parser) {
@@ -116,5 +121,22 @@ export class CuteDslCompiler extends BaseCompiler {
         );
         result.devices = devices;
         return result;
+    }
+
+    override getDefaultFilters() {
+        return {
+            intel: false,
+            commentOnly: false,
+            directives: false,
+            labels: false,
+            optOutput: true,
+            binary: false,
+            execute: false,
+            demangle: false,
+            libraryCode: false,
+            trim: false,
+            binaryObject: false,
+            debugCalls: false,
+        };
     }
 }
