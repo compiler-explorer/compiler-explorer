@@ -188,9 +188,12 @@ function applyParse_SourceWithLine(lineObj: ResultLine, filteredLine: string, in
 function applyParse_FileWithLine(lineObj: ResultLine, filteredLine: string) {
     const match = filteredLine.match(SOURCE_WITH_FILENAME);
     if (match) {
+        const filename = match[1];
+        if (!filename.includes('.')) return;
+
         const message = match[5].trim();
         lineObj.tag = {
-            file: match[1],
+            file: filename,
             line: Number.parseInt(match[2], 10),
             column: Number.parseInt(match[4] || '0', 10),
             text: message,
