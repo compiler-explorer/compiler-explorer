@@ -22,8 +22,10 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
+import {ResultLine} from '../../types/resultline/resultline.interfaces.js';
+
 export interface LeanCState {
-    leanCOutput: any;
+    leanCOutput: ResultLine[];
 }
 
 export type {LeanCOptions} from '../../types/compilation/lean-c.interfaces.js';

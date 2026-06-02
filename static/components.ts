@@ -28,6 +28,7 @@ import {ConfiguredOverrides} from '../types/compilation/compiler-overrides.inter
 import {ConfiguredRuntimeTools} from '../types/execution/execution.interfaces.js';
 import {ParseFiltersAndOutputOptions} from '../types/features/filters.interfaces.js';
 import {LanguageKey} from '../types/languages.interfaces.js';
+import {ResultLine} from '../types/resultline/resultline.interfaces.js';
 import {
     AnyComponentConfig,
     AST_VIEW_COMPONENT_NAME,
@@ -830,7 +831,7 @@ export function getLeanCView(): ComponentConfig<typeof LEAN_C_VIEW_COMPONENT_NAM
 export function getLeanCViewWith(
     id: number,
     source: string,
-    leanCOutput: unknown,
+    leanCOutput: ResultLine[] | undefined,
     compilerName: string,
     editorid: number,
     treeid: number,
