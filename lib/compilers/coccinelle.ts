@@ -211,11 +211,7 @@ export class CoccinelleCCompiler extends BaseCompiler {
         spfile.write(pFileContents);
         spfile.close();
 
-        // check that the SmPL source does not #include anything, via CE rules
-        let cocciSourceError = this.checkSource(pFileContents);
-        if (cocciSourceError) throw cocciSourceError;
-        // use own rules, too
-        cocciSourceError = this.checkCocciSource(pFileContents);
+        const cocciSourceError = this.checkCocciSource(pFileContents);
         if (cocciSourceError) throw cocciSourceError;
 
         const result = await this.exec(compiler, options, execOptions);

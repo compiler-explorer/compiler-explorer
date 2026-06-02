@@ -465,12 +465,12 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
             const currentState = this.getCurrentState();
 
             // Extract only the fields we need, with proper defaults
-            const {source = DEFAULT_EDITOR_ID, filters, options = '', compiler, libs, lang} = currentState;
+            const {source = DEFAULT_EDITOR_ID, filters, options = '', compiler, libs, lang, overrides} = currentState;
 
             return {
                 type: 'component',
                 componentName: COMPILER_COMPONENT_NAME,
-                componentState: {source, filters, options, compiler, libs, lang},
+                componentState: {source, filters, options, compiler, libs, lang, overrides},
             };
         };
         const createOptView = () => {
@@ -1696,7 +1696,7 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
 
         this.decorations.labelUsages = [];
         this.assembly.forEach((obj, line) => {
-            if (!obj.labels || !obj.labels.length) return;
+            if (!obj.labels?.length) return;
 
             obj.labels.forEach(label => {
                 this.decorations.labelUsages.push({
@@ -3687,8 +3687,7 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
             const hoverShowAsmDoc = this.settings.hoverShowAsmDoc;
             if (
                 hoverShowAsmDoc &&
-                this.compiler &&
-                this.compiler.supportsAsmDocs &&
+                this.compiler?.supportsAsmDocs &&
                 this.isWordAsmKeyword(e.target.position.lineNumber, currentWord)
             ) {
                 try {
@@ -3738,7 +3737,7 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
         const pos = ed.getPosition();
         if (!pos || !ed.getModel()) return;
         const word = ed.getModel()?.getWordAtPosition(pos);
-        if (!word || !word.word) return;
+        if (!word?.word) return;
         const opcode = word.word.toUpperCase();
 
         function newGitHubIssueUrl(): string {

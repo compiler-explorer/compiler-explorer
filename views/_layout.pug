@@ -28,13 +28,22 @@ html(lang="en")
       | (function () {
       |   try {
       |     var settings = window.localStorage.getItem("!{localStoragePrefix}settings") || '{}';
-      |     var theme = JSON.parse(settings).theme || (
-      |         window.matchMedia ?
-      |             (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'default')
-      |             : 'dark'
-      |     );
-      |     if(theme === 'darkplus') theme = 'dark';
+      |     var theme = JSON.parse(settings).theme || 'system';
+      |     if (theme === 'system') {
+      |       if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+      |         theme = 'dark';
+      |       } else {
+      |         theme = 'default';
+      |       }
+      |     }
+      |     if (theme === 'darkplus' || theme === 'real-dark') {
+      |       theme = 'dark';
+      |     }
+      |     if (theme === 'onedark') {
+      |       theme = 'one-dark';
+      |     }
       |     document.documentElement.setAttribute('data-theme', theme);
+      |
       |   } catch (e) {
       |     document.documentElement.setAttribute('data-theme', 'default');
       |   }

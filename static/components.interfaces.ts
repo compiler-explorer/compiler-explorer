@@ -96,6 +96,7 @@ export type PopulatedCompilerState = StateWithEditor & {
     compiler: string;
     libs?: unknown;
     lang?: string;
+    overrides?: ConfiguredOverrides;
 };
 export type CompilerForTreeState = StateWithLanguage & StateWithTree;
 
