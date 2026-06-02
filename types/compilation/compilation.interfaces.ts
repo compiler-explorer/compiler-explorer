@@ -41,6 +41,7 @@ import {CFGResult} from './cfg.interfaces.js';
 import {ClangirBackendOptions} from './clangir.interfaces.js';
 import {ConfiguredOverrides} from './compiler-overrides.interfaces.js';
 import {LLVMIrBackendOptions} from './ir.interfaces.js';
+import type {LeanCOptions} from './lean-c.interfaces.js';
 import {OptPipelineBackendOptions, OptPipelineOutput} from './opt-pipeline-output.interfaces.js';
 import {YulBackendOptions} from './yul.interfaces.js';
 
@@ -117,6 +118,7 @@ export type CompilationRequestOptions = {
         produceHaskellCore?: boolean;
         produceHaskellStg?: boolean;
         produceHaskellCmm?: boolean;
+        produceLeanC?: LeanCOptions | null;
         produceClojureMacroExp?: boolean;
         produceYul?: YulBackendOptions | null;
         cmakeArgs?: string;
@@ -216,6 +218,7 @@ export type CompilationResult = {
     haskellCoreOutput?: ResultLine[];
     haskellStgOutput?: ResultLine[];
     haskellCmmOutput?: ResultLine[];
+    leanCOutput?: ResultLine[];
 
     clojureMacroExpOutput?: ResultLine[];
 
