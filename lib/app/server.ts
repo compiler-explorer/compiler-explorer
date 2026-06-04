@@ -29,7 +29,12 @@ import {logger} from '../logger.js';
 import {createRenderHandlers} from './rendering.js';
 import {ServerDependencies, ServerOptions, WebServerResult} from './server.interfaces.js';
 import {setupBaseServerConfig, setupBasicRoutes, setupLoggingMiddleware} from './server-config.js';
-import {setupStaticMiddleware, setupWebPackDevMiddleware} from './static-assets.js';
+import {
+    getBrandingAssetDir,
+    setupStaticMiddleware,
+    setupWebPackDevMiddleware,
+    validateBrandingAssets,
+} from './static-assets.js';
 
 export {startListening} from './server-listening.js';
 export {isMobileViewer} from './url-handlers.js';
@@ -61,11 +66,12 @@ export async function setupWebServer(
         pugRequireHandler = path => `${options.staticRoot}/${path}`;
     }
 
+    await validateBrandingAssets(getBrandingAssetDir(appArgs.devMode, options.staticPath), options.extraBodyClass);
+
     const {renderConfig, renderGoldenLayout, embeddedHandler} = createRenderHandlers(
         pugRequireHandler,
         options,
         dependencies,
-        appArgs,
     );
 
     // Add healthcheck before logging middleware to prevent excessive log entries
