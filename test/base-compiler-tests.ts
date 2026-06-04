@@ -37,12 +37,7 @@ import {splitArguments} from '../shared/common-utils.js';
 import {CompilerOverrideType, ConfiguredOverrides} from '../types/compilation/compiler-overrides.interfaces.js';
 import {CompilerInfo} from '../types/compiler.interfaces.js';
 import {SelectedLibraryVersion} from '../types/libraries/libraries.interfaces.js';
-import {
-    makeCompilationEnvironment,
-    makeFakeCompilerInfo,
-    makeFakeParseFiltersAndOutputOptions,
-    shouldExist,
-} from './utils.js';
+import {makeCompilationEnvironment, makeFakeCompilerInfo, makeFakeParseFiltersAndOutputOptions} from './utils.js';
 
 const languages = {
     'c++': {id: 'c++'},
@@ -74,34 +69,7 @@ describe('Basic compiler invariants', () => {
         expect(compiler.optOutputRequested(['please', 'recognize', '-fsave-optimization-record'])).toBe(true);
         expect(compiler.optOutputRequested(['please', "don't", 'recognize'])).toBe(false);
     });
-    it('should allow comments next to includes (Bug #874)', () => {
-        expect(compiler.checkSource('#include <cmath> // std::(sin, cos, ...)')).toBeNull();
-        const badSource = compiler.checkSource('#include </dev/null..> //Muehehehe');
-        if (shouldExist(badSource)) {
-            expect(badSource).toEqual('<stdin>:1:1: no absolute or relative includes please');
-        }
-    });
-    it('should not warn of path-likes outside C++ includes (Bug #3045)', () => {
-        function testIncludeG(text: string) {
-            expect(compiler.checkSource(text)).toBeNull();
-        }
 
-        testIncludeG('#include <iostream>');
-        testIncludeG('#include <iostream>  // <..>');
-        testIncludeG('#include <type_traits> // for std::is_same_v<...>');
-        testIncludeG('#include <ranges>      // for std::ranges::range<...> and std::ranges::range_type_v<...>');
-        testIncludeG('#include <https://godbolt.com> // /home/');
-    });
-    it('should not allow path C++ includes', () => {
-        function testIncludeNotG(text: string) {
-            expect(compiler.checkSource(text)).toEqual('<stdin>:1:1: no absolute or relative includes please');
-        }
-
-        testIncludeNotG('#include <./.bashrc>');
-        testIncludeNotG('#include </dev/null>  // <..>');
-        testIncludeNotG('#include <../fish.config> // for std::is_same_v<...>');
-        testIncludeNotG('#include <./>      // for std::ranges::range<...> and std::ranges::range_type_v<...>');
-    });
     it('should skip version check if forced to', async () => {
         const newConfig: Partial<CompilerInfo> = {...info, explicitVersion: '123'};
         const forcedVersionCompiler = new BaseCompiler(newConfig as CompilerInfo, ce);

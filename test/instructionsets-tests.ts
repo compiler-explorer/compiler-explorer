@@ -51,4 +51,10 @@ describe('InstructionSets', () => {
 
         expect(isets.getCompilerInstructionSetHint(false, '/opt/compiler-explorer/gcc-12.2.0/bin/g++')).toBe('amd64');
     });
+
+    it('should recognize hppa from compiler target string', () => {
+        const isets = new InstructionSets();
+
+        expect(isets.getCompilerInstructionSetHint('hppa-unknown-linux-gnu')).toBe('hppa');
+    });
 });

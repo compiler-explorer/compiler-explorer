@@ -217,7 +217,7 @@ export class OptPipeline extends MonacoPane<monaco.editor.IStandaloneDiffEditor,
     }
 
     updateButtons() {
-        if (!this.compiler || !this.compiler.optPipeline) return;
+        if (!this.compiler?.optPipeline) return;
 
         const {supportedOptions, supportedFilters, initialOptionsState, initialFiltersState} =
             this.compiler.optPipeline;
