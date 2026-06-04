@@ -570,10 +570,14 @@ export class Diff extends MonacoPane<monaco.editor.IStandaloneDiffEditor, DiffSt
     updateCompilersFor(selectize: TomSelect, id: number | string) {
         selectize.clearOptions();
         for (const [_, compiler] of Object.entries(this.compilers)) {
+            const optionId = compiler.id.toString();
             selectize.addOption(compiler);
+            selectize.updateOption(optionId, compiler);
         }
-        if (id in this.compilers) {
-            selectize.setValue(id.toString());
+        selectize.refreshOptions(false);
+        const selectedId = id.toString();
+        if (selectedId in this.compilers) {
+            selectize.setValue(selectedId);
         }
     }
 
