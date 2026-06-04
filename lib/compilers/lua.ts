@@ -57,7 +57,15 @@ export class LuaCompiler extends BaseCompiler {
         super(compilerInfo, env);
         this.compiler.demangler = '';
         this.demanglerClass = null;
-        this.interpreterExe = this.compilerProps<string>('interpreter', '');
+        // Per-compiler properties aren't inherited through the normal cascade
+        // (TODO(#7150)), so resolve the interpreter explicitly: compiler-specific,
+        // then group, then the language-level default. Reading plain 'interpreter'
+        // would only ever see the top-level value, so every version would execute
+        // with the same Lua.
+        this.interpreterExe =
+            this.compilerProps<string>(`compiler.${this.compiler.id}.interpreter`, '') ||
+            this.compilerProps<string>(`group.${this.compiler.group}.interpreter`, '') ||
+            this.compilerProps<string>('interpreter', '');
     }
 
     override getArgumentParserClass() {
