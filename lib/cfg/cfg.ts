@@ -43,6 +43,7 @@ function isLLVMBased({compilerType, version}: CompilerInfo) {
         compilerType === 'swift' ||
         compilerType === 'zig' ||
         compilerType === 'ispc' ||
+        compilerType === 'lean' ||
         compilerType === 'snowball'
     );
 }
