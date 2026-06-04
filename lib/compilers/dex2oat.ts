@@ -78,7 +78,7 @@ export class Dex2OatCompiler extends BaseCompiler {
     methodRegex: RegExp;
     methodSizeRegex: RegExp;
     insnRegex: RegExp;
-    stackMapRegex: RegExp;
+    extraInfoRegex: RegExp;
     offsetRegex: RegExp;
 
     insnSetArgRegex: RegExp;
@@ -123,7 +123,7 @@ export class Dex2OatCompiler extends BaseCompiler {
         this.methodSizeRegex = /^\s+CODE:\s+\(code_offset=(0x\w+)\s+size=(\d+).*$/;
         this.insnRegex = /^\s+(0x\w+):\s+\w+\s+(.*)$/;
 
-        this.stackMapRegex = /^\s+(StackMap\[\d+\])\s+\((.*)\).*$/;
+        this.extraInfoRegex = /^\s+((StackMap|InlineInfo)\[\d+\])\s+\((.*)\).*$/;
 
         // Similar to insnRegex above, but this applies after oatdump output has
         // been cleaned up.
@@ -756,9 +756,9 @@ export class Dex2OatCompiler extends BaseCompiler {
                 // instructions are stored in classes.cfg's disassembly step.
                 absoluteToRelativeOffsets[Number.parseInt(match![1], 16)] =
                     Number.parseInt(match![1], 16) - currentCodeOffset;
-            } else if (inCode && this.stackMapRegex.test(l)) {
-                match = l.match(this.stackMapRegex);
-                methodsToInstructions[currentMethod].push(' ' + match![1] + '   ' + match![2]);
+            } else if (inCode && this.extraInfoRegex.test(l)) {
+                match = l.match(this.extraInfoRegex);
+                methodsToInstructions[currentMethod].push(' ' + match![2] + '   ' + match![3]);
             }
         }
 

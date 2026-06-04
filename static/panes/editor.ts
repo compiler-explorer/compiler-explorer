@@ -61,7 +61,7 @@ import {MonacoPane} from './pane.js';
 
 import IModelDeltaDecoration = editor.IModelDeltaDecoration;
 
-import {getStaticImage} from '../utils';
+import {getStaticImage, isMacintosh} from '../utils';
 
 // Expose monaco on window for integration tests (e.g. Cypress)
 window.monaco = monaco;
@@ -1066,9 +1066,28 @@ export class Editor extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Edit
             this.runFormatDocumentAction();
         });
 
-        this.editor.addCommand(monaco.KeyMod.CtrlCmd | monaco.KeyCode.KeyD, () => {
-            unwrap(this.editor.getAction('editor.action.duplicateSelection')).run();
-        });
+        // Bindings that match JetBrains defaults but conflict with widely-used VS Code defaults
+        // (e.g. Ctrl+D for multi-cursor) are only registered under the JetBrains keymap. The
+        // Win/Linux and macOS JetBrains keymaps disagree on a couple of these (delete-line is
+        // Ctrl+Y vs Cmd+Backspace; block-comment is Ctrl+Shift+/ vs Option+Cmd+/), so we pick
+        // the right one per platform.
+        if (this.settings.keymap === 'jetbrains') {
+            this.editor.addCommand(monaco.KeyMod.CtrlCmd | monaco.KeyCode.KeyD, () => {
+                unwrap(this.editor.getAction('editor.action.duplicateSelection')).run();
+            });
+            const deleteLineKey = isMacintosh
+                ? monaco.KeyMod.CtrlCmd | monaco.KeyCode.Backspace
+                : monaco.KeyMod.CtrlCmd | monaco.KeyCode.KeyY;
+            this.editor.addCommand(deleteLineKey, () => {
+                unwrap(this.editor.getAction('editor.action.deleteLines')).run();
+            });
+            const blockCommentKey = isMacintosh
+                ? monaco.KeyMod.CtrlCmd | monaco.KeyMod.Alt | monaco.KeyCode.Slash
+                : monaco.KeyMod.CtrlCmd | monaco.KeyMod.Shift | monaco.KeyCode.Slash;
+            this.editor.addCommand(blockCommentKey, () => {
+                unwrap(this.editor.getAction('editor.action.blockComment')).run();
+            });
+        }
     }
 
     runFormatDocumentAction(): void {
@@ -1079,7 +1098,7 @@ export class Editor extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Edit
         const pos = ed.getPosition();
         if (!pos || !ed.getModel()) return;
         const word = ed.getModel()?.getWordAtPosition(pos);
-        if (!word || !word.word) return;
+        if (!word?.word) return;
         const preferredLanguage = this.getPreferredLanguageTag();
         // This list comes from the footer of the page
         const cpprefLangs = ['ar', 'cs', 'de', 'en', 'es', 'fr', 'it', 'ja', 'ko', 'pl', 'pt', 'ru', 'tr', 'zh'];
@@ -1098,7 +1117,7 @@ export class Editor extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Edit
         const pos = ed.getPosition();
         if (!pos || !ed.getModel()) return;
         const word = ed.getModel()?.getWordAtPosition(pos);
-        if (!word || !word.word) return;
+        if (!word?.word) return;
         const url = 'https://cloogle.org/#' + encodeURIComponent(word.word);
         window.open(url, '_blank', 'noopener');
     }

@@ -28,7 +28,8 @@ const AssemblySyntaxesList = ['att', 'intel'] as const;
 export type AssemblySyntax = (typeof AssemblySyntaxesList)[number];
 
 export const ATT_SYNTAX_WARNING = 'WARNING: The information shown pertains to Intel syntax.';
-const CARDINALITY_REGEX = /\b(?:first|second|third|fourth|last)\s+operands?\b/i;
+const CARDINALITY_REGEX = /\b(?:first|second|third|fourth)\b/i;
+const OPERAND_REGEX = /\boperands?\b/i;
 const SOURCE_DEST_REGEX = /\b(?:source|destination)\b/i;
 
 export function addAttSyntaxWarningIfNeeded(
@@ -37,14 +38,19 @@ export function addAttSyntaxWarningIfNeeded(
 ): AssemblyInstructionInfo {
     if (syntax !== 'att') return data;
 
-    const referencesCardinality = (text: string): boolean =>
-        CARDINALITY_REGEX.test(text) && SOURCE_DEST_REGEX.test(text);
+    const referencesCardinalityOfSrcDstOperands = (text: string): boolean =>
+        CARDINALITY_REGEX.test(text) && OPERAND_REGEX.test(text) && SOURCE_DEST_REGEX.test(text);
 
-    return referencesCardinality(data.tooltip) || referencesCardinality(data.html)
-        ? {
-              ...data,
-              tooltip: '***' + ATT_SYNTAX_WARNING + '***\n\n' + data.tooltip,
-              html: '<b><em>' + ATT_SYNTAX_WARNING + '</em></b><br><br>' + data.html,
-          }
-        : data;
+    const tooltipRefs = referencesCardinalityOfSrcDstOperands(data.tooltip);
+    const htmlRefs = referencesCardinalityOfSrcDstOperands(data.html);
+    if (!tooltipRefs && !htmlRefs) return data;
+    return {
+        ...data,
+        ...(tooltipRefs && {tooltip: '***' + ATT_SYNTAX_WARNING + '***\n\n' + data.tooltip}),
+        ...(htmlRefs && {html: '<b><em>' + ATT_SYNTAX_WARNING + '</em></b><br><br>' + data.html}),
+    };
+}
+
+export function determineAssemblySyntax(supportsIntel: boolean = false, intelFilterEnabled: boolean): AssemblySyntax {
+    return supportsIntel && !intelFilterEnabled ? 'att' : 'intel';
 }

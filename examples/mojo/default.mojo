@@ -1,5 +1,5 @@
-fn multiply[m: Int](n: Int) -> Int:
-  return m * n
+def multiply[m: Int](n: Int) -> Int:
+    return m * n
 
-fn main():
-  _ = multiply[3](5)
+def main():
+    _ = multiply[3](5)

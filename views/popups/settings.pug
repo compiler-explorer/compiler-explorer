@@ -50,16 +50,20 @@ mixin input(cls, type, text, style)
               +checkbox("newEditorLastLang", "Use last selected language when opening new Editors")
               +checkbox("enableCommunityAds", "Show community events")
             #keybindings.tab-pane(role="group")
+              .mb-3
+                label.form-label(for="settings-select-keymap")
+                  | Keymap&nbsp;
+                  em (refresh required)
+                select.form-select.keymap(id="settings-select-keymap")
               +checkbox("useVim", "Vim editor mode")
               +checkbox("relativeLineNumbers", "Show relative line numbers (useful for vim motions)")
-              .the-save-option-to-auto-share
-                mb-3
-                  label.form-label(for="settings-checkbox-enableCtrlS")
-                    kbd Ctrl
-                    | +
-                    kbd S
-                    | &nbsp;behaviour
-                    select.form-select.enableCtrlS(id="settings-checkbox-enableCtrlS")
+              .the-save-option-to-auto-share.mb-3
+                label.form-label(for="settings-checkbox-enableCtrlS")
+                  kbd Ctrl
+                  | +
+                  kbd S
+                  | &nbsp;behaviour
+                select.form-select.enableCtrlS(id="settings-checkbox-enableCtrlS")
               .form-check.the-save-option-to-tree-save
                 input.form-check-input.enableCtrlStree(type="checkbox" id="settings-checkbox-enableCtrlStree")
                 label.form-check-label(for="settings-checkbox-enableCtrlStree")

@@ -162,7 +162,7 @@ export class RustCompiler extends BaseCompiler {
         const includeFlag = '--extern';
         return libraries.flatMap(selectedLib => {
             const foundVersion = this.findLibVersion(selectedLib);
-            if (!foundVersion || !foundVersion.name) return [];
+            if (!foundVersion?.name) return [];
             const lowercaseLibName = foundVersion.name.replaceAll('-', '_');
             return foundVersion.path.flatMap(rlib => {
                 return [
