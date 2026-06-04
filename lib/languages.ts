@@ -380,6 +380,17 @@ const definitions: Record<LanguageKey, LanguageDefinition> = {
         monacoDisassembly: null,
         digitSeparator: "'",
     },
+    cutedsl: {
+        name: 'CuTe DSL',
+        monaco: 'python',
+        extensions: ['.py'],
+        alias: ['cute', 'cutlass-cute', 'cutlass-cute-dsl'],
+        logoFilename: null,
+        logoFilenameDark: null,
+        formatter: null,
+        previewFilter: null,
+        monacoDisassembly: 'ptx',
+    },
     d: {
         name: 'D',
         monaco: 'd',
