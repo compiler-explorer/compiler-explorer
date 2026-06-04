@@ -25,6 +25,7 @@
 import {
     addCompilerFromEditor,
     assertNoConsoleOutput,
+    compilerPane,
     findPane,
     lastCompilerContent,
     monacoEditorTextShouldContain,
@@ -58,6 +59,24 @@ describe('Diff view', () => {
     it('should open a diff view pane from the Add menu', () => {
         waitForEditors();
         openDiffView();
+    });
+
+    it('should update selected compiler labels when compiler options change', () => {
+        waitForEditors();
+
+        compilerPane().find('input.options').clear().type('-O2');
+        compilerPane().find('input.options').should('have.value', '-O2');
+
+        openDiffView();
+
+        const lhsPicker = () => findPane('Diff').find('select.diff-picker.lhs + .ts-wrapper .ts-control');
+
+        lhsPicker().should('contain.text', '-O2');
+
+        compilerPane().find('input.options').clear().type('-O1');
+
+        lhsPicker().should('contain.text', '-O1');
+        lhsPicker().should('not.contain.text', '-O2');
     });
 
     it('should show diff content with two compiler panes', () => {
