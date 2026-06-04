@@ -629,6 +629,17 @@ const definitions: Record<LanguageKey, LanguageDefinition> = {
         previewFilter: null,
         monacoDisassembly: null,
     },
+    lua: {
+        name: 'Lua',
+        monaco: 'lua',
+        extensions: ['.lua'],
+        alias: [],
+        logoFilename: 'lua.png',
+        logoFilenameDark: null,
+        formatter: null,
+        previewFilter: null,
+        monacoDisassembly: null,
+    },
     modula2: {
         name: 'Modula-2',
         monaco: 'modula2',

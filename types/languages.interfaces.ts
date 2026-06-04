@@ -76,6 +76,7 @@ export type LanguageKey =
     | 'lean'
     | 'llvm'
     | 'llvm_mir'
+    | 'lua'
     | 'mlir'
     | 'modula2'
     | 'mojo'
