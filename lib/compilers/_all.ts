@@ -84,6 +84,7 @@ export {FakeCompiler} from './fake-for-test.js';
 export {FlangCompiler} from './flang.js';
 export {FlangFC1Compiler} from './flang-fc1.js';
 export {FortranCompiler} from './fortran.js';
+export {FXCCompiler} from './fxc.js';
 export {GA68Compiler} from './ga68.js';
 export {GCCCompiler} from './gcc.js';
 export {GCCCobolCompiler} from './gcccobol.js';
