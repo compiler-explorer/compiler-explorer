@@ -43,6 +43,10 @@ export class LeanCompiler extends BaseCompiler {
         this.compiler.supportsLeanCView = true;
     }
 
+    override isCfgCompiler() {
+        return true;
+    }
+
     override optionsForFilter(filters: ParseFiltersAndOutputOptions, outputFilename: string) {
         return [`--c=${this.getLeanCOutputFilename(outputFilename)}`];
     }
