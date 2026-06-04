@@ -1,4 +1,4 @@
-// Copyright (c) 2022, Compiler Explorer Authors
+// Copyright (c) 2026, Compiler Explorer Authors
 // All rights reserved.
 //
 // Redistribution and use in source and binary forms, with or without
@@ -22,26 +22,31 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-export {BloatyTool} from './bloaty-tool.js';
-export {BrontoRefactorTool} from './bronto-refactor-tool.js';
-export {ClangFormatTool} from './clang-format-tool.js';
-export {ClangQueryTool} from './clang-query-tool.js';
-export {ClangTidyTool} from './clang-tidy-tool.js';
-export {ClippyTool} from './clippy-tool.js';
-export {CompilerDropinTool} from './compiler-dropin-tool.js';
-export {LLVMCovTool} from './llvm-cov-tool.js';
-export {LLVMDWARFDumpTool} from './llvm-dwarfdump-tool.js';
-export {LLVMMcaTool} from './llvm-mca-tool.js';
-export {LLVMPDBUtilTool} from './llvm-pdbutil-tool.js';
-export {MicrosoftAnalysisTool} from './microsoft-analysis-tool.js';
-export {MiriTool} from './miri-tool.js';
-export {NmTool} from './nm-tool.js';
-export {OSACATool} from './osaca-tool.js';
-export {PaholeTool} from './pahole-tool.js';
-export {PvsStudioTool} from './pvs-studio-tool.js';
-export {ReadElfTool} from './readelf-tool.js';
-export {RustFmtTool} from './rustfmt-tool.js';
-export {SonarTool} from './sonar-tool.js';
-export {StringsTool} from './strings-tool.js';
-export {TestingTool} from './testing-tool.js';
-export {x86to6502Tool} from './x86to6502-tool.js';
+import {CompilationInfo} from '../../types/compilation/compilation.interfaces.js';
+import {fileExists} from '../utils.js';
+import {BaseTool} from './base-tool.js';
+
+export class LLVMPDBUtilTool extends BaseTool {
+    static get key() {
+        return 'llvm-pdbutil-tool';
+    }
+
+    override async runTool(compilationInfo: CompilationInfo, inputFilepath?: string, args?: string[]) {
+        if (!compilationInfo.filters.binary) {
+            return this.createErrorResponse(`${this.tool.name ?? 'llvm-pdbutil'} requires an executable`);
+        }
+
+        let filename = compilationInfo.executableFilename;
+        if (!(await fileExists(filename))) {
+            filename = compilationInfo.outputFilename;
+        }
+
+        // If a PDB is generated, it will be named after the executable.
+        const dotIdx = filename.lastIndexOf('.');
+        if (dotIdx >= 0) {
+            filename = filename.slice(0, dotIdx) + '.pdb';
+        }
+
+        return super.runTool(compilationInfo, filename, args);
+    }
+}
