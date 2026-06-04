@@ -74,6 +74,7 @@ import {PPOptions} from './pp-view.interfaces.js';
 import IEditorMouseEvent = editor.IEditorMouseEvent;
 
 import fileSaver from 'file-saver';
+import TomSelect from 'tom-select';
 
 import {unwrap, unwrapString} from '../../shared/assert.js';
 import {escapeHTML, splitArguments} from '../../shared/common-utils.js';
@@ -82,7 +83,7 @@ import {LLVMIrBackendOptions} from '../../types/compilation/ir.interfaces.js';
 import {YulBackendOptions} from '../../types/compilation/yul.interfaces.js';
 import {CompilerOutputOptions} from '../../types/features/filters.interfaces.js';
 import {InstructionSet} from '../../types/instructionsets.js';
-import {LanguageKey} from '../../types/languages.interfaces.js';
+import {Language, LanguageKey} from '../../types/languages.interfaces.js';
 import {Tool} from '../../types/tool.interfaces.js';
 import {ArtifactHandler} from '../artifact-handler.js';
 import {type AssemblySyntax, addAttSyntaxWarningIfNeeded, determineAssemblySyntax} from '../assembly-syntax.js';
@@ -154,6 +155,11 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
     private readonly id: number;
     private sourceTreeId: number | null;
     private sourceEditorId: number | null;
+    private sourceCompilerId: number | null;
+    private upstreamCompilerName: string | null;
+    private rootEditorId: number | null;
+    private chainedDownstreamIds: Set<number>;
+    private chainOutputLang: LanguageKey | null;
     private readonly infoByLang: Record<string, {compiler: string; options: string}>;
     private deferCompiles: boolean;
     private needsCompile: boolean;
@@ -293,6 +299,7 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
     private mouseUpThrottledFunction?: ((e: monaco.editor.IEditorMouseEvent) => void) & _.Cancelable;
     private compilerShared: ICompilerShared;
     private artifactHandler: ArtifactHandler;
+    private chainLanguagePicker: TomSelect | null = null;
 
     constructor(hub: Hub, container: Container, state: MonacoPaneState & CompilerState) {
         super(hub, container, state);
@@ -360,6 +367,8 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
         if (this.sourceTreeId) {
             this.compile();
         }
+        // In chained mode, we wait for the upstream to push its state via chainedCompilerOpen
+        // rather than compiling immediately (see onChainedCompilerOpen / registerCallbacks).
 
         if (!this.hub.deferred) {
             this.undefer();
@@ -369,7 +378,15 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
     override initializeStateDependentProperties(state: MonacoPaneState & CompilerState) {
         this.compilerService = this.hub.compilerService;
         this.sourceTreeId = state.tree ? state.tree : null;
+        this.sourceCompilerId = state.sourceCompiler ?? null;
+        this.upstreamCompilerName = null;
+        this.rootEditorId = state.rootEditorId ?? null;
+        this.chainedDownstreamIds = new Set();
+        this.chainOutputLang = (state.chainOutputLang as LanguageKey) ?? null;
         if (this.sourceTreeId) {
+            this.sourceEditorId = null;
+            this.sourceCompilerId = null;
+        } else if (this.sourceCompilerId) {
             this.sourceEditorId = null;
         } else {
             this.sourceEditorId = state.source || 1;
@@ -427,6 +444,55 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
         return null;
     }
 
+    private renderLangEntry(language: Language, escapeHtml: (str: string) => string, size: number): string {
+        const lightLogo = language.logoFilename
+            ? `<img src='${getStaticImage(language.logoFilename, 'logos')}' alt='Logo for ${escapeHtml(language.name)}' class='${language.logoFilenameDark ? 'theme-light-only' : ''}' width='${size}px' height='${size}px' />`
+            : '';
+        const darkLogo = language.logoFilenameDark
+            ? `<img src='${getStaticImage(language.logoFilenameDark, 'logos')}' alt='Logo for ${escapeHtml(language.name)}' class='theme-dark-only' width='${size}px' height='${size}px' />`
+            : '';
+        return `<div class='d-flex' style='align-items: center'><div class='me-1 d-flex' style='align-items: center; width: ${size}px; height: ${size}px'>${lightLogo}${darkLogo}</div><div title='${language.tooltip ?? ''}'>${escapeHtml(language.name)}</div></div>`;
+    }
+
+    initChainedLanguagePicker(): void {
+        const selectEl = this.domRoot.find('.change-chain-language')[0] as HTMLSelectElement;
+        const usableLanguages = Object.values(options.languages).filter(
+            lang => lang && this.hub.compilerService.getCompilersForLang(lang.id),
+        );
+        const initialLang = this.chainOutputLang ?? this.currentLangId;
+
+        this.chainLanguagePicker = new TomSelect(selectEl, {
+            sortField: 'name',
+            valueField: 'id',
+            labelField: 'name',
+            searchField: ['name'],
+            placeholder: '🔍 Select a language...',
+            options: usableLanguages,
+            items: initialLang ? [initialLang] : [],
+            dropdownParent: 'body',
+            plugins: ['dropdown_input'],
+            maxOptions: 1000,
+            render: {
+                option: (data: Language, escapeHtml: (str: string) => string) =>
+                    this.renderLangEntry(data, escapeHtml, 23),
+                item: (data: Language, escapeHtml: (str: string) => string) =>
+                    this.renderLangEntry(data, escapeHtml, 20),
+            },
+            onChange: (val: string) => {
+                this.chainOutputLang = val as LanguageKey;
+                this.updateState();
+                this.eventHub.emit('chainLanguageChange', this.id, val as LanguageKey);
+            },
+            closeAfterSelect: true,
+        });
+        this.chainLanguagePicker.on('dropdown_close', () => {
+            const selection = this.chainLanguagePicker!.getOption(this.chainOutputLang ?? '');
+            this.chainLanguagePicker!.setActiveOption(selection);
+        });
+
+        this.domRoot.find('.chain-language-select').show();
+    }
+
     initLangAndCompiler(state: Pick<MonacoPaneState & CompilerState, 'lang' | 'compiler'>): void {
         const langId = state.lang;
         const compilerId = state.compiler;
@@ -442,9 +508,17 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
         this.eventHub.emit('compilerClose', this.id, this.sourceTreeId ?? 0);
         this.editor.dispose();
         this.compilerPicker.destroy();
+        this.chainLanguagePicker?.destroy();
     }
 
-    onCompiler(compilerId: number, compiler: unknown, options: string, editorId: number, treeId: number): void {}
+    override onCompiler(compilerId: number, compiler: CompilerInfo | null, _options: string): void {
+        if (compilerId !== this.sourceCompilerId) return;
+        const newName = compiler?.name ?? null;
+        if (newName !== this.upstreamCompilerName) {
+            this.upstreamCompilerName = newName;
+            this.updateTitle();
+        }
+    }
 
     onCompileResult(compilerId: number, compiler: unknown, result: unknown): void {}
 
@@ -472,6 +546,15 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
                 componentName: COMPILER_COMPONENT_NAME,
                 componentState: {source, filters, options, compiler, libs, lang, overrides},
             };
+        };
+
+        const createChainedCompiler = () => {
+            const rootEditorId = this.sourceEditorId ?? this.rootEditorId ?? undefined;
+            return Components.getChainedCompiler(
+                this.id,
+                this.chainOutputLang ?? this.currentLangId ?? '',
+                rootEditorId,
+            );
         };
         const createOptView = () => {
             return Components.getOptViewWith(
@@ -756,6 +839,17 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
                 this.hub.findParentRowOrColumn(this.container.parent) ||
                 this.container.layoutManager.root.contentItems[0];
             insertPoint.addChild(cloneComponent());
+        });
+
+        createDragSource(this.container.layoutManager, this.domRoot.find('.btn.add-chained-compiler'), () =>
+            createChainedCompiler(),
+        ).on('dragStart', hidePaneAdder);
+
+        this.domRoot.find('.btn.add-chained-compiler').on('click', () => {
+            const insertPoint =
+                this.hub.findParentRowOrColumn(this.container.parent) ||
+                this.container.layoutManager.root.contentItems[0];
+            insertPoint.addChild(createChainedCompiler());
         });
 
         createDragSource(this.container.layoutManager, this.optButton, () => createOptView()).on(
@@ -1924,6 +2018,8 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
     }
 
     onEditorChange(editor: number, source: string, langId: string, compilerId?: number): void {
+        if (this.sourceCompilerId) return;
+
         if (this.sourceTreeId) {
             const tree = this.hub.getTreeById(this.sourceTreeId);
             if (tree) {
@@ -1947,6 +2043,54 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
                 this.compile();
             }
         }
+    }
+
+    onUpstreamCompileResult(compilerId: number, _compiler: CompilerInfo, result: CompilationResult): void {
+        if (compilerId !== this.sourceCompilerId) return;
+
+        if (!result.asm || result.timedOut || result.code !== 0) {
+            this.source = '';
+        } else {
+            const asm = result.asm;
+            this.source = typeof asm === 'string' ? asm : asm.map(line => line.text).join('\n');
+        }
+
+        // Always recompile when the upstream result changes — even on failure, so the error
+        // cascades to any further downstream compilers via our own compileResult event.
+        this.compile();
+    }
+
+    onUpstreamCompilerClose(compilerId: number): void {
+        // Our upstream compiler closed — detach and become sourceless.
+        if (compilerId !== this.sourceCompilerId) return;
+        this.sourceCompilerId = null;
+        this.source = '';
+        this.updateState();
+        this.updateTitle();
+    }
+
+    onDownstreamCompilerClose(compilerId: number): void {
+        // One of our chained downstreams closed — remove it from tracking.
+        if (!this.chainedDownstreamIds.has(compilerId)) return;
+        this.chainedDownstreamIds.delete(compilerId);
+        if (this.chainedDownstreamIds.size === 0) {
+            this.chainLanguagePicker?.destroy();
+            this.chainLanguagePicker = null;
+            this.domRoot.find('.chain-language-select').hide();
+        }
+    }
+
+    onChainedCompilerOpen(sourceCompilerId: number, chainedCompilerId: number): void {
+        if (sourceCompilerId !== this.id) return;
+
+        this.chainedDownstreamIds.add(chainedCompilerId);
+        if (!this.chainLanguagePicker) {
+            this.initChainedLanguagePicker();
+        }
+        // Push current state to the newly-opened downstream, mirroring the editor's
+        // onCompilerOpen → maybeEmitChange(true, compilerId) pattern.
+        this.sendCompiler();
+        this.resendResult();
     }
 
     onCompilerFlagsChange(compilerId: number, compilerFlags: string): void {
@@ -3003,8 +3147,18 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
         this.container.on('shown', this.resize, this);
         this.container.on('open', () => {
             this.eventHub.emit('compilerOpen', this.id, this.sourceEditorId ?? 0, this.sourceTreeId ?? 0);
+            if (this.sourceCompilerId) {
+                // Announce ourselves to the upstream so it can show its language selector
+                // and push its current state (compiler info + last result) to us.
+                this.eventHub.emit('chainedCompilerOpen', this.sourceCompilerId, this.id);
+            }
         });
         this.eventHub.on('editorChange', this.onEditorChange, this);
+        this.eventHub.on('compileResult', this.onUpstreamCompileResult, this);
+        this.eventHub.on('compilerClose', this.onUpstreamCompilerClose, this);
+        this.eventHub.on('compilerClose', this.onDownstreamCompilerClose, this);
+        this.eventHub.on('chainedCompilerOpen', this.onChainedCompilerOpen, this);
+        this.eventHub.on('chainLanguageChange', this.onChainLanguageChange, this);
         this.eventHub.on('compilerFlagsChange', this.onCompilerFlagsChange, this);
         this.eventHub.on('editorClose', this.onEditorClose, this);
         this.eventHub.on('treeClose', this.onTreeClose, this);
@@ -3309,6 +3463,9 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
             compiler: this.compiler ? this.compiler.id : '',
             source: this.sourceEditorId ?? undefined,
             tree: this.sourceTreeId ?? undefined,
+            sourceCompiler: this.sourceCompilerId ?? undefined,
+            chainOutputLang: this.chainOutputLang ?? undefined,
+            rootEditorId: this.rootEditorId ?? undefined,
             options: this.options,
             // NB must *not* be effective filters
             filters: this.filters.get(),
@@ -3800,31 +3957,41 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
         CompilerService.handleCompilationStatus(this.statusLabel, this.statusIcon, status);
     }
 
+    private applyLanguageChange(newLangId: LanguageKey): void {
+        const oldLangId = this.currentLangId ?? '';
+        this.currentLangId = newLangId;
+        // Store the current selected stuff to come back to it later in the same session (Not state stored!)
+        this.infoByLang[oldLangId] = {
+            compiler: this.compiler?.id ? this.compiler.id : options.defaultCompiler[oldLangId as LanguageKey],
+            options: this.options,
+        };
+        const info = this.infoByLang[this.currentLangId] || {};
+        this.deferCompiles = true;
+        this.initLangAndCompiler({lang: newLangId, compiler: info.compiler});
+        this.updateCompilersSelector(info);
+        this.updateState();
+        this.updateCompilerUI();
+        this.setAssembly({asm: this.fakeAsm('')});
+        // this is a workaround to delay compilation further until the Editor sends a compile request
+        this.needsCompile = false;
+        this.undefer();
+        this.sendCompiler();
+    }
+
     onLanguageChange(editorId: number | boolean, newLangId: LanguageKey, treeId?: number | boolean): void {
         if (
             (this.sourceEditorId && this.sourceEditorId === editorId) ||
             (this.sourceTreeId && this.sourceTreeId === treeId)
         ) {
-            const oldLangId = this.currentLangId ?? '';
-            this.currentLangId = newLangId;
-            // Store the current selected stuff to come back to it later in the same session (Not state stored!)
-            this.infoByLang[oldLangId] = {
-                compiler: this.compiler?.id ? this.compiler.id : options.defaultCompiler[oldLangId as LanguageKey],
-                options: this.options,
-            };
+            this.applyLanguageChange(newLangId);
+        }
+    }
 
-            const info = this.infoByLang[this.currentLangId] || {};
-            this.deferCompiles = true;
-            this.initLangAndCompiler({lang: newLangId, compiler: info.compiler});
-            this.updateCompilersSelector(info);
-            this.updateState();
-            this.updateCompilerUI();
-            this.setAssembly({asm: this.fakeAsm('')});
-            // this is a workaround to delay compilation further until the Editor sends a compile request
-            this.needsCompile = false;
-
-            this.undefer();
-            this.sendCompiler();
+    onChainLanguageChange(sourceCompilerId: number, newLangId: LanguageKey): void {
+        if (this.sourceCompilerId !== sourceCompilerId) return;
+        this.applyLanguageChange(newLangId);
+        if (this.source) {
+            this.compile();
         }
     }
 
@@ -3835,14 +4002,20 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
     }
 
     override getPaneTag() {
-        const editorId = this.sourceEditorId;
-        const treeId = this.sourceTreeId;
         const compilerName = this.getCompilerName();
 
-        if (editorId) {
-            return `${compilerName} (Editor #${editorId})`;
+        if (this.sourceCompilerId) {
+            const upstream = this.upstreamCompilerName ?? `Compiler #${this.sourceCompilerId}`;
+            const editorSuffix = this.rootEditorId ? `, Editor #${this.rootEditorId}` : '';
+            return `${compilerName} (🔗${upstream}${editorSuffix})`;
         }
-        return `${compilerName} (Tree #${treeId})`;
+        if (this.sourceEditorId) {
+            return `${compilerName} (Editor #${this.sourceEditorId})`;
+        }
+        if (this.sourceTreeId) {
+            return `${compilerName} (Tree #${this.sourceTreeId})`;
+        }
+        return compilerName;
     }
 
     override getExtraPrintData() {
