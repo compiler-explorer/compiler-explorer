@@ -363,7 +363,7 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
             this.compiler?.id ?? '',
             this.onCompilerChange.bind(this),
         );
-        this.initLibraries(state);
+        await this.initLibraries(state);
         this.sendCompiler();
         this.updateCompilerInfo();
         this.updateButtons();
@@ -2646,6 +2646,8 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
                 this.compiler?.remote,
             ),
         );
+        // Wait for the lazily-loaded libraries to be selected before compiling or persisting state.
+        await this.libsWidget.stateLoaded;
     }
 
     async updateLibraries(): Promise<void> {

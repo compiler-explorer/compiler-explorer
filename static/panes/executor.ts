@@ -186,7 +186,7 @@ export class Executor extends Pane<ExecutorState> {
             this.compilerIsVisible,
         );
 
-        this.initLibraries(state);
+        await this.initLibraries(state);
         this.updateCompilerInfo();
         this.updateState();
 
@@ -906,6 +906,8 @@ export class Executor extends Pane<ExecutorState> {
                 this.compiler?.remote ?? undefined,
             ),
         );
+        // Wait for the lazily-loaded libraries to be selected before compiling or persisting state.
+        await this.libsWidget.stateLoaded;
     }
 
     onFontScale(): void {

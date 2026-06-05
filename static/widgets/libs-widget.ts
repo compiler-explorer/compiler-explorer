@@ -139,6 +139,9 @@ export class LibsWidget {
 
     private readonly onChangeCallback: () => void;
 
+    // Resolves once the saved state has been applied to the lazily-loaded library list.
+    public readonly stateLoaded: Promise<void>;
+
     private readonly availableLibs: AvailableLibs;
     private readonly filters: PopupAlertFilter[] = [
         (compilerId, langId) => {
@@ -176,9 +179,10 @@ export class LibsWidget {
         this.initButtons();
         this.onChangeCallback = onChangeCallback;
         this.availableLibs = {};
-        this.updateAvailableLibs(possibleLibs, true).then(() => {
+        this.stateLoaded = this.updateAvailableLibs(possibleLibs, true).then(() => {
             this.loadState(state);
             this.fullRefresh();
+            this.updateButton();
         });
 
         const searchInput = this.domRoot.find('.lib-search-input');
