@@ -36,7 +36,7 @@ import {
 } from '../../types/execution/execution.interfaces.js';
 import * as BootstrapUtils from '../bootstrap-utils.js';
 import {localStorage} from '../local.js';
-import {options} from '../options.js';
+import {compilersService} from '../services/compilers.service.js';
 
 const FAV_RUNTIMETOOLS_STORE_KEY = 'favruntimetools';
 
@@ -350,8 +350,13 @@ export class RuntimeToolsWidget {
         this.updateButton();
     }
 
-    setCompiler(compilerId: string, languageId?: string) {
-        this.compiler = options.compilers.find(c => c.id === compilerId);
+    async setCompiler(compilerId: string, languageId?: string) {
+        if (languageId) {
+            const compilers = await compilersService.getCompilersForLang(languageId);
+            this.compiler = compilers[compilerId];
+        } else {
+            this.compiler = undefined;
+        }
     }
 
     get(): ConfiguredRuntimeTools | undefined {

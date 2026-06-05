@@ -261,7 +261,7 @@ export class ClientOptionsHandler implements ClientOptionsSource {
                                     toolBaseName + '.languageId',
                                 ) as LanguageKey,
                                 stdinHint: this.compilerProps<string>(lang, toolBaseName + '.stdinHint'),
-                                monacoStdin: this.compilerProps<string>(lang, toolBaseName + '.monacoStdin'),
+                                monacoStdin: this.compilerProps<boolean>(lang, toolBaseName + '.monacoStdin'),
                                 icon: this.compilerProps<string>(lang, toolBaseName + '.icon'),
                                 darkIcon: this.compilerProps<string>(lang, toolBaseName + '.darkIcon'),
                                 compilerLanguage: lang as LanguageKey,
@@ -508,6 +508,16 @@ export class ClientOptionsHandler implements ClientOptionsSource {
             // Set $order to -index on array. As group is an array, iteration order is guaranteed.
             for (const compiler of group) {
                 compiler['$order'] = -order++;
+            }
+        }
+
+        // Mirror $order onto the input compilers so other consumers (notably
+        // the api handler used by lazy-load) see the same ordering as the
+        // deep-copied client options here.
+        for (let i = 0; i < compilers.length; i++) {
+            const order = copiedCompilers[i].$order;
+            if (order !== undefined) {
+                compilers[i].$order = order;
             }
         }
 

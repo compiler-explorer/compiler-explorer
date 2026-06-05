@@ -712,6 +712,10 @@ textarea.form-control {
     }
 }
 
+select.compiler-picker {
+    background-color: $base;
+}
+
 #compiler-picker-modal {
     .architecture,
     .compiler-type {
