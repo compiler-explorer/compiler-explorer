@@ -179,6 +179,7 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
     private compiler: CompilerInfo | null;
     private recentInstructionSet: InstructionSet | null;
     private currentLangId: string | null;
+    private initialStateLoaded: boolean;
     private filters: Toggles;
     private optButton: JQuery<HTMLButtonElement>;
     private stackUsageButton: JQuery<HTMLButtonElement>;
@@ -301,6 +302,7 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
         this.infoByLang = {};
         this.deferCompiles = true;
         this.needsCompile = false;
+        this.initialStateLoaded = false;
 
         this.source = '';
         this.assembly = [];
@@ -348,6 +350,11 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
 
     private async postInit(state: MonacoPaneState & CompilerState) {
         await this.initLangAndCompiler(state);
+        // The lang/compiler are now resolved from our own state. Only after this point may we
+        // react to languageChange broadcasts; an earlier one (e.g. the editor's initial firstTime
+        // broadcast, which can arrive while the await above is still pending) would otherwise reset
+        // us to the language's default compiler and lose the compiler from the loaded state.
+        this.initialStateLoaded = true;
 
         this.compilerPicker = new CompilerPicker(
             this.domRoot,
@@ -3824,6 +3831,9 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
     }
 
     onLanguageChange(editorId: number | boolean, newLangId: LanguageKey, treeId?: number | boolean): void {
+        // Ignore language broadcasts that arrive before we've resolved our own initial state, otherwise
+        // we'd reset to the language's default compiler and lose the compiler from the loaded state.
+        if (!this.initialStateLoaded) return;
         if (
             (this.sourceEditorId && this.sourceEditorId === editorId) ||
             (this.sourceTreeId && this.sourceTreeId === treeId)
