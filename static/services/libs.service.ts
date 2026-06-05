@@ -28,6 +28,7 @@ import {getRemoteId} from '../../shared/remote-utils.js';
 import {LanguageLibs} from '../options.interfaces.js';
 import {optionsHash} from '../options.js';
 import {SentryCapture} from '../sentry.js';
+import {fetchApiJson} from './fetch-utils.js';
 
 export class LibsService {
     private readonly loadPromises = new Map<string, Promise<LanguageLibs>>();
@@ -72,11 +73,9 @@ export class LibsService {
     }
 
     private async fetchLibsForLang(langId: string): Promise<LanguageLibs> {
-        const response = await fetch(
+        const libsArr = await fetchApiJson<any[]>(
             `${window.httpRoot}api/libraries/${encodeURIComponent(langId)}?fields=${LibsService.libFields.join(',')}&hash=${optionsHash}`,
-            {headers: {Accept: 'application/json'}},
         );
-        const libsArr = await response.json();
         return this.libArrayToRecord(libsArr);
     }
 
@@ -87,8 +86,7 @@ export class LibsService {
             `${encodeURIComponent(langId)}?fields=${LibsService.libFields.join(',')}`,
         );
         try {
-            const response = await fetch(url, {headers: {Accept: 'application/json'}});
-            const libsArr = await response.json();
+            const libsArr = await fetchApiJson<any[]>(url);
             return this.libArrayToRecord(libsArr);
         } catch (e) {
             SentryCapture(e, `fetchRemoteLibs(${langId}, ${remoteUrl})`);
@@ -97,6 +95,9 @@ export class LibsService {
     }
 
     private libArrayToRecord(libsArr: any[]): LanguageLibs {
+        if (!Array.isArray(libsArr)) {
+            throw new Error(`Expected an array of libraries but got ${typeof libsArr}`);
+        }
         const libs: LanguageLibs = {};
         for (const lib of libsArr) {
             const versions = Object.fromEntries(lib.versions.map((v: any) => [v.id, v]));
