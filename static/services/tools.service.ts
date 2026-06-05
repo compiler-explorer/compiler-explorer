@@ -47,6 +47,7 @@ export class ToolsService {
     }
 
     async getToolsForLang(langId: string): Promise<Record<string, ToolEntry>> {
+        if (!langId) return {};
         let promise = this.loadPromises.get(langId);
         if (!promise) {
             promise = this.fetchToolsForLang(langId);

@@ -47,6 +47,7 @@ export class LibsService {
     ];
 
     async getLibsForLang(langId: string): Promise<LanguageLibs> {
+        if (!langId) return {};
         let promise = this.loadPromises.get(langId);
         if (!promise) {
             promise = this.fetchLibsForLang(langId);
@@ -60,6 +61,7 @@ export class LibsService {
     }
 
     async getRemoteLibs(langId: string, remoteUrl: string): Promise<LanguageLibs> {
+        if (!langId) return {};
         const remoteId = getRemoteId(remoteUrl, langId);
         let promise = this.loadPromises.get(remoteId);
         if (!promise) {

@@ -30,6 +30,7 @@ export class CompilersService {
     private readonly loadPromises = new Map<string, Promise<Record<string, CompilerInfo>>>();
 
     async getCompilersForLang(langId: string): Promise<Record<string, CompilerInfo>> {
+        if (!langId) return {};
         let promise = this.loadPromises.get(langId);
         if (!promise) {
             promise = this.fetchCompilersForLang(langId);
