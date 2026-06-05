@@ -16,6 +16,7 @@ This file provides guidance to AI Agents when working with code in this reposito
 ## Important Workflow Requirements
 - ⚠️ NEVER BYPASS PRE-COMMIT HOOKS! NEVER use `git commit -n` or `--no-verify` ⚠️
 - ⚠️ NEVER amend commits (`git commit --amend`) or force push (`git push --force` / `--force-with-lease`) ⚠️
+- ⚠️ NEVER include shared links (e.g. `/z/`, `/e#`, `/clientstate/`, or full godbolt.org short URLs) in commit messages ⚠️
 - ALWAYS run `make pre-commit` or at minimum `npm run ts-check` and `npm run lint` before committing
 - The full process must always be:
   1. Make changes
