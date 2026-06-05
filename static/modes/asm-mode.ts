@@ -44,7 +44,7 @@ function definition(): monaco.languages.IMonarchLanguage {
                 // Label definition (anything looking like a label, followed by anything that's not valid in a demangled
                 // identifier, until we get to a colon followed by any whitespace. This is to avoid finding the colon in
                 // a scoped (blah::foo) identifier.
-                [/^[.a-zA-Z0-9_$?@][^#;/]*:(?=\s)/, {token: 'type.identifier'}],
+                [/^[.a-zA-Z0-9_$?@][^#;/]*:(?=\s|$)/, {token: 'type.identifier'}],
                 // Label definition (quoted)
                 [/^"([^"\\]|\\.)*":/, {token: 'type.identifier'}],
                 // Label definition (ARM style)

@@ -181,6 +181,11 @@ class DiffStateObject {
                         {text: "<select 'Add new...' → 'Yul (Solidity IR)' in this compiler's pane>"},
                     ];
                     break;
+                case DiffType.LeanCOutput:
+                    output = this.result.leanCOutput || [
+                        {text: "<select 'Add new...' → 'Lean C Output' in this compiler's pane>"},
+                    ];
+                    break;
             }
         }
         this.model.setValue(output.map(x => x.text).join('\n'));
@@ -490,6 +495,9 @@ export class Diff extends MonacoPane<monaco.editor.IStandaloneDiffEditor, DiffSt
             if (compiler.supportsYulView) {
                 options.push({id: DiffType.YulOutput.toString(), name: 'Yul (Solidity IR)'});
             }
+            if (compiler.supportsLeanCView) {
+                options.push({id: DiffType.LeanCOutput.toString(), name: 'Lean C Output'});
+            }
         }
 
         const lhsoptions = this.getDiffableOptions(this.selectize.lhs, lhsextraoptions);
@@ -562,10 +570,14 @@ export class Diff extends MonacoPane<monaco.editor.IStandaloneDiffEditor, DiffSt
     updateCompilersFor(selectize: TomSelect, id: number | string) {
         selectize.clearOptions();
         for (const [_, compiler] of Object.entries(this.compilers)) {
+            const optionId = compiler.id.toString();
             selectize.addOption(compiler);
+            selectize.updateOption(optionId, compiler);
         }
-        if (id in this.compilers) {
-            selectize.setValue(id.toString());
+        selectize.refreshOptions(false);
+        const selectedId = id.toString();
+        if (selectedId in this.compilers) {
+            selectize.setValue(selectedId);
         }
     }
 

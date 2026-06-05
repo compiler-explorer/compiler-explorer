@@ -34,7 +34,7 @@ import {CompilationEnvironment} from '../compilation-env.js';
 import {IExecutionEnvironment} from '../execution/execution-env.interfaces.js';
 import {LocalExecutionEnvironment} from '../execution/index.js';
 import {logger} from '../logger.js';
-import {ClientOptionsHandler} from '../options-handler.js';
+import {ClientOptionsHandler, VersionInfo} from '../options-handler.js';
 import {PropertyGetter} from '../properties.interfaces.js';
 import {SentryCapture} from '../sentry.js';
 import {BaseShortener, getShortenerTypeByKey} from '../shortener/index.js';
@@ -45,6 +45,15 @@ function methodNotAllowed(req: express.Request, res: express.Response) {
     res.status(405).send('Method Not Allowed');
 }
 
+/** The full, legacy shape returned by {@link ApiHandler.getLibrariesAsArray} when no `fields` filter is applied. */
+type LibraryArrayEntry = {
+    id: string;
+    name: string;
+    description: string;
+    url: string;
+    versions: Array<VersionInfo & {id: string}>;
+};
+
 export class ApiHandler {
     public compilers: CompilerInfo[] = [];
     public languages: Partial<Record<LanguageKey, Language>> = {};
@@ -52,14 +61,14 @@ export class ApiHandler {
     private options: ClientOptionsHandler | null = null;
     public readonly handle: express.Router;
     public readonly shortener: BaseShortener;
-    private release = {
+    public release = {
         gitReleaseName: '',
         releaseBuildNumber: '',
     };
     private readonly compilationEnvironment: CompilationEnvironment;
 
     constructor(
-        compileHandler: CompileHandler,
+        public readonly compileHandler: CompileHandler,
         ceProps: PropertyGetter,
         private readonly storageHandler: StorageBase,
         urlShortenService: string,
@@ -160,10 +169,14 @@ export class ApiHandler {
     }
 
     handleLanguages(req: express.Request, res: express.Response) {
+        this.outputList(this.getAvailableLanguages(), 'Id', req, res);
+    }
+
+    getAvailableLanguages(): Language[] {
         // Always expose cmake to the frontend even if no compiler reports it as
         // its language, so IDE/tree mode (CMakeLists.txt) can resolve it.
         const langIds = unique([...this.usedLangIds, ...(this.languages.cmake ? (['cmake'] as LanguageKey[]) : [])]);
-        const availableLanguages = langIds.map(val => {
+        return langIds.map(val => {
             const lang = this.languages[val];
             const newLangObj: Language = Object.assign({}, lang);
             if (this.options) {
@@ -172,8 +185,11 @@ export class ApiHandler {
             }
             return newLangObj;
         });
+    }
 
-        this.outputList(availableLanguages, 'Id', req, res);
+    /** Resolve the default compiler id for a language, or undefined if none configured. */
+    getDefaultCompilerFor(languageId: LanguageKey): string | undefined {
+        return this.options?.options.defaultCompiler[languageId];
     }
 
     filterCompilerProperties(list: CompilerInfo[] | Language[], selectedFields: string[]) {
@@ -221,7 +237,15 @@ export class ApiHandler {
         res.send(header + body);
     }
 
-    getLibrariesAsArray(languageId: LanguageKey, fields?: string[]) {
+    // Overload order matters: `ReturnType<ApiHandler['getLibrariesAsArray']>` (used by the MCP
+    // tools, which always call without `fields`) resolves to the *last* overload, so the full
+    // non-partial shape must come last.
+    getLibrariesAsArray(languageId: LanguageKey, fields: string[] | undefined): Partial<LibraryArrayEntry>[];
+    getLibrariesAsArray(languageId: LanguageKey): LibraryArrayEntry[];
+    getLibrariesAsArray(
+        languageId: LanguageKey,
+        fields?: string[],
+    ): LibraryArrayEntry[] | Partial<LibraryArrayEntry>[] {
         const libsForLanguageObj = unwrap(this.options).options.libs[languageId];
         if (!libsForLanguageObj) return [];
 
@@ -252,22 +276,31 @@ export class ApiHandler {
             }
         }
 
-        return Object.keys(libsForLanguageObj).map(key => {
+        // Build the full, concretely-typed shape first so callers that omit
+        // `fields` (e.g. the MCP tools) get the legacy non-partial type back.
+        const fullList: LibraryArrayEntry[] = Object.keys(libsForLanguageObj).map(key => {
             const library = libsForLanguageObj[key];
-            const versionArr = Object.keys(library.versions).map(versionKey => {
-                const fullVersion = {...library.versions[versionKey], id: versionKey};
-                return versionFields ? _.pick(fullVersion, versionFields) : fullVersion;
-            });
-
-            const fullLib = {
+            const versions = Object.keys(library.versions).map(versionKey => ({
+                ...library.versions[versionKey],
+                id: versionKey,
+            }));
+            return {
                 id: key,
                 name: library.name,
                 description: library.description,
                 url: library.url,
-                versions: versionArr,
+                versions,
             };
-            return topLevelFields ? _.pick(fullLib, topLevelFields) : fullLib;
         });
+
+        if (!topLevelFields && !versionFields) return fullList;
+
+        return fullList.map(fullLib => {
+            const lib = versionFields
+                ? {...fullLib, versions: fullLib.versions.map(v => _.pick(v, versionFields!))}
+                : fullLib;
+            return topLevelFields ? _.pick(lib, topLevelFields) : lib;
+        }) as Partial<LibraryArrayEntry>[];
     }
 
     getToolsAsArray(languageId: LanguageKey) {

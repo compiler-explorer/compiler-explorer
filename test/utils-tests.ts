@@ -109,6 +109,9 @@ describe('Parses compiler output', () => {
             },
         ]);
     });
+    it('does not treat c2rust AST node lines as source locations', () => {
+        expect(utils.parseOutput('CTypeId(42): Located {', 'example.c')).toEqual([{text: 'CTypeId(42): Located {'}]);
+    });
     it('replaces all references to input source', () => {
         expect(utils.parseOutput('bob.cpp:1 error in bob.cpp', 'bob.cpp')).toEqual([
             {

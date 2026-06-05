@@ -38,6 +38,8 @@ import {Themes, themes} from './themes.js';
 
 export type FormatBase = 'Google' | 'LLVM' | 'Mozilla' | 'Chromium' | 'WebKit' | 'Microsoft' | 'GNU';
 
+export type Keymap = 'vscode' | 'jetbrains';
+
 export interface SiteSettings {
     autoCloseBrackets: boolean;
     autoCloseQuotes: boolean;
@@ -69,6 +71,7 @@ export interface SiteSettings {
     indefiniteLineHighlight: boolean;
     keepMultipleTabs: boolean;
     keepSourcesOnLangChange: boolean;
+    keymap: Keymap;
     newEditorLastLang: boolean;
     showMinimap: boolean;
     showQuickSuggestions: boolean;
@@ -398,6 +401,12 @@ export class Settings {
             {label: '4', desc: 'Compile'},
         ];
         addSelector('.enableCtrlS', 'enableCtrlS', enableCtrlSData, 'true');
+
+        const keymapData: {label: Keymap; desc: string}[] = [
+            {label: 'vscode', desc: 'VS Code'},
+            {label: 'jetbrains', desc: 'JetBrains'},
+        ];
+        addSelector('.keymap', 'keymap', keymapData, 'vscode');
     }
 
     private addSliders() {

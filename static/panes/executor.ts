@@ -454,12 +454,16 @@ export class Executor extends Pane<ExecutorState> {
             })
             .catch(x => {
                 let message = 'Unknown error';
+                const isNetworkError = (x as any)?.isNetworkError === true;
                 if (_.isString(x)) {
                     message = x;
                 } else if (x) {
                     message = x.error || x.code || x.message || x;
                 }
-                onCompilerResponse(request, this.errorResult(message), false);
+                const result = isNetworkError
+                    ? {...this.errorResult(message), networkError: true}
+                    : this.errorResult(message);
+                onCompilerResponse(request, result, false);
             });
     }
 
@@ -485,12 +489,16 @@ export class Executor extends Pane<ExecutorState> {
             })
             .catch(x => {
                 let message = 'Unknown error';
+                const isNetworkError = (x as any)?.isNetworkError === true;
                 if (typeof x === 'string') {
                     message = x;
                 } else if (x) {
                     message = x.error || x.code || x.message || x;
                 }
-                onCompilerResponse(request, this.errorResult(message), false);
+                const result = isNetworkError
+                    ? {...this.errorResult(message), networkError: true}
+                    : this.errorResult(message);
+                onCompilerResponse(request, result, false);
             });
     }
 
@@ -667,11 +675,15 @@ export class Executor extends Pane<ExecutorState> {
         }
 
         if (!result.didExecute) {
-            this.executionStatusSection.append($('<div/>').text('Could not execute the program'));
+            if (!result.networkError) {
+                this.executionStatusSection.append($('<div/>').text('Could not execute the program'));
+            }
             if (execStderr.length > 0) {
                 this.handleOutput(execStderr, this.executionStatusSection, this.normalAnsiToHtml, false);
             }
-            this.executionStatusSection.append($('<div/>').text('Compiler returned: ' + buildResultCode));
+            if (!result.networkError) {
+                this.executionStatusSection.append($('<div/>').text('Compiler returned: ' + buildResultCode));
+            }
         }
         // reset stream styles
         this.normalAnsiToHtml.reset();

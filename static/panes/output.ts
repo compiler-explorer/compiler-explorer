@@ -209,13 +209,15 @@ export class Output extends Pane<OutputState> {
             }
         } else {
             this.addOutputLines(result);
-            if (!result.execResult) {
-                this.add('Compiler returned: ' + result.code);
-            } else {
-                this.add('ASM generation compiler returned: ' + result.code);
-                if (result.execResult.buildResult) {
-                    this.addOutputLines(result.execResult.buildResult);
-                    this.add('Execution build compiler returned: ' + result.execResult.buildResult.code);
+            if (!result.networkError) {
+                if (!result.execResult) {
+                    this.add('Compiler returned: ' + result.code);
+                } else {
+                    this.add('ASM generation compiler returned: ' + result.code);
+                    if (result.execResult.buildResult) {
+                        this.addOutputLines(result.execResult.buildResult);
+                        this.add('Execution build compiler returned: ' + result.execResult.buildResult.code);
+                    }
                 }
             }
         }

@@ -1,5 +1,5 @@
 mixin newPaneButton(classId, text, title, icon)
-  button(class="dropdown-item btn btn-sm btn-light new-pane-button " + classId title=title data-cy="new-" + classId + "-btn")
+  button(class="dropdown-item btn btn-sm btn-light opens-singleton-pane " + classId title=title data-cy="new-" + classId + "-btn")
     span(class="dropdown-icon " + icon)
     | #{text}
 
@@ -64,6 +64,7 @@ mixin newPaneButton(classId, text, title, icon)
         +newPaneButton("view-haskellCore", "GHC Core", "Show GHC Core Intermediate Representation", "fas fa-water")
         +newPaneButton("view-haskellStg", "GHC STG", "Show GHC STG Intermediate Representation", "fas fa-water")
         +newPaneButton("view-haskellCmm", "GHC Cmm", "Show GHC Cmm Intermediate Representation", "fas fa-water")
+        +newPaneButton("view-leanC", "Lean C Output", "Show generated Lean C output", "fas fa-align-center")
         +newPaneButton("view-clojuremacroexp", "Clojure Macro Expansion", "Show Clojure macro expansion", "fas fa-arrows-alt")
         +newPaneButton("view-yul", "Yul (Solidity IR)", "Show Solidity Intermediate Representation", "fas fa-align-center")
         +newPaneButton("view-gccdump", "GCC Tree/RTL", "Show GCC Tree/RTL dump", "fas fa-tree")
@@ -83,7 +84,7 @@ mixin newPaneButton(classId, text, title, icon)
         .input-group
           button.btn.btn-sm.btn-light.clear-cache(title="Clear cache & recompile" aria-label="Clear cache and recompile")
             span.fas.fa-redo
-          button.btn.btn-sm.btn-light.output-btn(data-cy="new-output-pane-btn" aria-label="Show compiler output")
+          button.btn.btn-sm.btn-light.opens-singleton-pane.output-btn(data-cy="new-output-pane-btn" aria-label="Show compiler output")
             span.fas.fa-receipt.status-text
             | &nbsp;Output
             span.output-count(aria-live="polite")
