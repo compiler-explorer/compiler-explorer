@@ -22,7 +22,8 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import {assertNoConsoleOutput, findPane, openOptRemarks, visitPage, waitForEditors} from '../support/utils';
+import {stubCompileResponse} from '../support/fake-compile';
+import {assertNoConsoleOutput, findPane, openOptRemarks, setupAndWaitForCompilation, visitPage} from '../support/utils';
 
 function optPane() {
     return findPane('Opt');
@@ -38,12 +39,27 @@ afterEach(() => {
 
 describe('Optimisation remarks', () => {
     it('should open an opt remarks pane from the compiler toolbar', () => {
-        waitForEditors();
+        setupAndWaitForCompilation();
         openOptRemarks();
         optPane().should('exist');
     });
 
-    // TODO: Testing actual opt remark content requires a scriptable/canned compiler
-    // so we can guarantee remarks are produced regardless of GCC version.
-    // See discussion about a minimal test harness compiler.
+    it('should display optimisation remarks', () => {
+        stubCompileResponse({
+            optOutput: [
+                {
+                    optType: 'Missed',
+                    displayString: 'loop not vectorised',
+                    Pass: 'loop-vectorize',
+                    Name: 'MissedVectorization',
+                    Function: 'main',
+                    DebugLoc: {File: 'example.cpp', Line: 1, Column: 1},
+                    Args: [{String: 'loop not vectorised'}],
+                },
+            ],
+        });
+        setupAndWaitForCompilation();
+        openOptRemarks();
+        optPane().find('.opt-line', {timeout: 10000}).should('have.length.greaterThan', 0);
+    });
 });

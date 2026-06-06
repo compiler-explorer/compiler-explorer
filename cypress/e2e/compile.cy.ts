@@ -22,6 +22,7 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
+import {stubCompileResponse} from '../support/fake-compile';
 import {
     addCompilerFromEditor,
     allCompilerTabs,
@@ -48,6 +49,7 @@ afterEach(() => {
 
 describe('Basic compilation', () => {
     it('should compile the default code on load and show assembly', () => {
+        // Default: source echoed as asm — default source contains 'square'
         waitForEditors();
         monacoEditorTextShouldContain(compilerOutput(), 'square');
     });
@@ -75,66 +77,58 @@ int add(int a, int b) {
     });
 
     it('should highlight assembly lines when hovering over source code', () => {
-        sourceEditor()
-            .find('.view-line')
-            .eq(1) // Line 2 (0-indexed): "return num * num;"
-            .trigger('mousemove', {force: true});
-
+        sourceEditor().find('.view-line').eq(1).trigger('mousemove', {force: true});
         compilerOutput().find('.linked-code-decoration-margin', {timeout: 5000}).should('exist');
     });
 
     it('should highlight source lines when hovering over assembly', () => {
-        compilerOutput().contains('.view-line', 'ret').first().trigger('mousemove', {force: true});
+        compilerOutput().find('.view-line').eq(1).trigger('mousemove', {force: true});
         sourceEditor().find('.linked-code-decoration-margin', {timeout: 5000}).should('exist');
     });
 });
 
 describe('Compiler options', () => {
-    beforeEach(() => {
-        setMonacoEditorContent(`\
-#ifdef CYPRESS_TEST
-int cypress_test_active(void) { return 1; }
-#else
-int cypress_test_inactive(void) { return 0; }
-#endif`);
-        waitForEditors();
-        monacoEditorTextShouldContain(compilerOutput(), 'cypress_test_inactive');
-    });
-
-    it('should apply -D flag and recompile', () => {
-        compilerPane().find('input.options').clear().type('-DCYPRESS_TEST');
-        monacoEditorTextShouldContain(compilerOutput(), 'cypress_test_active');
-        monacoEditorTextShouldNotContain(compilerOutput(), 'cypress_test_inactive');
+    it('should apply options and recompile', () => {
+        // Default echo includes '; Options: ...' line
+        setupAndWaitForCompilation();
+        compilerPane().find('input.options').clear().type('-O2 -Wall');
+        monacoEditorTextShouldContain(compilerOutput(), '-O2 -Wall');
     });
 });
 
 describe('Output filters', () => {
-    beforeEach(() => {
+    it('should toggle the directives filter', () => {
+        // Default echo includes '; Filters: ...' line showing active filters
         setupAndWaitForCompilation();
-    });
-
-    it('should show directives when directive filter is toggled off', () => {
-        compilerOutput().find('.view-lines').should('not.contain.text', '.cfi_startproc');
+        monacoEditorTextShouldContain(compilerOutput(), 'directives');
 
         compilerPane().find('button[title="Compiler output filters"]').click();
         cy.get('button[data-bind="directives"]:visible').first().click();
 
-        compilerOutput().find('.view-lines', {timeout: 10000}).should('contain.text', '.cfi_startproc');
+        monacoEditorTextShouldNotContain(compilerOutput(), 'directives');
     });
 
-    it('should show comment-only lines when comment filter is toggled off', () => {
+    it('should toggle the comments filter', () => {
+        setupAndWaitForCompilation();
+        monacoEditorTextShouldContain(compilerOutput(), 'commentOnly');
+
         compilerPane().find('button[title="Compiler output filters"]').click();
         cy.get('button[data-bind="commentOnly"]:visible').first().click();
 
-        monacoEditorTextShouldContain(compilerOutput(), 'GNU C++');
+        monacoEditorTextShouldNotContain(compilerOutput(), 'commentOnly');
     });
 });
 
 describe('Compilation errors', () => {
-    it('should display compilation failure message for invalid code', () => {
+    it('should display compilation failure in output pane', () => {
         waitForEditors();
-        setMonacoEditorContent('int main() { this is not valid c++; }');
-        monacoEditorTextShouldContain(compilerOutput(), 'Compilation failed');
+        stubCompileResponse({
+            code: 1,
+            stderr: [{text: "error: expected ';' before '}' token"}],
+        });
+        setMonacoEditorContent('int main() { broken }');
+        cy.get('[data-cy="new-output-pane-btn"]:visible').first().click();
+        findPane('Output').find('.content', {timeout: 10000}).should('contain.text', "expected ';'");
     });
 });
 
@@ -146,21 +140,27 @@ describe('Output pane', () => {
     });
 
     it('should show error details for invalid code', () => {
-        setupAndWaitForCompilation();
-        cy.get('[data-cy="new-output-pane-btn"]:visible').first().click();
-        findPane('Output').find('.content', {timeout: 5000}).should('contain.text', 'Compiler returned: 0');
-
-        setMonacoEditorContent('int main() { this is not valid c++; }');
-
-        findPane('Output').find('.content', {timeout: 10000}).should('contain.text', 'error:');
-        findPane('Output').find('.content', {timeout: 10000}).should('not.contain.text', 'Compiler returned: 0');
-    });
-
-    it('should show stderr with source location for errors', () => {
+        stubCompileResponse({
+            code: 1,
+            stderr: [{text: "error: use of undeclared identifier 'missing_variable'"}],
+        });
         setMonacoEditorContent('int main() { return missing_variable; }');
         waitForEditors();
         cy.get('[data-cy="new-output-pane-btn"]:visible').first().click();
         findPane('Output').find('.content', {timeout: 10000}).should('contain.text', 'missing_variable');
+        findPane('Output').find('.content').should('contain.text', 'Compiler returned: 1');
+    });
+
+    it('should show stderr with source location for errors', () => {
+        stubCompileResponse({
+            code: 1,
+            stderr: [{text: "example.cpp:3:12: error: 'missing_variable' was not declared in this scope"}],
+        });
+        setMonacoEditorContent('int main() { return missing_variable; }');
+        waitForEditors();
+        cy.get('[data-cy="new-output-pane-btn"]:visible').first().click();
+        findPane('Output').find('.content', {timeout: 10000}).should('contain.text', 'missing_variable');
+        findPane('Output').find('.content').should('contain.text', 'example.cpp');
     });
 });
 

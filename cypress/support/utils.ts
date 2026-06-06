@@ -24,6 +24,8 @@
 
 import '../../static/global';
 
+import {setupFakeCompiler} from './fake-compile';
+
 export function stubConsoleOutput(win: Cypress.AUTWindow) {
     cy.stub(win.console, 'log').as('consoleLog');
     cy.stub(win.console, 'warn').as('consoleWarn');
@@ -41,6 +43,7 @@ export function assertNoConsoleOutput() {
  * `beforeEach` for any test that needs a fresh page load.
  */
 export function visitPage() {
+    setupFakeCompiler();
     cy.visit('/', {
         onBeforeLoad: win => {
             stubConsoleOutput(win);

@@ -22,6 +22,7 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
+import {setupFakeCompiler} from '../support/fake-compile';
 import {
     assertNoConsoleOutput,
     compilerOutput,
@@ -35,10 +36,10 @@ import {
 } from '../support/utils';
 
 beforeEach(() => {
+    setupFakeCompiler();
     cy.visit('/', {
         onBeforeLoad: win => {
             stubConsoleOutput(win);
-            // Disable auto-compile so we can test that Ctrl+Enter explicitly triggers it
             win.localStorage.setItem('settings', JSON.stringify({compileOnChange: false}));
         },
     });
@@ -53,22 +54,17 @@ afterEach(() => {
 describe('Keyboard shortcuts', () => {
     it('should recompile with Ctrl+Enter when compileOnChange is disabled', () => {
         waitForEditors();
-        setMonacoEditorContent(`\
-#ifdef SHORTCUT_TEST
-int shortcut_active(void) { return 1; }
-#else
-int shortcut_inactive(void) { return 0; }
-#endif`);
+        setMonacoEditorContent('int original(int x) { return x; }');
 
         // With compileOnChange off, changing options should NOT recompile
-        compilerPane().find('input.options').clear().type('-DSHORTCUT_TEST');
+        compilerPane().find('input.options').clear().type('-O2');
 
-        // Output should still show the old compilation result (no -D flag)
-        monacoEditorTextShouldNotContain(compilerOutput(), 'shortcut_active');
+        // Output should still show the old compilation (no -O2 in options line)
+        monacoEditorTextShouldNotContain(compilerOutput(), '-O2');
 
         // Ctrl+Enter should trigger recompilation
         sourceEditor().find('textarea').type('{ctrl}{enter}', {force: true});
 
-        monacoEditorTextShouldContain(compilerOutput(), 'shortcut_active');
+        monacoEditorTextShouldContain(compilerOutput(), '-O2');
     });
 });
