@@ -367,6 +367,8 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
         this.sendCompiler();
         this.updateCompilerInfo();
         this.updateButtons();
+        // initPanerButtons() ran before this.compiler was resolved, so populate the tools menu now.
+        this.initToolButtons();
         this.updateState();
 
         if (this.sourceTreeId) {
