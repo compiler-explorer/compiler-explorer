@@ -45,18 +45,16 @@ export class SfpiCompiler extends GCCCompiler {
         return 'tt-wh-tensix';
     }
 
-    private getRoots() {
+    private getBase() {
         const exeDir = path.dirname(this.compiler.exe);
-        const sfpiRoot = path.resolve(exeDir, '../../../../');
-        const ttMetalRoot = path.resolve(sfpiRoot, '../tt-metal/tt_metal');
-        return {sfpiRoot, ttMetalRoot};
+        return path.resolve(exeDir, '../../');
     }
 
     override optionsForFilter(filters, outputFilename: string, userOptions?: string[]) {
         const options = super.optionsForFilter(filters, outputFilename, userOptions);
         const cpu = this.getSelectedCpu(userOptions);
         const isBlackhole = cpu.includes('bh') || cpu.includes('blackhole');
-        const {sfpiRoot, ttMetalRoot} = this.getRoots();
+        const base = this.getBase();
         const llkArchDir = isBlackhole ? 'tt_llk_blackhole' : 'tt_llk_wormhole_b0';
         const ckernelArchDir = isBlackhole ? 'blackhole' : 'wormhole_b0';
 
@@ -78,15 +76,15 @@ export class SfpiCompiler extends GCCCompiler {
         }
 
         options.push(
-            `-I${path.join(sfpiRoot, 'include')}`,
-            `-I${path.join(sfpiRoot, 'build/sfpi/include')}`,
-            `-I${path.join(ttMetalRoot, 'hw/inc')}`,
-            `-I${path.join(ttMetalRoot, 'tt-llk/common')}`,
-            `-I${path.join(ttMetalRoot, 'tt-llk/tests/helpers/include')}`,
-            `-I${path.join(ttMetalRoot, `tt-llk/${llkArchDir}/common/inc`)}`,
-            `-I${path.join(ttMetalRoot, `tt-llk/${llkArchDir}/llk_lib`)}`,
-            `-I${path.join(ttMetalRoot, `hw/ckernels/${ckernelArchDir}/metal/llk_api`)}`,
-            `-I${path.join(ttMetalRoot, `hw/ckernels/${ckernelArchDir}/metal/llk_api/llk_sfpu`)}`,
+            `-I${path.join(base, 'include')}`,
+            `-I${path.join(base, 'build/sfpi/include')}`,
+            `-I${path.join(base, 'tt_metal/hw/inc')}`,
+            `-I${path.join(base, 'tt_metal/tt-llk/common')}`,
+            `-I${path.join(base, 'tt_metal/tt-llk/tests/helpers/include')}`,
+            `-I${path.join(base, `tt_metal/tt-llk/${llkArchDir}/common/inc`)}`,
+            `-I${path.join(base, `tt_metal/tt-llk/${llkArchDir}/llk_lib`)}`,
+            `-I${path.join(base, `tt_metal/hw/ckernels/${ckernelArchDir}/metal/llk_api`)}`,
+            `-I${path.join(base, `tt_metal/hw/ckernels/${ckernelArchDir}/metal/llk_api/llk_sfpu`)}`,
         );
 
         return options;
