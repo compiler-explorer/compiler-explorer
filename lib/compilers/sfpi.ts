@@ -57,6 +57,8 @@ export class SfpiCompiler extends GCCCompiler {
         const base = this.getBase();
         const llkArchDir = isBlackhole ? 'tt_llk_blackhole' : 'tt_llk_wormhole_b0';
         const ckernelArchDir = isBlackhole ? 'blackhole' : 'wormhole_b0';
+        const tensixArchDir = isBlackhole ? 'blackhole' : 'wormhole';
+        const tensixDefinesDir = isBlackhole ? 'blackhole/blackhole_defines' : 'wormhole/wormhole_b0_defines';
 
         options.push(
             '-std=c++17',
@@ -81,6 +83,9 @@ export class SfpiCompiler extends GCCCompiler {
             `-I${path.join(base, 'tt_metal/hw/inc')}`,
             `-I${path.join(base, 'tt_metal/tt-llk/common')}`,
             `-I${path.join(base, 'tt_metal/tt-llk/tests/helpers/include')}`,
+            `-I${path.join(base, 'tt_metal/hw/inc/internal/tt-1xx')}`,
+            `-I${path.join(base, `tt_metal/hw/inc/internal/tt-1xx/${tensixArchDir}`)}`,
+            `-I${path.join(base, `tt_metal/hw/inc/internal/tt-1xx/${tensixDefinesDir}`)}`,
             `-I${path.join(base, `tt_metal/tt-llk/${llkArchDir}/common/inc`)}`,
             `-I${path.join(base, `tt_metal/tt-llk/${llkArchDir}/llk_lib`)}`,
             `-I${path.join(base, `tt_metal/hw/ckernels/${ckernelArchDir}/metal/llk_api`)}`,

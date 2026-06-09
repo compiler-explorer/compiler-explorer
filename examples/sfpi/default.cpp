@@ -1,14 +1,7 @@
-#include <cstdint>
-
-extern volatile std::uint32_t __instrn_buffer[];
-
-namespace ckernel {
-constexpr inline volatile std::uint32_t *[[gnu::rvtt_reg_ptr]] instrn_buffer = ::__instrn_buffer;
-}
+// Required for standalone CE SFPI examples; it provides the firmware-side compat definitions.
+#include "ce_sfpi_compat.h"
 
 #include "sfpi.h"
-
-volatile std::uint32_t __instrn_buffer[64];
 
 using namespace sfpi;
 
