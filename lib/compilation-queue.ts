@@ -102,10 +102,17 @@ export class CompilationQueue {
                 }
                 try {
                     this._running.add(jobAsyncId);
-                    return job();
+                    const result = job();
+                    // Count completion when the job settles (even by rejection), not when it
+                    // merely returns its promise. Deliberately not awaited here: a job that
+                    // never settles must not hold _running (and so status().busy) forever.
+                    Promise.resolve(result).then(
+                        () => queueCompleted.inc(),
+                        () => queueCompleted.inc(),
+                    );
+                    return result;
                 } finally {
                     this._running.delete(jobAsyncId);
-                    queueCompleted.inc();
                 }
             },
             {priority: options?.highPriority ? 100 : 0},

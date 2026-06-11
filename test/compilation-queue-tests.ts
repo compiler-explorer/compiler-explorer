@@ -23,9 +23,16 @@
 // POSSIBILITY OF SUCH DAMAGE.
 
 import {TimeoutError} from 'p-queue';
+import PromClient from 'prom-client';
 import {describe, expect, it} from 'vitest';
 
 import {CompilationQueue} from '../lib/compilation-queue.js';
+
+async function completedCount(): Promise<number> {
+    const counter = PromClient.register.getSingleMetric('ce_compilation_queue_completed_total');
+    const metric = await (counter as PromClient.Counter).get();
+    return metric.values[0].value;
+}
 
 describe('CompilationQueue', () => {
     it('runs an enqueued job and returns its result', async () => {
@@ -55,4 +62,19 @@ describe('CompilationQueue', () => {
         // Generous test budget: the 100ms queue timeout can fire very late when vitest workers
         // saturate the machine (e.g. during pre-commit runs).
     }, 15_000);
+
+    it('counts a job as completed when it settles, not when it starts', async () => {
+        const queue = new CompilationQueue(1, 1000, 1000);
+        const before = await completedCount();
+        let release: () => void = () => {};
+        const gate = new Promise<void>(resolve => {
+            release = resolve;
+        });
+        const jobPromise = queue.enqueue(() => gate);
+        await new Promise(resolve => setTimeout(resolve, 20));
+        expect(await completedCount()).toEqual(before);
+        release();
+        await jobPromise;
+        expect(await completedCount()).toEqual(before + 1);
+    });
 });
