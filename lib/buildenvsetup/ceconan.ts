@@ -148,6 +148,9 @@ export class BuildEnvSetupCeConanDirect extends BuildEnvSetupBase {
         const gunzip = zlib.createGunzip();
 
         extract.on('entry', async (header, stream, next) => {
+            // Drained streams (skipped entries) have no other error listener; without this an
+            // entry-stream error would throw as an unhandled 'error' event.
+            stream.on('error', (error: any) => extract.destroy(error));
             try {
                 const filepath = this.getDestinationFilepath(downloadPath, header.name, libId);
 
@@ -164,17 +167,20 @@ export class BuildEnvSetupCeConanDirect extends BuildEnvSetupBase {
                     return;
                 }
 
-                if (!this.extractAllToRoot) {
-                    await fs.promises.mkdir(path.dirname(filepath), {recursive: true});
-                }
-
                 if (header.type !== 'file') {
                     // Only regular files are ever written; symlinks, hardlinks, directories etc
                     // are drained and skipped. Draining also avoids a hang on malformed entries
                     // (e.g. a directory with a non-zero size, whose stream tar-stream never ends).
                     stream.resume();
                     next();
-                } else if (header.size === 0) {
+                    return;
+                }
+
+                if (!this.extractAllToRoot) {
+                    await fs.promises.mkdir(path.dirname(filepath), {recursive: true});
+                }
+
+                if (header.size === 0) {
                     // tar-stream emits no data for zero-length entries (see
                     // https://github.com/mafintosh/tar-stream/issues/145): create empty files
                     // explicitly.
