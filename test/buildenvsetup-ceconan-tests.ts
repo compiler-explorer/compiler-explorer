@@ -192,6 +192,25 @@ describe('BuildEnvSetupCeConanDirect.downloadAndExtractPackage', () => {
         await expect(fs.promises.access(path.join(downloadPath, 'somelib', 'evildir'))).rejects.toThrow();
     }, 10_000);
 
+    it('rejects a package whose extracted size exceeds the cap', async () => {
+        const downloadPath = await temp.mkdir('ce-conan-test');
+        (setup as any).maxExtractedBytes = 1024;
+        try {
+            await expect(
+                setup.downloadAndExtractPackage('somelib', '1.0', downloadPath, `${baseUrl}/package.tgz`),
+            ).rejects.toThrow(/exceeds 1024 bytes/);
+        } finally {
+            (setup as any).maxExtractedBytes = 2 * 1024 * 1024 * 1024;
+        }
+    });
+
+    it('rejects a non-http(s) package URL', async () => {
+        const downloadPath = await temp.mkdir('ce-conan-test');
+        await expect(
+            setup.downloadAndExtractPackage('somelib', '1.0', downloadPath, 'file:///etc/passwd'),
+        ).rejects.toThrow(/Unexpected protocol 'file:'/);
+    });
+
     it('rejects when the download is severed mid-stream', async () => {
         const downloadPath = await temp.mkdir('ce-conan-test');
         await expect(
