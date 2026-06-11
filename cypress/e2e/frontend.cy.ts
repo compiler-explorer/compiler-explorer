@@ -1,5 +1,5 @@
 import {serialiseState} from '../../shared/url-serialization.js';
-import {assertNoConsoleOutput, stubConsoleOutput} from '../support/utils';
+import {assertNoConsoleOutput, stubConsoleOutput, waitForInitialCompile} from '../support/utils';
 
 const PANE_DATA_MAP = {
     codeEditor: {name: 'Editor', selector: 'new-editor'},
@@ -37,12 +37,7 @@ describe('Individual pane testing', () => {
             },
         });
 
-        // Wait for the initial compilation to finish: its result handler re-renders the
-        // add-pane dropdown contents (updateButtons() runs just before the status icon leaves
-        // its spinner state), which can otherwise detach a dropdown button mid-click.
-        cy.get('.status-icon', {timeout: 30_000}).should($icon => {
-            expect($icon.hasClass('fa-check-circle') || $icon.hasClass('fa-times-circle')).to.be.true;
-        });
+        waitForInitialCompile();
 
         cy.get('[data-cy="new-compiler-dropdown-btn"]:visible').click();
         // Shows every pane button even if the compiler does not support it
