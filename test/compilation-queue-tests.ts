@@ -70,8 +70,15 @@ describe('CompilationQueue', () => {
         const gate = new Promise<void>(resolve => {
             release = resolve;
         });
-        const jobPromise = queue.enqueue(() => gate);
-        await new Promise(resolve => setTimeout(resolve, 20));
+        let started: () => void = () => {};
+        const startedGate = new Promise<void>(resolve => {
+            started = resolve;
+        });
+        const jobPromise = queue.enqueue(() => {
+            started();
+            return gate;
+        });
+        await startedGate;
         expect(await completedCount()).toEqual(before);
         release();
         await jobPromise;

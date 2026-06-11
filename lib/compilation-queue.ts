@@ -41,7 +41,7 @@ const queueDequeued = new PromClient.Counter({
 });
 const queueCompleted = new PromClient.Counter({
     name: 'ce_compilation_queue_completed_total',
-    help: 'Total number of jobs completed',
+    help: 'Total number of jobs whose promise settled (fulfilled or rejected); a wedged job never counts',
 });
 const queueStale = new PromClient.Counter({
     name: 'ce_compilation_queue_stale_total',
