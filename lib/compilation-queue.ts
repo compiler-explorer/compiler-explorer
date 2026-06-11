@@ -108,7 +108,7 @@ export class CompilationQueue {
                     queueCompleted.inc();
                 }
             },
-            {priority: options?.highPriority ? 100 : 0, timeout: undefined},
+            {priority: options?.highPriority ? 100 : 0},
         );
     }
 
