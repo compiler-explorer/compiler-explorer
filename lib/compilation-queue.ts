@@ -108,8 +108,6 @@ export class CompilationQueue {
                     queueCompleted.inc();
                 }
             },
-            // NB: an explicit `timeout: undefined` here would silently disable the queue-wide timeout
-            // (p-queue spreads per-call options over its defaults).
             {priority: options?.highPriority ? 100 : 0},
         );
     }
