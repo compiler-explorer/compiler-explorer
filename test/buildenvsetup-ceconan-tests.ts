@@ -187,6 +187,8 @@ describe('BuildEnvSetupCeConanDirect.downloadAndExtractPackage', () => {
         await setup
             .downloadAndExtractPackage('somelib', '1.0', downloadPath, `${baseUrl}/sizeddir.tgz`)
             .catch(() => {});
+        // The good entry preceding the malformed one proves the archive was actually processed.
+        await expect(fs.promises.readFile(path.join(downloadPath, 'somelib', 'ok.txt'), 'utf8')).resolves.toEqual('ok');
         await expect(fs.promises.access(path.join(downloadPath, 'somelib', 'evildir'))).rejects.toThrow();
     }, 10_000);
 
