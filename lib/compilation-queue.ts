@@ -108,7 +108,11 @@ export class CompilationQueue {
                     queueCompleted.inc();
                 }
             },
-            {priority: options?.highPriority ? 100 : 0, timeout: undefined},
+            // No explicit timeout here: the queue-wide timeout from compilationEnvTimeoutMs applies.
+            // Passing `timeout: undefined` would override and disable it (p-queue spreads the options
+            // over its defaults), letting a never-settling job wedge a queue slot forever — which also
+            // permanently disables temp dir cleanup, which only runs when the queue is idle (#8811).
+            {priority: options?.highPriority ? 100 : 0},
         );
     }
 
