@@ -33,7 +33,9 @@ function exportTempDir(tmpDir: string) {
     // Set every variable os.tmpdir() may consult (TMPDIR first on POSIX; TEMP then TMP on
     // Windows) so the configured directory wins regardless of platform or inherited
     // environment, and so spawned tools reading any of them agree. Setting only TMP, as we
-    // once did, let an inherited TMPDIR silently override --tmp-dir.
+    // once did, let an inherited TMPDIR silently override --tmp-dir. Main thread only: a
+    // worker thread's process.env writes are invisible to os.tmpdir(), which reads the real
+    // environment via safeGetenv.
     process.env.TMPDIR = tmpDir;
     process.env.TMP = tmpDir;
     process.env.TEMP = tmpDir;

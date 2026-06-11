@@ -63,7 +63,7 @@ export function resetStats() {
 /**
  * The directory under which this module creates temporary directories (unless callers pass
  * an absolute prefix). The --tmp-dir command line option is not read directly: at startup
- * setupTempDir() exports it as $TMP (or $TEMP on Windows/WSL), which os.tmpdir() consults.
+ * setupTempDir() exports it as $TMPDIR/$TMP/$TEMP, which os.tmpdir() consults.
  * See lib/app/temp-dir.ts.
  */
 export function getTempRoot(): string {
@@ -129,6 +129,10 @@ export function cleanupSync() {
     const toRemove = pendingRemoval.splice(0, pendingRemoval.length);
     for (const dir of toRemove) {
         try {
+            if (!fs.existsSync(dir)) {
+                ++stats.numAlreadyGone;
+                continue;
+            }
             fs.rmSync(dir, {recursive: true, force: true});
             ++stats.numRemoved;
         } catch {
