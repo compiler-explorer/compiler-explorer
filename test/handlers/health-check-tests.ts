@@ -22,10 +22,12 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
+import fs from 'node:fs/promises';
+
 import express from 'express';
 import mockfs from 'mock-fs';
 import request from 'supertest';
-import {afterAll, beforeAll, beforeEach, describe, expect, it} from 'vitest';
+import {afterAll, afterEach, beforeAll, beforeEach, describe, expect, it, vi} from 'vitest';
 
 import {CompilationQueue} from '../../lib/compilation-queue.js';
 import {HealthcheckController} from '../../lib/handlers/api/healthcheck-controller.js';
@@ -135,5 +137,57 @@ describe('Health checks on disk', () => {
             .get('/healthcheck')
             .expect(200, 'Everything is fine')
             .expect('content-type', /text\/html/);
+    });
+});
+
+describe('Health checks for free temp space', () => {
+    let app: express.Express;
+
+    const oneMiB = 1024 * 1024;
+
+    function makeApp(minFreeSpaceMiB: number): express.Express {
+        const compileHandlerMock = {
+            hasLanguages: () => true,
+        };
+        const compilationQueue = new CompilationQueue(1, 1000 * 1000, 1000 * 1000);
+        const result = express();
+        const controller = new HealthcheckController(
+            compilationQueue,
+            null,
+            compileHandlerMock,
+            false,
+            minFreeSpaceMiB,
+        );
+        result.use(controller.createRouter());
+        return result;
+    }
+
+    afterEach(() => {
+        vi.restoreAllMocks();
+    });
+
+    it('should respond with OK when there is enough free space', async () => {
+        app = makeApp(100);
+        vi.spyOn(fs, 'statfs').mockResolvedValue({bavail: 200, bsize: oneMiB} as any);
+        await request(app).get('/healthcheck').expect(200, 'Everything is awesome');
+    });
+
+    it('should respond with 500 when free space is below the minimum', async () => {
+        app = makeApp(100);
+        vi.spyOn(fs, 'statfs').mockResolvedValue({bavail: 99, bsize: oneMiB} as any);
+        await request(app).get('/healthcheck').expect(500);
+    });
+
+    it('should respond with 500 when free space cannot be determined', async () => {
+        app = makeApp(100);
+        vi.spyOn(fs, 'statfs').mockRejectedValue(new Error('no statfs here'));
+        await request(app).get('/healthcheck').expect(500);
+    });
+
+    it('should not check free space when disabled', async () => {
+        app = makeApp(0);
+        const statfsSpy = vi.spyOn(fs, 'statfs');
+        await request(app).get('/healthcheck').expect(200, 'Everything is awesome');
+        expect(statfsSpy).not.toHaveBeenCalled();
     });
 });

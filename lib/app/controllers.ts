@@ -50,6 +50,7 @@ export interface ApiControllers {
  * @param formattingService - The formatting service instance
  * @param compilationQueue - The compilation queue instance
  * @param healthCheckFilePath - Optional path to health check file
+ * @param healthCheckMinFreeSpaceMiB - Minimum free space on the temp filesystem to be healthy (0 disables)
  * @param isExecutionWorker - Whether the server is running as an execution worker
  * @param isCompilationWorker - Whether the server is running as a compilation worker
  * @param formDataHandler - Handler for form data
@@ -60,6 +61,7 @@ export function setupControllersAndHandlers(
     formattingService: FormattingService,
     compilationQueue: CompilationQueue,
     healthCheckFilePath: string | null,
+    healthCheckMinFreeSpaceMiB: number,
     isExecutionWorker: boolean,
     isCompilationWorker: boolean,
     formDataHandler: express.Handler,
@@ -77,6 +79,7 @@ export function setupControllersAndHandlers(
         healthCheckFilePath,
         compileHandler,
         isExecutionWorker,
+        healthCheckMinFreeSpaceMiB,
     );
 
     return {

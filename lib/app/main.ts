@@ -82,6 +82,7 @@ export async function initialiseApplication(options: ApplicationOptions): Promis
     const isExecutionWorker = ceProps<boolean>('execqueue.is_worker', false);
     const isCompilationWorker = ceProps<boolean>('compilequeue.is_worker', false);
     const healthCheckFilePath = ceProps('healthCheckFilePath', null) as string | null;
+    const healthCheckMinFreeSpaceMiB = ceProps<number>('healthCheckMinFreeSpaceMiB', 100);
 
     const formDataHandler = createFormDataHandler();
 
@@ -90,6 +91,7 @@ export async function initialiseApplication(options: ApplicationOptions): Promis
         compilationEnvironment.formattingService,
         compilationEnvironment.compilationQueue,
         healthCheckFilePath,
+        healthCheckMinFreeSpaceMiB,
         isExecutionWorker,
         isCompilationWorker,
         formDataHandler,
