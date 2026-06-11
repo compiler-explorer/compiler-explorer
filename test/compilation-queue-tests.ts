@@ -22,6 +22,7 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
+import {TimeoutError} from 'p-queue';
 import {describe, expect, it} from 'vitest';
 
 import {CompilationQueue} from '../lib/compilation-queue.js';
@@ -47,7 +48,7 @@ describe('CompilationQueue', () => {
         // queue can go back to being non-busy (which gates temp dir cleanup).
         const queue = new CompilationQueue(1, 100, 1000);
         const wedged = queue.enqueue(() => new Promise(() => {}));
-        await expect(wedged).rejects.toThrow(/timed out/i);
+        await expect(wedged).rejects.toThrow(TimeoutError);
 
         await expect(queue.enqueue(async () => 'still works')).resolves.toEqual('still works');
         expect(queue.status().busy).toBe(false);
