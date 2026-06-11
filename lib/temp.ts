@@ -62,7 +62,9 @@ export function resetStats() {
 
 /**
  * The directory under which this module creates temporary directories (unless callers pass
- * an absolute prefix). Configurable via the --tmp-dir command line option.
+ * an absolute prefix). The --tmp-dir command line option is not read directly: at startup
+ * setupTempDir() exports it as $TMP (or $TEMP on Windows/WSL), which os.tmpdir() consults.
+ * See lib/app/temp-dir.ts.
  */
 export function getTempRoot(): string {
     return os.tmpdir();
