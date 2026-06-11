@@ -57,6 +57,7 @@ describe('BuildEnvSetupCeConanDirect.downloadAndExtractPackage', () => {
     let baseUrl: string;
     let setup: BuildEnvSetupCeConanDirect;
     let packageTarGz: Buffer;
+    let zipSlipTarGz: Buffer;
     const fileContents = crypto.randomBytes(64 * 1024).toString('hex');
 
     beforeAll(async () => {
@@ -64,11 +65,18 @@ describe('BuildEnvSetupCeConanDirect.downloadAndExtractPackage', () => {
             'include/somelib.h': fileContents,
             'empty.txt': '',
         });
+        zipSlipTarGz = await makeTarGz({
+            'good.txt': 'good',
+            '../../escape.txt': 'escaped',
+        });
 
         server = http.createServer((req, res) => {
             if (req.url === '/package.tgz') {
                 res.writeHead(200, {'Content-Type': 'application/octet-stream'});
                 res.end(packageTarGz);
+            } else if (req.url === '/zipslip.tgz') {
+                res.writeHead(200, {'Content-Type': 'application/octet-stream'});
+                res.end(zipSlipTarGz);
             } else if (req.url === '/severed.tgz') {
                 // Send a valid gzip prefix then cut the connection mid-stream, as seen when a
                 // download is interrupted: the client must reject, not hang forever.
@@ -110,6 +118,18 @@ describe('BuildEnvSetupCeConanDirect.downloadAndExtractPackage', () => {
         expect(info.packageUrl).toEqual(`${baseUrl}/package.tgz`);
         const extracted = await fs.promises.readFile(path.join(downloadPath, 'somelib', 'include/somelib.h'), 'utf8');
         expect(extracted).toEqual(fileContents);
+        const empty = await fs.promises.readFile(path.join(downloadPath, 'somelib', 'empty.txt'), 'utf8');
+        expect(empty).toEqual('');
+    });
+
+    it('skips entries that try to escape the download path', async () => {
+        const downloadPath = await temp.mkdir('ce-conan-test');
+        await setup.downloadAndExtractPackage('somelib', '1.0', downloadPath, `${baseUrl}/zipslip.tgz`);
+        await expect(fs.promises.readFile(path.join(downloadPath, 'somelib', 'good.txt'), 'utf8')).resolves.toEqual(
+            'good',
+        );
+        const escaped = path.resolve(downloadPath, '..', 'escape.txt');
+        await expect(fs.promises.access(escaped)).rejects.toThrow();
     });
 
     it('rejects when the server returns an error status', async () => {

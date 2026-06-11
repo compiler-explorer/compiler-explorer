@@ -151,8 +151,8 @@ export class BuildEnvSetupCeConanDirect extends BuildEnvSetupBase {
             try {
                 const filepath = this.getDestinationFilepath(downloadPath, header.name, libId);
 
-                const resolved = path.resolve(path.dirname(filepath));
-                if (!resolved.startsWith(downloadPath)) {
+                const relative = path.relative(path.resolve(downloadPath), path.resolve(path.dirname(filepath)));
+                if (relative.startsWith('..') || path.isAbsolute(relative)) {
                     logger.error(`Library ${libId}/${version} is using a zip-slip, skipping file`);
                     stream.resume();
                     next();
@@ -164,7 +164,12 @@ export class BuildEnvSetupCeConanDirect extends BuildEnvSetupBase {
                 }
 
                 if (header.size === 0) {
-                    // See https://github.com/mafintosh/tar-stream/issues/145
+                    // tar-stream emits no data for zero-length entries (see
+                    // https://github.com/mafintosh/tar-stream/issues/145): create empty regular
+                    // files explicitly and skip everything else (directories and the like).
+                    if (header.type === 'file') {
+                        await fs.promises.writeFile(filepath, '');
+                    }
                     stream.resume();
                     next();
                 } else {
