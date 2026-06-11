@@ -39,6 +39,28 @@ const languages = {
     'c++': {id: 'c++'},
 } as const;
 
+// Hand-built tar entry: tar-stream's packer won't produce malformed archives (e.g. a
+// directory entry claiming a non-zero size), which we need to test robustness against.
+function rawTarEntry(name: string, typeflag: string, size: number, content: Buffer): Buffer {
+    const header = Buffer.alloc(512);
+    header.write(name, 0);
+    header.write('0000777\0', 100);
+    header.write('0000000\0', 108);
+    header.write('0000000\0', 116);
+    header.write(`${size.toString(8).padStart(11, '0')}\0`, 124);
+    header.write('00000000000\0', 136);
+    header.fill(' ', 148, 156);
+    header.write(typeflag, 156);
+    header.write('ustar\0', 257);
+    header.write('00', 263);
+    let checksum = 0;
+    for (const byte of header) checksum += byte;
+    header.write(`${checksum.toString(8).padStart(6, '0')}\0 `, 148);
+    const body = Buffer.alloc(Math.ceil(size / 512) * 512);
+    content.copy(body);
+    return Buffer.concat([header, body]);
+}
+
 async function makeTarGz(files: Record<string, string>): Promise<Buffer> {
     const pack = tar.pack();
     for (const [name, content] of Object.entries(files)) {
@@ -58,6 +80,7 @@ describe('BuildEnvSetupCeConanDirect.downloadAndExtractPackage', () => {
     let setup: BuildEnvSetupCeConanDirect;
     let packageTarGz: Buffer;
     let zipSlipTarGz: Buffer;
+    let sizedDirTarGz: Buffer;
     const fileContents = crypto.randomBytes(64 * 1024).toString('hex');
 
     beforeAll(async () => {
@@ -67,10 +90,20 @@ describe('BuildEnvSetupCeConanDirect.downloadAndExtractPackage', () => {
         });
         zipSlipTarGz = await makeTarGz({
             'good.txt': 'good',
-            '../../escape.txt': 'escaped',
             // A directory merely *named* with leading dots is legitimate, not a traversal.
-            '../..odd/inside.txt': 'inside',
+            '..odd/inside.txt': 'inside',
+            // Escapes the download path entirely.
+            '../../escape.txt': 'escaped',
+            // Stays within the download path but escapes this library's own subdirectory.
+            '../sibling.txt': 'sneaky',
         });
+        sizedDirTarGz = zlib.gzipSync(
+            Buffer.concat([
+                rawTarEntry('ok.txt', '0', 2, Buffer.from('ok')),
+                rawTarEntry('evildir/', '5', 10, Buffer.from('whoops....')),
+                Buffer.alloc(1024),
+            ]),
+        );
 
         server = http.createServer((req, res) => {
             if (req.url === '/package.tgz') {
@@ -79,6 +112,9 @@ describe('BuildEnvSetupCeConanDirect.downloadAndExtractPackage', () => {
             } else if (req.url === '/zipslip.tgz') {
                 res.writeHead(200, {'Content-Type': 'application/octet-stream'});
                 res.end(zipSlipTarGz);
+            } else if (req.url === '/sizeddir.tgz') {
+                res.writeHead(200, {'Content-Type': 'application/octet-stream'});
+                res.end(sizedDirTarGz);
             } else if (req.url === '/severed.tgz') {
                 // Send a valid gzip prefix then cut the connection mid-stream, as seen when a
                 // download is interrupted: the client must reject, not hang forever.
@@ -124,18 +160,17 @@ describe('BuildEnvSetupCeConanDirect.downloadAndExtractPackage', () => {
         expect(empty).toEqual('');
     });
 
-    it('skips entries that try to escape the download path', async () => {
+    it('skips entries that try to escape the library extraction root', async () => {
         const downloadPath = await temp.mkdir('ce-conan-test');
         await setup.downloadAndExtractPackage('somelib', '1.0', downloadPath, `${baseUrl}/zipslip.tgz`);
         await expect(fs.promises.readFile(path.join(downloadPath, 'somelib', 'good.txt'), 'utf8')).resolves.toEqual(
             'good',
         );
-        const escaped = path.resolve(downloadPath, '..', 'escape.txt');
-        await expect(fs.promises.access(escaped)).rejects.toThrow();
-        // '../..odd/inside.txt' resolves to a '..odd' directory inside the download path: extracted.
-        await expect(fs.promises.readFile(path.join(downloadPath, '..odd', 'inside.txt'), 'utf8')).resolves.toEqual(
-            'inside',
-        );
+        await expect(
+            fs.promises.readFile(path.join(downloadPath, 'somelib', '..odd', 'inside.txt'), 'utf8'),
+        ).resolves.toEqual('inside');
+        await expect(fs.promises.access(path.resolve(downloadPath, '..', 'escape.txt'))).rejects.toThrow();
+        await expect(fs.promises.access(path.join(downloadPath, 'sibling.txt'))).rejects.toThrow();
     });
 
     it('rejects when the server returns an error status', async () => {
@@ -144,6 +179,16 @@ describe('BuildEnvSetupCeConanDirect.downloadAndExtractPackage', () => {
             setup.downloadAndExtractPackage('somelib', '1.0', downloadPath, `${baseUrl}/missing.tgz`),
         ).rejects.toThrow('Unable to request library from conan: 404');
     });
+
+    it('does not hang on a directory entry claiming a non-zero size', async () => {
+        const downloadPath = await temp.mkdir('ce-conan-test');
+        // Whether such a malformed archive extracts or rejects is tar-stream's business; ours is
+        // that the promise settles rather than wedging a compilation queue slot forever.
+        await setup
+            .downloadAndExtractPackage('somelib', '1.0', downloadPath, `${baseUrl}/sizeddir.tgz`)
+            .catch(() => {});
+        await expect(fs.promises.access(path.join(downloadPath, 'somelib', 'evildir'))).rejects.toThrow();
+    }, 10_000);
 
     it('rejects when the download is severed mid-stream', async () => {
         const downloadPath = await temp.mkdir('ce-conan-test');

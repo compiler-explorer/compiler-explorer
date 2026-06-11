@@ -151,7 +151,12 @@ export class BuildEnvSetupCeConanDirect extends BuildEnvSetupBase {
             try {
                 const filepath = this.getDestinationFilepath(downloadPath, header.name, libId);
 
-                const relative = path.relative(path.resolve(downloadPath), path.resolve(path.dirname(filepath)));
+                // Each library extracts under its own root; skip entries that would resolve outside
+                // it (and so could overwrite other libraries' files or the compilation's own).
+                const extractionRoot = path.resolve(
+                    this.extractAllToRoot ? downloadPath : path.join(downloadPath, libId),
+                );
+                const relative = path.relative(extractionRoot, path.resolve(path.dirname(filepath)));
                 if (relative === '..' || relative.startsWith(`..${path.sep}`) || path.isAbsolute(relative)) {
                     logger.error(`Library ${libId}/${version} is using a zip-slip, skipping file`);
                     stream.resume();
@@ -163,13 +168,17 @@ export class BuildEnvSetupCeConanDirect extends BuildEnvSetupBase {
                     await fs.promises.mkdir(path.dirname(filepath), {recursive: true});
                 }
 
-                if (header.size === 0) {
+                if (header.type !== 'file') {
+                    // Only regular files are ever written; symlinks, hardlinks, directories etc
+                    // are drained and skipped. Draining also avoids a hang on malformed entries
+                    // (e.g. a directory with a non-zero size, whose stream tar-stream never ends).
+                    stream.resume();
+                    next();
+                } else if (header.size === 0) {
                     // tar-stream emits no data for zero-length entries (see
-                    // https://github.com/mafintosh/tar-stream/issues/145): create empty regular
-                    // files explicitly and skip everything else (directories and the like).
-                    if (header.type === 'file') {
-                        await fs.promises.writeFile(filepath, '');
-                    }
+                    // https://github.com/mafintosh/tar-stream/issues/145): create empty files
+                    // explicitly.
+                    await fs.promises.writeFile(filepath, '');
                     stream.resume();
                     next();
                 } else {
@@ -177,7 +186,7 @@ export class BuildEnvSetupCeConanDirect extends BuildEnvSetupBase {
                     next();
                 }
             } catch (error) {
-                logger.error(`Error extracting entry '${header.name}' of ${libId}/${version}:`, error);
+                logger.error(`Error extracting entry ${JSON.stringify(header.name)} of ${libId}/${version}:`, error);
                 // Propagate the failure through the extract stream so the outer pipeline rejects.
                 extract.destroy(error as Error);
             }
