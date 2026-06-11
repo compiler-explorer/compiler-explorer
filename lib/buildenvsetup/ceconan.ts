@@ -65,6 +65,9 @@ export class BuildEnvSetupCeConanDirect extends BuildEnvSetupBase {
     protected onlyonstaticliblink: any;
     protected extractAllToRoot: boolean;
     protected conan_os: string;
+    // Generous cap on the total declared size of extracted files; real library packages are
+    // tens to a few hundred MiB, so anything near this is a packaging error or a gzip bomb.
+    protected maxExtractedBytes = 2 * 1024 * 1024 * 1024;
 
     static get key() {
         return 'ceconan';
@@ -143,9 +146,15 @@ export class BuildEnvSetupCeConanDirect extends BuildEnvSetupBase {
         downloadPath: string,
         packageUrl: string,
     ): Promise<BuildEnvDownloadInfo> {
+        const protocol = new URL(packageUrl).protocol;
+        if (protocol !== 'http:' && protocol !== 'https:') {
+            throw new Error(`Unexpected protocol '${protocol}' for conan package URL`);
+        }
+
         const startTime = process.hrtime.bigint();
         const extract = tar.extract();
         const gunzip = zlib.createGunzip();
+        let extractedBytes = 0;
 
         extract.on('entry', async (header, stream, next) => {
             // Drained streams (skipped entries) have no other error listener; without this an
@@ -165,6 +174,11 @@ export class BuildEnvSetupCeConanDirect extends BuildEnvSetupBase {
                     stream.resume();
                     next();
                     return;
+                }
+
+                extractedBytes += header.size ?? 0;
+                if (extractedBytes > this.maxExtractedBytes) {
+                    throw new Error(`Package ${libId}/${version} exceeds ${this.maxExtractedBytes} bytes extracted`);
                 }
 
                 if (header.type !== 'file') {
