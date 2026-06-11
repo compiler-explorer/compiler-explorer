@@ -121,6 +121,22 @@ export async function cleanup() {
     logger.debug(`Removed ${numRemoved} (${numAlreadyGone} already gone) of ${toRemove.length} temporary directories`);
 }
 
-process.on('exit', async () => {
-    await cleanup();
+/**
+ * Synchronously remove all temporary directories created by this module; for use at process
+ * exit, where asynchronous work never runs.
+ */
+export function cleanupSync() {
+    const toRemove = pendingRemoval.splice(0, pendingRemoval.length);
+    for (const dir of toRemove) {
+        try {
+            fs.rmSync(dir, {recursive: true, force: true});
+            ++stats.numRemoved;
+        } catch {
+            // Best effort only: we may be partway through exiting.
+        }
+    }
+}
+
+process.on('exit', () => {
+    cleanupSync();
 });
