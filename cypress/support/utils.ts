@@ -52,10 +52,13 @@ export function visitPage() {
  * Find a GoldenLayout pane by matching text in its visible tab title.
  * Returns the `.lm_content` element within the matching stack.
  */
-export function waitForInitialCompile() {
-    // The initial compilation's result handler re-renders the add-pane dropdown contents
-    // (updateButtons() runs just before the status icon reaches a terminal state), which can
-    // detach a dropdown button mid-click; wait for it before touching the dropdown.
+/**
+ * Wait for the in-flight compilation (any source, successful or not) to settle. A compile
+ * result re-renders the add-pane dropdown contents (updateButtons() runs just before the
+ * status icon reaches a terminal state), which can detach a dropdown button mid-click: call
+ * this before touching the dropdown.
+ */
+export function waitForCompilationToSettle() {
     cy.get('.status-icon.fa-check-circle:visible, .status-icon.fa-times-circle:visible', {timeout: 30_000}).should(
         'exist',
     );
@@ -140,6 +143,7 @@ export function compilerPane() {
 /** Wait for editors and verify the default code has compiled (looks for "square" in output). */
 export function setupAndWaitForCompilation() {
     waitForEditors();
+    waitForCompilationToSettle();
     monacoEditorTextShouldContain(compilerOutput(), 'square');
 }
 

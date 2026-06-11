@@ -22,7 +22,12 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import {clearAllIntercepts, setMonacoEditorContent, stubConsoleOutput, waitForInitialCompile} from '../support/utils';
+import {
+    clearAllIntercepts,
+    setMonacoEditorContent,
+    stubConsoleOutput,
+    waitForCompilationToSettle,
+} from '../support/utils';
 
 // Claude Explain specific test utilities
 function mockClaudeExplainAPI() {
@@ -57,7 +62,9 @@ function mockClaudeExplainAPI() {
 }
 
 function openClaudeExplainPane() {
-    waitForInitialCompile();
+    // Cannot use setupAndWaitForCompilation: some tests have replaced the default source
+    // (and so its expected output) before opening the pane.
+    waitForCompilationToSettle();
     cy.get('[data-cy="new-compiler-dropdown-btn"]:visible').click();
     cy.get('[data-cy="new-view-explain-btn"]:visible').click();
 }
