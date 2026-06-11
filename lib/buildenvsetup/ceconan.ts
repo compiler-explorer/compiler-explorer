@@ -177,7 +177,7 @@ export class BuildEnvSetupCeConanDirect extends BuildEnvSetupBase {
                     next();
                 }
             } catch (error) {
-                logger.error(`Error in entry handling: ${error}`);
+                logger.error(`Error extracting entry '${header.name}' of ${libId}/${version}:`, error);
                 // Propagate the failure through the extract stream so the outer pipeline rejects.
                 extract.destroy(error as Error);
             }
@@ -205,7 +205,7 @@ export class BuildEnvSetupCeConanDirect extends BuildEnvSetupBase {
                 extract,
             );
         } catch (error) {
-            logger.error(`Error downloading/extracting package from conan (${packageUrl}): ${error}`);
+            logger.error(`Error downloading/extracting package from conan (${packageUrl}):`, error);
             throw error;
         }
 
