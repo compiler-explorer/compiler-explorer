@@ -51,5 +51,7 @@ describe('CompilationQueue', () => {
 
         await expect(queue.enqueue(async () => 'still works')).resolves.toEqual('still works');
         expect(queue.status().busy).toBe(false);
-    }, 5_000);
+        // Generous test budget: the 100ms queue timeout can fire very late when vitest workers
+        // saturate the machine (e.g. during pre-commit runs).
+    }, 15_000);
 });
