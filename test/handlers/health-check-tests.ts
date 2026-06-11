@@ -178,6 +178,12 @@ describe('Health checks for free temp space', () => {
         await request(app).get('/healthcheck').expect(500);
     });
 
+    it('should respond with OK when free space is exactly the minimum', async () => {
+        app = makeApp(100);
+        vi.spyOn(fs, 'statfs').mockResolvedValue({bavail: 100, bsize: oneMiB} as any);
+        await request(app).get('/healthcheck').expect(200, 'Everything is awesome');
+    });
+
     it('should respond with 500 when free space cannot be determined', async () => {
         app = makeApp(100);
         vi.spyOn(fs, 'statfs').mockRejectedValue(new Error('no statfs here'));

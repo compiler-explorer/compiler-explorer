@@ -107,7 +107,7 @@ export class HealthcheckController implements HttpController {
                     return;
                 }
             } catch (e) {
-                logger.error(`*** HEALTH CHECK FAILURE: while checking free space on '${tempDir}' got ${e}`);
+                logger.error(`*** HEALTH CHECK FAILURE: while checking free space on '${tempDir}':`, e);
                 SentryCapture(e, 'Health check free space');
                 res.status(500).send();
                 return;
