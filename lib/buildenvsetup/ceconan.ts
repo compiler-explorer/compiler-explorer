@@ -152,7 +152,7 @@ export class BuildEnvSetupCeConanDirect extends BuildEnvSetupBase {
                 const filepath = this.getDestinationFilepath(downloadPath, header.name, libId);
 
                 const relative = path.relative(path.resolve(downloadPath), path.resolve(path.dirname(filepath)));
-                if (relative.startsWith('..') || path.isAbsolute(relative)) {
+                if (relative === '..' || relative.startsWith(`..${path.sep}`) || path.isAbsolute(relative)) {
                     logger.error(`Library ${libId}/${version} is using a zip-slip, skipping file`);
                     stream.resume();
                     next();

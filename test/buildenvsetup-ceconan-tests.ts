@@ -68,6 +68,8 @@ describe('BuildEnvSetupCeConanDirect.downloadAndExtractPackage', () => {
         zipSlipTarGz = await makeTarGz({
             'good.txt': 'good',
             '../../escape.txt': 'escaped',
+            // A directory merely *named* with leading dots is legitimate, not a traversal.
+            '../..odd/inside.txt': 'inside',
         });
 
         server = http.createServer((req, res) => {
@@ -130,6 +132,10 @@ describe('BuildEnvSetupCeConanDirect.downloadAndExtractPackage', () => {
         );
         const escaped = path.resolve(downloadPath, '..', 'escape.txt');
         await expect(fs.promises.access(escaped)).rejects.toThrow();
+        // '../..odd/inside.txt' resolves to a '..odd' directory inside the download path: extracted.
+        await expect(fs.promises.readFile(path.join(downloadPath, '..odd', 'inside.txt'), 'utf8')).resolves.toEqual(
+            'inside',
+        );
     });
 
     it('rejects when the server returns an error status', async () => {
