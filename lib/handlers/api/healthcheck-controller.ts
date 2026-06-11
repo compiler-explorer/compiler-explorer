@@ -23,13 +23,13 @@
 // POSSIBILITY OF SUCH DAMAGE.
 
 import fs from 'node:fs/promises';
-import os from 'node:os';
 
 import express from 'express';
 
 import {CompilationQueue} from '../../compilation-queue.js';
 import {logger} from '../../logger.js';
 import {SentryCapture} from '../../sentry.js';
+import * as temp from '../../temp.js';
 import {ICompileHandler} from '../compile.interfaces.js';
 import {HttpController} from './controller.interfaces.js';
 
@@ -42,7 +42,7 @@ export class HealthcheckController implements HttpController {
         private readonly healthCheckFilePath: string | null,
         private readonly compileHandler: ICompileHandler,
         private readonly isExecutionWorker: boolean,
-        private readonly minFreeSpaceMiB: number = 0,
+        private readonly minFreeSpaceMiB: number,
     ) {}
 
     public setCompilationWorkerHealthCheck(healthCheck: () => boolean): void {
@@ -94,7 +94,7 @@ export class HealthcheckController implements HttpController {
         // before compilations start failing with ENOSPC, so the load balancer replaces the instance
         // while it can still limp along (see #8811).
         if (this.minFreeSpaceMiB > 0) {
-            const tempDir = os.tmpdir();
+            const tempDir = temp.getTempRoot();
             try {
                 const stats = await fs.statfs(tempDir);
                 const freeMiB = (stats.bavail * stats.bsize) / (1024 * 1024);

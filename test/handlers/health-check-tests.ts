@@ -42,7 +42,7 @@ describe('Health checks', () => {
         };
         compilationQueue = new CompilationQueue(1, 1000 * 1000, 1000 * 1000);
         app = express();
-        const controller = new HealthcheckController(compilationQueue, null, compileHandlerMock, false);
+        const controller = new HealthcheckController(compilationQueue, null, compileHandlerMock, false, 0);
         app.use(controller.createRouter());
     });
 
@@ -71,7 +71,7 @@ describe('Health checks without lang/comp', () => {
         };
         compilationQueue = new CompilationQueue(1, 1000 * 1000, 1000 * 1000);
         app = express();
-        const controller = new HealthcheckController(compilationQueue, null, compileHandlerMock, false);
+        const controller = new HealthcheckController(compilationQueue, null, compileHandlerMock, false, 0);
         app.use(controller.createRouter());
     });
 
@@ -90,7 +90,7 @@ describe('Health checks without lang/comp but in execution worker mode', () => {
         };
         compilationQueue = new CompilationQueue(1, 1000 * 1000, 1000 * 1000);
         app = express();
-        const controller = new HealthcheckController(compilationQueue, null, compileHandlerMock, true);
+        const controller = new HealthcheckController(compilationQueue, null, compileHandlerMock, true, 0);
         app.use(controller.createRouter());
     });
 
@@ -110,11 +110,11 @@ describe('Health checks on disk', () => {
         const compilationQueue = new CompilationQueue(1, 1000 * 1000, 1000 * 1000);
 
         healthyApp = express();
-        const hc1 = new HealthcheckController(compilationQueue, '/fake/.health', compileHandlerMock, false);
+        const hc1 = new HealthcheckController(compilationQueue, '/fake/.health', compileHandlerMock, false, 0);
         healthyApp.use(hc1.createRouter());
 
         unhealthyApp = express();
-        const hc2 = new HealthcheckController(compilationQueue, '/fake/.nonexist', compileHandlerMock, false);
+        const hc2 = new HealthcheckController(compilationQueue, '/fake/.nonexist', compileHandlerMock, false, 0);
         unhealthyApp.use(hc2.createRouter());
 
         mockfs({
