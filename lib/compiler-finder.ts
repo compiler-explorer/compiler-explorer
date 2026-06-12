@@ -255,6 +255,11 @@ export class CompilerFinder {
             instructionSet === '' || InstructionSetsList.includes(instructionSet),
             `Unexpected instruction set ${instructionSet} ${compilerId}`,
         );
+        // A missing instructionSet flows through as null and falls back to
+        // amd64 at runtime in `getInstructionSetFromCompilerArgs`. That
+        // matches the host arch of essentially every CE installation, so
+        // we don't log: production configs are guarded by the
+        // `findCompilersWithoutInstructionSet` test in `npm run test:props`.
         const compilerInfo: PreliminaryCompilerInfo = {
             id: compilerId,
             exe: exe,
