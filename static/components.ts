@@ -24,6 +24,7 @@
 
 import GoldenLayout from 'golden-layout';
 
+import {GccDumpOutput} from '../types/compilation/compilation.interfaces.js';
 import {ConfiguredOverrides} from '../types/compilation/compiler-overrides.interfaces.js';
 import {ConfiguredRuntimeTools} from '../types/execution/execution.interfaces.js';
 import {ParseFiltersAndOutputOptions} from '../types/features/filters.interfaces.js';
@@ -71,7 +72,6 @@ import {
     TREE_COMPONENT_NAME,
     YUL_VIEW_COMPONENT_NAME,
 } from './components.interfaces.js';
-import {GccDumpViewState} from './panes/gccdump-view.interfaces.js';
 import {SentryCapture} from './sentry.js';
 
 /** Get an empty compiler component. */
@@ -495,7 +495,7 @@ export function getGccDumpViewWith(
     compilerName: string,
     editorid: number,
     treeid: number,
-    gccDumpOutput: GccDumpViewState,
+    gccDumpOutput: GccDumpOutput | undefined,
 ): ComponentConfig<typeof GCC_DUMP_VIEW_COMPONENT_NAME> {
     return {
         type: 'component',

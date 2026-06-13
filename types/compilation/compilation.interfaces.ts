@@ -95,6 +95,17 @@ export type GccDumpOptions = {
     dumpFlags?: GccDumpFlags;
 };
 
+export type GccDumpOutput = {
+    all: GccDumpViewSelectedPass[];
+    selectedPass: GccDumpViewSelectedPass | null;
+    currentPassOutput: string;
+    syntaxHighlight: boolean;
+    // Maps a pass's filename_suffix to its (header-trimmed) dump content. Populated when all
+    // passes are dumped and read at once (removeEmptyGccDump compilers). For libgccjit-based
+    // compilers this will be an empty object (they still recompile per pass selection).
+    passDumps: Record<string, string>;
+};
+
 export type CompilationRequestOptions = {
     userArguments: string;
     compilerOptions: {
@@ -186,7 +197,7 @@ export type CompilationResult = {
     dirPath?: string;
     compilationOptions?: string[];
     downloads?: BuildEnvDownloadInfo[];
-    gccDumpOutput?;
+    gccDumpOutput?: GccDumpOutput;
     languageId?: string;
     asmKeywordTypes?: string[];
     result?: CompilationResult; // cmake inner result
