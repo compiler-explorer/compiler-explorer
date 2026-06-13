@@ -24,15 +24,17 @@
 
 import {
     assertNoConsoleOutput,
-    findPane,
     monacoEditorTextShouldContain,
     openGccDump,
     setupAndWaitForCompilation,
     visitPage,
 } from '../support/utils';
 
+// Anchor on the pane's own pass-picker rather than the GoldenLayout tab title: the title query
+// (`span.lm_title:visible`) proved flaky right after a TomSelect dropdown interaction, whereas the
+// `.gccdump-pass-picker` element is unique to this pane and always present in its content area.
 function gccDumpPane() {
-    return findPane('GCC Tree');
+    return cy.get('.gccdump-pass-picker', {timeout: 10000}).closest('.lm_content');
 }
 
 beforeEach(visitPage);
