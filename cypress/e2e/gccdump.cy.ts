@@ -64,4 +64,35 @@ describe('GCC Tree/RTL dump', () => {
         cy.get('.ts-dropdown .option:visible', {timeout: 10000}).first().click();
         monacoEditorTextShouldContain(gccDumpPane().find('.monaco-editor'), 'square');
     });
+
+    it('should switch passes without triggering a recompile', () => {
+        // All pass dumps are shipped on the initial compile, so selecting a different pass is a
+        // client-side lookup. Count compile requests and assert switching passes adds none.
+        let compileCount = 0;
+        cy.intercept('POST', '**/api/compiler/**/compile', req => {
+            compileCount++;
+            req.continue();
+        }).as('compile');
+
+        setupAndWaitForCompilation();
+        openGccDump();
+
+        // Wait for the picker to populate from the initial compile, then pick a first pass.
+        cy.get('.gccdump-pass-picker + .ts-wrapper .ts-control', {timeout: 10000}).should('be.visible').click();
+        cy.get('.ts-dropdown .option:visible', {timeout: 10000}).should('have.length.greaterThan', 1);
+        cy.get('.ts-dropdown .option:visible').first().click();
+        monacoEditorTextShouldContain(gccDumpPane().find('.monaco-editor'), 'square');
+
+        // Once settled, switch to a different pass and assert no new compile fired.
+        cy.then(() => {
+            const before = compileCount;
+            cy.get('.gccdump-pass-picker + .ts-wrapper .ts-control').click();
+            cy.get('.ts-dropdown .option:visible').eq(1).click();
+            // Give any (unwanted) recompile a chance to be issued before asserting.
+            cy.wait(1500);
+            cy.then(() => {
+                expect(compileCount, 'compile requests during pass switch').to.equal(before);
+            });
+        });
+    });
 });
