@@ -61,7 +61,10 @@ describe('GCC Tree/RTL dump', () => {
         setupAndWaitForCompilation();
         openGccDump();
         cy.get('.gccdump-pass-picker + .ts-wrapper .ts-control', {timeout: 10000}).should('be.visible').click();
-        cy.get('.ts-dropdown .option:visible', {timeout: 10000}).first().click();
+        cy.get('.ts-dropdown .option:visible', {timeout: 10000}).should('have.length.greaterThan', 0);
+        // Pick a tree pass specifically: the first option is now an IPA summary (cgraph), whereas
+        // this test is about the GIMPLE/tree body, which is what shows the `square` function.
+        cy.contains('.ts-dropdown .option:visible', '(tree)').click();
         monacoEditorTextShouldContain(gccDumpPane().find('.monaco-editor'), 'square');
     });
 
@@ -81,9 +84,9 @@ describe('GCC Tree/RTL dump', () => {
         cy.get('.gccdump-pass-picker + .ts-wrapper .ts-control', {timeout: 10000}).should('be.visible').click();
         cy.get('.ts-dropdown .option:visible', {timeout: 10000}).should('have.length.greaterThan', 1);
         cy.get('.ts-dropdown .option:visible').first().click();
-        monacoEditorTextShouldContain(gccDumpPane().find('.monaco-editor'), 'square');
 
-        // Once settled, switch to a different pass and assert no new compile fired.
+        // Once settled, switch to a different pass and assert no new compile fired. (Content is
+        // covered by the test above; here we only care that switching is a client-side lookup.)
         cy.then(() => {
             const before = compileCount;
             cy.get('.gccdump-pass-picker + .ts-wrapper .ts-control').click();
