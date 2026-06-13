@@ -23,6 +23,7 @@
 // POSSIBILITY OF SUCH DAMAGE.
 
 import type {ParsedAsmResult} from '../../types/asmresult/asmresult.interfaces.js';
+import {DemanglerExecutionOptions} from '../../types/compilation/compilation.interfaces.js';
 import type {UnprocessedExecResult} from '../../types/execution/execution.interfaces.js';
 import {assert, unwrap} from '../assert.js';
 import {BaseCompiler} from '../base-compiler.js';
@@ -40,6 +41,7 @@ export class Win32Demangler extends CppDemangler {
     allDecoratedLabelsWithQuotes: RegExp;
     hasQuotesAroundDecoratedLabels: null | boolean;
     win32RawSymbols?: string[];
+    translations: Record<string, string>;
 
     constructor(demanglerExe: string, compiler: BaseCompiler, demanglerArguments: string[] = []) {
         super(demanglerExe, compiler, demanglerArguments);
@@ -57,6 +59,7 @@ export class Win32Demangler extends CppDemangler {
         // we set this to true if we see it, and false if we don't
         // null means we haven't set it yet.
         this.hasQuotesAroundDecoratedLabels = null;
+        this.translations = {};
     }
 
     protected override collectLabels() {
@@ -75,7 +78,7 @@ export class Win32Demangler extends CppDemangler {
         }
     }
 
-    protected override processOutput(translations: UnprocessedExecResult): ParsedAsmResult {
+    protected override processOutput(translations: UnprocessedExecResult) {
         assert(false, "Win32Demangler.processOutput shouldn't be called");
     }
 
@@ -161,10 +164,12 @@ export class Win32Demangler extends CppDemangler {
         }
 
         await Promise.all(commandLineArray.map(demangleSingleSet));
+        this.translations = translations;
         return translations;
     }
 
-    public override async process(result: ParsedAsmResult) {
+    public override async process(result: ParsedAsmResult, execOptions?: DemanglerExecutionOptions) {
+        const options = execOptions ?? {};
         if (!this.demanglerExe) {
             logger.error("Attempted to demangle, but there's no demangler set");
             return result;
@@ -172,7 +177,24 @@ export class Win32Demangler extends CppDemangler {
 
         this.result = result;
 
-        this.collectLabels();
-        return this.processTranslations(await this.createTranslations());
+        if (options.overrideSymbols) {
+            this.win32RawSymbols = [];
+            for (const sym of options.overrideSymbols) {
+                this.win32RawSymbols.push(sym);
+            }
+        } else {
+            this.collectLabels();
+        }
+
+        await this.createTranslations();
+
+        if (options.skipTranslation) {
+            return result;
+        }
+        return this.processTranslations(this.translations);
+    }
+
+    public override getTranslations(): [string, string][] {
+        return Object.entries(this.translations);
     }
 }

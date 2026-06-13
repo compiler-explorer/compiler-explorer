@@ -196,6 +196,7 @@ export class BaseCompiler {
     protected stubText: string;
     protected compilerWrapper: string | undefined;
     protected asm: IAsmParser;
+    protected llvmIrDemanglerClass: typeof BaseDemangler;
     protected llvmIr: LlvmIrParser;
     protected llvmPassDumpParser: LlvmPassDumpParser;
     protected llvmAst: LlvmAstParser;
@@ -258,16 +259,6 @@ export class BaseCompiler {
             this.compiler.disabledFilters = (this.compiler.disabledFilters as any).split(',');
         }
 
-        this.asm = new AsmParser(this.compilerProps);
-        const irDemangler = new LLVMIRDemangler(this.compiler.demangler, this);
-        this.llvmIr = new LlvmIrParser(this.compilerProps, irDemangler);
-        this.llvmPassDumpParser = new LlvmPassDumpParser();
-        this.llvmAst = new LlvmAstParser(this.compilerProps);
-
-        this.toolchainPath = getToolchainPath(this.compiler.exe, this.compiler.options);
-
-        this.possibleArguments = new CompilerArguments(this.compiler.id);
-        this.possibleTools = _.values(compilerInfo.tools) as ITool[];
         const demanglerExe = this.compiler.demangler;
         if (demanglerExe && this.compiler.demanglerType) {
             this.demanglerClass = getDemanglerTypeByKey(this.compiler.demanglerType);
@@ -276,6 +267,18 @@ export class BaseCompiler {
         if (objdumperExe && this.compiler.objdumperType) {
             this.objdumperClass = getObjdumperTypeByKey(this.compiler.objdumperType);
         }
+
+        this.asm = new AsmParser(this.compilerProps);
+        this.llvmIrDemanglerClass = this.demanglerClass ?? BaseDemangler;
+        const irDemangler = new LLVMIRDemangler(new this.llvmIrDemanglerClass(this.compiler.demangler, this));
+        this.llvmIr = new LlvmIrParser(this.compilerProps, irDemangler);
+        this.llvmPassDumpParser = new LlvmPassDumpParser();
+        this.llvmAst = new LlvmAstParser(this.compilerProps);
+
+        this.toolchainPath = getToolchainPath(this.compiler.exe, this.compiler.options);
+
+        this.possibleArguments = new CompilerArguments(this.compiler.id);
+        this.possibleTools = _.values(compilerInfo.tools) as ITool[];
 
         this.outputFilebase = 'output';
 
@@ -1591,7 +1594,7 @@ export class BaseCompiler {
             if (optPipelineOptions.demangle) {
                 // apply demangles after parsing, would otherwise greatly complicate the parsing of the passes
                 // new this.demanglerClass(this.compiler.demangler, this);
-                const demangler = new LLVMIRDemangler(this.compiler.demangler, this);
+                const demangler = new LLVMIRDemangler(new this.llvmIrDemanglerClass(this.compiler.demangler, this));
                 // collect labels off the raw input
                 if (this.compiler.debugPatched) {
                     demangler.collect({asm: output.stdout});
