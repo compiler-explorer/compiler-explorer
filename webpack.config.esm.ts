@@ -85,6 +85,10 @@ const plugins: Webpack.WebpackPluginInstance[] = [
     }),
     new MiniCssExtractPlugin({
         filename: isDev ? '[name].css' : `[name]${webpackJsHack}[contenthash].css`,
+        // monaco-editor imports hundreds of tiny CSS files in orders that differ between chunks,
+        // which MiniCssExtractPlugin can't reconcile into one global order. The ordering is
+        // irrelevant (monaco's CSS is self-scoped), so silence the spurious "Conflicting order" warnings.
+        ignoreOrder: true,
     }),
     new WebpackManifestPlugin({
         fileName: path.resolve(manifestPath, 'manifest.json'),
