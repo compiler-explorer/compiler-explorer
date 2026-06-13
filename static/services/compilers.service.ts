@@ -25,11 +25,13 @@
 import {CompilerInfo} from '../../types/compiler.interfaces.js';
 import {optionsHash} from '../options.js';
 import {SentryCapture} from '../sentry.js';
+import {fetchApiJson} from './fetch-utils.js';
 
 export class CompilersService {
     private readonly loadPromises = new Map<string, Promise<Record<string, CompilerInfo>>>();
 
     async getCompilersForLang(langId: string): Promise<Record<string, CompilerInfo>> {
+        if (!langId) return {};
         let promise = this.loadPromises.get(langId);
         if (!promise) {
             promise = this.fetchCompilersForLang(langId);
@@ -104,11 +106,9 @@ export class CompilersService {
     ];
 
     private async fetchCompilersForLang(langId: string): Promise<Record<string, CompilerInfo>> {
-        const response = await fetch(
+        const compilers = await fetchApiJson<CompilerInfo[]>(
             `${window.httpRoot}api/compilers/${encodeURIComponent(langId)}?fields=${CompilersService.compilerFields.join(',')}&hash=${optionsHash}`,
-            {headers: {Accept: 'application/json'}},
         );
-        const compilers: CompilerInfo[] = await response.json();
         const result: Record<string, CompilerInfo> = {};
         for (const compiler of compilers) {
             result[compiler.id] = compiler;
