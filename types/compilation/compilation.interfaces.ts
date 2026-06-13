@@ -101,9 +101,9 @@ export type GccDumpOutput = {
     currentPassOutput: string;
     syntaxHighlight: boolean;
     // Maps a pass's filename_suffix to its (header-trimmed) dump content. Populated when all
-    // passes are dumped and read at once (removeEmptyGccDump compilers); absent on the libgccjit
-    // path, where the frontend recompiles per pass selection.
-    passDumps?: Record<string, string>;
+    // passes are dumped and read at once (removeEmptyGccDump compilers). For libgccjit-based
+    // compilers this will be an empty object (they still recompile per pass selection).
+    passDumps: Record<string, string>;
 };
 
 export type CompilationRequestOptions = {
