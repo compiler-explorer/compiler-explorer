@@ -870,6 +870,20 @@ const definitions: Record<LanguageKey, LanguageDefinition> = {
         previewFilter: null,
         monacoDisassembly: null,
     },
+    sfpi: {
+        name: 'SFPI C++',
+        monaco: 'cppp',
+        extensions: ['.cpp', '.h', '.hpp'],
+        alias: ['sfpi', 'tt-sfpi'],
+        logoFilename: 'cpp.svg',
+        logoFilenameDark: null,
+        formatter: 'clangformat',
+        previewFilter: /^\s*#include/,
+        monacoDisassembly: null,
+        tooltip: 'Tenstorrent SFPI C++ for custom SFPU/Tensix kernel code',
+        digitSeparator: "'",
+    },
+
     snowball: {
         name: 'Snowball',
         monaco: 'swift',

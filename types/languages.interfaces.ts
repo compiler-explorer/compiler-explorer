@@ -99,6 +99,7 @@ export type LanguageKey =
     | 'rust'
     | 'sail'
     | 'scala'
+    | 'sfpi'
     | 'slang'
     | 'solidity'
     | 'spice'

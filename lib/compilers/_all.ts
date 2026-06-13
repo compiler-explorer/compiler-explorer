@@ -153,6 +153,7 @@ export {RustcCgGCCCompiler} from './rustc-cg-gcc.js';
 export {SailCompiler} from './sail.js';
 export {ScalaCompiler} from './scala.js';
 export {SdccCompiler} from './sdcc.js';
+export {SfpiCompiler} from './sfpi.js';
 export {ShaderExplorerCompiler} from './shader-explorer.js';
 export {SlangCompiler} from './slang.js';
 export {SnowballCompiler} from './snowball.js';
