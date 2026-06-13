@@ -1,0 +1,9 @@
+// Welcome to Doolang on Compiler Explorer!
+
+fn main() {
+    print("Hello, Compiler Explorer!");
+    
+    let x = 10;
+    let y = 20;
+    print("Result: ${x + y}");
+}
