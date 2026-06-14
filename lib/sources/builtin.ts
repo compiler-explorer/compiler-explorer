@@ -32,11 +32,9 @@ import * as props from '../properties.js';
 const NAME_SUBSTUTION_PATTERN = /_/g;
 
 function readExamples(examplesPath: string): SourceEntry[] {
-    // Recurse through the language folders
     return fs.readdirSync(examplesPath).flatMap(folder => {
         const folderPath = path.join(examplesPath, folder);
         return fs.readdirSync(folderPath).map(file => {
-            // Recurse through the source files
             const filePath = path.join(folderPath, file);
             const fileName = path.parse(filePath).name;
             return {

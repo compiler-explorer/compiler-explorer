@@ -68,6 +68,13 @@ describe('BuiltinSource', () => {
         await expect(builtin.load('customlang', 'nope')).resolves.toEqual({file: 'No path found'});
     });
 
+    it('returns "Could not read file" when a listed example becomes unreadable', async () => {
+        const examplesPath = await makeExamplesDir('int x;\n');
+        const builtin = new BuiltinSource(examplesPath);
+        await fs.rm(examplesPath, {recursive: true, force: true});
+        await expect(builtin.load('customlang', 'configured_example')).resolves.toEqual({file: 'Could not read file'});
+    });
+
     it('fails fast when constructed with a non-existent sourcePath', async () => {
         const missingPath = path.join(await makeTempDir(), 'does-not-exist');
         expect(() => new BuiltinSource(missingPath)).toThrow();
