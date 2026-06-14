@@ -30,15 +30,11 @@ import type {Source, SourceApiEntry, SourceEntry} from '../../types/source.inter
 import * as props from '../properties.js';
 
 const NAME_SUBSTUTION_PATTERN = /_/g;
-let examplesPath: string | undefined;
-let allExamples: SourceEntry[] | undefined;
 
-function readExamples(configuredExamplesPath: string): SourceEntry[] {
-    // Recurse through the language folders
-    return fs.readdirSync(configuredExamplesPath).flatMap(folder => {
-        const folderPath = path.join(configuredExamplesPath, folder);
+function readExamples(examplesPath: string): SourceEntry[] {
+    return fs.readdirSync(examplesPath).flatMap(folder => {
+        const folderPath = path.join(examplesPath, folder);
         return fs.readdirSync(folderPath).map(file => {
-            // Recurse through the source files
             const filePath = path.join(folderPath, file);
             const fileName = path.parse(filePath).name;
             return {
@@ -51,20 +47,17 @@ function readExamples(configuredExamplesPath: string): SourceEntry[] {
     });
 }
 
-function getExamples(): SourceEntry[] {
-    const configuredExamplesPath = props.get<string>('builtin', 'sourcePath', './examples/');
-    if (allExamples === undefined || examplesPath !== configuredExamplesPath) {
-        examplesPath = configuredExamplesPath;
-        allExamples = readExamples(configuredExamplesPath);
-    }
-    return allExamples;
-}
+export class BuiltinSource implements Source {
+    readonly name = 'Examples';
+    readonly urlpart = 'builtin';
+    private readonly examples: SourceEntry[];
 
-export const builtin: Source = {
-    name: 'Examples',
-    urlpart: 'builtin',
+    constructor(examplesPath: string) {
+        this.examples = readExamples(examplesPath);
+    }
+
     async load(language: string, filename: string): Promise<{file: string}> {
-        const example = getExamples().find(e => e.lang === language && e.file === filename);
+        const example = this.examples.find(e => e.lang === language && e.file === filename);
         if (example === undefined) {
             return {file: 'No path found'};
         }
@@ -73,12 +66,28 @@ export const builtin: Source = {
         } catch {
             return {file: 'Could not read file'};
         }
-    },
+    }
+
     async list(): Promise<SourceApiEntry[]> {
-        return getExamples().map(e => ({
+        return this.examples.map(e => ({
             lang: e.lang,
             name: e.name,
             file: e.file,
         }));
-    },
-};
+    }
+}
+
+export function getExamplesRoot(): string {
+    return props.get<string>('builtin', 'sourcePath', './examples/');
+}
+
+export function createBuiltinSource(): BuiltinSource {
+    const examplesRoot = getExamplesRoot();
+    try {
+        return new BuiltinSource(examplesRoot);
+    } catch (e) {
+        throw new Error(`Unable to read builtin examples from "${examplesRoot}" (set via builtin.sourcePath)`, {
+            cause: e,
+        });
+    }
+}
