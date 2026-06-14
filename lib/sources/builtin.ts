@@ -79,6 +79,10 @@ export class BuiltinSource implements Source {
     }
 }
 
+export function getExamplesRoot(): string {
+    return props.get<string>('builtin', 'sourcePath', './examples/');
+}
+
 export function createBuiltinSource(): BuiltinSource {
-    return new BuiltinSource(props.get<string>('builtin', 'sourcePath', './examples/'));
+    return new BuiltinSource(getExamplesRoot());
 }
