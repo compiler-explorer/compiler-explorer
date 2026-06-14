@@ -96,4 +96,15 @@ describe('createBuiltinSource', () => {
             {lang: 'customlang', name: 'configured example', file: 'configured_example'},
         ]);
     });
+
+    it('throws with builtin.sourcePath context when the configured dir is missing', async () => {
+        const missingPath = path.join(await makeTempDir(), 'does-not-exist');
+        const configPath = path.join(await makeTempDir(), 'config');
+        await fs.mkdir(configPath, {recursive: true});
+        await fs.writeFile(path.join(configPath, 'builtin.test.properties'), `sourcePath=${missingPath}\n`);
+
+        props.initialize(configPath, ['test']);
+
+        expect(() => createBuiltinSource()).toThrow(/builtin\.sourcePath/);
+    });
 });

@@ -82,5 +82,12 @@ export function getExamplesRoot(): string {
 }
 
 export function createBuiltinSource(): BuiltinSource {
-    return new BuiltinSource(getExamplesRoot());
+    const examplesRoot = getExamplesRoot();
+    try {
+        return new BuiltinSource(examplesRoot);
+    } catch (e) {
+        throw new Error(`Unable to read builtin examples from "${examplesRoot}" (set via builtin.sourcePath)`, {
+            cause: e,
+        });
+    }
 }
