@@ -49,10 +49,6 @@ export function visitPage() {
 }
 
 /**
- * Find a GoldenLayout pane by matching text in its visible tab title.
- * Returns the `.lm_content` element within the matching stack.
- */
-/**
  * Wait for the in-flight compilation (any source, successful or not) to settle. A compile
  * result re-renders the add-pane dropdown contents (updateButtons() runs just before the
  * status icon reaches a terminal state), which can detach a dropdown button mid-click: call
@@ -64,6 +60,10 @@ export function waitForCompilationToSettle() {
     );
 }
 
+/**
+ * Find a GoldenLayout pane by matching text in its visible tab title.
+ * Returns the `.lm_content` element within the matching stack.
+ */
 export function findPane(titleMatch: string) {
     return cy.contains('span.lm_title:visible', titleMatch).closest('.lm_item.lm_stack').find('.lm_content');
 }
