@@ -105,3 +105,13 @@ describe('Creates and tracks temporary directories', () => {
         }
     });
 });
+
+describe('cleanupSync', () => {
+    it('synchronously removes pending directories', async () => {
+        const dir = await temp.mkdir('ce-temp-test');
+        expect(await utils.dirExists(dir)).toBe(true);
+        temp.cleanupSync();
+        expect(await utils.dirExists(dir)).toBe(false);
+        expect(temp.getStats().numActive).toEqual(0);
+    });
+});
