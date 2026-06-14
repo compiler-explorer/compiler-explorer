@@ -40,6 +40,7 @@ export class ClangCLCompiler extends Win32Compiler {
     constructor(info: PreliminaryCompilerInfo, env: CompilationEnvironment) {
         super(info, env);
 
+        this.supportsMapFile = false;
         this.compiler.supportsIrView = true;
         this.compiler.irArg = ['-Xclang', '-emit-llvm', '-c'];
         this.compiler.minIrArgs = ['-emit-llvm'];
