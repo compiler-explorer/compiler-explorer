@@ -26,7 +26,7 @@ import fs from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
 
-import {afterEach, beforeEach, describe, expect, it} from 'vitest';
+import {afterEach, describe, expect, it} from 'vitest';
 
 import * as props from '../../lib/properties.js';
 import {BuiltinSource, createBuiltinSource} from '../../lib/sources/builtin.js';
@@ -47,11 +47,12 @@ async function makeExamplesDir(source: string) {
     return examplesPath;
 }
 
-describe('BuiltinSource', () => {
-    afterEach(async () => {
-        await Promise.all(tempDirs.splice(0).map(tempDir => fs.rm(tempDir, {recursive: true, force: true})));
-    });
+afterEach(async () => {
+    props.reset();
+    await Promise.all(tempDirs.splice(0).map(tempDir => fs.rm(tempDir, {recursive: true, force: true})));
+});
 
+describe('BuiltinSource', () => {
     it('lists and loads examples from the given directory', async () => {
         const source = 'int configured_example() { return 42; }\n';
         const builtin = new BuiltinSource(await makeExamplesDir(source));
@@ -67,20 +68,13 @@ describe('BuiltinSource', () => {
         await expect(builtin.load('customlang', 'nope')).resolves.toEqual({file: 'No path found'});
     });
 
-    it('fails fast when constructed with a non-existent sourcePath', () => {
-        expect(() => new BuiltinSource(path.join(os.tmpdir(), 'ce-does-not-exist-12345'))).toThrow();
+    it('fails fast when constructed with a non-existent sourcePath', async () => {
+        const missingPath = path.join(await makeTempDir(), 'does-not-exist');
+        expect(() => new BuiltinSource(missingPath)).toThrow();
     });
 });
 
 describe('createBuiltinSource', () => {
-    afterEach(() => {
-        props.reset();
-    });
-
-    beforeEach(() => {
-        props.reset();
-    });
-
     it('reads sourcePath from properties at construction time', async () => {
         const source = 'int configured_example() { return 42; }\n';
         const examplesPath = await makeExamplesDir(source);
