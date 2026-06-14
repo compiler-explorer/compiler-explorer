@@ -26,7 +26,10 @@ import fs from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
 
-import {afterEach, describe, expect, it, vi} from 'vitest';
+import {afterEach, beforeEach, describe, expect, it} from 'vitest';
+
+import * as props from '../../lib/properties.js';
+import {BuiltinSource, createBuiltinSource} from '../../lib/sources/builtin.js';
 
 const tempDirs: string[] = [];
 
@@ -36,40 +39,60 @@ async function makeTempDir() {
     return tempDir;
 }
 
-describe('builtin source provider', () => {
-    afterEach(async () => {
-        const props = await import('../../lib/properties.js');
-        props.reset();
-        vi.resetModules();
+async function makeExamplesDir(source: string) {
+    const examplesPath = path.join(await makeTempDir(), 'custom-examples');
+    const languagePath = path.join(examplesPath, 'customlang');
+    await fs.mkdir(languagePath, {recursive: true});
+    await fs.writeFile(path.join(languagePath, 'configured_example.cpp'), source);
+    return examplesPath;
+}
 
+describe('BuiltinSource', () => {
+    afterEach(async () => {
         await Promise.all(tempDirs.splice(0).map(tempDir => fs.rm(tempDir, {recursive: true, force: true})));
     });
 
-    it('uses sourcePath configured after the module has been imported', async () => {
-        const tempDir = await makeTempDir();
-        const examplesPath = path.join(tempDir, 'custom-examples');
-        const languagePath = path.join(examplesPath, 'customlang');
-        const configPath = path.join(tempDir, 'config');
+    it('lists and loads examples from the given directory', async () => {
         const source = 'int configured_example() { return 42; }\n';
+        const builtin = new BuiltinSource(await makeExamplesDir(source));
 
-        await fs.mkdir(languagePath, {recursive: true});
+        await expect(builtin.list()).resolves.toEqual([
+            {lang: 'customlang', name: 'configured example', file: 'configured_example'},
+        ]);
+        await expect(builtin.load('customlang', 'configured_example')).resolves.toEqual({file: source});
+    });
+
+    it('returns "No path found" for an unknown example', async () => {
+        const builtin = new BuiltinSource(await makeExamplesDir('int x;\n'));
+        await expect(builtin.load('customlang', 'nope')).resolves.toEqual({file: 'No path found'});
+    });
+
+    it('fails fast when constructed with a non-existent sourcePath', () => {
+        expect(() => new BuiltinSource(path.join(os.tmpdir(), 'ce-does-not-exist-12345'))).toThrow();
+    });
+});
+
+describe('createBuiltinSource', () => {
+    afterEach(() => {
+        props.reset();
+    });
+
+    beforeEach(() => {
+        props.reset();
+    });
+
+    it('reads sourcePath from properties at construction time', async () => {
+        const source = 'int configured_example() { return 42; }\n';
+        const examplesPath = await makeExamplesDir(source);
+        const configPath = path.join(await makeTempDir(), 'config');
         await fs.mkdir(configPath, {recursive: true});
-        await fs.writeFile(path.join(languagePath, 'configured_example.cpp'), source);
         await fs.writeFile(path.join(configPath, 'builtin.test.properties'), `sourcePath=${examplesPath}\n`);
-
-        vi.resetModules();
-        const {builtin} = await import('../../lib/sources/builtin.js');
-        const props = await import('../../lib/properties.js');
 
         props.initialize(configPath, ['test']);
 
+        const builtin = createBuiltinSource();
         await expect(builtin.list()).resolves.toEqual([
-            {
-                lang: 'customlang',
-                name: 'configured example',
-                file: 'configured_example',
-            },
+            {lang: 'customlang', name: 'configured example', file: 'configured_example'},
         ]);
-        await expect(builtin.load('customlang', 'configured_example')).resolves.toEqual({file: source});
     });
 });
