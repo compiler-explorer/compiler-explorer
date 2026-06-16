@@ -732,3 +732,167 @@ export function validateCrossFileCompilerIds(
 
     return {duplicateCompilerIds};
 }
+
+export interface MissingInstructionSet {
+    lang: string;
+    compilerId: string;
+    groupChain: string[];
+}
+
+// Per-compiler context exposing the effective property lookup for one compiler
+// — the same compiler.X → group.G(s) → top-level inheritance chain that
+// compiler-finder uses. Yielded by `enumerateCompilers`; lets callers ask
+// for any property without re-walking the chain.
+export interface CompilerPropertyContext {
+    lang: string;
+    compilerId: string;
+    groupChain: string[];
+    resolve(property: string): string | undefined;
+}
+
+// Expand a compilers= list, recursing into &group references and recording the
+// chain of groups that led to each compiler (innermost first).
+function expandCompilersList(
+    lookup: (key: string) => string | undefined,
+    listKey: string,
+    groupChain: string[] = [],
+): Array<{compilerId: string; groupChain: string[]}> {
+    const raw = lookup(listKey);
+    if (raw === undefined) return [];
+    const out: Array<{compilerId: string; groupChain: string[]}> = [];
+    for (const entry of parseCompilersList(raw)) {
+        if (entry.startsWith('&')) {
+            const groupName = entry.slice(1);
+            out.push(...expandCompilersList(lookup, `group.${groupName}.compilers`, [groupName, ...groupChain]));
+        } else if (!entry.includes('@')) {
+            out.push({compilerId: entry, groupChain});
+        }
+    }
+    return out;
+}
+
+// Walk all language config files and yield one context per compiler, with a
+// `resolve` that follows the standard inheritance chain. Used by both the
+// instructionSet-presence check and the instructionSet-vs-`-target`
+// consistency check.
+//
+// Each `<lang>.<env>.properties` (env != "defaults") is its own *deployment*:
+// godbolt.org uses `amazon`, the GPU instances use `gpu`, the Windows
+// instances use `amazonwin`, etc. They have separate `compilers=` lists and
+// don't see each other. We validate each deployment as `<lang>.defaults +
+// <lang>.<env>` independently, so a compiler reachable only from `c++.gpu`
+// is checked against the gpu+defaults overlay (not the amazon overlay).
+//
+// `disabledIds` collected from `# Disabled:` comments are honoured per-file:
+// a compiler explicitly disabled in any file in the deployment is skipped.
+export function* enumerateCompilers(
+    files: Array<{filename: string; parsed: ParsedPropertiesFile}>,
+): Generator<CompilerPropertyContext> {
+    type Layer = {env: string; props: Map<string, string>; disabled: Set<string>};
+    const langFiles = new Map<string, {defaults?: Layer; envs: Layer[]}>();
+    for (const {filename, parsed} of files) {
+        const m = filename.match(/^([^.]+(?:\.[^.]+)*?)\.([^.]+)\.properties$/);
+        if (!m) continue;
+        const [, lang, env] = m;
+        if (['execution', 'compiler-explorer', 'aws', 'asm-docs', 'builtin'].includes(lang)) continue;
+        const props = new Map<string, string>();
+        for (const p of parsed.properties) props.set(p.key, p.value);
+        const layer: Layer = {env, props, disabled: parsed.disabledIds};
+        const slot = langFiles.get(lang) ?? {envs: []};
+        if (env === 'defaults') slot.defaults = layer;
+        else slot.envs.push(layer);
+        langFiles.set(lang, slot);
+    }
+
+    for (const [lang, {defaults, envs}] of langFiles) {
+        // For langs with no env files (defaults-only), validate just defaults.
+        const overlays = envs.length > 0 ? envs : defaults ? [defaults] : [];
+        for (const env of overlays) {
+            const stack: Layer[] = defaults && env !== defaults ? [defaults, env] : [env];
+            const lookup = (key: string): string | undefined => {
+                for (let i = stack.length - 1; i >= 0; i--) {
+                    if (stack[i].props.has(key)) return stack[i].props.get(key);
+                }
+                return undefined;
+            };
+            const isDisabled = (id: string) => stack.some(l => l.disabled.has(id));
+            for (const {compilerId, groupChain} of expandCompilersList(lookup, 'compilers')) {
+                if (isDisabled(compilerId) || groupChain.some(isDisabled)) continue;
+                const resolve = (property: string): string | undefined => {
+                    const direct = lookup(`compiler.${compilerId}.${property}`);
+                    if (direct !== undefined) return direct;
+                    for (const g of groupChain) {
+                        const v = lookup(`group.${g}.${property}`);
+                        if (v !== undefined) return v;
+                    }
+                    return lookup(property);
+                };
+                yield {lang, compilerId, groupChain, resolve};
+            }
+        }
+    }
+}
+
+// Reports compilers whose effective `instructionSet` is unset. Backstops the
+// removal of the runtime inference heuristic (#8690). Each (lang, compilerId)
+// pair is reported once even if reachable from multiple deployments — the
+// `groupChain` of the first encounter is kept for the error message.
+export function findCompilersWithoutInstructionSet(
+    files: Array<{filename: string; parsed: ParsedPropertiesFile}>,
+): MissingInstructionSet[] {
+    const missing: MissingInstructionSet[] = [];
+    const seen = new Set<string>();
+    for (const c of enumerateCompilers(files)) {
+        const resolved = c.resolve('instructionSet');
+        if (resolved === undefined || resolved === '') {
+            const key = `${c.lang}\0${c.compilerId}`;
+            if (seen.has(key)) continue;
+            seen.add(key);
+            missing.push({lang: c.lang, compilerId: c.compilerId, groupChain: c.groupChain});
+        }
+    }
+    return missing;
+}
+
+// Extract target/arch override values from an options string. Recognises:
+//   `-target X` / `--target X` / `--target=X`         (clang/gcc)
+//   `-march=X`                                        (gcc/clang)
+//   `--targetarch X` / `--targetarch=X`               (.NET ilc/crossgen2)
+// Returns at most one entry per flag occurrence; consumers iterate to handle
+// the (rare) case of multiple flags.
+export function extractTargetTokens(options: string): string[] {
+    const out: string[] = [];
+    // A handful of property files quote their options strings (e.g.
+    // python.amazon.properties' micropython group). CE doesn't shell-parse
+    // properties values, but for the purpose of *finding* recognised flags
+    // we strip surrounding single/double quotes from each whitespace token.
+    //
+    // Limitations (intentional — keeps the parser simple, no current config
+    // hits these and a real shell tokeniser is overkill):
+    //  - Mismatched/unbalanced quotes (`"-march=foo` or `-march=foo"`) are
+    //    NOT stripped; the flag is then invisible to the validator.
+    //  - Whitespace inside quoted strings (`options="-O2 -march=foo"`) splits
+    //    the token across the space; quote-stripping won't reassemble it.
+    //  - The `length >= 2` guard avoids a bare `"` token shrinking to `''`.
+    const stripQuotes = (s: string) =>
+        s.length >= 2 && ((s.startsWith('"') && s.endsWith('"')) || (s.startsWith("'") && s.endsWith("'")))
+            ? s.slice(1, -1)
+            : s;
+    const tokens = options
+        .split(/\s+/)
+        .filter(t => t !== '')
+        .map(stripQuotes);
+    for (let i = 0; i < tokens.length; i++) {
+        const t = tokens[i];
+        if (t === '-target' || t === '--target' || t === '--targetarch') {
+            if (i + 1 < tokens.length) out.push(tokens[++i]);
+        } else if (t.startsWith('--target=')) {
+            out.push(t.slice('--target='.length));
+        } else if (t.startsWith('--targetarch=')) {
+            out.push(t.slice('--targetarch='.length));
+        } else if (t.startsWith('-march=')) {
+            out.push(t.slice('-march='.length));
+        }
+    }
+    return out;
+}
