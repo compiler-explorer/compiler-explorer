@@ -1,6 +1,6 @@
-# CLAUDE.md
+# AGENTS.md
 
-This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
+This file provides guidance to AI Agents when working with code in this repository.
 
 ## Build & Test Commands
 - Build: `npm run webpack`, `npm start`
@@ -16,6 +16,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 ## Important Workflow Requirements
 - ⚠️ NEVER BYPASS PRE-COMMIT HOOKS! NEVER use `git commit -n` or `--no-verify` ⚠️
 - ⚠️ NEVER amend commits (`git commit --amend`) or force push (`git push --force` / `--force-with-lease`) ⚠️
+- ⚠️ NEVER include shared links (e.g. `/z/`, `/e#`, `/clientstate/`, or full godbolt.org short URLs) in commit messages ⚠️
 - ALWAYS run `make pre-commit` or at minimum `npm run ts-check` and `npm run lint` before committing
 - The full process must always be:
   1. Make changes
@@ -50,6 +51,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
   In this case, the function name already clearly states what it does.
 - Comments should provide additional context or explain "why" something is done, not just restate "what" is being done.
 - Only add function header comments when they provide meaningful information beyond what the function name and signature convey.
+- Don't add comments narrating a change's history, the bug it fixes, or warning against code you deliberately *didn't* write (e.g. options intentionally not passed). That rationale belongs in the commit/PR/issue; regression protection belongs in a test.
 - Use British English spellings for things like "initialise" and "colour", but only in new code. It's a preference not a hard requirement
 - Use modern Typescript features like optional chaining when updating existing code or adding new code
 
@@ -59,6 +61,11 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
   - Shared types should be imported from `types/` directory instead
   - This separation is enforced by pre-commit hooks (`npm run check-frontend-imports`)
   - Violations will cause build failures and prevent commits
+
+## Security Review Calibration
+- Internal, CE-controlled endpoints (e.g. the conan library server) are not hostile: treat crafted-content hardening there as hygiene. Apply small fixes inline, file larger ones as follow-up issues, and don't block PRs on them.
+- The genuinely hostile input surface is user-submitted source code and compilation output, handled by nsjail sandboxing and the `/nosym/tmp` nosymfollow mount in production.
+- Prioritise robustness failures (promises that never settle, hangs, resource leaks) over crafted-input scenarios: the former have caused real outages (issue #8811).
 
 ## Worker Mode Configuration
 - **Compilation Workers**: New feature for offloading compilation tasks to dedicated worker instances

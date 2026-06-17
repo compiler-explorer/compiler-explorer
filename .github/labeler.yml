@@ -134,6 +134,12 @@
           - etc/config/cuda.*.properties
           - static/modes/cuda-mode.ts
 
+'lang-cutedsl':
+  - changed-files:
+      - any-glob-to-any-file:
+          - 'lib/compilers/cutedsl.ts'
+          - 'etc/config/cutedsl.*.properties'
+
 'lang-d':
   - changed-files:
       - any-glob-to-any-file:
@@ -245,6 +251,13 @@
       - any-glob-to-any-file:
           - 'lib/compilers/kotlin.ts'
           - 'etc/config/kotlin.*.properties'
+
+'lang-lean':
+  - changed-files:
+      - any-glob-to-any-file:
+          - 'lib/compilers/lean.ts'
+          - 'etc/config/lean.*.properties'
+          - 'static/modes/lean-mode.ts'
 
 'lang-llvm':
   - changed-files:

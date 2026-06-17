@@ -30,10 +30,8 @@ import {unwrap} from '../shared/assert.js';
 import {FiledataPair} from '../types/compilation/compilation.interfaces.js';
 import {LanguageKey} from '../types/languages.interfaces.js';
 import {Hub} from './hub.js';
-import * as options from './options.js';
+import {languagesService} from './services/languages.service.js';
 import {Alert} from './widgets/alert.js';
-
-const languages = options.options.languages;
 
 export interface MultifileFile {
     fileId: number;
@@ -94,7 +92,7 @@ export class MultifileService {
             return true;
         }
 
-        return _.any(languages, lang => {
+        return _.any(languagesService.getLanguagesOrFail(), lang => {
             return lang.extensions.includes(filenameExt);
         });
     }
@@ -111,7 +109,7 @@ export class MultifileService {
     private getLanguageIdFromFilename(filename: string): LanguageKey {
         const filenameExt = path.extname(filename);
 
-        const possibleLang = _.filter(languages, lang => {
+        const possibleLang = _.filter(languagesService.getLanguagesOrFail(), lang => {
             return lang.extensions.includes(filenameExt);
         });
 
@@ -445,8 +443,10 @@ export class MultifileService {
     }
 
     private static getDefaultMainSourceFilename(langId) {
-        const lang = languages[langId];
-        const ext0 = lang.extensions[0];
+        const languages = languagesService.getLanguagesOrFail();
+        // Language may be missing if the link was shared from an instance with
+        // a language no longer configured here. Fall back to a c++-style name.
+        const ext0 = languages[langId]?.extensions[0] ?? '.cpp';
         return 'example' + ext0;
     }
 

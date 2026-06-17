@@ -152,7 +152,7 @@ export class Ir extends MonacoPane<monaco.editor.IStandaloneCodeEditor, IrState>
         const pos = ed.getPosition();
         if (!pos || !ed.getModel()) return;
         const word = ed.getModel()?.getWordAtPosition(pos);
-        if (!word || !word.word) return;
+        if (!word?.word) return;
         const opcode = word.word.toUpperCase();
 
         function newGitHubIssueUrl(): string {

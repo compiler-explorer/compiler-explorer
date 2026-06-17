@@ -26,6 +26,6 @@ import {makeKeyedTypeGetter} from '../keyed-type.js';
 import * as all from './_all.js';
 
 export * from './_all.js';
-export {StorageBase} from './base.js';
+export {encodeBuffer, getSafeHash, isCleanText, StorageBase} from './base.js';
 
 export const getStorageTypeByKey = makeKeyedTypeGetter('storage', all);

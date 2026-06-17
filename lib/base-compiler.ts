@@ -196,6 +196,7 @@ export class BaseCompiler {
     protected stubText: string;
     protected compilerWrapper: string | undefined;
     protected asm: IAsmParser;
+    protected llvmIrDemanglerClass: typeof BaseDemangler;
     protected llvmIr: LlvmIrParser;
     protected llvmPassDumpParser: LlvmPassDumpParser;
     protected llvmAst: LlvmAstParser;
@@ -258,16 +259,6 @@ export class BaseCompiler {
             this.compiler.disabledFilters = (this.compiler.disabledFilters as any).split(',');
         }
 
-        this.asm = new AsmParser(this.compilerProps);
-        const irDemangler = new LLVMIRDemangler(this.compiler.demangler, this);
-        this.llvmIr = new LlvmIrParser(this.compilerProps, irDemangler);
-        this.llvmPassDumpParser = new LlvmPassDumpParser();
-        this.llvmAst = new LlvmAstParser(this.compilerProps);
-
-        this.toolchainPath = getToolchainPath(this.compiler.exe, this.compiler.options);
-
-        this.possibleArguments = new CompilerArguments(this.compiler.id);
-        this.possibleTools = _.values(compilerInfo.tools) as ITool[];
         const demanglerExe = this.compiler.demangler;
         if (demanglerExe && this.compiler.demanglerType) {
             this.demanglerClass = getDemanglerTypeByKey(this.compiler.demanglerType);
@@ -276,6 +267,18 @@ export class BaseCompiler {
         if (objdumperExe && this.compiler.objdumperType) {
             this.objdumperClass = getObjdumperTypeByKey(this.compiler.objdumperType);
         }
+
+        this.asm = new AsmParser(this.compilerProps);
+        this.llvmIrDemanglerClass = this.demanglerClass ?? BaseDemangler;
+        const irDemangler = new LLVMIRDemangler(new this.llvmIrDemanglerClass(this.compiler.demangler, this));
+        this.llvmIr = new LlvmIrParser(this.compilerProps, irDemangler);
+        this.llvmPassDumpParser = new LlvmPassDumpParser();
+        this.llvmAst = new LlvmAstParser(this.compilerProps);
+
+        this.toolchainPath = getToolchainPath(this.compiler.exe, this.compiler.options);
+
+        this.possibleArguments = new CompilerArguments(this.compiler.id);
+        this.possibleTools = _.values(compilerInfo.tools) as ITool[];
 
         this.outputFilebase = 'output';
 
@@ -839,11 +842,11 @@ export class BaseCompiler {
         return options;
     }
 
-    findLibVersion(selectedLib: SelectedLibraryVersion): false | VersionInfo {
-        if (!this.supportedLibraries) return false;
+    findLibVersion(selectedLib: SelectedLibraryVersion): null | VersionInfo {
+        if (!this.supportedLibraries) return null;
 
         const foundLib = _.find(this.supportedLibraries, (o, libId) => libId === selectedLib.id);
-        if (!foundLib) return false;
+        if (!foundLib) return null;
 
         const result: VersionInfo | undefined = _.find(
             foundLib.versions,
@@ -853,7 +856,7 @@ export class BaseCompiler {
             },
         );
 
-        if (!result) return false;
+        if (!result) return null;
 
         const copiedResult = structuredClone(result);
         copiedResult.name = foundLib.name;
@@ -1591,7 +1594,7 @@ export class BaseCompiler {
             if (optPipelineOptions.demangle) {
                 // apply demangles after parsing, would otherwise greatly complicate the parsing of the passes
                 // new this.demanglerClass(this.compiler.demangler, this);
-                const demangler = new LLVMIRDemangler(this.compiler.demangler, this);
+                const demangler = new LLVMIRDemangler(new this.llvmIrDemanglerClass(this.compiler.demangler, this));
                 // collect labels off the raw input
                 if (this.compiler.debugPatched) {
                     demangler.collect({asm: output.stdout});
@@ -1653,6 +1656,10 @@ export class BaseCompiler {
 
     getHaskellCmmOutputFilename(inputFilename: string) {
         return utils.changeExtension(inputFilename, '.dump-cmm');
+    }
+
+    getLeanCOutputFilename(outputFilename: string) {
+        return utils.changeExtension(outputFilename, '.c');
     }
 
     getYulOutputFilename(defaultOutputFilename: string) {
@@ -1733,6 +1740,25 @@ export class BaseCompiler {
                 .map(line => ({
                     text: line,
                 }));
+        }
+        return [{text: 'Internal error; unable to open output path'}];
+    }
+
+    async processLeanCOutput(
+        outputFilename: string,
+        output: CompilationResult,
+        options?: {['clang-format']: boolean} | null,
+    ): Promise<ResultLine[]> {
+        if (output.code !== 0) {
+            return [{text: 'Failed to run compiler to get Lean C output'}];
+        }
+        const outpath = this.getLeanCOutputFilename(outputFilename);
+        if (await utils.fileExists(outpath)) {
+            let content = await fs.readFile(outpath, 'utf8');
+            if (options?.['clang-format']) {
+                content = await this.applyClangFormat(content);
+            }
+            return content.split('\n').map(line => ({text: line}));
         }
         return [{text: 'Internal error; unable to open output path'}];
     }
@@ -1883,14 +1909,18 @@ export class BaseCompiler {
     fromInternalGccDumpName(internalDumpName: string, selectedPasses: string[]) {
         if (!selectedPasses) selectedPasses = ['ipa', 'tree', 'rtl'];
 
-        const internalNameRe = new RegExp('^\\s*(' + selectedPasses.join('|') + ')-([\\w_-]+).*ON$');
+        // #6744: the pass name (group 2) can contain a single space, for 'rtl pre'
+        const internalNameRe = new RegExp('^\\s*(' + selectedPasses.join('|') + ')-([\\w_-]+(?: [\\w_-]+)?).*ON$');
         const match = internalDumpName.match(internalNameRe);
-        if (match)
+        if (match) {
+            // for 'rtl pre', file_ext should be just 'pre'
+            const file_ext = match[2].includes(' ') ? match[2].split(' ')[1] : match[2];
             return {
-                filename_suffix: `${match[1][0]}.${match[2]}`,
+                filename_suffix: `${match[1][0]}.${file_ext}`,
                 name: match[2] + ' (' + match[1] + ')',
-                command_prefix: `-fdump-${match[1]}-${match[2]}`,
+                command_prefix: `-fdump-${match[1]}-${file_ext}`,
             };
+        }
         return null;
     }
 
@@ -2503,6 +2533,7 @@ export class BaseCompiler {
         const makeHaskellCore = backendOptions.produceHaskellCore && this.compiler.supportsHaskellCoreView;
         const makeHaskellStg = backendOptions.produceHaskellStg && this.compiler.supportsHaskellStgView;
         const makeHaskellCmm = backendOptions.produceHaskellCmm && this.compiler.supportsHaskellCmmView;
+        const makeLeanC = !!backendOptions.produceLeanC && this.compiler.supportsLeanCView;
         const makeGccDump = backendOptions.produceGccDump?.opened && this.compiler.supportsGccDump;
         const makeYul = backendOptions.produceYul && this.compiler.supportsYulView;
 
@@ -2571,6 +2602,10 @@ export class BaseCompiler {
             ? await this.processHaskellExtraOutput(this.getHaskellCmmOutputFilename(inputFilename), asmResult)
             : undefined;
 
+        const leanCResult = makeLeanC
+            ? await this.processLeanCOutput(outputFilename, asmResult, backendOptions.produceLeanC)
+            : undefined;
+
         const yulResult = makeYul
             ? await this.processYulOutput(outputFilename, asmResult, backendOptions.produceYul)
             : undefined;
@@ -2624,6 +2659,7 @@ export class BaseCompiler {
         asmResult.haskellCoreOutput = haskellCoreResult;
         asmResult.haskellStgOutput = haskellStgResult;
         asmResult.haskellCmmOutput = haskellCmmResult;
+        asmResult.leanCOutput = leanCResult;
 
         asmResult.clojureMacroExpOutput = clojureMacroExpResult;
 
@@ -3106,8 +3142,6 @@ export class BaseCompiler {
     ) {
         const optionsError = this.checkOptions(options);
         if (optionsError) throw optionsError;
-        const sourceError = this.checkSource(source);
-        if (sourceError) throw sourceError;
 
         const libsAndOptions = {libraries, options};
         if (this.tryAutodetectLibraries(libsAndOptions)) {
@@ -3281,7 +3315,7 @@ export class BaseCompiler {
             }
             // TODO rephrase this so we don't need to reassign
             result = filters.demangle ? await this.postProcessAsm(result, filters) : result;
-            if (this.compiler.supportsCfg && backendOptions.produceCfg && backendOptions.produceCfg.asm) {
+            if (this.compiler.supportsCfg && backendOptions.produceCfg?.asm) {
                 const isLlvmIr =
                     this.compiler.instructionSet === 'llvm' ||
                     (options && this.isOutputLikelyLlvmIr(options)) ||
@@ -3453,7 +3487,7 @@ export class BaseCompiler {
             }
 
             const opt = doc.toJS();
-            if (!opt.DebugLoc || !opt.DebugLoc.File || !opt.DebugLoc.File.includes(compileFileName)) continue;
+            if (!opt.DebugLoc?.File?.includes(compileFileName)) continue;
 
             const strOpt = JSON.stringify(opt);
             if (!remarksSet.has(strOpt)) {
@@ -3746,22 +3780,6 @@ but nothing was dumped. Possible causes are:
         return null;
     }
 
-    // This check for arbitrary user-controlled preprocessor inclusions
-    // can be circumvented in more than one way. The goal here is to respond
-    // to simple attempts with a clear diagnostic; the service still needs to
-    // assume that malicious actors can make the compiler open arbitrary files.
-    checkSource(source: string) {
-        const re = /^\s*#\s*i(nclude|mport)(_next)?\s+["<]((\.{1,2}|\/)[^">]*)[">]/;
-        const failed: string[] = [];
-        for (const [index, line] of utils.splitLines(source).entries()) {
-            if (re.test(line)) {
-                failed.push(`<stdin>:${index + 1}:1: no absolute or relative includes please`);
-            }
-        }
-        if (failed.length > 0) return failed.join('\n');
-        return null;
-    }
-
     protected getArgumentParserClass(): typeof BaseParser {
         const exe = this.compiler.exe.toLowerCase();
         const exeFilename = path.basename(exe);
@@ -3817,7 +3835,7 @@ but nothing was dumped. Possible causes are:
     }
 
     async getTargetsAsOverrideValues(): Promise<CompilerOverrideOption[]> {
-        if (!this.buildenvsetup || !this.buildenvsetup.getCompilerArch()) {
+        if (!this.buildenvsetup?.getCompilerArch()) {
             const targets = await this.argParser.getPossibleTargets();
 
             return targets.map(target => {

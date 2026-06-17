@@ -27,6 +27,7 @@ import GoldenLayout from 'golden-layout';
 import {ConfiguredOverrides} from '../types/compilation/compiler-overrides.interfaces.js';
 import {ConfiguredRuntimeTools} from '../types/execution/execution.interfaces.js';
 import {CompilerOutputOptions} from '../types/features/filters.interfaces.js';
+import {ResultLine} from '../types/resultline/resultline.interfaces.js';
 import {CfgState} from './panes/cfg-view.interfaces.js';
 import {ClangirState} from './panes/clangir-view.interfaces.js';
 import {GccDumpViewState} from './panes/gccdump-view.interfaces.js';
@@ -71,6 +72,7 @@ export const RUST_MIR_VIEW_COMPONENT_NAME = 'rustmir' as const;
 export const HASKELL_CORE_VIEW_COMPONENT_NAME = 'haskellCore' as const;
 export const HASKELL_STG_VIEW_COMPONENT_NAME = 'haskellStg' as const;
 export const HASKELL_CMM_VIEW_COMPONENT_NAME = 'haskellCmm' as const;
+export const LEAN_C_VIEW_COMPONENT_NAME = 'leanC' as const;
 export const GNAT_DEBUG_TREE_VIEW_COMPONENT_NAME = 'gnatdebugtree' as const;
 export const GNAT_DEBUG_VIEW_COMPONENT_NAME = 'gnatdebug' as const;
 export const RUST_MACRO_EXP_VIEW_COMPONENT_NAME = 'rustmacroexp' as const;
@@ -94,6 +96,7 @@ export type PopulatedCompilerState = StateWithEditor & {
     compiler: string;
     libs?: unknown;
     lang?: string;
+    overrides?: ConfiguredOverrides;
 };
 export type CompilerForTreeState = StateWithLanguage & StateWithTree;
 export type ChainedCompilerState = StateWithLanguage & {sourceCompiler: number; rootEditorId?: number};
@@ -297,6 +300,15 @@ export type PopulatedHaskellCmmViewState = StateWithId & {
     treeid: number;
 };
 
+export type EmptyLeanCViewState = EmptyState;
+export type PopulatedLeanCViewState = StateWithId & {
+    source: string;
+    leanCOutput: ResultLine[];
+    compilerName: string;
+    editorid: number;
+    treeid: number;
+};
+
 export type EmptyGnatDebugTreeViewState = EmptyState;
 export type PopulatedGnatDebugTreeViewState = StateWithId & {
     source: string;
@@ -400,6 +412,7 @@ export interface ComponentStateMap {
     [HASKELL_CORE_VIEW_COMPONENT_NAME]: EmptyHaskellCoreViewState | PopulatedHaskellCoreViewState;
     [HASKELL_STG_VIEW_COMPONENT_NAME]: EmptyHaskellStgViewState | PopulatedHaskellStgViewState;
     [HASKELL_CMM_VIEW_COMPONENT_NAME]: EmptyHaskellCmmViewState | PopulatedHaskellCmmViewState;
+    [LEAN_C_VIEW_COMPONENT_NAME]: EmptyLeanCViewState | PopulatedLeanCViewState;
     [GNAT_DEBUG_TREE_VIEW_COMPONENT_NAME]: EmptyGnatDebugTreeViewState | PopulatedGnatDebugTreeViewState;
     [GNAT_DEBUG_VIEW_COMPONENT_NAME]: EmptyGnatDebugViewState | PopulatedGnatDebugViewState;
     [RUST_MACRO_EXP_VIEW_COMPONENT_NAME]: EmptyRustMacroExpViewState | PopulatedRustMacroExpViewState;

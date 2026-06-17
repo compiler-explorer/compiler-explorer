@@ -606,7 +606,6 @@ input.vim-check {
 
 .program-exec-output {
     font-family: 'Courier New', Courier, monospace;
-    padding-left: 2%;
 }
 
 .execution-stdoutstderr {
@@ -1734,7 +1733,7 @@ span.lib-info {
     max-width: 600px;
 }
 
-button.new-pane-button:disabled:after {
+.opens-singleton-pane:disabled:after {
     content: ' [already open]';
 }
 

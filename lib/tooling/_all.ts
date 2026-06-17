@@ -32,6 +32,7 @@ export {CompilerDropinTool} from './compiler-dropin-tool.js';
 export {LLVMCovTool} from './llvm-cov-tool.js';
 export {LLVMDWARFDumpTool} from './llvm-dwarfdump-tool.js';
 export {LLVMMcaTool} from './llvm-mca-tool.js';
+export {LLVMPDBUtilTool} from './llvm-pdbutil-tool.js';
 export {MicrosoftAnalysisTool} from './microsoft-analysis-tool.js';
 export {MiriTool} from './miri-tool.js';
 export {NmTool} from './nm-tool.js';
