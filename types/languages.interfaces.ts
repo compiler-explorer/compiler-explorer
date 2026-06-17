@@ -39,6 +39,7 @@ export type LanguageKey =
     | 'clojure'
     | 'cmake'
     | 'cmakescript'
+    | 'co2'
     | 'cobol'
     | 'coccinelle_for_c'
     | 'coccinelle_for_cpp'
