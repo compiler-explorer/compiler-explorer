@@ -993,6 +993,17 @@ const definitions: Record<LanguageKey, LanguageDefinition> = {
         previewFilter: null,
         monacoDisassembly: null,
     },
+    'tt-metal': {
+        name: 'TT-Metalium',
+        monaco: 'cppp',
+        extensions: ['.cpp'],
+        alias: [],
+        logoFilename: null,
+        logoFilenameDark: null,
+        formatter: null,
+        previewFilter: null,
+        monacoDisassembly: null,
+    },
     typescript: {
         name: 'TypeScript Native',
         monaco: 'typescript',

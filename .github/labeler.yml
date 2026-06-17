@@ -447,6 +447,12 @@
           - 'lib/compilers/triton.ts'
           - 'etc/config/triton.*.properties'
 
+'lang-tt-metal':
+  - changed-files:
+      - any-glob-to-any-file:
+          - 'lib/compilers/tt-metal.ts'
+          - 'etc/config/tt-metal.*.properties'
+
 'lang-typescript':
   - changed-files:
       - any-glob-to-any-file:
