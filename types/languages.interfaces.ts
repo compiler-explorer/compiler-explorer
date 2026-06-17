@@ -95,6 +95,7 @@ export type LanguageKey =
     | 'ptx'
     | 'racket'
     | 'raku'
+    | 'razorforge'
     | 'ruby'
     | 'rust'
     | 'sail'
