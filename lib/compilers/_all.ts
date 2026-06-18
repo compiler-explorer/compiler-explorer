@@ -172,6 +172,7 @@ export {TinyCCompiler} from './tinyc.js';
 export {TinyGoCompiler} from './tinygo.js';
 export {ToitCompiler} from './toit.js';
 export {TritonCompiler} from './triton.js';
+export {TtMetalCompiler} from './tt-metal.js';
 export {TurboCCompiler} from './turboc.js';
 export {TypeScriptNativeCompiler} from './typescript-native.js';
 export {VCompiler} from './v.js';

@@ -109,6 +109,7 @@ export type LanguageKey =
     | 'tablegen'
     | 'toit'
     | 'triton'
+    | 'tt-metal'
     | 'typescript'
     | 'v'
     | 'vala'
