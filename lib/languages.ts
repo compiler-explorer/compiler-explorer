@@ -831,6 +831,17 @@ const definitions: Record<LanguageKey, LanguageDefinition> = {
         previewFilter: null,
         monacoDisassembly: null,
     },
+    razorforge: {
+        name: 'RazorForge',
+        monaco: 'razorforge',
+        extensions: ['.rf'],
+        alias: [],
+        logoFilename: null,
+        logoFilenameDark: null,
+        formatter: null,
+        previewFilter: null,
+        monacoDisassembly: 'llvm-ir',
+    },
     ruby: {
         name: 'Ruby',
         monaco: 'ruby',

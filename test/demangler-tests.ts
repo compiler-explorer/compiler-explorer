@@ -65,10 +65,6 @@ class DummyCppDemangler extends CppDemangler {
     public override collectLabels = super.collectLabels;
 }
 
-class DummyLlvmDemangler extends LLVMIRDemangler {
-    public override collectLabels = super.collectLabels;
-}
-
 class DummyWin32Demangler extends Win32Demangler {
     public override collectLabels = super.collectLabels;
 }
@@ -473,7 +469,8 @@ describe.skipIf(process.platform === 'win32')('LLVM IR demangler', () => {
             ],
         };
 
-        const demangler = new DummyLlvmDemangler(cppfiltpath, new DummyCompiler(), ['-n']);
+        const baseDemangler = new DummyCppDemangler(cppfiltpath, new DummyCompiler(), ['-n']);
+        const demangler = new LLVMIRDemangler(baseDemangler);
 
         return Promise.all([
             demangler
@@ -497,7 +494,8 @@ describe.skipIf(process.platform === 'win32')('LLVM IR demangler', () => {
             ],
         };
 
-        const demangler = new DummyLlvmDemangler(cppfiltpath, new DummyCompiler(), ['-n']);
+        const baseDemangler = new DummyCppDemangler(cppfiltpath, new DummyCompiler(), ['-n']);
+        const demangler = new LLVMIRDemangler(baseDemangler);
 
         return Promise.all([
             demangler

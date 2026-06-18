@@ -268,6 +268,13 @@ export type ExecutionOptions = {
 
 export type ExecutionOptionsWithEnv = ExecutionOptions & {env: Record<string, string>};
 
+export type DemanglerExecutionOptions = ExecutionOptions & {
+    // List of symbols to demangle - don't scan the input.
+    overrideSymbols?: string[];
+    // Don't apply translations to the input - return it as-is.
+    skipTranslation?: boolean;
+};
+
 export type BuildResult = CompilationResult & {
     downloads: BuildEnvDownloadInfo[];
     executableFilename: string;

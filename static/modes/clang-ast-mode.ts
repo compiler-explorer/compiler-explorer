@@ -1,4 +1,4 @@
-// Copyright (c) 2020, Compiler Explorer Authors
+// Copyright (c) 2026, Compiler Explorer Authors
 // All rights reserved.
 //
 // Redistribution and use in source and binary forms, with or without
@@ -22,9 +22,17 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import type {Source} from '../../types/source.interfaces.js';
-import {createBuiltinSource} from './builtin.js';
+import $ from 'jquery';
+import * as monaco from 'monaco-editor';
+import * as cpp from 'monaco-editor/esm/vs/basic-languages/cpp/cpp';
 
-export function createSources(): Source[] {
-    return [createBuiltinSource()];
+export function definition(): monaco.languages.IMonarchLanguage {
+    const clangAst = $.extend(true, {}, cpp.language);
+    clangAst.tokenPostfix = '.clang-ast';
+    clangAst.tokenizer.root.unshift([/(?:internal|external|module)-linkage\b/, 'keyword.ast-linkage']);
+    return clangAst;
 }
+
+monaco.languages.register({id: 'clang-ast'});
+monaco.languages.setLanguageConfiguration('clang-ast', cpp.conf);
+monaco.languages.setMonarchTokensProvider('clang-ast', definition());
