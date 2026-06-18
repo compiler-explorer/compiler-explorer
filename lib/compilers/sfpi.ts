@@ -60,18 +60,7 @@ export class SfpiCompiler extends GCCCompiler {
         const tensixArchDir = isBlackhole ? 'blackhole' : 'wormhole';
         const tensixDefinesDir = isBlackhole ? 'blackhole/blackhole_defines' : 'wormhole/wormhole_b0_defines';
 
-        options.push(
-            '-std=c++17',
-            '-O2',
-            '-ffast-math',
-            '-fno-exceptions',
-            '-fno-use-cxa-atexit',
-            '-fno-tree-loop-distribute-patterns',
-            '-DCOMPILE_FOR_TRISC',
-            '-DTENSIX_FIRMWARE',
-            '-Wall',
-            '-Wextra',
-        );
+        options.push('-std=c++17', '-DCOMPILE_FOR_TRISC', '-DTENSIX_FIRMWARE');
 
         if (!userOptions?.some(option => option === '-mcpu' || option.startsWith('-mcpu='))) {
             options.push(`-mcpu=${cpu}`);
