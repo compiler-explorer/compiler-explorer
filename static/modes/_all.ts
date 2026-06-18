@@ -30,6 +30,7 @@ import './asmruby-mode';
 import './c3-mode';
 import './carbon-mode';
 import './clean-mode';
+import './clang-ast-mode';
 import './cmake-mode';
 import './cobol-mode';
 import './cppcircle-mode';
