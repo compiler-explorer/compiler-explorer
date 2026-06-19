@@ -133,6 +133,9 @@
           - lib/compilers/nvcc.ts
           - etc/config/cuda.*.properties
           - static/modes/cuda-mode.ts
+          - lib/compilers/scale-nvcc-nvidia.ts
+          - lib/compilers/scale-nvcc-amd.ts
+
 
 'lang-cutedsl':
   - changed-files:

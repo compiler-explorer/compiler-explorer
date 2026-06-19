@@ -372,7 +372,7 @@ const definitions: Record<LanguageKey, LanguageDefinition> = {
         name: 'CUDA C++',
         monaco: 'cuda',
         extensions: ['.cu', '.cuh'],
-        alias: ['nvcc'],
+        alias: ['nvcc', 'scale-nvcc-nvidia', 'scale-nvcc-amd'],
         logoFilename: 'cuda.svg',
         logoFilenameDark: 'cuda-dark.svg',
         formatter: 'clangformat',

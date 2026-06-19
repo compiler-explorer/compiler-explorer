@@ -153,6 +153,8 @@ export {RustcCgCraneliftCompiler} from './rustc-cg-cranelift.js';
 export {RustcCgGCCCompiler} from './rustc-cg-gcc.js';
 export {SailCompiler} from './sail.js';
 export {ScalaCompiler} from './scala.js';
+export {ScaleNvccAMDCompiler} from './scale-nvcc-amd.js';
+export {ScaleNvccNvidiaCompiler} from './scale-nvcc-nvidia.js';
 export {SdccCompiler} from './sdcc.js';
 export {ShaderExplorerCompiler} from './shader-explorer.js';
 export {SlangCompiler} from './slang.js';
