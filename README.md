@@ -75,8 +75,11 @@ Assuming you have a compatible version of `node` installed, on Linux simply runn
 running with an Explorer running on port 10240 on your local machine:
 [http://localhost:10240/](http://localhost:10240/). If this doesn't work for you, please contact us, as we consider it
 important you can quickly and easily get running. Currently, **Compiler Explorer** requires
-[`node` 22 or higher](CONTRIBUTING.md#node-version) installed, either on the path or at `NODE_DIR` (an environment variable or
-`make` parameter).
+[`node` 22 or higher](CONTRIBUTING.md#node-version) installed. We look for it on your `PATH`, which covers a
+system install as well as any version manager with shell integration (`fnm`, `asdf`, `nodenv`, `volta`, or an
+active `nvm`). If your `PATH` `node` is missing or too old we also try to resolve the version pinned in
+`.node-version` via `nvm`/`fnm`/`nodenv`/`asdf` directly. To force a specific install, point `NODE_DIR` at it (an
+environment variable or `make` parameter); we then use `$NODE_DIR/bin/node`.
 
 Running with `make EXTRA_ARGS='--language LANG'` will allow you to load `LANG` exclusively, where `LANG` is one for the
 language ids/aliases defined in `lib/languages.ts`. For example, to only run **Compiler Explorer** with C++ support,

@@ -13,11 +13,13 @@ TS_NODE_ARGS:=--no-warnings=ExperimentalWarning --import=tsx
 # All file paths that are not .ts files that should be watched for changes if launched with watch.
 FILEWATCHER_ARGS:=--watch --include "etc/config/*"
 
-# These 'find' scripts cache their results in a dotfile.
-# Doing it this way instead of NODE:=$(shell etc/script/find-node) means
-# if they fail, they stop the make process. As best I can tell there's no
+# find-node caches its result in .node-bin.
+# Doing it this way instead of NODE:=$(shell etc/scripts/find-node) means
+# if it fails, it stops the make process. As best I can tell there's no
 # way to get make to fail if a sub-shell command fails.
-.node-bin: etc/scripts/find-node
+# Depending on .node-version means bumping the pinned version re-resolves node;
+# if you switch node behind make's back, `rm .node-bin` (or `make clean`).
+.node-bin: etc/scripts/find-node .node-version
 	@etc/scripts/find-node .node-bin
 
 # All targets that need node must depend on this to ensure the NODE variable
