@@ -741,7 +741,7 @@ export class BaseCompiler {
     }
 
     getGccDumpOptions(gccDumpOptions: Record<string, any>, outputFilename: string) {
-        const addOpts = ['-fdump-passes'];
+        const addOpts: string[] = [];
 
         // Build dump options to append to the end of the -fdump command-line flag.
         // GCC accepts these options as a list of '-' separated names that may
@@ -785,21 +785,28 @@ export class BaseCompiler {
         }
 
         // If we want to remove the passes that won't produce anything from the
-        // drop down menu, we need to ask for all dump files and see what's
-        // really created. This is currently only possible with regular GCC, not
-        // for compilers that us libgccjit. The later can't easily move dump
-        // files outside of the tempdir created on the fly.
+        // drop down menu, we dump every invoked pass to its own file and then
+        // enumerate what was actually produced (see processGccDumpOutput). This is
+        // only possible with regular GCC, not for compilers that use libgccjit. The
+        // latter can't easily move dump files outside of the tempdir created on the
+        // fly, so they keep relying on the -fdump-passes listing parsed from stderr.
         if (this.compiler.removeEmptyGccDump) {
+            // Force '-lineno' on: processGccDumpOutput uses the per-statement
+            // [file:line] annotations to keep only functions defined in the user's
+            // source (header/library functions are trimmed out). If the user turned
+            // lineno off, the annotations are stripped again before the dump is shown.
+            const allFlags = flags.includes('-lineno') ? flags : flags + '-lineno';
             if (gccDumpOptions.treeDump !== false) {
-                addOpts.push('-fdump-tree-all' + flags);
+                addOpts.push('-fdump-tree-all' + allFlags);
             }
             if (gccDumpOptions.rtlDump !== false) {
-                addOpts.push('-fdump-rtl-all' + flags);
+                addOpts.push('-fdump-rtl-all' + allFlags);
             }
             if (gccDumpOptions.ipaDump !== false) {
-                addOpts.push('-fdump-ipa-all' + flags);
+                addOpts.push('-fdump-ipa-all' + allFlags);
             }
         } else {
+            addOpts.push('-fdump-passes');
             // If not dumping everything, create a specific command like
             // -fdump-tree-fixup_cfg1-some-flags=somefilename
             if (gccDumpOptions.pass) {
@@ -1922,6 +1929,78 @@ export class BaseCompiler {
             };
         }
         return null;
+    }
+
+    /**
+     * Parse a GCC dump file name (`<inputbase>.<NNN><letter>.<passname>`, e.g.
+     * `example.cpp.255r.expand`) into the same descriptor shape as fromInternalGccDumpName.
+     * Returns null for files that aren't pass dumps (the .s output, .o, the source, ...).
+     * `nnn` is GCC's global pass-execution counter, used to order the drop-down.
+     */
+    passObjectFromDumpFilename(filename: string) {
+        // letter: t=tree, r=rtl, i=ipa. passname has hyphens/digits/underscores but no dots.
+        const match = filename.match(/\.(\d+)([tri])\.([\w-]+)$/);
+        if (!match) return null;
+
+        const category = {t: 'tree', r: 'rtl', i: 'ipa'}[match[2] as 't' | 'r' | 'i'];
+        const passName = match[3];
+        return {
+            nnn: Number.parseInt(match[1], 10),
+            // Keep these three fields byte-identical to fromInternalGccDumpName: the frontend
+            // keys TomSelect items by `name` and rebuilds the others from the stored suffix.
+            filename_suffix: `${match[2]}.${passName}`,
+            name: `${passName} (${category})`,
+            command_prefix: `-fdump-${category}-${passName}`,
+        };
+    }
+
+    /**
+     * Trim a GCC dump so it only contains functions defined in the user's source file,
+     * dropping functions that originate from included headers (#7870-era behaviour: this is
+     * the "defined in the actual source, not included headers" filter).
+     *
+     * Functions are delimited by `;; Function <sym> (...)` headers. We classify a block by
+     * substring rather than by parsing location syntax: tree/GIMPLE dumps annotate with
+     * `[file:line]`, but RTL dumps use `"file":line` plus unrelated brackets such as `[orig:N]`,
+     * so a syntax-based "first location" match is fragile and was wrongly emptying RTL passes.
+     * A block is treated as a header function (and dropped) only when it references a system
+     * include path but never the user's source file; everything else — including blocks with no
+     * recognisable location at all — is kept. Dumps without any `;; Function` markers (IPA
+     * summaries such as cgraph) are returned whole.
+     *
+     * `isRtlDump` selects the lineno handling: `-lineno` adds `[file:line]` prefixes to every
+     * GIMPLE statement, which appears in tree dumps AND in IPA passes that print GIMPLE bodies
+     * (icf, inline, sra, ...). So when the user disabled lineno but we forced it on for origin
+     * detection, those prefixes are stripped from all non-RTL dumps. RTL dumps are left untouched
+     * because they use different bracket syntax (`[orig:N]`, nested `[N [file:line]]`) that the
+     * strip regex would corrupt, and their locations come from -g rather than -lineno anyway.
+     */
+    trimGccDumpHeaderFunctions(
+        content: string,
+        sourceBasename: string,
+        keepLineno: boolean,
+        isRtlDump: boolean,
+    ): string {
+        // Splitting on a lookahead keeps each `;; Function` header with its block and leaves the
+        // preamble (text before the first function) as the first piece, so join('') is lossless.
+        const pieces = content.split(/(?=^;; Function )/m);
+
+        const isHeaderFunction = (piece: string) =>
+            !piece.includes(sourceBasename) && /\/usr\/|\/opt\/|\/include\//.test(piece);
+
+        const kept =
+            pieces.length <= 1
+                ? pieces // no function markers (e.g. IPA summary dump): keep whole
+                : pieces.filter((piece, index) => index === 0 || !isHeaderFunction(piece));
+
+        let trimmed = kept.join('');
+        if (!keepLineno && !isRtlDump) {
+            // Approximate the no-lineno output by removing the forced [file:line(:col)] prefixes
+            // from GIMPLE (tree + IPA) dumps. RTL is excluded so its [orig:N]/nested brackets are
+            // never touched.
+            trimmed = trimmed.replace(/\[[^[\]\n]*?:\d+(?::\d+)?(?: discrim \d+)?\] ?/g, '');
+        }
+        return trimmed;
     }
 
     async checkOutputFileAndDoPostProcess(
@@ -3592,6 +3671,7 @@ export class BaseCompiler {
                 selectedPass: null,
                 currentPassOutput: 'Nothing selected for dump:\nselect at least one of Tree/IPA/RTL filter',
                 syntaxHighlight: false,
+                passDumps: {} as Record<string, string>,
             };
         }
 
@@ -3600,7 +3680,79 @@ export class BaseCompiler {
             selectedPass: opts.pass ?? null,
             currentPassOutput: '<No pass selected>',
             syntaxHighlight: false,
+            passDumps: {} as Record<string, string>,
         };
+
+        const notDumpedMessage = (passName: string | null) =>
+            `Pass '${passName}' was requested
+but nothing was dumped. Possible causes are:
+ - pass is not valid in this (maybe you changed the compiler options);
+ - pass is valid but did not emit anything (eg. it was not executed).`;
+
+        if (removeEmptyPasses) {
+            // Enumerate the dump files GCC actually produced (every invoked pass, including
+            // passes turned on dynamically by pragmas -- see #7870) and read them all up front,
+            // so that switching passes in the UI is a client-side lookup with no recompile.
+            const selectedCategories = new Set<string>();
+            if (opts.treeDump) selectedCategories.add('tree');
+            if (opts.ipaDump) selectedCategories.add('ipa');
+            if (opts.rtlDump) selectedCategories.add('rtl');
+            const categoryByLetter: Record<string, string> = {t: 'tree', r: 'rtl', i: 'ipa'};
+
+            const sourceBasename = path.basename(result.inputFilename);
+            // We force -lineno on for origin detection; only KEEP its annotations in the shown
+            // dump when the user explicitly enabled the Line Numbers option. Anything else
+            // (off, or unset) strips them, matching the option's default-off behaviour.
+            const keepLineno = opts.dumpFlags?.lineno === true;
+
+            const candidates: {
+                filename: string;
+                pass: {nnn: number; filename_suffix: string; name: string; command_prefix: string};
+            }[] = [];
+            for (const filename of await fs.readdir(rootDir)) {
+                const pass = this.passObjectFromDumpFilename(filename);
+                if (!pass) continue;
+                if (!selectedCategories.has(categoryByLetter[pass.filename_suffix[0]])) continue;
+                candidates.push({filename, pass});
+            }
+            // Order the drop-down by GCC's global pass-execution counter (stable secondary by name).
+            candidates.sort((a, b) => a.pass.nnn - b.pass.nnn || a.pass.name.localeCompare(b.pass.name));
+
+            for (const {filename, pass} of candidates) {
+                const raw = await utils.tryReadTextFile(path.join(rootDir, filename));
+                const content = raw
+                    ? this.trimGccDumpHeaderFunctions(raw, sourceBasename, keepLineno, pass.filename_suffix[0] === 'r')
+                    : '';
+                // Skip passes that produced nothing for this source (e.g. an empty ipa-clones
+                // file, or a pass whose only output was header functions we trimmed away). This
+                // is the real "remove empty GCC dumps" behaviour: keep the drop-down to passes
+                // that actually have content, so selecting one never yields "nothing was dumped".
+                if (/^\s*$/.test(content)) continue;
+                const {nnn, ...descriptor} = pass;
+                output.all.push(descriptor);
+                output.passDumps[descriptor.filename_suffix] = content;
+            }
+
+            const selectedSuffix = opts.pass?.filename_suffix ?? null;
+            if (selectedSuffix && selectedSuffix in output.passDumps) {
+                const content = output.passDumps[selectedSuffix];
+                if (/^\s*$/.test(content)) {
+                    output.currentPassOutput = notDumpedMessage(opts.pass?.name ?? null);
+                } else {
+                    output.currentPassOutput = content;
+                    output.syntaxHighlight = true;
+                }
+            } else {
+                // The requested pass produced nothing (e.g. disabled by a filter change): clear
+                // the selection so the frontend resets its drop-down.
+                output.selectedPass = null;
+            }
+            return output;
+        }
+
+        // Legacy path for libgccjit-based compilers (removeEmptyGccDump === false): these cannot
+        // relocate dump files, so we can only enumerate passes from the -fdump-passes stderr
+        // listing and dump the single selected pass to a known file via -fdump-<cat>-<pass>=FILE.
         const treeDumpsNotInPasses: any[] = [];
 
         const selectedPasses: string[] = [];
@@ -3634,10 +3786,7 @@ export class BaseCompiler {
         if (opts.ipaDump) selectedPasses.push('ipa');
         if (opts.rtlDump) selectedPasses.push('rtl');
 
-        // Defaults to a custom file derived from output file name. Works when
-        // using the -fdump-tree-foo=FILE variant (!removeEmptyPasses).
-        // Will be overriden later if not.
-        let dumpFileName = this.getGccDumpFileName(outputFilename);
+        const dumpFileName = this.getGccDumpFileName(outputFilename);
         let passFound = false;
 
         const filtered_stderr: any[] = [];
@@ -3653,17 +3802,6 @@ export class BaseCompiler {
         for (const [obj, selectizeObject] of dumpPassesLines) {
             if (selectizeObject) {
                 if (opts.pass && opts.pass.name === selectizeObject.name) passFound = true;
-
-                if (removeEmptyPasses) {
-                    const f = (await fs.readdir(rootDir)).filter(fn => fn.endsWith(selectizeObject.filename_suffix));
-
-                    // pass is enabled, but the dump hasn't produced anything:
-                    // don't add it to the drop down menu
-                    if (f.length === 0) continue;
-
-                    if (opts.pass && opts.pass.name === selectizeObject.name) dumpFileName = path.join(rootDir, f[0]);
-                }
-
                 output.all.push(selectizeObject);
             }
 
@@ -3684,10 +3822,7 @@ export class BaseCompiler {
             // pass is still requested.
 
             if (/^\s*$/.test(output.currentPassOutput)) {
-                output.currentPassOutput = `Pass '${opts.pass.name}' was requested
-but nothing was dumped. Possible causes are:
- - pass is not valid in this (maybe you changed the compiler options);
- - pass is valid but did not emit anything (eg. it was not executed).`;
+                output.currentPassOutput = notDumpedMessage(opts.pass.name);
             } else {
                 output.syntaxHighlight = true;
             }
