@@ -156,8 +156,10 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
     private sourceEditorId: number | null;
     private sourceCompilerId: number | null;
     private upstreamCompilerName: string | null;
+    private upstreamResult: CompilationResult | null = null;
     private rootEditorId: number | null;
     private readonly chainedDownstreamIds = new Set<number>();
+    private readonly chainedDownstreamExecutorIds = new Set<number>();
     private chainOutputLang: LanguageKey | null;
     private readonly infoByLang: Record<string, {compiler: string; options: string}>;
     private deferCompiles: boolean;
@@ -306,6 +308,14 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
 
         this.id = state.id || hub.nextCompilerId();
 
+        // Guard against a hand-crafted state chaining a compiler to itself, which would
+        // otherwise recompile forever (our own compileResult would feed our own source).
+        // Fall back to being a regular editor-backed compiler.
+        if (this.sourceCompilerId === this.id) {
+            this.sourceCompilerId = null;
+            this.sourceEditorId = state.source || 1;
+        }
+
         this.infoByLang = {};
         this.deferCompiles = true;
         this.needsCompile = false;
@@ -399,7 +409,7 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
         this.sourceCompilerId = state.sourceCompiler ?? null;
         this.upstreamCompilerName = null;
         this.rootEditorId = state.rootEditorId ?? null;
-        this.chainOutputLang = (state.chainOutputLang as LanguageKey) ?? null;
+        this.chainOutputLang = state.chainOutputLang ?? null;
         if (this.sourceTreeId) {
             this.sourceEditorId = null;
             this.sourceCompilerId = null;
@@ -539,7 +549,51 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
         }
     }
 
-    onCompileResult(compilerId: number, compiler: unknown, result: unknown): void {}
+    onCompileResult(compilerId: number, _compiler: CompilerInfo, result: CompilationResult): void {
+        if (compilerId !== this.sourceCompilerId) return;
+        this.upstreamResult = result;
+        this.applyUpstreamResult();
+    }
+
+    // Derives our source from the stored upstream result and recompiles. Separate from
+    // onCompileResult so that anything changing how the upstream output is interpreted
+    // (e.g. future source transformations) can re-run it without an upstream recompile.
+    private applyUpstreamResult(): void {
+        const result = this.upstreamResult;
+        if (!result || !result.asm || result.timedOut || result.code !== 0) {
+            // Report a local error result rather than compiling an empty source; this still
+            // cascades the failure to viewers and further downstreams via our compileResult.
+            this.source = '';
+            this.onCompileResponse(this.fakeCompileRequest(), this.errorResult('<Upstream compilation failed>'), false);
+            return;
+        }
+
+        const asm = result.asm;
+        const newSource = typeof asm === 'string' ? asm : asm.map(line => line.text).join('\n');
+        // Skip recompiling when the derived source is unchanged and our last result was for it
+        // (e.g. the upstream re-pushed an identical result during the open handshake).
+        if (newSource === this.source && this.lastResult?.source === newSource) return;
+        this.source = newSource;
+        this.compile();
+    }
+
+    // A minimal request to accompany locally-generated error results (see errorResult callers).
+    private fakeCompileRequest(): CompilationRequest {
+        return {
+            source: this.source,
+            compiler: this.compiler?.id ?? '',
+            options: {
+                userArguments: this.options,
+                compilerOptions: {},
+                filters: this.getEffectiveFilters(),
+                tools: [],
+                libraries: [],
+                executeParameters: {args: [], stdin: ''},
+            },
+            lang: this.currentLangId,
+            files: [],
+        };
+    }
 
     initPanerButtons(): void {
         const outputConfig = Components.getOutput(this.id, this.sourceEditorId ?? 0, this.sourceTreeId ?? 0);
@@ -559,6 +613,25 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
 
             // Extract only the fields we need, with proper defaults
             const {source = DEFAULT_EDITOR_ID, filters, options = '', compiler, libs, lang, overrides} = currentState;
+
+            if (this.sourceCompilerId) {
+                // A clone of a chained pane is another downstream of the same upstream.
+                return {
+                    type: 'component',
+                    componentName: COMPILER_COMPONENT_NAME,
+                    componentState: {
+                        sourceCompiler: this.sourceCompilerId,
+                        rootEditorId: this.rootEditorId ?? undefined,
+                        chainOutputLang: this.chainOutputLang ?? undefined,
+                        filters,
+                        options,
+                        compiler,
+                        libs,
+                        lang: lang ?? this.currentLangId ?? '',
+                        overrides,
+                    },
+                };
+            }
 
             return {
                 type: 'component',
@@ -838,6 +911,8 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
                 treeId ?? 0,
                 currentState.overrides,
                 currentState.runtimeTools,
+                // On a chained pane the executor draws from the same upstream compiler we do.
+                this.sourceCompilerId ?? undefined,
             );
         };
 
@@ -2068,43 +2143,49 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
         }
     }
 
-    onUpstreamCompileResult(compilerId: number, _compiler: CompilerInfo, result: CompilationResult): void {
-        if (compilerId !== this.sourceCompilerId) return;
+    protected override onCompilerClose(compilerId: number): void {
+        super.onCompilerClose(compilerId);
 
-        if (!result.asm || result.timedOut || result.code !== 0) {
-            this.source = '';
-        } else {
-            const asm = result.asm;
-            this.source = typeof asm === 'string' ? asm : asm.map(line => line.text).join('\n');
+        if (compilerId === this.sourceCompilerId) {
+            // Our upstream compiler closed — detach and become sourceless.
+            this.detachFromUpstream();
         }
 
-        // Always recompile when the upstream result changes — even on failure, so the error
-        // cascades to any further downstream compilers via our own compileResult event.
-        this.compile();
+        if (this.chainedDownstreamIds.delete(compilerId)) {
+            this.teardownChainLanguagePickerIfUnused();
+        }
     }
 
-    onUpstreamCompilerClose(compilerId: number): void {
-        // Our upstream compiler closed — detach and become sourceless.
-        if (compilerId !== this.sourceCompilerId) return;
+    private detachFromUpstream(): void {
         this.sourceCompilerId = null;
+        this.upstreamResult = null;
         this.source = '';
         this.updateState();
         this.updateTitle();
     }
 
-    onDownstreamCompilerClose(compilerId: number): void {
-        // One of our chained downstreams closed — remove it from tracking.
-        if (!this.chainedDownstreamIds.has(compilerId)) return;
-        this.chainedDownstreamIds.delete(compilerId);
-        if (this.chainedDownstreamIds.size === 0) {
+    private teardownChainLanguagePickerIfUnused(): void {
+        if (this.chainedDownstreamIds.size === 0 && this.chainedDownstreamExecutorIds.size === 0) {
             this.chainLanguagePicker?.destroy();
             this.chainLanguagePicker = null;
             this.domRoot.find('.chain-language-select').hide();
         }
     }
 
+    onExecutorClose(executorId: number): void {
+        if (this.chainedDownstreamExecutorIds.delete(executorId)) {
+            this.teardownChainLanguagePickerIfUnused();
+        }
+    }
+
     onChainedCompilerOpen(sourceCompilerId: number, chainedCompilerId: number): void {
         if (sourceCompilerId !== this.id) return;
+        if (chainedCompilerId === this.id) return;
+        if (chainedCompilerId === this.sourceCompilerId) {
+            // Our own upstream is announcing us as *its* upstream: a hand-crafted state has
+            // formed a two-pane cycle, which would compile forever. Sever our side of it.
+            this.detachFromUpstream();
+        }
 
         this.chainedDownstreamIds.add(chainedCompilerId);
         if (!this.chainLanguagePicker) {
@@ -2112,6 +2193,17 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
         }
         // Push current state to the newly-opened downstream, mirroring the editor's
         // onCompilerOpen → maybeEmitChange(true, compilerId) pattern.
+        this.sendCompiler();
+        this.resendResult();
+    }
+
+    onChainedExecutorOpen(sourceCompilerId: number, executorId: number): void {
+        if (sourceCompilerId !== this.id) return;
+
+        this.chainedDownstreamExecutorIds.add(executorId);
+        if (!this.chainLanguagePicker) {
+            this.initChainedLanguagePicker();
+        }
         this.sendCompiler();
         this.resendResult();
     }
@@ -3187,10 +3279,9 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
             }
         });
         this.eventHub.on('editorChange', this.onEditorChange, this);
-        this.eventHub.on('compileResult', this.onUpstreamCompileResult, this);
-        this.eventHub.on('compilerClose', this.onUpstreamCompilerClose, this);
-        this.eventHub.on('compilerClose', this.onDownstreamCompilerClose, this);
         this.eventHub.on('chainedCompilerOpen', this.onChainedCompilerOpen, this);
+        this.eventHub.on('chainedExecutorOpen', this.onChainedExecutorOpen, this);
+        this.eventHub.on('executorClose', this.onExecutorClose, this);
         this.eventHub.on('chainLanguageChange', this.onChainLanguageChange, this);
         this.eventHub.on('compilerFlagsChange', this.onCompilerFlagsChange, this);
         this.eventHub.on('editorClose', this.onEditorClose, this);

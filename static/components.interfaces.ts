@@ -27,6 +27,7 @@ import GoldenLayout from 'golden-layout';
 import {ConfiguredOverrides} from '../types/compilation/compiler-overrides.interfaces.js';
 import {ConfiguredRuntimeTools} from '../types/execution/execution.interfaces.js';
 import {CompilerOutputOptions} from '../types/features/filters.interfaces.js';
+import type {LanguageKey} from '../types/languages.interfaces.js';
 import {ResultLine} from '../types/resultline/resultline.interfaces.js';
 import {CfgState} from './panes/cfg-view.interfaces.js';
 import {ClangirState} from './panes/clangir-view.interfaces.js';
@@ -99,7 +100,11 @@ export type PopulatedCompilerState = StateWithEditor & {
     overrides?: ConfiguredOverrides;
 };
 export type CompilerForTreeState = StateWithLanguage & StateWithTree;
-export type ChainedCompilerState = StateWithLanguage & {sourceCompiler: number; rootEditorId?: number};
+export type ChainedCompilerState = StateWithLanguage & {
+    sourceCompiler: number;
+    rootEditorId?: number;
+    chainOutputLang?: LanguageKey;
+};
 
 export type EmptyExecutorState = StateWithLanguage &
     StateWithEditor & {
@@ -116,6 +121,8 @@ export type PopulatedExecutorState = StateWithLanguage &
         compilerOutShown: boolean;
         overrides?: ConfiguredOverrides;
         runtimeTools?: ConfiguredRuntimeTools;
+        /** When set, the executor takes its source from this compiler's output (chained). */
+        sourceCompiler?: number;
     };
 export type ExecutorForTreeState = StateWithLanguage &
     StateWithTree & {

@@ -169,6 +169,7 @@ export function getExecutorWith(
     treeId: number,
     overrides?: ConfiguredOverrides,
     runtimeTools?: ConfiguredRuntimeTools,
+    sourceCompilerId?: number,
 ): ComponentConfig<typeof EXECUTOR_COMPONENT_NAME> {
     return {
         type: 'component',
@@ -176,6 +177,7 @@ export function getExecutorWith(
         componentState: {
             source: editorId,
             tree: treeId,
+            sourceCompiler: sourceCompilerId,
             compiler: compilerId,
             libs: libraries,
             options: compilerArgs,
