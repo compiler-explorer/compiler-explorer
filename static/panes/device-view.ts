@@ -358,6 +358,8 @@ export class DeviceAsm extends MonacoPane<monaco.editor.IStandaloneCodeEditor, D
     }
 
     private reapplyColours(): void {
+        // Why call this explicitly instead of just listening to the "colours" event?
+        // Because the recolouring happens before this editor's value is set using "showDeviceAsmResults".
         if (this.compilerInfo.editorId != null) {
             this.onColours(this.compilerInfo.editorId, this.lastColours, this.lastColourScheme);
         }
