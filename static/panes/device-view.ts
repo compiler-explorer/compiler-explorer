@@ -49,7 +49,8 @@ export class DeviceAsm extends MonacoPane<monaco.editor.IStandaloneCodeEditor, D
     private selectedDevice: string;
     private devices: Record<string, CompilationResult> | null;
     private deviceCode: ResultLine[];
-    private lastColoursByEditor: Map<number, {colours: Record<number, number>; scheme: string}>;
+    private lastColours: Record<number, number>;
+    private lastColourScheme: string;
     private selectize: TomSelect;
     private linkedFadeTimeoutId: NodeJS.Timeout | null;
     private alertSystem: Alert;
@@ -67,7 +68,8 @@ export class DeviceAsm extends MonacoPane<monaco.editor.IStandaloneCodeEditor, D
         this.devices = null;
 
         this.deviceCode = [];
-        this.lastColoursByEditor = new Map();
+        this.lastColours = [];
+        this.lastColourScheme = '';
 
         if (state.devices) {
             this.devices = state.devices;
@@ -356,40 +358,29 @@ export class DeviceAsm extends MonacoPane<monaco.editor.IStandaloneCodeEditor, D
     }
 
     private reapplyColours(): void {
-        if (this.compilerInfo.editorId == null) {
-            return;
-        }
-
-        const cachedColours = this.lastColoursByEditor.get(this.compilerInfo.editorId);
-        if (!cachedColours) {
-            return;
-        }
-
-        this.applyColoursForEditor(this.compilerInfo.editorId, cachedColours.colours, cachedColours.scheme);
-    }
-
-    private applyColoursForEditor(editorId: number, colours: Record<number, number>, scheme: string): void {
-        if (editorId === this.compilerInfo.editorId && this.deviceCode) {
-            const irColours: Record<number, number> = {};
-            this.deviceCode.forEach((x: ResultLine, index: number) => {
-                const sourceLine = x.source?.line;
-                if (
-                    x.source &&
-                    (x.source.file == null || x.source.mainsource) &&
-                    sourceLine &&
-                    sourceLine > 0 &&
-                    Object.prototype.hasOwnProperty.call(colours, sourceLine - 1)
-                ) {
-                    irColours[index] = colours[sourceLine - 1];
-                }
-            });
-            colour.applyColours(irColours, scheme, this.editorDecorations);
+        if (this.compilerInfo.editorId != null) {
+            this.onColours(this.compilerInfo.editorId, this.lastColours, this.lastColourScheme);
         }
     }
 
     onColours(editorId: number, colours: Record<number, number>, scheme: string): void {
-        this.lastColoursByEditor.set(editorId, {colours, scheme});
-        this.applyColoursForEditor(editorId, colours, scheme);
+        if (editorId === this.compilerInfo.editorId && this.deviceCode) {
+            this.lastColours = colours;
+            this.lastColourScheme = scheme;
+
+            const irColours: Record<number, number> = {};
+            this.deviceCode.forEach((x: ResultLine, index: number) => {
+                if (
+                    x.source &&
+                    (x.source.file == null || x.source.mainsource) &&
+                    x.source.line > 0 &&
+                    colours[x.source.line - 1] !== undefined
+                ) {
+                    irColours[index] = colours[x.source.line - 1];
+                }
+            });
+            colour.applyColours(irColours, scheme, this.editorDecorations);
+        }
     }
 
     override onCompilerClose(id: number): void {
