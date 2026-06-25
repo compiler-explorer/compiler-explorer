@@ -61,12 +61,22 @@ export function resetStats() {
 }
 
 /**
+ * The directory under which this module creates temporary directories (unless callers pass
+ * an absolute prefix). The --tmp-dir command line option is not read directly: at startup
+ * setupTempDir() exports it as $TMPDIR/$TMP/$TEMP, which os.tmpdir() consults.
+ * See lib/app/temp-dir.ts.
+ */
+export function getTempRoot(): string {
+    return os.tmpdir();
+}
+
+/**
  * Create a temporary directory. If the prefix is an absolute path, use it directly;
  * otherwise create the directory in the operating system's temporary directory.
  * @param prefix a prefix for the directory name, or an absolute path prefix
  */
 export async function mkdir(prefix: string) {
-    const baseDir = path.isAbsolute(prefix) ? prefix : path.join(os.tmpdir(), prefix);
+    const baseDir = path.isAbsolute(prefix) ? prefix : path.join(getTempRoot(), prefix);
     const result = await fs.promises.mkdtemp(baseDir);
     ++stats.numCreated;
     pendingRemoval.push(result);
@@ -79,7 +89,7 @@ export async function mkdir(prefix: string) {
  * @param prefix a prefix for the directory name, or an absolute path prefix
  */
 export function mkdirSync(prefix: string) {
-    const baseDir = path.isAbsolute(prefix) ? prefix : path.join(os.tmpdir(), prefix);
+    const baseDir = path.isAbsolute(prefix) ? prefix : path.join(getTempRoot(), prefix);
     const result = fs.mkdtempSync(baseDir);
     ++stats.numCreated;
     pendingRemoval.push(result);
@@ -111,6 +121,26 @@ export async function cleanup() {
     logger.debug(`Removed ${numRemoved} (${numAlreadyGone} already gone) of ${toRemove.length} temporary directories`);
 }
 
-process.on('exit', async () => {
-    await cleanup();
+/**
+ * Synchronously remove all temporary directories created by this module; for use at process
+ * exit, where asynchronous work never runs.
+ */
+export function cleanupSync() {
+    const toRemove = pendingRemoval.splice(0, pendingRemoval.length);
+    for (const dir of toRemove) {
+        try {
+            if (!fs.existsSync(dir)) {
+                ++stats.numAlreadyGone;
+                continue;
+            }
+            fs.rmSync(dir, {recursive: true, force: true});
+            ++stats.numRemoved;
+        } catch {
+            // Best effort only: we may be partway through exiting.
+        }
+    }
+}
+
+process.on('exit', () => {
+    cleanupSync();
 });

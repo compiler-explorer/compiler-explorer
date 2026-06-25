@@ -41,6 +41,7 @@ import {Hub} from '../hub.js';
 import * as LibUtils from '../lib-utils.js';
 import {Library, LibraryVersion} from '../options.interfaces.js';
 import {options} from '../options.js';
+import {languagesService} from '../services/languages.service.js';
 import * as utils from '../utils.js';
 import {CompilerPicker} from '../widgets/compiler-picker.js';
 import {Lib} from '../widgets/libs-widget.interfaces.js';
@@ -85,7 +86,7 @@ export class Conformance extends Pane<ConformanceViewState> {
         super(hub, container, state);
         this.compilerService = hub.compilerService;
         this.maxCompilations = options.cvCompilerCountMax;
-        this.langId = state.langId || _.keys(options.languages)[0];
+        this.langId = state.langId || _.keys(languagesService.getLanguagesOrFail())[0];
         this.source = state.source ?? '';
         this.sourceNeedsExpanding = true;
         this.expandedSourceAndFiles = null;
@@ -135,15 +136,16 @@ export class Conformance extends Pane<ConformanceViewState> {
         }
     }
 
-    initLibraries(state: PaneState & ConformanceViewState): void {
+    async initLibraries(state: PaneState & ConformanceViewState): Promise<void> {
         const compilerIds = this.getCurrentCompilersIds();
+        const libs = await this.getOverlappingLibraries(compilerIds);
         this.libsWidget = new LibsWidget(
             this.langId,
             compilerIds.join('|'),
             this.libsButton,
             state,
             this.onLibsChanged.bind(this),
-            this.getOverlappingLibraries(compilerIds),
+            libs,
         );
         // No callback is done on initialization, so make sure we store the current libs
         this.currentLibs = this.libsWidget.get();
@@ -205,7 +207,7 @@ export class Conformance extends Pane<ConformanceViewState> {
                 // Compiler id which is being used
                 compilerId: '',
                 // Options which are in use
-                options: options.compileOptions[this.langId],
+                options: '',
             };
         }
         const newSelector = this.selectorTemplate.clone();
@@ -244,12 +246,12 @@ export class Conformance extends Pane<ConformanceViewState> {
         newCompilerEntry.prependOptions = newSelector.find('.prepend-options');
         const popCompilerButton = newSelector.find('.extract-compiler');
 
-        const onCompilerChange = (compilerId: string) => {
+        const onCompilerChange = async (compilerId: string) => {
             popCompilerButton.toggleClass('d-none', !compilerId);
             this.saveState();
             // Hide the results icon when a new compiler is selected
             this.handleStatusIcon(newCompilerEntry.statusIcon, {code: 0, compilerOut: 0});
-            const compiler = this.compilerService.findCompiler(this.langId, compilerId);
+            const compiler = await this.compilerService.findCompiler(this.langId, compilerId);
             if (compiler) this.setCompilationOptionsPopover(newCompilerEntry.prependOptions, compiler.options);
             this.updateLibraries();
             this.compileChild(newCompilerEntry);
@@ -481,10 +483,10 @@ export class Conformance extends Pane<ConformanceViewState> {
         this.conformanceContentRoot.outerHeight(this.domRoot.height() ?? 0 - topBarHeight);
     }
 
-    getOverlappingLibraries(compilerIds: string[]): CompilerLibs {
-        const compilers = compilerIds.map(compilerId => {
-            return this.compilerService.findCompiler(this.langId, compilerId);
-        });
+    async getOverlappingLibraries(compilerIds: string[]): Promise<CompilerLibs> {
+        const compilers = await Promise.all(
+            compilerIds.map(compilerId => this.compilerService.findCompiler(this.langId, compilerId)),
+        );
 
         const langId = this.langId;
 
@@ -492,7 +494,7 @@ export class Conformance extends Pane<ConformanceViewState> {
         let first = true;
         for (const compiler of compilers) {
             if (!compiler) continue;
-            const filteredLibraries = LibUtils.getSupportedLibraries(compiler.libsArr, langId, compiler.remote);
+            const filteredLibraries = await LibUtils.getSupportedLibraries(compiler.libsArr, langId, compiler.remote);
 
             if (first) {
                 libraries = _.extend({}, filteredLibraries);
@@ -537,9 +539,10 @@ export class Conformance extends Pane<ConformanceViewState> {
         );
     }
 
-    updateLibraries(): void {
+    async updateLibraries(): Promise<void> {
         const compilerIds = this.getCurrentCompilersIds();
-        this.libsWidget.setNewLangId(this.langId, compilerIds.join('|'), this.getOverlappingLibraries(compilerIds));
+        const libs = await this.getOverlappingLibraries(compilerIds);
+        this.libsWidget.setNewLangId(this.langId, compilerIds.join('|'), libs);
     }
 
     onLanguageChange(editorId: number | boolean, newLangId: string): void {

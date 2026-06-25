@@ -39,7 +39,10 @@ import {CompilationEnvironment} from '../compilation-env.js';
 import {AssemblyName, DotnetExtraConfiguration} from '../execution/dotnet-execution-env.js';
 import {IExecutionEnvironment} from '../execution/execution-env.interfaces.js';
 import {DotNetAsmParser} from '../parsers/asm-parser-dotnet.js';
+import {DotNetPdbParser, type DotNetSourceMapping} from '../parsers/pdb-parser-dotnet.js';
 import * as utils from '../utils.js';
+
+type DotNetCompilationResult = CompilationResult & {dotnetSourceMapping?: DotNetSourceMapping};
 
 class DotNetCompiler extends BaseCompiler {
     private readonly sdkBaseDir: string;
@@ -346,7 +349,7 @@ class DotNetCompiler extends BaseCompiler {
             '-warn:9',
             '-highentropyva+',
             '-nullable:enable',
-            '-debug-',
+            '-debug:portable',
             '-optimize+',
             '-warnaserror-',
             '-utf8output',
@@ -410,7 +413,7 @@ System.Diagnostics,System.Linq,System.Xml.Linq,System.Threading.Tasks`,
             '-errorreport:prompt',
             '-rootnamespace:CompilerExplorer',
             '-highentropyva+',
-            '-debug-',
+            '-debug:portable',
             '-optimize+',
             '-warnaserror-',
             '-utf8output',
@@ -477,6 +480,7 @@ Imports System.Reflection
             '--warnaserror:3239',
             '--fullpaths',
             '--flaterrors',
+            '--debug:portable',
             '--highentropyva+',
             '--targetprofile:netcore',
             '--nocopyfsharpcore',
@@ -549,6 +553,7 @@ do()
             '-nologo',
             '-quiet',
             '-optimize',
+            '-debug:OPT',
             buildToBinary ? '-exe' : '-dll',
             assemblyInfoPath,
             `-include:${programDir}`,
@@ -619,7 +624,7 @@ do()
                     if (normalizedName === 'DOTNET_JITDISASM') {
                         overrideDisasm = true;
                     }
-                    if (normalizedName === 'DOTNET_JITDISASMASSEMBILES') {
+                    if (normalizedName === 'DOTNET_JITDISASMASSEMBLIES') {
                         overrideAssembly = true;
                     }
                     if (normalizedName === 'DOTNET_JITDIFFABLEDASM' || normalizedName === 'DOTNET_JITDISASMDIFFABLE') {
@@ -651,7 +656,7 @@ do()
                             if (normalizedValue.startsWith('JITDISASM=')) {
                                 overrideDisasm = true;
                             }
-                            if (normalizedValue.startsWith('JITDISASMASSEMBILES=')) {
+                            if (normalizedValue.startsWith('JITDISASMASSEMBLIES=')) {
                                 overrideAssembly = true;
                             }
                             if (
@@ -709,9 +714,18 @@ do()
             }
         }
 
+        const mapDebugInfo = (isCoreRun && !isMono) || isCrossgen2 || isAot;
+
+        if (mapDebugInfo) {
+            if (needCodegenOptions) {
+                toolOptions.push('--codegenopt', 'JitDisasmWithDebugInfo=1');
+            }
+            envVarFileContents.push('DOTNET_JitDisasmWithDebugInfo=1');
+        }
+
         this.setCompilerExecOptions(execOptions, programDir);
 
-        const compilerResult = await this.buildToDll(
+        const compilerResult: DotNetCompilationResult = await this.buildToDll(
             compiler,
             compilerInfo,
             inputFilename,
@@ -721,6 +735,16 @@ do()
         );
         if (compilerResult.code !== 0) {
             return compilerResult;
+        }
+
+        if (mapDebugInfo) {
+            const pdbPath = utils.changeExtension(programDllPath, '.pdb');
+            if (await utils.fileExists(pdbPath)) {
+                compilerResult.dotnetSourceMapping = new DotNetPdbParser(
+                    await fs.readFile(programDllPath),
+                    await fs.readFile(pdbPath),
+                ).parse();
+            }
         }
 
         if (isIlDasm) {
@@ -795,6 +819,10 @@ do()
         return compilerResult;
     }
 
+    override async processAsm(result: DotNetCompilationResult, filters: ParseFiltersAndOutputOptions) {
+        return new DotNetAsmParser(result.dotnetSourceMapping).process(result.asm as string, filters);
+    }
+
     override optionsForFilter(filters: ParseFiltersAndOutputOptions) {
         return [];
     }
@@ -846,7 +874,7 @@ do()
 
         await fs.writeFile(
             outputPath,
-            `// ${isMono ? 'mono' : 'coreclr'} ${await this.getRuntimeVersion()}\n\n${result.stdout
+            `// ${isMono ? 'mono' : 'coreclr'} ${await this.getRuntimeVersion()}${result.stdout
                 .map(o => o.text)
                 .reduce((a, n) => `${a}\n${n}`, '')}`,
         );
@@ -876,7 +904,7 @@ do()
 
         await fs.writeFile(
             outputPath,
-            `// ilspy ${await this.getRuntimeVersion()}\n\n${result.stdout
+            `// ilspy ${await this.getRuntimeVersion()}${result.stdout
                 .map(o => o.text)
                 .reduce((a, n) => `${a}\n${n}`, '')}`,
         );
@@ -892,7 +920,7 @@ do()
 
         await fs.writeFile(
             outputPath,
-            `// ildasm ${await this.getRuntimeVersion()}\n\n${result.stdout
+            `// ildasm ${await this.getRuntimeVersion()}${result.stdout
                 .map(o => o.text)
                 .reduce((a, n) => `${a}\n${n}`, '')}`,
         );
@@ -940,7 +968,7 @@ do()
 
         await fs.writeFile(
             outputPath,
-            `// crossgen2 ${await this.getRuntimeVersion()}\n\n${result.stdout
+            `// crossgen2 ${await this.getRuntimeVersion()}${result.stdout
                 .map(o => o.text)
                 .reduce((a, n) => `${a}\n${n}`, '')}`,
         );
@@ -976,13 +1004,26 @@ do()
             '--directpinvoke:libSystem.IO.Compression.Native',
             '--directpinvoke:libSystem.Net.Security.Native',
             '--directpinvoke:libSystem.Security.Cryptography.Native.OpenSsl',
+            '--feature:System.Reflection.Metadata.MetadataUpdater.IsSupported=false',
+            '--feature:System.Resources.ResourceManager.AllowCustomResourceTypes=false',
+            '--feature:System.Runtime.CompilerServices.RuntimeFeature.IsDynamicCodeSupported=false',
+            '--feature:System.Runtime.InteropServices.EnableConsumingManagedCodeFromNativeHosting=false',
+            '--feature:System.Runtime.InteropServices.EnableCppCLIHostActivation=false',
+            '--feature:System.StartupHookProvider.IsSupported=false',
+            '--feature:System.Linq.Expressions.CanEmitObjectArrayDelegate=false',
+            '--feature:System.Diagnostics.Debugger.IsSupported=false',
+            '--runtimeknob:System.Reflection.Metadata.MetadataUpdater.IsSupported=false',
+            '--runtimeknob:System.Resources.ResourceManager.AllowCustomResourceTypes=false',
+            '--runtimeknob:System.Runtime.CompilerServices.RuntimeFeature.IsDynamicCodeSupported=false',
+            '--runtimeknob:System.Runtime.InteropServices.EnableConsumingManagedCodeFromNativeHosting=false',
+            '--runtimeknob:System.Runtime.InteropServices.EnableCppCLIHostActivation=false',
+            '--runtimeknob:System.StartupHookProvider.IsSupported=false',
+            '--runtimeknob:System.Linq.Expressions.CanEmitObjectArrayDelegate=false',
             '--resilient',
             '--singlewarn',
             '--scanreflection',
             '--nosinglewarnassembly:CompilerExplorer',
             '--generateunmanagedentrypoints:System.Private.CoreLib',
-            '--notrimwarn',
-            '--noaotwarn',
         ].concat(options);
 
         if (!buildToBinary) {
@@ -994,7 +1035,7 @@ do()
 
         await fs.writeFile(
             outputPath,
-            `// ilc ${await this.getRuntimeVersion()}\n\n${result.stdout
+            `// ilc ${await this.getRuntimeVersion()}${result.stdout
                 .map(o => o.text)
                 .reduce((a, n) => `${a}\n${n}`, '')}`,
         );
@@ -1012,7 +1053,18 @@ do()
             executable = this.compiler.executionWrapper;
         }
 
+        const isCoreClr = this.compiler.group === 'dotnetcoreclr';
         const isMono = this.compiler.group === 'dotnetmono';
+
+        if (!isCoreClr && !isMono) {
+            return {
+                ...utils.getEmptyExecutionResult(),
+                stdout: [],
+                stderr: utils.parseOutput('Execution is only supported for CoreCLR and Mono compilers'),
+                code: -1,
+            };
+        }
+
         const compilerInfo = await this.getCompilerInfo(this.lang.id);
         const extraConfiguration: DotnetExtraConfiguration = {
             buildConfig: this.buildConfig,

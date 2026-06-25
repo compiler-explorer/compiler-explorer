@@ -31,7 +31,7 @@ import {ClientState} from '../clientstate.js';
 import {ClientStateNormalizer} from '../clientstate-normalizer.js';
 import {logger} from '../logger.js';
 import {ClientOptionsHandler} from '../options-handler.js';
-import {StorageBase} from '../storage/index.js';
+import {getSafeHash, StorageBase} from '../storage/index.js';
 import {RenderConfig} from './handler.interfaces.js';
 import {cached, csp} from './middleware.js';
 
@@ -224,7 +224,7 @@ export class NoScriptHandler {
         }
 
         // Generating shareable URL
-        const shareableUrl = await this.generateShareableUrl(state);
+        const shareableUrl = await this.generateShareableUrl(state, req);
 
         const httpRoot = (this.renderConfig as any).httpRoot || '/';
         const relativeUrl = shareableUrl.substring(shareableUrl.lastIndexOf('/z/') + 1);
@@ -251,10 +251,10 @@ export class NoScriptHandler {
         res.render('noscript/share', renderConfig);
     }
 
-    async generateShareableUrl(state: ClientState): Promise<string> {
+    async generateShareableUrl(state: ClientState, req: express.Request): Promise<string> {
         try {
             // Creating the stored object like the main handler does
-            const {config, configHash} = StorageBase.getSafeHash(state);
+            const {config, configHash} = getSafeHash(state);
 
             // Finding or create the unique subhash
             const result = await this.storageHandler.findUniqueSubhash(configHash);
@@ -267,7 +267,7 @@ export class NoScriptHandler {
                     config: config,
                 };
 
-                await this.storageHandler.storeItem(storedObject, {} as express.Request);
+                await this.storageHandler.storeItem(storedObject, req);
             }
 
             return `/z/${result.uniqueSubHash}`;
@@ -276,7 +276,7 @@ export class NoScriptHandler {
             // Fallback to direct encoding
             const stateString = JSON.stringify(state);
             const base64State = Buffer.from(stateString).toString('base64url');
-            return `/#${base64State}`;
+            return `clientstate/${base64State}`;
         }
     }
 }

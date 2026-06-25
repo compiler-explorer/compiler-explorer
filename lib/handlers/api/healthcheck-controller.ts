@@ -29,6 +29,7 @@ import express from 'express';
 import {CompilationQueue} from '../../compilation-queue.js';
 import {logger} from '../../logger.js';
 import {SentryCapture} from '../../sentry.js';
+import * as temp from '../../temp.js';
 import {ICompileHandler} from '../compile.interfaces.js';
 import {HttpController} from './controller.interfaces.js';
 
@@ -41,6 +42,7 @@ export class HealthcheckController implements HttpController {
         private readonly healthCheckFilePath: string | null,
         private readonly compileHandler: ICompileHandler,
         private readonly isExecutionWorker: boolean,
+        private readonly minFreeSpaceMiB: number,
     ) {}
 
     public setCompilationWorkerHealthCheck(healthCheck: () => boolean): void {
@@ -86,6 +88,30 @@ export class HealthcheckController implements HttpController {
             logger.error('*** HEALTH CHECK FAILURE: execution worker has failed permanently');
             res.status(500).send();
             return;
+        }
+
+        // Require some free space on the filesystem hosting our temporary directory: report unhealthy
+        // before compilations start failing with ENOSPC, so the load balancer replaces the instance
+        // while it can still limp along (see #8811).
+        if (this.minFreeSpaceMiB > 0) {
+            const tempDir = temp.getTempRoot();
+            try {
+                const stats = await fs.statfs(tempDir);
+                const freeMiB = (stats.bavail * stats.bsize) / (1024 * 1024);
+                if (freeMiB < this.minFreeSpaceMiB) {
+                    logger.error(
+                        `*** HEALTH CHECK FAILURE: only ${freeMiB.toFixed(0)}MiB free on '${tempDir}', ` +
+                            `need at least ${this.minFreeSpaceMiB}MiB`,
+                    );
+                    res.status(500).send();
+                    return;
+                }
+            } catch (e) {
+                logger.error(`*** HEALTH CHECK FAILURE: while checking free space on '${tempDir}':`, e);
+                SentryCapture(e, 'Health check free space');
+                res.status(500).send();
+                return;
+            }
         }
 
         // If we have a healthcheck file, we require that it exists and it is non-empty. The /efs/.health file contents

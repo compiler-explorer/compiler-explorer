@@ -1,5 +1,5 @@
 import {serialiseState} from '../../shared/url-serialization.js';
-import {assertNoConsoleOutput, stubConsoleOutput} from '../support/utils';
+import {assertNoConsoleOutput, setupAndWaitForCompilation, stubConsoleOutput} from '../support/utils';
 
 const PANE_DATA_MAP = {
     codeEditor: {name: 'Editor', selector: 'new-editor'},
@@ -36,6 +36,8 @@ describe('Individual pane testing', () => {
                 stubConsoleOutput(win);
             },
         });
+
+        setupAndWaitForCompilation();
 
         cy.get('[data-cy="new-compiler-dropdown-btn"]:visible').click();
         // Shows every pane button even if the compiler does not support it

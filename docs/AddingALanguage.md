@@ -1,6 +1,6 @@
 # Adding a new language
 
-If you want to add a new language to the site, you should follow this steps:
+If you want to add a new language to the site, you should follow these steps:
 
 - Add the new language to the exported `languages` variable in `lib/languages.ts`:
 
@@ -23,10 +23,10 @@ If you want to add a new language to the site, you should follow this steps:
   - If not, you should implement your own language mode; see `static/modes/asm-mode.ts` as an example. Don't forget to
     _require_ your mode file in `static/modes/_all.ts`, in alphabetical order
   - `language-key` is how your language will be referred internally by the code. In the rest of this document, replace
-    `{language-key}` by the corresponding value in the real files.
+    `{language-key}` by the corresponding value in the real files
   - Add a logo file to the `views/resources/logos/` folder and add its path to the `logoFilename{Dark}` key(s) in the
     language object
-  - Add the logo keys to the `static/logos.ts` file, in alphabetical order.
+  - Add the logo keys to the `static/logos.ts` file, in alphabetical order
 
 - Add `{language-key}` to type list in `types/languages.interfaces.ts`
 - Add a `lib/compilers/{language-key}.ts` file using the template below:
@@ -55,7 +55,7 @@ If you want to add a new language to the site, you should follow this steps:
     - execute the compiler.exe with the arguments from `OptionsForFilter()` and adding `inputFilename`
     - be aware that the language class is only instanced once, so storing state is not possible
   - If the compiler has problems with the defaults, you will have to override the `runCompiler()` method too. When
-    overriding it, here are some ideas
+    overriding it, here are some ideas:
     - set `execOptions.customCwd` parameter if the working directory needs to be somewhere else
     - set `execOptions.env` parameter if the compiler requires special environment variables
     - manipulate `options`, but make sure the user can still add their own arguments in CE
@@ -70,7 +70,7 @@ If you want to add a new language to the site, you should follow this steps:
   - You should add 1 compiler for the language you want to test
   - Test the command line options of the language compilers outside CE
 
-- Add a new file `etc/config/{language-key}.defaults.properties`. This is where a default configuration will live.
+- Add a new file `etc/config/{language-key}.defaults.properties`. This is where a default configuration will live
 
   - Usually, this loads default compilers from their usual paths on a normal installation (Check
     `etc/config/c++.defaults.properties` for an example)

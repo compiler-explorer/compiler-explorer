@@ -50,7 +50,7 @@
             }
         },
         {
-            "text": "Disassembly of <code object square at 0x55a2b8e95ff0, file \"example.py\", line 1>:",
+            "text": "Function #0",
             "source": {
                 "line": null,
                 "file": null
