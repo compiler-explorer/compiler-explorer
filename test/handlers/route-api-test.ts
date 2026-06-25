@@ -185,4 +185,17 @@ describe('clientStateHandler', () => {
         const response = await request(app).get(`/clientstate/${corruptGzipData}`);
         expect(response.status).toBe(400);
     });
+    it('should return 200 for GoldenLayout format in /clientstate', async () => {
+        const goldenLayout = {
+            content: [
+                {
+                    type: 'column',
+                    content: [],
+                },
+            ],
+        };
+        const document = Buffer.from(JSON.stringify(goldenLayout), 'utf-8').toString('base64');
+        const response = await request(app).get(`/clientstate/${document}`);
+        expect(response.status).toBe(200);
+    });
 });
