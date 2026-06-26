@@ -140,4 +140,24 @@ export class PrefixTree {
             mapNames: mapNames,
         };
     }
+
+    // Like replaceAll, but only computes the replaced text. Skips building the
+    // mapRanges/mapNames metadata, which callers that don't need source-position
+    // mapping (e.g. opt-pipeline pass-dump demangling) would otherwise allocate
+    // per line and immediately discard.
+    replaceAllText(line: string): string {
+        let newText = '';
+        let idxInOld = 0;
+        while (idxInOld < line.length) {
+            const [oldValue, newValue] = this.findLongestMatch(line);
+            if (oldValue) {
+                newText += newValue;
+                idxInOld += oldValue.length;
+            } else {
+                newText += line[idxInOld];
+                idxInOld++;
+            }
+        }
+        return newText;
+    }
 }

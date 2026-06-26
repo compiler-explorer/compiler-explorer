@@ -76,12 +76,12 @@ export class LLVMIRDemangler {
         if (translations.length > 0) {
             const tree = new PrefixTree(translations);
             for (const [functionName, passes] of Object.entries(passOutput)) {
-                const demangledFunctionName = tree.replaceAll(functionName).newText;
+                const demangledFunctionName = tree.replaceAllText(functionName);
                 for (const pass of passes) {
-                    pass.name = tree.replaceAll(pass.name).newText; // needed at least for full module mode
+                    pass.name = tree.replaceAllText(pass.name); // needed at least for full module mode
                     for (const dump of [pass.before, pass.after]) {
                         for (const line of dump) {
-                            line.text = tree.replaceAll(line.text).newText;
+                            line.text = tree.replaceAllText(line.text);
                         }
                     }
                 }
