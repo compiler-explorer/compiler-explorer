@@ -104,8 +104,8 @@ export class PrefixTree {
         const mapRanges: Record<number, Record<number, charRange>> = {};
         const mapNames: Record<string, string> = {};
         // Loop over each possible replacement point in the line.
-        // Use a binary search to find the replacements (allowing a prefix match). If we couldn't find a match, skip
-        // on, else use the replacement, and skip by that amount.
+        // Walk the prefix tree to find the longest replacement at the current index. If no match is found, emit the
+        // current character; otherwise emit the replacement and advance by the matched length.
         while (idxInOld < line.length) {
             const [oldValue, newValue] = this.findLongestMatch(line, idxInOld);
             if (oldValue) {
