@@ -71,15 +71,15 @@ export class PrefixTree {
     // Finds the longest possible match by walking along the N-way tree until we
     // mismatch or reach the end of the input string. Along the way, we note the
     // most recent match (if any), which will be our return value.
-    findLongestMatch(needle: string) {
+    findLongestMatch(needle: string, start = 0) {
         let node = this.root;
         let match: [string, string] | [null, null] = [null, null];
-        for (let i = 0; i < needle.length; ++i) {
+        for (let i = start; i < needle.length; ++i) {
             const character = needle.codePointAt(i);
             assert(character !== undefined, 'Undefined code point encountered in PrefixTree');
             node = node[character];
             if (!node) break;
-            if (node.result) match = [needle.substring(0, i + 1), node.result];
+            if (node.result) match = [needle.substring(start, i + 1), node.result];
         }
         return match;
     }
@@ -107,8 +107,7 @@ export class PrefixTree {
         // Use a binary search to find the replacements (allowing a prefix match). If we couldn't find a match, skip
         // on, else use the replacement, and skip by that amount.
         while (idxInOld < line.length) {
-            const lineBit = line.substring(idxInOld);
-            const [oldValue, newValue] = this.findLongestMatch(lineBit);
+            const [oldValue, newValue] = this.findLongestMatch(line, idxInOld);
             if (oldValue) {
                 // We found a replacement.
                 newText += newValue;
@@ -149,7 +148,7 @@ export class PrefixTree {
         let newText = '';
         let idxInOld = 0;
         while (idxInOld < line.length) {
-            const [oldValue, newValue] = this.findLongestMatch(line);
+            const [oldValue, newValue] = this.findLongestMatch(line, idxInOld);
             if (oldValue) {
                 newText += newValue;
                 idxInOld += oldValue.length;
