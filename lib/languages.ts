@@ -248,7 +248,7 @@ const definitions: Record<LanguageKey, LanguageDefinition> = {
         alias: [],
         logoFilename: null,
         logoFilenameDark: null,
-        formatter: null,
+        formatter: 'co2fmt',
         previewFilter: /^\s*#include/,
         monacoDisassembly: null,
         digitSeparator: '_',

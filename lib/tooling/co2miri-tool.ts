@@ -22,9 +22,7 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import {CompilationInfo} from '../../types/compilation/compilation.interfaces.js';
 import type {ResultLine} from '../../types/resultline/resultline.interfaces.js';
-import type {ToolResult} from '../../types/tool.interfaces.js';
 import {parseRustOutput} from '../utils.js';
 import {BaseTool} from './base-tool.js';
 
@@ -35,27 +33,5 @@ export class Co2MiriTool extends BaseTool {
 
     override parseOutput(lines: string, inputFilename?: string, pathPrefix?: string): ResultLine[] {
         return parseRustOutput(lines, inputFilename, pathPrefix);
-    }
-
-    override async runTool(
-        compilationInfo: CompilationInfo,
-        inputFilepath?: string,
-        args?: string[],
-        stdin?: string,
-        supportedLibraries?: any,
-        dontAppendInputFilepath?: boolean,
-    ): Promise<ToolResult> {
-        const compilerId = compilationInfo.compiler.id;
-        if (compilerId === 'co2cc') {
-            return {
-                id: this.tool.id,
-                name: this.tool.name,
-                code: -1,
-                languageId: 'stderr',
-                stderr: this.parseOutput('co2miri is only supported with co2rustc, not with co2cc (C compilation)'),
-                stdout: [],
-            };
-        }
-        return super.runTool(compilationInfo, inputFilepath, args, stdin, supportedLibraries, dontAppendInputFilepath);
     }
 }
