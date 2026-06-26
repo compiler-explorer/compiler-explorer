@@ -22,6 +22,7 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
+export {AburiCompiler} from './aburi.js';
 export {AdaCompiler} from './ada.js';
 export {AMDRGACompiler} from './amd-rga.js';
 export {AnalysisTool} from './analysis-tool.js';
