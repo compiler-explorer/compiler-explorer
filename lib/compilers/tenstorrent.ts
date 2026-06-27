@@ -3,9 +3,10 @@
  * Patched and production-optimized for tt-metal Issue #46364
  */
 
-import { BaseCompiler } from '../base-compiler.js';
-import * as path from 'path';
-import * as fs from 'fs';
+import * as fs from 'node:fs';
+import * as path from 'node:path';
+
+import {BaseCompiler} from '../base-compiler.js';
 
 export class TenstorrentCompiler extends BaseCompiler {
     private ttMetalHome: string;
