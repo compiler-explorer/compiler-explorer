@@ -29,7 +29,11 @@ import {SemVer} from 'semver';
 import _ from 'underscore';
 
 import {ExecutionOptionsWithEnv} from '../../types/compilation/compilation.interfaces.js';
-import {CompilerOverrideType, ConfiguredOverrides} from '../../types/compilation/compiler-overrides.interfaces.js';
+import {
+    CompilerOverrideOption,
+    CompilerOverrideType,
+    ConfiguredOverrides,
+} from '../../types/compilation/compiler-overrides.interfaces.js';
 import {LLVMIrBackendOptions} from '../../types/compilation/ir.interfaces.js';
 import type {PreliminaryCompilerInfo} from '../../types/compiler.interfaces.js';
 import type {BasicExecutionResult, UnprocessedExecResult} from '../../types/execution/execution.interfaces.js';
@@ -39,6 +43,7 @@ import {unwrap} from '../assert.js';
 import {BaseCompiler} from '../base-compiler.js';
 import type {BuildEnvDownloadInfo} from '../buildenvsetup/buildenv.interfaces.js';
 import {CompilationEnvironment} from '../compilation-env.js';
+import {E2KAsmParser} from '../parsers/asm-parser-e2k.js';
 import {changeExtension, parseRustOutput} from '../utils.js';
 import {RustParser} from './argument-parsers.js';
 
@@ -344,5 +349,101 @@ export class RustCompiler extends BaseCompiler {
     override isOutputLikelyLlvmIr(options: string[]): boolean {
         const emitIndex = options.indexOf('--emit');
         return options.includes('--emit=llvm-ir') || (emitIndex >= 0 && options[emitIndex + 1] == 'llvm-ir');
+    }
+}
+
+export class RustE2KCompiler extends RustCompiler {
+    defaultTarget: string;
+    E2KLinker: string;
+
+    static override get key() {
+        return 'rust-e2k';
+    }
+
+    constructor(info: PreliminaryCompilerInfo, env: CompilationEnvironment) {
+        super(info, env);
+
+        this.asm = new E2KAsmParser();
+
+        this.defaultTarget = this.compilerProps<string>('E2KDefaultTarget');
+        this.E2KLinker = this.compilerProps<string>('E2KLinker');
+    }
+
+    override async getTargetsAsOverrideValues(): Promise<CompilerOverrideOption[]> {
+        const targets = await super.getTargetsAsOverrideValues();
+        return targets.filter(target => target.value.startsWith('e2kv'));
+    }
+
+    override fixIncompatibleOptions(
+        options: string[],
+        userOptions: string[],
+        overrides: ConfiguredOverrides,
+    ): [string[], ConfiguredOverrides] {
+        const [newOptions, newOverrides] = super.fixIncompatibleOptions(options, userOptions, overrides);
+
+        const targetOverrideIdx = newOverrides.findIndex(ovr => ovr.name === CompilerOverrideType.arch);
+        if (targetOverrideIdx !== -1) {
+            if (
+                newOptions.some(opt => opt.startsWith('--target')) ||
+                userOptions.some(opt => opt.startsWith('--target'))
+            )
+                // Prefer the options target over the overrides
+                newOverrides.splice(targetOverrideIdx, 1);
+        }
+
+        return [newOptions, newOverrides];
+    }
+
+    override prepareArguments(
+        userOptions: string[],
+        filters: ParseFiltersAndOutputOptions,
+        backendOptions: Record<string, any>,
+        inputFilename: string,
+        outputFilename: string,
+        libraries: SelectedLibraryVersion[],
+        overrides: ConfiguredOverrides,
+    ) {
+        let options = super.prepareArguments(
+            userOptions,
+            filters,
+            backendOptions,
+            inputFilename,
+            outputFilename,
+            libraries,
+            overrides,
+        );
+
+        let target;
+        for (let idx = 0; idx < options.length; idx++) {
+            if (options[idx].startsWith('--target=')) {
+                target = options[idx].substring(9);
+                break;
+            } else if (options[idx] == '--target' && idx + 1 < options.length) {
+                target = options[idx + 1];
+                break;
+            }
+        }
+
+        if (!target && this.defaultTarget) {
+            options = options.concat('--target', this.defaultTarget);
+            target = this.defaultTarget;
+        }
+
+        if (this.E2KLinker && target && target.startsWith('e2k')) {
+            let foundLinker = false;
+            for (let idx = options.length; idx--; ) {
+                if (options[idx].startsWith('-Clinker=')) {
+                    options[idx] = `-Clinker=${this.E2KLinker}`;
+                    foundLinker = true;
+                    break;
+                }
+            }
+
+            if (!foundLinker) {
+                options = options.concat(`-Clinker=${this.E2KLinker}`);
+            }
+        }
+
+        return options;
     }
 }
