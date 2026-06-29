@@ -113,6 +113,7 @@ export {LLVMMOSCompiler} from './llvm-mos.js';
 export {LuaCompiler} from './lua.js';
 export {M68kCompiler} from './m68k.js';
 export {MadPascalCompiler} from './madpascal.js';
+export {MCSTLCCE2KCompiler} from './mcst-lcc.js';
 export {MicroPythonCompiler} from './micropython.js';
 export {MLIRCompiler} from './mlir.js';
 export {MojoCompiler} from './mojo.js';

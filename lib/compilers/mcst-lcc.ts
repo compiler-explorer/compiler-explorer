@@ -1,4 +1,4 @@
-// Copyright (c) 2023, Compiler Explorer Authors
+// Copyright (c) 2026, Compiler Explorer Authors
 // All rights reserved.
 //
 // Redistribution and use in source and binary forms, with or without
@@ -22,52 +22,35 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-export const InstructionSetsList = [
-    '6502',
-    'aarch64',
-    'amd64',
-    'x86',
-    'arm32',
-    'avr',
-    'beam',
-    'c6x',
-    'dex',
-    'e2k',
-    'ebpf',
-    'evm',
-    'eravm',
-    'ez80',
-    'hook',
-    'hppa',
-    'core',
-    'java',
-    'kvx',
-    'llvm',
-    'loongarch',
-    'm68k',
-    'mips',
-    'mos6502',
-    'mpy',
-    'mrisc32',
-    'msp430',
-    'perl',
-    'powerpc',
-    'ptx',
-    'python',
-    'riscv32',
-    'riscv64',
-    's390x',
-    'sass',
-    'sh',
-    'sparc',
-    'spirv',
-    'vax',
-    'wasm32',
-    'wasm64',
-    'wdc65c816',
-    'xtensa',
-    'z180',
-    'z80',
-] as const;
+import type {PreliminaryCompilerInfo} from '../../types/compiler.interfaces.js';
+import type {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces.js';
+import {BaseCompiler} from '../base-compiler.js';
+import {CompilationEnvironment} from '../compilation-env.js';
+import {MCSTLCCE2KAsmParser} from '../parsers/asm-parser-e2k.js';
 
-export type InstructionSet = (typeof InstructionSetsList)[number];
+export class MCSTLCCE2KCompiler extends BaseCompiler {
+    static get key() {
+        return 'mcst-lcc-e2k';
+    }
+
+    constructor(info: PreliminaryCompilerInfo, env: CompilationEnvironment) {
+        super(info, env);
+
+        this.asm = new MCSTLCCE2KAsmParser();
+    }
+
+    override optionsForFilter(
+        filters: ParseFiltersAndOutputOptions,
+        outputFilename: string,
+        userOptions?: string[],
+    ): string[] {
+        if (this.compiler.supportsVerboseAsm) {
+            // Skip adding any verbose-asm options in super.optionsForFilter.
+            this.compiler.supportsVerboseAsm = false;
+        }
+        let options = super.optionsForFilter(filters, outputFilename, userOptions);
+        // Always enable verbose-asm to get line numbers.
+        options = options.concat('-fverbose-asm');
+        return options;
+    }
+}

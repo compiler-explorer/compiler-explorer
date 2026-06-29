@@ -646,7 +646,8 @@ export class BaseCompiler {
         if (!this.compiler.objdumper || !this.objdumperClass) return null;
 
         if (this.compiler.llvmObjdumper && result.instructionSet) {
-            const hostArchitectures = new Set(['amd64', 'x86']);
+            // Upstream LLVM does not support E2K.
+            const hostArchitectures = new Set(['amd64', 'x86', 'e2k']);
             if (!hostArchitectures.has(result.instructionSet)) {
                 return {exe: this.compiler.llvmObjdumper, cls: LlvmObjdumper};
             }

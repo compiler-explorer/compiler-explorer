@@ -42,6 +42,7 @@ export class SourceLineHandler {
     private sourceCVTag: RegExp;
     private source6502Dbg: RegExp;
     private source6502DbgEnd: RegExp;
+    private sourceE2K: RegExp;
     private sourceStab: RegExp;
     private stdInLooking: RegExp;
 
@@ -51,6 +52,7 @@ export class SourceLineHandler {
         this.sourceCVTag = /^\s*\.cv_loc\s+(\d+)\s+(\d+)\s+(\d+)\s+(\d+).*/;
         this.source6502Dbg = /^\s*\.dbg\s+line,\s*"([^"]+)",\s*(\d+)/;
         this.source6502DbgEnd = /^\s*\.dbg\s+line[^,]/;
+        this.sourceE2K = /!\s*([^:]+)\s*:\s*(\d+)\s*$/;
         this.sourceStab = /^\s*\.stabn\s+(\d+),0,(\d+),.*/;
         this.stdInLooking = /<stdin>|^-$|example\.[^/]+$|<source>/;
     }
@@ -121,6 +123,16 @@ export class SourceLineHandler {
         return this.createSource(file, sourceLine, context);
     }
 
+    handleE2K(line: string, context: SourceHandlerContext): AsmResultSource | null {
+        const match = line.match(this.sourceE2K);
+        if (!match) return null;
+
+        const file = utils.maskRootdir(match[1]);
+        const sourceLine = Number.parseInt(match[2], 10);
+
+        return this.createSource(file, sourceLine, context);
+    }
+
     handleStabs(line: string): AsmResultSource | null | undefined {
         const match = line.match(this.sourceStab);
         if (!match) return undefined;
@@ -150,6 +162,7 @@ export class SourceLineHandler {
             () => this.handleD2Tag(line),
             () => this.handleCVTag(line, context),
             () => this.handle6502Debug(line, context),
+            () => this.handleE2K(line, context),
         ];
 
         for (const handler of handlers) {

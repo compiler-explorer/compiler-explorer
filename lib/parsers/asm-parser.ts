@@ -260,8 +260,11 @@ export class AsmParser extends AsmRegex implements IAsmParser {
                 continue;
             }
 
-            line = utils.expandTabs(line);
-            const text = AsmRegex.filterAsmLine(line, filters);
+            const res = this.filterAsmLine(line, filters);
+            if (res.skipLine) {
+                continue;
+            }
+            const text = res.text;
 
             const labelsInLine = match ? [] : this.getUsedLabelsInLine(text);
 
@@ -331,6 +334,12 @@ export class AsmParser extends AsmRegex implements IAsmParser {
 
         // Skip this line unless we determined there's user code mixed in (keepInlineCode=true)
         return !this.parsingState.shouldKeepInlineCode();
+    }
+
+    protected filterAsmLine(line: string, filters: ParseFiltersAndOutputOptions): {text: string; skipLine: boolean} {
+        line = utils.expandTabs(line);
+        const text = AsmRegex.filterAsmLine(line, filters);
+        return {text, skipLine: false};
     }
 
     constructor(compilerProps?: PropertyGetter) {
