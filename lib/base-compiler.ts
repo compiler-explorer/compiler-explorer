@@ -1596,7 +1596,6 @@ export class BaseCompiler {
                 optPipelineOptions,
                 this.compiler.debugPatched,
             );
-            const parseEnd = performance.now();
 
             if (optPipelineOptions.demangle) {
                 // apply demangles after parsing, would otherwise greatly complicate the parsing of the passes
@@ -1611,13 +1610,13 @@ export class BaseCompiler {
                 return {
                     results: await demangler.demangleLLVMPasses(optPipeline),
                     compileTime: compileEnd - compileStart,
-                    parseTime: parseEnd - parseStart,
+                    parseTime: performance.now() - parseStart,
                 };
             }
             return {
                 results: optPipeline,
                 compileTime: compileEnd - compileStart,
-                parseTime: parseEnd - parseStart,
+                parseTime: performance.now() - parseStart,
             };
         } catch (e: any) {
             return {
