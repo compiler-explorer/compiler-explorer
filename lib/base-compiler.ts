@@ -1005,6 +1005,14 @@ export class BaseCompiler {
         });
     }
 
+    getSharedLibraryDynamicLinker(libraries: SelectedLibraryVersion[], dirPath?: string): string[] {
+        return libraries.flatMap(selectedLib => {
+            const foundVersion = this.findLibVersion(selectedLib);
+            if (!foundVersion || foundVersion.dynamicLinker === undefined) return [];
+            return [foundVersion.dynamicLinker];
+        });
+    }
+
     getSharedLibraryBinPaths(libraries: SelectedLibraryVersion[], dirPath?: string): string[] {
         return libraries.flatMap(selectedLib => {
             const foundVersion = this.findLibVersion(selectedLib);
@@ -1026,6 +1034,8 @@ export class BaseCompiler {
     ): string[] {
         const pathFlag = this.compiler.rpathFlag || this.defaultRpathFlag;
         const libPathFlag = this.compiler.libpathFlag || '-L';
+        // TODO: make configurable
+        const dynamicLinkerFlag = '-Wl,--dynamic-linker=';
 
         let toolchainLibraryPaths: string[] = [];
         if (toolchainPath) {
@@ -1043,6 +1053,7 @@ export class BaseCompiler {
             toolchainLibraryPaths.map(path => pathFlag + path),
             this.getSharedLibraryPaths(libraries, dirPath).map(path => pathFlag + path),
             this.getSharedLibraryPaths(libraries, dirPath).map(path => libPathFlag + path),
+            this.getSharedLibraryDynamicLinker(libraries, dirPath).map(path => dynamicLinkerFlag + path),
         );
     }
 
@@ -1090,6 +1101,9 @@ export class BaseCompiler {
 
     getIncludeArguments(libraries: SelectedLibraryVersion[], dirPath: string): string[] {
         const includeFlag = this.compiler.includeFlag || '-I';
+        // TODO: make configurable
+        const sysrootFlag = '--sysroot=';
+
         return libraries.flatMap(selectedLib => {
             const foundVersion = this.findLibVersion(selectedLib);
             if (!foundVersion) return [];
@@ -1098,6 +1112,9 @@ export class BaseCompiler {
             if (foundVersion.packagedheaders) {
                 const includePath = path.join(dirPath, selectedLib.id, 'include');
                 paths.push(includeFlag + includePath);
+            }
+            if (foundVersion.sysroot) {
+                paths.push(sysrootFlag + foundVersion.sysroot);
             }
             return paths;
         });
