@@ -99,6 +99,7 @@ export type PopulatedCompilerState = StateWithEditor & {
     overrides?: ConfiguredOverrides;
 };
 export type CompilerForTreeState = StateWithLanguage & StateWithTree;
+export type ChainedCompilerState = StateWithLanguage & {sourceCompiler: number; rootEditorId?: number};
 
 export type EmptyExecutorState = StateWithLanguage &
     StateWithEditor & {
@@ -383,7 +384,11 @@ export type PopulatedYulViewState = StateWithId & {
  * states. Components can have either empty (default) or populated states.
  */
 export interface ComponentStateMap {
-    [COMPILER_COMPONENT_NAME]: EmptyCompilerState | PopulatedCompilerState | CompilerForTreeState;
+    [COMPILER_COMPONENT_NAME]:
+        | EmptyCompilerState
+        | PopulatedCompilerState
+        | CompilerForTreeState
+        | ChainedCompilerState;
     [EXECUTOR_COMPONENT_NAME]: EmptyExecutorState | PopulatedExecutorState | ExecutorForTreeState;
     [EDITOR_COMPONENT_NAME]: EmptyEditorState | PopulatedEditorState;
     [TREE_COMPONENT_NAME]: EmptyTreeState;
