@@ -42,6 +42,7 @@ import './cppx-gold-mode';
 import './crystal-mode';
 import './cuda-mode';
 import './d-mode';
+import './doolang-mode';
 import './no-highlight-mode';
 import './erlang-mode';
 import './fortran-mode';
