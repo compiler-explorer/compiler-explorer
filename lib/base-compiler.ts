@@ -1596,7 +1596,6 @@ export class BaseCompiler {
                 optPipelineOptions,
                 this.compiler.debugPatched,
             );
-            const parseEnd = performance.now();
 
             if (optPipelineOptions.demangle) {
                 // apply demangles after parsing, would otherwise greatly complicate the parsing of the passes
@@ -1611,13 +1610,13 @@ export class BaseCompiler {
                 return {
                     results: await demangler.demangleLLVMPasses(optPipeline),
                     compileTime: compileEnd - compileStart,
-                    parseTime: parseEnd - parseStart,
+                    parseTime: performance.now() - parseStart,
                 };
             }
             return {
                 results: optPipeline,
                 compileTime: compileEnd - compileStart,
-                parseTime: parseEnd - parseStart,
+                parseTime: performance.now() - parseStart,
             };
         } catch (e: any) {
             return {
@@ -3155,11 +3154,12 @@ export class BaseCompiler {
         // In worker mode, store large non-cacheable results with short TTL
         if (this.isCompilationWorker && !fullResult.result?.okToCache && fullResult) {
             // Check if result is large enough to require S3 storage
-            const resultSize = JSON.stringify(fullResult).length;
+            const resultString = JSON.stringify(fullResult);
+            const resultSize = resultString.length;
 
             if (resultSize > WEBSOCKET_SIZE_THRESHOLD) {
                 // Store with 1-day TTL for temporary retrieval in temp/ subdirectory
-                await this.env.tempCachePutWithTTL(cacheKey, fullResult, TEMP_STORAGE_TTL_DAYS, undefined);
+                await this.env.tempCachePutWithTTL(cacheKey, resultString, TEMP_STORAGE_TTL_DAYS, undefined);
                 // Set s3Key with temp/ prefix to reflect storage location
                 fullResult.s3Key = `temp/${BaseCache.hash(cacheKey)}`;
             }
@@ -3442,11 +3442,12 @@ export class BaseCompiler {
         // In worker mode, store large non-cacheable results with short TTL
         if (this.isCompilationWorker && !result.okToCache && !delayCaching) {
             // Check if result is large enough to require S3 storage
-            const resultSize = JSON.stringify(result).length;
+            const resultString = JSON.stringify(result);
+            const resultSize = resultString.length;
 
             if (resultSize > WEBSOCKET_SIZE_THRESHOLD) {
                 // Store with 1-day TTL for temporary retrieval in temp/ subdirectory
-                await this.env.tempCachePutWithTTL(key, result, TEMP_STORAGE_TTL_DAYS, undefined);
+                await this.env.tempCachePutWithTTL(key, resultString, TEMP_STORAGE_TTL_DAYS, undefined);
                 // Set s3Key with temp/ prefix to reflect storage location
                 result.s3Key = `temp/${BaseCache.hash(key)}`;
             }
