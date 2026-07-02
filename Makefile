@@ -74,8 +74,12 @@ check: $(NODE_MODULES) lint test  ## Runs all checks required before committing 
 check-frontend-imports: node-installed  ## Check that frontend doesn't import from backend
 	@$(NODE) ./etc/scripts/check-frontend-imports.js
 
+.PHONY: check-license-headers
+check-license-headers: node-installed  ## Check that every source file has the license banner
+	@$(NODE) ./etc/scripts/check-license-headers.js
+
 .PHONY: pre-commit
-pre-commit: $(NODE_MODULES) test-min lint check-frontend-imports
+pre-commit: $(NODE_MODULES) test-min lint check-frontend-imports check-license-headers
 
 .PHONY: clean
 clean:  ## Cleans up everything

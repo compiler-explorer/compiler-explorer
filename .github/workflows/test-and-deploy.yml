@@ -26,6 +26,7 @@ jobs:
       - name: Run checks
         run: |
           npm run lint-check
+          npm run check-license-headers
           npm run test -- --coverage
           npm run ts-check
           python3 ./etc/scripts/test_numba_wrapper.py
