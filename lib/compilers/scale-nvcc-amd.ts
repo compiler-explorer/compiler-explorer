@@ -1,4 +1,4 @@
-// Copyright (c) 2018, Compiler Explorer Authors
+// Copyright (c) 2026, Compiler Explorer Authors
 // All rights reserved.
 //
 // Redistribution and use in source and binary forms, with or without
@@ -33,6 +33,7 @@ import type {ParseFiltersAndOutputOptions} from '../../types/features/filters.in
 import {unwrap} from '../assert.js';
 import {BaseCompiler} from '../base-compiler.js';
 import {CompilationEnvironment} from '../compilation-env.js';
+import {logger} from '../logger.js';
 import {AmdgpuAsmParser} from '../parsers/asm-parser-amdgpu.js';
 import {ClangParser} from './argument-parsers.js';
 
@@ -56,8 +57,7 @@ export class ScaleNvccAMDCompiler extends BaseCompiler {
         this.amdgpuAsmParser = new AmdgpuAsmParser();
     }
 
-    override optionsForFilter(filters: ParseFiltersAndOutputOptions, outputFilename: string, userOptions?: string[]) {
-        // const opts = ['-o', this.filename(outputFilename), '-g', '-lineinfo', '--keep-device-functions'];
+    override optionsForFilter(filters: ParseFiltersAndOutputOptions, outputFilename: string) {
         const opts = ['-g', '-lineinfo', '--keep-device-functions'];
         if (!filters.execute) {
             opts.push('-keep', '-keep-dir', Path.dirname(outputFilename));
@@ -84,18 +84,14 @@ export class ScaleNvccAMDCompiler extends BaseCompiler {
     private static readonly scaleDeviceFileRe = /-cuda-amdgcn-amd-amdhsa-scale-(gfx[^./]+)\.s$/;
     private static readonly scaleDeviceBcFileRe = /-cuda-amdgcn-amd-amdhsa-scale-(gfx[^./]+)\.bc$/;
 
+    // Temp workaround since -o -S does not work in scale-1.7.1
+    // Side effect: it works only if one device file is present.
+    // will be cleaned when scale's bug is fixed
     private async findHostAsmFile(dirPath: string): Promise<string | null> {
         try {
             const files = await fs.readdir(dirPath);
-
-            //console.log('all files:', files);
-
             const hostFiles = files.filter(f => f.endsWith('.s') && !ScaleNvccAMDCompiler.scaleDeviceFileRe.test(f));
-
-            //console.log('Host ASM candidates:', hostFiles);
-
             if (hostFiles.length !== 1) {
-                //console.warn(`Expected exactly one host .s file, found ${hostFiles.length}`);
                 return null;
             }
 
@@ -163,12 +159,7 @@ export class ScaleNvccAMDCompiler extends BaseCompiler {
     }
 
     private async runLlvmDis(bcPath: string, dirPath: string): Promise<ExecResult> {
-        //console.log('[runLlvmDis]: running', this.compiler.llvmDisassembler, bcPath);
-
         const result = await this.exec(unwrap(this.compiler.llvmDisassembler), [bcPath], {customCwd: dirPath});
-
-        //if (result.stderr) console.log('[runLlvmDis]: stderr', result.stderr);
-
         return result;
     }
 
@@ -224,7 +215,6 @@ export class ScaleNvccAMDCompiler extends BaseCompiler {
                     ? await fs.readFile(llPath, 'utf8')
                     : `<llvm-dis failed with code ${disResult.code}>`;
         } catch (err) {
-            //console.error('[processBcDeviceFile]: exception running llvm-dis for', name, err);
             irText = `<llvm-dis failed: ${err}>`;
         }
 
@@ -255,9 +245,6 @@ export class ScaleNvccAMDCompiler extends BaseCompiler {
             const asmDeviceFiles = files.filter(f => ScaleNvccAMDCompiler.scaleDeviceFileRe.test(f));
             const bcDeviceFiles = files.filter(f => ScaleNvccAMDCompiler.scaleDeviceBcFileRe.test(f));
 
-            //console.log('[extractDeviceCode]: asm device files', asmDeviceFiles);
-            //console.log('[extractDeviceCode]: bc device files', bcDeviceFiles);
-
             await Promise.all([
                 ...asmDeviceFiles.map(async name => {
                     try {
@@ -275,16 +262,16 @@ export class ScaleNvccAMDCompiler extends BaseCompiler {
                             ),
                         });
                     } catch (err) {
+                        logger.error('[extractDeviceCode]: exception running postProcessAsm for', name, err);
                         // Never let a single device-asm failure take down the whole result.
-                        //console.error('[extractDeviceCode]: failed to process AMDGPU device file', name, err);
                     }
                 }),
                 ...bcDeviceFiles.map(async name => {
                     try {
                         await this.processBcDeviceFile(name, dirPath, filters, !!demangle, devices);
                     } catch (err) {
+                        logger.error('[extractDeviceCode]: exception running processBcDeviceFile for', name, err);
                         // Never let a single device-IR failure take down the whole result.
-                        //console.error('[extractDeviceCode]: failed to process device bitcode file', name, err);
                     }
                 }),
             ]);

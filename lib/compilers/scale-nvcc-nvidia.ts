@@ -1,3 +1,27 @@
+// Copyright (c) 2026, Compiler Explorer Authors
+// All rights reserved.
+//
+// Redistribution and use in source and binary forms, with or without
+// modification, are permitted provided that the following conditions are met:
+//
+//     * Redistributions of source code must retain the above copyright notice,
+//       this list of conditions and the following disclaimer.
+//     * Redistributions in binary form must reproduce the above copyright
+//       notice, this list of conditions and the following disclaimer in the
+//       documentation and/or other materials provided with the distribution.
+//
+// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+// AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+// IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+// ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
+// LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+// CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+// SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+// INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+// CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+// ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+// POSSIBILITY OF SUCH DAMAGE.
+
 import * as fs from 'node:fs/promises';
 import Path from 'node:path';
 
@@ -9,6 +33,7 @@ import type {ParseFiltersAndOutputOptions} from '../../types/features/filters.in
 import {unwrap} from '../assert.js';
 import {BaseCompiler} from '../base-compiler.js';
 import {CompilationEnvironment} from '../compilation-env.js';
+import {logger} from '../logger.js';
 import {PTXAsmParser} from '../parsers/asm-parser-ptx.js';
 import {SassAsmParser} from '../parsers/asm-parser-sass.js';
 import {ClangParser} from './argument-parsers.js';
@@ -40,8 +65,7 @@ export class ScaleNvccNvidiaCompiler extends BaseCompiler {
     // is shared) falls back to basename-derived default naming instead of
     // a predictable `output.s`. See findHostAsmFile()/extractDeviceCode()
     // below, which auto-detect either naming convention.
-    override optionsForFilter(filters: ParseFiltersAndOutputOptions, outputFilename: string, userOptions?: string[]) {
-        // const opts = ['-o', this.filename(outputFilename), '-g', '-lineinfo', '--keep-device-functions'];
+    override optionsForFilter(filters: ParseFiltersAndOutputOptions, outputFilename: string) {
         const opts = ['-g', '-lineinfo', '--keep-device-functions'];
         if (!filters.execute) {
             opts.push('-keep', '-keep-dir', Path.dirname(outputFilename));
@@ -68,18 +92,15 @@ export class ScaleNvccNvidiaCompiler extends BaseCompiler {
     private static readonly scaleDeviceFileRe = /-cuda-nvptx64-nvidia-cuda-([^./]+)\.s$/;
     private static readonly scaleDeviceBcFileRe = /-cuda-nvptx64-nvidia-cuda-([^./]+)\.bc$/;
 
+    // Temp workaround since -o -S does not work in scale-1.7.1
+    // Side effect: it works only if one device file is present.
+    // will be cleaned when scale's bug is fixed
     private async findHostAsmFile(dirPath: string): Promise<string | null> {
         try {
             const files = await fs.readdir(dirPath);
-
-            //console.log('all files:', files);
-
             const hostFiles = files.filter(f => f.endsWith('.s') && !ScaleNvccNvidiaCompiler.scaleDeviceFileRe.test(f));
 
-            //console.log('Host ASM candidates:', hostFiles);
-
             if (hostFiles.length !== 1) {
-                //console.warn(`Expected exactly one host .s file, found ${hostFiles.length}`);
                 return null;
             }
 
@@ -210,26 +231,17 @@ export class ScaleNvccNvidiaCompiler extends BaseCompiler {
     private async runPtxas(ptxFileName: string, cubinPath: string, arch: string, dirPath: string): Promise<ExecResult> {
         const {ptxas} = this.compiler;
         const args = ['-arch', arch, ptxFileName, '-o', cubinPath];
-        //console.log('[runPtxas]: running', ptxas, args.join(' '));
         return this.exec(unwrap(ptxas), args, {customCwd: dirPath});
     }
 
     private async runNvdisasm(cubinPath: string, dirPath: string): Promise<ExecResult> {
         const {nvdisasm} = this.compiler;
         const args = [cubinPath, '-c', '-g', '-hex'];
-        //console.log('[runNvdisasm]: running', nvdisasm, args.join(' '));
-
         return this.exec(unwrap(nvdisasm), args, {customCwd: dirPath});
     }
 
     private async runLlvmDis(bcPath: string, dirPath: string): Promise<ExecResult> {
-        //console.log('[runLlvmDis]: running', this.compiler.llvmDisassembler, bcPath);
-
         const result = await this.exec(unwrap(this.compiler.llvmDisassembler), [bcPath], {customCwd: dirPath});
-
-        //console.log('[runLlvmDis]: exit code', result.code);
-        //if (result.stderr) console.log('[runLlvmDis]: stderr', result.stderr);
-
         return result;
     }
 
@@ -283,12 +295,11 @@ export class ScaleNvccNvidiaCompiler extends BaseCompiler {
         try {
             ptxasResult = await this.runPtxas(name, cubinPath, archAndCode, dirPath);
         } catch (err) {
-            //console.error('[processPtxFile]: exception running ptxas for', name, err);
+            logger.error('[processPtxFile]: exception running ptxas for', name, err);
             return;
         }
 
         if (ptxasResult.code !== 0) {
-            //console.warn('[processPtxFile]: ptxas failed for', name, '- skipping SASS');
             return;
         }
 
@@ -296,10 +307,9 @@ export class ScaleNvccNvidiaCompiler extends BaseCompiler {
         try {
             nvdisasmResult = await this.runNvdisasm(cubinPath, dirPath);
         } catch (err) {
-            //console.error('[processPtxFile]: exception running nvdisasm for', cubinPath, err);
+            logger.error('[processPtxFile]: exception running nvdisasm for', name, err);
             return;
         }
-
         const sassAsm =
             nvdisasmResult.code === 0
                 ? this.postProcessObjdumpOutput(nvdisasmResult.stdout)
@@ -362,7 +372,6 @@ export class ScaleNvccNvidiaCompiler extends BaseCompiler {
                     ? await fs.readFile(llPath, 'utf8')
                     : `<llvm-dis failed with code ${disResult.code}>`;
         } catch (err) {
-            //console.error('[processBcDeviceFile]: exception running llvm-dis for', name, err);
             irText = `<llvm-dis failed: ${err}>`;
         }
 
@@ -388,10 +397,6 @@ export class ScaleNvccNvidiaCompiler extends BaseCompiler {
 
         if (dirPath) {
             const files = await fs.readdir(dirPath);
-
-            //console.log('[extractDeviceCode]: dirPath', dirPath);
-            //console.log('[extractDeviceCode]: all files at start', files);
-
             const ptxFile = files.filter(f => ScaleNvccNvidiaCompiler.scaleDeviceFileRe.test(f)); //Ends with .s, not the host
             const bcDeviceFile = files.filter(f => ScaleNvccNvidiaCompiler.scaleDeviceBcFileRe.test(f)); //ends with .bc, not the host
 
@@ -400,7 +405,6 @@ export class ScaleNvccNvidiaCompiler extends BaseCompiler {
                 ...bcDeviceFile.map(name => this.processBcDeviceFile(name, dirPath, filters, !!demangle, devices)),
             ]);
 
-            //console.log('[extractDeviceCode]: final devices keys', Object.keys(devices));
             result.devices = devices;
         }
 
