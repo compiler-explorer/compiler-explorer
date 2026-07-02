@@ -74,8 +74,8 @@ A [Road map](docs/Roadmap.md) is available which gives a little insight into the
 Assuming you have a compatible version of `node` installed, on Linux simply running `make` ought to get you up and
 running with an Explorer running on port 10240 on your local machine:
 [http://localhost:10240/](http://localhost:10240/). If this doesn't work for you, please contact us, as we consider it
-important you can quickly and easily get running. Currently, **Compiler Explorer** requires
-[`node` 22 or higher](CONTRIBUTING.md#node-version) installed. We look for it on your `PATH`, which covers a
+important you can quickly and easily get running. **Compiler Explorer** requires at least the
+[`node` version pinned in `.node-version`](CONTRIBUTING.md#node-version) (anything newer is fine). We look for it on your `PATH`, which covers a
 system install as well as any version manager with shell integration (`fnm`, `asdf`, `nodenv`, `volta`, or an
 active `nvm`). If your `PATH` `node` is missing or too old we also try to resolve the version pinned in
 `.node-version` via `nvm`/`fnm`/`nodenv`/`asdf` directly. To force a specific install, point `NODE_DIR` at it (an
