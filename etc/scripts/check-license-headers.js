@@ -11,6 +11,7 @@
 
 import {execSync} from 'node:child_process';
 import fs from 'node:fs';
+import path from 'node:path';
 
 // Directories/globs whose source files must carry the banner.
 const INCLUDE_DIRS = ['lib', 'static', 'shared', 'types', 'test', 'cypress'];
@@ -27,15 +28,29 @@ const EXCLUDE_PATTERNS = [
     /^static\/ansi-to-html\.ts$/, // MIT, Rob Burns
     /^lib\/node-graceful\.ts$/, // MIT, node-graceful
     /^shared\/rison\.ts$/, // Nanonid/rison port
+    // CE-authored files that pre-date this check and carry an MIT header rather than
+    // the repo-standard BSD-2. Exempt for now; relicensing them to BSD-2 is a separate
+    // call for a maintainer.
+    /^lib\/stack-usage-transformer\.ts$/,
+    /^test\/stack-usage-transformer-test\.ts$/,
+    /^test\/library-tests\.ts$/,
 ];
 
 // A file "has an appropriate banner" if, ignoring an optional shebang, it opens
 // with a `// Copyright (c) ...` line and contains the BSD-2-Clause disclaimer.
 // The year and copyright holder are intentionally not constrained: the tree has
 // many holders (Compiler Explorer Authors, Arm Ltd, Microsoft, individuals, ...).
-const COPYRIGHT_RE = /^\/\/ Copyright \([cC]\) .+/m;
+// No /m flag: the copyright line must be the very first line (post-shebang), not
+// merely present somewhere in the head.
+const COPYRIGHT_RE = /^\/\/ Copyright \([cC]\) .+/;
 // A couple of older files quote AS IS with single quotes; accept either.
 const DISCLAIMER_RE = /THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS ["']AS IS["']/;
+
+// Normalise to a repo-relative POSIX path so matching works whether we're handed
+// tracked paths from `git ls-files` or absolute/backslashed paths from lint-staged.
+function toRepoRelative(file) {
+    return path.relative(process.cwd(), path.resolve(file)).split(path.sep).join('/');
+}
 
 function isIncluded(file) {
     if (!INCLUDE_EXTENSIONS.some(ext => file.endsWith(ext))) return false;
@@ -67,7 +82,7 @@ function hasBanner(file) {
 }
 
 const args = process.argv.slice(2);
-const candidates = (args.length > 0 ? args : listTrackedFiles()).filter(isIncluded);
+const candidates = (args.length > 0 ? args : listTrackedFiles()).map(toRepoRelative).filter(isIncluded);
 const missing = candidates.filter(file => fs.existsSync(file) && !hasBanner(file));
 
 if (missing.length > 0) {
