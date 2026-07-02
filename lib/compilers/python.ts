@@ -24,15 +24,20 @@
 // POSSIBILITY OF SUCH DAMAGE.
 
 import type {AsmResultSource, ParsedAsmResultLine} from '../../types/asmresult/asmresult.interfaces.js';
+import type {CompilationResult} from '../../types/compilation/compilation.interfaces.js';
 import type {PreliminaryCompilerInfo} from '../../types/compiler.interfaces.js';
 import type {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces.js';
+import type {ResultLine} from '../../types/resultline/resultline.interfaces.js';
 import {BaseCompiler} from '../base-compiler.js';
 import {CompilationEnvironment} from '../compilation-env.js';
+import {PythonAstParser} from '../python-ast.js';
 import {resolvePathFromAppRoot} from '../utils.js';
 import {BaseParser} from './argument-parsers.js';
 
 export class PythonCompiler extends BaseCompiler {
     private readonly disasmScriptPath: string;
+    private readonly astScriptPath: string;
+    private readonly pythonAstParser: PythonAstParser;
 
     static get key() {
         return 'python';
@@ -45,6 +50,9 @@ export class PythonCompiler extends BaseCompiler {
         this.disasmScriptPath =
             this.compilerProps<string>('disasmScript') ||
             resolvePathFromAppRoot('etc', 'scripts', 'disasms', 'dis_all.py');
+        this.astScriptPath =
+            this.compilerProps<string>('astScript') || resolvePathFromAppRoot('etc', 'scripts', 'ast_dump.py');
+        this.pythonAstParser = new PythonAstParser(this.compilerProps);
     }
 
     override async processAsm(result) {
@@ -78,6 +86,24 @@ export class PythonCompiler extends BaseCompiler {
 
     override optionsForFilter(filters: ParseFiltersAndOutputOptions, outputFilename: string) {
         return ['-I', this.disasmScriptPath, '--outputfile', outputFilename, '--inputfile'];
+    }
+
+    override couldSupportASTDump(version: string) {
+        // Python's ast module is available since Python 2.6; all CE-supported
+        // versions (3.5+) have it.
+        return true;
+    }
+
+    override async generateAST(inputFilename: string, options: string[]): Promise<ResultLine[]> {
+        const astOptions = ['-I', this.astScriptPath, this.filename(inputFilename)];
+        const execOptions = this.getDefaultExecOptions();
+        const result: CompilationResult = await this.runCompiler(
+            this.compiler.exe,
+            astOptions,
+            this.filename(inputFilename),
+            execOptions,
+        );
+        return this.pythonAstParser.processAst(result);
     }
 
     override getArgumentParserClass() {
