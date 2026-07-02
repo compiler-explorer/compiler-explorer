@@ -16,7 +16,7 @@ set -e
 OUT="$1"
 
 # shellcheck disable=SC1007  # `CDPATH= cd` is the intended empty-assignment idiom
-ROOT="$(CDPATH= cd -- "$(dirname -- "$0")/../.." && pwd -P)"
+ROOT="$(CDPATH= cd -- "$(dirname "$0")/../.." && pwd -P)"
 MIN="$(sed 's/^v//; s/\..*//; q' "${ROOT}/.node-version")"
 
 # Major version of the node at $1, or empty if it can't be run.
