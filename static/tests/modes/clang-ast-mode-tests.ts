@@ -1,4 +1,4 @@
-// Copyright (c) 2022, Compiler Explorer Authors
+// Copyright (c) 2026, Compiler Explorer Authors
 // All rights reserved.
 //
 // Redistribution and use in source and binary forms, with or without
@@ -22,28 +22,26 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-export {BloatyTool} from './bloaty-tool.js';
-export {BrontoRefactorTool} from './bronto-refactor-tool.js';
-export {ClangFormatTool} from './clang-format-tool.js';
-export {ClangQueryTool} from './clang-query-tool.js';
-export {ClangTidyTool} from './clang-tidy-tool.js';
-export {ClippyTool} from './clippy-tool.js';
-export {Co2FmtTool} from './co2fmt-tool.js';
-export {Co2MiriTool} from './co2miri-tool.js';
-export {CompilerDropinTool} from './compiler-dropin-tool.js';
-export {LLVMCovTool} from './llvm-cov-tool.js';
-export {LLVMDWARFDumpTool} from './llvm-dwarfdump-tool.js';
-export {LLVMMcaTool} from './llvm-mca-tool.js';
-export {LLVMPDBUtilTool} from './llvm-pdbutil-tool.js';
-export {MicrosoftAnalysisTool} from './microsoft-analysis-tool.js';
-export {MiriTool} from './miri-tool.js';
-export {NmTool} from './nm-tool.js';
-export {OSACATool} from './osaca-tool.js';
-export {PaholeTool} from './pahole-tool.js';
-export {PvsStudioTool} from './pvs-studio-tool.js';
-export {ReadElfTool} from './readelf-tool.js';
-export {RustFmtTool} from './rustfmt-tool.js';
-export {SonarTool} from './sonar-tool.js';
-export {StringsTool} from './strings-tool.js';
-export {TestingTool} from './testing-tool.js';
-export {x86to6502Tool} from './x86to6502-tool.js';
+import * as monaco from 'monaco-editor';
+import {describe, expect, it} from 'vitest';
+
+import '../../modes/clang-ast-mode.js';
+
+describe('clang-ast mode', () => {
+    it('tokenises Clang linkage specifiers as complete keywords', () => {
+        const tokens = monaco.editor.tokenize(
+            'internal-linkage external-linkage module-linkage linkage',
+            'clang-ast',
+        )[0];
+
+        expect(tokens.map(({offset, type}) => ({offset, type}))).toEqual([
+            {offset: 0, type: 'keyword.ast-linkage.clang-ast'},
+            {offset: 16, type: ''},
+            {offset: 17, type: 'keyword.ast-linkage.clang-ast'},
+            {offset: 33, type: ''},
+            {offset: 34, type: 'keyword.ast-linkage.clang-ast'},
+            {offset: 48, type: ''},
+            {offset: 49, type: 'identifier.clang-ast'},
+        ]);
+    });
+});
