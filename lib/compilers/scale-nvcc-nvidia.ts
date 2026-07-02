@@ -350,10 +350,10 @@ export class ScaleNvccNvidiaCompiler extends BaseCompiler {
                 [irNameAndArch]: await this.postProcessAsm(
                     {
                         okToCache: false,
-                        ...this.llvmIr.process(
+                        ...(await this.llvmIr.process(
                             '<error: no llvm-dis found to disassemble bitcode>',
                             ScaleNvccNvidiaCompiler.llvmIrOptions(demangle),
-                        ),
+                        )),
                     },
                     {...filters, binary: false},
                 ),
