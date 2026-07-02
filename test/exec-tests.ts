@@ -251,6 +251,79 @@ describe('Execution tests', async () => {
         });
     });
 
+    describe('gvisor unit tests', () => {
+        beforeAll(() => {
+            props.initialize(path.resolve('./test/test-properties/execution'), ['test']);
+        });
+        afterAll(() => {
+            props.reset();
+        });
+        it('should handle simple cases', async () => {
+            const {config, options, filenameTransform} = await exec.getGvisorOptions(
+                'sandbox',
+                '/path/to/compiler',
+                ['1', '2', '3'],
+                {},
+            );
+            expect(config.process.args).toEqual(['/path/to/compiler', '1', '2', '3']);
+            expect(config.process.cwd).toEqual('/');
+            expect(config.process.env).toContain('HOME=/app');
+            expect(options).toEqual({timeoutMs: undefined, maxOutput: undefined, input: undefined});
+            expect(filenameTransform).toBeUndefined();
+        });
+        it('should pass through options', async () => {
+            const {options} = await exec.getGvisorOptions('sandbox', '/path/to/compiler', [], {
+                timeoutMs: 42,
+                maxOutput: -1,
+            });
+            expect(options).toEqual({timeoutMs: 42, maxOutput: -1, input: undefined});
+        });
+        it('should not pass through unknown configs', async () => {
+            await expect(
+                exec.getGvisorOptions('custom-config', '/path/to/compiler', ['1', '2', '3'], {}),
+            ).rejects.toThrow();
+        });
+        it('should remap paths when using customCwd', async () => {
+            const {config, options, filenameTransform} = await exec.getGvisorOptions(
+                'sandbox',
+                './exec',
+                ['/some/custom/cwd/file', '/not/custom/file'],
+                {customCwd: '/some/custom/cwd'},
+            );
+            expect(config.process.args).toEqual(['./exec', '/app/file', '/not/custom/file']);
+            expect(config.process.cwd).toEqual('/app');
+            expect(config.mounts).toContainEqual({
+                destination: '/app',
+                type: 'bind',
+                source: '/some/custom/cwd',
+                options: ['rw', 'rbind'],
+            });
+            expect(options).toEqual({timeoutMs: undefined, maxOutput: undefined, input: undefined});
+            expect(filenameTransform).toBeTruthy();
+            if (filenameTransform) {
+                expect(filenameTransform('moo')).toEqual('moo');
+                expect(filenameTransform('/some/custom/cwd/file')).toEqual('/app/file');
+            }
+        });
+        it('should handle linker paths', async () => {
+            const {config} = await exec.getGvisorOptions('sandbox', '/path/to/compiler', [], {
+                ldPath: ['/a/lib/path', '/b/lib2'],
+            });
+            if (process.platform === 'win32') {
+                expect(config.process.env).toContain('LD_LIBRARY_PATH=/a/lib/path;/b/lib2');
+            } else {
+                expect(config.process.env).toContain('LD_LIBRARY_PATH=/a/lib/path:/b/lib2');
+            }
+        });
+        it('should handle envs', async () => {
+            const {config} = await exec.getGvisorOptions('sandbox', '/path/to/compiler', [], {
+                env: {ENV1: '1', ENV2: '2'},
+            });
+            expect(config.process.env).toContain('ENV1=1');
+            expect(config.process.env).toContain('ENV2=2');
+        });
+    });
+
     describe('cewrapper unit tests', () => {
         beforeAll(() => {
             props.initialize(path.resolve('./test/test-properties/execution'), ['test']);

@@ -48,6 +48,12 @@ type NsJailOptions = {
     filenameTransform: FilenameTransformFunc | undefined;
 };
 
+type GvisorOptions = {
+    config: any;
+    options: ExecutionOptions;
+    filenameTransform: FilenameTransformFunc | undefined;
+};
+
 const execProps = propsFor('execution');
 const c_nsjail_permissions_error = 'runChild():486 Launching child process failed';
 
@@ -235,6 +241,16 @@ export function getCeWrapperCfgFilePath(configName: string): string {
     return path.resolve(configPath);
 }
 
+export function getGvisorCfgFilePath(configName: string): string {
+    const propKey = `gvisor.config.${configName}`;
+    const configPath = execProps<string>(propKey);
+    if (configPath === undefined) {
+        logger.error(`Could not find ${propKey}. Are you missing a definition?`);
+        throw new Error(`Missing gvisor execution config property key ${propKey}`);
+    }
+    return configPath;
+}
+
 export function getFirejailProfileFilePath(profileName: string): string {
     const propKey = `firejail.profile.${profileName}`;
     const profilePath = execProps<string>(propKey);
@@ -348,6 +364,116 @@ export function getSandboxNsjailOptions(command: string, args: string[], options
     return getNsJailOptions('sandbox', `./${path.basename(command)}`, args, options);
 }
 
+export async function getGvisorOptions(
+    configName: string,
+    command: string,
+    args: string[],
+    options: ExecutionOptions,
+): Promise<GvisorOptions> {
+    options = {...options};
+
+    const configPath = getGvisorCfgFilePath(configName);
+    const config = JSON.parse(await fs.readFile(configPath, 'utf8'));
+
+    config.process.args = [command, ...args];
+
+    const env: Record<string, string> = {...options.env, HOME: jailedHomeDir};
+    let filenameTransform: FilenameTransformFunc | undefined;
+
+    const transform = filenameTransform || (x => x);
+
+    if (options.customCwd) {
+        let replacement = options.customCwd;
+        let hostMountSource = options.customCwd;
+        const containerMountDest = jailedHomeDir;
+
+        if (options.appHome) {
+            replacement = options.appHome;
+            hostMountSource = options.appHome;
+            const relativeCwd = path.join(jailedHomeDir, path.relative(options.appHome, options.customCwd));
+            config.process.cwd = relativeCwd;
+        } else {
+            config.process.cwd = jailedHomeDir;
+        }
+
+        filenameTransform = opt => opt.replaceAll(replacement, jailedHomeDir);
+        config.process.args = config.process.args.map(filenameTransform);
+
+        config.mounts.push({
+            destination: containerMountDest,
+            type: 'bind',
+            source: hostMountSource,
+            options: ['rw', 'rbind'],
+        });
+
+        delete options.customCwd;
+    } else {
+        config.process.cwd = '/';
+    }
+
+    const ociEnv: string[] = [];
+    if (options.ldPath) {
+        const ldPaths = options.ldPath.filter(Boolean).map(path => transform(path));
+        ociEnv.push(`LD_LIBRARY_PATH=${ldPaths.join(path.delimiter)}`);
+        delete options.ldPath;
+        delete env.LD_LIBRARY_PATH;
+    }
+
+    for (const [key, value] of Object.entries(env)) {
+        if (value !== undefined) ociEnv.push(`${key}=${transform(value)}`);
+    }
+    delete options.env;
+    config.process.env = ociEnv;
+
+    const filteredMounts: any[] = [];
+    for (const mount of config.mounts) {
+        if (mount.skip_if_missing) {
+            delete mount.skip_if_missing;
+            try {
+                await fs.access(mount.source);
+                filteredMounts.push(mount);
+            } catch {
+                logger.debug(`Skipping missing mount: ${mount.source}`);
+            }
+        } else {
+            filteredMounts.push(mount);
+        }
+    }
+    config.mounts = filteredMounts;
+
+    const runscOptions: ExecutionOptions = {
+        timeoutMs: options.timeoutMs,
+        maxOutput: options.maxOutput,
+        input: options.input,
+    };
+
+    return {
+        config,
+        options: runscOptions,
+        filenameTransform,
+    };
+}
+
+export async function getSandboxGvisorOptions(
+    command: string,
+    args: string[],
+    options: ExecutionOptions,
+): Promise<GvisorOptions> {
+    if (options.customCwd) {
+        let relativeCommand = command;
+        if (command.startsWith(options.customCwd)) {
+            relativeCommand = path.relative(options.customCwd, command);
+            if (path.dirname(relativeCommand) === '.') {
+                relativeCommand = `./${relativeCommand}`;
+            }
+        }
+        return getGvisorOptions('sandbox', relativeCommand, args, options);
+    }
+
+    options = {...options, customCwd: path.dirname(command)};
+    return getGvisorOptions('sandbox', `./${path.basename(command)}`, args, options);
+}
+
 export function getSandboxCEWrapperOptions(command: string, args: string[], options: ExecutionOptions): NsJailOptions {
     return getCeWrapperOptions('sandbox', command, args, options);
 }
@@ -391,6 +517,106 @@ async function executeNsjail(
     );
     if (hasNsjailPermissionsIssue(result)) result.okToCache = false;
     return result;
+}
+
+async function sandboxGvisor(
+    command: string,
+    args: string[],
+    options: ExecutionOptions,
+): Promise<UnprocessedExecResult> {
+    logger.info('Sandbox execution via gvisor', {command, args});
+    const gOpts = await getSandboxGvisorOptions(command, args, options);
+
+    const bundleDir = await fs.mkdtemp(path.join(os.tmpdir(), 'ce-gvisor-'));
+    const rootfsDir = path.join(bundleDir, 'rootfs');
+    await fs.mkdir(rootfsDir);
+
+    const containerId = `ce-sandbox-${path.basename(bundleDir)}`;
+
+    const passwdContent =
+        'ce:x:0:0:Not a real account:/app:/bin/bash\nnobody:x:65534:65534:nobody:/nonexistent:/usr/sbin/nologin\n';
+    const passwdPath = path.join(bundleDir, 'passwd');
+    await fs.writeFile(passwdPath, passwdContent);
+    gOpts.config.mounts.push({
+        destination: '/etc/passwd',
+        type: 'bind',
+        source: passwdPath,
+        options: ['ro'],
+    });
+
+    const groupContent = 'ce:x:0:\nnogroup:x:65534:\n';
+    const groupPath = path.join(bundleDir, 'group');
+    await fs.writeFile(groupPath, groupContent);
+    gOpts.config.mounts.push({
+        destination: '/etc/group',
+        type: 'bind',
+        source: groupPath,
+        options: ['ro'],
+    });
+
+    await fs.writeFile(path.join(bundleDir, 'config.json'), JSON.stringify(gOpts.config, null, 2));
+
+    const runscPath = execProps<string>('runsc', 'runsc');
+    const runscRoot = path.join(os.tmpdir(), `runsc-root-${os.userInfo().username}`);
+    const runscArgs = ['--rootless', '--root', runscRoot, '--network=none', 'run', '--bundle', bundleDir, containerId];
+
+    try {
+        const result = await executeDirect(runscPath, runscArgs, gOpts.options, gOpts.filenameTransform);
+        return result;
+    } finally {
+        await fs.rm(bundleDir, {recursive: true, force: true});
+        await executeDirect(runscPath, ['--rootless', '--root', runscRoot, 'delete', '--force', containerId], {});
+    }
+}
+
+async function executeGvisor(
+    command: string,
+    args: string[],
+    options: ExecutionOptions,
+): Promise<UnprocessedExecResult> {
+    logger.info('Compiler execution via gvisor', {command, args});
+    const gOpts = await getGvisorOptions('execute', command, args, options);
+
+    const bundleDir = await fs.mkdtemp(path.join(os.tmpdir(), 'ce-gvisor-'));
+    const rootfsDir = path.join(bundleDir, 'rootfs');
+    await fs.mkdir(rootfsDir);
+
+    const containerId = `ce-execute-${path.basename(bundleDir)}`;
+
+    const passwdContent =
+        'ce:x:0:0:Not a real account:/app:/bin/bash\nnobody:x:65534:65534:nobody:/nonexistent:/usr/sbin/nologin\n';
+    const passwdPath = path.join(bundleDir, 'passwd');
+    await fs.writeFile(passwdPath, passwdContent);
+    gOpts.config.mounts.push({
+        destination: '/etc/passwd',
+        type: 'bind',
+        source: passwdPath,
+        options: ['ro'],
+    });
+
+    const groupContent = 'ce:x:0:\nnogroup:x:65534:\n';
+    const groupPath = path.join(bundleDir, 'group');
+    await fs.writeFile(groupPath, groupContent);
+    gOpts.config.mounts.push({
+        destination: '/etc/group',
+        type: 'bind',
+        source: groupPath,
+        options: ['ro'],
+    });
+
+    await fs.writeFile(path.join(bundleDir, 'config.json'), JSON.stringify(gOpts.config, null, 2));
+
+    const runscPath = execProps<string>('runsc', 'runsc');
+    const runscRoot = path.join(os.tmpdir(), `runsc-root-${os.userInfo().username}`);
+    const runscArgs = ['--rootless', '--root', runscRoot, '--network=none', 'run', '--bundle', bundleDir, containerId];
+
+    try {
+        const result = await executeDirect(runscPath, runscArgs, gOpts.options, gOpts.filenameTransform);
+        return result;
+    } finally {
+        await fs.rm(bundleDir, {recursive: true, force: true});
+        await executeDirect(runscPath, ['--rootless', '--root', runscRoot, 'delete', '--force', containerId], {});
+    }
 }
 
 function sandboxCEWrapper(command: string, args: string[], options: ExecutionOptions) {
@@ -450,6 +676,7 @@ const sandboxDispatchTable = {
     nsjail: sandboxNsjail,
     firejail: sandboxFirejail,
     cewrapper: sandboxCEWrapper,
+    gvisor: sandboxGvisor,
 };
 
 export async function sandbox(
@@ -459,7 +686,7 @@ export async function sandbox(
 ): Promise<UnprocessedExecResult> {
     checkExecOptions(options);
     const type = execProps('sandboxType', 'firejail');
-    const dispatchEntry = sandboxDispatchTable[type as 'none' | 'nsjail' | 'firejail' | 'cewrapper'];
+    const dispatchEntry = sandboxDispatchTable[type as 'none' | 'nsjail' | 'firejail' | 'cewrapper' | 'gvisor'];
     if (!dispatchEntry) throw new Error(`Bad sandbox type ${type}`);
     if (!command) throw new Error('No executable provided');
     const unbuffered = await maybeUnbuffer(command, args);
@@ -666,6 +893,8 @@ const executeDispatchTable: Record<string, DispatchFunction> = {
     nsjail: (command: string, args: string[], options: ExecutionOptions) =>
         needsWine(command) ? executeFirejail(command, args, options) : executeNsjail(command, args, options),
     cewrapper: executeCEWrapper,
+    gvisor: (command: string, args: string[], options: ExecutionOptions) =>
+        needsWine(command) ? executeFirejail(command, args, options) : executeGvisor(command, args, options),
 };
 
 export async function execute(
@@ -683,5 +912,6 @@ export async function execute(
 }
 
 export function maybeRemapJailedDir(customCwd: string): string {
-    return execProps('executionType', 'none') == 'nsjail' ? jailedHomeDir : customCwd;
+    const type = execProps('executionType', 'none');
+    return type === 'nsjail' || type === 'gvisor' ? jailedHomeDir : customCwd;
 }

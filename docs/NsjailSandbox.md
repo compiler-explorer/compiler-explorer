@@ -309,3 +309,4 @@ compiler.
 - [Compiler Explorer nsjail fork](https://github.com/compiler-explorer/nsjail)
 - [Compiler Explorer infra repository](https://github.com/compiler-explorer/infra) -- infrastructure, deployment, and compiler installation tooling for the live site
 - [Configuration.md](Configuration.md) -- general CE configuration reference
+- [gVisor Sandboxing](GvisorSandbox.md) -- alternative sandboxing using gVisor
