@@ -3,11 +3,11 @@
 //
 // We used to enforce this via eslint-plugin-header; that check was lost in the
 // migration to Biome (which has no equivalent rule). This is a standalone
-// replacement, run in CI, on pre-commit (via lint-staged) and by `make pre-commit`.
+// replacement, run in CI, in the husky pre-commit hook, and by `make pre-commit`.
 //
 // Usage:
 //   node ./etc/scripts/check-license-headers.js            # scan the tracked tree
-//   node ./etc/scripts/check-license-headers.js <files...>  # scan just these files (lint-staged)
+//   node ./etc/scripts/check-license-headers.js <files...>  # scan just these files
 
 import {execSync} from 'node:child_process';
 import fs from 'node:fs';
@@ -43,7 +43,12 @@ const EXCLUDE_PATTERNS = [
 // No /m flag: the copyright line must be the very first line (post-shebang), not
 // merely present somewhere in the head.
 const COPYRIGHT_RE = /^\/\/ Copyright \([cC]\) .+/;
-// A couple of older files quote AS IS with single quotes; accept either.
+// Two distinctive anchors from the BSD-2-Clause body: the opening grant and the
+// disclaimer line. Requiring both (rather than a single line) avoids passing a file
+// that merely happens to contain one stray phrase. We don't match the whole banner
+// verbatim — that would be brittle to minor punctuation/quoting differences (e.g. a
+// couple of files quote AS IS with single quotes, which is why that part is lenient).
+const REDISTRIBUTION_RE = /Redistribution and use in source and binary forms/;
 const DISCLAIMER_RE = /THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS ["']AS IS["']/;
 
 // Normalise to a repo-relative POSIX path so matching works whether we're handed
@@ -70,15 +75,18 @@ function hasBanner(file) {
     try {
         const buf = Buffer.alloc(4096);
         const fd = fs.openSync(file, 'r');
-        const bytesRead = fs.readSync(fd, buf, 0, buf.length, 0);
-        fs.closeSync(fd);
-        head = buf.toString('utf8', 0, bytesRead);
+        try {
+            const bytesRead = fs.readSync(fd, buf, 0, buf.length, 0);
+            head = buf.toString('utf8', 0, bytesRead);
+        } finally {
+            fs.closeSync(fd);
+        }
     } catch {
         return true; // Unreadable/deleted file: not our problem to report here.
     }
     // Skip an optional shebang line so scripts like this one still qualify.
     const body = head.startsWith('#!') ? head.slice(head.indexOf('\n') + 1) : head;
-    return COPYRIGHT_RE.test(body) && DISCLAIMER_RE.test(body);
+    return COPYRIGHT_RE.test(body) && REDISTRIBUTION_RE.test(body) && DISCLAIMER_RE.test(body);
 }
 
 const args = process.argv.slice(2);
