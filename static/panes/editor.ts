@@ -1840,6 +1840,8 @@ export class Editor extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Edit
     onConformanceViewOpen(editorId: number): void {
         if (editorId === this.id) {
             this.conformanceViewerButton.attr('disabled', 1);
+            // Re-broadcast the Editor's source so a restored conformance view picks it up and compiles
+            this.maybeEmitChange(true);
         }
     }
 

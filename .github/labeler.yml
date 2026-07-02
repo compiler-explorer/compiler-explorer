@@ -368,6 +368,12 @@
           - 'lib/compilers/racket.ts'
           - 'etc/config/racket.*.properties'
 
+'lang-razorforge':
+  - changed-files:
+      - any-glob-to-any-file:
+          - 'lib/compilers/razorforge.ts'
+          - 'etc/config/razorforge.*.properties'
+
 'lang-ruby':
   - changed-files:
       - any-glob-to-any-file:
