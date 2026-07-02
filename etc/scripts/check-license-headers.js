@@ -34,7 +34,8 @@ const EXCLUDE_PATTERNS = [
 // The year and copyright holder are intentionally not constrained: the tree has
 // many holders (Compiler Explorer Authors, Arm Ltd, Microsoft, individuals, ...).
 const COPYRIGHT_RE = /^\/\/ Copyright \([cC]\) .+/m;
-const DISCLAIMER = 'THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"';
+// A couple of older files quote AS IS with single quotes; accept either.
+const DISCLAIMER_RE = /THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS ["']AS IS["']/;
 
 function isIncluded(file) {
     if (!INCLUDE_EXTENSIONS.some(ext => file.endsWith(ext))) return false;
@@ -62,7 +63,7 @@ function hasBanner(file) {
     }
     // Skip an optional shebang line so scripts like this one still qualify.
     const body = head.startsWith('#!') ? head.slice(head.indexOf('\n') + 1) : head;
-    return COPYRIGHT_RE.test(body) && body.includes(DISCLAIMER);
+    return COPYRIGHT_RE.test(body) && DISCLAIMER_RE.test(body);
 }
 
 const args = process.argv.slice(2);
