@@ -51,6 +51,7 @@ export {CleanCompiler} from './clean.js';
 export {ClojureCompiler} from './clojure.js';
 export {CLSPVCompiler} from './clspv.js';
 export {CMakeScriptCompiler} from './cmakescript.js';
+export {Co2ccCompiler, Co2RustcCompiler} from './co2.js';
 export {CoccinelleCCompiler, CoccinelleCPlusPlusCompiler} from './coccinelle.js';
 export {CodonCompiler} from './codon.js';
 export {CompCertCompiler} from './compcert.js';

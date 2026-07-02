@@ -32,6 +32,7 @@ import './carbon-mode';
 import './clean-mode';
 import './clang-ast-mode';
 import './cmake-mode';
+import './co2-mode';
 import './cobol-mode';
 import './cppcircle-mode';
 import './cpp-for-opencl-mode';

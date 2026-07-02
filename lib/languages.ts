@@ -241,6 +241,18 @@ const definitions: Record<LanguageKey, LanguageDefinition> = {
         previewFilter: null,
         monacoDisassembly: null,
     },
+    co2: {
+        name: 'CO2',
+        monaco: 'co2',
+        extensions: ['.co2', '.c'],
+        alias: [],
+        logoFilename: null,
+        logoFilenameDark: null,
+        formatter: 'co2fmt',
+        previewFilter: /^\s*#include/,
+        monacoDisassembly: null,
+        digitSeparator: '_',
+    },
     cmake: {
         name: 'CMake',
         monaco: 'cmake',

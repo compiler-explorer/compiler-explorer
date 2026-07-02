@@ -1,4 +1,4 @@
-// Copyright (c) 2022, Compiler Explorer Authors
+// Copyright (c) 2026, Compiler Explorer Authors
 // All rights reserved.
 //
 // Redistribution and use in source and binary forms, with or without
@@ -22,8 +22,24 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-export type BuildEnvDownloadInfo = {
-    step: string;
-    packageUrl: string;
-    time: number;
-};
+import {CompilationInfo} from '../../types/compilation/compilation.interfaces.js';
+import {OptionsHandlerLibrary} from '../options-handler.js';
+import {BaseTool} from './base-tool.js';
+
+export class Co2FmtTool extends BaseTool {
+    static get key() {
+        return 'co2fmt-tool';
+    }
+
+    override async runTool(
+        compilationInfo: CompilationInfo,
+        inputFilepath?: string,
+        args?: string[],
+        stdin?: string,
+        supportedLibraries?: Record<string, OptionsHandlerLibrary>,
+        dontAppendInputFilepath?: boolean,
+    ) {
+        const co2Filepath = inputFilepath?.replace(/\.rs$/, '.co2');
+        return super.runTool(compilationInfo, co2Filepath, args, stdin, supportedLibraries, dontAppendInputFilepath);
+    }
+}

@@ -1,4 +1,4 @@
-// Copyright (c) 2022, Compiler Explorer Authors
+// Copyright (c) 2026, Compiler Explorer Authors
 // All rights reserved.
 //
 // Redistribution and use in source and binary forms, with or without
@@ -22,8 +22,16 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-export type BuildEnvDownloadInfo = {
-    step: string;
-    packageUrl: string;
-    time: number;
-};
+import type {ResultLine} from '../../types/resultline/resultline.interfaces.js';
+import {parseRustOutput} from '../utils.js';
+import {BaseTool} from './base-tool.js';
+
+export class Co2MiriTool extends BaseTool {
+    static get key() {
+        return 'co2miri-tool';
+    }
+
+    override parseOutput(lines: string, inputFilename?: string, pathPrefix?: string): ResultLine[] {
+        return parseRustOutput(lines, inputFilename, pathPrefix);
+    }
+}
