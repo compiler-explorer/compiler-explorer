@@ -251,6 +251,10 @@ export function getGvisorCfgFilePath(configName: string): string {
     return configPath;
 }
 
+export function usesAppJail(type: string): boolean {
+    return type === 'nsjail' || type === 'gvisor';
+}
+
 export function getFirejailProfileFilePath(profileName: string): string {
     const propKey = `firejail.profile.${profileName}`;
     const profilePath = execProps<string>(propKey);
@@ -380,8 +384,6 @@ export async function getGvisorOptions(
     const env: Record<string, string> = {...options.env, HOME: jailedHomeDir};
     let filenameTransform: FilenameTransformFunc | undefined;
 
-    const transform = filenameTransform || (x => x);
-
     if (options.customCwd) {
         let replacement = options.customCwd;
         let hostMountSource = options.customCwd;
@@ -410,6 +412,8 @@ export async function getGvisorOptions(
     } else {
         config.process.cwd = '/';
     }
+
+    const transform = filenameTransform || (x => x);
 
     const ociEnv: string[] = [];
     if (options.ldPath) {
@@ -519,19 +523,12 @@ async function executeNsjail(
     return result;
 }
 
-async function sandboxGvisor(
-    command: string,
-    args: string[],
-    options: ExecutionOptions,
-): Promise<UnprocessedExecResult> {
-    logger.info('Sandbox execution via gvisor', {command, args});
-    const gOpts = await getSandboxGvisorOptions(command, args, options);
-
+async function runInGvisor(gOpts: GvisorOptions, idPrefix: string): Promise<UnprocessedExecResult> {
     const bundleDir = await fs.mkdtemp(path.join(os.tmpdir(), 'ce-gvisor-'));
     const rootfsDir = path.join(bundleDir, 'rootfs');
     await fs.mkdir(rootfsDir);
 
-    const containerId = `ce-sandbox-${path.basename(bundleDir)}`;
+    const containerId = `${idPrefix}-${path.basename(bundleDir)}`;
 
     const passwdContent =
         'ce:x:0:0:Not a real account:/app:/bin/bash\nnobody:x:65534:65534:nobody:/nonexistent:/usr/sbin/nologin\n';
@@ -557,7 +554,13 @@ async function sandboxGvisor(
     await fs.writeFile(path.join(bundleDir, 'config.json'), JSON.stringify(gOpts.config, null, 2));
 
     const runscPath = execProps<string>('runsc', 'runsc');
-    const runscRoot = path.join(os.tmpdir(), `runsc-root-${os.userInfo().username}`);
+    let username = 'default';
+    try {
+        username = os.userInfo().username;
+    } catch {
+        username = process.env.USER || process.env.USERNAME || 'default';
+    }
+    const runscRoot = path.join(os.tmpdir(), `runsc-root-${username}`);
     const runscArgs = ['--rootless', '--root', runscRoot, '--network=none', 'run', '--bundle', bundleDir, containerId];
 
     try {
@@ -565,8 +568,22 @@ async function sandboxGvisor(
         return result;
     } finally {
         await fs.rm(bundleDir, {recursive: true, force: true});
-        await executeDirect(runscPath, ['--rootless', '--root', runscRoot, 'delete', '--force', containerId], {});
+        try {
+            await executeDirect(runscPath, ['--rootless', '--root', runscRoot, 'delete', '--force', containerId], {});
+        } catch (e) {
+            logger.warn(`Failed to delete gVisor container ${containerId}:`, e);
+        }
     }
+}
+
+async function sandboxGvisor(
+    command: string,
+    args: string[],
+    options: ExecutionOptions,
+): Promise<UnprocessedExecResult> {
+    logger.info('Sandbox execution via gvisor', {command, args});
+    const gOpts = await getSandboxGvisorOptions(command, args, options);
+    return runInGvisor(gOpts, 'ce-sandbox');
 }
 
 async function executeGvisor(
@@ -576,47 +593,7 @@ async function executeGvisor(
 ): Promise<UnprocessedExecResult> {
     logger.info('Compiler execution via gvisor', {command, args});
     const gOpts = await getGvisorOptions('execute', command, args, options);
-
-    const bundleDir = await fs.mkdtemp(path.join(os.tmpdir(), 'ce-gvisor-'));
-    const rootfsDir = path.join(bundleDir, 'rootfs');
-    await fs.mkdir(rootfsDir);
-
-    const containerId = `ce-execute-${path.basename(bundleDir)}`;
-
-    const passwdContent =
-        'ce:x:0:0:Not a real account:/app:/bin/bash\nnobody:x:65534:65534:nobody:/nonexistent:/usr/sbin/nologin\n';
-    const passwdPath = path.join(bundleDir, 'passwd');
-    await fs.writeFile(passwdPath, passwdContent);
-    gOpts.config.mounts.push({
-        destination: '/etc/passwd',
-        type: 'bind',
-        source: passwdPath,
-        options: ['ro'],
-    });
-
-    const groupContent = 'ce:x:0:\nnogroup:x:65534:\n';
-    const groupPath = path.join(bundleDir, 'group');
-    await fs.writeFile(groupPath, groupContent);
-    gOpts.config.mounts.push({
-        destination: '/etc/group',
-        type: 'bind',
-        source: groupPath,
-        options: ['ro'],
-    });
-
-    await fs.writeFile(path.join(bundleDir, 'config.json'), JSON.stringify(gOpts.config, null, 2));
-
-    const runscPath = execProps<string>('runsc', 'runsc');
-    const runscRoot = path.join(os.tmpdir(), `runsc-root-${os.userInfo().username}`);
-    const runscArgs = ['--rootless', '--root', runscRoot, '--network=none', 'run', '--bundle', bundleDir, containerId];
-
-    try {
-        const result = await executeDirect(runscPath, runscArgs, gOpts.options, gOpts.filenameTransform);
-        return result;
-    } finally {
-        await fs.rm(bundleDir, {recursive: true, force: true});
-        await executeDirect(runscPath, ['--rootless', '--root', runscRoot, 'delete', '--force', containerId], {});
-    }
+    return runInGvisor(gOpts, 'ce-execute');
 }
 
 function sandboxCEWrapper(command: string, args: string[], options: ExecutionOptions) {
@@ -913,5 +890,5 @@ export async function execute(
 
 export function maybeRemapJailedDir(customCwd: string): string {
     const type = execProps('executionType', 'none');
-    return type === 'nsjail' || type === 'gvisor' ? jailedHomeDir : customCwd;
+    return usesAppJail(type) ? jailedHomeDir : customCwd;
 }

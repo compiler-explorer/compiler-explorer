@@ -288,7 +288,15 @@ describe('Execution tests', async () => {
                 'sandbox',
                 './exec',
                 ['/some/custom/cwd/file', '/not/custom/file'],
-                {customCwd: '/some/custom/cwd'},
+                {
+                    customCwd: '/some/custom/cwd',
+                    ldPath: ['/usr/lib', '', '/some/custom/cwd/lib'],
+                    env: {
+                        MY_PATH: '/some/custom/cwd/path',
+                        OTHER_PATH: '/not/custom/path',
+                        CXX_FLAGS: '-L/usr/lib -L/some/custom/cwd/curl/lib',
+                    },
+                },
             );
             expect(config.process.args).toEqual(['./exec', '/app/file', '/not/custom/file']);
             expect(config.process.cwd).toEqual('/app');
@@ -304,6 +312,15 @@ describe('Execution tests', async () => {
                 expect(filenameTransform('moo')).toEqual('moo');
                 expect(filenameTransform('/some/custom/cwd/file')).toEqual('/app/file');
             }
+
+            if (process.platform === 'win32') {
+                expect(config.process.env).toContain('LD_LIBRARY_PATH=/usr/lib;/app/lib');
+            } else {
+                expect(config.process.env).toContain('LD_LIBRARY_PATH=/usr/lib:/app/lib');
+            }
+            expect(config.process.env).toContain('MY_PATH=/app/path');
+            expect(config.process.env).toContain('OTHER_PATH=/not/custom/path');
+            expect(config.process.env).toContain('CXX_FLAGS=-L/usr/lib -L/app/curl/lib');
         });
         it('should handle linker paths', async () => {
             const {config} = await exec.getGvisorOptions('sandbox', '/path/to/compiler', [], {
