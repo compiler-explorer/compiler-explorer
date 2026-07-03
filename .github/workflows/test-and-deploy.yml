@@ -50,7 +50,7 @@ jobs:
           check-latest: false
           cache: npm
       - name: Install prerequisites
-        run: make prereqs
+        run: npm i
       - name: Run checks
         run: |
           npm run ts-compile
