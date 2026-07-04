@@ -43,14 +43,14 @@ jobs:
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
-      - name: Use Node.js (minimum supported, from .node-version)
+      - name: Use Node.js (minimum supported, from .minimum-node-version)
         uses: actions/setup-node@v4
         with:
-          node-version-file: .node-version
+          node-version-file: .minimum-node-version
           check-latest: false
           cache: npm
       - name: Install prerequisites
-        run: make prereqs
+        run: npm i
       - name: Run checks
         run: |
           npm run ts-compile
