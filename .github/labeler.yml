@@ -105,6 +105,13 @@
           - 'lib/compilers/clojure.ts'
           - 'etc/config/clojure.*.properties'
 
+'lang-co2':
+  - changed-files:
+      - any-glob-to-any-file:
+          - 'lib/compilers/co2.ts'
+          - 'etc/config/co2.*.properties'
+          - 'static/modes/co2-mode.ts'
+
 'lang-cobol':
   - changed-files:
       - any-glob-to-any-file:
@@ -133,6 +140,9 @@
           - lib/compilers/nvcc.ts
           - etc/config/cuda.*.properties
           - static/modes/cuda-mode.ts
+          - lib/compilers/scale-nvcc-nvidia.ts
+          - lib/compilers/scale-nvcc-amd.ts
+
 
 'lang-cutedsl':
   - changed-files:

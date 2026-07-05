@@ -71,6 +71,7 @@ export type CompilerInfo = {
     objdumper: string;
     objdumperType: string;
     objdumperArgs: string[];
+    llvmDisassembler: string;
     llvmObjdumper: string;
     intelAsm: string;
     supportsAsmDocs: boolean;
@@ -175,6 +176,7 @@ export type CompilerInfo = {
     };
     cachedPossibleArguments?: any;
     nvdisasm?: string;
+    ptxas?: string;
     mtime?: any;
     $order: number;
 };

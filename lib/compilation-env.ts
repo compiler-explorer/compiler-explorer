@@ -181,16 +181,20 @@ export class CompilationEnvironment {
         }
     }
 
-    async tempCachePutWithTTL(object: CacheableValue, result: object, ttlDays: number, creator: string | undefined) {
+    async tempCachePutWithTTL(
+        object: CacheableValue,
+        jsonString: string,
+        ttlDays: number,
+        creator: string | undefined,
+    ) {
         const key = BaseCache.hash(object);
-        const jsonData = JSON.stringify(result);
 
         // Check if cache is S3Cache to use TTL functionality with temp path
         if (this.cache instanceof S3Cache) {
-            return this.cache.putWithTTLAndPath(key, Buffer.from(jsonData), ttlDays, 'temp', creator);
+            return this.cache.putWithTTLAndPath(key, Buffer.from(jsonString), ttlDays, 'temp', creator);
         } else {
             // Fallback to regular put for non-S3 caches
-            return this.cache.put(key, jsonData, creator);
+            return this.cache.put(key, jsonString, creator);
         }
     }
 
