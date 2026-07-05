@@ -23,15 +23,15 @@
 // POSSIBILITY OF SUCH DAMAGE.
 
 import _ from 'underscore';
-import * as utils from '../utils.js';
 
-import type {LLVMIrBackendOptions} from '../../types/llvm-ir/backend.interfaces.js';
+import type {LLVMIrBackendOptions} from '../../types/compilation/ir.interfaces.js';
 import type {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces.js';
 import {unwrap} from '../assert.js';
 import {BaseCompiler} from '../base-compiler.js';
+import * as utils from '../utils.js';
 
 export class AburiCompiler extends BaseCompiler {
-    static override get key() {
+    static get key() {
         return 'aburi';
     }
 
@@ -41,11 +41,7 @@ export class AburiCompiler extends BaseCompiler {
         this.compiler.irArg = ['--emit-llvm'];
     }
 
-    override optionsForFilter(
-        filters: ParseFiltersAndOutputOptions,
-        outputFilename: string,
-        userOptions?: string[],
-    ) {
+    override optionsForFilter(filters: ParseFiltersAndOutputOptions, outputFilename: string, userOptions?: string[]) {
         if (_.some(unwrap(userOptions), opt => opt === '--help' || opt === '-h' || opt === '-hh')) {
             return [];
         }
@@ -74,7 +70,7 @@ export class AburiCompiler extends BaseCompiler {
         const irPath = this.getIrOutputFilename(inputFilename);
         const irOptions_ = options
             .filter(opt => opt !== '-S')
-            .map((opt) => {
+            .map(opt => {
                 if (opt === '-o') return '__OFLAG__';
                 return opt;
             });
