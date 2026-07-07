@@ -209,6 +209,7 @@ type CompilerEntry = {
     options: unknown;
     editorId: number;
     treeId: number;
+    sourceName: string;
     compiler: CompilerInfo;
 };
 
@@ -299,14 +300,18 @@ export class Diff extends MonacoPane<monaco.editor.IStandaloneDiffEditor, DiffSt
                 options: [],
                 items: [],
                 render: <any>{
+                    item: (item, escapeHtml) => {
+                        return `<div>${escapeHtml(item.name)}</div>`;
+                    },
                     option: (item, escapeHtml) => {
-                        const origin = item.editorId !== false ? 'Editor #' + item.editorId : 'Tree #' + item.treeId;
+                        const origin =
+                            item.sourceName || (item.editorId ? 'Editor #' + item.editorId : 'Tree #' + item.treeId);
                         return (
                             '<div>' +
-                            `<span class="compiler">${escapeHtml(item.compiler.name)}</span>` +
-                            `<span class="options">${escapeHtml(item.options)}</span>` +
+                            `<span class="source">${escapeHtml(origin)}</span>` +
+                            `<span class="options">${escapeHtml(item.options || '')}</span>` +
                             '<ul class="meta">' +
-                            `<li class="editor">${escapeHtml(origin)}</li>` +
+                            `<li class="compilerName">${escapeHtml(item.compiler.name)}</li>` +
                             `<li class="compilerId">${escapeHtml(getItemDisplayTitle(item))}</li>` +
                             '</ul>' +
                             '</div>'
@@ -442,6 +447,12 @@ export class Diff extends MonacoPane<monaco.editor.IStandaloneDiffEditor, DiffSt
         this.eventHub.on('executeResult', this.onExecuteResult, this);
         this.eventHub.on('executor', this.onExecutor, this);
         this.eventHub.on('executorClose', this.onExecutorClose, this);
+        this.eventHub.on('renamePane', this.onPaneRenamed, this);
+    }
+
+    onPaneRenamed() {
+        this.eventHub.emit('findCompilers');
+        this.eventHub.emit('findExecutors');
     }
 
     requestResendResult(id: number | string) {
@@ -515,16 +526,19 @@ export class Diff extends MonacoPane<monaco.editor.IStandaloneDiffEditor, DiffSt
         options: unknown,
         editorId: number,
         treeId: number,
+        sourceName?: string,
     ) {
         if (!compiler) return;
         options = options || '';
-        const name = compiler.name + ' ' + options;
+        const source = sourceName || (editorId ? 'Editor #' + editorId : 'Tree #' + treeId);
+        const name = [source, compiler.name, options].filter(Boolean).join(' ');
         this.compilers[id] = {
             id: id,
             name: name,
             options: options,
             editorId: editorId,
             treeId: treeId,
+            sourceName: source,
             compiler: compiler,
         };
         if (this.lhs.id === undefined) {
@@ -540,8 +554,15 @@ export class Diff extends MonacoPane<monaco.editor.IStandaloneDiffEditor, DiffSt
         this.updateCompilers();
     }
 
-    onExecutor(id: number, compiler: CompilerInfo | null, options: string, editorId: number, treeId: number) {
-        this.onCompiler(id + '_exec', compiler, options, editorId, treeId);
+    onExecutor(
+        id: number,
+        compiler: CompilerInfo | null,
+        options: string,
+        editorId: number,
+        treeId: number,
+        sourceName?: string,
+    ) {
+        this.onCompiler(id + '_exec', compiler, options, editorId, treeId, sourceName);
     }
 
     override onCompilerClose(id: number | string) {
