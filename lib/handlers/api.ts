@@ -407,7 +407,12 @@ export class ApiHandler {
         // via /api/tools/:language.
         const slimmedCompilers = filteredCompilers.map(compiler =>
             compiler.tools
-                ? {...compiler, tools: Object.keys(compiler.tools) as unknown as CompilerInfo['tools']}
+                ? {
+                      ...compiler,
+                      tools: (Array.isArray(compiler.tools)
+                          ? compiler.tools
+                          : Object.keys(compiler.tools)) as unknown as CompilerInfo['tools'],
+                  }
                 : compiler,
         );
 
