@@ -40,6 +40,7 @@ export enum DiffType {
     ClojureMacroExpOutput = 13,
     YulOutput = 14,
     LeanCOutput = 15,
+    Source = 16,
 }
 
 export type DiffState = {
