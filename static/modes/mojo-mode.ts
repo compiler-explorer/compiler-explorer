@@ -73,23 +73,23 @@ function definition(): monaco.languages.IMonarchLanguage {
             'yield',
 
             // Mojo declarations
-            'fn',       // legacy (kept for older compilers)
+            'fn', // legacy (kept for older compilers)
             'struct',
             'trait',
             'var',
             'ref',
             'comptime', // current spelling of compile-time declarations
-            'alias',    // pre-comptime spelling
-            'let',      // legacy
+            'alias', // pre-comptime spelling
+            'let', // legacy
 
             // Mojo ownership
             'read',
             'mut',
             'out',
             'deinit',
-            'owned',    // old spelling of `var`
+            'owned', // old spelling of `var`
             'borrowed', // old spelling of `read`
-            'inout',    // old spelling of `mut`
+            'inout', // old spelling of `mut`
 
             // Mojo functions
             'raises',
@@ -149,9 +149,9 @@ function definition(): monaco.languages.IMonarchLanguage {
 
         // Python-inspired
         brackets: [
-            { open: '{', close: '}', token: 'delimiter.curly' },
-            { open: '[', close: ']', token: 'delimiter.bracket' },
-            { open: '(', close: ')', token: 'delimiter.parenthesis' }
+            {open: '{', close: '}', token: 'delimiter.curly'},
+            {open: '[', close: ']', token: 'delimiter.bracket'},
+            {open: '(', close: ')', token: 'delimiter.parenthesis'},
         ],
 
         tokenizer: {
@@ -159,6 +159,33 @@ function definition(): monaco.languages.IMonarchLanguage {
                 {include: '@whitespace'},
                 {include: '@numbers'},
                 {include: '@strings'},
+
+                // Decorators
+                // @fieldwise_init, @parameter, ...
+                [/@[a-zA-Z_][\w.]*/, 'tag'],
+
+                // Attribute access
+                // file.read(), simd.reduce_add(), ...
+                // Avoids mis-highlighting attributes that share names with keywords
+                [/(\.)(\s*)([a-zA-Z_]\w*)/, ['delimiter', 'white', 'identifier']],
+
+                // Operators
+                // Multi-char ops should be tried before the single-char ops
+                [/->|\*\*=?|\/\/=?|<<=?|>>=?|[<>=!]=|:=|[-+*/%&|^~<>=@]=?/, 'operator'],
+
+                [/[,:;]/, 'delimiter'],
+                [/[{}[\]()]/, '@brackets'],
+
+                [
+                    /[a-zA-Z_]\w*/,
+                    {
+                        cases: {
+                            '@typeKeywords': 'type.identifier',
+                            '@keywords': 'keyword',
+                            '@default': 'identifier',
+                        },
+                    },
+                ],
             ],
 
             // Comments can be anywhere on a line
