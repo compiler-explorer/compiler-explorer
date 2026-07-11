@@ -24,19 +24,76 @@
 
 import * as monaco from 'monaco-editor';
 
+// References:
+// https://github.com/microsoft/monaco-editor/blob/main/src/languages/definitions/python/python.ts
+// https://mojolang.org/docs/reference/
+// https://mojolang.org/docs/manual/
 function definition(): monaco.languages.IMonarchLanguage {
     return {
         defaultToken: '',
         tokenPostfix: '.mojo',
 
+        // Python-inspired
+        brackets: [
+            { open: '{', close: '}', token: 'delimiter.curly' },
+            { open: '[', close: ']', token: 'delimiter.bracket' },
+            { open: '(', close: ')', token: 'delimiter.parenthesis' }
+        ],
+
         tokenizer: {
             root: [
                 {include: '@whitespace'},
+                {include: '@numbers'},
+                {include: '@strings'},
             ],
 
+            // Comments can be anywhere on a line
             whitespace: [
                 [/\s+/, 'white'],
                 [/#.*$/, 'comment'],
+            ],
+
+            numbers: [
+                [/0[xX][0-9a-fA-F](_?[0-9a-fA-F])*/, 'number.hex'],
+                [/0[bB][01](_?[01])*/, 'number.binary'],
+                [/0[oO][0-7](_?[0-7])*/, 'number.octal'],
+                [/\d(_?\d)*\.\d(_?\d)*([eE][-+]?\d(_?\d)*)?/, 'number.float'],
+                [/\.\d(_?\d)*([eE][-+]?\d(_?\d)*)?/, 'number.float'],
+                [/\d(_?\d)*[eE][-+]?\d(_?\d)*/, 'number.float'],
+                [/\d(_?\d)*/, 'number'],
+            ],
+
+            strings: [
+                [/[bBfFrRtTuU]{0,2}'''/, 'string', '@tripleSingle'],
+                [/[bBfFrRtTuU]{0,2}"""/, 'string', '@tripleDouble'],
+                [/[bBfFrRtTuU]{0,2}'/, 'string.escape', '@stringBody'],
+                [/[bBfFrRtTuU]{0,2}"/, 'string.escape', '@dblStringBody'],
+            ],
+            tripleSingle: [
+                [/[^\\']+/, 'string'],
+                [/\\./, 'string.escape'],
+                [/'''/, 'string', '@popall'],
+                [/'/, 'string'],
+            ],
+            tripleDouble: [
+                [/[^\\"]+/, 'string'],
+                [/\\./, 'string.escape'],
+                [/"""/, 'string', '@popall'],
+                [/"/, 'string'],
+            ],
+            stringBody: [
+                [/[^\\']+$/, 'string', '@popall'],
+                [/[^\\']+/, 'string'],
+                [/\\./, 'string.escape'],
+                [/'/, 'string.escape', '@popall'],
+                [/\\$/, 'string'],
+            ],
+            dblStringBody: [
+                [/[^\\"]+$/, 'string', '@popall'],
+                [/[^\\"]+/, 'string'],
+                [/\\./, 'string.escape'],
+                [/"/, 'string.escape', '@popall'],
+                [/\\$/, 'string'],
             ],
         },
     };
