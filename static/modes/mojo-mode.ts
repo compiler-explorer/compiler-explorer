@@ -33,6 +33,120 @@ function definition(): monaco.languages.IMonarchLanguage {
         defaultToken: '',
         tokenPostfix: '.mojo',
 
+        keywords: [
+            // Python-inherited keywords
+            'False',
+            'None',
+            'True',
+            'and',
+            'as',
+            'assert',
+            'async',
+            'await',
+            'break',
+            'class',
+            'continue',
+            'def',
+            'del',
+            'elif',
+            'else',
+            'except',
+            'finally',
+            'for',
+            'from',
+            'global',
+            'if',
+            'import',
+            'in',
+            'is',
+            'lambda',
+            'nonlocal',
+            'not',
+            'or',
+            'pass',
+            'raise',
+            'return',
+            'self',
+            'try',
+            'while',
+            'with',
+            'yield',
+
+            // Mojo declarations
+            'fn',       // legacy (kept for older compilers)
+            'struct',
+            'trait',
+            'var',
+            'ref',
+            'comptime', // current spelling of compile-time declarations
+            'alias',    // pre-comptime spelling
+            'let',      // legacy
+
+            // Mojo ownership
+            'read',
+            'mut',
+            'out',
+            'deinit',
+            'owned',    // old spelling of `var`
+            'borrowed', // old spelling of `read`
+            'inout',    // old spelling of `mut`
+
+            // Mojo functions
+            'raises',
+            'capturing',
+            'escaping',
+            'unified',
+            'where',
+
+            // Mojo MLIR-level primitives
+            '__mlir_attr',
+            '__mlir_op',
+            '__mlir_type',
+        ],
+
+        // Common standard-library types
+        // (not exhaustive)
+        typeKeywords: [
+            'AnyType',
+            'Bool',
+            'Byte',
+            'DType',
+            'Dict',
+            'Error',
+            'Float16',
+            'Float32',
+            'Float64',
+            'Int',
+            'Int128',
+            'Int16',
+            'Int256',
+            'Int32',
+            'Int64',
+            'Int8',
+            'List',
+            'NoneType',
+            'Optional',
+            'Pointer',
+            'SIMD',
+            'Scalar',
+            'Self',
+            'Set',
+            'Span',
+            'String',
+            'StringLiteral',
+            'StringSlice',
+            'Tuple',
+            'UInt',
+            'UInt128',
+            'UInt16',
+            'UInt256',
+            'UInt32',
+            'UInt64',
+            'UInt8',
+            'UnsafePointer',
+            'object',
+        ],
+
         // Python-inspired
         brackets: [
             { open: '{', close: '}', token: 'delimiter.curly' },
@@ -63,6 +177,7 @@ function definition(): monaco.languages.IMonarchLanguage {
                 [/\d(_?\d)*/, 'number'],
             ],
 
+            // Python prefixes (bBfFrRuU) + Mojo prefix (template)
             strings: [
                 [/[bBfFrRtTuU]{0,2}'''/, 'string', '@tripleSingle'],
                 [/[bBfFrRtTuU]{0,2}"""/, 'string', '@tripleDouble'],
