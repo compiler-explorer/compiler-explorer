@@ -1,0 +1,258 @@
+{
+  "ociVersion": "1.0.0",
+  "process": {
+    "user": {
+      "uid": 0,
+      "gid": 0
+    },
+    "args": [
+      "sh"
+    ],
+    "env": [
+      "PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin",
+      "TERM=xterm"
+    ],
+    "cwd": "/",
+    "capabilities": {
+      "bounding": [
+        "CAP_AUDIT_WRITE",
+        "CAP_KILL",
+        "CAP_NET_BIND_SERVICE"
+      ],
+      "effective": [
+        "CAP_AUDIT_WRITE",
+        "CAP_KILL",
+        "CAP_NET_BIND_SERVICE"
+      ],
+      "inheritable": [
+        "CAP_AUDIT_WRITE",
+        "CAP_KILL",
+        "CAP_NET_BIND_SERVICE"
+      ],
+      "permitted": [
+        "CAP_AUDIT_WRITE",
+        "CAP_KILL",
+        "CAP_NET_BIND_SERVICE"
+      ]
+    },
+    "rlimits": [
+      {
+        "type": "RLIMIT_NOFILE",
+        "hard": 100,
+        "soft": 100
+      },
+      {
+        "type": "RLIMIT_FSIZE",
+        "hard": 16777216,
+        "soft": 16777216
+      }
+    ]
+  },
+  "root": {
+    "path": "rootfs",
+    "readonly": true
+  },
+  "hostname": "ce",
+  "mounts": [
+    {
+      "destination": "/proc",
+      "type": "proc",
+      "source": "proc"
+    },
+    {
+      "destination": "/dev",
+      "type": "tmpfs",
+      "source": "tmpfs"
+    },
+    {
+      "destination": "/sys",
+      "type": "sysfs",
+      "source": "sysfs",
+      "options": [
+        "nosuid",
+        "noexec",
+        "nodev",
+        "ro"
+      ]
+    },
+    {
+      "destination": "/bin",
+      "type": "bind",
+      "source": "/bin",
+      "options": [
+        "ro",
+        "rbind"
+      ]
+    },
+    {
+      "destination": "/lib",
+      "type": "bind",
+      "source": "/lib",
+      "options": [
+        "ro",
+        "rbind"
+      ]
+    },
+    {
+      "destination": "/usr",
+      "type": "bind",
+      "source": "/usr",
+      "options": [
+        "ro",
+        "rbind"
+      ]
+    },
+    {
+      "destination": "/etc/alternatives",
+      "type": "bind",
+      "source": "/etc/alternatives",
+      "options": [
+        "ro",
+        "rbind"
+      ],
+      "skip_if_missing": true
+    },
+    {
+      "destination": "/etc/localtime",
+      "type": "bind",
+      "source": "/etc/localtime",
+      "options": [
+        "ro"
+      ]
+    },
+    {
+      "destination": "/etc/ld.so.conf.d",
+      "type": "bind",
+      "source": "/etc/ld.so.conf.d",
+      "options": [
+        "ro",
+        "rbind"
+      ]
+    },
+    {
+      "destination": "/etc/ld.so.conf",
+      "type": "bind",
+      "source": "/etc/ld.so.conf",
+      "options": [
+        "ro"
+      ]
+    },
+    {
+      "destination": "/lib64",
+      "type": "bind",
+      "source": "/lib64",
+      "options": [
+        "ro",
+        "rbind"
+      ],
+      "skip_if_missing": true
+    },
+    {
+      "destination": "/lib32",
+      "type": "bind",
+      "source": "/lib32",
+      "options": [
+        "ro",
+        "rbind"
+      ],
+      "skip_if_missing": true
+    },
+    {
+      "destination": "/tmp",
+      "type": "tmpfs",
+      "source": "tmpfs",
+      "options": [
+        "rw",
+        "noexec",
+        "nosuid",
+        "nodev",
+        "size=20971520"
+      ]
+    },
+    {
+      "destination": "/dev/null",
+      "type": "bind",
+      "source": "/dev/null",
+      "options": [
+        "rw"
+      ]
+    },
+    {
+      "destination": "/dev/zero",
+      "type": "bind",
+      "source": "/dev/zero",
+      "options": [
+        "ro"
+      ]
+    },
+    {
+      "destination": "/dev/random",
+      "type": "bind",
+      "source": "/dev/urandom",
+      "options": [
+        "ro"
+      ]
+    },
+    {
+      "destination": "/dev/urandom",
+      "type": "bind",
+      "source": "/dev/urandom",
+      "options": [
+        "ro"
+      ]
+    },
+    {
+      "destination": "/usr/bin/stdbuf",
+      "type": "bind",
+      "source": "/usr/bin/stdbuf",
+      "options": [
+        "ro"
+      ]
+    },
+    {
+      "destination": "/usr/libexec/coreutils/libstdbuf.so",
+      "type": "bind",
+      "source": "/usr/libexec/coreutils/libstdbuf.so",
+      "options": [
+        "ro"
+      ],
+      "skip_if_missing": true
+    },
+    {
+      "destination": "/opt/compiler-explorer",
+      "type": "bind",
+      "source": "/opt/compiler-explorer",
+      "options": [
+        "ro",
+        "rbind"
+      ]
+    }
+  ],
+  "linux": {
+    "resources": {
+      "memory": {
+        "limit": 209715200
+      },
+      "pids": {
+        "limit": 14
+      }
+    },
+    "namespaces": [
+      {
+        "type": "pid"
+      },
+      {
+        "type": "network"
+      },
+      {
+        "type": "ipc"
+      },
+      {
+        "type": "uts"
+      },
+      {
+        "type": "mount"
+      }
+    ]
+  }
+}

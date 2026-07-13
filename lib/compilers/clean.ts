@@ -28,6 +28,7 @@ import path from 'node:path';
 import type {ExecutionOptionsWithEnv} from '../../types/compilation/compilation.interfaces.js';
 import type {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces.js';
 import {BaseCompiler} from '../base-compiler.js';
+import {usesAppJail} from '../exec.js';
 import {propsFor} from '../properties.js';
 import * as utils from '../utils.js';
 
@@ -115,7 +116,7 @@ export class CleanCompiler extends BaseCompiler {
         await fs.mkdir(execOptions.env.CLEANOPATH);
 
         const execProps = propsFor('execution');
-        if (execProps<string>('executionType') === 'nsjail') {
+        if (usesAppJail(execProps<string>('executionType'))) {
             execOptions.env.CLEANABCPATH = '/app/Clean System Files';
             execOptions.env.CLEANOPATH = '/app/obj';
         }
