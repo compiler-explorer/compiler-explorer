@@ -784,3 +784,33 @@ describe('output files', async () => {
         expect(await utils.tryReadTextFile(filepath)).toEqual('hello');
     });
 });
+
+describe('maskRootdir', () => {
+    it('masks a CE temp path down to the user-facing filename', () => {
+        expect(utils.maskRootdir('/tmp/compiler-explorer-compiler123-4-abc/example.cpp')).toEqual('example.cpp');
+    });
+
+    it('keeps /app/ when the temp path is embedded (e.g. a -I include flag)', () => {
+        expect(utils.maskRootdir('-I/tmp/compiler-explorer-compiler123-4-abc/include')).toEqual('-I/app/include');
+    });
+
+    // The path being masked was recorded when the compile ran; its leading directory
+    // need not match this process's os.tmpdir(). The distinctive ce_temp_prefix marker
+    // is what identifies a CE temp dir, so masking must not depend on the tmpdir root.
+    it.each([
+        ['/tmp', '/tmp/compiler-explorer-compilerXYZ/example.cpp'],
+        ['/usr/tmp', '/usr/tmp/compiler-explorer-compilerXYZ/example.cpp'],
+        ['macOS /private/var', '/private/var/folders/ab/xyz/T/compiler-explorer-compilerXYZ/example.cpp'],
+        ['Windows', 'C:/Users/ce/AppData/Local/Temp/compiler-explorer-compilerXYZ/example.cpp'],
+    ])('masks a temp path rooted at %s regardless of the local tmpdir', (_root, input) => {
+        expect(utils.maskRootdir(input)).toEqual('example.cpp');
+    });
+
+    it('leaves non-temp paths untouched', () => {
+        expect(utils.maskRootdir('/usr/include/stdio.h')).toEqual('/usr/include/stdio.h');
+    });
+
+    it('passes empty input through unchanged', () => {
+        expect(utils.maskRootdir('')).toEqual('');
+    });
+});

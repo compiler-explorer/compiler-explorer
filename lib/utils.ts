@@ -24,7 +24,6 @@
 
 import crypto from 'node:crypto';
 import fs from 'node:fs/promises';
-import os from 'node:os';
 import path from 'node:path';
 import {fileURLToPath} from 'node:url';
 import {Buffer} from 'buffer';
@@ -94,10 +93,17 @@ export function expandTabs(line: string): string {
     });
 }
 
-function getRegexForTempdir(): RegExp {
-    const tmp = os.tmpdir();
-    return new RegExp(tmp.replaceAll('/', '\\/') + '\\/' + ce_temp_prefix + '[\\w\\d-.]*\\/');
-}
+// Matches everything up to and through a CE temp dir, `.../<ce_temp_prefix><suffix>/`.
+// We key off the ce_temp_prefix marker, NOT the live os.tmpdir(): the temp root varies
+// by host/config (macOS /var vs /private/var, an execution.tempDirRoot elsewhere) and
+// the path being masked may have been recorded under a different tmpdir than this one.
+// The marker is the only invariant — it's the same constant we create the dir with.
+// `(?:[A-Za-z]:)?` + `/` handles Windows too; `[^/\s]` confines the match to one path
+// token so an embedded `-I/tmp/<prefix>XXX/inc` still masks to `-I/app/inc`.
+// A user path that itself contains a `<ce_temp_prefix>...` segment would be masked too,
+// but that only affects displayed output (never what's compiled/executed) and needs a
+// deliberately odd dir name, so it's not worth a costlier scheme to prevent.
+const TEMPDIR_RE = new RegExp(`(?:[A-Za-z]:)?/(?:[^/\\s]*/)*${ce_temp_prefix}[\\w.-]*/`);
 
 /**
  * Removes the root dir from the given filepath, so that it will match to the user's filenames used
@@ -105,14 +111,7 @@ function getRegexForTempdir(): RegExp {
  */
 export function maskRootdir(filepath: string): string {
     if (filepath) {
-        if (process.platform === 'win32') {
-            // todo: should also use temp_prefix here
-            return filepath
-                .replace(/^C:\/Users\/[\w\d-.]*\/AppData\/Local\/Temp\/compiler-explorer-compiler[\w\d-.]*\//, '/app/')
-                .replace(/^\/app\//, '');
-        }
-        const re = getRegexForTempdir();
-        return filepath.replace(re, '/app/').replace(/^\/app\//, '');
+        return filepath.replace(TEMPDIR_RE, '/app/').replace(/^\/app\//, '');
     }
     return filepath;
 }
