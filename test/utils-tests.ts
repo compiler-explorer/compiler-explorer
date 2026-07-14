@@ -810,6 +810,23 @@ describe('maskRootdir', () => {
         expect(utils.maskRootdir('/usr/include/stdio.h')).toEqual('/usr/include/stdio.h');
     });
 
+    // A bare temp dir with no trailing slash isn't masked: the marker segment must be
+    // followed by `/` (i.e. contain a file/subpath). In practice maskRootdir is only
+    // ever called on paths *inside* the temp dir, so this bare-directory form doesn't
+    // arise; asserted here to pin the boundary.
+    it('leaves a bare temp dir with no trailing slash untouched', () => {
+        expect(utils.maskRootdir('/tmp/compiler-explorer-compiler123-4-abc')).toEqual(
+            '/tmp/compiler-explorer-compiler123-4-abc',
+        );
+    });
+
+    // With a trailing slash the whole thing is the temp dir, so it masks to /app/ and
+    // the leading-/app/ strip then leaves an empty string. (Pre-existing behaviour,
+    // unchanged by this PR; also doesn't occur for real inputs, which name a file.)
+    it('masks a bare temp dir with a trailing slash to empty', () => {
+        expect(utils.maskRootdir('/tmp/compiler-explorer-compiler123-4-abc/')).toEqual('');
+    });
+
     it('leaves paths with invalid marker suffix chars untouched', () => {
         expect(utils.maskRootdir('/tmp/compiler-explorer-compiler+bad/example.cpp')).toEqual(
             '/tmp/compiler-explorer-compiler+bad/example.cpp',
