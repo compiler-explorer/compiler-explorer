@@ -1,0 +1,4 @@
+self-hosted-runner:
+  # The admin node is registered as a self-hosted runner (see the infra repository)
+  labels:
+    - admin

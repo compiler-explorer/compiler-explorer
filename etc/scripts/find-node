@@ -1,46 +1,120 @@
 #!/bin/sh
 
+# Locate a usable node interpreter and write its path to $1 (or stdout).
+#
+# Resolution order, stopping at the first that satisfies the minimum version:
+#   1. $NODE_DIR/bin/node     -- explicit override; authoritative (errors if too old)
+#   2. node / nodejs on PATH  -- system node, and any version manager with shell
+#                                integration (fnm, asdf, nodenv, volta, an active nvm)
+#   3. a detected version manager, honouring .node-version -- the rescue path for
+#      nvm's off-PATH default, or a manager without `cd` auto-switching
+#
+# The minimum version lives in .node-version (the same file version managers read)
+# so there's a single source of truth. We compare the full major.minor.patch so a
+# node that satisfies .node-version also satisfies package.json's `engines` gate;
+# anything newer is fine. Version-manager *lookups* use the major only, since nvm/fnm
+# take a "22" prefix and resolve the newest installed 22.x -- which we then validate.
+
 set -e
 OUT="$1"
 
-find_node() {
-  NODE="${NODE_DIR}/bin/node"
-  CE_NODE="/opt/compiler-explorer/node/bin/node"
-  SYS_NODE="$(command -v node 2>/dev/null || true)"
-  SYS_NODEJS="$(command -v nodejs 2>/dev/null || true)"
+# shellcheck disable=SC1007  # `CDPATH= cd` is the intended empty-assignment idiom
+ROOT="$(CDPATH= cd -- "$(dirname "$0")/../.." && pwd -P)"
+MIN="$(sed 's/^v//; q' "${ROOT}/.node-version")"   # full minimum, e.g. 22.12.0
+MIN_MAJOR="${MIN%%.*}"                              # major only, for manager prefix lookups
 
-  if test -x "${NODE}" -a -n "${NODE_DIR}"; then
-    echo "${NODE}"
-  elif test -x "${CE_NODE}"; then
-    echo "${CE_NODE}"
-  elif test -x "${SYS_NODE}"; then
-    echo "${SYS_NODE}"
-  elif test -x "${SYS_NODEJS}"; then
-    echo "${SYS_NODEJS}"
-  else
-    echo >&2 "Unable to find a node"
-  fi
+# Full version (major.minor.patch) of the node at $1, or empty if it can't be run.
+node_version() {
+  "$1" --version 2>/dev/null | sed 's/^v//'
 }
 
-NODE="$(find_node)"
+# True if dotted-numeric version $1 is >= $2. Missing components count as 0, and any
+# non-numeric suffix (a prerelease tag) is dropped -- good enough for node's scheme.
+semver_ge() {
+  awk -v a="$1" -v b="$2" 'BEGIN {
+    na = split(a, x, "."); nb = split(b, y, ".");
+    n = (na > nb) ? na : nb;
+    for (i = 1; i <= n; i++) {
+      xi = (i <= na) ? x[i] + 0 : 0;
+      yi = (i <= nb) ? y[i] + 0 : 0;
+      if (xi > yi) exit 0;
+      if (xi < yi) exit 1;
+    }
+    exit 0;
+  }'
+}
 
-NODE_MIN_VERSION=22
-NODE_VERSION_USED=22
-NODE_VERSION=$(${NODE} --version)
-NODE_MAJOR_VERSION=$(echo "${NODE_VERSION}" | cut -f1 -d. | sed 's/^v//g')
+# True if $1 is an executable node of at least the minimum version.
+usable() {
+  [ -n "$1" ] && [ -x "$1" ] || return 1
+  _v="$(node_version "$1")"
+  [ -n "${_v}" ] && semver_ge "${_v}" "${MIN}"
+}
 
-if test "${NODE_MAJOR_VERSION}" -lt ${NODE_MIN_VERSION}; then
-  echo >&2 "Compiler Explorer is known not to run with versions prior to v${NODE_MIN_VERSION}"
-  echo >&2 "Visit https://nodejs.org/ for installation instructions for newer versions"
-  echo >&2 "To configure where we look for node, set NODE_DIR to its installation base"
+# Echo the first usable node discovered on PATH or via a version manager.
+discover() {
+  for _cand in node nodejs; do
+    _p="$(command -v "${_cand}" 2>/dev/null || true)"
+    if usable "${_p}"; then echo "${_p}"; return 0; fi
+  done
+
+  # nvm is a shell function, not a PATH binary, so source it and ask for the
+  # pinned major (a prefix like "22" resolves to the latest installed 22.x, which
+  # usable() then version-checks). This is the case plain PATH discovery can't cover.
+  _nvm="${NVM_DIR:-${HOME}/.nvm}/nvm.sh"
+  if [ -s "${_nvm}" ]; then
+    # shellcheck disable=SC1090  # nvm.sh location is user-dependent
+    _p="$(. "${_nvm}" >/dev/null 2>&1 && nvm which "${MIN_MAJOR}" 2>/dev/null || true)"
+    if usable "${_p}"; then echo "${_p}"; return 0; fi
+  fi
+
+  # Other managers expose a binary that honours the local .node-version.
+  if command -v fnm >/dev/null 2>&1; then
+    _p="$(fnm exec --using "${MIN_MAJOR}" -- node -p 'process.execPath' 2>/dev/null || true)"
+    if usable "${_p}"; then echo "${_p}"; return 0; fi
+  fi
+  if command -v nodenv >/dev/null 2>&1; then
+    _p="$(nodenv which node 2>/dev/null || true)"
+    if usable "${_p}"; then echo "${_p}"; return 0; fi
+  fi
+  if command -v asdf >/dev/null 2>&1; then
+    _p="$(asdf which node 2>/dev/null || true)"
+    if usable "${_p}"; then echo "${_p}"; return 0; fi
+  fi
+
+  return 1
+}
+
+fail() {
+  echo >&2 "$@"
+  echo >&2
+  echo >&2 "Compiler Explorer needs node ${MIN} or newer (see .node-version)."
+  echo >&2 "Install it from https://nodejs.org/, or:"
+  echo >&2 "  - point NODE_DIR at an existing install (we use \$NODE_DIR/bin/node), or"
+  echo >&2 "  - select it with your version manager (e.g. 'nvm use', 'fnm use')."
   exit 1
+}
+
+if [ -n "${NODE_DIR}" ]; then
+  # Explicit override: honour it, and complain clearly if it's unusable rather
+  # than silently falling back to something else.
+  NODE="${NODE_DIR}/bin/node"
+  if [ ! -x "${NODE}" ]; then
+    fail "NODE_DIR is set to '${NODE_DIR}' but '${NODE}' is not executable."
+  fi
+  _v="$(node_version "${NODE}")"
+  if [ -z "${_v}" ] || ! semver_ge "${_v}" "${MIN}"; then
+    fail "NODE_DIR points at node v${_v:-?}, but ${MIN} or newer is required."
+  fi
+else
+  NODE="$(discover || true)"
+  if [ -z "${NODE}" ]; then
+    fail "Unable to find node ${MIN} or newer on your PATH."
+  fi
 fi
 
-if test ${NODE_VERSION_USED} -ne "${NODE_MAJOR_VERSION}"; then
-  echo >&2 "Warning: Compiler Explorer is only tested against v${NODE_VERSION_USED}.x, but v${NODE_MAJOR_VERSION} was found."
-  echo >&2 "Note that you might find issues if you decide to keep this version"
-  echo >&2 "Visit https://nodejs.org/ for installation instructions for the required version"
-  echo >&2 "To configure where we look for node, set NODE_DIR to its installation base"
+if [ -n "${OUT}" ]; then
+  echo "${NODE}" >"${OUT}"
+else
+  echo "${NODE}"
 fi
-
-echo "${NODE}" >"${OUT}"

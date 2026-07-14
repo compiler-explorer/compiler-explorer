@@ -22,10 +22,10 @@ jobs:
         with:
           fetch-depth: 0
           ref: ${{ github.event.inputs.buildnumber }}
-      - name: Use Node.js 22.13.1
+      - name: Use Node.js (from .node-version)
         uses: actions/setup-node@v4
         with:
-          node-version: 22.13.1
+          node-version-file: .node-version
           cache: npm
       - name: Build distribution
         id: build_dist
