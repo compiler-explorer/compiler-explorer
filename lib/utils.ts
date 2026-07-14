@@ -98,12 +98,13 @@ export function expandTabs(line: string): string {
 // by host/config (macOS /var vs /private/var, an execution.tempDirRoot elsewhere) and
 // the path being masked may have been recorded under a different tmpdir than this one.
 // The marker is the only invariant — it's the same constant we create the dir with.
-// `(?:[A-Za-z]:)?` + `/` handles Windows too; `[^/\s]` confines the match to one path
-// token so an embedded `-I/tmp/<prefix>XXX/inc` still masks to `-I/app/inc`.
+// `(?:[A-Za-z]:)?` + `/` handles Windows too; `[^/\s]+` confines the match to one
+// non-empty path token so an embedded `-I/tmp/<prefix>XXX/inc` still masks to
+// `-I/app/inc` (real temp paths never have empty `//` segments).
 // A user path that itself contains a `<ce_temp_prefix>...` segment would be masked too,
 // but that only affects displayed output (never what's compiled/executed) and needs a
 // deliberately odd dir name, so it's not worth a costlier scheme to prevent.
-const TEMPDIR_RE = new RegExp(`(?:[A-Za-z]:)?/(?:[^/\\s]*/)*${ce_temp_prefix}[\\w.-]*/`);
+const TEMPDIR_RE = new RegExp(`(?:[A-Za-z]:)?/(?:[^/\\s]+/)*${ce_temp_prefix}[\\w.-]*/`);
 
 /**
  * Removes the root dir from the given filepath, so that it will match to the user's filenames used
