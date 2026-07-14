@@ -59,6 +59,8 @@ jobs:
   build_dist:
     if: github.repository_owner == 'compiler-explorer' && github.event_name == 'push' && github.actor != 'dependabot[bot]'
     runs-on: ubuntu-22.04
+    permissions:
+      contents: read
     outputs:
       release_name: ${{ steps.build_dist.outputs.release_name }}
       branch: ${{ steps.build_dist.outputs.branch }}
@@ -86,6 +88,8 @@ jobs:
     if: github.repository_owner == 'compiler-explorer' && github.event_name == 'push' && github.actor != 'dependabot[bot]'
     needs: [test, build_dist]
     runs-on: ubuntu-22.04
+    permissions:
+      contents: write
 
     steps:
       - name: Checkout repository
