@@ -135,8 +135,10 @@ export async function validateBrandingAssets(staticPath: string, extraBodyClass:
     for (const filename of required) {
         try {
             await fs.access(path.join(staticPath, filename));
-        } catch {
-            missing.push(filename);
+        } catch (e: unknown) {
+            const err = e as NodeJS.ErrnoException;
+            if (err.code === 'ENOENT') missing.push(filename);
+            else throw err;
         }
     }
     if (missing.length > 0) {
