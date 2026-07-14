@@ -810,6 +810,17 @@ describe('maskRootdir', () => {
         expect(utils.maskRootdir('/usr/include/stdio.h')).toEqual('/usr/include/stdio.h');
     });
 
+    it('leaves paths with invalid marker suffix chars untouched', () => {
+        expect(utils.maskRootdir('/tmp/compiler-explorer-compiler+bad/example.cpp')).toEqual(
+            '/tmp/compiler-explorer-compiler+bad/example.cpp',
+        );
+    });
+
+    it('handles long non-matching path-like inputs without altering them', () => {
+        const input = `-I/${'segment/'.repeat(4000)}not-temp/include`;
+        expect(utils.maskRootdir(input)).toEqual(input);
+    });
+
     it('passes empty input through unchanged', () => {
         expect(utils.maskRootdir('')).toEqual('');
     });

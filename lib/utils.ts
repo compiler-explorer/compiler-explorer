@@ -93,18 +93,85 @@ export function expandTabs(line: string): string {
     });
 }
 
-// Matches everything up to and through a CE temp dir, `.../<ce_temp_prefix><suffix>/`.
-// We key off the ce_temp_prefix marker, NOT the live os.tmpdir(): the temp root varies
-// by host/config (macOS /var vs /private/var, an execution.tempDirRoot elsewhere) and
-// the path being masked may have been recorded under a different tmpdir than this one.
-// The marker is the only invariant — it's the same constant we create the dir with.
-// `(?:[A-Za-z]:)?` + `/` handles Windows too; `[^/\s]+` confines the match to one
-// non-empty path token so an embedded `-I/tmp/<prefix>XXX/inc` still masks to
-// `-I/app/inc` (real temp paths never have empty `//` segments).
-// A user path that itself contains a `<ce_temp_prefix>...` segment would be masked too,
-// but that only affects displayed output (never what's compiled/executed) and needs a
-// deliberately odd dir name, so it's not worth a costlier scheme to prevent.
-const TEMPDIR_RE = new RegExp(`(?:[A-Za-z]:)?/(?:[^/\\s]+/)*${ce_temp_prefix}[\\w.-]*/`);
+function isWhitespaceChar(char: string): boolean {
+    return /\s/.test(char);
+}
+
+function isDriveLetter(char: string): boolean {
+    return /^[A-Za-z]$/.test(char);
+}
+
+function isTempdirSuffixChar(char: string): boolean {
+    return /^[\w.-]$/.test(char);
+}
+
+function findTokenStart(filepath: string, start: number): number {
+    let tokenStart = start;
+    while (tokenStart > 0 && !isWhitespaceChar(filepath[tokenStart - 1])) {
+        tokenStart--;
+    }
+    return tokenStart;
+}
+
+function findPathStart(filepath: string, tokenStart: number, markerSlashIndex: number): number {
+    const hasDrivePrefix =
+        tokenStart + 2 <= markerSlashIndex &&
+        isDriveLetter(filepath[tokenStart]) &&
+        filepath[tokenStart + 1] === ':' &&
+        filepath[tokenStart + 2] === '/';
+
+    if (hasDrivePrefix) {
+        return tokenStart;
+    }
+
+    const firstSlashInToken = filepath.indexOf('/', tokenStart);
+    if (firstSlashInToken === -1 || firstSlashInToken > markerSlashIndex) {
+        return -1;
+    }
+
+    return firstSlashInToken;
+}
+
+function findTempdirRange(filepath: string): [number, number] | undefined {
+    let searchFrom = 0;
+    while (searchFrom < filepath.length) {
+        const markerStart = filepath.indexOf(ce_temp_prefix, searchFrom);
+        if (markerStart === -1) {
+            return undefined;
+        }
+
+        const markerSlashIndex = markerStart - 1;
+        if (markerSlashIndex < 0 || filepath[markerSlashIndex] !== '/') {
+            searchFrom = markerStart + 1;
+            continue;
+        }
+
+        let tempdirSegmentEnd = markerStart + ce_temp_prefix.length;
+        let isValidSegment = true;
+        while (tempdirSegmentEnd < filepath.length && filepath[tempdirSegmentEnd] !== '/') {
+            if (!isTempdirSuffixChar(filepath[tempdirSegmentEnd])) {
+                isValidSegment = false;
+                break;
+            }
+            tempdirSegmentEnd++;
+        }
+        if (!isValidSegment || tempdirSegmentEnd >= filepath.length || filepath[tempdirSegmentEnd] !== '/') {
+            searchFrom = markerStart + 1;
+            continue;
+        }
+
+        const tokenStart = findTokenStart(filepath, markerSlashIndex);
+        const pathStart = findPathStart(filepath, tokenStart, markerSlashIndex);
+        if (pathStart === -1) {
+            searchFrom = markerStart + 1;
+            continue;
+        }
+
+        return [pathStart, tempdirSegmentEnd + 1];
+    }
+
+    return undefined;
+}
 
 /**
  * Removes the root dir from the given filepath, so that it will match to the user's filenames used
@@ -112,7 +179,12 @@ const TEMPDIR_RE = new RegExp(`(?:[A-Za-z]:)?/(?:[^/\\s]+/)*${ce_temp_prefix}[\\
  */
 export function maskRootdir(filepath: string): string {
     if (filepath) {
-        return filepath.replace(TEMPDIR_RE, '/app/').replace(/^\/app\//, '');
+        const tempdirRange = findTempdirRange(filepath);
+        if (!tempdirRange) return filepath.replace(/^\/app\//, '');
+
+        const [start, end] = tempdirRange;
+        const maskedPath = filepath.slice(0, start) + '/app/' + filepath.slice(end);
+        return maskedPath.replace(/^\/app\//, '');
     }
     return filepath;
 }
