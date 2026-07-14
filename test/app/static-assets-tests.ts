@@ -197,7 +197,7 @@ describe('Static assets', () => {
         // files must exist, so a missing asset or a wrong directory fails the build, not just prod.
         const publicDir = getBrandingAssetDir(true, '/unused');
 
-        it.each(['dev', 'beta', 'staging'])('has favicon + logo overlay for %s', async extraBodyClass => {
+        it.each(['dev', 'beta', 'staging', 'winprod', 'winstaging', 'wintest'])('has favicon + logo overlay for %s', async extraBodyClass => {
             await expect(validateBrandingAssets(publicDir, extraBodyClass)).resolves.toBeUndefined();
         });
     });
