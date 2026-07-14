@@ -174,4 +174,5 @@ From oldest to newest contributor, we would like to thank:
 - [Sean Garwood](https://github.com/sean-garwood)
 - [Victor Vianna](https://github.com/victorvianna)
 - [Piers Wombwell](https://github.com/pwombwell)
+- [Sirui Mu](https://github.com/Lancern)
 - [Connor Simms](https://github.com/connorsimms)
