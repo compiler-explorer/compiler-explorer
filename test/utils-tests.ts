@@ -821,6 +821,17 @@ describe('maskRootdir', () => {
         expect(utils.maskRootdir(input)).toEqual(input);
     });
 
+    // maskRootdir runs on whole output lines with space-separated tokens, so the regex
+    // deliberately stops at whitespace. A temp root that itself contains a space (e.g.
+    // --tmp-dir "/tmp/with space") is therefore only masked from the last space onward,
+    // not fully collapsed to the basename. This is the accepted trade-off: widening the
+    // match to cross spaces would let a single line's leading tokens be swallowed too.
+    it('masks only from the last space in a spaced temp root (documented limitation)', () => {
+        expect(utils.maskRootdir('/tmp/with space/compiler-explorer-compilerXXX/example.cpp')).toEqual(
+            '/tmp/with space/app/example.cpp',
+        );
+    });
+
     it('passes empty input through unchanged', () => {
         expect(utils.maskRootdir('')).toEqual('');
     });
