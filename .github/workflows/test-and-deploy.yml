@@ -57,7 +57,7 @@ jobs:
           npm run webpack
 
   build_dist:
-    if: github.repository_owner == 'compiler-explorer' && github.event_name == 'push'
+    if: github.repository_owner == 'compiler-explorer' && github.event_name == 'push' && github.actor != 'dependabot[bot]'
     runs-on: ubuntu-22.04
     outputs:
       release_name: ${{ steps.build_dist.outputs.release_name }}
@@ -83,7 +83,7 @@ jobs:
           path: out/dist-bin
 
   deploy:
-    if: github.repository_owner == 'compiler-explorer' && github.event_name == 'push'
+    if: github.repository_owner == 'compiler-explorer' && github.event_name == 'push' && github.actor != 'dependabot[bot]'
     needs: [test, build_dist]
     runs-on: ubuntu-22.04
 
