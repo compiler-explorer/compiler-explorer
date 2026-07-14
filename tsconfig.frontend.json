@@ -3,6 +3,10 @@
   "compilerOptions": {
     /* Module resolution */
     "target": "es5",
+    /* Pin to the pre-TS6 inferred defaults (TS6 would otherwise default these to
+       esnext/bundler, which breaks deep monaco esm imports and CSS side-effects). */
+    "module": "commonjs",
+    "moduleResolution": "node",
     /* Code generation */
     "inlineSources": true,
     "strictPropertyInitialization": false,

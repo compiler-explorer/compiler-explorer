@@ -35,6 +35,7 @@ import {MessageWithLocation} from '../types/resultline/resultline.interfaces.js'
 import {NewToolSettings, ToolState} from './components.interfaces.js';
 import {Motd} from './motd.interfaces.js';
 import {GccDumpFiltersState, GccDumpViewSelectedPass} from './panes/gccdump-view.interfaces.js';
+import {LeanCOptions} from './panes/leanc-view.interfaces.js';
 import {PPOptions} from './panes/pp-view.interfaces.js';
 import {SiteSettings} from './settings.js';
 import {Theme} from './themes.js';
@@ -114,6 +115,9 @@ export type EventMap = {
     haskellCoreViewOpened: (compilerId: number) => void;
     haskellStgViewClosed: (compilerId: number) => void;
     haskellStgViewOpened: (compilerId: number) => void;
+    leanCViewClosed: (compilerId: number) => void;
+    leanCViewOpened: (compilerId: number) => void;
+    leanCViewOptionsUpdated: (compilerId: number, options: LeanCOptions, recompile: boolean) => void;
     initialised: () => void;
     irViewClosed: (compilerId: number) => void;
     irViewOpened: (compilerId: number) => void;

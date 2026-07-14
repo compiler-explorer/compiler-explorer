@@ -41,6 +41,7 @@ import {CFGResult} from './cfg.interfaces.js';
 import {ClangirBackendOptions} from './clangir.interfaces.js';
 import {ConfiguredOverrides} from './compiler-overrides.interfaces.js';
 import {LLVMIrBackendOptions} from './ir.interfaces.js';
+import type {LeanCOptions} from './lean-c.interfaces.js';
 import {OptPipelineBackendOptions, OptPipelineOutput} from './opt-pipeline-output.interfaces.js';
 import {YulBackendOptions} from './yul.interfaces.js';
 
@@ -94,6 +95,17 @@ export type GccDumpOptions = {
     dumpFlags?: GccDumpFlags;
 };
 
+export type GccDumpOutput = {
+    all: GccDumpViewSelectedPass[];
+    selectedPass: GccDumpViewSelectedPass | null;
+    currentPassOutput: string;
+    syntaxHighlight: boolean;
+    // Maps a pass's filename_suffix to its (header-trimmed) dump content. Populated when all
+    // passes are dumped and read at once (removeEmptyGccDump compilers). For libgccjit-based
+    // compilers this will be an empty object (they still recompile per pass selection).
+    passDumps: Record<string, string>;
+};
+
 export type CompilationRequestOptions = {
     userArguments: string;
     compilerOptions: {
@@ -117,6 +129,7 @@ export type CompilationRequestOptions = {
         produceHaskellCore?: boolean;
         produceHaskellStg?: boolean;
         produceHaskellCmm?: boolean;
+        produceLeanC?: LeanCOptions | null;
         produceClojureMacroExp?: boolean;
         produceYul?: YulBackendOptions | null;
         cmakeArgs?: string;
@@ -184,7 +197,7 @@ export type CompilationResult = {
     dirPath?: string;
     compilationOptions?: string[];
     downloads?: BuildEnvDownloadInfo[];
-    gccDumpOutput?;
+    gccDumpOutput?: GccDumpOutput;
     languageId?: string;
     asmKeywordTypes?: string[];
     result?: CompilationResult; // cmake inner result
@@ -216,6 +229,7 @@ export type CompilationResult = {
     haskellCoreOutput?: ResultLine[];
     haskellStgOutput?: ResultLine[];
     haskellCmmOutput?: ResultLine[];
+    leanCOutput?: ResultLine[];
 
     clojureMacroExpOutput?: ResultLine[];
 
@@ -244,6 +258,8 @@ export type CompilationResult = {
     popularArguments?: PossibleArguments;
 
     s3Key?: string; // Cache key hash for S3 storage reference
+
+    networkError?: boolean; // True when the result was produced by a network/transport failure (not a compiler error)
 };
 
 export type ExecutionOptions = {
@@ -262,6 +278,13 @@ export type ExecutionOptions = {
 };
 
 export type ExecutionOptionsWithEnv = ExecutionOptions & {env: Record<string, string>};
+
+export type DemanglerExecutionOptions = ExecutionOptions & {
+    // List of symbols to demangle - don't scan the input.
+    overrideSymbols?: string[];
+    // Don't apply translations to the input - return it as-is.
+    skipTranslation?: boolean;
+};
 
 export type BuildResult = CompilationResult & {
     downloads: BuildEnvDownloadInfo[];

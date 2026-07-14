@@ -43,6 +43,7 @@ import {logger} from './logger.js';
 import {ClientOptionsHandler} from './options-handler.js';
 import type {PropertyGetter} from './properties.interfaces.js';
 import {CompilerProps, getRawProperties} from './properties.js';
+import {backfillReleaseTrack, resolveReleaseTrack} from './release-track.js';
 import {getPossibleGccToolchainsFromCompilerInfo} from './toolchain-utils.js';
 
 const sleep = promisify(setTimeout);
@@ -154,6 +155,9 @@ export class CompilerFinder {
                                                 uriBase,
                                                 compiler.id,
                                             );
+                                            // Older CE remotes won't have releaseTrack. Backfill to keep the
+                                            // type contract intact for downstream consumers.
+                                            backfillReleaseTrack(compiler);
                                             return compiler;
                                         });
                                         resolve(compilers);
@@ -217,15 +221,16 @@ export class CompilerFinder {
 
         const isSemVer = props('isSemVer', false);
         const baseName = props<string | undefined>('baseName');
-        const semverVer = props('semver', '');
+        const semver = props('semver', '');
+        const isNightly = !!props('isNightly', false);
+        const releaseTrack = resolveReleaseTrack(props('releaseTrack', ''), {isSemVer, isNightly, semver}, compilerId);
 
         const name = props<string>('name');
 
         // If name set, display that as the name
         // If not, check if we have a baseName + semver and display that
         // Else display compilerId as its name
-        const displayName =
-            name === undefined ? (isSemVer && baseName ? `${baseName} ${semverVer}` : compilerId) : name;
+        const displayName = name === undefined ? (isSemVer && baseName ? `${baseName} ${semver}` : compilerId) : name;
 
         const baseOptions = props('baseOptions', '');
         const options = props('options', '');
@@ -268,9 +273,11 @@ export class CompilerFinder {
             demanglerType: props('demanglerType', ''),
             demanglerArgs: splitArrayPropsOrEmpty('demanglerArgs', '|'),
             nvdisasm: props('nvdisasm', ''),
+            ptxas: props('ptxas', ''),
             objdumper: props('objdumper', ''),
             objdumperType: props('objdumperType', ''),
             objdumperArgs: splitArrayPropsOrEmpty('objdumperArgs', '|'),
+            llvmDisassembler: props('llvmDisassembler', ''),
             llvmObjdumper: props('llvmObjdumper', ''),
             intelAsm: props('intelAsm', ''),
             supportsAsmDocs: props('supportsAsmDocs', true),
@@ -311,9 +318,10 @@ export class CompilerFinder {
                 .map(x => path.normalize(x.replace('${exePath}', exePath))),
             envVars: envVars,
             notification: props('notification', ''),
-            isSemVer: isSemVer,
-            semver: semverVer,
-            isNightly: props('isNightly', false),
+            isSemVer,
+            semver,
+            isNightly,
+            releaseTrack,
             libsArr: this.getSupportedLibrariesArr(props),
             tools: _.omit(this.optionsHandler.get().tools[langId], tool => tool.isCompilerExcluded(compilerId, props)),
             unwiseOptions: splitArrayPropsOrEmpty('unwiseOptions', '|'),
@@ -597,6 +605,12 @@ export class CompilerFinder {
     async loadPrediscovered(compilers: CompilerInfo[]) {
         for (const compiler of compilers) {
             const langId = compiler.lang;
+
+            // Backfill releaseTrack on prediscovered JSON. Cached discovery output
+            // written before this field existed will be missing it; a hand-edited
+            // value that doesn't match ReleaseTrack would otherwise slip through and
+            // break consumers that trust the type contract.
+            backfillReleaseTrack(compiler);
 
             if (compiler.buildenvsetup) {
                 compiler.buildenvsetup.props = (propName, def) => {

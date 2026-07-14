@@ -22,69 +22,77 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
+import {ParsedAsmResult} from '../../types/asmresult/asmresult.interfaces.js';
 import {OptPipelineResults} from '../../types/compilation/opt-pipeline-output.interfaces.js';
-import {UnprocessedExecResult} from '../../types/execution/execution.interfaces.js';
 import {ResultLine} from '../../types/resultline/resultline.interfaces.js';
-import {logger} from '../logger.js';
-import {SymbolStore} from '../symbol-store.js';
-import * as utils from '../utils.js';
 import {BaseDemangler} from './base.js';
 import {PrefixTree} from './prefix-tree.js';
 
-export class LLVMIRDemangler extends BaseDemangler {
+export class LLVMIRDemangler {
     // Identifiers can be quoted: https://llvm.org/docs/LangRef.html#identifiers
     llvmSymbolRE = /@(?<symbol>[\w$.]+)/gi;
     llvmQuotedSymbolRE = /@"(?<symbol>[^"]+)"/gi;
+
+    symbolDemangler: BaseDemangler;
+    result: ParsedAsmResult;
+    labels: string[];
 
     static get key() {
         return 'llvm-ir';
     }
 
-    protected override collectLabels() {
+    constructor(symbolDemangler: BaseDemangler) {
+        this.symbolDemangler = symbolDemangler;
+        this.result = {
+            asm: [],
+        };
+        this.labels = [];
+    }
+
+    public canDemangle() {
+        return this.symbolDemangler.canDemangle();
+    }
+
+    private collectLabels() {
+        const labels = new Set<string>();
         for (const line of this.result.asm) {
             const text = line.text;
             if (!text) continue;
 
             const matches = [...text.matchAll(this.llvmSymbolRE), ...text.matchAll(this.llvmQuotedSymbolRE)];
             for (const match of matches) {
-                this.symbolstore!.add(match.groups!.symbol);
+                labels.add(match.groups!.symbol);
             }
         }
+        this.labels = [...labels];
     }
 
     public collect(result: {asm: ResultLine[]}) {
         this.result = result;
-        if (!this.symbolstore) {
-            this.symbolstore = new SymbolStore();
-            this.collectLabels();
-        }
+        this.collectLabels();
     }
 
-    protected processPassOutput(passOutput: OptPipelineResults, demanglerOutput: UnprocessedExecResult) {
-        if (demanglerOutput.stdout.length === 0 && demanglerOutput.stderr.length > 0) {
-            logger.error(`Error executing demangler ${this.demanglerExe}`, demanglerOutput);
-            return passOutput;
-        }
-
-        const lines = utils.splitLines(demanglerOutput.stdout);
-        if (lines.length > this.input.length) {
-            logger.error(`Demangler output issue ${lines.length} > ${this.input.length}`, this.input, demanglerOutput);
-            throw new Error('Internal issue in demangler');
-        }
-        for (let i = 0; i < lines.length; ++i) this.addTranslation(this.input[i], lines[i]);
-
-        const translations = [...this.symbolstore!.listTranslations(), ...this.othersymbols.listTranslations()].filter(
-            elem => elem[0] !== elem[1],
-        );
+    protected processPassOutput(passOutput: OptPipelineResults, translations: [string, string][]) {
         if (translations.length > 0) {
             const tree = new PrefixTree(translations);
+            // Pass dumps are hugely redundant: `before[N+1]` is usually identical to `after[N]`, and the same IR
+            // lines repeat across dozens/hundreds of passes. Demangle each unique string once and reuse the result.
+            const cache = new Map<string, string>();
+            const demangle = (text: string) => {
+                let demangled = cache.get(text);
+                if (demangled === undefined) {
+                    demangled = tree.replaceAllText(text);
+                    cache.set(text, demangled);
+                }
+                return demangled;
+            };
             for (const [functionName, passes] of Object.entries(passOutput)) {
-                const demangledFunctionName = tree.replaceAll(functionName).newText;
+                const demangledFunctionName = demangle(functionName);
                 for (const pass of passes) {
-                    pass.name = tree.replaceAll(pass.name).newText; // needed at least for full module mode
+                    pass.name = demangle(pass.name); // needed at least for full module mode
                     for (const dump of [pass.before, pass.after]) {
                         for (const line of dump) {
-                            line.text = tree.replaceAll(line.text).newText;
+                            line.text = demangle(line.text);
                         }
                     }
                 }
@@ -96,13 +104,19 @@ export class LLVMIRDemangler extends BaseDemangler {
     }
 
     public async demangleLLVMPasses(passOutput: OptPipelineResults) {
-        const options = {
-            input: this.getInput(),
-        };
-
-        if (options.input === '') {
+        if (this.labels.length === 0) {
             return passOutput;
         }
-        return this.processPassOutput(passOutput, await this.execDemangler(options));
+        await this.symbolDemangler.process({asm: []}, {overrideSymbols: this.labels, skipTranslation: true});
+        return this.processPassOutput(passOutput, this.symbolDemangler.getTranslations());
+    }
+
+    public async process(result: ParsedAsmResult) {
+        this.result = result;
+        this.collectLabels();
+        if (this.labels.length === 0) {
+            return result;
+        }
+        return await this.symbolDemangler.process(result, {overrideSymbols: this.labels});
     }
 }

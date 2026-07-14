@@ -130,7 +130,7 @@ export async function executeDirect(
     const kill =
         options.killChild ||
         (() => {
-            if (running && child && child.pid) {
+            if (running && child?.pid) {
                 // Close the stdin pipe on our end, otherwise we'll get an EPIPE
                 child.stdin.destroy();
                 treeKill(child.pid);

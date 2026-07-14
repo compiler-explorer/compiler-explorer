@@ -34,7 +34,7 @@ import {CompilationEnvironment} from '../compilation-env.js';
 import {IExecutionEnvironment} from '../execution/execution-env.interfaces.js';
 import {LocalExecutionEnvironment} from '../execution/index.js';
 import {logger} from '../logger.js';
-import {ClientOptionsHandler} from '../options-handler.js';
+import {ClientOptionsHandler, VersionInfo} from '../options-handler.js';
 import {PropertyGetter} from '../properties.interfaces.js';
 import {SentryCapture} from '../sentry.js';
 import {BaseShortener, getShortenerTypeByKey} from '../shortener/index.js';
@@ -45,6 +45,15 @@ function methodNotAllowed(req: express.Request, res: express.Response) {
     res.status(405).send('Method Not Allowed');
 }
 
+/** The full, legacy shape returned by {@link ApiHandler.getLibrariesAsArray} when no `fields` filter is applied. */
+type LibraryArrayEntry = {
+    id: string;
+    name: string;
+    description: string;
+    url: string;
+    versions: Array<VersionInfo & {id: string}>;
+};
+
 export class ApiHandler {
     public compilers: CompilerInfo[] = [];
     public languages: Partial<Record<LanguageKey, Language>> = {};
@@ -52,14 +61,14 @@ export class ApiHandler {
     private options: ClientOptionsHandler | null = null;
     public readonly handle: express.Router;
     public readonly shortener: BaseShortener;
-    private release = {
+    public release = {
         gitReleaseName: '',
         releaseBuildNumber: '',
     };
     private readonly compilationEnvironment: CompilationEnvironment;
 
     constructor(
-        compileHandler: CompileHandler,
+        public readonly compileHandler: CompileHandler,
         ceProps: PropertyGetter,
         private readonly storageHandler: StorageBase,
         urlShortenService: string,
@@ -160,16 +169,27 @@ export class ApiHandler {
     }
 
     handleLanguages(req: express.Request, res: express.Response) {
-        const availableLanguages = this.usedLangIds.map(val => {
+        this.outputList(this.getAvailableLanguages(), 'Id', req, res);
+    }
+
+    getAvailableLanguages(): Language[] {
+        // Always expose cmake to the frontend even if no compiler reports it as
+        // its language, so IDE/tree mode (CMakeLists.txt) can resolve it.
+        const langIds = unique([...this.usedLangIds, ...(this.languages.cmake ? (['cmake'] as LanguageKey[]) : [])]);
+        return langIds.map(val => {
             const lang = this.languages[val];
             const newLangObj: Language = Object.assign({}, lang);
             if (this.options) {
                 newLangObj.defaultCompiler = this.options.options.defaultCompiler[unwrap(lang).id];
+                newLangObj.defaultLibs = this.options.options.defaultLibs[unwrap(lang).id];
             }
             return newLangObj;
         });
+    }
 
-        this.outputList(availableLanguages, 'Id', req, res);
+    /** Resolve the default compiler id for a language, or undefined if none configured. */
+    getDefaultCompilerFor(languageId: LanguageKey): string | undefined {
+        return this.options?.options.defaultCompiler[languageId];
     }
 
     filterCompilerProperties(list: CompilerInfo[] | Language[], selectedFields: string[]) {
@@ -217,27 +237,70 @@ export class ApiHandler {
         res.send(header + body);
     }
 
-    getLibrariesAsArray(languageId: LanguageKey) {
+    // Overload order matters: `ReturnType<ApiHandler['getLibrariesAsArray']>` (used by the MCP
+    // tools, which always call without `fields`) resolves to the *last* overload, so the full
+    // non-partial shape must come last.
+    getLibrariesAsArray(languageId: LanguageKey, fields: string[] | undefined): Partial<LibraryArrayEntry>[];
+    getLibrariesAsArray(languageId: LanguageKey): LibraryArrayEntry[];
+    getLibrariesAsArray(
+        languageId: LanguageKey,
+        fields?: string[],
+    ): LibraryArrayEntry[] | Partial<LibraryArrayEntry>[] {
         const libsForLanguageObj = unwrap(this.options).options.libs[languageId];
         if (!libsForLanguageObj) return [];
 
-        return Object.keys(libsForLanguageObj).map(key => {
-            const language = libsForLanguageObj[key];
-            const versionArr = Object.keys(language.versions).map(key => {
-                return {
-                    ...language.versions[key],
-                    id: key,
-                };
-            });
+        // Field filtering supports dotted paths for nested version fields
+        // (e.g. `versions.id,versions.version`). Bare `versions` includes the
+        // full version objects. Omitting `fields` returns the legacy full shape.
+        const VERSION_PREFIX = 'versions.';
+        let topLevelFields: string[] | undefined;
+        let versionFields: string[] | undefined;
+        if (fields && fields.length > 0) {
+            topLevelFields = [];
+            versionFields = [];
+            let allVersionFields = false;
+            for (const f of fields) {
+                if (f.startsWith(VERSION_PREFIX)) {
+                    versionFields.push(f.slice(VERSION_PREFIX.length));
+                } else if (f === 'versions') {
+                    allVersionFields = true;
+                    topLevelFields.push(f);
+                } else {
+                    topLevelFields.push(f);
+                }
+            }
+            if (allVersionFields) {
+                versionFields = undefined;
+            } else if (versionFields.length > 0 && !topLevelFields.includes('versions')) {
+                topLevelFields.push('versions');
+            }
+        }
 
+        // Build the full, concretely-typed shape first so callers that omit
+        // `fields` (e.g. the MCP tools) get the legacy non-partial type back.
+        const fullList: LibraryArrayEntry[] = Object.keys(libsForLanguageObj).map(key => {
+            const library = libsForLanguageObj[key];
+            const versions = Object.keys(library.versions).map(versionKey => ({
+                ...library.versions[versionKey],
+                id: versionKey,
+            }));
             return {
                 id: key,
-                name: language.name,
-                description: language.description,
-                url: language.url,
-                versions: versionArr,
+                name: library.name,
+                description: library.description,
+                url: library.url,
+                versions,
             };
         });
+
+        if (!topLevelFields && !versionFields) return fullList;
+
+        return fullList.map(fullLib => {
+            const lib = versionFields
+                ? {...fullLib, versions: fullLib.versions.map(v => _.pick(v, versionFields!))}
+                : fullLib;
+            return topLevelFields ? _.pick(lib, topLevelFields) : lib;
+        }) as Partial<LibraryArrayEntry>[];
     }
 
     getToolsAsArray(languageId: LanguageKey) {
@@ -252,6 +315,11 @@ export class ApiHandler {
                 type: tool.type,
                 languageId: tool.tool.languageId || languageId,
                 allowStdin: tool.tool.stdinHint !== 'disabled',
+                args: tool.tool.args,
+                monacoStdin: tool.tool.monacoStdin,
+                icon: tool.tool.icon,
+                darkIcon: tool.tool.darkIcon,
+                stdinHint: tool.tool.stdinHint,
             };
         });
     }
@@ -259,7 +327,9 @@ export class ApiHandler {
     handleLangLibraries(req: express.Request, res: express.Response, next: express.NextFunction) {
         if (this.options) {
             if (req.params.language) {
-                res.send(this.getLibrariesAsArray(req.params.language as LanguageKey));
+                const fieldsParam = req.query.fields;
+                const fields = isString(fieldsParam) ? fieldsParam.split(',') : undefined;
+                res.send(this.getLibrariesAsArray(req.params.language as LanguageKey, fields));
             } else {
                 next({
                     statusCode: 404,
@@ -332,7 +402,21 @@ export class ApiHandler {
             filteredCompilers = this.compilers.filter(compiler => compiler.lang === req.params.language);
         }
 
-        this.outputList(filteredCompilers, 'Compiler Name', req, res);
+        // Avoid leaking nested tool fields like `tool.exe` over the API: expose
+        // only the supported tool IDs. Per-tool metadata is served separately
+        // via /api/tools/:language.
+        const slimmedCompilers = filteredCompilers.map(compiler =>
+            compiler.tools
+                ? {
+                      ...compiler,
+                      tools: (Array.isArray(compiler.tools)
+                          ? compiler.tools
+                          : Object.keys(compiler.tools)) as unknown as CompilerInfo['tools'],
+                  }
+                : compiler,
+        );
+
+        this.outputList(slimmedCompilers, 'Compiler Name', req, res);
     }
 
     handleReleaseName(req: express.Request, res: express.Response) {

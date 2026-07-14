@@ -109,6 +109,9 @@ describe('Parses compiler output', () => {
             },
         ]);
     });
+    it('does not treat c2rust AST node lines as source locations', () => {
+        expect(utils.parseOutput('CTypeId(42): Located {', 'example.c')).toEqual([{text: 'CTypeId(42): Located {'}]);
+    });
     it('replaces all references to input source', () => {
         expect(utils.parseOutput('bob.cpp:1 error in bob.cpp', 'bob.cpp')).toEqual([
             {
@@ -779,5 +782,65 @@ describe('output files', async () => {
         expect(await utils.tryReadTextFile(filepath)).toEqual('hello');
         await utils.ensureFileExists(filepath);
         expect(await utils.tryReadTextFile(filepath)).toEqual('hello');
+    });
+});
+
+describe('maskRootdir', () => {
+    it('masks a CE temp path down to the user-facing filename', () => {
+        expect(utils.maskRootdir('/tmp/compiler-explorer-compiler123-4-abc/example.cpp')).toEqual('example.cpp');
+    });
+
+    it('keeps /app/ when the temp path is embedded (e.g. a -I include flag)', () => {
+        expect(utils.maskRootdir('-I/tmp/compiler-explorer-compiler123-4-abc/include')).toEqual('-I/app/include');
+    });
+
+    // The recorded path's tmpdir root need not match this process's os.tmpdir(), so
+    // masking keys off the ce_temp_prefix marker, not the root.
+    it.each([
+        ['/tmp', '/tmp/compiler-explorer-compilerXYZ/example.cpp'],
+        ['/usr/tmp', '/usr/tmp/compiler-explorer-compilerXYZ/example.cpp'],
+        ['macOS /private/var', '/private/var/folders/ab/xyz/T/compiler-explorer-compilerXYZ/example.cpp'],
+        ['Windows', 'C:/Users/ce/AppData/Local/Temp/compiler-explorer-compilerXYZ/example.cpp'],
+    ])('masks a temp path rooted at %s regardless of the local tmpdir', (_root, input) => {
+        expect(utils.maskRootdir(input)).toEqual('example.cpp');
+    });
+
+    it('leaves non-temp paths untouched', () => {
+        expect(utils.maskRootdir('/usr/include/stdio.h')).toEqual('/usr/include/stdio.h');
+    });
+
+    // The marker segment must be followed by `/`, so a bare dir with no trailing slash
+    // is left alone. (Real inputs always name a file inside the dir.)
+    it('leaves a bare temp dir with no trailing slash untouched', () => {
+        expect(utils.maskRootdir('/tmp/compiler-explorer-compiler123-4-abc')).toEqual(
+            '/tmp/compiler-explorer-compiler123-4-abc',
+        );
+    });
+
+    it('masks a bare temp dir with a trailing slash to empty', () => {
+        expect(utils.maskRootdir('/tmp/compiler-explorer-compiler123-4-abc/')).toEqual('');
+    });
+
+    it('leaves paths with invalid marker suffix chars untouched', () => {
+        expect(utils.maskRootdir('/tmp/compiler-explorer-compiler+bad/example.cpp')).toEqual(
+            '/tmp/compiler-explorer-compiler+bad/example.cpp',
+        );
+    });
+
+    it('handles long non-matching path-like inputs without altering them', () => {
+        const input = `-I/${'segment/'.repeat(4000)}not-temp/include`;
+        expect(utils.maskRootdir(input)).toEqual(input);
+    });
+
+    // The regex stops at whitespace (so multi-token output lines aren't over-masked),
+    // so a temp root containing a space is only masked from the last space onward.
+    it('masks only from the last space in a spaced temp root (documented limitation)', () => {
+        expect(utils.maskRootdir('/tmp/with space/compiler-explorer-compilerXXX/example.cpp')).toEqual(
+            '/tmp/with space/app/example.cpp',
+        );
+    });
+
+    it('passes empty input through unchanged', () => {
+        expect(utils.maskRootdir('')).toEqual('');
     });
 });

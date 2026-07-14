@@ -1,0 +1,48 @@
+name: Check Infra Settings
+
+on:
+  pull_request:
+    paths:
+      - 'etc/config/*.amazon.properties'
+      - 'etc/config/*.amazonwin.properties'
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install dependencies
+        run: pip install pyyaml
+
+      - name: Run infra-settings check
+        id: check
+        run: |
+          python etc/scripts/check_infra_settings.py --base-ref "origin/${{ github.base_ref }}" > infra_settings_check.txt
+          cat infra_settings_check.txt
+          if grep -q '<!-- ce-infra-settings-check -->' infra_settings_check.txt; then
+            echo "has_findings=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "has_findings=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Save PR number
+        if: steps.check.outputs.has_findings == 'true'
+        run: echo "${{ github.event.pull_request.number }}" > pr_number.txt
+
+      - name: Upload check results
+        if: steps.check.outputs.has_findings == 'true'
+        uses: actions/upload-artifact@v4
+        with:
+          name: infra-settings-check
+          path: |
+            infra_settings_check.txt
+            pr_number.txt
+          retention-days: 1

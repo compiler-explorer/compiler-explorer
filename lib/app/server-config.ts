@@ -200,6 +200,11 @@ export function setupBasicRoutes(
         .get('/sitemap.xml', cached, (req, res) => {
             res.set('Content-Type', 'application/xml');
             res.render('sitemap');
+        })
+        .get('/search.xml', cached, (req, res) => {
+            const base = `${req.protocol}://${req.get('host')}${options.httpRoot}`;
+            res.set('Content-Type', 'application/opensearchdescription+xml');
+            res.render('opensearch', renderConfig({searchUrlTemplate: `${base}z/{searchTerms}`}));
         });
 
     router

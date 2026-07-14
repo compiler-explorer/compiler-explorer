@@ -56,6 +56,8 @@ import * as LibUtils from '../lib-utils.js';
 import * as monacoConfig from '../monaco-config.js';
 import {LanguageLibs} from '../options.interfaces.js';
 import {options} from '../options.js';
+import {languagesService} from '../services/languages.service.js';
+import {toolsService} from '../services/tools.service.js';
 import {SiteSettings} from '../settings.js';
 import * as utils from '../utils.js';
 import {Alert} from '../widgets/alert.js';
@@ -66,6 +68,7 @@ import * as TimingWidget from '../widgets/timing-info-widget.js';
 import {Toggles} from '../widgets/toggles.js';
 import {CompilerCurrentState, CompilerState} from './compiler.interfaces.js';
 import {GccDumpFiltersState, GccDumpViewSelectedPass} from './gccdump-view.interfaces.js';
+import {LeanCOptions} from './leanc-view.interfaces.js';
 import {MonacoPaneState} from './pane.interfaces.js';
 import {MonacoPane} from './pane.js';
 import {PPOptions} from './pp-view.interfaces.js';
@@ -82,9 +85,8 @@ import {YulBackendOptions} from '../../types/compilation/yul.interfaces.js';
 import {CompilerOutputOptions} from '../../types/features/filters.interfaces.js';
 import {InstructionSet} from '../../types/instructionsets.js';
 import {LanguageKey} from '../../types/languages.interfaces.js';
-import {Tool} from '../../types/tool.interfaces.js';
 import {ArtifactHandler} from '../artifact-handler.js';
-import {type AssemblySyntax, addAttSyntaxWarningIfNeeded} from '../assembly-syntax.js';
+import {type AssemblySyntax, addAttSyntaxWarningIfNeeded, determineAssemblySyntax} from '../assembly-syntax.js';
 import {ICompilerShared} from '../compiler-shared.interfaces.js';
 import {CompilerShared} from '../compiler-shared.js';
 import {SourceAndFiles} from '../download-service.js';
@@ -115,8 +117,6 @@ function patchOldFilters(filters: Partial<Record<string, boolean>> | undefined):
     });
     return filters as Record<string, boolean>;
 }
-
-const languages = options.languages;
 
 type LinkedCode = {
     range: monaco.Range;
@@ -179,6 +179,7 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
     private compiler: CompilerInfo | null;
     private recentInstructionSet: InstructionSet | null;
     private currentLangId: string | null;
+    private initialStateLoaded: boolean;
     private filters: Toggles;
     private optButton: JQuery<HTMLButtonElement>;
     private stackUsageButton: JQuery<HTMLButtonElement>;
@@ -197,6 +198,7 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
     private haskellCoreButton: JQuery<HTMLButtonElement>;
     private haskellStgButton: JQuery<HTMLButtonElement>;
     private haskellCmmButton: JQuery<HTMLButtonElement>;
+    private leanCButton: JQuery<HTMLButtonElement>;
     private clojureMacroExpButton: JQuery<HTMLButtonElement>;
     private yulButton: JQuery<HTMLButtonElement>;
     private gccDumpButton: JQuery<HTMLButtonElement>;
@@ -276,6 +278,8 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
     private haskellCoreViewOpen: boolean;
     private haskellStgViewOpen: boolean;
     private haskellCmmViewOpen: boolean;
+    private leanCViewOpen: boolean;
+    private leanCOptions: LeanCOptions;
     private clojureMacroExpViewOpen: boolean;
     private yulViewOpen: boolean;
     private ppOptions: PPOptions;
@@ -298,7 +302,7 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
         this.infoByLang = {};
         this.deferCompiles = true;
         this.needsCompile = false;
-        this.initLangAndCompiler(state);
+        this.initialStateLoaded = false;
 
         this.source = '';
         this.assembly = [];
@@ -334,6 +338,24 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
         // MonacoPane's registerButtons is not called late enough, we still need to init some buttons with new data
         this.initPanerButtons();
 
+        this.compilerShared = new CompilerShared(this.domRoot, this.onCompilerOverridesChange.bind(this));
+        this.compilerShared.updateState(state);
+        // MonacoPane's registerCallbacks is not called late enough either
+        this.initCallbacks();
+        // Handle initial settings
+        this.onSettingsChange(this.settings);
+
+        this.postInit(state);
+    }
+
+    private async postInit(state: MonacoPaneState & CompilerState) {
+        await this.initLangAndCompiler(state);
+        // The lang/compiler are now resolved from our own state. Only after this point may we
+        // react to languageChange broadcasts; an earlier one (e.g. the editor's initial firstTime
+        // broadcast, which can arrive while the await above is still pending) would otherwise reset
+        // us to the language's default compiler and lose the compiler from the loaded state.
+        this.initialStateLoaded = true;
+
         this.compilerPicker = new CompilerPicker(
             this.domRoot,
             this.hub,
@@ -341,16 +363,12 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
             this.compiler?.id ?? '',
             this.onCompilerChange.bind(this),
         );
-        this.initLibraries(state);
-        this.compilerShared = new CompilerShared(this.domRoot, this.onCompilerOverridesChange.bind(this));
-        this.compilerShared.updateState(state);
-        // MonacoPane's registerCallbacks is not called late enough either
-        this.initCallbacks();
-        // Handle initial settings
-        this.onSettingsChange(this.settings);
+        await this.initLibraries(state);
         this.sendCompiler();
         this.updateCompilerInfo();
         this.updateButtons();
+        // initPanerButtons() ran before this.compiler was resolved, so populate the tools menu now.
+        this.initToolButtons();
         this.updateState();
 
         if (this.sourceTreeId) {
@@ -358,6 +376,10 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
         }
 
         if (!this.hub.deferred) {
+            // Re-emit compilerOpen so the editor resends the source via editorChange.
+            // The initial compilerOpen fires synchronously before postInit completes,
+            // so the editorChange arrives before currentLangId is set and gets ignored.
+            this.eventHub.emit('compilerOpen', this.id, this.sourceEditorId ?? 0, this.sourceTreeId ?? 0);
             this.undefer();
         }
     }
@@ -370,7 +392,7 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
         } else {
             this.sourceEditorId = state.source || 1;
         }
-        this.options = state.options || (options.compileOptions[this.currentLangId ?? ''] ?? '');
+        this.options = state.options || '';
 
         this.deviceViewOpen = !!state.deviceViewOpen;
         this.flagsViewOpen = state.flagsViewOpen || false;
@@ -423,10 +445,10 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
         return null;
     }
 
-    initLangAndCompiler(state: Pick<MonacoPaneState & CompilerState, 'lang' | 'compiler'>): void {
+    async initLangAndCompiler(state: Pick<MonacoPaneState & CompilerState, 'lang' | 'compiler'>): Promise<void> {
         const langId = state.lang;
         const compilerId = state.compiler;
-        const result = this.compilerService.processFromLangAndCompiler(langId ?? null, compilerId);
+        const result = await this.compilerService.processFromLangAndCompiler(langId ?? null, compilerId);
         this.compiler = result?.compiler ?? null;
         this.currentLangId = result?.langId ?? null;
         this.updateLibraries();
@@ -461,12 +483,12 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
             const currentState = this.getCurrentState();
 
             // Extract only the fields we need, with proper defaults
-            const {source = DEFAULT_EDITOR_ID, filters, options = '', compiler, libs, lang} = currentState;
+            const {source = DEFAULT_EDITOR_ID, filters, options = '', compiler, libs, lang, overrides} = currentState;
 
             return {
                 type: 'component',
                 componentName: COMPILER_COMPONENT_NAME,
-                componentState: {source, filters, options, compiler, libs, lang},
+                componentState: {source, filters, options, compiler, libs, lang, overrides},
             };
         };
         const createOptView = () => {
@@ -627,6 +649,17 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
                 this.id,
                 this.source,
                 this.lastResult?.haskellCmmOutput,
+                this.getCompilerName(),
+                this.sourceEditorId ?? 0,
+                this.sourceTreeId ?? 0,
+            );
+        };
+
+        const createLeanCView = () => {
+            return Components.getLeanCViewWith(
+                this.id,
+                this.source,
+                this.lastResult?.leanCOutput,
                 this.getCompilerName(),
                 this.sourceEditorId ?? 0,
                 this.sourceTreeId ?? 0,
@@ -902,6 +935,18 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
                 this.hub.findParentRowOrColumn(this.container.parent) ||
                 this.container.layoutManager.root.contentItems[0];
             insertPoint.addChild(createHaskellCmmView());
+        });
+
+        createDragSource(this.container.layoutManager, this.leanCButton, () => createLeanCView()).on(
+            'dragStart',
+            hidePaneAdder,
+        );
+
+        this.leanCButton.on('click', () => {
+            const insertPoint =
+                this.hub.findParentRowOrColumn(this.container.parent) ||
+                this.container.layoutManager.root.contentItems[0];
+            insertPoint.addChild(createLeanCView());
         });
 
         createDragSource(this.container.layoutManager, this.rustMacroExpButton, () => createRustMacroExpView()).on(
@@ -1346,6 +1391,7 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
                 produceHaskellCore: this.haskellCoreViewOpen,
                 produceHaskellStg: this.haskellStgViewOpen,
                 produceHaskellCmm: this.haskellCmmViewOpen,
+                produceLeanC: this.leanCViewOpen ? this.leanCOptions : null,
                 produceClojureMacroExp: this.clojureMacroExpViewOpen,
                 produceYul: this.yulViewOpen ? this.yulOptions : null,
                 overrides: this.getCurrentState().overrides,
@@ -1504,12 +1550,23 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
             .catch(x => {
                 clearTimeout(progress);
                 let message = 'Unknown error';
+                const isNetworkError = (x as any)?.isNetworkError === true;
                 if (typeof x === 'string' || x instanceof String) {
                     message = x.toString();
                 } else if (x) {
                     message = x.error || x.code || message;
                 }
-                this.onCMakeResponse(request, this.errorResult('<Compilation failed: ' + message + '>'), false);
+                const result: CompilationResult = isNetworkError
+                    ? {
+                          timedOut: false,
+                          asm: this.fakeAsm(message),
+                          code: -1,
+                          stdout: [],
+                          stderr: [{text: message}],
+                          networkError: true,
+                      }
+                    : this.errorResult('<Compilation failed: ' + message + '>');
+                this.onCMakeResponse(request, result, false);
             });
     }
 
@@ -1538,15 +1595,28 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
             .catch(e => {
                 clearTimeout(progress);
                 let message = 'Unknown error';
+                const isNetworkError = (e as any)?.isNetworkError === true;
                 if (typeof e === 'string' || e instanceof String) {
                     message = e.toString();
                 } else if (e) {
                     message = e.error || e.code || e.message;
-                    if (e.stack) {
+                    // Network errors have a stack (from new Error()) but logging them is
+                    // not useful since they are expected during connectivity loss
+                    if (e.stack && !isNetworkError) {
                         console.log(e);
                     }
                 }
-                onCompilerResponse(request, this.errorResult('<Compilation failed: ' + message + '>'), false);
+                const result: CompilationResult = isNetworkError
+                    ? {
+                          timedOut: false,
+                          asm: this.fakeAsm(message),
+                          code: -1,
+                          stdout: [],
+                          stderr: [{text: message}],
+                          networkError: true,
+                      }
+                    : this.errorResult('<Compilation failed: ' + message + '>');
+                onCompilerResponse(request, result, false);
             });
     }
 
@@ -1585,9 +1655,10 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
                 monaco.editor.setModelLanguage(editorModel, result.languageId);
             } else {
                 let monacoDisassembly = 'asm';
-                if (this.currentLangId && this.currentLangId in languages) {
+                const langs = languagesService.getLanguagesOrFail();
+                if (this.currentLangId && this.currentLangId in langs) {
                     // TS compiler trips if you try to fold this condition in one if
-                    const disasam = languages[this.currentLangId].monacoDisassembly;
+                    const disasam = langs[this.currentLangId].monacoDisassembly;
                     if (disasam !== null) {
                         monacoDisassembly = disasam;
                     }
@@ -1615,8 +1686,9 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
         }
 
         // Show language-specific hint when no assembly is generated and compilation succeeded
-        if (!asm.length && result.code === 0 && this.currentLangId && this.currentLangId in languages) {
-            const hint = languages[this.currentLangId].noAsmHint;
+        const langs2 = languagesService.getLanguagesOrFail();
+        if (!asm.length && result.code === 0 && this.currentLangId && this.currentLangId in langs2) {
+            const hint = langs2[this.currentLangId].noAsmHint;
             if (hint) {
                 msg += '\n\n' + hint;
             }
@@ -1644,7 +1716,7 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
 
         this.decorations.labelUsages = [];
         this.assembly.forEach((obj, line) => {
-            if (!obj.labels || !obj.labels.length) return;
+            if (!obj.labels?.length) return;
 
             obj.labels.forEach(label => {
                 this.decorations.labelUsages.push({
@@ -1818,8 +1890,10 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
             this.deviceButton.trigger('click');
         }
 
-        if (this.compiler)
+        if (this.compiler) {
+            const languages = languagesService.getLanguagesOrFail();
             this.eventHub.emit('compileResult', this.id, this.compiler, result, languages[this.currentLangId ?? '']);
+        }
     }
 
     onCompileResponse(request: any, result: any, cached: boolean): void {
@@ -2192,6 +2266,29 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
         }
     }
 
+    onLeanCViewOpened(id: number): void {
+        if (this.id === id) {
+            this.leanCButton.prop('disabled', true);
+            this.leanCViewOpen = true;
+        }
+    }
+
+    onLeanCViewClosed(id: number): void {
+        if (this.id === id) {
+            this.leanCButton.prop('disabled', false);
+            this.leanCViewOpen = false;
+        }
+    }
+
+    onLeanCViewOptionsUpdated(id: number, options: LeanCOptions, recompile: boolean): void {
+        if (this.id === id) {
+            this.leanCOptions = options;
+            if (recompile) {
+                this.compile();
+            }
+        }
+    }
+
     onGnatDebugTreeViewOpened(id: number): void {
         if (this.id === id) {
             this.gnatDebugTreeButton.prop('disabled', true);
@@ -2479,6 +2576,7 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
         this.haskellCoreButton = this.domRoot.find('.btn.view-haskellCore');
         this.haskellStgButton = this.domRoot.find('.btn.view-haskellStg');
         this.haskellCmmButton = this.domRoot.find('.btn.view-haskellCmm');
+        this.leanCButton = this.domRoot.find('.btn.view-leanC');
         this.clojureMacroExpButton = this.domRoot.find('.btn.view-clojuremacroexp');
         this.yulButton = this.domRoot.find('.btn.view-yul');
         this.gccDumpButton = this.domRoot.find('.btn.view-gccdump');
@@ -2537,26 +2635,28 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
         this.compile();
     }
 
-    initLibraries(state: WidgetState): void {
+    async initLibraries(state: WidgetState): Promise<void> {
         this.libsWidget = new LibsWidget(
             this.currentLangId ?? '',
             this.compiler,
             this.libsButton,
             state,
             this.onLibsChanged.bind(this),
-            LibUtils.getSupportedLibraries(
+            await LibUtils.getSupportedLibraries(
                 this.compiler ? this.compiler.libsArr : [],
                 this.currentLangId ?? '',
                 this.compiler?.remote,
             ),
         );
+        // Wait for the lazily-loaded libraries to be selected before compiling or persisting state.
+        await this.libsWidget.stateLoaded;
     }
 
-    updateLibraries(): void {
+    async updateLibraries(): Promise<void> {
         if (this.libsWidget) {
             let filteredLibraries: LanguageLibs = {};
             if (this.compiler) {
-                filteredLibraries = LibUtils.getSupportedLibraries(
+                filteredLibraries = await LibUtils.getSupportedLibraries(
                     this.compiler.libsArr,
                     this.currentLangId ?? '',
                     this.compiler.remote,
@@ -2567,9 +2667,9 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
         }
     }
 
-    isSupportedTool(tool: Tool): boolean {
+    isSupportedTool(toolType: string | undefined): boolean {
         if (this.sourceTreeId) {
-            return tool.tool.type === 'postcompilation';
+            return toolType === 'postcompilation';
         }
         return true;
     }
@@ -2577,22 +2677,24 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
     supportsTool(toolId: string): boolean {
         if (!this.compiler) return false;
 
-        return !!Object.values(this.compiler.tools).find(tool => {
-            return tool.tool.id === toolId && this.isSupportedTool(tool);
-        });
+        const compilerToolIds = this.compiler.tools as unknown as string[];
+        if (!compilerToolIds.includes(toolId)) return false;
+        const langTools = toolsService.getCachedToolsForLang(this.currentLangId ?? '');
+        return this.isSupportedTool(langTools?.[toolId]?.type);
     }
 
     initToolButton(hideToolDropdown: () => void, button: JQuery<HTMLElement>, toolId: string): void {
         const createToolView = () => {
             let args = '';
             let monacoStdin = false;
-            const langTools = options.tools[this.currentLangId ?? ''];
-            if (langTools?.[toolId]?.tool) {
-                if (langTools[toolId].tool.args !== undefined) {
-                    args = langTools[toolId].tool.args;
+            const langTools = toolsService.getCachedToolsForLang(this.currentLangId ?? '');
+            const tool = langTools?.[toolId];
+            if (tool) {
+                if (tool.args !== undefined) {
+                    args = tool.args;
                 }
-                if (langTools[toolId].tool.monacoStdin !== undefined) {
-                    monacoStdin = langTools[toolId].tool.monacoStdin;
+                if (tool.monacoStdin !== undefined) {
+                    monacoStdin = !!tool.monacoStdin;
                 }
             }
             return Components.getToolViewWith(
@@ -2618,10 +2720,10 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
                 this.container.layoutManager.root.contentItems[0];
             insertPoint.addChild(createToolView());
         });
-        button.addClass('new-pane-button');
+        button.addClass('opens-singleton-pane');
     }
 
-    initToolButtons(): void {
+    async initToolButtons(): Promise<void> {
         this.toolsMenu = this.domRoot.find('.new-tool-dropdown');
         const hideToolDropdown = () => {
             if (this.toolsMenu) BootstrapUtils.hideDropdown(this.toolsMenu);
@@ -2629,6 +2731,10 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
         this.toolsMenu.empty();
 
         if (!this.compiler) return;
+
+        if (this.currentLangId) {
+            await toolsService.getToolsForLang(this.currentLangId);
+        }
 
         const addTool = (toolName: string, title: string, toolIcon?: string, toolIconDark?: string) => {
             const btn = $("<button class='dropdown-item btn btn-light btn-sm'>");
@@ -2658,13 +2764,15 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
             }
         };
 
-        const tools = Object.values(this.compiler.tools);
-        if (tools.length === 0) {
+        const compilerToolIds = this.compiler.tools as unknown as string[];
+        if (compilerToolIds.length === 0) {
             addTool('none', 'No tools available');
         } else {
-            tools.forEach(tool => {
-                if (this.isSupportedTool(tool)) {
-                    addTool(tool.tool.id, tool.tool.name || tool.tool.id, tool.tool.icon, tool.tool.darkIcon);
+            const langTools = toolsService.getCachedToolsForLang(this.currentLangId ?? '');
+            compilerToolIds.forEach(toolId => {
+                const meta = langTools?.[toolId];
+                if (this.isSupportedTool(meta?.type)) {
+                    addTool(toolId, meta?.name || toolId, meta?.icon, meta?.darkIcon);
                 }
             });
         }
@@ -2703,15 +2811,17 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
                     (button.prop('disabled') ? ' [LOCKED]' : ''),
             );
         };
-        const isIntelFilterDisabled = !this.compiler.supportsIntel && !filters.binary && !filters.binaryObject;
+
         // Hide the Intel syntax option for languages where it doesn't make sense (e.g., Java, Go)
         // unless we're in binary mode (which uses objdump that might support Intel syntax)
-        const shouldHideIntelFilter = isIntelFilterDisabled;
+        const shouldHideIntelFilter =
+            (!this.compiler.supportsIntel && !filters.binary && !filters.binaryObject) ||
+            (!!this.lastResult && !['x86', 'amd64'].includes(this.lastResult.instructionSet ?? ''));
         if (shouldHideIntelFilter) {
             this.filterIntelButton.parent().hide();
         } else {
             this.filterIntelButton.parent().show();
-            this.filterIntelButton.prop('disabled', isIntelFilterDisabled);
+            this.filterIntelButton.prop('disabled', false);
         }
         formatFilterTitle(this.filterIntelButton, this.filterIntelTitle);
 
@@ -2770,6 +2880,7 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
         this.haskellCoreButton.prop('disabled', this.haskellCoreViewOpen);
         this.haskellStgButton.prop('disabled', this.haskellStgViewOpen);
         this.haskellCmmButton.prop('disabled', this.haskellCmmViewOpen);
+        this.leanCButton.prop('disabled', this.leanCViewOpen);
         this.rustMacroExpButton.prop('disabled', this.rustMacroExpViewOpen);
         this.rustHirButton.prop('disabled', this.rustHirViewOpen);
         this.clojureMacroExpButton.prop('disabled', this.clojureMacroExpViewOpen);
@@ -2794,6 +2905,7 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
         this.haskellCoreButton.toggle(!!this.compiler.supportsHaskellCoreView);
         this.haskellStgButton.toggle(!!this.compiler.supportsHaskellStgView);
         this.haskellCmmButton.toggle(!!this.compiler.supportsHaskellCmmView);
+        this.leanCButton.toggle(!!this.compiler.supportsLeanCView);
         this.clojureMacroExpButton.toggle(!!this.compiler.supportsClojureMacroExpView);
         this.yulButton.toggle(!!this.compiler.supportsYulView);
         // TODO(jeremy-rifkin): Disable cfg button when binary mode is set?
@@ -2830,12 +2942,8 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
         );
     }
 
-    // Only x86/x64 compilers (supportsIntel) can emit AT&T syntax.
-    // Non-x86 architectures default to 'intel' so they never trigger the AT&T warning.
     asmSyntax(): AssemblySyntax {
-        const isAtt =
-            this.compiler?.supportsIntel && !(this.filters.isSet('intel') && this.compiler.intelAsm.includes('intel'));
-        return isAtt ? 'att' : 'intel';
+        return determineAssemblySyntax(this.compiler?.supportsIntel, this.filters.isSet('intel'));
     }
 
     handlePopularArgumentsResult(result: Record<string, {description: string}> | null): void {
@@ -2980,6 +3088,9 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
         this.eventHub.on('haskellStgViewClosed', this.onHaskellStgViewClosed, this);
         this.eventHub.on('haskellCmmViewOpened', this.onHaskellCmmViewOpened, this);
         this.eventHub.on('haskellCmmViewClosed', this.onHaskellCmmViewClosed, this);
+        this.eventHub.on('leanCViewOpened', this.onLeanCViewOpened, this);
+        this.eventHub.on('leanCViewClosed', this.onLeanCViewClosed, this);
+        this.eventHub.on('leanCViewOptionsUpdated', this.onLeanCViewOptionsUpdated, this);
         this.eventHub.on('clojureMacroExpViewOpened', this.onClojureMacroExpViewOpened, this);
         this.eventHub.on('clojureMacroExpViewClosed', this.onClojureMacroExpViewClosed, this);
         this.eventHub.on('yulViewOpened', this.onYulViewOpened, this);
@@ -3169,8 +3280,8 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
         this.resize();
     }
 
-    onCompilerChange(value: string): void {
-        this.compiler = this.compilerService.findCompiler(this.currentLangId ?? '', value);
+    async onCompilerChange(value: string): Promise<void> {
+        this.compiler = await this.compilerService.findCompiler(this.currentLangId ?? '', value);
 
         this.deferCompiles = true;
         this.needsCompile = true;
@@ -3185,6 +3296,7 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
     }
 
     sendCompiler(): void {
+        if (!this.compiler) return;
         this.eventHub.emit(
             'compiler',
             this.id,
@@ -3278,9 +3390,8 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
     }
 
     getLanguageName(): string {
-        const lang = options.languages[this.currentLangId ?? ''];
-
-        return lang?.name ?? '?';
+        const languages = languagesService.getLanguagesOrFail();
+        return languages[this.currentLangId ?? '']?.name ?? '?';
     }
 
     override getDefaultPaneName(): string {
@@ -3307,6 +3418,7 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
     resendResult(): boolean {
         if (this.lastResult) {
             if (this.compiler) {
+                const languages = languagesService.getLanguagesOrFail();
                 this.eventHub.emit(
                     'compileResult',
                     this.id,
@@ -3588,6 +3700,7 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
                 currentWord.endColumn,
             );
             const lang = this.compiler?.lang;
+            const languages = languagesService.getLanguagesOrFail();
             const language = lang === undefined ? undefined : languages[lang];
             const numericToolTip = utils.getNumericToolTip(word, language?.digitSeparator);
             if (numericToolTip) {
@@ -3610,8 +3723,7 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
             const hoverShowAsmDoc = this.settings.hoverShowAsmDoc;
             if (
                 hoverShowAsmDoc &&
-                this.compiler &&
-                this.compiler.supportsAsmDocs &&
+                this.compiler?.supportsAsmDocs &&
                 this.isWordAsmKeyword(e.target.position.lineNumber, currentWord)
             ) {
                 try {
@@ -3661,7 +3773,7 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
         const pos = ed.getPosition();
         if (!pos || !ed.getModel()) return;
         const word = ed.getModel()?.getWordAtPosition(pos);
-        if (!word || !word.word) return;
+        if (!word?.word) return;
         const opcode = word.word.toUpperCase();
 
         function newGitHubIssueUrl(): string {
@@ -3725,30 +3837,37 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
     }
 
     onLanguageChange(editorId: number | boolean, newLangId: LanguageKey, treeId?: number | boolean): void {
+        // Ignore language broadcasts that arrive before we've resolved our own initial state, otherwise
+        // we'd reset to the language's default compiler and lose the compiler from the loaded state.
+        if (!this.initialStateLoaded) return;
         if (
             (this.sourceEditorId && this.sourceEditorId === editorId) ||
             (this.sourceTreeId && this.sourceTreeId === treeId)
         ) {
+            const languages = languagesService.getLanguagesOrFail();
             const oldLangId = this.currentLangId ?? '';
             this.currentLangId = newLangId;
             // Store the current selected stuff to come back to it later in the same session (Not state stored!)
             this.infoByLang[oldLangId] = {
-                compiler: this.compiler?.id ? this.compiler.id : options.defaultCompiler[oldLangId as LanguageKey],
+                compiler: this.compiler?.id
+                    ? this.compiler.id
+                    : (languages[oldLangId as LanguageKey]?.defaultCompiler ?? ''),
                 options: this.options,
             };
 
             const info = this.infoByLang[this.currentLangId] || {};
             this.deferCompiles = true;
-            this.initLangAndCompiler({lang: newLangId, compiler: info.compiler});
-            this.updateCompilersSelector(info);
-            this.updateState();
-            this.updateCompilerUI();
-            this.setAssembly({asm: this.fakeAsm('')});
-            // this is a workaround to delay compilation further until the Editor sends a compile request
-            this.needsCompile = false;
+            this.initLangAndCompiler({lang: newLangId, compiler: info.compiler}).then(() => {
+                this.updateCompilersSelector(info);
+                this.updateState();
+                this.updateCompilerUI();
+                this.setAssembly({asm: this.fakeAsm('')});
+                // this is a workaround to delay compilation further until the Editor sends a compile request
+                this.needsCompile = false;
 
-            this.undefer();
-            this.sendCompiler();
+                this.undefer();
+                this.sendCompiler();
+            });
         }
     }
 

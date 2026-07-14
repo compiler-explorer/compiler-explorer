@@ -112,6 +112,11 @@ export class SharingBase {
     }
 
     protected ensureUrlIsNotOutdated(config: any): void {
+        // Never rewrite the URL in embedded mode: doing so strips the /e path and
+        // state hash from the iframe's URL, and browsers that restore an iframe's
+        // session-history URL when the parent page reloads (e.g. Firefox) then
+        // load the full site with the default example instead of the embed (#8896).
+        if (options.embedded) return;
         const stringifiedConfig = JSON.stringify(config);
         if (stringifiedConfig !== this.lastState) {
             if (this.lastState != null && window.location.pathname !== window.httpRoot) {

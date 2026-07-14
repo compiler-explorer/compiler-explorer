@@ -1,3 +1,27 @@
+// Copyright (c) 2023, Compiler Explorer Authors
+// All rights reserved.
+//
+// Redistribution and use in source and binary forms, with or without
+// modification, are permitted provided that the following conditions are met:
+//
+//     * Redistributions of source code must retain the above copyright notice,
+//       this list of conditions and the following disclaimer.
+//     * Redistributions in binary form must reproduce the above copyright
+//       notice, this list of conditions and the following disclaimer in the
+//       documentation and/or other materials provided with the distribution.
+//
+// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+// AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+// IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+// ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
+// LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+// CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+// SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+// INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+// CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+// ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+// POSSIBILITY OF SUCH DAMAGE.
+
 import * as monaco from 'monaco-editor';
 
 function definition(): monaco.languages.IMonarchLanguage {
@@ -5,49 +29,55 @@ function definition(): monaco.languages.IMonarchLanguage {
         defaultToken: 'invalid',
 
         keywords: [
+            'alias',
             'assert',
             'asm',
+            'attrdef',
             'bitstruct',
             'break',
             'case',
             'catch',
             'const',
+            'constdef',
             'continue',
-            'define',
             'default',
             'defer',
+            'distinct',
             'do',
             'else',
             'enum',
             'extern',
             'false',
             'fault',
+            'faultdef',
             'for',
             'foreach',
             'foreach_r',
             'fn',
-            'tlocal',
             'if',
             'import',
+            'inline',
+            'interface',
+            'lengthof',
             'macro',
             'module',
             'nextcase',
             'null',
             'private',
             'return',
+            'scope',
             'static',
             'struct',
             'switch',
+            'tlocal',
             'true',
             'try',
+            'typedef',
             'union',
             'var',
             'while',
-            'def',
-            'distinct',
-            'inline',
             '$alignof',
-            '$append',
+            '$assignable',
             '$assert',
             '$case',
             '$concat',
@@ -60,14 +90,18 @@ function definition(): monaco.languages.IMonarchLanguage {
             '$endforeach',
             '$endif',
             '$endswitch',
+            '$error',
             '$eval',
             '$evaltype',
             '$extnameof',
             '$exec',
+            '$feature',
             '$for',
             '$foreach',
             '$if',
             '$include',
+            '$is_const',
+            '$kindof',
             '$nameof',
             '$offsetof',
             '$qnameof',
@@ -81,12 +115,31 @@ function definition(): monaco.languages.IMonarchLanguage {
             '$vaexpr',
             '$vasplat',
             '$$abs',
+            '$$acos',
+            '$$asin',
+            '$$atan',
+            '$$any_make',
+            '$$atomic_load',
+            '$$atomic_store',
+            '$$atomic_fetch_exchange',
+            '$$atomic_fetch_add',
+            '$$atomic_fetch_sub',
+            '$$atomic_fetch_and',
+            '$$atomic_fetch_nand',
+            '$$atomic_fetch_or',
+            '$$atomic_fetch_xor',
+            '$$atomic_fetch_max',
+            '$$atomic_fetch_min',
+            '$$atomic_fetch_inc_wrap',
+            '$$atomic_fetch_dec_wrap',
             '$$bitreverse',
+            '$$breakpoint',
             '$$bswap',
             '$$ceil',
             '$$compare_exchange',
             '$$copysign',
             '$$cos',
+            '$$cosh',
             '$$clz',
             '$$ctz',
             '$$add',
@@ -97,18 +150,27 @@ function definition(): monaco.languages.IMonarchLanguage {
             '$$sub',
             '$$exp',
             '$$exp2',
+            '$$exp10',
             '$$expect',
             '$$expect_with_probability',
+            '$$fence',
             '$$floor',
             '$$fma',
             '$$fmuladd',
             '$$frameaddress',
             '$$fshl',
             '$$fshr',
+            '$$gather',
             '$$get_rounding_mode',
+            '$$int_to_mask',
             '$$log',
-            '$$log10',
             '$$log2',
+            '$$log10',
+            '$$matrix_mul',
+            '$$matrix_transpose',
+            '$$mask_to_int',
+            '$$masked_load',
+            '$$masked_store',
             '$$max',
             '$$memcpy',
             '$$memcpy_inline',
@@ -134,22 +196,39 @@ function definition(): monaco.languages.IMonarchLanguage {
             '$$reduce_or',
             '$$reduce_xor',
             '$$reverse',
+            '$$returnaddress',
             '$$rint',
+            '$$rnd',
             '$$round',
             '$$roundeven',
             '$$sat_add',
             '$$sat_shl',
             '$$sat_sub',
+            '$$sat_mul',
+            '$$scatter',
+            '$$select',
             '$$set_rounding_mode',
+            '$$sprintf',
+            '$$str_find',
+            '$$str_hash',
+            '$$str_lower',
+            '$$str_pascalcase',
+            '$$str_replace',
+            '$$str_upper',
+            '$$str_snakecase',
             '$$swizzle',
             '$$swizzle2',
             '$$sin',
+            '$$sinh',
             '$$sqrt',
-            '$$stacktrace',
             '$$syscall',
             '$$sysclock',
+            '$$tan',
+            '$$tanh',
             '$$trap',
             '$$trunc',
+            '$$unaligned_load',
+            '$$unaligned_store',
             '$$unreachable',
             '$$veccomplt',
             '$$veccomple',
@@ -161,6 +240,8 @@ function definition(): monaco.languages.IMonarchLanguage {
             '$$volatile_store',
             '$$wasm_memory_size',
             '$$wasm_memory_grow',
+            '$$wstr16',
+            '$$wstr32',
             '$$DATE',
             '$$FILE',
             '$$FILEPATH',
@@ -169,18 +250,20 @@ function definition(): monaco.languages.IMonarchLanguage {
             '$$LINE',
             '$$LINE_RAW',
             '$$MODULE',
+            '$$BENCHMARK_NAMES',
+            '$$BENCHMARK_FNS',
             '$$TEST_NAMES',
             '$$TEST_FNS',
             '$$TIME',
         ],
         typeKeywords: [
-            'anyfault',
             'any',
             'void',
             'bool',
             'char',
             'double',
             'float16',
+            'bfloat',
             'bfloat16',
             'float128',
             'int128',
@@ -200,6 +283,7 @@ function definition(): monaco.languages.IMonarchLanguage {
             'typeid',
             'ireg',
             'ureg',
+            'fault',
             '$vatype',
             '$typeof',
             '$typefrom',
@@ -220,6 +304,8 @@ function definition(): monaco.languages.IMonarchLanguage {
             '%',
             '??',
             '!!',
+            '?:',
+            '???',
             '++',
             '--',
             '<<',
@@ -238,17 +324,33 @@ function definition(): monaco.languages.IMonarchLanguage {
             '%=',
             '<<=',
             '>>=',
+            '+++=',
             '+++',
             '&&&',
             '|||',
+            '~',
+            '::',
+            '->',
+            '!!!',
+            '[<',
+            '>]',
+            '=>',
         ],
 
         symbols: /[=><!~?:&|+\-*/^%]+/,
 
-        escapes: /\\(?:[abfnrtv\\"']|x[0-9A-Fa-f]{1,4}|u[0-9A-Fa-f]{4}|U[0-9A-Fa-f]{8})/,
+        escapes: /\\(?:[0abefnrtv\\"']|x[0-9A-Fa-f]{1,4}|u[0-9A-Fa-f]{4}|U[0-9A-Fa-f]{8})/,
 
         tokenizer: {
             root: [
+                // Attributes and builtins
+                [/@[a-zA-Z_$]*/, 'annotation'],
+                [/\$[a-zA-Z_$][\w$]*/, 'keyword'],
+
+                // Highlight function calls and namespaces (prioritize colors)
+                [/[a-z_$][\w$]*(?=\s*\()/, 'constant'],
+                [/[a-z_$][\w$]*(?=\s*::)/, 'keyword'],
+
                 // u0/i0 integer types
                 [/[iu]\d+/, 'keyword'],
 
@@ -257,19 +359,18 @@ function definition(): monaco.languages.IMonarchLanguage {
                     /[a-z_$][\w$]*/,
                     {
                         cases: {
-                            '@typeKeywords': 'keyword',
+                            '@typeKeywords': 'type',
                             '@keywords': 'keyword',
                             '@default': 'identifier',
                         },
                     },
                 ],
 
-                [/@[a-zA-Z_$]*/, 'builtin.identifier'],
-
-                [/[A-Z][\w$]*/, 'type.identifier'], // to show class names nicely
+                [/[A-Z][\w$]*/, 'type.identifier'],
 
                 // whitespace
                 {include: '@whitespace'},
+                [/#![^\n]*$/, 'comment'],
 
                 // delimiters and operators
                 [/[{}()[\]]/, '@brackets'],
@@ -295,13 +396,14 @@ function definition(): monaco.languages.IMonarchLanguage {
                 [/[;,.]/, 'delimiter'],
 
                 // strings
-                [/"([^"\\]|\\.)*$/, 'string.invalid'], // non-teminated string
-                [/c?\\\\.*$/, 'string'],
-                [/c?"/, 'string', '@string'],
+                [/"([^"\\]|\\.)*$/, 'string.invalid'], // non-terminated string
+                [/(?:c|x|b64)?\\\\.*$/, 'string'],
+                [/(?:c|x|b64)?"/, 'string', '@string'],
+                [/(?:x|b64)?`/, 'string', '@rawString'],
 
                 // characters
-                [/'[^\\']'/, 'string'],
-                [/(')(@escapes)(')/, ['string', 'string.escape', 'string']],
+                [/(?:x|b64)?'[^\\']*'/, 'string'],
+                [/(?:x|b64)?(')(@escapes)(')/, ['string', 'string.escape', 'string']],
                 [/'/, 'string.invalid'],
             ],
 
@@ -333,6 +435,12 @@ function definition(): monaco.languages.IMonarchLanguage {
                 [/@escapes/, 'string.escape'],
                 [/\\./, 'string.escape.invalid'],
                 [/"/, 'string', '@pop'],
+            ],
+
+            rawString: [
+                [/``/, 'string.escape'],
+                [/[^`]+/, 'string'],
+                [/`/, 'string', '@pop'],
             ],
         },
     };

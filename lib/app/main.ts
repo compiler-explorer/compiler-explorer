@@ -38,7 +38,7 @@ import {logger} from '../logger.js';
 import {setupMetricsServer} from '../metrics-server.js';
 import {ClientOptionsHandler} from '../options-handler.js';
 import {SetupSentry} from '../sentry.js';
-import {sources} from '../sources/index.js';
+import {createSources} from '../sources/index.js';
 import {loadSponsorsFromString} from '../sponsors.js';
 import {getStorageTypeByKey} from '../storage/index.js';
 import {initializeCompilationEnvironment} from './compilation-env.js';
@@ -73,6 +73,7 @@ export async function initialiseApplication(options: ApplicationOptions): Promis
         awsProps,
     );
 
+    const sources = createSources();
     const clientOptionsHandler = new ClientOptionsHandler(sources, compilerProps, appArgs);
     const storageType = getStorageTypeByKey(storageSolution);
     const storageHandler = new storageType(config.httpRoot, compilerProps, awsProps);
@@ -82,14 +83,17 @@ export async function initialiseApplication(options: ApplicationOptions): Promis
     const isExecutionWorker = ceProps<boolean>('execqueue.is_worker', false);
     const isCompilationWorker = ceProps<boolean>('compilequeue.is_worker', false);
     const healthCheckFilePath = ceProps('healthCheckFilePath', null) as string | null;
+    const healthCheckMinFreeSpaceMiB = ceProps<number>('healthCheckMinFreeSpaceMiB', 100);
 
     const formDataHandler = createFormDataHandler();
 
     const controllers = setupControllersAndHandlers(
+        sources,
         compileHandler,
         compilationEnvironment.formattingService,
         compilationEnvironment.compilationQueue,
         healthCheckFilePath,
+        healthCheckMinFreeSpaceMiB,
         isExecutionWorker,
         isCompilationWorker,
         formDataHandler,

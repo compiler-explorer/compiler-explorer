@@ -26,6 +26,7 @@ jobs:
       - name: Run checks
         run: |
           npm run lint-check
+          npm run check-license-headers
           npm run test -- --coverage
           npm run ts-check
           python3 ./etc/scripts/test_numba_wrapper.py
@@ -42,22 +43,24 @@ jobs:
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
-      - name: Use Node.js 20
+      - name: Use Node.js (minimum supported, from .minimum-node-version)
         uses: actions/setup-node@v4
         with:
-          node-version: 20.18.2
+          node-version-file: .minimum-node-version
           check-latest: false
           cache: npm
       - name: Install prerequisites
-        run: make prereqs
+        run: npm i
       - name: Run checks
         run: |
           npm run ts-compile
           npm run webpack
 
   build_dist:
-    if: github.repository_owner == 'compiler-explorer' && github.event_name == 'push'
+    if: github.repository_owner == 'compiler-explorer' && github.event_name == 'push' && github.actor != 'dependabot[bot]'
     runs-on: ubuntu-22.04
+    permissions:
+      contents: read
     outputs:
       release_name: ${{ steps.build_dist.outputs.release_name }}
       branch: ${{ steps.build_dist.outputs.branch }}
@@ -82,9 +85,11 @@ jobs:
           path: out/dist-bin
 
   deploy:
-    if: github.repository_owner == 'compiler-explorer' && github.event_name == 'push'
+    if: github.repository_owner == 'compiler-explorer' && github.event_name == 'push' && github.actor != 'dependabot[bot]'
     needs: [test, build_dist]
     runs-on: ubuntu-22.04
+    permissions:
+      contents: write
 
     steps:
       - name: Checkout repository

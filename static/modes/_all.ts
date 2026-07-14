@@ -23,13 +23,16 @@
 // POSSIBILITY OF SUCH DAMAGE.
 
 import './ada-mode';
+import './algol68-mode';
 import './asm6502-mode';
 import './asm-mode';
 import './asmruby-mode';
 import './c3-mode';
 import './carbon-mode';
 import './clean-mode';
+import './clang-ast-mode';
 import './cmake-mode';
+import './co2-mode';
 import './cobol-mode';
 import './cppcircle-mode';
 import './cpp-for-opencl-mode';
@@ -51,6 +54,7 @@ import './hook-mode';
 import './hylo-mode';
 import './ispc-mode';
 import './jakt-mode';
+import './lean-mode';
 import './llvm-ir-mode';
 import './mlir-mode';
 import './modula2-mode';
@@ -63,6 +67,7 @@ import './odin-mode';
 import './openclc-mode';
 import './ptx-mode';
 import './perl-concise-mode';
+import './razorforge-mode';
 import './rust-mode';
 import './sail-mode';
 import './slang-mode';

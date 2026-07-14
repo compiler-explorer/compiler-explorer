@@ -39,6 +39,7 @@ export type LanguageKey =
     | 'clojure'
     | 'cmake'
     | 'cmakescript'
+    | 'co2'
     | 'cobol'
     | 'coccinelle_for_c'
     | 'coccinelle_for_cpp'
@@ -51,6 +52,7 @@ export type LanguageKey =
     | 'crystal'
     | 'csharp'
     | 'cuda'
+    | 'cutedsl'
     | 'd'
     | 'dart'
     | 'elixir'
@@ -72,8 +74,10 @@ export type LanguageKey =
     | 'julia'
     | 'javascript'
     | 'kotlin'
+    | 'lean'
     | 'llvm'
     | 'llvm_mir'
+    | 'lua'
     | 'mlir'
     | 'modula2'
     | 'mojo'
@@ -92,10 +96,12 @@ export type LanguageKey =
     | 'ptx'
     | 'racket'
     | 'raku'
+    | 'razorforge'
     | 'ruby'
     | 'rust'
     | 'sail'
     | 'scala'
+    | 'sfpi'
     | 'slang'
     | 'solidity'
     | 'spice'
@@ -143,6 +149,8 @@ export interface Language {
     tooltip?: string;
     /** Default compiler for the language. This is populated when handed to the frontend. */
     defaultCompiler?: string;
+    /** Default libraries for the language. This is populated when handed to the frontend. */
+    defaultLibs?: string;
     digitSeparator?: string;
     /** Hint to display when no assembly is generated (e.g., for inlined functions) */
     noAsmHint?: string;

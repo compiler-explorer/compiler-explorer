@@ -33,9 +33,12 @@ import {EventHub} from './event-hub.js';
 import {Hub} from './hub.js';
 import {localStorage} from './local.js';
 import {options} from './options.js';
+import {languagesService} from './services/languages.service.js';
 import {Themes, themes} from './themes.js';
 
 export type FormatBase = 'Google' | 'LLVM' | 'Mozilla' | 'Chromium' | 'WebKit' | 'Microsoft' | 'GNU';
+
+export type Keymap = 'vscode' | 'jetbrains';
 
 export interface SiteSettings {
     autoCloseBrackets: boolean;
@@ -68,6 +71,7 @@ export interface SiteSettings {
     indefiniteLineHighlight: boolean;
     keepMultipleTabs: boolean;
     keepSourcesOnLangChange: boolean;
+    keymap: Keymap;
     newEditorLastLang: boolean;
     showMinimap: boolean;
     showQuickSuggestions: boolean;
@@ -349,7 +353,7 @@ export class Settings {
         // Now add the theme selector
         addSelector('.theme', 'theme', themesData, defaultThemeId);
 
-        const langs = options.languages;
+        const langs = languagesService.getLanguagesOrFail();
         const defaultLanguageSelector = this.root.find('.defaultLanguage');
         const defLang = this.settings.defaultLanguage || Object.keys(langs)[0] || 'c++';
 
@@ -397,6 +401,12 @@ export class Settings {
             {label: '4', desc: 'Compile'},
         ];
         addSelector('.enableCtrlS', 'enableCtrlS', enableCtrlSData, 'true');
+
+        const keymapData: {label: Keymap; desc: string}[] = [
+            {label: 'vscode', desc: 'VS Code'},
+            {label: 'jetbrains', desc: 'JetBrains'},
+        ];
+        addSelector('.keymap', 'keymap', keymapData, 'vscode');
     }
 
     private addSliders() {

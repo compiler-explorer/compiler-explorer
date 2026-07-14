@@ -51,10 +51,6 @@ const manifestPath = path.resolve(__dirname, 'out', 'dist');
 const staticPath = path.resolve(__dirname, 'out', 'webpack', 'static');
 const hasGit = fs.existsSync(path.resolve(__dirname, '.git'));
 
-// Hack alert: due to a variety of issues, sometimes we need to change
-// the name here. Mostly it's things like webpack changes that affect
-// how minification is done, even though that's supposed not to matter.
-const webpackJsHack = '.v66.';
 const plugins: Webpack.WebpackPluginInstance[] = [
     new MonacoEditorWebpackPlugin({
         languages: [
@@ -81,10 +77,10 @@ const plugins: Webpack.WebpackPluginInstance[] = [
             'elixir',
             'clojure',
         ],
-        filename: isDev ? '[name].worker.js' : `[name]${webpackJsHack}worker.[contenthash].js`,
+        filename: isDev ? '[name].worker.js' : '[name].worker.[contenthash].js',
     }),
     new MiniCssExtractPlugin({
-        filename: isDev ? '[name].css' : `[name]${webpackJsHack}[contenthash].css`,
+        filename: isDev ? '[name].css' : '[name].[contenthash].css',
     }),
     new WebpackManifestPlugin({
         fileName: path.resolve(manifestPath, 'manifest.json'),
@@ -109,7 +105,7 @@ export default {
         noscript: './static/noscript.ts',
     },
     output: {
-        filename: isDev ? '[name].js' : `[name]${webpackJsHack}[contenthash].js`,
+        filename: isDev ? '[name].js' : '[name].[contenthash].js',
         path: staticPath,
     },
     cache: {

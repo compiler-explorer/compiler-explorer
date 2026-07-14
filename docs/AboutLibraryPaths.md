@@ -37,14 +37,14 @@ or executables.
 
 For a comprehensive overview of the configuration system, see [Configuration.md](Configuration.md).
 
-- Compiler .ldPath
+- Compiler `.ldPath`
   - is used for `LD_LIBRARY_PATH` to support running the compiler
   - is used for linking (`-Wl,-rpath=` and/or `-L`) during building binaries
   - is used for `LD_LIBRARY_PATH` to enable the users's executable to find `.so` files
-- Compiler .libPath
+- Compiler `.libPath`
   - is used for linking (`-Wl,-rpath=` and/or `-L`) during building binaries
   - is used for `LD_LIBRARY_PATH` to enable the users's executable to find `.so` files
-- Library .libPath
+- Library `.libpath`
   - is used for linking (`-Wl,-rpath=` and/or `-L`) during building binaries
   - is used for `LD_LIBRARY_PATH` to enable the users's executable to find `.so` files (just in case)
 

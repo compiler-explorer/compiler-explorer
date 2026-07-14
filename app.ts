@@ -53,10 +53,14 @@ function signalHandler(name: string) {
 }
 
 function uncaughtHandler(err: Error, origin: NodeJS.UncaughtExceptionOrigin) {
-    logger.info(`stopping process: Uncaught exception: ${err}\nException origin: ${origin}`);
-    // The app will exit naturally from here, but if we call `process.exit()` we may lose log lines.
-    // see https://github.com/winstonjs/winston/issues/1504#issuecomment-1033087411
+    logger.error(`stopping process: Uncaught exception (origin: ${origin}):`, err);
+    // A process with live server listeners never exits "naturally": after an uncaught exception we'd
+    // limp on in an undefined state (#8811). Exit after a short delay so winston can flush its
+    // transports (calling `process.exit()` immediately may lose log lines, see
+    // https://github.com/winstonjs/winston/issues/1504#issuecomment-1033087411), and let the load
+    // balancer replace the instance.
     process.exitCode = 1;
+    setTimeout(() => process.exit(1), 1000);
 }
 
 // Parse command line arguments
