@@ -3,14 +3,11 @@ function square(a) {
 	return result;
 }
 
-// Collect type information on next call of function
+// Allocate feedback vector for the function and call it once to record type
+// information.
 %PrepareFunctionForOptimization(square)
-
-// Call function once to fill type information
 square(23);
 
-// Call function again to go from uninitialized -> pre-monomorphic -> monomorphic
-square(13);
+// Optimize with Turbofan.
 %OptimizeFunctionOnNextCall(square);
 square(71);
-
