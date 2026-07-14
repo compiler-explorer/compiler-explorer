@@ -794,9 +794,8 @@ describe('maskRootdir', () => {
         expect(utils.maskRootdir('-I/tmp/compiler-explorer-compiler123-4-abc/include')).toEqual('-I/app/include');
     });
 
-    // The path being masked was recorded when the compile ran; its leading directory
-    // need not match this process's os.tmpdir(). The distinctive ce_temp_prefix marker
-    // is what identifies a CE temp dir, so masking must not depend on the tmpdir root.
+    // The recorded path's tmpdir root need not match this process's os.tmpdir(), so
+    // masking keys off the ce_temp_prefix marker, not the root.
     it.each([
         ['/tmp', '/tmp/compiler-explorer-compilerXYZ/example.cpp'],
         ['/usr/tmp', '/usr/tmp/compiler-explorer-compilerXYZ/example.cpp'],
@@ -810,19 +809,14 @@ describe('maskRootdir', () => {
         expect(utils.maskRootdir('/usr/include/stdio.h')).toEqual('/usr/include/stdio.h');
     });
 
-    // A bare temp dir with no trailing slash isn't masked: the marker segment must be
-    // followed by `/` (i.e. contain a file/subpath). In practice maskRootdir is only
-    // ever called on paths *inside* the temp dir, so this bare-directory form doesn't
-    // arise; asserted here to pin the boundary.
+    // The marker segment must be followed by `/`, so a bare dir with no trailing slash
+    // is left alone. (Real inputs always name a file inside the dir.)
     it('leaves a bare temp dir with no trailing slash untouched', () => {
         expect(utils.maskRootdir('/tmp/compiler-explorer-compiler123-4-abc')).toEqual(
             '/tmp/compiler-explorer-compiler123-4-abc',
         );
     });
 
-    // With a trailing slash the whole thing is the temp dir, so it masks to /app/ and
-    // the leading-/app/ strip then leaves an empty string. (Pre-existing behaviour,
-    // unchanged by this PR; also doesn't occur for real inputs, which name a file.)
     it('masks a bare temp dir with a trailing slash to empty', () => {
         expect(utils.maskRootdir('/tmp/compiler-explorer-compiler123-4-abc/')).toEqual('');
     });
@@ -838,11 +832,8 @@ describe('maskRootdir', () => {
         expect(utils.maskRootdir(input)).toEqual(input);
     });
 
-    // maskRootdir runs on whole output lines with space-separated tokens, so the regex
-    // deliberately stops at whitespace. A temp root that itself contains a space (e.g.
-    // --tmp-dir "/tmp/with space") is therefore only masked from the last space onward,
-    // not fully collapsed to the basename. This is the accepted trade-off: widening the
-    // match to cross spaces would let a single line's leading tokens be swallowed too.
+    // The regex stops at whitespace (so multi-token output lines aren't over-masked),
+    // so a temp root containing a space is only masked from the last space onward.
     it('masks only from the last space in a spaced temp root (documented limitation)', () => {
         expect(utils.maskRootdir('/tmp/with space/compiler-explorer-compilerXXX/example.cpp')).toEqual(
             '/tmp/with space/app/example.cpp',
