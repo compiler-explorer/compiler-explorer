@@ -78,7 +78,7 @@ function makeAnsiToHtml(color?: string): AnsiToHtml {
 
 export class Executor extends Pane<ExecutorState> {
     private contentRoot: JQuery<HTMLElement>;
-    private readonly sourceEditorId: number | null;
+    private sourceEditorId: number | null;
     private sourceTreeId: number | null;
     private sourceCompilerId: number | null;
     private upstreamCompilerName: string | null = null;
@@ -940,6 +940,7 @@ export class Executor extends Pane<ExecutorState> {
         this.eventHub.on('editorChange', this.onEditorChange, this);
         this.eventHub.on('editorClose', this.onEditorClose, this);
         this.eventHub.on('chainLanguageChange', this.onChainLanguageChange, this);
+        this.eventHub.on('chainUpstreamReplaced', this.onChainUpstreamReplaced, this);
         this.eventHub.on('settingsChange', this.onSettingsChange, this);
         this.eventHub.on('requestCompilation', this.onRequestCompilation, this);
         this.eventHub.on('resendExecution', this.onResendExecutionResult, this);
@@ -1312,6 +1313,25 @@ export class Executor extends Pane<ExecutorState> {
                 this.compile();
             }
         });
+    }
+
+    onChainUpstreamReplaced(compilerId: number, editorId: number, langId: string, source: string): void {
+        if (compilerId !== this.sourceCompilerId) return;
+        // Our upstream compiler is turning into an editor holding the same text it was
+        // feeding us: become a regular editor-backed executor bound to it. Nulling
+        // sourceCompilerId first means the upstream's imminent compilerClose is ignored.
+        this.sourceCompilerId = null;
+        this.upstreamCompilerName = null;
+        this.sourceEditorId = editorId;
+        const sourceChanged = source !== this.source;
+        this.source = source;
+        if (langId !== this.currentLangId && this.currentLangId) {
+            void this.applyLanguageChange(langId).then(() => this.compile());
+            return;
+        }
+        this.updateState();
+        this.updateTitle();
+        if (sourceChanged) this.compile();
     }
 
     private async applyLanguageChange(newLangId: string): Promise<void> {

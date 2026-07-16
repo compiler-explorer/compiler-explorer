@@ -568,13 +568,20 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
             return;
         }
 
-        const asm = result.asm;
-        const newSource = typeof asm === 'string' ? asm : asm.map(line => line.text).join('\n');
+        const newSource = Compiler.sourceFromResult(result);
         // Skip recompiling when the derived source is unchanged and our last result was for it
         // (e.g. the upstream re-pushed an identical result during the open handshake).
         if (newSource === this.source && this.lastResult?.source === newSource) return;
         this.source = newSource;
         this.compile();
+    }
+
+    // The text a downstream pane derives from a compilation result: the asm as plain text,
+    // or '' when the compilation failed or produced nothing.
+    private static sourceFromResult(result: CompilationResult | null): string {
+        if (!result || !result.asm || result.timedOut || result.code !== 0) return '';
+        const asm = result.asm;
+        return typeof asm === 'string' ? asm : asm.map(line => line.text).join('\n');
     }
 
     // A minimal request to accompany locally-generated error results (see errorResult callers).
@@ -2147,8 +2154,9 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
         super.onCompilerClose(compilerId);
 
         if (compilerId === this.sourceCompilerId) {
-            // Our upstream compiler closed — detach and become sourceless.
-            this.detachFromUpstream();
+            // Our upstream compiler closed — turn into an editor holding the text we were
+            // being fed, so the user can continue working with it by hand.
+            this.becomeEditor();
         }
 
         if (this.chainedDownstreamIds.delete(compilerId)) {
@@ -2159,9 +2167,66 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
     private detachFromUpstream(): void {
         this.sourceCompilerId = null;
         this.upstreamResult = null;
+        this.upstreamCompilerName = null;
         this.source = '';
         this.updateState();
         this.updateTitle();
+    }
+
+    // Replaces this pane, in place, with an editor containing the text we were feeding our
+    // downstreams (our last output, in our declared chain output language)
+    // should leave downstreams' source text completely unchanged.
+    private becomeEditor(): void {
+        const langId = this.chainOutputLang ?? (this.currentLangId as LanguageKey | null);
+        if (!langId) {
+            // We don't know our language yet (still initializing) — just detach.
+            this.detachFromUpstream();
+            return;
+        }
+        const source = Compiler.sourceFromResult(this.lastResult);
+        const editorId = this.hub.nextEditorId();
+        const editorConfig = Components.getEditorWith(editorId, source, {}, langId);
+
+        // Let our own downstreams rebind to the editor replacing us; they keep their
+        // compilers, options and content, and the conversion doesn't cascade any further.
+        this.eventHub.emit('chainUpstreamReplaced', this.id, editorId, langId, source);
+
+        // The upstream's close is still being processed by GoldenLayout; defer the layout
+        // change like the deferred close in Pane.onCompilerClose. Inserting the editor at
+        // our own position and then closing makes it take our place (and our close runs the
+        // full teardown, letting our own viewers react).
+        _.defer(() => {
+            const myItem = this.container.parent;
+            const stack = myItem?.parent;
+            if (!stack || !this.container.layoutManager.isInitialised) return;
+            const index = stack.contentItems.indexOf(myItem);
+            stack.addChild(editorConfig, index + 1);
+            this.container.close();
+        });
+    }
+
+    onChainUpstreamReplaced(compilerId: number, editorId: number, langId: LanguageKey, source: string): void {
+        if (compilerId !== this.sourceCompilerId) return;
+        // Our upstream is turning into an editor holding the same text it was feeding us:
+        // become a regular editor-backed compiler bound to it, keeping our compiler, options,
+        // content and downstreams. Nulling sourceCompilerId first means the upstream's
+        // imminent compilerClose is ignored.
+        this.sourceCompilerId = null;
+        this.upstreamResult = null;
+        this.upstreamCompilerName = null;
+        this.rootEditorId = null;
+        this.sourceEditorId = editorId;
+        const sourceChanged = source !== this.source;
+        this.source = source;
+        if (langId !== this.currentLangId) {
+            void this.applyLanguageChange(langId).then(() => this.compile());
+            return;
+        }
+        this.updateState();
+        this.updateTitle();
+        // Normally the editor holds exactly the text we were already compiling, so our
+        // current result remains valid and no recompile is needed.
+        if (sourceChanged) this.compile();
     }
 
     private teardownChainLanguagePickerIfUnused(): void {
@@ -3283,6 +3348,7 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
         this.eventHub.on('chainedExecutorOpen', this.onChainedExecutorOpen, this);
         this.eventHub.on('executorClose', this.onExecutorClose, this);
         this.eventHub.on('chainLanguageChange', this.onChainLanguageChange, this);
+        this.eventHub.on('chainUpstreamReplaced', this.onChainUpstreamReplaced, this);
         this.eventHub.on('compilerFlagsChange', this.onCompilerFlagsChange, this);
         this.eventHub.on('editorClose', this.onEditorClose, this);
         this.eventHub.on('treeClose', this.onTreeClose, this);
