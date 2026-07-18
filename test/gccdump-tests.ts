@@ -151,10 +151,41 @@ describe('GCC dump output processing', () => {
             expect(trimmed).toContain('[orig:117]'); // RTL brackets left intact
         });
 
-        it('does not strip brackets from RTL dumps even when lineno is disabled', () => {
-            const rtlBlock = ';; Function main (main)\n(note 1 0 3 [orig:117] "example.cpp":5)\n';
+        it('keeps non-lineno RTL brackets ([orig:N], hex, %) but drops the insn filename when lineno is disabled', () => {
+            const rtlBlock =
+                ';; Function main (main)\n' +
+                '(note 1 0 3 [orig:117] NOTE_INSN_DELETED)\n' +
+                '(insn 8 7 9 (set (reg:DI 139) (const_int -32 [0xffffffffffffffe0])) "/app/example.cpp":12:15 discrim 1 -1)\n' +
+                '  goto <bb 3>; [94.50%]\n';
             const trimmed = compiler.trimGccDumpHeaderFunctions(rtlBlock, 'example.cpp', false, true);
-            expect(trimmed).toContain('[orig:117]');
+            expect(trimmed).toContain('[orig:117]'); // not a path -> kept
+            expect(trimmed).toContain('[0xffffffffffffffe0]'); // hex operand -> kept
+            expect(trimmed).toContain('[94.50%]'); // branch probability -> kept
+            expect(trimmed).toContain(':12:15 discrim 1'); // line:col of the insn location -> kept
+            expect(trimmed).not.toContain('"/app/example.cpp"'); // redundant source filename -> dropped
+        });
+
+        it('strips forced -lineno [path:line] prefixes from RTL dumps when lineno is disabled (#8826)', () => {
+            // -fdump-rtl-expand-details prints the gimple statements it expands; -lineno prefixes
+            // each with [path:line:col], which pinskia reported made the dump hard to read.
+            const rtlBlock =
+                ';; Function main (main)\n' +
+                '  [/app/example.cpp:12:15 discrim 1] __builtin_memcpy (&v1, data_22(D), 32);\n' +
+                '  _32 = BIT_FIELD_REF <[/app/example.cpp:16:41] [/app/example.cpp:16:37] v.val[3], 16, 0>;\n' +
+                ';; [/app/example.cpp:12:15 discrim 1] __builtin_memcpy (&v1, data_22(D), 32);\n';
+            const trimmed = compiler.trimGccDumpHeaderFunctions(rtlBlock, 'example.cpp', false, true);
+            expect(trimmed).not.toContain('[/app/example.cpp:12:15 discrim 1]');
+            expect(trimmed).not.toContain('[/app/example.cpp:16:41]');
+            expect(trimmed).toContain('  __builtin_memcpy (&v1, data_22(D), 32);');
+            expect(trimmed).toContain('  _32 = BIT_FIELD_REF <v.val[3], 16, 0>;');
+            expect(trimmed).toContain(';; __builtin_memcpy (&v1, data_22(D), 32);');
+        });
+
+        it('keeps forced -lineno prefixes in RTL dumps when lineno is enabled', () => {
+            const rtlBlock =
+                ';; Function main (main)\n  [/app/example.cpp:12:15 discrim 1] __builtin_memcpy (&v1, x);\n';
+            const trimmed = compiler.trimGccDumpHeaderFunctions(rtlBlock, 'example.cpp', true, true);
+            expect(trimmed).toContain('[/app/example.cpp:12:15 discrim 1]');
         });
 
         it('strips location annotations from tree dumps when lineno is disabled', () => {
