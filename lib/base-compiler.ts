@@ -2004,9 +2004,9 @@ export class BaseCompiler {
                 // RTL dumps also contain brackets that must survive: [orig:N], hex operands like
                 // [0x..], branch probabilities like [5.50%], and the insn's own quoted "file":line
                 // locations (bracket-free). The forced -lineno prefixes always carry a path, so
-                // restrict the strip to brackets holding a '/' -- that keeps [orig:N] et al. while
+                // restrict the strip to brackets holding a path separator -- that keeps [orig:N] et al. while
                 // reproducing the readable no-lineno RTL dump.
-                trimmed = trimmed.replace(/\[[^[\]\n]*\/[^[\]\n]*:\d+(?::\d+)?(?: discrim \d+)?\] ?/g, '');
+                trimmed = trimmed.replace(/\[[^[\]\n]*[\/\\\\][^[\]\n]*:\d+(?::\d+)?(?: discrim \d+)?\] ?/g, '');
                 // Each insn also prints its own location as "file":line:col; the filename is the
                 // (long, temp-dir) source path repeated on every line and adds no information, so
                 // drop just the quoted path and keep the :line:col that pinskia asked to retain.
