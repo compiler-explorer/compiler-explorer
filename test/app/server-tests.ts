@@ -98,7 +98,7 @@ describe('Server Module', () => {
                 httpRoot: '',
                 sentrySlowRequestMs: 500,
                 manifestPath: '/mocked/dist', // Use absolute path for testing
-                extraBodyClass: '',
+                extraBodyClass: 'test-class',
                 maxUploadSize: '1mb',
             };
 
@@ -155,9 +155,9 @@ describe('Server Module', () => {
             const embeddedConfig = renderConfig({embedded: true});
             expect(embeddedConfig).toHaveProperty('extraBodyClass', 'embedded');
 
-            // When embedded is false the configured extraBodyClass is passed through
+            // When embedded is false
             const normalConfig = renderConfig({embedded: false});
-            expect(normalConfig).toHaveProperty('extraBodyClass', '');
+            expect(normalConfig).toHaveProperty('extraBodyClass', 'test-class');
         });
 
         it('should include mobile viewer slides when needed', async () => {

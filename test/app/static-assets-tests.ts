@@ -22,18 +22,9 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import path from 'node:path';
+import {describe, expect, it, vi} from 'vitest';
 
-import {afterAll, beforeAll, describe, expect, it, vi} from 'vitest';
-
-import {
-    createDefaultPugRequireHandler,
-    getBrandingAssetDir,
-    getFaviconFilename,
-    getLogoOverlayFilename,
-    validateBrandingAssets,
-} from '../../lib/app/static-assets.js';
-import {resolvePathFromAppRoot} from '../../lib/utils.js';
+import {createDefaultPugRequireHandler, getFaviconFilename} from '../../lib/app/static-assets.js';
 
 // Mock the logger
 vi.mock('../../lib/logger.js', () => ({
@@ -121,91 +112,38 @@ describe('Static assets', () => {
     });
 
     describe('getFaviconFilename', () => {
-        it('uses the default favicon when no body class is set', () => {
-            expect(getFaviconFilename('')).toBe('favicon.ico');
+        it('should prioritize dev environment over other environments', () => {
+            // Dev mode favicon should be used regardless of environment flags
+            expect(getFaviconFilename(true, [])).toContain('dev');
+            expect(getFaviconFilename(true, ['beta'])).toContain('dev');
+            expect(getFaviconFilename(true, ['staging'])).toContain('dev');
+            expect(getFaviconFilename(true, ['beta', 'staging'])).toContain('dev');
         });
 
-        it('derives the favicon name from the body class', () => {
-            expect(getFaviconFilename('dev')).toBe('favicon-dev.ico');
-            expect(getFaviconFilename('beta')).toBe('favicon-beta.ico');
-            expect(getFaviconFilename('staging')).toBe('favicon-staging.ico');
-            expect(getFaviconFilename('anything-else')).toBe('favicon-anything-else.ico');
-        });
-    });
+        it('should select appropriate favicon based on environment', () => {
+            // Test specific environments when not in dev mode
+            const environments = [
+                {env: ['beta'], expected: 'beta'},
+                {env: ['staging'], expected: 'staging'},
+                {env: [], expected: 'favicon.ico'},
+            ];
 
-    describe('getLogoOverlayFilename', () => {
-        it('returns undefined when no body class is set', () => {
-            expect(getLogoOverlayFilename('')).toBeUndefined();
-        });
-
-        it('derives the overlay filename from the body class', () => {
-            expect(getLogoOverlayFilename('dev')).toBe('site-logo-dev.svg');
-            expect(getLogoOverlayFilename('beta')).toBe('site-logo-beta.svg');
-            expect(getLogoOverlayFilename('intern')).toBe('site-logo-intern.svg');
-        });
-    });
-
-    describe('validateBrandingAssets', () => {
-        let tmpDir: string;
-
-        beforeAll(async () => {
-            const fs = await import('node:fs/promises');
-            const os = await import('node:os');
-            tmpDir = await fs.mkdtemp(path.join(os.tmpdir(), 'ce-branding-test-'));
-            await fs.writeFile(path.join(tmpDir, 'favicon-good.ico'), '');
-            await fs.writeFile(path.join(tmpDir, 'site-logo-good.svg'), '');
-            await fs.writeFile(path.join(tmpDir, 'favicon-partial.ico'), '');
+            for (const {env, expected} of environments) {
+                const result = getFaviconFilename(false, env);
+                if (expected === 'favicon.ico') {
+                    expect(result).toBe(expected);
+                } else {
+                    expect(result).toContain(expected);
+                }
+            }
         });
 
-        afterAll(async () => {
-            const fs = await import('node:fs/promises');
-            await fs.rm(tmpDir, {recursive: true, force: true});
-        });
-
-        it('is a no-op when no body class is set', async () => {
-            await expect(validateBrandingAssets('/nonexistent/path', '')).resolves.toBeUndefined();
-        });
-
-        it('passes when both assets exist', async () => {
-            await expect(validateBrandingAssets(tmpDir, 'good')).resolves.toBeUndefined();
-        });
-
-        it('throws listing every missing asset', async () => {
-            await expect(validateBrandingAssets(tmpDir, 'missing')).rejects.toThrow(/favicon-missing\.ico/);
-            await expect(validateBrandingAssets(tmpDir, 'missing')).rejects.toThrow(/site-logo-missing\.svg/);
-        });
-
-        it('throws when only one asset is missing', async () => {
-            await expect(validateBrandingAssets(tmpDir, 'partial')).rejects.toThrow(/site-logo-partial\.svg/);
-        });
-    });
-
-    describe('getBrandingAssetDir', () => {
-        it('uses staticPath in production mode', () => {
-            expect(getBrandingAssetDir(false, '/dist/static')).toBe('/dist/static');
-        });
-
-        it('uses the public source dir in dev mode (assets are served from there, not staticPath)', () => {
-            // Regression: in dev the webpack middleware serves branding from public/, so validating
-            // staticPath (the source dir, which has no branding assets) spuriously crashes startup.
-            expect(getBrandingAssetDir(true, '/dist/static')).toBe(resolvePathFromAppRoot('public'));
-        });
-    });
-
-    describe('branding assets ship for every deployed environment', () => {
-        // Guards the dev path end-to-end: getBrandingAssetDir(devMode) points here and the real
-        // files must exist, so a missing asset or a wrong directory fails the build, not just prod.
-        const publicDir = getBrandingAssetDir(true, '/unused');
-
-        it.each([
-            'dev',
-            'beta',
-            'staging',
-            'winprod',
-            'winstaging',
-            'wintest',
-        ])('has favicon + logo overlay for %s', async extraBodyClass => {
-            await expect(validateBrandingAssets(publicDir, extraBodyClass)).resolves.toBeUndefined();
+        it('should handle environment arrays with mixed values', () => {
+            // When multiple environments are specified, there should be a consistent priority
+            expect(getFaviconFilename(false, ['beta', 'staging'])).toContain('beta');
+            expect(getFaviconFilename(false, ['staging', 'beta'])).toContain('beta');
+            expect(getFaviconFilename(false, ['other', 'beta'])).toContain('beta');
+            expect(getFaviconFilename(false, ['other', 'staging'])).toContain('staging');
         });
     });
 });

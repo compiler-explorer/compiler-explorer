@@ -31,7 +31,6 @@ import urljoin from 'url-join';
 
 import {unwrap} from '../assert.js';
 import {logger} from '../logger.js';
-import {resolvePathFromAppRoot} from '../utils.js';
 import {PugRequireHandler, ServerOptions} from './server.interfaces.js';
 
 /**
@@ -109,41 +108,21 @@ export async function setupStaticMiddleware(options: ServerOptions, router: Rout
     return createDefaultPugRequireHandler(options.staticRoot, staticManifest);
 }
 
-export function getFaviconFilename(extraBodyClass: string): string {
-    return extraBodyClass ? `favicon-${extraBodyClass}.ico` : 'favicon.ico';
-}
-
-export function getLogoOverlayFilename(extraBodyClass: string): string | undefined {
-    return extraBodyClass ? `site-logo-${extraBodyClass}.svg` : undefined;
-}
-
 /**
- * Resolves the directory branding assets are actually served from. In dev mode the webpack
- * dev middleware serves them from public/ (they aren't on disk in staticPath); in production
- * webpack has copied public/ into staticPath (dist/static), so we validate there.
+ * Gets the appropriate favicon filename based on the environment
+ * @param isDevMode - Whether the app is running in development mode
+ * @param env - The environment names array
+ * @returns The favicon filename to use
  */
-export function getBrandingAssetDir(devMode: boolean, staticPath: string): string {
-    return devMode ? resolvePathFromAppRoot('public') : staticPath;
-}
-
-export async function validateBrandingAssets(staticPath: string, extraBodyClass: string): Promise<void> {
-    if (!extraBodyClass) return;
-    const required = [getFaviconFilename(extraBodyClass), getLogoOverlayFilename(extraBodyClass)].filter(
-        (f): f is string => f !== undefined,
-    );
-    const missing: string[] = [];
-    for (const filename of required) {
-        try {
-            await fs.access(path.join(staticPath, filename));
-        } catch (e: unknown) {
-            const err = e as NodeJS.ErrnoException;
-            if (err.code === 'ENOENT') missing.push(filename);
-            else throw err;
-        }
+export function getFaviconFilename(isDevMode: boolean, env?: string[]): string {
+    if (isDevMode) {
+        return 'favicon-dev.ico';
     }
-    if (missing.length > 0) {
-        throw new Error(
-            `Missing branding assets for extraBodyClass='${extraBodyClass}' in ${staticPath}: ${missing.join(', ')}`,
-        );
+    if (env?.includes('beta')) {
+        return 'favicon-beta.ico';
     }
+    if (env?.includes('staging')) {
+        return 'favicon-staging.ico';
+    }
+    return 'favicon.ico';
 }
