@@ -135,6 +135,7 @@ export {ORCACompiler} from './orca.js';
 export {OSACATool} from './osaca.js';
 export {FPCCompiler} from './pascal.js';
 export {PascalWinCompiler} from './pascal-win.js';
+export {PascalWinLinuxCompiler} from './pascal-win-linux.js';
 export {PerlCompiler} from './perl.js';
 export {PonyCompiler} from './pony.js';
 export {PPCICompiler} from './ppci.js';
