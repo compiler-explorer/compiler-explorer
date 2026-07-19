@@ -32,13 +32,17 @@ import type {
 } from '../../types/compilation/compilation.interfaces.js';
 import type {PreliminaryCompilerInfo} from '../../types/compiler.interfaces.js';
 import type {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces.js';
-import {unwrap} from '../assert.js';
 import {BaseCompiler} from '../base-compiler.js';
 import {CompilationEnvironment} from '../compilation-env.js';
-import {MapFileReaderDelphi} from '../mapfiles/map-file-delphi.js';
-import {PELabelReconstructor} from '../pe32-support.js';
+import * as delphiPdb from '../delphi-pdb-support.js';
+import type {AsmRange} from '../delphi-pdb-support.js';
 import * as utils from '../utils.js';
 import * as pascalUtils from './pascal-utils.js';
+
+// External tools for the map2pdb + llvm-pdbutil disassembly pipeline (see delphi-pdb-support.ts).
+// Overridable via env so the service config can relocate them without a code change.
+const MAP2PDB = process.env.CE_MAP2PDB || 'C:\\ci\\map2pdb\\map2pdb.exe';
+const PDBUTIL = process.env.CE_PDBUTIL || 'C:\\Program Files\\LLVM\\bin\\llvm-pdbutil.exe';
 
 export class PascalWinCompiler extends BaseCompiler {
     static get key() {
@@ -48,6 +52,12 @@ export class PascalWinCompiler extends BaseCompiler {
     mapFilename: string | null;
     dprFilename: string;
 
+    // Result of the PDB line-mapping pipeline for the most recent compile, consumed by the
+    // (synchronous) preProcessBinaryAsmLines hook. Set in runCompiler.
+    pdbRanges: AsmRange[];
+    pdbMarkerPath: string;
+    pdbLabelName: string;
+
     constructor(info: PreliminaryCompilerInfo, env: CompilationEnvironment) {
         super(info, env);
         info.supportsFiltersInBinary = true;
@@ -55,6 +65,10 @@ export class PascalWinCompiler extends BaseCompiler {
         this.mapFilename = null;
         this.compileFilename = 'output.pas';
         this.dprFilename = 'prog.dpr';
+
+        this.pdbRanges = [];
+        this.pdbMarkerPath = 'C:/app/prog.dpr';
+        this.pdbLabelName = 'prog';
     }
 
     override getSharedLibraryPathsAsArguments() {
@@ -112,13 +126,24 @@ export class PascalWinCompiler extends BaseCompiler {
         });
     }
 
-    async saveDummyProjectFile(filename: string, unitName: string, unitPath: string) {
+    async saveDummyProjectFile(filename: string, unitName: string, unitPath: string, unitSource: string) {
+        // Delphi's linker drops any routine the wrapper never references, so a bare `uses X;`
+        // wrapper compiles fine but silently omits the very code being tested. Call every
+        // parseable top-level routine with synthesized dummy arguments to force the linker to
+        // keep it - see pascal-utils.ts. Routines we can't confidently synthesize arguments for
+        // (custom record/class/generic parameter types) are skipped rather than guessed at, so
+        // this can under-cover but never emits invalid Pascal.
+        const routines = pascalUtils.extractDeclaredRoutines(unitSource);
+        const {varsBlock, statements} = pascalUtils.buildForceReferenceCallSite(routines);
+
         // biome-ignore format: keep as-is for readability
         await fs.writeFile(
             filename,
             'program prog;\n' +
             'uses ' + unitName + ' in \'' + unitPath + '\';\n' +
+            varsBlock +
             'begin\n' +
+            (statements ? statements + '\n' : '') +
             'end.\n',
         );
     }
@@ -147,6 +172,30 @@ export class PascalWinCompiler extends BaseCompiler {
         };
     }
 
+    // Run map2pdb + `llvm-pdbutil dump -l` on the freshly compiled artifacts and precompute the
+    // per-line VA ranges of the user's own source file. Stored for the synchronous
+    // preProcessBinaryAsmLines hook. Any failure degrades to empty ranges (a "no source-mapped
+    // code" note), never a crash.
+    async computePdbRanges(tempPath: string, targetBasename: string, labelName: string) {
+        this.pdbRanges = [];
+        this.pdbMarkerPath = 'C:/app/' + targetBasename;
+        this.pdbLabelName = labelName;
+        try {
+            const execOpts: ExecutionOptions = {customCwd: tempPath, maxOutput: 1024 * 1024 * 256};
+            const m2p = await this.exec(MAP2PDB, ['prog.map', '-pdb:prog.pdb'], execOpts);
+            if (m2p.code !== 0) return;
+            const dl = await this.exec(PDBUTIL, ['dump', '-l', 'prog.pdb'], execOpts);
+            if (dl.code !== 0) return;
+
+            const mapText = await fs.readFile(path.join(tempPath, 'prog.map'), 'utf8');
+            const segBases = delphiPdb.parseSegmentBases(mapText);
+            const contribs = delphiPdb.parseDumpLines(dl.stdout);
+            this.pdbRanges = delphiPdb.buildRanges(contribs, segBases, targetBasename);
+        } catch {
+            this.pdbRanges = [];
+        }
+    }
+
     override async runCompiler(
         compiler: string,
         options: string[],
@@ -166,10 +215,16 @@ export class PascalWinCompiler extends BaseCompiler {
 
         inputFilename = inputFilename.replaceAll('/', '\\');
 
+        // The user's own source file (the code we annotate): the program's prog.dpr, or the unit's
+        // .pas (its routines are force-referenced into the prog.dpr wrapper - see above).
+        const unitFilepath = path.basename(inputFilename);
+        const targetBasename = alreadyHasDPR ? this.dprFilename : unitFilepath;
+        const labelName = targetBasename.replace(/\.(pas|dpr)$/i, '');
+
         if (!alreadyHasDPR) {
-            const unitFilepath = path.basename(inputFilename);
             const unitName = unitFilepath.replace(/.pas$/i, '');
-            await this.saveDummyProjectFile(projectFile, unitName, unitFilepath);
+            const unitSource = await fs.readFile(inputFilename, 'utf8');
+            await this.saveDummyProjectFile(projectFile, unitName, unitFilepath, unitSource);
         }
 
         options.pop();
@@ -179,7 +234,12 @@ export class PascalWinCompiler extends BaseCompiler {
         options.push(projectFile);
         execOptions.customCwd = tempPath;
 
-        return this.exec(compiler, options, execOptions).then(result => {
+        return this.exec(compiler, options, execOptions).then(async result => {
+            if (result.code === 0) {
+                await this.computePdbRanges(tempPath, targetBasename, labelName);
+            } else {
+                this.pdbRanges = [];
+            }
             return {
                 ...result,
                 inputFilename,
@@ -193,11 +253,7 @@ export class PascalWinCompiler extends BaseCompiler {
         filters.binary = true;
         filters.dontMaskFilenames = true;
         filters.preProcessBinaryAsmLines = (asmLines: string[]) => {
-            const mapFileReader = new MapFileReaderDelphi(unwrap(this.mapFilename));
-            const reconstructor = new PELabelReconstructor(asmLines, false, mapFileReader, false);
-            reconstructor.run('output');
-
-            return reconstructor.asmLines;
+            return delphiPdb.annotateAsm(asmLines, this.pdbRanges, this.pdbMarkerPath, this.pdbLabelName);
         };
 
         return [];
