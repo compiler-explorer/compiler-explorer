@@ -24,6 +24,7 @@
 
 import fs from 'node:fs';
 import https from 'node:https';
+import http from 'node:http';
 import path from 'node:path';
 
 import semverParser from 'semver';
@@ -423,24 +424,31 @@ export class ClientOptionsHandler implements ClientOptionsSource {
             return await new Promise(resolve => {
                 const url = ClientOptionsHandler.getRemoteUrlForLibraries(remoteUrl, language);
                 logger.info(`Fetching remote libraries from ${url}`);
+                const requestLib = url.startsWith('https:') ? https : http;
                 let fullData = '';
-                https.get(url, res => {
-                    res.on('data', data => {
-                        fullData += data;
-                    });
-                    res.on('end', () => {
-                        try {
-                            const libsArr = JSON.parse(fullData);
+                requestLib
+                    .get(url, res => {
+                        res.on('data', data => {
+                            fullData += data;
+                        });
+                        res.on('end', () => {
+                            try {
+                                const libsArr = JSON.parse(fullData);
 
-                            this.remoteLibs[remoteId] = this.libArrayToObject(libsArr);
-                        } catch (e) {
-                            logger.error('Error while fetching remote libraries, but continuing.', e);
-                            this.remoteLibs[remoteId] = {};
-                        }
+                                this.remoteLibs[remoteId] = this.libArrayToObject(libsArr);
+                            } catch (e) {
+                                logger.error('Error while fetching remote libraries, but continuing.', e);
+                                this.remoteLibs[remoteId] = {};
+                            }
 
+                            resolve(this.remoteLibs[remoteId]);
+                        });
+                    })
+                    .on('error', e => {
+                        logger.error('Error while fetching remote libraries, but continuing.', e);
+                        this.remoteLibs[remoteId] = {};
                         resolve(this.remoteLibs[remoteId]);
                     });
-                });
             });
         }
         return this.remoteLibs[remoteId];
