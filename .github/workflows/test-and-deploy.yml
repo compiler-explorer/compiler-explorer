@@ -22,7 +22,7 @@ jobs:
           make prereqs
           python3 -m pip install numba
       - name: Install uv
-        uses: astral-sh/setup-uv@v6
+        uses: astral-sh/setup-uv@v8
       - name: Run checks
         run: |
           npm run lint-check
