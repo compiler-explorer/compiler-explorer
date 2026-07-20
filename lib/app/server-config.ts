@@ -137,14 +137,10 @@ export function setupLoggingMiddleware(isDevMode: boolean, router: Router): void
     );
 }
 
+const FAVICON_PATH_RE = /^\/favicon(-[a-z0-9-]+)?\.ico$/;
+
 function isFaviconRequest(req: Request): boolean {
-    return [
-        'favicon.ico',
-        'favicon-beta.ico',
-        'favicon-dev.ico',
-        'favicon-staging.ico',
-        'favicon-suspend.ico',
-    ].includes(req.path);
+    return FAVICON_PATH_RE.test(req.path);
 }
 
 /**
