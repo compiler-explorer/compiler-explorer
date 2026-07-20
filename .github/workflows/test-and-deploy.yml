@@ -131,6 +131,7 @@ jobs:
           SOURCE_DIR: out/dist-bin
           DEST_DIR: dist/gh/${{ needs.build_dist.outputs.branch }}
       - name: Tag the commit
+        # May 403 on branch builds whose commit changes workflow files (GITHUB_TOKEN can't hold workflows=write): https://github.com/orgs/community/discussions/26164
         uses: actions/github-script@v9
         with:
           script: |
