@@ -30,10 +30,12 @@ import {createRenderHandlers} from './rendering.js';
 import {ServerDependencies, ServerOptions, WebServerResult} from './server.interfaces.js';
 import {setupBaseServerConfig, setupBasicRoutes, setupLoggingMiddleware} from './server-config.js';
 import {
-    getBrandingAssetDir,
+    getBrandingPublicDir,
+    loadStaticManifest,
     setupStaticMiddleware,
     setupWebPackDevMiddleware,
-    validateBrandingAssets,
+    validateBrandingAssetsInManifest,
+    validateBrandingAssetsOnDisk,
 } from './static-assets.js';
 
 export {startListening} from './server-listening.js';
@@ -55,18 +57,29 @@ export async function setupWebServer(
     const router = express.Router();
 
     let pugRequireHandler;
+    let staticManifest: Record<string, string> | undefined;
 
     try {
-        pugRequireHandler = await (appArgs.devMode
-            ? setupWebPackDevMiddleware(options, router)
-            : setupStaticMiddleware(options, router));
+        if (appArgs.devMode) {
+            pugRequireHandler = await setupWebPackDevMiddleware(options, router);
+        } else {
+            staticManifest = await loadStaticManifest(options.manifestPath);
+            pugRequireHandler = setupStaticMiddleware(options, router, staticManifest);
+        }
     } catch (err: unknown) {
         const error = err as Error;
         logger.warn(`Error setting up static middleware: ${error.message}`);
         pugRequireHandler = path => `${options.staticRoot}/${path}`;
     }
 
-    await validateBrandingAssets(getBrandingAssetDir(appArgs.devMode, options.staticPath), options.extraBodyClass);
+    // Deliberately fatal (and outside the try above): a mistyped extraBodyClass should stop
+    // startup, not serve broken branding. If the manifest failed to load we're already limping
+    // on the fallback handler, so there's nothing to validate against and we don't try.
+    if (appArgs.devMode) {
+        await validateBrandingAssetsOnDisk(getBrandingPublicDir(), options.extraBodyClass);
+    } else if (staticManifest) {
+        validateBrandingAssetsInManifest(staticManifest, options.extraBodyClass);
+    }
 
     const {renderConfig, renderGoldenLayout, embeddedHandler} = createRenderHandlers(
         pugRequireHandler,

@@ -85,15 +85,22 @@ export async function setupWebPackDevMiddleware(options: ServerOptions, router: 
     return path => urljoin(options.httpRoot, path);
 }
 
+export async function loadStaticManifest(manifestPath: string): Promise<Record<string, string>> {
+    return JSON.parse(await fs.readFile(path.join(manifestPath, 'manifest.json'), 'utf-8'));
+}
+
 /**
  * Sets up static file middleware for production mode
  * @param options - Server options
  * @param router - Express router
+ * @param staticManifest - Webpack manifest mapping asset names to hashed filenames
  * @returns Function to handle Pug requires
  */
-export async function setupStaticMiddleware(options: ServerOptions, router: Router): Promise<PugRequireHandler> {
-    const staticManifest = JSON.parse(await fs.readFile(path.join(options.manifestPath, 'manifest.json'), 'utf-8'));
-
+export function setupStaticMiddleware(
+    options: ServerOptions,
+    router: Router,
+    staticManifest: Record<string, string>,
+): PugRequireHandler {
     if (options.staticUrl) {
         logger.info(`  using static files from '${options.staticUrl}'`);
     } else {
@@ -118,32 +125,50 @@ export function getLogoOverlayFilename(extraBodyClass: string): string | undefin
 }
 
 /**
- * Resolves the directory branding assets are actually served from. In dev mode the webpack
- * dev middleware serves them from public/ (they aren't on disk in staticPath); in production
- * webpack has copied public/ into staticPath (dist/static), so we validate there.
+ * The directory branding assets are served from in dev mode: the webpack dev middleware
+ * serves public/ directly (they aren't on disk in staticPath).
  */
-export function getBrandingAssetDir(devMode: boolean, staticPath: string): string {
-    return devMode ? resolvePathFromAppRoot('public') : staticPath;
+export function getBrandingPublicDir(): string {
+    return resolvePathFromAppRoot('public');
 }
 
-export async function validateBrandingAssets(staticPath: string, extraBodyClass: string): Promise<void> {
-    if (!extraBodyClass) return;
-    const required = [getFaviconFilename(extraBodyClass), getLogoOverlayFilename(extraBodyClass)].filter(
+function requiredBrandingAssets(extraBodyClass: string): string[] {
+    return [getFaviconFilename(extraBodyClass), getLogoOverlayFilename(extraBodyClass)].filter(
         (f): f is string => f !== undefined,
     );
+}
+
+function throwIfMissingBrandingAssets(extraBodyClass: string, where: string, missing: string[]): void {
+    if (missing.length > 0) {
+        throw new Error(
+            `Missing branding assets for extraBodyClass='${extraBodyClass}' in ${where}: ${missing.join(', ')}`,
+        );
+    }
+}
+
+export async function validateBrandingAssetsOnDisk(assetDir: string, extraBodyClass: string): Promise<void> {
+    if (!extraBodyClass) return;
     const missing: string[] = [];
-    for (const filename of required) {
+    for (const filename of requiredBrandingAssets(extraBodyClass)) {
         try {
-            await fs.access(path.join(staticPath, filename));
+            await fs.access(path.join(assetDir, filename));
         } catch (e: unknown) {
             const err = e as NodeJS.ErrnoException;
             if (err.code === 'ENOENT') missing.push(filename);
             else throw err;
         }
     }
-    if (missing.length > 0) {
-        throw new Error(
-            `Missing branding assets for extraBodyClass='${extraBodyClass}' in ${staticPath}: ${missing.join(', ')}`,
-        );
-    }
+    throwIfMissingBrandingAssets(extraBodyClass, assetDir, missing);
+}
+
+/**
+ * Production deploys ship the static assets in a separate CDN bundle (see build-dist.sh), so
+ * they are not on disk next to the node app and cannot be checked with the filesystem. The
+ * webpack manifest *does* ship with the node app and lists every asset in the static bundle
+ * (public/ is copied in wholesale), so presence of a manifest key proves the asset shipped.
+ */
+export function validateBrandingAssetsInManifest(manifest: Record<string, string>, extraBodyClass: string): void {
+    if (!extraBodyClass) return;
+    const missing = requiredBrandingAssets(extraBodyClass).filter(filename => !Object.hasOwn(manifest, filename));
+    throwIfMissingBrandingAssets(extraBodyClass, 'the static manifest', missing);
 }
