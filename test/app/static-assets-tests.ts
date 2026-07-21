@@ -28,10 +28,11 @@ import {afterAll, beforeAll, describe, expect, it, vi} from 'vitest';
 
 import {
     createDefaultPugRequireHandler,
-    getBrandingAssetDir,
+    getBrandingPublicDir,
     getFaviconFilename,
     getLogoOverlayFilename,
-    validateBrandingAssets,
+    validateBrandingAssetsInManifest,
+    validateBrandingAssetsOnDisk,
 } from '../../lib/app/static-assets.js';
 import {resolvePathFromAppRoot} from '../../lib/utils.js';
 
@@ -145,7 +146,7 @@ describe('Static assets', () => {
         });
     });
 
-    describe('validateBrandingAssets', () => {
+    describe('validateBrandingAssetsOnDisk', () => {
         let tmpDir: string;
 
         beforeAll(async () => {
@@ -163,39 +164,63 @@ describe('Static assets', () => {
         });
 
         it('is a no-op when no body class is set', async () => {
-            await expect(validateBrandingAssets('/nonexistent/path', '')).resolves.toBeUndefined();
+            await expect(validateBrandingAssetsOnDisk('/nonexistent/path', '')).resolves.toBeUndefined();
         });
 
         it('passes when both assets exist', async () => {
-            await expect(validateBrandingAssets(tmpDir, 'good')).resolves.toBeUndefined();
+            await expect(validateBrandingAssetsOnDisk(tmpDir, 'good')).resolves.toBeUndefined();
         });
 
         it('throws listing every missing asset', async () => {
-            await expect(validateBrandingAssets(tmpDir, 'missing')).rejects.toThrow(/favicon-missing\.ico/);
-            await expect(validateBrandingAssets(tmpDir, 'missing')).rejects.toThrow(/site-logo-missing\.svg/);
+            await expect(validateBrandingAssetsOnDisk(tmpDir, 'missing')).rejects.toThrow(/favicon-missing\.ico/);
+            await expect(validateBrandingAssetsOnDisk(tmpDir, 'missing')).rejects.toThrow(/site-logo-missing\.svg/);
         });
 
         it('throws when only one asset is missing', async () => {
-            await expect(validateBrandingAssets(tmpDir, 'partial')).rejects.toThrow(/site-logo-partial\.svg/);
+            await expect(validateBrandingAssetsOnDisk(tmpDir, 'partial')).rejects.toThrow(/site-logo-partial\.svg/);
         });
     });
 
-    describe('getBrandingAssetDir', () => {
-        it('uses staticPath in production mode', () => {
-            expect(getBrandingAssetDir(false, '/dist/static')).toBe('/dist/static');
+    describe('validateBrandingAssetsInManifest', () => {
+        // Regression for the gh-8755 revert: production nodes don't have the static files on
+        // disk (they ship in the CDN bundle), so validation must go via the manifest, which
+        // lists everything webpack copied from public/ into that bundle.
+        const manifest = {
+            'favicon-staging.ico': 'favicon-staging.ico',
+            'site-logo-staging.svg': 'site-logo-staging.svg',
+            'favicon-partial.ico': 'favicon-partial.ico',
+        };
+
+        it('is a no-op when no body class is set', () => {
+            expect(() => validateBrandingAssetsInManifest({}, '')).not.toThrow();
         });
 
-        it('uses the public source dir in dev mode (assets are served from there, not staticPath)', () => {
+        it('passes when both assets are in the manifest', () => {
+            expect(() => validateBrandingAssetsInManifest(manifest, 'staging')).not.toThrow();
+        });
+
+        it('throws listing every missing asset', () => {
+            expect(() => validateBrandingAssetsInManifest(manifest, 'missing')).toThrow(/favicon-missing\.ico/);
+            expect(() => validateBrandingAssetsInManifest(manifest, 'missing')).toThrow(/site-logo-missing\.svg/);
+        });
+
+        it('throws when only one asset is missing', () => {
+            expect(() => validateBrandingAssetsInManifest(manifest, 'partial')).toThrow(/site-logo-partial\.svg/);
+        });
+    });
+
+    describe('getBrandingPublicDir', () => {
+        it('points at the public source dir (dev serves branding from there, not staticPath)', () => {
             // Regression: in dev the webpack middleware serves branding from public/, so validating
             // staticPath (the source dir, which has no branding assets) spuriously crashes startup.
-            expect(getBrandingAssetDir(true, '/dist/static')).toBe(resolvePathFromAppRoot('public'));
+            expect(getBrandingPublicDir()).toBe(resolvePathFromAppRoot('public'));
         });
     });
 
     describe('branding assets ship for every deployed environment', () => {
-        // Guards the dev path end-to-end: getBrandingAssetDir(devMode) points here and the real
-        // files must exist, so a missing asset or a wrong directory fails the build, not just prod.
-        const publicDir = getBrandingAssetDir(true, '/unused');
+        // Guards the dev path end-to-end: the real files must exist in public/, so a missing
+        // asset fails the build, not just a deploy. Adding an environment? Add its class here.
+        const publicDir = getBrandingPublicDir();
 
         it.each([
             'dev',
@@ -205,7 +230,7 @@ describe('Static assets', () => {
             'winstaging',
             'wintest',
         ])('has favicon + logo overlay for %s', async extraBodyClass => {
-            await expect(validateBrandingAssets(publicDir, extraBodyClass)).resolves.toBeUndefined();
+            await expect(validateBrandingAssetsOnDisk(publicDir, extraBodyClass)).resolves.toBeUndefined();
         });
     });
 });

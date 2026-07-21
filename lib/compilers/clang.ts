@@ -437,3 +437,19 @@ export class Z80ClangCompiler extends ClangCompiler {
         this.compiler.irArg = ['-Xclang', '-emit-llvm'];
     }
 }
+
+export class TIClangCompiler extends ClangCompiler {
+    static override get key() {
+        return 'ticlang';
+    }
+
+    constructor(info: PreliminaryCompilerInfo, env: CompilationEnvironment) {
+        super(info, env);
+
+        this.compiler.supportsIntel = false;
+    }
+
+    override couldSupportASTDump(_version: string) {
+        return true;
+    }
+}
