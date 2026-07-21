@@ -122,10 +122,7 @@ export class RouteAPI {
         this.storageHandler
             .expandId(id)
             .then(result => {
-                let config = JSON.parse(result.config);
-                if (config.sessions) {
-                    config = this.getGoldenLayoutFromClientState(new ClientState(config));
-                }
+                const config = this.configToGoldenLayout(JSON.parse(result.config));
                 const metadata = this.getMetaDataFromLink(req, result, config);
                 this.renderGoldenLayout(config, metadata, req, res);
                 // And finally, increment the view count
@@ -151,13 +148,20 @@ export class RouteAPI {
         return goldenifier.golden;
     }
 
+    configToGoldenLayout(config: any) {
+        if (config.content) {
+            return config;
+        }
+        return this.getGoldenLayoutFromClientState(new ClientState(config));
+    }
+
     unstoredStateHandler(req: express.Request, res: express.Response, next: express.NextFunction) {
         let clientstatebase64: string | undefined;
         try {
             clientstatebase64 = unwrapString(req.params.clientstatebase64);
             const buffer = Buffer.from(clientstatebase64, 'base64');
             const state = extractJsonFromBufferAndInflateIfRequired(buffer);
-            const config = this.getGoldenLayoutFromClientState(new ClientState(state));
+            const config = this.configToGoldenLayout(state);
             const metadata = this.getMetaDataFromLink(req, null, config);
 
             this.renderGoldenLayout(config, metadata, req, res);
