@@ -796,4 +796,27 @@ async function start() {
     hub.layout.eventHub.emit('settingsChange', settings); // Ensure everyone knows the settings
 }
 
-$(start);
+$(() => {
+    start().catch((e: unknown) => {
+        // The bootstrap (notably languagesService.getLanguages()) failed even after retries, so the page
+        // never finished initializing. Surface it to the console and Sentry, and offer the user a reload
+        // rather than leaving them staring at a blank page.
+        console.error('Compiler Explorer failed to start', e);
+        SentryCapture(e, 'start');
+        try {
+            new Alert().ask(
+                'Failed to load Compiler Explorer',
+                'Compiler Explorer could not finish loading, likely due to a network problem. ' +
+                    'Please check your connection and reload the page.',
+                {
+                    yes: () => window.location.reload(),
+                    yesHtml: 'Reload',
+                    noHtml: 'Dismiss',
+                },
+            );
+        } catch (alertError) {
+            // If even the alert machinery isn't ready, there's nothing more we can do but log it.
+            console.error('Could not display the startup failure alert', alertError);
+        }
+    });
+});
