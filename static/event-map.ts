@@ -57,6 +57,7 @@ export type EventMap = {
         options: string,
         editorId: number,
         treeId: number,
+        sourceName?: string,
     ) => void;
     compilerClose: (compilerId: number, treeId: boolean | number) => void;
     compileResult: (
@@ -92,6 +93,7 @@ export type EventMap = {
         options: string,
         editorId: number,
         treeId: number,
+        sourceName?: string,
     ) => void;
     executorClose: (executorId: number) => void;
     executorOpen: (executorId: number, editorId: boolean | number) => void;

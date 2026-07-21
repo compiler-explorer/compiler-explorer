@@ -79,6 +79,30 @@ describe('Diff view', () => {
         lhsPicker().should('not.contain.text', '-O2');
     });
 
+    it('should show renamed source panes in selected compiler labels', () => {
+        waitForEditors();
+
+        compilerPane().find('input.options').clear().type('-O2');
+        compilerPane().find('input.options').should('have.value', '-O2');
+
+        openDiffView();
+
+        const lhsPicker = () => findPane('Diff').find('select.diff-picker.lhs + .ts-wrapper .ts-control');
+
+        lhsPicker().should('contain.text', '-O2');
+
+        cy.contains('span.lm_title:visible', 'source')
+            .closest('.lm_tab')
+            .find('.lm_modify_tab_title')
+            .click({force: true});
+        cy.get('#enter-something:visible').find('.question-answer').clear().type('struct w/ call to foo');
+        cy.get('#enter-something:visible').find('.modal-footer .yes').click();
+        cy.contains('span.lm_title:visible', 'struct w/ call to foo').should('exist');
+
+        lhsPicker().should('contain.text', 'struct w/ call to foo');
+        lhsPicker().should('contain.text', '-O2');
+    });
+
     it('should show diff content with two compiler panes', () => {
         waitForEditors();
         setMonacoEditorContent(DIFF_SOURCE);
