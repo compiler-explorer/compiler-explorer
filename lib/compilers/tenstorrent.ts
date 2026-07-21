@@ -1,4 +1,4 @@
-// Copyright (c) 2020, Compiler Explorer Authors
+// Copyright (c) 2026, Compiler Explorer Authors
 // All rights reserved.
 //
 // Redistribution and use in source and binary forms, with or without
@@ -22,10 +22,31 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import {makeKeyedTypeGetter} from '../keyed-type.js';
-import * as all from './_all.js';
+import path from 'node:path';
 
-export * from './_all.js';
+import {GCCCompiler} from './gcc.js';
 
-export const getCompilerTypeByKey = makeKeyedTypeGetter('compiler', all);
+export class TenstorrentCompiler extends GCCCompiler {
+    static override get key() {
+        return 'tenstorrent';
+    }
 
+    private getBase() {
+        const exeDir = path.dirname(this.compiler.exe);
+        return path.resolve(exeDir, '../../');
+    }
+
+    override optionsForFilter(filters, outputFilename: string, userOptions?: string[]) {
+        const options = super.optionsForFilter(filters, outputFilename, userOptions);
+        const base = this.getBase();
+
+        options.push(
+            `-I${path.join(base, 'include')}`,
+            `-I${path.join(base, 'tt_metal/include')}`,
+            `-I${path.join(base, 'tt_metal/include/compute_kernel_api')}`,
+            `-I${path.join(base, 'tt_metal/include/hw')}`,
+        );
+
+        return options;
+    }
+}
