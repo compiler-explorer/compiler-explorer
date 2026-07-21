@@ -1967,12 +1967,15 @@ export class BaseCompiler {
      * recognisable location at all — is kept. Dumps without any `;; Function` markers (IPA
      * summaries such as cgraph) are returned whole.
      *
-     * `isRtlDump` selects the lineno handling: `-lineno` adds `[file:line]` prefixes to every
-     * GIMPLE statement, which appears in tree dumps AND in IPA passes that print GIMPLE bodies
-     * (icf, inline, sra, ...). So when the user disabled lineno but we forced it on for origin
-     * detection, those prefixes are stripped from all non-RTL dumps. RTL dumps are left untouched
-     * because they use different bracket syntax (`[orig:N]`, nested `[N [file:line]]`) that the
-     * strip regex would corrupt, and their locations come from -g rather than -lineno anyway.
+     * `isRtlDump` selects the lineno-strip regex. `-lineno` adds `[file:line]` prefixes to every
+     * GIMPLE statement; these show up in tree dumps, in IPA passes that print GIMPLE bodies (icf,
+     * inline, sra, ...), and in the GIMPLE section of RTL expand dumps (which print each gimple
+     * statement before the RTL it expands to). When the user disabled lineno but we forced it on
+     * for origin detection, those prefixes are stripped so the dump reads as it would without
+     * -lineno. RTL dumps carry extra brackets that are NOT lineno noise -- `[orig:N]`, hex operands
+     * like `[0x..]`, branch probabilities like `[5.50%]` -- so the RTL strip only removes brackets
+     * that contain a path ('/'), leaving those intact. The `"file":line:col` location each insn
+     * prints keeps its `:line:col` but loses the repeated (temp-dir) filename, which is noise.
      */
     trimGccDumpHeaderFunctions(
         content: string,
@@ -1993,11 +1996,24 @@ export class BaseCompiler {
                 : pieces.filter((piece, index) => index === 0 || !isHeaderFunction(piece));
 
         let trimmed = kept.join('');
-        if (!keepLineno && !isRtlDump) {
-            // Approximate the no-lineno output by removing the forced [file:line(:col)] prefixes
-            // from GIMPLE (tree + IPA) dumps. RTL is excluded so its [orig:N]/nested brackets are
-            // never touched.
-            trimmed = trimmed.replace(/\[[^[\]\n]*?:\d+(?::\d+)?(?: discrim \d+)?\] ?/g, '');
+        if (!keepLineno) {
+            // Approximate the no-lineno output by removing the [file:line(:col)] prefixes that
+            // -lineno forces onto GIMPLE statements (tree/IPA dumps, and the GIMPLE section of RTL
+            // expand dumps).
+            if (isRtlDump) {
+                // RTL dumps also contain brackets that must survive: [orig:N], hex operands like
+                // [0x..], branch probabilities like [5.50%], and the insn's own quoted "file":line
+                // locations (bracket-free). The forced -lineno prefixes always carry a path, so
+                // restrict the strip to brackets holding a path separator -- that keeps [orig:N] et al. while
+                // reproducing the readable no-lineno RTL dump.
+                trimmed = trimmed.replace(/\[[^[\]\n]*[\/\\\\][^[\]\n]*:\d+(?::\d+)?(?: discrim \d+)?\] ?/g, '');
+                // Each insn also prints its own location as "file":line:col; the filename is the
+                // (long, temp-dir) source path repeated on every line and adds no information, so
+                // drop just the quoted path and keep the :line:col that pinskia asked to retain.
+                trimmed = trimmed.replace(/"[^"\n]*"(?=:\d)/g, '');
+            } else {
+                trimmed = trimmed.replace(/\[[^[\]\n]*?:\d+(?::\d+)?(?: discrim \d+)?\] ?/g, '');
+            }
         }
         return trimmed;
     }
