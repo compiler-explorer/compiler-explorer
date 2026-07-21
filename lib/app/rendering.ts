@@ -26,7 +26,6 @@ import express, {Request, Response} from 'express';
 import _ from 'underscore';
 
 import type {Options as FrontendOptions} from '../../static/options.interfaces.js';
-import {AppArguments} from '../app.interfaces.js';
 import * as normalizer from '../clientstate-normalizer.js';
 import {GoldenLayoutRootStruct} from '../clientstate-normalizer.js';
 import type {ShortLinkMetaData} from '../handlers/handler.interfaces.js';
@@ -40,7 +39,7 @@ import {
     ServerDependencies,
     ServerOptions,
 } from './server.interfaces.js';
-import {getFaviconFilename} from './static-assets.js';
+import {getFaviconFilename, getLogoOverlayFilename} from './static-assets.js';
 import {isMobileViewer} from './url-handlers.js';
 
 // Heavy fields (compilers, libs, tools, ...) are absent on purpose — they are lazy-loaded.
@@ -67,19 +66,10 @@ const FRONTEND_INLINE_OPTION_KEYS = [
     'explainApiEndpoint',
 ] as const satisfies readonly (keyof ClientOptionsType & keyof FrontendOptions)[];
 
-/**
- * Create rendering-related functions
- * @param pugRequireHandler - Handler for Pug requires
- * @param options - Server options
- * @param dependencies - Server dependencies
- * @param appArgs - App arguments
- * @returns Rendering functions
- */
 export function createRenderHandlers(
     pugRequireHandler: PugRequireHandler,
     options: ServerOptions,
     dependencies: ServerDependencies,
-    appArgs: AppArguments,
 ): {
     renderConfig: RenderConfigFunction;
     renderGoldenLayout: RenderGoldenLayoutHandler;
@@ -124,7 +114,8 @@ export function createRenderHandlers(
         options.storageSolution = options.storageSolution || storageSolution;
         options.require = pugRequireHandler;
         options.sponsors = sponsorConfig;
-        options.faviconFilename = getFaviconFilename(appArgs.devMode, appArgs.env);
+        options.faviconFilename = getFaviconFilename(extraBodyClass);
+        options.logoOverlayFilename = getLogoOverlayFilename(extraBodyClass);
         return options;
     };
 
