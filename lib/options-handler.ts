@@ -59,6 +59,8 @@ export type VersionInfo = {
     options: string[];
     hidden: boolean;
     packagedheaders?: boolean;
+    sysroot?: string;
+    dynamicLinker?: string;
     $order?: number;
 };
 export type OptionsHandlerLibrary = {
@@ -357,10 +359,19 @@ export class ClientOptionsHandler implements ClientOptionsSource {
                                 versionObject.lookupname = libraries[lang][lib].lookupname;
                             }
 
+                            const sysroot = this.compilerProps<string>(lang, libVersionName + '.sysroot');
+                            if (sysroot !== undefined) {
+                                versionObject.sysroot = sysroot;
+                            }
+
                             const includes = this.compilerProps<string>(lang, libVersionName + '.path');
                             if (includes) {
                                 versionObject.path = includes.split(path.delimiter);
-                            } else if (version !== 'autodetect' && !versionObject.packagedheaders) {
+                            } else if (
+                                version !== 'autodetect' &&
+                                !versionObject.packagedheaders &&
+                                !versionObject.sysroot
+                            ) {
                                 logger.warn(`Library ${lib} ${version} (${lang}) has no include paths`);
                             }
 
@@ -379,6 +390,11 @@ export class ClientOptionsHandler implements ClientOptionsSource {
                                 libVersionName + '.packagedheaders',
                                 libraries[lang][lib].packagedheaders,
                             );
+
+                            const dynamicLinker = this.compilerProps<string>(lang, libVersionName + '.dynamicLinker');
+                            if (dynamicLinker !== undefined) {
+                                versionObject.dynamicLinker = dynamicLinker;
+                            }
 
                             libraries[lang][lib].versions[version] = versionObject;
                         }
