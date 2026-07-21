@@ -58,6 +58,8 @@ export type EventMap = {
         editorId: number,
         treeId: number,
     ) => void;
+    chainedCompilerOpen: (sourceCompilerId: number, chainedCompilerId: number) => void;
+    chainLanguageChange: (sourceCompilerId: number, newLangId: LanguageKey) => void;
     compilerClose: (compilerId: number, treeId: boolean | number) => void;
     compileResult: (
         compilerId: number,
