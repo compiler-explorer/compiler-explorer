@@ -100,8 +100,8 @@ export class PythonCompiler extends BaseCompiler {
             return false;
         }
 
-        const major = Number.parseInt(versionMatch[1]);
-        const minor = Number.parseInt(versionMatch[2]);
+        const major = Number.parseInt(versionMatch[1], 10);
+        const minor = Number.parseInt(versionMatch[2], 10);
         return major > 3 || (major === 3 && minor >= 9);
     }
 
