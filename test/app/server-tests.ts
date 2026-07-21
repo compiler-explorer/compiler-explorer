@@ -22,6 +22,7 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
+import path from 'node:path';
 import process from 'node:process';
 
 // Test helper functions
@@ -187,6 +188,44 @@ describe('Server Module', () => {
             renderGoldenLayout({} as Record<string, unknown>, {} as Record<string, unknown>, mockRequest, mockResponse);
 
             expect(mockResponse.render).toHaveBeenCalledWith('index', expect.any(Object));
+        });
+
+        describe('branding validation in the CDN deploy layout', () => {
+            // Regression for the gh-8755 revert: on AWS the static assets ship in the CDN
+            // bundle, not on the node's disk — only manifest.json ships with the app. A branded
+            // env (e.g. staging) must boot by validating against the manifest, never staticPath.
+            let manifestDir: string;
+
+            const writeManifest = async (manifest: Record<string, string>) => {
+                const fs = await import('node:fs/promises');
+                const os = await import('node:os');
+                manifestDir = await fs.mkdtemp(path.join(os.tmpdir(), 'ce-manifest-test-'));
+                await fs.writeFile(path.join(manifestDir, 'manifest.json'), JSON.stringify(manifest));
+                mockOptions.manifestPath = manifestDir;
+                mockOptions.staticPath = '/nonexistent/.deploy/static';
+                mockOptions.staticUrl = 'https://static.example.com/';
+                mockOptions.extraBodyClass = 'staging';
+            };
+
+            afterEach(async () => {
+                const fs = await import('node:fs/promises');
+                await fs.rm(manifestDir, {recursive: true, force: true});
+            });
+
+            it('boots when the manifest lists the branding assets, despite no local static files', async () => {
+                await writeManifest({
+                    'favicon-staging.ico': 'favicon-staging.ico',
+                    'site-logo-staging.svg': 'site-logo-staging.svg',
+                });
+                await expect(setupWebServer(mockAppArgs, mockOptions, mockDependencies)).resolves.toBeDefined();
+            });
+
+            it('fails startup when the manifest is missing the branding assets', async () => {
+                await writeManifest({'main.js': 'main.abc123.js'});
+                await expect(setupWebServer(mockAppArgs, mockOptions, mockDependencies)).rejects.toThrow(
+                    /Missing branding assets for extraBodyClass='staging' in the static manifest/,
+                );
+            });
         });
     });
 });
