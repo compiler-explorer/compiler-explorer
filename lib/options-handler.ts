@@ -23,8 +23,8 @@
 // POSSIBILITY OF SUCH DAMAGE.
 
 import fs from 'node:fs';
-import https from 'node:https';
 import http from 'node:http';
+import https from 'node:https';
 import path from 'node:path';
 
 import semverParser from 'semver';
