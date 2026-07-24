@@ -1,0 +1,6780 @@
+{
+  "main.square": [
+    {
+      "after": [
+        {
+          "text": "// MIR for `square` after LintAndRemoveUninhabited",
+        },
+        {
+          "text": "",
+        },
+        {
+          "text": "fn square(_1: i32) -> i32 {",
+        },
+        {
+          "text": "    debug num => _1;",
+        },
+        {
+          "text": "    let mut _0: i32;",
+        },
+        {
+          "text": "    let mut _2: i32;",
+        },
+        {
+          "text": "    let mut _3: i32;",
+        },
+        {
+          "text": "    let mut _4: (i32, bool);",
+        },
+        {
+          "text": "",
+        },
+        {
+          "text": "    bb0: {",
+        },
+        {
+          "text": "        StorageLive(_2);",
+        },
+        {
+          "text": "        _2 = copy _1;",
+        },
+        {
+          "text": "        StorageLive(_3);",
+        },
+        {
+          "text": "        _3 = copy _1;",
+        },
+        {
+          "text": "        _4 = MulWithOverflow(copy _2, copy _3);",
+        },
+        {
+          "text": "        assert(!move (_4.1: bool), "attempt to compute `{} * {}`, which would overflow", move _2, move _3) -> [success: bb1, unwind: bb2];",
+        },
+        {
+          "text": "    }",
+        },
+        {
+          "text": "",
+        },
+        {
+          "text": "    bb1: {",
+        },
+        {
+          "text": "        _0 = move (_4.0: i32);",
+        },
+        {
+          "text": "        StorageDead(_3);",
+        },
+        {
+          "text": "        StorageDead(_2);",
+        },
+        {
+          "text": "        return;",
+        },
+        {
+          "text": "    }",
+        },
+        {
+          "text": "",
+        },
+        {
+          "text": "    bb2 (cleanup): {",
+        },
+        {
+          "text": "        resume;",
+        },
+        {
+          "text": "    }",
+        },
+        {
+          "text": "}",
+        },
+      ],
+      "before": [
+        {
+          "text": "// MIR for `square` before LintAndRemoveUninhabited",
+        },
+        {
+          "text": "",
+        },
+        {
+          "text": "fn square(_1: i32) -> i32 {",
+        },
+        {
+          "text": "    debug num => _1;",
+        },
+        {
+          "text": "    let mut _0: i32;",
+        },
+        {
+          "text": "    let mut _2: i32;",
+        },
+        {
+          "text": "    let mut _3: i32;",
+        },
+        {
+          "text": "    let mut _4: (i32, bool);",
+        },
+        {
+          "text": "",
+        },
+        {
+          "text": "    bb0: {",
+        },
+        {
+          "text": "        StorageLive(_2);",
+        },
+        {
+          "text": "        _2 = copy _1;",
+        },
+        {
+          "text": "        StorageLive(_3);",
+        },
+        {
+          "text": "        _3 = copy _1;",
+        },
+        {
+          "text": "        _4 = MulWithOverflow(copy _2, copy _3);",
+        },
+        {
+          "text": "        assert(!move (_4.1: bool), "attempt to compute `{} * {}`, which would overflow", move _2, move _3) -> [success: bb1, unwind: bb2];",
+        },
+        {
+          "text": "    }",
+        },
+        {
+          "text": "",
+        },
+        {
+          "text": "    bb1: {",
+        },
+        {
+          "text": "        _0 = move (_4.0: i32);",
+        },
+        {
+          "text": "        StorageDead(_3);",
+        },
+        {
+          "text": "        StorageDead(_2);",
+        },
+        {
+          "text": "        return;",
+        },
+        {
+          "text": "    }",
+        },
+        {
+          "text": "",
+        },
+        {
+          "text": "    bb2 (cleanup): {",
+        },
+        {
+          "text": "        resume;",
+        },
+        {
+          "text": "    }",
+        },
+        {
+          "text": "}",
+        },
+      ],
+      "irChanged": false,
+      "machine": false,
+      "name": "LintAndRemoveUninhabited",
+      "passId": "1-1-000",
+    },
+    {
+      "after": [
+        {
+          "text": "// MIR for `square` after SimplifyCfg-initial",
+        },
+        {
+          "text": "",
+        },
+        {
+          "text": "fn square(_1: i32) -> i32 {",
+        },
+        {
+          "text": "    debug num => _1;",
+        },
+        {
+          "text": "    let mut _0: i32;",
+        },
+        {
+          "text": "    let mut _2: i32;",
+        },
+        {
+          "text": "    let mut _3: i32;",
+        },
+        {
+          "text": "    let mut _4: (i32, bool);",
+        },
+        {
+          "text": "",
+        },
+        {
+          "text": "    bb0: {",
+        },
+        {
+          "text": "        StorageLive(_2);",
+        },
+        {
+          "text": "        _2 = copy _1;",
+        },
+        {
+          "text": "        StorageLive(_3);",
+        },
+        {
+          "text": "        _3 = copy _1;",
+        },
+        {
+          "text": "        _4 = MulWithOverflow(copy _2, copy _3);",
+        },
+        {
+          "text": "        assert(!move (_4.1: bool), "attempt to compute `{} * {}`, which would overflow", move _2, move _3) -> [success: bb1, unwind: bb2];",
+        },
+        {
+          "text": "    }",
+        },
+        {
+          "text": "",
+        },
+        {
+          "text": "    bb1: {",
+        },
+        {
+          "text": "        _0 = move (_4.0: i32);",
+        },
+        {
+          "text": "        StorageDead(_3);",
+        },
+        {
+          "text": "        StorageDead(_2);",
+        },
+        {
+          "text": "        return;",
+        },
+        {
+          "text": "    }",
+        },
+        {
+          "text": "",
+        },
+        {
+          "text": "    bb2 (cleanup): {",
+        },
+        {
+          "text": "        resume;",
+        },
+        {
+          "text": "    }",
+        },
+        {
+          "text": "}",
+        },
+      ],
+      "before": [
+        {
+          "text": "// MIR for `square` before SimplifyCfg-initial",
+        },
+        {
+          "text": "",
+        },
+        {
+          "text": "fn square(_1: i32) -> i32 {",
+        },
+        {
+          "text": "    debug num => _1;",
+        },
+        {
+          "text": "    let mut _0: i32;",
+        },
+        {
+          "text": "    let mut _2: i32;",
+        },
+        {
+          "text": "    let mut _3: i32;",
+        },
+        {
+          "text": "    let mut _4: (i32, bool);",
+        },
+        {
+          "text": "",
+        },
+        {
+          "text": "    bb0: {",
+        },
+        {
+          "text": "        StorageLive(_2);",
+        },
+        {
+          "text": "        _2 = copy _1;",
+        },
+        {
+          "text": "        StorageLive(_3);",
+        },
+        {
+          "text": "        _3 = copy _1;",
+        },
+        {
+          "text": "        _4 = MulWithOverflow(copy _2, copy _3);",
+        },
+        {
+          "text": "        assert(!move (_4.1: bool), "attempt to compute `{} * {}`, which would overflow", move _2, move _3) -> [success: bb1, unwind: bb2];",
+        },
+        {
+          "text": "    }",
+        },
+        {
+          "text": "",
+        },
+        {
+          "text": "    bb1: {",
+        },
+        {
+          "text": "        _0 = move (_4.0: i32);",
+        },
+        {
+          "text": "        StorageDead(_3);",
+        },
+        {
+          "text": "        StorageDead(_2);",
+        },
+        {
+          "text": "        return;",
+        },
+        {
+          "text": "    }",
+        },
+        {
+          "text": "",
+        },
+        {
+          "text": "    bb2 (cleanup): {",
+        },
+        {
+          "text": "        resume;",
+        },
+        {
+          "text": "    }",
+        },
+        {
+          "text": "}",
+        },
+      ],
+      "irChanged": false,
+      "machine": false,
+      "name": "SimplifyCfg-initial",
+      "passId": "1-1-006",
+    },
+    {
+      "after": [
+        {
+          "text": "// MIR for `square` after PromoteTemps",
+        },
+        {
+          "text": "",
+        },
+        {
+          "text": "fn square(_1: i32) -> i32 {",
+        },
+        {
+          "text": "    debug num => _1;",
+        },
+        {
+          "text": "    let mut _0: i32;",
+        },
+        {
+          "text": "    let mut _2: i32;",
+        },
+        {
+          "text": "    let mut _3: i32;",
+        },
+        {
+          "text": "    let mut _4: (i32, bool);",
+        },
+        {
+          "text": "",
+        },
+        {
+          "text": "    bb0: {",
+        },
+        {
+          "text": "        StorageLive(_2);",
+        },
+        {
+          "text": "        _2 = copy _1;",
+        },
+        {
+          "text": "        StorageLive(_3);",
+        },
+        {
+          "text": "        _3 = copy _1;",
+        },
+        {
+          "text": "        _4 = MulWithOverflow(copy _2, copy _3);",
+        },
+        {
+          "text": "        assert(!move (_4.1: bool), "attempt to compute `{} * {}`, which would overflow", move _2, move _3) -> [success: bb1, unwind: bb2];",
+        },
+        {
+          "text": "    }",
+        },
+        {
+          "text": "",
+        },
+        {
+          "text": "    bb1: {",
+        },
+        {
+          "text": "        _0 = move (_4.0: i32);",
+        },
+        {
+          "text": "        StorageDead(_3);",
+        },
+        {
+          "text": "        StorageDead(_2);",
+        },
+        {
+          "text": "        return;",
+        },
+        {
+          "text": "    }",
+        },
+        {
+          "text": "",
+        },
+        {
+          "text": "    bb2 (cleanup): {",
+        },
+        {
+          "text": "        resume;",
+        },
+        {
+          "text": "    }",
+        },
+        {
+          "text": "}",
+        },
+      ],
+      "before": [
+        {
+          "text": "// MIR for `square` before PromoteTemps",
+        },
+        {
+          "text": "",
+        },
+        {
+          "text": "fn square(_1: i32) -> i32 {",
+        },
+        {
+          "text": "    debug num => _1;",
+        },
+        {
+          "text": "    let mut _0: i32;",
+        },
+        {
+          "text": "    let mut _2: i32;",
+        },
+        {
+          "text": "    let mut _3: i32;",
+        },
+        {
+          "text": "    let mut _4: (i32, bool);",
+        },
+        {
+          "text": "",
+        },
+        {
+          "text": "    bb0: {",
+        },
+        {
+          "text": "        StorageLive(_2);",
+        },
+        {
+          "text": "        _2 = copy _1;",
+        },
+        {
+          "text": "        StorageLive(_3);",
+        },
+        {
+          "text": "        _3 = copy _1;",
+        },
+        {
+          "text": "        _4 = MulWithOverflow(copy _2, copy _3);",
+        },
+        {
+          "text": "        assert(!move (_4.1: bool), "attempt to compute `{} * {}`, which would overflow", move _2, move _3) -> [success: bb1, unwind: bb2];",
+        },
+        {
+          "text": "    }",
+        },
+        {
+          "text": "",
+        },
+        {
+          "text": "    bb1: {",
+        },
+        {
+          "text": "        _0 = move (_4.0: i32);",
+        },
+        {
+          "text": "        StorageDead(_3);",
+        },
+        {
+          "text": "        StorageDead(_2);",
+        },
+        {
+          "text": "        return;",
+        },
+        {
+          "text": "    }",
+        },
+        {
+          "text": "",
+        },
+        {
+          "text": "    bb2 (cleanup): {",
+        },
+        {
+          "text": "        resume;",
+        },
+        {
+          "text": "    }",
+        },
+        {
+          "text": "}",
+        },
+      ],
+      "irChanged": false,
+      "machine": false,
+      "name": "PromoteTemps",
+      "passId": "1-1-008",
+    },
+    {
+      "after": [
+        {
+          "text": "// MIR for `square` after SimplifyCfg-promote-consts",
+        },
+        {
+          "text": "",
+        },
+        {
+          "text": "fn square(_1: i32) -> i32 {",
+        },
+        {
+          "text": "    debug num => _1;",
+        },
+        {
+          "text": "    let mut _0: i32;",
+        },
+        {
+          "text": "    let mut _2: i32;",
+        },
+        {
+          "text": "    let mut _3: i32;",
+        },
+        {
+          "text": "    let mut _4: (i32, bool);",
+        },
+        {
+          "text": "",
+        },
+        {
+          "text": "    bb0: {",
+        },
+        {
+          "text": "        StorageLive(_2);",
+        },
+        {
+          "text": "        _2 = copy _1;",
+        },
+        {
+          "text": "        StorageLive(_3);",
+        },
+        {
+          "text": "        _3 = copy _1;",
+        },
+        {
+          "text": "        _4 = MulWithOverflow(copy _2, copy _3);",
+        },
+        {
+          "text": "        assert(!move (_4.1: bool), "attempt to compute `{} * {}`, which would overflow", move _2, move _3) -> [success: bb1, unwind: bb2];",
+        },
+        {
+          "text": "    }",
+        },
+        {
+          "text": "",
+        },
+        {
+          "text": "    bb1: {",
+        },
+        {
+          "text": "        _0 = move (_4.0: i32);",
+        },
+        {
+          "text": "        StorageDead(_3);",
+        },
+        {
+          "text": "        StorageDead(_2);",
+        },
+        {
+          "text": "        return;",
+        },
+        {
+          "text": "    }",
+        },
+        {
+          "text": "",
+        },
+        {
+          "text": "    bb2 (cleanup): {",
+        },
+        {
+          "text": "        resume;",
+        },
+        {
+          "text": "    }",
+        },
+        {
+          "text": "}",
+        },
+      ],
+      "before": [
+        {
+          "text": "// MIR for `square` before SimplifyCfg-promote-consts",
+        },
+        {
+          "text": "",
+        },
+        {
+          "text": "fn square(_1: i32) -> i32 {",
+        },
+        {
+          "text": "    debug num => _1;",
+        },
+        {
+          "text": "    let mut _0: i32;",
+        },
+        {
+          "text": "    let mut _2: i32;",
+        },
+        {
+          "text": "    let mut _3: i32;",
+        },
+        {
+          "text": "    let mut _4: (i32, bool);",
+        },
+        {
+          "text": "",
+        },
+        {
+          "text": "    bb0: {",
+        },
+        {
+          "text": "        StorageLive(_2);",
+        },
+        {
+          "text": "        _2 = copy _1;",
+        },
+        {
+          "text": "        StorageLive(_3);",
+        },
+        {
+          "text": "        _3 = copy _1;",
+        },
+        {
+          "text": "        _4 = MulWithOverflow(copy _2, copy _3);",
+        },
+        {
+          "text": "        assert(!move (_4.1: bool), "attempt to compute `{} * {}`, which would overflow", move _2, move _3) -> [success: bb1, unwind: bb2];",
+        },
+        {
+          "text": "    }",
+        },
+        {
+          "text": "",
+        },
+        {
+          "text": "    bb1: {",
+        },
+        {
+          "text": "        _0 = move (_4.0: i32);",
+        },
+        {
+          "text": "        StorageDead(_3);",
+        },
+        {
+          "text": "        StorageDead(_2);",
+        },
+        {
+          "text": "        return;",
+        },
+        {
+          "text": "    }",
+        },
+        {
+          "text": "",
+        },
+        {
+          "text": "    bb2 (cleanup): {",
+        },
+        {
+          "text": "        resume;",
+        },
+        {
+          "text": "    }",
+        },
+        {
+          "text": "}",
+        },
+      ],
+      "irChanged": false,
+      "machine": false,
+      "name": "SimplifyCfg-promote-consts",
+      "passId": "1-1-009",
+    },
+    {
+      "after": [
+        {
+          "text": "// MIR for `square` after ImpossiblePredicates",
+        },
+        {
+          "text": "",
+        },
+        {
+          "text": "fn square(_1: i32) -> i32 {",
+        },
+        {
+          "text": "    debug num => _1;",
+        },
+        {
+          "text": "    let mut _0: i32;",
+        },
+        {
+          "text": "    let mut _2: i32;",
+        },
+        {
+          "text": "    let mut _3: i32;",
+        },
+        {
+          "text": "    let mut _4: (i32, bool);",
+        },
+        {
+          "text": "",
+        },
+        {
+          "text": "    bb0: {",
+        },
+        {
+          "text": "        StorageLive(_2);",
+        },
+        {
+          "text": "        _2 = copy _1;",
+        },
+        {
+          "text": "        StorageLive(_3);",
+        },
+        {
+          "text": "        _3 = copy _1;",
+        },
+        {
+          "text": "        _4 = MulWithOverflow(copy _2, copy _3);",
+        },
+        {
+          "text": "        assert(!move (_4.1: bool), "attempt to compute `{} * {}`, which would overflow", move _2, move _3) -> [success: bb1, unwind: bb2];",
+        },
+        {
+          "text": "    }",
+        },
+        {
+          "text": "",
+        },
+        {
+          "text": "    bb1: {",
+        },
+        {
+          "text": "        _0 = move (_4.0: i32);",
+        },
+        {
+          "text": "        StorageDead(_3);",
+        },
+        {
+          "text": "        StorageDead(_2);",
+        },
+        {
+          "text": "        return;",
+        },
+        {
+          "text": "    }",
+        },
+        {
+          "text": "",
+        },
+        {
+          "text": "    bb2 (cleanup): {",
+        },
+        {
+          "text": "        resume;",
+        },
+        {
+          "text": "    }",
+        },
+        {
+          "text": "}",
+        },
+      ],
+      "before": [
+        {
+          "text": "// MIR for `square` before ImpossiblePredicates",
+        },
+        {
+          "text": "",
+        },
+        {
+          "text": "fn square(_1: i32) -> i32 {",
+        },
+        {
+          "text": "    debug num => _1;",
+        },
+        {
+          "text": "    let mut _0: i32;",
+        },
+        {
+          "text": "    let mut _2: i32;",
+        },
+        {
+          "text": "    let mut _3: i32;",
+        },
+        {
+          "text": "    let mut _4: (i32, bool);",
+        },
+        {
+          "text": "",
+        },
+        {
+          "text": "    bb0: {",
+        },
+        {
+          "text": "        StorageLive(_2);",
+        },
+        {
+          "text": "        _2 = copy _1;",
+        },
+        {
+          "text": "        StorageLive(_3);",
+        },
+        {
+          "text": "        _3 = copy _1;",
+        },
+        {
+          "text": "        _4 = MulWithOverflow(copy _2, copy _3);",
+        },
+        {
+          "text": "        assert(!move (_4.1: bool), "attempt to compute `{} * {}`, which would overflow", move _2, move _3) -> [success: bb1, unwind: bb2];",
+        },
+        {
+          "text": "    }",
+        },
+        {
+          "text": "",
+        },
+        {
+          "text": "    bb1: {",
+        },
+        {
+          "text": "        _0 = move (_4.0: i32);",
+        },
+        {
+          "text": "        StorageDead(_3);",
+        },
+        {
+          "text": "        StorageDead(_2);",
+        },
+        {
+          "text": "        return;",
+        },
+        {
+          "text": "    }",
+        },
+        {
+          "text": "",
+        },
+        {
+          "text": "    bb2 (cleanup): {",
+        },
+        {
+          "text": "        resume;",
+        },
+        {
+          "text": "    }",
+        },
+        {
+          "text": "}",
+        },
+      ],
+      "irChanged": false,
+      "machine": false,
+      "name": "ImpossiblePredicates",
+      "passId": "2-1-001",
+    },
+    {
+      "after": [
+        {
+          "text": "// MIR for `square` after CleanupPostBorrowck",
+        },
+        {
+          "text": "",
+        },
+        {
+          "text": "fn square(_1: i32) -> i32 {",
+        },
+        {
+          "text": "    debug num => _1;",
+        },
+        {
+          "text": "    let mut _0: i32;",
+        },
+        {
+          "text": "    let mut _2: i32;",
+        },
+        {
+          "text": "    let mut _3: i32;",
+        },
+        {
+          "text": "    let mut _4: (i32, bool);",
+        },
+        {
+          "text": "",
+        },
+        {
+          "text": "    bb0: {",
+        },
+        {
+          "text": "        StorageLive(_2);",
+        },
+        {
+          "text": "        _2 = copy _1;",
+        },
+        {
+          "text": "        StorageLive(_3);",
+        },
+        {
+          "text": "        _3 = copy _1;",
+        },
+        {
+          "text": "        _4 = MulWithOverflow(copy _2, copy _3);",
+        },
+        {
+          "text": "        assert(!move (_4.1: bool), "attempt to compute `{} * {}`, which would overflow", move _2, move _3) -> [success: bb1, unwind: bb2];",
+        },
+        {
+          "text": "    }",
+        },
+        {
+          "text": "",
+        },
+        {
+          "text": "    bb1: {",
+        },
+        {
+          "text": "        _0 = move (_4.0: i32);",
+        },
+        {
+          "text": "        StorageDead(_3);",
+        },
+        {
+          "text": "        StorageDead(_2);",
+        },
+        {
+          "text": "        return;",
+        },
+        {
+          "text": "    }",
+        },
+        {
+          "text": "",
+        },
+        {
+          "text": "    bb2 (cleanup): {",
+        },
+        {
+          "text": "        resume;",
+        },
+        {
+          "text": "    }",
+        },
+        {
+          "text": "}",
+        },
+      ],
+      "before": [
+        {
+          "text": "// MIR for `square` before CleanupPostBorrowck",
+        },
+        {
+          "text": "",
+        },
+        {
+          "text": "fn square(_1: i32) -> i32 {",
+        },
+        {
+          "text": "    debug num => _1;",
+        },
+        {
+          "text": "    let mut _0: i32;",
+        },
+        {
+          "text": "    let mut _2: i32;",
+        },
+        {
+          "text": "    let mut _3: i32;",
+        },
+        {
+          "text": "    let mut _4: (i32, bool);",
+        },
+        {
+          "text": "",
+        },
+        {
+          "text": "    bb0: {",
+        },
+        {
+          "text": "        StorageLive(_2);",
+        },
+        {
+          "text": "        _2 = copy _1;",
+        },
+        {
+          "text": "        StorageLive(_3);",
+        },
+        {
+          "text": "        _3 = copy _1;",
+        },
+        {
+          "text": "        _4 = MulWithOverflow(copy _2, copy _3);",
+        },
+        {
+          "text": "        assert(!move (_4.1: bool), "attempt to compute `{} * {}`, which would overflow", move _2, move _3) -> [success: bb1, unwind: bb2];",
+        },
+        {
+          "text": "    }",
+        },
+        {
+          "text": "",
+        },
+        {
+          "text": "    bb1: {",
+        },
+        {
+          "text": "        _0 = move (_4.0: i32);",
+        },
+        {
+          "text": "        StorageDead(_3);",
+        },
+        {
+          "text": "        StorageDead(_2);",
+        },
+        {
+          "text": "        return;",
+        },
+        {
+          "text": "    }",
+        },
+        {
+          "text": "",
+        },
+        {
+          "text": "    bb2 (cleanup): {",
+        },
+        {
+          "text": "        resume;",
+        },
+        {
+          "text": "    }",
+        },
+        {
+          "text": "}",
+        },
+      ],
+      "irChanged": false,
+      "machine": false,
+      "name": "CleanupPostBorrowck",
+      "passId": "2-1-002",
+    },
+    {
+      "after": [
+        {
+          "text": "// MIR for `square` after RemoveNoopLandingPads",
+        },
+        {
+          "text": "",
+        },
+        {
+          "text": "fn square(_1: i32) -> i32 {",
+        },
+        {
+          "text": "    debug num => _1;",
+        },
+        {
+          "text": "    let mut _0: i32;",
+        },
+        {
+          "text": "    let mut _2: i32;",
+        },
+        {
+          "text": "    let mut _3: i32;",
+        },
+        {
+          "text": "    let mut _4: (i32, bool);",
+        },
+        {
+          "text": "",
+        },
+        {
+          "text": "    bb0: {",
+        },
+        {
+          "text": "        StorageLive(_2);",
+        },
+        {
+          "text": "        _2 = copy _1;",
+        },
+        {
+          "text": "        StorageLive(_3);",
+        },
+        {
+          "text": "        _3 = copy _1;",
+        },
+        {
+          "text": "        _4 = MulWithOverflow(copy _2, copy _3);",
+        },
+        {
+          "text": "        assert(!move (_4.1: bool), "attempt to compute `{} * {}`, which would overflow", move _2, move _3) -> [success: bb1, unwind continue];",
+        },
+        {
+          "text": "    }",
+        },
+        {
+          "text": "",
+        },
+        {
+          "text": "    bb1: {",
+        },
+        {
+          "text": "        _0 = move (_4.0: i32);",
+        },
+        {
+          "text": "        StorageDead(_3);",
+        },
+        {
+          "text": "        StorageDead(_2);",
+        },
+        {
+          "text": "        return;",
+        },
+        {
+          "text": "    }",
+        },
+        {
+          "text": "",
+        },
+        {
+          "text": "    bb2 (cleanup): {",
+        },
+        {
+          "text": "        resume;",
+        },
+        {
+          "text": "    }",
+        },
+        {
+          "text": "}",
+        },
+      ],
+      "before": [
+        {
+          "text": "// MIR for `square` before RemoveNoopLandingPads",
+        },
+        {
+          "text": "",
+        },
+        {
+          "text": "fn square(_1: i32) -> i32 {",
+        },
+        {
+          "text": "    debug num => _1;",
+        },
+        {
+          "text": "    let mut _0: i32;",
+        },
+        {
+          "text": "    let mut _2: i32;",
+        },
+        {
+          "text": "    let mut _3: i32;",
+        },
+        {
+          "text": "    let mut _4: (i32, bool);",
+        },
+        {
+          "text": "",
+        },
+        {
+          "text": "    bb0: {",
+        },
+        {
+          "text": "        StorageLive(_2);",
+        },
+        {
+          "text": "        _2 = copy _1;",
+        },
+        {
+          "text": "        StorageLive(_3);",
+        },
+        {
+          "text": "        _3 = copy _1;",
+        },
+        {
+          "text": "        _4 = MulWithOverflow(copy _2, copy _3);",
+        },
+        {
+          "text": "        assert(!move (_4.1: bool), "attempt to compute `{} * {}`, which would overflow", move _2, move _3) -> [success: bb1, unwind: bb2];",
+        },
+        {
+          "text": "    }",
+        },
+        {
+          "text": "",
+        },
+        {
+          "text": "    bb1: {",
+        },
+        {
+          "text": "        _0 = move (_4.0: i32);",
+        },
+        {
+          "text": "        StorageDead(_3);",
+        },
+        {
+          "text": "        StorageDead(_2);",
+        },
+        {
+          "text": "        return;",
+        },
+        {
+          "text": "    }",
+        },
+        {
+          "text": "",
+        },
+        {
+          "text": "    bb2 (cleanup): {",
+        },
+        {
+          "text": "        resume;",
+        },
+        {
+          "text": "    }",
+        },
+        {
+          "text": "}",
+        },
+      ],
+      "irChanged": true,
+      "machine": false,
+      "name": "RemoveNoopLandingPads",
+      "passId": "2-1-003",
+    },
+    {
+      "after": [
+        {
+          "text": "// MIR for `square` after SimplifyCfg-post-analysis",
+        },
+        {
+          "text": "",
+        },
+        {
+          "text": "fn square(_1: i32) -> i32 {",
+        },
+        {
+          "text": "    debug num => _1;",
+        },
+        {
+          "text": "    let mut _0: i32;",
+        },
+        {
+          "text": "    let mut _2: i32;",
+        },
+        {
+          "text": "    let mut _3: i32;",
+        },
+        {
+          "text": "    let mut _4: (i32, bool);",
+        },
+        {
+          "text": "",
+        },
+        {
+          "text": "    bb0: {",
+        },
+        {
+          "text": "        StorageLive(_2);",
+        },
+        {
+          "text": "        _2 = copy _1;",
+        },
+        {
+          "text": "        StorageLive(_3);",
+        },
+        {
+          "text": "        _3 = copy _1;",
+        },
+        {
+          "text": "        _4 = MulWithOverflow(copy _2, copy _3);",
+        },
+        {
+          "text": "        assert(!move (_4.1: bool), "attempt to compute `{} * {}`, which would overflow", move _2, move _3) -> [success: bb1, unwind continue];",
+        },
+        {
+          "text": "    }",
+        },
+        {
+          "text": "",
+        },
+        {
+          "text": "    bb1: {",
+        },
+        {
+          "text": "        _0 = move (_4.0: i32);",
+        },
+        {
+          "text": "        StorageDead(_3);",
+        },
+        {
+          "text": "        StorageDead(_2);",
+        },
+        {
+          "text": "        return;",
+        },
+        {
+          "text": "    }",
+        },
+        {
+          "text": "}",
+        },
+      ],
+      "before": [
+        {
+          "text": "// MIR for `square` before SimplifyCfg-post-analysis",
+        },
+        {
+          "text": "",
+        },
+        {
+          "text": "fn square(_1: i32) -> i32 {",
+        },
+        {
+          "text": "    debug num => _1;",
+        },
+        {
+          "text": "    let mut _0: i32;",
+        },
+        {
+          "text": "    let mut _2: i32;",
+        },
+        {
+          "text": "    let mut _3: i32;",
+        },
+        {
+          "text": "    let mut _4: (i32, bool);",
+        },
+        {
+          "text": "",
+        },
+        {
+          "text": "    bb0: {",
+        },
+        {
+          "text": "        StorageLive(_2);",
+        },
+        {
+          "text": "        _2 = copy _1;",
+        },
+        {
+          "text": "        StorageLive(_3);",
+        },
+        {
+          "text": "        _3 = copy _1;",
+        },
+        {
+          "text": "        _4 = MulWithOverflow(copy _2, copy _3);",
+        },
+        {
+          "text": "        assert(!move (_4.1: bool), "attempt to compute `{} * {}`, which would overflow", move _2, move _3) -> [success: bb1, unwind continue];",
+        },
+        {
+          "text": "    }",
+        },
+        {
+          "text": "",
+        },
+        {
+          "text": "    bb1: {",
+        },
+        {
+          "text": "        _0 = move (_4.0: i32);",
+        },
+        {
+          "text": "        StorageDead(_3);",
+        },
+        {
+          "text": "        StorageDead(_2);",
+        },
+        {
+          "text": "        return;",
+        },
+        {
+          "text": "    }",
+        },
+        {
+          "text": "",
+        },
+        {
+          "text": "    bb2 (cleanup): {",
+        },
+        {
+          "text": "        resume;",
+        },
+        {
+          "text": "    }",
+        },
+        {
+          "text": "}",
+        },
+      ],
+      "irChanged": true,
+      "machine": false,
+      "name": "SimplifyCfg-post-analysis",
+      "passId": "2-1-004",
+    },
+    {
+      "after": [
+        {
+          "text": "// MIR for `square` after Derefer",
+        },
+        {
+          "text": "",
+        },
+        {
+          "text": "fn square(_1: i32) -> i32 {",
+        },
+        {
+          "text": "    debug num => _1;",
+        },
+        {
+          "text": "    let mut _0: i32;",
+        },
+        {
+          "text": "    let mut _2: i32;",
+        },
+        {
+          "text": "    let mut _3: i32;",
+        },
+        {
+          "text": "    let mut _4: (i32, bool);",
+        },
+        {
+          "text": "",
+        },
+        {
+          "text": "    bb0: {",
+        },
+        {
+          "text": "        StorageLive(_2);",
+        },
+        {
+          "text": "        _2 = copy _1;",
+        },
+        {
+          "text": "        StorageLive(_3);",
+        },
+        {
+          "text": "        _3 = copy _1;",
+        },
+        {
+          "text": "        _4 = MulWithOverflow(copy _2, copy _3);",
+        },
+        {
+          "text": "        assert(!move (_4.1: bool), "attempt to compute `{} * {}`, which would overflow", move _2, move _3) -> [success: bb1, unwind continue];",
+        },
+        {
+          "text": "    }",
+        },
+        {
+          "text": "",
+        },
+        {
+          "text": "    bb1: {",
+        },
+        {
+          "text": "        _0 = move (_4.0: i32);",
+        },
+        {
+          "text": "        StorageDead(_3);",
+        },
+        {
+          "text": "        StorageDead(_2);",
+        },
+        {
+          "text": "        return;",
+        },
+        {
+          "text": "    }",
+        },
+        {
+          "text": "}",
+        },
+      ],
+      "before": [
+        {
+          "text": "// MIR for `square` before Derefer",
+        },
+        {
+          "text": "",
+        },
+        {
+          "text": "fn square(_1: i32) -> i32 {",
+        },
+        {
+          "text": "    debug num => _1;",
+        },
+        {
+          "text": "    let mut _0: i32;",
+        },
+        {
+          "text": "    let mut _2: i32;",
+        },
+        {
+          "text": "    let mut _3: i32;",
+        },
+        {
+          "text": "    let mut _4: (i32, bool);",
+        },
+        {
+          "text": "",
+        },
+        {
+          "text": "    bb0: {",
+        },
+        {
+          "text": "        StorageLive(_2);",
+        },
+        {
+          "text": "        _2 = copy _1;",
+        },
+        {
+          "text": "        StorageLive(_3);",
+        },
+        {
+          "text": "        _3 = copy _1;",
+        },
+        {
+          "text": "        _4 = MulWithOverflow(copy _2, copy _3);",
+        },
+        {
+          "text": "        assert(!move (_4.1: bool), "attempt to compute `{} * {}`, which would overflow", move _2, move _3) -> [success: bb1, unwind continue];",
+        },
+        {
+          "text": "    }",
+        },
+        {
+          "text": "",
+        },
+        {
+          "text": "    bb1: {",
+        },
+        {
+          "text": "        _0 = move (_4.0: i32);",
+        },
+        {
+          "text": "        StorageDead(_3);",
+        },
+        {
+          "text": "        StorageDead(_2);",
+        },
+        {
+          "text": "        return;",
+        },
+        {
+          "text": "    }",
+        },
+        {
+          "text": "}",
+        },
+      ],
+      "irChanged": false,
+      "machine": false,
+      "name": "Derefer",
+      "passId": "2-1-005",
+    },
+    {
+      "after": [
+        {
+          "text": "// MIR for `square` after AddCallGuards",
+        },
+        {
+          "text": "",
+        },
+        {
+          "text": "fn square(_1: i32) -> i32 {",
+        },
+        {
+          "text": "    debug num => _1;",
+        },
+        {
+          "text": "    let mut _0: i32;",
+        },
+        {
+          "text": "    let mut _2: i32;",
+        },
+        {
+          "text": "    let mut _3: i32;",
+        },
+        {
+          "text": "    let mut _4: (i32, bool);",
+        },
+        {
+          "text": "",
+        },
+        {
+          "text": "    bb0: {",
+        },
+        {
+          "text": "        StorageLive(_2);",
+        },
+        {
+          "text": "        _2 = copy _1;",
+        },
+        {
+          "text": "        StorageLive(_3);",
+        },
+        {
+          "text": "        _3 = copy _1;",
+        },
+        {
+          "text": "        _4 = MulWithOverflow(copy _2, copy _3);",
+        },
+        {
+          "text": "        assert(!move (_4.1: bool), "attempt to compute `{} * {}`, which would overflow", move _2, move _3) -> [success: bb1, unwind continue];",
+        },
+        {
+          "text": "    }",
+        },
+        {
+          "text": "",
+        },
+        {
+          "text": "    bb1: {",
+        },
+        {
+          "text": "        _0 = move (_4.0: i32);",
+        },
+        {
+          "text": "        StorageDead(_3);",
+        },
+        {
+          "text": "        StorageDead(_2);",
+        },
+        {
+          "text": "        return;",
+        },
+        {
+          "text": "    }",
+        },
+        {
+          "text": "}",
+        },
+      ],
+      "before": [
+        {
+          "text": "// MIR for `square` before AddCallGuards",
+        },
+        {
+          "text": "",
+        },
+        {
+          "text": "fn square(_1: i32) -> i32 {",
+        },
+        {
+          "text": "    debug num => _1;",
+        },
+        {
+          "text": "    let mut _0: i32;",
+        },
+        {
+          "text": "    let mut _2: i32;",
+        },
+        {
+          "text": "    let mut _3: i32;",
+        },
+        {
+          "text": "    let mut _4: (i32, bool);",
+        },
+        {
+          "text": "",
+        },
+        {
+          "text": "    bb0: {",
+        },
+        {
+          "text": "        StorageLive(_2);",
+        },
+        {
+          "text": "        _2 = copy _1;",
+        },
+        {
+          "text": "        StorageLive(_3);",
+        },
+        {
+          "text": "        _3 = copy _1;",
+        },
+        {
+          "text": "        _4 = MulWithOverflow(copy _2, copy _3);",
+        },
+        {
+          "text": "        assert(!move (_4.1: bool), "attempt to compute `{} * {}`, which would overflow", move _2, move _3) -> [success: bb1, unwind continue];",
+        },
+        {
+          "text": "    }",
+        },
+        {
+          "text": "",
+        },
+        {
+          "text": "    bb1: {",
+        },
+        {
+          "text": "        _0 = move (_4.0: i32);",
+        },
+        {
+          "text": "        StorageDead(_3);",
+        },
+        {
+          "text": "        StorageDead(_2);",
+        },
+        {
+          "text": "        return;",
+        },
+        {
+          "text": "    }",
+        },
+        {
+          "text": "}",
+        },
+      ],
+      "irChanged": false,
+      "machine": false,
+      "name": "AddCallGuards",
+      "passId": "2-2-001",
+    },
+    {
+      "after": [
+        {
+          "text": "// MIR for `square` after PostAnalysisNormalize",
+        },
+        {
+          "text": "",
+        },
+        {
+          "text": "fn square(_1: i32) -> i32 {",
+        },
+        {
+          "text": "    debug num => _1;",
+        },
+        {
+          "text": "    let mut _0: i32;",
+        },
+        {
+          "text": "    let mut _2: i32;",
+        },
+        {
+          "text": "    let mut _3: i32;",
+        },
+        {
+          "text": "    let mut _4: (i32, bool);",
+        },
+        {
+          "text": "",
+        },
+        {
+          "text": "    bb0: {",
+        },
+        {
+          "text": "        StorageLive(_2);",
+        },
+        {
+          "text": "        _2 = copy _1;",
+        },
+        {
+          "text": "        StorageLive(_3);",
+        },
+        {
+          "text": "        _3 = copy _1;",
+        },
+        {
+          "text": "        _4 = MulWithOverflow(copy _2, copy _3);",
+        },
+        {
+          "text": "        assert(!move (_4.1: bool), "attempt to compute `{} * {}`, which would overflow", move _2, move _3) -> [success: bb1, unwind continue];",
+        },
+        {
+          "text": "    }",
+        },
+        {
+          "text": "",
+        },
+        {
+          "text": "    bb1: {",
+        },
+        {
+          "text": "        _0 = move (_4.0: i32);",
+        },
+        {
+          "text": "        StorageDead(_3);",
+        },
+        {
+          "text": "        StorageDead(_2);",
+        },
+        {
+          "text": "        return;",
+        },
+        {
+          "text": "    }",
+        },
+        {
+          "text": "}",
+        },
+      ],
+      "before": [
+        {
+          "text": "// MIR for `square` before PostAnalysisNormalize",
+        },
+        {
+          "text": "",
+        },
+        {
+          "text": "fn square(_1: i32) -> i32 {",
+        },
+        {
+          "text": "    debug num => _1;",
+        },
+        {
+          "text": "    let mut _0: i32;",
+        },
+        {
+          "text": "    let mut _2: i32;",
+        },
+        {
+          "text": "    let mut _3: i32;",
+        },
+        {
+          "text": "    let mut _4: (i32, bool);",
+        },
+        {
+          "text": "",
+        },
+        {
+          "text": "    bb0: {",
+        },
+        {
+          "text": "        StorageLive(_2);",
+        },
+        {
+          "text": "        _2 = copy _1;",
+        },
+        {
+          "text": "        StorageLive(_3);",
+        },
+        {
+          "text": "        _3 = copy _1;",
+        },
+        {
+          "text": "        _4 = MulWithOverflow(copy _2, copy _3);",
+        },
+        {
+          "text": "        assert(!move (_4.1: bool), "attempt to compute `{} * {}`, which would overflow", move _2, move _3) -> [success: bb1, unwind continue];",
+        },
+        {
+          "text": "    }",
+        },
+        {
+          "text": "",
+        },
+        {
+          "text": "    bb1: {",
+        },
+        {
+          "text": "        _0 = move (_4.0: i32);",
+        },
+        {
+          "text": "        StorageDead(_3);",
+        },
+        {
+          "text": "        StorageDead(_2);",
+        },
+        {
+          "text": "        return;",
+        },
+        {
+          "text": "    }",
+        },
+        {
+          "text": "}",
+        },
+      ],
+      "irChanged": false,
+      "machine": false,
+      "name": "PostAnalysisNormalize",
+      "passId": "2-2-002",
+    },
+    {
+      "after": [
+        {
+          "text": "// MIR for `square` after Subtyper",
+        },
+        {
+          "text": "",
+        },
+        {
+          "text": "fn square(_1: i32) -> i32 {",
+        },
+        {
+          "text": "    debug num => _1;",
+        },
+        {
+          "text": "    let mut _0: i32;",
+        },
+        {
+          "text": "    let mut _2: i32;",
+        },
+        {
+          "text": "    let mut _3: i32;",
+        },
+        {
+          "text": "    let mut _4: (i32, bool);",
+        },
+        {
+          "text": "",
+        },
+        {
+          "text": "    bb0: {",
+        },
+        {
+          "text": "        StorageLive(_2);",
+        },
+        {
+          "text": "        _2 = copy _1;",
+        },
+        {
+          "text": "        StorageLive(_3);",
+        },
+        {
+          "text": "        _3 = copy _1;",
+        },
+        {
+          "text": "        _4 = MulWithOverflow(copy _2, copy _3);",
+        },
+        {
+          "text": "        assert(!move (_4.1: bool), "attempt to compute `{} * {}`, which would overflow", move _2, move _3) -> [success: bb1, unwind continue];",
+        },
+        {
+          "text": "    }",
+        },
+        {
+          "text": "",
+        },
+        {
+          "text": "    bb1: {",
+        },
+        {
+          "text": "        _0 = move (_4.0: i32);",
+        },
+        {
+          "text": "        StorageDead(_3);",
+        },
+        {
+          "text": "        StorageDead(_2);",
+        },
+        {
+          "text": "        return;",
+        },
+        {
+          "text": "    }",
+        },
+        {
+          "text": "}",
+        },
+      ],
+      "before": [
+        {
+          "text": "// MIR for `square` before Subtyper",
+        },
+        {
+          "text": "",
+        },
+        {
+          "text": "fn square(_1: i32) -> i32 {",
+        },
+        {
+          "text": "    debug num => _1;",
+        },
+        {
+          "text": "    let mut _0: i32;",
+        },
+        {
+          "text": "    let mut _2: i32;",
+        },
+        {
+          "text": "    let mut _3: i32;",
+        },
+        {
+          "text": "    let mut _4: (i32, bool);",
+        },
+        {
+          "text": "",
+        },
+        {
+          "text": "    bb0: {",
+        },
+        {
+          "text": "        StorageLive(_2);",
+        },
+        {
+          "text": "        _2 = copy _1;",
+        },
+        {
+          "text": "        StorageLive(_3);",
+        },
+        {
+          "text": "        _3 = copy _1;",
+        },
+        {
+          "text": "        _4 = MulWithOverflow(copy _2, copy _3);",
+        },
+        {
+          "text": "        assert(!move (_4.1: bool), "attempt to compute `{} * {}`, which would overflow", move _2, move _3) -> [success: bb1, unwind continue];",
+        },
+        {
+          "text": "    }",
+        },
+        {
+          "text": "",
+        },
+        {
+          "text": "    bb1: {",
+        },
+        {
+          "text": "        _0 = move (_4.0: i32);",
+        },
+        {
+          "text": "        StorageDead(_3);",
+        },
+        {
+          "text": "        StorageDead(_2);",
+        },
+        {
+          "text": "        return;",
+        },
+        {
+          "text": "    }",
+        },
+        {
+          "text": "}",
+        },
+      ],
+      "irChanged": false,
+      "machine": false,
+      "name": "Subtyper",
+      "passId": "2-2-003",
+    },
+    {
+      "after": [
+        {
+          "text": "// MIR for `square` after ElaborateDrops",
+        },
+        {
+          "text": "",
+        },
+        {
+          "text": "fn square(_1: i32) -> i32 {",
+        },
+        {
+          "text": "    debug num => _1;",
+        },
+        {
+          "text": "    let mut _0: i32;",
+        },
+        {
+          "text": "    let mut _2: i32;",
+        },
+        {
+          "text": "    let mut _3: i32;",
+        },
+        {
+          "text": "    let mut _4: (i32, bool);",
+        },
+        {
+          "text": "",
+        },
+        {
+          "text": "    bb0: {",
+        },
+        {
+          "text": "        StorageLive(_2);",
+        },
+        {
+          "text": "        _2 = copy _1;",
+        },
+        {
+          "text": "        StorageLive(_3);",
+        },
+        {
+          "text": "        _3 = copy _1;",
+        },
+        {
+          "text": "        _4 = MulWithOverflow(copy _2, copy _3);",
+        },
+        {
+          "text": "        assert(!move (_4.1: bool), "attempt to compute `{} * {}`, which would overflow", move _2, move _3) -> [success: bb1, unwind continue];",
+        },
+        {
+          "text": "    }",
+        },
+        {
+          "text": "",
+        },
+        {
+          "text": "    bb1: {",
+        },
+        {
+          "text": "        _0 = move (_4.0: i32);",
+        },
+        {
+          "text": "        StorageDead(_3);",
+        },
+        {
+          "text": "        StorageDead(_2);",
+        },
+        {
+          "text": "        return;",
+        },
+        {
+          "text": "    }",
+        },
+        {
+          "text": "}",
+        },
+      ],
+      "before": [
+        {
+          "text": "// MIR for `square` before ElaborateDrops",
+        },
+        {
+          "text": "",
+        },
+        {
+          "text": "fn square(_1: i32) -> i32 {",
+        },
+        {
+          "text": "    debug num => _1;",
+        },
+        {
+          "text": "    let mut _0: i32;",
+        },
+        {
+          "text": "    let mut _2: i32;",
+        },
+        {
+          "text": "    let mut _3: i32;",
+        },
+        {
+          "text": "    let mut _4: (i32, bool);",
+        },
+        {
+          "text": "",
+        },
+        {
+          "text": "    bb0: {",
+        },
+        {
+          "text": "        StorageLive(_2);",
+        },
+        {
+          "text": "        _2 = copy _1;",
+        },
+        {
+          "text": "        StorageLive(_3);",
+        },
+        {
+          "text": "        _3 = copy _1;",
+        },
+        {
+          "text": "        _4 = MulWithOverflow(copy _2, copy _3);",
+        },
+        {
+          "text": "        assert(!move (_4.1: bool), "attempt to compute `{} * {}`, which would overflow", move _2, move _3) -> [success: bb1, unwind continue];",
+        },
+        {
+          "text": "    }",
+        },
+        {
+          "text": "",
+        },
+        {
+          "text": "    bb1: {",
+        },
+        {
+          "text": "        _0 = move (_4.0: i32);",
+        },
+        {
+          "text": "        StorageDead(_3);",
+        },
+        {
+          "text": "        StorageDead(_2);",
+        },
+        {
+          "text": "        return;",
+        },
+        {
+          "text": "    }",
+        },
+        {
+          "text": "}",
+        },
+      ],
+      "irChanged": false,
+      "machine": false,
+      "name": "ElaborateDrops",
+      "passId": "2-2-004",
+    },
+    {
+      "after": [
+        {
+          "text": "// MIR for `square` after AbortUnwindingCalls",
+        },
+        {
+          "text": "",
+        },
+        {
+          "text": "fn square(_1: i32) -> i32 {",
+        },
+        {
+          "text": "    debug num => _1;",
+        },
+        {
+          "text": "    let mut _0: i32;",
+        },
+        {
+          "text": "    let mut _2: i32;",
+        },
+        {
+          "text": "    let mut _3: i32;",
+        },
+        {
+          "text": "    let mut _4: (i32, bool);",
+        },
+        {
+          "text": "",
+        },
+        {
+          "text": "    bb0: {",
+        },
+        {
+          "text": "        StorageLive(_2);",
+        },
+        {
+          "text": "        _2 = copy _1;",
+        },
+        {
+          "text": "        StorageLive(_3);",
+        },
+        {
+          "text": "        _3 = copy _1;",
+        },
+        {
+          "text": "        _4 = MulWithOverflow(copy _2, copy _3);",
+        },
+        {
+          "text": "        assert(!move (_4.1: bool), "attempt to compute `{} * {}`, which would overflow", move _2, move _3) -> [success: bb1, unwind continue];",
+        },
+        {
+          "text": "    }",
+        },
+        {
+          "text": "",
+        },
+        {
+          "text": "    bb1: {",
+        },
+        {
+          "text": "        _0 = move (_4.0: i32);",
+        },
+        {
+          "text": "        StorageDead(_3);",
+        },
+        {
+          "text": "        StorageDead(_2);",
+        },
+        {
+          "text": "        return;",
+        },
+        {
+          "text": "    }",
+        },
+        {
+          "text": "}",
+        },
+      ],
+      "before": [
+        {
+          "text": "// MIR for `square` before AbortUnwindingCalls",
+        },
+        {
+          "text": "",
+        },
+        {
+          "text": "fn square(_1: i32) -> i32 {",
+        },
+        {
+          "text": "    debug num => _1;",
+        },
+        {
+          "text": "    let mut _0: i32;",
+        },
+        {
+          "text": "    let mut _2: i32;",
+        },
+        {
+          "text": "    let mut _3: i32;",
+        },
+        {
+          "text": "    let mut _4: (i32, bool);",
+        },
+        {
+          "text": "",
+        },
+        {
+          "text": "    bb0: {",
+        },
+        {
+          "text": "        StorageLive(_2);",
+        },
+        {
+          "text": "        _2 = copy _1;",
+        },
+        {
+          "text": "        StorageLive(_3);",
+        },
+        {
+          "text": "        _3 = copy _1;",
+        },
+        {
+          "text": "        _4 = MulWithOverflow(copy _2, copy _3);",
+        },
+        {
+          "text": "        assert(!move (_4.1: bool), "attempt to compute `{} * {}`, which would overflow", move _2, move _3) -> [success: bb1, unwind continue];",
+        },
+        {
+          "text": "    }",
+        },
+        {
+          "text": "",
+        },
+        {
+          "text": "    bb1: {",
+        },
+        {
+          "text": "        _0 = move (_4.0: i32);",
+        },
+        {
+          "text": "        StorageDead(_3);",
+        },
+        {
+          "text": "        StorageDead(_2);",
+        },
+        {
+          "text": "        return;",
+        },
+        {
+          "text": "    }",
+        },
+        {
+          "text": "}",
+        },
+      ],
+      "irChanged": false,
+      "machine": false,
+      "name": "AbortUnwindingCalls",
+      "passId": "2-2-006",
+    },
+    {
+      "after": [
+        {
+          "text": "// MIR for `square` after AddMovesForPackedDrops",
+        },
+        {
+          "text": "",
+        },
+        {
+          "text": "fn square(_1: i32) -> i32 {",
+        },
+        {
+          "text": "    debug num => _1;",
+        },
+        {
+          "text": "    let mut _0: i32;",
+        },
+        {
+          "text": "    let mut _2: i32;",
+        },
+        {
+          "text": "    let mut _3: i32;",
+        },
+        {
+          "text": "    let mut _4: (i32, bool);",
+        },
+        {
+          "text": "",
+        },
+        {
+          "text": "    bb0: {",
+        },
+        {
+          "text": "        StorageLive(_2);",
+        },
+        {
+          "text": "        _2 = copy _1;",
+        },
+        {
+          "text": "        StorageLive(_3);",
+        },
+        {
+          "text": "        _3 = copy _1;",
+        },
+        {
+          "text": "        _4 = MulWithOverflow(copy _2, copy _3);",
+        },
+        {
+          "text": "        assert(!move (_4.1: bool), "attempt to compute `{} * {}`, which would overflow", move _2, move _3) -> [success: bb1, unwind continue];",
+        },
+        {
+          "text": "    }",
+        },
+        {
+          "text": "",
+        },
+        {
+          "text": "    bb1: {",
+        },
+        {
+          "text": "        _0 = move (_4.0: i32);",
+        },
+        {
+          "text": "        StorageDead(_3);",
+        },
+        {
+          "text": "        StorageDead(_2);",
+        },
+        {
+          "text": "        return;",
+        },
+        {
+          "text": "    }",
+        },
+        {
+          "text": "}",
+        },
+      ],
+      "before": [
+        {
+          "text": "// MIR for `square` before AddMovesForPackedDrops",
+        },
+        {
+          "text": "",
+        },
+        {
+          "text": "fn square(_1: i32) -> i32 {",
+        },
+        {
+          "text": "    debug num => _1;",
+        },
+        {
+          "text": "    let mut _0: i32;",
+        },
+        {
+          "text": "    let mut _2: i32;",
+        },
+        {
+          "text": "    let mut _3: i32;",
+        },
+        {
+          "text": "    let mut _4: (i32, bool);",
+        },
+        {
+          "text": "",
+        },
+        {
+          "text": "    bb0: {",
+        },
+        {
+          "text": "        StorageLive(_2);",
+        },
+        {
+          "text": "        _2 = copy _1;",
+        },
+        {
+          "text": "        StorageLive(_3);",
+        },
+        {
+          "text": "        _3 = copy _1;",
+        },
+        {
+          "text": "        _4 = MulWithOverflow(copy _2, copy _3);",
+        },
+        {
+          "text": "        assert(!move (_4.1: bool), "attempt to compute `{} * {}`, which would overflow", move _2, move _3) -> [success: bb1, unwind continue];",
+        },
+        {
+          "text": "    }",
+        },
+        {
+          "text": "",
+        },
+        {
+          "text": "    bb1: {",
+        },
+        {
+          "text": "        _0 = move (_4.0: i32);",
+        },
+        {
+          "text": "        StorageDead(_3);",
+        },
+        {
+          "text": "        StorageDead(_2);",
+        },
+        {
+          "text": "        return;",
+        },
+        {
+          "text": "    }",
+        },
+        {
+          "text": "}",
+        },
+      ],
+      "irChanged": false,
+      "machine": false,
+      "name": "AddMovesForPackedDrops",
+      "passId": "2-2-007",
+    },
+    {
+      "after": [
+        {
+          "text": "// MIR for `square` after EraseDerefTemps",
+        },
+        {
+          "text": "",
+        },
+        {
+          "text": "fn square(_1: i32) -> i32 {",
+        },
+        {
+          "text": "    debug num => _1;",
+        },
+        {
+          "text": "    let mut _0: i32;",
+        },
+        {
+          "text": "    let mut _2: i32;",
+        },
+        {
+          "text": "    let mut _3: i32;",
+        },
+        {
+          "text": "    let mut _4: (i32, bool);",
+        },
+        {
+          "text": "",
+        },
+        {
+          "text": "    bb0: {",
+        },
+        {
+          "text": "        StorageLive(_2);",
+        },
+        {
+          "text": "        _2 = copy _1;",
+        },
+        {
+          "text": "        StorageLive(_3);",
+        },
+        {
+          "text": "        _3 = copy _1;",
+        },
+        {
+          "text": "        _4 = MulWithOverflow(copy _2, copy _3);",
+        },
+        {
+          "text": "        assert(!move (_4.1: bool), "attempt to compute `{} * {}`, which would overflow", move _2, move _3) -> [success: bb1, unwind continue];",
+        },
+        {
+          "text": "    }",
+        },
+        {
+          "text": "",
+        },
+        {
+          "text": "    bb1: {",
+        },
+        {
+          "text": "        _0 = move (_4.0: i32);",
+        },
+        {
+          "text": "        StorageDead(_3);",
+        },
+        {
+          "text": "        StorageDead(_2);",
+        },
+        {
+          "text": "        return;",
+        },
+        {
+          "text": "    }",
+        },
+        {
+          "text": "}",
+        },
+      ],
+      "before": [
+        {
+          "text": "// MIR for `square` before EraseDerefTemps",
+        },
+        {
+          "text": "",
+        },
+        {
+          "text": "fn square(_1: i32) -> i32 {",
+        },
+        {
+          "text": "    debug num => _1;",
+        },
+        {
+          "text": "    let mut _0: i32;",
+        },
+        {
+          "text": "    let mut _2: i32;",
+        },
+        {
+          "text": "    let mut _3: i32;",
+        },
+        {
+          "text": "    let mut _4: (i32, bool);",
+        },
+        {
+          "text": "",
+        },
+        {
+          "text": "    bb0: {",
+        },
+        {
+          "text": "        StorageLive(_2);",
+        },
+        {
+          "text": "        _2 = copy _1;",
+        },
+        {
+          "text": "        StorageLive(_3);",
+        },
+        {
+          "text": "        _3 = copy _1;",
+        },
+        {
+          "text": "        _4 = MulWithOverflow(copy _2, copy _3);",
+        },
+        {
+          "text": "        assert(!move (_4.1: bool), "attempt to compute `{} * {}`, which would overflow", move _2, move _3) -> [success: bb1, unwind continue];",
+        },
+        {
+          "text": "    }",
+        },
+        {
+          "text": "",
+        },
+        {
+          "text": "    bb1: {",
+        },
+        {
+          "text": "        _0 = move (_4.0: i32);",
+        },
+        {
+          "text": "        StorageDead(_3);",
+        },
+        {
+          "text": "        StorageDead(_2);",
+        },
+        {
+          "text": "        return;",
+        },
+        {
+          "text": "    }",
+        },
+        {
+          "text": "}",
+        },
+      ],
+      "irChanged": false,
+      "machine": false,
+      "name": "EraseDerefTemps",
+      "passId": "2-2-008",
+    },
+    {
+      "after": [
+        {
+          "text": "// MIR for `square` after ElaborateBoxDerefs",
+        },
+        {
+          "text": "",
+        },
+        {
+          "text": "fn square(_1: i32) -> i32 {",
+        },
+        {
+          "text": "    debug num => _1;",
+        },
+        {
+          "text": "    let mut _0: i32;",
+        },
+        {
+          "text": "    let mut _2: i32;",
+        },
+        {
+          "text": "    let mut _3: i32;",
+        },
+        {
+          "text": "    let mut _4: (i32, bool);",
+        },
+        {
+          "text": "",
+        },
+        {
+          "text": "    bb0: {",
+        },
+        {
+          "text": "        StorageLive(_2);",
+        },
+        {
+          "text": "        _2 = copy _1;",
+        },
+        {
+          "text": "        StorageLive(_3);",
+        },
+        {
+          "text": "        _3 = copy _1;",
+        },
+        {
+          "text": "        _4 = MulWithOverflow(copy _2, copy _3);",
+        },
+        {
+          "text": "        assert(!move (_4.1: bool), "attempt to compute `{} * {}`, which would overflow", move _2, move _3) -> [success: bb1, unwind continue];",
+        },
+        {
+          "text": "    }",
+        },
+        {
+          "text": "",
+        },
+        {
+          "text": "    bb1: {",
+        },
+        {
+          "text": "        _0 = move (_4.0: i32);",
+        },
+        {
+          "text": "        StorageDead(_3);",
+        },
+        {
+          "text": "        StorageDead(_2);",
+        },
+        {
+          "text": "        return;",
+        },
+        {
+          "text": "    }",
+        },
+        {
+          "text": "}",
+        },
+      ],
+      "before": [
+        {
+          "text": "// MIR for `square` before ElaborateBoxDerefs",
+        },
+        {
+          "text": "",
+        },
+        {
+          "text": "fn square(_1: i32) -> i32 {",
+        },
+        {
+          "text": "    debug num => _1;",
+        },
+        {
+          "text": "    let mut _0: i32;",
+        },
+        {
+          "text": "    let mut _2: i32;",
+        },
+        {
+          "text": "    let mut _3: i32;",
+        },
+        {
+          "text": "    let mut _4: (i32, bool);",
+        },
+        {
+          "text": "",
+        },
+        {
+          "text": "    bb0: {",
+        },
+        {
+          "text": "        StorageLive(_2);",
+        },
+        {
+          "text": "        _2 = copy _1;",
+        },
+        {
+          "text": "        StorageLive(_3);",
+        },
+        {
+          "text": "        _3 = copy _1;",
+        },
+        {
+          "text": "        _4 = MulWithOverflow(copy _2, copy _3);",
+        },
+        {
+          "text": "        assert(!move (_4.1: bool), "attempt to compute `{} * {}`, which would overflow", move _2, move _3) -> [success: bb1, unwind continue];",
+        },
+        {
+          "text": "    }",
+        },
+        {
+          "text": "",
+        },
+        {
+          "text": "    bb1: {",
+        },
+        {
+          "text": "        _0 = move (_4.0: i32);",
+        },
+        {
+          "text": "        StorageDead(_3);",
+        },
+        {
+          "text": "        StorageDead(_2);",
+        },
+        {
+          "text": "        return;",
+        },
+        {
+          "text": "    }",
+        },
+        {
+          "text": "}",
+        },
+      ],
+      "irChanged": false,
+      "machine": false,
+      "name": "ElaborateBoxDerefs",
+      "passId": "2-2-009",
+    },
+    {
+      "after": [
+        {
+          "text": "// MIR for `square` after StateTransform",
+        },
+        {
+          "text": "",
+        },
+        {
+          "text": "fn square(_1: i32) -> i32 {",
+        },
+        {
+          "text": "    debug num => _1;",
+        },
+        {
+          "text": "    let mut _0: i32;",
+        },
+        {
+          "text": "    let mut _2: i32;",
+        },
+        {
+          "text": "    let mut _3: i32;",
+        },
+        {
+          "text": "    let mut _4: (i32, bool);",
+        },
+        {
+          "text": "",
+        },
+        {
+          "text": "    bb0: {",
+        },
+        {
+          "text": "        StorageLive(_2);",
+        },
+        {
+          "text": "        _2 = copy _1;",
+        },
+        {
+          "text": "        StorageLive(_3);",
+        },
+        {
+          "text": "        _3 = copy _1;",
+        },
+        {
+          "text": "        _4 = MulWithOverflow(copy _2, copy _3);",
+        },
+        {
+          "text": "        assert(!move (_4.1: bool), "attempt to compute `{} * {}`, which would overflow", move _2, move _3) -> [success: bb1, unwind continue];",
+        },
+        {
+          "text": "    }",
+        },
+        {
+          "text": "",
+        },
+        {
+          "text": "    bb1: {",
+        },
+        {
+          "text": "        _0 = move (_4.0: i32);",
+        },
+        {
+          "text": "        StorageDead(_3);",
+        },
+        {
+          "text": "        StorageDead(_2);",
+        },
+        {
+          "text": "        return;",
+        },
+        {
+          "text": "    }",
+        },
+        {
+          "text": "}",
+        },
+      ],
+      "before": [
+        {
+          "text": "// MIR for `square` before StateTransform",
+        },
+        {
+          "text": "",
+        },
+        {
+          "text": "fn square(_1: i32) -> i32 {",
+        },
+        {
+          "text": "    debug num => _1;",
+        },
+        {
+          "text": "    let mut _0: i32;",
+        },
+        {
+          "text": "    let mut _2: i32;",
+        },
+        {
+          "text": "    let mut _3: i32;",
+        },
+        {
+          "text": "    let mut _4: (i32, bool);",
+        },
+        {
+          "text": "",
+        },
+        {
+          "text": "    bb0: {",
+        },
+        {
+          "text": "        StorageLive(_2);",
+        },
+        {
+          "text": "        _2 = copy _1;",
+        },
+        {
+          "text": "        StorageLive(_3);",
+        },
+        {
+          "text": "        _3 = copy _1;",
+        },
+        {
+          "text": "        _4 = MulWithOverflow(copy _2, copy _3);",
+        },
+        {
+          "text": "        assert(!move (_4.1: bool), "attempt to compute `{} * {}`, which would overflow", move _2, move _3) -> [success: bb1, unwind continue];",
+        },
+        {
+          "text": "    }",
+        },
+        {
+          "text": "",
+        },
+        {
+          "text": "    bb1: {",
+        },
+        {
+          "text": "        _0 = move (_4.0: i32);",
+        },
+        {
+          "text": "        StorageDead(_3);",
+        },
+        {
+          "text": "        StorageDead(_2);",
+        },
+        {
+          "text": "        return;",
+        },
+        {
+          "text": "    }",
+        },
+        {
+          "text": "}",
+        },
+      ],
+      "irChanged": false,
+      "machine": false,
+      "name": "StateTransform",
+      "passId": "2-2-010",
+    },
+    {
+      "after": [
+        {
+          "text": "// MIR for `square` after LowerIntrinsics",
+        },
+        {
+          "text": "",
+        },
+        {
+          "text": "fn square(_1: i32) -> i32 {",
+        },
+        {
+          "text": "    debug num => _1;",
+        },
+        {
+          "text": "    let mut _0: i32;",
+        },
+        {
+          "text": "    let mut _2: i32;",
+        },
+        {
+          "text": "    let mut _3: i32;",
+        },
+        {
+          "text": "    let mut _4: (i32, bool);",
+        },
+        {
+          "text": "",
+        },
+        {
+          "text": "    bb0: {",
+        },
+        {
+          "text": "        StorageLive(_2);",
+        },
+        {
+          "text": "        _2 = copy _1;",
+        },
+        {
+          "text": "        StorageLive(_3);",
+        },
+        {
+          "text": "        _3 = copy _1;",
+        },
+        {
+          "text": "        _4 = MulWithOverflow(copy _2, copy _3);",
+        },
+        {
+          "text": "        assert(!move (_4.1: bool), "attempt to compute `{} * {}`, which would overflow", move _2, move _3) -> [success: bb1, unwind continue];",
+        },
+        {
+          "text": "    }",
+        },
+        {
+          "text": "",
+        },
+        {
+          "text": "    bb1: {",
+        },
+        {
+          "text": "        _0 = move (_4.0: i32);",
+        },
+        {
+          "text": "        StorageDead(_3);",
+        },
+        {
+          "text": "        StorageDead(_2);",
+        },
+        {
+          "text": "        return;",
+        },
+        {
+          "text": "    }",
+        },
+        {
+          "text": "}",
+        },
+      ],
+      "before": [
+        {
+          "text": "// MIR for `square` before LowerIntrinsics",
+        },
+        {
+          "text": "",
+        },
+        {
+          "text": "fn square(_1: i32) -> i32 {",
+        },
+        {
+          "text": "    debug num => _1;",
+        },
+        {
+          "text": "    let mut _0: i32;",
+        },
+        {
+          "text": "    let mut _2: i32;",
+        },
+        {
+          "text": "    let mut _3: i32;",
+        },
+        {
+          "text": "    let mut _4: (i32, bool);",
+        },
+        {
+          "text": "",
+        },
+        {
+          "text": "    bb0: {",
+        },
+        {
+          "text": "        StorageLive(_2);",
+        },
+        {
+          "text": "        _2 = copy _1;",
+        },
+        {
+          "text": "        StorageLive(_3);",
+        },
+        {
+          "text": "        _3 = copy _1;",
+        },
+        {
+          "text": "        _4 = MulWithOverflow(copy _2, copy _3);",
+        },
+        {
+          "text": "        assert(!move (_4.1: bool), "attempt to compute `{} * {}`, which would overflow", move _2, move _3) -> [success: bb1, unwind continue];",
+        },
+        {
+          "text": "    }",
+        },
+        {
+          "text": "",
+        },
+        {
+          "text": "    bb1: {",
+        },
+        {
+          "text": "        _0 = move (_4.0: i32);",
+        },
+        {
+          "text": "        StorageDead(_3);",
+        },
+        {
+          "text": "        StorageDead(_2);",
+        },
+        {
+          "text": "        return;",
+        },
+        {
+          "text": "    }",
+        },
+        {
+          "text": "}",
+        },
+      ],
+      "irChanged": false,
+      "machine": false,
+      "name": "LowerIntrinsics",
+      "passId": "3-1-001",
+    },
+    {
+      "after": [
+        {
+          "text": "// MIR for `square` after RemovePlaceMention",
+        },
+        {
+          "text": "",
+        },
+        {
+          "text": "fn square(_1: i32) -> i32 {",
+        },
+        {
+          "text": "    debug num => _1;",
+        },
+        {
+          "text": "    let mut _0: i32;",
+        },
+        {
+          "text": "    let mut _2: i32;",
+        },
+        {
+          "text": "    let mut _3: i32;",
+        },
+        {
+          "text": "    let mut _4: (i32, bool);",
+        },
+        {
+          "text": "",
+        },
+        {
+          "text": "    bb0: {",
+        },
+        {
+          "text": "        StorageLive(_2);",
+        },
+        {
+          "text": "        _2 = copy _1;",
+        },
+        {
+          "text": "        StorageLive(_3);",
+        },
+        {
+          "text": "        _3 = copy _1;",
+        },
+        {
+          "text": "        _4 = MulWithOverflow(copy _2, copy _3);",
+        },
+        {
+          "text": "        assert(!move (_4.1: bool), "attempt to compute `{} * {}`, which would overflow", move _2, move _3) -> [success: bb1, unwind continue];",
+        },
+        {
+          "text": "    }",
+        },
+        {
+          "text": "",
+        },
+        {
+          "text": "    bb1: {",
+        },
+        {
+          "text": "        _0 = move (_4.0: i32);",
+        },
+        {
+          "text": "        StorageDead(_3);",
+        },
+        {
+          "text": "        StorageDead(_2);",
+        },
+        {
+          "text": "        return;",
+        },
+        {
+          "text": "    }",
+        },
+        {
+          "text": "}",
+        },
+      ],
+      "before": [
+        {
+          "text": "// MIR for `square` before RemovePlaceMention",
+        },
+        {
+          "text": "",
+        },
+        {
+          "text": "fn square(_1: i32) -> i32 {",
+        },
+        {
+          "text": "    debug num => _1;",
+        },
+        {
+          "text": "    let mut _0: i32;",
+        },
+        {
+          "text": "    let mut _2: i32;",
+        },
+        {
+          "text": "    let mut _3: i32;",
+        },
+        {
+          "text": "    let mut _4: (i32, bool);",
+        },
+        {
+          "text": "",
+        },
+        {
+          "text": "    bb0: {",
+        },
+        {
+          "text": "        StorageLive(_2);",
+        },
+        {
+          "text": "        _2 = copy _1;",
+        },
+        {
+          "text": "        StorageLive(_3);",
+        },
+        {
+          "text": "        _3 = copy _1;",
+        },
+        {
+          "text": "        _4 = MulWithOverflow(copy _2, copy _3);",
+        },
+        {
+          "text": "        assert(!move (_4.1: bool), "attempt to compute `{} * {}`, which would overflow", move _2, move _3) -> [success: bb1, unwind continue];",
+        },
+        {
+          "text": "    }",
+        },
+        {
+          "text": "",
+        },
+        {
+          "text": "    bb1: {",
+        },
+        {
+          "text": "        _0 = move (_4.0: i32);",
+        },
+        {
+          "text": "        StorageDead(_3);",
+        },
+        {
+          "text": "        StorageDead(_2);",
+        },
+        {
+          "text": "        return;",
+        },
+        {
+          "text": "    }",
+        },
+        {
+          "text": "}",
+        },
+      ],
+      "irChanged": false,
+      "machine": false,
+      "name": "RemovePlaceMention",
+      "passId": "3-1-002",
+    },
+    {
+      "after": [
+        {
+          "text": "// MIR for `square` after SimplifyCfg-pre-optimizations",
+        },
+        {
+          "text": "",
+        },
+        {
+          "text": "fn square(_1: i32) -> i32 {",
+        },
+        {
+          "text": "    debug num => _1;",
+        },
+        {
+          "text": "    let mut _0: i32;",
+        },
+        {
+          "text": "    let mut _2: i32;",
+        },
+        {
+          "text": "    let mut _3: i32;",
+        },
+        {
+          "text": "    let mut _4: (i32, bool);",
+        },
+        {
+          "text": "",
+        },
+        {
+          "text": "    bb0: {",
+        },
+        {
+          "text": "        StorageLive(_2);",
+        },
+        {
+          "text": "        _2 = copy _1;",
+        },
+        {
+          "text": "        StorageLive(_3);",
+        },
+        {
+          "text": "        _3 = copy _1;",
+        },
+        {
+          "text": "        _4 = MulWithOverflow(copy _2, copy _3);",
+        },
+        {
+          "text": "        assert(!move (_4.1: bool), "attempt to compute `{} * {}`, which would overflow", move _2, move _3) -> [success: bb1, unwind continue];",
+        },
+        {
+          "text": "    }",
+        },
+        {
+          "text": "",
+        },
+        {
+          "text": "    bb1: {",
+        },
+        {
+          "text": "        _0 = move (_4.0: i32);",
+        },
+        {
+          "text": "        StorageDead(_3);",
+        },
+        {
+          "text": "        StorageDead(_2);",
+        },
+        {
+          "text": "        return;",
+        },
+        {
+          "text": "    }",
+        },
+        {
+          "text": "}",
+        },
+      ],
+      "before": [
+        {
+          "text": "// MIR for `square` before SimplifyCfg-pre-optimizations",
+        },
+        {
+          "text": "",
+        },
+        {
+          "text": "fn square(_1: i32) -> i32 {",
+        },
+        {
+          "text": "    debug num => _1;",
+        },
+        {
+          "text": "    let mut _0: i32;",
+        },
+        {
+          "text": "    let mut _2: i32;",
+        },
+        {
+          "text": "    let mut _3: i32;",
+        },
+        {
+          "text": "    let mut _4: (i32, bool);",
+        },
+        {
+          "text": "",
+        },
+        {
+          "text": "    bb0: {",
+        },
+        {
+          "text": "        StorageLive(_2);",
+        },
+        {
+          "text": "        _2 = copy _1;",
+        },
+        {
+          "text": "        StorageLive(_3);",
+        },
+        {
+          "text": "        _3 = copy _1;",
+        },
+        {
+          "text": "        _4 = MulWithOverflow(copy _2, copy _3);",
+        },
+        {
+          "text": "        assert(!move (_4.1: bool), "attempt to compute `{} * {}`, which would overflow", move _2, move _3) -> [success: bb1, unwind continue];",
+        },
+        {
+          "text": "    }",
+        },
+        {
+          "text": "",
+        },
+        {
+          "text": "    bb1: {",
+        },
+        {
+          "text": "        _0 = move (_4.0: i32);",
+        },
+        {
+          "text": "        StorageDead(_3);",
+        },
+        {
+          "text": "        StorageDead(_2);",
+        },
+        {
+          "text": "        return;",
+        },
+        {
+          "text": "    }",
+        },
+        {
+          "text": "}",
+        },
+      ],
+      "irChanged": false,
+      "machine": false,
+      "name": "SimplifyCfg-pre-optimizations",
+      "passId": "3-1-003",
+    },
+    {
+      "after": [
+        {
+          "text": "// MIR for `square` after CheckAlignment",
+        },
+        {
+          "text": "",
+        },
+        {
+          "text": "fn square(_1: i32) -> i32 {",
+        },
+        {
+          "text": "    debug num => _1;",
+        },
+        {
+          "text": "    let mut _0: i32;",
+        },
+        {
+          "text": "    let mut _2: i32;",
+        },
+        {
+          "text": "    let mut _3: i32;",
+        },
+        {
+          "text": "    let mut _4: (i32, bool);",
+        },
+        {
+          "text": "",
+        },
+        {
+          "text": "    bb0: {",
+        },
+        {
+          "text": "        StorageLive(_2);",
+        },
+        {
+          "text": "        _2 = copy _1;",
+        },
+        {
+          "text": "        StorageLive(_3);",
+        },
+        {
+          "text": "        _3 = copy _1;",
+        },
+        {
+          "text": "        _4 = MulWithOverflow(copy _2, copy _3);",
+        },
+        {
+          "text": "        assert(!move (_4.1: bool), "attempt to compute `{} * {}`, which would overflow", move _2, move _3) -> [success: bb1, unwind continue];",
+        },
+        {
+          "text": "    }",
+        },
+        {
+          "text": "",
+        },
+        {
+          "text": "    bb1: {",
+        },
+        {
+          "text": "        _0 = move (_4.0: i32);",
+        },
+        {
+          "text": "        StorageDead(_3);",
+        },
+        {
+          "text": "        StorageDead(_2);",
+        },
+        {
+          "text": "        return;",
+        },
+        {
+          "text": "    }",
+        },
+        {
+          "text": "}",
+        },
+      ],
+      "before": [
+        {
+          "text": "// MIR for `square` before CheckAlignment",
+        },
+        {
+          "text": "",
+        },
+        {
+          "text": "fn square(_1: i32) -> i32 {",
+        },
+        {
+          "text": "    debug num => _1;",
+        },
+        {
+          "text": "    let mut _0: i32;",
+        },
+        {
+          "text": "    let mut _2: i32;",
+        },
+        {
+          "text": "    let mut _3: i32;",
+        },
+        {
+          "text": "    let mut _4: (i32, bool);",
+        },
+        {
+          "text": "",
+        },
+        {
+          "text": "    bb0: {",
+        },
+        {
+          "text": "        StorageLive(_2);",
+        },
+        {
+          "text": "        _2 = copy _1;",
+        },
+        {
+          "text": "        StorageLive(_3);",
+        },
+        {
+          "text": "        _3 = copy _1;",
+        },
+        {
+          "text": "        _4 = MulWithOverflow(copy _2, copy _3);",
+        },
+        {
+          "text": "        assert(!move (_4.1: bool), "attempt to compute `{} * {}`, which would overflow", move _2, move _3) -> [success: bb1, unwind continue];",
+        },
+        {
+          "text": "    }",
+        },
+        {
+          "text": "",
+        },
+        {
+          "text": "    bb1: {",
+        },
+        {
+          "text": "        _0 = move (_4.0: i32);",
+        },
+        {
+          "text": "        StorageDead(_3);",
+        },
+        {
+          "text": "        StorageDead(_2);",
+        },
+        {
+          "text": "        return;",
+        },
+        {
+          "text": "    }",
+        },
+        {
+          "text": "}",
+        },
+      ],
+      "irChanged": false,
+      "machine": false,
+      "name": "CheckAlignment",
+      "passId": "3-2-001",
+    },
+    {
+      "after": [
+        {
+          "text": "// MIR for `square` after CheckNull",
+        },
+        {
+          "text": "",
+        },
+        {
+          "text": "fn square(_1: i32) -> i32 {",
+        },
+        {
+          "text": "    debug num => _1;",
+        },
+        {
+          "text": "    let mut _0: i32;",
+        },
+        {
+          "text": "    let mut _2: i32;",
+        },
+        {
+          "text": "    let mut _3: i32;",
+        },
+        {
+          "text": "    let mut _4: (i32, bool);",
+        },
+        {
+          "text": "",
+        },
+        {
+          "text": "    bb0: {",
+        },
+        {
+          "text": "        StorageLive(_2);",
+        },
+        {
+          "text": "        _2 = copy _1;",
+        },
+        {
+          "text": "        StorageLive(_3);",
+        },
+        {
+          "text": "        _3 = copy _1;",
+        },
+        {
+          "text": "        _4 = MulWithOverflow(copy _2, copy _3);",
+        },
+        {
+          "text": "        assert(!move (_4.1: bool), "attempt to compute `{} * {}`, which would overflow", move _2, move _3) -> [success: bb1, unwind continue];",
+        },
+        {
+          "text": "    }",
+        },
+        {
+          "text": "",
+        },
+        {
+          "text": "    bb1: {",
+        },
+        {
+          "text": "        _0 = move (_4.0: i32);",
+        },
+        {
+          "text": "        StorageDead(_3);",
+        },
+        {
+          "text": "        StorageDead(_2);",
+        },
+        {
+          "text": "        return;",
+        },
+        {
+          "text": "    }",
+        },
+        {
+          "text": "}",
+        },
+      ],
+      "before": [
+        {
+          "text": "// MIR for `square` before CheckNull",
+        },
+        {
+          "text": "",
+        },
+        {
+          "text": "fn square(_1: i32) -> i32 {",
+        },
+        {
+          "text": "    debug num => _1;",
+        },
+        {
+          "text": "    let mut _0: i32;",
+        },
+        {
+          "text": "    let mut _2: i32;",
+        },
+        {
+          "text": "    let mut _3: i32;",
+        },
+        {
+          "text": "    let mut _4: (i32, bool);",
+        },
+        {
+          "text": "",
+        },
+        {
+          "text": "    bb0: {",
+        },
+        {
+          "text": "        StorageLive(_2);",
+        },
+        {
+          "text": "        _2 = copy _1;",
+        },
+        {
+          "text": "        StorageLive(_3);",
+        },
+        {
+          "text": "        _3 = copy _1;",
+        },
+        {
+          "text": "        _4 = MulWithOverflow(copy _2, copy _3);",
+        },
+        {
+          "text": "        assert(!move (_4.1: bool), "attempt to compute `{} * {}`, which would overflow", move _2, move _3) -> [success: bb1, unwind continue];",
+        },
+        {
+          "text": "    }",
+        },
+        {
+          "text": "",
+        },
+        {
+          "text": "    bb1: {",
+        },
+        {
+          "text": "        _0 = move (_4.0: i32);",
+        },
+        {
+          "text": "        StorageDead(_3);",
+        },
+        {
+          "text": "        StorageDead(_2);",
+        },
+        {
+          "text": "        return;",
+        },
+        {
+          "text": "    }",
+        },
+        {
+          "text": "}",
+        },
+      ],
+      "irChanged": false,
+      "machine": false,
+      "name": "CheckNull",
+      "passId": "3-2-002",
+    },
+    {
+      "after": [
+        {
+          "text": "// MIR for `square` after CheckEnums",
+        },
+        {
+          "text": "",
+        },
+        {
+          "text": "fn square(_1: i32) -> i32 {",
+        },
+        {
+          "text": "    debug num => _1;",
+        },
+        {
+          "text": "    let mut _0: i32;",
+        },
+        {
+          "text": "    let mut _2: i32;",
+        },
+        {
+          "text": "    let mut _3: i32;",
+        },
+        {
+          "text": "    let mut _4: (i32, bool);",
+        },
+        {
+          "text": "",
+        },
+        {
+          "text": "    bb0: {",
+        },
+        {
+          "text": "        StorageLive(_2);",
+        },
+        {
+          "text": "        _2 = copy _1;",
+        },
+        {
+          "text": "        StorageLive(_3);",
+        },
+        {
+          "text": "        _3 = copy _1;",
+        },
+        {
+          "text": "        _4 = MulWithOverflow(copy _2, copy _3);",
+        },
+        {
+          "text": "        assert(!move (_4.1: bool), "attempt to compute `{} * {}`, which would overflow", move _2, move _3) -> [success: bb1, unwind continue];",
+        },
+        {
+          "text": "    }",
+        },
+        {
+          "text": "",
+        },
+        {
+          "text": "    bb1: {",
+        },
+        {
+          "text": "        _0 = move (_4.0: i32);",
+        },
+        {
+          "text": "        StorageDead(_3);",
+        },
+        {
+          "text": "        StorageDead(_2);",
+        },
+        {
+          "text": "        return;",
+        },
+        {
+          "text": "    }",
+        },
+        {
+          "text": "}",
+        },
+      ],
+      "before": [
+        {
+          "text": "// MIR for `square` before CheckEnums",
+        },
+        {
+          "text": "",
+        },
+        {
+          "text": "fn square(_1: i32) -> i32 {",
+        },
+        {
+          "text": "    debug num => _1;",
+        },
+        {
+          "text": "    let mut _0: i32;",
+        },
+        {
+          "text": "    let mut _2: i32;",
+        },
+        {
+          "text": "    let mut _3: i32;",
+        },
+        {
+          "text": "    let mut _4: (i32, bool);",
+        },
+        {
+          "text": "",
+        },
+        {
+          "text": "    bb0: {",
+        },
+        {
+          "text": "        StorageLive(_2);",
+        },
+        {
+          "text": "        _2 = copy _1;",
+        },
+        {
+          "text": "        StorageLive(_3);",
+        },
+        {
+          "text": "        _3 = copy _1;",
+        },
+        {
+          "text": "        _4 = MulWithOverflow(copy _2, copy _3);",
+        },
+        {
+          "text": "        assert(!move (_4.1: bool), "attempt to compute `{} * {}`, which would overflow", move _2, move _3) -> [success: bb1, unwind continue];",
+        },
+        {
+          "text": "    }",
+        },
+        {
+          "text": "",
+        },
+        {
+          "text": "    bb1: {",
+        },
+        {
+          "text": "        _0 = move (_4.0: i32);",
+        },
+        {
+          "text": "        StorageDead(_3);",
+        },
+        {
+          "text": "        StorageDead(_2);",
+        },
+        {
+          "text": "        return;",
+        },
+        {
+          "text": "    }",
+        },
+        {
+          "text": "}",
+        },
+      ],
+      "irChanged": false,
+      "machine": false,
+      "name": "CheckEnums",
+      "passId": "3-2-003",
+    },
+    {
+      "after": [
+        {
+          "text": "// MIR for `square` after LowerSliceLenCalls",
+        },
+        {
+          "text": "",
+        },
+        {
+          "text": "fn square(_1: i32) -> i32 {",
+        },
+        {
+          "text": "    debug num => _1;",
+        },
+        {
+          "text": "    let mut _0: i32;",
+        },
+        {
+          "text": "    let mut _2: i32;",
+        },
+        {
+          "text": "    let mut _3: i32;",
+        },
+        {
+          "text": "    let mut _4: (i32, bool);",
+        },
+        {
+          "text": "",
+        },
+        {
+          "text": "    bb0: {",
+        },
+        {
+          "text": "        StorageLive(_2);",
+        },
+        {
+          "text": "        _2 = copy _1;",
+        },
+        {
+          "text": "        StorageLive(_3);",
+        },
+        {
+          "text": "        _3 = copy _1;",
+        },
+        {
+          "text": "        _4 = MulWithOverflow(copy _2, copy _3);",
+        },
+        {
+          "text": "        assert(!move (_4.1: bool), "attempt to compute `{} * {}`, which would overflow", move _2, move _3) -> [success: bb1, unwind continue];",
+        },
+        {
+          "text": "    }",
+        },
+        {
+          "text": "",
+        },
+        {
+          "text": "    bb1: {",
+        },
+        {
+          "text": "        _0 = move (_4.0: i32);",
+        },
+        {
+          "text": "        StorageDead(_3);",
+        },
+        {
+          "text": "        StorageDead(_2);",
+        },
+        {
+          "text": "        return;",
+        },
+        {
+          "text": "    }",
+        },
+        {
+          "text": "}",
+        },
+      ],
+      "before": [
+        {
+          "text": "// MIR for `square` before LowerSliceLenCalls",
+        },
+        {
+          "text": "",
+        },
+        {
+          "text": "fn square(_1: i32) -> i32 {",
+        },
+        {
+          "text": "    debug num => _1;",
+        },
+        {
+          "text": "    let mut _0: i32;",
+        },
+        {
+          "text": "    let mut _2: i32;",
+        },
+        {
+          "text": "    let mut _3: i32;",
+        },
+        {
+          "text": "    let mut _4: (i32, bool);",
+        },
+        {
+          "text": "",
+        },
+        {
+          "text": "    bb0: {",
+        },
+        {
+          "text": "        StorageLive(_2);",
+        },
+        {
+          "text": "        _2 = copy _1;",
+        },
+        {
+          "text": "        StorageLive(_3);",
+        },
+        {
+          "text": "        _3 = copy _1;",
+        },
+        {
+          "text": "        _4 = MulWithOverflow(copy _2, copy _3);",
+        },
+        {
+          "text": "        assert(!move (_4.1: bool), "attempt to compute `{} * {}`, which would overflow", move _2, move _3) -> [success: bb1, unwind continue];",
+        },
+        {
+          "text": "    }",
+        },
+        {
+          "text": "",
+        },
+        {
+          "text": "    bb1: {",
+        },
+        {
+          "text": "        _0 = move (_4.0: i32);",
+        },
+        {
+          "text": "        StorageDead(_3);",
+        },
+        {
+          "text": "        StorageDead(_2);",
+        },
+        {
+          "text": "        return;",
+        },
+        {
+          "text": "    }",
+        },
+        {
+          "text": "}",
+        },
+      ],
+      "irChanged": false,
+      "machine": false,
+      "name": "LowerSliceLenCalls",
+      "passId": "3-2-004",
+    },
+    {
+      "after": [
+        {
+          "text": "// MIR for `square` after InstSimplify-before-inline",
+        },
+        {
+          "text": "",
+        },
+        {
+          "text": "fn square(_1: i32) -> i32 {",
+        },
+        {
+          "text": "    debug num => _1;",
+        },
+        {
+          "text": "    let mut _0: i32;",
+        },
+        {
+          "text": "    let mut _2: i32;",
+        },
+        {
+          "text": "    let mut _3: i32;",
+        },
+        {
+          "text": "    let mut _4: (i32, bool);",
+        },
+        {
+          "text": "",
+        },
+        {
+          "text": "    bb0: {",
+        },
+        {
+          "text": "        StorageLive(_2);",
+        },
+        {
+          "text": "        _2 = copy _1;",
+        },
+        {
+          "text": "        StorageLive(_3);",
+        },
+        {
+          "text": "        _3 = copy _1;",
+        },
+        {
+          "text": "        _4 = MulWithOverflow(copy _2, copy _3);",
+        },
+        {
+          "text": "        assert(!move (_4.1: bool), "attempt to compute `{} * {}`, which would overflow", move _2, move _3) -> [success: bb1, unwind continue];",
+        },
+        {
+          "text": "    }",
+        },
+        {
+          "text": "",
+        },
+        {
+          "text": "    bb1: {",
+        },
+        {
+          "text": "        _0 = move (_4.0: i32);",
+        },
+        {
+          "text": "        StorageDead(_3);",
+        },
+        {
+          "text": "        StorageDead(_2);",
+        },
+        {
+          "text": "        return;",
+        },
+        {
+          "text": "    }",
+        },
+        {
+          "text": "}",
+        },
+      ],
+      "before": [
+        {
+          "text": "// MIR for `square` before InstSimplify-before-inline",
+        },
+        {
+          "text": "",
+        },
+        {
+          "text": "fn square(_1: i32) -> i32 {",
+        },
+        {
+          "text": "    debug num => _1;",
+        },
+        {
+          "text": "    let mut _0: i32;",
+        },
+        {
+          "text": "    let mut _2: i32;",
+        },
+        {
+          "text": "    let mut _3: i32;",
+        },
+        {
+          "text": "    let mut _4: (i32, bool);",
+        },
+        {
+          "text": "",
+        },
+        {
+          "text": "    bb0: {",
+        },
+        {
+          "text": "        StorageLive(_2);",
+        },
+        {
+          "text": "        _2 = copy _1;",
+        },
+        {
+          "text": "        StorageLive(_3);",
+        },
+        {
+          "text": "        _3 = copy _1;",
+        },
+        {
+          "text": "        _4 = MulWithOverflow(copy _2, copy _3);",
+        },
+        {
+          "text": "        assert(!move (_4.1: bool), "attempt to compute `{} * {}`, which would overflow", move _2, move _3) -> [success: bb1, unwind continue];",
+        },
+        {
+          "text": "    }",
+        },
+        {
+          "text": "",
+        },
+        {
+          "text": "    bb1: {",
+        },
+        {
+          "text": "        _0 = move (_4.0: i32);",
+        },
+        {
+          "text": "        StorageDead(_3);",
+        },
+        {
+          "text": "        StorageDead(_2);",
+        },
+        {
+          "text": "        return;",
+        },
+        {
+          "text": "    }",
+        },
+        {
+          "text": "}",
+        },
+      ],
+      "irChanged": false,
+      "machine": false,
+      "name": "InstSimplify-before-inline",
+      "passId": "3-2-005",
+    },
+    {
+      "after": [
+        {
+          "text": "// MIR for `square` after ForceInline",
+        },
+        {
+          "text": "",
+        },
+        {
+          "text": "fn square(_1: i32) -> i32 {",
+        },
+        {
+          "text": "    debug num => _1;",
+        },
+        {
+          "text": "    let mut _0: i32;",
+        },
+        {
+          "text": "    let mut _2: i32;",
+        },
+        {
+          "text": "    let mut _3: i32;",
+        },
+        {
+          "text": "    let mut _4: (i32, bool);",
+        },
+        {
+          "text": "",
+        },
+        {
+          "text": "    bb0: {",
+        },
+        {
+          "text": "        StorageLive(_2);",
+        },
+        {
+          "text": "        _2 = copy _1;",
+        },
+        {
+          "text": "        StorageLive(_3);",
+        },
+        {
+          "text": "        _3 = copy _1;",
+        },
+        {
+          "text": "        _4 = MulWithOverflow(copy _2, copy _3);",
+        },
+        {
+          "text": "        assert(!move (_4.1: bool), "attempt to compute `{} * {}`, which would overflow", move _2, move _3) -> [success: bb1, unwind continue];",
+        },
+        {
+          "text": "    }",
+        },
+        {
+          "text": "",
+        },
+        {
+          "text": "    bb1: {",
+        },
+        {
+          "text": "        _0 = move (_4.0: i32);",
+        },
+        {
+          "text": "        StorageDead(_3);",
+        },
+        {
+          "text": "        StorageDead(_2);",
+        },
+        {
+          "text": "        return;",
+        },
+        {
+          "text": "    }",
+        },
+        {
+          "text": "}",
+        },
+      ],
+      "before": [
+        {
+          "text": "// MIR for `square` before ForceInline",
+        },
+        {
+          "text": "",
+        },
+        {
+          "text": "fn square(_1: i32) -> i32 {",
+        },
+        {
+          "text": "    debug num => _1;",
+        },
+        {
+          "text": "    let mut _0: i32;",
+        },
+        {
+          "text": "    let mut _2: i32;",
+        },
+        {
+          "text": "    let mut _3: i32;",
+        },
+        {
+          "text": "    let mut _4: (i32, bool);",
+        },
+        {
+          "text": "",
+        },
+        {
+          "text": "    bb0: {",
+        },
+        {
+          "text": "        StorageLive(_2);",
+        },
+        {
+          "text": "        _2 = copy _1;",
+        },
+        {
+          "text": "        StorageLive(_3);",
+        },
+        {
+          "text": "        _3 = copy _1;",
+        },
+        {
+          "text": "        _4 = MulWithOverflow(copy _2, copy _3);",
+        },
+        {
+          "text": "        assert(!move (_4.1: bool), "attempt to compute `{} * {}`, which would overflow", move _2, move _3) -> [success: bb1, unwind continue];",
+        },
+        {
+          "text": "    }",
+        },
+        {
+          "text": "",
+        },
+        {
+          "text": "    bb1: {",
+        },
+        {
+          "text": "        _0 = move (_4.0: i32);",
+        },
+        {
+          "text": "        StorageDead(_3);",
+        },
+        {
+          "text": "        StorageDead(_2);",
+        },
+        {
+          "text": "        return;",
+        },
+        {
+          "text": "    }",
+        },
+        {
+          "text": "}",
+        },
+      ],
+      "irChanged": false,
+      "machine": false,
+      "name": "ForceInline",
+      "passId": "3-2-006",
+    },
+    {
+      "after": [
+        {
+          "text": "// MIR for `square` after RemoveStorageMarkers",
+        },
+        {
+          "text": "",
+        },
+        {
+          "text": "fn square(_1: i32) -> i32 {",
+        },
+        {
+          "text": "    debug num => _1;",
+        },
+        {
+          "text": "    let mut _0: i32;",
+        },
+        {
+          "text": "    let mut _2: i32;",
+        },
+        {
+          "text": "    let mut _3: i32;",
+        },
+        {
+          "text": "    let mut _4: (i32, bool);",
+        },
+        {
+          "text": "",
+        },
+        {
+          "text": "    bb0: {",
+        },
+        {
+          "text": "        _2 = copy _1;",
+        },
+        {
+          "text": "        _3 = copy _1;",
+        },
+        {
+          "text": "        _4 = MulWithOverflow(copy _2, copy _3);",
+        },
+        {
+          "text": "        assert(!move (_4.1: bool), "attempt to compute `{} * {}`, which would overflow", move _2, move _3) -> [success: bb1, unwind continue];",
+        },
+        {
+          "text": "    }",
+        },
+        {
+          "text": "",
+        },
+        {
+          "text": "    bb1: {",
+        },
+        {
+          "text": "        _0 = move (_4.0: i32);",
+        },
+        {
+          "text": "        return;",
+        },
+        {
+          "text": "    }",
+        },
+        {
+          "text": "}",
+        },
+      ],
+      "before": [
+        {
+          "text": "// MIR for `square` before RemoveStorageMarkers",
+        },
+        {
+          "text": "",
+        },
+        {
+          "text": "fn square(_1: i32) -> i32 {",
+        },
+        {
+          "text": "    debug num => _1;",
+        },
+        {
+          "text": "    let mut _0: i32;",
+        },
+        {
+          "text": "    let mut _2: i32;",
+        },
+        {
+          "text": "    let mut _3: i32;",
+        },
+        {
+          "text": "    let mut _4: (i32, bool);",
+        },
+        {
+          "text": "",
+        },
+        {
+          "text": "    bb0: {",
+        },
+        {
+          "text": "        StorageLive(_2);",
+        },
+        {
+          "text": "        _2 = copy _1;",
+        },
+        {
+          "text": "        StorageLive(_3);",
+        },
+        {
+          "text": "        _3 = copy _1;",
+        },
+        {
+          "text": "        _4 = MulWithOverflow(copy _2, copy _3);",
+        },
+        {
+          "text": "        assert(!move (_4.1: bool), "attempt to compute `{} * {}`, which would overflow", move _2, move _3) -> [success: bb1, unwind continue];",
+        },
+        {
+          "text": "    }",
+        },
+        {
+          "text": "",
+        },
+        {
+          "text": "    bb1: {",
+        },
+        {
+          "text": "        _0 = move (_4.0: i32);",
+        },
+        {
+          "text": "        StorageDead(_3);",
+        },
+        {
+          "text": "        StorageDead(_2);",
+        },
+        {
+          "text": "        return;",
+        },
+        {
+          "text": "    }",
+        },
+        {
+          "text": "}",
+        },
+      ],
+      "irChanged": true,
+      "machine": false,
+      "name": "RemoveStorageMarkers",
+      "passId": "3-2-007",
+    },
+    {
+      "after": [
+        {
+          "text": "// MIR for `square` after RemoveZsts",
+        },
+        {
+          "text": "",
+        },
+        {
+          "text": "fn square(_1: i32) -> i32 {",
+        },
+        {
+          "text": "    debug num => _1;",
+        },
+        {
+          "text": "    let mut _0: i32;",
+        },
+        {
+          "text": "    let mut _2: i32;",
+        },
+        {
+          "text": "    let mut _3: i32;",
+        },
+        {
+          "text": "    let mut _4: (i32, bool);",
+        },
+        {
+          "text": "",
+        },
+        {
+          "text": "    bb0: {",
+        },
+        {
+          "text": "        _2 = copy _1;",
+        },
+        {
+          "text": "        _3 = copy _1;",
+        },
+        {
+          "text": "        _4 = MulWithOverflow(copy _2, copy _3);",
+        },
+        {
+          "text": "        assert(!move (_4.1: bool), "attempt to compute `{} * {}`, which would overflow", move _2, move _3) -> [success: bb1, unwind continue];",
+        },
+        {
+          "text": "    }",
+        },
+        {
+          "text": "",
+        },
+        {
+          "text": "    bb1: {",
+        },
+        {
+          "text": "        _0 = move (_4.0: i32);",
+        },
+        {
+          "text": "        return;",
+        },
+        {
+          "text": "    }",
+        },
+        {
+          "text": "}",
+        },
+      ],
+      "before": [
+        {
+          "text": "// MIR for `square` before RemoveZsts",
+        },
+        {
+          "text": "",
+        },
+        {
+          "text": "fn square(_1: i32) -> i32 {",
+        },
+        {
+          "text": "    debug num => _1;",
+        },
+        {
+          "text": "    let mut _0: i32;",
+        },
+        {
+          "text": "    let mut _2: i32;",
+        },
+        {
+          "text": "    let mut _3: i32;",
+        },
+        {
+          "text": "    let mut _4: (i32, bool);",
+        },
+        {
+          "text": "",
+        },
+        {
+          "text": "    bb0: {",
+        },
+        {
+          "text": "        _2 = copy _1;",
+        },
+        {
+          "text": "        _3 = copy _1;",
+        },
+        {
+          "text": "        _4 = MulWithOverflow(copy _2, copy _3);",
+        },
+        {
+          "text": "        assert(!move (_4.1: bool), "attempt to compute `{} * {}`, which would overflow", move _2, move _3) -> [success: bb1, unwind continue];",
+        },
+        {
+          "text": "    }",
+        },
+        {
+          "text": "",
+        },
+        {
+          "text": "    bb1: {",
+        },
+        {
+          "text": "        _0 = move (_4.0: i32);",
+        },
+        {
+          "text": "        return;",
+        },
+        {
+          "text": "    }",
+        },
+        {
+          "text": "}",
+        },
+      ],
+      "irChanged": false,
+      "machine": false,
+      "name": "RemoveZsts",
+      "passId": "3-2-008",
+    },
+    {
+      "after": [
+        {
+          "text": "// MIR for `square` after RemoveUnneededDrops",
+        },
+        {
+          "text": "",
+        },
+        {
+          "text": "fn square(_1: i32) -> i32 {",
+        },
+        {
+          "text": "    debug num => _1;",
+        },
+        {
+          "text": "    let mut _0: i32;",
+        },
+        {
+          "text": "    let mut _2: i32;",
+        },
+        {
+          "text": "    let mut _3: i32;",
+        },
+        {
+          "text": "    let mut _4: (i32, bool);",
+        },
+        {
+          "text": "",
+        },
+        {
+          "text": "    bb0: {",
+        },
+        {
+          "text": "        _2 = copy _1;",
+        },
+        {
+          "text": "        _3 = copy _1;",
+        },
+        {
+          "text": "        _4 = MulWithOverflow(copy _2, copy _3);",
+        },
+        {
+          "text": "        assert(!move (_4.1: bool), "attempt to compute `{} * {}`, which would overflow", move _2, move _3) -> [success: bb1, unwind continue];",
+        },
+        {
+          "text": "    }",
+        },
+        {
+          "text": "",
+        },
+        {
+          "text": "    bb1: {",
+        },
+        {
+          "text": "        _0 = move (_4.0: i32);",
+        },
+        {
+          "text": "        return;",
+        },
+        {
+          "text": "    }",
+        },
+        {
+          "text": "}",
+        },
+      ],
+      "before": [
+        {
+          "text": "// MIR for `square` before RemoveUnneededDrops",
+        },
+        {
+          "text": "",
+        },
+        {
+          "text": "fn square(_1: i32) -> i32 {",
+        },
+        {
+          "text": "    debug num => _1;",
+        },
+        {
+          "text": "    let mut _0: i32;",
+        },
+        {
+          "text": "    let mut _2: i32;",
+        },
+        {
+          "text": "    let mut _3: i32;",
+        },
+        {
+          "text": "    let mut _4: (i32, bool);",
+        },
+        {
+          "text": "",
+        },
+        {
+          "text": "    bb0: {",
+        },
+        {
+          "text": "        _2 = copy _1;",
+        },
+        {
+          "text": "        _3 = copy _1;",
+        },
+        {
+          "text": "        _4 = MulWithOverflow(copy _2, copy _3);",
+        },
+        {
+          "text": "        assert(!move (_4.1: bool), "attempt to compute `{} * {}`, which would overflow", move _2, move _3) -> [success: bb1, unwind continue];",
+        },
+        {
+          "text": "    }",
+        },
+        {
+          "text": "",
+        },
+        {
+          "text": "    bb1: {",
+        },
+        {
+          "text": "        _0 = move (_4.0: i32);",
+        },
+        {
+          "text": "        return;",
+        },
+        {
+          "text": "    }",
+        },
+        {
+          "text": "}",
+        },
+      ],
+      "irChanged": false,
+      "machine": false,
+      "name": "RemoveUnneededDrops",
+      "passId": "3-2-009",
+    },
+    {
+      "after": [
+        {
+          "text": "// MIR for `square` after UnreachableEnumBranching",
+        },
+        {
+          "text": "",
+        },
+        {
+          "text": "fn square(_1: i32) -> i32 {",
+        },
+        {
+          "text": "    debug num => _1;",
+        },
+        {
+          "text": "    let mut _0: i32;",
+        },
+        {
+          "text": "    let mut _2: i32;",
+        },
+        {
+          "text": "    let mut _3: i32;",
+        },
+        {
+          "text": "    let mut _4: (i32, bool);",
+        },
+        {
+          "text": "",
+        },
+        {
+          "text": "    bb0: {",
+        },
+        {
+          "text": "        _2 = copy _1;",
+        },
+        {
+          "text": "        _3 = copy _1;",
+        },
+        {
+          "text": "        _4 = MulWithOverflow(copy _2, copy _3);",
+        },
+        {
+          "text": "        assert(!move (_4.1: bool), "attempt to compute `{} * {}`, which would overflow", move _2, move _3) -> [success: bb1, unwind continue];",
+        },
+        {
+          "text": "    }",
+        },
+        {
+          "text": "",
+        },
+        {
+          "text": "    bb1: {",
+        },
+        {
+          "text": "        _0 = move (_4.0: i32);",
+        },
+        {
+          "text": "        return;",
+        },
+        {
+          "text": "    }",
+        },
+        {
+          "text": "}",
+        },
+      ],
+      "before": [
+        {
+          "text": "// MIR for `square` before UnreachableEnumBranching",
+        },
+        {
+          "text": "",
+        },
+        {
+          "text": "fn square(_1: i32) -> i32 {",
+        },
+        {
+          "text": "    debug num => _1;",
+        },
+        {
+          "text": "    let mut _0: i32;",
+        },
+        {
+          "text": "    let mut _2: i32;",
+        },
+        {
+          "text": "    let mut _3: i32;",
+        },
+        {
+          "text": "    let mut _4: (i32, bool);",
+        },
+        {
+          "text": "",
+        },
+        {
+          "text": "    bb0: {",
+        },
+        {
+          "text": "        _2 = copy _1;",
+        },
+        {
+          "text": "        _3 = copy _1;",
+        },
+        {
+          "text": "        _4 = MulWithOverflow(copy _2, copy _3);",
+        },
+        {
+          "text": "        assert(!move (_4.1: bool), "attempt to compute `{} * {}`, which would overflow", move _2, move _3) -> [success: bb1, unwind continue];",
+        },
+        {
+          "text": "    }",
+        },
+        {
+          "text": "",
+        },
+        {
+          "text": "    bb1: {",
+        },
+        {
+          "text": "        _0 = move (_4.0: i32);",
+        },
+        {
+          "text": "        return;",
+        },
+        {
+          "text": "    }",
+        },
+        {
+          "text": "}",
+        },
+      ],
+      "irChanged": false,
+      "machine": false,
+      "name": "UnreachableEnumBranching",
+      "passId": "3-2-010",
+    },
+    {
+      "after": [
+        {
+          "text": "// MIR for `square` after SimplifyCfg-after-unreachable-enum-branching",
+        },
+        {
+          "text": "",
+        },
+        {
+          "text": "fn square(_1: i32) -> i32 {",
+        },
+        {
+          "text": "    debug num => _1;",
+        },
+        {
+          "text": "    let mut _0: i32;",
+        },
+        {
+          "text": "    let mut _2: i32;",
+        },
+        {
+          "text": "    let mut _3: i32;",
+        },
+        {
+          "text": "    let mut _4: (i32, bool);",
+        },
+        {
+          "text": "",
+        },
+        {
+          "text": "    bb0: {",
+        },
+        {
+          "text": "        _2 = copy _1;",
+        },
+        {
+          "text": "        _3 = copy _1;",
+        },
+        {
+          "text": "        _4 = MulWithOverflow(copy _2, copy _3);",
+        },
+        {
+          "text": "        assert(!move (_4.1: bool), "attempt to compute `{} * {}`, which would overflow", move _2, move _3) -> [success: bb1, unwind continue];",
+        },
+        {
+          "text": "    }",
+        },
+        {
+          "text": "",
+        },
+        {
+          "text": "    bb1: {",
+        },
+        {
+          "text": "        _0 = move (_4.0: i32);",
+        },
+        {
+          "text": "        return;",
+        },
+        {
+          "text": "    }",
+        },
+        {
+          "text": "}",
+        },
+      ],
+      "before": [
+        {
+          "text": "// MIR for `square` before SimplifyCfg-after-unreachable-enum-branching",
+        },
+        {
+          "text": "",
+        },
+        {
+          "text": "fn square(_1: i32) -> i32 {",
+        },
+        {
+          "text": "    debug num => _1;",
+        },
+        {
+          "text": "    let mut _0: i32;",
+        },
+        {
+          "text": "    let mut _2: i32;",
+        },
+        {
+          "text": "    let mut _3: i32;",
+        },
+        {
+          "text": "    let mut _4: (i32, bool);",
+        },
+        {
+          "text": "",
+        },
+        {
+          "text": "    bb0: {",
+        },
+        {
+          "text": "        _2 = copy _1;",
+        },
+        {
+          "text": "        _3 = copy _1;",
+        },
+        {
+          "text": "        _4 = MulWithOverflow(copy _2, copy _3);",
+        },
+        {
+          "text": "        assert(!move (_4.1: bool), "attempt to compute `{} * {}`, which would overflow", move _2, move _3) -> [success: bb1, unwind continue];",
+        },
+        {
+          "text": "    }",
+        },
+        {
+          "text": "",
+        },
+        {
+          "text": "    bb1: {",
+        },
+        {
+          "text": "        _0 = move (_4.0: i32);",
+        },
+        {
+          "text": "        return;",
+        },
+        {
+          "text": "    }",
+        },
+        {
+          "text": "}",
+        },
+      ],
+      "irChanged": false,
+      "machine": false,
+      "name": "SimplifyCfg-after-unreachable-enum-branching",
+      "passId": "3-2-011",
+    },
+    {
+      "after": [
+        {
+          "text": "// MIR for `square` after InstSimplify-after-simplifycfg",
+        },
+        {
+          "text": "",
+        },
+        {
+          "text": "fn square(_1: i32) -> i32 {",
+        },
+        {
+          "text": "    debug num => _1;",
+        },
+        {
+          "text": "    let mut _0: i32;",
+        },
+        {
+          "text": "    let mut _2: i32;",
+        },
+        {
+          "text": "    let mut _3: i32;",
+        },
+        {
+          "text": "    let mut _4: (i32, bool);",
+        },
+        {
+          "text": "",
+        },
+        {
+          "text": "    bb0: {",
+        },
+        {
+          "text": "        _2 = copy _1;",
+        },
+        {
+          "text": "        _3 = copy _1;",
+        },
+        {
+          "text": "        _4 = MulWithOverflow(copy _2, copy _3);",
+        },
+        {
+          "text": "        assert(!move (_4.1: bool), "attempt to compute `{} * {}`, which would overflow", move _2, move _3) -> [success: bb1, unwind continue];",
+        },
+        {
+          "text": "    }",
+        },
+        {
+          "text": "",
+        },
+        {
+          "text": "    bb1: {",
+        },
+        {
+          "text": "        _0 = move (_4.0: i32);",
+        },
+        {
+          "text": "        return;",
+        },
+        {
+          "text": "    }",
+        },
+        {
+          "text": "}",
+        },
+      ],
+      "before": [
+        {
+          "text": "// MIR for `square` before InstSimplify-after-simplifycfg",
+        },
+        {
+          "text": "",
+        },
+        {
+          "text": "fn square(_1: i32) -> i32 {",
+        },
+        {
+          "text": "    debug num => _1;",
+        },
+        {
+          "text": "    let mut _0: i32;",
+        },
+        {
+          "text": "    let mut _2: i32;",
+        },
+        {
+          "text": "    let mut _3: i32;",
+        },
+        {
+          "text": "    let mut _4: (i32, bool);",
+        },
+        {
+          "text": "",
+        },
+        {
+          "text": "    bb0: {",
+        },
+        {
+          "text": "        _2 = copy _1;",
+        },
+        {
+          "text": "        _3 = copy _1;",
+        },
+        {
+          "text": "        _4 = MulWithOverflow(copy _2, copy _3);",
+        },
+        {
+          "text": "        assert(!move (_4.1: bool), "attempt to compute `{} * {}`, which would overflow", move _2, move _3) -> [success: bb1, unwind continue];",
+        },
+        {
+          "text": "    }",
+        },
+        {
+          "text": "",
+        },
+        {
+          "text": "    bb1: {",
+        },
+        {
+          "text": "        _0 = move (_4.0: i32);",
+        },
+        {
+          "text": "        return;",
+        },
+        {
+          "text": "    }",
+        },
+        {
+          "text": "}",
+        },
+      ],
+      "irChanged": false,
+      "machine": false,
+      "name": "InstSimplify-after-simplifycfg",
+      "passId": "3-2-012",
+    },
+    {
+      "after": [
+        {
+          "text": "// MIR for `square` after SimplifyConstCondition-after-inst-simplify",
+        },
+        {
+          "text": "",
+        },
+        {
+          "text": "fn square(_1: i32) -> i32 {",
+        },
+        {
+          "text": "    debug num => _1;",
+        },
+        {
+          "text": "    let mut _0: i32;",
+        },
+        {
+          "text": "    let mut _2: i32;",
+        },
+        {
+          "text": "    let mut _3: i32;",
+        },
+        {
+          "text": "    let mut _4: (i32, bool);",
+        },
+        {
+          "text": "",
+        },
+        {
+          "text": "    bb0: {",
+        },
+        {
+          "text": "        _2 = copy _1;",
+        },
+        {
+          "text": "        _3 = copy _1;",
+        },
+        {
+          "text": "        _4 = MulWithOverflow(copy _2, copy _3);",
+        },
+        {
+          "text": "        assert(!move (_4.1: bool), "attempt to compute `{} * {}`, which would overflow", move _2, move _3) -> [success: bb1, unwind continue];",
+        },
+        {
+          "text": "    }",
+        },
+        {
+          "text": "",
+        },
+        {
+          "text": "    bb1: {",
+        },
+        {
+          "text": "        _0 = move (_4.0: i32);",
+        },
+        {
+          "text": "        return;",
+        },
+        {
+          "text": "    }",
+        },
+        {
+          "text": "}",
+        },
+      ],
+      "before": [
+        {
+          "text": "// MIR for `square` before SimplifyConstCondition-after-inst-simplify",
+        },
+        {
+          "text": "",
+        },
+        {
+          "text": "fn square(_1: i32) -> i32 {",
+        },
+        {
+          "text": "    debug num => _1;",
+        },
+        {
+          "text": "    let mut _0: i32;",
+        },
+        {
+          "text": "    let mut _2: i32;",
+        },
+        {
+          "text": "    let mut _3: i32;",
+        },
+        {
+          "text": "    let mut _4: (i32, bool);",
+        },
+        {
+          "text": "",
+        },
+        {
+          "text": "    bb0: {",
+        },
+        {
+          "text": "        _2 = copy _1;",
+        },
+        {
+          "text": "        _3 = copy _1;",
+        },
+        {
+          "text": "        _4 = MulWithOverflow(copy _2, copy _3);",
+        },
+        {
+          "text": "        assert(!move (_4.1: bool), "attempt to compute `{} * {}`, which would overflow", move _2, move _3) -> [success: bb1, unwind continue];",
+        },
+        {
+          "text": "    }",
+        },
+        {
+          "text": "",
+        },
+        {
+          "text": "    bb1: {",
+        },
+        {
+          "text": "        _0 = move (_4.0: i32);",
+        },
+        {
+          "text": "        return;",
+        },
+        {
+          "text": "    }",
+        },
+        {
+          "text": "}",
+        },
+      ],
+      "irChanged": false,
+      "machine": false,
+      "name": "SimplifyConstCondition-after-inst-simplify",
+      "passId": "3-2-013",
+    },
+    {
+      "after": [
+        {
+          "text": "// MIR for `square` after SimplifyLocals-before-const-prop",
+        },
+        {
+          "text": "",
+        },
+        {
+          "text": "fn square(_1: i32) -> i32 {",
+        },
+        {
+          "text": "    debug num => _1;",
+        },
+        {
+          "text": "    let mut _0: i32;",
+        },
+        {
+          "text": "    let mut _2: i32;",
+        },
+        {
+          "text": "    let mut _3: i32;",
+        },
+        {
+          "text": "    let mut _4: (i32, bool);",
+        },
+        {
+          "text": "",
+        },
+        {
+          "text": "    bb0: {",
+        },
+        {
+          "text": "        _2 = copy _1;",
+        },
+        {
+          "text": "        _3 = copy _1;",
+        },
+        {
+          "text": "        _4 = MulWithOverflow(copy _2, copy _3);",
+        },
+        {
+          "text": "        assert(!move (_4.1: bool), "attempt to compute `{} * {}`, which would overflow", move _2, move _3) -> [success: bb1, unwind continue];",
+        },
+        {
+          "text": "    }",
+        },
+        {
+          "text": "",
+        },
+        {
+          "text": "    bb1: {",
+        },
+        {
+          "text": "        _0 = move (_4.0: i32);",
+        },
+        {
+          "text": "        return;",
+        },
+        {
+          "text": "    }",
+        },
+        {
+          "text": "}",
+        },
+      ],
+      "before": [
+        {
+          "text": "// MIR for `square` before SimplifyLocals-before-const-prop",
+        },
+        {
+          "text": "",
+        },
+        {
+          "text": "fn square(_1: i32) -> i32 {",
+        },
+        {
+          "text": "    debug num => _1;",
+        },
+        {
+          "text": "    let mut _0: i32;",
+        },
+        {
+          "text": "    let mut _2: i32;",
+        },
+        {
+          "text": "    let mut _3: i32;",
+        },
+        {
+          "text": "    let mut _4: (i32, bool);",
+        },
+        {
+          "text": "",
+        },
+        {
+          "text": "    bb0: {",
+        },
+        {
+          "text": "        _2 = copy _1;",
+        },
+        {
+          "text": "        _3 = copy _1;",
+        },
+        {
+          "text": "        _4 = MulWithOverflow(copy _2, copy _3);",
+        },
+        {
+          "text": "        assert(!move (_4.1: bool), "attempt to compute `{} * {}`, which would overflow", move _2, move _3) -> [success: bb1, unwind continue];",
+        },
+        {
+          "text": "    }",
+        },
+        {
+          "text": "",
+        },
+        {
+          "text": "    bb1: {",
+        },
+        {
+          "text": "        _0 = move (_4.0: i32);",
+        },
+        {
+          "text": "        return;",
+        },
+        {
+          "text": "    }",
+        },
+        {
+          "text": "}",
+        },
+      ],
+      "irChanged": false,
+      "machine": false,
+      "name": "SimplifyLocals-before-const-prop",
+      "passId": "3-2-014",
+    },
+    {
+      "after": [
+        {
+          "text": "// MIR for `square` after SimplifyLocals-after-value-numbering",
+        },
+        {
+          "text": "",
+        },
+        {
+          "text": "fn square(_1: i32) -> i32 {",
+        },
+        {
+          "text": "    debug num => _1;",
+        },
+        {
+          "text": "    let mut _0: i32;",
+        },
+        {
+          "text": "    let mut _2: i32;",
+        },
+        {
+          "text": "    let mut _3: i32;",
+        },
+        {
+          "text": "    let mut _4: (i32, bool);",
+        },
+        {
+          "text": "",
+        },
+        {
+          "text": "    bb0: {",
+        },
+        {
+          "text": "        _2 = copy _1;",
+        },
+        {
+          "text": "        _3 = copy _1;",
+        },
+        {
+          "text": "        _4 = MulWithOverflow(copy _2, copy _3);",
+        },
+        {
+          "text": "        assert(!move (_4.1: bool), "attempt to compute `{} * {}`, which would overflow", move _2, move _3) -> [success: bb1, unwind continue];",
+        },
+        {
+          "text": "    }",
+        },
+        {
+          "text": "",
+        },
+        {
+          "text": "    bb1: {",
+        },
+        {
+          "text": "        _0 = move (_4.0: i32);",
+        },
+        {
+          "text": "        return;",
+        },
+        {
+          "text": "    }",
+        },
+        {
+          "text": "}",
+        },
+      ],
+      "before": [
+        {
+          "text": "// MIR for `square` before SimplifyLocals-after-value-numbering",
+        },
+        {
+          "text": "",
+        },
+        {
+          "text": "fn square(_1: i32) -> i32 {",
+        },
+        {
+          "text": "    debug num => _1;",
+        },
+        {
+          "text": "    let mut _0: i32;",
+        },
+        {
+          "text": "    let mut _2: i32;",
+        },
+        {
+          "text": "    let mut _3: i32;",
+        },
+        {
+          "text": "    let mut _4: (i32, bool);",
+        },
+        {
+          "text": "",
+        },
+        {
+          "text": "    bb0: {",
+        },
+        {
+          "text": "        _2 = copy _1;",
+        },
+        {
+          "text": "        _3 = copy _1;",
+        },
+        {
+          "text": "        _4 = MulWithOverflow(copy _2, copy _3);",
+        },
+        {
+          "text": "        assert(!move (_4.1: bool), "attempt to compute `{} * {}`, which would overflow", move _2, move _3) -> [success: bb1, unwind continue];",
+        },
+        {
+          "text": "    }",
+        },
+        {
+          "text": "",
+        },
+        {
+          "text": "    bb1: {",
+        },
+        {
+          "text": "        _0 = move (_4.0: i32);",
+        },
+        {
+          "text": "        return;",
+        },
+        {
+          "text": "    }",
+        },
+        {
+          "text": "}",
+        },
+      ],
+      "irChanged": false,
+      "machine": false,
+      "name": "SimplifyLocals-after-value-numbering",
+      "passId": "3-2-015",
+    },
+    {
+      "after": [
+        {
+          "text": "// MIR for `square` after SingleUseConsts",
+        },
+        {
+          "text": "",
+        },
+        {
+          "text": "fn square(_1: i32) -> i32 {",
+        },
+        {
+          "text": "    debug num => _1;",
+        },
+        {
+          "text": "    let mut _0: i32;",
+        },
+        {
+          "text": "    let mut _2: i32;",
+        },
+        {
+          "text": "    let mut _3: i32;",
+        },
+        {
+          "text": "    let mut _4: (i32, bool);",
+        },
+        {
+          "text": "",
+        },
+        {
+          "text": "    bb0: {",
+        },
+        {
+          "text": "        _2 = copy _1;",
+        },
+        {
+          "text": "        _3 = copy _1;",
+        },
+        {
+          "text": "        _4 = MulWithOverflow(copy _2, copy _3);",
+        },
+        {
+          "text": "        assert(!move (_4.1: bool), "attempt to compute `{} * {}`, which would overflow", move _2, move _3) -> [success: bb1, unwind continue];",
+        },
+        {
+          "text": "    }",
+        },
+        {
+          "text": "",
+        },
+        {
+          "text": "    bb1: {",
+        },
+        {
+          "text": "        _0 = move (_4.0: i32);",
+        },
+        {
+          "text": "        return;",
+        },
+        {
+          "text": "    }",
+        },
+        {
+          "text": "}",
+        },
+      ],
+      "before": [
+        {
+          "text": "// MIR for `square` before SingleUseConsts",
+        },
+        {
+          "text": "",
+        },
+        {
+          "text": "fn square(_1: i32) -> i32 {",
+        },
+        {
+          "text": "    debug num => _1;",
+        },
+        {
+          "text": "    let mut _0: i32;",
+        },
+        {
+          "text": "    let mut _2: i32;",
+        },
+        {
+          "text": "    let mut _3: i32;",
+        },
+        {
+          "text": "    let mut _4: (i32, bool);",
+        },
+        {
+          "text": "",
+        },
+        {
+          "text": "    bb0: {",
+        },
+        {
+          "text": "        _2 = copy _1;",
+        },
+        {
+          "text": "        _3 = copy _1;",
+        },
+        {
+          "text": "        _4 = MulWithOverflow(copy _2, copy _3);",
+        },
+        {
+          "text": "        assert(!move (_4.1: bool), "attempt to compute `{} * {}`, which would overflow", move _2, move _3) -> [success: bb1, unwind continue];",
+        },
+        {
+          "text": "    }",
+        },
+        {
+          "text": "",
+        },
+        {
+          "text": "    bb1: {",
+        },
+        {
+          "text": "        _0 = move (_4.0: i32);",
+        },
+        {
+          "text": "        return;",
+        },
+        {
+          "text": "    }",
+        },
+        {
+          "text": "}",
+        },
+      ],
+      "irChanged": false,
+      "machine": false,
+      "name": "SingleUseConsts",
+      "passId": "3-2-016",
+    },
+    {
+      "after": [
+        {
+          "text": "// MIR for `square` after SimplifyConstCondition-after-const-prop",
+        },
+        {
+          "text": "",
+        },
+        {
+          "text": "fn square(_1: i32) -> i32 {",
+        },
+        {
+          "text": "    debug num => _1;",
+        },
+        {
+          "text": "    let mut _0: i32;",
+        },
+        {
+          "text": "    let mut _2: i32;",
+        },
+        {
+          "text": "    let mut _3: i32;",
+        },
+        {
+          "text": "    let mut _4: (i32, bool);",
+        },
+        {
+          "text": "",
+        },
+        {
+          "text": "    bb0: {",
+        },
+        {
+          "text": "        _2 = copy _1;",
+        },
+        {
+          "text": "        _3 = copy _1;",
+        },
+        {
+          "text": "        _4 = MulWithOverflow(copy _2, copy _3);",
+        },
+        {
+          "text": "        assert(!move (_4.1: bool), "attempt to compute `{} * {}`, which would overflow", move _2, move _3) -> [success: bb1, unwind continue];",
+        },
+        {
+          "text": "    }",
+        },
+        {
+          "text": "",
+        },
+        {
+          "text": "    bb1: {",
+        },
+        {
+          "text": "        _0 = move (_4.0: i32);",
+        },
+        {
+          "text": "        return;",
+        },
+        {
+          "text": "    }",
+        },
+        {
+          "text": "}",
+        },
+      ],
+      "before": [
+        {
+          "text": "// MIR for `square` before SimplifyConstCondition-after-const-prop",
+        },
+        {
+          "text": "",
+        },
+        {
+          "text": "fn square(_1: i32) -> i32 {",
+        },
+        {
+          "text": "    debug num => _1;",
+        },
+        {
+          "text": "    let mut _0: i32;",
+        },
+        {
+          "text": "    let mut _2: i32;",
+        },
+        {
+          "text": "    let mut _3: i32;",
+        },
+        {
+          "text": "    let mut _4: (i32, bool);",
+        },
+        {
+          "text": "",
+        },
+        {
+          "text": "    bb0: {",
+        },
+        {
+          "text": "        _2 = copy _1;",
+        },
+        {
+          "text": "        _3 = copy _1;",
+        },
+        {
+          "text": "        _4 = MulWithOverflow(copy _2, copy _3);",
+        },
+        {
+          "text": "        assert(!move (_4.1: bool), "attempt to compute `{} * {}`, which would overflow", move _2, move _3) -> [success: bb1, unwind continue];",
+        },
+        {
+          "text": "    }",
+        },
+        {
+          "text": "",
+        },
+        {
+          "text": "    bb1: {",
+        },
+        {
+          "text": "        _0 = move (_4.0: i32);",
+        },
+        {
+          "text": "        return;",
+        },
+        {
+          "text": "    }",
+        },
+        {
+          "text": "}",
+        },
+      ],
+      "irChanged": false,
+      "machine": false,
+      "name": "SimplifyConstCondition-after-const-prop",
+      "passId": "3-2-017",
+    },
+    {
+      "after": [
+        {
+          "text": "// MIR for `square` after SimplifyConstCondition-final",
+        },
+        {
+          "text": "",
+        },
+        {
+          "text": "fn square(_1: i32) -> i32 {",
+        },
+        {
+          "text": "    debug num => _1;",
+        },
+        {
+          "text": "    let mut _0: i32;",
+        },
+        {
+          "text": "    let mut _2: i32;",
+        },
+        {
+          "text": "    let mut _3: i32;",
+        },
+        {
+          "text": "    let mut _4: (i32, bool);",
+        },
+        {
+          "text": "",
+        },
+        {
+          "text": "    bb0: {",
+        },
+        {
+          "text": "        _2 = copy _1;",
+        },
+        {
+          "text": "        _3 = copy _1;",
+        },
+        {
+          "text": "        _4 = MulWithOverflow(copy _2, copy _3);",
+        },
+        {
+          "text": "        assert(!move (_4.1: bool), "attempt to compute `{} * {}`, which would overflow", move _2, move _3) -> [success: bb1, unwind continue];",
+        },
+        {
+          "text": "    }",
+        },
+        {
+          "text": "",
+        },
+        {
+          "text": "    bb1: {",
+        },
+        {
+          "text": "        _0 = move (_4.0: i32);",
+        },
+        {
+          "text": "        return;",
+        },
+        {
+          "text": "    }",
+        },
+        {
+          "text": "}",
+        },
+      ],
+      "before": [
+        {
+          "text": "// MIR for `square` before SimplifyConstCondition-final",
+        },
+        {
+          "text": "",
+        },
+        {
+          "text": "fn square(_1: i32) -> i32 {",
+        },
+        {
+          "text": "    debug num => _1;",
+        },
+        {
+          "text": "    let mut _0: i32;",
+        },
+        {
+          "text": "    let mut _2: i32;",
+        },
+        {
+          "text": "    let mut _3: i32;",
+        },
+        {
+          "text": "    let mut _4: (i32, bool);",
+        },
+        {
+          "text": "",
+        },
+        {
+          "text": "    bb0: {",
+        },
+        {
+          "text": "        _2 = copy _1;",
+        },
+        {
+          "text": "        _3 = copy _1;",
+        },
+        {
+          "text": "        _4 = MulWithOverflow(copy _2, copy _3);",
+        },
+        {
+          "text": "        assert(!move (_4.1: bool), "attempt to compute `{} * {}`, which would overflow", move _2, move _3) -> [success: bb1, unwind continue];",
+        },
+        {
+          "text": "    }",
+        },
+        {
+          "text": "",
+        },
+        {
+          "text": "    bb1: {",
+        },
+        {
+          "text": "        _0 = move (_4.0: i32);",
+        },
+        {
+          "text": "        return;",
+        },
+        {
+          "text": "    }",
+        },
+        {
+          "text": "}",
+        },
+      ],
+      "irChanged": false,
+      "machine": false,
+      "name": "SimplifyConstCondition-final",
+      "passId": "3-2-018",
+    },
+    {
+      "after": [
+        {
+          "text": "// MIR for `square` after RemoveNoopLandingPads",
+        },
+        {
+          "text": "",
+        },
+        {
+          "text": "fn square(_1: i32) -> i32 {",
+        },
+        {
+          "text": "    debug num => _1;",
+        },
+        {
+          "text": "    let mut _0: i32;",
+        },
+        {
+          "text": "    let mut _2: i32;",
+        },
+        {
+          "text": "    let mut _3: i32;",
+        },
+        {
+          "text": "    let mut _4: (i32, bool);",
+        },
+        {
+          "text": "",
+        },
+        {
+          "text": "    bb0: {",
+        },
+        {
+          "text": "        _2 = copy _1;",
+        },
+        {
+          "text": "        _3 = copy _1;",
+        },
+        {
+          "text": "        _4 = MulWithOverflow(copy _2, copy _3);",
+        },
+        {
+          "text": "        assert(!move (_4.1: bool), "attempt to compute `{} * {}`, which would overflow", move _2, move _3) -> [success: bb1, unwind continue];",
+        },
+        {
+          "text": "    }",
+        },
+        {
+          "text": "",
+        },
+        {
+          "text": "    bb1: {",
+        },
+        {
+          "text": "        _0 = move (_4.0: i32);",
+        },
+        {
+          "text": "        return;",
+        },
+        {
+          "text": "    }",
+        },
+        {
+          "text": "}",
+        },
+      ],
+      "before": [
+        {
+          "text": "// MIR for `square` before RemoveNoopLandingPads",
+        },
+        {
+          "text": "",
+        },
+        {
+          "text": "fn square(_1: i32) -> i32 {",
+        },
+        {
+          "text": "    debug num => _1;",
+        },
+        {
+          "text": "    let mut _0: i32;",
+        },
+        {
+          "text": "    let mut _2: i32;",
+        },
+        {
+          "text": "    let mut _3: i32;",
+        },
+        {
+          "text": "    let mut _4: (i32, bool);",
+        },
+        {
+          "text": "",
+        },
+        {
+          "text": "    bb0: {",
+        },
+        {
+          "text": "        _2 = copy _1;",
+        },
+        {
+          "text": "        _3 = copy _1;",
+        },
+        {
+          "text": "        _4 = MulWithOverflow(copy _2, copy _3);",
+        },
+        {
+          "text": "        assert(!move (_4.1: bool), "attempt to compute `{} * {}`, which would overflow", move _2, move _3) -> [success: bb1, unwind continue];",
+        },
+        {
+          "text": "    }",
+        },
+        {
+          "text": "",
+        },
+        {
+          "text": "    bb1: {",
+        },
+        {
+          "text": "        _0 = move (_4.0: i32);",
+        },
+        {
+          "text": "        return;",
+        },
+        {
+          "text": "    }",
+        },
+        {
+          "text": "}",
+        },
+      ],
+      "irChanged": false,
+      "machine": false,
+      "name": "RemoveNoopLandingPads",
+      "passId": "3-2-019",
+    },
+    {
+      "after": [
+        {
+          "text": "// MIR for `square` after SimplifyCfg-final",
+        },
+        {
+          "text": "",
+        },
+        {
+          "text": "fn square(_1: i32) -> i32 {",
+        },
+        {
+          "text": "    debug num => _1;",
+        },
+        {
+          "text": "    let mut _0: i32;",
+        },
+        {
+          "text": "    let mut _2: i32;",
+        },
+        {
+          "text": "    let mut _3: i32;",
+        },
+        {
+          "text": "    let mut _4: (i32, bool);",
+        },
+        {
+          "text": "",
+        },
+        {
+          "text": "    bb0: {",
+        },
+        {
+          "text": "        _2 = copy _1;",
+        },
+        {
+          "text": "        _3 = copy _1;",
+        },
+        {
+          "text": "        _4 = MulWithOverflow(copy _2, copy _3);",
+        },
+        {
+          "text": "        assert(!move (_4.1: bool), "attempt to compute `{} * {}`, which would overflow", move _2, move _3) -> [success: bb1, unwind continue];",
+        },
+        {
+          "text": "    }",
+        },
+        {
+          "text": "",
+        },
+        {
+          "text": "    bb1: {",
+        },
+        {
+          "text": "        _0 = move (_4.0: i32);",
+        },
+        {
+          "text": "        return;",
+        },
+        {
+          "text": "    }",
+        },
+        {
+          "text": "}",
+        },
+      ],
+      "before": [
+        {
+          "text": "// MIR for `square` before SimplifyCfg-final",
+        },
+        {
+          "text": "",
+        },
+        {
+          "text": "fn square(_1: i32) -> i32 {",
+        },
+        {
+          "text": "    debug num => _1;",
+        },
+        {
+          "text": "    let mut _0: i32;",
+        },
+        {
+          "text": "    let mut _2: i32;",
+        },
+        {
+          "text": "    let mut _3: i32;",
+        },
+        {
+          "text": "    let mut _4: (i32, bool);",
+        },
+        {
+          "text": "",
+        },
+        {
+          "text": "    bb0: {",
+        },
+        {
+          "text": "        _2 = copy _1;",
+        },
+        {
+          "text": "        _3 = copy _1;",
+        },
+        {
+          "text": "        _4 = MulWithOverflow(copy _2, copy _3);",
+        },
+        {
+          "text": "        assert(!move (_4.1: bool), "attempt to compute `{} * {}`, which would overflow", move _2, move _3) -> [success: bb1, unwind continue];",
+        },
+        {
+          "text": "    }",
+        },
+        {
+          "text": "",
+        },
+        {
+          "text": "    bb1: {",
+        },
+        {
+          "text": "        _0 = move (_4.0: i32);",
+        },
+        {
+          "text": "        return;",
+        },
+        {
+          "text": "    }",
+        },
+        {
+          "text": "}",
+        },
+      ],
+      "irChanged": false,
+      "machine": false,
+      "name": "SimplifyCfg-final",
+      "passId": "3-2-020",
+    },
+    {
+      "after": [
+        {
+          "text": "// MIR for `square` after CopyProp",
+        },
+        {
+          "text": "",
+        },
+        {
+          "text": "fn square(_1: i32) -> i32 {",
+        },
+        {
+          "text": "    debug num => _1;",
+        },
+        {
+          "text": "    let mut _0: i32;",
+        },
+        {
+          "text": "    let mut _2: i32;",
+        },
+        {
+          "text": "    let mut _3: i32;",
+        },
+        {
+          "text": "    let mut _4: (i32, bool);",
+        },
+        {
+          "text": "",
+        },
+        {
+          "text": "    bb0: {",
+        },
+        {
+          "text": "        _4 = MulWithOverflow(copy _1, copy _1);",
+        },
+        {
+          "text": "        assert(!move (_4.1: bool), "attempt to compute `{} * {}`, which would overflow", copy _1, copy _1) -> [success: bb1, unwind continue];",
+        },
+        {
+          "text": "    }",
+        },
+        {
+          "text": "",
+        },
+        {
+          "text": "    bb1: {",
+        },
+        {
+          "text": "        _0 = move (_4.0: i32);",
+        },
+        {
+          "text": "        return;",
+        },
+        {
+          "text": "    }",
+        },
+        {
+          "text": "}",
+        },
+      ],
+      "before": [
+        {
+          "text": "// MIR for `square` before CopyProp",
+        },
+        {
+          "text": "",
+        },
+        {
+          "text": "fn square(_1: i32) -> i32 {",
+        },
+        {
+          "text": "    debug num => _1;",
+        },
+        {
+          "text": "    let mut _0: i32;",
+        },
+        {
+          "text": "    let mut _2: i32;",
+        },
+        {
+          "text": "    let mut _3: i32;",
+        },
+        {
+          "text": "    let mut _4: (i32, bool);",
+        },
+        {
+          "text": "",
+        },
+        {
+          "text": "    bb0: {",
+        },
+        {
+          "text": "        _2 = copy _1;",
+        },
+        {
+          "text": "        _3 = copy _1;",
+        },
+        {
+          "text": "        _4 = MulWithOverflow(copy _2, copy _3);",
+        },
+        {
+          "text": "        assert(!move (_4.1: bool), "attempt to compute `{} * {}`, which would overflow", move _2, move _3) -> [success: bb1, unwind continue];",
+        },
+        {
+          "text": "    }",
+        },
+        {
+          "text": "",
+        },
+        {
+          "text": "    bb1: {",
+        },
+        {
+          "text": "        _0 = move (_4.0: i32);",
+        },
+        {
+          "text": "        return;",
+        },
+        {
+          "text": "    }",
+        },
+        {
+          "text": "}",
+        },
+      ],
+      "irChanged": true,
+      "machine": false,
+      "name": "CopyProp",
+      "passId": "3-2-021",
+    },
+    {
+      "after": [
+        {
+          "text": "// MIR for `square` after SimplifyLocals-final",
+        },
+        {
+          "text": "",
+        },
+        {
+          "text": "fn square(_1: i32) -> i32 {",
+        },
+        {
+          "text": "    debug num => _1;",
+        },
+        {
+          "text": "    let mut _0: i32;",
+        },
+        {
+          "text": "    let mut _2: (i32, bool);",
+        },
+        {
+          "text": "",
+        },
+        {
+          "text": "    bb0: {",
+        },
+        {
+          "text": "        _2 = MulWithOverflow(copy _1, copy _1);",
+        },
+        {
+          "text": "        assert(!move (_2.1: bool), "attempt to compute `{} * {}`, which would overflow", copy _1, copy _1) -> [success: bb1, unwind continue];",
+        },
+        {
+          "text": "    }",
+        },
+        {
+          "text": "",
+        },
+        {
+          "text": "    bb1: {",
+        },
+        {
+          "text": "        _0 = move (_2.0: i32);",
+        },
+        {
+          "text": "        return;",
+        },
+        {
+          "text": "    }",
+        },
+        {
+          "text": "}",
+        },
+      ],
+      "before": [
+        {
+          "text": "// MIR for `square` before SimplifyLocals-final",
+        },
+        {
+          "text": "",
+        },
+        {
+          "text": "fn square(_1: i32) -> i32 {",
+        },
+        {
+          "text": "    debug num => _1;",
+        },
+        {
+          "text": "    let mut _0: i32;",
+        },
+        {
+          "text": "    let mut _2: i32;",
+        },
+        {
+          "text": "    let mut _3: i32;",
+        },
+        {
+          "text": "    let mut _4: (i32, bool);",
+        },
+        {
+          "text": "",
+        },
+        {
+          "text": "    bb0: {",
+        },
+        {
+          "text": "        _4 = MulWithOverflow(copy _1, copy _1);",
+        },
+        {
+          "text": "        assert(!move (_4.1: bool), "attempt to compute `{} * {}`, which would overflow", copy _1, copy _1) -> [success: bb1, unwind continue];",
+        },
+        {
+          "text": "    }",
+        },
+        {
+          "text": "",
+        },
+        {
+          "text": "    bb1: {",
+        },
+        {
+          "text": "        _0 = move (_4.0: i32);",
+        },
+        {
+          "text": "        return;",
+        },
+        {
+          "text": "    }",
+        },
+        {
+          "text": "}",
+        },
+      ],
+      "irChanged": true,
+      "machine": false,
+      "name": "SimplifyLocals-final",
+      "passId": "3-2-022",
+    },
+    {
+      "after": [
+        {
+          "text": "// MIR for `square` after AddCallGuards",
+        },
+        {
+          "text": "",
+        },
+        {
+          "text": "fn square(_1: i32) -> i32 {",
+        },
+        {
+          "text": "    debug num => _1;",
+        },
+        {
+          "text": "    let mut _0: i32;",
+        },
+        {
+          "text": "    let mut _2: (i32, bool);",
+        },
+        {
+          "text": "",
+        },
+        {
+          "text": "    bb0: {",
+        },
+        {
+          "text": "        _2 = MulWithOverflow(copy _1, copy _1);",
+        },
+        {
+          "text": "        assert(!move (_2.1: bool), "attempt to compute `{} * {}`, which would overflow", copy _1, copy _1) -> [success: bb1, unwind continue];",
+        },
+        {
+          "text": "    }",
+        },
+        {
+          "text": "",
+        },
+        {
+          "text": "    bb1: {",
+        },
+        {
+          "text": "        _0 = move (_2.0: i32);",
+        },
+        {
+          "text": "        return;",
+        },
+        {
+          "text": "    }",
+        },
+        {
+          "text": "}",
+        },
+      ],
+      "before": [
+        {
+          "text": "// MIR for `square` before AddCallGuards",
+        },
+        {
+          "text": "",
+        },
+        {
+          "text": "fn square(_1: i32) -> i32 {",
+        },
+        {
+          "text": "    debug num => _1;",
+        },
+        {
+          "text": "    let mut _0: i32;",
+        },
+        {
+          "text": "    let mut _2: (i32, bool);",
+        },
+        {
+          "text": "",
+        },
+        {
+          "text": "    bb0: {",
+        },
+        {
+          "text": "        _2 = MulWithOverflow(copy _1, copy _1);",
+        },
+        {
+          "text": "        assert(!move (_2.1: bool), "attempt to compute `{} * {}`, which would overflow", copy _1, copy _1) -> [success: bb1, unwind continue];",
+        },
+        {
+          "text": "    }",
+        },
+        {
+          "text": "",
+        },
+        {
+          "text": "    bb1: {",
+        },
+        {
+          "text": "        _0 = move (_2.0: i32);",
+        },
+        {
+          "text": "        return;",
+        },
+        {
+          "text": "    }",
+        },
+        {
+          "text": "}",
+        },
+      ],
+      "irChanged": false,
+      "machine": false,
+      "name": "AddCallGuards",
+      "passId": "3-2-023",
+    },
+  ],
+}

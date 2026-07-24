@@ -1,0 +1,92 @@
+// MIR for `print` after AbortUnwindingCalls
+
+fn print(_1: T) -> () {
+    debug value => _1;
+    let mut _0: ();
+    let _2: ();
+    let _3: ();
+    let mut _4: std::fmt::Arguments<'_>;
+    let _5: (&T,);
+    let mut _6: &T;
+    let mut _8: core::fmt::rt::Argument<'_>;
+    let mut _9: &T;
+    let mut _10: &[u8; 4];
+    let _11: &[u8; 4];
+    let mut _12: &[core::fmt::rt::Argument<'_>; 1];
+    let _13: &[core::fmt::rt::Argument<'_>; 1];
+    let mut _14: &T;
+    scope 1 {
+        debug args => _5;
+        let _7: [core::fmt::rt::Argument<'_>; 1];
+        scope 2 {
+            debug args => _7;
+        }
+    }
+
+    bb0: {
+        StorageLive(_2);
+        StorageLive(_3);
+        StorageLive(_4);
+        StorageLive(_5);
+        StorageLive(_6);
+        _6 = &_1;
+        _5 = (move _6,);
+        StorageDead(_6);
+        StorageLive(_7);
+        StorageLive(_8);
+        StorageLive(_9);
+        _14 = deref_copy (_5.0: &T);
+        _9 = &(*_14);
+        _8 = core::fmt::rt::Argument::<'_>::new_display::<T>(move _9) -> [return: bb1, unwind: bb5];
+    }
+
+    bb1: {
+        StorageDead(_9);
+        _7 = [move _8];
+        StorageDead(_8);
+        StorageLive(_10);
+        StorageLive(_11);
+        _11 = const b"\xc0\x01\n\x00";
+        _10 = &(*_11);
+        StorageLive(_12);
+        StorageLive(_13);
+        _13 = &_7;
+        _12 = &(*_13);
+        _4 = Arguments::<'_>::new::<4, 1>(move _10, move _12) -> [return: bb2, unwind: bb5];
+    }
+
+    bb2: {
+        StorageDead(_13);
+        StorageDead(_12);
+        StorageDead(_11);
+        StorageDead(_10);
+        _3 = std::io::_print(move _4) -> [return: bb3, unwind: bb5];
+    }
+
+    bb3: {
+        StorageDead(_4);
+        StorageDead(_7);
+        StorageDead(_5);
+        StorageDead(_3);
+        _2 = const ();
+        StorageDead(_2);
+        _0 = const ();
+        drop(_1) -> [return: bb4, unwind: bb6];
+    }
+
+    bb4: {
+        return;
+    }
+
+    bb5 (cleanup): {
+        drop(_1) -> [return: bb6, unwind terminate(cleanup)];
+    }
+
+    bb6 (cleanup): {
+        resume;
+    }
+}
+
+alloc1 (size: 4, align: 1) {
+    c0 01 0a 00                                     │ ....
+}

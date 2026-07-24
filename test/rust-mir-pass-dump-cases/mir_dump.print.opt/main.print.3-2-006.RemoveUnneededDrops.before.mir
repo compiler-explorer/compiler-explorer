@@ -1,0 +1,126 @@
+// MIR for `print` before RemoveUnneededDrops
+
+fn print(_1: T) -> () {
+    debug value => _1;
+    let mut _0: ();
+    let _2: ();
+    let _3: ();
+    let mut _4: std::fmt::Arguments<'_>;
+    let _5: (&T,);
+    let mut _6: &T;
+    let mut _8: core::fmt::rt::Argument<'_>;
+    let mut _9: &T;
+    let mut _10: &[u8; 4];
+    let _11: &[u8; 4];
+    let mut _12: &[core::fmt::rt::Argument<'_>; 1];
+    let _13: &[core::fmt::rt::Argument<'_>; 1];
+    let mut _14: &T;
+    scope 1 {
+        debug args => _5;
+        let _7: [core::fmt::rt::Argument<'_>; 1];
+        scope 2 {
+            debug args => _7;
+            scope 8 (inlined Arguments::<'_>::new::<4, 1>) {
+                let mut _20: std::ptr::NonNull<u8>;
+                let mut _21: std::ptr::NonNull<core::fmt::rt::Argument<'_>>;
+            }
+        }
+        scope 3 (inlined core::fmt::rt::Argument::<'_>::new_display::<T>) {
+            let mut _15: core::fmt::rt::ArgumentType<'_>;
+            let mut _16: std::ptr::NonNull<()>;
+            let mut _17: for<'a, 'b> unsafe fn(std::ptr::NonNull<()>, &'a mut std::fmt::Formatter<'b>) -> std::result::Result<(), std::fmt::Error>;
+            let _18: for<'a, 'b, 'c> fn(&'a T, &'b mut std::fmt::Formatter<'c>) -> std::result::Result<(), std::fmt::Error>;
+            scope 4 {
+            }
+            scope 5 (inlined NonNull::<T>::from_ref) {
+                let mut _19: *const T;
+            }
+            scope 6 (inlined NonNull::<T>::cast::<()>) {
+                scope 7 (inlined NonNull::<T>::as_ptr) {
+                }
+            }
+        }
+    }
+
+    bb0: {
+        nop;
+        nop;
+        StorageLive(_4);
+        StorageLive(_5);
+        StorageLive(_6);
+        _6 = &_1;
+        _5 = (move _6,);
+        StorageDead(_6);
+        StorageLive(_7);
+        StorageLive(_8);
+        StorageLive(_9);
+        _14 = no_retag copy (_5.0: &T);
+        _9 = copy _14;
+        StorageLive(_19);
+        StorageLive(_15);
+        StorageLive(_16);
+        _19 = &raw const (*_9);
+        _16 = copy _19 as std::ptr::NonNull<()> (Transmute);
+        StorageLive(_17);
+        StorageLive(_18);
+        _18 = <T as std::fmt::Display>::fmt as for<'a, 'b, 'c> fn(&'a T, &'b mut std::fmt::Formatter<'c>) -> std::result::Result<(), std::fmt::Error> (PointerCoercion(ReifyFnPointer(Safe), Implicit));
+        _17 = copy _18 as for<'a, 'b> unsafe fn(std::ptr::NonNull<()>, &'a mut std::fmt::Formatter<'b>) -> std::result::Result<(), std::fmt::Error> (Transmute);
+        StorageDead(_18);
+        _15 = core::fmt::rt::ArgumentType::<'_>::Placeholder { value: move _16, formatter: copy _17, _lifetime: const PhantomData::<&()> };
+        StorageDead(_17);
+        StorageDead(_16);
+        _8 = core::fmt::rt::Argument::<'_> { ty: move _15 };
+        StorageDead(_15);
+        StorageDead(_19);
+        StorageDead(_9);
+        _7 = [move _8];
+        StorageDead(_8);
+        StorageLive(_10);
+        StorageLive(_11);
+        _11 = const b"\xc0\x01\n\x00";
+        _10 = copy _11;
+        StorageLive(_12);
+        StorageLive(_13);
+        _13 = &_7;
+        _12 = copy _13;
+        StorageLive(_20);
+        _20 = copy _10 as std::ptr::NonNull<u8> (Transmute);
+        StorageLive(_21);
+        _21 = copy _12 as std::ptr::NonNull<core::fmt::rt::Argument<'_>> (Transmute);
+        _4 = Arguments::<'_> { template: move _20, args: move _21 };
+        StorageDead(_21);
+        StorageDead(_20);
+        StorageDead(_13);
+        StorageDead(_12);
+        StorageDead(_11);
+        StorageDead(_10);
+        _3 = std::io::_print(move _4) -> [return: bb1, unwind: bb3];
+    }
+
+    bb1: {
+        StorageDead(_4);
+        StorageDead(_7);
+        StorageDead(_5);
+        nop;
+        nop;
+        nop;
+        nop;
+        drop(_1) -> [return: bb2, unwind: bb4];
+    }
+
+    bb2: {
+        return;
+    }
+
+    bb3 (cleanup): {
+        drop(_1) -> [return: bb4, unwind terminate(cleanup)];
+    }
+
+    bb4 (cleanup): {
+        resume;
+    }
+}
+
+alloc1 (size: 4, align: 1) {
+    c0 01 0a 00                                     │ ....
+}

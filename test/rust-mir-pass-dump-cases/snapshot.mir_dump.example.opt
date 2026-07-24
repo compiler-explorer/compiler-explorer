@@ -1,0 +1,5832 @@
+{
+  "main.square": [
+    {
+      "after": [
+        {
+          "text": "// MIR for `square` after LintAndRemoveUninhabited",
+        },
+        {
+          "text": "",
+        },
+        {
+          "text": "fn square(_1: i32) -> i32 {",
+        },
+        {
+          "text": "    debug num => _1;",
+        },
+        {
+          "text": "    let mut _0: i32;",
+        },
+        {
+          "text": "    let mut _2: i32;",
+        },
+        {
+          "text": "    let mut _3: i32;",
+        },
+        {
+          "text": "",
+        },
+        {
+          "text": "    bb0: {",
+        },
+        {
+          "text": "        StorageLive(_2);",
+        },
+        {
+          "text": "        _2 = copy _1;",
+        },
+        {
+          "text": "        StorageLive(_3);",
+        },
+        {
+          "text": "        _3 = copy _1;",
+        },
+        {
+          "text": "        _0 = Mul(move _2, move _3);",
+        },
+        {
+          "text": "        StorageDead(_3);",
+        },
+        {
+          "text": "        StorageDead(_2);",
+        },
+        {
+          "text": "        return;",
+        },
+        {
+          "text": "    }",
+        },
+        {
+          "text": "}",
+        },
+      ],
+      "before": [
+        {
+          "text": "// MIR for `square` before LintAndRemoveUninhabited",
+        },
+        {
+          "text": "",
+        },
+        {
+          "text": "fn square(_1: i32) -> i32 {",
+        },
+        {
+          "text": "    debug num => _1;",
+        },
+        {
+          "text": "    let mut _0: i32;",
+        },
+        {
+          "text": "    let mut _2: i32;",
+        },
+        {
+          "text": "    let mut _3: i32;",
+        },
+        {
+          "text": "",
+        },
+        {
+          "text": "    bb0: {",
+        },
+        {
+          "text": "        StorageLive(_2);",
+        },
+        {
+          "text": "        _2 = copy _1;",
+        },
+        {
+          "text": "        StorageLive(_3);",
+        },
+        {
+          "text": "        _3 = copy _1;",
+        },
+        {
+          "text": "        _0 = Mul(move _2, move _3);",
+        },
+        {
+          "text": "        StorageDead(_3);",
+        },
+        {
+          "text": "        StorageDead(_2);",
+        },
+        {
+          "text": "        return;",
+        },
+        {
+          "text": "    }",
+        },
+        {
+          "text": "}",
+        },
+      ],
+      "irChanged": false,
+      "machine": false,
+      "name": "LintAndRemoveUninhabited",
+      "passId": "1-1-000",
+    },
+    {
+      "after": [
+        {
+          "text": "// MIR for `square` after SimplifyCfg-initial",
+        },
+        {
+          "text": "",
+        },
+        {
+          "text": "fn square(_1: i32) -> i32 {",
+        },
+        {
+          "text": "    debug num => _1;",
+        },
+        {
+          "text": "    let mut _0: i32;",
+        },
+        {
+          "text": "    let mut _2: i32;",
+        },
+        {
+          "text": "    let mut _3: i32;",
+        },
+        {
+          "text": "",
+        },
+        {
+          "text": "    bb0: {",
+        },
+        {
+          "text": "        StorageLive(_2);",
+        },
+        {
+          "text": "        _2 = copy _1;",
+        },
+        {
+          "text": "        StorageLive(_3);",
+        },
+        {
+          "text": "        _3 = copy _1;",
+        },
+        {
+          "text": "        _0 = Mul(move _2, move _3);",
+        },
+        {
+          "text": "        StorageDead(_3);",
+        },
+        {
+          "text": "        StorageDead(_2);",
+        },
+        {
+          "text": "        return;",
+        },
+        {
+          "text": "    }",
+        },
+        {
+          "text": "}",
+        },
+      ],
+      "before": [
+        {
+          "text": "// MIR for `square` before SimplifyCfg-initial",
+        },
+        {
+          "text": "",
+        },
+        {
+          "text": "fn square(_1: i32) -> i32 {",
+        },
+        {
+          "text": "    debug num => _1;",
+        },
+        {
+          "text": "    let mut _0: i32;",
+        },
+        {
+          "text": "    let mut _2: i32;",
+        },
+        {
+          "text": "    let mut _3: i32;",
+        },
+        {
+          "text": "",
+        },
+        {
+          "text": "    bb0: {",
+        },
+        {
+          "text": "        StorageLive(_2);",
+        },
+        {
+          "text": "        _2 = copy _1;",
+        },
+        {
+          "text": "        StorageLive(_3);",
+        },
+        {
+          "text": "        _3 = copy _1;",
+        },
+        {
+          "text": "        _0 = Mul(move _2, move _3);",
+        },
+        {
+          "text": "        StorageDead(_3);",
+        },
+        {
+          "text": "        StorageDead(_2);",
+        },
+        {
+          "text": "        return;",
+        },
+        {
+          "text": "    }",
+        },
+        {
+          "text": "}",
+        },
+      ],
+      "irChanged": false,
+      "machine": false,
+      "name": "SimplifyCfg-initial",
+      "passId": "1-1-006",
+    },
+    {
+      "after": [
+        {
+          "text": "// MIR for `square` after PromoteTemps",
+        },
+        {
+          "text": "",
+        },
+        {
+          "text": "fn square(_1: i32) -> i32 {",
+        },
+        {
+          "text": "    debug num => _1;",
+        },
+        {
+          "text": "    let mut _0: i32;",
+        },
+        {
+          "text": "    let mut _2: i32;",
+        },
+        {
+          "text": "    let mut _3: i32;",
+        },
+        {
+          "text": "",
+        },
+        {
+          "text": "    bb0: {",
+        },
+        {
+          "text": "        StorageLive(_2);",
+        },
+        {
+          "text": "        _2 = copy _1;",
+        },
+        {
+          "text": "        StorageLive(_3);",
+        },
+        {
+          "text": "        _3 = copy _1;",
+        },
+        {
+          "text": "        _0 = Mul(move _2, move _3);",
+        },
+        {
+          "text": "        StorageDead(_3);",
+        },
+        {
+          "text": "        StorageDead(_2);",
+        },
+        {
+          "text": "        return;",
+        },
+        {
+          "text": "    }",
+        },
+        {
+          "text": "}",
+        },
+      ],
+      "before": [
+        {
+          "text": "// MIR for `square` before PromoteTemps",
+        },
+        {
+          "text": "",
+        },
+        {
+          "text": "fn square(_1: i32) -> i32 {",
+        },
+        {
+          "text": "    debug num => _1;",
+        },
+        {
+          "text": "    let mut _0: i32;",
+        },
+        {
+          "text": "    let mut _2: i32;",
+        },
+        {
+          "text": "    let mut _3: i32;",
+        },
+        {
+          "text": "",
+        },
+        {
+          "text": "    bb0: {",
+        },
+        {
+          "text": "        StorageLive(_2);",
+        },
+        {
+          "text": "        _2 = copy _1;",
+        },
+        {
+          "text": "        StorageLive(_3);",
+        },
+        {
+          "text": "        _3 = copy _1;",
+        },
+        {
+          "text": "        _0 = Mul(move _2, move _3);",
+        },
+        {
+          "text": "        StorageDead(_3);",
+        },
+        {
+          "text": "        StorageDead(_2);",
+        },
+        {
+          "text": "        return;",
+        },
+        {
+          "text": "    }",
+        },
+        {
+          "text": "}",
+        },
+      ],
+      "irChanged": false,
+      "machine": false,
+      "name": "PromoteTemps",
+      "passId": "1-1-008",
+    },
+    {
+      "after": [
+        {
+          "text": "// MIR for `square` after SimplifyCfg-promote-consts",
+        },
+        {
+          "text": "",
+        },
+        {
+          "text": "fn square(_1: i32) -> i32 {",
+        },
+        {
+          "text": "    debug num => _1;",
+        },
+        {
+          "text": "    let mut _0: i32;",
+        },
+        {
+          "text": "    let mut _2: i32;",
+        },
+        {
+          "text": "    let mut _3: i32;",
+        },
+        {
+          "text": "",
+        },
+        {
+          "text": "    bb0: {",
+        },
+        {
+          "text": "        StorageLive(_2);",
+        },
+        {
+          "text": "        _2 = copy _1;",
+        },
+        {
+          "text": "        StorageLive(_3);",
+        },
+        {
+          "text": "        _3 = copy _1;",
+        },
+        {
+          "text": "        _0 = Mul(move _2, move _3);",
+        },
+        {
+          "text": "        StorageDead(_3);",
+        },
+        {
+          "text": "        StorageDead(_2);",
+        },
+        {
+          "text": "        return;",
+        },
+        {
+          "text": "    }",
+        },
+        {
+          "text": "}",
+        },
+      ],
+      "before": [
+        {
+          "text": "// MIR for `square` before SimplifyCfg-promote-consts",
+        },
+        {
+          "text": "",
+        },
+        {
+          "text": "fn square(_1: i32) -> i32 {",
+        },
+        {
+          "text": "    debug num => _1;",
+        },
+        {
+          "text": "    let mut _0: i32;",
+        },
+        {
+          "text": "    let mut _2: i32;",
+        },
+        {
+          "text": "    let mut _3: i32;",
+        },
+        {
+          "text": "",
+        },
+        {
+          "text": "    bb0: {",
+        },
+        {
+          "text": "        StorageLive(_2);",
+        },
+        {
+          "text": "        _2 = copy _1;",
+        },
+        {
+          "text": "        StorageLive(_3);",
+        },
+        {
+          "text": "        _3 = copy _1;",
+        },
+        {
+          "text": "        _0 = Mul(move _2, move _3);",
+        },
+        {
+          "text": "        StorageDead(_3);",
+        },
+        {
+          "text": "        StorageDead(_2);",
+        },
+        {
+          "text": "        return;",
+        },
+        {
+          "text": "    }",
+        },
+        {
+          "text": "}",
+        },
+      ],
+      "irChanged": false,
+      "machine": false,
+      "name": "SimplifyCfg-promote-consts",
+      "passId": "1-1-009",
+    },
+    {
+      "after": [
+        {
+          "text": "// MIR for `square` after ImpossiblePredicates",
+        },
+        {
+          "text": "",
+        },
+        {
+          "text": "fn square(_1: i32) -> i32 {",
+        },
+        {
+          "text": "    debug num => _1;",
+        },
+        {
+          "text": "    let mut _0: i32;",
+        },
+        {
+          "text": "    let mut _2: i32;",
+        },
+        {
+          "text": "    let mut _3: i32;",
+        },
+        {
+          "text": "",
+        },
+        {
+          "text": "    bb0: {",
+        },
+        {
+          "text": "        StorageLive(_2);",
+        },
+        {
+          "text": "        _2 = copy _1;",
+        },
+        {
+          "text": "        StorageLive(_3);",
+        },
+        {
+          "text": "        _3 = copy _1;",
+        },
+        {
+          "text": "        _0 = Mul(move _2, move _3);",
+        },
+        {
+          "text": "        StorageDead(_3);",
+        },
+        {
+          "text": "        StorageDead(_2);",
+        },
+        {
+          "text": "        return;",
+        },
+        {
+          "text": "    }",
+        },
+        {
+          "text": "}",
+        },
+      ],
+      "before": [
+        {
+          "text": "// MIR for `square` before ImpossiblePredicates",
+        },
+        {
+          "text": "",
+        },
+        {
+          "text": "fn square(_1: i32) -> i32 {",
+        },
+        {
+          "text": "    debug num => _1;",
+        },
+        {
+          "text": "    let mut _0: i32;",
+        },
+        {
+          "text": "    let mut _2: i32;",
+        },
+        {
+          "text": "    let mut _3: i32;",
+        },
+        {
+          "text": "",
+        },
+        {
+          "text": "    bb0: {",
+        },
+        {
+          "text": "        StorageLive(_2);",
+        },
+        {
+          "text": "        _2 = copy _1;",
+        },
+        {
+          "text": "        StorageLive(_3);",
+        },
+        {
+          "text": "        _3 = copy _1;",
+        },
+        {
+          "text": "        _0 = Mul(move _2, move _3);",
+        },
+        {
+          "text": "        StorageDead(_3);",
+        },
+        {
+          "text": "        StorageDead(_2);",
+        },
+        {
+          "text": "        return;",
+        },
+        {
+          "text": "    }",
+        },
+        {
+          "text": "}",
+        },
+      ],
+      "irChanged": false,
+      "machine": false,
+      "name": "ImpossiblePredicates",
+      "passId": "2-1-001",
+    },
+    {
+      "after": [
+        {
+          "text": "// MIR for `square` after CleanupPostBorrowck",
+        },
+        {
+          "text": "",
+        },
+        {
+          "text": "fn square(_1: i32) -> i32 {",
+        },
+        {
+          "text": "    debug num => _1;",
+        },
+        {
+          "text": "    let mut _0: i32;",
+        },
+        {
+          "text": "    let mut _2: i32;",
+        },
+        {
+          "text": "    let mut _3: i32;",
+        },
+        {
+          "text": "",
+        },
+        {
+          "text": "    bb0: {",
+        },
+        {
+          "text": "        StorageLive(_2);",
+        },
+        {
+          "text": "        _2 = copy _1;",
+        },
+        {
+          "text": "        StorageLive(_3);",
+        },
+        {
+          "text": "        _3 = copy _1;",
+        },
+        {
+          "text": "        _0 = Mul(move _2, move _3);",
+        },
+        {
+          "text": "        StorageDead(_3);",
+        },
+        {
+          "text": "        StorageDead(_2);",
+        },
+        {
+          "text": "        return;",
+        },
+        {
+          "text": "    }",
+        },
+        {
+          "text": "}",
+        },
+      ],
+      "before": [
+        {
+          "text": "// MIR for `square` before CleanupPostBorrowck",
+        },
+        {
+          "text": "",
+        },
+        {
+          "text": "fn square(_1: i32) -> i32 {",
+        },
+        {
+          "text": "    debug num => _1;",
+        },
+        {
+          "text": "    let mut _0: i32;",
+        },
+        {
+          "text": "    let mut _2: i32;",
+        },
+        {
+          "text": "    let mut _3: i32;",
+        },
+        {
+          "text": "",
+        },
+        {
+          "text": "    bb0: {",
+        },
+        {
+          "text": "        StorageLive(_2);",
+        },
+        {
+          "text": "        _2 = copy _1;",
+        },
+        {
+          "text": "        StorageLive(_3);",
+        },
+        {
+          "text": "        _3 = copy _1;",
+        },
+        {
+          "text": "        _0 = Mul(move _2, move _3);",
+        },
+        {
+          "text": "        StorageDead(_3);",
+        },
+        {
+          "text": "        StorageDead(_2);",
+        },
+        {
+          "text": "        return;",
+        },
+        {
+          "text": "    }",
+        },
+        {
+          "text": "}",
+        },
+      ],
+      "irChanged": false,
+      "machine": false,
+      "name": "CleanupPostBorrowck",
+      "passId": "2-1-002",
+    },
+    {
+      "after": [
+        {
+          "text": "// MIR for `square` after RemoveNoopLandingPads",
+        },
+        {
+          "text": "",
+        },
+        {
+          "text": "fn square(_1: i32) -> i32 {",
+        },
+        {
+          "text": "    debug num => _1;",
+        },
+        {
+          "text": "    let mut _0: i32;",
+        },
+        {
+          "text": "    let mut _2: i32;",
+        },
+        {
+          "text": "    let mut _3: i32;",
+        },
+        {
+          "text": "",
+        },
+        {
+          "text": "    bb0: {",
+        },
+        {
+          "text": "        StorageLive(_2);",
+        },
+        {
+          "text": "        _2 = copy _1;",
+        },
+        {
+          "text": "        StorageLive(_3);",
+        },
+        {
+          "text": "        _3 = copy _1;",
+        },
+        {
+          "text": "        _0 = Mul(move _2, move _3);",
+        },
+        {
+          "text": "        StorageDead(_3);",
+        },
+        {
+          "text": "        StorageDead(_2);",
+        },
+        {
+          "text": "        return;",
+        },
+        {
+          "text": "    }",
+        },
+        {
+          "text": "}",
+        },
+      ],
+      "before": [
+        {
+          "text": "// MIR for `square` before RemoveNoopLandingPads",
+        },
+        {
+          "text": "",
+        },
+        {
+          "text": "fn square(_1: i32) -> i32 {",
+        },
+        {
+          "text": "    debug num => _1;",
+        },
+        {
+          "text": "    let mut _0: i32;",
+        },
+        {
+          "text": "    let mut _2: i32;",
+        },
+        {
+          "text": "    let mut _3: i32;",
+        },
+        {
+          "text": "",
+        },
+        {
+          "text": "    bb0: {",
+        },
+        {
+          "text": "        StorageLive(_2);",
+        },
+        {
+          "text": "        _2 = copy _1;",
+        },
+        {
+          "text": "        StorageLive(_3);",
+        },
+        {
+          "text": "        _3 = copy _1;",
+        },
+        {
+          "text": "        _0 = Mul(move _2, move _3);",
+        },
+        {
+          "text": "        StorageDead(_3);",
+        },
+        {
+          "text": "        StorageDead(_2);",
+        },
+        {
+          "text": "        return;",
+        },
+        {
+          "text": "    }",
+        },
+        {
+          "text": "}",
+        },
+      ],
+      "irChanged": false,
+      "machine": false,
+      "name": "RemoveNoopLandingPads",
+      "passId": "2-1-003",
+    },
+    {
+      "after": [
+        {
+          "text": "// MIR for `square` after SimplifyCfg-post-analysis",
+        },
+        {
+          "text": "",
+        },
+        {
+          "text": "fn square(_1: i32) -> i32 {",
+        },
+        {
+          "text": "    debug num => _1;",
+        },
+        {
+          "text": "    let mut _0: i32;",
+        },
+        {
+          "text": "    let mut _2: i32;",
+        },
+        {
+          "text": "    let mut _3: i32;",
+        },
+        {
+          "text": "",
+        },
+        {
+          "text": "    bb0: {",
+        },
+        {
+          "text": "        StorageLive(_2);",
+        },
+        {
+          "text": "        _2 = copy _1;",
+        },
+        {
+          "text": "        StorageLive(_3);",
+        },
+        {
+          "text": "        _3 = copy _1;",
+        },
+        {
+          "text": "        _0 = Mul(move _2, move _3);",
+        },
+        {
+          "text": "        StorageDead(_3);",
+        },
+        {
+          "text": "        StorageDead(_2);",
+        },
+        {
+          "text": "        return;",
+        },
+        {
+          "text": "    }",
+        },
+        {
+          "text": "}",
+        },
+      ],
+      "before": [
+        {
+          "text": "// MIR for `square` before SimplifyCfg-post-analysis",
+        },
+        {
+          "text": "",
+        },
+        {
+          "text": "fn square(_1: i32) -> i32 {",
+        },
+        {
+          "text": "    debug num => _1;",
+        },
+        {
+          "text": "    let mut _0: i32;",
+        },
+        {
+          "text": "    let mut _2: i32;",
+        },
+        {
+          "text": "    let mut _3: i32;",
+        },
+        {
+          "text": "",
+        },
+        {
+          "text": "    bb0: {",
+        },
+        {
+          "text": "        StorageLive(_2);",
+        },
+        {
+          "text": "        _2 = copy _1;",
+        },
+        {
+          "text": "        StorageLive(_3);",
+        },
+        {
+          "text": "        _3 = copy _1;",
+        },
+        {
+          "text": "        _0 = Mul(move _2, move _3);",
+        },
+        {
+          "text": "        StorageDead(_3);",
+        },
+        {
+          "text": "        StorageDead(_2);",
+        },
+        {
+          "text": "        return;",
+        },
+        {
+          "text": "    }",
+        },
+        {
+          "text": "}",
+        },
+      ],
+      "irChanged": false,
+      "machine": false,
+      "name": "SimplifyCfg-post-analysis",
+      "passId": "2-1-004",
+    },
+    {
+      "after": [
+        {
+          "text": "// MIR for `square` after Derefer",
+        },
+        {
+          "text": "",
+        },
+        {
+          "text": "fn square(_1: i32) -> i32 {",
+        },
+        {
+          "text": "    debug num => _1;",
+        },
+        {
+          "text": "    let mut _0: i32;",
+        },
+        {
+          "text": "    let mut _2: i32;",
+        },
+        {
+          "text": "    let mut _3: i32;",
+        },
+        {
+          "text": "",
+        },
+        {
+          "text": "    bb0: {",
+        },
+        {
+          "text": "        StorageLive(_2);",
+        },
+        {
+          "text": "        _2 = copy _1;",
+        },
+        {
+          "text": "        StorageLive(_3);",
+        },
+        {
+          "text": "        _3 = copy _1;",
+        },
+        {
+          "text": "        _0 = Mul(move _2, move _3);",
+        },
+        {
+          "text": "        StorageDead(_3);",
+        },
+        {
+          "text": "        StorageDead(_2);",
+        },
+        {
+          "text": "        return;",
+        },
+        {
+          "text": "    }",
+        },
+        {
+          "text": "}",
+        },
+      ],
+      "before": [
+        {
+          "text": "// MIR for `square` before Derefer",
+        },
+        {
+          "text": "",
+        },
+        {
+          "text": "fn square(_1: i32) -> i32 {",
+        },
+        {
+          "text": "    debug num => _1;",
+        },
+        {
+          "text": "    let mut _0: i32;",
+        },
+        {
+          "text": "    let mut _2: i32;",
+        },
+        {
+          "text": "    let mut _3: i32;",
+        },
+        {
+          "text": "",
+        },
+        {
+          "text": "    bb0: {",
+        },
+        {
+          "text": "        StorageLive(_2);",
+        },
+        {
+          "text": "        _2 = copy _1;",
+        },
+        {
+          "text": "        StorageLive(_3);",
+        },
+        {
+          "text": "        _3 = copy _1;",
+        },
+        {
+          "text": "        _0 = Mul(move _2, move _3);",
+        },
+        {
+          "text": "        StorageDead(_3);",
+        },
+        {
+          "text": "        StorageDead(_2);",
+        },
+        {
+          "text": "        return;",
+        },
+        {
+          "text": "    }",
+        },
+        {
+          "text": "}",
+        },
+      ],
+      "irChanged": false,
+      "machine": false,
+      "name": "Derefer",
+      "passId": "2-1-005",
+    },
+    {
+      "after": [
+        {
+          "text": "// MIR for `square` after AddCallGuards",
+        },
+        {
+          "text": "",
+        },
+        {
+          "text": "fn square(_1: i32) -> i32 {",
+        },
+        {
+          "text": "    debug num => _1;",
+        },
+        {
+          "text": "    let mut _0: i32;",
+        },
+        {
+          "text": "    let mut _2: i32;",
+        },
+        {
+          "text": "    let mut _3: i32;",
+        },
+        {
+          "text": "",
+        },
+        {
+          "text": "    bb0: {",
+        },
+        {
+          "text": "        StorageLive(_2);",
+        },
+        {
+          "text": "        _2 = copy _1;",
+        },
+        {
+          "text": "        StorageLive(_3);",
+        },
+        {
+          "text": "        _3 = copy _1;",
+        },
+        {
+          "text": "        _0 = Mul(move _2, move _3);",
+        },
+        {
+          "text": "        StorageDead(_3);",
+        },
+        {
+          "text": "        StorageDead(_2);",
+        },
+        {
+          "text": "        return;",
+        },
+        {
+          "text": "    }",
+        },
+        {
+          "text": "}",
+        },
+      ],
+      "before": [
+        {
+          "text": "// MIR for `square` before AddCallGuards",
+        },
+        {
+          "text": "",
+        },
+        {
+          "text": "fn square(_1: i32) -> i32 {",
+        },
+        {
+          "text": "    debug num => _1;",
+        },
+        {
+          "text": "    let mut _0: i32;",
+        },
+        {
+          "text": "    let mut _2: i32;",
+        },
+        {
+          "text": "    let mut _3: i32;",
+        },
+        {
+          "text": "",
+        },
+        {
+          "text": "    bb0: {",
+        },
+        {
+          "text": "        StorageLive(_2);",
+        },
+        {
+          "text": "        _2 = copy _1;",
+        },
+        {
+          "text": "        StorageLive(_3);",
+        },
+        {
+          "text": "        _3 = copy _1;",
+        },
+        {
+          "text": "        _0 = Mul(move _2, move _3);",
+        },
+        {
+          "text": "        StorageDead(_3);",
+        },
+        {
+          "text": "        StorageDead(_2);",
+        },
+        {
+          "text": "        return;",
+        },
+        {
+          "text": "    }",
+        },
+        {
+          "text": "}",
+        },
+      ],
+      "irChanged": false,
+      "machine": false,
+      "name": "AddCallGuards",
+      "passId": "2-2-001",
+    },
+    {
+      "after": [
+        {
+          "text": "// MIR for `square` after PostAnalysisNormalize",
+        },
+        {
+          "text": "",
+        },
+        {
+          "text": "fn square(_1: i32) -> i32 {",
+        },
+        {
+          "text": "    debug num => _1;",
+        },
+        {
+          "text": "    let mut _0: i32;",
+        },
+        {
+          "text": "    let mut _2: i32;",
+        },
+        {
+          "text": "    let mut _3: i32;",
+        },
+        {
+          "text": "",
+        },
+        {
+          "text": "    bb0: {",
+        },
+        {
+          "text": "        StorageLive(_2);",
+        },
+        {
+          "text": "        _2 = copy _1;",
+        },
+        {
+          "text": "        StorageLive(_3);",
+        },
+        {
+          "text": "        _3 = copy _1;",
+        },
+        {
+          "text": "        _0 = Mul(move _2, move _3);",
+        },
+        {
+          "text": "        StorageDead(_3);",
+        },
+        {
+          "text": "        StorageDead(_2);",
+        },
+        {
+          "text": "        return;",
+        },
+        {
+          "text": "    }",
+        },
+        {
+          "text": "}",
+        },
+      ],
+      "before": [
+        {
+          "text": "// MIR for `square` before PostAnalysisNormalize",
+        },
+        {
+          "text": "",
+        },
+        {
+          "text": "fn square(_1: i32) -> i32 {",
+        },
+        {
+          "text": "    debug num => _1;",
+        },
+        {
+          "text": "    let mut _0: i32;",
+        },
+        {
+          "text": "    let mut _2: i32;",
+        },
+        {
+          "text": "    let mut _3: i32;",
+        },
+        {
+          "text": "",
+        },
+        {
+          "text": "    bb0: {",
+        },
+        {
+          "text": "        StorageLive(_2);",
+        },
+        {
+          "text": "        _2 = copy _1;",
+        },
+        {
+          "text": "        StorageLive(_3);",
+        },
+        {
+          "text": "        _3 = copy _1;",
+        },
+        {
+          "text": "        _0 = Mul(move _2, move _3);",
+        },
+        {
+          "text": "        StorageDead(_3);",
+        },
+        {
+          "text": "        StorageDead(_2);",
+        },
+        {
+          "text": "        return;",
+        },
+        {
+          "text": "    }",
+        },
+        {
+          "text": "}",
+        },
+      ],
+      "irChanged": false,
+      "machine": false,
+      "name": "PostAnalysisNormalize",
+      "passId": "2-2-002",
+    },
+    {
+      "after": [
+        {
+          "text": "// MIR for `square` after Subtyper",
+        },
+        {
+          "text": "",
+        },
+        {
+          "text": "fn square(_1: i32) -> i32 {",
+        },
+        {
+          "text": "    debug num => _1;",
+        },
+        {
+          "text": "    let mut _0: i32;",
+        },
+        {
+          "text": "    let mut _2: i32;",
+        },
+        {
+          "text": "    let mut _3: i32;",
+        },
+        {
+          "text": "",
+        },
+        {
+          "text": "    bb0: {",
+        },
+        {
+          "text": "        StorageLive(_2);",
+        },
+        {
+          "text": "        _2 = copy _1;",
+        },
+        {
+          "text": "        StorageLive(_3);",
+        },
+        {
+          "text": "        _3 = copy _1;",
+        },
+        {
+          "text": "        _0 = Mul(move _2, move _3);",
+        },
+        {
+          "text": "        StorageDead(_3);",
+        },
+        {
+          "text": "        StorageDead(_2);",
+        },
+        {
+          "text": "        return;",
+        },
+        {
+          "text": "    }",
+        },
+        {
+          "text": "}",
+        },
+      ],
+      "before": [
+        {
+          "text": "// MIR for `square` before Subtyper",
+        },
+        {
+          "text": "",
+        },
+        {
+          "text": "fn square(_1: i32) -> i32 {",
+        },
+        {
+          "text": "    debug num => _1;",
+        },
+        {
+          "text": "    let mut _0: i32;",
+        },
+        {
+          "text": "    let mut _2: i32;",
+        },
+        {
+          "text": "    let mut _3: i32;",
+        },
+        {
+          "text": "",
+        },
+        {
+          "text": "    bb0: {",
+        },
+        {
+          "text": "        StorageLive(_2);",
+        },
+        {
+          "text": "        _2 = copy _1;",
+        },
+        {
+          "text": "        StorageLive(_3);",
+        },
+        {
+          "text": "        _3 = copy _1;",
+        },
+        {
+          "text": "        _0 = Mul(move _2, move _3);",
+        },
+        {
+          "text": "        StorageDead(_3);",
+        },
+        {
+          "text": "        StorageDead(_2);",
+        },
+        {
+          "text": "        return;",
+        },
+        {
+          "text": "    }",
+        },
+        {
+          "text": "}",
+        },
+      ],
+      "irChanged": false,
+      "machine": false,
+      "name": "Subtyper",
+      "passId": "2-2-003",
+    },
+    {
+      "after": [
+        {
+          "text": "// MIR for `square` after ElaborateDrops",
+        },
+        {
+          "text": "",
+        },
+        {
+          "text": "fn square(_1: i32) -> i32 {",
+        },
+        {
+          "text": "    debug num => _1;",
+        },
+        {
+          "text": "    let mut _0: i32;",
+        },
+        {
+          "text": "    let mut _2: i32;",
+        },
+        {
+          "text": "    let mut _3: i32;",
+        },
+        {
+          "text": "",
+        },
+        {
+          "text": "    bb0: {",
+        },
+        {
+          "text": "        StorageLive(_2);",
+        },
+        {
+          "text": "        _2 = copy _1;",
+        },
+        {
+          "text": "        StorageLive(_3);",
+        },
+        {
+          "text": "        _3 = copy _1;",
+        },
+        {
+          "text": "        _0 = Mul(move _2, move _3);",
+        },
+        {
+          "text": "        StorageDead(_3);",
+        },
+        {
+          "text": "        StorageDead(_2);",
+        },
+        {
+          "text": "        return;",
+        },
+        {
+          "text": "    }",
+        },
+        {
+          "text": "}",
+        },
+      ],
+      "before": [
+        {
+          "text": "// MIR for `square` before ElaborateDrops",
+        },
+        {
+          "text": "",
+        },
+        {
+          "text": "fn square(_1: i32) -> i32 {",
+        },
+        {
+          "text": "    debug num => _1;",
+        },
+        {
+          "text": "    let mut _0: i32;",
+        },
+        {
+          "text": "    let mut _2: i32;",
+        },
+        {
+          "text": "    let mut _3: i32;",
+        },
+        {
+          "text": "",
+        },
+        {
+          "text": "    bb0: {",
+        },
+        {
+          "text": "        StorageLive(_2);",
+        },
+        {
+          "text": "        _2 = copy _1;",
+        },
+        {
+          "text": "        StorageLive(_3);",
+        },
+        {
+          "text": "        _3 = copy _1;",
+        },
+        {
+          "text": "        _0 = Mul(move _2, move _3);",
+        },
+        {
+          "text": "        StorageDead(_3);",
+        },
+        {
+          "text": "        StorageDead(_2);",
+        },
+        {
+          "text": "        return;",
+        },
+        {
+          "text": "    }",
+        },
+        {
+          "text": "}",
+        },
+      ],
+      "irChanged": false,
+      "machine": false,
+      "name": "ElaborateDrops",
+      "passId": "2-2-004",
+    },
+    {
+      "after": [
+        {
+          "text": "// MIR for `square` after AbortUnwindingCalls",
+        },
+        {
+          "text": "",
+        },
+        {
+          "text": "fn square(_1: i32) -> i32 {",
+        },
+        {
+          "text": "    debug num => _1;",
+        },
+        {
+          "text": "    let mut _0: i32;",
+        },
+        {
+          "text": "    let mut _2: i32;",
+        },
+        {
+          "text": "    let mut _3: i32;",
+        },
+        {
+          "text": "",
+        },
+        {
+          "text": "    bb0: {",
+        },
+        {
+          "text": "        StorageLive(_2);",
+        },
+        {
+          "text": "        _2 = copy _1;",
+        },
+        {
+          "text": "        StorageLive(_3);",
+        },
+        {
+          "text": "        _3 = copy _1;",
+        },
+        {
+          "text": "        _0 = Mul(move _2, move _3);",
+        },
+        {
+          "text": "        StorageDead(_3);",
+        },
+        {
+          "text": "        StorageDead(_2);",
+        },
+        {
+          "text": "        return;",
+        },
+        {
+          "text": "    }",
+        },
+        {
+          "text": "}",
+        },
+      ],
+      "before": [
+        {
+          "text": "// MIR for `square` before AbortUnwindingCalls",
+        },
+        {
+          "text": "",
+        },
+        {
+          "text": "fn square(_1: i32) -> i32 {",
+        },
+        {
+          "text": "    debug num => _1;",
+        },
+        {
+          "text": "    let mut _0: i32;",
+        },
+        {
+          "text": "    let mut _2: i32;",
+        },
+        {
+          "text": "    let mut _3: i32;",
+        },
+        {
+          "text": "",
+        },
+        {
+          "text": "    bb0: {",
+        },
+        {
+          "text": "        StorageLive(_2);",
+        },
+        {
+          "text": "        _2 = copy _1;",
+        },
+        {
+          "text": "        StorageLive(_3);",
+        },
+        {
+          "text": "        _3 = copy _1;",
+        },
+        {
+          "text": "        _0 = Mul(move _2, move _3);",
+        },
+        {
+          "text": "        StorageDead(_3);",
+        },
+        {
+          "text": "        StorageDead(_2);",
+        },
+        {
+          "text": "        return;",
+        },
+        {
+          "text": "    }",
+        },
+        {
+          "text": "}",
+        },
+      ],
+      "irChanged": false,
+      "machine": false,
+      "name": "AbortUnwindingCalls",
+      "passId": "2-2-006",
+    },
+    {
+      "after": [
+        {
+          "text": "// MIR for `square` after AddMovesForPackedDrops",
+        },
+        {
+          "text": "",
+        },
+        {
+          "text": "fn square(_1: i32) -> i32 {",
+        },
+        {
+          "text": "    debug num => _1;",
+        },
+        {
+          "text": "    let mut _0: i32;",
+        },
+        {
+          "text": "    let mut _2: i32;",
+        },
+        {
+          "text": "    let mut _3: i32;",
+        },
+        {
+          "text": "",
+        },
+        {
+          "text": "    bb0: {",
+        },
+        {
+          "text": "        StorageLive(_2);",
+        },
+        {
+          "text": "        _2 = copy _1;",
+        },
+        {
+          "text": "        StorageLive(_3);",
+        },
+        {
+          "text": "        _3 = copy _1;",
+        },
+        {
+          "text": "        _0 = Mul(move _2, move _3);",
+        },
+        {
+          "text": "        StorageDead(_3);",
+        },
+        {
+          "text": "        StorageDead(_2);",
+        },
+        {
+          "text": "        return;",
+        },
+        {
+          "text": "    }",
+        },
+        {
+          "text": "}",
+        },
+      ],
+      "before": [
+        {
+          "text": "// MIR for `square` before AddMovesForPackedDrops",
+        },
+        {
+          "text": "",
+        },
+        {
+          "text": "fn square(_1: i32) -> i32 {",
+        },
+        {
+          "text": "    debug num => _1;",
+        },
+        {
+          "text": "    let mut _0: i32;",
+        },
+        {
+          "text": "    let mut _2: i32;",
+        },
+        {
+          "text": "    let mut _3: i32;",
+        },
+        {
+          "text": "",
+        },
+        {
+          "text": "    bb0: {",
+        },
+        {
+          "text": "        StorageLive(_2);",
+        },
+        {
+          "text": "        _2 = copy _1;",
+        },
+        {
+          "text": "        StorageLive(_3);",
+        },
+        {
+          "text": "        _3 = copy _1;",
+        },
+        {
+          "text": "        _0 = Mul(move _2, move _3);",
+        },
+        {
+          "text": "        StorageDead(_3);",
+        },
+        {
+          "text": "        StorageDead(_2);",
+        },
+        {
+          "text": "        return;",
+        },
+        {
+          "text": "    }",
+        },
+        {
+          "text": "}",
+        },
+      ],
+      "irChanged": false,
+      "machine": false,
+      "name": "AddMovesForPackedDrops",
+      "passId": "2-2-007",
+    },
+    {
+      "after": [
+        {
+          "text": "// MIR for `square` after EraseDerefTemps",
+        },
+        {
+          "text": "",
+        },
+        {
+          "text": "fn square(_1: i32) -> i32 {",
+        },
+        {
+          "text": "    debug num => _1;",
+        },
+        {
+          "text": "    let mut _0: i32;",
+        },
+        {
+          "text": "    let mut _2: i32;",
+        },
+        {
+          "text": "    let mut _3: i32;",
+        },
+        {
+          "text": "",
+        },
+        {
+          "text": "    bb0: {",
+        },
+        {
+          "text": "        StorageLive(_2);",
+        },
+        {
+          "text": "        _2 = copy _1;",
+        },
+        {
+          "text": "        StorageLive(_3);",
+        },
+        {
+          "text": "        _3 = copy _1;",
+        },
+        {
+          "text": "        _0 = Mul(move _2, move _3);",
+        },
+        {
+          "text": "        StorageDead(_3);",
+        },
+        {
+          "text": "        StorageDead(_2);",
+        },
+        {
+          "text": "        return;",
+        },
+        {
+          "text": "    }",
+        },
+        {
+          "text": "}",
+        },
+      ],
+      "before": [
+        {
+          "text": "// MIR for `square` before EraseDerefTemps",
+        },
+        {
+          "text": "",
+        },
+        {
+          "text": "fn square(_1: i32) -> i32 {",
+        },
+        {
+          "text": "    debug num => _1;",
+        },
+        {
+          "text": "    let mut _0: i32;",
+        },
+        {
+          "text": "    let mut _2: i32;",
+        },
+        {
+          "text": "    let mut _3: i32;",
+        },
+        {
+          "text": "",
+        },
+        {
+          "text": "    bb0: {",
+        },
+        {
+          "text": "        StorageLive(_2);",
+        },
+        {
+          "text": "        _2 = copy _1;",
+        },
+        {
+          "text": "        StorageLive(_3);",
+        },
+        {
+          "text": "        _3 = copy _1;",
+        },
+        {
+          "text": "        _0 = Mul(move _2, move _3);",
+        },
+        {
+          "text": "        StorageDead(_3);",
+        },
+        {
+          "text": "        StorageDead(_2);",
+        },
+        {
+          "text": "        return;",
+        },
+        {
+          "text": "    }",
+        },
+        {
+          "text": "}",
+        },
+      ],
+      "irChanged": false,
+      "machine": false,
+      "name": "EraseDerefTemps",
+      "passId": "2-2-008",
+    },
+    {
+      "after": [
+        {
+          "text": "// MIR for `square` after ElaborateBoxDerefs",
+        },
+        {
+          "text": "",
+        },
+        {
+          "text": "fn square(_1: i32) -> i32 {",
+        },
+        {
+          "text": "    debug num => _1;",
+        },
+        {
+          "text": "    let mut _0: i32;",
+        },
+        {
+          "text": "    let mut _2: i32;",
+        },
+        {
+          "text": "    let mut _3: i32;",
+        },
+        {
+          "text": "",
+        },
+        {
+          "text": "    bb0: {",
+        },
+        {
+          "text": "        StorageLive(_2);",
+        },
+        {
+          "text": "        _2 = copy _1;",
+        },
+        {
+          "text": "        StorageLive(_3);",
+        },
+        {
+          "text": "        _3 = copy _1;",
+        },
+        {
+          "text": "        _0 = Mul(move _2, move _3);",
+        },
+        {
+          "text": "        StorageDead(_3);",
+        },
+        {
+          "text": "        StorageDead(_2);",
+        },
+        {
+          "text": "        return;",
+        },
+        {
+          "text": "    }",
+        },
+        {
+          "text": "}",
+        },
+      ],
+      "before": [
+        {
+          "text": "// MIR for `square` before ElaborateBoxDerefs",
+        },
+        {
+          "text": "",
+        },
+        {
+          "text": "fn square(_1: i32) -> i32 {",
+        },
+        {
+          "text": "    debug num => _1;",
+        },
+        {
+          "text": "    let mut _0: i32;",
+        },
+        {
+          "text": "    let mut _2: i32;",
+        },
+        {
+          "text": "    let mut _3: i32;",
+        },
+        {
+          "text": "",
+        },
+        {
+          "text": "    bb0: {",
+        },
+        {
+          "text": "        StorageLive(_2);",
+        },
+        {
+          "text": "        _2 = copy _1;",
+        },
+        {
+          "text": "        StorageLive(_3);",
+        },
+        {
+          "text": "        _3 = copy _1;",
+        },
+        {
+          "text": "        _0 = Mul(move _2, move _3);",
+        },
+        {
+          "text": "        StorageDead(_3);",
+        },
+        {
+          "text": "        StorageDead(_2);",
+        },
+        {
+          "text": "        return;",
+        },
+        {
+          "text": "    }",
+        },
+        {
+          "text": "}",
+        },
+      ],
+      "irChanged": false,
+      "machine": false,
+      "name": "ElaborateBoxDerefs",
+      "passId": "2-2-009",
+    },
+    {
+      "after": [
+        {
+          "text": "// MIR for `square` after StateTransform",
+        },
+        {
+          "text": "",
+        },
+        {
+          "text": "fn square(_1: i32) -> i32 {",
+        },
+        {
+          "text": "    debug num => _1;",
+        },
+        {
+          "text": "    let mut _0: i32;",
+        },
+        {
+          "text": "    let mut _2: i32;",
+        },
+        {
+          "text": "    let mut _3: i32;",
+        },
+        {
+          "text": "",
+        },
+        {
+          "text": "    bb0: {",
+        },
+        {
+          "text": "        StorageLive(_2);",
+        },
+        {
+          "text": "        _2 = copy _1;",
+        },
+        {
+          "text": "        StorageLive(_3);",
+        },
+        {
+          "text": "        _3 = copy _1;",
+        },
+        {
+          "text": "        _0 = Mul(move _2, move _3);",
+        },
+        {
+          "text": "        StorageDead(_3);",
+        },
+        {
+          "text": "        StorageDead(_2);",
+        },
+        {
+          "text": "        return;",
+        },
+        {
+          "text": "    }",
+        },
+        {
+          "text": "}",
+        },
+      ],
+      "before": [
+        {
+          "text": "// MIR for `square` before StateTransform",
+        },
+        {
+          "text": "",
+        },
+        {
+          "text": "fn square(_1: i32) -> i32 {",
+        },
+        {
+          "text": "    debug num => _1;",
+        },
+        {
+          "text": "    let mut _0: i32;",
+        },
+        {
+          "text": "    let mut _2: i32;",
+        },
+        {
+          "text": "    let mut _3: i32;",
+        },
+        {
+          "text": "",
+        },
+        {
+          "text": "    bb0: {",
+        },
+        {
+          "text": "        StorageLive(_2);",
+        },
+        {
+          "text": "        _2 = copy _1;",
+        },
+        {
+          "text": "        StorageLive(_3);",
+        },
+        {
+          "text": "        _3 = copy _1;",
+        },
+        {
+          "text": "        _0 = Mul(move _2, move _3);",
+        },
+        {
+          "text": "        StorageDead(_3);",
+        },
+        {
+          "text": "        StorageDead(_2);",
+        },
+        {
+          "text": "        return;",
+        },
+        {
+          "text": "    }",
+        },
+        {
+          "text": "}",
+        },
+      ],
+      "irChanged": false,
+      "machine": false,
+      "name": "StateTransform",
+      "passId": "2-2-010",
+    },
+    {
+      "after": [
+        {
+          "text": "// MIR for `square` after LowerIntrinsics",
+        },
+        {
+          "text": "",
+        },
+        {
+          "text": "fn square(_1: i32) -> i32 {",
+        },
+        {
+          "text": "    debug num => _1;",
+        },
+        {
+          "text": "    let mut _0: i32;",
+        },
+        {
+          "text": "    let mut _2: i32;",
+        },
+        {
+          "text": "    let mut _3: i32;",
+        },
+        {
+          "text": "",
+        },
+        {
+          "text": "    bb0: {",
+        },
+        {
+          "text": "        StorageLive(_2);",
+        },
+        {
+          "text": "        _2 = copy _1;",
+        },
+        {
+          "text": "        StorageLive(_3);",
+        },
+        {
+          "text": "        _3 = copy _1;",
+        },
+        {
+          "text": "        _0 = Mul(move _2, move _3);",
+        },
+        {
+          "text": "        StorageDead(_3);",
+        },
+        {
+          "text": "        StorageDead(_2);",
+        },
+        {
+          "text": "        return;",
+        },
+        {
+          "text": "    }",
+        },
+        {
+          "text": "}",
+        },
+      ],
+      "before": [
+        {
+          "text": "// MIR for `square` before LowerIntrinsics",
+        },
+        {
+          "text": "",
+        },
+        {
+          "text": "fn square(_1: i32) -> i32 {",
+        },
+        {
+          "text": "    debug num => _1;",
+        },
+        {
+          "text": "    let mut _0: i32;",
+        },
+        {
+          "text": "    let mut _2: i32;",
+        },
+        {
+          "text": "    let mut _3: i32;",
+        },
+        {
+          "text": "",
+        },
+        {
+          "text": "    bb0: {",
+        },
+        {
+          "text": "        StorageLive(_2);",
+        },
+        {
+          "text": "        _2 = copy _1;",
+        },
+        {
+          "text": "        StorageLive(_3);",
+        },
+        {
+          "text": "        _3 = copy _1;",
+        },
+        {
+          "text": "        _0 = Mul(move _2, move _3);",
+        },
+        {
+          "text": "        StorageDead(_3);",
+        },
+        {
+          "text": "        StorageDead(_2);",
+        },
+        {
+          "text": "        return;",
+        },
+        {
+          "text": "    }",
+        },
+        {
+          "text": "}",
+        },
+      ],
+      "irChanged": false,
+      "machine": false,
+      "name": "LowerIntrinsics",
+      "passId": "3-1-001",
+    },
+    {
+      "after": [
+        {
+          "text": "// MIR for `square` after RemovePlaceMention",
+        },
+        {
+          "text": "",
+        },
+        {
+          "text": "fn square(_1: i32) -> i32 {",
+        },
+        {
+          "text": "    debug num => _1;",
+        },
+        {
+          "text": "    let mut _0: i32;",
+        },
+        {
+          "text": "    let mut _2: i32;",
+        },
+        {
+          "text": "    let mut _3: i32;",
+        },
+        {
+          "text": "",
+        },
+        {
+          "text": "    bb0: {",
+        },
+        {
+          "text": "        StorageLive(_2);",
+        },
+        {
+          "text": "        _2 = copy _1;",
+        },
+        {
+          "text": "        StorageLive(_3);",
+        },
+        {
+          "text": "        _3 = copy _1;",
+        },
+        {
+          "text": "        _0 = Mul(move _2, move _3);",
+        },
+        {
+          "text": "        StorageDead(_3);",
+        },
+        {
+          "text": "        StorageDead(_2);",
+        },
+        {
+          "text": "        return;",
+        },
+        {
+          "text": "    }",
+        },
+        {
+          "text": "}",
+        },
+      ],
+      "before": [
+        {
+          "text": "// MIR for `square` before RemovePlaceMention",
+        },
+        {
+          "text": "",
+        },
+        {
+          "text": "fn square(_1: i32) -> i32 {",
+        },
+        {
+          "text": "    debug num => _1;",
+        },
+        {
+          "text": "    let mut _0: i32;",
+        },
+        {
+          "text": "    let mut _2: i32;",
+        },
+        {
+          "text": "    let mut _3: i32;",
+        },
+        {
+          "text": "",
+        },
+        {
+          "text": "    bb0: {",
+        },
+        {
+          "text": "        StorageLive(_2);",
+        },
+        {
+          "text": "        _2 = copy _1;",
+        },
+        {
+          "text": "        StorageLive(_3);",
+        },
+        {
+          "text": "        _3 = copy _1;",
+        },
+        {
+          "text": "        _0 = Mul(move _2, move _3);",
+        },
+        {
+          "text": "        StorageDead(_3);",
+        },
+        {
+          "text": "        StorageDead(_2);",
+        },
+        {
+          "text": "        return;",
+        },
+        {
+          "text": "    }",
+        },
+        {
+          "text": "}",
+        },
+      ],
+      "irChanged": false,
+      "machine": false,
+      "name": "RemovePlaceMention",
+      "passId": "3-1-002",
+    },
+    {
+      "after": [
+        {
+          "text": "// MIR for `square` after SimplifyCfg-pre-optimizations",
+        },
+        {
+          "text": "",
+        },
+        {
+          "text": "fn square(_1: i32) -> i32 {",
+        },
+        {
+          "text": "    debug num => _1;",
+        },
+        {
+          "text": "    let mut _0: i32;",
+        },
+        {
+          "text": "    let mut _2: i32;",
+        },
+        {
+          "text": "    let mut _3: i32;",
+        },
+        {
+          "text": "",
+        },
+        {
+          "text": "    bb0: {",
+        },
+        {
+          "text": "        StorageLive(_2);",
+        },
+        {
+          "text": "        _2 = copy _1;",
+        },
+        {
+          "text": "        StorageLive(_3);",
+        },
+        {
+          "text": "        _3 = copy _1;",
+        },
+        {
+          "text": "        _0 = Mul(move _2, move _3);",
+        },
+        {
+          "text": "        StorageDead(_3);",
+        },
+        {
+          "text": "        StorageDead(_2);",
+        },
+        {
+          "text": "        return;",
+        },
+        {
+          "text": "    }",
+        },
+        {
+          "text": "}",
+        },
+      ],
+      "before": [
+        {
+          "text": "// MIR for `square` before SimplifyCfg-pre-optimizations",
+        },
+        {
+          "text": "",
+        },
+        {
+          "text": "fn square(_1: i32) -> i32 {",
+        },
+        {
+          "text": "    debug num => _1;",
+        },
+        {
+          "text": "    let mut _0: i32;",
+        },
+        {
+          "text": "    let mut _2: i32;",
+        },
+        {
+          "text": "    let mut _3: i32;",
+        },
+        {
+          "text": "",
+        },
+        {
+          "text": "    bb0: {",
+        },
+        {
+          "text": "        StorageLive(_2);",
+        },
+        {
+          "text": "        _2 = copy _1;",
+        },
+        {
+          "text": "        StorageLive(_3);",
+        },
+        {
+          "text": "        _3 = copy _1;",
+        },
+        {
+          "text": "        _0 = Mul(move _2, move _3);",
+        },
+        {
+          "text": "        StorageDead(_3);",
+        },
+        {
+          "text": "        StorageDead(_2);",
+        },
+        {
+          "text": "        return;",
+        },
+        {
+          "text": "    }",
+        },
+        {
+          "text": "}",
+        },
+      ],
+      "irChanged": false,
+      "machine": false,
+      "name": "SimplifyCfg-pre-optimizations",
+      "passId": "3-1-003",
+    },
+    {
+      "after": [
+        {
+          "text": "// MIR for `square` after LowerSliceLenCalls",
+        },
+        {
+          "text": "",
+        },
+        {
+          "text": "fn square(_1: i32) -> i32 {",
+        },
+        {
+          "text": "    debug num => _1;",
+        },
+        {
+          "text": "    let mut _0: i32;",
+        },
+        {
+          "text": "    let mut _2: i32;",
+        },
+        {
+          "text": "    let mut _3: i32;",
+        },
+        {
+          "text": "",
+        },
+        {
+          "text": "    bb0: {",
+        },
+        {
+          "text": "        StorageLive(_2);",
+        },
+        {
+          "text": "        _2 = copy _1;",
+        },
+        {
+          "text": "        StorageLive(_3);",
+        },
+        {
+          "text": "        _3 = copy _1;",
+        },
+        {
+          "text": "        _0 = Mul(move _2, move _3);",
+        },
+        {
+          "text": "        StorageDead(_3);",
+        },
+        {
+          "text": "        StorageDead(_2);",
+        },
+        {
+          "text": "        return;",
+        },
+        {
+          "text": "    }",
+        },
+        {
+          "text": "}",
+        },
+      ],
+      "before": [
+        {
+          "text": "// MIR for `square` before LowerSliceLenCalls",
+        },
+        {
+          "text": "",
+        },
+        {
+          "text": "fn square(_1: i32) -> i32 {",
+        },
+        {
+          "text": "    debug num => _1;",
+        },
+        {
+          "text": "    let mut _0: i32;",
+        },
+        {
+          "text": "    let mut _2: i32;",
+        },
+        {
+          "text": "    let mut _3: i32;",
+        },
+        {
+          "text": "",
+        },
+        {
+          "text": "    bb0: {",
+        },
+        {
+          "text": "        StorageLive(_2);",
+        },
+        {
+          "text": "        _2 = copy _1;",
+        },
+        {
+          "text": "        StorageLive(_3);",
+        },
+        {
+          "text": "        _3 = copy _1;",
+        },
+        {
+          "text": "        _0 = Mul(move _2, move _3);",
+        },
+        {
+          "text": "        StorageDead(_3);",
+        },
+        {
+          "text": "        StorageDead(_2);",
+        },
+        {
+          "text": "        return;",
+        },
+        {
+          "text": "    }",
+        },
+        {
+          "text": "}",
+        },
+      ],
+      "irChanged": false,
+      "machine": false,
+      "name": "LowerSliceLenCalls",
+      "passId": "3-2-001",
+    },
+    {
+      "after": [
+        {
+          "text": "// MIR for `square` after InstSimplify-before-inline",
+        },
+        {
+          "text": "",
+        },
+        {
+          "text": "fn square(_1: i32) -> i32 {",
+        },
+        {
+          "text": "    debug num => _1;",
+        },
+        {
+          "text": "    let mut _0: i32;",
+        },
+        {
+          "text": "    let mut _2: i32;",
+        },
+        {
+          "text": "    let mut _3: i32;",
+        },
+        {
+          "text": "",
+        },
+        {
+          "text": "    bb0: {",
+        },
+        {
+          "text": "        StorageLive(_2);",
+        },
+        {
+          "text": "        _2 = copy _1;",
+        },
+        {
+          "text": "        StorageLive(_3);",
+        },
+        {
+          "text": "        _3 = copy _1;",
+        },
+        {
+          "text": "        _0 = Mul(move _2, move _3);",
+        },
+        {
+          "text": "        StorageDead(_3);",
+        },
+        {
+          "text": "        StorageDead(_2);",
+        },
+        {
+          "text": "        return;",
+        },
+        {
+          "text": "    }",
+        },
+        {
+          "text": "}",
+        },
+      ],
+      "before": [
+        {
+          "text": "// MIR for `square` before InstSimplify-before-inline",
+        },
+        {
+          "text": "",
+        },
+        {
+          "text": "fn square(_1: i32) -> i32 {",
+        },
+        {
+          "text": "    debug num => _1;",
+        },
+        {
+          "text": "    let mut _0: i32;",
+        },
+        {
+          "text": "    let mut _2: i32;",
+        },
+        {
+          "text": "    let mut _3: i32;",
+        },
+        {
+          "text": "",
+        },
+        {
+          "text": "    bb0: {",
+        },
+        {
+          "text": "        StorageLive(_2);",
+        },
+        {
+          "text": "        _2 = copy _1;",
+        },
+        {
+          "text": "        StorageLive(_3);",
+        },
+        {
+          "text": "        _3 = copy _1;",
+        },
+        {
+          "text": "        _0 = Mul(move _2, move _3);",
+        },
+        {
+          "text": "        StorageDead(_3);",
+        },
+        {
+          "text": "        StorageDead(_2);",
+        },
+        {
+          "text": "        return;",
+        },
+        {
+          "text": "    }",
+        },
+        {
+          "text": "}",
+        },
+      ],
+      "irChanged": false,
+      "machine": false,
+      "name": "InstSimplify-before-inline",
+      "passId": "3-2-002",
+    },
+    {
+      "after": [
+        {
+          "text": "// MIR for `square` after ForceInline",
+        },
+        {
+          "text": "",
+        },
+        {
+          "text": "fn square(_1: i32) -> i32 {",
+        },
+        {
+          "text": "    debug num => _1;",
+        },
+        {
+          "text": "    let mut _0: i32;",
+        },
+        {
+          "text": "    let mut _2: i32;",
+        },
+        {
+          "text": "    let mut _3: i32;",
+        },
+        {
+          "text": "",
+        },
+        {
+          "text": "    bb0: {",
+        },
+        {
+          "text": "        StorageLive(_2);",
+        },
+        {
+          "text": "        _2 = copy _1;",
+        },
+        {
+          "text": "        StorageLive(_3);",
+        },
+        {
+          "text": "        _3 = copy _1;",
+        },
+        {
+          "text": "        _0 = Mul(move _2, move _3);",
+        },
+        {
+          "text": "        StorageDead(_3);",
+        },
+        {
+          "text": "        StorageDead(_2);",
+        },
+        {
+          "text": "        return;",
+        },
+        {
+          "text": "    }",
+        },
+        {
+          "text": "}",
+        },
+      ],
+      "before": [
+        {
+          "text": "// MIR for `square` before ForceInline",
+        },
+        {
+          "text": "",
+        },
+        {
+          "text": "fn square(_1: i32) -> i32 {",
+        },
+        {
+          "text": "    debug num => _1;",
+        },
+        {
+          "text": "    let mut _0: i32;",
+        },
+        {
+          "text": "    let mut _2: i32;",
+        },
+        {
+          "text": "    let mut _3: i32;",
+        },
+        {
+          "text": "",
+        },
+        {
+          "text": "    bb0: {",
+        },
+        {
+          "text": "        StorageLive(_2);",
+        },
+        {
+          "text": "        _2 = copy _1;",
+        },
+        {
+          "text": "        StorageLive(_3);",
+        },
+        {
+          "text": "        _3 = copy _1;",
+        },
+        {
+          "text": "        _0 = Mul(move _2, move _3);",
+        },
+        {
+          "text": "        StorageDead(_3);",
+        },
+        {
+          "text": "        StorageDead(_2);",
+        },
+        {
+          "text": "        return;",
+        },
+        {
+          "text": "    }",
+        },
+        {
+          "text": "}",
+        },
+      ],
+      "irChanged": false,
+      "machine": false,
+      "name": "ForceInline",
+      "passId": "3-2-003",
+    },
+    {
+      "after": [
+        {
+          "text": "// MIR for `square` after Inline",
+        },
+        {
+          "text": "",
+        },
+        {
+          "text": "fn square(_1: i32) -> i32 {",
+        },
+        {
+          "text": "    debug num => _1;",
+        },
+        {
+          "text": "    let mut _0: i32;",
+        },
+        {
+          "text": "    let mut _2: i32;",
+        },
+        {
+          "text": "    let mut _3: i32;",
+        },
+        {
+          "text": "",
+        },
+        {
+          "text": "    bb0: {",
+        },
+        {
+          "text": "        StorageLive(_2);",
+        },
+        {
+          "text": "        _2 = copy _1;",
+        },
+        {
+          "text": "        StorageLive(_3);",
+        },
+        {
+          "text": "        _3 = copy _1;",
+        },
+        {
+          "text": "        _0 = Mul(move _2, move _3);",
+        },
+        {
+          "text": "        StorageDead(_3);",
+        },
+        {
+          "text": "        StorageDead(_2);",
+        },
+        {
+          "text": "        return;",
+        },
+        {
+          "text": "    }",
+        },
+        {
+          "text": "}",
+        },
+      ],
+      "before": [
+        {
+          "text": "// MIR for `square` before Inline",
+        },
+        {
+          "text": "",
+        },
+        {
+          "text": "fn square(_1: i32) -> i32 {",
+        },
+        {
+          "text": "    debug num => _1;",
+        },
+        {
+          "text": "    let mut _0: i32;",
+        },
+        {
+          "text": "    let mut _2: i32;",
+        },
+        {
+          "text": "    let mut _3: i32;",
+        },
+        {
+          "text": "",
+        },
+        {
+          "text": "    bb0: {",
+        },
+        {
+          "text": "        StorageLive(_2);",
+        },
+        {
+          "text": "        _2 = copy _1;",
+        },
+        {
+          "text": "        StorageLive(_3);",
+        },
+        {
+          "text": "        _3 = copy _1;",
+        },
+        {
+          "text": "        _0 = Mul(move _2, move _3);",
+        },
+        {
+          "text": "        StorageDead(_3);",
+        },
+        {
+          "text": "        StorageDead(_2);",
+        },
+        {
+          "text": "        return;",
+        },
+        {
+          "text": "    }",
+        },
+        {
+          "text": "}",
+        },
+      ],
+      "irChanged": false,
+      "machine": false,
+      "name": "Inline",
+      "passId": "3-2-004",
+    },
+    {
+      "after": [
+        {
+          "text": "// MIR for `square` after RemoveZsts",
+        },
+        {
+          "text": "",
+        },
+        {
+          "text": "fn square(_1: i32) -> i32 {",
+        },
+        {
+          "text": "    debug num => _1;",
+        },
+        {
+          "text": "    let mut _0: i32;",
+        },
+        {
+          "text": "    let mut _2: i32;",
+        },
+        {
+          "text": "    let mut _3: i32;",
+        },
+        {
+          "text": "",
+        },
+        {
+          "text": "    bb0: {",
+        },
+        {
+          "text": "        StorageLive(_2);",
+        },
+        {
+          "text": "        _2 = copy _1;",
+        },
+        {
+          "text": "        StorageLive(_3);",
+        },
+        {
+          "text": "        _3 = copy _1;",
+        },
+        {
+          "text": "        _0 = Mul(move _2, move _3);",
+        },
+        {
+          "text": "        StorageDead(_3);",
+        },
+        {
+          "text": "        StorageDead(_2);",
+        },
+        {
+          "text": "        return;",
+        },
+        {
+          "text": "    }",
+        },
+        {
+          "text": "}",
+        },
+      ],
+      "before": [
+        {
+          "text": "// MIR for `square` before RemoveZsts",
+        },
+        {
+          "text": "",
+        },
+        {
+          "text": "fn square(_1: i32) -> i32 {",
+        },
+        {
+          "text": "    debug num => _1;",
+        },
+        {
+          "text": "    let mut _0: i32;",
+        },
+        {
+          "text": "    let mut _2: i32;",
+        },
+        {
+          "text": "    let mut _3: i32;",
+        },
+        {
+          "text": "",
+        },
+        {
+          "text": "    bb0: {",
+        },
+        {
+          "text": "        StorageLive(_2);",
+        },
+        {
+          "text": "        _2 = copy _1;",
+        },
+        {
+          "text": "        StorageLive(_3);",
+        },
+        {
+          "text": "        _3 = copy _1;",
+        },
+        {
+          "text": "        _0 = Mul(move _2, move _3);",
+        },
+        {
+          "text": "        StorageDead(_3);",
+        },
+        {
+          "text": "        StorageDead(_2);",
+        },
+        {
+          "text": "        return;",
+        },
+        {
+          "text": "    }",
+        },
+        {
+          "text": "}",
+        },
+      ],
+      "irChanged": false,
+      "machine": false,
+      "name": "RemoveZsts",
+      "passId": "3-2-005",
+    },
+    {
+      "after": [
+        {
+          "text": "// MIR for `square` after RemoveUnneededDrops",
+        },
+        {
+          "text": "",
+        },
+        {
+          "text": "fn square(_1: i32) -> i32 {",
+        },
+        {
+          "text": "    debug num => _1;",
+        },
+        {
+          "text": "    let mut _0: i32;",
+        },
+        {
+          "text": "    let mut _2: i32;",
+        },
+        {
+          "text": "    let mut _3: i32;",
+        },
+        {
+          "text": "",
+        },
+        {
+          "text": "    bb0: {",
+        },
+        {
+          "text": "        StorageLive(_2);",
+        },
+        {
+          "text": "        _2 = copy _1;",
+        },
+        {
+          "text": "        StorageLive(_3);",
+        },
+        {
+          "text": "        _3 = copy _1;",
+        },
+        {
+          "text": "        _0 = Mul(move _2, move _3);",
+        },
+        {
+          "text": "        StorageDead(_3);",
+        },
+        {
+          "text": "        StorageDead(_2);",
+        },
+        {
+          "text": "        return;",
+        },
+        {
+          "text": "    }",
+        },
+        {
+          "text": "}",
+        },
+      ],
+      "before": [
+        {
+          "text": "// MIR for `square` before RemoveUnneededDrops",
+        },
+        {
+          "text": "",
+        },
+        {
+          "text": "fn square(_1: i32) -> i32 {",
+        },
+        {
+          "text": "    debug num => _1;",
+        },
+        {
+          "text": "    let mut _0: i32;",
+        },
+        {
+          "text": "    let mut _2: i32;",
+        },
+        {
+          "text": "    let mut _3: i32;",
+        },
+        {
+          "text": "",
+        },
+        {
+          "text": "    bb0: {",
+        },
+        {
+          "text": "        StorageLive(_2);",
+        },
+        {
+          "text": "        _2 = copy _1;",
+        },
+        {
+          "text": "        StorageLive(_3);",
+        },
+        {
+          "text": "        _3 = copy _1;",
+        },
+        {
+          "text": "        _0 = Mul(move _2, move _3);",
+        },
+        {
+          "text": "        StorageDead(_3);",
+        },
+        {
+          "text": "        StorageDead(_2);",
+        },
+        {
+          "text": "        return;",
+        },
+        {
+          "text": "    }",
+        },
+        {
+          "text": "}",
+        },
+      ],
+      "irChanged": false,
+      "machine": false,
+      "name": "RemoveUnneededDrops",
+      "passId": "3-2-006",
+    },
+    {
+      "after": [
+        {
+          "text": "// MIR for `square` after UnreachableEnumBranching",
+        },
+        {
+          "text": "",
+        },
+        {
+          "text": "fn square(_1: i32) -> i32 {",
+        },
+        {
+          "text": "    debug num => _1;",
+        },
+        {
+          "text": "    let mut _0: i32;",
+        },
+        {
+          "text": "    let mut _2: i32;",
+        },
+        {
+          "text": "    let mut _3: i32;",
+        },
+        {
+          "text": "",
+        },
+        {
+          "text": "    bb0: {",
+        },
+        {
+          "text": "        StorageLive(_2);",
+        },
+        {
+          "text": "        _2 = copy _1;",
+        },
+        {
+          "text": "        StorageLive(_3);",
+        },
+        {
+          "text": "        _3 = copy _1;",
+        },
+        {
+          "text": "        _0 = Mul(move _2, move _3);",
+        },
+        {
+          "text": "        StorageDead(_3);",
+        },
+        {
+          "text": "        StorageDead(_2);",
+        },
+        {
+          "text": "        return;",
+        },
+        {
+          "text": "    }",
+        },
+        {
+          "text": "}",
+        },
+      ],
+      "before": [
+        {
+          "text": "// MIR for `square` before UnreachableEnumBranching",
+        },
+        {
+          "text": "",
+        },
+        {
+          "text": "fn square(_1: i32) -> i32 {",
+        },
+        {
+          "text": "    debug num => _1;",
+        },
+        {
+          "text": "    let mut _0: i32;",
+        },
+        {
+          "text": "    let mut _2: i32;",
+        },
+        {
+          "text": "    let mut _3: i32;",
+        },
+        {
+          "text": "",
+        },
+        {
+          "text": "    bb0: {",
+        },
+        {
+          "text": "        StorageLive(_2);",
+        },
+        {
+          "text": "        _2 = copy _1;",
+        },
+        {
+          "text": "        StorageLive(_3);",
+        },
+        {
+          "text": "        _3 = copy _1;",
+        },
+        {
+          "text": "        _0 = Mul(move _2, move _3);",
+        },
+        {
+          "text": "        StorageDead(_3);",
+        },
+        {
+          "text": "        StorageDead(_2);",
+        },
+        {
+          "text": "        return;",
+        },
+        {
+          "text": "    }",
+        },
+        {
+          "text": "}",
+        },
+      ],
+      "irChanged": false,
+      "machine": false,
+      "name": "UnreachableEnumBranching",
+      "passId": "3-2-007",
+    },
+    {
+      "after": [
+        {
+          "text": "// MIR for `square` after UnreachablePropagation",
+        },
+        {
+          "text": "",
+        },
+        {
+          "text": "fn square(_1: i32) -> i32 {",
+        },
+        {
+          "text": "    debug num => _1;",
+        },
+        {
+          "text": "    let mut _0: i32;",
+        },
+        {
+          "text": "    let mut _2: i32;",
+        },
+        {
+          "text": "    let mut _3: i32;",
+        },
+        {
+          "text": "",
+        },
+        {
+          "text": "    bb0: {",
+        },
+        {
+          "text": "        StorageLive(_2);",
+        },
+        {
+          "text": "        _2 = copy _1;",
+        },
+        {
+          "text": "        StorageLive(_3);",
+        },
+        {
+          "text": "        _3 = copy _1;",
+        },
+        {
+          "text": "        _0 = Mul(move _2, move _3);",
+        },
+        {
+          "text": "        StorageDead(_3);",
+        },
+        {
+          "text": "        StorageDead(_2);",
+        },
+        {
+          "text": "        return;",
+        },
+        {
+          "text": "    }",
+        },
+        {
+          "text": "}",
+        },
+      ],
+      "before": [
+        {
+          "text": "// MIR for `square` before UnreachablePropagation",
+        },
+        {
+          "text": "",
+        },
+        {
+          "text": "fn square(_1: i32) -> i32 {",
+        },
+        {
+          "text": "    debug num => _1;",
+        },
+        {
+          "text": "    let mut _0: i32;",
+        },
+        {
+          "text": "    let mut _2: i32;",
+        },
+        {
+          "text": "    let mut _3: i32;",
+        },
+        {
+          "text": "",
+        },
+        {
+          "text": "    bb0: {",
+        },
+        {
+          "text": "        StorageLive(_2);",
+        },
+        {
+          "text": "        _2 = copy _1;",
+        },
+        {
+          "text": "        StorageLive(_3);",
+        },
+        {
+          "text": "        _3 = copy _1;",
+        },
+        {
+          "text": "        _0 = Mul(move _2, move _3);",
+        },
+        {
+          "text": "        StorageDead(_3);",
+        },
+        {
+          "text": "        StorageDead(_2);",
+        },
+        {
+          "text": "        return;",
+        },
+        {
+          "text": "    }",
+        },
+        {
+          "text": "}",
+        },
+      ],
+      "irChanged": false,
+      "machine": false,
+      "name": "UnreachablePropagation",
+      "passId": "3-2-008",
+    },
+    {
+      "after": [
+        {
+          "text": "// MIR for `square` after SimplifyCfg-after-unreachable-enum-branching",
+        },
+        {
+          "text": "",
+        },
+        {
+          "text": "fn square(_1: i32) -> i32 {",
+        },
+        {
+          "text": "    debug num => _1;",
+        },
+        {
+          "text": "    let mut _0: i32;",
+        },
+        {
+          "text": "    let mut _2: i32;",
+        },
+        {
+          "text": "    let mut _3: i32;",
+        },
+        {
+          "text": "",
+        },
+        {
+          "text": "    bb0: {",
+        },
+        {
+          "text": "        StorageLive(_2);",
+        },
+        {
+          "text": "        _2 = copy _1;",
+        },
+        {
+          "text": "        StorageLive(_3);",
+        },
+        {
+          "text": "        _3 = copy _1;",
+        },
+        {
+          "text": "        _0 = Mul(move _2, move _3);",
+        },
+        {
+          "text": "        StorageDead(_3);",
+        },
+        {
+          "text": "        StorageDead(_2);",
+        },
+        {
+          "text": "        return;",
+        },
+        {
+          "text": "    }",
+        },
+        {
+          "text": "}",
+        },
+      ],
+      "before": [
+        {
+          "text": "// MIR for `square` before SimplifyCfg-after-unreachable-enum-branching",
+        },
+        {
+          "text": "",
+        },
+        {
+          "text": "fn square(_1: i32) -> i32 {",
+        },
+        {
+          "text": "    debug num => _1;",
+        },
+        {
+          "text": "    let mut _0: i32;",
+        },
+        {
+          "text": "    let mut _2: i32;",
+        },
+        {
+          "text": "    let mut _3: i32;",
+        },
+        {
+          "text": "",
+        },
+        {
+          "text": "    bb0: {",
+        },
+        {
+          "text": "        StorageLive(_2);",
+        },
+        {
+          "text": "        _2 = copy _1;",
+        },
+        {
+          "text": "        StorageLive(_3);",
+        },
+        {
+          "text": "        _3 = copy _1;",
+        },
+        {
+          "text": "        _0 = Mul(move _2, move _3);",
+        },
+        {
+          "text": "        StorageDead(_3);",
+        },
+        {
+          "text": "        StorageDead(_2);",
+        },
+        {
+          "text": "        return;",
+        },
+        {
+          "text": "    }",
+        },
+        {
+          "text": "}",
+        },
+      ],
+      "irChanged": false,
+      "machine": false,
+      "name": "SimplifyCfg-after-unreachable-enum-branching",
+      "passId": "3-2-009",
+    },
+    {
+      "after": [
+        {
+          "text": "// MIR for `square` after InstSimplify-after-simplifycfg",
+        },
+        {
+          "text": "",
+        },
+        {
+          "text": "fn square(_1: i32) -> i32 {",
+        },
+        {
+          "text": "    debug num => _1;",
+        },
+        {
+          "text": "    let mut _0: i32;",
+        },
+        {
+          "text": "    let mut _2: i32;",
+        },
+        {
+          "text": "    let mut _3: i32;",
+        },
+        {
+          "text": "",
+        },
+        {
+          "text": "    bb0: {",
+        },
+        {
+          "text": "        StorageLive(_2);",
+        },
+        {
+          "text": "        _2 = copy _1;",
+        },
+        {
+          "text": "        StorageLive(_3);",
+        },
+        {
+          "text": "        _3 = copy _1;",
+        },
+        {
+          "text": "        _0 = Mul(move _2, move _3);",
+        },
+        {
+          "text": "        StorageDead(_3);",
+        },
+        {
+          "text": "        StorageDead(_2);",
+        },
+        {
+          "text": "        return;",
+        },
+        {
+          "text": "    }",
+        },
+        {
+          "text": "}",
+        },
+      ],
+      "before": [
+        {
+          "text": "// MIR for `square` before InstSimplify-after-simplifycfg",
+        },
+        {
+          "text": "",
+        },
+        {
+          "text": "fn square(_1: i32) -> i32 {",
+        },
+        {
+          "text": "    debug num => _1;",
+        },
+        {
+          "text": "    let mut _0: i32;",
+        },
+        {
+          "text": "    let mut _2: i32;",
+        },
+        {
+          "text": "    let mut _3: i32;",
+        },
+        {
+          "text": "",
+        },
+        {
+          "text": "    bb0: {",
+        },
+        {
+          "text": "        StorageLive(_2);",
+        },
+        {
+          "text": "        _2 = copy _1;",
+        },
+        {
+          "text": "        StorageLive(_3);",
+        },
+        {
+          "text": "        _3 = copy _1;",
+        },
+        {
+          "text": "        _0 = Mul(move _2, move _3);",
+        },
+        {
+          "text": "        StorageDead(_3);",
+        },
+        {
+          "text": "        StorageDead(_2);",
+        },
+        {
+          "text": "        return;",
+        },
+        {
+          "text": "    }",
+        },
+        {
+          "text": "}",
+        },
+      ],
+      "irChanged": false,
+      "machine": false,
+      "name": "InstSimplify-after-simplifycfg",
+      "passId": "3-2-010",
+    },
+    {
+      "after": [
+        {
+          "text": "// MIR for `square` after SimplifyConstCondition-after-inst-simplify",
+        },
+        {
+          "text": "",
+        },
+        {
+          "text": "fn square(_1: i32) -> i32 {",
+        },
+        {
+          "text": "    debug num => _1;",
+        },
+        {
+          "text": "    let mut _0: i32;",
+        },
+        {
+          "text": "    let mut _2: i32;",
+        },
+        {
+          "text": "    let mut _3: i32;",
+        },
+        {
+          "text": "",
+        },
+        {
+          "text": "    bb0: {",
+        },
+        {
+          "text": "        StorageLive(_2);",
+        },
+        {
+          "text": "        _2 = copy _1;",
+        },
+        {
+          "text": "        StorageLive(_3);",
+        },
+        {
+          "text": "        _3 = copy _1;",
+        },
+        {
+          "text": "        _0 = Mul(move _2, move _3);",
+        },
+        {
+          "text": "        StorageDead(_3);",
+        },
+        {
+          "text": "        StorageDead(_2);",
+        },
+        {
+          "text": "        return;",
+        },
+        {
+          "text": "    }",
+        },
+        {
+          "text": "}",
+        },
+      ],
+      "before": [
+        {
+          "text": "// MIR for `square` before SimplifyConstCondition-after-inst-simplify",
+        },
+        {
+          "text": "",
+        },
+        {
+          "text": "fn square(_1: i32) -> i32 {",
+        },
+        {
+          "text": "    debug num => _1;",
+        },
+        {
+          "text": "    let mut _0: i32;",
+        },
+        {
+          "text": "    let mut _2: i32;",
+        },
+        {
+          "text": "    let mut _3: i32;",
+        },
+        {
+          "text": "",
+        },
+        {
+          "text": "    bb0: {",
+        },
+        {
+          "text": "        StorageLive(_2);",
+        },
+        {
+          "text": "        _2 = copy _1;",
+        },
+        {
+          "text": "        StorageLive(_3);",
+        },
+        {
+          "text": "        _3 = copy _1;",
+        },
+        {
+          "text": "        _0 = Mul(move _2, move _3);",
+        },
+        {
+          "text": "        StorageDead(_3);",
+        },
+        {
+          "text": "        StorageDead(_2);",
+        },
+        {
+          "text": "        return;",
+        },
+        {
+          "text": "    }",
+        },
+        {
+          "text": "}",
+        },
+      ],
+      "irChanged": false,
+      "machine": false,
+      "name": "SimplifyConstCondition-after-inst-simplify",
+      "passId": "3-2-011",
+    },
+    {
+      "after": [
+        {
+          "text": "// MIR for `square` after ReferencePropagation",
+        },
+        {
+          "text": "",
+        },
+        {
+          "text": "fn square(_1: i32) -> i32 {",
+        },
+        {
+          "text": "    debug num => _1;",
+        },
+        {
+          "text": "    let mut _0: i32;",
+        },
+        {
+          "text": "    let mut _2: i32;",
+        },
+        {
+          "text": "    let mut _3: i32;",
+        },
+        {
+          "text": "",
+        },
+        {
+          "text": "    bb0: {",
+        },
+        {
+          "text": "        StorageLive(_2);",
+        },
+        {
+          "text": "        _2 = copy _1;",
+        },
+        {
+          "text": "        StorageLive(_3);",
+        },
+        {
+          "text": "        _3 = copy _1;",
+        },
+        {
+          "text": "        _0 = Mul(move _2, move _3);",
+        },
+        {
+          "text": "        StorageDead(_3);",
+        },
+        {
+          "text": "        StorageDead(_2);",
+        },
+        {
+          "text": "        return;",
+        },
+        {
+          "text": "    }",
+        },
+        {
+          "text": "}",
+        },
+      ],
+      "before": [
+        {
+          "text": "// MIR for `square` before ReferencePropagation",
+        },
+        {
+          "text": "",
+        },
+        {
+          "text": "fn square(_1: i32) -> i32 {",
+        },
+        {
+          "text": "    debug num => _1;",
+        },
+        {
+          "text": "    let mut _0: i32;",
+        },
+        {
+          "text": "    let mut _2: i32;",
+        },
+        {
+          "text": "    let mut _3: i32;",
+        },
+        {
+          "text": "",
+        },
+        {
+          "text": "    bb0: {",
+        },
+        {
+          "text": "        StorageLive(_2);",
+        },
+        {
+          "text": "        _2 = copy _1;",
+        },
+        {
+          "text": "        StorageLive(_3);",
+        },
+        {
+          "text": "        _3 = copy _1;",
+        },
+        {
+          "text": "        _0 = Mul(move _2, move _3);",
+        },
+        {
+          "text": "        StorageDead(_3);",
+        },
+        {
+          "text": "        StorageDead(_2);",
+        },
+        {
+          "text": "        return;",
+        },
+        {
+          "text": "    }",
+        },
+        {
+          "text": "}",
+        },
+      ],
+      "irChanged": false,
+      "machine": false,
+      "name": "ReferencePropagation",
+      "passId": "3-2-012",
+    },
+    {
+      "after": [
+        {
+          "text": "// MIR for `square` after ScalarReplacementOfAggregates",
+        },
+        {
+          "text": "",
+        },
+        {
+          "text": "fn square(_1: i32) -> i32 {",
+        },
+        {
+          "text": "    debug num => _1;",
+        },
+        {
+          "text": "    let mut _0: i32;",
+        },
+        {
+          "text": "    let mut _2: i32;",
+        },
+        {
+          "text": "    let mut _3: i32;",
+        },
+        {
+          "text": "",
+        },
+        {
+          "text": "    bb0: {",
+        },
+        {
+          "text": "        StorageLive(_2);",
+        },
+        {
+          "text": "        _2 = copy _1;",
+        },
+        {
+          "text": "        StorageLive(_3);",
+        },
+        {
+          "text": "        _3 = copy _1;",
+        },
+        {
+          "text": "        _0 = Mul(move _2, move _3);",
+        },
+        {
+          "text": "        StorageDead(_3);",
+        },
+        {
+          "text": "        StorageDead(_2);",
+        },
+        {
+          "text": "        return;",
+        },
+        {
+          "text": "    }",
+        },
+        {
+          "text": "}",
+        },
+      ],
+      "before": [
+        {
+          "text": "// MIR for `square` before ScalarReplacementOfAggregates",
+        },
+        {
+          "text": "",
+        },
+        {
+          "text": "fn square(_1: i32) -> i32 {",
+        },
+        {
+          "text": "    debug num => _1;",
+        },
+        {
+          "text": "    let mut _0: i32;",
+        },
+        {
+          "text": "    let mut _2: i32;",
+        },
+        {
+          "text": "    let mut _3: i32;",
+        },
+        {
+          "text": "",
+        },
+        {
+          "text": "    bb0: {",
+        },
+        {
+          "text": "        StorageLive(_2);",
+        },
+        {
+          "text": "        _2 = copy _1;",
+        },
+        {
+          "text": "        StorageLive(_3);",
+        },
+        {
+          "text": "        _3 = copy _1;",
+        },
+        {
+          "text": "        _0 = Mul(move _2, move _3);",
+        },
+        {
+          "text": "        StorageDead(_3);",
+        },
+        {
+          "text": "        StorageDead(_2);",
+        },
+        {
+          "text": "        return;",
+        },
+        {
+          "text": "    }",
+        },
+        {
+          "text": "}",
+        },
+      ],
+      "irChanged": false,
+      "machine": false,
+      "name": "ScalarReplacementOfAggregates",
+      "passId": "3-2-013",
+    },
+    {
+      "after": [
+        {
+          "text": "// MIR for `square` after SimplifyLocals-before-const-prop",
+        },
+        {
+          "text": "",
+        },
+        {
+          "text": "fn square(_1: i32) -> i32 {",
+        },
+        {
+          "text": "    debug num => _1;",
+        },
+        {
+          "text": "    let mut _0: i32;",
+        },
+        {
+          "text": "    let mut _2: i32;",
+        },
+        {
+          "text": "    let mut _3: i32;",
+        },
+        {
+          "text": "",
+        },
+        {
+          "text": "    bb0: {",
+        },
+        {
+          "text": "        StorageLive(_2);",
+        },
+        {
+          "text": "        _2 = copy _1;",
+        },
+        {
+          "text": "        StorageLive(_3);",
+        },
+        {
+          "text": "        _3 = copy _1;",
+        },
+        {
+          "text": "        _0 = Mul(move _2, move _3);",
+        },
+        {
+          "text": "        StorageDead(_3);",
+        },
+        {
+          "text": "        StorageDead(_2);",
+        },
+        {
+          "text": "        return;",
+        },
+        {
+          "text": "    }",
+        },
+        {
+          "text": "}",
+        },
+      ],
+      "before": [
+        {
+          "text": "// MIR for `square` before SimplifyLocals-before-const-prop",
+        },
+        {
+          "text": "",
+        },
+        {
+          "text": "fn square(_1: i32) -> i32 {",
+        },
+        {
+          "text": "    debug num => _1;",
+        },
+        {
+          "text": "    let mut _0: i32;",
+        },
+        {
+          "text": "    let mut _2: i32;",
+        },
+        {
+          "text": "    let mut _3: i32;",
+        },
+        {
+          "text": "",
+        },
+        {
+          "text": "    bb0: {",
+        },
+        {
+          "text": "        StorageLive(_2);",
+        },
+        {
+          "text": "        _2 = copy _1;",
+        },
+        {
+          "text": "        StorageLive(_3);",
+        },
+        {
+          "text": "        _3 = copy _1;",
+        },
+        {
+          "text": "        _0 = Mul(move _2, move _3);",
+        },
+        {
+          "text": "        StorageDead(_3);",
+        },
+        {
+          "text": "        StorageDead(_2);",
+        },
+        {
+          "text": "        return;",
+        },
+        {
+          "text": "    }",
+        },
+        {
+          "text": "}",
+        },
+      ],
+      "irChanged": false,
+      "machine": false,
+      "name": "SimplifyLocals-before-const-prop",
+      "passId": "3-2-014",
+    },
+    {
+      "after": [
+        {
+          "text": "// MIR for `square` after DeadStoreElimination-initial",
+        },
+        {
+          "text": "",
+        },
+        {
+          "text": "fn square(_1: i32) -> i32 {",
+        },
+        {
+          "text": "    debug num => _1;",
+        },
+        {
+          "text": "    let mut _0: i32;",
+        },
+        {
+          "text": "    let mut _2: i32;",
+        },
+        {
+          "text": "    let mut _3: i32;",
+        },
+        {
+          "text": "",
+        },
+        {
+          "text": "    bb0: {",
+        },
+        {
+          "text": "        StorageLive(_2);",
+        },
+        {
+          "text": "        _2 = copy _1;",
+        },
+        {
+          "text": "        StorageLive(_3);",
+        },
+        {
+          "text": "        _3 = copy _1;",
+        },
+        {
+          "text": "        _0 = Mul(move _2, move _3);",
+        },
+        {
+          "text": "        StorageDead(_3);",
+        },
+        {
+          "text": "        StorageDead(_2);",
+        },
+        {
+          "text": "        return;",
+        },
+        {
+          "text": "    }",
+        },
+        {
+          "text": "}",
+        },
+      ],
+      "before": [
+        {
+          "text": "// MIR for `square` before DeadStoreElimination-initial",
+        },
+        {
+          "text": "",
+        },
+        {
+          "text": "fn square(_1: i32) -> i32 {",
+        },
+        {
+          "text": "    debug num => _1;",
+        },
+        {
+          "text": "    let mut _0: i32;",
+        },
+        {
+          "text": "    let mut _2: i32;",
+        },
+        {
+          "text": "    let mut _3: i32;",
+        },
+        {
+          "text": "",
+        },
+        {
+          "text": "    bb0: {",
+        },
+        {
+          "text": "        StorageLive(_2);",
+        },
+        {
+          "text": "        _2 = copy _1;",
+        },
+        {
+          "text": "        StorageLive(_3);",
+        },
+        {
+          "text": "        _3 = copy _1;",
+        },
+        {
+          "text": "        _0 = Mul(move _2, move _3);",
+        },
+        {
+          "text": "        StorageDead(_3);",
+        },
+        {
+          "text": "        StorageDead(_2);",
+        },
+        {
+          "text": "        return;",
+        },
+        {
+          "text": "    }",
+        },
+        {
+          "text": "}",
+        },
+      ],
+      "irChanged": false,
+      "machine": false,
+      "name": "DeadStoreElimination-initial",
+      "passId": "3-2-015",
+    },
+    {
+      "after": [
+        {
+          "text": "// MIR for `square` after GVN",
+        },
+        {
+          "text": "",
+        },
+        {
+          "text": "fn square(_1: i32) -> i32 {",
+        },
+        {
+          "text": "    debug num => _1;",
+        },
+        {
+          "text": "    let mut _0: i32;",
+        },
+        {
+          "text": "    let mut _2: i32;",
+        },
+        {
+          "text": "    let mut _3: i32;",
+        },
+        {
+          "text": "",
+        },
+        {
+          "text": "    bb0: {",
+        },
+        {
+          "text": "        StorageLive(_2);",
+        },
+        {
+          "text": "        _2 = copy _1;",
+        },
+        {
+          "text": "        StorageLive(_3);",
+        },
+        {
+          "text": "        _3 = copy _1;",
+        },
+        {
+          "text": "        _0 = Mul(copy _1, copy _1);",
+        },
+        {
+          "text": "        StorageDead(_3);",
+        },
+        {
+          "text": "        StorageDead(_2);",
+        },
+        {
+          "text": "        return;",
+        },
+        {
+          "text": "    }",
+        },
+        {
+          "text": "}",
+        },
+      ],
+      "before": [
+        {
+          "text": "// MIR for `square` before GVN",
+        },
+        {
+          "text": "",
+        },
+        {
+          "text": "fn square(_1: i32) -> i32 {",
+        },
+        {
+          "text": "    debug num => _1;",
+        },
+        {
+          "text": "    let mut _0: i32;",
+        },
+        {
+          "text": "    let mut _2: i32;",
+        },
+        {
+          "text": "    let mut _3: i32;",
+        },
+        {
+          "text": "",
+        },
+        {
+          "text": "    bb0: {",
+        },
+        {
+          "text": "        StorageLive(_2);",
+        },
+        {
+          "text": "        _2 = copy _1;",
+        },
+        {
+          "text": "        StorageLive(_3);",
+        },
+        {
+          "text": "        _3 = copy _1;",
+        },
+        {
+          "text": "        _0 = Mul(move _2, move _3);",
+        },
+        {
+          "text": "        StorageDead(_3);",
+        },
+        {
+          "text": "        StorageDead(_2);",
+        },
+        {
+          "text": "        return;",
+        },
+        {
+          "text": "    }",
+        },
+        {
+          "text": "}",
+        },
+      ],
+      "irChanged": true,
+      "machine": false,
+      "name": "GVN",
+      "passId": "3-2-016",
+    },
+    {
+      "after": [
+        {
+          "text": "// MIR for `square` after SimplifyLocals-after-value-numbering",
+        },
+        {
+          "text": "",
+        },
+        {
+          "text": "fn square(_1: i32) -> i32 {",
+        },
+        {
+          "text": "    debug num => _1;",
+        },
+        {
+          "text": "    let mut _0: i32;",
+        },
+        {
+          "text": "",
+        },
+        {
+          "text": "    bb0: {",
+        },
+        {
+          "text": "        _0 = Mul(copy _1, copy _1);",
+        },
+        {
+          "text": "        return;",
+        },
+        {
+          "text": "    }",
+        },
+        {
+          "text": "}",
+        },
+      ],
+      "before": [
+        {
+          "text": "// MIR for `square` before SimplifyLocals-after-value-numbering",
+        },
+        {
+          "text": "",
+        },
+        {
+          "text": "fn square(_1: i32) -> i32 {",
+        },
+        {
+          "text": "    debug num => _1;",
+        },
+        {
+          "text": "    let mut _0: i32;",
+        },
+        {
+          "text": "    let mut _2: i32;",
+        },
+        {
+          "text": "    let mut _3: i32;",
+        },
+        {
+          "text": "",
+        },
+        {
+          "text": "    bb0: {",
+        },
+        {
+          "text": "        StorageLive(_2);",
+        },
+        {
+          "text": "        _2 = copy _1;",
+        },
+        {
+          "text": "        StorageLive(_3);",
+        },
+        {
+          "text": "        _3 = copy _1;",
+        },
+        {
+          "text": "        _0 = Mul(copy _1, copy _1);",
+        },
+        {
+          "text": "        StorageDead(_3);",
+        },
+        {
+          "text": "        StorageDead(_2);",
+        },
+        {
+          "text": "        return;",
+        },
+        {
+          "text": "    }",
+        },
+        {
+          "text": "}",
+        },
+      ],
+      "irChanged": true,
+      "machine": false,
+      "name": "SimplifyLocals-after-value-numbering",
+      "passId": "3-2-017",
+    },
+    {
+      "after": [
+        {
+          "text": "// MIR for `square` after SsaRangePropagation",
+        },
+        {
+          "text": "",
+        },
+        {
+          "text": "fn square(_1: i32) -> i32 {",
+        },
+        {
+          "text": "    debug num => _1;",
+        },
+        {
+          "text": "    let mut _0: i32;",
+        },
+        {
+          "text": "",
+        },
+        {
+          "text": "    bb0: {",
+        },
+        {
+          "text": "        _0 = Mul(copy _1, copy _1);",
+        },
+        {
+          "text": "        return;",
+        },
+        {
+          "text": "    }",
+        },
+        {
+          "text": "}",
+        },
+      ],
+      "before": [
+        {
+          "text": "// MIR for `square` before SsaRangePropagation",
+        },
+        {
+          "text": "",
+        },
+        {
+          "text": "fn square(_1: i32) -> i32 {",
+        },
+        {
+          "text": "    debug num => _1;",
+        },
+        {
+          "text": "    let mut _0: i32;",
+        },
+        {
+          "text": "",
+        },
+        {
+          "text": "    bb0: {",
+        },
+        {
+          "text": "        _0 = Mul(copy _1, copy _1);",
+        },
+        {
+          "text": "        return;",
+        },
+        {
+          "text": "    }",
+        },
+        {
+          "text": "}",
+        },
+      ],
+      "irChanged": false,
+      "machine": false,
+      "name": "SsaRangePropagation",
+      "passId": "3-2-018",
+    },
+    {
+      "after": [
+        {
+          "text": "// MIR for `square` after MatchBranchSimplification",
+        },
+        {
+          "text": "",
+        },
+        {
+          "text": "fn square(_1: i32) -> i32 {",
+        },
+        {
+          "text": "    debug num => _1;",
+        },
+        {
+          "text": "    let mut _0: i32;",
+        },
+        {
+          "text": "",
+        },
+        {
+          "text": "    bb0: {",
+        },
+        {
+          "text": "        _0 = Mul(copy _1, copy _1);",
+        },
+        {
+          "text": "        return;",
+        },
+        {
+          "text": "    }",
+        },
+        {
+          "text": "}",
+        },
+      ],
+      "before": [
+        {
+          "text": "// MIR for `square` before MatchBranchSimplification",
+        },
+        {
+          "text": "",
+        },
+        {
+          "text": "fn square(_1: i32) -> i32 {",
+        },
+        {
+          "text": "    debug num => _1;",
+        },
+        {
+          "text": "    let mut _0: i32;",
+        },
+        {
+          "text": "",
+        },
+        {
+          "text": "    bb0: {",
+        },
+        {
+          "text": "        _0 = Mul(copy _1, copy _1);",
+        },
+        {
+          "text": "        return;",
+        },
+        {
+          "text": "    }",
+        },
+        {
+          "text": "}",
+        },
+      ],
+      "irChanged": false,
+      "machine": false,
+      "name": "MatchBranchSimplification",
+      "passId": "3-2-019",
+    },
+    {
+      "after": [
+        {
+          "text": "// MIR for `square` after SingleUseConsts",
+        },
+        {
+          "text": "",
+        },
+        {
+          "text": "fn square(_1: i32) -> i32 {",
+        },
+        {
+          "text": "    debug num => _1;",
+        },
+        {
+          "text": "    let mut _0: i32;",
+        },
+        {
+          "text": "",
+        },
+        {
+          "text": "    bb0: {",
+        },
+        {
+          "text": "        _0 = Mul(copy _1, copy _1);",
+        },
+        {
+          "text": "        return;",
+        },
+        {
+          "text": "    }",
+        },
+        {
+          "text": "}",
+        },
+      ],
+      "before": [
+        {
+          "text": "// MIR for `square` before SingleUseConsts",
+        },
+        {
+          "text": "",
+        },
+        {
+          "text": "fn square(_1: i32) -> i32 {",
+        },
+        {
+          "text": "    debug num => _1;",
+        },
+        {
+          "text": "    let mut _0: i32;",
+        },
+        {
+          "text": "",
+        },
+        {
+          "text": "    bb0: {",
+        },
+        {
+          "text": "        _0 = Mul(copy _1, copy _1);",
+        },
+        {
+          "text": "        return;",
+        },
+        {
+          "text": "    }",
+        },
+        {
+          "text": "}",
+        },
+      ],
+      "irChanged": false,
+      "machine": false,
+      "name": "SingleUseConsts",
+      "passId": "3-2-020",
+    },
+    {
+      "after": [
+        {
+          "text": "// MIR for `square` after SimplifyConstCondition-after-const-prop",
+        },
+        {
+          "text": "",
+        },
+        {
+          "text": "fn square(_1: i32) -> i32 {",
+        },
+        {
+          "text": "    debug num => _1;",
+        },
+        {
+          "text": "    let mut _0: i32;",
+        },
+        {
+          "text": "",
+        },
+        {
+          "text": "    bb0: {",
+        },
+        {
+          "text": "        _0 = Mul(copy _1, copy _1);",
+        },
+        {
+          "text": "        return;",
+        },
+        {
+          "text": "    }",
+        },
+        {
+          "text": "}",
+        },
+      ],
+      "before": [
+        {
+          "text": "// MIR for `square` before SimplifyConstCondition-after-const-prop",
+        },
+        {
+          "text": "",
+        },
+        {
+          "text": "fn square(_1: i32) -> i32 {",
+        },
+        {
+          "text": "    debug num => _1;",
+        },
+        {
+          "text": "    let mut _0: i32;",
+        },
+        {
+          "text": "",
+        },
+        {
+          "text": "    bb0: {",
+        },
+        {
+          "text": "        _0 = Mul(copy _1, copy _1);",
+        },
+        {
+          "text": "        return;",
+        },
+        {
+          "text": "    }",
+        },
+        {
+          "text": "}",
+        },
+      ],
+      "irChanged": false,
+      "machine": false,
+      "name": "SimplifyConstCondition-after-const-prop",
+      "passId": "3-2-021",
+    },
+    {
+      "after": [
+        {
+          "text": "// MIR for `square` after JumpThreading",
+        },
+        {
+          "text": "",
+        },
+        {
+          "text": "fn square(_1: i32) -> i32 {",
+        },
+        {
+          "text": "    debug num => _1;",
+        },
+        {
+          "text": "    let mut _0: i32;",
+        },
+        {
+          "text": "",
+        },
+        {
+          "text": "    bb0: {",
+        },
+        {
+          "text": "        _0 = Mul(copy _1, copy _1);",
+        },
+        {
+          "text": "        return;",
+        },
+        {
+          "text": "    }",
+        },
+        {
+          "text": "}",
+        },
+      ],
+      "before": [
+        {
+          "text": "// MIR for `square` before JumpThreading",
+        },
+        {
+          "text": "",
+        },
+        {
+          "text": "fn square(_1: i32) -> i32 {",
+        },
+        {
+          "text": "    debug num => _1;",
+        },
+        {
+          "text": "    let mut _0: i32;",
+        },
+        {
+          "text": "",
+        },
+        {
+          "text": "    bb0: {",
+        },
+        {
+          "text": "        _0 = Mul(copy _1, copy _1);",
+        },
+        {
+          "text": "        return;",
+        },
+        {
+          "text": "    }",
+        },
+        {
+          "text": "}",
+        },
+      ],
+      "irChanged": false,
+      "machine": false,
+      "name": "JumpThreading",
+      "passId": "3-2-022",
+    },
+    {
+      "after": [
+        {
+          "text": "// MIR for `square` after EarlyOtherwiseBranch",
+        },
+        {
+          "text": "",
+        },
+        {
+          "text": "fn square(_1: i32) -> i32 {",
+        },
+        {
+          "text": "    debug num => _1;",
+        },
+        {
+          "text": "    let mut _0: i32;",
+        },
+        {
+          "text": "",
+        },
+        {
+          "text": "    bb0: {",
+        },
+        {
+          "text": "        _0 = Mul(copy _1, copy _1);",
+        },
+        {
+          "text": "        return;",
+        },
+        {
+          "text": "    }",
+        },
+        {
+          "text": "}",
+        },
+      ],
+      "before": [
+        {
+          "text": "// MIR for `square` before EarlyOtherwiseBranch",
+        },
+        {
+          "text": "",
+        },
+        {
+          "text": "fn square(_1: i32) -> i32 {",
+        },
+        {
+          "text": "    debug num => _1;",
+        },
+        {
+          "text": "    let mut _0: i32;",
+        },
+        {
+          "text": "",
+        },
+        {
+          "text": "    bb0: {",
+        },
+        {
+          "text": "        _0 = Mul(copy _1, copy _1);",
+        },
+        {
+          "text": "        return;",
+        },
+        {
+          "text": "    }",
+        },
+        {
+          "text": "}",
+        },
+      ],
+      "irChanged": false,
+      "machine": false,
+      "name": "EarlyOtherwiseBranch",
+      "passId": "3-2-023",
+    },
+    {
+      "after": [
+        {
+          "text": "// MIR for `square` after SimplifyComparisonIntegral",
+        },
+        {
+          "text": "",
+        },
+        {
+          "text": "fn square(_1: i32) -> i32 {",
+        },
+        {
+          "text": "    debug num => _1;",
+        },
+        {
+          "text": "    let mut _0: i32;",
+        },
+        {
+          "text": "",
+        },
+        {
+          "text": "    bb0: {",
+        },
+        {
+          "text": "        _0 = Mul(copy _1, copy _1);",
+        },
+        {
+          "text": "        return;",
+        },
+        {
+          "text": "    }",
+        },
+        {
+          "text": "}",
+        },
+      ],
+      "before": [
+        {
+          "text": "// MIR for `square` before SimplifyComparisonIntegral",
+        },
+        {
+          "text": "",
+        },
+        {
+          "text": "fn square(_1: i32) -> i32 {",
+        },
+        {
+          "text": "    debug num => _1;",
+        },
+        {
+          "text": "    let mut _0: i32;",
+        },
+        {
+          "text": "",
+        },
+        {
+          "text": "    bb0: {",
+        },
+        {
+          "text": "        _0 = Mul(copy _1, copy _1);",
+        },
+        {
+          "text": "        return;",
+        },
+        {
+          "text": "    }",
+        },
+        {
+          "text": "}",
+        },
+      ],
+      "irChanged": false,
+      "machine": false,
+      "name": "SimplifyComparisonIntegral",
+      "passId": "3-2-024",
+    },
+    {
+      "after": [
+        {
+          "text": "// MIR for `square` after SimplifyConstCondition-final",
+        },
+        {
+          "text": "",
+        },
+        {
+          "text": "fn square(_1: i32) -> i32 {",
+        },
+        {
+          "text": "    debug num => _1;",
+        },
+        {
+          "text": "    let mut _0: i32;",
+        },
+        {
+          "text": "",
+        },
+        {
+          "text": "    bb0: {",
+        },
+        {
+          "text": "        _0 = Mul(copy _1, copy _1);",
+        },
+        {
+          "text": "        return;",
+        },
+        {
+          "text": "    }",
+        },
+        {
+          "text": "}",
+        },
+      ],
+      "before": [
+        {
+          "text": "// MIR for `square` before SimplifyConstCondition-final",
+        },
+        {
+          "text": "",
+        },
+        {
+          "text": "fn square(_1: i32) -> i32 {",
+        },
+        {
+          "text": "    debug num => _1;",
+        },
+        {
+          "text": "    let mut _0: i32;",
+        },
+        {
+          "text": "",
+        },
+        {
+          "text": "    bb0: {",
+        },
+        {
+          "text": "        _0 = Mul(copy _1, copy _1);",
+        },
+        {
+          "text": "        return;",
+        },
+        {
+          "text": "    }",
+        },
+        {
+          "text": "}",
+        },
+      ],
+      "irChanged": false,
+      "machine": false,
+      "name": "SimplifyConstCondition-final",
+      "passId": "3-2-025",
+    },
+    {
+      "after": [
+        {
+          "text": "// MIR for `square` after RemoveNoopLandingPads",
+        },
+        {
+          "text": "",
+        },
+        {
+          "text": "fn square(_1: i32) -> i32 {",
+        },
+        {
+          "text": "    debug num => _1;",
+        },
+        {
+          "text": "    let mut _0: i32;",
+        },
+        {
+          "text": "",
+        },
+        {
+          "text": "    bb0: {",
+        },
+        {
+          "text": "        _0 = Mul(copy _1, copy _1);",
+        },
+        {
+          "text": "        return;",
+        },
+        {
+          "text": "    }",
+        },
+        {
+          "text": "}",
+        },
+      ],
+      "before": [
+        {
+          "text": "// MIR for `square` before RemoveNoopLandingPads",
+        },
+        {
+          "text": "",
+        },
+        {
+          "text": "fn square(_1: i32) -> i32 {",
+        },
+        {
+          "text": "    debug num => _1;",
+        },
+        {
+          "text": "    let mut _0: i32;",
+        },
+        {
+          "text": "",
+        },
+        {
+          "text": "    bb0: {",
+        },
+        {
+          "text": "        _0 = Mul(copy _1, copy _1);",
+        },
+        {
+          "text": "        return;",
+        },
+        {
+          "text": "    }",
+        },
+        {
+          "text": "}",
+        },
+      ],
+      "irChanged": false,
+      "machine": false,
+      "name": "RemoveNoopLandingPads",
+      "passId": "3-2-026",
+    },
+    {
+      "after": [
+        {
+          "text": "// MIR for `square` after SimplifyCfg-final",
+        },
+        {
+          "text": "",
+        },
+        {
+          "text": "fn square(_1: i32) -> i32 {",
+        },
+        {
+          "text": "    debug num => _1;",
+        },
+        {
+          "text": "    let mut _0: i32;",
+        },
+        {
+          "text": "",
+        },
+        {
+          "text": "    bb0: {",
+        },
+        {
+          "text": "        _0 = Mul(copy _1, copy _1);",
+        },
+        {
+          "text": "        return;",
+        },
+        {
+          "text": "    }",
+        },
+        {
+          "text": "}",
+        },
+      ],
+      "before": [
+        {
+          "text": "// MIR for `square` before SimplifyCfg-final",
+        },
+        {
+          "text": "",
+        },
+        {
+          "text": "fn square(_1: i32) -> i32 {",
+        },
+        {
+          "text": "    debug num => _1;",
+        },
+        {
+          "text": "    let mut _0: i32;",
+        },
+        {
+          "text": "",
+        },
+        {
+          "text": "    bb0: {",
+        },
+        {
+          "text": "        _0 = Mul(copy _1, copy _1);",
+        },
+        {
+          "text": "        return;",
+        },
+        {
+          "text": "    }",
+        },
+        {
+          "text": "}",
+        },
+      ],
+      "irChanged": false,
+      "machine": false,
+      "name": "SimplifyCfg-final",
+      "passId": "3-2-027",
+    },
+    {
+      "after": [
+        {
+          "text": "// MIR for `square` after CopyProp",
+        },
+        {
+          "text": "",
+        },
+        {
+          "text": "fn square(_1: i32) -> i32 {",
+        },
+        {
+          "text": "    debug num => _1;",
+        },
+        {
+          "text": "    let mut _0: i32;",
+        },
+        {
+          "text": "",
+        },
+        {
+          "text": "    bb0: {",
+        },
+        {
+          "text": "        _0 = Mul(copy _1, copy _1);",
+        },
+        {
+          "text": "        return;",
+        },
+        {
+          "text": "    }",
+        },
+        {
+          "text": "}",
+        },
+      ],
+      "before": [
+        {
+          "text": "// MIR for `square` before CopyProp",
+        },
+        {
+          "text": "",
+        },
+        {
+          "text": "fn square(_1: i32) -> i32 {",
+        },
+        {
+          "text": "    debug num => _1;",
+        },
+        {
+          "text": "    let mut _0: i32;",
+        },
+        {
+          "text": "",
+        },
+        {
+          "text": "    bb0: {",
+        },
+        {
+          "text": "        _0 = Mul(copy _1, copy _1);",
+        },
+        {
+          "text": "        return;",
+        },
+        {
+          "text": "    }",
+        },
+        {
+          "text": "}",
+        },
+      ],
+      "irChanged": false,
+      "machine": false,
+      "name": "CopyProp",
+      "passId": "3-2-028",
+    },
+    {
+      "after": [
+        {
+          "text": "// MIR for `square` after DeadStoreElimination-final",
+        },
+        {
+          "text": "",
+        },
+        {
+          "text": "fn square(_1: i32) -> i32 {",
+        },
+        {
+          "text": "    debug num => _1;",
+        },
+        {
+          "text": "    let mut _0: i32;",
+        },
+        {
+          "text": "",
+        },
+        {
+          "text": "    bb0: {",
+        },
+        {
+          "text": "        _0 = Mul(copy _1, copy _1);",
+        },
+        {
+          "text": "        return;",
+        },
+        {
+          "text": "    }",
+        },
+        {
+          "text": "}",
+        },
+      ],
+      "before": [
+        {
+          "text": "// MIR for `square` before DeadStoreElimination-final",
+        },
+        {
+          "text": "",
+        },
+        {
+          "text": "fn square(_1: i32) -> i32 {",
+        },
+        {
+          "text": "    debug num => _1;",
+        },
+        {
+          "text": "    let mut _0: i32;",
+        },
+        {
+          "text": "",
+        },
+        {
+          "text": "    bb0: {",
+        },
+        {
+          "text": "        _0 = Mul(copy _1, copy _1);",
+        },
+        {
+          "text": "        return;",
+        },
+        {
+          "text": "    }",
+        },
+        {
+          "text": "}",
+        },
+      ],
+      "irChanged": false,
+      "machine": false,
+      "name": "DeadStoreElimination-final",
+      "passId": "3-2-029",
+    },
+    {
+      "after": [
+        {
+          "text": "// MIR for `square` after DestinationPropagation",
+        },
+        {
+          "text": "",
+        },
+        {
+          "text": "fn square(_1: i32) -> i32 {",
+        },
+        {
+          "text": "    debug num => _1;",
+        },
+        {
+          "text": "    let mut _0: i32;",
+        },
+        {
+          "text": "",
+        },
+        {
+          "text": "    bb0: {",
+        },
+        {
+          "text": "        _0 = Mul(copy _1, copy _1);",
+        },
+        {
+          "text": "        return;",
+        },
+        {
+          "text": "    }",
+        },
+        {
+          "text": "}",
+        },
+      ],
+      "before": [
+        {
+          "text": "// MIR for `square` before DestinationPropagation",
+        },
+        {
+          "text": "",
+        },
+        {
+          "text": "fn square(_1: i32) -> i32 {",
+        },
+        {
+          "text": "    debug num => _1;",
+        },
+        {
+          "text": "    let mut _0: i32;",
+        },
+        {
+          "text": "",
+        },
+        {
+          "text": "    bb0: {",
+        },
+        {
+          "text": "        _0 = Mul(copy _1, copy _1);",
+        },
+        {
+          "text": "        return;",
+        },
+        {
+          "text": "    }",
+        },
+        {
+          "text": "}",
+        },
+      ],
+      "irChanged": false,
+      "machine": false,
+      "name": "DestinationPropagation",
+      "passId": "3-2-030",
+    },
+    {
+      "after": [
+        {
+          "text": "// MIR for `square` after SimplifyLocals-final",
+        },
+        {
+          "text": "",
+        },
+        {
+          "text": "fn square(_1: i32) -> i32 {",
+        },
+        {
+          "text": "    debug num => _1;",
+        },
+        {
+          "text": "    let mut _0: i32;",
+        },
+        {
+          "text": "",
+        },
+        {
+          "text": "    bb0: {",
+        },
+        {
+          "text": "        _0 = Mul(copy _1, copy _1);",
+        },
+        {
+          "text": "        return;",
+        },
+        {
+          "text": "    }",
+        },
+        {
+          "text": "}",
+        },
+      ],
+      "before": [
+        {
+          "text": "// MIR for `square` before SimplifyLocals-final",
+        },
+        {
+          "text": "",
+        },
+        {
+          "text": "fn square(_1: i32) -> i32 {",
+        },
+        {
+          "text": "    debug num => _1;",
+        },
+        {
+          "text": "    let mut _0: i32;",
+        },
+        {
+          "text": "",
+        },
+        {
+          "text": "    bb0: {",
+        },
+        {
+          "text": "        _0 = Mul(copy _1, copy _1);",
+        },
+        {
+          "text": "        return;",
+        },
+        {
+          "text": "    }",
+        },
+        {
+          "text": "}",
+        },
+      ],
+      "irChanged": false,
+      "machine": false,
+      "name": "SimplifyLocals-final",
+      "passId": "3-2-031",
+    },
+    {
+      "after": [
+        {
+          "text": "// MIR for `square` after AddCallGuards",
+        },
+        {
+          "text": "",
+        },
+        {
+          "text": "fn square(_1: i32) -> i32 {",
+        },
+        {
+          "text": "    debug num => _1;",
+        },
+        {
+          "text": "    let mut _0: i32;",
+        },
+        {
+          "text": "",
+        },
+        {
+          "text": "    bb0: {",
+        },
+        {
+          "text": "        _0 = Mul(copy _1, copy _1);",
+        },
+        {
+          "text": "        return;",
+        },
+        {
+          "text": "    }",
+        },
+        {
+          "text": "}",
+        },
+      ],
+      "before": [
+        {
+          "text": "// MIR for `square` before AddCallGuards",
+        },
+        {
+          "text": "",
+        },
+        {
+          "text": "fn square(_1: i32) -> i32 {",
+        },
+        {
+          "text": "    debug num => _1;",
+        },
+        {
+          "text": "    let mut _0: i32;",
+        },
+        {
+          "text": "",
+        },
+        {
+          "text": "    bb0: {",
+        },
+        {
+          "text": "        _0 = Mul(copy _1, copy _1);",
+        },
+        {
+          "text": "        return;",
+        },
+        {
+          "text": "    }",
+        },
+        {
+          "text": "}",
+        },
+      ],
+      "irChanged": false,
+      "machine": false,
+      "name": "AddCallGuards",
+      "passId": "3-2-032",
+    },
+  ],
+}

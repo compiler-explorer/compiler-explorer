@@ -1,0 +1,115 @@
+// MIR for `print` after DeadStoreElimination-initial
+
+fn print(_1: T) -> () {
+    debug value => _1;
+    let mut _0: ();
+    let _2: ();
+    let mut _3: std::fmt::Arguments<'_>;
+    let mut _4: &T;
+    let mut _6: core::fmt::rt::Argument<'_>;
+    let mut _7: &[u8; 4];
+    let _8: &[u8; 4];
+    let mut _9: &[core::fmt::rt::Argument<'_>; 1];
+    let _10: &[core::fmt::rt::Argument<'_>; 1];
+    let mut _11: &T;
+    let _19: &T;
+    scope 1 {
+        debug ((args: (&T,)).0: &T) => _19;
+        let _5: [core::fmt::rt::Argument<'_>; 1];
+        scope 2 {
+            debug args => _5;
+            scope 8 (inlined Arguments::<'_>::new::<4, 1>) {
+                let mut _17: std::ptr::NonNull<u8>;
+                let mut _18: std::ptr::NonNull<core::fmt::rt::Argument<'_>>;
+            }
+        }
+        scope 3 (inlined core::fmt::rt::Argument::<'_>::new_display::<T>) {
+            let mut _12: core::fmt::rt::ArgumentType<'_>;
+            let mut _13: std::ptr::NonNull<()>;
+            let mut _14: for<'a, 'b> unsafe fn(std::ptr::NonNull<()>, &'a mut std::fmt::Formatter<'b>) -> std::result::Result<(), std::fmt::Error>;
+            let _15: for<'a, 'b, 'c> fn(&'a T, &'b mut std::fmt::Formatter<'c>) -> std::result::Result<(), std::fmt::Error>;
+            scope 4 {
+            }
+            scope 5 (inlined NonNull::<T>::from_ref) {
+                let mut _16: *const T;
+            }
+            scope 6 (inlined NonNull::<T>::cast::<()>) {
+                scope 7 (inlined NonNull::<T>::as_ptr) {
+                }
+            }
+        }
+    }
+
+    bb0: {
+        StorageLive(_3);
+        StorageLive(_19);
+        StorageLive(_4);
+        _4 = &_1;
+        _19 = copy _4;
+        StorageDead(_4);
+        StorageLive(_5);
+        StorageLive(_6);
+        _11 = no_retag copy _19;
+        StorageLive(_16);
+        StorageLive(_12);
+        StorageLive(_13);
+        _16 = &raw const (*_11);
+        _13 = copy _16 as std::ptr::NonNull<()> (Transmute);
+        StorageLive(_14);
+        StorageLive(_15);
+        _15 = <T as std::fmt::Display>::fmt as for<'a, 'b, 'c> fn(&'a T, &'b mut std::fmt::Formatter<'c>) -> std::result::Result<(), std::fmt::Error> (PointerCoercion(ReifyFnPointer(Safe), Implicit));
+        _14 = copy _15 as for<'a, 'b> unsafe fn(std::ptr::NonNull<()>, &'a mut std::fmt::Formatter<'b>) -> std::result::Result<(), std::fmt::Error> (Transmute);
+        StorageDead(_15);
+        _12 = core::fmt::rt::ArgumentType::<'_>::Placeholder { value: move _13, formatter: copy _14, _lifetime: const PhantomData::<&()> };
+        StorageDead(_14);
+        StorageDead(_13);
+        _6 = core::fmt::rt::Argument::<'_> { ty: move _12 };
+        StorageDead(_12);
+        StorageDead(_16);
+        _5 = [move _6];
+        StorageDead(_6);
+        StorageLive(_7);
+        StorageLive(_8);
+        _8 = const b"\xc0\x01\n\x00";
+        _7 = copy _8;
+        StorageLive(_9);
+        StorageLive(_10);
+        _10 = &_5;
+        _9 = copy _10;
+        StorageLive(_17);
+        _17 = copy _7 as std::ptr::NonNull<u8> (Transmute);
+        StorageLive(_18);
+        _18 = copy _9 as std::ptr::NonNull<core::fmt::rt::Argument<'_>> (Transmute);
+        _3 = Arguments::<'_> { template: move _17, args: move _18 };
+        StorageDead(_18);
+        StorageDead(_17);
+        StorageDead(_10);
+        StorageDead(_9);
+        StorageDead(_8);
+        StorageDead(_7);
+        _2 = std::io::_print(move _3) -> [return: bb1, unwind: bb3];
+    }
+
+    bb1: {
+        StorageDead(_3);
+        StorageDead(_5);
+        StorageDead(_19);
+        drop(_1) -> [return: bb2, unwind: bb4];
+    }
+
+    bb2: {
+        return;
+    }
+
+    bb3 (cleanup): {
+        drop(_1) -> [return: bb4, unwind terminate(cleanup)];
+    }
+
+    bb4 (cleanup): {
+        resume;
+    }
+}
+
+alloc1 (size: 4, align: 1) {
+    c0 01 0a 00                                     │ ....
+}
