@@ -123,6 +123,7 @@ export type CompilationRequestOptions = {
         produceIr?: LLVMIrBackendOptions | null;
         produceClangir?: ClangirBackendOptions | null;
         produceOptPipeline?: OptPipelineBackendOptions | null;
+        produceRustMirOptPipeline?: boolean;
         produceDevice?: boolean;
         produceRustMir?: boolean;
         produceRustMacroExp?: boolean;
@@ -225,6 +226,7 @@ export type CompilationResult = {
     clangirOutput?: ResultLine[];
 
     optPipelineOutput?: OptPipelineOutput;
+    rustMirOptPipelineOutput?: OptPipelineOutput;
 
     cfg?: CFGResult;
 
