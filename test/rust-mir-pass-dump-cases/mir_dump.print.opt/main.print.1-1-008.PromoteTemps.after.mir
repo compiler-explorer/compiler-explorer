@@ -1,0 +1,96 @@
+// MIR for `print` after PromoteTemps
+
+| User Type Annotations
+| 0: user_ty: Canonical { value: TypeOf(core::fmt::rt::Argument<'_>::new_display<^c_1> at <impl core::fmt::rt::<{impl#0}> for core::fmt::rt::Argument<'_>>), max_universe: U0, var_kinds: [Region(U0), Ty { ui: U0, sub_root: 1 }, Region(U0)] }, span: src/main.rs:4:15: 4:22, inferred_ty: for<'a> fn(&'a T) -> core::fmt::rt::Argument<'a> {core::fmt::rt::Argument::<'_>::new_display::<T>}
+| 1: user_ty: Canonical { value: TypeOf(Arguments<'_>::new<^c_BoundConst { var: 1, .. }, ^c_BoundConst { var: 2, .. }> at <impl core::fmt::<{impl#4}> for Arguments<'_>>), max_universe: U0, var_kinds: [Region(U0), Const(U0), Const(U0), Region(U0)] }, span: /build/.rustup/toolchains/nightly-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/std/src/macros.rs:148:28: 148:61, inferred_ty: unsafe fn(&[u8; 4], &[core::fmt::rt::Argument<'_>; 1]) -> std::fmt::Arguments<'_> {std::fmt::Arguments::<'_>::new::<4, 1>}
+|
+fn print(_1: T) -> () {
+    debug value => _1;
+    let mut _0: ();
+    let _2: ();
+    let _3: ();
+    let mut _4: std::fmt::Arguments<'_>;
+    let _5: (&T,);
+    let mut _6: &T;
+    let mut _8: core::fmt::rt::Argument<'_>;
+    let mut _9: &T;
+    let mut _10: &[u8; 4];
+    let _11: &[u8; 4];
+    let mut _12: &[core::fmt::rt::Argument<'_>; 1];
+    let _13: &[core::fmt::rt::Argument<'_>; 1];
+    scope 1 {
+        debug args => _5;
+        let _7: [core::fmt::rt::Argument<'_>; 1];
+        scope 2 {
+            debug args => _7;
+        }
+    }
+
+    bb0: {
+        StorageLive(_2);
+        StorageLive(_3);
+        StorageLive(_4);
+        StorageLive(_5);
+        StorageLive(_6);
+        _6 = &_1;
+        _5 = (move _6,);
+        StorageDead(_6);
+        FakeRead(ForLet(None), _5);
+        StorageLive(_7);
+        StorageLive(_8);
+        StorageLive(_9);
+        _9 = &(*(_5.0: &T));
+        _8 = core::fmt::rt::Argument::<'_>::new_display::<T>(move _9) -> [return: bb1, unwind: bb5];
+    }
+
+    bb1: {
+        StorageDead(_9);
+        _7 = [move _8];
+        StorageDead(_8);
+        FakeRead(ForLet(None), _7);
+        StorageLive(_10);
+        StorageLive(_11);
+        _11 = const b"\xc0\x01\n\x00";
+        _10 = &(*_11);
+        StorageLive(_12);
+        StorageLive(_13);
+        _13 = &_7;
+        _12 = &(*_13);
+        _4 = Arguments::<'_>::new::<4, 1>(move _10, move _12) -> [return: bb2, unwind: bb5];
+    }
+
+    bb2: {
+        StorageDead(_13);
+        StorageDead(_12);
+        StorageDead(_11);
+        StorageDead(_10);
+        _3 = std::io::_print(move _4) -> [return: bb3, unwind: bb5];
+    }
+
+    bb3: {
+        StorageDead(_4);
+        StorageDead(_7);
+        StorageDead(_5);
+        StorageDead(_3);
+        _2 = const ();
+        StorageDead(_2);
+        _0 = const ();
+        drop(_1) -> [return: bb4, unwind: bb6];
+    }
+
+    bb4: {
+        return;
+    }
+
+    bb5 (cleanup): {
+        drop(_1) -> [return: bb6, unwind terminate(cleanup)];
+    }
+
+    bb6 (cleanup): {
+        resume;
+    }
+}
+
+alloc1 (size: 4, align: 1) {
+    c0 01 0a 00                                     │ ....
+}

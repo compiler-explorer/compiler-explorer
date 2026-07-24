@@ -99,6 +99,7 @@ export type CompilerInfo = {
     supportsIrViewOptToggleOption?: boolean;
     supportsClangirView?: boolean;
     supportsRustMirView?: boolean;
+    supportsRustMirOptPipeline?: boolean;
     supportsRustMacroExpView?: boolean;
     supportsRustHirView?: boolean;
     supportsHaskellCoreView?: boolean;

@@ -72,6 +72,7 @@ import {
     TREE_COMPONENT_NAME,
     YUL_VIEW_COMPONENT_NAME,
 } from './components.interfaces.js';
+import type {OptPipelineKind} from './panes/opt-pipeline.interfaces.js';
 import {SentryCapture} from './sentry.js';
 
 /** Get an empty compiler component. */
@@ -641,6 +642,7 @@ export function getOptPipelineViewWith(
     compilerName: string,
     editorid: number,
     treeid: number,
+    kind: OptPipelineKind,
 ): ComponentConfig<typeof OPT_PIPELINE_VIEW_COMPONENT_NAME> {
     return {
         type: 'component',
@@ -655,6 +657,7 @@ export function getOptPipelineViewWith(
             selectedGroup: '',
             selectedIndex: 0,
             sidebarWidth: 0,
+            kind,
         },
     };
 }

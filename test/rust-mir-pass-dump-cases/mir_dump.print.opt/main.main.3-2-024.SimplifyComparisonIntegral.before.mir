@@ -1,0 +1,26 @@
+// MIR for `main` before SimplifyComparisonIntegral
+
+fn main() -> () {
+    let mut _0: ();
+    let _1: u32;
+    let _2: ();
+    let _3: ();
+    scope 1 {
+        debug x => const 123_u32;
+    }
+
+    bb0: {
+        StorageLive(_1);
+        nop;
+        _2 = print::<u32>(const 123_u32) -> [return: bb1, unwind continue];
+    }
+
+    bb1: {
+        _3 = print::<u64>(const 456_u64) -> [return: bb2, unwind continue];
+    }
+
+    bb2: {
+        StorageDead(_1);
+        return;
+    }
+}

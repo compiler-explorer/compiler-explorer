@@ -69,6 +69,7 @@ import {Toggles} from '../widgets/toggles.js';
 import {CompilerCurrentState, CompilerState} from './compiler.interfaces.js';
 import {GccDumpFiltersState, GccDumpViewSelectedPass} from './gccdump-view.interfaces.js';
 import {LeanCOptions} from './leanc-view.interfaces.js';
+import type {OptPipelineKind} from './opt-pipeline.interfaces.js';
 import {MonacoPaneState} from './pane.interfaces.js';
 import {MonacoPane} from './pane.js';
 import {PPOptions} from './pp-view.interfaces.js';
@@ -189,6 +190,7 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
     private irButton: JQuery<HTMLButtonElement>;
     private clangirButton: JQuery<HTMLButtonElement>;
     private optPipelineButton: JQuery<HTMLButtonElement>;
+    private rustMirOptPipelineButton: JQuery<HTMLButtonElement>;
     private deviceButton: JQuery<HTMLButtonElement>;
     private gnatDebugTreeButton: JQuery<HTMLButtonElement>;
     private gnatDebugButton: JQuery<HTMLButtonElement>;
@@ -263,7 +265,7 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
     private astViewOpen: boolean;
     private irViewOpen: boolean;
     private clangirViewOpen: boolean;
-    private optPipelineViewOpenCount: number;
+    private optPipelineViewOpenCount: Record<OptPipelineKind, number>;
     private gccDumpViewOpen: boolean;
     private gccDumpPassSelected?: GccDumpViewSelectedPass;
     private treeDumpEnabled?: boolean;
@@ -316,7 +318,7 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
         this.optViewOpen = false;
         this.cfgViewOpenCount = 0;
         this.irCfgViewOpenCount = 0;
-        this.optPipelineViewOpenCount = 0;
+        this.optPipelineViewOpenCount = {llvm: 0, rustMir: 0};
 
         this.decorations = {
             labelUsages: [],
@@ -564,7 +566,7 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
             );
         };
 
-        const createOptPipelineView = () => {
+        const createOptPipelineView = (kind: OptPipelineKind) => {
             const currentState = this.getCurrentState();
             const langId = currentState.lang;
             const compilerId = currentState.compiler;
@@ -575,6 +577,7 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
                 this.getCompilerName(),
                 this.sourceEditorId ?? 0,
                 this.sourceTreeId ?? 0,
+                kind,
             );
         };
 
@@ -865,7 +868,7 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
             insertPoint.addChild(createClangirView());
         });
 
-        createDragSource(this.container.layoutManager, this.optPipelineButton, () => createOptPipelineView()).on(
+        createDragSource(this.container.layoutManager, this.optPipelineButton, () => createOptPipelineView('llvm')).on(
             'dragStart',
             hidePaneAdder,
         );
@@ -874,7 +877,18 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
             const insertPoint =
                 this.hub.findParentRowOrColumn(this.container.parent) ||
                 this.container.layoutManager.root.contentItems[0];
-            insertPoint.addChild(createOptPipelineView());
+            insertPoint.addChild(createOptPipelineView('llvm'));
+        });
+
+        createDragSource(this.container.layoutManager, this.rustMirOptPipelineButton, () =>
+            createOptPipelineView('rustMir'),
+        ).on('dragStart', hidePaneAdder);
+
+        this.rustMirOptPipelineButton.on('click', () => {
+            const insertPoint =
+                this.hub.findParentRowOrColumn(this.container.parent) ||
+                this.container.layoutManager.root.contentItems[0];
+            insertPoint.addChild(createOptPipelineView('rustMir'));
         });
 
         createDragSource(this.container.layoutManager, this.deviceButton, () => createDeviceView()).on(
@@ -1383,7 +1397,8 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
                 produceGnatDebug: this.gnatDebugViewOpen,
                 produceIr: this.irViewOpen ? this.llvmIrOptions : null,
                 produceClangir: this.clangirViewOpen ? this.clangirOptions : null,
-                produceOptPipeline: this.optPipelineViewOpenCount > 0 ? this.optPipelineOptions : null,
+                produceOptPipeline: this.optPipelineViewOpenCount.llvm > 0 ? this.optPipelineOptions : null,
+                produceRustMirOptPipeline: this.optPipelineViewOpenCount.rustMir > 0,
                 produceDevice: this.deviceViewOpen,
                 produceRustMir: this.rustMirViewOpen,
                 produceRustMacroExp: this.rustMacroExpViewOpen,
@@ -2167,16 +2182,16 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
         }
     }
 
-    onOptPipelineViewOpened(id: number): void {
+    onOptPipelineViewOpened(id: number, kind: OptPipelineKind): void {
         if (this.id === id) {
-            this.optPipelineViewOpenCount++;
+            this.optPipelineViewOpenCount[kind]++;
             this.compile();
         }
     }
 
-    onOptPipelineViewClosed(id: number): void {
+    onOptPipelineViewClosed(id: number, kind: OptPipelineKind): void {
         if (this.id === id) {
-            this.optPipelineViewOpenCount--;
+            this.optPipelineViewOpenCount[kind]--;
         }
     }
 
@@ -2567,6 +2582,7 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
         this.irButton = this.domRoot.find('.btn.view-ir');
         this.clangirButton = this.domRoot.find('.btn.view-clangir');
         this.optPipelineButton = this.domRoot.find('.btn.view-opt-pipeline');
+        this.rustMirOptPipelineButton = this.domRoot.find('.btn.view-rust-mir-opt-pipeline');
         this.deviceButton = this.domRoot.find('.btn.view-device');
         this.gnatDebugTreeButton = this.domRoot.find('.btn.view-gnatdebugtree');
         this.gnatDebugButton = this.domRoot.find('.btn.view-gnatdebug');
@@ -2898,6 +2914,7 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
         this.irButton.toggle(!!this.compiler.supportsIrView);
         this.clangirButton.toggle(!!this.compiler.supportsClangirView);
         this.optPipelineButton.toggle(!!this.compiler.optPipeline);
+        this.rustMirOptPipelineButton.toggle(!!this.compiler.supportsRustMirOptPipeline);
         this.deviceButton.toggle(!!this.compiler.supportsDeviceAsmView);
         this.rustMirButton.toggle(!!this.compiler.supportsRustMirView);
         this.rustMacroExpButton.toggle(!!this.compiler.supportsRustMacroExpView);

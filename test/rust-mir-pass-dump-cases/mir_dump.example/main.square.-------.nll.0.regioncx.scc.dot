@@ -1,0 +1,5 @@
+digraph RegionInferenceContext {
+    r0[label="SCC(0) = {\'?1}"][shape="box"];
+    r1[label="SCC(1) = {\'?0 (\'static)}"][shape="box"];
+    r1 -> r0[label=""];
+}

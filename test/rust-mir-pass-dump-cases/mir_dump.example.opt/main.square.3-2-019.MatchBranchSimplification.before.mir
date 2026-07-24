@@ -1,0 +1,11 @@
+// MIR for `square` before MatchBranchSimplification
+
+fn square(_1: i32) -> i32 {
+    debug num => _1;
+    let mut _0: i32;
+
+    bb0: {
+        _0 = Mul(copy _1, copy _1);
+        return;
+    }
+}

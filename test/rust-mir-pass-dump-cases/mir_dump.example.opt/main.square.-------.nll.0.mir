@@ -1,0 +1,31 @@
+// MIR for `square` 0 nll
+
+| Free Region Mapping
+| '?0 | Global | ['?0, '?1]
+| '?1 | Local | ['?1]
+|
+| Inferred Region Values
+| '?0 | U0 | {bb0[0..=7], '?0, '?1}
+| '?1 | U0 | {bb0[0..=7], '?1}
+|
+| Inference Constraints
+| '?0 live at {bb0[0..=7]}
+| '?1 live at {bb0[0..=7]}
+|
+fn square(_1: i32) -> i32 {
+    debug num => _1;                     // in scope 0 at src/main.rs:2:15: 2:18
+    let mut _0: i32;                     // return place in scope 0 at src/main.rs:2:28: 2:31
+    let mut _2: i32;                     // in scope 0 at src/main.rs:3:5: 3:8
+    let mut _3: i32;                     // in scope 0 at src/main.rs:3:11: 3:14
+
+    bb0: {
+        StorageLive(_2);                 // scope 0 at src/main.rs:3:5: 3:8
+        _2 = copy _1;                    // scope 0 at src/main.rs:3:5: 3:8
+        StorageLive(_3);                 // scope 0 at src/main.rs:3:11: 3:14
+        _3 = copy _1;                    // scope 0 at src/main.rs:3:11: 3:14
+        _0 = Mul(move _2, move _3);      // scope 0 at src/main.rs:3:5: 3:14
+        StorageDead(_3);                 // scope 0 at src/main.rs:3:13: 3:14
+        StorageDead(_2);                 // scope 0 at src/main.rs:3:13: 3:14
+        return;                          // scope 0 at src/main.rs:4:2: 4:2
+    }
+}

@@ -1,0 +1,65 @@
+// MIR for `print` after SimplifyConstCondition-final
+
+fn print(_1: T) -> () {
+    debug value => _1;
+    let mut _0: ();
+    let _2: ();
+    let mut _3: std::fmt::Arguments<'_>;
+    let _4: (&T,);
+    let mut _5: &T;
+    let mut _7: core::fmt::rt::Argument<'_>;
+    let mut _8: &T;
+    let mut _9: &[u8; 4];
+    let _10: &[u8; 4];
+    let mut _11: &[core::fmt::rt::Argument<'_>; 1];
+    let _12: &[core::fmt::rt::Argument<'_>; 1];
+    let mut _13: &T;
+    scope 1 {
+        debug args => _4;
+        let _6: [core::fmt::rt::Argument<'_>; 1];
+        scope 2 {
+            debug args => _6;
+        }
+    }
+
+    bb0: {
+        _5 = &_1;
+        _4 = (move _5,);
+        _13 = no_retag copy (_4.0: &T);
+        _8 = copy _13;
+        _7 = core::fmt::rt::Argument::<'_>::new_display::<T>(move _8) -> [return: bb1, unwind: bb5];
+    }
+
+    bb1: {
+        _6 = [move _7];
+        nop;
+        _9 = const b"\xc0\x01\n\x00";
+        _12 = &_6;
+        _11 = copy _12;
+        _3 = Arguments::<'_>::new::<4, 1>(move _9, move _11) -> [return: bb2, unwind: bb5];
+    }
+
+    bb2: {
+        _2 = std::io::_print(move _3) -> [return: bb3, unwind: bb5];
+    }
+
+    bb3: {
+        drop(_1) -> [return: bb4, unwind: bb6];
+    }
+
+    bb4: {
+        return;
+    }
+
+    bb5 (cleanup): {
+        drop(_1) -> [return: bb6, unwind terminate(cleanup)];
+    }
+
+    bb6 (cleanup): {
+        resume;
+    }
+}
+
+alloc1 (size: 4, align: 1) {
+    c0 01 0a 00                                     │ ....
+}

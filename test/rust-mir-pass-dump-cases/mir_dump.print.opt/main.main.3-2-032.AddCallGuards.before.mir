@@ -1,0 +1,22 @@
+// MIR for `main` before AddCallGuards
+
+fn main() -> () {
+    let mut _0: ();
+    let _1: ();
+    let _2: ();
+    scope 1 {
+        debug x => const 123_u32;
+    }
+
+    bb0: {
+        _1 = print::<u32>(const 123_u32) -> [return: bb1, unwind continue];
+    }
+
+    bb1: {
+        _2 = print::<u64>(const 456_u64) -> [return: bb2, unwind continue];
+    }
+
+    bb2: {
+        return;
+    }
+}

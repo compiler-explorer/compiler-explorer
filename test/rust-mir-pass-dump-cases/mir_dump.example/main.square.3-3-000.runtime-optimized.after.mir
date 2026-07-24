@@ -1,0 +1,17 @@
+// MIR for `square` after runtime-optimized
+
+fn square(_1: i32) -> i32 {
+    debug num => _1;
+    let mut _0: i32;
+    let mut _2: (i32, bool);
+
+    bb0: {
+        _2 = MulWithOverflow(copy _1, copy _1);
+        assert(!move (_2.1: bool), "attempt to compute `{} * {}`, which would overflow", copy _1, copy _1) -> [success: bb1, unwind continue];
+    }
+
+    bb1: {
+        _0 = move (_2.0: i32);
+        return;
+    }
+}
