@@ -64,6 +64,10 @@ export class RustCompiler extends BaseCompiler {
         this.compiler.supportsRustHirView = isNightly;
         if (this.compiler.name === 'rustc nightly') {
             this.compiler.supportsOptOutput = true;
+            this.compiler.rustMirOptPipeline = {
+                supportedOptions: [],
+                supportedFilters: [],
+            };
             // not setting compiler.optArg, overriding prepareOptRemarksArgs instead (2 args needed)
         }
 

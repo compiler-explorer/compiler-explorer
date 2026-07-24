@@ -163,22 +163,26 @@ export type CompilerInfo = {
     removeEmptyGccDump?: boolean;
     irArg?: string[];
     minIrArgs?: string[];
-    optPipeline?: {
-        groupName?: string;
-        supportedOptions?: string[];
-        supportedFilters?: string[];
+    optPipeline?: OptPipelineOptions & {
         arg?: string[];
         moduleScopeArg?: string[];
         noDiscardValueNamesArg?: string[];
-        monacoLanguage?: string;
-        initialOptionsState?: Record<string, boolean>;
-        initialFiltersState?: Record<string, boolean>;
     };
+    rustMirOptPipeline?: OptPipelineOptions;
     cachedPossibleArguments?: any;
     nvdisasm?: string;
     ptxas?: string;
     mtime?: any;
     $order: number;
+};
+
+type OptPipelineOptions = {
+    groupName?: string;
+    supportedOptions?: string[];
+    supportedFilters?: string[];
+    monacoLanguage?: string;
+    initialOptionsState?: Record<string, boolean>;
+    initialFiltersState?: Record<string, boolean>;
 };
 
 // Compiler information collected by the compiler-finder
