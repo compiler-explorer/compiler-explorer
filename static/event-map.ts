@@ -36,6 +36,7 @@ import {NewToolSettings, ToolState} from './components.interfaces.js';
 import {Motd} from './motd.interfaces.js';
 import {GccDumpFiltersState, GccDumpViewSelectedPass} from './panes/gccdump-view.interfaces.js';
 import {LeanCOptions} from './panes/leanc-view.interfaces.js';
+import type {OptPipelineKind} from './panes/opt-pipeline.interfaces.js';
 import {PPOptions} from './panes/pp-view.interfaces.js';
 import {SiteSettings} from './settings.js';
 import {Theme} from './themes.js';
@@ -123,8 +124,8 @@ export type EventMap = {
     irViewOpened: (compilerId: number) => void;
     clangirViewClosed: (compilerId: number) => void;
     clangirViewOpened: (compilerId: number) => void;
-    optPipelineViewClosed: (compilerId: number) => void;
-    optPipelineViewOpened: (compilerId: number) => void;
+    optPipelineViewClosed: (compilerId: number, kind: OptPipelineKind) => void;
+    optPipelineViewOpened: (compilerId: number, kind: OptPipelineKind) => void;
     optPipelineViewOptionsUpdated: (compilerId: number, options: OptPipelineBackendOptions, recompile: boolean) => void;
     llvmIrViewOptionsUpdated: (compilerId: number, options: LLVMIrBackendOptions, recompile: boolean) => void;
     clangirViewOptionsUpdated: (compilerId: number, options: ClangirBackendOptions, recompile: boolean) => void;

@@ -78,6 +78,7 @@ export class CompilersService {
         'supportsBinary',
         'supportsBinaryObject',
         'supportsOptOutput',
+        'supportsRustMirOptPipeline',
         'supportsStackUsageOutput',
         'supportsPpView',
         'supportsGccDump',

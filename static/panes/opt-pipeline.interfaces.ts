@@ -22,6 +22,8 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
+export type OptPipelineKind = 'llvm' | 'rustMir';
+
 export interface OptPipelineViewState {
     // Older state may be missing these fields
     lang?: string;
@@ -40,4 +42,5 @@ export interface OptPipelineViewState {
     'filter-inconsequential-passes'?: boolean;
     'filter-debug-info'?: boolean;
     'filter-instruction-metadata'?: boolean;
+    kind?: OptPipelineKind;
 }
