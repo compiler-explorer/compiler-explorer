@@ -1643,7 +1643,7 @@ export class BaseCompiler {
     }
 
     async generateRustMirOptPipeline(inputFilename: string, options: string[]): Promise<OptPipelineOutput> {
-        const mirDumpDir = await fs.mkdtemp(`${path.dirname(this.filename(inputFilename))}/mir_dump`);
+        const mirDumpDir = await fs.mkdtemp(path.join(path.dirname(this.filename(inputFilename)), 'mir_dump'));
         const newOptions = [
             ...options,
             '-Zdump-mir=all',
