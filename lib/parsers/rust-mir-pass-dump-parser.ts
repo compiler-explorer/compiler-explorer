@@ -37,7 +37,7 @@ export async function parseMirPassDump(mirDumpDir: string): Promise<OptPipelineR
         // `filename` is of the format `<functionName>.<passId>.<passName>.before.mir`
         const fullName = path.basename(filename, beforeMir);
         const passName = path.extname(fullName);
-        const {name: functionName, ext: passId} = path.parse(fullName.slice(0, -passName.length));
+        const {name: functionName, ext: passIdWithDot} = path.parse(fullName.slice(0, -passName.length));
         const before = await read(filename);
         const after = await read(`${filename.slice(0, -beforeMir.length)}.after.mir`);
 
@@ -45,9 +45,10 @@ export async function parseMirPassDump(mirDumpDir: string): Promise<OptPipelineR
         if (func === undefined) {
             func = results[functionName] = [];
         }
+        const passId = passIdWithDot.slice(1);
         func.push({
-            passId: passId.slice(1),
-            name: passName.slice(1),
+            passId,
+            name: `${passName.slice(1)} (${passId})`,
             machine: false,
             before: before.map(line => ({text: line})),
             after: after.map(line => ({text: line})),
