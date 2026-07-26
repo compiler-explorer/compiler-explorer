@@ -65,6 +65,7 @@ export class RustCompiler extends BaseCompiler {
         if (this.compiler.name === 'rustc nightly') {
             this.compiler.supportsOptOutput = true;
             this.compiler.rustMirOptPipeline = {
+                monacoLanguage: 'rust',
                 supportedOptions: [],
                 supportedFilters: [],
             };
