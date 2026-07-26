@@ -147,7 +147,7 @@ export class OptPipeline extends MonacoPane<monaco.editor.IStandaloneDiffEditor,
 
     override initializeStateDependentProperties(state: OptPipelineViewState & MonacoPaneState) {
         // The compiler value is fetched async via postInit. Reads of `this.compiler`
-        // during synchronous construction (createEditor → getMonacoLanguage,
+        // during synchronous construction (createEditor → monacoLanguage,
         // updateButtons) will see null and fall back to defaults; postInit re-applies
         // the correct values once the fetch resolves.
         this.compiler = null;
@@ -171,16 +171,12 @@ export class OptPipeline extends MonacoPane<monaco.editor.IStandaloneDiffEditor,
         return $('#opt-pipeline').html();
     }
 
-    getMonacoLanguage(): string {
-        let monacoLanguage = 'llvm-ir';
-        if (this.compiler) {
-            monacoLanguage = this.compiler[this.kind]?.monacoLanguage ?? 'llvm-ir';
-        }
-        return monacoLanguage;
+    get monacoLanguage(): string {
+        return this.compiler?.[this.kind]?.monacoLanguage ?? 'llvm-ir';
     }
 
     override createEditor(editorRoot: HTMLElement): void {
-        const monacoLanguage = this.getMonacoLanguage();
+        const monacoLanguage = this.monacoLanguage;
         this.editor = monaco.editor.createDiffEditor(
             editorRoot,
             extendConfig({
@@ -196,7 +192,7 @@ export class OptPipeline extends MonacoPane<monaco.editor.IStandaloneDiffEditor,
     }
 
     updateEditor() {
-        const monacoLanguage = this.getMonacoLanguage();
+        const monacoLanguage = this.monacoLanguage;
         monaco.editor.setModelLanguage(this.originalModel, monacoLanguage);
         monaco.editor.setModelLanguage(this.modifiedModel, monacoLanguage);
     }
