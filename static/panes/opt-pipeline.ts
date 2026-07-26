@@ -33,11 +33,7 @@ import _ from 'underscore';
 import {unwrap, unwrapString} from '../../shared/assert.js';
 import {escapeHTML} from '../../shared/common-utils.js';
 import {CompilationResult} from '../../types/compilation/compilation.interfaces.js';
-import {
-    OptPipelineBackendOptions,
-    OptPipelineOutput,
-    OptPipelineResults,
-} from '../../types/compilation/opt-pipeline-output.interfaces.js';
+import {OptPipelineBackendOptions, OptPipelineResults} from '../../types/compilation/opt-pipeline-output.interfaces.js';
 import {CompilerInfo} from '../../types/compiler.interfaces.js';
 import {Hub} from '../hub.js';
 import {extendConfig} from '../monaco-config.js';
@@ -311,9 +307,8 @@ export class OptPipeline extends MonacoPane<monaco.editor.IStandaloneDiffEditor,
 
     override onCompileResult(compilerId: number, compiler: CompilerInfo, result: CompilationResult): void {
         if (this.compilerInfo.compilerId !== compilerId) return;
-        const outputField = `${this.kind}Output`;
-        if (result[outputField]) {
-            const output: OptPipelineOutput = unwrap(result[outputField]);
+        const output = result[`${this.kind}Output`];
+        if (output) {
             if (output.error) {
                 this.editor
                     .getModel()
