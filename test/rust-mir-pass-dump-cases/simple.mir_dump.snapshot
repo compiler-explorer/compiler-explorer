@@ -37,7 +37,7 @@
       ],
       "irChanged": true,
       "machine": false,
-      "name": "First",
+      "name": "First (1-1-001)",
       "passId": "1-1-001",
     },
     {
@@ -77,7 +77,7 @@
       ],
       "irChanged": false,
       "machine": false,
-      "name": "Second",
+      "name": "Second (1-1-002)",
       "passId": "1-1-002",
     },
     {
@@ -117,7 +117,7 @@
       ],
       "irChanged": true,
       "machine": false,
-      "name": "Third",
+      "name": "Third (1-1-003)",
       "passId": "1-1-003",
     },
   ],
