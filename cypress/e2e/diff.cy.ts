@@ -100,23 +100,23 @@ function visitState(state: object) {
     });
 }
 
+// The Diff pane's own tab title embeds the names of whatever it is diffing, which now include the
+// source pane name (e.g. "Diff Viewer C++ source #1 x86-64 gcc vs ..."). Exclude it so that indexing
+// into "source" tabs only ever walks real editor panes.
+function sourceEditorTitles() {
+    return cy.get('span.lm_title:visible').filter(':contains("source")').not(':contains("Diff Viewer")');
+}
+
 function addSourceEditor() {
     findPane('source').find('[data-cy="new-editor-dropdown-btn"]').click();
     cy.get('[data-cy="new-add-editor-btn"]:visible').first().click();
-    cy.get('span.lm_title:visible')
-        .filter(':contains("source")')
-        .should($titles => {
-            expect($titles.length).to.be.at.least(2);
-        });
+    sourceEditorTitles().should($titles => {
+        expect($titles.length).to.be.at.least(2);
+    });
 }
 
 function closeSourceEditor(sourceEditorIndex: number) {
-    cy.get('span.lm_title:visible')
-        .filter(':contains("source")')
-        .eq(sourceEditorIndex)
-        .closest('.lm_tab')
-        .find('.lm_close_tab')
-        .click({force: true});
+    sourceEditorTitles().eq(sourceEditorIndex).closest('.lm_tab').find('.lm_close_tab').click({force: true});
 }
 
 function selectDiffSource(side: 'lhs' | 'rhs', editorNumber: number) {
@@ -127,8 +127,7 @@ function selectDiffSource(side: 'lhs' | 'rhs', editorNumber: number) {
 }
 
 function setSourceEditorContent(content: string, sourceEditorIndex: number) {
-    cy.get('span.lm_title:visible')
-        .filter(':contains("source")')
+    sourceEditorTitles()
         .eq(sourceEditorIndex)
         .closest('.lm_item.lm_stack')
         .find('.lm_content .monaco-editor')
@@ -208,6 +207,30 @@ describe('Diff view', () => {
         lhsPicker().should('not.contain.text', '-O2');
         diffTab().should('contain.text', '-O1');
         diffTab().should('not.contain.text', '-O2');
+    });
+
+    it('should show renamed source panes in selected compiler labels', () => {
+        waitForEditors();
+
+        compilerPane().find('input.options').clear().type('-O2');
+        compilerPane().find('input.options').should('have.value', '-O2');
+
+        openDiffView();
+
+        const lhsPicker = () => findPane('Diff').find('select.diff-picker.lhs + .ts-wrapper .ts-control');
+
+        lhsPicker().should('contain.text', '-O2');
+
+        cy.contains('span.lm_title:visible', 'source')
+            .closest('.lm_tab')
+            .find('.lm_modify_tab_title')
+            .click({force: true});
+        cy.get('#enter-something:visible').find('.question-answer').clear().type('struct w/ call to foo');
+        cy.get('#enter-something:visible').find('.modal-footer .yes').click();
+        cy.contains('span.lm_title:visible', 'struct w/ call to foo').should('exist');
+
+        lhsPicker().should('contain.text', 'struct w/ call to foo');
+        lhsPicker().should('contain.text', '-O2');
     });
 
     it('should show diff content with two compiler panes', () => {
