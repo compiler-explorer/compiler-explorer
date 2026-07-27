@@ -79,6 +79,7 @@ export type EventMap = {
     explainViewClosed: (compilerId: number) => void;
     explainViewOpened: (compilerId: number) => void;
     displaySharingPopover: () => void;
+    editor: (editorId: number, source: string, name: string) => void;
     editorChange: (editorId: number, source: string, langId: string, compilerId?: number) => void;
     editorClose: (editorId: number) => void;
     editorDisplayFlow: (editorId: number, flow: MessageWithLocation[]) => void;
