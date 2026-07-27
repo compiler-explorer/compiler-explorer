@@ -32,6 +32,7 @@ import {ClientStateNormalizer} from '../clientstate-normalizer.js';
 import {logger} from '../logger.js';
 import {ClientOptionsHandler} from '../options-handler.js';
 import {getSafeHash, StorageBase} from '../storage/index.js';
+import {extractShortId} from '../url-utils.js';
 import {RenderConfig} from './handler.interfaces.js';
 import {cached, csp} from './middleware.js';
 
@@ -227,8 +228,8 @@ export class NoScriptHandler {
         const shareableUrl = await this.generateShareableUrl(state, req);
 
         const httpRoot = (this.renderConfig as any).httpRoot || '/';
-        const relativeUrl = shareableUrl.substring(shareableUrl.lastIndexOf('/z/') + 1);
-        const shortlink = `${req.protocol}://${req.get('host')}${httpRoot}${relativeUrl}`;
+        const shortId = extractShortId(shareableUrl);
+        const shortlink = `${req.protocol}://${req.get('host')}${httpRoot}z/${shortId}`;
 
         logger.debug('Shareable URL:', shortlink);
 
