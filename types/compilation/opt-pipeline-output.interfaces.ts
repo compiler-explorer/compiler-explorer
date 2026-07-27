@@ -36,6 +36,7 @@ export type Pass = {
 export type OptPipelineResults = Record<string, Pass[]>;
 
 export type OptPipelineOutput = {
+    compilationOptions?: string[];
     error?: string;
     results: OptPipelineResults;
     compileTime?: number | string;

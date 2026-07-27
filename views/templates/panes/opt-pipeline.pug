@@ -8,6 +8,8 @@ mixin optionButton(bind, isActive, text, title)
   .top-bar.btn-toolbar.bg-light(role="toolbar")
     include ../../font-size
     .btn-group.btn-group-sm.options(role="group")
+      button.btn.btn-sm.btn-light.input-group-text.prepend-options(data-trigger="click" style="cursor: pointer;" role="button" title="All compilation options")
+        span.status-icon
       button.btn.btn-sm.btn-light.dropdown-toggle(type="button" title="Opt Pass Options" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false" aria-label="Set output options")
         span.fas.fa-anchor
         span.hideable Options

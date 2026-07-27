@@ -1551,7 +1551,7 @@ export class BaseCompiler {
         optPipelineOptions: OptPipelineBackendOptions,
     ): Promise<OptPipelineOutput | undefined> {
         // These options make Clang produce the pass dumps
-        const newOptions = options
+        const compilationOptions = options
             .filter(option => option !== '-fcolor-diagnostics')
             .concat(unwrap(this.compiler.optPipeline?.arg))
             .concat(optPipelineOptions.fullModule ? unwrap(this.compiler.optPipeline?.moduleScopeArg) : [])
@@ -1564,11 +1564,17 @@ export class BaseCompiler {
         execOptions.maxOutput = 1024 * 1024 * 1024;
 
         const compileStart = performance.now();
-        const output = await this.runCompiler(this.compiler.exe, newOptions, this.filename(inputFilename), execOptions);
+        const output = await this.runCompiler(
+            this.compiler.exe,
+            compilationOptions,
+            this.filename(inputFilename),
+            execOptions,
+        );
         const compileEnd = performance.now();
 
         if (output.truncated) {
             return {
+                compilationOptions,
                 error: 'Exceeded max output limit',
                 results: {},
                 compileTime: output.execTime || compileEnd - compileStart,
@@ -1577,6 +1583,7 @@ export class BaseCompiler {
 
         if (output.timedOut) {
             return {
+                compilationOptions,
                 error: 'Invocation timed out',
                 results: {},
                 compileTime: output.execTime || compileEnd - compileStart,
@@ -1585,6 +1592,7 @@ export class BaseCompiler {
 
         if (output.code) {
             return {
+                compilationOptions,
                 error: `Invocation failed: ${utils.resultLinesToText(output.stderr)}${utils.resultLinesToText(output.stdout)}}`,
                 results: {},
                 compileTime: output.execTime || compileEnd - compileStart,
@@ -1611,18 +1619,21 @@ export class BaseCompiler {
                     demangler.collect({asm: output.stderr});
                 }
                 return {
+                    compilationOptions,
                     results: await demangler.demangleLLVMPasses(optPipeline),
                     compileTime: compileEnd - compileStart,
                     parseTime: performance.now() - parseStart,
                 };
             }
             return {
+                compilationOptions,
                 results: optPipeline,
                 compileTime: compileEnd - compileStart,
                 parseTime: performance.now() - parseStart,
             };
         } catch (e: any) {
             return {
+                compilationOptions,
                 error: e.toString(),
                 results: {},
                 compileTime: compileEnd - compileStart,
