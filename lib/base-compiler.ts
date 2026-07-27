@@ -1464,9 +1464,11 @@ export class BaseCompiler {
         const ir = await this.processIrOutput(output, irOptions, filters);
 
         const result: {
+            compilationOptions: string[];
             asm: ParsedAsmResultLine[];
             cfg?: Record<string, cfg.CFG>;
         } = {
+            compilationOptions: newOptions,
             asm: ir.asm,
         };
 

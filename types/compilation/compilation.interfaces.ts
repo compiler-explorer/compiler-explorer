@@ -213,6 +213,7 @@ export type CompilationResult = {
     astOutput?: ResultLine[];
 
     irOutput?: {
+        compilationOptions?: string[];
         asm: ParsedAsmResultLine[];
         cfg?: CFGResult;
     };
