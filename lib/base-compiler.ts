@@ -1458,15 +1458,18 @@ export class BaseCompiler {
         const output = await this.runCompiler(this.compiler.exe, newOptions, this.filename(inputFilename), execOptions);
         if (output.code !== 0) {
             return {
+                compilationOptions: newOptions,
                 asm: [{text: 'Failed to run compiler to get IR code'}],
             };
         }
         const ir = await this.processIrOutput(output, irOptions, filters);
 
         const result: {
+            compilationOptions?: string[];
             asm: ParsedAsmResultLine[];
             cfg?: Record<string, cfg.CFG>;
         } = {
+            compilationOptions: newOptions,
             asm: ir.asm,
         };
 

@@ -42,6 +42,7 @@ import {extendConfig} from '../monaco-config.js';
 import {SentryCapture} from '../sentry.js';
 import {Alert} from '../widgets/alert.js';
 import {Toggles} from '../widgets/toggles.js';
+import {CompilationOptions} from './compilation-options.js';
 import {Compiler} from './compiler.js';
 import {IrState} from './ir-view.interfaces.js';
 import {MonacoPaneState} from './pane.interfaces.js';
@@ -79,6 +80,7 @@ export class Ir extends MonacoPane<monaco.editor.IStandaloneCodeEditor, IrState>
 
     constructor(hub: Hub, container: Container, state: IrState & MonacoPaneState) {
         super(hub, container, state);
+        new CompilationOptions(this, this.domRoot.find('.prepend-options'), result => result.irOutput);
         if (state.irOutput) {
             this.showIrResults(state.irOutput ?? []);
         }
