@@ -26,7 +26,7 @@
     "@aws-sdk/credential-providers": "^3.1079.0",
     "@flatten-js/interval-tree": "^2.0.3",
     "@fortawesome/fontawesome-free": "^7.3.0",
-    "@modelcontextprotocol/sdk": "^1.29.0",
+    "@modelcontextprotocol/sdk": "^1.30.0",
     "@orchidjs/sifter": "^1.1.0",
     "@popperjs/core": "^2.11.8",
     "@sentry/browser": "^10.63.0",
