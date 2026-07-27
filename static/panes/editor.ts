@@ -345,7 +345,7 @@ export class Editor extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Edit
     override registerCallbacks(): void {
         this.container.on('shown', this.resize, this);
         this.container.on('open', () => {
-            this.eventHub.emit('editorOpen', this.id);
+            this.sendEditor();
         });
         this.container.layoutManager.on('initialised', () => {
             // Once initialized, let everyone know what text we have.
@@ -420,6 +420,7 @@ export class Editor extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Edit
 
     sendEditor(): void {
         this.eventHub.emit('editorOpen', this.id);
+        this.eventHub.emit('editor', this.id, this.getSource() ?? '', this.getPaneName());
     }
 
     onMouseMove(e: editor.IEditorMouseEvent): void {
@@ -1920,6 +1921,7 @@ export class Editor extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Edit
         this.filename = name;
         this.updateTitle();
         this.updateState();
+        this.sendEditor();
     }
 
     getFilename(): string {

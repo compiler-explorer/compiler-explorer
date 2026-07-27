@@ -44,6 +44,7 @@ export {
     ClangHexagonCompiler,
     ClangHipCompiler,
     ClangIntelCompiler,
+    TIClangCompiler,
     Z80ClangCompiler,
 } from './clang.js';
 export {ClangCLCompiler} from './clangcl.js';

@@ -10,9 +10,9 @@ jobs:
         browser: ['chrome']
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
       - name: Use Node.js 22.x
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v7
         with:
           node-version: 22.x
           check-latest: true
@@ -23,10 +23,10 @@ jobs:
         uses: browser-actions/setup-firefox@v1
         if: matrix.browser == 'firefox'
       - name: Setup Chrome
-        uses: browser-actions/setup-chrome@v1
+        uses: browser-actions/setup-chrome@v2
         if: matrix.browser == 'chrome'
       - name: Cypress run
-        uses: cypress-io/github-action@v6
+        uses: cypress-io/github-action@v7
         with:
           start: npm run dev -- --language c++ --no-local
           wait-on: 'http://localhost:10240'
@@ -34,7 +34,7 @@ jobs:
           config: screenshotOnRunFailure=true,video=false
           browser: ${{ matrix.browser }}
       - name: Upload screenshots on failure
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         if: failure()
         with:
           name: cypress-screenshots
