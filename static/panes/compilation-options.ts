@@ -30,7 +30,6 @@ import {CompilationResult} from '../../types/compilation/compilation.interfaces.
 import {CompilerInfo} from '../../types/compiler.interfaces.js';
 import * as BootstrapUtils from '../bootstrap-utils.js';
 import {CompilerService} from '../compiler-service.js';
-import {EventHub} from '../event-hub.js';
 import {Toggles} from '../widgets/toggles.js';
 import {PaneCompilerState} from './pane.interfaces.js';
 import {Pane} from './pane.js';
@@ -39,7 +38,6 @@ type GetResult = (result: CompilationResult) => {compilationOptions?: string[]} 
 
 export class CompilationOptions<P extends Pane<object>> {
     private readonly parent: P;
-    private readonly eventHub: EventHub;
     private readonly prependOptions: JQuery<HTMLElement>;
     private readonly statusIcon: JQuery<HTMLElement>;
     private readonly getResult: GetResult;
@@ -47,14 +45,12 @@ export class CompilationOptions<P extends Pane<object>> {
 
     constructor(pane: P, prependOptions: JQuery<HTMLElement>, getResult: GetResult, filters?: Toggles) {
         this.parent = pane;
-        this.eventHub = pane.eventHub;
         this.prependOptions = prependOptions;
         this.statusIcon = prependOptions.find('.status-icon');
         this.getResult = getResult;
         this.filters = filters;
 
-        this.eventHub.on('compileResult', this.onCompileResult.bind(this));
-        this.eventHub.on('compilerClose', this.close.bind(this));
+        pane.eventHub.on('compileResult', this.onCompileResult.bind(this));
 
         $(document).on('mouseup', e => {
             const target = $(e.target);
@@ -70,11 +66,6 @@ export class CompilationOptions<P extends Pane<object>> {
 
     private get compilerInfo(): PaneCompilerState {
         return this.parent.compilerInfo;
-    }
-
-    private close(compilerId: number, sourceTreeId: number | boolean): void {
-        if (this.compilerInfo.compilerId !== compilerId) return;
-        this.eventHub.unsubscribe();
     }
 
     private onCompileResult(compilerId: number, compiler: CompilerInfo, result: CompilationResult): void {
