@@ -50,6 +50,7 @@ export class CompilationOptions<P extends Pane<object>> {
         this.getResult = getResult;
         this.filters = filters;
 
+        pane.eventHub.on('compiling', this.onCompiling.bind(this));
         pane.eventHub.on('compileResult', this.onCompileResult.bind(this));
 
         $(document).on('mouseup', e => {
@@ -66,6 +67,12 @@ export class CompilationOptions<P extends Pane<object>> {
 
     private get compilerInfo(): PaneCompilerState {
         return this.parent.compilerInfo;
+    }
+
+    private onCompiling(compilerId: number, compiler: CompilerInfo): void {
+        if (this.compilerInfo.compilerId !== compilerId) return;
+        // Display the spinner
+        CompilerService.handleCompilationStatus(null, this.statusIcon, {code: 4, compilerOut: 0});
     }
 
     private onCompileResult(compilerId: number, compiler: CompilerInfo, result: CompilationResult): void {

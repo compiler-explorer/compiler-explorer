@@ -1540,8 +1540,6 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
             return;
         }
         if (this.compiler) this.eventHub.emit('compiling', this.id, this.compiler);
-        // Display the spinner
-        this.handleCompilationStatus({code: 4, compilerOut: 0});
         this.pendingCMakeRequestSentAt = Date.now();
         // After a short delay, give the user some indication that we're working on their
         // compilation.
@@ -1585,8 +1583,6 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
             return;
         }
         if (this.compiler) this.eventHub.emit('compiling', this.id, this.compiler);
-        // Display the spinner
-        this.handleCompilationStatus({code: 4, compilerOut: 0});
         this.pendingRequestSentAt = Date.now();
         // After a short delay, give the user some indication that we're working on their
         // compilation.
