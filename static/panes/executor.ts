@@ -1119,6 +1119,16 @@ export class Executor extends Pane<ExecutorState> {
             this.options,
             this.sourceEditorId ?? -1,
             this.sourceTreeId ?? -1,
+            this.getSourceName(),
+        );
+    }
+
+    getSourceName(): string {
+        if (this.sourceTreeId) {
+            return 'Tree #' + this.sourceTreeId;
+        }
+        return (
+            this.hub.getEditorById(this.sourceEditorId ?? -1)?.getPaneName() ?? 'Editor #' + (this.sourceEditorId ?? -1)
         );
     }
 

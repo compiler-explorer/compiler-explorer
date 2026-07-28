@@ -1,4 +1,4 @@
-// Copyright (c) 2022, Compiler Explorer Authors
+// Copyright (c) 2026, Compiler Explorer Authors
 // All rights reserved.
 //
 // Redistribution and use in source and binary forms, with or without
@@ -22,32 +22,31 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-// note that these variables are saved to state, so don't change, only add to it
-export enum DiffType {
-    ASM = 0,
-    CompilerStdOut = 1,
-    CompilerStdErr = 2,
-    ExecStdOut = 3,
-    ExecStdErr = 4,
-    GNAT_ExpandedCode = 5,
-    GNAT_Tree = 6,
-    DeviceView = 7,
-    AstOutput = 8,
-    IrOutput = 9,
-    RustMirOutput = 10,
-    RustMacroExpOutput = 11,
-    RustHirOutput = 12,
-    ClojureMacroExpOutput = 13,
-    YulOutput = 14,
-    LeanCOutput = 15,
-    Source = 16,
-}
+/**
+ * Extract the short link id from a `/z/<id>` URL or path.
+ *
+ * Accepts a full URL (`https://godbolt.org/z/abc`), a path (`/z/abc`), or a
+ * bare id (`abc`), and correctly ignores query strings, fragments and trailing
+ * slashes — the pitfalls of the various ad-hoc `lastIndexOf('/z/')` / regex
+ * implementations this replaces.
+ */
+export function extractShortId(input: string): string {
+    let pathname = input;
+    try {
+        // Works for absolute URLs; throws for paths/bare ids.
+        pathname = new URL(input).pathname;
+    } catch {
+        // Not an absolute URL — treat the input as a path and drop any
+        // query string or fragment ourselves.
+        pathname = input.split(/[?#]/)[0];
+    }
 
-export type DiffState = {
-    lhs: number | string;
-    rhs: number | string;
-    lhsdifftype: DiffType;
-    rhsdifftype: DiffType;
-    lhsextraoption?: string;
-    rhsextraoption?: string;
-};
+    const segments = pathname.split('/').filter(Boolean);
+    const zIdx = segments.lastIndexOf('z');
+    if (zIdx >= 0 && zIdx < segments.length - 1) {
+        return segments[zIdx + 1];
+    }
+    // No `/z/<id>` structure: fall back to the last path segment, or the
+    // original input if there were no segments at all.
+    return segments.at(-1) ?? input;
+}

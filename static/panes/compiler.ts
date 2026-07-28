@@ -3304,6 +3304,16 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
             this.options,
             this.sourceEditorId ?? 0,
             this.sourceTreeId ?? 0,
+            this.getSourceName(),
+        );
+    }
+
+    getSourceName(): string {
+        if (this.sourceTreeId) {
+            return 'Tree #' + this.sourceTreeId;
+        }
+        return (
+            this.hub.getEditorById(this.sourceEditorId ?? 0)?.getPaneName() ?? 'Editor #' + (this.sourceEditorId ?? 0)
         );
     }
 
