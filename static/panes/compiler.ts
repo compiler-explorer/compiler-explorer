@@ -294,9 +294,10 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
     private artifactHandler: ArtifactHandler;
 
     constructor(hub: Hub, container: Container, state: MonacoPaneState & CompilerState) {
+        state.id = state.id || hub.nextCompilerId();
         super(hub, container, state);
 
-        this.id = state.id || hub.nextCompilerId();
+        this.id = state.id;
 
         this.infoByLang = {};
         this.deferCompiles = true;
