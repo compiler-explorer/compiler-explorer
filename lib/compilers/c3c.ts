@@ -27,7 +27,8 @@ import path from 'node:path';
 
 import Semver from 'semver';
 
-import type {CompilationResult, ExecutionOptionsWithEnv} from '../../types/compilation/compilation.interfaces.js';
+import type {CompilationResult} from '../../types/compilation/compilation.interfaces.js';
+import type {LLVMIrBackendOptions} from '../../types/compilation/ir.interfaces.js';
 import type {PreliminaryCompilerInfo} from '../../types/compiler.interfaces.js';
 import type {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces.js';
 import {BaseCompiler} from '../base-compiler.js';
@@ -44,6 +45,13 @@ import {asSafeVer} from '../utils.js';
 // library": it is legal to declare `module std::io` in user code, in which case c3c appends to the
 // standard library's own file and a name-based exclusion would discard the user's output.
 const MODULE_DECL_RE = /^[^\S\n]*module\s+([a-zA-Z_]\w*(?:\s*::\s*[a-zA-Z_]\w*)*)/gm;
+
+// Raw strings and the three comment forms, blanked before looking for module declarations so that a
+// commented-out or quoted `module std::io;` doesn't have us serve up the standard library's assembly.
+const NON_CODE_RE = /`[^`]*`|<\*[\s\S]*?\*>|\/\*[\s\S]*?\*\/|\/\/[^\n]*/g;
+
+// c3c replaces anything that isn't a word character when it derives a module name from a file name.
+const FILENAME_TO_MODULE_RE = /\W/g;
 
 export class C3Compiler extends BaseCompiler {
     static get key() {
@@ -71,63 +79,104 @@ export class C3Compiler extends BaseCompiler {
         return options;
     }
 
-    override getIrOutputFilename(inputFilename: string): string {
+    override getIrOutputFilename(
+        inputFilename: string,
+        filters?: ParseFiltersAndOutputOptions,
+        irOptions?: LLVMIrBackendOptions,
+    ): string {
         return this.filename(path.dirname(inputFilename) + '/output.ll');
     }
 
+    // The module name c3c derives for a file that declares none.
+    static moduleNameForFile(inputFilename: string): string {
+        return path.parse(inputFilename).name.replace(FILENAME_TO_MODULE_RE, '_');
+    }
+
     // Module names for the sections declared in the source, in declaration order, as c3c would name
-    // the files it writes. Falls back to the source's own basename, matching how c3c names the module
-    // for a file that declares none.
+    // the files it writes. Falls back to the name derived from the file, matching what c3c does when
+    // the source declares no module at all.
     async getModuleBaseNames(inputFilename: string): Promise<string[]> {
         let source: string;
         try {
             source = await fs.readFile(inputFilename, 'utf8');
         } catch {
-            return [];
+            return [C3Compiler.moduleNameForFile(inputFilename)];
         }
-        const names = [...source.matchAll(MODULE_DECL_RE)].map(match => match[1].replaceAll(/\s*::\s*/g, '.'));
+        // Blank out non-code, preserving newlines so the line anchors below still line up.
+        const code = source.replaceAll(NON_CODE_RE, match => match.replaceAll(/[^\n]/g, ' '));
+        const names = [...code.matchAll(MODULE_DECL_RE)].map(match => match[1].replaceAll(/\s*::\s*/g, '.'));
         // Order matters, but a module may be declared more than once in one file and each declaration
         // appends to the same output file, so only join it in once.
         const unique = [...new Set(names)];
-        return unique.length > 0 ? unique : [path.parse(inputFilename).name];
+        return unique.length > 0 ? unique : [C3Compiler.moduleNameForFile(inputFilename)];
     }
 
     async joinModuleOutputs(dirPath: string, baseNames: string[], extension: string, destination: string) {
-        const parts: string[] = [];
+        const parts: {name: string; text: string}[] = [];
         for (const baseName of baseNames) {
             const modulePath = path.join(dirPath, baseName + extension);
             // Read everything before writing: a `module output;` would otherwise have us copy the
             // destination onto itself.
             if (modulePath !== destination && (await utils.fileExists(modulePath))) {
-                parts.push(await fs.readFile(modulePath, 'utf8'));
+                parts.push({name: baseName, text: await fs.readFile(modulePath, 'utf8')});
             }
         }
         // Leave the destination absent when there is nothing to write, so the usual "no output"
         // reporting still happens rather than showing an empty pane.
-        if (parts.length > 0) await fs.writeFile(destination, parts.join('\n'));
+        if (parts.length === 0) return;
+        // One module is overwhelmingly the common case; only label the chunks when there is more than
+        // one to tell apart, so ordinary output is untouched.
+        const comment = extension === '.ll' ? ';' : '#';
+        const body =
+            parts.length === 1
+                ? parts[0].text
+                : parts.map(part => `${comment} module ${part.name}\n${part.text}`).join('\n');
+        await fs.writeFile(destination, body);
     }
 
-    override async runCompiler(
-        compiler: string,
-        options: string[],
-        inputFilename: string,
-        execOptions: ExecutionOptionsWithEnv,
-        filters?: ParseFiltersAndOutputOptions,
-    ): Promise<CompilationResult> {
-        const result = await super.runCompiler(compiler, options, inputFilename, execOptions, filters);
-        if (result.code === 0) {
-            const dirPath = path.dirname(inputFilename);
-            const baseNames = await this.getModuleBaseNames(inputFilename);
-            // Both panes are fed from per-module files, and which one this invocation produced depends
-            // on whether --emit-llvm was added, so gather up whatever is there.
-            await this.joinModuleOutputs(
-                dirPath,
-                baseNames,
-                '.s',
-                this.getOutputFilename(dirPath, this.outputFilebase),
-            );
-            await this.joinModuleOutputs(dirPath, baseNames, '.ll', this.getIrOutputFilename(inputFilename));
+    async joinModulesFor(inputFilename: string, extension: string, destination: string) {
+        await this.joinModuleOutputs(
+            path.dirname(inputFilename),
+            await this.getModuleBaseNames(inputFilename),
+            extension,
+            destination,
+        );
+    }
+
+    // Runs once, after every compiler invocation for this request has finished, and is handed the
+    // caller's own outputFilename, so there is no second writer and no need to guess the name.
+    override async postProcess(
+        result: CompilationResult,
+        outputFilename: string,
+        filters: ParseFiltersAndOutputOptions,
+        produceOptRemarks = false,
+    ) {
+        if (result.code === 0 && result.inputFilename) {
+            await this.joinModulesFor(result.inputFilename, '.s', outputFilename);
+            // checkOutputFileAndDoPostProcess sizes the output before calling us, which is before the
+            // file exists at all. Without refreshing it, super reports "<No output file>" regardless.
+            try {
+                result.asmSize = (await fs.stat(outputFilename)).size;
+            } catch {
+                // Nothing was written; leave asmSize unset so the usual reporting applies.
+            }
         }
-        return result;
+        return super.postProcess(result, outputFilename, filters, produceOptRemarks);
+    }
+
+    // The IR pane reads its own file, written by a separate --emit-llvm invocation, so it is joined
+    // here rather than in postProcess. Only that invocation writes .ll files, so the two never collide.
+    override async processIrOutput(
+        output: CompilationResult,
+        irOptions: LLVMIrBackendOptions,
+        filters: ParseFiltersAndOutputOptions,
+    ) {
+        if (output.inputFilename)
+            await this.joinModulesFor(
+                output.inputFilename,
+                '.ll',
+                this.getIrOutputFilename(output.inputFilename, filters, irOptions),
+            );
+        return super.processIrOutput(output, irOptions, filters);
     }
 }

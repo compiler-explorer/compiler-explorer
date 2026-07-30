@@ -30,6 +30,7 @@ import {afterEach, beforeAll, describe, expect, it} from 'vitest';
 
 import {CompilationEnvironment} from '../lib/compilation-env.js';
 import {C3Compiler} from '../lib/compilers/index.js';
+import {CompilationResult} from '../types/compilation/compilation.interfaces.js';
 import {CompilerInfo} from '../types/compiler.interfaces.js';
 import {ParseFiltersAndOutputOptions} from '../types/features/filters.interfaces.js';
 import {makeCompilationEnvironment} from './utils.js';
@@ -118,13 +119,64 @@ describe('C3 compiler', () => {
             expect(await baseNamesFor('module test @if(env::LINUX);\n')).toEqual(['test']);
         });
 
-        it('does not treat an indented or embedded "module" as a declaration', async () => {
+        it('handles a generic module', async () => {
+            expect(await baseNamesFor('module gen<Type>;\nfn void f() {}\n')).toEqual(['gen']);
+        });
+
+        it('accepts an indented declaration but not one embedded mid-line', async () => {
+            expect(await baseNamesFor('    module indented;\n')).toEqual(['indented']);
             expect(await baseNamesFor('module real;\nfn void f() { int modules = 1; }\n')).toEqual(['real']);
+            expect(await baseNamesFor('module real;\nimport std::io;\n')).toEqual(['real']);
+        });
+
+        it('sanitises the derived name the way c3c does', async () => {
+            // c3c turns my-file.c3 into module my_file, so the file it writes is my_file.s.
+            expect(await baseNamesFor('fn void f() {}\n', 'my-file.c3')).toEqual(['my_file']);
+        });
+
+        it('falls back to the derived name when the source cannot be read', async () => {
+            const dir = await tempDir();
+            const compiler = new C3Compiler(makeInfo('0.8.2'), env);
+            expect(await compiler.getModuleBaseNames(path.join(dir, 'missing.c3'))).toEqual(['missing']);
+        });
+
+        describe('ignores declarations that are not code', () => {
+            it('in a line comment', async () => {
+                expect(await baseNamesFor('module mine;\n// module std::io;\n')).toEqual(['mine']);
+            });
+
+            it('in a block comment', async () => {
+                expect(await baseNamesFor('/*\nmodule std::io;\n*/\nmodule mine;\n')).toEqual(['mine']);
+            });
+
+            it('in a doc comment', async () => {
+                expect(await baseNamesFor('<*\nmodule std::io;\n*>\nmodule mine;\n')).toEqual(['mine']);
+            });
+
+            it('in a raw string', async () => {
+                expect(await baseNamesFor('module mine;\nString s = `\nmodule std::io;\n`;\n')).toEqual(['mine']);
+            });
+
+            it('but still finds a declaration on the line after a comment', async () => {
+                // Blanking must preserve line structure, or the anchors shift.
+                expect(await baseNamesFor('/* c */\nmodule mine;\n')).toEqual(['mine']);
+            });
         });
     });
 
     describe('joining per-module output', () => {
-        it('concatenates the modules that were emitted', async () => {
+        it('passes a single module through untouched', async () => {
+            const dir = await tempDir();
+            await fs.writeFile(path.join(dir, 'alpha.s'), 'alpha asm');
+            const compiler = new C3Compiler(makeInfo('0.8.2'), env);
+            const destination = path.join(dir, 'output.s');
+
+            await compiler.joinModuleOutputs(dir, ['alpha'], '.s', destination);
+
+            expect(await fs.readFile(destination, 'utf8')).toEqual('alpha asm');
+        });
+
+        it('labels the chunks when several modules were emitted', async () => {
             const dir = await tempDir();
             await fs.writeFile(path.join(dir, 'alpha.s'), 'alpha asm');
             await fs.writeFile(path.join(dir, 'beta.s'), 'beta asm');
@@ -133,7 +185,21 @@ describe('C3 compiler', () => {
 
             await compiler.joinModuleOutputs(dir, ['alpha', 'beta'], '.s', destination);
 
-            expect(await fs.readFile(destination, 'utf8')).toEqual('alpha asm\nbeta asm');
+            expect(await fs.readFile(destination, 'utf8')).toEqual(
+                '# module alpha\nalpha asm\n# module beta\nbeta asm',
+            );
+        });
+
+        it('comments the labels correctly for IR', async () => {
+            const dir = await tempDir();
+            await fs.writeFile(path.join(dir, 'alpha.ll'), 'alpha ir');
+            await fs.writeFile(path.join(dir, 'beta.ll'), 'beta ir');
+            const compiler = new C3Compiler(makeInfo('0.8.2'), env);
+            const destination = path.join(dir, 'output.ll');
+
+            await compiler.joinModuleOutputs(dir, ['alpha', 'beta'], '.ll', destination);
+
+            expect(await fs.readFile(destination, 'utf8')).toEqual('; module alpha\nalpha ir\n; module beta\nbeta ir');
         });
 
         it('skips modules that produced no file', async () => {
@@ -168,6 +234,48 @@ describe('C3 compiler', () => {
             await compiler.joinModuleOutputs(dir, ['output', 'other'], '.s', destination);
 
             expect(await fs.readFile(destination, 'utf8')).toEqual('real asm');
+        });
+    });
+
+    describe('postProcess wiring', () => {
+        async function runPostProcess(setup: (dir: string) => Promise<void>, code = 0) {
+            const dir = await tempDir();
+            const inputFilename = path.join(dir, 'example.c3');
+            await fs.writeFile(inputFilename, 'module test;\nfn void f() {}\n');
+            await setup(dir);
+            const outputFilename = path.join(dir, 'output.s');
+            const result = {code, inputFilename, asm: '', stdout: [], stderr: []} as unknown as CompilationResult;
+            await new C3Compiler(makeInfo('0.8.2'), env).postProcess(
+                result,
+                outputFilename,
+                {} as ParseFiltersAndOutputOptions,
+            );
+            return {result, outputFilename};
+        }
+
+        it('joins the module output and refreshes the recorded size', async () => {
+            // The size is stat'd by the caller before postProcess runs, i.e. before the file exists.
+            // If it is not refreshed here, BaseCompiler reports "<No output file>" even though we
+            // just wrote one.
+            const {result, outputFilename} = await runPostProcess(async dir =>
+                fs.writeFile(path.join(dir, 'test.s'), 'the asm'),
+            );
+            expect(await fs.readFile(outputFilename, 'utf8')).toEqual('the asm');
+            expect(result.asmSize).toEqual('the asm'.length);
+        });
+
+        it('leaves the size unset when the compiler produced nothing', async () => {
+            const {result} = await runPostProcess(async () => {});
+            expect(result.asmSize).toBeUndefined();
+        });
+
+        it('does nothing when the compilation failed', async () => {
+            const {result, outputFilename} = await runPostProcess(
+                async dir => fs.writeFile(path.join(dir, 'test.s'), 'stale asm'),
+                1,
+            );
+            await expect(fs.access(outputFilename)).rejects.toThrow();
+            expect(result.asmSize).toBeUndefined();
         });
     });
 
