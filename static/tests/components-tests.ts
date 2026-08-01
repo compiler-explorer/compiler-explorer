@@ -25,12 +25,14 @@
 import {describe, expect, it} from 'vitest';
 
 import {
+    ChainedCompilerState,
     COMPILER_COMPONENT_NAME,
     DIFF_VIEW_COMPONENT_NAME,
     EDITOR_COMPONENT_NAME,
     EXECUTOR_COMPONENT_NAME,
     OPT_VIEW_COMPONENT_NAME,
     OUTPUT_COMPONENT_NAME,
+    PopulatedExecutorState,
     TOOL_COMPONENT_NAME,
     TREE_COMPONENT_NAME,
 } from '../../static/components.interfaces.js';
@@ -38,6 +40,8 @@ import {
     createComponentConfig,
     createLayoutItem,
     fromGoldenLayoutConfig,
+    getChainedCompiler,
+    getExecutorWith,
     toGoldenLayoutConfig,
 } from '../../static/components.js';
 
@@ -90,6 +94,63 @@ describe('Components validation', () => {
                             componentState: {
                                 source: 1,
                                 lang: 'c++',
+                            },
+                        },
+                    ],
+                };
+                const result = fromGoldenLayoutConfig(config);
+                expect(result).toEqual(config);
+            });
+
+            it('should accept valid chained compiler component', () => {
+                // A chained compiler draws its source from another compiler's output rather
+                // than from an editor or a tree, so it has sourceCompiler instead of source.
+                const config = {
+                    content: [
+                        {
+                            type: 'component',
+                            componentName: COMPILER_COMPONENT_NAME,
+                            componentState: {
+                                sourceCompiler: 2,
+                                lang: 'c++',
+                            },
+                        },
+                    ],
+                };
+                const result = fromGoldenLayoutConfig(config);
+                expect(result).toEqual(config);
+            });
+
+            it('should accept chained compiler component with chain metadata', () => {
+                const config = {
+                    content: [
+                        {
+                            type: 'component',
+                            componentName: COMPILER_COMPONENT_NAME,
+                            componentState: {
+                                sourceCompiler: 2,
+                                lang: 'c++',
+                                rootEditorId: 1,
+                                chainOutputLang: 'assembly',
+                            },
+                        },
+                    ],
+                };
+                const result = fromGoldenLayoutConfig(config);
+                expect(result).toEqual(config);
+            });
+
+            it('should accept chained executor component', () => {
+                const config = {
+                    content: [
+                        {
+                            type: 'component',
+                            componentName: EXECUTOR_COMPONENT_NAME,
+                            componentState: {
+                                sourceCompiler: 2,
+                                lang: 'c++',
+                                compilationPanelShown: true,
+                                compilerOutShown: false,
                             },
                         },
                     ],
@@ -262,6 +323,25 @@ describe('Components validation', () => {
                             componentState: {
                                 // Missing required properties
                                 invalidProp: true,
+                            },
+                        },
+                    ],
+                };
+                expect(() => fromGoldenLayoutConfig(config)).toThrow(
+                    "Invalid item 0: invalid component state for component 'compiler'",
+                );
+            });
+
+            it('should throw for chained compiler state missing a language', () => {
+                // A chained compiler needs a language: without one there is nothing to pick a
+                // compiler for, since it has no editor to inherit it from.
+                const config = {
+                    content: [
+                        {
+                            type: 'component',
+                            componentName: COMPILER_COMPONENT_NAME,
+                            componentState: {
+                                sourceCompiler: 2,
                             },
                         },
                     ],
@@ -582,6 +662,50 @@ describe('Components validation', () => {
                 };
                 const result = toGoldenLayoutConfig(config);
                 expect(result).toBe(config);
+            });
+        });
+    });
+
+    describe('Chained compiler factories', () => {
+        describe('getChainedCompiler', () => {
+            it('should create a compiler drawing its source from another compiler', () => {
+                const config = getChainedCompiler(3, 'c++', 1);
+                expect(config).toEqual({
+                    type: 'component',
+                    componentName: COMPILER_COMPONENT_NAME,
+                    componentState: {
+                        sourceCompiler: 3,
+                        lang: 'c++',
+                        rootEditorId: 1,
+                    },
+                });
+            });
+
+            it('should leave rootEditorId unset when not supplied', () => {
+                // A chain whose root is a tree rather than an editor has no editor to name.
+                const state = getChainedCompiler(3, 'c++').componentState as ChainedCompilerState;
+                expect(state.rootEditorId).toBeUndefined();
+            });
+
+            it('should produce state that passes validation', () => {
+                // Ties the factory to the validator: whatever it emits must survive a
+                // save/restore round-trip through a shared link.
+                const config = {content: [getChainedCompiler(3, 'c++', 1)]};
+                expect(() => fromGoldenLayoutConfig(config)).not.toThrow();
+            });
+        });
+
+        describe('getExecutorWith', () => {
+            it('should carry sourceCompiler for an executor created from a chained pane', () => {
+                const state = getExecutorWith(0, 'c++', 'g122', [], '-O2', 0, undefined, undefined, 3)
+                    .componentState as PopulatedExecutorState;
+                expect(state.sourceCompiler).toEqual(3);
+            });
+
+            it('should leave sourceCompiler unset for an editor-backed executor', () => {
+                const state = getExecutorWith(1, 'c++', 'g122', [], '-O2', 0).componentState as PopulatedExecutorState;
+                expect(state.sourceCompiler).toBeUndefined();
+                expect(state.source).toEqual(1);
             });
         });
     });

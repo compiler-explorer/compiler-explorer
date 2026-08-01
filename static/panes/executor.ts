@@ -1397,8 +1397,7 @@ export class Executor extends Pane<ExecutorState> {
             return;
         }
 
-        const asm = result.asm;
-        const newSource = typeof asm === 'string' ? asm : asm.map(line => line.text).join('\n');
+        const newSource = CompilerService.getAsmAsText(result);
         // Skip recompiling when the derived source is unchanged and our last result was for it
         // (e.g. the upstream re-pushed an identical result during the open handshake).
         if (newSource === this.source && this.lastResult?.source === newSource) return;

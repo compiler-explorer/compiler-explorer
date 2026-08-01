@@ -568,20 +568,12 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
             return;
         }
 
-        const newSource = Compiler.sourceFromResult(result);
+        const newSource = CompilerService.getAsmAsText(result);
         // Skip recompiling when the derived source is unchanged and our last result was for it
         // (e.g. the upstream re-pushed an identical result during the open handshake).
         if (newSource === this.source && this.lastResult?.source === newSource) return;
         this.source = newSource;
         this.compile();
-    }
-
-    // The text a downstream pane derives from a compilation result: the asm as plain text,
-    // or '' when the compilation failed or produced nothing.
-    private static sourceFromResult(result: CompilationResult | null): string {
-        if (!result || !result.asm || result.timedOut || result.code !== 0) return '';
-        const asm = result.asm;
-        return typeof asm === 'string' ? asm : asm.map(line => line.text).join('\n');
     }
 
     // A minimal request to accompany locally-generated error results (see errorResult callers).
@@ -2183,7 +2175,7 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
             this.detachFromUpstream();
             return;
         }
-        const source = Compiler.sourceFromResult(this.lastResult);
+        const source = CompilerService.getAsmAsText(this.lastResult);
         const editorId = this.hub.nextEditorId();
         const editorConfig = Components.getEditorWith(editorId, source, {}, langId);
 

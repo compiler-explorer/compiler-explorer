@@ -338,6 +338,18 @@ export class CompilerService {
         return [{field: '$order'}, {field: '$score'}, {field: 'name'}];
     }
 
+    /**
+     * The assembly from a compilation result as plain text, or '' if the compilation failed,
+     * timed out, or produced none. Used by chained panes, which take an upstream compiler's
+     * output as their own source: a failed upstream must contribute nothing rather than pass
+     * placeholder assembly on down the chain.
+     */
+    public static getAsmAsText(result: CompilationResult | null | undefined): string {
+        if (!result || !result.asm || result.timedOut || result.code !== 0) return '';
+        const asm = result.asm;
+        return typeof asm === 'string' ? asm : asm.map(line => line.text).join('\n');
+    }
+
     public static doesCompilationResultHaveWarnings(result: CompilationResult) {
         // TODO: Types probably need to be updated here
 
