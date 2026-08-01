@@ -1,3 +1,3 @@
 @export
-def multiply(x: Int, y: Int) abi("C") -> Int:
-    return x * y
+def square(i: Int32) abi("C") -> Int32:
+    return i * i
