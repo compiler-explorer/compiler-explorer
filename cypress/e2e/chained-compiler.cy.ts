@@ -105,6 +105,28 @@ function setChainLanguage(index: number, languageName: string) {
     waitForCompilationToSettle();
 }
 
+/** The source editor pane's own language picker control. */
+function editorLanguagePicker() {
+    return findPane('source').find('select.change-language + .ts-wrapper .ts-control');
+}
+
+/** The nth compiler pane's chain output language picker control. */
+function chainLanguagePicker(index: number) {
+    return paneAt(index).find('select.change-chain-language + .ts-wrapper .ts-control');
+}
+
+/**
+ * Open a TomSelect language picker and capture the language names it offers under `alias`.
+ * The options only exist in the DOM while the dropdown is open, and it renders on <body>.
+ */
+function captureLanguageOptions($control: JQuery<HTMLElement>, alias: string) {
+    cy.wrap($control).click();
+    cy.get('.ts-dropdown .option:visible')
+        .should('have.length.greaterThan', 0)
+        .then($options => $options.toArray().map(option => option.innerText.trim()))
+        .as(alias);
+}
+
 /** Open a new chained compiler taking its source from the nth compiler pane's output. */
 function chainFrom(index: number) {
     paneAt(index).find('[data-cy="new-compiler-dropdown-btn"]').first().should('be.visible').click();
@@ -168,6 +190,33 @@ describe('Chained compiler panes', () => {
         monacoEditorTextShouldContain(paneOutputAt(0), 'cube');
         monacoEditorTextShouldContain(paneOutputAt(1), 'cube');
         monacoEditorTextShouldContain(paneOutputAt(2), 'cube');
+    });
+
+    it('offers the same languages for chain output as the editor offers for source', () => {
+        // Locate both controls before opening either. They are found via their pane's tab
+        // title, and an open dropdown seems to shift the layout enough that those lookups stop
+        // matching, so everything past this point works off held element references.
+        editorLanguagePicker().then($editorControl => {
+            chainLanguagePicker(0).then($chainControl => {
+                captureLanguageOptions($editorControl, 'editorLanguages');
+                captureLanguageOptions($chainControl, 'chainLanguages');
+
+                cy.get('@editorLanguages').then(editorLanguages => {
+                    cy.get('@chainLanguages').then(chainLanguages => {
+                        // CMake is left out of the comparison on purpose. The server injects it
+                        // unconditionally so tree/IDE mode can resolve CMakeLists.txt, even
+                        // though it has no compilers of its own, which makes it a candidate for
+                        // being dropped from the chain picker later; ignoring it keeps this
+                        // test valid either way.
+                        const withoutCmake = (names: unknown) =>
+                            (names as string[]).filter(name => name !== 'CMake').sort();
+                        expect(withoutCmake(chainLanguages), 'chain output languages').to.deep.equal(
+                            withoutCmake(editorLanguages),
+                        );
+                    });
+                });
+            });
+        });
     });
 
     it('reports upstream failure downstream without issuing a compile request for it', () => {
