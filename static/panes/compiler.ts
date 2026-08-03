@@ -92,7 +92,7 @@ import {ICompilerShared} from '../compiler-shared.interfaces.js';
 import {CompilerShared} from '../compiler-shared.js';
 import {SourceAndFiles} from '../download-service.js';
 import {SentryCapture} from '../sentry.js';
-import {getStaticImage} from '../utils.js';
+import {getSelectizeRenderHtml, getStaticImage} from '../utils.js';
 import {CompilerVersionInfo, setCompilerVersionPopoverForPane} from '../widgets/compiler-version-info.js';
 
 type CachedOpcode = {
@@ -471,18 +471,6 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
         return null;
     }
 
-    private renderLangEntry(language: Language, escapeHtml: (str: string) => string, size: number): string {
-        const lightLogo =
-            language.logoFilename !== null
-                ? `<img src='${getStaticImage(language.logoFilename, 'logos')}' alt='Logo for ${escapeHtml(language.name)}' class='${language.logoFilenameDark !== null ? 'theme-light-only' : ''}' width='${size}px' height='${size}px' />`
-                : '';
-        const darkLogo =
-            language.logoFilenameDark !== null
-                ? `<img src='${getStaticImage(language.logoFilenameDark, 'logos')}' alt='Logo for ${escapeHtml(language.name)}' class='theme-dark-only' width='${size}px' height='${size}px' />`
-                : '';
-        return `<div class='d-flex' style='align-items: center'><div class='me-1 d-flex' style='align-items: center; width: ${size}px; height: ${size}px'>${lightLogo}${darkLogo}</div><div title='${language.tooltip ?? ''}'>${escapeHtml(language.name)}</div></div>`;
-    }
-
     initChainedLanguagePicker(): void {
         const selectEl = this.domRoot.find('.change-chain-language')[0] as HTMLSelectElement;
         const usableLanguages = Object.values(languagesService.getLanguagesOrFail()).filter(
@@ -503,9 +491,9 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
             maxOptions: 1000,
             render: {
                 option: (data: Language, escapeHtml: (str: string) => string) =>
-                    this.renderLangEntry(data, escapeHtml, 23),
+                    getSelectizeRenderHtml(data, escapeHtml, 23, 23),
                 item: (data: Language, escapeHtml: (str: string) => string) =>
-                    this.renderLangEntry(data, escapeHtml, 20),
+                    getSelectizeRenderHtml(data, escapeHtml, 20, 20),
             },
             onChange: (val: string) => {
                 this.chainOutputLang = val as LanguageKey;
