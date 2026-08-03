@@ -73,7 +73,7 @@ export function getSelectizeRenderHtml(
                     : ''
             }
           </div>
-          <div title='${language.tooltip ?? ''}'>
+          <div title='${escapeHtml(language.tooltip ?? '')}'>
             ${escapeHtml(language.name)}
           </div>
         </div>
