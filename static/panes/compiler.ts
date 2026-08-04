@@ -4130,13 +4130,14 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
     }
 
     private async applyLanguageChange(newLangId: LanguageKey): Promise<void> {
+        const languages = languagesService.getLanguagesOrFail();
         const oldLangId = this.currentLangId ?? '';
         this.currentLangId = newLangId;
         // Store the current selected stuff to come back to it later in the same session (Not state stored!)
         this.infoByLang[oldLangId] = {
             compiler: this.compiler?.id
                 ? this.compiler.id
-                : (languagesService.getLanguagesOrFail()[oldLangId as LanguageKey]?.defaultCompiler ?? ''),
+                : (languages[oldLangId as LanguageKey]?.defaultCompiler ?? ''),
             options: this.options,
         };
         const info = this.infoByLang[this.currentLangId] || {};
