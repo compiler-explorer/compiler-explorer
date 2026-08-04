@@ -1137,6 +1137,11 @@ export class Executor extends Pane<ExecutorState> {
     }
 
     getSourceName(): string {
+        if (this.sourceCompilerId) {
+            // A chained executor runs another compiler's output, so it has neither an editor
+            // nor a tree to name; without this it would fall through to "Editor #-1".
+            return '🔗' + (this.upstreamCompilerName ?? 'Compiler #' + this.sourceCompilerId);
+        }
         if (this.sourceTreeId) {
             return 'Tree #' + this.sourceTreeId;
         }

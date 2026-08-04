@@ -3617,6 +3617,11 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
     }
 
     getSourceName(): string {
+        if (this.sourceCompilerId) {
+            // A chained pane compiles another compiler's output, so it has neither an editor
+            // nor a tree to name; without this it would fall through to "Editor #0".
+            return '🔗' + (this.upstreamCompilerName ?? 'Compiler #' + this.sourceCompilerId);
+        }
         if (this.sourceTreeId) {
             return 'Tree #' + this.sourceTreeId;
         }
