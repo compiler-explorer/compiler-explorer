@@ -548,15 +548,30 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
     // (e.g. future source transformations) can re-run it without an upstream recompile.
     private applyUpstreamResult(): void {
         const result = this.upstreamResult;
-        if (!result || !result.asm || result.timedOut || result.code !== 0) {
-            // Report a local error result rather than compiling an empty source; this still
-            // cascades the failure to viewers and further downstreams via our compileResult.
+        // Both of these report a local result rather than compiling: there is nothing to send,
+        // and reporting still cascades to our viewers and downstreams via our compileResult.
+        // They must also stay ahead of the dedup below, which assumes our last result came from
+        // actually compiling our current source -- untrue once we have reported one of these.
+        if (!CompilerService.isSuccessfulResult(result)) {
             this.source = '';
             this.onCompileResponse(this.fakeCompileRequest(), this.errorResult('<Upstream compilation failed>'), false);
             return;
         }
 
         const newSource = CompilerService.getAsmAsText(result);
+        if (!newSource) {
+            // A compiler that succeeds without emitting anything is an ordinary state here --
+            // an uninstantiated template or an inlined-away function, the case Language.noAsmHint
+            // exists to explain -- so say so rather than calling it a failure.
+            this.source = '';
+            this.onCompileResponse(
+                this.fakeCompileRequest(),
+                this.errorResult('<No output from upstream compiler>'),
+                false,
+            );
+            return;
+        }
+
         // Skip recompiling when the derived source is unchanged and our last result was for it
         // (e.g. the upstream re-pushed an identical result during the open handshake).
         if (newSource === this.source && this.lastResult?.source === newSource) return;
@@ -2167,10 +2182,6 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
         const editorId = this.hub.nextEditorId();
         const editorConfig = Components.getEditorWith(editorId, source, {}, langId);
 
-        // Let our own downstreams rebind to the editor replacing us; they keep their
-        // compilers, options and content, and the conversion doesn't cascade any further.
-        this.eventHub.emit('chainUpstreamReplaced', this.id, editorId, langId, source);
-
         // The upstream's close is still being processed by GoldenLayout; defer the layout
         // change like the deferred close in Pane.onCompilerClose. Inserting the editor at
         // our own position and then closing makes it take our place (and our close runs the
@@ -2180,6 +2191,11 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
             const stack = myItem?.parent;
             if (!stack || !this.container.layoutManager.isInitialised) return;
             const index = stack.contentItems.indexOf(myItem);
+            // Only now that the editor is certain to exist, let our own downstreams rebind to
+            // it; they keep their compilers, options and content, and the conversion does not
+            // cascade any further. This has to precede the close below, so that the
+            // compilerClose we are about to emit finds them already detached from us.
+            this.eventHub.emit('chainUpstreamReplaced', this.id, editorId, langId, source);
             stack.addChild(editorConfig, index + 1);
             this.container.close();
         });
@@ -2233,19 +2249,19 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
         }
 
         this.chainedDownstreamIds.add(chainedCompilerId);
-        if (!this.chainLanguagePicker) {
-            this.initChainedLanguagePicker();
-        }
-        // Push current state to the newly-opened downstream, mirroring the editor's
-        // onCompilerOpen → maybeEmitChange(true, compilerId) pattern.
-        this.sendCompiler();
-        this.resendResult();
+        this.onDownstreamAttached();
     }
 
     onChainedExecutorOpen(sourceCompilerId: number, executorId: number): void {
         if (sourceCompilerId !== this.id) return;
 
         this.chainedDownstreamExecutorIds.add(executorId);
+        this.onDownstreamAttached();
+    }
+
+    // Show the picker declaring what our output is, and push our current state to the pane that
+    // just attached, mirroring the editor's onCompilerOpen → maybeEmitChange(true, compilerId).
+    private onDownstreamAttached(): void {
         if (!this.chainLanguagePicker) {
             this.initChainedLanguagePicker();
         }

@@ -32,6 +32,33 @@ function makeResult(overrides: Partial<CompilationResult> = {}): CompilationResu
     return {code: 0, timedOut: false, stdout: [], stderr: [], ...overrides};
 }
 
+describe('CompilerService.isSuccessfulResult', () => {
+    // Deliberately ignores result.asm. Chained panes have to tell "the upstream broke" apart
+    // from "the upstream ran fine but emitted nothing", and report each differently, so
+    // whether any assembly came back is getAsmAsText's business rather than this one's.
+    it('accepts a compilation that ran to completion', () => {
+        expect(CompilerService.isSuccessfulResult(makeResult())).toBe(true);
+    });
+
+    it('accepts a successful compilation that produced no assembly', () => {
+        expect(CompilerService.isSuccessfulResult(makeResult({asm: []}))).toBe(true);
+        expect(CompilerService.isSuccessfulResult(makeResult({asm: undefined}))).toBe(true);
+    });
+
+    it('rejects a non-zero exit code', () => {
+        expect(CompilerService.isSuccessfulResult(makeResult({code: 1}))).toBe(false);
+    });
+
+    it('rejects a timeout even when the exit code is zero', () => {
+        expect(CompilerService.isSuccessfulResult(makeResult({timedOut: true}))).toBe(false);
+    });
+
+    it('rejects a missing result', () => {
+        expect(CompilerService.isSuccessfulResult(null)).toBe(false);
+        expect(CompilerService.isSuccessfulResult(undefined)).toBe(false);
+    });
+});
+
 describe('CompilerService.getAsmAsText', () => {
     // Chained panes take an upstream compiler's output as their own source. These cases decide
     // what a downstream pane ends up compiling, so a failed upstream must yield nothing at all

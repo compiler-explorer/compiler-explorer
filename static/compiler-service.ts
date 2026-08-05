@@ -338,6 +338,11 @@ export class CompilerService {
         return [{field: '$order'}, {field: '$score'}, {field: 'name'}];
     }
 
+    // Whether a compilation ran to completion. Says nothing about how much output it produced.
+    public static isSuccessfulResult(result: CompilationResult | null | undefined): boolean {
+        return !!result && !result.timedOut && result.code === 0;
+    }
+
     /**
      * The assembly from a compilation result as plain text, or '' if the compilation failed,
      * timed out, or produced none. Used by chained panes, which take an upstream compiler's
@@ -345,7 +350,7 @@ export class CompilerService {
      * placeholder assembly on down the chain.
      */
     public static getAsmAsText(result: CompilationResult | null | undefined): string {
-        if (!result || !result.asm || result.timedOut || result.code !== 0) return '';
+        if (!CompilerService.isSuccessfulResult(result) || !result?.asm) return '';
         const asm = result.asm;
         return typeof asm === 'string' ? asm : asm.map(line => line.text).join('\n');
     }

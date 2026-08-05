@@ -1390,14 +1390,27 @@ export class Executor extends Pane<ExecutorState> {
     onCompileResult(compilerId: number, _compiler: CompilerInfo, result: CompilationResult): void {
         if (compilerId !== this.sourceCompilerId) return;
 
-        if (!result.asm || result.timedOut || result.code !== 0) {
-            // Report a local error result rather than executing an empty source.
+        // Both of these report a local result rather than executing: there is nothing to run.
+        // They must also stay ahead of the dedup below, which assumes our last result came from
+        // actually compiling our current source -- untrue once we have reported one of these.
+        if (!CompilerService.isSuccessfulResult(result)) {
             this.source = '';
             this.onCompileResponse(this.fakeCompileRequest(), this.errorResult('<Upstream compilation failed>'), false);
             return;
         }
 
         const newSource = CompilerService.getAsmAsText(result);
+        if (!newSource) {
+            // Succeeding without emitting anything is an ordinary state, not a failure.
+            this.source = '';
+            this.onCompileResponse(
+                this.fakeCompileRequest(),
+                this.errorResult('<No output from upstream compiler>'),
+                false,
+            );
+            return;
+        }
+
         // Skip recompiling when the derived source is unchanged and our last result was for it
         // (e.g. the upstream re-pushed an identical result during the open handshake).
         if (newSource === this.source && this.lastResult?.source === newSource) return;
