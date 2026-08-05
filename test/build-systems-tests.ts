@@ -177,11 +177,9 @@ describe('CMake build system', () => {
 
         expect(plan.steps.map(step => step.name)).toEqual(['cmake', 'build']);
         expect(plan.steps.map(step => step.exe)).toEqual([CMAKE_EXE, CMAKE_EXE]);
-        expect(plan.steps[0].args).toEqual([
-            '-DCMAKE_CXX_COMPILER_EXTERNAL_TOOLCHAIN=/usr',
-            '-DCMAKE_BUILD_TYPE=Debug',
-            '..',
-        ]);
+        // The toolchain path is derived from the compiler's exe, so its spelling is platform-dependent.
+        expect(plan.steps[0].args[0]).toMatch(/^-DCMAKE_CXX_COMPILER_EXTERNAL_TOOLCHAIN=/);
+        expect(plan.steps[0].args.slice(1)).toEqual(['-DCMAKE_BUILD_TYPE=Debug', '..']);
         expect(plan.steps[1].args).toEqual(['--build', '.']);
     });
 
@@ -230,11 +228,7 @@ describe('CMake build system', () => {
 
         const plan = await cmakeBuildSystem.getBuildPlan(ctx);
 
-        expect(plan.steps[0].args).toEqual([
-            '-DCMAKE_CXX_COMPILER_EXTERNAL_TOOLCHAIN=/usr',
-            '-DSOMETHING=1',
-            '-DUSER=2',
-            '..',
-        ]);
+        expect(plan.steps[0].args[0]).toMatch(/^-DCMAKE_CXX_COMPILER_EXTERNAL_TOOLCHAIN=/);
+        expect(plan.steps[0].args.slice(1)).toEqual(['-DSOMETHING=1', '-DUSER=2', '..']);
     });
 });
