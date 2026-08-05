@@ -121,8 +121,9 @@ export class CMakeBuildSystem implements BuildSystemDriver {
         return ctx.compiler.getExecutableFilename(ctx.buildPath, ctx.compiler.outputFilebase, ctx.key);
     }
 
-    async finaliseArtifact(): Promise<void> {
+    async finaliseArtifact(): Promise<string | undefined> {
         // CMake builds to the path we asked for, so there is nothing to reconcile.
+        return undefined;
     }
 
     async postProcessArtifact(

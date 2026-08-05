@@ -3041,11 +3041,28 @@ export class BaseCompiler {
                     }
                 }
 
+                let nothingToInspect: string | undefined;
                 try {
-                    await buildSystem.finaliseArtifact(buildContext, result, outputFilename);
+                    nothingToInspect = await buildSystem.finaliseArtifact(buildContext, result, outputFilename);
                 } catch (e) {
                     logger.error(`${buildSystem.id}: could not finalise the artifact`, e);
                     return this.handleUserError(e, dirPath);
+                }
+
+                if (nothingToInspect) {
+                    // The build itself was fine, so report what was built alongside why there is nothing to show.
+                    result.result = {
+                        dirPath,
+                        timedOut: false,
+                        stdout: [],
+                        stderr: [{text: nothingToInspect}],
+                        okToCache: false,
+                        code: 0,
+                        asm: `<${nothingToInspect}>`,
+                        compilationOptions: buildPlan.getCompilationOptions(),
+                    };
+                    compilationTimeHistogram.observe((performance.now() - start) / 1000);
+                    return result;
                 }
 
                 result.result = {

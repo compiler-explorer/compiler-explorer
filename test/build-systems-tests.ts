@@ -396,7 +396,7 @@ describe('Cargo build system', () => {
         expect(copied).toEqual([[path.join(ctx.dirPath, 'target/debug/helper'), artifact]]);
     });
 
-    it('complains clearly when cargo built no executable', async () => {
+    it('explains, rather than fails, when cargo built no executable', async () => {
         const env = makeRustEnv();
         const compiler = makeRustCompiler(env);
         const ctx = makeCargoContext(compiler, env, makeParsedRequest());
@@ -404,8 +404,37 @@ describe('Cargo build system', () => {
             buildsteps: [{step: 'cargo', stdout: [{text: '{"reason":"build-finished","success":true}'}]}],
         } as any;
 
-        await expect(
-            cargoBuildSystem.finaliseArtifact(ctx, result, cargoBuildSystem.getArtifactFilename(ctx)),
-        ).rejects.toThrow(/no executable/);
+        // A library-only crate builds fine; there is just nothing to disassemble.
+        expect(await cargoBuildSystem.finaliseArtifact(ctx, result, cargoBuildSystem.getArtifactFilename(ctx))).toMatch(
+            /did not build an executable/,
+        );
+    });
+
+    it('keeps what cargo printed, dropping only the records we asked it for', async () => {
+        const env = makeRustEnv();
+        const compiler = makeRustCompiler(env);
+        const ctx = makeCargoContext(compiler, env, makeParsedRequest());
+        // `cargo build --help` prints to stdout and never builds; that output is the whole point of the request.
+        const result = {
+            buildsteps: [
+                {
+                    step: 'cargo',
+                    stdout: [
+                        {text: 'Compile a local package and all of its dependencies'},
+                        {text: ''},
+                        {text: 'Usage: cargo build [OPTIONS]'},
+                        {text: '{"reason":"build-finished","success":true}'},
+                    ],
+                },
+            ],
+        } as any;
+
+        await cargoBuildSystem.finaliseArtifact(ctx, result, cargoBuildSystem.getArtifactFilename(ctx));
+
+        expect(result.buildsteps[0].stdout.map((l: any) => l.text)).toEqual([
+            'Compile a local package and all of its dependencies',
+            '',
+            'Usage: cargo build [OPTIONS]',
+        ]);
     });
 });

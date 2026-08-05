@@ -108,8 +108,16 @@ export interface BuildSystemDriver {
     /**
      * Runs once every step has succeeded, before the artifact is post-processed. Where a build system reports what it
      * built rather than putting it at a path we chose, this is where that gets reconciled — see the Cargo driver.
+     *
+     * Returns a message explaining why there is nothing to inspect, when a build system can succeed without producing
+     * an artifact at all. That is not an error: a library-only crate, or an argument like `--help`, gets a plain
+     * explanation rather than a failed compilation.
      */
-    finaliseArtifact(ctx: BuildContext, result: CompilationResult, artifactFilename: string): Promise<void>;
+    finaliseArtifact(
+        ctx: BuildContext,
+        result: CompilationResult,
+        artifactFilename: string,
+    ): Promise<string | undefined>;
 
     /** Turn the built artifact into something to show the user, usually by disassembling it. */
     postProcessArtifact(

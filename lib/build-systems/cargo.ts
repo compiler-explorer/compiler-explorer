@@ -29,6 +29,7 @@ import _ from 'underscore';
 
 import {BuildSystems} from '../../shared/build-systems.js';
 import type {CompilationResult} from '../../types/compilation/compilation.interfaces.js';
+import type {ResultLine} from '../../types/resultline/resultline.interfaces.js';
 import type {BaseCompiler} from '../base-compiler.js';
 import type {ParsedRequest} from '../handlers/compile.js';
 import * as utils from '../utils.js';
@@ -43,6 +44,18 @@ type CargoArtifact = {
     executable?: string | null;
     target?: {name?: string};
 };
+
+/** Parse one line of cargo's stdout as a record, or undefined if it is ordinary output. */
+function CargoArtifactRecord(text: string): CargoArtifact | undefined {
+    const trimmed = text.trim();
+    if (!trimmed.startsWith('{')) return undefined;
+    try {
+        const record = JSON.parse(trimmed) as CargoArtifact;
+        return record.reason ? record : undefined;
+    } catch {
+        return undefined;
+    }
+}
 
 export class CargoBuildSystem implements BuildSystemDriver {
     readonly id = 'cargo' as const;
@@ -140,20 +153,22 @@ export class CargoBuildSystem implements BuildSystemDriver {
         return path.isAbsolute(relative) ? reportedPath : path.join(dirPath, relative);
     }
 
-    /** The `compiler-artifact` records cargo wrote to stdout, in order. */
-    private static parseArtifacts(stdout: {text: string}[]): CargoArtifact[] {
+    /**
+     * Split cargo's stdout into the machine-readable records we asked for and everything else. Anything else is
+     * genuine output the user wants — `--help` prints there, for one — so it must survive.
+     */
+    private static partitionStdout(stdout: ResultLine[]): {artifacts: CargoArtifact[]; output: ResultLine[]} {
         const artifacts: CargoArtifact[] = [];
+        const output: ResultLine[] = [];
         for (const line of stdout) {
-            const text = line.text.trim();
-            if (!text.startsWith('{')) continue;
-            try {
-                const record = JSON.parse(text) as CargoArtifact;
-                if (record.reason === 'compiler-artifact') artifacts.push(record);
-            } catch {
-                // Not a record we understand; the user sees cargo's own output regardless.
+            const record = CargoArtifactRecord(line.text);
+            if (!record) {
+                output.push(line);
+            } else if (record.reason === 'compiler-artifact') {
+                artifacts.push(record);
             }
         }
-        return artifacts;
+        return {artifacts, output};
     }
 
     /**
@@ -165,12 +180,12 @@ export class CargoBuildSystem implements BuildSystemDriver {
         result: CompilationResult,
         artifactFilename: string,
         copyFile: (from: string, to: string) => Promise<void> = fs.copyFile,
-    ): Promise<void> {
+    ): Promise<string | undefined> {
         const cargoStep = result.buildsteps?.find(step => step.step === 'cargo');
-        const artifacts = CargoBuildSystem.parseArtifacts(cargoStep?.stdout ?? []);
+        const {artifacts, output} = CargoBuildSystem.partitionStdout(cargoStep?.stdout ?? []);
 
-        // The records are machine-readable noise; the user reads cargo's stderr instead.
-        if (cargoStep) cargoStep.stdout = [];
+        // Drop the records we asked for, which mean nothing to the user, but keep the rest of what cargo said.
+        if (cargoStep) cargoStep.stdout = output;
 
         const executables = artifacts
             .filter(artifact => artifact.executable)
@@ -179,7 +194,9 @@ export class CargoBuildSystem implements BuildSystemDriver {
                 executable: CargoBuildSystem.toHostPath(artifact.executable!, ctx.dirPath),
             }));
         if (executables.length === 0) {
-            throw new Error('Cargo built no executable. Does the project have a [[bin]] target?');
+            // Not an error as such: cargo can succeed without building a binary, for a library-only crate or when an
+            // argument like --help means it never builds at all.
+            return 'Cargo did not build an executable, so there is nothing to show here';
         }
 
         const wanted = path.basename(artifactFilename);
@@ -190,6 +207,7 @@ export class CargoBuildSystem implements BuildSystemDriver {
         if (chosen.executable !== artifactFilename) {
             await copyFile(chosen.executable as string, artifactFilename);
         }
+        return undefined;
     }
 
     async postProcessArtifact(
