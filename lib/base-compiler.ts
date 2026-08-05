@@ -84,6 +84,8 @@ import {type ToolResult, type ToolTypeKey} from '../types/tool.interfaces.js';
 import {moveArtifactsIntoResult} from './artifact-utils.js';
 import {assert, unwrap} from './assert.js';
 import {copyCopperSpicePlugins} from './binaries/copperspice-utils.js';
+import type {BuildContext, BuildSystemDriver} from './build-systems/index.js';
+import {cmakeBuildSystem} from './build-systems/index.js';
 import type {BuildEnvDownloadInfo} from './buildenvsetup/buildenv.interfaces.js';
 import {BuildEnvSetupBase, getBuildEnvTypeByKey} from './buildenvsetup/index.js';
 import {BaseCache} from './cache/base.js';
@@ -2006,7 +2008,7 @@ export class BaseCompiler {
                 // locations (bracket-free). The forced -lineno prefixes always carry a path, so
                 // restrict the strip to brackets holding a path separator -- that keeps [orig:N] et al. while
                 // reproducing the readable no-lineno RTL dump.
-                trimmed = trimmed.replace(/\[[^[\]\n]*[\/\\\\][^[\]\n]*:\d+(?::\d+)?(?: discrim \d+)?\] ?/g, '');
+                trimmed = trimmed.replace(/\[[^[\]\n]*[/\\\\][^[\]\n]*:\d+(?::\d+)?(?: discrim \d+)?\] ?/g, '');
                 // Each insn also prints its own location as "file":line:col; the filename is the
                 // (long, temp-dir) source path repeated on every line and adds no information, so
                 // drop just the quoted path and keep the :line:col that pinskia asked to retain.
@@ -2116,15 +2118,11 @@ export class BaseCompiler {
         };
     }
 
-    protected async writeAllFilesCMake(
-        dirPath: string,
-        source: string,
-        files: FiledataPair[],
-        filters: ParseFiltersAndOutputOptions,
-    ) {
-        if (!source) throw new Error('File CMakeLists.txt has no content or file is missing');
+    /** Write out a build system project: its manifest (as the main source), plus all the other files. */
+    async writeProjectFiles(dirPath: string, manifestFilename: string, source: string, files: FiledataPair[]) {
+        if (!source) throw new Error(`File ${manifestFilename} has no content or file is missing`);
 
-        const inputFilename = path.join(dirPath, 'CMakeLists.txt');
+        const inputFilename = path.join(dirPath, manifestFilename);
         await fs.writeFile(inputFilename, source);
 
         if (files && files.length > 0) {
@@ -2472,7 +2470,7 @@ export class BaseCompiler {
         return {compiler: this.compiler, source, options, backendOptions, filters, tools, libraries, files};
     }
 
-    getCmakeCacheKey(key: ParsedRequest, files: FiledataPair[]): CmakeCacheKey {
+    getBuildProjectCacheKey(buildSystem: BuildSystemDriver, key: ParsedRequest, files: FiledataPair[]): CmakeCacheKey {
         const cacheKey: CmakeCacheKey = {
             source: key.source,
             options: key.options,
@@ -2482,7 +2480,7 @@ export class BaseCompiler {
 
             compiler: this.compiler,
             files: files,
-            api: 'cmake',
+            api: buildSystem.id,
         };
 
         if (cacheKey.filters) delete cacheKey.filters.execute;
@@ -2911,9 +2909,22 @@ export class BaseCompiler {
         parsedRequest: ParsedRequest,
         bypassCache: BypassCache,
     ): Promise<CompilationResult> {
-        // key = {source, options, backendOptions, filters, bypassCache, tools, executeParameters, libraries};
+        return await this.buildProject(cmakeBuildSystem, files, parsedRequest, bypassCache);
+    }
 
-        if (!this.compiler.supportsBinary) {
+    /**
+     * Build a whole project with a build system (CMake and friends) rather than invoking the compiler on a single
+     * source file. Everything build-system-specific lives behind {@link BuildSystemDriver}; this handles the parts
+     * that are the same whatever built the project.
+     */
+    async buildProject(
+        buildSystem: BuildSystemDriver,
+        files: FiledataPair[],
+        parsedRequest: ParsedRequest,
+        bypassCache: BypassCache,
+    ): Promise<CompilationResult> {
+        const unsupportedReason = buildSystem.getUnsupportedReason(this);
+        if (unsupportedReason) {
             const errorResult: CompilationResult = {
                 code: -1,
                 timedOut: false,
@@ -2922,13 +2933,11 @@ export class BaseCompiler {
                 stdout: [],
             };
 
-            errorResult.stderr.push({text: 'Compiler does not support compiling to binaries'});
+            errorResult.stderr.push({text: unsupportedReason});
             return errorResult;
         }
 
-        _.defaults(parsedRequest.filters, this.getDefaultFilters());
-        parsedRequest.filters.binary = true;
-        parsedRequest.filters.dontMaskFilenames = true;
+        buildSystem.applyRequestDefaults(this, parsedRequest);
 
         const libsAndOptions = this.createLibsAndOptions(parsedRequest);
 
@@ -2947,10 +2956,22 @@ export class BaseCompiler {
             env: {},
         };
 
-        const cacheKey = this.getCmakeCacheKey(parsedRequest, files);
+        const cacheKey = this.getBuildProjectCacheKey(buildSystem, parsedRequest, files);
         const executablePackageHash = this.env.getExecutableHash(cacheKey);
 
-        const outputFilename = this.getExecutableFilename(path.join(dirPath, 'build'), this.outputFilebase, cacheKey);
+        const buildContext: BuildContext = {
+            compiler: this,
+            env: this.env,
+            dirPath,
+            buildPath: buildSystem.getBuildPath(dirPath),
+            key: cacheKey,
+            parsedRequest,
+            files,
+            libsAndOptions,
+            toolchainPath,
+        };
+
+        const outputFilename = buildSystem.getArtifactFilename(buildContext);
 
         let fullResult: CompilationResult = bypassCompilationCache(bypassCache)
             ? undefined
@@ -2970,18 +2991,14 @@ export class BaseCompiler {
 
                 let writeSummary;
                 try {
-                    writeSummary = await this.writeAllFilesCMake(dirPath, cacheKey.source, files, cacheKey.filters);
+                    writeSummary = await buildSystem.writeProjectFiles(buildContext);
                 } catch (e) {
                     return this.handleUserError(e, dirPath);
                 }
 
-                const execParams = this.getDefaultExecOptions();
-                execParams.appHome = dirPath;
-                execParams.customCwd = path.join(dirPath, 'build');
+                await buildSystem.prepareBuildDirectory(buildContext);
 
-                await fs.mkdir(execParams.customCwd);
-
-                const makeExecParams = this.createCmakeExecParams(execParams, dirPath, libsAndOptions, toolchainPath);
+                const buildPlan = await buildSystem.getBuildPlan(buildContext);
 
                 const result: CompilationResult = {
                     code: 0,
@@ -2995,64 +3012,31 @@ export class BaseCompiler {
 
                 result.downloads = await this.setupBuildEnvironment(cacheKey, dirPath, true);
 
-                const toolchainparam = this.getCMakeExtToolchainParam(parsedRequest.backendOptions.overrides || []);
+                for (const step of buildPlan.steps) {
+                    const stepResult = await this.doBuildstepAndAddToResult(
+                        result,
+                        step.name,
+                        step.exe,
+                        step.args,
+                        step.execParams,
+                    );
 
-                const cmakeArgs = splitArguments(parsedRequest.backendOptions.cmakeArgs);
-                const partArgs: string[] = [
-                    toolchainparam,
-                    ...this.getExtraCMakeArgs(parsedRequest),
-                    ...cmakeArgs,
-                    '..',
-                ].filter(Boolean); // filter out empty args
-                const useNinja = this.env.ceProps('useninja');
-                const fullArgs: string[] = useNinja ? ['-GNinja'].concat(partArgs) : partArgs;
-
-                const cmd = this.env.ceProps('cmake') as string;
-                assert(cmd, 'No cmake command found');
-
-                const cmakeStepResult = await this.doBuildstepAndAddToResult(
-                    result,
-                    'cmake',
-                    cmd,
-                    fullArgs,
-                    makeExecParams,
-                );
-
-                if (cmakeStepResult.code !== 0) {
-                    result.result = {
-                        dirPath,
-                        timedOut: false,
-                        stdout: [],
-                        stderr: [],
-                        okToCache: false,
-                        code: cmakeStepResult.code,
-                        asm: '<CMake configure step failed>',
-                    };
-                    result.result.compilationOptions = this.getUsedEnvironmentVariableFlags(makeExecParams);
-                    compilationTimeHistogram.observe((performance.now() - start) / 1000);
-                    return result;
-                }
-
-                const makeStepResult = await this.doBuildstepAndAddToResult(
-                    result,
-                    'build',
-                    cmd,
-                    ['--build', '.'],
-                    execParams,
-                );
-
-                if (makeStepResult.code !== 0) {
-                    result.result = {
-                        dirPath,
-                        timedOut: false,
-                        stdout: [],
-                        stderr: [],
-                        okToCache: false,
-                        code: makeStepResult.code,
-                        asm: '<CMake build step failed>',
-                    };
-                    compilationTimeHistogram.observe((performance.now() - start) / 1000);
-                    return result;
+                    if (stepResult.code !== 0) {
+                        result.result = {
+                            dirPath,
+                            timedOut: false,
+                            stdout: [],
+                            stderr: [],
+                            okToCache: false,
+                            code: stepResult.code,
+                            asm: step.failureMessage,
+                        };
+                        if (step.reportsCompilationOptions) {
+                            result.result.compilationOptions = buildPlan.getCompilationOptions();
+                        }
+                        compilationTimeHistogram.observe((performance.now() - start) / 1000);
+                        return result;
+                    }
                 }
 
                 result.result = {
@@ -3062,16 +3046,11 @@ export class BaseCompiler {
                     stdout: [],
                     stderr: [],
                     okToCache: true,
-                    compilationOptions: this.getUsedEnvironmentVariableFlags(makeExecParams),
+                    compilationOptions: buildPlan.getCompilationOptions(),
                 };
 
                 if (!parsedRequest.backendOptions.skipAsm) {
-                    const [asmResult] = await this.checkOutputFileAndDoPostProcess(
-                        result.result,
-                        outputFilename,
-                        cacheKey.filters,
-                    );
-                    result.result = asmResult;
+                    result.result = await buildSystem.postProcessArtifact(buildContext, result.result, outputFilename);
                 }
 
                 result.code = 0;
@@ -3153,7 +3132,7 @@ export class BaseCompiler {
             optOutput,
             stackUsageOutput,
             bypassCache,
-            path.join(dirPath, 'build'),
+            buildContext.buildPath,
         );
 
         if (fullResult.result) delete fullResult.result.dirPath;
