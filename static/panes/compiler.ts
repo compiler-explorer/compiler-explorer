@@ -3109,15 +3109,17 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
                     (button.prop('disabled') ? ' [LOCKED]' : ''),
             );
         };
-        const isIntelFilterDisabled = !this.compiler.supportsIntel && !filters.binary && !filters.binaryObject;
+
         // Hide the Intel syntax option for languages where it doesn't make sense (e.g., Java, Go)
         // unless we're in binary mode (which uses objdump that might support Intel syntax)
-        const shouldHideIntelFilter = isIntelFilterDisabled;
+        const shouldHideIntelFilter =
+            (!this.compiler.supportsIntel && !filters.binary && !filters.binaryObject) ||
+            (!!this.lastResult && !['x86', 'amd64'].includes(this.lastResult.instructionSet ?? ''));
         if (shouldHideIntelFilter) {
             this.filterIntelButton.parent().hide();
         } else {
             this.filterIntelButton.parent().show();
-            this.filterIntelButton.prop('disabled', isIntelFilterDisabled);
+            this.filterIntelButton.prop('disabled', false);
         }
         formatFilterTitle(this.filterIntelButton, this.filterIntelTitle);
 
@@ -3610,6 +3612,16 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
             this.options,
             this.sourceEditorId ?? 0,
             this.sourceTreeId ?? 0,
+            this.getSourceName(),
+        );
+    }
+
+    getSourceName(): string {
+        if (this.sourceTreeId) {
+            return 'Tree #' + this.sourceTreeId;
+        }
+        return (
+            this.hub.getEditorById(this.sourceEditorId ?? 0)?.getPaneName() ?? 'Editor #' + (this.sourceEditorId ?? 0)
         );
     }
 

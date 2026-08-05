@@ -1,0 +1,160 @@
+Module(
+  body=[
+    Expr(
+      value=Constant(value='Dumps the AST of a Python source file as structured JSON for Compiler Explorer.')),
+    Import(
+      names=[
+        alias(name='argparse')]),
+    Import(
+      names=[
+        alias(name='ast')]),
+    Import(
+      names=[
+        alias(name='sys')]),
+    FunctionDef(
+      name='main',
+      args=arguments(),
+      body=[
+        Assign(
+          targets=[
+            Name(id='parser', ctx=Store())],
+          value=Call(
+            func=Attribute(
+              value=Name(id='argparse', ctx=Load()),
+              attr='ArgumentParser',
+              ctx=Load()),
+            keywords=[
+              keyword(
+                arg='description',
+                value=Constant(value='Parse and dump the AST of an Python source file'))])),
+        Expr(
+          value=Call(
+            func=Attribute(
+              value=Name(id='parser', ctx=Load()),
+              attr='add_argument',
+              ctx=Load()),
+            args=[
+              Constant(value='input')],
+            keywords=[
+              keyword(
+                arg='help',
+                value=Constant(value='Path to input Python source code file'))])),
+        Assign(
+          targets=[
+            Name(id='args', ctx=Store())],
+          value=Call(
+            func=Attribute(
+              value=Name(id='parser', ctx=Load()),
+              attr='parse_args',
+              ctx=Load()))),
+        Try(
+          body=[
+            With(
+              items=[
+                withitem(
+                  context_expr=Call(
+                    func=Name(id='open', ctx=Load()),
+                    args=[
+                      Attribute(
+                        value=Name(id='args', ctx=Load()),
+                        attr='input',
+                        ctx=Load()),
+                      Constant(value='r')],
+                    keywords=[
+                      keyword(
+                        arg='encoding',
+                        value=Constant(value='utf-8'))]),
+                  optional_vars=Name(id='f', ctx=Store()))],
+              body=[
+                Assign(
+                  targets=[
+                    Name(id='source', ctx=Store())],
+                  value=Call(
+                    func=Attribute(
+                      value=Name(id='f', ctx=Load()),
+                      attr='read',
+                      ctx=Load())))])],
+          handlers=[
+            ExceptHandler(
+              type=Name(id='IOError', ctx=Load()),
+              name='err',
+              body=[
+                Expr(
+                  value=Call(
+                    func=Name(id='print', ctx=Load()),
+                    args=[
+                      BinOp(
+                        left=Constant(value='Error reading file: %s'),
+                        op=Mod(),
+                        right=Name(id='err', ctx=Load()))])),
+                Expr(
+                  value=Call(
+                    func=Attribute(
+                      value=Name(id='sys', ctx=Load()),
+                      attr='exit',
+                      ctx=Load()),
+                    args=[
+                      Constant(value=1)]))])]),
+        Try(
+          body=[
+            Assign(
+              targets=[
+                Name(id='tree', ctx=Store())],
+              value=Call(
+                func=Attribute(
+                  value=Name(id='ast', ctx=Load()),
+                  attr='parse',
+                  ctx=Load()),
+                args=[
+                  Name(id='source', ctx=Load())],
+                keywords=[
+                  keyword(
+                    arg='optimize',
+                    value=Constant(value=0))]))],
+          handlers=[
+            ExceptHandler(
+              type=Name(id='SyntaxError', ctx=Load()),
+              name='err',
+              body=[
+                Expr(
+                  value=Call(
+                    func=Name(id='print', ctx=Load()),
+                    args=[
+                      BinOp(
+                        left=Constant(value='SyntaxError: %s'),
+                        op=Mod(),
+                        right=Name(id='err', ctx=Load()))])),
+                Expr(
+                  value=Call(
+                    func=Attribute(
+                      value=Name(id='sys', ctx=Load()),
+                      attr='exit',
+                      ctx=Load()),
+                    args=[
+                      Constant(value=1)]))])]),
+        Expr(
+          value=Call(
+            func=Name(id='print', ctx=Load()),
+            args=[
+              Call(
+                func=Attribute(
+                  value=Name(id='ast', ctx=Load()),
+                  attr='dump',
+                  ctx=Load()),
+                args=[
+                  Name(id='tree', ctx=Load())],
+                keywords=[
+                  keyword(
+                    arg='indent',
+                    value=Constant(value=2))])]))]),
+    If(
+      test=Compare(
+        left=Name(id='__name__', ctx=Load()),
+        ops=[
+          Eq()],
+        comparators=[
+          Constant(value='__main__')]),
+      body=[
+        Expr(
+          value=Call(
+            func=Name(id='main', ctx=Load())))])])

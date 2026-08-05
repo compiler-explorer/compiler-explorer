@@ -444,6 +444,12 @@ describe('Demangler prefix tree', () => {
             'Everyone loves short_an long_ardvshort_ark',
         );
     });
+    it('should match replaceAllText to replaceAll newText', () => {
+        expect(replacements.replaceAllText('aaa')).toEqual(replacements.replaceAll('aaa').newText);
+        expect(replacements.replaceAllText('Everyone loves an aardvark')).toEqual(
+            replacements.replaceAll('Everyone loves an aardvark').newText,
+        );
+    });
     it('should find exact matches', () => {
         expect(unwrap(replacements.findExact('a'))).toEqual('short_a');
         expect(unwrap(replacements.findExact('aa'))).toEqual('long_a');

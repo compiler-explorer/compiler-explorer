@@ -1,5 +1,3 @@
-def multiply[m: Int](n: Int) -> Int:
-    return m * n
-
-def main():
-    _ = multiply[3](5)
+@export
+def multiply(x: Int, y: Int) abi("C") -> Int:
+    return x * y

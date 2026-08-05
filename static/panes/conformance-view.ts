@@ -388,10 +388,14 @@ export class Conformance extends Pane<ConformanceViewState> {
     }
 
     private getCompilerId(compilerEntry?: CompilerEntry): string {
-        if (compilerEntry?.picker?.tomSelect) {
-            return unwrapString(compilerEntry.picker.tomSelect.getValue());
+        const picker = compilerEntry?.picker;
+        if (picker?.tomSelect) {
+            return unwrapString(picker.tomSelect.getValue());
         }
-        return '';
+        // tomSelect is built asynchronously, so it may not exist yet on a freshly-restored
+        // pane. lastCompilerId is set synchronously and mirrors the selection, so fall back
+        // to it (e.g. when a restored view is asked to compile before the picker is ready).
+        return picker?.lastCompilerId ?? '';
     }
 
     compileChild(compilerEntry: CompilerEntry) {
@@ -414,7 +418,7 @@ export class Conformance extends Pane<ConformanceViewState> {
                 files: expanded.files,
             };
 
-            this.currentLibs.forEach(item => {
+            (this.currentLibs ?? []).forEach(item => {
                 request.options.libraries.push({
                     id: item.name,
                     version: item.ver,

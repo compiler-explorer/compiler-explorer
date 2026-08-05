@@ -57,6 +57,7 @@ export type EventMap = {
         options: string,
         editorId: number,
         treeId: number,
+        sourceName?: string,
     ) => void;
     chainedCompilerOpen: (sourceCompilerId: number, chainedCompilerId: number) => void;
     chainedExecutorOpen: (sourceCompilerId: number, executorId: number) => void;
@@ -83,6 +84,7 @@ export type EventMap = {
     explainViewClosed: (compilerId: number) => void;
     explainViewOpened: (compilerId: number) => void;
     displaySharingPopover: () => void;
+    editor: (editorId: number, source: string, name: string) => void;
     editorChange: (editorId: number, source: string, langId: string, compilerId?: number) => void;
     editorClose: (editorId: number) => void;
     editorDisplayFlow: (editorId: number, flow: MessageWithLocation[]) => void;
@@ -96,6 +98,7 @@ export type EventMap = {
         options: string,
         editorId: number,
         treeId: number,
+        sourceName?: string,
     ) => void;
     executorClose: (executorId: number) => void;
     executorOpen: (executorId: number, editorId: boolean | number) => void;

@@ -137,14 +137,10 @@ export function setupLoggingMiddleware(isDevMode: boolean, router: Router): void
     );
 }
 
+const FAVICON_PATH_RE = /^\/favicon(-[a-z0-9-]+)?\.ico$/;
+
 function isFaviconRequest(req: Request): boolean {
-    return [
-        'favicon.ico',
-        'favicon-beta.ico',
-        'favicon-dev.ico',
-        'favicon-staging.ico',
-        'favicon-suspend.ico',
-    ].includes(req.path);
+    return FAVICON_PATH_RE.test(req.path);
 }
 
 /**
@@ -204,6 +200,11 @@ export function setupBasicRoutes(
         .get('/sitemap.xml', cached, (req, res) => {
             res.set('Content-Type', 'application/xml');
             res.render('sitemap');
+        })
+        .get('/search.xml', cached, (req, res) => {
+            const base = `${req.protocol}://${req.get('host')}${options.httpRoot}`;
+            res.set('Content-Type', 'application/opensearchdescription+xml');
+            res.render('opensearch', renderConfig({searchUrlTemplate: `${base}z/{searchTerms}`}));
         });
 
     router

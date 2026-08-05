@@ -32,6 +32,7 @@ import type {ApiHandler} from '../../handlers/api.js';
 import {logger} from '../../logger.js';
 import type {StorageBase} from '../../storage/base.js';
 import {getSafeHash} from '../../storage/base.js';
+import {extractShortId} from '../../url-utils.js';
 import {normaliseRequestLibraries} from '../library-utils.js';
 
 // CE shortlinks save the canonical "config" shape used by the web app, where each
@@ -167,9 +168,8 @@ export function registerShortlinkTools(
             openWorldHint: false,
         },
         async ({id}) => {
-            // Extract ID from URL if a full URL was provided
-            const match = id.match(/\/z\/([^/]+)$/);
-            const shortId = match ? match[1] : id;
+            // Extract the short id whether a full URL or a bare id was provided.
+            const shortId = extractShortId(id);
 
             try {
                 const result = await storageHandler.expandId(shortId);

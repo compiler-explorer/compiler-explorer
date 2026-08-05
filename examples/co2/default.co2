@@ -1,0 +1,20 @@
+// Type your code here, or load an example.
+
+#include <stdio.h>
+
+// Similar to Rust, small functions are automatically
+// marked as `#[inline]` so they will not show up in
+// the output when compiling with optimisations. Use
+// `#[no_mangle]` or `#[inline(never)]` to
+// work around this issue. C style functions are
+// automatically `#[no_mangle]` and do not need attribute.
+// See https://github.com/compiler-explorer/compiler-explorer/issues/5939
+#[no_mangle]
+pub fn square(num: i32) -> i32 {
+    i32 result = num * num;
+    printf("square of %d is %d", num, result);
+    return result;
+}
+
+// If you use `main()`, declare it as `pub` to see it in the output:
+// pub fn main() {}

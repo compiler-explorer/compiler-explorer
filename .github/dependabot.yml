@@ -1,0 +1,17 @@
+# Version updates for the actions used in .github/workflows. This does not
+# change security-update behaviour, and no other ecosystem (npm, pip) gets
+# version updates from this file.
+version: 2
+updates:
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "monthly"
+    # One rolled-up PR per interval instead of a PR per action.
+    groups:
+      github-actions:
+        patterns: ["*"]
+    # Don't propose a release until it has been public for a week, the window
+    # in which compromised releases tend to be caught and yanked.
+    cooldown:
+      default-days: 7

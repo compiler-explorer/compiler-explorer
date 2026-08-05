@@ -75,13 +75,24 @@ export class LLVMIRDemangler {
     protected processPassOutput(passOutput: OptPipelineResults, translations: [string, string][]) {
         if (translations.length > 0) {
             const tree = new PrefixTree(translations);
+            // Pass dumps are hugely redundant: `before[N+1]` is usually identical to `after[N]`, and the same IR
+            // lines repeat across dozens/hundreds of passes. Demangle each unique string once and reuse the result.
+            const cache = new Map<string, string>();
+            const demangle = (text: string) => {
+                let demangled = cache.get(text);
+                if (demangled === undefined) {
+                    demangled = tree.replaceAllText(text);
+                    cache.set(text, demangled);
+                }
+                return demangled;
+            };
             for (const [functionName, passes] of Object.entries(passOutput)) {
-                const demangledFunctionName = tree.replaceAll(functionName).newText;
+                const demangledFunctionName = demangle(functionName);
                 for (const pass of passes) {
-                    pass.name = tree.replaceAll(pass.name).newText; // needed at least for full module mode
+                    pass.name = demangle(pass.name); // needed at least for full module mode
                     for (const dump of [pass.before, pass.after]) {
                         for (const line of dump) {
-                            line.text = tree.replaceAll(line.text).newText;
+                            line.text = demangle(line.text);
                         }
                     }
                 }
