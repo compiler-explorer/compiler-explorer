@@ -327,6 +327,18 @@ describe('Cargo build system', () => {
         expect(CargoBuildSystem.explainFailure('error[E0425]: cannot find value `x` in this scope')).toBeUndefined();
     });
 
+    it('explains that a library feature cannot be chosen, but leaves your own features alone', () => {
+        expect(
+            CargoBuildSystem.explainFailure(
+                "error: the package 'output' does not contain this feature: rand/small_rng",
+            ),
+        ).toMatch(/its rlib is prebuilt/);
+        // Their own feature, misspelled: cargo has already said the useful thing.
+        expect(
+            CargoBuildSystem.explainFailure("error: the package 'output' does not contain this feature: nosuch"),
+        ).toBeUndefined();
+    });
+
     it('drives the selected rustc and keeps cargo caches inside the sandbox', async () => {
         const env = makeRustEnv();
         const compiler = makeRustCompiler(env);

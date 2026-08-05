@@ -197,6 +197,11 @@ cargo cannot resolve them itself — it wants sources from a registry, and there
 driver passes them to rustc directly as `--extern`, through `CARGO_ENCODED_RUSTFLAGS`. `use rand::Rng;` then works
 with nothing declared in Cargo.toml.
 
+Features of your own package work as normal — declare them in `[features]` and pass `--features`,
+`--all-features` or `--no-default-features` in the Cargo arguments box. A library's features cannot be chosen,
+because its rlib arrives prebuilt with a fixed set of them; see
+[#5534](https://github.com/compiler-explorer/compiler-explorer/issues/5534).
+
 A `[dependencies]` entry therefore always fails, and cargo's own message for it ("no matching package named ...,
 location searched: crates.io index") does not hint at what to do instead, so `explainFailure` on the build step adds
 that. Making `[dependencies]` genuinely work needs vendored crate *sources* on the build node, which is infrastructure
