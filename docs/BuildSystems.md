@@ -74,7 +74,10 @@ The plumbing is the easy part. The hard part is four assumptions baked into `cma
 1. **The compiler is selected via C-style environment variables.** Cargo wants `RUSTC`/`CARGO`; Maven wants a JDK on
    `JAVA_HOME`.
 2. **The artifact lives at a conventional path.** Cargo needs `--message-format=json` (or `cargo metadata`) to discover
-   `target/debug/<name>`; Maven produces `target/*.jar` named from the POM.
+   `target/debug/<name>`; Maven produces `target/*.jar` named from the POM. Note discovery supplies the *default* only:
+   `backendOptions.customOutputFilename` is the user picking which artifact to inspect, and a build with several
+   targets — extra bins, libraries, examples — has plenty of others worth looking at. A driver that discovers its
+   artifact must still let that override win.
 3. **"Output" means disassembling a native binary.** For Cargo the useful output is `cargo rustc -- --emit asm`; for
    Maven it is javap-style bytecode, and there is no native binary at all.
 4. **Execution means running the artifact directly.** Maven artifacts need `java -jar`.

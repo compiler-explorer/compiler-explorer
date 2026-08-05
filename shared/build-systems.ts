@@ -30,6 +30,9 @@ import type {LanguageKey} from '../types/languages.interfaces.js';
  */
 export type BuildSystemId = 'cmake';
 
+/** What a tree is built with, or `'none'` for a plain multi-file project compiled directly. */
+export type TreeBuildSystem = BuildSystemId | 'none';
+
 /**
  * What both the frontend and the backend need to know about a build system. The backend additionally has a driver per
  * build system (`lib/build-systems/`) that knows how to actually run it.

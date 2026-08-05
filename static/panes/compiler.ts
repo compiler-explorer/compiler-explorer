@@ -1456,16 +1456,17 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
         Promise.all(fetches)
             .then(() => {
                 const treeState = tree.currentState();
-                const cmakeProject = tree.multifileService.isACMakeProject();
+                const buildSystem = tree.multifileService.getBuildSystemDescriptor();
                 request.files.push(...moreFiles);
 
                 if (bypassCache) request.bypassCache = BypassCache.Compilation;
                 if (!this.compiler) {
                     this.onCompileResponse(request, this.errorResult('<Please select a compiler>'), false);
-                } else if (cmakeProject && request.source === '') {
-                    this.onCompileResponse(request, this.errorResult('<Please supply a CMakeLists.txt>'), false);
+                } else if (buildSystem && request.source === '') {
+                    const message = `<Please supply a ${buildSystem.manifestFilename}>`;
+                    this.onCompileResponse(request, this.errorResult(message), false);
                 } else {
-                    if (cmakeProject) {
+                    if (buildSystem) {
                         request.options.compilerOptions.cmakeArgs = treeState.cmakeArgs;
                         request.options.compilerOptions.customOutputFilename = treeState.customOutputFilename;
                         this.sendCMakeCompile(request);
