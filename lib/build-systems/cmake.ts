@@ -72,6 +72,7 @@ export class CMakeBuildSystem implements BuildSystemDriver {
         const execParams = compiler.getDefaultExecOptions();
         execParams.appHome = ctx.dirPath;
         execParams.customCwd = ctx.buildPath;
+        compiler.applyOverridesToExecOptions(execParams, ctx.parsedRequest.backendOptions.overrides || []);
 
         // Note this shares its `env` with execParams, so both steps see the compiler flags it adds.
         const makeExecParams = compiler.createCmakeExecParams(

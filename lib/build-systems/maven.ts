@@ -31,9 +31,13 @@ import {BuildSystems} from '../../shared/build-systems.js';
 import type {CompilationResult} from '../../types/compilation/compilation.interfaces.js';
 import type {ExecutableExecutionOptions} from '../../types/execution/execution.interfaces.js';
 import type {BaseCompiler} from '../base-compiler.js';
+import {maybeRemapJailedDir} from '../exec.js';
 import type {ParsedRequest} from '../handlers/compile.js';
 import * as utils from '../utils.js';
 import type {BuildContext, BuildPlan, BuildSystemDriver} from './build-system.interfaces.js';
+
+/** Where jansi is told to unpack its native library, relative to the project. */
+const JANSI_DIR = '.jansi';
 
 /** Where maven puts compiled classes, relative to the project. */
 const CLASSES_DIR = path.join('target', 'classes');
@@ -79,8 +83,9 @@ export class MavenBuildSystem implements BuildSystemDriver {
         );
     }
 
-    async prepareBuildDirectory(): Promise<void> {
-        // maven creates target/ itself.
+    async prepareBuildDirectory(ctx: BuildContext): Promise<void> {
+        // maven creates target/ itself, but jansi will not create the directory it is pointed at.
+        await fs.mkdir(path.join(ctx.dirPath, JANSI_DIR), {recursive: true});
     }
 
     async getBuildPlan(ctx: BuildContext): Promise<BuildPlan> {
@@ -89,7 +94,15 @@ export class MavenBuildSystem implements BuildSystemDriver {
         const execParams = compiler.getDefaultExecOptions();
         execParams.appHome = ctx.dirPath;
         execParams.customCwd = ctx.dirPath;
+        compiler.applyOverridesToExecOptions(execParams, ctx.parsedRequest.backendOptions.overrides || []);
         execParams.env.JAVA_HOME = MavenBuildSystem.getJavaHome(compiler);
+        // jansi unpacks a native library into java.io.tmpdir and maps it, and the sandbox mounts /tmp noexec. Point
+        // it at the project instead, which is executable because built binaries run from there. This has to reach the
+        // JVM at launch: jansi initialises before maven turns its own -D arguments into system properties.
+        // Spelled as the build will see it: /app under a sandbox, the real path without one. Ours goes first so
+        // that anything the user set through an environment override wins, the JVM taking the last of a duplicate.
+        const jansiTmpdir = `-Djansi.tmpdir=${path.join(maybeRemapJailedDir(ctx.dirPath), JANSI_DIR)}`;
+        execParams.env.MAVEN_OPTS = [jansiTmpdir, execParams.env.MAVEN_OPTS].filter(Boolean).join(' ');
 
         const mvn = ctx.env.ceProps('maven') as string;
         // Everything maven needs was fetched into this repository when it was installed; see infra's tools.yaml.
@@ -105,9 +118,12 @@ export class MavenBuildSystem implements BuildSystemDriver {
                         // Offline because build nodes have no network, and batch mode so there is no progress spam.
                         '-o',
                         '-B',
-                        // The sandbox mounts /tmp noexec, where jansi would otherwise unpack a native library.
-                        '-Djansi.passthrough=true',
                         `-Dmaven.repo.local=${repository}`,
+                        // Without an encoding maven warns that the build is platform dependent, three times over.
+                        // Compiler Explorer writes these files as UTF-8, so saying so is both true and what makes
+                        // the build reproducible -- but only when the project has not spoken for itself, because a
+                        // -D would override what its pom says.
+                        ...(/encoding/i.test(ctx.key.source) ? [] : ['-Dproject.build.sourceEncoding=UTF-8']),
                         ...ctx.buildSystemArgs,
                         // Only if the user has not asked for particular goals themselves.
                         ...(ctx.buildSystemArgs.some(arg => !arg.startsWith('-')) ? [] : ['package']),

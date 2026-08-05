@@ -68,6 +68,11 @@ function makeCompiler(env: CompilationEnvironment, info: Partial<CompilerInfo> =
     );
 }
 
+/** An `env` compiler override, as the overrides widget produces. */
+function envOverride(vars: Record<string, string>) {
+    return {name: 'env', values: Object.entries(vars).map(([name, value]) => ({name, value}))};
+}
+
 function makeParsedRequest(backendOptions: Record<string, any> = {}): ParsedRequest {
     return {
         source: 'project(test)',
@@ -214,6 +219,15 @@ describe('CMake build system', () => {
             '<CMake configure step failed>',
             '<CMake build step failed>',
         ]);
+    });
+
+    it('passes the environment the user asked for to the build', async () => {
+        const env = makeEnv();
+        const compiler = makeCompiler(env);
+        const req = makeParsedRequest({overrides: [envOverride({CE_PROBE: 'reached'})]});
+        const plan = await cmakeBuildSystem.getBuildPlan(makeContext(compiler, env, req));
+
+        expect(plan.steps[0].execParams.env.CE_PROBE).toEqual('reached');
     });
 
     it('runs both steps in the build directory, sharing the compiler environment', async () => {
@@ -560,6 +574,50 @@ describe('Maven build system', () => {
         expect(plan.steps[0].args).toContain('-Dmaven.repo.local=/opt/compiler-explorer/maven/repository');
         expect(plan.steps[0].args).toContain('package');
         expect(plan.steps[0].execParams.env.JAVA_HOME).toEqual('/opt/compiler-explorer/jdk-21.0.0');
+    });
+
+    it('keeps jansi out of the noexec temp directory', async () => {
+        const env = makeJavaEnv();
+        const compiler = makeJavaCompiler(env);
+        const ctx = makeMavenContext(compiler, env, makeParsedRequest());
+        const plan = await mavenBuildSystem.getBuildPlan(ctx);
+
+        // Has to be an environment variable: jansi initialises before maven applies its own -D arguments. The path
+        // is whatever the build will see -- unsandboxed here, so the real one rather than /app.
+        expect(plan.steps[0].execParams.env.MAVEN_OPTS).toEqual(`-Djansi.tmpdir=${path.join(ctx.dirPath, '.jansi')}`);
+    });
+
+    it('keeps the environment the user asked for, alongside its own MAVEN_OPTS', async () => {
+        const env = makeJavaEnv();
+        const compiler = makeJavaCompiler(env);
+        const req = makeParsedRequest({overrides: [envOverride({MAVEN_OPTS: '-Duser.language=fr'})]});
+        const ctx = makeMavenContext(compiler, env, req);
+        const plan = await mavenBuildSystem.getBuildPlan(ctx);
+
+        // Ours first, so the user's wins on a duplicate: the JVM takes the last one.
+        expect(plan.steps[0].execParams.env.MAVEN_OPTS).toEqual(
+            `-Djansi.tmpdir=${path.join(ctx.dirPath, '.jansi')} -Duser.language=fr`,
+        );
+    });
+
+    it('says the files are UTF-8, which they are, so maven stops warning about it', async () => {
+        const env = makeJavaEnv();
+        const compiler = makeJavaCompiler(env);
+        const plan = await mavenBuildSystem.getBuildPlan(makeMavenContext(compiler, env, makeParsedRequest()));
+
+        expect(plan.steps[0].args).toContain('-Dproject.build.sourceEncoding=UTF-8');
+    });
+
+    it('leaves the encoding alone when the project has set one', async () => {
+        const env = makeJavaEnv();
+        const compiler = makeJavaCompiler(env);
+        const req = makeParsedRequest();
+        // A -D would win over the pom, so a project that has chosen an encoding must keep it.
+        req.source =
+            '<project><properties><project.build.sourceEncoding>ISO-8859-1</project.build.sourceEncoding></properties></project>';
+        const plan = await mavenBuildSystem.getBuildPlan(makeMavenContext(compiler, env, req));
+
+        expect(plan.steps[0].args.join(' ')).not.toContain('sourceEncoding');
     });
 
     it('leaves the goals alone when the user names their own', async () => {

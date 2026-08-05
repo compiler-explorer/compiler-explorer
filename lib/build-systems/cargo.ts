@@ -108,6 +108,7 @@ export class CargoBuildSystem implements BuildSystemDriver {
         const execParams = compiler.getDefaultExecOptions();
         execParams.appHome = ctx.dirPath;
         execParams.customCwd = ctx.dirPath;
+        compiler.applyOverridesToExecOptions(execParams, ctx.parsedRequest.backendOptions.overrides || []);
 
         execParams.env.RUSTC = compiler.compiler.exe;
         // Keep cargo's registry and caches inside the sandbox: build nodes have no network, and nothing it writes
