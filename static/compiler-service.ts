@@ -267,7 +267,8 @@ export class CompilerService {
             const compilerId = encodeURIComponent(request.compiler);
             $.ajax({
                 type: 'POST',
-                url: `${this.getBaseUrl()}api/compiler/${compilerId}/cmake`,
+                // The build system is still hardcoded here; phase 2 makes the tree pick it. See docs/BuildSystems.md.
+                url: `${this.getBaseUrl()}api/compiler/${compilerId}/build/cmake`,
                 dataType: 'json',
                 contentType: 'application/json',
                 data: jsonRequest,
