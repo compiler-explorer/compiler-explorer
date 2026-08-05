@@ -2923,7 +2923,7 @@ export class BaseCompiler {
         parsedRequest: ParsedRequest,
         bypassCache: BypassCache,
     ): Promise<CompilationResult> {
-        const unsupportedReason = buildSystem.getUnsupportedReason(this);
+        const unsupportedReason = await buildSystem.getUnsupportedReason(this);
         if (unsupportedReason) {
             const errorResult: CompilationResult = {
                 code: -1,
@@ -2994,6 +2994,7 @@ export class BaseCompiler {
                 try {
                     writeSummary = await buildSystem.writeProjectFiles(buildContext);
                 } catch (e) {
+                    logger.error(`${buildSystem.id}: could not write the project files`, e);
                     return this.handleUserError(e, dirPath);
                 }
 
@@ -3038,6 +3039,13 @@ export class BaseCompiler {
                         compilationTimeHistogram.observe((performance.now() - start) / 1000);
                         return result;
                     }
+                }
+
+                try {
+                    await buildSystem.finaliseArtifact(buildContext, result, outputFilename);
+                } catch (e) {
+                    logger.error(`${buildSystem.id}: could not finalise the artifact`, e);
+                    return this.handleUserError(e, dirPath);
                 }
 
                 result.result = {

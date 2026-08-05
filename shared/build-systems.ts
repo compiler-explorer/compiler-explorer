@@ -28,7 +28,7 @@ import type {LanguageKey} from '../types/languages.interfaces.js';
  * Identifies a build system. This value appears in the API route, in the compilation cache key (as `api`) and in the
  * stats, so existing ids must never change.
  */
-export type BuildSystemId = 'cmake';
+export type BuildSystemId = 'cmake' | 'cargo';
 
 /** What a tree is built with, or `'none'` for a plain multi-file project compiled directly. */
 export type TreeBuildSystem = BuildSystemId | 'none';
@@ -62,6 +62,15 @@ export const BuildSystems: Record<BuildSystemId, BuildSystemDescriptor> = {
         compatibleLanguageIds: ['c++', 'c', 'fortran', 'cuda', 'assembly'],
         defaultArgs: '-DCMAKE_BUILD_TYPE=Debug',
         argsPlaceholder: 'CMake arguments...',
+    },
+    cargo: {
+        id: 'cargo',
+        name: 'Cargo',
+        manifestFilename: 'Cargo.toml',
+        manifestLanguageId: 'cargo',
+        compatibleLanguageIds: ['rust'],
+        defaultArgs: '',
+        argsPlaceholder: 'Cargo arguments...',
     },
 };
 

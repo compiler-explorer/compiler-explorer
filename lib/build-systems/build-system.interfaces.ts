@@ -85,7 +85,7 @@ export interface BuildSystemDriver {
     readonly descriptor: BuildSystemDescriptor;
 
     /** Why this compiler cannot be built with this build system, or undefined if it can. */
-    getUnsupportedReason(compiler: BaseCompiler): string | undefined;
+    getUnsupportedReason(compiler: BaseCompiler): Promise<string | undefined>;
 
     /** Coerce the request into the shape this build system needs. Runs before the cache key is computed. */
     applyRequestDefaults(compiler: BaseCompiler, parsedRequest: ParsedRequest): void;
@@ -104,6 +104,12 @@ export interface BuildSystemDriver {
 
     /** The artifact to post-process and, if asked, execute. */
     getArtifactFilename(ctx: BuildContext): string;
+
+    /**
+     * Runs once every step has succeeded, before the artifact is post-processed. Where a build system reports what it
+     * built rather than putting it at a path we chose, this is where that gets reconciled — see the Cargo driver.
+     */
+    finaliseArtifact(ctx: BuildContext, result: CompilationResult, artifactFilename: string): Promise<void>;
 
     /** Turn the built artifact into something to show the user, usually by disassembling it. */
     postProcessArtifact(

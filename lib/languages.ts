@@ -253,6 +253,17 @@ const definitions: Record<LanguageKey, LanguageDefinition> = {
         monacoDisassembly: null,
         digitSeparator: '_',
     },
+    cargo: {
+        name: 'Cargo',
+        monaco: 'toml',
+        extensions: ['.toml'],
+        alias: [],
+        logoFilename: 'rust.svg',
+        logoFilenameDark: null,
+        formatter: null,
+        previewFilter: null,
+        monacoDisassembly: null,
+    },
     cmake: {
         name: 'CMake',
         monaco: 'cmake',

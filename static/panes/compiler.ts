@@ -78,6 +78,7 @@ import IEditorMouseEvent = editor.IEditorMouseEvent;
 import fileSaver from 'file-saver';
 
 import {unwrap, unwrapString} from '../../shared/assert.js';
+import type {BuildSystemId} from '../../shared/build-systems.js';
 import {escapeHTML, splitArguments} from '../../shared/common-utils.js';
 import {ClangirBackendOptions} from '../../types/compilation/clangir.interfaces.js';
 import {LLVMIrBackendOptions} from '../../types/compilation/ir.interfaces.js';
@@ -164,9 +165,9 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
     private lastTimeTaken: number;
     private previousScroll: number | null = null;
     private pendingRequestSentAt: number;
-    private pendingCMakeRequestSentAt: number;
+    private pendingBuildRequestSentAt: number;
     private nextRequest: CompilationRequest | null;
-    private nextCMakeRequest: CompilationRequest | null;
+    private nextBuildRequest: {buildSystem: BuildSystemId; request: CompilationRequest} | null;
     private readonly decorations: Decorations;
     private prevDecorations: string[];
     private labelDefinitions: Record<any, number>;
@@ -310,9 +311,9 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
 
         this.lastTimeTaken = 0;
         this.pendingRequestSentAt = 0;
-        this.pendingCMakeRequestSentAt = 0;
+        this.pendingBuildRequestSentAt = 0;
         this.nextRequest = null;
-        this.nextCMakeRequest = null;
+        this.nextBuildRequest = null;
         this.optViewOpen = false;
         this.cfgViewOpenCount = 0;
         this.irCfgViewOpenCount = 0;
@@ -1469,7 +1470,7 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
                     if (buildSystem) {
                         request.options.compilerOptions.cmakeArgs = treeState.cmakeArgs;
                         request.options.compilerOptions.customOutputFilename = treeState.customOutputFilename;
-                        this.sendCMakeCompile(request);
+                        this.sendBuildCompile(buildSystem.id, request);
                     } else {
                         this.sendCompile(request);
                     }
@@ -1528,25 +1529,25 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
         }, 500);
     }
 
-    sendCMakeCompile(request: CompilationRequest) {
-        if (this.pendingCMakeRequestSentAt) {
+    sendBuildCompile(buildSystem: BuildSystemId, request: CompilationRequest) {
+        if (this.pendingBuildRequestSentAt) {
             // If we have a request pending, then just store this request to do once the
             // previous request completes.
-            this.nextCMakeRequest = request;
+            this.nextBuildRequest = {buildSystem, request};
             return;
         }
         if (this.compiler) this.eventHub.emit('compiling', this.id, this.compiler);
         // Display the spinner
         this.handleCompilationStatus({code: 4, compilerOut: 0});
-        this.pendingCMakeRequestSentAt = Date.now();
+        this.pendingBuildRequestSentAt = Date.now();
         // After a short delay, give the user some indication that we're working on their
         // compilation.
         const progress = this.makeCompilingPlaceholderTimeout();
         this.compilerService
-            .submitCMake(request)
+            .submitBuild(buildSystem, request)
             .then((x: any) => {
                 clearTimeout(progress);
-                this.onCMakeResponse(request, x?.result, x?.localCacheHit ?? false);
+                this.onBuildResponse(request, x?.result, x?.localCacheHit ?? false);
             })
             .catch(x => {
                 clearTimeout(progress);
@@ -1567,7 +1568,7 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
                           networkError: true,
                       }
                     : this.errorResult('<Compilation failed: ' + message + '>');
-                this.onCMakeResponse(request, result, false);
+                this.onBuildResponse(request, result, false);
             });
     }
 
@@ -1790,25 +1791,25 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
         }
     }
 
-    doNextCMakeRequest(): void {
-        if (this.nextCMakeRequest) {
-            const next = this.nextCMakeRequest;
-            this.nextCMakeRequest = null;
-            this.sendCMakeCompile(next);
+    doNextBuildRequest(): void {
+        if (this.nextBuildRequest) {
+            const next = this.nextBuildRequest;
+            this.nextBuildRequest = null;
+            this.sendBuildCompile(next.buildSystem, next.request);
         }
     }
 
-    onCMakeResponse(request: any, result: any, cached: boolean) {
+    onBuildResponse(request: any, result: any, cached: boolean) {
         result.source = this.source;
         this.lastResult = result;
-        const timeTaken = Math.max(0, Date.now() - this.pendingCMakeRequestSentAt);
+        const timeTaken = Math.max(0, Date.now() - this.pendingBuildRequestSentAt);
         this.lastTimeTaken = timeTaken;
-        const wasRealReply = this.pendingCMakeRequestSentAt > 0;
-        this.pendingCMakeRequestSentAt = 0;
+        const wasRealReply = this.pendingBuildRequestSentAt > 0;
+        this.pendingBuildRequestSentAt = 0;
 
         this.handleCompileRequestAndResult(request, result, cached, wasRealReply, timeTaken);
 
-        this.doNextCMakeRequest();
+        this.doNextBuildRequest();
     }
 
     handleCompileRequestAndResult(

@@ -38,7 +38,7 @@ export class CMakeBuildSystem implements BuildSystemDriver {
     readonly id = 'cmake' as const;
     readonly descriptor = BuildSystems.cmake;
 
-    getUnsupportedReason(compiler: BaseCompiler): string | undefined {
+    async getUnsupportedReason(compiler: BaseCompiler): Promise<string | undefined> {
         if (!compiler.compiler.supportsBinary) return 'Compiler does not support compiling to binaries';
         return undefined;
     }
@@ -119,6 +119,10 @@ export class CMakeBuildSystem implements BuildSystemDriver {
 
     getArtifactFilename(ctx: BuildContext): string {
         return ctx.compiler.getExecutableFilename(ctx.buildPath, ctx.compiler.outputFilebase, ctx.key);
+    }
+
+    async finaliseArtifact(): Promise<void> {
+        // CMake builds to the path we asked for, so there is nothing to reconcile.
     }
 
     async postProcessArtifact(

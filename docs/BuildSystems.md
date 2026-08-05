@@ -1,14 +1,13 @@
 # Build systems
 
 Compiler Explorer's IDE ("tree") mode can hand a whole project to a build system rather than invoking a compiler on a
-single source file. The only supported build system is CMake, and it is wired in as a special case at nearly every
-layer: a boolean on the tree state, and a hardcoded language list in the frontend.
+single source file. CMake and Cargo are supported, through a driver per build system.
 
 This document describes how that works, and the incremental plan for turning it into a pluggable mechanism so that
-Cargo (Rust), Maven/Gradle (Java, Kotlin) and others can be added without another round of special-casing. Phases 0 and
-1 below have landed; the rest has not.
+Cargo (Rust), Maven/Gradle (Java, Kotlin) and others can be added without another round of special-casing. Phases 0-3
+below have landed; phase 4 has not.
 
-## How CMake works
+## How it works
 
 ### Backend
 
@@ -55,21 +54,22 @@ Surrounding plumbing:
 
 ### Frontend
 
-- `MultifileService` holds `isCMakeProject: boolean`; `isCompatibleWithCMake()` hardcodes the language list
-  (c++, c, fortran, cuda, assembly); the main source file is `CMakeLists.txt` when the flag is set.
-- The tree pane (`static/panes/tree.ts`) exposes an on/off toggle plus `cmakeArgs` and `customOutputFilename` inputs,
-  all part of `TreeState`.
-- The compiler and executor panes each duplicate a parallel request path — `sendCMakeCompile()`,
-  `pendingCMakeRequestSentAt`, `nextCMakeRequest`, `onCMakeResponse()` — chosen by `isACMakeProject()`.
-- `CompilerService.submitCMake()` posts to the `/cmake` URL.
-- `cmake` is a pseudo-language in `lib/languages.ts`, force-exposed to the frontend even when no compiler claims it
-  (`lib/handlers/api.ts`, `lib/app/config.ts`) so tree mode can always resolve it.
-- Shortlinks persist the flag through `ClientStateTree` (`lib/clientstate.ts`); `test/state/*.json` are golden fixtures
-  of that format.
+- `MultifileService` holds `buildSystem: BuildSystemId | 'none'`, migrated from the older `isCMakeProject` boolean.
+  The main source file is whichever manifest the chosen build system declares.
+- The tree pane (`static/panes/tree.ts`) has a build system dropdown, filled from `getBuildSystemsForLanguage()`, plus
+  the `cmakeArgs` and `customOutputFilename` inputs — all part of `TreeState`.
+- The compiler and executor panes each duplicate a parallel request path — `sendBuildCompile()`,
+  `pendingBuildRequestSentAt`, `nextBuildRequest`, `onBuildResponse()` — taken when the tree has a build system.
+- `CompilerService.submitBuild()` posts to `/build/<buildSystem>`.
+- Each manifest language (`cmake`, `cargo`) is a pseudo-language in `lib/languages.ts`, force-exposed to the frontend
+  even when no compiler claims it (`lib/handlers/api.ts`, `lib/app/config.ts`) so tree mode can always resolve it.
+- Shortlinks persist the choice through `ClientStateTree` (`lib/clientstate.ts`), still writing `isCMakeProject`
+  alongside it; `test/state/*.json` are golden fixtures of that format.
 
-## Why this doesn't generalise
+## Why CMake didn't generalise
 
-The plumbing is the easy part. The hard part is four assumptions baked into `cmake()`:
+The plumbing was the easy part. The hard part was four assumptions baked into the old `cmake()`, which is what the
+driver interface exists to separate:
 
 1. **The compiler is selected via C-style environment variables.** Cargo wants `RUSTC`/`CARGO`; Maven wants a JDK on
    `JAVA_HOME`.
@@ -168,16 +168,34 @@ between the configure and build steps, and the `-GNinja` and toolchain arguments
 - Replace the `wasCmake` heuristic (sniffing `buildsteps` for a step named `cmake`) with a `buildSystem` field echoed in
   the compilation result.
 
-### Phase 3 — Cargo
+### Phase 3 — Cargo (done)
 
-Add a `cargo` pseudo-language (manifest `Cargo.toml`, TOML highlighting — a Monaco mode has to be written), force-exposed
-like `cmake`. `CargoBuildSystem` is compatible with `rust`, runs `cargo build --message-format=json --offline`,
-discovers the artifact from the `compiler-artifact` JSON records, and produces assembly via
-`cargo rustc -- --emit asm` through the existing Rust asm parser. Compiler injection is `RUSTC`/`CARGO_HOME` rather than
-`CC`/`CXX`. Needs a `cargo=` property.
+`CargoBuildSystem` (`lib/build-systems/cargo.ts`) builds `Cargo.toml` projects for the `rust` language, alongside a
+`cargo` pseudo-language for the manifest and a TOML Monaco mode (`static/modes/toml-mode.ts` — Monaco ships `ini`, but
+TOML's array-of-tables headers, arrays and inline tables all come out wrong under it, and a Cargo.toml is full of them).
 
-**Open question to settle before starting:** build nodes have no network access during compilation. v1 is either "no
-external crates" or a pre-seeded vendored registry, and the latter is infrastructure work.
+Points worth knowing:
+
+- **cargo comes from the selected compiler's own toolchain**, not a `cargo=` property: it is the sibling of that
+  compiler's `rustc`. A 1.80 cargo driving a 1.91 rustc disagree about lockfile and edition features. Rust compilers
+  that ship no cargo — gccrs, mrustc, the BPF gcc — are refused by `getUnsupportedReason`, which is why that hook is
+  async: it has to stat for the binary.
+- **The compiler is injected as `RUSTC`**, with user options going through `RUSTFLAGS`, and `CARGO_HOME` pointed inside
+  the sandbox so nothing cargo writes outlives the compilation.
+- **Output goes to `--message-format=json-render-diagnostics`**: cargo then renders diagnostics to stderr, which is
+  what the user reads, and leaves stdout as artifact records for us. The driver parses those records, then blanks that
+  stdout so the JSON never reaches the output pane.
+- **cargo names its output after the manifest**, so `finaliseArtifact` copies what it built to the path the rest of the
+  compilation was told to expect. `customOutputFilename` picks between artifacts when a project builds several.
+- **The paths cargo reports are the ones it saw**: the sandbox bind-mounts the project as `/app`, and without a sandbox
+  it is the real temp directory. `utils.maskRootdir` reduces both to a path relative to the project root, which is then
+  rebased onto the real one.
+
+**Dependencies are not supported.** Build nodes have no network, so the build runs `--offline` and an external crate
+fails immediately with cargo's own message rather than hanging. That is enough for what
+[#8988](https://github.com/compiler-explorer/compiler-explorer/issues/8988) asked for — several modules or crates in
+one tree — but not for [#3763](https://github.com/compiler-explorer/compiler-explorer/issues/3763). Vendoring a
+registry is infrastructure work and deserves its own phase.
 
 ### Phase 4 — Maven (then Gradle)
 

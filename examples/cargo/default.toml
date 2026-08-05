@@ -1,0 +1,10 @@
+[package]
+name = "output"
+version = "0.1.0"
+edition = "2021"
+
+# Compiler Explorer's build nodes have no network access, so external
+# dependencies cannot be fetched. Split your code across modules instead.
+[[bin]]
+name = "output"
+path = "example.rs"

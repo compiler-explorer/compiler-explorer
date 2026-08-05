@@ -27,8 +27,9 @@ import path from 'node:path';
 import {describe, expect, it} from 'vitest';
 
 import {BaseCompiler} from '../lib/base-compiler.js';
+import {CargoBuildSystem} from '../lib/build-systems/cargo.js';
 import type {BuildContext} from '../lib/build-systems/index.js';
-import {cmakeBuildSystem, getBuildSystem, getBuildSystemArgs} from '../lib/build-systems/index.js';
+import {cargoBuildSystem, cmakeBuildSystem, getBuildSystem, getBuildSystemArgs} from '../lib/build-systems/index.js';
 import {CompilationEnvironment} from '../lib/compilation-env.js';
 import {ParsedRequest} from '../lib/handlers/compile.js';
 import {getBuildSystemsForLanguage, isBuildSystemId} from '../shared/build-systems.js';
@@ -95,15 +96,21 @@ describe('Build system registry', () => {
         expect(getBuildSystem('cmake')).toBe(cmakeBuildSystem);
     });
 
+    it('resolves cargo', () => {
+        expect(isBuildSystemId('cargo')).toBe(true);
+        expect(getBuildSystem('cargo')).toBe(cargoBuildSystem);
+    });
+
     it('does not resolve unknown build systems', () => {
-        expect(isBuildSystemId('cargo')).toBe(false);
-        expect(getBuildSystem('cargo')).toBeUndefined();
+        expect(isBuildSystemId('maven')).toBe(false);
+        expect(getBuildSystem('maven')).toBeUndefined();
         expect(getBuildSystem('toString')).toBeUndefined();
     });
 
-    it('offers cmake only for the languages it can build', () => {
+    it('offers each build system only for the languages it can build', () => {
         expect(getBuildSystemsForLanguage('c++').map(bs => bs.id)).toEqual(['cmake']);
-        expect(getBuildSystemsForLanguage('rust')).toEqual([]);
+        expect(getBuildSystemsForLanguage('rust').map(bs => bs.id)).toEqual(['cargo']);
+        expect(getBuildSystemsForLanguage('haskell')).toEqual([]);
     });
 });
 
@@ -128,10 +135,10 @@ describe('CMake build system', () => {
         expect(cmakeBuildSystem.getBuildPath('/tmp/project')).toEqual(path.join('/tmp/project', 'build'));
     });
 
-    it('refuses compilers that cannot produce binaries', () => {
+    it('refuses compilers that cannot produce binaries', async () => {
         const env = makeEnv();
-        expect(cmakeBuildSystem.getUnsupportedReason(makeCompiler(env))).toBeUndefined();
-        expect(cmakeBuildSystem.getUnsupportedReason(makeCompiler(env, {supportsBinary: false}))).toEqual(
+        expect(await cmakeBuildSystem.getUnsupportedReason(makeCompiler(env))).toBeUndefined();
+        expect(await cmakeBuildSystem.getUnsupportedReason(makeCompiler(env, {supportsBinary: false}))).toEqual(
             'Compiler does not support compiling to binaries',
         );
     });
@@ -230,5 +237,175 @@ describe('CMake build system', () => {
 
         expect(plan.steps[0].args[0]).toMatch(/^-DCMAKE_CXX_COMPILER_EXTERNAL_TOOLCHAIN=/);
         expect(plan.steps[0].args.slice(1)).toEqual(['-DSOMETHING=1', '-DUSER=2', '..']);
+    });
+});
+
+describe('Cargo build system', () => {
+    const rustLanguages = {rust: {id: 'rust'}} as const;
+    // The real cargo of a real CE toolchain, so the sibling-of-rustc lookup is checked against something that exists.
+    const RUSTC_EXE = '/opt/compiler-explorer/rust-1.91.0/bin/rustc';
+
+    function makeRustEnv(): CompilationEnvironment {
+        return makeCompilationEnvironment({languages: rustLanguages, props: {}});
+    }
+
+    function makeRustCompiler(env: CompilationEnvironment, info: Partial<CompilerInfo> = {}): BaseCompiler {
+        return new BaseCompiler(
+            makeFakeCompilerInfo({exe: RUSTC_EXE, lang: 'rust', ldPath: [], libPath: [], ...info}),
+            env,
+        );
+    }
+
+    function makeCargoContext(compiler: BaseCompiler, env: CompilationEnvironment, req: ParsedRequest): BuildContext {
+        const dirPath = '/tmp/ce-fake-cargo';
+        return {
+            compiler,
+            env,
+            dirPath,
+            buildPath: cargoBuildSystem.getBuildPath(dirPath),
+            key: compiler.getBuildProjectCacheKey(cargoBuildSystem, req, []),
+            parsedRequest: req,
+            files: [],
+            libsAndOptions: {libraries: [], options: []},
+            toolchainPath: undefined,
+            buildSystemArgs: getBuildSystemArgs(req.backendOptions),
+        };
+    }
+
+    it('builds in the project root, where cargo makes its own target directory', () => {
+        expect(cargoBuildSystem.descriptor.manifestFilename).toEqual('Cargo.toml');
+        expect(cargoBuildSystem.getBuildPath('/tmp/project')).toEqual('/tmp/project');
+    });
+
+    it('takes cargo from the selected compiler own toolchain, not a global one', () => {
+        const compiler = makeRustCompiler(makeRustEnv());
+        expect(CargoBuildSystem.getCargoPath(compiler)).toEqual('/opt/compiler-explorer/rust-1.91.0/bin/cargo');
+    });
+
+    it('refuses Rust compilers that ship no cargo', async () => {
+        const env = makeRustEnv();
+        // gccrs and mrustc are Rust compilers with no cargo beside them.
+        const gccrs = makeRustCompiler(env, {exe: '/opt/compiler-explorer/gcc-16.1.0/bin/gccrs'});
+        expect(await cargoBuildSystem.getUnsupportedReason(gccrs)).toEqual('This compiler does not come with cargo');
+        expect(await cargoBuildSystem.getUnsupportedReason(makeRustCompiler(env, {exe: ''}))).toEqual(
+            'Compiler has no executable to find a cargo alongside',
+        );
+    });
+
+    it('plans one offline build step that reports artifacts as JSON', async () => {
+        const env = makeRustEnv();
+        const compiler = makeRustCompiler(env);
+        const plan = await cargoBuildSystem.getBuildPlan(makeCargoContext(compiler, env, makeParsedRequest()));
+
+        expect(plan.steps.map(step => step.name)).toEqual(['cargo']);
+        expect(plan.steps[0].exe).toEqual('/opt/compiler-explorer/rust-1.91.0/bin/cargo');
+        expect(plan.steps[0].args).toEqual(['build', '--offline', '--message-format=json-render-diagnostics']);
+    });
+
+    it('drives the selected rustc and keeps cargo caches inside the sandbox', async () => {
+        const env = makeRustEnv();
+        const compiler = makeRustCompiler(env);
+        const ctx = makeCargoContext(compiler, env, makeParsedRequest());
+        const plan = await cargoBuildSystem.getBuildPlan(ctx);
+
+        expect(plan.steps[0].execParams.env.RUSTC).toEqual(RUSTC_EXE);
+        expect(plan.steps[0].execParams.env.CARGO_HOME).toEqual(path.join(ctx.dirPath, '.cargo-home'));
+        expect(plan.steps[0].execParams.customCwd).toEqual(ctx.dirPath);
+    });
+
+    it('passes the user arguments to cargo, and compiler options through RUSTFLAGS', async () => {
+        const env = makeRustEnv();
+        const compiler = makeRustCompiler(env);
+        const req = makeParsedRequest({buildSystemArgs: '--release'});
+        req.options = ['-C', 'opt-level=3'];
+        const plan = await cargoBuildSystem.getBuildPlan(makeCargoContext(compiler, env, req));
+
+        expect(plan.steps[0].args).toContain('--release');
+        expect(plan.steps[0].execParams.env.RUSTFLAGS).toEqual('-C opt-level=3');
+    });
+
+    it('maps the sandbox paths cargo reports back to real ones', () => {
+        // CE bind-mounts the project at /app, so this is what cargo actually reports during a real compilation.
+        expect(CargoBuildSystem.toHostPath('/app/target/debug/output', '/tmp/ce-build')).toEqual(
+            '/tmp/ce-build/target/debug/output',
+        );
+        // Run without a sandbox, cargo reports the real temp directory instead, which rebases to the same place.
+        expect(
+            CargoBuildSystem.toHostPath('/tmp/compiler-explorer-compilerXYZ/target/debug/output', '/tmp/ce-build'),
+        ).toEqual('/tmp/ce-build/target/debug/output');
+        // A path under neither spelling of the root is not ours to rebase.
+        expect(CargoBuildSystem.toHostPath('/tmp/elsewhere/target/debug/output', '/tmp/ce-build')).toEqual(
+            '/tmp/elsewhere/target/debug/output',
+        );
+        // A directory that merely starts with the same letters is not the mount point.
+        expect(CargoBuildSystem.toHostPath('/applications/thing', '/tmp/ce-build')).toEqual('/applications/thing');
+    });
+
+    it('copies what cargo built to the path the compilation was told to expect', async () => {
+        const env = makeRustEnv();
+        const compiler = makeRustCompiler(env);
+        const ctx = makeCargoContext(compiler, env, makeParsedRequest());
+        const artifact = cargoBuildSystem.getArtifactFilename(ctx);
+        expect(artifact).toEqual(path.join('/tmp/ce-fake-cargo', 'output'));
+
+        const copied: [string, string][] = [];
+        const result = {
+            buildsteps: [
+                {
+                    step: 'cargo',
+                    stdout: [
+                        {text: '{"reason":"compiler-artifact","executable":"/app/target/debug/mycrate"}'},
+                        {text: '{"reason":"build-finished","success":true}'},
+                    ],
+                },
+            ],
+        } as any;
+
+        await cargoBuildSystem.finaliseArtifact(ctx, result, artifact, async (from: string, to: string) => {
+            copied.push([from, to]);
+        });
+
+        expect(copied).toEqual([[path.join(ctx.dirPath, 'target/debug/mycrate'), artifact]]);
+        // The JSON records are for us, not the user, who reads cargo's stderr.
+        expect(result.buildsteps[0].stdout).toEqual([]);
+    });
+
+    it('picks the artifact the user asked for when a project builds several', async () => {
+        const env = makeRustEnv();
+        const compiler = makeRustCompiler(env);
+        const ctx = makeCargoContext(compiler, env, makeParsedRequest({customOutputFilename: 'helper'}));
+        const artifact = cargoBuildSystem.getArtifactFilename(ctx);
+
+        const copied: [string, string][] = [];
+        const result = {
+            buildsteps: [
+                {
+                    step: 'cargo',
+                    stdout: [
+                        {text: '{"reason":"compiler-artifact","executable":"/app/target/debug/main"}'},
+                        {text: '{"reason":"compiler-artifact","executable":"/app/target/debug/helper"}'},
+                    ],
+                },
+            ],
+        } as any;
+
+        await cargoBuildSystem.finaliseArtifact(ctx, result, artifact, async (from: string, to: string) => {
+            copied.push([from, to]);
+        });
+
+        expect(copied).toEqual([[path.join(ctx.dirPath, 'target/debug/helper'), artifact]]);
+    });
+
+    it('complains clearly when cargo built no executable', async () => {
+        const env = makeRustEnv();
+        const compiler = makeRustCompiler(env);
+        const ctx = makeCargoContext(compiler, env, makeParsedRequest());
+        const result = {
+            buildsteps: [{step: 'cargo', stdout: [{text: '{"reason":"build-finished","success":true}'}]}],
+        } as any;
+
+        await expect(
+            cargoBuildSystem.finaliseArtifact(ctx, result, cargoBuildSystem.getArtifactFilename(ctx)),
+        ).rejects.toThrow(/no executable/);
     });
 });
