@@ -3024,15 +3024,17 @@ export class BaseCompiler {
                     );
 
                     if (stepResult.code !== 0) {
+                        const explanation = step.explainFailure?.(stepResult.stderr.map(line => line.text).join('\n'));
                         result.result = {
                             dirPath,
                             timedOut: false,
                             stdout: [],
-                            stderr: [],
+                            stderr: explanation ? [{text: explanation}] : [],
                             okToCache: false,
                             code: stepResult.code,
                             asm: step.failureMessage,
                         };
+                        if (explanation) stepResult.stderr.push({text: explanation});
                         if (step.reportsCompilationOptions) {
                             result.result.compilationOptions = buildPlan.getCompilationOptions();
                         }

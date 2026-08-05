@@ -266,7 +266,7 @@ describe('Cargo build system', () => {
             key: compiler.getBuildProjectCacheKey(cargoBuildSystem, req, []),
             parsedRequest: req,
             files: [],
-            libsAndOptions: {libraries: [], options: []},
+            libsAndOptions: {libraries: req.libraries, options: req.options},
             toolchainPath: undefined,
             buildSystemArgs: getBuildSystemArgs(req.backendOptions),
         };
@@ -302,6 +302,31 @@ describe('Cargo build system', () => {
         expect(plan.steps[0].args).toEqual(['build', '--offline', '--message-format=json-render-diagnostics']);
     });
 
+    it('hands prebuilt libraries to rustc, since cargo cannot resolve them offline', async () => {
+        const env = makeRustEnv();
+        const compiler = makeRustCompiler(env);
+        const ctx = makeCargoContext(compiler, env, makeParsedRequest());
+        // Stand in for a library the user picked, already unpacked into the project by setupBuildEnvironment.
+        compiler.getIncludeArguments = () => ['--extern', 'rand=rand/build/debug/librand.rlib'];
+
+        const plan = await cargoBuildSystem.getBuildPlan(ctx);
+
+        expect(plan.steps[0].execParams.env.CARGO_ENCODED_RUSTFLAGS).toEqual(
+            '--extern\x1frand=rand/build/debug/librand.rlib',
+        );
+    });
+
+    it('explains that crates cannot be declared in Cargo.toml when resolution fails', () => {
+        const offline = [
+            'error: no matching package named `rand` found',
+            'location searched: crates.io index',
+            "As a reminder, you're using offline mode (--offline)",
+        ].join('\n');
+        expect(CargoBuildSystem.explainFailure(offline)).toMatch(/Libraries pane/);
+        // An ordinary compile error is cargo's to explain, not ours.
+        expect(CargoBuildSystem.explainFailure('error[E0425]: cannot find value `x` in this scope')).toBeUndefined();
+    });
+
     it('drives the selected rustc and keeps cargo caches inside the sandbox', async () => {
         const env = makeRustEnv();
         const compiler = makeRustCompiler(env);
@@ -321,7 +346,7 @@ describe('Cargo build system', () => {
         const plan = await cargoBuildSystem.getBuildPlan(makeCargoContext(compiler, env, req));
 
         expect(plan.steps[0].args).toContain('--release');
-        expect(plan.steps[0].execParams.env.RUSTFLAGS).toEqual('-C opt-level=3');
+        expect(plan.steps[0].execParams.env.CARGO_ENCODED_RUSTFLAGS).toEqual('-C\x1fopt-level=3');
     });
 
     it('maps the sandbox paths cargo reports back to real ones', () => {

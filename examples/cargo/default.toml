@@ -3,8 +3,9 @@ name = "output"
 version = "0.1.0"
 edition = "2021"
 
-# Compiler Explorer's build nodes have no network access, so external
-# dependencies cannot be fetched. Split your code across modules instead.
+# Crates cannot be downloaded here, so [dependencies] will not resolve.
+# Pick the crate you want in the Libraries pane instead and leave it out of
+# this file: it is handed to rustc directly, so `use rand::Rng;` just works.
 [[bin]]
 name = "output"
 path = "example.rs"

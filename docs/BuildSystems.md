@@ -191,11 +191,17 @@ Points worth knowing:
   it is the real temp directory. `utils.maskRootdir` reduces both to a path relative to the project root, which is then
   rebased onto the real one.
 
-**Dependencies are not supported.** Build nodes have no network, so the build runs `--offline` and an external crate
-fails immediately with cargo's own message rather than hanging. That is enough for what
-[#8988](https://github.com/compiler-explorer/compiler-explorer/issues/8988) asked for — several modules or crates in
-one tree — but not for [#3763](https://github.com/compiler-explorer/compiler-explorer/issues/3763). Vendoring a
-registry is infrastructure work and deserves its own phase.
+**Libraries come from the Libraries pane, not `[dependencies]`.** Compiler Explorer's Rust crates are prebuilt
+`.rlib`s fetched from Conan, and `setupBuildEnvironment` unpacks them into the project before the sandboxed build.
+cargo cannot resolve them itself — it wants sources from a registry, and there is no network on a build node — so the
+driver passes them to rustc directly as `--extern`, through `CARGO_ENCODED_RUSTFLAGS`. `use rand::Rng;` then works
+with nothing declared in Cargo.toml.
+
+A `[dependencies]` entry therefore always fails, and cargo's own message for it ("no matching package named ...,
+location searched: crates.io index") does not hint at what to do instead, so `explainFailure` on the build step adds
+that. Making `[dependencies]` genuinely work needs vendored crate *sources* on the build node, which is infrastructure
+work and deserves its own phase — see
+[#3763](https://github.com/compiler-explorer/compiler-explorer/issues/3763).
 
 ### Phase 4 — Maven (then Gradle)
 

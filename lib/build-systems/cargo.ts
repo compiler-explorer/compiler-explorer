@@ -113,11 +113,16 @@ export class CargoBuildSystem implements BuildSystemDriver {
         // Keep cargo's registry and caches inside the sandbox: build nodes have no network, and nothing it writes
         // should outlive the compilation.
         execParams.env.CARGO_HOME = path.join(ctx.dirPath, '.cargo-home');
-        const rustFlags = ctx.parsedRequest.options.join(' ').trim();
-        if (rustFlags) execParams.env.RUSTFLAGS = rustFlags;
+
+        // Libraries the user picked are already unpacked into the project as prebuilt rlibs, so hand them to rustc
+        // directly. cargo could not resolve them itself: it wants sources from a registry, and there is no network.
+        const libIncludes = compiler.getIncludeArguments(ctx.libsAndOptions.libraries, ctx.dirPath);
+        const rustcArgs = [...libIncludes, ...ctx.libsAndOptions.options];
+        // The encoded form is separator-delimited, so it survives paths and flags containing spaces.
+        if (rustcArgs.length > 0) execParams.env.CARGO_ENCODED_RUSTFLAGS = rustcArgs.join('\x1f');
 
         return {
-            getCompilationOptions: () => ctx.parsedRequest.options,
+            getCompilationOptions: () => ctx.libsAndOptions.options,
             steps: [
                 {
                     name: 'cargo',
@@ -132,10 +137,27 @@ export class CargoBuildSystem implements BuildSystemDriver {
                     ],
                     execParams: execParams,
                     failureMessage: '<Cargo build failed>',
+                    explainFailure: CargoBuildSystem.explainFailure,
                     reportsCompilationOptions: true,
                 },
             ],
         };
+    }
+
+    /**
+     * Compiler Explorer cannot let cargo fetch crates, so a [dependencies] entry always fails to resolve. The
+     * libraries it does have are prebuilt and selected in the Libraries pane, which is not something cargo's own
+     * message could know to suggest.
+     */
+    static explainFailure(stderr: string): string | undefined {
+        if (/no matching package|failed to (?:select a version|get|resolve)|offline mode/.test(stderr)) {
+            return (
+                'Crates cannot be downloaded here, so [dependencies] cannot be resolved. ' +
+                'Pick the library in the Libraries pane instead and leave it out of Cargo.toml — ' +
+                'it is passed to rustc directly, so `use <crate>::...` works without declaring it.'
+            );
+        }
+        return undefined;
     }
 
     getArtifactFilename(ctx: BuildContext): string {
