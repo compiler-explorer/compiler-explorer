@@ -27,6 +27,7 @@ import {splitArguments} from '../../shared/common-utils.js';
 import type {BuildSystemDriver} from './build-system.interfaces.js';
 import {CargoBuildSystem} from './cargo.js';
 import {CMakeBuildSystem} from './cmake.js';
+import {MavenBuildSystem} from './maven.js';
 
 export type {
     BuildContext,
@@ -37,10 +38,12 @@ export type {
 
 export const cmakeBuildSystem = new CMakeBuildSystem();
 export const cargoBuildSystem = new CargoBuildSystem();
+export const mavenBuildSystem = new MavenBuildSystem();
 
 const buildSystems: Record<BuildSystemId, BuildSystemDriver> = {
     cmake: cmakeBuildSystem,
     cargo: cargoBuildSystem,
+    maven: mavenBuildSystem,
 };
 
 /** Look up a build system driver by id, or undefined if there is no such build system. */

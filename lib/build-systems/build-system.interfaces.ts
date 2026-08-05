@@ -30,6 +30,7 @@ import type {
     FiledataPair,
     LibsAndOptions,
 } from '../../types/compilation/compilation.interfaces.js';
+import type {ExecutableExecutionOptions} from '../../types/execution/execution.interfaces.js';
 import type {BaseCompiler} from '../base-compiler.js';
 import type {CompilationEnvironment} from '../compilation-env.js';
 import type {ParsedRequest} from '../handlers/compile.js';
@@ -122,6 +123,16 @@ export interface BuildSystemDriver {
         ctx: BuildContext,
         result: CompilationResult,
         artifactFilename: string,
+    ): Promise<string | undefined>;
+
+    /**
+     * How to run what was built. Most build systems produce something directly executable, but a jar needs a JVM
+     * started on it. Returning undefined means run the artifact itself.
+     */
+    prepareExecution?(
+        ctx: BuildContext,
+        artifactFilename: string,
+        executeOptions: ExecutableExecutionOptions,
     ): Promise<string | undefined>;
 
     /** Turn the built artifact into something to show the user, usually by disassembling it. */

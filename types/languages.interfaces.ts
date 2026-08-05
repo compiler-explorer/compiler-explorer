@@ -79,6 +79,7 @@ export type LanguageKey =
     | 'llvm'
     | 'llvm_mir'
     | 'lua'
+    | 'maven'
     | 'mlir'
     | 'modula2'
     | 'mojo'

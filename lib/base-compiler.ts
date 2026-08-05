@@ -3121,7 +3121,11 @@ export class BaseCompiler {
                     });
 
                     if (matchesCurrentHost(execTriple)) {
-                        fullResult.execResult = await this.runExecutable(outputFilename, executeOptions, dirPath);
+                        // A build system may produce something that is not directly executable, such as a jar.
+                        const executable =
+                            (await buildSystem.prepareExecution?.(buildContext, outputFilename, executeOptions)) ??
+                            outputFilename;
+                        fullResult.execResult = await this.runExecutable(executable, executeOptions, dirPath);
                         fullResult.didExecute = true;
                     } else {
                         if (await RemoteExecutionQuery.isPossible(execTriple)) {

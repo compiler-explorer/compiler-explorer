@@ -1,11 +1,11 @@
 # Build systems
 
 Compiler Explorer's IDE ("tree") mode can hand a whole project to a build system rather than invoking a compiler on a
-single source file. CMake and Cargo are supported, through a driver per build system.
+single source file. CMake, Cargo and Maven are supported, through a driver per build system.
 
 This document describes how that works, and the incremental plan for turning it into a pluggable mechanism so that
-Cargo (Rust), Maven/Gradle (Java, Kotlin) and others can be added without another round of special-casing. Phases 0-3
-below have landed; phase 4 has not.
+Cargo (Rust), Maven/Gradle (Java, Kotlin) and others can be added without another round of special-casing. All the
+phases below have landed.
 
 ## How it works
 
@@ -208,49 +208,28 @@ that. Making `[dependencies]` genuinely work needs vendored crate *sources* on t
 work and deserves its own phase — see
 [#3763](https://github.com/compiler-explorer/compiler-explorer/issues/3763).
 
-### Phase 4 — Maven (then Gradle)
+### Phase 4 — Maven (done)
 
-`pom.xml` (XML highlighting), compatible with `java` and `kotlin`. Runs `mvn -o package`, takes the artifact from
-`target/*.jar`, post-processes with a jar-aware variant of the existing Java bytecode dump, and executes with
-`java -jar`. Same offline-dependency problem as Cargo, but more acute: it needs a pre-seeded `~/.m2` or a local mirror.
-Gradle is a cheap follow-on once this shape exists.
+`MavenBuildSystem` (`lib/build-systems/maven.ts`) builds `pom.xml` projects for Java, with a `maven` pseudo-language
+for the manifest highlighted as XML.
 
-## Related issues
+- **JAVA_HOME comes from the selected compiler**, whose exe is `<jdk>/bin/javac`, so the build runs under the JDK the
+  user picked. Java compilers that are not part of a JDK are refused.
+- **`maven=` names the mvn to run** — unlike cargo, maven is not part of a toolchain, so it is a property like `cmake`.
+- **Maven cannot build anything without its plugins**, and build nodes have no network, so infra's `tools.yaml` primes
+  a repository inside the maven install by running each plugin against a throwaway project. The build points
+  `maven.repo.local` at it; it is only read, so every compilation shares the one copy. `package` is the default goal,
+  left alone if the user names their own.
+- **The bytecode is javap over `target/classes`**, reusing the Java compiler's own handling — which is why the driver
+  sets `filters.binary`, since that is how Java signals "run javap" rather than anything about native binaries.
+- **Execution needs a JVM started on the classes**, which is what the `prepareExecution` hook is for, along with the
+  same JVM flags the Java compiler uses to fit inside the sandbox's thread and memory limits. The main class is found
+  by looking for the `main` descriptor in each class file's constant pool.
+- **`JavaCompiler.readdir` is now recursive**, because anything with a package puts its classes in a matching
+  directory tree, which a build system does by default. Clojure had already overridden it for the same reason.
 
-Requests that motivate making this pluggable:
-
-- [#3388](https://github.com/compiler-explorer/compiler-explorer/issues/3388) — Maven (or Gradle) dependencies for
-  Java. The clearest ask for phase 4.
-- [#3919](https://github.com/compiler-explorer/compiler-explorer/issues/3919) — "Can Compiler Explorer support
-  language-specific package managers?", asking for Fortran's `fpm`.
-- [#7380](https://github.com/compiler-explorer/compiler-explorer/issues/7380) — an `fpm` project template for Fortran,
-  explicitly modelled on the existing CMake template.
-- [#8988](https://github.com/compiler-explorer/compiler-explorer/issues/8988) — a Rust IDE-mode example; the reporter
-  could not get multiple crates working, and fell back to CMake's experimental Rust support.
-- [#3763](https://github.com/compiler-explorer/compiler-explorer/issues/3763) — Rust crate support, currently served by
-  pre-built Conan binaries rather than Cargo.
-- [#5534](https://github.com/compiler-explorer/compiler-explorer/issues/5534) and
-  [#2598](https://github.com/compiler-explorer/compiler-explorer/issues/2598) — crate features and `build-std`, both
-  things a real Cargo driver would get for free.
-
-Existing CMake bugs that the refactor touches, and should at least not make harder to fix:
-
-- [#5051](https://github.com/compiler-explorer/compiler-explorer/issues/5051) — toolchain switching is ignored under
-  CMake because `LD`/`AS`/`AR` come from the compiler's configured toolchain. There is already a `TODO(#5051)` in
-  `getCmakeBaseEnv()`; the environment computation moves into the driver, which is where the fix belongs.
-- [#2897](https://github.com/compiler-explorer/compiler-explorer/issues/2897) — forgetting `-DCMAKE_BUILD_TYPE` loses
-  `-g` and the library filter then hides everything. Phase 2 moves the default arguments into the per-build-system
-  descriptor, which is where a real fix would live.
-- [#7106](https://github.com/compiler-explorer/compiler-explorer/issues/7106) — CFG is empty in tree mode.
-- [#6380](https://github.com/compiler-explorer/compiler-explorer/issues/6380) — shortlink loading breaks when a plain
-  compiler and a CMake compiler coexist; relevant to the phase 2 state migration.
-- [#6140](https://github.com/compiler-explorer/compiler-explorer/issues/6140) (time-trace),
-  [#6550](https://github.com/compiler-explorer/compiler-explorer/issues/6550) (missing ICX asm comments),
-  [#4909](https://github.com/compiler-explorer/compiler-explorer/issues/4909) (demangling and source annotation with
-  modules) — all cases where the CMake path diverges from the single-file path.
-- [#6742](https://github.com/compiler-explorer/compiler-explorer/issues/6742) and
-  [#7969](https://github.com/compiler-explorer/compiler-explorer/issues/7969) — MSVC-specific CMake failures, which is
-  why `win32-vc`'s `getExtraCMakeArgs()` override must keep working unchanged through phase 1.
+A `<dependencies>` entry cannot resolve, and `install` fails because it writes to the shared read-only repository.
+Both get an explanation rather than a bare Maven error.
 
 ## Things not to break
 

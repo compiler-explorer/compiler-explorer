@@ -309,6 +309,17 @@ const definitions: Record<LanguageKey, LanguageDefinition> = {
         monacoDisassembly: null,
         digitSeparator: "'",
     },
+    maven: {
+        name: 'Maven',
+        monaco: 'xml',
+        extensions: ['.xml'],
+        alias: [],
+        logoFilename: 'java.svg',
+        logoFilenameDark: null,
+        formatter: null,
+        previewFilter: null,
+        monacoDisassembly: null,
+    },
     mlir: {
         name: 'MLIR',
         monaco: 'mlir',

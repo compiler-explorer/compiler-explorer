@@ -29,7 +29,14 @@ import {describe, expect, it} from 'vitest';
 import {BaseCompiler} from '../lib/base-compiler.js';
 import {CargoBuildSystem} from '../lib/build-systems/cargo.js';
 import type {BuildContext} from '../lib/build-systems/index.js';
-import {cargoBuildSystem, cmakeBuildSystem, getBuildSystem, getBuildSystemArgs} from '../lib/build-systems/index.js';
+import {
+    cargoBuildSystem,
+    cmakeBuildSystem,
+    getBuildSystem,
+    getBuildSystemArgs,
+    mavenBuildSystem,
+} from '../lib/build-systems/index.js';
+import {MavenBuildSystem} from '../lib/build-systems/maven.js';
 import {CompilationEnvironment} from '../lib/compilation-env.js';
 import {ParsedRequest} from '../lib/handlers/compile.js';
 import {getBuildSystemsForLanguage, isBuildSystemId} from '../shared/build-systems.js';
@@ -101,15 +108,21 @@ describe('Build system registry', () => {
         expect(getBuildSystem('cargo')).toBe(cargoBuildSystem);
     });
 
+    it('resolves maven', () => {
+        expect(isBuildSystemId('maven')).toBe(true);
+        expect(getBuildSystem('maven')).toBe(mavenBuildSystem);
+    });
+
     it('does not resolve unknown build systems', () => {
-        expect(isBuildSystemId('maven')).toBe(false);
-        expect(getBuildSystem('maven')).toBeUndefined();
+        expect(isBuildSystemId('gradle')).toBe(false);
+        expect(getBuildSystem('gradle')).toBeUndefined();
         expect(getBuildSystem('toString')).toBeUndefined();
     });
 
     it('offers each build system only for the languages it can build', () => {
         expect(getBuildSystemsForLanguage('c++').map(bs => bs.id)).toEqual(['cmake']);
         expect(getBuildSystemsForLanguage('rust').map(bs => bs.id)).toEqual(['cargo']);
+        expect(getBuildSystemsForLanguage('java').map(bs => bs.id)).toEqual(['maven']);
         expect(getBuildSystemsForLanguage('haskell')).toEqual([]);
     });
 });
@@ -473,5 +486,95 @@ describe('Cargo build system', () => {
             '',
             'Usage: cargo build [OPTIONS]',
         ]);
+    });
+});
+
+describe('Maven build system', () => {
+    const javaLanguages = {java: {id: 'java'}} as const;
+    // A real CE JDK, so the JAVA_HOME derivation is checked against something that exists.
+    const JAVAC_EXE = '/opt/compiler-explorer/jdk-21.0.0/bin/javac';
+
+    function makeJavaEnv(): CompilationEnvironment {
+        return makeCompilationEnvironment({
+            languages: javaLanguages,
+            props: {maven: '/opt/compiler-explorer/maven/bin/mvn'},
+        });
+    }
+
+    function makeJavaCompiler(env: CompilationEnvironment, info: Partial<CompilerInfo> = {}): BaseCompiler {
+        return new BaseCompiler(
+            makeFakeCompilerInfo({exe: JAVAC_EXE, lang: 'java', ldPath: [], libPath: [], ...info}),
+            env,
+        );
+    }
+
+    function makeMavenContext(compiler: BaseCompiler, env: CompilationEnvironment, req: ParsedRequest): BuildContext {
+        const dirPath = '/tmp/ce-fake-maven';
+        return {
+            compiler,
+            env,
+            dirPath,
+            buildPath: mavenBuildSystem.getBuildPath(dirPath),
+            key: compiler.getBuildProjectCacheKey(mavenBuildSystem, req, []),
+            parsedRequest: req,
+            files: [],
+            libsAndOptions: {libraries: req.libraries, options: req.options},
+            toolchainPath: undefined,
+            buildSystemArgs: getBuildSystemArgs(req.backendOptions),
+        };
+    }
+
+    it('builds in the project root, where maven makes its own target directory', () => {
+        expect(mavenBuildSystem.descriptor.manifestFilename).toEqual('pom.xml');
+        expect(mavenBuildSystem.getBuildPath('/tmp/project')).toEqual('/tmp/project');
+    });
+
+    it('takes JAVA_HOME from the selected compiler, whose exe lives in its bin', () => {
+        const compiler = makeJavaCompiler(makeJavaEnv());
+        expect(MavenBuildSystem.getJavaHome(compiler)).toEqual('/opt/compiler-explorer/jdk-21.0.0');
+    });
+
+    it('refuses compilers that are not part of a JDK', async () => {
+        const env = makeJavaEnv();
+        expect(await mavenBuildSystem.getUnsupportedReason(makeJavaCompiler(env))).toBeUndefined();
+        const notAJdk = makeJavaCompiler(env, {exe: '/usr/bin/some-other-java-thing'});
+        expect(await mavenBuildSystem.getUnsupportedReason(notAJdk)).toMatch(/not part of a JDK/);
+    });
+
+    it('asks javap for the bytecode rather than disassembling a binary', () => {
+        const env = makeJavaEnv();
+        const compiler = makeJavaCompiler(env);
+        const req = makeParsedRequest();
+        mavenBuildSystem.applyRequestDefaults(compiler, req);
+        // Java reads binary as "run javap"; there is no native binary here at all.
+        expect(req.filters.binary).toBe(true);
+    });
+
+    it('builds offline against the repository primed when maven was installed', async () => {
+        const env = makeJavaEnv();
+        const compiler = makeJavaCompiler(env);
+        const plan = await mavenBuildSystem.getBuildPlan(makeMavenContext(compiler, env, makeParsedRequest()));
+
+        expect(plan.steps[0].exe).toEqual('/opt/compiler-explorer/maven/bin/mvn');
+        expect(plan.steps[0].args).toContain('-o');
+        expect(plan.steps[0].args).toContain('-Dmaven.repo.local=/opt/compiler-explorer/maven/repository');
+        expect(plan.steps[0].args).toContain('package');
+        expect(plan.steps[0].execParams.env.JAVA_HOME).toEqual('/opt/compiler-explorer/jdk-21.0.0');
+    });
+
+    it('leaves the goals alone when the user names their own', async () => {
+        const env = makeJavaEnv();
+        const compiler = makeJavaCompiler(env);
+        const req = makeParsedRequest({buildSystemArgs: 'javadoc:jar'});
+        const plan = await mavenBuildSystem.getBuildPlan(makeMavenContext(compiler, env, req));
+
+        expect(plan.steps[0].args).toContain('javadoc:jar');
+        expect(plan.steps[0].args).not.toContain('package');
+    });
+
+    it('explains that Maven Central is unreachable when resolution fails', () => {
+        const offline = 'Cannot access central (https://repo.maven.apache.org/maven2) in offline mode';
+        expect(MavenBuildSystem.explainFailure(offline)).toMatch(/cannot download from Maven Central/);
+        expect(MavenBuildSystem.explainFailure('BUILD FAILURE: compilation error')).toBeUndefined();
     });
 });

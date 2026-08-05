@@ -28,7 +28,7 @@ import type {LanguageKey} from '../types/languages.interfaces.js';
  * Identifies a build system. This value appears in the API route, in the compilation cache key (as `api`) and in the
  * stats, so existing ids must never change.
  */
-export type BuildSystemId = 'cmake' | 'cargo';
+export type BuildSystemId = 'cmake' | 'cargo' | 'maven';
 
 /** What a tree is built with, or `'none'` for a plain multi-file project compiled directly. */
 export type TreeBuildSystem = BuildSystemId | 'none';
@@ -71,6 +71,15 @@ export const BuildSystems: Record<BuildSystemId, BuildSystemDescriptor> = {
         compatibleLanguageIds: ['rust'],
         defaultArgs: '',
         argsPlaceholder: 'Cargo arguments...',
+    },
+    maven: {
+        id: 'maven',
+        name: 'Maven',
+        manifestFilename: 'pom.xml',
+        manifestLanguageId: 'maven',
+        compatibleLanguageIds: ['java'],
+        defaultArgs: '',
+        argsPlaceholder: 'Maven arguments...',
     },
 };
 
