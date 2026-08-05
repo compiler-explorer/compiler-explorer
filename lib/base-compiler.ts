@@ -85,7 +85,7 @@ import {moveArtifactsIntoResult} from './artifact-utils.js';
 import {assert, unwrap} from './assert.js';
 import {copyCopperSpicePlugins} from './binaries/copperspice-utils.js';
 import type {BuildContext, BuildSystemDriver} from './build-systems/index.js';
-import {cmakeBuildSystem} from './build-systems/index.js';
+import {cmakeBuildSystem, getBuildSystemArgs} from './build-systems/index.js';
 import type {BuildEnvDownloadInfo} from './buildenvsetup/buildenv.interfaces.js';
 import {BuildEnvSetupBase, getBuildEnvTypeByKey} from './buildenvsetup/index.js';
 import {BaseCache} from './cache/base.js';
@@ -2969,6 +2969,7 @@ export class BaseCompiler {
             files,
             libsAndOptions,
             toolchainPath,
+            buildSystemArgs: getBuildSystemArgs(parsedRequest.backendOptions),
         };
 
         const outputFilename = buildSystem.getArtifactFilename(buildContext);

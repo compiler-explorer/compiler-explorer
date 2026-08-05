@@ -22,14 +22,15 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import type {BuildSystemDriver, BuildSystemId} from './build-system.interfaces.js';
+import {type BuildSystemId, isBuildSystemId} from '../../shared/build-systems.js';
+import {splitArguments} from '../../shared/common-utils.js';
+import type {BuildSystemDriver} from './build-system.interfaces.js';
 import {CMakeBuildSystem} from './cmake.js';
 
 export type {
     BuildContext,
     BuildPlan,
     BuildSystemDriver,
-    BuildSystemId,
     BuildSystemStep,
 } from './build-system.interfaces.js';
 
@@ -39,11 +40,15 @@ const buildSystems: Record<BuildSystemId, BuildSystemDriver> = {
     cmake: cmakeBuildSystem,
 };
 
-export function isBuildSystemId(id: string): id is BuildSystemId {
-    return Object.hasOwn(buildSystems, id);
-}
-
 /** Look up a build system driver by id, or undefined if there is no such build system. */
 export function getBuildSystem(id: string): BuildSystemDriver | undefined {
     return isBuildSystemId(id) ? buildSystems[id] : undefined;
+}
+
+/**
+ * The arguments the user gave the build system. `cmakeArgs` is the original name for this and is still what the
+ * frontend sends and what shared links contain, so it stays supported.
+ */
+export function getBuildSystemArgs(backendOptions: Record<string, any>): string[] {
+    return splitArguments(backendOptions.buildSystemArgs ?? backendOptions.cmakeArgs);
 }

@@ -106,6 +106,11 @@ export class ApiHandler {
             .post(textParser, compileHandler.handle.bind(compileHandler))
             .all(methodNotAllowed);
         this.handle
+            .route('/compiler/:compiler/build/:buildSystem')
+            .post(compileHandler.handleBuildProject.bind(compileHandler))
+            .all(methodNotAllowed);
+        // The original, CMake-only spelling of the above. Documented API, so it stays.
+        this.handle
             .route('/compiler/:compiler/cmake')
             .post(compileHandler.handleCmake.bind(compileHandler))
             .all(methodNotAllowed);

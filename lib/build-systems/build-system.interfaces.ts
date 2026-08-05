@@ -22,6 +22,7 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
+import type {BuildSystemDescriptor, BuildSystemId} from '../../shared/build-systems.js';
 import type {
     CmakeCacheKey,
     CompilationResult,
@@ -32,12 +33,6 @@ import type {
 import type {BaseCompiler} from '../base-compiler.js';
 import type {CompilationEnvironment} from '../compilation-env.js';
 import type {ParsedRequest} from '../handlers/compile.js';
-
-/**
- * Identifies a build system. This value also ends up in the compilation cache key (as `api`), so existing ids must
- * never change or every cached build for them is invalidated.
- */
-export type BuildSystemId = 'cmake';
 
 /** A single command in a build system's plan, for example CMake's configure step. */
 export type BuildSystemStep = {
@@ -74,6 +69,8 @@ export type BuildContext = {
     files: FiledataPair[];
     libsAndOptions: LibsAndOptions;
     toolchainPath: string | undefined;
+    /** The arguments the user gave the build system itself, as opposed to the compiler */
+    buildSystemArgs: string[];
 };
 
 /**
@@ -84,8 +81,8 @@ export type BuildContext = {
 export interface BuildSystemDriver {
     readonly id: BuildSystemId;
 
-    /** The file the tree's main source is written to, e.g. `CMakeLists.txt` */
-    readonly manifestFilename: string;
+    /** What the frontend knows about this build system, including the manifest filename. */
+    readonly descriptor: BuildSystemDescriptor;
 
     /** Why this compiler cannot be built with this build system, or undefined if it can. */
     getUnsupportedReason(compiler: BaseCompiler): string | undefined;

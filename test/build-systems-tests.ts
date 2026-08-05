@@ -28,9 +28,10 @@ import {describe, expect, it} from 'vitest';
 
 import {BaseCompiler} from '../lib/base-compiler.js';
 import type {BuildContext} from '../lib/build-systems/index.js';
-import {cmakeBuildSystem, getBuildSystem, isBuildSystemId} from '../lib/build-systems/index.js';
+import {cmakeBuildSystem, getBuildSystem, getBuildSystemArgs} from '../lib/build-systems/index.js';
 import {CompilationEnvironment} from '../lib/compilation-env.js';
 import {ParsedRequest} from '../lib/handlers/compile.js';
+import {getBuildSystemsForLanguage, isBuildSystemId} from '../shared/build-systems.js';
 import {BypassCache} from '../types/compilation/compilation.interfaces.js';
 import {CompilerInfo} from '../types/compiler.interfaces.js';
 import {makeCompilationEnvironment, makeFakeCompilerInfo} from './utils.js';
@@ -84,6 +85,7 @@ function makeContext(compiler: BaseCompiler, env: CompilationEnvironment, parsed
         files: [],
         libsAndOptions: {libraries: [], options: []},
         toolchainPath: undefined,
+        buildSystemArgs: getBuildSystemArgs(parsedRequest.backendOptions),
     };
 }
 
@@ -98,11 +100,31 @@ describe('Build system registry', () => {
         expect(getBuildSystem('cargo')).toBeUndefined();
         expect(getBuildSystem('toString')).toBeUndefined();
     });
+
+    it('offers cmake only for the languages it can build', () => {
+        expect(getBuildSystemsForLanguage('c++').map(bs => bs.id)).toEqual(['cmake']);
+        expect(getBuildSystemsForLanguage('rust')).toEqual([]);
+    });
+});
+
+describe('Build system arguments', () => {
+    it('takes buildSystemArgs when given', () => {
+        expect(getBuildSystemArgs({buildSystemArgs: '-DA=1 -DB=2'})).toEqual(['-DA=1', '-DB=2']);
+    });
+
+    it('falls back to the original cmakeArgs, as sent by the frontend and stored in shared links', () => {
+        expect(getBuildSystemArgs({cmakeArgs: '-DA=1'})).toEqual(['-DA=1']);
+        expect(getBuildSystemArgs({buildSystemArgs: '-DNew=1', cmakeArgs: '-DOld=1'})).toEqual(['-DNew=1']);
+    });
+
+    it('copes with neither being given', () => {
+        expect(getBuildSystemArgs({})).toEqual([]);
+    });
 });
 
 describe('CMake build system', () => {
     it('builds into a build subdirectory of the project', () => {
-        expect(cmakeBuildSystem.manifestFilename).toEqual('CMakeLists.txt');
+        expect(cmakeBuildSystem.descriptor.manifestFilename).toEqual('CMakeLists.txt');
         expect(cmakeBuildSystem.getBuildPath('/tmp/project')).toEqual(path.join('/tmp/project', 'build'));
     });
 

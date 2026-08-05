@@ -242,10 +242,20 @@ The `source` field contains the contents of your `CMakeLists.txt` file. The `fil
 
 Important parameters:
 - `userArguments`: Compiler flags passed to the C++ compiler (not CMake)
-- `compilerOptions.cmakeArgs`: Arguments passed directly to CMake (e.g., "-DCMAKE_BUILD_TYPE=Release")
+- `compilerOptions.buildSystemArgs`: Arguments passed directly to the build system (e.g., "-DCMAKE_BUILD_TYPE=Release")
+- `compilerOptions.cmakeArgs`: The original name for `buildSystemArgs`. Still supported; used if `buildSystemArgs` is absent
 - `compilerOptions.customOutputFilename`: Custom name for the output executable
 
 The response will include the compilation results similar to the regular compile endpoint.
+
+### `POST /api/compiler/<compiler-id>/build/<build-system>` - build a project with a build system
+
+The same as the CMake endpoint above, but with the build system named in the URL rather than implied by it. `cmake` is
+currently the only build system, so `POST /api/compiler/<compiler-id>/build/cmake` is equivalent to
+`POST /api/compiler/<compiler-id>/cmake`. Requesting an unknown build system returns a 404.
+
+The request and response bodies are identical to the CMake endpoint's. Prefer `compilerOptions.buildSystemArgs` over
+`compilerOptions.cmakeArgs` here.
 
 ### `GET /api/formats` - return available code formatters
 

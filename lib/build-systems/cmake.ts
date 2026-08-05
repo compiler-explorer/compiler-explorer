@@ -27,7 +27,7 @@ import path from 'node:path';
 
 import _ from 'underscore';
 
-import {splitArguments} from '../../shared/common-utils.js';
+import {BuildSystems} from '../../shared/build-systems.js';
 import type {CompilationResult} from '../../types/compilation/compilation.interfaces.js';
 import {assert} from '../assert.js';
 import type {BaseCompiler} from '../base-compiler.js';
@@ -36,7 +36,7 @@ import type {BuildContext, BuildPlan, BuildSystemDriver} from './build-system.in
 
 export class CMakeBuildSystem implements BuildSystemDriver {
     readonly id = 'cmake' as const;
-    readonly manifestFilename = 'CMakeLists.txt';
+    readonly descriptor = BuildSystems.cmake;
 
     getUnsupportedReason(compiler: BaseCompiler): string | undefined {
         if (!compiler.compiler.supportsBinary) return 'Compiler does not support compiling to binaries';
@@ -54,7 +54,12 @@ export class CMakeBuildSystem implements BuildSystemDriver {
     }
 
     async writeProjectFiles(ctx: BuildContext): Promise<{inputFilename: string}> {
-        return await ctx.compiler.writeProjectFiles(ctx.dirPath, this.manifestFilename, ctx.key.source, ctx.files);
+        return await ctx.compiler.writeProjectFiles(
+            ctx.dirPath,
+            this.descriptor.manifestFilename,
+            ctx.key.source,
+            ctx.files,
+        );
     }
 
     async prepareBuildDirectory(ctx: BuildContext): Promise<void> {
@@ -78,11 +83,10 @@ export class CMakeBuildSystem implements BuildSystemDriver {
 
         const toolchainparam = compiler.getCMakeExtToolchainParam(ctx.parsedRequest.backendOptions.overrides || []);
 
-        const cmakeArgs = splitArguments(ctx.parsedRequest.backendOptions.cmakeArgs);
         const partArgs: string[] = [
             toolchainparam,
             ...compiler.getExtraCMakeArgs(ctx.parsedRequest),
-            ...cmakeArgs,
+            ...ctx.buildSystemArgs,
             '..',
         ].filter(Boolean);
         const useNinja = ctx.env.ceProps('useninja');

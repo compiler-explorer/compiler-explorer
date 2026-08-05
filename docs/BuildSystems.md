@@ -2,11 +2,11 @@
 
 Compiler Explorer's IDE ("tree") mode can hand a whole project to a build system rather than invoking a compiler on a
 single source file. The only supported build system is CMake, and it is wired in as a special case at nearly every
-layer: a boolean on the tree state, a dedicated API route, and a boolean on the compilation queue message.
+layer: a boolean on the tree state, and a hardcoded language list in the frontend.
 
 This document describes how that works, and the incremental plan for turning it into a pluggable mechanism so that
-Cargo (Rust), Maven/Gradle (Java, Kotlin) and others can be added without another round of special-casing. Phase 1
-below has landed; the rest has not.
+Cargo (Rust), Maven/Gradle (Java, Kotlin) and others can be added without another round of special-casing. Phases 0 and
+1 below have landed; the rest has not.
 
 ## How CMake works
 
@@ -22,7 +22,8 @@ below has landed; the rest has not.
 3. Build a cache key (`getBuildProjectCacheKey()`) discriminated by `api: 'cmake'`, and try to load a prebuilt
    executable package from the cache before doing any work.
 4. Run the plan's steps via `doBuildstepAndAddToResult()`: the configure step (`ceProps('cmake')`, optionally `-GNinja`
-   from `ceProps('useninja')`, plus the toolchain param and user `cmakeArgs`), then `cmake --build .`.
+   from `ceProps('useninja')`, plus the toolchain param and the user's build system arguments), then
+   `cmake --build .`.
 5. Locate the artifact by convention: `getExecutableFilename(dirPath/build, outputFilebase, key)`, i.e. `build/output.s`
    unless `backendOptions.customOutputFilename` overrides it.
 6. Disassemble it (`checkOutputFileAndDoPostProcess()`), optionally execute it locally or remotely
@@ -44,12 +45,12 @@ Surrounding plumbing:
 
 | Concern            | Where                                                                                  |
 | ------------------ | -------------------------------------------------------------------------------------- |
-| HTTP route         | `POST /api/compiler/:id/cmake` → `CompileHandler.handleCmake()` (`lib/handlers/compile.ts`) |
-| Sub-server proxying| `compilerInfo.cmakePath` (`types/compiler.interfaces.ts`, set in `lib/compiler-finder.ts`) |
-| Queue worker       | `RemoteCompilationRequest.isCMake` boolean (`lib/compilation/sqs-compilation-queue.ts`) — produced outside this repo |
+| HTTP route         | `POST /api/compiler/:id/build/:buildSystem`, and the original `/cmake` (`lib/handlers/compile.ts`) |
+| Sub-server proxying| `compilerInfo.cmakePath` and `buildPath` (`types/compiler.interfaces.ts`, set in `lib/compiler-finder.ts`) |
+| Queue worker       | `RemoteCompilationRequest.buildSystem`, or the older `isCMake` boolean (`lib/compilation/sqs-compilation-queue.ts`) — produced outside this repo |
 | Cache key          | `CmakeCacheKey`'s `api: 'cmake'` discriminator (`types/compilation/compilation.interfaces.ts`) |
-| Stats              | `KnownBuildMethod.CMake` (`lib/stats.ts`)                                              |
-| Metrics            | `ce_cmake_compilations_total`, `ce_cmake_executions_total`, and SQS equivalents        |
+| Stats              | the build system id as the build method (`lib/stats.ts`)                               |
+| Metrics            | `ce_project_build_*` labelled by build system, plus the older `ce_cmake_*`, and SQS equivalents of both |
 | Config             | `cmake=` and `useninja=` in `etc/config/compiler-explorer.*.properties`                |
 
 ### Frontend
@@ -85,22 +86,30 @@ execution shape — not just "which binary do we run".
 
 Phases 0–2 are refactoring with no user-visible change. Each is independently shippable.
 
-### Phase 0 — protocol groundwork
+### Phase 0 — protocol groundwork (done)
 
-Add `shared/build-systems.ts` with a `BuildSystemId` type (initially just `'cmake'`) and descriptors both frontend and
-backend need: display name, manifest filename, manifest language id, compatible language ids, default arguments,
-argument-input placeholder.
+`shared/build-systems.ts` holds the `BuildSystemId` type and the descriptors both frontend and backend need: display
+name, manifest filename, manifest language id, compatible language ids, default arguments, argument-input placeholder.
+The backend drivers in `lib/build-systems/` each carry their descriptor.
 
-Widen the wire in back-compatible ways:
+The wire was widened in back-compatible ways:
 
 - New route `POST /api/compiler/:id/build/:buildSystem`, with `/cmake` kept **permanently** as an alias (it is
-  documented public API in `docs/API.md`).
-- `backendOptions.buildSystemArgs`, accepting `cmakeArgs` as a fallback.
-- `CmakeCacheKey.api` becomes `BuildSystemId`, keeping the literal `'cmake'` so existing cache and executable-package
+  documented public API in `docs/API.md`). Both go through `CompileHandler.handleProjectBuildWith()`.
+- `backendOptions.buildSystemArgs`, falling back to `cmakeArgs` — see `getBuildSystemArgs()`. The frontend still sends
+  `cmakeArgs`, so cache keys are unchanged until phase 2 switches it over.
+- `CmakeCacheKey.api` is set from the driver id, still `'cmake'` for CMake, so existing cache and executable-package
   hashes stay valid.
-- `RemoteCompilationRequest.buildSystem?: BuildSystemId` alongside a still-honoured `isCMake` — the producer of those
-  messages lives in another repository, so both must work across a rolling deploy.
-- `compilerInfo.buildPath` alongside `cmakePath`, for the same reason.
+- `RemoteCompilationRequest.buildSystem` alongside a still-honoured `isCMake` — the producer of those messages lives in
+  another repository, so both must work across a rolling deploy.
+- `compilerInfo.buildPath` alongside `cmakePath`. Optional, because a sub-server on an older version has neither the
+  field nor the route; CMake keeps proxying to `cmakePath` for exactly that reason.
+- Stats record the build system id as the build method. The `ce_cmake_*` counters still count CMake for existing
+  dashboards, and `ce_project_build_*` / `ce_sqs_project_build_*` count every build system with a `build_system` label.
+
+**Infra dependency:** the ALB has overriding routes for `/api/compiler/*/compile` and `/api/compiler/*/cmake` per
+environment. They need `/api/compiler/*/build/*` adding before the frontend starts using the new route —
+[compiler-explorer/infra#2269](https://github.com/compiler-explorer/infra/issues/2269).
 
 ### Phase 1 — extract a build system driver (done)
 
@@ -138,8 +147,8 @@ Two things generalised in passing: `writeAllFilesCMake()` became `writeProjectFi
 and `getCmakeCacheKey()` became `getBuildProjectCacheKey(buildSystem, …)`, which sets `api` from the driver id — still
 `'cmake'` for CMake, so cached builds survive.
 
-Not yet done, deferred to the phase they are needed by: the execution shape hook (Maven needs `java -jar`; phase 4),
-and collapsing `handleCmake` and the SQS `isCMake` branch into a driver lookup (needs the phase 0 wire changes).
+Not yet done, deferred to the phase it is needed by: the execution shape hook, since Maven needs `java -jar`
+(phase 4).
 
 `test/build-systems-tests.ts` locks the emitted build plan — step order, argument composition, the shared environment
 between the configure and build steps, and the `-GNinja` and toolchain arguments.
