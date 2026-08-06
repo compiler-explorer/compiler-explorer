@@ -1,7 +1,7 @@
 # Build systems
 
 Compiler Explorer's IDE ("tree") mode can hand a whole project to a build system rather than invoking a compiler on a
-single source file. CMake, Cargo and Maven are supported, through a driver per build system.
+single source file. CMake, Cargo, Maven and Make are supported, through a driver per build system.
 
 This document describes how that works, and the incremental plan for turning it into a pluggable mechanism so that
 Cargo (Rust), Maven/Gradle (Java, Kotlin) and others can be added without another round of special-casing. All the
@@ -261,6 +261,29 @@ The same driver, with `kotlin` added to the descriptor's languages. Three things
   first — named in full, since resolving the `dependency:` prefix would need metadata from Maven Central. It also
   needs a bigger stack than the Java compiler's `-Xss136K`: reaching Kotlin's collections overflows it during the
   nested class loading before `main` is entered.
+
+### Phase 6 — Make (done)
+
+`MakeBuildSystem` (`lib/build-systems/make.ts`) runs one `make` against a `Makefile`, and is the first build system
+offered for **every** language: `compatibleLanguageIds: 'all'`, since a Makefile says for itself what to run rather
+than being tied to a toolchain. One `make=` in the properties names the binary, as `cmake=` does.
+
+- **It is handed the environment CMake is handed**, by the same `createCmakeExecParams`: `CXX`/`CC`/`FC`/`CUDACXX`/
+  `AS` from the selected compiler, the matching `CXXFLAGS`/`CFLAGS`/`FFLAGS`/`CUDAFLAGS` carrying the user's options
+  and libraries, and `LDFLAGS`. So a recipe reading `$(CXX) $(CXXFLAGS) -o output main.cpp` compiles with what was
+  selected in the UI, which is the whole point of offering it.
+- **`NVCC` as well, when the compiler really is nvcc.** CMake has no need of it, but a CUDA Makefile conventionally
+  says `$(NVCC)`, and make has no built-in for it, so it would otherwise expand to nothing and the recipe would run
+  without a compiler. Guarded on `compilerType === 'nvcc'`: clang compiles CUDA too, and naming it NVCC would be a
+  lie the Makefile cannot see through. Note the converse trap, which is CMake's too: for CUDA, `$(CXX)` is make's
+  own built-in `g++` rather than anything selected here, since CE sets `CUDACXX` for that language.
+- **Nothing is added to the command line.** A bare `make` is the default target; targets, `-j`, variable overrides
+  are the user's to pass.
+- **The artifact is `output` unless the project says otherwise**, because only the Makefile knows what it built.
+  When nothing is there, the failure says so and points at the output file box rather than letting the disassembler
+  fail on a missing file.
+- **Makefiles are edited with tabs**, whatever the indentation setting says, since a recipe line that begins with
+  spaces gets only "missing separator" from make (`static/panes/editor.ts`).
 
 ## Things not to break
 

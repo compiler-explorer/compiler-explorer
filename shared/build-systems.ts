@@ -28,7 +28,7 @@ import type {LanguageKey} from '../types/languages.interfaces.js';
  * Identifies a build system. This value appears in the API route, in the compilation cache key (as `api`) and in the
  * stats, so existing ids must never change.
  */
-export type BuildSystemId = 'cmake' | 'cargo' | 'maven';
+export type BuildSystemId = 'cmake' | 'cargo' | 'maven' | 'make';
 
 /** What a tree is built with, or `'none'` for a plain multi-file project compiled directly. */
 export type TreeBuildSystem = BuildSystemId | 'none';
@@ -45,8 +45,8 @@ export type BuildSystemDescriptor = {
     manifestFilename: string;
     /** The language the manifest is highlighted as */
     manifestLanguageId: LanguageKey;
-    /** The languages this build system can build */
-    compatibleLanguageIds: LanguageKey[];
+    /** The languages this build system can build, or 'all' for one that does not care what it is driving */
+    compatibleLanguageIds: LanguageKey[] | 'all';
     /** Prefilled into the build system arguments input */
     defaultArgs: string;
     /** Placeholder for the build system arguments input */
@@ -72,6 +72,16 @@ export const BuildSystems: Record<BuildSystemId, BuildSystemDescriptor> = {
         defaultArgs: '',
         argsPlaceholder: 'Cargo arguments...',
     },
+    make: {
+        id: 'make',
+        name: 'Make',
+        manifestFilename: 'Makefile',
+        manifestLanguageId: 'makefile',
+        // A Makefile says what to run itself, so there is no language this cannot be pointed at.
+        compatibleLanguageIds: 'all',
+        defaultArgs: '',
+        argsPlaceholder: 'Make arguments and targets...',
+    },
     maven: {
         id: 'maven',
         name: 'Maven',
@@ -93,5 +103,8 @@ export function getBuildSystemDescriptor(id: string): BuildSystemDescriptor | un
 
 /** The build systems that can build the given language. */
 export function getBuildSystemsForLanguage(langId: LanguageKey): BuildSystemDescriptor[] {
-    return Object.values(BuildSystems).filter(buildSystem => buildSystem.compatibleLanguageIds.includes(langId));
+    return Object.values(BuildSystems).filter(
+        buildSystem =>
+            buildSystem.compatibleLanguageIds === 'all' || buildSystem.compatibleLanguageIds.includes(langId),
+    );
 }

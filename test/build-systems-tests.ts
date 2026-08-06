@@ -37,12 +37,13 @@ import {
     cmakeBuildSystem,
     getBuildSystem,
     getBuildSystemArgs,
+    makeBuildSystem,
     mavenBuildSystem,
 } from '../lib/build-systems/index.js';
 import {MavenBuildSystem} from '../lib/build-systems/maven.js';
 import {CompilationEnvironment} from '../lib/compilation-env.js';
 import {ParsedRequest} from '../lib/handlers/compile.js';
-import {getBuildSystemsForLanguage, isBuildSystemId} from '../shared/build-systems.js';
+import {BuildSystems, getBuildSystemsForLanguage, isBuildSystemId} from '../shared/build-systems.js';
 import {BypassCache} from '../types/compilation/compilation.interfaces.js';
 import {CompilerInfo} from '../types/compiler.interfaces.js';
 import {makeCompilationEnvironment, makeFakeCompilerInfo} from './utils.js';
@@ -116,6 +117,11 @@ describe('Build system registry', () => {
         expect(getBuildSystem('cargo')).toBe(cargoBuildSystem);
     });
 
+    it('resolves make', () => {
+        expect(isBuildSystemId('make')).toBe(true);
+        expect(getBuildSystem('make')).toBe(makeBuildSystem);
+    });
+
     it('resolves maven', () => {
         expect(isBuildSystemId('maven')).toBe(true);
         expect(getBuildSystem('maven')).toBe(mavenBuildSystem);
@@ -144,11 +150,12 @@ describe('Build system registry', () => {
     });
 
     it('offers each build system only for the languages it can build', () => {
-        expect(getBuildSystemsForLanguage('c++').map(bs => bs.id)).toEqual(['cmake']);
-        expect(getBuildSystemsForLanguage('rust').map(bs => bs.id)).toEqual(['cargo']);
-        expect(getBuildSystemsForLanguage('java').map(bs => bs.id)).toEqual(['maven']);
-        expect(getBuildSystemsForLanguage('kotlin').map(bs => bs.id)).toEqual(['maven']);
-        expect(getBuildSystemsForLanguage('haskell')).toEqual([]);
+        // Make is offered everywhere, a Makefile being able to drive anything, so it accompanies each of these.
+        expect(getBuildSystemsForLanguage('c++').map(bs => bs.id)).toEqual(['cmake', 'make']);
+        expect(getBuildSystemsForLanguage('rust').map(bs => bs.id)).toEqual(['cargo', 'make']);
+        expect(getBuildSystemsForLanguage('java').map(bs => bs.id)).toEqual(['make', 'maven']);
+        expect(getBuildSystemsForLanguage('kotlin').map(bs => bs.id)).toEqual(['make', 'maven']);
+        expect(getBuildSystemsForLanguage('haskell').map(bs => bs.id)).toEqual(['make']);
     });
 });
 
@@ -790,5 +797,117 @@ describe('Maven build system', () => {
         const offline = 'Cannot access central (https://repo.maven.apache.org/maven2) in offline mode';
         expect(MavenBuildSystem.explainFailure(offline)).toMatch(/cannot download from Maven Central/);
         expect(MavenBuildSystem.explainFailure('BUILD FAILURE: compilation error')).toBeUndefined();
+    });
+});
+
+describe('Make build system', () => {
+    function makeMakeEnv(): CompilationEnvironment {
+        return makeCompilationEnvironment({
+            languages: {'c++': {id: 'c++'}},
+            props: {make: '/usr/bin/make'},
+        });
+    }
+
+    function makeCppCompiler(env: CompilationEnvironment): BaseCompiler {
+        return new BaseCompiler(makeFakeCompilerInfo({exe: '/usr/bin/g++', lang: 'c++', ldPath: [], libPath: []}), env);
+    }
+
+    function makeMakeContext(compiler: BaseCompiler, env: CompilationEnvironment, req: ParsedRequest): BuildContext {
+        const dirPath = '/tmp/ce-fake-make';
+        return {
+            compiler,
+            env,
+            dirPath,
+            buildPath: makeBuildSystem.getBuildPath(dirPath),
+            key: compiler.getBuildProjectCacheKey(makeBuildSystem, req, []),
+            parsedRequest: req,
+            files: [],
+            libsAndOptions: {libraries: req.libraries, options: req.options},
+            toolchainPath: undefined,
+            buildSystemArgs: getBuildSystemArgs(req.backendOptions),
+        };
+    }
+
+    it('builds where the Makefile is, there being nowhere else it could', () => {
+        expect(makeBuildSystem.descriptor.manifestFilename).toEqual('Makefile');
+        expect(makeBuildSystem.getBuildPath('/tmp/project')).toEqual('/tmp/project');
+    });
+
+    it('is offered for anything, a Makefile saying for itself what to run', async () => {
+        const env = makeMakeEnv();
+        expect(await makeBuildSystem.getUnsupportedReason(makeCppCompiler(env))).toBeUndefined();
+        expect(BuildSystems.make.compatibleLanguageIds).toEqual('all');
+    });
+
+    it('hands the Makefile the compiler that was selected, and the options chosen with it', async () => {
+        const env = makeMakeEnv();
+        const compiler = makeCppCompiler(env);
+        const req = makeParsedRequest();
+        req.options = ['-O2'];
+        const plan = await makeBuildSystem.getBuildPlan(makeMakeContext(compiler, env, req));
+
+        // What a recipe saying `$(CXX) $(CXXFLAGS)` picks up.
+        expect(plan.steps[0].exe).toEqual('/usr/bin/make');
+        expect(plan.steps[0].execParams.env.CXXFLAGS).toContain('-O2');
+        expect(plan.steps[0].execParams.env.LDFLAGS).toBeDefined();
+    });
+
+    it('passes on the targets and arguments asked for, and invents none', async () => {
+        const env = makeMakeEnv();
+        const compiler = makeCppCompiler(env);
+        const withArgs = makeParsedRequest({buildSystemArgs: '-j4 all'});
+        const plan = await makeBuildSystem.getBuildPlan(makeMakeContext(compiler, env, withArgs));
+        expect(plan.steps[0].args).toEqual(['-j4', 'all']);
+
+        const bare = await makeBuildSystem.getBuildPlan(makeMakeContext(compiler, env, makeParsedRequest()));
+        expect(bare.steps[0].args).toEqual([]);
+    });
+
+    it('names nvcc for a Makefile that asks for it, and only when it really is nvcc', async () => {
+        const env = makeCompilationEnvironment({languages: {cuda: {id: 'cuda'}}, props: {make: '/usr/bin/make'}});
+        const asCuda = (compilerType: string) =>
+            new BaseCompiler(
+                makeFakeCompilerInfo({
+                    exe: '/opt/compiler-explorer/cuda/12.8.1/bin/nvcc',
+                    lang: 'cuda',
+                    compilerType,
+                    ldPath: [],
+                    libPath: [],
+                }),
+                env,
+            );
+
+        const nvcc = await makeBuildSystem.getBuildPlan(makeMakeContext(asCuda('nvcc'), env, makeParsedRequest()));
+        expect(nvcc.steps[0].execParams.env.NVCC).toEqual('/opt/compiler-explorer/cuda/12.8.1/bin/nvcc');
+
+        // clang compiles CUDA too, and it is not nvcc.
+        const clang = await makeBuildSystem.getBuildPlan(
+            makeMakeContext(asCuda('clang-cuda'), env, makeParsedRequest()),
+        );
+        expect(clang.steps[0].execParams.env.NVCC).toBeUndefined();
+    });
+
+    it('says so when the Makefile built nothing by the name we were told to look for', async () => {
+        const env = makeMakeEnv();
+        const compiler = makeCppCompiler(env);
+        const ctx = makeMakeContext(compiler, env, makeParsedRequest());
+
+        const nothingToInspect = await makeBuildSystem.finaliseArtifact(
+            ctx,
+            {code: 0, timedOut: false, stdout: [], stderr: []},
+            path.join(ctx.dirPath, 'output'),
+        );
+        expect(nothingToInspect).toMatch(/Nothing was built at output/);
+        expect(nothingToInspect).toMatch(/output file box/);
+    });
+
+    it('looks for what the project asked to inspect, and otherwise for something conventional', () => {
+        const env = makeMakeEnv();
+        const compiler = makeCppCompiler(env);
+        const named = makeMakeContext(compiler, env, makeParsedRequest({customOutputFilename: 'demo'}));
+        expect(makeBuildSystem.getArtifactFilename(named)).toEqual('/tmp/ce-fake-make/demo');
+
+        const unnamed = makeMakeContext(compiler, env, makeParsedRequest());
+        expect(makeBuildSystem.getArtifactFilename(unnamed)).toEqual('/tmp/ce-fake-make/output');
     });
 });
