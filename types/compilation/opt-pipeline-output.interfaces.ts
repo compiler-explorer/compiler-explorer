@@ -23,6 +23,7 @@
 // POSSIBILITY OF SUCH DAMAGE.
 
 import {ResultLine} from '../resultline/resultline.interfaces.js';
+import type {CompilationResult} from './compilation.interfaces.js';
 
 // Pass name with before / after dump
 export type Pass = {
@@ -36,12 +37,11 @@ export type Pass = {
 export type OptPipelineResults = Record<string, Pass[]>;
 
 export type OptPipelineOutput = {
-    compilationOptions?: string[];
     error?: string;
     results: OptPipelineResults;
     compileTime?: number | string;
     parseTime?: number;
-};
+} & Pick<CompilationResult, 'code' | 'compilationOptions'>;
 
 export type OptPipelineBackendOptions = {
     filterDebugInfo?: boolean;

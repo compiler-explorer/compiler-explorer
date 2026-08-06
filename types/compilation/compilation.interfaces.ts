@@ -213,10 +213,9 @@ export type CompilationResult = {
     astOutput?: ResultLine[];
 
     irOutput?: {
-        compilationOptions?: string[];
         asm: ParsedAsmResultLine[];
         cfg?: CFGResult;
-    };
+    } & Pick<CompilationResult, 'code' | 'compilationOptions'>;
     clangirOutput?: ResultLine[];
 
     optPipelineOutput?: OptPipelineOutput;

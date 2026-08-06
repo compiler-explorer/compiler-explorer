@@ -1458,6 +1458,7 @@ export class BaseCompiler {
         const output = await this.runCompiler(this.compiler.exe, newOptions, this.filename(inputFilename), execOptions);
         if (output.code !== 0) {
             return {
+                code: output.code,
                 compilationOptions: newOptions,
                 asm: [{text: 'Failed to run compiler to get IR code'}],
             };
@@ -1465,10 +1466,12 @@ export class BaseCompiler {
         const ir = await this.processIrOutput(output, irOptions, filters);
 
         const result: {
+            code: number;
             compilationOptions?: string[];
             asm: ParsedAsmResultLine[];
             cfg?: Record<string, cfg.CFG>;
         } = {
+            code: output.code,
             compilationOptions: newOptions,
             asm: ir.asm,
         };
@@ -1572,30 +1575,32 @@ export class BaseCompiler {
         );
         const compileEnd = performance.now();
 
+        const result = {code: output.code, compilationOptions};
+
         if (output.truncated) {
             return {
-                compilationOptions,
                 error: 'Exceeded max output limit',
                 results: {},
                 compileTime: output.execTime || compileEnd - compileStart,
+                ...result,
             };
         }
 
         if (output.timedOut) {
             return {
-                compilationOptions,
                 error: 'Invocation timed out',
                 results: {},
                 compileTime: output.execTime || compileEnd - compileStart,
+                ...result,
             };
         }
 
         if (output.code) {
             return {
-                compilationOptions,
                 error: `Invocation failed: ${utils.resultLinesToText(output.stderr)}${utils.resultLinesToText(output.stdout)}}`,
                 results: {},
                 compileTime: output.execTime || compileEnd - compileStart,
+                ...result,
             };
         }
 
@@ -1619,24 +1624,24 @@ export class BaseCompiler {
                     demangler.collect({asm: output.stderr});
                 }
                 return {
-                    compilationOptions,
                     results: await demangler.demangleLLVMPasses(optPipeline),
                     compileTime: compileEnd - compileStart,
                     parseTime: performance.now() - parseStart,
+                    ...result,
                 };
             }
             return {
-                compilationOptions,
                 results: optPipeline,
                 compileTime: compileEnd - compileStart,
                 parseTime: performance.now() - parseStart,
+                ...result,
             };
         } catch (e: any) {
             return {
-                compilationOptions,
                 error: e.toString(),
                 results: {},
                 compileTime: compileEnd - compileStart,
+                ...result,
             };
         }
     }

@@ -34,7 +34,7 @@ import {Toggles} from '../widgets/toggles.js';
 import {PaneCompilerState} from './pane.interfaces.js';
 import {Pane} from './pane.js';
 
-type GetResult = (result: CompilationResult) => {compilationOptions?: string[]} | undefined;
+type GetResult = (result: CompilationResult) => Pick<CompilationResult, 'code' | 'compilationOptions'> | undefined;
 
 export class CompilationOptions<P extends Pane<object>> {
     private readonly parent: P;
@@ -79,12 +79,17 @@ export class CompilationOptions<P extends Pane<object>> {
         if (this.compilerInfo.compilerId !== compilerId) return;
 
         const wasCmake = result.result ? (result.buildsteps?.some(step => step.step === 'cmake') ?? false) : false;
-        const options = this.getResult(result)?.compilationOptions;
+        const stepResult = this.getResult(result);
+        const options = stepResult?.compilationOptions;
         this.setCompilationOptionsPopover(
             options ? options.join(' ') : '',
             this.checkForUnwiseArguments(compiler, options, wasCmake),
         );
-        CompilerService.handleCompilationStatus(null, this.statusIcon, CompilerService.calculateStatusIcon(result));
+        CompilerService.handleCompilationStatus(
+            null,
+            this.statusIcon,
+            CompilerService.calculateStatusIcon(stepResult ?? result),
+        );
     }
 
     private setCompilationOptionsPopover(content: string | null, warnings: string[]): void {

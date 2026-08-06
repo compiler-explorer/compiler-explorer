@@ -44,6 +44,9 @@ import {SiteSettings} from './settings.js';
 
 const ASCII_COLORS_RE = new RegExp(/\x1B\[[\d;]*m(.\[K)?/g);
 
+type HasCompilationStatus = Pick<CompilationResult, 'code'> &
+    Partial<Pick<CompilationResult, 'stdout' | 'stderr' | 'inputFilename'>>;
+
 export class CompilerService {
     private readonly base = window.httpRoot;
     private allowStoreCodeDebug: boolean;
@@ -338,12 +341,10 @@ export class CompilerService {
         return [{field: '$order'}, {field: '$score'}, {field: 'name'}];
     }
 
-    public static doesCompilationResultHaveWarnings(result: CompilationResult) {
-        // TODO: Types probably need to be updated here
-
+    public static doesCompilationResultHaveWarnings(result: HasCompilationStatus) {
         const stdout = result.stdout ?? [];
-
         const stderr = result.stderr ?? [];
+
         // TODO: Pass what compiler did this and check if it it's actually skippable
         // Right now we're ignoring outputs that match the input filename
         // Compiler & Executor are capable of giving us the info, but conformance view is not
@@ -357,7 +358,7 @@ export class CompilerService {
         return stdout.length > 0 || stderr.length > 0;
     }
 
-    public static calculateStatusIcon(result: CompilationResult): CompilationStatus {
+    public static calculateStatusIcon(result: HasCompilationStatus): CompilationStatus {
         let code = 1;
         if (result.code !== 0) {
             code = 3;
