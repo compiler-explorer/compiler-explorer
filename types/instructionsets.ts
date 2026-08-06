@@ -32,6 +32,7 @@ export const InstructionSetsList = [
     'beam',
     'c6x',
     'dex',
+    'e2k',
     'ebpf',
     'evm',
     'eravm',

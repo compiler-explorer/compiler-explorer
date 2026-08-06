@@ -84,6 +84,9 @@ export class BinaryInfoLinux {
             case 'loongarch': {
                 return 'loongarch';
             }
+            case 'mcst elbrus': {
+                return 'e2k';
+            }
             default: {
                 logger.error(`Unknown architecture text: ${value}`);
                 return 'amd64';
