@@ -127,6 +127,22 @@ describe('Build system registry', () => {
         expect(getBuildSystem('toString')).toBeUndefined();
     });
 
+    it('takes execute out of the very filters it was handed when making a cache key', () => {
+        // Load-bearing, and easy to trip over: the key is built from the request's own filters rather than a copy,
+        // so anything that wants to know whether to execute has to ask before the key is made, not after.
+        const env = makeCompilationEnvironment({languages: {'c++': {id: 'c++'}}});
+        const compiler = new BaseCompiler(
+            makeFakeCompilerInfo({exe: '/usr/bin/g++', lang: 'c++', ldPath: [], libPath: []}),
+            env,
+        );
+        const req = makeParsedRequest();
+        req.filters.execute = true;
+
+        compiler.getBuildProjectCacheKey(cmakeBuildSystem, req, []);
+
+        expect(req.filters.execute).toBeUndefined();
+    });
+
     it('offers each build system only for the languages it can build', () => {
         expect(getBuildSystemsForLanguage('c++').map(bs => bs.id)).toEqual(['cmake']);
         expect(getBuildSystemsForLanguage('rust').map(bs => bs.id)).toEqual(['cargo']);
