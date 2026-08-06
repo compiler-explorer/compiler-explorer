@@ -3024,7 +3024,11 @@ export class BaseCompiler {
                     );
 
                     if (stepResult.code !== 0) {
-                        const explanation = step.explainFailure?.(stepResult.stderr.map(line => line.text).join('\n'));
+                        // Both streams: cargo diagnoses on stderr, maven says everything on stdout. Awaited because
+                        // working out what to say can mean looking at what is installed, which is only worth it here.
+                        const explanation = await step.explainFailure?.(
+                            [...stepResult.stdout, ...stepResult.stderr].map(line => line.text).join('\n'),
+                        );
                         result.result = {
                             dirPath,
                             timedOut: false,

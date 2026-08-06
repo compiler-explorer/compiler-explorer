@@ -22,6 +22,9 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
+import fsSync from 'node:fs';
+import fs from 'node:fs/promises';
+import os from 'node:os';
 import path from 'node:path';
 
 import {describe, expect, it} from 'vitest';
@@ -128,6 +131,7 @@ describe('Build system registry', () => {
         expect(getBuildSystemsForLanguage('c++').map(bs => bs.id)).toEqual(['cmake']);
         expect(getBuildSystemsForLanguage('rust').map(bs => bs.id)).toEqual(['cargo']);
         expect(getBuildSystemsForLanguage('java').map(bs => bs.id)).toEqual(['maven']);
+        expect(getBuildSystemsForLanguage('kotlin').map(bs => bs.id)).toEqual(['maven']);
         expect(getBuildSystemsForLanguage('haskell')).toEqual([]);
     });
 });
@@ -508,6 +512,23 @@ describe('Maven build system', () => {
     // A real CE JDK, so the JAVA_HOME derivation is checked against something that exists.
     const JAVAC_EXE = '/opt/compiler-explorer/jdk-21.0.0/bin/javac';
 
+    // The three things the driver reads, laid out as they are installed: a maven, a Kotlin installation holding the
+    // jars, and the repository beside it holding a pom for what the installation answers for. A second Kotlin with
+    // no repository of its own stands for one whose Maven artifacts were never installed.
+    const fixtures = fsSync.mkdtempSync(path.join(os.tmpdir(), 'ce-maven-'));
+    const fakeMavenHome = path.join(fixtures, 'maven');
+    const fakeKotlinHome = path.join(fixtures, 'kotlin-jvm-2.1.21');
+    const fakeKotlinRepository = `${fakeKotlinHome}-maven`;
+    const fakeProjectDir = path.join(fixtures, 'project');
+    fsSync.mkdirSync(fakeKotlinRepository, {recursive: true});
+    // What infra records when it takes those jars back out, and so what the driver is to link in from the install.
+    fsSync.writeFileSync(path.join(fakeKotlinRepository, '.ce-supplied-by-installation'), 'kotlin-compiler\n');
+    fsSync.mkdirSync(path.join(fakeMavenHome, 'repository'), {recursive: true});
+    fsSync.mkdirSync(path.join(fakeKotlinHome, 'lib'), {recursive: true});
+    fsSync.writeFileSync(path.join(fakeKotlinHome, 'lib', 'kotlin-compiler.jar'), '');
+    fsSync.mkdirSync(path.join(fixtures, 'kotlin-jvm-1.9.20', 'lib'), {recursive: true});
+    fsSync.mkdirSync(fakeProjectDir, {recursive: true});
+
     function makeJavaEnv(): CompilationEnvironment {
         return makeCompilationEnvironment({
             languages: javaLanguages,
@@ -548,11 +569,130 @@ describe('Maven build system', () => {
         expect(MavenBuildSystem.getJavaHome(compiler)).toEqual('/opt/compiler-explorer/jdk-21.0.0');
     });
 
-    it('refuses compilers that are not part of a JDK', async () => {
+    it('refuses compilers that no JDK can be found for', async () => {
         const env = makeJavaEnv();
         expect(await mavenBuildSystem.getUnsupportedReason(makeJavaCompiler(env))).toBeUndefined();
         const notAJdk = makeJavaCompiler(env, {exe: '/usr/bin/some-other-java-thing'});
-        expect(await mavenBuildSystem.getUnsupportedReason(notAJdk)).toMatch(/not part of a JDK/);
+        expect(await mavenBuildSystem.getUnsupportedReason(notAJdk)).toMatch(/No JDK could be found/);
+    });
+
+    it('asks a Kotlin compiler which JDK it belongs to, being no part of one itself', async () => {
+        const env = makeJavaEnv();
+        // What KotlinCompiler reads from compiler.<id>.java_home: kotlinc lives in its own kotlin-jvm-x.y.z, so
+        // deriving a JDK from its path would find nothing to run maven with.
+        const kotlinc = Object.assign(
+            makeJavaCompiler(env, {exe: '/opt/compiler-explorer/kotlin-jvm-2.1.21/bin/kotlinc-jvm', lang: 'kotlin'}),
+            {javaHome: '/opt/compiler-explorer/jdk-21.0.0'},
+        );
+        expect(MavenBuildSystem.getJavaHome(kotlinc)).toEqual('/opt/compiler-explorer/jdk-21.0.0');
+    });
+
+    it('falls back to the JDK that runs the compiler output', async () => {
+        const env = makeJavaEnv();
+        // What JavaCompiler reads from compiler.<id>.runtime, for anything that does not declare a java_home.
+        const compiler = Object.assign(makeJavaCompiler(env, {exe: '/somewhere/else/javac'}), {
+            javaRuntime: '/opt/compiler-explorer/jdk-21.0.0/bin/java',
+        });
+        expect(MavenBuildSystem.getJavaHome(compiler)).toEqual('/opt/compiler-explorer/jdk-21.0.0');
+    });
+
+    it('builds Kotlin with the compiler that was selected, jars and all', async () => {
+        const env = makeCompilationEnvironment({
+            languages: {kotlin: {id: 'kotlin'}},
+            props: {maven: path.join(fakeMavenHome, 'bin', 'mvn')},
+        });
+        const kotlinc = Object.assign(
+            new BaseCompiler(
+                makeFakeCompilerInfo({
+                    exe: path.join(fakeKotlinHome, 'bin', 'kotlinc-jvm'),
+                    lang: 'kotlin',
+                    semver: '2.1.21',
+                    ldPath: [],
+                    libPath: [],
+                }),
+                env,
+            ),
+            {javaHome: '/opt/compiler-explorer/jdk-21.0.0'},
+        );
+        const ctx = makeMavenContext(kotlinc, env, makeParsedRequest());
+        ctx.dirPath = fakeProjectDir;
+        const plan = await mavenBuildSystem.getBuildPlan(ctx);
+
+        // The plugin resolves its compiler by version, so the selected one has to be named...
+        expect(plan.steps[0].args).toContain('-Dkotlin.version=2.1.21');
+        // ...and found: the installation's own jar, in a repository of this build's own, ahead of the one installed
+        // beside that compiler, ahead of the shared one.
+        expect(plan.steps[0].args).toContain(`-Dmaven.repo.local=${path.join(fakeProjectDir, '.m2')}`);
+        expect(plan.steps[0].args).toContain(
+            `-Dmaven.repo.local.tail=${fakeKotlinRepository},${path.join(fakeMavenHome, 'repository')}`,
+        );
+        const linked = path.join(
+            fakeProjectDir,
+            '.m2/org/jetbrains/kotlin/kotlin-compiler/2.1.21/kotlin-compiler-2.1.21.jar',
+        );
+        expect(await fs.realpath(linked)).toEqual(path.join(fakeKotlinHome, 'lib', 'kotlin-compiler.jar'));
+    });
+
+    it('leaves a Java build reading the shared repository and nothing else', async () => {
+        const env = makeJavaEnv();
+        const plan = await mavenBuildSystem.getBuildPlan(
+            makeMavenContext(makeJavaCompiler(env), env, makeParsedRequest()),
+        );
+
+        expect(plan.steps[0].args).toContain('-Dmaven.repo.local.tail=/opt/compiler-explorer/maven/repository');
+        expect(plan.steps[0].args.join(' ')).not.toContain('kotlin.version');
+    });
+
+    it('refuses a Kotlin whose maven artifacts were never installed, naming the ones that were', async () => {
+        const env = makeCompilationEnvironment({
+            languages: {kotlin: {id: 'kotlin'}},
+            props: {maven: path.join(fakeMavenHome, 'bin', 'mvn')},
+        });
+        // 1.9.20 is installed beside 2.1.21, but without a repository of its own: infra installs those separately.
+        const kotlinc = Object.assign(
+            new BaseCompiler(
+                makeFakeCompilerInfo({
+                    exe: path.join(fixtures, 'kotlin-jvm-1.9.20', 'bin', 'kotlinc-jvm'),
+                    lang: 'kotlin',
+                    semver: '1.9.20',
+                    ldPath: [],
+                    libPath: [],
+                }),
+                env,
+            ),
+            {javaHome: '/opt/compiler-explorer/jdk-21.0.0'},
+        );
+
+        const reason = await mavenBuildSystem.getUnsupportedReason(kotlinc);
+        expect(reason).toMatch(/Maven artifacts for this Kotlin are not installed/);
+        expect(reason).toMatch(/Maven is available for 2\.1\.21/);
+    });
+
+    it('says which Kotlin a project may ask for, maven bringing its own compiler rather than using the one picked', () => {
+        const explanation = MavenBuildSystem.explainFailure(
+            'Could not resolve dependencies: org.jetbrains.kotlin:kotlin-maven-plugin:jar:1.9.20 has not been downloaded',
+            ['2.1.21'],
+        );
+        expect(explanation).toMatch(/installed here for 2\.1\.21\. Select one of those Kotlin compilers/);
+    });
+
+    it('blames the installation, not the project, when the selected Kotlin is not really there', () => {
+        const explanation = MavenBuildSystem.explainFailure(
+            'Could not resolve dependencies: org.jetbrains.kotlin:kotlin-compiler:jar:2.1.21 has not been downloaded',
+            ['2.1.21'],
+            '2.1.21',
+            ['kotlin-compiler'],
+        );
+        expect(explanation).toMatch(/Kotlin 2\.1\.21 does not appear to be fully installed/);
+        expect(explanation).toMatch(/for Compiler Explorer to fix, not your project/);
+    });
+
+    it('explains an unresolvable Kotlin nothing was bundled for as the ordinary offline failure', () => {
+        const explanation = MavenBuildSystem.explainFailure(
+            'Could not resolve dependencies: org.jetbrains.kotlin:kotlin-maven-plugin:jar:1.9.20 has not been downloaded',
+            [],
+        );
+        expect(explanation).toMatch(/cannot download from Maven Central/);
     });
 
     it('asks javap for the bytecode rather than disassembling a binary', () => {
@@ -571,7 +711,7 @@ describe('Maven build system', () => {
 
         expect(plan.steps[0].exe).toEqual('/opt/compiler-explorer/maven/bin/mvn');
         expect(plan.steps[0].args).toContain('-o');
-        expect(plan.steps[0].args).toContain('-Dmaven.repo.local=/opt/compiler-explorer/maven/repository');
+        expect(plan.steps[0].args).toContain('-Dmaven.repo.local.tail=/opt/compiler-explorer/maven/repository');
         expect(plan.steps[0].args).toContain('package');
         expect(plan.steps[0].execParams.env.JAVA_HOME).toEqual('/opt/compiler-explorer/jdk-21.0.0');
     });

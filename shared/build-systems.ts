@@ -77,7 +77,7 @@ export const BuildSystems: Record<BuildSystemId, BuildSystemDescriptor> = {
         name: 'Maven',
         manifestFilename: 'pom.xml',
         manifestLanguageId: 'maven',
-        compatibleLanguageIds: ['java'],
+        compatibleLanguageIds: ['java', 'kotlin'],
         defaultArgs: '',
         argsPlaceholder: 'Maven arguments...',
     },

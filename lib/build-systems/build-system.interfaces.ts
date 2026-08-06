@@ -45,10 +45,11 @@ export type BuildSystemStep = {
     /** Placeholder shown in the assembly pane if this step fails */
     failureMessage: string;
     /**
-     * Given what the step printed when it failed, an extra line to show the user. For turning a build tool's own
-     * diagnostics into something actionable in Compiler Explorer's terms.
+     * Given everything the step printed when it failed, both streams together because a build tool is free to
+     * diagnose on either, an extra line to show the user. For turning a build tool's own diagnostics into something
+     * actionable in Compiler Explorer's terms.
      */
-    explainFailure?: (stderr: string) => string | undefined;
+    explainFailure?: (output: string) => string | undefined | Promise<string | undefined>;
     /** Whether a failure of this step reports the effective compilation options back to the user */
     reportsCompilationOptions?: boolean;
 };

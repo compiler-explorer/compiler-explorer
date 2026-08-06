@@ -150,17 +150,17 @@ export class CargoBuildSystem implements BuildSystemDriver {
      * libraries it does have are prebuilt and selected in the Libraries pane, which is not something cargo's own
      * message could know to suggest.
      */
-    static explainFailure(stderr: string): string | undefined {
+    static explainFailure(output: string): string | undefined {
         // A slash means a dependency's feature, e.g. --features rand/small_rng, which cannot apply to a crate that is
         // not a dependency. Without the slash it is a feature of their own package, and cargo's message is the truth.
-        if (/does not contain this feature: \S+\//.test(stderr)) {
+        if (/does not contain this feature: \S+\//.test(output)) {
             return (
                 'Features of a library cannot be chosen here: its rlib is prebuilt, with every feature enabled ' +
                 'where that built cleanly and none at all where it did not. --features applies only to the ' +
                 'features your own Cargo.toml declares.'
             );
         }
-        if (/no matching package|failed to (?:select a version|get|resolve)|offline mode/.test(stderr)) {
+        if (/no matching package|failed to (?:select a version|get|resolve)|offline mode/.test(output)) {
             return (
                 'Crates cannot be downloaded here, so [dependencies] cannot be resolved. ' +
                 'Pick the library in the Libraries pane instead and leave it out of Cargo.toml — ' +

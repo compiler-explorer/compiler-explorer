@@ -210,11 +210,11 @@ work and deserves its own phase — see
 
 ### Phase 4 — Maven (done)
 
-`MavenBuildSystem` (`lib/build-systems/maven.ts`) builds `pom.xml` projects for Java, with a `maven` pseudo-language
+`MavenBuildSystem` (`lib/build-systems/maven.ts`) builds `pom.xml` projects for Java and Kotlin, with a `maven` pseudo-language
 for the manifest highlighted as XML.
 
-- **JAVA_HOME comes from the selected compiler**, whose exe is `<jdk>/bin/javac`, so the build runs under the JDK the
-  user picked. Java compilers that are not part of a JDK are refused.
+- **JAVA_HOME comes from the selected compiler**, which says which JDK it belongs to: `java_home` for Kotlin,
+  `runtime` for Java, and failing both the JDK its own exe sits in. Compilers no JDK can be found for are refused.
 - **`maven=` names the mvn to run** — unlike cargo, maven is not part of a toolchain, so it is a property like `cmake`.
 - **Maven cannot build anything without its plugins**, and build nodes have no network, so infra's `tools.yaml` primes
   a repository inside the maven install by running each plugin against a throwaway project. The build points
@@ -229,7 +229,38 @@ for the manifest highlighted as XML.
   directory tree, which a build system does by default. Clojure had already overridden it for the same reason.
 
 A `<dependencies>` entry cannot resolve, and `install` fails because it writes to the shared read-only repository.
-Both get an explanation rather than a bare Maven error.
+Both get an explanation rather than a bare Maven error. The explanation is given the step's whole output, not just
+its stderr, because maven says everything on stdout.
+
+### Phase 5 — Kotlin under Maven (done)
+
+The same driver, with `kotlin` added to the descriptor's languages. Three things had to give:
+
+- **A Kotlin compiler is not part of a JDK**, living in its own `kotlin-jvm-x.y.z`, so JAVA_HOME had to come from what
+  the compiler declares rather than from where its exe sits.
+- **`kotlin-maven-plugin` compiles with a compiler it resolves from the repository**, not with anything installed on
+  the machine, which left to itself would make the compiler picker decorative — the pom would decide. Two things fix
+  that, and together they mean the compiler you select is the one that runs:
+  - **The version is told to the plugin**: `-Dkotlin.version=<selected semver>`, which a pom following the convention
+    of naming its Kotlin once picks up for the plugin and the standard library alike. It goes before the user's own
+    arguments, so a project that insists on a version still gets it.
+  - **The jars come from the selected installation.** A Kotlin installation's `lib/*.jar` are the very Maven
+    artifacts, byte for byte — `kotlin-compiler.jar` is `org.jetbrains.kotlin:kotlin-compiler` down to the sha1. So
+    the driver symlinks them into a repository of the build's own and puts it in front, using
+    `maven.repo.local.tail`, the chained local repository Maven Resolver 1.9 (Maven 3.9) provides. Three links,
+    nearest first: the build's own, then `kotlin-jvm-<version>-maven` — installed beside the compiler by infra's
+    `tools/kotlin-maven`, holding only what the installation does not carry — then the shared repository maven was
+    installed with, which holds the Java plugins and never changes when a Kotlin is added. A Kotlin whose repository
+    is not installed is refused up front, naming the versions that are.
+  - From **Kotlin 2.2** the plugin drives the compiler through the build tools API and asks for
+    `kotlin-compiler-embeddable`, a repackaging with everything relocated inside it that no distribution ships. That
+    one is bundled, at 54 MiB a version. It is still the Kotlin release that was selected, only JetBrains' embedding
+    build of it rather than the command-line one.
+- **Running a Kotlin program needs its standard library beside the classes.** Maven leaves dependencies in the shared
+  repository, which the execution sandbox cannot see, so `prepareExecution` has maven copy them into the project
+  first — named in full, since resolving the `dependency:` prefix would need metadata from Maven Central. It also
+  needs a bigger stack than the Java compiler's `-Xss136K`: reaching Kotlin's collections overflows it during the
+  nested class loading before `main` is entered.
 
 ## Things not to break
 
