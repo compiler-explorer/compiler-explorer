@@ -109,8 +109,8 @@ describe('C3 compiler', () => {
         });
 
         it('keeps a user module that shadows a standard library name', async () => {
-            // Legal in C3: the section is appended to the standard library module's own output file,
-            // so it must not be filtered out as "not the user's code".
+            // Legal in C3: the section is appended to the standard library module's own output file, so
+            // it must not be filtered out as "not the user's code".
             expect(await baseNamesFor('module std::io;\nfn void mine() {}\n')).toEqual(['std.io']);
         });
 
@@ -255,8 +255,7 @@ describe('C3 compiler', () => {
 
         it('joins the module output and refreshes the recorded size', async () => {
             // The size is stat'd by the caller before postProcess runs, i.e. before the file exists.
-            // If it is not refreshed here, BaseCompiler reports "<No output file>" even though we
-            // just wrote one.
+            // Unrefreshed, BaseCompiler reports "<No output file>" even though we just wrote one.
             const {result, outputFilename} = await runPostProcess(async dir =>
                 fs.writeFile(path.join(dir, 'test.s'), 'the asm'),
             );
