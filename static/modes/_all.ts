@@ -56,6 +56,7 @@ import './ispc-mode';
 import './jakt-mode';
 import './lean-mode';
 import './llvm-ir-mode';
+import './makefile-mode';
 import './mlir-mode';
 import './modula2-mode';
 import './mojo-mode';

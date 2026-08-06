@@ -309,6 +309,17 @@ const definitions: Record<LanguageKey, LanguageDefinition> = {
         monacoDisassembly: null,
         digitSeparator: "'",
     },
+    makefile: {
+        name: 'Makefile',
+        monaco: 'makefile',
+        extensions: ['.mk'],
+        alias: ['make'],
+        logoFilename: null,
+        logoFilenameDark: null,
+        formatter: null,
+        previewFilter: null,
+        monacoDisassembly: null,
+    },
     maven: {
         name: 'Maven',
         monaco: 'xml',

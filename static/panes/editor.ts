@@ -1308,11 +1308,7 @@ export class Editor extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Edit
             this.disableVim();
         }
 
-        this.editor.getModel()?.updateOptions({
-            tabSize: this.settings.tabWidth,
-            indentSize: this.settings.tabWidth,
-            insertSpaces: this.settings.useSpaces,
-        });
+        this.updateIndentationOptions();
 
         this.numberUsedLines();
     }
@@ -1873,6 +1869,19 @@ export class Editor extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Edit
         });
     }
 
+    /**
+     * Indent the way the settings ask, except where the language cannot be written that way: a recipe line in a
+     * Makefile has to begin with a tab, and make says only "missing separator" when it does not.
+     */
+    private updateIndentationOptions(): void {
+        const needsTabs = this.currentLanguage?.id === 'makefile';
+        this.editor.getModel()?.updateOptions({
+            tabSize: this.settings.tabWidth,
+            indentSize: this.settings.tabWidth,
+            insertSpaces: needsTabs ? false : this.settings.useSpaces,
+        });
+    }
+
     onLanguageChange(newLangId: LanguageKey, firstTime?: boolean): void {
         const languages = languagesService.getLanguagesOrFail();
         if (newLangId in languages) {
@@ -1887,6 +1896,7 @@ export class Editor extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Edit
                 const editorModel = this.editor.getModel();
                 if (editorModel && this.currentLanguage)
                     monaco.editor.setModelLanguage(editorModel, this.currentLanguage.monaco);
+                this.updateIndentationOptions();
                 this.isCpp.set(this.currentLanguage?.id === 'c++');
                 this.isClean.set(this.currentLanguage?.id === 'clean');
                 this.updateLanguageTooltip();
