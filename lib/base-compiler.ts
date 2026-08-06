@@ -2943,260 +2943,291 @@ export class BaseCompiler {
 
         const toolchainPath = this.getDefaultOrOverridenToolchainPath(parsedRequest.backendOptions.overrides || []);
 
-        const dirPath = await this.newTempDir();
+        // Everything from here holds a queue slot, the way compile() does: the directory below is written to,
+        // built in, run from and finally removed, and a slot held for only part of that would let the temp
+        // directory sweep -- which asks the queue whether anything is compiling -- delete it mid-build.
+        // Unwrapped because a server with no compilation queue cannot build anything, and this promises a result.
+        return unwrap(
+            await this.env.enqueue(
+                async () => {
+                    const dirPath = await this.newTempDir();
 
-        const doExecute = parsedRequest.filters.execute;
+                    const doExecute = parsedRequest.filters.execute;
 
-        // todo: executeOptions.env should be set??
-        const executeOptions: ExecutableExecutionOptions = {
-            args: parsedRequest.executeParameters.args || [],
-            stdin: parsedRequest.executeParameters.stdin || '',
-            ldPath: this.getSharedLibraryPathsAsLdLibraryPaths(parsedRequest.libraries, dirPath),
-            runtimeTools: parsedRequest.executeParameters?.runtimeTools || [],
-            env: {},
-        };
+                    // todo: executeOptions.env should be set??
+                    const executeOptions: ExecutableExecutionOptions = {
+                        args: parsedRequest.executeParameters.args || [],
+                        stdin: parsedRequest.executeParameters.stdin || '',
+                        ldPath: this.getSharedLibraryPathsAsLdLibraryPaths(parsedRequest.libraries, dirPath),
+                        runtimeTools: parsedRequest.executeParameters?.runtimeTools || [],
+                        env: {},
+                    };
 
-        const cacheKey = this.getBuildProjectCacheKey(buildSystem, parsedRequest, files);
-        const executablePackageHash = this.env.getExecutableHash(cacheKey);
+                    const cacheKey = this.getBuildProjectCacheKey(buildSystem, parsedRequest, files);
+                    const executablePackageHash = this.env.getExecutableHash(cacheKey);
 
-        const buildContext: BuildContext = {
-            compiler: this,
-            env: this.env,
-            dirPath,
-            buildPath: buildSystem.getBuildPath(dirPath),
-            key: cacheKey,
-            parsedRequest,
-            files,
-            libsAndOptions,
-            toolchainPath,
-            buildSystemArgs: getBuildSystemArgs(parsedRequest.backendOptions),
-        };
+                    const buildContext: BuildContext = {
+                        compiler: this,
+                        env: this.env,
+                        dirPath,
+                        buildPath: buildSystem.getBuildPath(dirPath),
+                        key: cacheKey,
+                        parsedRequest,
+                        files,
+                        libsAndOptions,
+                        toolchainPath,
+                        buildSystemArgs: getBuildSystemArgs(parsedRequest.backendOptions),
+                    };
 
-        const outputFilename = buildSystem.getArtifactFilename(buildContext);
+                    const outputFilename = buildSystem.getArtifactFilename(buildContext);
 
-        let fullResult: CompilationResult = bypassCompilationCache(bypassCache)
-            ? undefined
-            : await this.loadPackageWithExecutable(cacheKey, executablePackageHash, dirPath);
-        if (fullResult) {
-            fullResult.retreivedFromCache = true;
-            fullResult.s3Key = BaseCache.hash(cacheKey);
+                    let fullResult: CompilationResult = bypassCompilationCache(bypassCache)
+                        ? undefined
+                        : await this.loadPackageWithExecutable(cacheKey, executablePackageHash, dirPath);
+                    if (fullResult) {
+                        fullResult.retreivedFromCache = true;
+                        fullResult.s3Key = BaseCache.hash(cacheKey);
 
-            delete fullResult.inputFilename;
-            delete fullResult.dirPath;
-            fullResult.executableFilename = outputFilename;
-        } else {
-            const queueTime = performance.now();
-            const moreResult = await this.env.enqueue(async () => {
-                const start = performance.now();
-                compilationQueueTimeHistogram.observe((start - queueTime) / 1000);
+                        delete fullResult.inputFilename;
+                        delete fullResult.dirPath;
+                        fullResult.executableFilename = outputFilename;
+                    } else {
+                        const queueTime = performance.now();
+                        const moreResult = await (async () => {
+                            const start = performance.now();
+                            compilationQueueTimeHistogram.observe((start - queueTime) / 1000);
 
-                let writeSummary;
-                try {
-                    writeSummary = await buildSystem.writeProjectFiles(buildContext);
-                } catch (e) {
-                    logger.error(`${buildSystem.id}: could not write the project files`, e);
-                    return this.handleUserError(e, dirPath);
-                }
+                            let writeSummary;
+                            try {
+                                writeSummary = await buildSystem.writeProjectFiles(buildContext);
+                            } catch (e) {
+                                logger.error(`${buildSystem.id}: could not write the project files`, e);
+                                return this.handleUserError(e, dirPath);
+                            }
 
-                await buildSystem.prepareBuildDirectory(buildContext);
+                            await buildSystem.prepareBuildDirectory(buildContext);
 
-                const buildPlan = await buildSystem.getBuildPlan(buildContext);
+                            const buildPlan = await buildSystem.getBuildPlan(buildContext);
 
-                const result: CompilationResult = {
-                    code: 0,
-                    timedOut: false,
-                    stdout: [],
-                    stderr: [],
-                    buildsteps: [],
-                    inputFilename: writeSummary.inputFilename,
-                    executableFilename: outputFilename,
-                };
+                            const result: CompilationResult = {
+                                code: 0,
+                                timedOut: false,
+                                stdout: [],
+                                stderr: [],
+                                buildsteps: [],
+                                inputFilename: writeSummary.inputFilename,
+                                executableFilename: outputFilename,
+                            };
 
-                result.downloads = await this.setupBuildEnvironment(cacheKey, dirPath, true);
+                            result.downloads = await this.setupBuildEnvironment(cacheKey, dirPath, true);
 
-                for (const step of buildPlan.steps) {
-                    const stepResult = await this.doBuildstepAndAddToResult(
-                        result,
-                        step.name,
-                        step.exe,
-                        step.args,
-                        step.execParams,
+                            for (const step of buildPlan.steps) {
+                                const stepResult = await this.doBuildstepAndAddToResult(
+                                    result,
+                                    step.name,
+                                    step.exe,
+                                    step.args,
+                                    step.execParams,
+                                );
+
+                                if (stepResult.code !== 0) {
+                                    // Both streams: cargo diagnoses on stderr, maven says everything on stdout. Awaited because
+                                    // working out what to say can mean looking at what is installed, which is only worth it here.
+                                    const explanation = await step.explainFailure?.(
+                                        [...stepResult.stdout, ...stepResult.stderr].map(line => line.text).join('\n'),
+                                    );
+                                    result.result = {
+                                        dirPath,
+                                        timedOut: false,
+                                        stdout: [],
+                                        stderr: explanation ? [{text: explanation}] : [],
+                                        okToCache: false,
+                                        code: stepResult.code,
+                                        asm: step.failureMessage,
+                                    };
+                                    if (explanation) stepResult.stderr.push({text: explanation});
+                                    if (step.reportsCompilationOptions) {
+                                        result.result.compilationOptions = buildPlan.getCompilationOptions();
+                                    }
+                                    compilationTimeHistogram.observe((performance.now() - start) / 1000);
+                                    return result;
+                                }
+                            }
+
+                            let nothingToInspect: string | undefined;
+                            try {
+                                nothingToInspect = await buildSystem.finaliseArtifact(
+                                    buildContext,
+                                    result,
+                                    outputFilename,
+                                );
+                            } catch (e) {
+                                logger.error(`${buildSystem.id}: could not finalise the artifact`, e);
+                                return this.handleUserError(e, dirPath);
+                            }
+
+                            if (nothingToInspect) {
+                                // The build itself was fine, so report what was built alongside why there is nothing to show.
+                                result.result = {
+                                    dirPath,
+                                    timedOut: false,
+                                    stdout: [],
+                                    stderr: [{text: nothingToInspect}],
+                                    okToCache: false,
+                                    code: 0,
+                                    asm: `<${nothingToInspect}>`,
+                                    compilationOptions: buildPlan.getCompilationOptions(),
+                                };
+                                compilationTimeHistogram.observe((performance.now() - start) / 1000);
+                                return result;
+                            }
+
+                            result.result = {
+                                dirPath,
+                                code: 0,
+                                timedOut: false,
+                                stdout: [],
+                                stderr: [],
+                                okToCache: true,
+                                compilationOptions: buildPlan.getCompilationOptions(),
+                            };
+
+                            if (!parsedRequest.backendOptions.skipAsm) {
+                                result.result = await buildSystem.postProcessArtifact(
+                                    buildContext,
+                                    result.result,
+                                    outputFilename,
+                                );
+                            }
+
+                            result.code = 0;
+                            if (result.buildsteps) {
+                                _.each(result.buildsteps, step => {
+                                    result.code += step.code;
+                                });
+                            }
+
+                            await this.storePackageWithExecutable(executablePackageHash, dirPath, result);
+
+                            compilationTimeHistogram.observe((performance.now() - start) / 1000);
+                            return result;
+                        })();
+
+                        if (moreResult) fullResult = moreResult;
+                    }
+
+                    if (fullResult.result) {
+                        fullResult.result.dirPath = dirPath;
+
+                        if (doExecute && fullResult.result.code === 0) {
+                            // Check if executable exists before trying to run it
+                            if (!(await utils.fileExists(outputFilename))) {
+                                fullResult.execResult = {
+                                    code: -1,
+                                    okToCache: false,
+                                    stdout: [],
+                                    stderr: [{text: `Executable not found: ${utils.maskRootdir(outputFilename)}`}],
+                                    execTime: 0,
+                                    timedOut: false,
+                                };
+                                fullResult.didExecute = false;
+                            } else {
+                                const execTriple = await RemoteExecutionQuery.guessExecutionTripleForBuildresult({
+                                    ...fullResult,
+                                    downloads: fullResult.downloads || [],
+                                    executableFilename: outputFilename,
+                                    compilationOptions: fullResult.compilationOptions || [],
+                                });
+
+                                if (matchesCurrentHost(execTriple)) {
+                                    // A build system may produce something that is not directly executable, such as a jar.
+                                    const executable =
+                                        (await buildSystem.prepareExecution?.(
+                                            buildContext,
+                                            outputFilename,
+                                            executeOptions,
+                                        )) ?? outputFilename;
+                                    fullResult.execResult = await this.runExecutable(
+                                        executable,
+                                        executeOptions,
+                                        dirPath,
+                                    );
+                                    fullResult.didExecute = true;
+                                } else {
+                                    if (await RemoteExecutionQuery.isPossible(execTriple)) {
+                                        fullResult.execResult = await this.runExecutableRemotely(
+                                            executablePackageHash,
+                                            executeOptions,
+                                            execTriple,
+                                        );
+                                        fullResult.didExecute = true;
+                                    } else {
+                                        fullResult.execResult = {
+                                            code: -1,
+                                            okToCache: false,
+                                            stdout: [],
+                                            stderr: [{text: `No execution available for ${execTriple.toString()}`}],
+                                            execTime: 0,
+                                            timedOut: false,
+                                        };
+                                    }
+                                }
+                            }
+                        }
+                    }
+
+                    const optOutput = undefined;
+                    const stackUsageOutput = undefined;
+                    await this.afterCmakeCompilation(
+                        fullResult,
+                        false,
+                        cacheKey,
+                        executeOptions,
+                        parsedRequest.tools,
+                        cacheKey.backendOptions,
+                        cacheKey.filters,
+                        libsAndOptions.options,
+                        optOutput,
+                        stackUsageOutput,
+                        bypassCache,
+                        buildContext.buildPath,
                     );
 
-                    if (stepResult.code !== 0) {
-                        // Both streams: cargo diagnoses on stderr, maven says everything on stdout. Awaited because
-                        // working out what to say can mean looking at what is installed, which is only worth it here.
-                        const explanation = await step.explainFailure?.(
-                            [...stepResult.stdout, ...stepResult.stderr].map(line => line.text).join('\n'),
-                        );
-                        result.result = {
-                            dirPath,
-                            timedOut: false,
-                            stdout: [],
-                            stderr: explanation ? [{text: explanation}] : [],
-                            okToCache: false,
-                            code: stepResult.code,
-                            asm: step.failureMessage,
-                        };
-                        if (explanation) stepResult.stderr.push({text: explanation});
-                        if (step.reportsCompilationOptions) {
-                            result.result.compilationOptions = buildPlan.getCompilationOptions();
-                        }
-                        compilationTimeHistogram.observe((performance.now() - start) / 1000);
-                        return result;
+                    if (fullResult.result) delete fullResult.result.dirPath;
+
+                    // Cleanup temp directory after execution is complete
+                    await this.doTempfolderCleanup(fullResult);
+                    if (fullResult.result) {
+                        await this.doTempfolderCleanup(fullResult.result);
                     }
-                }
 
-                let nothingToInspect: string | undefined;
-                try {
-                    nothingToInspect = await buildSystem.finaliseArtifact(buildContext, result, outputFilename);
-                } catch (e) {
-                    logger.error(`${buildSystem.id}: could not finalise the artifact`, e);
-                    return this.handleUserError(e, dirPath);
-                }
+                    this.cleanupResult(fullResult);
+                    fullResult.s3Key = BaseCache.hash(cacheKey);
 
-                if (nothingToInspect) {
-                    // The build itself was fine, so report what was built alongside why there is nothing to show.
-                    result.result = {
-                        dirPath,
-                        timedOut: false,
-                        stdout: [],
-                        stderr: [{text: nothingToInspect}],
-                        okToCache: false,
-                        code: 0,
-                        asm: `<${nothingToInspect}>`,
-                        compilationOptions: buildPlan.getCompilationOptions(),
-                    };
-                    compilationTimeHistogram.observe((performance.now() - start) / 1000);
-                    return result;
-                }
+                    // In worker mode, store large non-cacheable results with short TTL
+                    if (this.isCompilationWorker && !fullResult.result?.okToCache && fullResult) {
+                        // Check if result is large enough to require S3 storage
+                        const resultString = JSON.stringify(fullResult);
+                        const resultSize = resultString.length;
 
-                result.result = {
-                    dirPath,
-                    code: 0,
-                    timedOut: false,
-                    stdout: [],
-                    stderr: [],
-                    okToCache: true,
-                    compilationOptions: buildPlan.getCompilationOptions(),
-                };
-
-                if (!parsedRequest.backendOptions.skipAsm) {
-                    result.result = await buildSystem.postProcessArtifact(buildContext, result.result, outputFilename);
-                }
-
-                result.code = 0;
-                if (result.buildsteps) {
-                    _.each(result.buildsteps, step => {
-                        result.code += step.code;
-                    });
-                }
-
-                await this.storePackageWithExecutable(executablePackageHash, dirPath, result);
-
-                compilationTimeHistogram.observe((performance.now() - start) / 1000);
-                return result;
-            });
-
-            if (moreResult) fullResult = moreResult;
-        }
-
-        if (fullResult.result) {
-            fullResult.result.dirPath = dirPath;
-
-            if (doExecute && fullResult.result.code === 0) {
-                // Check if executable exists before trying to run it
-                if (!(await utils.fileExists(outputFilename))) {
-                    fullResult.execResult = {
-                        code: -1,
-                        okToCache: false,
-                        stdout: [],
-                        stderr: [{text: `Executable not found: ${utils.maskRootdir(outputFilename)}`}],
-                        execTime: 0,
-                        timedOut: false,
-                    };
-                    fullResult.didExecute = false;
-                } else {
-                    const execTriple = await RemoteExecutionQuery.guessExecutionTripleForBuildresult({
-                        ...fullResult,
-                        downloads: fullResult.downloads || [],
-                        executableFilename: outputFilename,
-                        compilationOptions: fullResult.compilationOptions || [],
-                    });
-
-                    if (matchesCurrentHost(execTriple)) {
-                        // A build system may produce something that is not directly executable, such as a jar.
-                        const executable =
-                            (await buildSystem.prepareExecution?.(buildContext, outputFilename, executeOptions)) ??
-                            outputFilename;
-                        fullResult.execResult = await this.runExecutable(executable, executeOptions, dirPath);
-                        fullResult.didExecute = true;
-                    } else {
-                        if (await RemoteExecutionQuery.isPossible(execTriple)) {
-                            fullResult.execResult = await this.runExecutableRemotely(
-                                executablePackageHash,
-                                executeOptions,
-                                execTriple,
+                        if (resultSize > WEBSOCKET_SIZE_THRESHOLD) {
+                            // Store with 1-day TTL for temporary retrieval in temp/ subdirectory
+                            await this.env.tempCachePutWithTTL(
+                                cacheKey,
+                                resultString,
+                                TEMP_STORAGE_TTL_DAYS,
+                                undefined,
                             );
-                            fullResult.didExecute = true;
-                        } else {
-                            fullResult.execResult = {
-                                code: -1,
-                                okToCache: false,
-                                stdout: [],
-                                stderr: [{text: `No execution available for ${execTriple.toString()}`}],
-                                execTime: 0,
-                                timedOut: false,
-                            };
+                            // Set s3Key with temp/ prefix to reflect storage location
+                            fullResult.s3Key = `temp/${BaseCache.hash(cacheKey)}`;
                         }
                     }
-                }
-            }
-        }
 
-        const optOutput = undefined;
-        const stackUsageOutput = undefined;
-        await this.afterCmakeCompilation(
-            fullResult,
-            false,
-            cacheKey,
-            executeOptions,
-            parsedRequest.tools,
-            cacheKey.backendOptions,
-            cacheKey.filters,
-            libsAndOptions.options,
-            optOutput,
-            stackUsageOutput,
-            bypassCache,
-            buildContext.buildPath,
+                    return fullResult;
+                },
+                {abandonIfStale: true},
+            ),
         );
-
-        if (fullResult.result) delete fullResult.result.dirPath;
-
-        // Cleanup temp directory after execution is complete
-        await this.doTempfolderCleanup(fullResult);
-        if (fullResult.result) {
-            await this.doTempfolderCleanup(fullResult.result);
-        }
-
-        this.cleanupResult(fullResult);
-        fullResult.s3Key = BaseCache.hash(cacheKey);
-
-        // In worker mode, store large non-cacheable results with short TTL
-        if (this.isCompilationWorker && !fullResult.result?.okToCache && fullResult) {
-            // Check if result is large enough to require S3 storage
-            const resultString = JSON.stringify(fullResult);
-            const resultSize = resultString.length;
-
-            if (resultSize > WEBSOCKET_SIZE_THRESHOLD) {
-                // Store with 1-day TTL for temporary retrieval in temp/ subdirectory
-                await this.env.tempCachePutWithTTL(cacheKey, resultString, TEMP_STORAGE_TTL_DAYS, undefined);
-                // Set s3Key with temp/ prefix to reflect storage location
-                fullResult.s3Key = `temp/${BaseCache.hash(cacheKey)}`;
-            }
-        }
-
-        return fullResult;
     }
 
     protected getExtraFilepath(dirPath: string, filename: string) {
