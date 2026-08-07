@@ -437,7 +437,7 @@ describe('Cargo build system', () => {
         const compiler = makeRustCompiler(env);
         const ctx = makeCargoContext(compiler, env, makeParsedRequest());
         const artifact = cargoBuildSystem.getArtifactFilename(ctx);
-        expect(artifact).toEqual(path.join('/tmp/ce-fake-cargo', 'output'));
+        expect(artifact).toEqual(path.join('/tmp/ce-fake-cargo', 'output.s'));
 
         const copied: [string, string][] = [];
         const result = {
@@ -485,6 +485,33 @@ describe('Cargo build system', () => {
         });
 
         expect(copied).toEqual([[path.join(ctx.dirPath, 'target/debug/helper'), artifact]]);
+    });
+
+    it('takes a bin named for the artifact without its extension, which is how cargo would spell it', async () => {
+        const env = makeRustEnv();
+        const compiler = makeRustCompiler(env);
+        const ctx = makeCargoContext(compiler, env, makeParsedRequest());
+        const artifact = cargoBuildSystem.getArtifactFilename(ctx);
+
+        const copied: [string, string][] = [];
+        const result = {
+            buildsteps: [
+                {
+                    step: 'cargo',
+                    stdout: [
+                        // `output` is what the example's [[bin]] is called, and it is not the last one built.
+                        {text: '{"reason":"compiler-artifact","executable":"/app/target/debug/output"}'},
+                        {text: '{"reason":"compiler-artifact","executable":"/app/target/debug/helper"}'},
+                    ],
+                },
+            ],
+        } as any;
+
+        await cargoBuildSystem.finaliseArtifact(ctx, result, artifact, async (from: string, to: string) => {
+            copied.push([from, to]);
+        });
+
+        expect(copied).toEqual([[path.join(ctx.dirPath, 'target/debug/output'), artifact]]);
     });
 
     it('explains, rather than fails, when cargo built no executable', async () => {
@@ -908,6 +935,6 @@ describe('Make build system', () => {
         expect(makeBuildSystem.getArtifactFilename(named)).toEqual('/tmp/ce-fake-make/demo');
 
         const unnamed = makeMakeContext(compiler, env, makeParsedRequest());
-        expect(makeBuildSystem.getArtifactFilename(unnamed)).toEqual('/tmp/ce-fake-make/output');
+        expect(makeBuildSystem.getArtifactFilename(unnamed)).toEqual('/tmp/ce-fake-make/output.s');
     });
 });

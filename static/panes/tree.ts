@@ -164,6 +164,7 @@ export class Tree {
         const buildSystem = this.multifileService.getBuildSystemDescriptor();
         if (buildSystem) {
             this.cmakeArgsInput.prop('placeholder', buildSystem.argsPlaceholder);
+            this.customOutputFilenameInput.prop('placeholder', buildSystem.defaultArtifactName);
         }
     }
 
@@ -265,6 +266,7 @@ export class Tree {
         const descriptor = this.multifileService.getBuildSystemDescriptor();
         if (descriptor) {
             this.cmakeArgsInput.prop('placeholder', descriptor.argsPlaceholder);
+            this.customOutputFilenameInput.prop('placeholder', descriptor.defaultArtifactName);
             // Give the user the arguments this build system is usually driven with, but never clobber their own.
             if (this.getCmakeArgs() === '') this.cmakeArgsInput.val(descriptor.defaultArgs);
         }

@@ -35,9 +35,6 @@ import type {ParsedRequest} from '../handlers/compile.js';
 import * as utils from '../utils.js';
 import type {BuildContext, BuildPlan, BuildSystemDriver} from './build-system.interfaces.js';
 
-/** The name the built binary is copied to, so the rest of the compilation has a path it knew in advance. */
-const DEFAULT_ARTIFACT_NAME = 'output';
-
 /** One `compiler-artifact` record of `cargo --message-format=json...`. Only the parts we use. */
 type CargoArtifact = {
     reason: string;
@@ -172,7 +169,7 @@ export class CargoBuildSystem implements BuildSystemDriver {
 
     getArtifactFilename(ctx: BuildContext): string {
         const customName = ctx.key.backendOptions?.customOutputFilename;
-        return path.join(ctx.dirPath, customName || DEFAULT_ARTIFACT_NAME);
+        return path.join(ctx.dirPath, customName || this.descriptor.defaultArtifactName);
     }
 
     /**
@@ -232,9 +229,14 @@ export class CargoBuildSystem implements BuildSystemDriver {
         }
 
         const wanted = path.basename(artifactFilename);
+        // A cargo binary has no extension, so match the artifact's stem too: a project that names a bin `output`,
+        // as the example does, is still naming the conventional `output.s` this copies it to.
+        const wantedStem = path.parse(wanted).name;
         const chosen =
-            executables.find(artifact => path.basename(artifact.executable as string) === wanted) ??
-            executables[executables.length - 1];
+            executables.find(artifact => {
+                const built = path.basename(artifact.executable as string);
+                return built === wanted || built === wantedStem;
+            }) ?? executables[executables.length - 1];
 
         if (chosen.executable !== artifactFilename) {
             await copyFile(chosen.executable as string, artifactFilename);

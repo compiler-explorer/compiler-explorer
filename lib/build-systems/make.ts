@@ -34,9 +34,6 @@ import type {ParsedRequest} from '../handlers/compile.js';
 import * as utils from '../utils.js';
 import type {BuildContext, BuildPlan, BuildSystemDriver} from './build-system.interfaces.js';
 
-/** What the artifact is called when the project has not said, which a Makefile is free to disagree with. */
-const DEFAULT_ARTIFACT_NAME = 'output';
-
 export class MakeBuildSystem implements BuildSystemDriver {
     readonly id = 'make' as const;
     readonly descriptor = BuildSystems.make;
@@ -116,7 +113,7 @@ export class MakeBuildSystem implements BuildSystemDriver {
 
     getArtifactFilename(ctx: BuildContext): string {
         const customName = ctx.key.backendOptions?.customOutputFilename;
-        return path.join(ctx.dirPath, customName || DEFAULT_ARTIFACT_NAME);
+        return path.join(ctx.dirPath, customName || this.descriptor.defaultArtifactName);
     }
 
     async finaliseArtifact(

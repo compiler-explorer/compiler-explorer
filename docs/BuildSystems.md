@@ -78,6 +78,12 @@ driver interface exists to separate:
    `backendOptions.customOutputFilename` is the user picking which artifact to inspect, and a build with several
    targets — extra bins, libraries, examples — has plenty of others worth looking at. A driver that discovers its
    artifact must still let that override win.
+
+   What that default is called is `defaultArtifactName` on the descriptor, so the frontend can show it as the output
+   file input's placeholder and the drivers cannot drift from it. It is `output.s` everywhere a build produces a
+   binary — the name a plain compilation already uses, so a project only has to learn one — and `output.jar` for
+   Maven, which builds a jar. CMake asks the compiler instead of reading it, because a compiler may override the name:
+   the Windows ones want a `.exe`.
 3. **"Output" means disassembling a native binary.** For Cargo the useful output is `cargo rustc -- --emit asm`; for
    Maven it is javap-style bytecode, and there is no native binary at all.
 4. **Execution means running the artifact directly.** Maven artifacts need `java -jar`.

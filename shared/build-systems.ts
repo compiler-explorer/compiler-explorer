@@ -51,6 +51,15 @@ export type BuildSystemDescriptor = {
     defaultArgs: string;
     /** Placeholder for the build system arguments input */
     argsPlaceholder: string;
+    /**
+     * What the build's artifact is called when `customOutputFilename` does not say. `output.s` is the name a plain
+     * compilation gives its output, so every build system that produces a binary keeps it, and a project only has to
+     * know one name. Maven is the exception: what it builds is a jar, and calling one `output.s` helps nobody.
+     *
+     * Also the placeholder for the tree pane's output file input. CMake derives the same name from the compiler
+     * instead of reading this, because a compiler is free to override it -- the Windows ones want a `.exe`.
+     */
+    defaultArtifactName: string;
 };
 
 export const BuildSystems: Record<BuildSystemId, BuildSystemDescriptor> = {
@@ -62,6 +71,7 @@ export const BuildSystems: Record<BuildSystemId, BuildSystemDescriptor> = {
         compatibleLanguageIds: ['c++', 'c', 'fortran', 'cuda', 'assembly'],
         defaultArgs: '-DCMAKE_BUILD_TYPE=Debug',
         argsPlaceholder: 'CMake arguments...',
+        defaultArtifactName: 'output.s',
     },
     cargo: {
         id: 'cargo',
@@ -71,6 +81,7 @@ export const BuildSystems: Record<BuildSystemId, BuildSystemDescriptor> = {
         compatibleLanguageIds: ['rust'],
         defaultArgs: '',
         argsPlaceholder: 'Cargo arguments...',
+        defaultArtifactName: 'output.s',
     },
     make: {
         id: 'make',
@@ -81,6 +92,7 @@ export const BuildSystems: Record<BuildSystemId, BuildSystemDescriptor> = {
         compatibleLanguageIds: 'all',
         defaultArgs: '',
         argsPlaceholder: 'Make arguments and targets...',
+        defaultArtifactName: 'output.s',
     },
     maven: {
         id: 'maven',
@@ -90,6 +102,7 @@ export const BuildSystems: Record<BuildSystemId, BuildSystemDescriptor> = {
         compatibleLanguageIds: ['java', 'kotlin'],
         defaultArgs: '',
         argsPlaceholder: 'Maven arguments...',
+        defaultArtifactName: 'output.jar',
     },
 };
 

@@ -54,9 +54,6 @@ const KOTLIN_GROUP_PATH = path.join('org', 'jetbrains', 'kotlin');
 /** What a Kotlin's repository says its installation has to answer for, one artifact a line. Written by infra. */
 const SUPPLIED_RECORD = '.ce-supplied-by-installation';
 
-/** The name the built jar is copied to, so the rest of the compilation has a path it knew in advance. */
-const DEFAULT_ARTIFACT_NAME = 'output.jar';
-
 /**
  * What the Java-family compilers know about the JDK they belong to, neither of which BaseCompiler has any concept of:
  * `javaHome` is the JDK a Kotlin compiler targets, `javaRuntime` the `java` that runs a Java compiler's output.
@@ -327,7 +324,7 @@ export class MavenBuildSystem implements BuildSystemDriver {
 
     getArtifactFilename(ctx: BuildContext): string {
         const customName = ctx.key.backendOptions?.customOutputFilename;
-        return path.join(ctx.dirPath, customName || DEFAULT_ARTIFACT_NAME);
+        return path.join(ctx.dirPath, customName || this.descriptor.defaultArtifactName);
     }
 
     /**
