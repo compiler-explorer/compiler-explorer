@@ -380,7 +380,7 @@ describe('Cargo build system', () => {
 
     it('takes cargo from the selected compiler own toolchain, not a global one', () => {
         const compiler = makeRustCompiler(makeRustEnv());
-        expect(CargoBuildSystem.getCargoPath(compiler)).toEqual('/opt/compiler-explorer/rust-1.91.0/bin/cargo');
+        expect(CargoBuildSystem.getCargoPath(compiler)).toEqual(path.join(path.dirname(RUSTC_EXE), 'cargo'));
     });
 
     it('refuses Rust compilers that ship no cargo', async () => {
@@ -399,7 +399,7 @@ describe('Cargo build system', () => {
         const plan = await cargoBuildSystem.getBuildPlan(makeCargoContext(compiler, env, makeParsedRequest()));
 
         expect(plan.steps.map(step => step.name)).toEqual(['cargo']);
-        expect(plan.steps[0].exe).toEqual('/opt/compiler-explorer/rust-1.91.0/bin/cargo');
+        expect(plan.steps[0].exe).toEqual(path.join(path.dirname(RUSTC_EXE), 'cargo'));
         expect(plan.steps[0].args).toEqual(['build', '--offline', '--message-format=json-render-diagnostics']);
     });
 
@@ -465,12 +465,12 @@ describe('Cargo build system', () => {
     it('maps the sandbox paths cargo reports back to real ones', () => {
         // CE bind-mounts the project at /app, so this is what cargo actually reports during a real compilation.
         expect(CargoBuildSystem.toHostPath('/app/target/debug/output', '/tmp/ce-build')).toEqual(
-            '/tmp/ce-build/target/debug/output',
+            path.join('/tmp/ce-build', 'target/debug/output'),
         );
         // Run without a sandbox, cargo reports the real temp directory instead, which rebases to the same place.
         expect(
             CargoBuildSystem.toHostPath('/tmp/compiler-explorer-compilerXYZ/target/debug/output', '/tmp/ce-build'),
-        ).toEqual('/tmp/ce-build/target/debug/output');
+        ).toEqual(path.join('/tmp/ce-build', 'target/debug/output'));
         // A path under neither spelling of the root is not ours to rebase.
         expect(CargoBuildSystem.toHostPath('/tmp/elsewhere/target/debug/output', '/tmp/ce-build')).toEqual(
             '/tmp/elsewhere/target/debug/output',
@@ -615,8 +615,6 @@ describe('Cargo build system', () => {
 
 describe('Maven build system', () => {
     const javaLanguages = {java: {id: 'java'}} as const;
-    // A real CE JDK, so the JAVA_HOME derivation is checked against something that exists.
-    const JAVAC_EXE = '/opt/compiler-explorer/jdk-21.0.0/bin/javac';
 
     // The three things the driver reads, laid out as they are installed: a maven, a Kotlin installation holding the
     // jars, and the repository beside it holding a pom for what the installation answers for. A second Kotlin with
@@ -634,11 +632,19 @@ describe('Maven build system', () => {
     fsSync.writeFileSync(path.join(fakeKotlinHome, 'lib', 'kotlin-compiler.jar'), '');
     fsSync.mkdirSync(path.join(fixtures, 'kotlin-jvm-1.9.20', 'lib'), {recursive: true});
     fsSync.mkdirSync(fakeProjectDir, {recursive: true});
+    // A JDK of the fixtures' own: the driver refuses a compiler it can find no java for, so one has to be here
+    // rather than wherever this machine happens to have installed one.
+    const fakeJavaHome = path.join(fixtures, 'jdk-21.0.0');
+    fsSync.mkdirSync(path.join(fakeJavaHome, 'bin'), {recursive: true});
+    fsSync.writeFileSync(path.join(fakeJavaHome, 'bin', 'java'), '');
+    const JAVAC_EXE = path.join(fakeJavaHome, 'bin', 'javac');
+    // The launcher the driver walks up from to find the repository primed when maven was installed.
+    const MVN_EXE = path.join(fakeMavenHome, 'bin', 'mvn');
 
     function makeJavaEnv(): CompilationEnvironment {
         return makeCompilationEnvironment({
             languages: javaLanguages,
-            props: {maven: '/opt/compiler-explorer/maven/bin/mvn'},
+            props: {maven: MVN_EXE},
         });
     }
 
@@ -672,7 +678,7 @@ describe('Maven build system', () => {
 
     it('takes JAVA_HOME from the selected compiler, whose exe lives in its bin', () => {
         const compiler = makeJavaCompiler(makeJavaEnv());
-        expect(MavenBuildSystem.getJavaHome(compiler)).toEqual('/opt/compiler-explorer/jdk-21.0.0');
+        expect(MavenBuildSystem.getJavaHome(compiler)).toEqual(fakeJavaHome);
     });
 
     it('refuses compilers that no JDK can be found for', async () => {
@@ -687,19 +693,19 @@ describe('Maven build system', () => {
         // What KotlinCompiler reads from compiler.<id>.java_home: kotlinc lives in its own kotlin-jvm-x.y.z, so
         // deriving a JDK from its path would find nothing to run maven with.
         const kotlinc = Object.assign(
-            makeJavaCompiler(env, {exe: '/opt/compiler-explorer/kotlin-jvm-2.1.21/bin/kotlinc-jvm', lang: 'kotlin'}),
-            {javaHome: '/opt/compiler-explorer/jdk-21.0.0'},
+            makeJavaCompiler(env, {exe: path.join(fakeKotlinHome, 'bin', 'kotlinc-jvm'), lang: 'kotlin'}),
+            {javaHome: fakeJavaHome},
         );
-        expect(MavenBuildSystem.getJavaHome(kotlinc)).toEqual('/opt/compiler-explorer/jdk-21.0.0');
+        expect(MavenBuildSystem.getJavaHome(kotlinc)).toEqual(fakeJavaHome);
     });
 
     it('falls back to the JDK that runs the compiler output', async () => {
         const env = makeJavaEnv();
         // What JavaCompiler reads from compiler.<id>.runtime, for anything that does not declare a java_home.
         const compiler = Object.assign(makeJavaCompiler(env, {exe: '/somewhere/else/javac'}), {
-            javaRuntime: '/opt/compiler-explorer/jdk-21.0.0/bin/java',
+            javaRuntime: path.join(fakeJavaHome, 'bin', 'java'),
         });
-        expect(MavenBuildSystem.getJavaHome(compiler)).toEqual('/opt/compiler-explorer/jdk-21.0.0');
+        expect(MavenBuildSystem.getJavaHome(compiler)).toEqual(fakeJavaHome);
     });
 
     it('builds Kotlin with the compiler that was selected, jars and all', async () => {
@@ -718,7 +724,7 @@ describe('Maven build system', () => {
                 }),
                 env,
             ),
-            {javaHome: '/opt/compiler-explorer/jdk-21.0.0'},
+            {javaHome: fakeJavaHome},
         );
         const ctx = makeMavenContext(kotlinc, env, makeParsedRequest());
         ctx.dirPath = fakeProjectDir;
@@ -745,7 +751,7 @@ describe('Maven build system', () => {
             makeMavenContext(makeJavaCompiler(env), env, makeParsedRequest()),
         );
 
-        expect(plan.steps[0].args).toContain('-Dmaven.repo.local.tail=/opt/compiler-explorer/maven/repository');
+        expect(plan.steps[0].args).toContain(`-Dmaven.repo.local.tail=${path.join(fakeMavenHome, 'repository')}`);
         expect(plan.steps[0].args.join(' ')).not.toContain('kotlin.version');
     });
 
@@ -766,7 +772,7 @@ describe('Maven build system', () => {
                 }),
                 env,
             ),
-            {javaHome: '/opt/compiler-explorer/jdk-21.0.0'},
+            {javaHome: fakeJavaHome},
         );
 
         const reason = await mavenBuildSystem.getUnsupportedReason(kotlinc);
@@ -815,11 +821,11 @@ describe('Maven build system', () => {
         const compiler = makeJavaCompiler(env);
         const plan = await mavenBuildSystem.getBuildPlan(makeMavenContext(compiler, env, makeParsedRequest()));
 
-        expect(plan.steps[0].exe).toEqual('/opt/compiler-explorer/maven/bin/mvn');
+        expect(plan.steps[0].exe).toEqual(MVN_EXE);
         expect(plan.steps[0].args).toContain('-o');
-        expect(plan.steps[0].args).toContain('-Dmaven.repo.local.tail=/opt/compiler-explorer/maven/repository');
+        expect(plan.steps[0].args).toContain(`-Dmaven.repo.local.tail=${path.join(fakeMavenHome, 'repository')}`);
         expect(plan.steps[0].args).toContain('package');
-        expect(plan.steps[0].execParams.env.JAVA_HOME).toEqual('/opt/compiler-explorer/jdk-21.0.0');
+        expect(plan.steps[0].execParams.env.JAVA_HOME).toEqual(fakeJavaHome);
     });
 
     it('keeps jansi out of the noexec temp directory', async () => {
@@ -1033,10 +1039,10 @@ describe('Make build system', () => {
         const env = makeMakeEnv();
         const compiler = makeCppCompiler(env);
         const named = makeMakeContext(compiler, env, makeParsedRequest({customOutputFilename: 'demo'}));
-        expect(makeBuildSystem.getArtifactFilename(named)).toEqual('/tmp/ce-fake-make/demo');
+        expect(makeBuildSystem.getArtifactFilename(named)).toEqual(path.join('/tmp/ce-fake-make', 'demo'));
 
         const unnamed = makeMakeContext(compiler, env, makeParsedRequest());
-        expect(makeBuildSystem.getArtifactFilename(unnamed)).toEqual('/tmp/ce-fake-make/output.s');
+        expect(makeBuildSystem.getArtifactFilename(unnamed)).toEqual(path.join('/tmp/ce-fake-make', 'output.s'));
     });
 
     it('gives up on a build that waited too long, but never on one the cache already answered', async () => {
