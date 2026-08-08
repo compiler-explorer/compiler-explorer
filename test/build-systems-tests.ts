@@ -43,7 +43,13 @@ import {
 import {MavenBuildSystem} from '../lib/build-systems/maven.js';
 import {CompilationEnvironment} from '../lib/compilation-env.js';
 import {ParsedRequest} from '../lib/handlers/compile.js';
-import {BuildSystems, getBuildSystemsForLanguage, isBuildSystemId} from '../shared/build-systems.js';
+import {
+    BuildSystems,
+    getBuildSystemByManifestFilename,
+    getBuildSystemsForLanguage,
+    isBuildSystemId,
+    isManifestLanguageId,
+} from '../shared/build-systems.js';
 import {BypassCache} from '../types/compilation/compilation.interfaces.js';
 import {CompilerInfo} from '../types/compiler.interfaces.js';
 import {makeCompilationEnvironment, makeFakeCompilerInfo} from './utils.js';
@@ -147,6 +153,34 @@ describe('Build system registry', () => {
         compiler.getBuildProjectCacheKey(cmakeBuildSystem, req, []);
 
         expect(req.filters.execute).toBeUndefined();
+    });
+
+    it('recognises each build system by its manifest filename', () => {
+        // Makefile is the reason this exists: it has no extension, so nothing else identifies it.
+        expect(getBuildSystemByManifestFilename('Makefile')?.id).toEqual('make');
+        expect(getBuildSystemByManifestFilename('CMakeLists.txt')?.id).toEqual('cmake');
+        expect(getBuildSystemByManifestFilename('Cargo.toml')?.id).toEqual('cargo');
+        expect(getBuildSystemByManifestFilename('pom.xml')?.id).toEqual('maven');
+
+        // A manifest in a subdirectory is still one, however the path is spelled.
+        expect(getBuildSystemByManifestFilename('sub/dir/Makefile')?.id).toEqual('make');
+        expect(getBuildSystemByManifestFilename('sub\\dir\\Makefile')?.id).toEqual('make');
+
+        expect(getBuildSystemByManifestFilename('makefile')).toBeUndefined();
+        expect(getBuildSystemByManifestFilename('Makefile.am')).toBeUndefined();
+        expect(getBuildSystemByManifestFilename('main.cpp')).toBeUndefined();
+        expect(getBuildSystemByManifestFilename('')).toBeUndefined();
+    });
+
+    it('knows which languages are a manifest rather than something to compile', () => {
+        expect(isManifestLanguageId('makefile')).toBe(true);
+        expect(isManifestLanguageId('cmake')).toBe(true);
+        expect(isManifestLanguageId('cargo')).toBe(true);
+        expect(isManifestLanguageId('maven')).toBe(true);
+
+        expect(isManifestLanguageId('c++')).toBe(false);
+        expect(isManifestLanguageId('rust')).toBe(false);
+        expect(isManifestLanguageId('make')).toBe(false);
     });
 
     it('offers each build system only for the languages it can build', () => {

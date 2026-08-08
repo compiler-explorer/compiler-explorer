@@ -114,6 +114,23 @@ export function getBuildSystemDescriptor(id: string): BuildSystemDescriptor | un
     return isBuildSystemId(id) ? BuildSystems[id] : undefined;
 }
 
+/**
+ * The build system this file is the manifest of, if any. A manifest is recognised by its name rather than by its
+ * extension, because `Makefile` has none for an extension to be read from.
+ */
+export function getBuildSystemByManifestFilename(filename: string): BuildSystemDescriptor | undefined {
+    const basename = filename.split(/[/\\]/).pop();
+    return Object.values(BuildSystems).find(buildSystem => buildSystem.manifestFilename === basename);
+}
+
+/**
+ * Whether this is the language a build system's manifest is written in. Those are not languages anything is compiled
+ * as, so they are not offered for an editor until one is needed.
+ */
+export function isManifestLanguageId(langId: string): boolean {
+    return Object.values(BuildSystems).some(buildSystem => buildSystem.manifestLanguageId === langId);
+}
+
 /** The build systems that can build the given language. */
 export function getBuildSystemsForLanguage(langId: LanguageKey): BuildSystemDescriptor[] {
     return Object.values(BuildSystems).filter(

@@ -29,6 +29,7 @@ import _ from 'underscore';
 import {unwrap} from '../shared/assert.js';
 import {
     type BuildSystemDescriptor,
+    getBuildSystemByManifestFilename,
     getBuildSystemDescriptor,
     getBuildSystemsForLanguage,
     type TreeBuildSystem,
@@ -104,6 +105,9 @@ export class MultifileService {
     private isValidFilename(filename: string): boolean {
         if (MultifileService.isHiddenFile(filename)) return false;
 
+        // Before the extension checks below, which a Makefile has nothing for them to match on.
+        if (getBuildSystemByManifestFilename(filename)) return true;
+
         const filenameExt = path.extname(filename);
         if (this.validExtraFilenameExtensions.includes(filenameExt)) {
             return true;
@@ -136,6 +140,11 @@ export class MultifileService {
             });
             return sorted[0].id;
         }
+
+        // A build system's manifest is highlighted as whatever that build system reads it as, which for a Makefile is
+        // the only way to tell: it has no extension, so the check above cannot see it and it would open as C++.
+        const manifestOf = getBuildSystemByManifestFilename(filename);
+        if (manifestOf) return manifestOf.manifestLanguageId;
 
         if (this.isCMakeFile(filename)) {
             return this.cmakeLangId;

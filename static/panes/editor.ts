@@ -48,6 +48,7 @@ import '../modes/_all';
 import {Container} from 'golden-layout';
 
 import {assert, unwrap} from '../../shared/assert.js';
+import {getBuildSystemByManifestFilename, isManifestLanguageId} from '../../shared/build-systems.js';
 import {escapeHTML, isString} from '../../shared/common-utils.js';
 import {CompilationResult} from '../../types/compilation/compilation.interfaces.js';
 import {CompilerInfo} from '../../types/compiler.interfaces.js';
@@ -895,9 +896,10 @@ export class Editor extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Edit
             // In some initialization flows we get here before creating this.selectize
             setTimeout(() => this.changeLanguage(newLang), 0);
         } else {
-            if (newLang === 'cmake') {
-                const cmakeLang = languagesService.getLanguagesOrFail().cmake;
-                if (cmakeLang) this.selectize.addOption(cmakeLang);
+            // A manifest language is not offered for an editor, so it has to be added before it can be selected.
+            if (isManifestLanguageId(newLang)) {
+                const manifestLang = languagesService.getLanguagesOrFail()[newLang as LanguageKey];
+                if (manifestLang) this.selectize.addOption(manifestLang);
             }
             this.selectize.setValue(newLang);
         }
@@ -1941,8 +1943,10 @@ export class Editor extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Edit
     override updateTitle(): void {
         const name = this.getPaneName();
         const customName = this.paneName ? this.paneName : name;
-        if (name.endsWith('CMakeLists.txt')) {
-            this.changeLanguage('cmake');
+        // A manifest is read as whatever its build system reads it as, whoever named the file that.
+        const manifestOf = getBuildSystemByManifestFilename(name);
+        if (manifestOf) {
+            this.changeLanguage(manifestOf.manifestLanguageId);
         }
         this.container.setTitle(escapeHTML(customName));
     }
