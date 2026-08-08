@@ -31,7 +31,7 @@ import {describe, expect, it} from 'vitest';
 
 import {BaseCompiler} from '../lib/base-compiler.js';
 import {CargoBuildSystem} from '../lib/build-systems/cargo.js';
-import type {BuildContext} from '../lib/build-systems/index.js';
+import type {BuildContext, BuildPlan} from '../lib/build-systems/index.js';
 import {
     cargoBuildSystem,
     cmakeBuildSystem,
@@ -40,6 +40,7 @@ import {
     makeBuildSystem,
     mavenBuildSystem,
 } from '../lib/build-systems/index.js';
+import {MakeBuildSystem} from '../lib/build-systems/make.js';
 import {MavenBuildSystem} from '../lib/build-systems/maven.js';
 import {CompilationEnvironment} from '../lib/compilation-env.js';
 import {ParsedRequest} from '../lib/handlers/compile.js';
@@ -991,6 +992,52 @@ describe('Make build system', () => {
 
         const unnamed = makeMakeContext(compiler, env, makeParsedRequest());
         expect(makeBuildSystem.getArtifactFilename(unnamed)).toEqual('/tmp/ce-fake-make/output.s');
+    });
+
+    it('reports a build that could not be set up, instead of post-processing nothing', async () => {
+        const env = makeMakeEnv();
+        const compiler = makeCppCompiler(env);
+
+        let dirPath = '';
+        class FailsToWrite extends MakeBuildSystem {
+            override async writeProjectFiles(ctx: BuildContext): Promise<{inputFilename: string}> {
+                dirPath = ctx.dirPath;
+                throw new Error('could not write the project');
+            }
+        }
+
+        const result = await compiler.buildProject(
+            new FailsToWrite(),
+            [],
+            makeParsedRequest(),
+            BypassCache.Compilation,
+        );
+
+        // A project build's assembly is read from the nested result. Without one, post-processing threw a TypeError
+        // over the top of the real error, and left the build directory behind because it threw before the cleanup.
+        expect(result.result?.asm).toEqual([{text: '<could not write the project>'}]);
+        expect(result.code).toEqual(-1);
+        expect(dirPath).not.toEqual('');
+        expect(fsSync.existsSync(dirPath)).toBe(false);
+    });
+
+    it('reports a missing launcher, which is thrown while working out what to run', async () => {
+        // maven defaults to empty and asserts, so this has to arrive as a compilation result rather than a bare 400.
+        const env = makeMakeEnv();
+        const compiler = makeCppCompiler(env);
+
+        let dirPath = '';
+        class NoLauncher extends MakeBuildSystem {
+            override async getBuildPlan(ctx: BuildContext): Promise<BuildPlan> {
+                dirPath = ctx.dirPath;
+                throw new Error('No make command found');
+            }
+        }
+
+        const result = await compiler.buildProject(new NoLauncher(), [], makeParsedRequest(), BypassCache.Compilation);
+
+        expect(result.result?.asm).toEqual([{text: '<No make command found>'}]);
+        expect(fsSync.existsSync(dirPath)).toBe(false);
     });
 
     it('refuses an output filename that leaves the project, whatever it is copied from', () => {

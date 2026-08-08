@@ -2816,6 +2816,34 @@ export class BaseCompiler {
         };
     }
 
+    /**
+     * A project build that fell over before it made anything to inspect. Shaped like the failures runBuildPlanSteps
+     * reports rather than like handleUserError's, whose flat shape belongs to a single-file compilation: a project
+     * build's assembly is read from the nested result, and finishProjectBuild post-processes it, so leaving that out
+     * both hides the reason and takes the post-processing down with it.
+     */
+    private handleProjectUserError(error: any, dirPath: string): CompilationResult {
+        const message = `<${error.message}>`;
+        return {
+            dirPath,
+            okToCache: false,
+            code: -1,
+            timedOut: false,
+            buildsteps: [],
+            stdout: [],
+            stderr: [{text: message}],
+            result: {
+                dirPath,
+                okToCache: false,
+                code: -1,
+                timedOut: false,
+                stdout: [],
+                stderr: [{text: message}],
+                asm: message,
+            },
+        };
+    }
+
     handleUserBuildError(error: any, dirPath: string): BuildResult {
         return {
             dirPath,
@@ -3070,16 +3098,17 @@ export class BaseCompiler {
         const start = performance.now();
 
         let writeSummary;
+        let buildPlan: BuildPlan;
         try {
             writeSummary = await buildSystem.writeProjectFiles(buildContext);
+            await buildSystem.prepareBuildDirectory(buildContext);
+            buildPlan = await buildSystem.getBuildPlan(buildContext);
         } catch (e) {
-            logger.error(`${buildSystem.id}: could not write the project files`, e);
-            return this.handleUserError(e, dirPath);
+            // Anything the build system needs before it can run a step, including what it is to run: a missing
+            // launcher throws from here, and the user is owed that message rather than a bare 400.
+            logger.error(`${buildSystem.id}: could not set up the build`, e);
+            return this.handleProjectUserError(e, dirPath);
         }
-
-        await buildSystem.prepareBuildDirectory(buildContext);
-
-        const buildPlan = await buildSystem.getBuildPlan(buildContext);
 
         const result: CompilationResult = {
             code: 0,
@@ -3103,7 +3132,7 @@ export class BaseCompiler {
             nothingToInspect = await buildSystem.finaliseArtifact(buildContext, result, outputFilename);
         } catch (e) {
             logger.error(`${buildSystem.id}: could not finalise the artifact`, e);
-            return this.handleUserError(e, dirPath);
+            return this.handleProjectUserError(e, dirPath);
         }
 
         if (nothingToInspect) {
