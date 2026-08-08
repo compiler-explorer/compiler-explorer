@@ -27,7 +27,7 @@ import fs from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
 
-import {describe, expect, it} from 'vitest';
+import {describe, expect, it, vi} from 'vitest';
 
 import {BaseCompiler} from '../lib/base-compiler.js';
 import {CargoBuildSystem} from '../lib/build-systems/cargo.js';
@@ -1037,6 +1037,30 @@ describe('Make build system', () => {
 
         const unnamed = makeMakeContext(compiler, env, makeParsedRequest());
         expect(makeBuildSystem.getArtifactFilename(unnamed)).toEqual('/tmp/ce-fake-make/output.s');
+    });
+
+    it('gives up on a build that waited too long, but never on one the cache already answered', async () => {
+        const env = makeMakeEnv();
+        const compiler = makeCppCompiler(env);
+
+        class Fails extends MakeBuildSystem {
+            override async writeProjectFiles(): Promise<{inputFilename: string}> {
+                throw new Error('far enough');
+            }
+        }
+
+        const enqueued = vi.spyOn(env, 'enqueue');
+
+        // Nothing cached: a compiler has to run, so waiting too long for a slot is worth giving up on.
+        await compiler.buildProject(new Fails(), [], makeParsedRequest(), BypassCache.None);
+        expect(enqueued.mock.calls.at(-1)?.[1]).toEqual({abandonIfStale: true});
+
+        // Cached: the result was there before the wait began, so there is nothing to be too late for.
+        vi.spyOn(compiler, 'fetchExecutablePackage').mockResolvedValue(Buffer.from('not really a package'));
+        await compiler.buildProject(new Fails(), [], makeParsedRequest(), BypassCache.None);
+        expect(enqueued.mock.calls.at(-1)?.[1]).toEqual({abandonIfStale: false});
+
+        vi.restoreAllMocks();
     });
 
     it('reports a build that could not be set up, instead of post-processing nothing', async () => {

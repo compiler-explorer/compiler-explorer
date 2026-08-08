@@ -2237,12 +2237,35 @@ export class BaseCompiler {
         return buildResult;
     }
 
-    async loadPackageWithExecutable(key: CacheKey, executablePackageHash: string, dirPath: string) {
+    /**
+     * The packaged build for this key if the cache has one. Deliberately answerable without a directory to put it in:
+     * whether something was built before is a question about the cache alone, and asking it early is what lets the
+     * caller decide whether a compiler has to run at all.
+     */
+    async fetchExecutablePackage(executablePackageHash: string) {
+        try {
+            const result = await this.env.executableCache.get(executablePackageHash);
+            if (result.hit) return unwrap(result.data);
+            logger.debug('Tried to get executable from cache, but got a cache miss');
+        } catch (err) {
+            logger.error('Tried to get executable from cache, but got an error:', {err});
+        }
+        return undefined;
+    }
+
+    /** Write a packaged build into a directory and read back the compilation it describes. */
+    async unpackExecutablePackage(
+        packaged: Awaited<ReturnType<BaseCompiler['fetchExecutablePackage']>>,
+        key: CacheKey,
+        executablePackageHash: string,
+        dirPath: string,
+    ) {
         const compilationResultFilename = 'compilation-result.json';
         try {
             const startTime = process.hrtime.bigint();
-            const outputFilename = await this.env.executableGet(executablePackageHash, dirPath);
-            if (outputFilename) {
+            const outputFilename = path.join(dirPath, executablePackageHash);
+            await fs.writeFile(outputFilename, unwrap(packaged));
+            {
                 logger.debug(`Using cached package ${outputFilename}`);
                 await this.packager.unpack(outputFilename, dirPath);
                 const buildResultsBuf = await fs.readFile(path.join(dirPath, compilationResultFilename));
@@ -2262,11 +2285,16 @@ export class BaseCompiler {
                     packageDownloadAndUnzipTime: utils.deltaTimeNanoToMili(startTime, endTime),
                 });
             }
-            logger.debug('Tried to get executable from cache, but got a cache miss');
         } catch (err) {
-            logger.error('Tried to get executable from cache, but got an error:', {err});
+            logger.error('Tried to unpack a cached executable, but got an error:', {err});
         }
         return false;
+    }
+
+    async loadPackageWithExecutable(key: CacheKey, executablePackageHash: string, dirPath: string) {
+        const packaged = await this.fetchExecutablePackage(executablePackageHash);
+        if (!packaged) return false;
+        return await this.unpackExecutablePackage(packaged, key, executablePackageHash, dirPath);
     }
 
     async storePackageWithExecutable(
@@ -2986,21 +3014,34 @@ export class BaseCompiler {
 
         const toolchainPath = this.getDefaultOrOverridenToolchainPath(parsedRequest.backendOptions.overrides || []);
 
+        // Read before the cache key is built: making one deletes `execute` from these very filters, which are the
+        // request's own object rather than a copy of it.
+        const doExecute = parsedRequest.filters.execute;
+        const cacheKey = this.getBuildProjectCacheKey(buildSystem, parsedRequest, files);
+        const executablePackageHash = this.env.getExecutableHash(cacheKey);
+
+        // Asked before any slot is waited for, and before there is anywhere to put the answer: nothing here needs a
+        // directory or a compiler, and knowing whether this was built before is what decides if either is needed.
+        const packaged = bypassCompilationCache(bypassCache)
+            ? undefined
+            : await this.fetchExecutablePackage(executablePackageHash);
+
         // Timed out here, so that what is measured is the wait for a slot rather than the work done once one is
         // held.
         const queueTime = performance.now();
         // Everything from here holds a queue slot, the way compile() does: the directory below is written to,
         // built in, run from and finally removed, and a slot held for only part of that would let the temp
         // directory sweep -- which asks the queue whether anything is compiling -- delete it mid-build.
+        //
+        // Only a build that has to run a compiler is given up for having waited too long. One the cache already
+        // answered has nothing to be too late for: the client is owed the result it would have got instantly, and
+        // deciding that here rather than inside is the point, staleness being judged before the job is entered.
+        //
         // Unwrapped because a server with no compilation queue cannot build anything, and this promises a result.
         return unwrap(
             await this.env.enqueue(
                 async () => {
                     compilationQueueTimeHistogram.observe((performance.now() - queueTime) / 1000);
-
-                    // Read before the cache key is built: making one deletes `execute` from these very filters,
-                    // which are the request's own object rather than a copy of it.
-                    const doExecute = parsedRequest.filters.execute;
 
                     const build = await this.prepareProjectBuild(
                         buildSystem,
@@ -3008,24 +3049,31 @@ export class BaseCompiler {
                         files,
                         libsAndOptions,
                         toolchainPath,
+                        cacheKey,
+                        executablePackageHash,
                     );
-                    const {dirPath, cacheKey, executablePackageHash, outputFilename} = build;
+                    const {dirPath, outputFilename} = build;
 
-                    let fullResult: CompilationResult = bypassCompilationCache(bypassCache)
-                        ? undefined
-                        : await this.loadPackageWithExecutable(cacheKey, executablePackageHash, dirPath);
-                    if (fullResult) {
-                        fullResult.retreivedFromCache = true;
-                        fullResult.s3Key = BaseCache.hash(cacheKey);
+                    let fullResult: CompilationResult | undefined;
+                    if (packaged) {
+                        // Falls through to building it if the package turns out not to be usable.
+                        const cached: CompilationResult | false = await this.unpackExecutablePackage(
+                            packaged,
+                            cacheKey,
+                            executablePackageHash,
+                            dirPath,
+                        );
+                        if (cached) {
+                            cached.retreivedFromCache = true;
+                            cached.s3Key = BaseCache.hash(cacheKey);
 
-                        delete fullResult.inputFilename;
-                        delete fullResult.dirPath;
-                        fullResult.executableFilename = outputFilename;
-                    } else {
-                        const moreResult = await this.runProjectBuild(build, parsedRequest);
-
-                        if (moreResult) fullResult = moreResult;
+                            delete cached.inputFilename;
+                            delete cached.dirPath;
+                            cached.executableFilename = outputFilename;
+                            fullResult = cached;
+                        }
                     }
+                    if (!fullResult) fullResult = await this.runProjectBuild(build, parsedRequest);
 
                     // Wanted by the cleanup at the end whether or not there is anything to run.
                     if (fullResult.result) fullResult.result.dirPath = dirPath;
@@ -3033,7 +3081,7 @@ export class BaseCompiler {
 
                     return await this.finishProjectBuild(build, fullResult, parsedRequest, libsAndOptions, bypassCache);
                 },
-                {abandonIfStale: true},
+                {abandonIfStale: !packaged},
             ),
         );
     }
@@ -3045,6 +3093,8 @@ export class BaseCompiler {
         files: FiledataPair[],
         libsAndOptions: LibsAndOptions,
         toolchainPath: string | undefined,
+        cacheKey: CmakeCacheKey,
+        executablePackageHash: string,
     ): Promise<ProjectBuild> {
         const dirPath = await this.newTempDir();
 
@@ -3056,9 +3106,6 @@ export class BaseCompiler {
             runtimeTools: parsedRequest.executeParameters?.runtimeTools || [],
             env: {},
         };
-
-        const cacheKey = this.getBuildProjectCacheKey(buildSystem, parsedRequest, files);
-        const executablePackageHash = this.env.getExecutableHash(cacheKey);
 
         const buildContext: BuildContext = {
             compiler: this,
