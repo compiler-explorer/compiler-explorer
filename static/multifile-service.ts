@@ -30,6 +30,7 @@ import {unwrap} from '../shared/assert.js';
 import {
     type BuildSystemDescriptor,
     getBuildSystemByManifestFilename,
+    getBuildSystemByManifestLanguageId,
     getBuildSystemDescriptor,
     getBuildSystemsForLanguage,
     type TreeBuildSystem,
@@ -476,10 +477,6 @@ export class MultifileService {
         }
     }
 
-    private getDefaultMainCMakeFilename() {
-        return this.cmakeMainSourceFilename;
-    }
-
     private static getDefaultMainSourceFilename(langId) {
         const languages = languagesService.getLanguagesOrFail();
         // Language may be missing if the link was shared from an instance with
@@ -500,8 +497,11 @@ export class MultifileService {
             }
 
             if (!suggestedFilename) {
-                if (langId === this.cmakeLangId) {
-                    suggestedFilename = this.getDefaultMainCMakeFilename();
+                // Writing a manifest means writing it under the name its build system looks for, which is not a name
+                // the language's extension would ever suggest: a Cargo.toml is not an example.toml.
+                const manifestOf = getBuildSystemByManifestLanguageId(langId);
+                if (manifestOf) {
+                    suggestedFilename = manifestOf.manifestFilename;
                 } else {
                     suggestedFilename = MultifileService.getDefaultMainSourceFilename(langId);
                 }

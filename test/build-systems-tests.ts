@@ -46,6 +46,7 @@ import {ParsedRequest} from '../lib/handlers/compile.js';
 import {
     BuildSystems,
     getBuildSystemByManifestFilename,
+    getBuildSystemByManifestLanguageId,
     getBuildSystemsForLanguage,
     isBuildSystemId,
     isManifestLanguageId,
@@ -170,6 +171,17 @@ describe('Build system registry', () => {
         expect(getBuildSystemByManifestFilename('Makefile.am')).toBeUndefined();
         expect(getBuildSystemByManifestFilename('main.cpp')).toBeUndefined();
         expect(getBuildSystemByManifestFilename('')).toBeUndefined();
+    });
+
+    it('names the manifest a given language is written in', () => {
+        // What the rename dialog offers, which is nothing the language's own extension would suggest.
+        expect(getBuildSystemByManifestLanguageId('makefile')?.manifestFilename).toEqual('Makefile');
+        expect(getBuildSystemByManifestLanguageId('cmake')?.manifestFilename).toEqual('CMakeLists.txt');
+        expect(getBuildSystemByManifestLanguageId('cargo')?.manifestFilename).toEqual('Cargo.toml');
+        expect(getBuildSystemByManifestLanguageId('maven')?.manifestFilename).toEqual('pom.xml');
+
+        expect(getBuildSystemByManifestLanguageId('c++')).toBeUndefined();
+        expect(getBuildSystemByManifestLanguageId('rust')).toBeUndefined();
     });
 
     it('knows which languages are a manifest rather than something to compile', () => {
