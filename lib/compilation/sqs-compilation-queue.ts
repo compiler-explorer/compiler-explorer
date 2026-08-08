@@ -112,9 +112,18 @@ const sqsProjectBuildExecuteCounter = new Counter({
 /**
  * Which build system a queued request wants, or undefined for a plain single-file compilation. Producers live outside
  * this repo, so both the new `buildSystem` field and the original `isCMake` boolean have to work.
+ *
+ * A name this worker does not know is not the same as no name at all, and must not be read as one: a producer can be
+ * ahead of a worker across a deploy, and taking `cargo` for a plain compilation would compile the project's manifest
+ * as source and answer with syntax errors about it. Throws, so it reaches the user as a failed compilation naming the
+ * build system, which is what the HTTP route says too.
  */
-function getRequestedBuildSystem(msg: RemoteCompilationRequest): BuildSystemDriver | undefined {
-    if (msg.buildSystem) return getBuildSystem(msg.buildSystem);
+export function getRequestedBuildSystem(msg: RemoteCompilationRequest): BuildSystemDriver | undefined {
+    if (msg.buildSystem) {
+        const buildSystem = getBuildSystem(msg.buildSystem);
+        if (!buildSystem) throw new Error(`Unknown build system '${msg.buildSystem}'`);
+        return buildSystem;
+    }
     return msg.isCMake ? cmakeBuildSystem : undefined;
 }
 
@@ -331,10 +340,13 @@ async function doOneCompilation(
 
     if (msg?.guid) {
         const startTime = Date.now();
-        const buildSystem = getRequestedBuildSystem(msg);
-        const compilationType = buildSystem ? buildSystem.id : 'compile';
+        // Named from the request rather than from a resolved driver, because resolving is itself something that can
+        // fail, and the logs for that failure want to say which build system was asked for.
+        const compilationType = msg.buildSystem ?? (msg.isCMake ? 'cmake' : 'compile');
 
         try {
+            // Inside the try: an unknown build system is reported to the user like any other failed compilation.
+            const buildSystem = getRequestedBuildSystem(msg);
             const compiler = compilationEnvironment.findCompiler(msg.lang as any, msg.compilerId);
             if (!compiler) {
                 throw new Error(`Compiler with ID ${msg.compilerId} not found for language ${msg.lang}`);
