@@ -2111,7 +2111,7 @@ export class BaseCompiler {
         for (const file of files) {
             if (!file.filename) throw new Error('One of more files do not have a filename');
 
-            const fullpath = this.getExtraFilepath(dirPath, file.filename);
+            const fullpath = utils.resolveWithinDir(dirPath, file.filename);
             filesToWrite.push(utils.outputTextFile(fullpath, file.contents));
         }
 
@@ -3046,6 +3046,9 @@ export class BaseCompiler {
         };
 
         const outputFilename = buildSystem.getArtifactFilename(buildContext);
+        // Backstop for drivers that build the path themselves: CMake's comes from customOutputFilename too, by way of
+        // getOutputFilename, and this is the artifact every driver goes on to write, run and post-process.
+        if (!utils.isPathInside(dirPath, outputFilename)) throw new Error('Invalid filename');
 
         const build: ProjectBuild = {
             buildSystem,
@@ -3298,22 +3301,6 @@ export class BaseCompiler {
         }
 
         return fullResult;
-    }
-
-    protected getExtraFilepath(dirPath: string, filename: string) {
-        // note: it's vitally important that the resulting path does not escape dirPath
-        //       (filename is user input and thus unsafe)
-
-        const joined = path.join(dirPath, filename);
-        const normalized = path.normalize(joined);
-        if (process.platform === 'win32') {
-            if (!normalized.replaceAll('\\', '/').startsWith(dirPath.replaceAll('\\', '/'))) {
-                throw new Error('Invalid filename');
-            }
-        } else {
-            if (!normalized.startsWith(dirPath)) throw new Error('Invalid filename');
-        }
-        return normalized;
     }
 
     fixFiltersBeforeCacheKey(filters: ParseFiltersAndOutputOptions, options: string[], files: FiledataPair[]) {

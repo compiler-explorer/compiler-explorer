@@ -844,3 +844,54 @@ describe('maskRootdir', () => {
         expect(utils.maskRootdir('')).toEqual('');
     });
 });
+
+describe('resolveWithinDir', () => {
+    it('joins a filename onto the directory', () => {
+        if (process.platform === 'win32') {
+            expect(utils.resolveWithinDir('c:/tmp/somefolder', 'test.h')).toEqual('c:\\tmp\\somefolder\\test.h');
+            expect(utils.resolveWithinDir('c:/tmp/somefolder', 'test.txt')).toEqual('c:\\tmp\\somefolder\\test.txt');
+        } else {
+            expect(utils.resolveWithinDir('/tmp/somefolder', 'test.h')).toEqual('/tmp/somefolder/test.h');
+            expect(utils.resolveWithinDir('/tmp/somefolder', 'test.txt')).toEqual('/tmp/somefolder/test.txt');
+        }
+    });
+
+    it('allows a subdirectory of the directory', () => {
+        expect(utils.resolveWithinDir('/tmp/somefolder', 'subfolder/hello.h')).toEqual(
+            path.normalize('/tmp/somefolder/subfolder/hello.h'),
+        );
+    });
+
+    it('rejects a filename that traverses out of the directory', () => {
+        expect(() => utils.resolveWithinDir('/tmp/somefolder', '../test.h')).toThrow(Error);
+        expect(() => utils.resolveWithinDir('/tmp/somefolder', './../test.h')).toThrow(Error);
+        expect(() => utils.resolveWithinDir('/tmp/somefolder', 'test_hello/../../etc/passwd')).toThrow(Error);
+    });
+
+    it('rejects a sibling that shares the directory name as a prefix', () => {
+        expect(() => utils.resolveWithinDir('/tmp/somefolder', '../somefolder-evil/test.h')).toThrow(Error);
+        expect(() => utils.resolveWithinDir('/tmp/somefolder', '../somefolder.txt')).toThrow(Error);
+    });
+
+    it('rejects a filename that resolves to the directory itself', () => {
+        expect(() => utils.resolveWithinDir('/tmp/somefolder', '')).toThrow(Error);
+        expect(() => utils.resolveWithinDir('/tmp/somefolder', '.')).toThrow(Error);
+    });
+
+    it('reports containment without joining', () => {
+        expect(utils.isPathInside('/tmp/somefolder', '/tmp/somefolder/test.h')).toBe(true);
+        expect(utils.isPathInside('/tmp/somefolder', '/tmp/somefolder/sub/test.h')).toBe(true);
+        expect(utils.isPathInside('/tmp/somefolder', '/tmp/somefolder')).toBe(false);
+        expect(utils.isPathInside('/tmp/somefolder', '/tmp/somefolder-evil/test.h')).toBe(false);
+        expect(utils.isPathInside('/tmp/somefolder', '/tmp/test.h')).toBe(false);
+    });
+
+    it('anchors an absolute filename inside the directory rather than honouring it', () => {
+        expect(utils.resolveWithinDir('/tmp/somefolder', '/tmp/someotherfolder/test.h')).toEqual(
+            path.normalize('/tmp/somefolder/tmp/someotherfolder/test.h'),
+        );
+        if (process.platform === 'win32') {
+            expect(utils.resolveWithinDir('/tmp/somefolder', '\\test.h')).toEqual('\\tmp\\somefolder\\test.h');
+        }
+    });
+});

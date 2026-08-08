@@ -541,6 +541,23 @@ export function resolvePathFromAppRoot(...args: string[]) {
     return path.resolve(APP_ROOT, ...args);
 }
 
+/**
+ * Whether `candidate` is strictly inside `dirPath`, compared a segment at a time: a string-prefix test would also
+ * accept a sibling whose name merely starts with dirPath's. Compares paths and not what they point at, so a symlink
+ * leading out of `dirPath` counts as inside.
+ */
+export function isPathInside(dirPath: string, candidate: string): boolean {
+    const relative = path.relative(dirPath, candidate);
+    return relative !== '' && relative !== '..' && !relative.startsWith(`..${path.sep}`) && !path.isAbsolute(relative);
+}
+
+/** Join user-supplied `filename` onto `dirPath`, throwing if the result would escape it. */
+export function resolveWithinDir(dirPath: string, filename: string): string {
+    const normalized = path.normalize(path.join(dirPath, filename));
+    if (!isPathInside(dirPath, normalized)) throw new Error('Invalid filename');
+    return normalized;
+}
+
 export async function fileExists(filename: string): Promise<boolean> {
     try {
         const stat = await fs.stat(filename);
