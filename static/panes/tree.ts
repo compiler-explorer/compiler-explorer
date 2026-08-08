@@ -29,7 +29,7 @@ import TomSelect from 'tom-select';
 import _ from 'underscore';
 
 import {assert, unwrap, unwrapString} from '../../shared/assert.js';
-import type {TreeBuildSystem} from '../../shared/build-systems.js';
+import type {BuildSystemId, TreeBuildSystem} from '../../shared/build-systems.js';
 import {escapeHTML} from '../../shared/common-utils.js';
 import {LanguageKey} from '../../types/languages.interfaces.js';
 import {ResultLine} from '../../types/resultline/resultline.interfaces.js';
@@ -50,6 +50,13 @@ export interface TreeState extends MultifileServiceState {
     id: number;
     cmakeArgs: string;
     customOutputFilename: string;
+    /**
+     * The arguments given to each build system that has been picked, so that switching between them restores what was
+     * typed for each rather than carrying one build system's arguments to the next. Having an entry at all is what
+     * marks a build system as picked before: one selected for the first time is prefilled with its default arguments,
+     * and one whose entry is empty was deliberately cleared and stays that way.
+     */
+    buildSystemArgs?: Partial<Record<BuildSystemId, string>>;
 }
 
 export class Tree {
@@ -67,6 +74,8 @@ export class Tree {
     private langKeys: string[];
     private cmakeArgsInput: JQuery;
     private customOutputFilenameInput: JQuery;
+    /** See {@link TreeState.buildSystemArgs}. Holds the build systems not currently selected; the box holds that one. */
+    private buildSystemArgs: Partial<Record<BuildSystemId, string>>;
     public multifileService: MultifileService;
     private lineColouring: LineColouring;
     private readonly ourCompilers: Record<number, boolean>;
@@ -157,6 +166,12 @@ export class Tree {
             this.cmakeArgsInput.val(state.cmakeArgs);
         }
 
+        // A link predating this carries only the arguments of the build system it was saved with, so credit them to
+        // that one. Every other build system then reads as never picked, and is prefilled when it first is.
+        const savedWith = this.multifileService.getBuildSystem();
+        this.buildSystemArgs =
+            state.buildSystemArgs ?? (savedWith === 'none' ? {} : {[savedWith]: state.cmakeArgs ?? ''});
+
         if (state.customOutputFilename) {
             this.customOutputFilenameInput.val(state.customOutputFilename);
         }
@@ -176,11 +191,19 @@ export class Tree {
         return escapeHTML(unwrapString(this.customOutputFilenameInput.val()));
     }
 
+    /** What has been given to each build system, the selected one's being whatever the input holds right now. */
+    private getBuildSystemArgs(): Partial<Record<BuildSystemId, string>> {
+        const buildSystem = this.multifileService.getBuildSystem();
+        if (buildSystem === 'none') return this.buildSystemArgs;
+        return {...this.buildSystemArgs, [buildSystem]: this.getCmakeArgs()};
+    }
+
     public currentState(): TreeState {
         const state = {
             id: this.id,
             cmakeArgs: this.getCmakeArgs(),
             customOutputFilename: this.getCustomOutputFilename(),
+            buildSystemArgs: this.getBuildSystemArgs(),
             ...this.multifileService.getState(),
         };
         this.paneRenaming.addState(state);
@@ -259,7 +282,10 @@ export class Tree {
     }
 
     private onBuildSystemChange(buildSystem: TreeBuildSystem) {
-        if (buildSystem === this.multifileService.getBuildSystem()) return;
+        const previous = this.multifileService.getBuildSystem();
+        if (buildSystem === previous) return;
+
+        if (previous !== 'none') this.buildSystemArgs[previous] = this.getCmakeArgs();
 
         this.multifileService.setBuildSystem(buildSystem);
 
@@ -267,8 +293,10 @@ export class Tree {
         if (descriptor) {
             this.cmakeArgsInput.prop('placeholder', descriptor.argsPlaceholder);
             this.customOutputFilenameInput.prop('placeholder', descriptor.defaultArtifactName);
-            // Give the user the arguments this build system is usually driven with, but never clobber their own.
-            if (this.getCmakeArgs() === '') this.cmakeArgsInput.val(descriptor.defaultArgs);
+            // Whatever was last given to this build system, or the arguments it is usually driven with if this is the
+            // first time it has been picked. Either way the arguments meant for the last one do not follow it here.
+            const remembered = this.buildSystemArgs[descriptor.id];
+            this.cmakeArgsInput.val(remembered ?? descriptor.defaultArgs);
         }
 
         this.updateBuildSystemButton();
