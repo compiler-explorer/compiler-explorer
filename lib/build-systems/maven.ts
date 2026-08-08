@@ -28,11 +28,52 @@ import path from 'node:path';
 import {BuildSystems} from '../../shared/build-systems.js';
 import type {CompilationResult} from '../../types/compilation/compilation.interfaces.js';
 import type {ExecutableExecutionOptions} from '../../types/execution/execution.interfaces.js';
+import {assert} from '../assert.js';
 import type {BaseCompiler} from '../base-compiler.js';
 import {maybeRemapJailedDir} from '../exec.js';
 import * as utils from '../utils.js';
 import {BaseBuildSystem} from './base.js';
 import type {BuildContext, BuildPlan} from './build-system.interfaces.js';
+
+/**
+ * Every phase of maven's three lifecycles, which is a closed set: its compatibility promise is what keeps them from
+ * changing, unlike the flags they are told apart from.
+ */
+const MAVEN_PHASES = new Set([
+    // clean
+    'pre-clean',
+    'clean',
+    'post-clean',
+    // default
+    'validate',
+    'initialize',
+    'generate-sources',
+    'process-sources',
+    'generate-resources',
+    'process-resources',
+    'compile',
+    'process-classes',
+    'generate-test-sources',
+    'process-test-sources',
+    'generate-test-resources',
+    'process-test-resources',
+    'test-compile',
+    'process-test-classes',
+    'test',
+    'prepare-package',
+    'package',
+    'pre-integration-test',
+    'integration-test',
+    'post-integration-test',
+    'verify',
+    'install',
+    'deploy',
+    // site
+    'pre-site',
+    'site',
+    'post-site',
+    'site-deploy',
+]);
 
 /** Where jansi is told to unpack its native library, relative to the project. */
 const JANSI_DIR = '.jansi';
@@ -123,9 +164,24 @@ export class MavenBuildSystem extends BaseBuildSystem {
         await fs.mkdir(path.join(ctx.dirPath, HEAD_REPOSITORY_DIR), {recursive: true});
     }
 
+    /**
+     * Whether these arguments name a goal for maven to run, in which case it needs none of ours. Recognised by what a
+     * goal looks like -- `plugin:goal`, or one of the phases the three lifecycles are made of -- rather than by which
+     * flags take a value, a list that grows with every maven release and would silently rot. A bare token that is
+     * neither is taken for a flag's value, `-P release` being far more common than a goal we have never heard of; and
+     * being wrong that way appends a `package` the user did not ask for, where being wrong the other way leaves maven
+     * with nothing to do and no way to say so beyond "No goals have been specified for this build".
+     */
+    static namesAGoal(args: string[]): boolean {
+        return args.some(arg => !arg.startsWith('-') && (arg.includes(':') || MAVEN_PHASES.has(arg)));
+    }
+
     /** Where maven is, and the repository holding everything it was given when it was installed. */
     private static getMavenPaths(ctx: BuildContext): {mvn: string; repository: string} {
         const mvn = ctx.env.ceProps('maven') as string;
+        // Defaults to empty, there being no name for it that works: the repository below is found by walking up from
+        // the launcher, so a deployment has to say where its maven is installed rather than just what it is called.
+        assert(mvn, 'No maven command configured');
         // Everything maven needs was fetched into this repository when it was installed; see infra's tools.yaml.
         return {mvn, repository: path.join(path.dirname(path.dirname(mvn)), 'repository')};
     }
@@ -281,7 +337,7 @@ export class MavenBuildSystem extends BaseBuildSystem {
                         ...(/encoding/i.test(ctx.key.source) ? [] : ['-Dproject.build.sourceEncoding=UTF-8']),
                         ...ctx.buildSystemArgs,
                         // Only if the user has not asked for particular goals themselves.
-                        ...(ctx.buildSystemArgs.some(arg => !arg.startsWith('-')) ? [] : ['package']),
+                        ...(MavenBuildSystem.namesAGoal(ctx.buildSystemArgs) ? [] : ['package']),
                     ],
                     execParams: execParams,
                     failureMessage: '<Maven build failed>',

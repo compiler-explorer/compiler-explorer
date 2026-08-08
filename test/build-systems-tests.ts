@@ -876,6 +876,27 @@ describe('Maven build system', () => {
         expect(plan.steps[0].args).not.toContain('package');
     });
 
+    it('leaves the goals alone when the user names a lifecycle phase', async () => {
+        const env = makeJavaEnv();
+        const compiler = makeJavaCompiler(env);
+        const req = makeParsedRequest({buildSystemArgs: 'compile'});
+        const plan = await mavenBuildSystem.getBuildPlan(makeMavenContext(compiler, env, req));
+
+        expect(plan.steps[0].args).not.toContain('package');
+    });
+
+    it("still names a goal when an argument is a flag of the user's own", async () => {
+        // The value of a flag is not a goal, and maven has nothing to do if we take it for one.
+        const env = makeJavaEnv();
+        const compiler = makeJavaCompiler(env);
+        for (const args of ['-P release', '-T 2', '-pl mod', '-f other/pom.xml']) {
+            const req = makeParsedRequest({buildSystemArgs: args});
+            const plan = await mavenBuildSystem.getBuildPlan(makeMavenContext(compiler, env, req));
+
+            expect(plan.steps[0].args).toContain('package');
+        }
+    });
+
     it('explains that Maven Central is unreachable when resolution fails', () => {
         const offline = 'Cannot access central (https://repo.maven.apache.org/maven2) in offline mode';
         expect(MavenBuildSystem.explainFailure(offline)).toMatch(/cannot download from Maven Central/);
