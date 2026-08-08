@@ -712,7 +712,9 @@ describe('Maven build system', () => {
     it('refuses compilers that no JDK can be found for', async () => {
         const env = makeJavaEnv();
         expect(await mavenBuildSystem.getUnsupportedReason(makeJavaCompiler(env))).toBeUndefined();
-        const notAJdk = makeJavaCompiler(env, {exe: '/usr/bin/some-other-java-thing'});
+        // Inside the fixtures rather than under /usr/bin, where a machine with a system java installed -- which is
+        // most of them, CI included -- would have one for this to find and the driver would be right to allow it.
+        const notAJdk = makeJavaCompiler(env, {exe: path.join(fixtures, 'not-a-jdk', 'bin', 'javac')});
         expect(await mavenBuildSystem.getUnsupportedReason(notAJdk)).toMatch(/No JDK could be found/);
     });
 
