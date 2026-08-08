@@ -619,7 +619,9 @@ describe('Maven build system', () => {
     // The three things the driver reads, laid out as they are installed: a maven, a Kotlin installation holding the
     // jars, and the repository beside it holding a pom for what the installation answers for. A second Kotlin with
     // no repository of its own stands for one whose Maven artifacts were never installed.
-    const fixtures = fsSync.mkdtempSync(path.join(os.tmpdir(), 'ce-maven-'));
+    // Resolved, because os.tmpdir() can name a directory by its 8.3 short form on Windows while realpath -- which
+    // reading a symlink back means going through -- gives the long one, and the two would never compare equal.
+    const fixtures = fsSync.realpathSync(fsSync.mkdtempSync(path.join(os.tmpdir(), 'ce-maven-')));
     const fakeMavenHome = path.join(fixtures, 'maven');
     const fakeKotlinHome = path.join(fixtures, 'kotlin-jvm-2.1.21');
     const fakeKotlinRepository = `${fakeKotlinHome}-maven`;
