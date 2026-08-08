@@ -30,7 +30,6 @@ import type {
     FiledataPair,
     LibsAndOptions,
 } from '../../types/compilation/compilation.interfaces.js';
-import type {ExecutableExecutionOptions} from '../../types/execution/execution.interfaces.js';
 import type {BaseCompiler} from '../base-compiler.js';
 import type {CompilationEnvironment} from '../compilation-env.js';
 import type {ParsedRequest} from '../handlers/compile.js';
@@ -81,6 +80,13 @@ export type BuildContext = {
 };
 
 /**
+ * What running a build amounts to: something to execute, with any arguments that go in front of the user's own, or a
+ * sentence saying why there is nothing to execute. `args` is returned rather than applied so that a plan can be asked
+ * for before it is known whether the run happens here or on another machine.
+ */
+export type ExecutionPlan = {executable: string; args?: string[]} | {cannotRun: string};
+
+/**
  * A build system, as far as {@link BaseCompiler.buildProject} is concerned. Everything that is *not* specific to a
  * build system — temp directories, caching, the compilation queue, execution, post-compilation tools — stays in the
  * orchestrator; this interface covers only the parts that differ between CMake, Cargo, Maven and friends.
@@ -127,14 +133,12 @@ export interface BuildSystemDriver {
     ): Promise<string | undefined>;
 
     /**
-     * How to run what was built. Most build systems produce something directly executable, but a jar needs a JVM
-     * started on it. Returning undefined means run the artifact itself.
+     * How to run what was built, or why it cannot be run. Only the build system knows whether the artifact path is
+     * even the right question: Maven runs the compiled classes when the project builds no jar. Saying why in its own
+     * words is the point -- the alternative is the caller guessing from a missing file, and telling the user only
+     * that something it named is absent.
      */
-    prepareExecution?(
-        ctx: BuildContext,
-        artifactFilename: string,
-        executeOptions: ExecutableExecutionOptions,
-    ): Promise<string | undefined>;
+    prepareExecution(ctx: BuildContext, artifactFilename: string): Promise<ExecutionPlan>;
 
     /** Turn the built artifact into something to show the user, usually by disassembling it. */
     postProcessArtifact(

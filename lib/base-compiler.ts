@@ -3229,52 +3229,48 @@ export class BaseCompiler {
         // Nothing to run from a build that produced nothing.
         if (!fullResult.result || fullResult.result.code !== 0) return;
 
-        // Check if executable exists before trying to run it
-        if (!(await utils.fileExists(outputFilename))) {
-            fullResult.execResult = {
-                code: -1,
-                okToCache: false,
-                stdout: [],
-                stderr: [{text: `Executable not found: ${utils.maskRootdir(outputFilename)}`}],
-                execTime: 0,
-                timedOut: false,
-            };
+        // Asked before anything is checked, because only the build system knows what running its build means: maven
+        // runs the classes it compiled, so a missing jar is no reason not to. It answers in a sentence when there is
+        // nothing to run, which is what the user is owed instead of the name of a file they never chose.
+        const plan = await buildSystem.prepareExecution(buildContext, outputFilename);
+        if ('cannotRun' in plan) {
+            fullResult.execResult = this.cannotExecute(plan.cannotRun);
             fullResult.didExecute = false;
-        } else {
-            const execTriple = await RemoteExecutionQuery.guessExecutionTripleForBuildresult({
-                ...fullResult,
-                downloads: fullResult.downloads || [],
-                executableFilename: outputFilename,
-                compilationOptions: fullResult.compilationOptions || [],
-            });
-
-            if (matchesCurrentHost(execTriple)) {
-                // A build system may produce something that is not directly executable, such as a jar.
-                const executable =
-                    (await buildSystem.prepareExecution?.(buildContext, outputFilename, executeOptions)) ??
-                    outputFilename;
-                fullResult.execResult = await this.runExecutable(executable, executeOptions, dirPath);
-                fullResult.didExecute = true;
-            } else {
-                if (await RemoteExecutionQuery.isPossible(execTriple)) {
-                    fullResult.execResult = await this.runExecutableRemotely(
-                        executablePackageHash,
-                        executeOptions,
-                        execTriple,
-                    );
-                    fullResult.didExecute = true;
-                } else {
-                    fullResult.execResult = {
-                        code: -1,
-                        okToCache: false,
-                        stdout: [],
-                        stderr: [{text: `No execution available for ${execTriple.toString()}`}],
-                        execTime: 0,
-                        timedOut: false,
-                    };
-                }
-            }
+            return;
         }
+
+        const execTriple = await RemoteExecutionQuery.guessExecutionTripleForBuildresult({
+            ...fullResult,
+            downloads: fullResult.downloads || [],
+            executableFilename: outputFilename,
+            compilationOptions: fullResult.compilationOptions || [],
+        });
+
+        if (matchesCurrentHost(execTriple)) {
+            // Ahead of the user's own, which is where a JVM wants its flags and the class to start from.
+            if (plan.args) executeOptions.args = [...plan.args, ...executeOptions.args];
+            fullResult.execResult = await this.runExecutable(plan.executable, executeOptions, dirPath);
+            fullResult.didExecute = true;
+        } else if (await RemoteExecutionQuery.isPossible(execTriple)) {
+            fullResult.execResult = await this.runExecutableRemotely(executablePackageHash, executeOptions, execTriple);
+            fullResult.didExecute = true;
+        } else {
+            fullResult.execResult = this.cannotExecute(`No execution available for ${execTriple.toString()}`);
+            fullResult.didExecute = false;
+        }
+    }
+
+    /** An execution that never happened, saying why in the pane the user is watching. */
+    private cannotExecute(reason: string): BasicExecutionResult {
+        return {
+            code: -1,
+            okToCache: false,
+            stdout: [],
+            stderr: [{text: reason}],
+            execTime: 0,
+            timedOut: false,
+            filenameTransform: x => x,
+        };
     }
 
     /** The tools, the caching and the tidying up that follow every project build, whatever it built. */

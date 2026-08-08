@@ -897,6 +897,30 @@ describe('Maven build system', () => {
         }
     });
 
+    it('says why there is nothing to run rather than naming a file the user never chose', async () => {
+        const env = makeJavaEnv();
+        const compiler = makeJavaCompiler(env);
+
+        // No classes at all: the jar the rest of the compilation expects is beside the point, and saying it is
+        // missing would send the user looking for the wrong thing.
+        const nothing = makeMavenContext(compiler, env, makeParsedRequest());
+        expect(await mavenBuildSystem.prepareExecution(nothing, 'output.jar')).toEqual({
+            cannotRun: 'Nothing to run: maven compiled no classes.',
+        });
+
+        // Classes, but none of them a program.
+        const dirPath = fsSync.mkdtempSync(path.join(os.tmpdir(), 'ce-maven-run-'));
+        try {
+            fsSync.mkdirSync(path.join(dirPath, 'target', 'classes'), {recursive: true});
+            const noMain = {...makeMavenContext(compiler, env, makeParsedRequest()), dirPath};
+            const plan = await mavenBuildSystem.prepareExecution(noMain, path.join(dirPath, 'output.jar'));
+
+            expect('cannotRun' in plan && plan.cannotRun).toMatch(/main\(String\[\]\)/);
+        } finally {
+            fsSync.rmSync(dirPath, {recursive: true, force: true});
+        }
+    });
+
     it('explains that Maven Central is unreachable when resolution fails', () => {
         const offline = 'Cannot access central (https://repo.maven.apache.org/maven2) in offline mode';
         expect(MavenBuildSystem.explainFailure(offline)).toMatch(/cannot download from Maven Central/);
@@ -1059,6 +1083,17 @@ describe('Make build system', () => {
 
         expect(result.result?.asm).toEqual([{text: '<No make command found>'}]);
         expect(fsSync.existsSync(dirPath)).toBe(false);
+    });
+
+    it('points at the output file box when the build named its artifact something else', async () => {
+        const env = makeMakeEnv();
+        const compiler = makeCppCompiler(env);
+        const ctx = makeMakeContext(compiler, env, makeParsedRequest());
+
+        const plan = await makeBuildSystem.prepareExecution(ctx, path.join(ctx.dirPath, 'output.s'));
+
+        expect('cannotRun' in plan && plan.cannotRun).toMatch(/no output\.s/);
+        expect('cannotRun' in plan && plan.cannotRun).toMatch(/output file box/);
     });
 
     it('refuses an output filename that leaves the project, whatever it is copied from', () => {

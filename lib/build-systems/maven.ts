@@ -27,13 +27,12 @@ import path from 'node:path';
 
 import {BuildSystems} from '../../shared/build-systems.js';
 import type {CompilationResult} from '../../types/compilation/compilation.interfaces.js';
-import type {ExecutableExecutionOptions} from '../../types/execution/execution.interfaces.js';
 import {assert} from '../assert.js';
 import type {BaseCompiler} from '../base-compiler.js';
 import {maybeRemapJailedDir} from '../exec.js';
 import * as utils from '../utils.js';
 import {BaseBuildSystem} from './base.js';
-import type {BuildContext, BuildPlan} from './build-system.interfaces.js';
+import type {BuildContext, BuildPlan, ExecutionPlan} from './build-system.interfaces.js';
 
 /**
  * Every phase of maven's three lifecycles, which is a closed set: its compatibility promise is what keeps them from
@@ -456,19 +455,28 @@ export class MavenBuildSystem extends BaseBuildSystem {
         return jars.map(jar => path.join(dependencyDir, jar));
     }
 
-    /** A jar is not executable on its own: start a JVM on the classes maven produced. */
-    async prepareExecution(
-        ctx: BuildContext,
-        artifactFilename: string,
-        executeOptions: ExecutableExecutionOptions,
-    ): Promise<string | undefined> {
+    /**
+     * A jar is not executable on its own: start a JVM on the classes maven produced. Which also means a jar is not
+     * needed at all, so this says nothing about whether one was built -- only whether anything here has a main.
+     */
+    override async prepareExecution(ctx: BuildContext, _artifactFilename: string): Promise<ExecutionPlan> {
         const classesDir = path.join(ctx.dirPath, CLASSES_DIR);
+        if (!(await utils.dirExists(classesDir))) {
+            return {cannotRun: 'Nothing to run: maven compiled no classes.'};
+        }
+
         const mainClass = await MavenBuildSystem.findMainClass(classesDir);
-        if (!mainClass) return undefined;
+        if (!mainClass) {
+            return {
+                cannotRun:
+                    'Nothing to run: none of the compiled classes has a `public static void main(String[])`, ' +
+                    'which is what the JVM starts a program from.',
+            };
+        }
 
         const classpath = [classesDir, ...(await MavenBuildSystem.gatherRuntimeDependencies(ctx))].join(path.delimiter);
 
-        executeOptions.args = [
+        const args = [
             // The sandbox is tight on threads and memory, and a JVM left to itself asks for far more than it gets:
             // it sizes its heap and its pools from the machine's memory, which it sees rather than the cgroup it is
             // held to (200 MiB, in etc/nsjail/user-execution.cfg). Saying so outright is what makes a Kotlin program
@@ -485,9 +493,8 @@ export class MavenBuildSystem extends BaseBuildSystem {
             '-cp',
             classpath,
             mainClass,
-            ...executeOptions.args,
         ];
-        return path.join(MavenBuildSystem.getJavaHome(ctx.compiler), 'bin', 'java');
+        return {executable: path.join(MavenBuildSystem.getJavaHome(ctx.compiler), 'bin', 'java'), args};
     }
 
     /** The first class with a `main`, named the way the JVM wants it: package-qualified, dots not slashes. */

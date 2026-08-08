@@ -22,6 +22,8 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
+import path from 'node:path';
+
 import _ from 'underscore';
 
 import type {BuildSystemDescriptor, BuildSystemId} from '../../shared/build-systems.js';
@@ -29,7 +31,7 @@ import type {CompilationResult} from '../../types/compilation/compilation.interf
 import type {BaseCompiler} from '../base-compiler.js';
 import type {ParsedRequest} from '../handlers/compile.js';
 import * as utils from '../utils.js';
-import type {BuildContext, BuildPlan, BuildSystemDriver} from './build-system.interfaces.js';
+import type {BuildContext, BuildPlan, BuildSystemDriver, ExecutionPlan} from './build-system.interfaces.js';
 
 /**
  * What every build system does the same way, so that a driver is left saying only what makes its build system
@@ -83,6 +85,20 @@ export abstract class BaseBuildSystem implements BuildSystemDriver {
     ): Promise<string | undefined> {
         // Nothing to reconcile: the build put its artifact at the path it was told to.
         return undefined;
+    }
+
+    async prepareExecution(_ctx: BuildContext, artifactFilename: string): Promise<ExecutionPlan> {
+        // The build succeeded and yet the artifact is not there, which means it was built under another name: the
+        // build system chose one, and the only one we know to look for is the one we were told to expect.
+        if (!(await utils.fileExists(artifactFilename))) {
+            const wanted = path.basename(artifactFilename);
+            return {
+                cannotRun:
+                    `Nothing to run: the build produced no ${wanted}. Either build something by that name, or put ` +
+                    'the name it does build in the output file box.',
+            };
+        }
+        return {executable: artifactFilename};
     }
 
     async postProcessArtifact(
