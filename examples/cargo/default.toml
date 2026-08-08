@@ -7,5 +7,5 @@ edition = "2021"
 # Pick the crate you want in the Libraries pane instead and leave it out of
 # this file: it is handed to rustc directly, so `use rand::Rng;` just works.
 [[bin]]
-name = "output"
+name = "output.s"
 path = "example.rs"
