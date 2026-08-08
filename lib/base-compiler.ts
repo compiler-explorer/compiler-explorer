@@ -433,8 +433,13 @@ export class BaseCompiler {
         return env;
     }
 
-    async newTempDir(): Promise<string> {
-        return await temp.mkdir(utils.ce_temp_prefix);
+    /**
+     * A temporary directory, removed by the sweep once nothing is using it. Pass `hold` when the directory outlives no
+     * queue slot of its own -- the sweep only stays away while the compilation queue reports itself busy, so anything
+     * using a directory outside a slot has to say so, and has to say so as the directory is made.
+     */
+    async newTempDir(options?: {hold?: boolean}): Promise<string> {
+        return await temp.mkdir(utils.ce_temp_prefix, options);
     }
 
     optOutputRequested(options: string[]) {
@@ -479,7 +484,10 @@ export class BaseCompiler {
         // actual random path is unimportant for caching; and its presence prevents cache hits.
         const optionsForCache = {...options};
         if (options.createAndUseTempDir) {
-            options.customCwd = await this.newTempDir();
+            // Held: the exec below runs in a queue slot, but this directory is made before joining the queue and the
+            // cache lookup in between is awaited. An idle queue -- which is what compiler probing runs against --
+            // leaves the temp sweep free to delete the directory before the exec that was given it as its cwd.
+            options.customCwd = await this.newTempDir({hold: true});
         }
 
         const key = this.getCompilerCacheKey(compiler, args, optionsForCache);
@@ -516,6 +524,7 @@ export class BaseCompiler {
         }
 
         if (options.createAndUseTempDir) {
+            temp.release(options.customCwd!);
             fs.rm(options.customCwd!, {recursive: true, force: true}).catch(() => {});
         }
 

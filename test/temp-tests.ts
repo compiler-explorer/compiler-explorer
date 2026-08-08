@@ -197,6 +197,24 @@ describe('Holds directories in use back from cleanup', () => {
         expect(temp.getStats()).toMatchObject({numActive: 0, numHeld: 0});
     });
 
+    it('makes a directory already held, so a cleanup straight after leaves it alone', async () => {
+        const held = await temp.mkdir('ce-held', {hold: true});
+        await temp.cleanup();
+
+        expect(await utils.dirExists(held)).toBe(true);
+        expect(temp.getStats().numHeld).toEqual(1);
+    });
+
+    it('cannot be held usefully once cleanup has been round', async () => {
+        // Why mkdir takes the option rather than the caller holding what it returns: returning is an await boundary,
+        // and a hold that arrives after cleanup has been through is a hold on a directory that is already gone.
+        const late = await temp.mkdir('ce-late');
+        await temp.cleanup();
+        temp.hold(late);
+
+        expect(await utils.dirExists(late)).toBe(false);
+    });
+
     it('releases by directory as well as through the returned function', async () => {
         const dir = await temp.mkdir('ce-held');
         temp.hold(dir);

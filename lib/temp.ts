@@ -85,6 +85,9 @@ export function resetStats() {
 /**
  * Exempt a directory from cleanup for as long as something is using it, returning the release. Cleanup otherwise
  * removes every directory this module created the moment it runs, whatever is still reading from or writing to one.
+ *
+ * A directory being made for something that will use it wants `mkdir(prefix, {hold: true})` rather than this: holding
+ * it after the fact leaves a gap in which cleanup can run.
  */
 export function hold(dir: string): () => void {
     heldUntil.set(dir, Date.now() + maxHoldMs);
@@ -123,11 +126,14 @@ export function getTempRoot(): string {
  * otherwise create the directory in the operating system's temporary directory.
  * @param prefix a prefix for the directory name, or an absolute path prefix
  */
-export async function mkdir(prefix: string) {
+export async function mkdir(prefix: string, options?: {hold?: boolean}) {
     const baseDir = path.isAbsolute(prefix) ? prefix : path.join(getTempRoot(), prefix);
     const result = await fs.promises.mkdtemp(baseDir);
     ++stats.numCreated;
     pendingRemoval.push(result);
+    // Held here and not by the caller: returning from this is an await boundary, and a cleanup running in it would
+    // take the directory before the caller's next statement could hold it.
+    if (options?.hold) hold(result);
     return result;
 }
 
