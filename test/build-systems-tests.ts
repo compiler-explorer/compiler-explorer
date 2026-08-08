@@ -645,9 +645,9 @@ describe('Maven build system', () => {
     // The three things the driver reads, laid out as they are installed: a maven, a Kotlin installation holding the
     // jars, and the repository beside it holding a pom for what the installation answers for. A second Kotlin with
     // no repository of its own stands for one whose Maven artifacts were never installed.
-    // Resolved, because os.tmpdir() can name a directory by its 8.3 short form on Windows while realpath -- which
-    // reading a symlink back means going through -- gives the long one, and the two would never compare equal.
-    const fixtures = fsSync.realpathSync(fsSync.mkdtempSync(path.join(os.tmpdir(), 'ce-maven-')));
+    // realpathSync.native, not realpathSync: the JS one resolves symlinks but leaves a Windows 8.3 short name as it
+    // found it, where the promise-based realpath a test reads a symlink back with returns the long form.
+    const fixtures = fsSync.realpathSync.native(fsSync.mkdtempSync(path.join(os.tmpdir(), 'ce-maven-')));
     const fakeMavenHome = path.join(fixtures, 'maven');
     const fakeKotlinHome = path.join(fixtures, 'kotlin-jvm-2.1.21');
     const fakeKotlinRepository = `${fakeKotlinHome}-maven`;
@@ -772,7 +772,10 @@ describe('Maven build system', () => {
             fakeProjectDir,
             '.m2/org/jetbrains/kotlin/kotlin-compiler/2.1.21/kotlin-compiler-2.1.21.jar',
         );
-        expect(await fs.realpath(linked)).toEqual(path.join(fakeKotlinHome, 'lib', 'kotlin-compiler.jar'));
+        // Both sides resolved, so that what is compared is which file each names rather than how it is spelled.
+        expect(await fs.realpath(linked)).toEqual(
+            await fs.realpath(path.join(fakeKotlinHome, 'lib', 'kotlin-compiler.jar')),
+        );
     });
 
     it('leaves a Java build reading the shared repository and nothing else', async () => {
