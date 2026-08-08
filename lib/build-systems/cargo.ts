@@ -25,15 +25,13 @@
 import fs from 'node:fs/promises';
 import path from 'node:path';
 
-import _ from 'underscore';
-
 import {BuildSystems} from '../../shared/build-systems.js';
 import type {CompilationResult} from '../../types/compilation/compilation.interfaces.js';
 import type {ResultLine} from '../../types/resultline/resultline.interfaces.js';
 import type {BaseCompiler} from '../base-compiler.js';
-import type {ParsedRequest} from '../handlers/compile.js';
 import * as utils from '../utils.js';
-import type {BuildContext, BuildPlan, BuildSystemDriver} from './build-system.interfaces.js';
+import {BaseBuildSystem} from './base.js';
+import type {BuildContext, BuildPlan} from './build-system.interfaces.js';
 
 /** One `compiler-artifact` record of `cargo --message-format=json...`. Only the parts we use. */
 type CargoArtifact = {
@@ -54,7 +52,7 @@ function CargoArtifactRecord(text: string): CargoArtifact | undefined {
     }
 }
 
-export class CargoBuildSystem implements BuildSystemDriver {
+export class CargoBuildSystem extends BaseBuildSystem {
     readonly id = 'cargo' as const;
     readonly descriptor = BuildSystems.cargo;
 
@@ -73,30 +71,6 @@ export class CargoBuildSystem implements BuildSystemDriver {
             return 'This compiler does not come with cargo';
         }
         return undefined;
-    }
-
-    applyRequestDefaults(compiler: BaseCompiler, parsedRequest: ParsedRequest): void {
-        _.defaults(parsedRequest.filters, compiler.getDefaultFilters());
-        parsedRequest.filters.binary = true;
-        parsedRequest.filters.dontMaskFilenames = true;
-    }
-
-    getBuildPath(dirPath: string): string {
-        // cargo runs in the project root and puts its output under target/ itself.
-        return dirPath;
-    }
-
-    async writeProjectFiles(ctx: BuildContext): Promise<{inputFilename: string}> {
-        return await ctx.compiler.writeProjectFiles(
-            ctx.dirPath,
-            this.descriptor.manifestFilename,
-            ctx.key.source,
-            ctx.files,
-        );
-    }
-
-    async prepareBuildDirectory(): Promise<void> {
-        // cargo creates target/ itself.
     }
 
     async getBuildPlan(ctx: BuildContext): Promise<BuildPlan> {
@@ -167,11 +141,6 @@ export class CargoBuildSystem implements BuildSystemDriver {
         return undefined;
     }
 
-    getArtifactFilename(ctx: BuildContext): string {
-        const customName = ctx.key.backendOptions?.customOutputFilename;
-        return path.join(ctx.dirPath, customName || this.descriptor.defaultArtifactName);
-    }
-
     /**
      * cargo reports where it put things, but under whichever spelling of the project root it saw: the sandbox
      * bind-mounts it as /app, and without a sandbox it is the real temp directory. maskRootdir reduces both to a path
@@ -204,7 +173,7 @@ export class CargoBuildSystem implements BuildSystemDriver {
      * cargo names its output after the manifest, so copy what it built to the path the rest of the compilation was
      * told to expect. `customOutputFilename` picks between artifacts when a project builds more than one.
      */
-    async finaliseArtifact(
+    override async finaliseArtifact(
         ctx: BuildContext,
         result: CompilationResult,
         artifactFilename: string,
@@ -242,18 +211,5 @@ export class CargoBuildSystem implements BuildSystemDriver {
             await copyFile(chosen.executable as string, artifactFilename);
         }
         return undefined;
-    }
-
-    async postProcessArtifact(
-        ctx: BuildContext,
-        result: CompilationResult,
-        artifactFilename: string,
-    ): Promise<CompilationResult> {
-        const [asmResult] = await ctx.compiler.checkOutputFileAndDoPostProcess(
-            result,
-            artifactFilename,
-            ctx.key.filters,
-        );
-        return asmResult;
     }
 }

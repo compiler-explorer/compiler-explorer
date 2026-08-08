@@ -24,17 +24,15 @@
 
 import path from 'node:path';
 
-import _ from 'underscore';
-
 import {BuildSystems} from '../../shared/build-systems.js';
 import type {CompilationResult} from '../../types/compilation/compilation.interfaces.js';
 import {assert} from '../assert.js';
 import type {BaseCompiler} from '../base-compiler.js';
-import type {ParsedRequest} from '../handlers/compile.js';
 import * as utils from '../utils.js';
-import type {BuildContext, BuildPlan, BuildSystemDriver} from './build-system.interfaces.js';
+import {BaseBuildSystem} from './base.js';
+import type {BuildContext, BuildPlan} from './build-system.interfaces.js';
 
-export class MakeBuildSystem implements BuildSystemDriver {
+export class MakeBuildSystem extends BaseBuildSystem {
     readonly id = 'make' as const;
     readonly descriptor = BuildSystems.make;
 
@@ -42,30 +40,6 @@ export class MakeBuildSystem implements BuildSystemDriver {
         // A Makefile decides for itself what to run, so there is nothing about a compiler that rules it out. What it
         // is given -- CXX, CXXFLAGS and the rest -- is whatever the selected compiler would have been given anyway.
         return undefined;
-    }
-
-    applyRequestDefaults(compiler: BaseCompiler, parsedRequest: ParsedRequest): void {
-        _.defaults(parsedRequest.filters, compiler.getDefaultFilters());
-        parsedRequest.filters.binary = true;
-        parsedRequest.filters.dontMaskFilenames = true;
-    }
-
-    getBuildPath(dirPath: string): string {
-        // make builds where the Makefile is, and puts things wherever that says.
-        return dirPath;
-    }
-
-    async writeProjectFiles(ctx: BuildContext): Promise<{inputFilename: string}> {
-        return await ctx.compiler.writeProjectFiles(
-            ctx.dirPath,
-            this.descriptor.manifestFilename,
-            ctx.key.source,
-            ctx.files,
-        );
-    }
-
-    async prepareBuildDirectory(): Promise<void> {
-        // Whatever directories the build wants are the Makefile's business.
     }
 
     async getBuildPlan(ctx: BuildContext): Promise<BuildPlan> {
@@ -111,12 +85,7 @@ export class MakeBuildSystem implements BuildSystemDriver {
         };
     }
 
-    getArtifactFilename(ctx: BuildContext): string {
-        const customName = ctx.key.backendOptions?.customOutputFilename;
-        return path.join(ctx.dirPath, customName || this.descriptor.defaultArtifactName);
-    }
-
-    async finaliseArtifact(
+    override async finaliseArtifact(
         ctx: BuildContext,
         result: CompilationResult,
         artifactFilename: string,
@@ -130,18 +99,5 @@ export class MakeBuildSystem implements BuildSystemDriver {
             );
         }
         return undefined;
-    }
-
-    async postProcessArtifact(
-        ctx: BuildContext,
-        result: CompilationResult,
-        artifactFilename: string,
-    ): Promise<CompilationResult> {
-        const [asmResult] = await ctx.compiler.checkOutputFileAndDoPostProcess(
-            result,
-            artifactFilename,
-            ctx.key.filters,
-        );
-        return asmResult;
     }
 }

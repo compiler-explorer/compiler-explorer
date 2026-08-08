@@ -25,16 +25,13 @@
 import fs from 'node:fs/promises';
 import path from 'node:path';
 
-import _ from 'underscore';
-
 import {BuildSystems} from '../../shared/build-systems.js';
-import type {CompilationResult} from '../../types/compilation/compilation.interfaces.js';
 import {assert} from '../assert.js';
 import type {BaseCompiler} from '../base-compiler.js';
-import type {ParsedRequest} from '../handlers/compile.js';
-import type {BuildContext, BuildPlan, BuildSystemDriver} from './build-system.interfaces.js';
+import {BaseBuildSystem} from './base.js';
+import type {BuildContext, BuildPlan} from './build-system.interfaces.js';
 
-export class CMakeBuildSystem implements BuildSystemDriver {
+export class CMakeBuildSystem extends BaseBuildSystem {
     readonly id = 'cmake' as const;
     readonly descriptor = BuildSystems.cmake;
 
@@ -43,26 +40,11 @@ export class CMakeBuildSystem implements BuildSystemDriver {
         return undefined;
     }
 
-    applyRequestDefaults(compiler: BaseCompiler, parsedRequest: ParsedRequest): void {
-        _.defaults(parsedRequest.filters, compiler.getDefaultFilters());
-        parsedRequest.filters.binary = true;
-        parsedRequest.filters.dontMaskFilenames = true;
-    }
-
-    getBuildPath(dirPath: string): string {
+    override getBuildPath(dirPath: string): string {
         return path.join(dirPath, 'build');
     }
 
-    async writeProjectFiles(ctx: BuildContext): Promise<{inputFilename: string}> {
-        return await ctx.compiler.writeProjectFiles(
-            ctx.dirPath,
-            this.descriptor.manifestFilename,
-            ctx.key.source,
-            ctx.files,
-        );
-    }
-
-    async prepareBuildDirectory(ctx: BuildContext): Promise<void> {
+    override async prepareBuildDirectory(ctx: BuildContext): Promise<void> {
         await fs.mkdir(ctx.buildPath);
     }
 
@@ -118,25 +100,7 @@ export class CMakeBuildSystem implements BuildSystemDriver {
         };
     }
 
-    getArtifactFilename(ctx: BuildContext): string {
+    override getArtifactFilename(ctx: BuildContext): string {
         return ctx.compiler.getExecutableFilename(ctx.buildPath, ctx.compiler.outputFilebase, ctx.key);
-    }
-
-    async finaliseArtifact(): Promise<string | undefined> {
-        // CMake builds to the path we asked for, so there is nothing to reconcile.
-        return undefined;
-    }
-
-    async postProcessArtifact(
-        ctx: BuildContext,
-        result: CompilationResult,
-        artifactFilename: string,
-    ): Promise<CompilationResult> {
-        const [asmResult] = await ctx.compiler.checkOutputFileAndDoPostProcess(
-            result,
-            artifactFilename,
-            ctx.key.filters,
-        );
-        return asmResult;
     }
 }

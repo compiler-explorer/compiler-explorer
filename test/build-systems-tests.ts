@@ -487,6 +487,15 @@ describe('Cargo build system', () => {
         expect(copied).toEqual([[path.join(ctx.dirPath, 'target/debug/helper'), artifact]]);
     });
 
+    it('will not copy the built binary to a path outside the project', () => {
+        const env = makeRustEnv();
+        const compiler = makeRustCompiler(env);
+        const ctx = makeCargoContext(compiler, env, makeParsedRequest({customOutputFilename: '../../../../evil'}));
+
+        // finaliseArtifact copies to whatever this returns, so the name has to be refused before it gets there.
+        expect(() => cargoBuildSystem.getArtifactFilename(ctx)).toThrow(Error);
+    });
+
     it('takes a bin named for the artifact without its extension, which is how cargo would spell it', async () => {
         const env = makeRustEnv();
         const compiler = makeRustCompiler(env);
@@ -936,5 +945,15 @@ describe('Make build system', () => {
 
         const unnamed = makeMakeContext(compiler, env, makeParsedRequest());
         expect(makeBuildSystem.getArtifactFilename(unnamed)).toEqual('/tmp/ce-fake-make/output.s');
+    });
+
+    it('refuses an output filename that leaves the project, whatever it is copied from', () => {
+        const env = makeMakeEnv();
+        const compiler = makeCppCompiler(env);
+        // The second leaves the project via a sibling whose name starts with the project directory's.
+        for (const outside of ['../../../../etc/passwd', '../ce-fake-make-evil/output']) {
+            const ctx = makeMakeContext(compiler, env, makeParsedRequest({customOutputFilename: outside}));
+            expect(() => makeBuildSystem.getArtifactFilename(ctx)).toThrow(Error);
+        }
     });
 });

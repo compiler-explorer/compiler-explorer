@@ -25,16 +25,14 @@
 import fs from 'node:fs/promises';
 import path from 'node:path';
 
-import _ from 'underscore';
-
 import {BuildSystems} from '../../shared/build-systems.js';
 import type {CompilationResult} from '../../types/compilation/compilation.interfaces.js';
 import type {ExecutableExecutionOptions} from '../../types/execution/execution.interfaces.js';
 import type {BaseCompiler} from '../base-compiler.js';
 import {maybeRemapJailedDir} from '../exec.js';
-import type {ParsedRequest} from '../handlers/compile.js';
 import * as utils from '../utils.js';
-import type {BuildContext, BuildPlan, BuildSystemDriver} from './build-system.interfaces.js';
+import {BaseBuildSystem} from './base.js';
+import type {BuildContext, BuildPlan} from './build-system.interfaces.js';
 
 /** Where jansi is told to unpack its native library, relative to the project. */
 const JANSI_DIR = '.jansi';
@@ -60,7 +58,7 @@ const SUPPLIED_RECORD = '.ce-supplied-by-installation';
  */
 type JavaLikeCompiler = BaseCompiler & {javaHome?: string; javaRuntime?: string};
 
-export class MavenBuildSystem implements BuildSystemDriver {
+export class MavenBuildSystem extends BaseBuildSystem {
     readonly id = 'maven' as const;
     readonly descriptor = BuildSystems.maven;
 
@@ -118,28 +116,7 @@ export class MavenBuildSystem implements BuildSystemDriver {
         return undefined;
     }
 
-    applyRequestDefaults(compiler: BaseCompiler, parsedRequest: ParsedRequest): void {
-        _.defaults(parsedRequest.filters, compiler.getDefaultFilters());
-        // Java reads this as "run javap", which is how bytecode gets shown; there is no native binary involved.
-        parsedRequest.filters.binary = true;
-        parsedRequest.filters.dontMaskFilenames = true;
-    }
-
-    getBuildPath(dirPath: string): string {
-        // maven runs in the project root and makes target/ itself.
-        return dirPath;
-    }
-
-    async writeProjectFiles(ctx: BuildContext): Promise<{inputFilename: string}> {
-        return await ctx.compiler.writeProjectFiles(
-            ctx.dirPath,
-            this.descriptor.manifestFilename,
-            ctx.key.source,
-            ctx.files,
-        );
-    }
-
-    async prepareBuildDirectory(ctx: BuildContext): Promise<void> {
+    override async prepareBuildDirectory(ctx: BuildContext): Promise<void> {
         // maven creates target/ itself, but jansi will not create the directory it is pointed at, and a repository
         // maven is told to write to has to exist before it will read the ones behind it.
         await fs.mkdir(path.join(ctx.dirPath, JANSI_DIR), {recursive: true});
@@ -322,11 +299,6 @@ export class MavenBuildSystem implements BuildSystemDriver {
         };
     }
 
-    getArtifactFilename(ctx: BuildContext): string {
-        const customName = ctx.key.backendOptions?.customOutputFilename;
-        return path.join(ctx.dirPath, customName || this.descriptor.defaultArtifactName);
-    }
-
     /**
      * Maven's offline failures name an artifact rather than the reason it is missing, which in Compiler Explorer is
      * always the same reason.
@@ -367,7 +339,7 @@ export class MavenBuildSystem implements BuildSystemDriver {
      * maven names the jar after the pom, so copy it to the path the rest of the compilation was told to expect, the
      * same way the Cargo driver does. `customOutputFilename` picks between jars when a build produces several.
      */
-    async finaliseArtifact(
+    override async finaliseArtifact(
         ctx: BuildContext,
         result: CompilationResult,
         artifactFilename: string,
@@ -479,7 +451,7 @@ export class MavenBuildSystem implements BuildSystemDriver {
         return undefined;
     }
 
-    async postProcessArtifact(ctx: BuildContext, result: CompilationResult): Promise<CompilationResult> {
+    override async postProcessArtifact(ctx: BuildContext, result: CompilationResult): Promise<CompilationResult> {
         // Reuse the Java compiler's javap handling by pointing it at maven's class output.
         const classesDir = path.join(ctx.dirPath, CLASSES_DIR);
         const [asmResult] = await ctx.compiler.checkOutputFileAndDoPostProcess(
