@@ -39,11 +39,25 @@ describe('Creates and tracks temporary directories', () => {
     });
 
     it('creates directories under $TMPDIR', async () => {
-        expect(temp.getStats()).toEqual({numCreated: 0, numActive: 0, numRemoved: 0, numAlreadyGone: 0});
+        expect(temp.getStats()).toEqual({
+            numCreated: 0,
+            numActive: 0,
+            numHeld: 0,
+            numRemoved: 0,
+            numAlreadyGone: 0,
+            numHoldsExpired: 0,
+        });
         const newTemp = await temp.mkdir('prefix');
         expect(newTemp).toContain(osTemp);
         expect(await utils.dirExists(newTemp)).toBe(true);
-        expect(temp.getStats()).toEqual({numCreated: 1, numActive: 1, numRemoved: 0, numAlreadyGone: 0});
+        expect(temp.getStats()).toEqual({
+            numCreated: 1,
+            numActive: 1,
+            numHeld: 0,
+            numRemoved: 0,
+            numAlreadyGone: 0,
+            numHoldsExpired: 0,
+        });
     });
     it('creates directories with prefix', async () => {
         const newTemp = await temp.mkdir('prefix');
@@ -56,16 +70,37 @@ describe('Creates and tracks temporary directories', () => {
         expect(temp1).not.toEqual(temp2);
         expect(temp1).not.toEqual(temp3);
         expect(temp2).not.toEqual(temp3);
-        expect(temp.getStats()).toEqual({numCreated: 3, numActive: 3, numRemoved: 0, numAlreadyGone: 0});
+        expect(temp.getStats()).toEqual({
+            numCreated: 3,
+            numActive: 3,
+            numHeld: 0,
+            numRemoved: 0,
+            numAlreadyGone: 0,
+            numHoldsExpired: 0,
+        });
     });
     it('cleans up directories even if not empty', async () => {
         const newTemp1 = await temp.mkdir('prefix');
         await utils.ensureFileExists(path.join(newTemp1, 'some', 'dirs', 'under', 'file'));
         const newTemp2 = await temp.mkdir('prefix');
         const newTemp3 = await temp.mkdir('prefix');
-        expect(temp.getStats()).toEqual({numCreated: 3, numActive: 3, numRemoved: 0, numAlreadyGone: 0});
+        expect(temp.getStats()).toEqual({
+            numCreated: 3,
+            numActive: 3,
+            numHeld: 0,
+            numRemoved: 0,
+            numAlreadyGone: 0,
+            numHoldsExpired: 0,
+        });
         await temp.cleanup();
-        expect(temp.getStats()).toEqual({numCreated: 3, numActive: 0, numRemoved: 3, numAlreadyGone: 0});
+        expect(temp.getStats()).toEqual({
+            numCreated: 3,
+            numActive: 0,
+            numHeld: 0,
+            numRemoved: 3,
+            numAlreadyGone: 0,
+            numHoldsExpired: 0,
+        });
         expect(await utils.dirExists(newTemp1)).toBe(false);
         expect(await utils.dirExists(newTemp2)).toBe(false);
         expect(await utils.dirExists(newTemp3)).toBe(false);
@@ -73,9 +108,23 @@ describe('Creates and tracks temporary directories', () => {
     it('counts already-cleaned-up directiories', async () => {
         const newTemp = await temp.mkdir('prefix');
         await fs.rm(newTemp, {recursive: true});
-        expect(temp.getStats()).toEqual({numCreated: 1, numActive: 1, numRemoved: 0, numAlreadyGone: 0});
+        expect(temp.getStats()).toEqual({
+            numCreated: 1,
+            numActive: 1,
+            numHeld: 0,
+            numRemoved: 0,
+            numAlreadyGone: 0,
+            numHoldsExpired: 0,
+        });
         await temp.cleanup();
-        expect(temp.getStats()).toEqual({numCreated: 1, numActive: 0, numRemoved: 0, numAlreadyGone: 1});
+        expect(temp.getStats()).toEqual({
+            numCreated: 1,
+            numActive: 0,
+            numHeld: 0,
+            numRemoved: 0,
+            numAlreadyGone: 1,
+            numHoldsExpired: 0,
+        });
     });
 
     it('uses absolute paths directly when provided', async () => {
@@ -113,5 +162,68 @@ describe('cleanupSync', () => {
         temp.cleanupSync();
         expect(await utils.dirExists(dir)).toBe(false);
         expect(temp.getStats().numActive).toEqual(0);
+    });
+
+    it('removes a held directory, nothing being able to use one as the process exits', async () => {
+        const dir = await temp.mkdir('ce-temp-test');
+        temp.hold(dir);
+        temp.cleanupSync();
+        expect(await utils.dirExists(dir)).toBe(false);
+        expect(temp.getStats().numHeld).toEqual(0);
+    });
+});
+
+describe('Holds directories in use back from cleanup', () => {
+    afterEach(async () => {
+        temp.setMaxHoldMs(10 * 60 * 1000);
+        await temp.cleanup();
+        temp.resetStats();
+    });
+
+    it('keeps a held directory, and removes it once released', async () => {
+        const held = await temp.mkdir('ce-held');
+        const free = await temp.mkdir('ce-free');
+        const release = temp.hold(held);
+
+        await temp.cleanup();
+        expect(await utils.dirExists(held)).toBe(true);
+        expect(await utils.dirExists(free)).toBe(false);
+        // Still tracked, so the cleanup after the release finds it.
+        expect(temp.getStats()).toMatchObject({numActive: 1, numHeld: 1});
+
+        release();
+        await temp.cleanup();
+        expect(await utils.dirExists(held)).toBe(false);
+        expect(temp.getStats()).toMatchObject({numActive: 0, numHeld: 0});
+    });
+
+    it('releases by directory as well as through the returned function', async () => {
+        const dir = await temp.mkdir('ce-held');
+        temp.hold(dir);
+        temp.release(dir);
+
+        await temp.cleanup();
+        expect(await utils.dirExists(dir)).toBe(false);
+    });
+
+    it('removes a directory whose hold was never released, once the hold lapses', async () => {
+        // What guarantees the directory goes away even when the code holding it never gives it back.
+        temp.setMaxHoldMs(0);
+        const leaked = await temp.mkdir('ce-leaked');
+        temp.hold(leaked);
+
+        await temp.cleanup();
+        expect(await utils.dirExists(leaked)).toBe(false);
+        expect(temp.getStats()).toMatchObject({numActive: 0, numHeld: 0, numHoldsExpired: 1});
+    });
+
+    it('does not lapse a hold that is still within its time', async () => {
+        temp.setMaxHoldMs(60_000);
+        const dir = await temp.mkdir('ce-held');
+        temp.hold(dir);
+
+        await temp.cleanup();
+        expect(await utils.dirExists(dir)).toBe(true);
+        expect(temp.getStats().numHoldsExpired).toEqual(0);
     });
 });
