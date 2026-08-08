@@ -43,6 +43,7 @@ import {
 import {MakeBuildSystem} from '../lib/build-systems/make.js';
 import {MavenBuildSystem} from '../lib/build-systems/maven.js';
 import {CompilationEnvironment} from '../lib/compilation-env.js';
+import {RustCompiler} from '../lib/compilers/rust.js';
 import {ParsedRequest} from '../lib/handlers/compile.js';
 import {
     BuildSystems,
@@ -199,7 +200,8 @@ describe('Build system registry', () => {
     it('offers each build system only for the languages it can build', () => {
         // Make is offered everywhere, a Makefile being able to drive anything, so it accompanies each of these.
         expect(getBuildSystemsForLanguage('c++').map(bs => bs.id)).toEqual(['cmake', 'make']);
-        expect(getBuildSystemsForLanguage('rust').map(bs => bs.id)).toEqual(['cargo', 'make']);
+        // CMake builds Rust too, given a compiler it can drive; whether a particular one can is the driver's business.
+        expect(getBuildSystemsForLanguage('rust').map(bs => bs.id)).toEqual(['cmake', 'cargo', 'make']);
         expect(getBuildSystemsForLanguage('java').map(bs => bs.id)).toEqual(['make', 'maven']);
         expect(getBuildSystemsForLanguage('kotlin').map(bs => bs.id)).toEqual(['make', 'maven']);
         expect(getBuildSystemsForLanguage('haskell').map(bs => bs.id)).toEqual(['make']);
@@ -265,6 +267,30 @@ describe('CMake build system', () => {
         expect(cmakeBuildSystem.getArtifactFilename(ctx)).toEqual(
             path.join('/tmp/ce-fake-build', 'build', 'thing.elf'),
         );
+    });
+
+    it('hands CMake a Rust compiler and its flags, which it will not find for itself', async () => {
+        const env = makeCompilationEnvironment({languages: {rust: {id: 'rust'}}, props: {cmake: CMAKE_EXE}});
+        const rustc = new RustCompiler(
+            makeFakeCompilerInfo({
+                exe: '/opt/compiler-explorer/rust-1.91.0/bin/rustc',
+                lang: 'rust',
+                semver: '1.91.0',
+                ldPath: [],
+                libPath: [],
+                supportsBinary: true,
+                options: '-C debuginfo=2',
+            }),
+            env,
+        );
+        const req = makeParsedRequest();
+        req.options = ['--edition', '2021'];
+
+        expect(rustc.getExtraCMakeArgs(req)).toEqual([
+            '-DCMAKE_Rust_COMPILER=/opt/compiler-explorer/rust-1.91.0/bin/rustc',
+            '-DCMAKE_Rust_FLAGS=-C debuginfo=2 --edition 2021',
+        ]);
+        expect(await cmakeBuildSystem.getUnsupportedReason(rustc)).toBeUndefined();
     });
 
     it('plans a configure step followed by a build step', async () => {

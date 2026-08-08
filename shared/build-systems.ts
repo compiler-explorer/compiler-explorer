@@ -68,7 +68,7 @@ export const BuildSystems: Record<BuildSystemId, BuildSystemDescriptor> = {
         name: 'CMake',
         manifestFilename: 'CMakeLists.txt',
         manifestLanguageId: 'cmake',
-        compatibleLanguageIds: ['c++', 'c', 'fortran', 'cuda', 'assembly'],
+        compatibleLanguageIds: ['c++', 'c', 'fortran', 'cuda', 'assembly', 'rust'],
         defaultArgs: '-DCMAKE_BUILD_TYPE=Debug',
         argsPlaceholder: 'CMake arguments...',
         defaultArtifactName: 'output.s',
