@@ -30,8 +30,8 @@ phases below have landed.
 
 The compiler to use is injected through environment variables rather than a command line:
 
-- `getCmakeBaseEnv()` sets `CXX`/`CC` (C++), `FC` (Fortran), `CUDACXX` (CUDA), `AS` (assembly), `CC` otherwise.
-- `getCompilerEnvironmentVariables()` sets `CXXFLAGS`/`FFLAGS`/`CUDAFLAGS`/`CFLAGS`.
+- `getCmakeBaseEnv()` sets `CXX`/`CC` (C++), `FC` (Fortran), `CUDACXX` (CUDA), `AS` (assembly), `RUSTC` (Rust), `CC` otherwise.
+- `getCompilerEnvironmentVariables()` sets `CXXFLAGS`/`FFLAGS`/`CUDAFLAGS`/`CFLAGS`/`RUSTFLAGS`.
 - `createCmakeExecParams()` sets `LDFLAGS` and `ldPath`.
 
 Compilers that need to deviate override `getExtraCMakeArgs()` (`win32-vc`, `llvm-mos`), `getCMakeExtToolchainParam()`
@@ -275,9 +275,9 @@ offered for **every** language: `compatibleLanguageIds: 'all'`, since a Makefile
 than being tied to a toolchain. One `make=` in the properties names the binary, as `cmake=` does.
 
 - **It is handed the environment CMake is handed**, by the same `createCmakeExecParams`: `CXX`/`CC`/`FC`/`CUDACXX`/
-  `AS` from the selected compiler, the matching `CXXFLAGS`/`CFLAGS`/`FFLAGS`/`CUDAFLAGS` carrying the user's options
-  and libraries, and `LDFLAGS`. So a recipe reading `$(CXX) $(CXXFLAGS) -o output main.cpp` compiles with what was
-  selected in the UI, which is the whole point of offering it.
+  `AS`/`RUSTC` from the selected compiler, the matching `CXXFLAGS`/`CFLAGS`/`FFLAGS`/`CUDAFLAGS`/`RUSTFLAGS` carrying
+  the user's options and libraries, and `LDFLAGS`. So a recipe reading `$(CXX) $(CXXFLAGS) -o output main.cpp`
+  compiles with what was selected in the UI, which is the whole point of offering it.
 - **`NVCC` as well, when the compiler really is nvcc.** CMake has no need of it, but a CUDA Makefile conventionally
   says `$(NVCC)`, and make has no built-in for it, so it would otherwise expand to nothing and the recipe would run
   without a compiler. Guarded on `compilerType === 'nvcc'`: clang compiles CUDA too, and naming it NVCC would be a
