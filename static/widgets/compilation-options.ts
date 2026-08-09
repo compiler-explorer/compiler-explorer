@@ -30,9 +30,9 @@ import {CompilationResult} from '../../types/compilation/compilation.interfaces.
 import {CompilerInfo} from '../../types/compiler.interfaces.js';
 import * as BootstrapUtils from '../bootstrap-utils.js';
 import {CompilerService} from '../compiler-service.js';
-import {Toggles} from '../widgets/toggles.js';
-import {PaneCompilerState} from './pane.interfaces.js';
-import {Pane} from './pane.js';
+import {PaneCompilerState} from '../panes/pane.interfaces.js';
+import {Pane} from '../panes/pane.js';
+import {Toggles} from './toggles.js';
 
 type GetResult = (result: CompilationResult) => Pick<CompilationResult, 'code' | 'compilationOptions'> | undefined;
 
