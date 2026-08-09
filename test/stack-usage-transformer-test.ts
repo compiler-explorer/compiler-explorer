@@ -64,4 +64,21 @@ example.cpp:7:5:int h()\t64\tdynamic,bounded
             },
         ]);
     });
+
+    it('should work for GCC >= 17', () => {
+        const output = parse('example.cpp:2:5:int square(int)\t_Z6squarei\t16\tstatic\n');
+        expect(output).toEqual([
+            {
+                BytesUsed: 16,
+                DebugLoc: {
+                    File: 'example.cpp',
+                    Line: 2,
+                    Column: 0,
+                },
+                Function: 'int square(int)',
+                Qualifier: 'static',
+                displayString: '16 bytes, static',
+            },
+        ]);
+    });
 });
