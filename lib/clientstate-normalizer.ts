@@ -394,6 +394,7 @@ class GoldenLayoutComponents {
                 cmakeArgs: tree.cmakeArgs,
                 customOutputFilename: tree.customOutputFilename,
                 isCMakeProject: tree.isCMakeProject,
+                buildSystem: tree.buildSystem,
                 compilerLanguageId: tree.compilerLanguageId,
                 files: tree.files,
                 newFileId: tree.newFileId,

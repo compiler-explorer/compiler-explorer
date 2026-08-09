@@ -25,6 +25,7 @@
 import express from 'express';
 import _ from 'underscore';
 
+import {BuildSystems} from '../../shared/build-systems.js';
 import {isString, unique} from '../../shared/common-utils.js';
 import {CompilerInfo} from '../../types/compiler.interfaces.js';
 import {Language, LanguageKey} from '../../types/languages.interfaces.js';
@@ -106,6 +107,11 @@ export class ApiHandler {
             .post(textParser, compileHandler.handle.bind(compileHandler))
             .all(methodNotAllowed);
         this.handle
+            .route('/compiler/:compiler/build/:buildSystem')
+            .post(compileHandler.handleBuildProject.bind(compileHandler))
+            .all(methodNotAllowed);
+        // The original, CMake-only spelling of the above. Documented API, so it stays.
+        this.handle
             .route('/compiler/:compiler/cmake')
             .post(compileHandler.handleCmake.bind(compileHandler))
             .all(methodNotAllowed);
@@ -173,9 +179,12 @@ export class ApiHandler {
     }
 
     getAvailableLanguages(): Language[] {
-        // Always expose cmake to the frontend even if no compiler reports it as
-        // its language, so IDE/tree mode (CMakeLists.txt) can resolve it.
-        const langIds = unique([...this.usedLangIds, ...(this.languages.cmake ? (['cmake'] as LanguageKey[]) : [])]);
+        // Always expose the build system manifest languages to the frontend even if no compiler reports them as its
+        // language, so IDE/tree mode (CMakeLists.txt, Cargo.toml) can resolve them.
+        const manifestLangIds = Object.values(BuildSystems)
+            .map(buildSystem => buildSystem.manifestLanguageId)
+            .filter(langId => this.languages[langId]);
+        const langIds = unique([...this.usedLangIds, ...manifestLangIds]);
         return langIds.map(val => {
             const lang = this.languages[val];
             const newLangObj: Language = Object.assign({}, lang);

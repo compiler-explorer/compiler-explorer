@@ -39,6 +39,10 @@ const formatMs = createMs({
     formatOptions: {includedUnits: ['hour', 'minute', 'second', 'millisecond'], useAbbreviations: true},
 });
 
+/**
+ * How a compilation was built. Project builds record the build system's id, so these values line up with
+ * `BuildSystemId` — `KnownBuildMethod.CMake` and the `'cmake'` build system are the same thing.
+ */
 export enum KnownBuildMethod {
     Compile = 'compile',
     CMake = 'cmake',
