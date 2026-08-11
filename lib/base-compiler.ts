@@ -405,6 +405,8 @@ export class BaseCompiler {
             env.CUDACXX = this.compiler.exe;
         } else if (this.lang.id === 'assembly') {
             env.AS = this.compiler.exe;
+        } else if (this.lang.id === 'rust') {
+            env.RUSTC = this.compiler.exe;
         } else {
             env.CC = this.compiler.exe;
         }
@@ -2833,6 +2835,9 @@ export class BaseCompiler {
         if (this.lang.id === 'cuda') {
             return {...this.cmakeBaseEnv, CUDAFLAGS: compilerflags};
         }
+        if (this.lang.id === 'rust') {
+            return {...this.cmakeBaseEnv, RUSTFLAGS: compilerflags};
+        }
         return {...this.cmakeBaseEnv, CFLAGS: compilerflags};
     }
 
@@ -2980,6 +2985,9 @@ export class BaseCompiler {
         }
         if (this.lang.id === 'cuda') {
             return splitArguments(makeExecParams.env.CUDAFLAGS);
+        }
+        if (this.lang.id === 'rust') {
+            return splitArguments(makeExecParams.env.RUSTFLAGS);
         }
         return splitArguments(makeExecParams.env.CFLAGS);
     }
