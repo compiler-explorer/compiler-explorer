@@ -22,6 +22,8 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
+import zlib from 'node:zlib';
+
 import {assert} from './assert.js';
 import {
     ClientState,
@@ -31,6 +33,7 @@ import {
     ClientStateSession,
     ClientStateTree,
 } from './clientstate.js';
+import {logger} from './logger.js';
 
 type BasicGoldenLayoutStruct = {
     type: string;
@@ -394,6 +397,7 @@ class GoldenLayoutComponents {
                 cmakeArgs: tree.cmakeArgs,
                 customOutputFilename: tree.customOutputFilename,
                 isCMakeProject: tree.isCMakeProject,
+                buildSystem: tree.buildSystem,
                 compilerLanguageId: tree.compilerLanguageId,
                 files: tree.files,
                 newFileId: tree.newFileId,
@@ -1391,4 +1395,62 @@ export class ClientStateGoldenifier extends GoldenLayoutComponents {
             }
         }
     }
+}
+
+// Decode a base64/inline client-state buffer into a raw config object, transparently
+// inflating it first if it was compressed with zlib deflate (as used by gzip).
+export function extractJsonFromBufferAndInflateIfRequired(buffer: Buffer): any {
+    const firstByte = buffer.at(0); // for uncompressed data this is probably '{'
+    const isGzipUsed = firstByte !== undefined && (firstByte & 0x0f) === 0x8; // https://datatracker.ietf.org/doc/html/rfc1950, https://datatracker.ietf.org/doc/html/rfc1950, for '{' this yields 11
+
+    let jsonString: string;
+    if (isGzipUsed) {
+        try {
+            jsonString = zlib.inflateSync(buffer).toString();
+        } catch (inflateError) {
+            logger.debug('Failed to inflate gzipped buffer, falling back to raw buffer', inflateError);
+            jsonString = buffer.toString();
+        }
+    } else {
+        jsonString = buffer.toString();
+    }
+
+    try {
+        return JSON.parse(jsonString);
+    } catch (parseError) {
+        logger.debug('Failed to parse JSON from client state', {
+            error: parseError,
+            jsonString: jsonString.substring(0, 100) + (jsonString.length > 100 ? '...' : ''),
+            bufferLength: buffer.length,
+        });
+        const errorMessage = parseError instanceof Error ? parseError.message : 'Unknown parsing error';
+        throw new Error(`Invalid JSON in client state: ${errorMessage}`);
+    }
+}
+
+// Goldenify a fully-constructed ClientState into its default GoldenLayout representation.
+export function goldenLayoutFromClientState(state: ClientState): GoldenLayoutRootStruct {
+    const goldenifier = new ClientStateGoldenifier();
+    goldenifier.fromClientState(state);
+    return goldenifier.golden;
+}
+
+// Interpret a raw config (either GoldenLayout `{content}` or ClientState `{sessions}`)
+// as a GoldenLayout, passing GoldenLayout through unchanged.
+export function configToGoldenLayout(config: any): GoldenLayoutRootStruct {
+    if (config.content) {
+        return config;
+    }
+    return goldenLayoutFromClientState(new ClientState(config));
+}
+
+// Interpret a raw config (either GoldenLayout `{content}` or ClientState `{sessions}`)
+// as a ClientState, normalizing GoldenLayout back into sessions.
+export function configToClientState(config: any): ClientState {
+    if (config.content) {
+        const normalizer = new ClientStateNormalizer();
+        normalizer.fromGoldenLayout(config);
+        return normalizer.normalized;
+    }
+    return new ClientState(config);
 }

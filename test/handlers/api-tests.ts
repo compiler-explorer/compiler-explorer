@@ -84,6 +84,7 @@ describe('API handling', () => {
             {
                 handle: res => res.send('compile'),
                 handleCmake: res => res.send('cmake'),
+                handleBuildProject: res => res.send('build'),
                 handlePopularArguments: res => res.send('ok'),
                 handleOptimizationArguments: res => res.send('ok'),
             } as unknown as CompileHandler, // TODO(mrg) ideally fake this out or make it a higher-level interface
@@ -176,6 +177,7 @@ describe('API tools endpoint', () => {
             {
                 handle: res => res.send('compile'),
                 handleCmake: res => res.send('cmake'),
+                handleBuildProject: res => res.send('build'),
                 handlePopularArguments: res => res.send('ok'),
                 handleOptimizationArguments: res => res.send('ok'),
             } as unknown as CompileHandler,
@@ -258,6 +260,7 @@ describe('API compilers tools slimming', () => {
             {
                 handle: res => res.send('compile'),
                 handleCmake: res => res.send('cmake'),
+                handleBuildProject: res => res.send('build'),
                 handlePopularArguments: res => res.send('ok'),
                 handleOptimizationArguments: res => res.send('ok'),
             } as unknown as CompileHandler,
@@ -289,6 +292,12 @@ describe('API compilers tools slimming', () => {
                 lang: 'c++',
                 tools: {clangtidy: mockTool},
             }),
+            makeFakeCompilerInfo({
+                id: 'msvc',
+                name: 'MSVC',
+                lang: 'c++',
+                tools: ['MicrosoftAnalysisTool', 'llvm-pdbutil'] as unknown as CompilerInfo['tools'],
+            }),
         ]);
         apiHandler.setLanguages(languages);
     });
@@ -300,7 +309,10 @@ describe('API compilers tools slimming', () => {
             .expect('Content-Type', /json/)
             .expect(200);
 
-        expect(res.body).toEqual([{id: 'gcc900', tools: ['clangtidy']}]);
+        expect(res.body).toEqual([
+            {id: 'gcc900', tools: ['clangtidy']},
+            {id: 'msvc', tools: ['MicrosoftAnalysisTool', 'llvm-pdbutil']},
+        ]);
         expect(JSON.stringify(res.body)).not.toContain('/secret/path/to/clang-tidy');
     });
 });
@@ -314,6 +326,7 @@ describe('API libraries field filtering', () => {
             {
                 handle: res => res.send('compile'),
                 handleCmake: res => res.send('cmake'),
+                handleBuildProject: res => res.send('build'),
                 handlePopularArguments: res => res.send('ok'),
                 handleOptimizationArguments: res => res.send('ok'),
             } as unknown as CompileHandler,

@@ -595,6 +595,7 @@ describe('Options handler', () => {
             target: 'https://godbolt.org:443',
             path: '/gpu/api/compiler/g123remote/compile',
             cmakePath: '/gpu/api/compiler/g123remote/cmake',
+            buildPath: '/gpu/api/compiler/g123remote/build',
             basePath: '/gpu',
         });
 

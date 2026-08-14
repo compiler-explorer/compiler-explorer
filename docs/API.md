@@ -242,10 +242,20 @@ The `source` field contains the contents of your `CMakeLists.txt` file. The `fil
 
 Important parameters:
 - `userArguments`: Compiler flags passed to the C++ compiler (not CMake)
-- `compilerOptions.cmakeArgs`: Arguments passed directly to CMake (e.g., "-DCMAKE_BUILD_TYPE=Release")
+- `compilerOptions.buildSystemArgs`: Arguments passed directly to the build system (e.g., "-DCMAKE_BUILD_TYPE=Release")
+- `compilerOptions.cmakeArgs`: The original name for `buildSystemArgs`. Still supported; used if `buildSystemArgs` is absent
 - `compilerOptions.customOutputFilename`: Custom name for the output executable
 
 The response will include the compilation results similar to the regular compile endpoint.
+
+### `POST /api/compiler/<compiler-id>/build/<build-system>` - build a project with a build system
+
+The same as the CMake endpoint above, but with the build system named in the URL rather than implied by it. `cmake` is
+currently the only build system, so `POST /api/compiler/<compiler-id>/build/cmake` is equivalent to
+`POST /api/compiler/<compiler-id>/cmake`. Requesting an unknown build system returns a 404.
+
+The request and response bodies are identical to the CMake endpoint's. Prefer `compilerOptions.buildSystemArgs` over
+`compilerOptions.cmakeArgs` here.
 
 ### `GET /api/formats` - return available code formatters
 
@@ -383,9 +393,54 @@ If JSON is present in the request's `Accept` header, the compilation results are
 
 ### `POST /api/shortener` - saves given state _forever_ to a shortlink and returns the unique id for the link
 
-The body of this post should be in the format of a [ClientState](../lib/clientstate.ts) Be sure that the Content-Type of
-your post is application/json. The body must be a JSON object (e.g. `{"sessions": [...]}`); a JSON string at the top
+Be sure that the Content-Type of your post is application/json. The body must be a JSON object; a JSON string at the top
 level is not accepted.
+
+The state you save is either of two objects:
+
+- a [ClientState](../lib/clientstate.ts) (`{"sessions": [...]}`), which describes the editors, compilers, and executors
+  without pinning a particular window arrangement, or
+- a **GoldenLayout** (`{"content": [...]}`), which additionally captures a full custom panel layout.
+
+Post that state object directly as the body. It is the exact object that gets stored and later delivered when the
+shortlink is opened (via `/z/<id>`), and it is the same state object accepted by `/clientstate/<base64>` (there it is
+base64-encoded in the URL rather than sent in a POST body).
+
+You may optionally wrap the state object under a top-level `config` key (`{"config": <state>}`); only the value of
+`config` is stored. This wrapper is what the site itself sends when you create a short link from the UI (its state is a
+GoldenLayout captured from the current layout), and it is accepted for both forms.
+
+To save a client state _with a layout_, post a GoldenLayout. This one stacks an editor above its compiler in a single
+column (the compiler's `source` refers to the editor's `id`):
+
+```JSON
+{
+  "content": [
+    {
+      "type": "column",
+      "content": [
+        {
+          "type": "component",
+          "componentName": "codeEditor",
+          "componentState": {"id": 1, "lang": "c++", "source": "int square(int n) { return n * n; }"}
+        },
+        {
+          "type": "component",
+          "componentName": "compiler",
+          "componentState": {
+            "id": 1,
+            "source": 1,
+            "lang": "c++",
+            "compiler": "g82",
+            "options": "-O2",
+            "filters": {"intel": true, "demangle": true}
+          }
+        }
+      ]
+    }
+  ]
+}
+```
 
 **⚠️ Important: Shell Escaping**
 
@@ -465,11 +520,11 @@ etcetera, otherwise `<sourceid>` can be set to 1.
 
 ### `GET /clientstate/<base64>` - Opens the website in a given state
 
-This call is to open the website with a given state (without having to store the state first with /api/shortener)
-Instead of sending the ClientState JSON in the post body, it will have to be encoded with base64 and attached directly
-onto the URL. It is possible to compress the JSON string with the zlib deflate method (compression used by gzip;
-available for many programming languages like [javascript](https://nodejs.org/api/zlib.html)). It is automatically
-detected.
+This call is to open the website with a given state (without having to store the state first with /api/shortener). The
+state is the same object described under `POST /api/shortener` above; here it is encoded with base64 and attached
+directly onto the URL instead of being sent in a POST body. It is possible to compress the JSON string with the zlib
+deflate method (compression used by gzip; available for many programming languages like
+[javascript](https://nodejs.org/api/zlib.html)). It is automatically detected.
 
 To avoid problems in reading base64 by the API, some characters must be kept in unicode. Therefore, before calling the
 API, it is necessary to replace these characters with their respective unicodes. A suggestion is to use the Regex
@@ -477,9 +532,10 @@ expression `/[\u007F-\uFFFF]/g` that allows mapping these characters.
 
 ### `GET /noscript/clientstate/<base64>` - Opens the noscript version of the website in a given state
 
-This is the noscript equivalent of `/clientstate/<base64>`. It opens the noscript version of the website with a given
-state. The base64-encoded ClientState JSON works the same way as the regular `/clientstate/`
-endpoint.
+This is the noscript equivalent of `/clientstate/<base64>`, and accepts the same base64-encoded state in the same way.
+
+Because the noscript version renders a simplified static page, a custom GoldenLayout panel arrangement is not preserved;
+the layout is flattened to its editors, compilers, and executors.
 
 # Implementations
 

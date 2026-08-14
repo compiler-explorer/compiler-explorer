@@ -84,6 +84,8 @@ import {type ToolResult, type ToolTypeKey} from '../types/tool.interfaces.js';
 import {moveArtifactsIntoResult} from './artifact-utils.js';
 import {assert, unwrap} from './assert.js';
 import {copyCopperSpicePlugins} from './binaries/copperspice-utils.js';
+import type {BuildContext, BuildPlan, BuildSystemDriver} from './build-systems/index.js';
+import {cmakeBuildSystem, getBuildSystemArgs} from './build-systems/index.js';
 import type {BuildEnvDownloadInfo} from './buildenvsetup/buildenv.interfaces.js';
 import {BuildEnvSetupBase, getBuildEnvTypeByKey} from './buildenvsetup/index.js';
 import {BaseCache} from './cache/base.js';
@@ -183,6 +185,21 @@ export const c_value_placeholder = '<value>';
 export interface SimpleOutputFilenameCompiler {
     getOutputFilename(dirPath: string): string;
 }
+
+/**
+ * One project build: where it happens, what it is building, and where that lands. Worked out once and then referred
+ * to by each step of it, which would otherwise pass a dozen arguments between them.
+ */
+type ProjectBuild = {
+    buildSystem: BuildSystemDriver;
+    buildContext: BuildContext;
+    dirPath: string;
+    cacheKey: CmakeCacheKey;
+    executablePackageHash: string;
+    /** The artifact the rest of the compilation was told to expect, whatever the build system called it. */
+    outputFilename: string;
+    executeOptions: ExecutableExecutionOptions;
+};
 
 export class BaseCompiler {
     public compiler: CompilerInfo;
@@ -388,6 +405,8 @@ export class BaseCompiler {
             env.CUDACXX = this.compiler.exe;
         } else if (this.lang.id === 'assembly') {
             env.AS = this.compiler.exe;
+        } else if (this.lang.id === 'rust') {
+            env.RUSTC = this.compiler.exe;
         } else {
             env.CC = this.compiler.exe;
         }
@@ -416,8 +435,13 @@ export class BaseCompiler {
         return env;
     }
 
-    async newTempDir(): Promise<string> {
-        return await temp.mkdir(utils.ce_temp_prefix);
+    /**
+     * A temporary directory, removed by the sweep once nothing is using it. Pass `hold` when the directory outlives no
+     * queue slot of its own -- the sweep only stays away while the compilation queue reports itself busy, so anything
+     * using a directory outside a slot has to say so, and has to say so as the directory is made.
+     */
+    async newTempDir(options?: {hold?: boolean}): Promise<string> {
+        return await temp.mkdir(utils.ce_temp_prefix, options);
     }
 
     optOutputRequested(options: string[]) {
@@ -462,7 +486,10 @@ export class BaseCompiler {
         // actual random path is unimportant for caching; and its presence prevents cache hits.
         const optionsForCache = {...options};
         if (options.createAndUseTempDir) {
-            options.customCwd = await this.newTempDir();
+            // Held: the exec below runs in a queue slot, but this directory is made before joining the queue and the
+            // cache lookup in between is awaited. An idle queue -- which is what compiler probing runs against --
+            // leaves the temp sweep free to delete the directory before the exec that was given it as its cwd.
+            options.customCwd = await this.newTempDir({hold: true});
         }
 
         const key = this.getCompilerCacheKey(compiler, args, optionsForCache);
@@ -499,6 +526,7 @@ export class BaseCompiler {
         }
 
         if (options.createAndUseTempDir) {
+            temp.release(options.customCwd!);
             fs.rm(options.customCwd!, {recursive: true, force: true}).catch(() => {});
         }
 
@@ -741,7 +769,7 @@ export class BaseCompiler {
     }
 
     getGccDumpOptions(gccDumpOptions: Record<string, any>, outputFilename: string) {
-        const addOpts = ['-fdump-passes'];
+        const addOpts: string[] = [];
 
         // Build dump options to append to the end of the -fdump command-line flag.
         // GCC accepts these options as a list of '-' separated names that may
@@ -785,21 +813,28 @@ export class BaseCompiler {
         }
 
         // If we want to remove the passes that won't produce anything from the
-        // drop down menu, we need to ask for all dump files and see what's
-        // really created. This is currently only possible with regular GCC, not
-        // for compilers that us libgccjit. The later can't easily move dump
-        // files outside of the tempdir created on the fly.
+        // drop down menu, we dump every invoked pass to its own file and then
+        // enumerate what was actually produced (see processGccDumpOutput). This is
+        // only possible with regular GCC, not for compilers that use libgccjit. The
+        // latter can't easily move dump files outside of the tempdir created on the
+        // fly, so they keep relying on the -fdump-passes listing parsed from stderr.
         if (this.compiler.removeEmptyGccDump) {
+            // Force '-lineno' on: processGccDumpOutput uses the per-statement
+            // [file:line] annotations to keep only functions defined in the user's
+            // source (header/library functions are trimmed out). If the user turned
+            // lineno off, the annotations are stripped again before the dump is shown.
+            const allFlags = flags.includes('-lineno') ? flags : flags + '-lineno';
             if (gccDumpOptions.treeDump !== false) {
-                addOpts.push('-fdump-tree-all' + flags);
+                addOpts.push('-fdump-tree-all' + allFlags);
             }
             if (gccDumpOptions.rtlDump !== false) {
-                addOpts.push('-fdump-rtl-all' + flags);
+                addOpts.push('-fdump-rtl-all' + allFlags);
             }
             if (gccDumpOptions.ipaDump !== false) {
-                addOpts.push('-fdump-ipa-all' + flags);
+                addOpts.push('-fdump-ipa-all' + allFlags);
             }
         } else {
+            addOpts.push('-fdump-passes');
             // If not dumping everything, create a specific command like
             // -fdump-tree-fixup_cfg1-some-flags=somefilename
             if (gccDumpOptions.pass) {
@@ -1589,7 +1624,6 @@ export class BaseCompiler {
                 optPipelineOptions,
                 this.compiler.debugPatched,
             );
-            const parseEnd = performance.now();
 
             if (optPipelineOptions.demangle) {
                 // apply demangles after parsing, would otherwise greatly complicate the parsing of the passes
@@ -1604,13 +1638,13 @@ export class BaseCompiler {
                 return {
                     results: await demangler.demangleLLVMPasses(optPipeline),
                     compileTime: compileEnd - compileStart,
-                    parseTime: parseEnd - parseStart,
+                    parseTime: performance.now() - parseStart,
                 };
             }
             return {
                 results: optPipeline,
                 compileTime: compileEnd - compileStart,
-                parseTime: parseEnd - parseStart,
+                parseTime: performance.now() - parseStart,
             };
         } catch (e: any) {
             return {
@@ -1924,6 +1958,94 @@ export class BaseCompiler {
         return null;
     }
 
+    /**
+     * Parse a GCC dump file name (`<inputbase>.<NNN><letter>.<passname>`, e.g.
+     * `example.cpp.255r.expand`) into the same descriptor shape as fromInternalGccDumpName.
+     * Returns null for files that aren't pass dumps (the .s output, .o, the source, ...).
+     * `nnn` is GCC's global pass-execution counter, used to order the drop-down.
+     */
+    passObjectFromDumpFilename(filename: string) {
+        // letter: t=tree, r=rtl, i=ipa. passname has hyphens/digits/underscores but no dots.
+        const match = filename.match(/\.(\d+)([tri])\.([\w-]+)$/);
+        if (!match) return null;
+
+        const category = {t: 'tree', r: 'rtl', i: 'ipa'}[match[2] as 't' | 'r' | 'i'];
+        const passName = match[3];
+        return {
+            nnn: Number.parseInt(match[1], 10),
+            // Keep these three fields byte-identical to fromInternalGccDumpName: the frontend
+            // keys TomSelect items by `name` and rebuilds the others from the stored suffix.
+            filename_suffix: `${match[2]}.${passName}`,
+            name: `${passName} (${category})`,
+            command_prefix: `-fdump-${category}-${passName}`,
+        };
+    }
+
+    /**
+     * Trim a GCC dump so it only contains functions defined in the user's source file,
+     * dropping functions that originate from included headers (#7870-era behaviour: this is
+     * the "defined in the actual source, not included headers" filter).
+     *
+     * Functions are delimited by `;; Function <sym> (...)` headers. We classify a block by
+     * substring rather than by parsing location syntax: tree/GIMPLE dumps annotate with
+     * `[file:line]`, but RTL dumps use `"file":line` plus unrelated brackets such as `[orig:N]`,
+     * so a syntax-based "first location" match is fragile and was wrongly emptying RTL passes.
+     * A block is treated as a header function (and dropped) only when it references a system
+     * include path but never the user's source file; everything else — including blocks with no
+     * recognisable location at all — is kept. Dumps without any `;; Function` markers (IPA
+     * summaries such as cgraph) are returned whole.
+     *
+     * `isRtlDump` selects the lineno-strip regex. `-lineno` adds `[file:line]` prefixes to every
+     * GIMPLE statement; these show up in tree dumps, in IPA passes that print GIMPLE bodies (icf,
+     * inline, sra, ...), and in the GIMPLE section of RTL expand dumps (which print each gimple
+     * statement before the RTL it expands to). When the user disabled lineno but we forced it on
+     * for origin detection, those prefixes are stripped so the dump reads as it would without
+     * -lineno. RTL dumps carry extra brackets that are NOT lineno noise -- `[orig:N]`, hex operands
+     * like `[0x..]`, branch probabilities like `[5.50%]` -- so the RTL strip only removes brackets
+     * that contain a path ('/'), leaving those intact. The `"file":line:col` location each insn
+     * prints keeps its `:line:col` but loses the repeated (temp-dir) filename, which is noise.
+     */
+    trimGccDumpHeaderFunctions(
+        content: string,
+        sourceBasename: string,
+        keepLineno: boolean,
+        isRtlDump: boolean,
+    ): string {
+        // Splitting on a lookahead keeps each `;; Function` header with its block and leaves the
+        // preamble (text before the first function) as the first piece, so join('') is lossless.
+        const pieces = content.split(/(?=^;; Function )/m);
+
+        const isHeaderFunction = (piece: string) =>
+            !piece.includes(sourceBasename) && /\/usr\/|\/opt\/|\/include\//.test(piece);
+
+        const kept =
+            pieces.length <= 1
+                ? pieces // no function markers (e.g. IPA summary dump): keep whole
+                : pieces.filter((piece, index) => index === 0 || !isHeaderFunction(piece));
+
+        let trimmed = kept.join('');
+        if (!keepLineno) {
+            // Approximate the no-lineno output by removing the [file:line(:col)] prefixes that
+            // -lineno forces onto GIMPLE statements (tree/IPA dumps, and the GIMPLE section of RTL
+            // expand dumps).
+            if (isRtlDump) {
+                // RTL dumps also contain brackets that must survive: [orig:N], hex operands like
+                // [0x..], branch probabilities like [5.50%], and the insn's own quoted "file":line
+                // locations (bracket-free). The forced -lineno prefixes always carry a path, so
+                // restrict the strip to brackets holding a path separator -- that keeps [orig:N] et al. while
+                // reproducing the readable no-lineno RTL dump.
+                trimmed = trimmed.replace(/\[[^[\]\n]*[/\\\\][^[\]\n]*:\d+(?::\d+)?(?: discrim \d+)?\] ?/g, '');
+                // Each insn also prints its own location as "file":line:col; the filename is the
+                // (long, temp-dir) source path repeated on every line and adds no information, so
+                // drop just the quoted path and keep the :line:col that pinskia asked to retain.
+                trimmed = trimmed.replace(/"[^"\n]*"(?=:\d)/g, '');
+            } else {
+                trimmed = trimmed.replace(/\[[^[\]\n]*?:\d+(?::\d+)?(?: discrim \d+)?\] ?/g, '');
+            }
+        }
+        return trimmed;
+    }
+
     async checkOutputFileAndDoPostProcess(
         asmResult: CompilationResult,
         outputFilename: string,
@@ -2000,7 +2122,7 @@ export class BaseCompiler {
         for (const file of files) {
             if (!file.filename) throw new Error('One of more files do not have a filename');
 
-            const fullpath = this.getExtraFilepath(dirPath, file.filename);
+            const fullpath = utils.resolveWithinDir(dirPath, file.filename);
             filesToWrite.push(utils.outputTextFile(fullpath, file.contents));
         }
 
@@ -2022,15 +2144,11 @@ export class BaseCompiler {
         };
     }
 
-    protected async writeAllFilesCMake(
-        dirPath: string,
-        source: string,
-        files: FiledataPair[],
-        filters: ParseFiltersAndOutputOptions,
-    ) {
-        if (!source) throw new Error('File CMakeLists.txt has no content or file is missing');
+    /** Write out a build system project: its manifest (as the main source), plus all the other files. */
+    async writeProjectFiles(dirPath: string, manifestFilename: string, source: string, files: FiledataPair[]) {
+        if (!source) throw new Error(`File ${manifestFilename} has no content or file is missing`);
 
-        const inputFilename = path.join(dirPath, 'CMakeLists.txt');
+        const inputFilename = path.join(dirPath, manifestFilename);
         await fs.writeFile(inputFilename, source);
 
         if (files && files.length > 0) {
@@ -2130,12 +2248,35 @@ export class BaseCompiler {
         return buildResult;
     }
 
-    async loadPackageWithExecutable(key: CacheKey, executablePackageHash: string, dirPath: string) {
+    /**
+     * The packaged build for this key if the cache has one. Deliberately answerable without a directory to put it in:
+     * whether something was built before is a question about the cache alone, and asking it early is what lets the
+     * caller decide whether a compiler has to run at all.
+     */
+    async fetchExecutablePackage(executablePackageHash: string) {
+        try {
+            const result = await this.env.executableCache.get(executablePackageHash);
+            if (result.hit) return unwrap(result.data);
+            logger.debug('Tried to get executable from cache, but got a cache miss');
+        } catch (err) {
+            logger.error('Tried to get executable from cache, but got an error:', {err});
+        }
+        return undefined;
+    }
+
+    /** Write a packaged build into a directory and read back the compilation it describes. */
+    async unpackExecutablePackage(
+        packaged: Awaited<ReturnType<BaseCompiler['fetchExecutablePackage']>>,
+        key: CacheKey,
+        executablePackageHash: string,
+        dirPath: string,
+    ) {
         const compilationResultFilename = 'compilation-result.json';
         try {
             const startTime = process.hrtime.bigint();
-            const outputFilename = await this.env.executableGet(executablePackageHash, dirPath);
-            if (outputFilename) {
+            const outputFilename = path.join(dirPath, executablePackageHash);
+            await fs.writeFile(outputFilename, unwrap(packaged));
+            {
                 logger.debug(`Using cached package ${outputFilename}`);
                 await this.packager.unpack(outputFilename, dirPath);
                 const buildResultsBuf = await fs.readFile(path.join(dirPath, compilationResultFilename));
@@ -2155,11 +2296,16 @@ export class BaseCompiler {
                     packageDownloadAndUnzipTime: utils.deltaTimeNanoToMili(startTime, endTime),
                 });
             }
-            logger.debug('Tried to get executable from cache, but got a cache miss');
         } catch (err) {
-            logger.error('Tried to get executable from cache, but got an error:', {err});
+            logger.error('Tried to unpack a cached executable, but got an error:', {err});
         }
         return false;
+    }
+
+    async loadPackageWithExecutable(key: CacheKey, executablePackageHash: string, dirPath: string) {
+        const packaged = await this.fetchExecutablePackage(executablePackageHash);
+        if (!packaged) return false;
+        return await this.unpackExecutablePackage(packaged, key, executablePackageHash, dirPath);
     }
 
     async storePackageWithExecutable(
@@ -2378,7 +2524,7 @@ export class BaseCompiler {
         return {compiler: this.compiler, source, options, backendOptions, filters, tools, libraries, files};
     }
 
-    getCmakeCacheKey(key: ParsedRequest, files: FiledataPair[]): CmakeCacheKey {
+    getBuildProjectCacheKey(buildSystem: BuildSystemDriver, key: ParsedRequest, files: FiledataPair[]): CmakeCacheKey {
         const cacheKey: CmakeCacheKey = {
             source: key.source,
             options: key.options,
@@ -2388,7 +2534,7 @@ export class BaseCompiler {
 
             compiler: this.compiler,
             files: files,
-            api: 'cmake',
+            api: buildSystem.id,
         };
 
         if (cacheKey.filters) delete cacheKey.filters.execute;
@@ -2689,6 +2835,9 @@ export class BaseCompiler {
         if (this.lang.id === 'cuda') {
             return {...this.cmakeBaseEnv, CUDAFLAGS: compilerflags};
         }
+        if (this.lang.id === 'rust') {
+            return {...this.cmakeBaseEnv, RUSTFLAGS: compilerflags};
+        }
         return {...this.cmakeBaseEnv, CFLAGS: compilerflags};
     }
 
@@ -2706,6 +2855,34 @@ export class BaseCompiler {
             asm: [{text: `<${error.message}>`}],
             stdout: [],
             stderr: [{text: `<${error.message}>`}],
+        };
+    }
+
+    /**
+     * A project build that fell over before it made anything to inspect. Shaped like the failures runBuildPlanSteps
+     * reports rather than like handleUserError's, whose flat shape belongs to a single-file compilation: a project
+     * build's assembly is read from the nested result, and finishProjectBuild post-processes it, so leaving that out
+     * both hides the reason and takes the post-processing down with it.
+     */
+    private handleProjectUserError(error: any, dirPath: string): CompilationResult {
+        const message = `<${error.message}>`;
+        return {
+            dirPath,
+            okToCache: false,
+            code: -1,
+            timedOut: false,
+            buildsteps: [],
+            stdout: [],
+            stderr: [{text: message}],
+            result: {
+                dirPath,
+                okToCache: false,
+                code: -1,
+                timedOut: false,
+                stdout: [],
+                stderr: [{text: message}],
+                asm: message,
+            },
         };
     }
 
@@ -2809,6 +2986,9 @@ export class BaseCompiler {
         if (this.lang.id === 'cuda') {
             return splitArguments(makeExecParams.env.CUDAFLAGS);
         }
+        if (this.lang.id === 'rust') {
+            return splitArguments(makeExecParams.env.RUSTFLAGS);
+        }
         return splitArguments(makeExecParams.env.CFLAGS);
     }
 
@@ -2817,9 +2997,22 @@ export class BaseCompiler {
         parsedRequest: ParsedRequest,
         bypassCache: BypassCache,
     ): Promise<CompilationResult> {
-        // key = {source, options, backendOptions, filters, bypassCache, tools, executeParameters, libraries};
+        return await this.buildProject(cmakeBuildSystem, files, parsedRequest, bypassCache);
+    }
 
-        if (!this.compiler.supportsBinary) {
+    /**
+     * Build a whole project with a build system (CMake and friends) rather than invoking the compiler on a single
+     * source file. Everything build-system-specific lives behind {@link BuildSystemDriver}; this handles the parts
+     * that are the same whatever built the project.
+     */
+    async buildProject(
+        buildSystem: BuildSystemDriver,
+        files: FiledataPair[],
+        parsedRequest: ParsedRequest,
+        bypassCache: BypassCache,
+    ): Promise<CompilationResult> {
+        const unsupportedReason = await buildSystem.getUnsupportedReason(this);
+        if (unsupportedReason) {
             const errorResult: CompilationResult = {
                 code: -1,
                 timedOut: false,
@@ -2828,21 +3021,99 @@ export class BaseCompiler {
                 stdout: [],
             };
 
-            errorResult.stderr.push({text: 'Compiler does not support compiling to binaries'});
+            errorResult.stderr.push({text: unsupportedReason});
             return errorResult;
         }
 
-        _.defaults(parsedRequest.filters, this.getDefaultFilters());
-        parsedRequest.filters.binary = true;
-        parsedRequest.filters.dontMaskFilenames = true;
+        buildSystem.applyRequestDefaults(this, parsedRequest);
 
         const libsAndOptions = this.createLibsAndOptions(parsedRequest);
 
         const toolchainPath = this.getDefaultOrOverridenToolchainPath(parsedRequest.backendOptions.overrides || []);
 
-        const dirPath = await this.newTempDir();
-
+        // Read before the cache key is built: making one deletes `execute` from these very filters, which are the
+        // request's own object rather than a copy of it.
         const doExecute = parsedRequest.filters.execute;
+        const cacheKey = this.getBuildProjectCacheKey(buildSystem, parsedRequest, files);
+        const executablePackageHash = this.env.getExecutableHash(cacheKey);
+
+        // Asked before any slot is waited for, and before there is anywhere to put the answer: nothing here needs a
+        // directory or a compiler, and knowing whether this was built before is what decides if either is needed.
+        const packaged = bypassCompilationCache(bypassCache)
+            ? undefined
+            : await this.fetchExecutablePackage(executablePackageHash);
+
+        // Timed out here, so that what is measured is the wait for a slot rather than the work done once one is
+        // held.
+        const queueTime = performance.now();
+        // Everything from here holds a queue slot, the way compile() does: the directory below is written to,
+        // built in, run from and finally removed, and a slot held for only part of that would let the temp
+        // directory sweep -- which asks the queue whether anything is compiling -- delete it mid-build.
+        //
+        // Only a build that has to run a compiler is given up for having waited too long. One the cache already
+        // answered has nothing to be too late for: the client is owed the result it would have got instantly, and
+        // deciding that here rather than inside is the point, staleness being judged before the job is entered.
+        //
+        // Unwrapped because a server with no compilation queue cannot build anything, and this promises a result.
+        return unwrap(
+            await this.env.enqueue(
+                async () => {
+                    compilationQueueTimeHistogram.observe((performance.now() - queueTime) / 1000);
+
+                    const build = await this.prepareProjectBuild(
+                        buildSystem,
+                        parsedRequest,
+                        files,
+                        libsAndOptions,
+                        toolchainPath,
+                        cacheKey,
+                        executablePackageHash,
+                    );
+                    const {dirPath, outputFilename} = build;
+
+                    let fullResult: CompilationResult | undefined;
+                    if (packaged) {
+                        // Falls through to building it if the package turns out not to be usable.
+                        const cached: CompilationResult | false = await this.unpackExecutablePackage(
+                            packaged,
+                            cacheKey,
+                            executablePackageHash,
+                            dirPath,
+                        );
+                        if (cached) {
+                            cached.retreivedFromCache = true;
+                            cached.s3Key = BaseCache.hash(cacheKey);
+
+                            delete cached.inputFilename;
+                            delete cached.dirPath;
+                            cached.executableFilename = outputFilename;
+                            fullResult = cached;
+                        }
+                    }
+                    if (!fullResult) fullResult = await this.runProjectBuild(build, parsedRequest);
+
+                    // Wanted by the cleanup at the end whether or not there is anything to run.
+                    if (fullResult.result) fullResult.result.dirPath = dirPath;
+                    if (doExecute) await this.executeProjectArtifact(build, fullResult);
+
+                    return await this.finishProjectBuild(build, fullResult, parsedRequest, libsAndOptions, bypassCache);
+                },
+                {abandonIfStale: !packaged},
+            ),
+        );
+    }
+
+    /** Where a project build happens and what it is building, worked out before any of it starts. */
+    private async prepareProjectBuild(
+        buildSystem: BuildSystemDriver,
+        parsedRequest: ParsedRequest,
+        files: FiledataPair[],
+        libsAndOptions: LibsAndOptions,
+        toolchainPath: string | undefined,
+        cacheKey: CmakeCacheKey,
+        executablePackageHash: string,
+    ): Promise<ProjectBuild> {
+        const dirPath = await this.newTempDir();
 
         // todo: executeOptions.env should be set??
         const executeOptions: ExecutableExecutionOptions = {
@@ -2853,197 +3124,228 @@ export class BaseCompiler {
             env: {},
         };
 
-        const cacheKey = this.getCmakeCacheKey(parsedRequest, files);
-        const executablePackageHash = this.env.getExecutableHash(cacheKey);
+        const buildContext: BuildContext = {
+            compiler: this,
+            env: this.env,
+            dirPath,
+            buildPath: buildSystem.getBuildPath(dirPath),
+            key: cacheKey,
+            parsedRequest,
+            files,
+            libsAndOptions,
+            toolchainPath,
+            buildSystemArgs: getBuildSystemArgs(parsedRequest.backendOptions),
+        };
 
-        const outputFilename = this.getExecutableFilename(path.join(dirPath, 'build'), this.outputFilebase, cacheKey);
+        const outputFilename = buildSystem.getArtifactFilename(buildContext);
+        // Backstop for drivers that build the path themselves: CMake's comes from customOutputFilename too, by way of
+        // getOutputFilename, and this is the artifact every driver goes on to write, run and post-process.
+        if (!utils.isPathInside(dirPath, outputFilename)) throw new Error('Invalid filename');
 
-        let fullResult: CompilationResult = bypassCompilationCache(bypassCache)
-            ? undefined
-            : await this.loadPackageWithExecutable(cacheKey, executablePackageHash, dirPath);
-        if (fullResult) {
-            fullResult.retreivedFromCache = true;
-            fullResult.s3Key = BaseCache.hash(cacheKey);
+        const build: ProjectBuild = {
+            buildSystem,
+            buildContext,
+            dirPath,
+            cacheKey,
+            executablePackageHash,
+            outputFilename,
+            executeOptions,
+        };
 
-            delete fullResult.inputFilename;
-            delete fullResult.dirPath;
-            fullResult.executableFilename = outputFilename;
-        } else {
-            const queueTime = performance.now();
-            const moreResult = await this.env.enqueue(async () => {
-                const start = performance.now();
-                compilationQueueTimeHistogram.observe((start - queueTime) / 1000);
+        return build;
+    }
 
-                let writeSummary;
-                try {
-                    writeSummary = await this.writeAllFilesCMake(dirPath, cacheKey.source, files, cacheKey.filters);
-                } catch (e) {
-                    return this.handleUserError(e, dirPath);
-                }
+    /** Write the project out, run what the build system asks for, and make what it built inspectable. */
+    private async runProjectBuild(build: ProjectBuild, parsedRequest: ParsedRequest): Promise<CompilationResult> {
+        const {buildSystem, buildContext, dirPath, cacheKey, executablePackageHash, outputFilename} = build;
 
-                const execParams = this.getDefaultExecOptions();
-                execParams.appHome = dirPath;
-                execParams.customCwd = path.join(dirPath, 'build');
+        const start = performance.now();
 
-                await fs.mkdir(execParams.customCwd);
+        let writeSummary;
+        let buildPlan: BuildPlan;
+        try {
+            writeSummary = await buildSystem.writeProjectFiles(buildContext);
+            await buildSystem.prepareBuildDirectory(buildContext);
+            buildPlan = await buildSystem.getBuildPlan(buildContext);
+        } catch (e) {
+            // Anything the build system needs before it can run a step, including what it is to run: a missing
+            // launcher throws from here, and the user is owed that message rather than a bare 400.
+            logger.error(`${buildSystem.id}: could not set up the build`, e);
+            return this.handleProjectUserError(e, dirPath);
+        }
 
-                const makeExecParams = this.createCmakeExecParams(execParams, dirPath, libsAndOptions, toolchainPath);
+        const result: CompilationResult = {
+            code: 0,
+            timedOut: false,
+            stdout: [],
+            stderr: [],
+            buildsteps: [],
+            inputFilename: writeSummary.inputFilename,
+            executableFilename: outputFilename,
+        };
 
-                const result: CompilationResult = {
-                    code: 0,
-                    timedOut: false,
-                    stdout: [],
-                    stderr: [],
-                    buildsteps: [],
-                    inputFilename: writeSummary.inputFilename,
-                    executableFilename: outputFilename,
-                };
+        result.downloads = await this.setupBuildEnvironment(cacheKey, dirPath, true);
 
-                result.downloads = await this.setupBuildEnvironment(cacheKey, dirPath, true);
+        if (!(await this.runBuildPlanSteps(dirPath, result, buildPlan))) {
+            compilationTimeHistogram.observe((performance.now() - start) / 1000);
+            return result;
+        }
 
-                const toolchainparam = this.getCMakeExtToolchainParam(parsedRequest.backendOptions.overrides || []);
+        let nothingToInspect: string | undefined;
+        try {
+            nothingToInspect = await buildSystem.finaliseArtifact(buildContext, result, outputFilename);
+        } catch (e) {
+            logger.error(`${buildSystem.id}: could not finalise the artifact`, e);
+            return this.handleProjectUserError(e, dirPath);
+        }
 
-                const cmakeArgs = splitArguments(parsedRequest.backendOptions.cmakeArgs);
-                const partArgs: string[] = [
-                    toolchainparam,
-                    ...this.getExtraCMakeArgs(parsedRequest),
-                    ...cmakeArgs,
-                    '..',
-                ].filter(Boolean); // filter out empty args
-                const useNinja = this.env.ceProps('useninja');
-                const fullArgs: string[] = useNinja ? ['-GNinja'].concat(partArgs) : partArgs;
+        if (nothingToInspect) {
+            // The build itself was fine, so report what was built alongside why there is nothing to show.
+            result.result = {
+                dirPath,
+                timedOut: false,
+                stdout: [],
+                stderr: [{text: nothingToInspect}],
+                okToCache: false,
+                code: 0,
+                asm: `<${nothingToInspect}>`,
+                compilationOptions: buildPlan.getCompilationOptions(),
+            };
+            compilationTimeHistogram.observe((performance.now() - start) / 1000);
+            return result;
+        }
 
-                const cmd = this.env.ceProps('cmake') as string;
-                assert(cmd, 'No cmake command found');
+        result.result = {
+            dirPath,
+            code: 0,
+            timedOut: false,
+            stdout: [],
+            stderr: [],
+            okToCache: true,
+            compilationOptions: buildPlan.getCompilationOptions(),
+        };
 
-                const cmakeStepResult = await this.doBuildstepAndAddToResult(
-                    result,
-                    'cmake',
-                    cmd,
-                    fullArgs,
-                    makeExecParams,
+        if (!parsedRequest.backendOptions.skipAsm) {
+            result.result = await buildSystem.postProcessArtifact(buildContext, result.result, outputFilename);
+        }
+
+        result.code = 0;
+        if (result.buildsteps) {
+            _.each(result.buildsteps, step => {
+                result.code += step.code;
+            });
+        }
+
+        await this.storePackageWithExecutable(executablePackageHash, dirPath, result);
+
+        compilationTimeHistogram.observe((performance.now() - start) / 1000);
+        return result;
+    }
+
+    /**
+     * Run each step the build system asked for, in order, stopping at the first that fails: a step that does not
+     * run leaves everything after it unbuilt, and its own message is what the user needs to see. Returns whether
+     * they all succeeded, having put the failure into the result if one did not.
+     */
+    private async runBuildPlanSteps(
+        dirPath: string,
+        result: CompilationResult,
+        buildPlan: BuildPlan,
+    ): Promise<boolean> {
+        for (const step of buildPlan.steps) {
+            const stepResult = await this.doBuildstepAndAddToResult(
+                result,
+                step.name,
+                step.exe,
+                step.args,
+                step.execParams,
+            );
+
+            if (stepResult.code !== 0) {
+                // Both streams: cargo diagnoses on stderr, maven says everything on stdout. Awaited because
+                // working out what to say can mean looking at what is installed, which is only worth it here.
+                const explanation = await step.explainFailure?.(
+                    [...stepResult.stdout, ...stepResult.stderr].map(line => line.text).join('\n'),
                 );
-
-                if (cmakeStepResult.code !== 0) {
-                    result.result = {
-                        dirPath,
-                        timedOut: false,
-                        stdout: [],
-                        stderr: [],
-                        okToCache: false,
-                        code: cmakeStepResult.code,
-                        asm: '<CMake configure step failed>',
-                    };
-                    result.result.compilationOptions = this.getUsedEnvironmentVariableFlags(makeExecParams);
-                    compilationTimeHistogram.observe((performance.now() - start) / 1000);
-                    return result;
-                }
-
-                const makeStepResult = await this.doBuildstepAndAddToResult(
-                    result,
-                    'build',
-                    cmd,
-                    ['--build', '.'],
-                    execParams,
-                );
-
-                if (makeStepResult.code !== 0) {
-                    result.result = {
-                        dirPath,
-                        timedOut: false,
-                        stdout: [],
-                        stderr: [],
-                        okToCache: false,
-                        code: makeStepResult.code,
-                        asm: '<CMake build step failed>',
-                    };
-                    compilationTimeHistogram.observe((performance.now() - start) / 1000);
-                    return result;
-                }
-
                 result.result = {
                     dirPath,
-                    code: 0,
                     timedOut: false,
                     stdout: [],
-                    stderr: [],
-                    okToCache: true,
-                    compilationOptions: this.getUsedEnvironmentVariableFlags(makeExecParams),
+                    stderr: explanation ? [{text: explanation}] : [],
+                    okToCache: false,
+                    code: stepResult.code,
+                    asm: step.failureMessage,
                 };
-
-                if (!parsedRequest.backendOptions.skipAsm) {
-                    const [asmResult] = await this.checkOutputFileAndDoPostProcess(
-                        result.result,
-                        outputFilename,
-                        cacheKey.filters,
-                    );
-                    result.result = asmResult;
+                if (explanation) stepResult.stderr.push({text: explanation});
+                if (step.reportsCompilationOptions) {
+                    result.result.compilationOptions = buildPlan.getCompilationOptions();
                 }
-
-                result.code = 0;
-                if (result.buildsteps) {
-                    _.each(result.buildsteps, step => {
-                        result.code += step.code;
-                    });
-                }
-
-                await this.storePackageWithExecutable(executablePackageHash, dirPath, result);
-
-                compilationTimeHistogram.observe((performance.now() - start) / 1000);
-                return result;
-            });
-
-            if (moreResult) fullResult = moreResult;
-        }
-
-        if (fullResult.result) {
-            fullResult.result.dirPath = dirPath;
-
-            if (doExecute && fullResult.result.code === 0) {
-                // Check if executable exists before trying to run it
-                if (!(await utils.fileExists(outputFilename))) {
-                    fullResult.execResult = {
-                        code: -1,
-                        okToCache: false,
-                        stdout: [],
-                        stderr: [{text: `Executable not found: ${utils.maskRootdir(outputFilename)}`}],
-                        execTime: 0,
-                        timedOut: false,
-                    };
-                    fullResult.didExecute = false;
-                } else {
-                    const execTriple = await RemoteExecutionQuery.guessExecutionTripleForBuildresult({
-                        ...fullResult,
-                        downloads: fullResult.downloads || [],
-                        executableFilename: outputFilename,
-                        compilationOptions: fullResult.compilationOptions || [],
-                    });
-
-                    if (matchesCurrentHost(execTriple)) {
-                        fullResult.execResult = await this.runExecutable(outputFilename, executeOptions, dirPath);
-                        fullResult.didExecute = true;
-                    } else {
-                        if (await RemoteExecutionQuery.isPossible(execTriple)) {
-                            fullResult.execResult = await this.runExecutableRemotely(
-                                executablePackageHash,
-                                executeOptions,
-                                execTriple,
-                            );
-                            fullResult.didExecute = true;
-                        } else {
-                            fullResult.execResult = {
-                                code: -1,
-                                okToCache: false,
-                                stdout: [],
-                                stderr: [{text: `No execution available for ${execTriple.toString()}`}],
-                                execTime: 0,
-                                timedOut: false,
-                            };
-                        }
-                    }
-                }
+                return false;
             }
         }
+
+        return true;
+    }
+
+    /** Run what was built, here or on a machine that can, and say why not when neither is possible. */
+    private async executeProjectArtifact(build: ProjectBuild, fullResult: CompilationResult): Promise<void> {
+        const {buildSystem, buildContext, dirPath, executablePackageHash, outputFilename, executeOptions} = build;
+        // Nothing to run from a build that produced nothing.
+        if (!fullResult.result || fullResult.result.code !== 0) return;
+
+        // Asked before anything is checked, because only the build system knows what running its build means: maven
+        // runs the classes it compiled, so a missing jar is no reason not to. It answers in a sentence when there is
+        // nothing to run, which is what the user is owed instead of the name of a file they never chose.
+        const plan = await buildSystem.prepareExecution(buildContext, outputFilename);
+        if ('cannotRun' in plan) {
+            fullResult.execResult = this.cannotExecute(plan.cannotRun);
+            fullResult.didExecute = false;
+            return;
+        }
+
+        const execTriple = await RemoteExecutionQuery.guessExecutionTripleForBuildresult({
+            ...fullResult,
+            downloads: fullResult.downloads || [],
+            executableFilename: outputFilename,
+            compilationOptions: fullResult.compilationOptions || [],
+        });
+
+        if (matchesCurrentHost(execTriple)) {
+            // Ahead of the user's own, which is where a JVM wants its flags and the class to start from.
+            if (plan.args) executeOptions.args = [...plan.args, ...executeOptions.args];
+            fullResult.execResult = await this.runExecutable(plan.executable, executeOptions, dirPath);
+            fullResult.didExecute = true;
+        } else if (await RemoteExecutionQuery.isPossible(execTriple)) {
+            fullResult.execResult = await this.runExecutableRemotely(executablePackageHash, executeOptions, execTriple);
+            fullResult.didExecute = true;
+        } else {
+            fullResult.execResult = this.cannotExecute(`No execution available for ${execTriple.toString()}`);
+            fullResult.didExecute = false;
+        }
+    }
+
+    /** An execution that never happened, saying why in the pane the user is watching. */
+    private cannotExecute(reason: string): BasicExecutionResult {
+        return {
+            code: -1,
+            okToCache: false,
+            stdout: [],
+            stderr: [{text: reason}],
+            execTime: 0,
+            timedOut: false,
+            filenameTransform: x => x,
+        };
+    }
+
+    /** The tools, the caching and the tidying up that follow every project build, whatever it built. */
+    private async finishProjectBuild(
+        build: ProjectBuild,
+        fullResult: CompilationResult,
+        parsedRequest: ParsedRequest,
+        libsAndOptions: LibsAndOptions,
+        bypassCache: BypassCache,
+    ): Promise<CompilationResult> {
+        const {buildContext, cacheKey, executeOptions} = build;
 
         const optOutput = undefined;
         const stackUsageOutput = undefined;
@@ -3059,7 +3361,7 @@ export class BaseCompiler {
             optOutput,
             stackUsageOutput,
             bypassCache,
-            path.join(dirPath, 'build'),
+            buildContext.buildPath,
         );
 
         if (fullResult.result) delete fullResult.result.dirPath;
@@ -3076,33 +3378,18 @@ export class BaseCompiler {
         // In worker mode, store large non-cacheable results with short TTL
         if (this.isCompilationWorker && !fullResult.result?.okToCache && fullResult) {
             // Check if result is large enough to require S3 storage
-            const resultSize = JSON.stringify(fullResult).length;
+            const resultString = JSON.stringify(fullResult);
+            const resultSize = resultString.length;
 
             if (resultSize > WEBSOCKET_SIZE_THRESHOLD) {
                 // Store with 1-day TTL for temporary retrieval in temp/ subdirectory
-                await this.env.tempCachePutWithTTL(cacheKey, fullResult, TEMP_STORAGE_TTL_DAYS, undefined);
+                await this.env.tempCachePutWithTTL(cacheKey, resultString, TEMP_STORAGE_TTL_DAYS, undefined);
                 // Set s3Key with temp/ prefix to reflect storage location
                 fullResult.s3Key = `temp/${BaseCache.hash(cacheKey)}`;
             }
         }
 
         return fullResult;
-    }
-
-    protected getExtraFilepath(dirPath: string, filename: string) {
-        // note: it's vitally important that the resulting path does not escape dirPath
-        //       (filename is user input and thus unsafe)
-
-        const joined = path.join(dirPath, filename);
-        const normalized = path.normalize(joined);
-        if (process.platform === 'win32') {
-            if (!normalized.replaceAll('\\', '/').startsWith(dirPath.replaceAll('\\', '/'))) {
-                throw new Error('Invalid filename');
-            }
-        } else {
-            if (!normalized.startsWith(dirPath)) throw new Error('Invalid filename');
-        }
-        return normalized;
     }
 
     fixFiltersBeforeCacheKey(filters: ParseFiltersAndOutputOptions, options: string[], files: FiledataPair[]) {
@@ -3363,11 +3650,12 @@ export class BaseCompiler {
         // In worker mode, store large non-cacheable results with short TTL
         if (this.isCompilationWorker && !result.okToCache && !delayCaching) {
             // Check if result is large enough to require S3 storage
-            const resultSize = JSON.stringify(result).length;
+            const resultString = JSON.stringify(result);
+            const resultSize = resultString.length;
 
             if (resultSize > WEBSOCKET_SIZE_THRESHOLD) {
                 // Store with 1-day TTL for temporary retrieval in temp/ subdirectory
-                await this.env.tempCachePutWithTTL(key, result, TEMP_STORAGE_TTL_DAYS, undefined);
+                await this.env.tempCachePutWithTTL(key, resultString, TEMP_STORAGE_TTL_DAYS, undefined);
                 // Set s3Key with temp/ prefix to reflect storage location
                 result.s3Key = `temp/${BaseCache.hash(key)}`;
             }
@@ -3592,6 +3880,7 @@ export class BaseCompiler {
                 selectedPass: null,
                 currentPassOutput: 'Nothing selected for dump:\nselect at least one of Tree/IPA/RTL filter',
                 syntaxHighlight: false,
+                passDumps: {} as Record<string, string>,
             };
         }
 
@@ -3600,7 +3889,79 @@ export class BaseCompiler {
             selectedPass: opts.pass ?? null,
             currentPassOutput: '<No pass selected>',
             syntaxHighlight: false,
+            passDumps: {} as Record<string, string>,
         };
+
+        const notDumpedMessage = (passName: string | null) =>
+            `Pass '${passName}' was requested
+but nothing was dumped. Possible causes are:
+ - pass is not valid in this (maybe you changed the compiler options);
+ - pass is valid but did not emit anything (eg. it was not executed).`;
+
+        if (removeEmptyPasses) {
+            // Enumerate the dump files GCC actually produced (every invoked pass, including
+            // passes turned on dynamically by pragmas -- see #7870) and read them all up front,
+            // so that switching passes in the UI is a client-side lookup with no recompile.
+            const selectedCategories = new Set<string>();
+            if (opts.treeDump) selectedCategories.add('tree');
+            if (opts.ipaDump) selectedCategories.add('ipa');
+            if (opts.rtlDump) selectedCategories.add('rtl');
+            const categoryByLetter: Record<string, string> = {t: 'tree', r: 'rtl', i: 'ipa'};
+
+            const sourceBasename = path.basename(result.inputFilename);
+            // We force -lineno on for origin detection; only KEEP its annotations in the shown
+            // dump when the user explicitly enabled the Line Numbers option. Anything else
+            // (off, or unset) strips them, matching the option's default-off behaviour.
+            const keepLineno = opts.dumpFlags?.lineno === true;
+
+            const candidates: {
+                filename: string;
+                pass: {nnn: number; filename_suffix: string; name: string; command_prefix: string};
+            }[] = [];
+            for (const filename of await fs.readdir(rootDir)) {
+                const pass = this.passObjectFromDumpFilename(filename);
+                if (!pass) continue;
+                if (!selectedCategories.has(categoryByLetter[pass.filename_suffix[0]])) continue;
+                candidates.push({filename, pass});
+            }
+            // Order the drop-down by GCC's global pass-execution counter (stable secondary by name).
+            candidates.sort((a, b) => a.pass.nnn - b.pass.nnn || a.pass.name.localeCompare(b.pass.name));
+
+            for (const {filename, pass} of candidates) {
+                const raw = await utils.tryReadTextFile(path.join(rootDir, filename));
+                const content = raw
+                    ? this.trimGccDumpHeaderFunctions(raw, sourceBasename, keepLineno, pass.filename_suffix[0] === 'r')
+                    : '';
+                // Skip passes that produced nothing for this source (e.g. an empty ipa-clones
+                // file, or a pass whose only output was header functions we trimmed away). This
+                // is the real "remove empty GCC dumps" behaviour: keep the drop-down to passes
+                // that actually have content, so selecting one never yields "nothing was dumped".
+                if (/^\s*$/.test(content)) continue;
+                const {nnn, ...descriptor} = pass;
+                output.all.push(descriptor);
+                output.passDumps[descriptor.filename_suffix] = content;
+            }
+
+            const selectedSuffix = opts.pass?.filename_suffix ?? null;
+            if (selectedSuffix && selectedSuffix in output.passDumps) {
+                const content = output.passDumps[selectedSuffix];
+                if (/^\s*$/.test(content)) {
+                    output.currentPassOutput = notDumpedMessage(opts.pass?.name ?? null);
+                } else {
+                    output.currentPassOutput = content;
+                    output.syntaxHighlight = true;
+                }
+            } else {
+                // The requested pass produced nothing (e.g. disabled by a filter change): clear
+                // the selection so the frontend resets its drop-down.
+                output.selectedPass = null;
+            }
+            return output;
+        }
+
+        // Legacy path for libgccjit-based compilers (removeEmptyGccDump === false): these cannot
+        // relocate dump files, so we can only enumerate passes from the -fdump-passes stderr
+        // listing and dump the single selected pass to a known file via -fdump-<cat>-<pass>=FILE.
         const treeDumpsNotInPasses: any[] = [];
 
         const selectedPasses: string[] = [];
@@ -3634,10 +3995,7 @@ export class BaseCompiler {
         if (opts.ipaDump) selectedPasses.push('ipa');
         if (opts.rtlDump) selectedPasses.push('rtl');
 
-        // Defaults to a custom file derived from output file name. Works when
-        // using the -fdump-tree-foo=FILE variant (!removeEmptyPasses).
-        // Will be overriden later if not.
-        let dumpFileName = this.getGccDumpFileName(outputFilename);
+        const dumpFileName = this.getGccDumpFileName(outputFilename);
         let passFound = false;
 
         const filtered_stderr: any[] = [];
@@ -3653,17 +4011,6 @@ export class BaseCompiler {
         for (const [obj, selectizeObject] of dumpPassesLines) {
             if (selectizeObject) {
                 if (opts.pass && opts.pass.name === selectizeObject.name) passFound = true;
-
-                if (removeEmptyPasses) {
-                    const f = (await fs.readdir(rootDir)).filter(fn => fn.endsWith(selectizeObject.filename_suffix));
-
-                    // pass is enabled, but the dump hasn't produced anything:
-                    // don't add it to the drop down menu
-                    if (f.length === 0) continue;
-
-                    if (opts.pass && opts.pass.name === selectizeObject.name) dumpFileName = path.join(rootDir, f[0]);
-                }
-
                 output.all.push(selectizeObject);
             }
 
@@ -3684,10 +4031,7 @@ export class BaseCompiler {
             // pass is still requested.
 
             if (/^\s*$/.test(output.currentPassOutput)) {
-                output.currentPassOutput = `Pass '${opts.pass.name}' was requested
-but nothing was dumped. Possible causes are:
- - pass is not valid in this (maybe you changed the compiler options);
- - pass is valid but did not emit anything (eg. it was not executed).`;
+                output.currentPassOutput = notDumpedMessage(opts.pass.name);
             } else {
                 output.syntaxHighlight = true;
             }

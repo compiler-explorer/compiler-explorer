@@ -53,6 +53,7 @@
                       "cmakeArgs": "",
                       "customOutputFilename": "hellow",
                       "isCMakeProject": true,
+                      "buildSystem": "cmake",
                       "compilerLanguageId": "c++",
                       "files": [
                         {

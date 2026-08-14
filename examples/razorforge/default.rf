@@ -1,0 +1,17 @@
+module Example
+import IO/Console
+
+# `!` marks a failable routine. The compiler auto-generates try_/check_/lookup_
+# variants, so callers choose how to consume failure - no exceptions involved.
+routine get_text!(n: S64) -> Text
+  when n
+    == 0 => throw DivisionByZeroError()
+    == 1 => return "hello"
+    else => return "world"
+
+routine start()
+  var m = try_get_text(n: 0)
+  when m
+    is None => show("absent")
+    else v  => show(f"present: {v}")
+  return
