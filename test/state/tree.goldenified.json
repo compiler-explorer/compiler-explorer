@@ -158,7 +158,7 @@
           ]
         },
         {
-          "type": "stack",
+          "type": "column",
           "width": 40,
           "content": [
             {

@@ -779,9 +779,10 @@ export class ClientStateGoldenifier extends GoldenLayoutComponents {
         };
     }
 
-    newEmptyColumn(): BasicGoldenLayoutStruct {
+    newEmptyColumn(width?: number): BasicGoldenLayoutStruct {
         return {
             type: 'column',
+            width: width,
             content: [],
         };
     }
@@ -1105,15 +1106,17 @@ export class ClientStateGoldenifier extends GoldenLayoutComponents {
         let contentRow;
         let extraRow;
 
+        // A stack may only ever hold components; putting a row in one renders as a blank, untitled tab.
         if (leaveSomeSpace) {
             contentRow = this.newEmptyRow(50);
             extraRow = this.newEmptyRow(50);
             rightSide = this.newEmptyColumn();
-            rightSide.content.push(contentRow, extraRow);
         } else {
-            rightSide = this.newEmptyStack(40);
             contentRow = this.newEmptyRow(100);
+            rightSide = this.newEmptyColumn(40);
         }
+        rightSide.content.push(contentRow);
+        if (extraRow) rightSide.content.push(extraRow);
 
         let idxCompiler = 0;
         for (const compiler of firstTree.compilers) {
@@ -1128,10 +1131,16 @@ export class ClientStateGoldenifier extends GoldenLayoutComponents {
             idxCompiler++;
         }
 
-        rightSide.content.push(contentRow);
+        for (const executor of firstTree.executors) {
+            contentRow.content.push(this.createExecutorComponentForTree(firstTree, executor));
+        }
 
         assert(this.golden.content);
-        this.golden.content[0].content.push(leftSide, middle, rightSide);
+        this.golden.content[0].content.push(leftSide, middle);
+        // With nothing to put on the right, adding it anyway just reserves a blank slice of the screen.
+        if (contentRow.content.length > 0 || extraRow) {
+            this.golden.content[0].content.push(rightSide);
+        }
 
         return extraRow;
     }

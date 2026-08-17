@@ -204,6 +204,79 @@ describe('Trees', () => {
         expect(normalized).toEqual(resultdata);
     });
 
+    // A stack may only hold components; anything else renders as a blank, untitled tab.
+    function expectNoNestedStacks(golden: any) {
+        const check = (item: any) => {
+            if (item.type === 'stack') {
+                for (const child of item.content ?? []) {
+                    expect(child.type).toEqual('component');
+                }
+            }
+            for (const child of item.content ?? []) check(child);
+        };
+        check({content: golden.content});
+    }
+
+    function componentNamesOf(golden: any): string[] {
+        const names: string[] = [];
+        const collect = (item: any) => {
+            if (item.componentName) names.push(item.componentName);
+            for (const child of item.content ?? []) collect(child);
+        };
+        collect({content: golden.content});
+        return names;
+    }
+
+    // https://godbolt.org/z/59q8GYa5z: a CMake tree whose only pane is an executor, with no
+    // editor-attached compilers or executors either. The right hand pane came out empty.
+    function goldenifyExecutorOnlyTree(mutate?: (state: ClientState) => void) {
+        const jsonStr = fs.readFileSync('test/state/tree-executor-only.json', {encoding: 'utf8'});
+        const state = new ClientState(JSON.parse(jsonStr));
+        expect(state.trees.length).toEqual(1);
+        mutate?.(state);
+
+        const gl = new ClientStateGoldenifier();
+        gl.fromClientState(state);
+
+        const golden = JSON.parse(JSON.stringify(gl.golden));
+        expectNoNestedStacks(golden);
+        return golden;
+    }
+
+    it('ClientState to GL with only a tree executor', () => {
+        const golden = goldenifyExecutorOnlyTree(state => {
+            expect(state.trees[0].compilers.length).toEqual(0);
+            expect(state.trees[0].executors.length).toEqual(1);
+        });
+
+        expect(componentNamesOf(golden)).toContain('executor');
+    });
+
+    it('ClientState to GL with only a tree compiler', () => {
+        const treeJson = fs.readFileSync('test/state/tree.json', {encoding: 'utf8'});
+        const treeCompiler = new ClientState(JSON.parse(treeJson)).trees[0].compilers[0];
+
+        const golden = goldenifyExecutorOnlyTree(state => {
+            state.trees[0].compilers = [treeCompiler];
+            state.trees[0].executors = [];
+        });
+
+        const names = componentNamesOf(golden);
+        expect(names).toContain('compiler');
+        expect(names).not.toContain('executor');
+    });
+
+    it('ClientState to GL with neither tree compilers nor executors', () => {
+        const golden = goldenifyExecutorOnlyTree(state => {
+            state.trees[0].compilers = [];
+            state.trees[0].executors = [];
+        });
+
+        // Nothing to show on the right, so no empty pane should be reserved for it.
+        expect(componentNamesOf(golden)).toEqual(['tree', 'codeEditor', 'codeEditor', 'codeEditor']);
+        expect(golden.content[0].content.length).toEqual(2);
+    });
+
     it('ClientState to Mobile GL', () => {
         const jsonStr = fs.readFileSync('test/state/tree-mobile.json', {encoding: 'utf8'});
         const state = new ClientState(JSON.parse(jsonStr));
