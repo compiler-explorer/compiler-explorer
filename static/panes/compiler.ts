@@ -3156,7 +3156,9 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
             this.onOptionsChange(unwrapString($(e.target).val()));
         }, 800);
 
-        this.optionsField.on('change', optionsChange).on('keyup', optionsChange);
+        // "input" rather than "keyup": it covers every edit, including the ones that
+        // involve no keystroke at all (middle-click paste, drag and drop, autofill).
+        this.optionsField.on('change', optionsChange).on('input', optionsChange);
 
         this.mouseMoveThrottledFunction = _.throttle(this.onMouseMove.bind(this), 50);
         this.editor.onMouseMove(e => {

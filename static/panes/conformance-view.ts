@@ -228,7 +228,7 @@ export class Conformance extends Pane<ConformanceViewState> {
             .find('.conformance-options')
             .val(config.options)
             .on('change', onOptionsChange)
-            .on('keyup', onOptionsChange);
+            .on('input', onOptionsChange);
 
         newSelector.find('.close-compiler').on('click', () => {
             this.removeCompilerPicker(newCompilerEntry);
