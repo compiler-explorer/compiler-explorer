@@ -27,6 +27,7 @@ import $ from 'jquery';
 import {LRUCache} from 'lru-cache';
 import _ from 'underscore';
 
+import type {BuildSystemId} from '../shared/build-systems.js';
 import {ResultLine} from '../types/resultline/resultline.interfaces.js';
 import {options} from './options.js';
 
@@ -253,7 +254,7 @@ export class CompilerService {
         });
     }
 
-    public submitCMake(request: Record<string, any>) {
+    public submitBuild(buildSystem: BuildSystemId, request: Record<string, any>) {
         request.allowStoreCodeDebug = this.allowStoreCodeDebug;
         const jsonRequest = JSON.stringify(request);
         if (options.doCache && !request.bypassCache) {
@@ -270,7 +271,7 @@ export class CompilerService {
             const compilerId = encodeURIComponent(request.compiler);
             $.ajax({
                 type: 'POST',
-                url: `${this.getBaseUrl()}api/compiler/${compilerId}/cmake`,
+                url: `${this.getBaseUrl()}api/compiler/${compilerId}/build/${buildSystem}`,
                 dataType: 'json',
                 contentType: 'application/json',
                 data: jsonRequest,

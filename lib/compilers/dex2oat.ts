@@ -118,7 +118,7 @@ export class Dex2OatCompiler extends BaseCompiler {
 
         // These must be used after the output is split on newlines.
         this.compilerFilterRegex = /^compiler-filter\s=\s(.*)$/;
-        this.classRegex = /^\s*\d+:\s+L(.*);\s+\(offset=0x\w+\)\s+\(type_idx=\d+\).*$/;
+        this.classRegex = /^\s*\d+:\s+(\S+)\s+\(offset=0x\w+\)\s+\(type_idx=\d+\).*$/;
         this.methodRegex = /^\s+\d+:\s+(.*)\s+\(dex_method_idx=\d+\)$/;
         this.methodSizeRegex = /^\s+CODE:\s+\(code_offset=(0x\w+)\s+size=(\d+).*$/;
         this.insnRegex = /^\s+(0x\w+):\s+\w+\s+(.*)$/;

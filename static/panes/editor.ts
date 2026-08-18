@@ -48,6 +48,7 @@ import '../modes/_all';
 import {Container} from 'golden-layout';
 
 import {assert, unwrap} from '../../shared/assert.js';
+import {getBuildSystemByManifestFilename, isManifestLanguageId} from '../../shared/build-systems.js';
 import {escapeHTML, isString} from '../../shared/common-utils.js';
 import {CompilationResult} from '../../types/compilation/compilation.interfaces.js';
 import {CompilerInfo} from '../../types/compiler.interfaces.js';
@@ -345,7 +346,7 @@ export class Editor extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Edit
     override registerCallbacks(): void {
         this.container.on('shown', this.resize, this);
         this.container.on('open', () => {
-            this.eventHub.emit('editorOpen', this.id);
+            this.sendEditor();
         });
         this.container.layoutManager.on('initialised', () => {
             // Once initialized, let everyone know what text we have.
@@ -420,6 +421,7 @@ export class Editor extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Edit
 
     sendEditor(): void {
         this.eventHub.emit('editorOpen', this.id);
+        this.eventHub.emit('editor', this.id, this.getSource() ?? '', this.getPaneName());
     }
 
     onMouseMove(e: editor.IEditorMouseEvent): void {
@@ -894,9 +896,10 @@ export class Editor extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Edit
             // In some initialization flows we get here before creating this.selectize
             setTimeout(() => this.changeLanguage(newLang), 0);
         } else {
-            if (newLang === 'cmake') {
-                const cmakeLang = languagesService.getLanguagesOrFail().cmake;
-                if (cmakeLang) this.selectize.addOption(cmakeLang);
+            // A manifest language is not offered for an editor, so it has to be added before it can be selected.
+            if (isManifestLanguageId(newLang)) {
+                const manifestLang = languagesService.getLanguagesOrFail()[newLang as LanguageKey];
+                if (manifestLang) this.selectize.addOption(manifestLang);
             }
             this.selectize.setValue(newLang);
         }
@@ -1307,11 +1310,7 @@ export class Editor extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Edit
             this.disableVim();
         }
 
-        this.editor.getModel()?.updateOptions({
-            tabSize: this.settings.tabWidth,
-            indentSize: this.settings.tabWidth,
-            insertSpaces: this.settings.useSpaces,
-        });
+        this.updateIndentationOptions();
 
         this.numberUsedLines();
     }
@@ -1872,6 +1871,19 @@ export class Editor extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Edit
         });
     }
 
+    /**
+     * Indent the way the settings ask, except where the language cannot be written that way: a recipe line in a
+     * Makefile has to begin with a tab, and make says only "missing separator" when it does not.
+     */
+    private updateIndentationOptions(): void {
+        const needsTabs = this.currentLanguage?.id === 'makefile';
+        this.editor.getModel()?.updateOptions({
+            tabSize: this.settings.tabWidth,
+            indentSize: this.settings.tabWidth,
+            insertSpaces: needsTabs ? false : this.settings.useSpaces,
+        });
+    }
+
     onLanguageChange(newLangId: LanguageKey, firstTime?: boolean): void {
         const languages = languagesService.getLanguagesOrFail();
         if (newLangId in languages) {
@@ -1886,6 +1898,7 @@ export class Editor extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Edit
                 const editorModel = this.editor.getModel();
                 if (editorModel && this.currentLanguage)
                     monaco.editor.setModelLanguage(editorModel, this.currentLanguage.monaco);
+                this.updateIndentationOptions();
                 this.isCpp.set(this.currentLanguage?.id === 'c++');
                 this.isClean.set(this.currentLanguage?.id === 'clean');
                 this.updateLanguageTooltip();
@@ -1920,6 +1933,7 @@ export class Editor extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Edit
         this.filename = name;
         this.updateTitle();
         this.updateState();
+        this.sendEditor();
     }
 
     getFilename(): string {
@@ -1929,8 +1943,10 @@ export class Editor extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Edit
     override updateTitle(): void {
         const name = this.getPaneName();
         const customName = this.paneName ? this.paneName : name;
-        if (name.endsWith('CMakeLists.txt')) {
-            this.changeLanguage('cmake');
+        // A manifest is read as whatever its build system reads it as, whoever named the file that.
+        const manifestOf = getBuildSystemByManifestFilename(name);
+        if (manifestOf) {
+            this.changeLanguage(manifestOf.manifestLanguageId);
         }
         this.container.setTitle(escapeHTML(customName));
     }

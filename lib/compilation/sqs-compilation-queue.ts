@@ -31,6 +31,8 @@ import {
     FiledataPair,
     WEBSOCKET_SIZE_THRESHOLD,
 } from '../../types/compilation/compilation.interfaces.js';
+import type {BuildSystemDriver} from '../build-systems/index.js';
+import {cmakeBuildSystem, getBuildSystem} from '../build-systems/index.js';
 import {CompilationEnvironment} from '../compilation-env.js';
 import {PersistentEventsSender} from '../execution/events-websocket.js';
 import {CompileHandler} from '../handlers/compile.js';
@@ -52,6 +54,9 @@ export type RemoteCompilationRequest = {
     libraries: any[];
     lang: string;
     files: any[];
+    /** Which build system to build the project with, if any. Supersedes isCMake. */
+    buildSystem?: string;
+    /** The original, CMake-only spelling of buildSystem. Still sent by producers we don't deploy in lockstep with. */
     isCMake?: boolean;
     queueTimeMs?: number;
     headers: Record<string, string>;
@@ -91,6 +96,36 @@ const sqsCmakeExecuteCounter = new Counter({
     help: 'Number of SQS executions after CMake',
     labelNames: ['language'],
 });
+
+const sqsProjectBuildCounter = new Counter({
+    name: 'ce_sqs_project_build_compilations_total',
+    help: 'Number of SQS build system compilations',
+    labelNames: ['language', 'build_system'],
+});
+
+const sqsProjectBuildExecuteCounter = new Counter({
+    name: 'ce_sqs_project_build_executions_total',
+    help: 'Number of SQS executions after a build system compilation',
+    labelNames: ['language', 'build_system'],
+});
+
+/**
+ * Which build system a queued request wants, or undefined for a plain single-file compilation. Producers live outside
+ * this repo, so both the new `buildSystem` field and the original `isCMake` boolean have to work.
+ *
+ * A name this worker does not know is not the same as no name at all, and must not be read as one: a producer can be
+ * ahead of a worker across a deploy, and taking `cargo` for a plain compilation would compile the project's manifest
+ * as source and answer with syntax errors about it. Throws, so it reaches the user as a failed compilation naming the
+ * build system, which is what the HTTP route says too.
+ */
+export function getRequestedBuildSystem(msg: RemoteCompilationRequest): BuildSystemDriver | undefined {
+    if (msg.buildSystem) {
+        const buildSystem = getBuildSystem(msg.buildSystem);
+        if (!buildSystem) throw new Error(`Unknown build system '${msg.buildSystem}'`);
+        return buildSystem;
+    }
+    return msg.isCMake ? cmakeBuildSystem : undefined;
+}
 
 export class SqsCompilationQueueBase {
     protected sqs: SQS;
@@ -305,9 +340,13 @@ async function doOneCompilation(
 
     if (msg?.guid) {
         const startTime = Date.now();
-        const compilationType = msg.isCMake ? 'cmake' : 'compile';
+        // Named from the request rather than from a resolved driver, because resolving is itself something that can
+        // fail, and the logs for that failure want to say which build system was asked for.
+        const compilationType = msg.buildSystem ?? (msg.isCMake ? 'cmake' : 'compile');
 
         try {
+            // Inside the try: an unknown build system is reported to the user like any other failed compilation.
+            const buildSystem = getRequestedBuildSystem(msg);
             const compiler = compilationEnvironment.findCompiler(msg.lang as any, msg.compilerId);
             if (!compiler) {
                 throw new Error(`Compiler with ID ${msg.compilerId} not found for language ${msg.lang}`);
@@ -326,19 +365,21 @@ async function doOneCompilation(
             let result: CompilationResult;
             const files = (msg.files || []) as FiledataPair[];
 
-            if (msg.isCMake) {
-                sqsCmakeCounter.inc({language: compiler.lang.id});
+            if (buildSystem) {
+                if (buildSystem.id === 'cmake') sqsCmakeCounter.inc({language: compiler.lang.id});
+                sqsProjectBuildCounter.inc({language: compiler.lang.id, build_system: buildSystem.id});
                 compilationEnvironment.statsNoter.noteCompilation(
                     compiler.getInfo().id,
                     parsedRequest,
                     files,
-                    KnownBuildMethod.CMake,
+                    buildSystem.id,
                 );
 
-                result = await compiler.cmake(files, parsedRequest, parsedRequest.bypassCache);
+                result = await compiler.buildProject(buildSystem, files, parsedRequest, parsedRequest.bypassCache);
 
                 if (result.didExecute || result.execResult?.didExecute) {
-                    sqsCmakeExecuteCounter.inc({language: compiler.lang.id});
+                    if (buildSystem.id === 'cmake') sqsCmakeExecuteCounter.inc({language: compiler.lang.id});
+                    sqsProjectBuildExecuteCounter.inc({language: compiler.lang.id, build_system: buildSystem.id});
                 }
             } else {
                 sqsCompileCounter.inc({language: compiler.lang.id});
