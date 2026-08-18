@@ -1544,7 +1544,6 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
         }
         if (this.compiler) this.eventHub.emit('compiling', this.id, this.compiler);
         // Display the spinner
-        this.pendingCMakeRequestSentAt = Date.now();
         this.pendingBuildRequestSentAt = Date.now();
         // After a short delay, give the user some indication that we're working on their
         // compilation.
