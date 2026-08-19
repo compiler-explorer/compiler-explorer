@@ -253,6 +253,31 @@ describe('Per-request temp directory cleanup', () => {
 
             expect(await utils.dirExists(dirs[0])).toBe(false);
         });
+
+        // Java, Kotlin and Cerberus run the built executable themselves from handleInterpreting, through this.
+        it('removes the build directory when what withBuiltExecutable runs throws', async () => {
+            const dirs = trackTempDirs(compiler);
+            vi.spyOn(compiler, 'buildExecutableInFolder').mockResolvedValue({
+                code: 0,
+                okToCache: true,
+                stdout: [],
+                stderr: [],
+                timedOut: false,
+                downloads: [],
+                executableFilename: '',
+                compilationOptions: [],
+            });
+            vi.spyOn(compiler, 'storePackageWithExecutable').mockResolvedValue();
+
+            await expect(
+                (compiler as any).withBuiltExecutable(key(), BypassCache.Compilation, 'hash', async () => {
+                    throw new Error('no main class');
+                }),
+            ).rejects.toThrow('no main class');
+
+            expect(dirs).toHaveLength(1);
+            expect(await utils.dirExists(dirs[0])).toBe(false);
+        });
     });
 
     describe('buildProject()', () => {

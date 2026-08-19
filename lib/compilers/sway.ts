@@ -122,14 +122,10 @@ export class SwayCompiler extends BaseCompiler {
         execOptions: ExecutionOptionsWithEnv,
         filters?: Partial<ParseFiltersAndOutputOptions>,
     ): Promise<CompilationResult> {
-        // Make a temp directory for a forc project
-        const projectDir = await this.newTempDir();
-        try {
-            return await this.buildForcProject(projectDir, compiler, options, inputFilename, execOptions, filters);
-        } finally {
-            // Everything the result needs has been read out of it by now.
-            await this.removeTempDir(projectDir);
-        }
+        // Everything the result needs is read out of the forc project directory before this returns.
+        return await this.withTempDir(projectDir =>
+            this.buildForcProject(projectDir, compiler, options, inputFilename, execOptions, filters),
+        );
     }
 
     private async buildForcProject(

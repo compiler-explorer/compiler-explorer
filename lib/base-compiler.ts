@@ -454,6 +454,20 @@ export class BaseCompiler {
         await fs.rm(dirPath, {recursive: true, force: true}).catch(() => {});
     }
 
+    /**
+     * Run `fn` in a fresh temporary directory that is removed once it returns or throws. For work that is done with
+     * its directory by the time it answers; anything that hands the directory on (see getOrBuildExecutable) cannot
+     * use this.
+     */
+    async withTempDir<T>(fn: (dirPath: string) => Promise<T>): Promise<T> {
+        const dirPath = await this.newTempDir();
+        try {
+            return await fn(dirPath);
+        } finally {
+            await this.removeTempDir(dirPath);
+        }
+    }
+
     optOutputRequested(options: string[]) {
         return options.includes('-fsave-optimization-record');
     }
@@ -2398,8 +2412,7 @@ export class BaseCompiler {
 
     async handleInterpreting(key: CacheKey, executeParameters: ExecutableExecutionOptions): Promise<CompilationResult> {
         const source = key.source;
-        const dirPath = await this.newTempDir();
-        try {
+        return await this.withTempDir(async dirPath => {
             const outputFilename = this.getExecutableFilename(dirPath, this.outputFilebase);
 
             // cant use this.writeAllFiles here because outputFilename is used as the file to execute
@@ -2426,9 +2439,7 @@ export class BaseCompiler {
                     compilationOptions: [],
                 },
             };
-        } finally {
-            await this.removeTempDir(dirPath);
-        }
+        });
     }
 
     async doExecution(
@@ -2441,13 +2452,26 @@ export class BaseCompiler {
         }
 
         const executablePackageHash = this.env.getExecutableHash(key);
+        return await this.withBuiltExecutable(key, bypassCache, executablePackageHash, buildResult =>
+            this.executeBuildResult(key, executeParameters, executablePackageHash, buildResult),
+        );
+    }
 
+    /**
+     * Build (or fetch) the executable for `key` and hand it to `fn` to run. The result `fn` returns carries the
+     * build directory for the caller to remove once it has finished with it (see doTempfolderCleanup); if `fn`
+     * throws instead, this is the last chance to remove it.
+     */
+    protected async withBuiltExecutable(
+        key: CacheKey,
+        bypassCache: BypassCache,
+        executablePackageHash: string,
+        fn: (buildResult: BuildResult) => Promise<CompilationResult>,
+    ): Promise<CompilationResult> {
         const buildResult = await this.getOrBuildExecutable(key, bypassCache, executablePackageHash);
         try {
-            return await this.executeBuildResult(key, executeParameters, executablePackageHash, buildResult);
+            return await fn(buildResult);
         } catch (e) {
-            // On success the build directory goes back inside the result for the caller to remove once it has
-            // finished with it; a failure here is the last chance to remove it.
             if (buildResult.dirPath) await this.removeTempDir(buildResult.dirPath);
             throw e;
         }
@@ -3102,8 +3126,9 @@ export class BaseCompiler {
                 async () => {
                     compilationQueueTimeHistogram.observe((performance.now() - queueTime) / 1000);
 
-                    const dirPath = await this.newTempDir();
-                    try {
+                    // Removed only once everything is done with it: the executable is run from it, and the tools
+                    // and post-processing in finishProjectBuild read from it.
+                    return await this.withTempDir(async dirPath => {
                         const build = await this.prepareProjectBuild(
                             buildSystem,
                             parsedRequest,
@@ -3149,11 +3174,7 @@ export class BaseCompiler {
                             libsAndOptions,
                             bypassCache,
                         );
-                    } finally {
-                        // Only once everything is done with it: the executable was run from it, and the tools and
-                        // post-processing in finishProjectBuild read from it.
-                        await this.removeTempDir(dirPath);
-                    }
+                    });
                 },
                 {abandonIfStale: !packaged},
             ),
@@ -3551,8 +3572,9 @@ export class BaseCompiler {
                         return execResult;
                     }
 
-                    const dirPath = await this.newTempDir();
-                    try {
+                    // Ordinarily gone before this returns, afterCompilation having removed it once everything that
+                    // reads from it was done; withTempDir catches the paths that return or throw before that.
+                    return await this.withTempDir(async dirPath => {
                         let writeSummary;
                         try {
                             writeSummary = await this.writeAllFiles(dirPath, source, files);
@@ -3585,11 +3607,7 @@ export class BaseCompiler {
                             stackUsageOutput,
                             bypassCache,
                         );
-                    } finally {
-                        // Ordinarily already gone, afterCompilation having removed it once everything that reads
-                        // from it was done; this catches the paths that return or throw before that.
-                        await this.removeTempDir(dirPath);
-                    }
+                    });
                 })();
                 compilationTimeHistogram.observe((performance.now() - start) / 1000);
                 return res;

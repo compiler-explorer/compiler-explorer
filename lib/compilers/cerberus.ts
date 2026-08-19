@@ -91,30 +91,31 @@ export class CerberusCompiler extends BaseCompiler {
 
     override async handleInterpreting(key: CacheKey, executeParameters: ExecutableExecutionOptions) {
         const executionPackageHash = this.env.getExecutableHash(key);
-        const compileResult = await this.getOrBuildExecutable(key, BypassCache.None, executionPackageHash);
-        assert(compileResult.dirPath !== undefined);
-        if (compileResult.code === 0) {
-            executeParameters.args = [
-                '--exec',
-                this.getOutputFilename(compileResult.dirPath),
-                '--',
-                ...executeParameters.args,
-            ];
-            const result = await this.runExecutable(this.compiler.exe, executeParameters, compileResult.dirPath);
+        return await this.withBuiltExecutable(key, BypassCache.None, executionPackageHash, async compileResult => {
+            assert(compileResult.dirPath !== undefined);
+            if (compileResult.code === 0) {
+                executeParameters.args = [
+                    '--exec',
+                    this.getOutputFilename(compileResult.dirPath),
+                    '--',
+                    ...executeParameters.args,
+                ];
+                const result = await this.runExecutable(this.compiler.exe, executeParameters, compileResult.dirPath);
+                return {
+                    ...result,
+                    didExecute: true,
+                    buildResult: compileResult,
+                };
+            }
             return {
-                ...result,
-                didExecute: true,
+                stdout: compileResult.stdout,
+                stderr: compileResult.stderr,
+                code: compileResult.code,
+                didExecute: false,
                 buildResult: compileResult,
+                timedOut: false,
             };
-        }
-        return {
-            stdout: compileResult.stdout,
-            stderr: compileResult.stderr,
-            code: compileResult.code,
-            didExecute: false,
-            buildResult: compileResult,
-            timedOut: false,
-        };
+        });
     }
 
     override async processAsm(result): Promise<ParsedAsmResult> {

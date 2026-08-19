@@ -189,30 +189,33 @@ export class RacketCompiler extends BaseCompiler {
     ): Promise<OptPipelineOutput | undefined> {
         // Use a separate directory so this is not affected by the main
         // compilation (which races in parallel)
-        const pipelineDir = await this.newTempDir();
-        let output: CompilationResult;
-        let compileStart: number;
-        let compileEnd: number;
-        try {
-            const inputFile = this.filename(inputFilename);
-            const pipelineFile = path.join(pipelineDir, path.basename(inputFile));
-            await fs.copyFile(inputFile, pipelineFile);
+        return await this.withTempDir(pipelineDir =>
+            this.generateOptPipelineIn(pipelineDir, inputFilename, options, filters, optPipelineOptions),
+        );
+    }
 
-            const execOptions = this.getDefaultExecOptions();
-            execOptions.maxOutput = 1024 * 1024 * 1024;
+    private async generateOptPipelineIn(
+        pipelineDir: string,
+        inputFilename: string,
+        options: string[],
+        filters: ParseFiltersAndOutputOptions,
+        optPipelineOptions: OptPipelineBackendOptions,
+    ): Promise<OptPipelineOutput | undefined> {
+        const inputFile = this.filename(inputFilename);
+        const pipelineFile = path.join(pipelineDir, path.basename(inputFile));
+        await fs.copyFile(inputFile, pipelineFile);
 
-            // Dump various optimisation passes during compilation
-            execOptions.env['PLT_LINKLET_SHOW_CP0'] = '1';
-            execOptions.env['PLT_LINKLET_SHOW_PASSES'] = 'all';
-            execOptions.env['PLT_LINKLET_SHOW_ASSEMBLY'] = '1';
+        const execOptions = this.getDefaultExecOptions();
+        execOptions.maxOutput = 1024 * 1024 * 1024;
 
-            compileStart = performance.now();
-            output = await this.runCompiler(this.compiler.exe, options, pipelineFile, execOptions);
-            compileEnd = performance.now();
-        } finally {
-            // Everything wanted from here on is in the output; the files are not.
-            await this.removeTempDir(pipelineDir);
-        }
+        // Dump various optimisation passes during compilation
+        execOptions.env['PLT_LINKLET_SHOW_CP0'] = '1';
+        execOptions.env['PLT_LINKLET_SHOW_PASSES'] = 'all';
+        execOptions.env['PLT_LINKLET_SHOW_ASSEMBLY'] = '1';
+
+        const compileStart = performance.now();
+        const output = await this.runCompiler(this.compiler.exe, options, pipelineFile, execOptions);
+        const compileEnd = performance.now();
 
         if (output.timedOut) {
             return {
