@@ -444,6 +444,16 @@ export class BaseCompiler {
         return await temp.mkdir(utils.ce_temp_prefix, options);
     }
 
+    /**
+     * Remove a temporary directory this compiler is finished with, rather than leaving it for the sweep: that only
+     * runs when the queue is idle, which a busy server seldom is. Safe to call more than once, and on a directory
+     * that is already gone. Compilers that delay cleanup keep everything for the sweep.
+     */
+    async removeTempDir(dirPath: string) {
+        if (this.delayCleanupTemp) return;
+        await fs.rm(dirPath, {recursive: true, force: true}).catch(() => {});
+    }
+
     optOutputRequested(options: string[]) {
         return options.includes('-fsave-optimization-record');
     }
@@ -492,45 +502,47 @@ export class BaseCompiler {
             options.customCwd = await this.newTempDir({hold: true});
         }
 
-        const key = this.getCompilerCacheKey(compiler, args, optionsForCache);
-        const hash = BaseCache.hash(key);
+        try {
+            const key = this.getCompilerCacheKey(compiler, args, optionsForCache);
+            const hash = BaseCache.hash(key);
 
-        let result = await this.env.compilerCacheGet(key);
-        if (result) {
-            if (exec.hasNsjailPermissionsIssue(result)) {
-                logger.info(`Throwing out faulty cached result with nsjail permissions issue for ${compiler}`);
-                result = undefined;
+            let result = await this.env.compilerCacheGet(key);
+            if (result) {
+                if (exec.hasNsjailPermissionsIssue(result)) {
+                    logger.info(`Throwing out faulty cached result with nsjail permissions issue for ${compiler}`);
+                    result = undefined;
+                }
+            }
+
+            if (!result && this.env.willBeInCacheSoon(hash)) {
+                result = await this.env.enqueue(async () => {
+                    return await this.env.compilerCacheGet(key);
+                });
+            }
+
+            if (!result) {
+                this.env.setCachingInProgress(hash);
+                result = await this.env.enqueue(async () => {
+                    const res = await this.exec(compiler, args, options);
+                    if (res.okToCache) {
+                        try {
+                            await this.env.compilerCachePut(key, res, undefined);
+                        } catch (e) {
+                            logger.info('Uncaught exception caching compilation results', e);
+                        }
+                    }
+                    this.env.clearCachingInProgress(hash);
+                    return res;
+                });
+            }
+
+            return result;
+        } finally {
+            if (options.createAndUseTempDir) {
+                temp.release(options.customCwd!);
+                fs.rm(options.customCwd!, {recursive: true, force: true}).catch(() => {});
             }
         }
-
-        if (!result && this.env.willBeInCacheSoon(hash)) {
-            result = await this.env.enqueue(async () => {
-                return await this.env.compilerCacheGet(key);
-            });
-        }
-
-        if (!result) {
-            this.env.setCachingInProgress(hash);
-            result = await this.env.enqueue(async () => {
-                const res = await this.exec(compiler, args, options);
-                if (res.okToCache) {
-                    try {
-                        await this.env.compilerCachePut(key, res, undefined);
-                    } catch (e) {
-                        logger.info('Uncaught exception caching compilation results', e);
-                    }
-                }
-                this.env.clearCachingInProgress(hash);
-                return res;
-            });
-        }
-
-        if (options.createAndUseTempDir) {
-            temp.release(options.customCwd!);
-            fs.rm(options.customCwd!, {recursive: true, force: true}).catch(() => {});
-        }
-
-        return result;
     }
 
     protected getExtraPaths(): string[] {
@@ -2217,7 +2229,23 @@ export class BaseCompiler {
         executablePackageHash: string,
     ): Promise<BuildResult> {
         const dirPath = await this.newTempDir();
+        try {
+            const buildResult = await this.getOrBuildExecutableIn(key, bypassCache, executablePackageHash, dirPath);
+            // However the build went, the directory is the caller's from here: it runs what is in it, and removes it.
+            if (!buildResult.dirPath) buildResult.dirPath = dirPath;
+            return buildResult;
+        } catch (e) {
+            await this.removeTempDir(dirPath);
+            throw e;
+        }
+    }
 
+    private async getOrBuildExecutableIn(
+        key: CacheKey,
+        bypassCache: BypassCache,
+        executablePackageHash: string,
+        dirPath: string,
+    ): Promise<BuildResult> {
         if (!bypassCompilationCache(bypassCache)) {
             const buildResult = await this.loadPackageWithExecutable(key, executablePackageHash, dirPath);
             if (buildResult) return buildResult;
@@ -2240,10 +2268,6 @@ export class BaseCompiler {
         await this.storePackageWithExecutable(executablePackageHash, dirPath, buildResult);
         const packageStoreEnd = process.hrtime.bigint();
         buildResult.packageStoreTime = utils.deltaTimeNanoToMili(packageStoreStart, packageStoreEnd);
-
-        if (!buildResult.dirPath) {
-            buildResult.dirPath = dirPath;
-        }
 
         return buildResult;
     }
@@ -2375,32 +2399,36 @@ export class BaseCompiler {
     async handleInterpreting(key: CacheKey, executeParameters: ExecutableExecutionOptions): Promise<CompilationResult> {
         const source = key.source;
         const dirPath = await this.newTempDir();
-        const outputFilename = this.getExecutableFilename(dirPath, this.outputFilebase);
+        try {
+            const outputFilename = this.getExecutableFilename(dirPath, this.outputFilebase);
 
-        // cant use this.writeAllFiles here because outputFilename is used as the file to execute
-        //  instead of inputFilename
+            // cant use this.writeAllFiles here because outputFilename is used as the file to execute
+            //  instead of inputFilename
 
-        await fs.writeFile(outputFilename, source);
-        if (key.files && key.files.length > 0) {
-            await this.writeMultipleFiles(key.files, dirPath);
+            await fs.writeFile(outputFilename, source);
+            if (key.files && key.files.length > 0) {
+                await this.writeMultipleFiles(key.files, dirPath);
+            }
+
+            this.fixExecuteParametersForInterpreting(executeParameters, outputFilename);
+
+            const result = await this.runExecutable(this.compiler.exe, executeParameters, dirPath);
+            return {
+                ...result,
+                didExecute: true,
+                buildResult: {
+                    code: 0,
+                    timedOut: false,
+                    stdout: [],
+                    stderr: [],
+                    downloads: [],
+                    executableFilename: outputFilename,
+                    compilationOptions: [],
+                },
+            };
+        } finally {
+            await this.removeTempDir(dirPath);
         }
-
-        this.fixExecuteParametersForInterpreting(executeParameters, outputFilename);
-
-        const result = await this.runExecutable(this.compiler.exe, executeParameters, dirPath);
-        return {
-            ...result,
-            didExecute: true,
-            buildResult: {
-                code: 0,
-                timedOut: false,
-                stdout: [],
-                stderr: [],
-                downloads: [],
-                executableFilename: outputFilename,
-                compilationOptions: [],
-            },
-        };
     }
 
     async doExecution(
@@ -2415,6 +2443,22 @@ export class BaseCompiler {
         const executablePackageHash = this.env.getExecutableHash(key);
 
         const buildResult = await this.getOrBuildExecutable(key, bypassCache, executablePackageHash);
+        try {
+            return await this.executeBuildResult(key, executeParameters, executablePackageHash, buildResult);
+        } catch (e) {
+            // On success the build directory goes back inside the result for the caller to remove once it has
+            // finished with it; a failure here is the last chance to remove it.
+            if (buildResult.dirPath) await this.removeTempDir(buildResult.dirPath);
+            throw e;
+        }
+    }
+
+    private async executeBuildResult(
+        key: CacheKey,
+        executeParameters: ExecutableExecutionOptions,
+        executablePackageHash: string,
+        buildResult: BuildResult,
+    ): Promise<CompilationResult> {
         if (buildResult.code !== 0) {
             return {
                 code: -1,
@@ -2819,9 +2863,7 @@ export class BaseCompiler {
     }
 
     async doTempfolderCleanup(buildResult: BuildResult | CompilationResult) {
-        if (buildResult.dirPath && !this.delayCleanupTemp) {
-            await fs.rm(buildResult.dirPath, {recursive: true, force: true}).catch(() => {});
-        }
+        if (buildResult.dirPath) await this.removeTempDir(buildResult.dirPath);
         buildResult.dirPath = undefined;
     }
 
@@ -3060,50 +3102,65 @@ export class BaseCompiler {
                 async () => {
                     compilationQueueTimeHistogram.observe((performance.now() - queueTime) / 1000);
 
-                    const build = await this.prepareProjectBuild(
-                        buildSystem,
-                        parsedRequest,
-                        files,
-                        libsAndOptions,
-                        toolchainPath,
-                        cacheKey,
-                        executablePackageHash,
-                    );
-                    const {dirPath, outputFilename} = build;
-
-                    let fullResult: CompilationResult | undefined;
-                    if (packaged) {
-                        // Falls through to building it if the package turns out not to be usable.
-                        const cached: CompilationResult | false = await this.unpackExecutablePackage(
-                            packaged,
+                    const dirPath = await this.newTempDir();
+                    try {
+                        const build = await this.prepareProjectBuild(
+                            buildSystem,
+                            parsedRequest,
+                            files,
+                            libsAndOptions,
+                            toolchainPath,
                             cacheKey,
                             executablePackageHash,
                             dirPath,
                         );
-                        if (cached) {
-                            cached.retreivedFromCache = true;
-                            cached.s3Key = BaseCache.hash(cacheKey);
+                        const {outputFilename} = build;
 
-                            delete cached.inputFilename;
-                            delete cached.dirPath;
-                            cached.executableFilename = outputFilename;
-                            fullResult = cached;
+                        let fullResult: CompilationResult | undefined;
+                        if (packaged) {
+                            // Falls through to building it if the package turns out not to be usable.
+                            const cached: CompilationResult | false = await this.unpackExecutablePackage(
+                                packaged,
+                                cacheKey,
+                                executablePackageHash,
+                                dirPath,
+                            );
+                            if (cached) {
+                                cached.retreivedFromCache = true;
+                                cached.s3Key = BaseCache.hash(cacheKey);
+
+                                delete cached.inputFilename;
+                                delete cached.dirPath;
+                                cached.executableFilename = outputFilename;
+                                fullResult = cached;
+                            }
                         }
+                        if (!fullResult) fullResult = await this.runProjectBuild(build, parsedRequest);
+
+                        // Where the post-processing finds what was built, whichever way it got here: a package
+                        // carries the path of the directory it was made in, not the one it was unpacked into.
+                        if (fullResult.result) fullResult.result.dirPath = dirPath;
+                        if (doExecute) await this.executeProjectArtifact(build, fullResult);
+
+                        return await this.finishProjectBuild(
+                            build,
+                            fullResult,
+                            parsedRequest,
+                            libsAndOptions,
+                            bypassCache,
+                        );
+                    } finally {
+                        // Only once everything is done with it: the executable was run from it, and the tools and
+                        // post-processing in finishProjectBuild read from it.
+                        await this.removeTempDir(dirPath);
                     }
-                    if (!fullResult) fullResult = await this.runProjectBuild(build, parsedRequest);
-
-                    // Wanted by the cleanup at the end whether or not there is anything to run.
-                    if (fullResult.result) fullResult.result.dirPath = dirPath;
-                    if (doExecute) await this.executeProjectArtifact(build, fullResult);
-
-                    return await this.finishProjectBuild(build, fullResult, parsedRequest, libsAndOptions, bypassCache);
                 },
                 {abandonIfStale: !packaged},
             ),
         );
     }
 
-    /** Where a project build happens and what it is building, worked out before any of it starts. */
+    /** What a project build is building and how, worked out before any of it starts in the directory given. */
     private async prepareProjectBuild(
         buildSystem: BuildSystemDriver,
         parsedRequest: ParsedRequest,
@@ -3112,9 +3169,8 @@ export class BaseCompiler {
         toolchainPath: string | undefined,
         cacheKey: CmakeCacheKey,
         executablePackageHash: string,
+        dirPath: string,
     ): Promise<ProjectBuild> {
-        const dirPath = await this.newTempDir();
-
         // todo: executeOptions.env should be set??
         const executeOptions: ExecutableExecutionOptions = {
             args: parsedRequest.executeParameters.args || [],
@@ -3364,13 +3420,9 @@ export class BaseCompiler {
             buildContext.buildPath,
         );
 
+        // The directory itself is removed by buildProject once this returns; only the paths go from the result.
+        delete fullResult.dirPath;
         if (fullResult.result) delete fullResult.result.dirPath;
-
-        // Cleanup temp directory after execution is complete
-        await this.doTempfolderCleanup(fullResult);
-        if (fullResult.result) {
-            await this.doTempfolderCleanup(fullResult.result);
-        }
 
         this.cleanupResult(fullResult);
         fullResult.s3Key = BaseCache.hash(cacheKey);
@@ -3500,39 +3552,44 @@ export class BaseCompiler {
                     }
 
                     const dirPath = await this.newTempDir();
-
-                    let writeSummary;
                     try {
-                        writeSummary = await this.writeAllFiles(dirPath, source, files);
-                    } catch (e) {
-                        return this.handleUserError(e, dirPath);
+                        let writeSummary;
+                        try {
+                            writeSummary = await this.writeAllFiles(dirPath, source, files);
+                        } catch (e) {
+                            return this.handleUserError(e, dirPath);
+                        }
+                        const inputFilename = writeSummary.inputFilename;
+
+                        const [result, optOutput, stackUsageOutput] = await this.doCompilation(
+                            inputFilename,
+                            dirPath,
+                            key,
+                            options,
+                            filters,
+                            backendOptions,
+                            libraries,
+                            tools,
+                        );
+
+                        return await this.afterCompilation(
+                            result,
+                            doExecute!,
+                            key,
+                            executeOptions,
+                            tools,
+                            backendOptions,
+                            filters,
+                            options,
+                            optOutput,
+                            stackUsageOutput,
+                            bypassCache,
+                        );
+                    } finally {
+                        // Ordinarily already gone, afterCompilation having removed it once everything that reads
+                        // from it was done; this catches the paths that return or throw before that.
+                        await this.removeTempDir(dirPath);
                     }
-                    const inputFilename = writeSummary.inputFilename;
-
-                    const [result, optOutput, stackUsageOutput] = await this.doCompilation(
-                        inputFilename,
-                        dirPath,
-                        key,
-                        options,
-                        filters,
-                        backendOptions,
-                        libraries,
-                        tools,
-                    );
-
-                    return await this.afterCompilation(
-                        result,
-                        doExecute!,
-                        key,
-                        executeOptions,
-                        tools,
-                        backendOptions,
-                        filters,
-                        options,
-                        optOutput,
-                        stackUsageOutput,
-                        bypassCache,
-                    );
                 })();
                 compilationTimeHistogram.observe((performance.now() - start) / 1000);
                 return res;

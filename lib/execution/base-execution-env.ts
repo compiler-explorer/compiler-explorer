@@ -131,6 +131,11 @@ export class LocalExecutionEnvironment implements IExecutionEnvironment {
         this.buildResult = await this.loadPackageWithExecutable(hash, this.dirPath);
     }
 
+    async cleanup(): Promise<void> {
+        if (this.dirPath === 'not initialized') return;
+        await fs.rm(this.dirPath, {recursive: true, force: true}).catch(() => {});
+    }
+
     protected getDefaultExecOptions(params: ExecutionParams): ExecutionOptionsWithEnv {
         const env: Record<string, string> = {};
         env.PATH = '';

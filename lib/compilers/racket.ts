@@ -190,21 +190,29 @@ export class RacketCompiler extends BaseCompiler {
         // Use a separate directory so this is not affected by the main
         // compilation (which races in parallel)
         const pipelineDir = await this.newTempDir();
-        const inputFile = this.filename(inputFilename);
-        const pipelineFile = path.join(pipelineDir, path.basename(inputFile));
-        await fs.copyFile(inputFile, pipelineFile);
+        let output: CompilationResult;
+        let compileStart: number;
+        let compileEnd: number;
+        try {
+            const inputFile = this.filename(inputFilename);
+            const pipelineFile = path.join(pipelineDir, path.basename(inputFile));
+            await fs.copyFile(inputFile, pipelineFile);
 
-        const execOptions = this.getDefaultExecOptions();
-        execOptions.maxOutput = 1024 * 1024 * 1024;
+            const execOptions = this.getDefaultExecOptions();
+            execOptions.maxOutput = 1024 * 1024 * 1024;
 
-        // Dump various optimisation passes during compilation
-        execOptions.env['PLT_LINKLET_SHOW_CP0'] = '1';
-        execOptions.env['PLT_LINKLET_SHOW_PASSES'] = 'all';
-        execOptions.env['PLT_LINKLET_SHOW_ASSEMBLY'] = '1';
+            // Dump various optimisation passes during compilation
+            execOptions.env['PLT_LINKLET_SHOW_CP0'] = '1';
+            execOptions.env['PLT_LINKLET_SHOW_PASSES'] = 'all';
+            execOptions.env['PLT_LINKLET_SHOW_ASSEMBLY'] = '1';
 
-        const compileStart = performance.now();
-        const output = await this.runCompiler(this.compiler.exe, options, pipelineFile, execOptions);
-        const compileEnd = performance.now();
+            compileStart = performance.now();
+            output = await this.runCompiler(this.compiler.exe, options, pipelineFile, execOptions);
+            compileEnd = performance.now();
+        } finally {
+            // Everything wanted from here on is in the output; the files are not.
+            await this.removeTempDir(pipelineDir);
+        }
 
         if (output.timedOut) {
             return {

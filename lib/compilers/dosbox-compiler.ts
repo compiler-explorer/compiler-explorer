@@ -143,19 +143,23 @@ export class DosboxCompiler extends BaseCompiler {
 
         execOptions.env = this.getDosboxEnv();
 
-        if (!execOptions.customCwd) {
-            execOptions.customCwd = await this.newTempDir();
+        // A directory made here is nobody else's to read from once this returns, so it can go then.
+        const ownTempDir = execOptions.customCwd ? undefined : await this.newTempDir();
+        if (ownTempDir) execOptions.customCwd = ownTempDir;
+
+        try {
+            const tempDir = execOptions.customCwd;
+            const fullArgs = this.getDosboxArgs(tempDir, args);
+
+            const result = await exec.executeDirect(this.dosbox, fullArgs, execOptions);
+
+            const stdoutFilename = path.join(tempDir, 'STDOUT.TXT');
+            result.stdout = await fs.readFile(stdoutFilename, 'utf-8');
+
+            return result;
+        } finally {
+            if (ownTempDir) await this.removeTempDir(ownTempDir);
         }
-
-        const tempDir = execOptions.customCwd;
-        const fullArgs = this.getDosboxArgs(tempDir, args);
-
-        const result = await exec.executeDirect(this.dosbox, fullArgs, execOptions);
-
-        const stdoutFilename = path.join(tempDir, 'STDOUT.TXT');
-        result.stdout = await fs.readFile(stdoutFilename, 'utf-8');
-
-        return result;
     }
 
     public override async runCompiler(
