@@ -785,6 +785,24 @@ describe('output files', async () => {
     });
 });
 
+describe('maskRootdirKeepingAppPrefix', () => {
+    it('keeps the /app/ prefix, which is the path the compiler is given', () => {
+        expect(utils.maskRootdirKeepingAppPrefix('/tmp/compiler-explorer-compiler123-4-abc/example.cpp')).toEqual(
+            '/app/example.cpp',
+        );
+    });
+
+    it('masks an embedded temp path the same way maskRootdir does', () => {
+        expect(utils.maskRootdirKeepingAppPrefix('-I/tmp/compiler-explorer-compiler123-4-abc/include')).toEqual(
+            '-I/app/include',
+        );
+    });
+
+    it('leaves non-temp paths untouched', () => {
+        expect(utils.maskRootdirKeepingAppPrefix('/usr/include/stdio.h')).toEqual('/usr/include/stdio.h');
+    });
+});
+
 describe('maskRootdir', () => {
     it('masks a CE temp path down to the user-facing filename', () => {
         expect(utils.maskRootdir('/tmp/compiler-explorer-compiler123-4-abc/example.cpp')).toEqual('example.cpp');
