@@ -33,6 +33,16 @@ import {ClientOptionsHandler} from '../options-handler.js';
 import {PropertyGetter} from '../properties.interfaces.js';
 import {getHash} from '../utils.js';
 
+/**
+ * Setup handling of compiler changes and periodic rescanning
+ * @param initialCompilers - The initial set of compilers
+ * @param clientOptionsHandler - Client options handler
+ * @param routeApi - Route API instance
+ * @param languages - Available languages
+ * @param ceProps - CE properties
+ * @param compilerFinder - Compiler finder instance
+ * @param appArgs - Application arguments
+ */
 export async function setupCompilerChangeHandling(
     initialCompilers: CompilerInfo[],
     clientOptionsHandler: ClientOptionsHandler,
@@ -46,11 +56,12 @@ export async function setupCompilerChangeHandling(
     const rescanEnabled = !!rescanCompilerSecs && !appArgs.prediscovered;
     let prevCompilersHash: string | undefined;
 
+    /**
+     * Handle compiler change events
+     * @param compilers - New set of compilers
+     */
     async function onCompilerChange(compilers: CompilerInfo[]) {
         if (rescanEnabled) {
-            // Compare by content hash so no-op rescans are skipped without
-            // retaining a full serialised copy of every compiler, which for a
-            // production-sized set runs to tens of megabytes.
             const compilersHash = getHash(compilers);
             if (prevCompilersHash === compilersHash) {
                 return;
