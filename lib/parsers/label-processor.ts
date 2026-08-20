@@ -80,6 +80,7 @@ export type LabelContext = {
     mipsLabelDefinition: RegExp;
     labelFindNonMips: RegExp;
     labelFindMips: RegExp;
+    numericLocalLabelRef: RegExp;
     startBlock: RegExp;
     endBlock: RegExp;
     fixLabelIndentation: (line: string) => string;
@@ -174,8 +175,8 @@ export class LabelProcessor {
         const definesFunction = line.match(context.definesFunction);
         if (!definesFunction && (!line || line[0] === '.')) return;
 
-        const match = line.match(labelFind);
-        if (!match) return;
+        const match = this.findLabelsInLine(line, context, labelFind);
+        if (match.length === 0) return;
 
         if (!filterDirectives || context.hasOpcode(line, state.inNvccCode, state.inVLIWpacket) || definesFunction) {
             for (const label of match) state.labelsUsed.add(label);
@@ -192,6 +193,18 @@ export class LabelProcessor {
                 }
             }
         }
+    }
+
+    /**
+     * Names of the labels this line refers to. A GNU as numeric local label is defined as `1:` and
+     * referred to as `1f` or `1b`, which the label finders do not match because they only accept
+     * names starting with a letter, a dot or an underscore. Those references name the label `1`.
+     */
+    private findLabelsInLine(line: string, context: LabelContext, labelFind: RegExp): string[] {
+        const labels = line.match(labelFind) ?? [];
+        const localRefs = line.match(context.numericLocalLabelRef);
+        if (!localRefs) return labels;
+        return [...labels, ...localRefs.map(ref => ref.slice(0, -1))];
     }
 
     private resolveWeakUsages(state: FindLabelsState): void {
