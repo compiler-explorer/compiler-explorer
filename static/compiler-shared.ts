@@ -51,15 +51,15 @@ export class CompilerShared implements ICompilerShared {
         return this.runtimeToolsWidget?.get();
     }
 
-    public updateState(state: CompilerState | ExecutorState) {
-        this.overridesWidget.setCompiler(state.compiler, state.lang);
+    public async updateState(state: CompilerState | ExecutorState): Promise<void> {
+        await this.overridesWidget.setCompiler(state.compiler, state.lang);
 
         if (state.overrides) {
             this.overridesWidget.set(state.overrides);
         }
 
         if (this.runtimeToolsWidget) {
-            this.runtimeToolsWidget.setCompiler(state.compiler, state.lang);
+            await this.runtimeToolsWidget.setCompiler(state.compiler, state.lang);
             if (state.runtimeTools) {
                 this.runtimeToolsWidget.set(state.runtimeTools);
             } else {
