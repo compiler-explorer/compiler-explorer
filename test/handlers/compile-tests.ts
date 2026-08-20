@@ -24,12 +24,13 @@
 
 import express, {Express} from 'express';
 import request from 'supertest';
-import {beforeAll, describe, expect, it} from 'vitest';
+import {afterEach, beforeAll, beforeEach, describe, expect, it, vi} from 'vitest';
 
+import {CompilerArguments} from '../../lib/compiler-arguments.js';
 import {CompileHandler, SetTestMode} from '../../lib/handlers/compile.js';
 import {fakeProps} from '../../lib/properties.js';
 import {ActiveTool, BypassCache, LegacyCompatibleActiveTool} from '../../types/compilation/compilation.interfaces.js';
-import {makeCompilationEnvironment} from '../utils.js';
+import {makeCompilationEnvironment, makeFakeCompilerInfo} from '../utils.js';
 
 SetTestMode();
 
@@ -481,6 +482,61 @@ describe('Compiler tests', () => {
             await setFakeCompilers();
             const res = await makeFakeJson('a', 'b');
             expect(res.body.asm).toEqual([{text: 'LANG B but A'}]);
+        });
+    });
+
+    describe('Possible arguments background loading', () => {
+        beforeEach(async () => {
+            // Flush any load kicked off by earlier tests before mocking loadFromStorage.
+            await compileHandler.possibleArgumentsLoaded();
+        });
+
+        afterEach(async () => {
+            await compileHandler.possibleArgumentsLoaded();
+            vi.restoreAllMocks();
+        });
+
+        function fakeCompiler(id: string) {
+            return makeFakeCompilerInfo({compilerType: 'fake-for-test', id, lang: 'a' as any, exe: 'fake'});
+        }
+
+        it('does not block setCompilers on storage loads', async () => {
+            let resolveLoad: () => void = () => {};
+            const loadSpy = vi
+                .spyOn(CompilerArguments.prototype, 'loadFromStorage')
+                .mockReturnValue(new Promise<void>(resolve => (resolveLoad = resolve)));
+            const compilers = await compileHandler.setCompilers([fakeCompiler('one')], null);
+            expect(compilers).toHaveLength(1);
+            await vi.waitFor(() => expect(loadSpy).toHaveBeenCalledTimes(1));
+            resolveLoad();
+            await compileHandler.possibleArgumentsLoaded();
+        });
+
+        it('keeps other compilers when one storage load fails', async () => {
+            const loadSpy = vi
+                .spyOn(CompilerArguments.prototype, 'loadFromStorage')
+                .mockRejectedValueOnce(new Error('S3 exploded'))
+                .mockResolvedValue(undefined);
+            const compilers = await compileHandler.setCompilers([fakeCompiler('one'), fakeCompiler('two')], null);
+            expect(compilers).toHaveLength(2);
+            await expect(compileHandler.possibleArgumentsLoaded()).resolves.toBeUndefined();
+            expect(loadSpy).toHaveBeenCalledTimes(2);
+        });
+
+        it('serialises loads across repeated setCompilers calls', async () => {
+            const resolvers: (() => void)[] = [];
+            const loadSpy = vi
+                .spyOn(CompilerArguments.prototype, 'loadFromStorage')
+                .mockImplementation(() => new Promise<void>(resolve => resolvers.push(resolve)));
+            await compileHandler.setCompilers([fakeCompiler('one')], null);
+            await compileHandler.setCompilers([fakeCompiler('one')], null);
+            // Only the first batch's load should start until it completes.
+            await vi.waitFor(() => expect(loadSpy).toHaveBeenCalledTimes(1));
+            expect(loadSpy).toHaveBeenCalledTimes(1);
+            resolvers.shift()!();
+            await vi.waitFor(() => expect(loadSpy).toHaveBeenCalledTimes(2));
+            resolvers.shift()!();
+            await compileHandler.possibleArgumentsLoaded();
         });
     });
 });
