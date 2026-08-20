@@ -129,6 +129,9 @@ export function maskRootdirKeepingAppPrefix(filepath: string): string {
  *  note: will keep /app/ if instead of filepath something like '-I/tmp/path' is used
  */
 export function maskRootdir(filepath: string): string {
+    // Same load-bearing guard as the function above: it hands a falsy argument straight
+    // back, so an undefined that slipped through a type hole must not reach the strip.
+    if (!filepath) return filepath;
     // The trailing /app/ strip is anchored (no backtracking) and must run regardless, as
     // paths may already be /app/-rooted from an earlier mask.
     return maskRootdirKeepingAppPrefix(filepath).replace(/^\/app\//, '');

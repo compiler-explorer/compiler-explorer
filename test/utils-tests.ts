@@ -827,6 +827,13 @@ describe('maskRootdir', () => {
         expect(utils.maskRootdir('/usr/include/stdio.h')).toEqual('/usr/include/stdio.h');
     });
 
+    // Callers reach here through type holes that hand over an undefined, which is what the
+    // falsy guard is for. Both entry points have to survive it, not just one.
+    it.each([undefined, null, ''])('hands %p straight back', input => {
+        expect(utils.maskRootdir(input as unknown as string)).toEqual(input);
+        expect(utils.maskRootdirKeepingAppPrefix(input as unknown as string)).toEqual(input);
+    });
+
     // The marker segment must be followed by `/`, so a bare dir with no trailing slash
     // is left alone. (Real inputs always name a file inside the dir.)
     it('leaves a bare temp dir with no trailing slash untouched', () => {
