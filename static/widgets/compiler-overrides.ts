@@ -408,9 +408,13 @@ export class CompilerOverridesWidget {
         this.updateButton();
     }
 
-    async setCompiler(compilerId: string, languageId?: string) {
+    async setCompiler(compilerId: string, languageId?: string, signal?: AbortSignal) {
         if (languageId) {
             const compilers = await compilersService.getCompilersForLang(languageId);
+
+            if (signal?.aborted) {
+                return;
+            }
             this.compiler = compilers[compilerId];
         } else {
             this.compiler = undefined;
