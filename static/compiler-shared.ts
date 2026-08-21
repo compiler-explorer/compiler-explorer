@@ -36,6 +36,7 @@ export class CompilerShared implements ICompilerShared {
     private overridesWidget: CompilerOverridesWidget;
     private runtimeToolsButton: JQuery<HTMLElement>;
     private runtimeToolsWidget?: RuntimeToolsWidget;
+    private pendingUpdate?: AbortController;
 
     constructor(domRoot: JQuery, onChange: () => void) {
         this.domRoot = domRoot;
@@ -51,15 +52,29 @@ export class CompilerShared implements ICompilerShared {
         return this.runtimeToolsWidget?.get();
     }
 
-    public updateState(state: CompilerState | ExecutorState) {
-        this.overridesWidget.setCompiler(state.compiler, state.lang);
+    public async updateState(state: CompilerState | ExecutorState): Promise<void> {
+        this.pendingUpdate?.abort();
+        const controller = new AbortController();
+        this.pendingUpdate = controller;
+        const {signal} = controller;
+
+        await this.overridesWidget.setCompiler(state.compiler, state.lang, signal);
+
+        if (signal.aborted) {
+            return;
+        }
 
         if (state.overrides) {
             this.overridesWidget.set(state.overrides);
         }
 
         if (this.runtimeToolsWidget) {
-            this.runtimeToolsWidget.setCompiler(state.compiler, state.lang);
+            await this.runtimeToolsWidget.setCompiler(state.compiler, state.lang, signal);
+
+            if (signal.aborted) {
+                return;
+            }
+
             if (state.runtimeTools) {
                 this.runtimeToolsWidget.set(state.runtimeTools);
             } else {
