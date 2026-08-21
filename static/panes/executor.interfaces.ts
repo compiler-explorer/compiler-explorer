@@ -29,6 +29,7 @@ import type {WidgetState} from '../widgets/libs-widget.interfaces.js';
 export type ExecutorState = WidgetState & {
     tree?: number;
     source?: number;
+    sourceCompiler?: number;
     execArgs?: string;
     execStdin?: string;
     options?: string;

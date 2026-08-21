@@ -24,12 +24,16 @@
 
 import type {ConfiguredOverrides} from '../../types/compilation/compiler-overrides.interfaces.js';
 import {ConfiguredRuntimeTools} from '../../types/execution/execution.interfaces.js';
+import type {LanguageKey} from '../../types/languages.interfaces.js';
 import {WidgetState} from '../widgets/libs-widget.interfaces.js';
 import {MonacoPaneState} from './pane.interfaces.js';
 
 export type CompilerState = WidgetState & {
     tree?: number;
     source?: number;
+    sourceCompiler?: number;
+    chainOutputLang?: LanguageKey;
+    rootEditorId?: number;
     compiler: string;
     options?: string;
     flagsViewOpen?: boolean;

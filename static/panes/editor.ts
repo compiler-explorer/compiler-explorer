@@ -63,7 +63,7 @@ import {MonacoPane} from './pane.js';
 
 import IModelDeltaDecoration = editor.IModelDeltaDecoration;
 
-import {getStaticImage, isMacintosh} from '../utils';
+import {getSelectizeRenderHtml, isMacintosh} from '../utils';
 
 // Expose monaco on window for integration tests (e.g. Cypress)
 window.monaco = monaco;
@@ -1967,51 +1967,12 @@ export class Editor extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Edit
         this.hub.removeEditor(this.id);
     }
 
-    getSelectizeRenderHtml(
-        language: Language,
-        escapeHtml: (str: string) => string,
-        width: number,
-        height: number,
-    ): string {
-        return `
-        <div class='d-flex' style='align-items: center'>
-          <div class='me-1 d-flex' style='align-items: center; width: ${width}px; height: ${height}px'>
-            ${
-                language.logoFilename !== null
-                    ? `
-                <img src='${getStaticImage(language.logoFilename, 'logos')}'
-                     alt='Logo for ${escapeHtml(language.name)}'
-                     class='${language.logoFilenameDark ? 'theme-light-only' : ''}'
-                     width='${width}px'
-                     height='${height}px' />
-                `
-                    : ''
-            }
-            ${
-                language.logoFilenameDark !== null
-                    ? `
-                <img src='${getStaticImage(language.logoFilenameDark, 'logos')}'
-                     alt='Logo for ${escapeHtml(language.name)}'
-                     class='theme-dark-only'
-                     width='${width}px'
-                     height='${height}px' />
-               `
-                    : ''
-            }
-          </div>
-          <div title='${language.tooltip ?? ''}'>
-            ${escapeHtml(language.name)}
-          </div>
-        </div>
-        `;
-    }
-
     renderSelectizeOption(data: Language, escapeHtml: (str: string) => string) {
-        return this.getSelectizeRenderHtml(data, escapeHtml, 23, 23);
+        return getSelectizeRenderHtml(data, escapeHtml, 23, 23);
     }
 
     renderSelectizeItem(data: Language, escapeHtml: (str: string) => string) {
-        return this.getSelectizeRenderHtml(data, escapeHtml, 20, 20);
+        return getSelectizeRenderHtml(data, escapeHtml, 20, 20);
     }
 
     onCompiler(compilerId: number, compiler: unknown, options: string, editorId: number, treeId: number): void {}

@@ -25,6 +25,7 @@
 import bigInt from 'big-integer';
 
 import {addDigitSeparator} from '../shared/common-utils.js';
+import {Language} from '../types/languages.interfaces.js';
 
 // Mirrors monaco-editor's own platform detection (vs/base/common/platform.js).
 export const isMacintosh = typeof navigator !== 'undefined' && navigator.userAgent.indexOf('Macintosh') >= 0;
@@ -38,6 +39,45 @@ export function getStaticImage(filename: string, parent?: string) {
         return `${root}${parent}/${filename}`;
     }
     return `${root}${filename}`;
+}
+
+export function getSelectizeRenderHtml(
+    language: Language,
+    escapeHtml: (str: string) => string,
+    width: number,
+    height: number,
+): string {
+    return `
+        <div class='d-flex' style='align-items: center'>
+          <div class='me-1 d-flex' style='align-items: center; width: ${width}px; height: ${height}px'>
+            ${
+                language.logoFilename !== null
+                    ? `
+                <img src='${getStaticImage(language.logoFilename, 'logos')}'
+                     alt='Logo for ${escapeHtml(language.name)}'
+                     class='${language.logoFilenameDark ? 'theme-light-only' : ''}'
+                     width='${width}px'
+                     height='${height}px' />
+                `
+                    : ''
+            }
+            ${
+                language.logoFilenameDark !== null
+                    ? `
+                <img src='${getStaticImage(language.logoFilenameDark, 'logos')}'
+                     alt='Logo for ${escapeHtml(language.name)}'
+                     class='theme-dark-only'
+                     width='${width}px'
+                     height='${height}px' />
+               `
+                    : ''
+            }
+          </div>
+          <div title='${escapeHtml(language.tooltip ?? '')}'>
+            ${escapeHtml(language.name)}
+          </div>
+        </div>
+        `;
 }
 
 export function updateAndCalcTopBarHeight(domRoot: JQuery, topBar: JQuery, hideable: JQuery): number {

@@ -49,6 +49,7 @@ mixin newPaneButton(classId, text, title, icon)
         span.hideable Add new...
       .dropdown-menu.dropdown-menu-end.new-pane-dropdown(data-cy="new-compiler-pane-dropdown")
         +newPaneButton("add-compiler", "Clone Compiler", "Clone this compiler window (click or drag)", "far fa-clone")
+        +newPaneButton("add-chained-compiler", "Chained Compiler", "Create a new compiler that uses this compiler's output as its source (click or drag)", "fas fa-link")
         +newPaneButton("create-executor", "Executor From This", "Create executor from this compiler", "fas fa-microchip")
         +newPaneButton("view-optimization", "Opt Remarks", "Show optimization remarks", "fas fa-weight")
         +newPaneButton("view-stack-usage", "Stack Usage", "Show stack usage", "fas fa-layer-group")
@@ -77,6 +78,8 @@ mixin newPaneButton(classId, text, title, icon)
         span.fas.fa-screwdriver
         span.hideable Add tool...
       .dropdown-menu.dropdown-menu-end.new-tool-dropdown
+    .btn-group.btn-group-sm.ms-auto.chain-language-select(role="group" aria-label="Chain input language" style="display: none")
+      select.change-chain-language(title="Language of this compiler's output (input for next chained compiler)" disabled=embedded && readOnly)
   .monaco-placeholder
   .bottom-bar.bg-light
     if !embedded

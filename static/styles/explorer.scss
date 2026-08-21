@@ -548,12 +548,14 @@ pre.content.wrap * {
     }
 }
 
-.change-language {
+.change-language,
+.change-chain-language {
     line-height: 14px;
     min-width: 200px !important;
 }
 
-.change-language .ts-input {
+.change-language .ts-input,
+.change-chain-language .ts-input {
     border-bottom: none;
     border-right: none;
     border-radius: 0;
