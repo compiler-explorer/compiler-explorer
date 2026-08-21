@@ -382,8 +382,9 @@ export class ApiHandler {
             return;
         }
 
+        let env: IExecutionEnvironment | undefined;
         try {
-            const env: IExecutionEnvironment = new LocalExecutionEnvironment(this.compilationEnvironment);
+            env = new LocalExecutionEnvironment(this.compilationEnvironment);
             await env.downloadExecutablePackage(unwrapString(req.params.hash));
             const execResult = await env.execute(req.body.ExecutionParams);
             logger.debug('execResult', execResult);
@@ -391,6 +392,8 @@ export class ApiHandler {
         } catch (e) {
             logger.error(e);
             next({statusCode: 500, message: 'Internal error'});
+        } finally {
+            await env?.cleanup();
         }
     }
 
