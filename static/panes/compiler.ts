@@ -61,6 +61,7 @@ import {toolsService} from '../services/tools.service.js';
 import {SiteSettings} from '../settings.js';
 import * as utils from '../utils.js';
 import {Alert} from '../widgets/alert.js';
+import {CompilationOptions} from '../widgets/compilation-options.js';
 import {CompilerPicker} from '../widgets/compiler-picker.js';
 import {WidgetState} from '../widgets/libs-widget.interfaces.js';
 import {LibsWidget} from '../widgets/libs-widget.js';
@@ -214,7 +215,6 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
     private outputErrorCount: JQuery<HTMLElement>;
     private optionsField: JQuery<HTMLElement>;
     private initialOptionsFieldPlacehoder: JQuery<HTMLElement>;
-    private prependOptions: JQuery<HTMLElement>;
     private fullCompilerName: JQuery<HTMLElement>;
     private fullTimingInfo: JQuery<HTMLElement>;
     private compilerLicenseButton: JQuery<HTMLElement>;
@@ -246,7 +246,6 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
     private shortCompilerName: JQuery<HTMLElement>;
     private bottomBar: JQuery<HTMLElement>;
     private statusLabel: JQuery<HTMLElement>;
-    private statusIcon: JQuery<HTMLElement>;
     private libsWidget: LibsWidget | null;
     private isLabelCtxKey: monaco.editor.IContextKey<boolean>;
     private revealJumpStackHasElementsCtxKey: monaco.editor.IContextKey<boolean>;
@@ -296,9 +295,10 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
     private artifactHandler: ArtifactHandler;
 
     constructor(hub: Hub, container: Container, state: MonacoPaneState & CompilerState) {
+        state.id = state.id || hub.nextCompilerId();
         super(hub, container, state);
 
-        this.id = state.id || hub.nextCompilerId();
+        this.id = state.id;
 
         this.infoByLang = {};
         this.deferCompiles = true;
@@ -345,6 +345,12 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
         this.initCallbacks();
         // Handle initial settings
         this.onSettingsChange(this.settings);
+        new CompilationOptions(
+            this,
+            this.domRoot.find('.prepend-options'),
+            result => result.result ?? result,
+            this.filters,
+        );
 
         this.postInit(state);
     }
@@ -1537,8 +1543,6 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
             return;
         }
         if (this.compiler) this.eventHub.emit('compiling', this.id, this.compiler);
-        // Display the spinner
-        this.handleCompilationStatus({code: 4, compilerOut: 0});
         this.pendingBuildRequestSentAt = Date.now();
         // After a short delay, give the user some indication that we're working on their
         // compilation.
@@ -1582,8 +1586,6 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
             return;
         }
         if (this.compiler) this.eventHub.emit('compiling', this.id, this.compiler);
-        // Display the spinner
-        this.handleCompilationStatus({code: 4, compilerOut: 0});
         this.pendingRequestSentAt = Date.now();
         // After a short delay, give the user some indication that we're working on their
         // compilation.
@@ -1874,14 +1876,7 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
 
         this.compileInfoLabel.text(infoLabelText);
 
-        if (result.result) {
-            const wasCmake = result.buildsteps?.some(step => {
-                return step.step === 'cmake';
-            });
-            this.postCompilationResult(request, result.result, wasCmake);
-        } else {
-            this.postCompilationResult(request, result);
-        }
+        this.postCompilationResult(request, result.result ?? result);
 
         if (
             this.compiler?.supportsDeviceAsmView &&
@@ -1912,7 +1907,7 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
         this.doNextCompileRequest();
     }
 
-    postCompilationResult(request: any, result: any, wasCmake?: boolean): void {
+    postCompilationResult(request: any, result: any): void {
         if (result.popularArguments) {
             this.handlePopularArgumentsResult(result.popularArguments);
         } else if (this.compiler) {
@@ -1932,11 +1927,6 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
         this.updateButtons();
 
         this.handleCompilationStatus(CompilerService.calculateStatusIcon(result));
-        const warnings = this.checkForUnwiseArguments(result.compilationOptions, wasCmake ?? false);
-        this.setCompilationOptionsPopover(
-            result.compilationOptions ? result.compilationOptions.join(' ') : '',
-            warnings,
-        );
 
         this.checkForHints(result);
 
@@ -2596,11 +2586,9 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
 
         this.optionsField = this.domRoot.find('.options');
         this.initialOptionsFieldPlacehoder = this.optionsField.prop('placeholder');
-        this.prependOptions = this.domRoot.find('.prepend-options');
         this.fullCompilerName = this.domRoot.find('.full-compiler-name');
         this.fullTimingInfo = this.domRoot.find('.full-timing-info');
         this.compilerLicenseButton = this.domRoot.find('.compiler-license');
-        this.setCompilationOptionsPopover(this.compiler ? this.compiler.options : null, []);
 
         this.initFilterButtons();
 
@@ -2617,7 +2605,6 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
         this.statusLabel = this.domRoot.find('.status-text');
 
         this.hideable = this.domRoot.find('.hideable');
-        this.statusIcon = this.domRoot.find('.status-icon');
 
         $(this.domRoot).on('keydown', event => {
             if ((event.ctrlKey || event.metaKey) && String.fromCharCode(event.which).toLowerCase() === 's') {
@@ -3130,13 +3117,6 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
         $(document).on('mouseup', e => {
             const target = $(e.target);
             if (
-                !target.is(this.prependOptions) &&
-                this.prependOptions.has(target as unknown as Element).length === 0 &&
-                target.closest('.popover').length === 0
-            )
-                BootstrapUtils.hidePopover(this.prependOptions);
-
-            if (
                 !target.is(this.fullCompilerName) &&
                 this.fullCompilerName.has(target as unknown as Element).length === 0 &&
                 target.closest('.popover').length === 0
@@ -3231,37 +3211,6 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
         }
     }
 
-    checkForUnwiseArguments(optionsArray: string[] | undefined, wasCmake: boolean) {
-        if (!this.compiler) return [];
-
-        if (!optionsArray) optionsArray = [];
-
-        // Check if any options are in the unwiseOptions array and remember them
-        const unwiseOptions = _.intersection(
-            optionsArray,
-            this.compiler.unwiseOptions.filter(opt => {
-                return opt !== '';
-            }),
-        );
-
-        const options = unwiseOptions.length === 1 ? 'Option ' : 'Options ';
-        const names = unwiseOptions.join(', ');
-        const are = unwiseOptions.length === 1 ? ' is ' : ' are ';
-        const msg = options + names + are + 'not recommended, as behaviour might change based on server hardware.';
-
-        const warnings: string[] = [];
-
-        if (optionsArray.some(opt => opt === '-flto') && !this.filters.isSet('binary') && !wasCmake) {
-            warnings.push('Option -flto is being used without Link to Binary.');
-        }
-
-        if (unwiseOptions.length > 0) {
-            warnings.push(msg);
-        }
-
-        return warnings;
-    }
-
     updateCompilerInfo(): void {
         this.updateCompilerName();
         if (this.compiler) {
@@ -3272,7 +3221,6 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
                     dismissTime: 7000,
                 });
             }
-            this.prependOptions.data('content', this.compiler.options);
         }
     }
 
@@ -3551,44 +3499,6 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
         }
     }
 
-    setCompilationOptionsPopover(content: string | null, warnings: string[]): void {
-        const infoLine =
-            '<div class="compiler-arg-warning info">You can configure icon animations in Settings>Compilation</div>\n';
-
-        // Dispose any existing popover
-        const existingPopover = BootstrapUtils.getPopoverInstance(this.prependOptions);
-        if (existingPopover) existingPopover.dispose();
-
-        // Create new popover
-        BootstrapUtils.initPopover(this.prependOptions, {
-            content:
-                warnings.map(w => `<div class="compiler-arg-warning">${w}</div>`).join('\n') +
-                '\n' +
-                (warnings.length > 0 ? infoLine : '') +
-                escapeHTML(content || 'No options in use') +
-                `\n<div class="compiler-arg-warning-shake-setting"></div>`,
-            html: true,
-            template:
-                '<div class="popover' +
-                (content ? ' compiler-options-popover' : '') +
-                '" role="tooltip"><div class="arrow"></div>' +
-                '<h3 class="popover-header"></h3><div class="popover-body"></div></div>',
-        });
-
-        // TODO: Kind of redundant with compiler-service's handleCompilationStatus and overriding what that function
-        // does. I hate that the logic is spread out like this. Definitely in need of a refactor.
-        if (warnings.length > 0) {
-            this.statusIcon
-                .removeClass()
-                .addClass(
-                    'status-icon fa-solid fa-triangle-exclamation compiler-arg-warning-icon' +
-                        (this.settings.shakeStatusIconOnWarnings ? ' shake' : ''),
-                )
-                .css('color', '')
-                .attr('aria-label', 'There are warnings about the compiler arguments that have been provided');
-        }
-    }
-
     setCompilerVersionPopover(version?: CompilerVersionInfo, notification?: string, compilerId?: string) {
         setCompilerVersionPopoverForPane(this, version, notification, compilerId);
     }
@@ -3847,7 +3757,7 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
     }
 
     handleCompilationStatus(status: CompilationStatus): void {
-        CompilerService.handleCompilationStatus(this.statusLabel, this.statusIcon, status);
+        CompilerService.handleCompilationStatus(this.statusLabel, null, status);
     }
 
     onLanguageChange(editorId: number | boolean, newLangId: LanguageKey, treeId?: number | boolean): void {

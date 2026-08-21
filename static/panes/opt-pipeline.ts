@@ -43,6 +43,7 @@ import {Hub} from '../hub.js';
 import {extendConfig} from '../monaco-config.js';
 import {SentryCapture} from '../sentry.js';
 import * as utils from '../utils.js';
+import {CompilationOptions} from '../widgets/compilation-options.js';
 import {Toggles} from '../widgets/toggles.js';
 import {OptPipelineViewState} from './opt-pipeline.interfaces.js';
 import {MonacoPaneState} from './pane.interfaces.js';
@@ -84,6 +85,7 @@ export class OptPipeline extends MonacoPane<monaco.editor.IStandaloneDiffEditor,
 
     constructor(hub: Hub, container: Container, state: OptPipelineViewState & MonacoPaneState) {
         super(hub, container, state);
+        new CompilationOptions(this, this.domRoot.find('.prepend-options'), result => result.optPipelineOutput);
         this.groupName = this.domRoot.find('.opt-group-name');
         this.updateGroupName();
         this.passesColumn = this.domRoot.find('.passes-column');
