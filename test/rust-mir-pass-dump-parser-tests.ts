@@ -1,4 +1,4 @@
-// Copyright (c) 2022, Compiler Explorer Authors
+// Copyright (c) 2026, Compiler Explorer Authors
 // All rights reserved.
 //
 // Redistribution and use in source and binary forms, with or without
@@ -22,25 +22,23 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-export type OptPipelineKind = 'optPipeline' | 'rustMirOptPipeline';
+import fs from 'node:fs/promises';
+import path from 'node:path';
 
-export interface OptPipelineViewState {
-    // Older state may be missing these fields
-    lang?: string;
-    compiler?: string;
-    // `selectedGroup` replaces `selectedFunction`
-    selectedFunction?: string;
-    selectedGroup: string;
-    selectedIndex: number;
-    // may be 0 when first initialized
-    sidebarWidth: number;
-    // options/filters
-    // marked as optional so they don't have to be specified in components.ts, just let them default
-    'dump-full-module'?: boolean;
-    'demangle-symbols'?: boolean;
-    '-fno-discard-value-names'?: boolean;
-    'filter-inconsequential-passes'?: boolean;
-    'filter-debug-info'?: boolean;
-    'filter-instruction-metadata'?: boolean;
-    kind?: OptPipelineKind;
-}
+import {describe, expect, it} from 'vitest';
+
+import {parseMirPassDump} from '../lib/parsers/rust-mir-pass-dump-parser.js';
+import {resolvePathFromTestRoot} from './utils.js';
+
+describe('rust mir opt view snapshot tests', async () => {
+    const testCasesPath = resolvePathFromTestRoot('rust-mir-pass-dump-cases');
+
+    for await (const mirDumpDir of fs.glob(path.join(testCasesPath, '*.mir_dump'))) {
+        const testCaseName = path.basename(mirDumpDir);
+        it(`parses ${path.basename(mirDumpDir)}`, async () => {
+            await expect(parseMirPassDump(mirDumpDir)).resolves.toMatchFileSnapshot(
+                path.join(testCasesPath, `${testCaseName}.snapshot`),
+            );
+        });
+    }
+});
