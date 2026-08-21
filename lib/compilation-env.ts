@@ -181,21 +181,23 @@ export class CompilationEnvironment {
         }
     }
 
+    // Returns the key the value was stored under, relative to the cache's own path.
     async tempCachePutWithTTL(
         object: CacheableValue,
         jsonString: string,
         ttlDays: number,
         creator: string | undefined,
-    ) {
+    ): Promise<string> {
         const key = BaseCache.hash(object);
 
         // Check if cache is S3Cache to use TTL functionality with temp path
         if (this.cache instanceof S3Cache) {
-            return this.cache.putWithTTLAndPath(key, Buffer.from(jsonString), ttlDays, 'temp', creator);
-        } else {
-            // Fallback to regular put for non-S3 caches
-            return this.cache.put(key, jsonString, creator);
+            await this.cache.putWithTTLAndPath(key, Buffer.from(jsonString), ttlDays, 'temp', creator);
+            return `temp/${key}`;
         }
+        // Fallback to regular put for non-S3 caches
+        await this.cache.put(key, jsonString, creator);
+        return key;
     }
 
     getExecutableHash(object: CacheableValue): string {
