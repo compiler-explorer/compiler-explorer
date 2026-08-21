@@ -130,7 +130,7 @@ export class BaseTool implements ITool {
     }
 
     protected replacePathsIfNeededForSandbox(args: string[], physicalPath: string): string[] {
-        if (this.sandboxType !== 'nsjail' || !physicalPath) return args;
+        if (!exec.usesAppJail(this.sandboxType) || !physicalPath) return args;
 
         return args.map(arg => {
             if (arg && arg.length > 1) {

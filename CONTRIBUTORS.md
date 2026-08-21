@@ -177,3 +177,4 @@ From oldest to newest contributor, we would like to thank:
 - [Sirui Mu](https://github.com/Lancern)
 - [Connor Simms](https://github.com/connorsimms)
 - [Macsen Casaus](https://github.com/macsencasaus)
+- [Jeff Bailey](https://github.com/kaladron)

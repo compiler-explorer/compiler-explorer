@@ -36,7 +36,7 @@ import {
     UnprocessedExecResult,
 } from '../../types/execution/execution.interfaces.js';
 import {CompilationEnvironment} from '../compilation-env.js';
-import {executeDirect} from '../exec.js';
+import {executeDirect, usesAppJail} from '../exec.js';
 import {logger} from '../logger.js';
 import {PropertyGetter} from '../properties.interfaces.js';
 import {BaseRuntimeTool} from './base-runtime-tool.js';
@@ -99,7 +99,7 @@ export class HeaptrackWrapper extends BaseRuntimeTool {
             execOptions.env.LD_PRELOAD = this.preload;
         }
 
-        if (this.sandboxType === 'nsjail') {
+        if (usesAppJail(this.sandboxType)) {
             execOptions.env.DUMP_HEAPTRACK_OUTPUT = '/app/heaptrack_fifo';
         } else {
             execOptions.env.DUMP_HEAPTRACK_OUTPUT = this.pipe;
