@@ -115,6 +115,9 @@ export async function handleDiscoveryOnlyMode(
     initialCompilers: Partial<CompilerInfo>[],
     compilerFinder: CompilerFinder,
 ) {
+    // Possible-argument stats load in the background after setCompilers; wait for them
+    // here so the saved discovery file still includes them.
+    await compilerFinder.compileHandler.possibleArgumentsLoaded();
     for (const compiler of initialCompilers) {
         if (compiler.buildenvsetup && compiler.buildenvsetup.id === '') delete compiler.buildenvsetup;
 
