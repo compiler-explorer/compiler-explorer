@@ -3382,10 +3382,13 @@ export class BaseCompiler {
             const resultSize = resultString.length;
 
             if (resultSize > WEBSOCKET_SIZE_THRESHOLD) {
-                // Store with 1-day TTL for temporary retrieval in temp/ subdirectory
-                await this.env.tempCachePutWithTTL(cacheKey, resultString, TEMP_STORAGE_TTL_DAYS, undefined);
-                // Set s3Key with temp/ prefix to reflect storage location
-                fullResult.s3Key = `temp/${BaseCache.hash(cacheKey)}`;
+                // Too big for the websocket: hand the reader an out-of-band key instead
+                fullResult.s3Key = await this.env.tempCachePutWithTTL(
+                    cacheKey,
+                    resultString,
+                    TEMP_STORAGE_TTL_DAYS,
+                    undefined,
+                );
             }
         }
 
@@ -3654,10 +3657,8 @@ export class BaseCompiler {
             const resultSize = resultString.length;
 
             if (resultSize > WEBSOCKET_SIZE_THRESHOLD) {
-                // Store with 1-day TTL for temporary retrieval in temp/ subdirectory
-                await this.env.tempCachePutWithTTL(key, resultString, TEMP_STORAGE_TTL_DAYS, undefined);
-                // Set s3Key with temp/ prefix to reflect storage location
-                result.s3Key = `temp/${BaseCache.hash(key)}`;
+                // Too big for the websocket: hand the reader an out-of-band key instead
+                result.s3Key = await this.env.tempCachePutWithTTL(key, resultString, TEMP_STORAGE_TTL_DAYS, undefined);
             }
         }
 
