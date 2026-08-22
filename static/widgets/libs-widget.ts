@@ -25,6 +25,7 @@
 import $ from 'jquery';
 
 import {unwrapString} from '../../shared/assert.js';
+import type {CompilerInfo} from '../../types/compiler.interfaces.js';
 import * as BootstrapUtils from '../bootstrap-utils.js';
 import {localStorage} from '../local.js';
 import {Library, LibraryVersion} from '../options.interfaces.js';
@@ -36,7 +37,25 @@ import {Alert} from './alert.js';
 import {Lib, WidgetState} from './libs-widget.interfaces.js';
 
 const FAV_LIBS_STORE_KEY = 'favlibs';
-const c_default_compiler_non_id = '_default_';
+
+/** The bucket libs land in when no compiler is selected yet. */
+export const DEFAULT_COMPILER_KEY = '_default_';
+
+/**
+ * The key `availableLibs` is bucketed by.
+ *
+ * Two call shapes reach this widget. The compiler and executor panes own one
+ * compiler each and pass the `CompilerInfo`. The conformance view tracks
+ * several at once and passes their ids joined with `|`, because the libraries
+ * it offers are the intersection across all of them. `setNewLangId` already
+ * took the string form while the constructor only read `.id`, so a widget
+ * built from a string keyed itself on `undefined` and then silently re-keyed
+ * the first time a compiler changed, orphaning every lib recorded until then.
+ */
+export function toCompilerKey(compiler: CompilerInfo | string | null | undefined): string {
+    const id = typeof compiler === 'string' ? compiler : compiler?.id;
+    return id === undefined || id === '' ? DEFAULT_COMPILER_KEY : id;
+}
 
 export type CompilerLibs = Record<string, Library>;
 type LangLibs = Record<string, CompilerLibs>;
@@ -103,7 +122,7 @@ class LibraryAnnotations {
 }
 
 async function getCompilerName(compilerId: string, langId: string): Promise<string> {
-    if (compilerId === c_default_compiler_non_id) {
+    if (compilerId === DEFAULT_COMPILER_KEY) {
         return 'compiler';
     }
 
@@ -161,18 +180,16 @@ export class LibsWidget {
 
     constructor(
         langId: string,
-        compiler: any,
+        compiler: CompilerInfo | string | null | undefined,
         dropdownButton: JQuery,
         state: WidgetState,
         onChangeCallback: () => void,
         possibleLibs: CompilerLibs,
     ) {
         this.dropdownButton = dropdownButton;
-        if (compiler) {
-            this.currentCompilerId = compiler.id;
+        this.currentCompilerId = toCompilerKey(compiler);
+        if (compiler && typeof compiler !== 'string') {
             this.currentCompilerName = compiler.name ?? '';
-        } else {
-            this.currentCompilerId = c_default_compiler_non_id;
         }
         this.currentLangId = langId;
         this.domRoot = $('#library-selection').clone(true);
@@ -656,7 +673,7 @@ export class LibsWidget {
         }
 
         if (!(this.currentCompilerId in this.availableLibs[this.currentLangId])) {
-            if (this.currentCompilerId === '_default_') {
+            if (this.currentCompilerId === DEFAULT_COMPILER_KEY) {
                 const allLibs = await libsService.getLibsForLang(this.currentLangId);
                 this.availableLibs[this.currentLangId][this.currentCompilerId] = $.extend(true, {}, allLibs);
             } else {
@@ -676,13 +693,8 @@ export class LibsWidget {
 
         this.currentLangId = langId;
 
-        if (compilerId) {
-            this.currentCompilerId = compilerId;
-            this.currentCompilerName = (await getCompilerName(compilerId, langId)) || compilerId;
-        } else {
-            this.currentCompilerId = '_default_';
-            this.currentCompilerName = '';
-        }
+        this.currentCompilerId = toCompilerKey(compilerId);
+        this.currentCompilerName = compilerId ? (await getCompilerName(compilerId, langId)) || compilerId : '';
 
         // Clear the dom Root so it gets rebuilt with the new language libraries
         await this.updateAvailableLibs(possibleLibs, isLangChanged);
