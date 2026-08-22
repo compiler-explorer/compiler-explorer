@@ -86,13 +86,25 @@ const shareServices = {
     },
 };
 
+// How long the layout has to stop changing on its own before the state it settles on
+// counts as the baseline the URL is measured against. See `ensureUrlIsNotOutdated`.
+export const LAYOUT_SETTLE_MS = 2000;
+
 // Base class that handles state tracking and embedded link updates
 export class SharingBase {
     protected layout: GoldenLayout;
     protected lastState: string | null = null;
+    // Until the layout has settled, `lastState` is only a running record of what the
+    // page has been through, not something to compare against.
+    private baselineSettled = false;
 
     constructor(layout: GoldenLayout) {
         this.layout = layout;
+        // The window runs from here, not from the first state change, so that someone
+        // who starts typing straight away cannot hold it open indefinitely.
+        setTimeout(() => {
+            this.baselineSettled = true;
+        }, LAYOUT_SETTLE_MS);
         this.initCallbacks();
     }
 
@@ -118,6 +130,16 @@ export class SharingBase {
         // load the full site with the default example instead of the embed (#8896).
         if (options.embedded) return;
         const stringifiedConfig = JSON.stringify(config);
+        // Opening a link produces several state changes with nobody touching anything:
+        // a pane's `componentState` starts out unpopulated and fills in with its own
+        // defaults, and its title changes once it knows what it is showing. Comparing
+        // against the first of those threw the shortlink out of the address bar during
+        // page load (#8898), so wait for the layout to stop moving on its own before
+        // deciding what "unchanged" means.
+        if (!this.baselineSettled) {
+            this.lastState = stringifiedConfig;
+            return;
+        }
         if (stringifiedConfig !== this.lastState) {
             if (this.lastState != null && window.location.pathname !== window.httpRoot) {
                 window.history.replaceState(null, '', window.httpRoot);
