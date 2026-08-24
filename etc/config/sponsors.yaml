@@ -47,9 +47,10 @@ levels:
         topIconShowEvery: 3
         statsId: cppcon
       - name: Andreas Fertig
-        description: Modern C++ training that helps your team write robust, efficient code.<br>Delivered in person or remotely by Andreas Fertig, C++ expert, ISO C++ committee member and creator of C++ Insights.
-        img: https://static.ce-cdn.net/andreasfertig/logo1.svg
-        icon: https://static.ce-cdn.net/andreasfertig/logo1.svg
+        description: Modern C++ training that helps your team write robust, efficient code. Delivered in person or remotely by Andreas Fertig, C++ expert, ISO C++ committee member and creator of C++ Insights.
+        img: https://static.ce-cdn.net/andreasfertig/logo3-dark.svg
+        icon: https://static.ce-cdn.net/andreasfertig/logo3.svg
+        icon_dark: https://static.ce-cdn.net/andreasfertig/logo3-dark.svg
         url: https://andreasfertig.com/compiler-explorer/
         displayType: SideBySide
         topIconShowEvery: 3
