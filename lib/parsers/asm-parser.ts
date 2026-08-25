@@ -144,6 +144,13 @@ export class AsmParser extends AsmRegex implements IAsmParser {
                 // We're defining data that's being used somewhere.
                 return false;
             }
+            // Between #APP and #NO_APP the directives are the user's own inline asm, and
+            // dropping them changes what the block assembles to: `.rept 5` / `.endr` around
+            // a `nop` collapses to a single `nop`. Only the source-location markers the
+            // compiler interleaves in there are ours to drop.
+            if (this.parsingState.isInCustomAssembly() && !this.sourceLineHandler.isSourceLocationDirective(line)) {
+                return false;
+            }
             // .inst generates an opcode, so does not count as a directive, nor does an alias definition that's used.
             if (
                 this.directive.test(line) &&

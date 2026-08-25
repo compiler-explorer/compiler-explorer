@@ -229,10 +229,10 @@ export class ClientOptionsHandler implements ClientOptionsSource {
             explainApiEndpoint: ceProps('explainApiEndpoint', ''),
             pageloadUrl: ceProps('pageloadUrl', ''),
         };
-        // Will be immediately replaced with actual values
+        // Replaced with real values by the first setCompilers() call, which
+        // always happens before the server starts listening.
         this.optionsJSON = '';
         this.optionsHash = '';
-        this._updateOptionsHash();
     }
 
     parseTools(baseTools: Record<string, string>) {

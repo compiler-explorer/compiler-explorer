@@ -59,6 +59,52 @@ describe('AsmParser comment filtering', () => {
     });
 });
 
+describe('AsmParser directive filtering', () => {
+    const parser = new AsmParser();
+    // GCC wraps inline asm in #APP/#NO_APP and interleaves its own .loc markers there.
+    const inlineAsm = `square(int):
+	pushq	%rbp
+#APP
+# 3 "/app/example.cpp" 1
+	.rept 5
+nop
+.endr
+# 0 "" 2
+	.loc 1 4 5 view .LVU3
+#NO_APP
+	movl	%edi, %eax
+	.loc 1 5 1
+	popq	%rbp
+	ret`;
+
+    it('should keep inline asm directives when filtering directives', () => {
+        const result = parser.processAsm(inlineAsm, {directives: true});
+        const lines = result.asm.map(line => line.text.trim());
+        expect(lines).toContain('.rept 5');
+        expect(lines).toContain('.endr');
+    });
+
+    it('should still drop source location markers inside an inline asm block', () => {
+        const result = parser.processAsm(inlineAsm, {directives: true});
+        const lines = result.asm.map(line => line.text.trim());
+        expect(lines.some(line => line.startsWith('.loc'))).toBe(false);
+    });
+
+    it('should keep filtering directives once the inline asm block has ended', () => {
+        const result = parser.processAsm(
+            `#APP
+	.rept 5
+#NO_APP
+	.p2align 4
+	ret`,
+            {directives: true},
+        );
+        const lines = result.asm.map(line => line.text.trim());
+        expect(lines).toContain('.rept 5');
+        expect(lines).not.toContain('.p2align 4');
+    });
+});
+
 describe('AsmParser numeric local labels', () => {
     const parser = new AsmParser();
     const filters = {directives: true, labels: true};
