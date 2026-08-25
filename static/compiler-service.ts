@@ -45,8 +45,7 @@ import {SiteSettings} from './settings.js';
 
 const ASCII_COLORS_RE = new RegExp(/\x1B\[[\d;]*m(.\[K)?/g);
 
-type HasCompilationStatus = Pick<CompilationResult, 'code'> &
-    Partial<Pick<CompilationResult, 'stdout' | 'stderr' | 'inputFilename'>>;
+type HasCompilationStatus = Partial<Pick<CompilationResult, 'code' | 'stdout' | 'stderr' | 'inputFilename'>>;
 
 export class CompilerService {
     private readonly base = window.httpRoot;
@@ -361,7 +360,9 @@ export class CompilerService {
 
     public static calculateStatusIcon(result: HasCompilationStatus): CompilationStatus {
         let code = 1;
-        if (result.code !== 0) {
+        if (result.code === undefined) {
+            code = 5;
+        } else if (result.code !== 0) {
             code = 3;
         } else if (CompilerService.doesCompilationResultHaveWarnings(result)) {
             code = 2;
@@ -370,6 +371,7 @@ export class CompilerService {
     }
 
     private static getAriaLabel(status: CompilationStatus) {
+        if (status.code === 5) return 'Unknown';
         // Compiling...
         if (status.code === 4) return 'Compiling';
         if (status.compilerOut === 0) {
@@ -421,6 +423,7 @@ export class CompilerService {
                 .attr('aria-label', CompilerService.getAriaLabel(status))
                 .toggleClass('fa-spinner fa-spin', status.code === 4)
                 .toggleClass('fa-times-circle', status.code === 3)
+                .toggleClass('fa-circle-question', status.code === 5)
                 .toggleClass('fa-check-circle', status.code === 1 || status.code === 2);
         }
     }

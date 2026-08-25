@@ -31,9 +31,10 @@ export enum CompilationStatusCode {
     WITH_WARNINGS = 2,
     WITH_ERRORS = 3,
     COMPILING = 4,
+    UNKNOWN = 5,
 }
 
 export interface CompilationStatus {
     code: CompilationStatusCode;
-    compilerOut: number;
+    compilerOut: number | undefined;
 }
