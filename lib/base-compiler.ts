@@ -3466,12 +3466,8 @@ export class BaseCompiler {
                 result.retreivedFromCacheTime = utils.deltaTimeNanoToMili(cacheRetrieveTimeStart, cacheRetrieveTimeEnd);
                 result.retreivedFromCache = true;
                 result.s3Key = BaseCache.hash(key);
-                // cachePut() stores the result *before* cleanupResult() masks it, so what
-                // comes back out still has the temp dir of whichever compilation happened to
-                // populate the entry. Mask on the way out too, or a cache hit shows a
-                // different command line to the cold compile of the same input. Safe to
-                // repeat: maskRootdirKeepingAppPrefix() only rewrites paths still carrying
-                // the temp prefix, so re-masking an already-masked result is a no-op.
+                // We cache before masking, so cached results still hold a temp dir. Masking
+                // is idempotent, so it's safe to redo here.
                 this.cleanupResult(result);
                 if (doExecute) {
                     const queueTime = performance.now();
