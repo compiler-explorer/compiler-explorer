@@ -61,6 +61,13 @@ function decodeSelectizeValue(value: string): DiffTypeAndExtra {
     };
 }
 
+function replaceOptions(picker: TomSelect, options: any[]): void {
+    picker.clearOptions();
+    picker.addOptions(options);
+    // addOptions() doesn't re-render an open dropdown, leaving the user staring at an empty list.
+    if (picker.isOpen) picker.refreshOptions(false);
+}
+
 function isSourceEntryId(id: number | string | undefined): boolean {
     return typeof id === 'string' && id.startsWith('source_');
 }
@@ -475,8 +482,7 @@ export class Diff extends MonacoPane<monaco.editor.IStandaloneDiffEditor, DiffSt
             side.source || side.difftype === DiffType.Source
                 ? [{id: DiffType.Source.toString(), name: 'Source'}]
                 : this.getDiffableOptions();
-        difftypePicker.clearOptions();
-        difftypePicker.addOptions(options);
+        replaceOptions(difftypePicker, options);
         difftypePicker.setValue(
             encodeSelectizeValue({
                 difftype: side.difftype || DiffType.ASM,
@@ -613,14 +619,12 @@ export class Diff extends MonacoPane<monaco.editor.IStandaloneDiffEditor, DiffSt
 
         if (!this.lhs.source) {
             const lhsoptions = this.getDiffableOptions(this.selectize.lhs, lhsextraoptions);
-            this.selectize.lhsdifftype.clearOptions();
-            this.selectize.lhsdifftype.addOptions(lhsoptions);
+            replaceOptions(this.selectize.lhsdifftype, lhsoptions);
         }
 
         if (!this.rhs.source) {
             const rhsoptions = this.getDiffableOptions(this.selectize.rhs, rhsextraoptions);
-            this.selectize.rhsdifftype.clearOptions();
-            this.selectize.rhsdifftype.addOptions(rhsoptions);
+            replaceOptions(this.selectize.rhsdifftype, rhsoptions);
         }
     }
 
