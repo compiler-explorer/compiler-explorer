@@ -192,7 +192,7 @@ export class CompilerOverridesWidget {
                         'The value of this override is not compatible with the current compiler.',
                     );
                 } else if (
-                    current_overrides?.find(ov => {
+                    current_overrides.find(ov => {
                         return ov.name !== CompilerOverrideType.env && ov.name === fave.name && ov.value === fave.value;
                     })
                 ) {
@@ -383,17 +383,27 @@ export class CompilerOverridesWidget {
     }
 
     set(configured: ConfiguredOverrides) {
-        this.configured = [];
+        this.configured = this.filterForCompiler(configured);
+        this.updateButton();
+    }
 
-        // Only keep the overrides that apply to this compiler. Set the overrides to the their
-        // defaults if they are not configured.
-        for (const ov of this.compiler?.possibleOverrides ?? []) {
+    // Only keep the overrides that apply to this compiler. Set the overrides to their
+    // defaults if they are not configured. Without a compiler the applicable overrides are
+    // unknown, so we keep the configuration as-is. setCompiler() re-filters once it resolves.
+    private filterForCompiler(configured: ConfiguredOverrides): ConfiguredOverrides {
+        if (!this.compiler) {
+            return configured;
+        }
+
+        const filtered: ConfiguredOverrides = [];
+
+        for (const ov of this.compiler.possibleOverrides ?? []) {
             if (ov.name === CompilerOverrideType.env) continue;
             const config = configured.find(config => config.name === ov.name);
             if (config) {
-                this.configured.push(config);
+                filtered.push(config);
             } else if (!this.dirtyOverrides.has(ov.name) && ov.default) {
-                this.configured.push({
+                filtered.push({
                     name: ov.name,
                     value: ov.default,
                 });
@@ -402,10 +412,10 @@ export class CompilerOverridesWidget {
 
         const config = configured.find(config => config.name === CompilerOverrideType.env);
         if (config) {
-            this.configured.push(config);
+            filtered.push(config);
         }
 
-        this.updateButton();
+        return filtered;
     }
 
     async setCompiler(compilerId: string, languageId?: string, signal?: AbortSignal) {
@@ -419,13 +429,13 @@ export class CompilerOverridesWidget {
         } else {
             this.compiler = undefined;
         }
+
+        this.configured = this.filterForCompiler(this.configured);
+        this.updateButton();
     }
 
-    get(): ConfiguredOverrides | undefined {
-        if (this.compiler) {
-            return this.configured;
-        }
-        return undefined;
+    get(): ConfiguredOverrides {
+        return this.configured;
     }
 
     private getFavorites(): FavOverrides {
@@ -438,7 +448,7 @@ export class CompilerOverridesWidget {
 
     private updateButton() {
         const selected = this.get();
-        if (selected && selected.length > 0) {
+        if (selected.length > 0) {
             this.dropdownButton
                 .addClass('btn-success')
                 .removeClass('btn-light')

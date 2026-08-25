@@ -363,11 +363,8 @@ export class RuntimeToolsWidget {
         }
     }
 
-    get(): ConfiguredRuntimeTools | undefined {
-        if (this.compiler) {
-            return this.configured;
-        }
-        return undefined;
+    get(): ConfiguredRuntimeTools {
+        return this.configured;
     }
 
     private getFavorites(): FavRuntimeTools {
@@ -380,7 +377,7 @@ export class RuntimeToolsWidget {
 
     private updateButton() {
         const selected = this.get();
-        if (selected && selected.length > 0) {
+        if (selected.length > 0) {
             this.dropdownButton
                 .addClass('btn-success')
                 .removeClass('btn-light')

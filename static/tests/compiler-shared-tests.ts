@@ -156,6 +156,32 @@ describe('CompilerShared override restoration', () => {
         expect(shared.getOverrides()).toEqual(urlOverrides);
     });
 
+    it('keeps the URL overrides when the pane echoes its state back before the compiler list arrives', async () => {
+        let resolveRust!: (value: Record<string, CompilerInfo>) => void;
+
+        const rustPromise = new Promise<Record<string, CompilerInfo>>(resolve => {
+            resolveRust = resolve;
+        });
+
+        vi.mocked(compilersService.getCompilersForLang).mockReturnValue(rustPromise);
+
+        const state = deserialiseState(urlHash);
+        const componentState = findComponent(state.content, 'compiler').componentState;
+        const shared = new CompilerShared(makeDomRoot(), () => {});
+
+        const first = shared.updateState(componentState);
+
+        // A pane opening during layout init (e.g. the flags view) makes the compiler pane
+        // echo getCurrentState() back synchronously, while the compiler list is still loading.
+        const second = shared.updateState({...componentState, overrides: shared.getOverrides()});
+
+        resolveRust({r1970: rustc1970});
+
+        await Promise.all([first, second]);
+
+        expect(shared.getOverrides()).toEqual(urlOverrides);
+    });
+
     it('ignores a stale compiler-list fetch that resolves after a newer call', async () => {
         let resolveRust!: (value: Record<string, CompilerInfo>) => void;
 

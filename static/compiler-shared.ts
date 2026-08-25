@@ -58,29 +58,28 @@ export class CompilerShared implements ICompilerShared {
         this.pendingUpdate = controller;
         const {signal} = controller;
 
-        await this.overridesWidget.setCompiler(state.compiler, state.lang, signal);
-
-        if (signal.aborted) {
-            return;
-        }
-
+        // Apply the configuration before awaiting the compiler list, so that a re-entrant
+        // updateState() (e.g. a pane opening during layout init) reads it back instead of
+        // an empty widget.
         if (state.overrides) {
             this.overridesWidget.set(state.overrides);
         }
 
         if (this.runtimeToolsWidget) {
-            await this.runtimeToolsWidget.setCompiler(state.compiler, state.lang, signal);
-
-            if (signal.aborted) {
-                return;
-            }
-
             if (state.runtimeTools) {
                 this.runtimeToolsWidget.set(state.runtimeTools);
             } else {
                 this.runtimeToolsWidget.setDefaults();
             }
         }
+
+        await this.overridesWidget.setCompiler(state.compiler, state.lang, signal);
+
+        if (signal.aborted) {
+            return;
+        }
+
+        await this.runtimeToolsWidget?.setCompiler(state.compiler, state.lang, signal);
     }
 
     private initButtons(onChange: () => void) {
