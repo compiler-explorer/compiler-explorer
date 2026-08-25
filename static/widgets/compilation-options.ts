@@ -80,15 +80,15 @@ export class CompilationOptions<P extends Pane<object>> {
 
         const wasCmake = result.result ? (result.buildsteps?.some(step => step.step === 'cmake') ?? false) : false;
         const stepResult = this.getResult(result);
-        const options = stepResult?.compilationOptions;
-        this.setCompilationOptionsPopover(
-            options ? options.join(' ') : '',
-            this.checkForUnwiseArguments(compiler, options, wasCmake),
-        );
         CompilerService.handleCompilationStatus(
             null,
             this.statusIcon,
             CompilerService.calculateStatusIcon(stepResult ?? result),
+        );
+        const options = stepResult?.compilationOptions;
+        this.setCompilationOptionsPopover(
+            options ? options.join(' ') : '',
+            this.checkForUnwiseArguments(compiler, options, wasCmake),
         );
     }
 
