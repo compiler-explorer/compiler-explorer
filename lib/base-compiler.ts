@@ -3635,8 +3635,6 @@ export class BaseCompiler {
             ];
         }
 
-        // Mask before caching, not after: whatever we store here is served verbatim on a
-        // cache hit, which never gets a chance to clean it up.
         this.cleanupResult(result);
 
         if (result.okToCache && !delayCaching) {

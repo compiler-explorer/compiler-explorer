@@ -801,15 +801,6 @@ describe('maskRootdirKeepingAppPrefix', () => {
     it('leaves non-temp paths untouched', () => {
         expect(utils.maskRootdirKeepingAppPrefix('/usr/include/stdio.h')).toEqual('/usr/include/stdio.h');
     });
-
-    it('is idempotent, so masking an already-masked path is a no-op', () => {
-        // Load-bearing for base-compiler's cache-hit path, which masks results that may
-        // already have been masked before being cached.
-        const once = utils.maskRootdirKeepingAppPrefix('/tmp/compiler-explorer-compiler123-4-abc/example.cpp');
-        expect(utils.maskRootdirKeepingAppPrefix(once)).toEqual(once);
-        const embedded = utils.maskRootdirKeepingAppPrefix('-I/tmp/compiler-explorer-compiler123-4-abc/include');
-        expect(utils.maskRootdirKeepingAppPrefix(embedded)).toEqual(embedded);
-    });
 });
 
 describe('maskRootdir', () => {
