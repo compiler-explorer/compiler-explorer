@@ -106,6 +106,11 @@ int cypress_test_inactive(void) { return 0; }
         monacoEditorTextShouldContain(compilerOutput(), 'cypress_test_active');
         monacoEditorTextShouldNotContain(compilerOutput(), 'cypress_test_inactive');
     });
+
+    it('should warn on unwise options', () => {
+        compilerPane().find('input.options').clear().type('-march=native');
+        cy.get('.status-icon.fa-triangle-exclamation:visible', {timeout: 5_000});
+    });
 });
 
 describe('Output filters', () => {
