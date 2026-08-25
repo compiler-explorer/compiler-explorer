@@ -978,11 +978,11 @@ export class Executor extends Pane<ExecutorState> {
             this.onExecStdinChange($(e.target).val() as string);
         }, 800);
 
-        this.optionsField.on('change', optionsChange).on('keyup', optionsChange);
+        this.optionsField.on('change', optionsChange).on('input', optionsChange);
 
-        this.execArgsField.on('change', execArgsChange).on('keyup', execArgsChange);
+        this.execArgsField.on('change', execArgsChange).on('input', execArgsChange);
 
-        this.execStdinField.on('change', execStdinChange).on('keyup', execStdinChange);
+        this.execStdinField.on('change', execStdinChange).on('input', execStdinChange);
 
         // Dismiss the popover on escape.
         $(document).on('keyup.editable', e => {

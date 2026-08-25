@@ -27,8 +27,9 @@ The `type` of the tool represents the stage in which the tool will run:
 - independent - when running a tool on sourcecode
 - postcompilation - when running a tool on the assembly or a binary
 
-The `exclude` property is to indicate which compilers are proven to be incompatible with the tool. You can supply the
-full id of the compiler, or a partial id (for example 'arm' to exclude all arm compilers).
+The `exclude` property is to indicate which compilers are proven to be incompatible with the tool. Values of the form
+`group<semver` are interpreted as excluding compilers from group `group` that have a SemVer less than the given
+`semver`. All other values will exclude any compiler whose ID contains the value as a substring.
 
 The `class` of the tool says which javascript class is needed to run the tool and process its output. The folder
 _lib/tooling_ is used for these classes.
