@@ -3466,9 +3466,6 @@ export class BaseCompiler {
                 result.retreivedFromCacheTime = utils.deltaTimeNanoToMili(cacheRetrieveTimeStart, cacheRetrieveTimeEnd);
                 result.retreivedFromCache = true;
                 result.s3Key = BaseCache.hash(key);
-                // We cache before masking, so cached results still hold a temp dir. Masking
-                // is idempotent, so it's safe to redo here.
-                this.cleanupResult(result);
                 if (doExecute) {
                     const queueTime = performance.now();
                     result.execResult = await this.env.enqueue(
@@ -3638,6 +3635,10 @@ export class BaseCompiler {
             ];
         }
 
+        // Mask before caching, not after: whatever we store here is served verbatim on a
+        // cache hit, which never gets a chance to clean it up.
+        this.cleanupResult(result);
+
         if (result.okToCache && !delayCaching) {
             await this.env.cachePut(key, result, undefined);
         }
@@ -3650,7 +3651,6 @@ export class BaseCompiler {
             }
         }
 
-        this.cleanupResult(result);
         result.s3Key = BaseCache.hash(key);
 
         // In worker mode, store large non-cacheable results with short TTL
