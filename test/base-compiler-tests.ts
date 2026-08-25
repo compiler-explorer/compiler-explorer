@@ -70,6 +70,17 @@ describe('Basic compiler invariants', () => {
         expect(compiler.optOutputRequested(['please', "don't", 'recognize'])).toBe(false);
     });
 
+    it('should keep /app/ on the arguments it reports to the user', () => {
+        expect(
+            compiler['maskPathsInArgumentsForUser']([
+                '-O3',
+                '-o',
+                '/tmp/compiler-explorer-compiler123-4-abc/output.s',
+                '/tmp/compiler-explorer-compiler123-4-abc/example.cpp',
+            ]),
+        ).toEqual(['-O3', '-o', '/app/output.s', '/app/example.cpp']);
+    });
+
     it('should skip version check if forced to', async () => {
         const newConfig: Partial<CompilerInfo> = {...info, explicitVersion: '123'};
         const forcedVersionCompiler = new BaseCompiler(newConfig as CompilerInfo, ce);
