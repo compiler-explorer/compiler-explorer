@@ -350,11 +350,11 @@ export class RuntimeToolsWidget {
         this.updateButton();
     }
 
-    async setCompiler(compilerId: string, languageId?: string, signal?: AbortSignal) {
+    async setCompiler(compilerId: string, languageId: string | undefined, signal: AbortSignal) {
         if (languageId) {
             const compilers = await compilersService.getCompilersForLang(languageId);
 
-            if (signal?.aborted) {
+            if (signal.aborted) {
                 return;
             }
             this.compiler = compilers[compilerId];
