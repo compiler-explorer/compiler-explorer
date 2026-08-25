@@ -353,8 +353,9 @@ export class AsmParser extends AsmRegex implements IAsmParser {
         this.labelFindMips = /[$.A-Z_a-z][\w$.]*|"[$.A-Z_a-z][\w$.]*"/g;
         // GNU as numeric local labels are defined as `1:` and referred to as `1f` (forwards) or
         // `1b` (backwards). The finders above only match names that start with a letter, a dot or
-        // an underscore, so those references need a pattern of their own.
-        this.numericLocalLabelRef = /\b(\d+)[bf]\b/g;
+        // an underscore, so those references need a pattern of their own. The lookbehind keeps
+        // NEON element sizes out of it: the `16b` of `add v0.16b, v1.16b, v2.16b` is not a label.
+        this.numericLocalLabelRef = /(?<![\w.$])(\d+)[bf]\b/g;
         this.mipsLabelDefinition = /^\$[\w$.]+:/;
         this.dataDefn =
             /^\s*\.(ascii|asciz|base64|[1248]?byte|dc(?:\.[abdlswx])?|dcb(?:\.[bdlswx])?|ds(?:\.[bdlpswx])?|double|dword|fill|float|half|hword|int|long|octa|quad|short|single|skip|space|string(?:8|16|32|64)?|value|word|xword|zero)/;

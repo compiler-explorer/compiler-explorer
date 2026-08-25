@@ -126,6 +126,12 @@ describe('AsmParser numeric local labels', () => {
         const lines = parser.processAsm(input, filters).asm.map(line => line.text);
         expect(lines).not.toContain('1:');
     });
+
+    it('should not read a NEON element size as a reference', () => {
+        const input = ['square:', '  add v0.16b, v1.16b, v2.16b', '16:', '  ret'].join('\n');
+        const lines = parser.processAsm(input, filters).asm.map(line => line.text);
+        expect(lines).not.toContain('16:');
+    });
 });
 
 describe('PTXAsmParser tests', () => {
