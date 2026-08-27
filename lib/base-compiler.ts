@@ -3122,7 +3122,7 @@ export class BaseCompiler {
         const executeOptions: ExecutableExecutionOptions = {
             args: parsedRequest.executeParameters.args || [],
             stdin: parsedRequest.executeParameters.stdin || '',
-            ldPath: this.getSharedLibraryPathsAsLdLibraryPaths(parsedRequest.libraries, dirPath),
+            ldPath: this.getSharedLibraryPathsAsLdLibraryPathsForExecution(cacheKey, dirPath),
             runtimeTools: parsedRequest.executeParameters?.runtimeTools || [],
             env: {},
         };
