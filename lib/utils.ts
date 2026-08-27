@@ -107,23 +107,34 @@ export function expandTabs(line: string): string {
 const TEMPDIR_RE = new RegExp(`(?:[A-Za-z]:)?/(?:[^/\\s]+/)*${ce_temp_prefix}[\\w.-]*/`);
 
 /**
- * Removes the root dir from the given filepath, so that it will match to the user's filenames used
- *  note: will keep /app/ if instead of filepath something like '-I/tmp/path' is used
+ * Rewrites a CE temp dir down to `/app/`, and stops there. That is the path the compiler
+ * is really given, and what `__FILE__` and friends expand to, so anything that shows the
+ * user a command line has to keep the prefix. Use maskRootdir() for output lines instead.
  */
-export function maskRootdir(filepath: string): string {
+export function maskRootdirKeepingAppPrefix(filepath: string): string {
     // TODO: this falsy guard is load-bearing against runtime `undefined` that the types
     // don't catch — not declared `string | undefined` callers (TS would reject those),
     // but type holes: a JSON.parse(...) result typed `any` (base-compiler cleanup) and a
     // Record<number,string> index that's really `undefined` when the key is missing
     // (noUncheckedIndexedAccess is off). Tighten those two sites, then this can go.
     if (!filepath) return filepath;
-    // TEMPDIR_RE has a repeated path-segment group that backtracks on long input, and
-    // maskRootdir runs on every output line. Gate it behind a cheap linear substring
-    // check: the regex cannot match without the marker anyway. The trailing /app/ strip
-    // is anchored (no backtracking) and must run regardless, as paths may already be
-    // /app/-rooted from an earlier mask.
-    const masked = filepath.includes(ce_temp_prefix) ? filepath.replace(TEMPDIR_RE, '/app/') : filepath;
-    return masked.replace(/^\/app\//, '');
+    // TEMPDIR_RE has a repeated path-segment group that backtracks on long input, and this
+    // runs on every output line. Gate it behind a cheap linear substring check: the regex
+    // cannot match without the marker anyway.
+    return filepath.includes(ce_temp_prefix) ? filepath.replace(TEMPDIR_RE, '/app/') : filepath;
+}
+
+/**
+ * Removes the root dir from the given filepath, so that it will match to the user's filenames used
+ *  note: will keep /app/ if instead of filepath something like '-I/tmp/path' is used
+ */
+export function maskRootdir(filepath: string): string {
+    // Same load-bearing guard as the function above: it hands a falsy argument straight
+    // back, so an undefined that slipped through a type hole must not reach the strip.
+    if (!filepath) return filepath;
+    // The trailing /app/ strip is anchored (no backtracking) and must run regardless, as
+    // paths may already be /app/-rooted from an earlier mask.
+    return maskRootdirKeepingAppPrefix(filepath).replace(/^\/app\//, '');
 }
 
 export function changeExtension(filename: string, newExtension: string): string {

@@ -785,6 +785,31 @@ describe('output files', async () => {
     });
 });
 
+describe('maskRootdirKeepingAppPrefix', () => {
+    it('keeps the /app/ prefix, which is the path the compiler is given', () => {
+        expect(utils.maskRootdirKeepingAppPrefix('/tmp/compiler-explorer-compiler123-4-abc/example.cpp')).toEqual(
+            '/app/example.cpp',
+        );
+    });
+
+    it('masks an embedded temp path the same way maskRootdir does', () => {
+        expect(utils.maskRootdirKeepingAppPrefix('-I/tmp/compiler-explorer-compiler123-4-abc/include')).toEqual(
+            '-I/app/include',
+        );
+    });
+
+    it('leaves non-temp paths untouched', () => {
+        expect(utils.maskRootdirKeepingAppPrefix('/usr/include/stdio.h')).toEqual('/usr/include/stdio.h');
+    });
+
+    it('is idempotent, so masking an already-masked path is a no-op', () => {
+        const once = utils.maskRootdirKeepingAppPrefix('/tmp/compiler-explorer-compiler123-4-abc/example.cpp');
+        expect(utils.maskRootdirKeepingAppPrefix(once)).toEqual(once);
+        const embedded = utils.maskRootdirKeepingAppPrefix('-I/tmp/compiler-explorer-compiler123-4-abc/include');
+        expect(utils.maskRootdirKeepingAppPrefix(embedded)).toEqual(embedded);
+    });
+});
+
 describe('maskRootdir', () => {
     it('masks a CE temp path down to the user-facing filename', () => {
         expect(utils.maskRootdir('/tmp/compiler-explorer-compiler123-4-abc/example.cpp')).toEqual('example.cpp');
@@ -807,6 +832,13 @@ describe('maskRootdir', () => {
 
     it('leaves non-temp paths untouched', () => {
         expect(utils.maskRootdir('/usr/include/stdio.h')).toEqual('/usr/include/stdio.h');
+    });
+
+    // Callers reach here through type holes that hand over an undefined, which is what the
+    // falsy guard is for. Both entry points have to survive it, not just one.
+    it.each([undefined, null, ''])('hands %p straight back', input => {
+        expect(utils.maskRootdir(input as unknown as string)).toEqual(input);
+        expect(utils.maskRootdirKeepingAppPrefix(input as unknown as string)).toEqual(input);
     });
 
     // The marker segment must be followed by `/`, so a bare dir with no trailing slash
