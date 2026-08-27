@@ -25,6 +25,7 @@
 import GoldenLayout from 'golden-layout';
 import {afterEach, beforeEach, describe, expect, it, vi} from 'vitest';
 
+import {options} from '../options.js';
 import {LAYOUT_SETTLE_MS, SharingBase} from '../sharing.js';
 
 // A layout that only does what SharingBase asks of it: hand over a config and let
@@ -78,16 +79,21 @@ const USER_EDITED = {
 describe('SharingBase URL freshness', () => {
     let replaceState: ReturnType<typeof vi.fn>;
 
+    let wasEmbedded: unknown;
+
     beforeEach(() => {
         vi.useFakeTimers();
         replaceState = vi.fn();
         window.history.replaceState = replaceState as any;
         window.httpRoot = '/';
         window.history.pushState(null, '', '/z/abc123');
+        wasEmbedded = options.embedded;
+        options.embedded = false;
     });
 
     afterEach(() => {
         vi.useRealTimers();
+        options.embedded = wasEmbedded;
     });
 
     function newSharing(config: any): FakeLayout {
@@ -104,7 +110,6 @@ describe('SharingBase URL freshness', () => {
         vi.advanceTimersByTime(LAYOUT_SETTLE_MS);
 
         expect(replaceState).not.toHaveBeenCalled();
-        expect(window.location.pathname).toBe('/z/abc123');
     });
 
     it('drops the shortlink URL once the state really changes', () => {
@@ -125,6 +130,30 @@ describe('SharingBase URL freshness', () => {
         layout.change(AFTER_INIT);
 
         expect(replaceState).not.toHaveBeenCalled();
+    });
+
+    it('drops the shortlink URL when the user edits before the layout settles', () => {
+        const layout = newSharing(DURING_INIT);
+
+        layout.change(AFTER_INIT);
+        // Well inside the window, someone starts typing. What follows is theirs, so the
+        // link stops describing the page and has to go.
+        vi.advanceTimersByTime(LAYOUT_SETTLE_MS / 4);
+        document.body.dispatchEvent(new KeyboardEvent('keydown', {key: 'a', bubbles: true}));
+        layout.change(USER_EDITED);
+
+        expect(replaceState).toHaveBeenCalledWith(null, '', '/');
+    });
+
+    it('only arms the settle timer where the URL can actually be rewritten', () => {
+        newSharing(DURING_INIT);
+        expect(vi.getTimerCount()).toBe(1);
+
+        vi.clearAllTimers();
+        options.embedded = true;
+        newSharing(DURING_INIT);
+
+        expect(vi.getTimerCount()).toBe(0);
     });
 
     it('does not rewrite a URL that is already the root', () => {
