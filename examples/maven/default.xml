@@ -1,0 +1,10 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0">
+  <modelVersion>4.0.0</modelVersion>
+  <groupId>org.compiler-explorer</groupId>
+  <artifactId>output</artifactId>
+  <version>1.0</version>
+
+  <!-- Compiler Explorer cannot download from Maven Central, so a <dependencies>
+       entry will not resolve. The plugins bundled with maven here do work:
+       exec, javadoc, source, checkstyle, spotless, antrun and build-helper. -->
+</project>

@@ -48,6 +48,7 @@ export class Win32Compiler extends BaseCompiler {
     }
 
     binaryAsmParser: VcAsmParser;
+    supportsMapFile = true;
 
     constructor(compilerInfo: PreliminaryCompilerInfo, env: CompilationEnvironment) {
         super(compilerInfo, env);
@@ -248,25 +249,29 @@ export class Win32Compiler extends BaseCompiler {
 
     override optionsForFilter(filters: ParseFiltersAndOutputOptions, outputFilename: string, userOptions?: string[]) {
         if (filters.binary) {
-            const mapFilename = outputFilename + '.map';
-            const mapFileReader = new MapFileReaderVS(mapFilename);
-
-            filters.preProcessBinaryAsmLines = asmLines => {
-                const reconstructor = new PELabelReconstructor(asmLines, false, mapFileReader);
-                reconstructor.run('output.s.obj');
-
-                return reconstructor.asmLines;
-            };
-
-            return [
+            const options = [
                 '/nologo',
                 '/FA', // assembly listing with source and machine code
                 '/Fa' + this.filename(outputFilename.replace(/\.exe$/, '')), // assembly listing
                 '/Fo' + this.filename(outputFilename.replace(/\.exe$/, '') + '.obj'), // object file
-                '/Fm' + this.filename(mapFilename),
                 '/Fe' + this.filename(this.getExecutableFilename(path.dirname(outputFilename), 'output')),
                 '/Zi', // complete debugging information
             ];
+
+            if (this.supportsMapFile) {
+                const mapFilename = outputFilename + '.map';
+                const mapFileReader = new MapFileReaderVS(mapFilename);
+
+                filters.preProcessBinaryAsmLines = asmLines => {
+                    const reconstructor = new PELabelReconstructor(asmLines, false, mapFileReader);
+                    reconstructor.run('output.s.obj');
+
+                    return reconstructor.asmLines;
+                };
+                options.push('/Fm' + this.filename(mapFilename));
+            }
+
+            return options;
         }
         return [
             '/nologo',

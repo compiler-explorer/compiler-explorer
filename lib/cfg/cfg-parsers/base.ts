@@ -214,7 +214,15 @@ export class BaseCFGParser {
         const bb = arrBB[bbIdx];
         if (hasName(asmArr, bb)) return asmArr[bb.end].text;
         const newBbName = generateName(bb.nameId, bb.end);
-        arrBB[bbIdx + 1].nameId = newBbName;
+        // bbIdx can be the last canonical basic block in the function (e.g. when a
+        // conditional jump is the final instruction and there's no fallthrough block
+        // to rename). In that case there's nothing to point the "not taken" edge at,
+        // so we still return a name for the edge but skip mutating a block that
+        // doesn't exist. The layout code already ignores edges whose target isn't a
+        // real node (see graph-layout-core.ts), so this degrades gracefully.
+        if (arrBB[bbIdx + 1]) {
+            arrBB[bbIdx + 1].nameId = newBbName;
+        }
         return newBbName;
     }
 

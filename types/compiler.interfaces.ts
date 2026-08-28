@@ -33,6 +33,11 @@ export type Remote = {
     target: string;
     path: string;
     cmakePath: string;
+    /**
+     * Base of the generic build system route; the build system id is appended. Optional because sub-servers running an
+     * older version don't have the route at all — see `CompileHandler.getRemoteBuildUrl`.
+     */
+    buildPath?: string;
     basePath: string;
 };
 
@@ -71,6 +76,7 @@ export type CompilerInfo = {
     objdumper: string;
     objdumperType: string;
     objdumperArgs: string[];
+    llvmDisassembler: string;
     llvmObjdumper: string;
     intelAsm: string;
     supportsAsmDocs: boolean;
@@ -175,6 +181,7 @@ export type CompilerInfo = {
     };
     cachedPossibleArguments?: any;
     nvdisasm?: string;
+    ptxas?: string;
     mtime?: any;
     $order: number;
 };

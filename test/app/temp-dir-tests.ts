@@ -23,43 +23,54 @@
 // POSSIBILITY OF SUCH DAMAGE.
 
 import child_process from 'node:child_process';
+import os from 'node:os';
 import process from 'node:process';
 
 import {afterEach, beforeEach, describe, expect, it, vi} from 'vitest';
 
 import {setupTempDir} from '../../lib/app/temp-dir.js';
 
+const TEMP_VARS = ['TMPDIR', 'TMP', 'TEMP'] as const;
+
 describe('setupTempDir', () => {
-    let originalEnv: NodeJS.ProcessEnv;
+    let savedVars: Record<string, string | undefined>;
 
     beforeEach(() => {
-        originalEnv = {...process.env};
+        // Save and clear the individual variables rather than reassigning process.env
+        // wholesale: a replaced process.env is a plain object whose writes no longer reach
+        // the real environment, while os.tmpdir() reads the real environment.
+        savedVars = Object.fromEntries(TEMP_VARS.map(v => [v, process.env[v]]));
+        for (const v of TEMP_VARS) delete process.env[v];
         vi.spyOn(child_process, 'execSync');
     });
 
     afterEach(() => {
-        process.env = originalEnv;
+        for (const v of TEMP_VARS) {
+            if (savedVars[v] === undefined) delete process.env[v];
+            else process.env[v] = savedVars[v];
+        }
         vi.restoreAllMocks();
     });
 
-    it('should set TMP env var with tmpDir option on non-WSL', () => {
+    it('should set all temp env vars with tmpDir option', () => {
         // Skip on Windows as it has different environment variable defaults
         if (process.platform === 'win32') return;
 
         setupTempDir('/custom/tmp', false);
 
+        expect(process.env.TMPDIR).toEqual('/custom/tmp');
         expect(process.env.TMP).toEqual('/custom/tmp');
-        expect(process.env.TEMP).toBeUndefined();
+        expect(process.env.TEMP).toEqual('/custom/tmp');
     });
 
-    it('should set TEMP env var with tmpDir option on WSL', () => {
-        // Skip on Windows as it has different environment variable defaults
+    it('should make os.tmpdir() return the configured dir even when TMPDIR was inherited', () => {
+        // Skip on Windows, where os.tmpdir() does not consult TMPDIR
         if (process.platform === 'win32') return;
 
-        setupTempDir('/custom/tmp', true);
+        process.env.TMPDIR = '/inherited/elsewhere';
+        setupTempDir('/custom/tmp', false);
 
-        expect(process.env.TEMP).toEqual('/custom/tmp');
-        expect(process.env.TMP).toEqual(originalEnv.TMP);
+        expect(os.tmpdir()).toEqual('/custom/tmp');
     });
 
     it('should try to use Windows TEMP on WSL without tmpDir option', () => {
@@ -71,6 +82,7 @@ describe('setupTempDir', () => {
         setupTempDir(undefined, true);
 
         expect(process.env.TEMP).toEqual('/mnt/c/Users/user/AppData/Local/Temp');
+        expect(os.tmpdir()).toEqual('/mnt/c/Users/user/AppData/Local/Temp');
         expect(child_process.execSync).toHaveBeenCalledWith('cmd.exe /c echo %TEMP%');
     });
 });

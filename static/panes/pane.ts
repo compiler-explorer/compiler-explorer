@@ -144,6 +144,7 @@ export abstract class Pane<S> {
      * @param compiler - The updated compiler object
      * @param options - User commandline args
      * @param editorId - The editor id the updated compiler is attached to
+     * @param sourceName - The display name of the source editor or tree pane
      */
     abstract onCompiler(
         compilerId: number,
@@ -151,6 +152,7 @@ export abstract class Pane<S> {
         options: string,
         editorId: number,
         treeId: number,
+        sourceName?: string,
     ): void;
 
     /**

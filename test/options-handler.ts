@@ -383,6 +383,15 @@ describe('Options handler', () => {
         });
         optionsHandler.setCompilers([]);
     });
+    it('should only compute the options hash once compilers are set', async () => {
+        const handler = new ClientOptionsHandler([], compilerProps, {env: ['dev']} as unknown as AppArguments);
+        expect(handler.getHash()).toEqual('');
+        expect(handler.getJSON()).toEqual('');
+
+        await handler.setCompilers([]);
+        expect(handler.getHash()).not.toEqual('');
+        expect(JSON.parse(handler.getJSON())).toHaveProperty('compilers', []);
+    });
     it('should get static libraries', () => {
         const libs = optionsHandler.parseLibraries({fake: optionsProps.libs});
         const compilerInfo = fakeCompilerInfo('g82', 'c++', 'cpp', '8.2', true);
@@ -595,6 +604,7 @@ describe('Options handler', () => {
             target: 'https://godbolt.org:443',
             path: '/gpu/api/compiler/g123remote/compile',
             cmakePath: '/gpu/api/compiler/g123remote/cmake',
+            buildPath: '/gpu/api/compiler/g123remote/build',
             basePath: '/gpu',
         });
 

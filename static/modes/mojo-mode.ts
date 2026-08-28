@@ -24,140 +24,218 @@
 
 import * as monaco from 'monaco-editor';
 
+// References:
+// https://github.com/microsoft/monaco-editor/blob/main/src/languages/definitions/python/python.ts
+// https://mojolang.org/docs/reference/
+// https://mojolang.org/docs/manual/
 function definition(): monaco.languages.IMonarchLanguage {
     return {
-        // Set defaultToken to invalid to see what you do not tokenize yet
-        defaultToken: 'invalid',
+        defaultToken: '',
+        tokenPostfix: '.mojo',
 
-        // C# style strings
-        escapes: /\\(?:[abfnrtv\\"']|x[0-9A-Fa-f]{1,4}|u[0-9A-Fa-f]{4}|U[0-9A-Fa-f]{8})/,
+        keywords: [
+            // Python-inherited keywords
+            'False',
+            'None',
+            'True',
+            'and',
+            'as',
+            'assert',
+            'async',
+            'await',
+            'break',
+            'class',
+            'continue',
+            'def',
+            'del',
+            'elif',
+            'else',
+            'except',
+            'finally',
+            'for',
+            'from',
+            'global',
+            'if',
+            'import',
+            'in',
+            'is',
+            'lambda',
+            'nonlocal',
+            'not',
+            'or',
+            'pass',
+            'raise',
+            'return',
+            'self',
+            'try',
+            'while',
+            'with',
+            'yield',
 
-        registers: /%?\b(r[0-9]+[dbw]?|([er]?([abcd][xhl]|cs|fs|ds|ss|sp|bp|ip|sil?|dil?))|[xyz]mm[0-9]+|sp|fp|lr)\b/,
+            // Mojo declarations
+            'fn', // legacy (kept for older compilers)
+            'struct',
+            'trait',
+            'var',
+            'ref',
+            'comptime', // current spelling of compile-time declarations
+            'alias', // pre-comptime spelling
+            'let', // legacy
 
-        intelOperators: /PTR|(D|Q|[XYZ]MM)?WORD/,
+            // Mojo ownership
+            'read',
+            'mut',
+            'out',
+            'deinit',
+            'owned', // old spelling of `var`
+            'borrowed', // old spelling of `read`
+            'inout', // old spelling of `mut`
+
+            // Mojo functions
+            'raises',
+            'capturing',
+            'escaping',
+            'unified',
+            'where',
+
+            // Mojo MLIR-level primitives
+            '__mlir_attr',
+            '__mlir_op',
+            '__mlir_type',
+        ],
+
+        // Common standard-library types
+        // (not exhaustive)
+        typeKeywords: [
+            'AnyType',
+            'Bool',
+            'Byte',
+            'DType',
+            'Dict',
+            'Error',
+            'Float16',
+            'Float32',
+            'Float64',
+            'Int',
+            'Int128',
+            'Int16',
+            'Int256',
+            'Int32',
+            'Int64',
+            'Int8',
+            'List',
+            'NoneType',
+            'Optional',
+            'Pointer',
+            'SIMD',
+            'Scalar',
+            'Self',
+            'Set',
+            'Span',
+            'String',
+            'StringLiteral',
+            'StringSlice',
+            'Tuple',
+            'UInt',
+            'UInt128',
+            'UInt16',
+            'UInt256',
+            'UInt32',
+            'UInt64',
+            'UInt8',
+            'UnsafePointer',
+            'object',
+        ],
+
+        // Python-inspired
+        brackets: [
+            {open: '{', close: '}', token: 'delimiter.curly'},
+            {open: '[', close: ']', token: 'delimiter.bracket'},
+            {open: '(', close: ')', token: 'delimiter.parenthesis'},
+        ],
 
         tokenizer: {
             root: [
-                // Error document
-                [/^<.*>$/, {token: 'annotation'}],
-                // inline comments
-                [/\/\*/, 'comment', '@comment'],
-                // Label definition (anything looking like a label, followed by anything that's not valid in a demangled
-                // identifier, until we get to a colon followed by any whitespace. This is to avoid finding the colon in
-                // a scoped (blah::foo) identifier.
-                [/^[.a-zA-Z0-9_$?@][^#;/]*:(?=\s)/, {token: 'type.identifier'}],
-                // Label definition (quoted)
-                [/^"([^"\\]|\\.)*":/, {token: 'type.identifier'}],
-                // Label definition (ARM style)
-                [/^\s*[|][^|]*[|]/, {token: 'type.identifier'}],
-                // Label definition (CL style). This is pretty hideous: we essentially take anything that ends in spaces
-                // followed by a definition (PROC, ENDP etc) and assume it's a label. That means we have to use
-                // backtracking and then a lookahead to ensure we don't consume the definition. As a nod to efficiency
-                // we assume the line has to start with a non-whitespace character before we go all back-tracky.
-                // See https://github.com/compiler-explorer/compiler-explorer/issues/1645 for examples.
-                [/^\S.*?(?=\s+(PROC|ENDP|D[BDWQ]))/, {token: 'type.identifier', next: '@rest'}],
-                // Constant definition
-                [/^[.a-zA-Z0-9_$?@][^=]*=/, {token: 'type.identifier'}],
-                // opcode
-                [/[.a-zA-Z_][.a-zA-Z_0-9]*/, {token: 'keyword', next: '@rest'}],
-                // braces and parentheses at the start of the line (e.g. nvcc output)
-                [/[(){}]/, {token: 'operator', next: '@rest'}],
-                // msvc can have strings at the start of a line in a inSegDirList
-                [/`/, {token: 'string.backtick', bracket: '@open', next: '@segDirMsvcstring'}],
-
-                // whitespace
                 {include: '@whitespace'},
+                {include: '@numbers'},
+                {include: '@strings'},
+
+                // Decorators
+                // @fieldwise_init, @parameter, ...
+                [/@[a-zA-Z_][\w.]*/, 'tag'],
+
+                // Attribute access
+                // file.read(), simd.reduce_add(), ...
+                // Avoids mis-highlighting attributes that share names with keywords
+                [/(\.)(\s*)([a-zA-Z_]\w*)/, ['delimiter', 'white', 'identifier']],
+
+                // Operators
+                // Multi-char ops should be tried before the single-char ops
+                [/->|\*\*=?|\/\/=?|<<=?|>>=?|[<>=!]=|:=|[-+*/%&|^~<>=@]=?/, 'operator'],
+
+                [/[,:;]/, 'delimiter'],
+                [/[{}[\]()]/, '@brackets'],
+
+                [
+                    /[a-zA-Z_]\w*/,
+                    {
+                        cases: {
+                            '@typeKeywords': 'type.identifier',
+                            '@keywords': 'keyword',
+                            '@default': 'identifier',
+                        },
+                    },
+                ],
             ],
 
-            rest: [
-                // pop at the beginning of the next line and rematch
-                [/^.*$/, {token: '@rematch', next: '@pop'}],
-
-                [/@registers/, 'variable.predefined'],
-                [/@intelOperators/, 'annotation'],
-                // inline comments
-                [/\/\*/, 'comment', '@comment'],
-                // CL style post-label definition.
-                [/PROC|ENDP|D[BDWQ]/, 'keyword'],
-
-                // brackets
-                [/[{}<>()[\]]/, '@brackets'],
-
-                // ARM-style label reference
-                [/[|][^|]*[|]*/, 'type.identifier'],
-
-                // numbers
-                [/\d*\.\d+([eE][-+]?\d+)?/, 'number.float'],
-                [/([$]|0[xX])[0-9a-fA-F]+/, 'number.hex'],
-                [/\d+/, 'number'],
-                // ARM-style immediate numbers (which otherwise look like comments)
-                [/#-?\d+/, 'number'],
-
-                // operators
-                [/[-+,*/!:&{}()]/, 'operator'],
-
-                // strings
-                [/"([^"\\]|\\.)*$/, 'string.invalid'], // non-terminated string
-                [/"/, {token: 'string.quote', bracket: '@open', next: '@string'}],
-                // `msvc does this, sometimes'
-                [/`/, {token: 'string.backtick', bracket: '@open', next: '@msvcstring'}],
-                [/'/, {token: 'string.singlequote', bracket: '@open', next: '@sstring'}],
-
-                // characters
-                [/'[^\\']'/, 'string'],
-                [/(')(@escapes)(')/, ['string', 'string.escape', 'string']],
-                [/'/, 'string.invalid'],
-
-                // Assume anything else is a label reference. .NET uses ` in some identifiers
-                [/%?[.?_$a-zA-Z@][.?_$a-zA-Z0-9@`]*/, 'type.identifier'],
-
-                // whitespace
-                {include: '@whitespace'},
-            ],
-
-            comment: [
-                [/[^/*]+/, 'comment'],
-                [/\/\*/, 'comment', '@push'], // nested comment
-                ['\\*/', 'comment', '@pop'],
-                [/[/*]/, 'comment'],
-            ],
-
-            string: [
-                [/[^\\"]+/, 'string'],
-                [/@escapes/, 'string.escape'],
-                [/\\./, 'string.escape.invalid'],
-                [/"/, {token: 'string.quote', bracket: '@close', next: '@pop'}],
-            ],
-
-            msvcstringCommon: [
-                [/[^\\']+/, 'string'],
-                [/@escapes/, 'string.escape'],
-                [/''/, 'string.escape'], // ` isn't escaped but ' is escaped as ''
-                [/\\./, 'string.escape.invalid'],
-            ],
-
-            msvcstring: [
-                {include: '@msvcstringCommon'},
-                [/'/, {token: 'string.backtick', bracket: '@close', next: '@pop'}],
-            ],
-
-            segDirMsvcstring: [
-                {include: '@msvcstringCommon'},
-                [/'/, {token: 'string.backtick', bracket: '@close', switchTo: '@rest'}],
-            ],
-
-            sstring: [
-                [/[^\\']+/, 'string'],
-                [/@escapes/, 'string.escape'],
-                [/\\./, 'string.escape.invalid'],
-                [/'/, {token: 'string.singlequote', bracket: '@close', next: '@pop'}],
-            ],
-
+            // Comments can be anywhere on a line
             whitespace: [
-                [/[ \t\r\n]+/, 'white'],
-                [/\/\*/, 'comment', '@comment'],
-                [/\/\/.*$/, 'comment'],
-                [/[#;\\@].*$/, 'comment'],
+                [/\s+/, 'white'],
+                [/#.*$/, 'comment'],
+            ],
+
+            numbers: [
+                [/0[xX][0-9a-fA-F](_?[0-9a-fA-F])*/, 'number.hex'],
+                [/0[bB][01](_?[01])*/, 'number.binary'],
+                [/0[oO][0-7](_?[0-7])*/, 'number.octal'],
+                [/\d(_?\d)*\.\d(_?\d)*([eE][-+]?\d(_?\d)*)?/, 'number.float'],
+                [/\.\d(_?\d)*([eE][-+]?\d(_?\d)*)?/, 'number.float'],
+                [/\d(_?\d)*[eE][-+]?\d(_?\d)*/, 'number.float'],
+                [/\d(_?\d)*/, 'number'],
+            ],
+
+            // Python prefixes (bBfFrRuU) + Mojo prefix (template)
+            strings: [
+                [/[bBfFrRtTuU]{0,2}'''/, 'string', '@tripleSingle'],
+                [/[bBfFrRtTuU]{0,2}"""/, 'string', '@tripleDouble'],
+                [/[bBfFrRtTuU]{0,2}'/, 'string.escape', '@stringBody'],
+                [/[bBfFrRtTuU]{0,2}"/, 'string.escape', '@dblStringBody'],
+            ],
+            tripleSingle: [
+                [/[^\\']+/, 'string'],
+                [/\\./, 'string.escape'],
+                [/'''/, 'string', '@popall'],
+                [/'/, 'string'],
+            ],
+            tripleDouble: [
+                [/[^\\"]+/, 'string'],
+                [/\\./, 'string.escape'],
+                [/"""/, 'string', '@popall'],
+                [/"/, 'string'],
+            ],
+            stringBody: [
+                [/[^\\']+$/, 'string', '@popall'],
+                [/[^\\']+/, 'string'],
+                [/\\./, 'string.escape'],
+                [/'/, 'string.escape', '@popall'],
+                [/\\$/, 'string'],
+            ],
+            dblStringBody: [
+                [/[^\\"]+$/, 'string', '@popall'],
+                [/[^\\"]+/, 'string'],
+                [/\\./, 'string.escape'],
+                [/"/, 'string.escape', '@popall'],
+                [/\\$/, 'string'],
             ],
         },
     };
@@ -166,5 +244,4 @@ function definition(): monaco.languages.IMonarchLanguage {
 const def = definition();
 monaco.languages.register({id: 'mojo'});
 monaco.languages.setMonarchTokensProvider('mojo', def);
-
 export default def;

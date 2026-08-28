@@ -59,6 +59,52 @@ describe('AsmParser comment filtering', () => {
     });
 });
 
+describe('AsmParser directive filtering', () => {
+    const parser = new AsmParser();
+    // GCC wraps inline asm in #APP/#NO_APP and interleaves its own .loc markers there.
+    const inlineAsm = `square(int):
+	pushq	%rbp
+#APP
+# 3 "/app/example.cpp" 1
+	.rept 5
+nop
+.endr
+# 0 "" 2
+	.loc 1 4 5 view .LVU3
+#NO_APP
+	movl	%edi, %eax
+	.loc 1 5 1
+	popq	%rbp
+	ret`;
+
+    it('should keep inline asm directives when filtering directives', () => {
+        const result = parser.processAsm(inlineAsm, {directives: true});
+        const lines = result.asm.map(line => line.text.trim());
+        expect(lines).toContain('.rept 5');
+        expect(lines).toContain('.endr');
+    });
+
+    it('should still drop source location markers inside an inline asm block', () => {
+        const result = parser.processAsm(inlineAsm, {directives: true});
+        const lines = result.asm.map(line => line.text.trim());
+        expect(lines.some(line => line.startsWith('.loc'))).toBe(false);
+    });
+
+    it('should keep filtering directives once the inline asm block has ended', () => {
+        const result = parser.processAsm(
+            `#APP
+	.rept 5
+#NO_APP
+	.p2align 4
+	ret`,
+            {directives: true},
+        );
+        const lines = result.asm.map(line => line.text.trim());
+        expect(lines).toContain('.rept 5');
+        expect(lines).not.toContain('.p2align 4');
+    });
+});
+
 describe('PTXAsmParser tests', () => {
     const parser = new PTXAsmParser();
 
@@ -341,6 +387,44 @@ module {
 
             const constLine = result.asm.find(line => line.text.includes('arith.constant 1024'));
             expect(constLine).toBeDefined();
+        });
+
+        it('should resolve nested named MLIR locations', () => {
+            const input = `#loc = loc("<source>":16:0)
+#loc1 = loc("<source>":17:24)
+#loc2 = loc("<source>":18:28)
+#loc19 = loc("pid"(#loc1))
+#loc20 = loc("block_start"(#loc2))
+#loc21 = loc(unknown)
+#loc22 = loc("unknown_value"(#loc21))
+module {
+  tt.func public @kernel(%x_ptr: !tt.ptr<f32> loc("x_ptr"(#loc))) attributes {noinline = false} {
+    %pid = tt.get_program_id x : i32 loc(#loc19)
+    %block_start = arith.muli %pid, %c1024_i32 : i32 loc(#loc20)
+    %unknown = arith.constant 0 : i32 loc(#loc22)
+  } loc(#loc)
+}`;
+
+            const result = parser.processAsm(input, {});
+
+            expect(result.asm[0].text).toBe('module {');
+            expect(result.asm.find(line => line.text.includes('#loc'))).toBeUndefined();
+            expect(result.asm.find(line => line.text.includes('loc('))).toBeUndefined();
+
+            const functionLine = result.asm.find(line => line.text.includes('tt.func public @kernel'));
+            expect(functionLine?.source?.line).toBe(16);
+            expect(functionLine?.source?.column).toBe(0);
+
+            const pidLine = result.asm.find(line => line.text.includes('%pid = tt.get_program_id'));
+            expect(pidLine?.source?.line).toBe(17);
+            expect(pidLine?.source?.column).toBe(24);
+
+            const blockStartLine = result.asm.find(line => line.text.includes('%block_start = arith.muli'));
+            expect(blockStartLine?.source?.line).toBe(18);
+            expect(blockStartLine?.source?.column).toBe(28);
+
+            const unknownLine = result.asm.find(line => line.text.includes('%unknown = arith.constant'));
+            expect(unknownLine?.source).toBeNull();
         });
     });
 });

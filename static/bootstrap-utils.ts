@@ -211,6 +211,29 @@ export function getDropdownInstance(elementOrSelector: string | HTMLElement | JQ
 }
 
 /**
+ * Get the dropdown instance for an element, creating it with the given options if needed
+ *
+ * Prefer this over `data-bs-*` attributes whenever a dropdown needs non-default options.
+ * Bootstrap merges an element's data attributes on top of its defaults, so if a browser
+ * enumerates `data-bs-foo` but hands back `undefined` when reading it via `element.dataset`,
+ * the option ends up `undefined` and Bootstrap's config type check throws. An explicit
+ * config object is merged last and always wins, which makes that failure impossible.
+ *
+ * @param elementOrSelector Element or selector for the dropdown
+ * @param config Dropdown options to use if the instance does not exist yet
+ * @returns The dropdown instance, or null if the element could not be found
+ */
+export function getOrCreateDropdownInstance(
+    elementOrSelector: string | HTMLElement | JQuery,
+    config?: Partial<Dropdown.Options>,
+): Dropdown | null {
+    const element = getElement(elementOrSelector);
+    if (!element) return null;
+
+    return Dropdown.getOrCreateInstance(element, config);
+}
+
+/**
  * Show a dropdown
  * @param elementOrSelector Element or selector for the dropdown
  */

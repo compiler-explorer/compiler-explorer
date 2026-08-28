@@ -22,6 +22,7 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
+export {AburiCompiler} from './aburi.js';
 export {AdaCompiler} from './ada.js';
 export {AMDRGACompiler} from './amd-rga.js';
 export {AnalysisTool} from './analysis-tool.js';
@@ -44,6 +45,7 @@ export {
     ClangHexagonCompiler,
     ClangHipCompiler,
     ClangIntelCompiler,
+    TIClangCompiler,
     Z80ClangCompiler,
 } from './clang.js';
 export {ClangCLCompiler} from './clangcl.js';
@@ -51,6 +53,7 @@ export {CleanCompiler} from './clean.js';
 export {ClojureCompiler} from './clojure.js';
 export {CLSPVCompiler} from './clspv.js';
 export {CMakeScriptCompiler} from './cmakescript.js';
+export {Co2ccCompiler, Co2RustcCompiler} from './co2.js';
 export {CoccinelleCCompiler, CoccinelleCPlusPlusCompiler} from './coccinelle.js';
 export {CodonCompiler} from './codon.js';
 export {CompCertCompiler} from './compcert.js';
@@ -153,7 +156,10 @@ export {RustcCgCraneliftCompiler} from './rustc-cg-cranelift.js';
 export {RustcCgGCCCompiler} from './rustc-cg-gcc.js';
 export {SailCompiler} from './sail.js';
 export {ScalaCompiler} from './scala.js';
+export {ScaleNvccAMDCompiler} from './scale-nvcc-amd.js';
+export {ScaleNvccNvidiaCompiler} from './scale-nvcc-nvidia.js';
 export {SdccCompiler} from './sdcc.js';
+export {SfpiCompiler} from './sfpi.js';
 export {ShaderExplorerCompiler} from './shader-explorer.js';
 export {SlangCompiler} from './slang.js';
 export {SnowballCompiler} from './snowball.js';

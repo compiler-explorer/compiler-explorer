@@ -1,3 +1,27 @@
+// Copyright (c) 2024, Compiler Explorer Authors
+// All rights reserved.
+//
+// Redistribution and use in source and binary forms, with or without
+// modification, are permitted provided that the following conditions are met:
+//
+//     * Redistributions of source code must retain the above copyright notice,
+//       this list of conditions and the following disclaimer.
+//     * Redistributions in binary form must reproduce the above copyright
+//       notice, this list of conditions and the following disclaimer in the
+//       documentation and/or other materials provided with the distribution.
+//
+// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+// AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+// IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+// ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
+// LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+// CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+// SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+// INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+// CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+// ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+// POSSIBILITY OF SUCH DAMAGE.
+
 import path from 'node:path';
 
 import {CompilationResult} from '../../types/compilation/compilation.interfaces.js';
@@ -34,6 +58,16 @@ class OdinVersion {
             return true;
         } else if (this.year === version.year) {
             return this.month >= version.month;
+        } else {
+            return false;
+        }
+    }
+
+    lte(version: OdinVersion) {
+        if (this.year < version.year) {
+            return true;
+        } else if (this.year === version.year) {
+            return this.month <= version.month;
         } else {
             return false;
         }
@@ -100,12 +134,27 @@ export class OdinCompiler extends BaseCompiler {
         filters: ParseFiltersAndOutputOptions,
     ) {
         let newOutputFilename = outputFilename;
-        if (!filters.binary && !filters.execute) newOutputFilename = outputFilename.replace(/.s$/, '.S');
+
+        const version = new OdinVersion(this.compiler.version);
+        if (version.lte(new OdinVersion('dev-2026-07a'))) {
+            if (!filters.binary && !filters.execute) newOutputFilename = outputFilename.replace(/.s$/, '.S');
+        }
+
         return super.checkOutputFileAndDoPostProcess(asmResult, newOutputFilename, filters);
     }
 
     override getIrOutputFilename(inputFilename: string): string {
-        return this.filename(path.dirname(inputFilename) + '/output.ll');
+        const outputDir = path.dirname(inputFilename);
+        let outputFile = '/output.ll';
+
+        const version = new OdinVersion(this.compiler.version);
+        const filenameIssueStart = new OdinVersion('dev-2026-07a');
+        const filenameIssueEnd = new OdinVersion('dev-2026-08');
+        if (version.gte(filenameIssueStart) && version.lte(filenameIssueEnd)) {
+            outputFile = '/outputoutput.ll';
+        }
+
+        return outputDir + outputFile;
     }
 
     override async postProcessAsm(result, filters?: ParseFiltersAndOutputOptions) {

@@ -33,7 +33,7 @@ import {CompilerOverrideOptions} from '../../types/compilation/compiler-override
 import {Argument} from '../../types/compiler-arguments.interfaces.js';
 import {BaseCompiler} from '../base-compiler.js';
 import {logger} from '../logger.js';
-import * as props from '../properties.js';
+import {getExamplesRoot} from '../sources/builtin.js';
 import * as utils from '../utils.js';
 import {JuliaCompiler} from './julia.js';
 
@@ -1220,7 +1220,7 @@ export class GolangParser extends GCCParser {
         // NB this file _must_ be visible to the jail, if you're using one. This may bite on a local install when your
         // example path may not match paths available in the jail (e.g. `/infra/.deploy/examples`)
         // TODO: find a way to invoke GoLang without needing a real example Go file.
-        const examplesRoot = props.get<string>('builtin', 'sourcePath', './examples/');
+        const examplesRoot = getExamplesRoot();
         const exampleFilepath = path.resolve(path.join(examplesRoot, 'go/default.go'));
         const results = await Promise.all([
             this.getOptions('build -o /tmp/output.s "-gcflags=-S --help" ' + exampleFilepath),

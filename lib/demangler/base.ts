@@ -23,7 +23,7 @@
 // POSSIBILITY OF SUCH DAMAGE.
 
 import type {ParsedAsmResult} from '../../types/asmresult/asmresult.interfaces.js';
-import type {ExecutionOptions} from '../../types/compilation/compilation.interfaces.js';
+import type {DemanglerExecutionOptions, ExecutionOptions} from '../../types/compilation/compilation.interfaces.js';
 import type {UnprocessedExecResult} from '../../types/execution/execution.interfaces.js';
 import {unwrap} from '../assert.js';
 import {BaseCompiler} from '../base-compiler.js';
@@ -173,7 +173,7 @@ export class BaseDemangler extends AsmRegex {
     protected processOutput(output: UnprocessedExecResult) {
         if (output.stdout.length === 0 && output.stderr.length > 0) {
             logger.error(`Error executing demangler ${this.demanglerExe}`, output);
-            return this.result;
+            return;
         }
 
         const lines = utils.splitLines(output.stdout);
@@ -182,11 +182,10 @@ export class BaseDemangler extends AsmRegex {
             throw new Error('Internal issue in demangler');
         }
         for (let i = 0; i < lines.length; ++i) this.addTranslation(this.input[i], lines[i]);
+    }
 
-        const translations = [
-            ...unwrap(this.symbolstore).listTranslations(),
-            ...this.othersymbols.listTranslations(),
-        ].filter(elem => elem[0] !== elem[1]);
+    protected applyTranslations() {
+        const translations = this.getTranslations();
         if (translations.length > 0) {
             const tree = new PrefixTree(translations);
             const translationsDict = Object.fromEntries(translations);
@@ -218,7 +217,7 @@ export class BaseDemangler extends AsmRegex {
         return this.compiler.exec(this.demanglerExe, this.demanglerArguments, options);
     }
 
-    public async process(result: ParsedAsmResult, execOptions?: ExecutionOptions): Promise<ParsedAsmResult> {
+    public async process(result: ParsedAsmResult, execOptions?: DemanglerExecutionOptions): Promise<ParsedAsmResult> {
         const options = execOptions || {};
         this.result = result;
 
@@ -226,7 +225,13 @@ export class BaseDemangler extends AsmRegex {
             this.symbolstore = new SymbolStore();
         }
 
-        this.collectLabels();
+        if (options.overrideSymbols) {
+            for (const symbol of options.overrideSymbols) {
+                this.symbolstore.add(symbol);
+            }
+        } else {
+            this.collectLabels();
+        }
 
         options.input = this.getInput();
 
@@ -234,6 +239,16 @@ export class BaseDemangler extends AsmRegex {
             return this.result;
         }
 
-        return this.processOutput(await this.execDemangler(options));
+        this.processOutput(await this.execDemangler(options));
+        if (options.skipTranslation) {
+            return this.result;
+        }
+        return this.applyTranslations();
+    }
+
+    public getTranslations() {
+        return [...unwrap(this.symbolstore).listTranslations(), ...this.othersymbols.listTranslations()].filter(
+            elem => elem[0] !== elem[1],
+        );
     }
 }

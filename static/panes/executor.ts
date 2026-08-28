@@ -26,6 +26,7 @@ import {Container} from 'golden-layout';
 import $ from 'jquery';
 import _ from 'underscore';
 
+import type {BuildSystemId} from '../../shared/build-systems.js';
 import {escapeHTML} from '../../shared/common-utils.js';
 import {
     BypassCache,
@@ -88,9 +89,9 @@ export class Executor extends Pane<ExecutorState> {
     private source: string;
     private lastTimeTaken: number;
     private pendingRequestSentAt: number;
-    private pendingCMakeRequestSentAt: number;
+    private pendingBuildRequestSentAt: number;
     private nextRequest: CompilationRequest | null;
-    private nextCMakeRequest: CompilationRequest | null;
+    private nextBuildRequest: {buildSystem: BuildSystemId; request: CompilationRequest} | null;
     private options: string;
     private lastResult: CompilationResult | null;
     private alertSystem: Alert;
@@ -150,9 +151,9 @@ export class Executor extends Pane<ExecutorState> {
         this.lastResult = {code: -1, timedOut: false, stdout: [], stderr: []};
         this.lastTimeTaken = 0;
         this.pendingRequestSentAt = 0;
-        this.pendingCMakeRequestSentAt = 0;
+        this.pendingBuildRequestSentAt = 0;
         this.nextRequest = null;
-        this.nextCMakeRequest = null;
+        this.nextBuildRequest = null;
 
         this.alertSystem = new Alert();
         this.alertSystem.prefixMessage = 'Executor #' + this.id;
@@ -402,19 +403,20 @@ export class Executor extends Pane<ExecutorState> {
         Promise.all(fetches)
             .then(() => {
                 const treeState = tree.currentState();
-                const cmakeProject = tree.multifileService.isACMakeProject();
+                const buildSystem = tree.multifileService.getBuildSystemDescriptor();
                 request.files.push(...moreFiles);
 
                 if (bypassCache) request.bypassCache = bypassCache;
                 if (!this.compiler) {
                     this.onCompileResponse(request, this.errorResult('<Please select a compiler>'), false);
-                } else if (cmakeProject && request.source === '') {
-                    this.onCompileResponse(request, this.errorResult('<Please supply a CMakeLists.txt>'), false);
+                } else if (buildSystem && request.source === '') {
+                    const message = `<Please supply a ${buildSystem.manifestFilename}>`;
+                    this.onCompileResponse(request, this.errorResult(message), false);
                 } else {
-                    if (cmakeProject) {
+                    if (buildSystem) {
                         request.options.compilerOptions.cmakeArgs = treeState.cmakeArgs;
                         request.options.compilerOptions.customOutputFilename = treeState.customOutputFilename;
-                        this.sendCMakeCompile(request);
+                        this.sendBuildCompile(buildSystem.id, request);
                     } else {
                         this.sendCompile(request);
                     }
@@ -432,23 +434,23 @@ export class Executor extends Pane<ExecutorState> {
             });
     }
 
-    sendCMakeCompile(request: CompilationRequest): void {
-        const onCompilerResponse = this.onCMakeResponse.bind(this);
+    sendBuildCompile(buildSystem: BuildSystemId, request: CompilationRequest): void {
+        const onCompilerResponse = this.onBuildResponse.bind(this);
 
-        if (this.pendingCMakeRequestSentAt) {
+        if (this.pendingBuildRequestSentAt) {
             // If we have a request pending, then just store this request to do once the
             // previous request completes.
-            this.nextCMakeRequest = request;
+            this.nextBuildRequest = {buildSystem, request};
             return;
         }
         // this.eventHub.emit('compiling', this.id, this.compiler);
         // Display the spinner
         this.handleCompilationStatus({code: 4});
-        this.pendingCMakeRequestSentAt = Date.now();
+        this.pendingBuildRequestSentAt = Date.now();
         // After a short delay, give the user some indication that we're working on their
         // compilation.
         this.hub.compilerService
-            .submitCMake(request)
+            .submitBuild(buildSystem, request)
             .then((x: any) => {
                 onCompilerResponse(request, x.result, x.localCacheHit);
             })
@@ -622,17 +624,17 @@ export class Executor extends Pane<ExecutorState> {
         return result.stderr || [];
     }
 
-    onCMakeResponse(request: CompilationRequest, result: CompilationResult, cached: boolean): void {
+    onBuildResponse(request: CompilationRequest, result: CompilationResult, cached: boolean): void {
         result.source = this.source;
         this.lastResult = result;
-        const timeTaken = Math.max(0, Date.now() - this.pendingCMakeRequestSentAt);
+        const timeTaken = Math.max(0, Date.now() - this.pendingBuildRequestSentAt);
         this.lastTimeTaken = timeTaken;
-        const wasRealReply = this.pendingCMakeRequestSentAt > 0;
-        this.pendingCMakeRequestSentAt = 0;
+        const wasRealReply = this.pendingBuildRequestSentAt > 0;
+        this.pendingBuildRequestSentAt = 0;
 
         this.handleCompileRequestAndResponse(request, result, cached, wasRealReply, timeTaken);
 
-        this.doNextCMakeRequest();
+        this.doNextBuildRequest();
     }
 
     doNextCompileRequest(): void {
@@ -643,11 +645,11 @@ export class Executor extends Pane<ExecutorState> {
         }
     }
 
-    doNextCMakeRequest(): void {
-        if (this.nextCMakeRequest) {
-            const next = this.nextCMakeRequest;
-            this.nextCMakeRequest = null;
-            this.sendCMakeCompile(next);
+    doNextBuildRequest(): void {
+        if (this.nextBuildRequest) {
+            const next = this.nextBuildRequest;
+            this.nextBuildRequest = null;
+            this.sendBuildCompile(next.buildSystem, next.request);
         }
     }
 
@@ -976,11 +978,11 @@ export class Executor extends Pane<ExecutorState> {
             this.onExecStdinChange($(e.target).val() as string);
         }, 800);
 
-        this.optionsField.on('change', optionsChange).on('keyup', optionsChange);
+        this.optionsField.on('change', optionsChange).on('input', optionsChange);
 
-        this.execArgsField.on('change', execArgsChange).on('keyup', execArgsChange);
+        this.execArgsField.on('change', execArgsChange).on('input', execArgsChange);
 
-        this.execStdinField.on('change', execStdinChange).on('keyup', execStdinChange);
+        this.execStdinField.on('change', execStdinChange).on('input', execStdinChange);
 
         // Dismiss the popover on escape.
         $(document).on('keyup.editable', e => {
@@ -1119,6 +1121,16 @@ export class Executor extends Pane<ExecutorState> {
             this.options,
             this.sourceEditorId ?? -1,
             this.sourceTreeId ?? -1,
+            this.getSourceName(),
+        );
+    }
+
+    getSourceName(): string {
+        if (this.sourceTreeId) {
+            return 'Tree #' + this.sourceTreeId;
+        }
+        return (
+            this.hub.getEditorById(this.sourceEditorId ?? -1)?.getPaneName() ?? 'Editor #' + (this.sourceEditorId ?? -1)
         );
     }
 

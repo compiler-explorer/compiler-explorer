@@ -28,6 +28,8 @@ export {ClangFormatTool} from './clang-format-tool.js';
 export {ClangQueryTool} from './clang-query-tool.js';
 export {ClangTidyTool} from './clang-tidy-tool.js';
 export {ClippyTool} from './clippy-tool.js';
+export {Co2FmtTool} from './co2fmt-tool.js';
+export {Co2MiriTool} from './co2miri-tool.js';
 export {CompilerDropinTool} from './compiler-dropin-tool.js';
 export {LLVMCovTool} from './llvm-cov-tool.js';
 export {LLVMDWARFDumpTool} from './llvm-dwarfdump-tool.js';
