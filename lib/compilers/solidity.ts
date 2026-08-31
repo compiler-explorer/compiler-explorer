@@ -27,7 +27,6 @@ import path from 'node:path';
 
 import Semver from 'semver';
 
-import {SelectedLibraryVersion} from '../../types/libraries/libraries.interfaces.js';
 import {BaseCompiler} from '../base-compiler.js';
 import {asSafeVer} from '../utils.js';
 import {ClangParser} from './argument-parsers.js';
@@ -45,12 +44,8 @@ export class SolidityCompiler extends BaseCompiler {
         return ClangParser;
     }
 
-    override getIncludeArguments(libraries: SelectedLibraryVersion[], dirPath: string) {
-        const includes = libraries.flatMap(selectedLib => {
-            const foundVersion = this.findLibVersion(selectedLib);
-            return foundVersion?.path.flatMap(includePath => ['--include-path', includePath]) ?? [];
-        });
-        return libraries.length > 0 ? ['--base-path', dirPath, ...includes] : includes;
+    override getIncludeArguments() {
+        return [];
     }
 
     override optionsForFilter() {
