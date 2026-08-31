@@ -1,5 +1,6 @@
 // The entry point and target profile are needed to compile this example:
-// -T ps_6_6 -E PSMain
+// DXC:     -T ps_6_6 -E PSMain
+// AMD RGA: -s dx12 -c gfx1201 --ps-model ps_6_6 --ps-entry PSMain
 
 struct PSInput
 {
