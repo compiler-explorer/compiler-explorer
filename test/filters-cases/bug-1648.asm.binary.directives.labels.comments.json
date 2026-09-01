@@ -1,0 +1,9467 @@
+{
+  "asm": [
+    {
+      "labels": [],
+      "source": null,
+      "text": "_dl_start:"
+    },
+    {
+      "address": 4198789,
+      "labels": [],
+      "opcodes": [
+        "f3",
+        "0f",
+        "1e",
+        "fa"
+      ],
+      "source": null,
+      "text": " endbr64"
+    },
+    {
+      "address": 4198793,
+      "labels": [],
+      "opcodes": [
+        "55"
+      ],
+      "source": null,
+      "text": " push   %rbp"
+    },
+    {
+      "address": 4198794,
+      "labels": [],
+      "opcodes": [
+        "48",
+        "89",
+        "e5"
+      ],
+      "source": null,
+      "text": " mov    %rsp,%rbp"
+    },
+    {
+      "address": 4198797,
+      "labels": [
+        {
+          "name": "abort",
+          "range": {
+            "endCol": 22,
+            "startCol": 17
+          }
+        }
+      ],
+      "opcodes": [
+        "e8",
+        "00",
+        "00",
+        "00",
+        "00"
+      ],
+      "source": null,
+      "text": " call   401192 <abort>"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "abort:"
+    },
+    {
+      "address": 4198802,
+      "labels": [],
+      "opcodes": [
+        "f3",
+        "0f",
+        "1e",
+        "fa"
+      ],
+      "source": null,
+      "text": " endbr64"
+    },
+    {
+      "address": 4198806,
+      "labels": [],
+      "opcodes": [
+        "55"
+      ],
+      "source": null,
+      "text": " push   %rbp"
+    },
+    {
+      "address": 4198807,
+      "labels": [],
+      "opcodes": [
+        "48",
+        "89",
+        "e5"
+      ],
+      "source": null,
+      "text": " mov    %rsp,%rbp"
+    },
+    {
+      "address": 4198810,
+      "labels": [],
+      "opcodes": [
+        "53"
+      ],
+      "source": null,
+      "text": " push   %rbx"
+    },
+    {
+      "address": 4198811,
+      "labels": [],
+      "opcodes": [
+        "bb",
+        "0e",
+        "00",
+        "00",
+        "00"
+      ],
+      "source": null,
+      "text": " mov    $0xe,%ebx"
+    },
+    {
+      "address": 4198816,
+      "labels": [],
+      "opcodes": [
+        "48",
+        "81",
+        "ec",
+        "b8",
+        "00",
+        "00",
+        "00"
+      ],
+      "source": null,
+      "text": " sub    $0xb8,%rsp"
+    },
+    {
+      "address": 4198823,
+      "labels": [],
+      "opcodes": [
+        "64",
+        "48",
+        "8b",
+        "3c",
+        "25",
+        "28",
+        "00"
+      ],
+      "source": null,
+      "text": " mov    %fs:0x28,%rdi"
+    },
+    {
+      "address": 4198830,
+      "labels": [],
+      "opcodes": [
+        "00",
+        "00"
+      ],
+      "source": null,
+      "text": " "
+    },
+    {
+      "address": 4198832,
+      "labels": [],
+      "opcodes": [
+        "48",
+        "89",
+        "7d",
+        "e8"
+      ],
+      "source": null,
+      "text": " mov    %rdi,-0x18(%rbp)"
+    },
+    {
+      "address": 4198836,
+      "labels": [],
+      "opcodes": [
+        "bf",
+        "06",
+        "00",
+        "00",
+        "00"
+      ],
+      "source": null,
+      "text": " mov    $0x6,%edi"
+    },
+    {
+      "address": 4198841,
+      "labels": [],
+      "opcodes": [
+        "e8",
+        "82",
+        "76",
+        "05",
+        "00"
+      ],
+      "source": null,
+      "text": " call   458840 <raise>"
+    },
+    {
+      "address": 4198846,
+      "labels": [],
+      "opcodes": [
+        "41",
+        "ba",
+        "08",
+        "00",
+        "00",
+        "00"
+      ],
+      "source": null,
+      "text": " mov    $0x8,%r10d"
+    },
+    {
+      "address": 4198852,
+      "labels": [],
+      "opcodes": [
+        "31",
+        "d2"
+      ],
+      "source": null,
+      "text": " xor    %edx,%edx"
+    },
+    {
+      "address": 4198854,
+      "labels": [],
+      "opcodes": [
+        "31",
+        "ff"
+      ],
+      "source": null,
+      "text": " xor    %edi,%edi"
+    },
+    {
+      "address": 4198856,
+      "labels": [],
+      "opcodes": [
+        "48",
+        "8d",
+        "35",
+        "89",
+        "4e",
+        "08",
+        "00"
+      ],
+      "source": null,
+      "text": " lea    0x84e89(%rip),%rsi        # 486058 <sigall_set>"
+    },
+    {
+      "address": 4198863,
+      "labels": [],
+      "opcodes": [
+        "89",
+        "d8"
+      ],
+      "source": null,
+      "text": " mov    %ebx,%eax"
+    },
+    {
+      "address": 4198865,
+      "labels": [],
+      "opcodes": [
+        "0f",
+        "05"
+      ],
+      "source": null,
+      "text": " syscall"
+    },
+    {
+      "address": 4198867,
+      "labels": [],
+      "opcodes": [
+        "48",
+        "8d",
+        "3d",
+        "c6",
+        "6a",
+        "0b",
+        "00"
+      ],
+      "source": null,
+      "text": " lea    0xb6ac6(%rip),%rdi        # 4b7ca0 <lock>"
+    },
+    {
+      "address": 4198874,
+      "labels": [],
+      "opcodes": [
+        "e8",
+        "51",
+        "cb",
+        "02",
+        "00"
+      ],
+      "source": null,
+      "text": " call   42dd30 <___pthread_rwlock_wrlock>"
+    },
+    {
+      "address": 4198879,
+      "labels": [],
+      "opcodes": [
+        "31",
+        "c0"
+      ],
+      "source": null,
+      "text": " xor    %eax,%eax"
+    },
+    {
+      "address": 4198881,
+      "labels": [],
+      "opcodes": [
+        "48",
+        "8d",
+        "bd",
+        "50",
+        "ff",
+        "ff",
+        "ff"
+      ],
+      "source": null,
+      "text": " lea    -0xb0(%rbp),%rdi"
+    },
+    {
+      "address": 4198888,
+      "labels": [],
+      "opcodes": [
+        "31",
+        "d2"
+      ],
+      "source": null,
+      "text": " xor    %edx,%edx"
+    },
+    {
+      "address": 4198890,
+      "labels": [],
+      "opcodes": [
+        "b9",
+        "26",
+        "00",
+        "00",
+        "00"
+      ],
+      "source": null,
+      "text": " mov    $0x26,%ecx"
+    },
+    {
+      "address": 4198895,
+      "labels": [],
+      "opcodes": [
+        "48",
+        "8d",
+        "b5",
+        "50",
+        "ff",
+        "ff",
+        "ff"
+      ],
+      "source": null,
+      "text": " lea    -0xb0(%rbp),%rsi"
+    },
+    {
+      "address": 4198902,
+      "labels": [],
+      "opcodes": [
+        "f3",
+        "ab"
+      ],
+      "source": null,
+      "text": " rep stos %eax,%es:(%rdi)"
+    },
+    {
+      "address": 4198904,
+      "labels": [],
+      "opcodes": [
+        "bf",
+        "06",
+        "00",
+        "00",
+        "00"
+      ],
+      "source": null,
+      "text": " mov    $0x6,%edi"
+    },
+    {
+      "address": 4198909,
+      "labels": [],
+      "opcodes": [
+        "48",
+        "c7",
+        "85",
+        "58",
+        "ff",
+        "ff",
+        "ff"
+      ],
+      "source": null,
+      "text": " movq   $0xffffffffffffffff,-0xa8(%rbp)"
+    },
+    {
+      "address": 4198916,
+      "labels": [],
+      "opcodes": [
+        "ff",
+        "ff",
+        "ff",
+        "ff"
+      ],
+      "source": null,
+      "text": " "
+    },
+    {
+      "address": 4198920,
+      "labels": [],
+      "opcodes": [
+        "e8",
+        "a3",
+        "76",
+        "05",
+        "00"
+      ],
+      "source": null,
+      "text": " call   4588b0 <__libc_sigaction>"
+    },
+    {
+      "address": 4198925,
+      "labels": [],
+      "opcodes": [
+        "bf",
+        "06",
+        "00",
+        "00",
+        "00"
+      ],
+      "source": null,
+      "text": " mov    $0x6,%edi"
+    },
+    {
+      "address": 4198930,
+      "labels": [],
+      "opcodes": [
+        "e8",
+        "09",
+        "b3",
+        "02",
+        "00"
+      ],
+      "source": null,
+      "text": " call   42c520 <__pthread_raise_internal>"
+    },
+    {
+      "address": 4198935,
+      "labels": [],
+      "opcodes": [
+        "48",
+        "8d",
+        "b5",
+        "48",
+        "ff",
+        "ff",
+        "ff"
+      ],
+      "source": null,
+      "text": " lea    -0xb8(%rbp),%rsi"
+    },
+    {
+      "address": 4198942,
+      "labels": [],
+      "opcodes": [
+        "31",
+        "d2"
+      ],
+      "source": null,
+      "text": " xor    %edx,%edx"
+    },
+    {
+      "address": 4198944,
+      "labels": [],
+      "opcodes": [
+        "89",
+        "d8"
+      ],
+      "source": null,
+      "text": " mov    %ebx,%eax"
+    },
+    {
+      "address": 4198946,
+      "labels": [],
+      "opcodes": [
+        "48",
+        "c7",
+        "85",
+        "48",
+        "ff",
+        "ff",
+        "ff"
+      ],
+      "source": null,
+      "text": " movq   $0x20,-0xb8(%rbp)"
+    },
+    {
+      "address": 4198953,
+      "labels": [],
+      "opcodes": [
+        "20",
+        "00",
+        "00",
+        "00"
+      ],
+      "source": null,
+      "text": " "
+    },
+    {
+      "address": 4198957,
+      "labels": [],
+      "opcodes": [
+        "41",
+        "ba",
+        "08",
+        "00",
+        "00",
+        "00"
+      ],
+      "source": null,
+      "text": " mov    $0x8,%r10d"
+    },
+    {
+      "address": 4198963,
+      "labels": [],
+      "opcodes": [
+        "bf",
+        "01",
+        "00",
+        "00",
+        "00"
+      ],
+      "source": null,
+      "text": " mov    $0x1,%edi"
+    },
+    {
+      "address": 4198968,
+      "labels": [],
+      "opcodes": [
+        "0f",
+        "05"
+      ],
+      "source": null,
+      "text": " syscall"
+    },
+    {
+      "address": 4198970,
+      "labels": [],
+      "opcodes": [
+        "f4"
+      ],
+      "source": null,
+      "text": " hlt"
+    },
+    {
+      "address": 4198971,
+      "labels": [],
+      "opcodes": [
+        "bf",
+        "7f",
+        "00",
+        "00",
+        "00"
+      ],
+      "source": null,
+      "text": " mov    $0x7f,%edi"
+    },
+    {
+      "address": 4198976,
+      "labels": [],
+      "opcodes": [
+        "e8",
+        "ab",
+        "12",
+        "01",
+        "00"
+      ],
+      "source": null,
+      "text": " call   4124f0 <_exit>"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "_IO_fputs.cold:"
+    },
+    {
+      "address": 4198981,
+      "labels": [],
+      "opcodes": [
+        "f6",
+        "43",
+        "01",
+        "80"
+      ],
+      "source": null,
+      "text": " testb  $0x80,0x1(%rbx)"
+    },
+    {
+      "address": 4198985,
+      "labels": [
+        {
+          "name": "_IO_fputs.cold",
+          "range": {
+            "endCol": 31,
+            "startCol": 17
+          }
+        }
+      ],
+      "opcodes": [
+        "75",
+        "21"
+      ],
+      "source": null,
+      "text": " jne    40126c <_IO_fputs.cold+0x27>"
+    },
+    {
+      "address": 4198987,
+      "labels": [],
+      "opcodes": [
+        "48",
+        "8b",
+        "bb",
+        "88",
+        "00",
+        "00",
+        "00"
+      ],
+      "source": null,
+      "text": " mov    0x88(%rbx),%rdi"
+    },
+    {
+      "address": 4198994,
+      "labels": [],
+      "opcodes": [
+        "80",
+        "3d",
+        "1f",
+        "08",
+        "0b",
+        "00",
+        "00"
+      ],
+      "source": null,
+      "text": " cmpb   $0x0,0xb081f(%rip)        # 4b1a78 <__libc_single_threaded>"
+    },
+    {
+      "address": 4199001,
+      "labels": [],
+      "opcodes": [
+        "8b",
+        "47",
+        "04"
+      ],
+      "source": null,
+      "text": " mov    0x4(%rdi),%eax"
+    },
+    {
+      "address": 4199004,
+      "labels": [
+        {
+          "name": "_IO_fputs.cold",
+          "range": {
+            "endCol": 31,
+            "startCol": 17
+          }
+        }
+      ],
+      "opcodes": [
+        "74",
+        "16"
+      ],
+      "source": null,
+      "text": " je     401274 <_IO_fputs.cold+0x2f>"
+    },
+    {
+      "address": 4199006,
+      "labels": [],
+      "opcodes": [
+        "85",
+        "c0"
+      ],
+      "source": null,
+      "text": " test   %eax,%eax"
+    },
+    {
+      "address": 4199008,
+      "labels": [
+        {
+          "name": "_IO_fputs.cold",
+          "range": {
+            "endCol": 31,
+            "startCol": 17
+          }
+        }
+      ],
+      "opcodes": [
+        "75",
+        "2a"
+      ],
+      "source": null,
+      "text": " jne    40128c <_IO_fputs.cold+0x47>"
+    },
+    {
+      "address": 4199010,
+      "labels": [],
+      "opcodes": [
+        "31",
+        "c9"
+      ],
+      "source": null,
+      "text": " xor    %ecx,%ecx"
+    },
+    {
+      "address": 4199012,
+      "labels": [],
+      "opcodes": [
+        "31",
+        "f6"
+      ],
+      "source": null,
+      "text": " xor    %esi,%esi"
+    },
+    {
+      "address": 4199014,
+      "labels": [],
+      "opcodes": [
+        "48",
+        "89",
+        "4f",
+        "08"
+      ],
+      "source": null,
+      "text": " mov    %rcx,0x8(%rdi)"
+    },
+    {
+      "address": 4199018,
+      "labels": [],
+      "opcodes": [
+        "89",
+        "37"
+      ],
+      "source": null,
+      "text": " mov    %esi,(%rdi)"
+    },
+    {
+      "address": 4199020,
+      "labels": [],
+      "opcodes": [
+        "4c",
+        "89",
+        "e7"
+      ],
+      "source": null,
+      "text": " mov    %r12,%rdi"
+    },
+    {
+      "address": 4199023,
+      "labels": [],
+      "opcodes": [
+        "e8",
+        "ec",
+        "e6",
+        "07",
+        "00"
+      ],
+      "source": null,
+      "text": " call   47f960 <_Unwind_Resume>"
+    },
+    {
+      "address": 4199028,
+      "labels": [],
+      "opcodes": [
+        "85",
+        "c0"
+      ],
+      "source": null,
+      "text": " test   %eax,%eax"
+    },
+    {
+      "address": 4199030,
+      "labels": [
+        {
+          "name": "_IO_fputs.cold",
+          "range": {
+            "endCol": 31,
+            "startCol": 17
+          }
+        }
+      ],
+      "opcodes": [
+        "75",
+        "14"
+      ],
+      "source": null,
+      "text": " jne    40128c <_IO_fputs.cold+0x47>"
+    },
+    {
+      "address": 4199032,
+      "labels": [],
+      "opcodes": [
+        "31",
+        "d2"
+      ],
+      "source": null,
+      "text": " xor    %edx,%edx"
+    },
+    {
+      "address": 4199034,
+      "labels": [],
+      "opcodes": [
+        "48",
+        "89",
+        "57",
+        "08"
+      ],
+      "source": null,
+      "text": " mov    %rdx,0x8(%rdi)"
+    },
+    {
+      "address": 4199038,
+      "labels": [],
+      "opcodes": [
+        "87",
+        "07"
+      ],
+      "source": null,
+      "text": " xchg   %eax,(%rdi)"
+    },
+    {
+      "address": 4199040,
+      "labels": [],
+      "opcodes": [
+        "83",
+        "e8",
+        "01"
+      ],
+      "source": null,
+      "text": " sub    $0x1,%eax"
+    },
+    {
+      "address": 4199043,
+      "labels": [
+        {
+          "name": "_IO_fputs.cold",
+          "range": {
+            "endCol": 31,
+            "startCol": 17
+          }
+        }
+      ],
+      "opcodes": [
+        "7e",
+        "e7"
+      ],
+      "source": null,
+      "text": " jle    40126c <_IO_fputs.cold+0x27>"
+    },
+    {
+      "address": 4199045,
+      "labels": [],
+      "opcodes": [
+        "e8",
+        "f6",
+        "45",
+        "00",
+        "00"
+      ],
+      "source": null,
+      "text": " call   405880 <__lll_lock_wake_private>"
+    },
+    {
+      "address": 4199050,
+      "labels": [
+        {
+          "name": "_IO_fputs.cold",
+          "range": {
+            "endCol": 31,
+            "startCol": 17
+          }
+        }
+      ],
+      "opcodes": [
+        "eb",
+        "e0"
+      ],
+      "source": null,
+      "text": " jmp    40126c <_IO_fputs.cold+0x27>"
+    },
+    {
+      "address": 4199052,
+      "labels": [],
+      "opcodes": [
+        "83",
+        "e8",
+        "01"
+      ],
+      "source": null,
+      "text": " sub    $0x1,%eax"
+    },
+    {
+      "address": 4199055,
+      "labels": [],
+      "opcodes": [
+        "89",
+        "47",
+        "04"
+      ],
+      "source": null,
+      "text": " mov    %eax,0x4(%rdi)"
+    },
+    {
+      "address": 4199058,
+      "labels": [
+        {
+          "name": "_IO_fputs.cold",
+          "range": {
+            "endCol": 31,
+            "startCol": 17
+          }
+        }
+      ],
+      "opcodes": [
+        "eb",
+        "d8"
+      ],
+      "source": null,
+      "text": " jmp    40126c <_IO_fputs.cold+0x27>"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "_IO_fwrite.cold:"
+    },
+    {
+      "address": 4199060,
+      "labels": [],
+      "opcodes": [
+        "f6",
+        "43",
+        "01",
+        "80"
+      ],
+      "source": null,
+      "text": " testb  $0x80,0x1(%rbx)"
+    },
+    {
+      "address": 4199064,
+      "labels": [
+        {
+          "name": "_IO_fwrite.cold",
+          "range": {
+            "endCol": 32,
+            "startCol": 17
+          }
+        }
+      ],
+      "opcodes": [
+        "75",
+        "21"
+      ],
+      "source": null,
+      "text": " jne    4012bb <_IO_fwrite.cold+0x27>"
+    },
+    {
+      "address": 4199066,
+      "labels": [],
+      "opcodes": [
+        "48",
+        "8b",
+        "bb",
+        "88",
+        "00",
+        "00",
+        "00"
+      ],
+      "source": null,
+      "text": " mov    0x88(%rbx),%rdi"
+    },
+    {
+      "address": 4199073,
+      "labels": [],
+      "opcodes": [
+        "80",
+        "3d",
+        "d0",
+        "07",
+        "0b",
+        "00",
+        "00"
+      ],
+      "source": null,
+      "text": " cmpb   $0x0,0xb07d0(%rip)        # 4b1a78 <__libc_single_threaded>"
+    },
+    {
+      "address": 4199080,
+      "labels": [],
+      "opcodes": [
+        "8b",
+        "47",
+        "04"
+      ],
+      "source": null,
+      "text": " mov    0x4(%rdi),%eax"
+    },
+    {
+      "address": 4199083,
+      "labels": [
+        {
+          "name": "_IO_fwrite.cold",
+          "range": {
+            "endCol": 32,
+            "startCol": 17
+          }
+        }
+      ],
+      "opcodes": [
+        "74",
+        "16"
+      ],
+      "source": null,
+      "text": " je     4012c3 <_IO_fwrite.cold+0x2f>"
+    },
+    {
+      "address": 4199085,
+      "labels": [],
+      "opcodes": [
+        "85",
+        "c0"
+      ],
+      "source": null,
+      "text": " test   %eax,%eax"
+    },
+    {
+      "address": 4199087,
+      "labels": [
+        {
+          "name": "_IO_fwrite.cold",
+          "range": {
+            "endCol": 32,
+            "startCol": 17
+          }
+        }
+      ],
+      "opcodes": [
+        "75",
+        "2a"
+      ],
+      "source": null,
+      "text": " jne    4012db <_IO_fwrite.cold+0x47>"
+    },
+    {
+      "address": 4199089,
+      "labels": [],
+      "opcodes": [
+        "31",
+        "c9"
+      ],
+      "source": null,
+      "text": " xor    %ecx,%ecx"
+    },
+    {
+      "address": 4199091,
+      "labels": [],
+      "opcodes": [
+        "31",
+        "f6"
+      ],
+      "source": null,
+      "text": " xor    %esi,%esi"
+    },
+    {
+      "address": 4199093,
+      "labels": [],
+      "opcodes": [
+        "48",
+        "89",
+        "4f",
+        "08"
+      ],
+      "source": null,
+      "text": " mov    %rcx,0x8(%rdi)"
+    },
+    {
+      "address": 4199097,
+      "labels": [],
+      "opcodes": [
+        "89",
+        "37"
+      ],
+      "source": null,
+      "text": " mov    %esi,(%rdi)"
+    },
+    {
+      "address": 4199099,
+      "labels": [],
+      "opcodes": [
+        "4c",
+        "89",
+        "e7"
+      ],
+      "source": null,
+      "text": " mov    %r12,%rdi"
+    },
+    {
+      "address": 4199102,
+      "labels": [],
+      "opcodes": [
+        "e8",
+        "9d",
+        "e6",
+        "07",
+        "00"
+      ],
+      "source": null,
+      "text": " call   47f960 <_Unwind_Resume>"
+    },
+    {
+      "address": 4199107,
+      "labels": [],
+      "opcodes": [
+        "85",
+        "c0"
+      ],
+      "source": null,
+      "text": " test   %eax,%eax"
+    },
+    {
+      "address": 4199109,
+      "labels": [
+        {
+          "name": "_IO_fwrite.cold",
+          "range": {
+            "endCol": 32,
+            "startCol": 17
+          }
+        }
+      ],
+      "opcodes": [
+        "75",
+        "14"
+      ],
+      "source": null,
+      "text": " jne    4012db <_IO_fwrite.cold+0x47>"
+    },
+    {
+      "address": 4199111,
+      "labels": [],
+      "opcodes": [
+        "31",
+        "d2"
+      ],
+      "source": null,
+      "text": " xor    %edx,%edx"
+    },
+    {
+      "address": 4199113,
+      "labels": [],
+      "opcodes": [
+        "48",
+        "89",
+        "57",
+        "08"
+      ],
+      "source": null,
+      "text": " mov    %rdx,0x8(%rdi)"
+    },
+    {
+      "address": 4199117,
+      "labels": [],
+      "opcodes": [
+        "87",
+        "07"
+      ],
+      "source": null,
+      "text": " xchg   %eax,(%rdi)"
+    },
+    {
+      "address": 4199119,
+      "labels": [],
+      "opcodes": [
+        "83",
+        "e8",
+        "01"
+      ],
+      "source": null,
+      "text": " sub    $0x1,%eax"
+    },
+    {
+      "address": 4199122,
+      "labels": [
+        {
+          "name": "_IO_fwrite.cold",
+          "range": {
+            "endCol": 32,
+            "startCol": 17
+          }
+        }
+      ],
+      "opcodes": [
+        "7e",
+        "e7"
+      ],
+      "source": null,
+      "text": " jle    4012bb <_IO_fwrite.cold+0x27>"
+    },
+    {
+      "address": 4199124,
+      "labels": [],
+      "opcodes": [
+        "e8",
+        "a7",
+        "45",
+        "00",
+        "00"
+      ],
+      "source": null,
+      "text": " call   405880 <__lll_lock_wake_private>"
+    },
+    {
+      "address": 4199129,
+      "labels": [
+        {
+          "name": "_IO_fwrite.cold",
+          "range": {
+            "endCol": 32,
+            "startCol": 17
+          }
+        }
+      ],
+      "opcodes": [
+        "eb",
+        "e0"
+      ],
+      "source": null,
+      "text": " jmp    4012bb <_IO_fwrite.cold+0x27>"
+    },
+    {
+      "address": 4199131,
+      "labels": [],
+      "opcodes": [
+        "83",
+        "e8",
+        "01"
+      ],
+      "source": null,
+      "text": " sub    $0x1,%eax"
+    },
+    {
+      "address": 4199134,
+      "labels": [],
+      "opcodes": [
+        "89",
+        "47",
+        "04"
+      ],
+      "source": null,
+      "text": " mov    %eax,0x4(%rdi)"
+    },
+    {
+      "address": 4199137,
+      "labels": [
+        {
+          "name": "_IO_fwrite.cold",
+          "range": {
+            "endCol": 32,
+            "startCol": 17
+          }
+        }
+      ],
+      "opcodes": [
+        "eb",
+        "d8"
+      ],
+      "source": null,
+      "text": " jmp    4012bb <_IO_fwrite.cold+0x27>"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "_IO_new_file_underflow.cold:"
+    },
+    {
+      "address": 4199139,
+      "labels": [],
+      "opcodes": [
+        "41",
+        "f6",
+        "44",
+        "24",
+        "01",
+        "80"
+      ],
+      "source": null,
+      "text": " testb  $0x80,0x1(%r12)"
+    },
+    {
+      "address": 4199145,
+      "labels": [
+        {
+          "name": "_IO_new_file_underflow.cold",
+          "range": {
+            "endCol": 44,
+            "startCol": 17
+          }
+        }
+      ],
+      "opcodes": [
+        "75",
+        "22"
+      ],
+      "source": null,
+      "text": " jne    40130d <_IO_new_file_underflow.cold+0x2a>"
+    },
+    {
+      "address": 4199147,
+      "labels": [],
+      "opcodes": [
+        "49",
+        "8b",
+        "bc",
+        "24",
+        "88",
+        "00",
+        "00"
+      ],
+      "source": null,
+      "text": " mov    0x88(%r12),%rdi"
+    },
+    {
+      "address": 4199154,
+      "labels": [],
+      "opcodes": [
+        "00"
+      ],
+      "source": null,
+      "text": " "
+    },
+    {
+      "address": 4199155,
+      "labels": [],
+      "opcodes": [
+        "80",
+        "3d",
+        "7e",
+        "07",
+        "0b",
+        "00",
+        "00"
+      ],
+      "source": null,
+      "text": " cmpb   $0x0,0xb077e(%rip)        # 4b1a78 <__libc_single_threaded>"
+    },
+    {
+      "address": 4199162,
+      "labels": [],
+      "opcodes": [
+        "8b",
+        "47",
+        "04"
+      ],
+      "source": null,
+      "text": " mov    0x4(%rdi),%eax"
+    },
+    {
+      "address": 4199165,
+      "labels": [
+        {
+          "name": "_IO_new_file_underflow.cold",
+          "range": {
+            "endCol": 44,
+            "startCol": 17
+          }
+        }
+      ],
+      "opcodes": [
+        "74",
+        "16"
+      ],
+      "source": null,
+      "text": " je     401315 <_IO_new_file_underflow.cold+0x32>"
+    },
+    {
+      "address": 4199167,
+      "labels": [],
+      "opcodes": [
+        "85",
+        "c0"
+      ],
+      "source": null,
+      "text": " test   %eax,%eax"
+    },
+    {
+      "address": 4199169,
+      "labels": [
+        {
+          "name": "_IO_new_file_underflow.cold",
+          "range": {
+            "endCol": 44,
+            "startCol": 17
+          }
+        }
+      ],
+      "opcodes": [
+        "75",
+        "2a"
+      ],
+      "source": null,
+      "text": " jne    40132d <_IO_new_file_underflow.cold+0x4a>"
+    },
+    {
+      "address": 4199171,
+      "labels": [],
+      "opcodes": [
+        "31",
+        "c9"
+      ],
+      "source": null,
+      "text": " xor    %ecx,%ecx"
+    },
+    {
+      "address": 4199173,
+      "labels": [],
+      "opcodes": [
+        "31",
+        "f6"
+      ],
+      "source": null,
+      "text": " xor    %esi,%esi"
+    },
+    {
+      "address": 4199175,
+      "labels": [],
+      "opcodes": [
+        "48",
+        "89",
+        "4f",
+        "08"
+      ],
+      "source": null,
+      "text": " mov    %rcx,0x8(%rdi)"
+    },
+    {
+      "address": 4199179,
+      "labels": [],
+      "opcodes": [
+        "89",
+        "37"
+      ],
+      "source": null,
+      "text": " mov    %esi,(%rdi)"
+    },
+    {
+      "address": 4199181,
+      "labels": [],
+      "opcodes": [
+        "48",
+        "89",
+        "df"
+      ],
+      "source": null,
+      "text": " mov    %rbx,%rdi"
+    },
+    {
+      "address": 4199184,
+      "labels": [],
+      "opcodes": [
+        "e8",
+        "4b",
+        "e6",
+        "07",
+        "00"
+      ],
+      "source": null,
+      "text": " call   47f960 <_Unwind_Resume>"
+    },
+    {
+      "address": 4199189,
+      "labels": [],
+      "opcodes": [
+        "85",
+        "c0"
+      ],
+      "source": null,
+      "text": " test   %eax,%eax"
+    },
+    {
+      "address": 4199191,
+      "labels": [
+        {
+          "name": "_IO_new_file_underflow.cold",
+          "range": {
+            "endCol": 44,
+            "startCol": 17
+          }
+        }
+      ],
+      "opcodes": [
+        "75",
+        "14"
+      ],
+      "source": null,
+      "text": " jne    40132d <_IO_new_file_underflow.cold+0x4a>"
+    },
+    {
+      "address": 4199193,
+      "labels": [],
+      "opcodes": [
+        "31",
+        "d2"
+      ],
+      "source": null,
+      "text": " xor    %edx,%edx"
+    },
+    {
+      "address": 4199195,
+      "labels": [],
+      "opcodes": [
+        "48",
+        "89",
+        "57",
+        "08"
+      ],
+      "source": null,
+      "text": " mov    %rdx,0x8(%rdi)"
+    },
+    {
+      "address": 4199199,
+      "labels": [],
+      "opcodes": [
+        "87",
+        "07"
+      ],
+      "source": null,
+      "text": " xchg   %eax,(%rdi)"
+    },
+    {
+      "address": 4199201,
+      "labels": [],
+      "opcodes": [
+        "83",
+        "e8",
+        "01"
+      ],
+      "source": null,
+      "text": " sub    $0x1,%eax"
+    },
+    {
+      "address": 4199204,
+      "labels": [
+        {
+          "name": "_IO_new_file_underflow.cold",
+          "range": {
+            "endCol": 44,
+            "startCol": 17
+          }
+        }
+      ],
+      "opcodes": [
+        "7e",
+        "e7"
+      ],
+      "source": null,
+      "text": " jle    40130d <_IO_new_file_underflow.cold+0x2a>"
+    },
+    {
+      "address": 4199206,
+      "labels": [],
+      "opcodes": [
+        "e8",
+        "55",
+        "45",
+        "00",
+        "00"
+      ],
+      "source": null,
+      "text": " call   405880 <__lll_lock_wake_private>"
+    },
+    {
+      "address": 4199211,
+      "labels": [
+        {
+          "name": "_IO_new_file_underflow.cold",
+          "range": {
+            "endCol": 44,
+            "startCol": 17
+          }
+        }
+      ],
+      "opcodes": [
+        "eb",
+        "e0"
+      ],
+      "source": null,
+      "text": " jmp    40130d <_IO_new_file_underflow.cold+0x2a>"
+    },
+    {
+      "address": 4199213,
+      "labels": [],
+      "opcodes": [
+        "83",
+        "e8",
+        "01"
+      ],
+      "source": null,
+      "text": " sub    $0x1,%eax"
+    },
+    {
+      "address": 4199216,
+      "labels": [],
+      "opcodes": [
+        "89",
+        "47",
+        "04"
+      ],
+      "source": null,
+      "text": " mov    %eax,0x4(%rdi)"
+    },
+    {
+      "address": 4199219,
+      "labels": [
+        {
+          "name": "_IO_new_file_underflow.cold",
+          "range": {
+            "endCol": 44,
+            "startCol": 17
+          }
+        }
+      ],
+      "opcodes": [
+        "eb",
+        "d8"
+      ],
+      "source": null,
+      "text": " jmp    40130d <_IO_new_file_underflow.cold+0x2a>"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "_nl_load_domain.cold:"
+    },
+    {
+      "address": 4199221,
+      "labels": [
+        {
+          "name": "abort",
+          "range": {
+            "endCol": 22,
+            "startCol": 17
+          }
+        }
+      ],
+      "opcodes": [
+        "e8",
+        "58",
+        "fe",
+        "ff",
+        "ff"
+      ],
+      "source": null,
+      "text": " call   401192 <abort>"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "_IO_new_fclose.cold:"
+    },
+    {
+      "address": 4199236,
+      "labels": [],
+      "opcodes": [
+        "f6",
+        "43",
+        "01",
+        "80"
+      ],
+      "source": null,
+      "text": " testb  $0x80,0x1(%rbx)"
+    },
+    {
+      "address": 4199240,
+      "labels": [
+        {
+          "name": "_IO_new_fclose.cold",
+          "range": {
+            "endCol": 36,
+            "startCol": 17
+          }
+        }
+      ],
+      "opcodes": [
+        "75",
+        "21"
+      ],
+      "source": null,
+      "text": " jne    40136b <_IO_new_fclose.cold+0x27>"
+    },
+    {
+      "address": 4199242,
+      "labels": [],
+      "opcodes": [
+        "48",
+        "8b",
+        "bb",
+        "88",
+        "00",
+        "00",
+        "00"
+      ],
+      "source": null,
+      "text": " mov    0x88(%rbx),%rdi"
+    },
+    {
+      "address": 4199249,
+      "labels": [],
+      "opcodes": [
+        "80",
+        "3d",
+        "20",
+        "07",
+        "0b",
+        "00",
+        "00"
+      ],
+      "source": null,
+      "text": " cmpb   $0x0,0xb0720(%rip)        # 4b1a78 <__libc_single_threaded>"
+    },
+    {
+      "address": 4199256,
+      "labels": [],
+      "opcodes": [
+        "8b",
+        "47",
+        "04"
+      ],
+      "source": null,
+      "text": " mov    0x4(%rdi),%eax"
+    },
+    {
+      "address": 4199259,
+      "labels": [
+        {
+          "name": "_IO_new_fclose.cold",
+          "range": {
+            "endCol": 36,
+            "startCol": 17
+          }
+        }
+      ],
+      "opcodes": [
+        "74",
+        "16"
+      ],
+      "source": null,
+      "text": " je     401373 <_IO_new_fclose.cold+0x2f>"
+    },
+    {
+      "address": 4199261,
+      "labels": [],
+      "opcodes": [
+        "85",
+        "c0"
+      ],
+      "source": null,
+      "text": " test   %eax,%eax"
+    },
+    {
+      "address": 4199263,
+      "labels": [
+        {
+          "name": "_IO_new_fclose.cold",
+          "range": {
+            "endCol": 36,
+            "startCol": 17
+          }
+        }
+      ],
+      "opcodes": [
+        "75",
+        "2a"
+      ],
+      "source": null,
+      "text": " jne    40138b <_IO_new_fclose.cold+0x47>"
+    },
+    {
+      "address": 4199265,
+      "labels": [],
+      "opcodes": [
+        "31",
+        "c9"
+      ],
+      "source": null,
+      "text": " xor    %ecx,%ecx"
+    },
+    {
+      "address": 4199267,
+      "labels": [],
+      "opcodes": [
+        "31",
+        "f6"
+      ],
+      "source": null,
+      "text": " xor    %esi,%esi"
+    },
+    {
+      "address": 4199269,
+      "labels": [],
+      "opcodes": [
+        "48",
+        "89",
+        "4f",
+        "08"
+      ],
+      "source": null,
+      "text": " mov    %rcx,0x8(%rdi)"
+    },
+    {
+      "address": 4199273,
+      "labels": [],
+      "opcodes": [
+        "89",
+        "37"
+      ],
+      "source": null,
+      "text": " mov    %esi,(%rdi)"
+    },
+    {
+      "address": 4199275,
+      "labels": [],
+      "opcodes": [
+        "4c",
+        "89",
+        "e7"
+      ],
+      "source": null,
+      "text": " mov    %r12,%rdi"
+    },
+    {
+      "address": 4199278,
+      "labels": [],
+      "opcodes": [
+        "e8",
+        "ed",
+        "e5",
+        "07",
+        "00"
+      ],
+      "source": null,
+      "text": " call   47f960 <_Unwind_Resume>"
+    },
+    {
+      "address": 4199283,
+      "labels": [],
+      "opcodes": [
+        "85",
+        "c0"
+      ],
+      "source": null,
+      "text": " test   %eax,%eax"
+    },
+    {
+      "address": 4199285,
+      "labels": [
+        {
+          "name": "_IO_new_fclose.cold",
+          "range": {
+            "endCol": 36,
+            "startCol": 17
+          }
+        }
+      ],
+      "opcodes": [
+        "75",
+        "14"
+      ],
+      "source": null,
+      "text": " jne    40138b <_IO_new_fclose.cold+0x47>"
+    },
+    {
+      "address": 4199287,
+      "labels": [],
+      "opcodes": [
+        "31",
+        "d2"
+      ],
+      "source": null,
+      "text": " xor    %edx,%edx"
+    },
+    {
+      "address": 4199289,
+      "labels": [],
+      "opcodes": [
+        "48",
+        "89",
+        "57",
+        "08"
+      ],
+      "source": null,
+      "text": " mov    %rdx,0x8(%rdi)"
+    },
+    {
+      "address": 4199293,
+      "labels": [],
+      "opcodes": [
+        "87",
+        "07"
+      ],
+      "source": null,
+      "text": " xchg   %eax,(%rdi)"
+    },
+    {
+      "address": 4199295,
+      "labels": [],
+      "opcodes": [
+        "83",
+        "e8",
+        "01"
+      ],
+      "source": null,
+      "text": " sub    $0x1,%eax"
+    },
+    {
+      "address": 4199298,
+      "labels": [
+        {
+          "name": "_IO_new_fclose.cold",
+          "range": {
+            "endCol": 36,
+            "startCol": 17
+          }
+        }
+      ],
+      "opcodes": [
+        "7e",
+        "e7"
+      ],
+      "source": null,
+      "text": " jle    40136b <_IO_new_fclose.cold+0x27>"
+    },
+    {
+      "address": 4199300,
+      "labels": [],
+      "opcodes": [
+        "e8",
+        "f7",
+        "44",
+        "00",
+        "00"
+      ],
+      "source": null,
+      "text": " call   405880 <__lll_lock_wake_private>"
+    },
+    {
+      "address": 4199305,
+      "labels": [
+        {
+          "name": "_IO_new_fclose.cold",
+          "range": {
+            "endCol": 36,
+            "startCol": 17
+          }
+        }
+      ],
+      "opcodes": [
+        "eb",
+        "e0"
+      ],
+      "source": null,
+      "text": " jmp    40136b <_IO_new_fclose.cold+0x27>"
+    },
+    {
+      "address": 4199307,
+      "labels": [],
+      "opcodes": [
+        "83",
+        "e8",
+        "01"
+      ],
+      "source": null,
+      "text": " sub    $0x1,%eax"
+    },
+    {
+      "address": 4199310,
+      "labels": [],
+      "opcodes": [
+        "89",
+        "47",
+        "04"
+      ],
+      "source": null,
+      "text": " mov    %eax,0x4(%rdi)"
+    },
+    {
+      "address": 4199313,
+      "labels": [
+        {
+          "name": "_IO_new_fclose.cold",
+          "range": {
+            "endCol": 36,
+            "startCol": 17
+          }
+        }
+      ],
+      "opcodes": [
+        "eb",
+        "d8"
+      ],
+      "source": null,
+      "text": " jmp    40136b <_IO_new_fclose.cold+0x27>"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "_IO_wfile_underflow.cold:"
+    },
+    {
+      "address": 4199394,
+      "labels": [],
+      "opcodes": [
+        "41",
+        "f6",
+        "44",
+        "24",
+        "01",
+        "80"
+      ],
+      "source": null,
+      "text": " testb  $0x80,0x1(%r12)"
+    },
+    {
+      "address": 4199400,
+      "labels": [
+        {
+          "name": "_IO_wfile_underflow.cold",
+          "range": {
+            "endCol": 41,
+            "startCol": 17
+          }
+        }
+      ],
+      "opcodes": [
+        "75",
+        "25"
+      ],
+      "source": null,
+      "text": " jne    40140f <_IO_wfile_underflow.cold+0x2d>"
+    },
+    {
+      "address": 4199402,
+      "labels": [],
+      "opcodes": [
+        "49",
+        "8b",
+        "bc",
+        "24",
+        "88",
+        "00",
+        "00"
+      ],
+      "source": null,
+      "text": " mov    0x88(%r12),%rdi"
+    },
+    {
+      "address": 4199409,
+      "labels": [],
+      "opcodes": [
+        "00"
+      ],
+      "source": null,
+      "text": " "
+    },
+    {
+      "address": 4199410,
+      "labels": [],
+      "opcodes": [
+        "80",
+        "3d",
+        "7f",
+        "06",
+        "0b",
+        "00",
+        "00"
+      ],
+      "source": null,
+      "text": " cmpb   $0x0,0xb067f(%rip)        # 4b1a78 <__libc_single_threaded>"
+    },
+    {
+      "address": 4199417,
+      "labels": [],
+      "opcodes": [
+        "8b",
+        "47",
+        "04"
+      ],
+      "source": null,
+      "text": " mov    0x4(%rdi),%eax"
+    },
+    {
+      "address": 4199420,
+      "labels": [
+        {
+          "name": "_IO_wfile_underflow.cold",
+          "range": {
+            "endCol": 41,
+            "startCol": 17
+          }
+        }
+      ],
+      "opcodes": [
+        "74",
+        "28"
+      ],
+      "source": null,
+      "text": " je     401426 <_IO_wfile_underflow.cold+0x44>"
+    },
+    {
+      "address": 4199422,
+      "labels": [],
+      "opcodes": [
+        "85",
+        "c0"
+      ],
+      "source": null,
+      "text": " test   %eax,%eax"
+    },
+    {
+      "address": 4199424,
+      "labels": [
+        {
+          "name": "_IO_wfile_underflow.cold",
+          "range": {
+            "endCol": 41,
+            "startCol": 17
+          }
+        }
+      ],
+      "opcodes": [
+        "75",
+        "3c"
+      ],
+      "source": null,
+      "text": " jne    40143e <_IO_wfile_underflow.cold+0x5c>"
+    },
+    {
+      "address": 4199426,
+      "labels": [],
+      "opcodes": [
+        "45",
+        "31",
+        "c0"
+      ],
+      "source": null,
+      "text": " xor    %r8d,%r8d"
+    },
+    {
+      "address": 4199429,
+      "labels": [],
+      "opcodes": [
+        "45",
+        "31",
+        "c9"
+      ],
+      "source": null,
+      "text": " xor    %r9d,%r9d"
+    },
+    {
+      "address": 4199432,
+      "labels": [],
+      "opcodes": [
+        "4c",
+        "89",
+        "47",
+        "08"
+      ],
+      "source": null,
+      "text": " mov    %r8,0x8(%rdi)"
+    },
+    {
+      "address": 4199436,
+      "labels": [],
+      "opcodes": [
+        "44",
+        "89",
+        "0f"
+      ],
+      "source": null,
+      "text": " mov    %r9d,(%rdi)"
+    },
+    {
+      "address": 4199439,
+      "labels": [],
+      "opcodes": [
+        "48",
+        "8b",
+        "45",
+        "c8"
+      ],
+      "source": null,
+      "text": " mov    -0x38(%rbp),%rax"
+    },
+    {
+      "address": 4199443,
+      "labels": [],
+      "opcodes": [
+        "64",
+        "48",
+        "2b",
+        "04",
+        "25",
+        "28",
+        "00"
+      ],
+      "source": null,
+      "text": " sub    %fs:0x28,%rax"
+    },
+    {
+      "address": 4199450,
+      "labels": [],
+      "opcodes": [
+        "00",
+        "00"
+      ],
+      "source": null,
+      "text": " "
+    },
+    {
+      "address": 4199452,
+      "labels": [
+        {
+          "name": "_IO_wfile_underflow.cold",
+          "range": {
+            "endCol": 41,
+            "startCol": 17
+          }
+        }
+      ],
+      "opcodes": [
+        "75",
+        "28"
+      ],
+      "source": null,
+      "text": " jne    401446 <_IO_wfile_underflow.cold+0x64>"
+    },
+    {
+      "address": 4199454,
+      "labels": [],
+      "opcodes": [
+        "48",
+        "89",
+        "df"
+      ],
+      "source": null,
+      "text": " mov    %rbx,%rdi"
+    },
+    {
+      "address": 4199457,
+      "labels": [],
+      "opcodes": [
+        "e8",
+        "3a",
+        "e5",
+        "07",
+        "00"
+      ],
+      "source": null,
+      "text": " call   47f960 <_Unwind_Resume>"
+    },
+    {
+      "address": 4199462,
+      "labels": [],
+      "opcodes": [
+        "85",
+        "c0"
+      ],
+      "source": null,
+      "text": " test   %eax,%eax"
+    },
+    {
+      "address": 4199464,
+      "labels": [
+        {
+          "name": "_IO_wfile_underflow.cold",
+          "range": {
+            "endCol": 41,
+            "startCol": 17
+          }
+        }
+      ],
+      "opcodes": [
+        "75",
+        "14"
+      ],
+      "source": null,
+      "text": " jne    40143e <_IO_wfile_underflow.cold+0x5c>"
+    },
+    {
+      "address": 4199466,
+      "labels": [],
+      "opcodes": [
+        "31",
+        "f6"
+      ],
+      "source": null,
+      "text": " xor    %esi,%esi"
+    },
+    {
+      "address": 4199468,
+      "labels": [],
+      "opcodes": [
+        "48",
+        "89",
+        "77",
+        "08"
+      ],
+      "source": null,
+      "text": " mov    %rsi,0x8(%rdi)"
+    },
+    {
+      "address": 4199472,
+      "labels": [],
+      "opcodes": [
+        "87",
+        "07"
+      ],
+      "source": null,
+      "text": " xchg   %eax,(%rdi)"
+    },
+    {
+      "address": 4199474,
+      "labels": [],
+      "opcodes": [
+        "83",
+        "e8",
+        "01"
+      ],
+      "source": null,
+      "text": " sub    $0x1,%eax"
+    },
+    {
+      "address": 4199477,
+      "labels": [
+        {
+          "name": "_IO_wfile_underflow.cold",
+          "range": {
+            "endCol": 41,
+            "startCol": 17
+          }
+        }
+      ],
+      "opcodes": [
+        "7e",
+        "d8"
+      ],
+      "source": null,
+      "text": " jle    40140f <_IO_wfile_underflow.cold+0x2d>"
+    },
+    {
+      "address": 4199479,
+      "labels": [],
+      "opcodes": [
+        "e8",
+        "44",
+        "44",
+        "00",
+        "00"
+      ],
+      "source": null,
+      "text": " call   405880 <__lll_lock_wake_private>"
+    },
+    {
+      "address": 4199484,
+      "labels": [
+        {
+          "name": "_IO_wfile_underflow.cold",
+          "range": {
+            "endCol": 41,
+            "startCol": 17
+          }
+        }
+      ],
+      "opcodes": [
+        "eb",
+        "d1"
+      ],
+      "source": null,
+      "text": " jmp    40140f <_IO_wfile_underflow.cold+0x2d>"
+    },
+    {
+      "address": 4199486,
+      "labels": [],
+      "opcodes": [
+        "83",
+        "e8",
+        "01"
+      ],
+      "source": null,
+      "text": " sub    $0x1,%eax"
+    },
+    {
+      "address": 4199489,
+      "labels": [],
+      "opcodes": [
+        "89",
+        "47",
+        "04"
+      ],
+      "source": null,
+      "text": " mov    %eax,0x4(%rdi)"
+    },
+    {
+      "address": 4199492,
+      "labels": [
+        {
+          "name": "_IO_wfile_underflow.cold",
+          "range": {
+            "endCol": 41,
+            "startCol": 17
+          }
+        }
+      ],
+      "opcodes": [
+        "eb",
+        "c9"
+      ],
+      "source": null,
+      "text": " jmp    40140f <_IO_wfile_underflow.cold+0x2d>"
+    },
+    {
+      "address": 4199494,
+      "labels": [],
+      "opcodes": [
+        "e8",
+        "55",
+        "21",
+        "01",
+        "00"
+      ],
+      "source": null,
+      "text": " call   4135a0 <__stack_chk_fail>"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "uw_install_context_1.cold:"
+    },
+    {
+      "address": 4199564,
+      "labels": [
+        {
+          "name": "abort",
+          "range": {
+            "endCol": 22,
+            "startCol": 17
+          }
+        }
+      ],
+      "opcodes": [
+        "e8",
+        "01",
+        "fd",
+        "ff",
+        "ff"
+      ],
+      "source": null,
+      "text": " call   401192 <abort>"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "read_encoded_value.cold:"
+    },
+    {
+      "address": 4199569,
+      "labels": [
+        {
+          "name": "abort",
+          "range": {
+            "endCol": 22,
+            "startCol": 17
+          }
+        }
+      ],
+      "opcodes": [
+        "e8",
+        "fc",
+        "fc",
+        "ff",
+        "ff"
+      ],
+      "source": null,
+      "text": " call   401192 <abort>"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "execute_stack_op.cold:"
+    },
+    {
+      "address": 4199574,
+      "labels": [
+        {
+          "name": "abort",
+          "range": {
+            "endCol": 22,
+            "startCol": 17
+          }
+        }
+      ],
+      "opcodes": [
+        "e8",
+        "f7",
+        "fc",
+        "ff",
+        "ff"
+      ],
+      "source": null,
+      "text": " call   401192 <abort>"
+    },
+    {
+      "address": 4199579,
+      "labels": [
+        {
+          "name": "abort",
+          "range": {
+            "endCol": 22,
+            "startCol": 17
+          }
+        }
+      ],
+      "opcodes": [
+        "e8",
+        "f2",
+        "fc",
+        "ff",
+        "ff"
+      ],
+      "source": null,
+      "text": " call   401192 <abort>"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "uw_update_context_1.cold:"
+    },
+    {
+      "address": 4199584,
+      "labels": [
+        {
+          "name": "abort",
+          "range": {
+            "endCol": 22,
+            "startCol": 17
+          }
+        }
+      ],
+      "opcodes": [
+        "e8",
+        "ed",
+        "fc",
+        "ff",
+        "ff"
+      ],
+      "source": null,
+      "text": " call   401192 <abort>"
+    },
+    {
+      "address": 4199589,
+      "labels": [
+        {
+          "name": "abort",
+          "range": {
+            "endCol": 22,
+            "startCol": 17
+          }
+        }
+      ],
+      "opcodes": [
+        "e8",
+        "e8",
+        "fc",
+        "ff",
+        "ff"
+      ],
+      "source": null,
+      "text": " call   401192 <abort>"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "execute_cfa_program_specialized.cold:"
+    },
+    {
+      "address": 4199594,
+      "labels": [
+        {
+          "name": "abort",
+          "range": {
+            "endCol": 22,
+            "startCol": 17
+          }
+        }
+      ],
+      "opcodes": [
+        "e8",
+        "e3",
+        "fc",
+        "ff",
+        "ff"
+      ],
+      "source": null,
+      "text": " call   401192 <abort>"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "execute_cfa_program_generic.cold:"
+    },
+    {
+      "address": 4199599,
+      "labels": [
+        {
+          "name": "abort",
+          "range": {
+            "endCol": 22,
+            "startCol": 17
+          }
+        }
+      ],
+      "opcodes": [
+        "e8",
+        "de",
+        "fc",
+        "ff",
+        "ff"
+      ],
+      "source": null,
+      "text": " call   401192 <abort>"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "uw_frame_state_for.cold:"
+    },
+    {
+      "address": 4199604,
+      "labels": [
+        {
+          "name": "abort",
+          "range": {
+            "endCol": 22,
+            "startCol": 17
+          }
+        }
+      ],
+      "opcodes": [
+        "e8",
+        "d9",
+        "fc",
+        "ff",
+        "ff"
+      ],
+      "source": null,
+      "text": " call   401192 <abort>"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "uw_init_context_1.cold:"
+    },
+    {
+      "address": 4199609,
+      "labels": [
+        {
+          "name": "abort",
+          "range": {
+            "endCol": 22,
+            "startCol": 17
+          }
+        }
+      ],
+      "opcodes": [
+        "e8",
+        "d4",
+        "fc",
+        "ff",
+        "ff"
+      ],
+      "source": null,
+      "text": " call   401192 <abort>"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "_Unwind_RaiseException_Phase2.cold:"
+    },
+    {
+      "address": 4199614,
+      "labels": [
+        {
+          "name": "abort",
+          "range": {
+            "endCol": 22,
+            "startCol": 17
+          }
+        }
+      ],
+      "opcodes": [
+        "e8",
+        "cf",
+        "fc",
+        "ff",
+        "ff"
+      ],
+      "source": null,
+      "text": " call   401192 <abort>"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "_Unwind_ForcedUnwind_Phase2.cold:"
+    },
+    {
+      "address": 4199619,
+      "labels": [
+        {
+          "name": "abort",
+          "range": {
+            "endCol": 22,
+            "startCol": 17
+          }
+        }
+      ],
+      "opcodes": [
+        "e8",
+        "ca",
+        "fc",
+        "ff",
+        "ff"
+      ],
+      "source": null,
+      "text": " call   401192 <abort>"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "_Unwind_GetGR.cold:"
+    },
+    {
+      "address": 4199624,
+      "labels": [],
+      "opcodes": [
+        "55"
+      ],
+      "source": null,
+      "text": " push   %rbp"
+    },
+    {
+      "address": 4199625,
+      "labels": [],
+      "opcodes": [
+        "48",
+        "89",
+        "e5"
+      ],
+      "source": null,
+      "text": " mov    %rsp,%rbp"
+    },
+    {
+      "address": 4199628,
+      "labels": [
+        {
+          "name": "abort",
+          "range": {
+            "endCol": 22,
+            "startCol": 17
+          }
+        }
+      ],
+      "opcodes": [
+        "e8",
+        "c1",
+        "fc",
+        "ff",
+        "ff"
+      ],
+      "source": null,
+      "text": " call   401192 <abort>"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "_Unwind_SetGR.cold:"
+    },
+    {
+      "address": 4199633,
+      "labels": [],
+      "opcodes": [
+        "55"
+      ],
+      "source": null,
+      "text": " push   %rbp"
+    },
+    {
+      "address": 4199634,
+      "labels": [],
+      "opcodes": [
+        "48",
+        "89",
+        "e5"
+      ],
+      "source": null,
+      "text": " mov    %rsp,%rbp"
+    },
+    {
+      "address": 4199637,
+      "labels": [
+        {
+          "name": "abort",
+          "range": {
+            "endCol": 22,
+            "startCol": 17
+          }
+        }
+      ],
+      "opcodes": [
+        "e8",
+        "b8",
+        "fc",
+        "ff",
+        "ff"
+      ],
+      "source": null,
+      "text": " call   401192 <abort>"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "_Unwind_RaiseException.cold:"
+    },
+    {
+      "address": 4199642,
+      "labels": [
+        {
+          "name": "abort",
+          "range": {
+            "endCol": 22,
+            "startCol": 17
+          }
+        }
+      ],
+      "opcodes": [
+        "e8",
+        "b3",
+        "fc",
+        "ff",
+        "ff"
+      ],
+      "source": null,
+      "text": " call   401192 <abort>"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "_Unwind_Resume.cold:"
+    },
+    {
+      "address": 4199647,
+      "labels": [
+        {
+          "name": "abort",
+          "range": {
+            "endCol": 22,
+            "startCol": 17
+          }
+        }
+      ],
+      "opcodes": [
+        "e8",
+        "ae",
+        "fc",
+        "ff",
+        "ff"
+      ],
+      "source": null,
+      "text": " call   401192 <abort>"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "_Unwind_Resume_or_Rethrow.cold:"
+    },
+    {
+      "address": 4199652,
+      "labels": [
+        {
+          "name": "abort",
+          "range": {
+            "endCol": 22,
+            "startCol": 17
+          }
+        }
+      ],
+      "opcodes": [
+        "e8",
+        "a9",
+        "fc",
+        "ff",
+        "ff"
+      ],
+      "source": null,
+      "text": " call   401192 <abort>"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "_Unwind_Backtrace.cold:"
+    },
+    {
+      "address": 4199657,
+      "labels": [
+        {
+          "name": "abort",
+          "range": {
+            "endCol": 22,
+            "startCol": 17
+          }
+        }
+      ],
+      "opcodes": [
+        "e8",
+        "a4",
+        "fc",
+        "ff",
+        "ff"
+      ],
+      "source": null,
+      "text": " call   401192 <abort>"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "read_encoded_value_with_base.cold:"
+    },
+    {
+      "address": 4199662,
+      "labels": [],
+      "opcodes": [
+        "55"
+      ],
+      "source": null,
+      "text": " push   %rbp"
+    },
+    {
+      "address": 4199663,
+      "labels": [],
+      "opcodes": [
+        "48",
+        "89",
+        "e5"
+      ],
+      "source": null,
+      "text": " mov    %rsp,%rbp"
+    },
+    {
+      "address": 4199666,
+      "labels": [
+        {
+          "name": "abort",
+          "range": {
+            "endCol": 22,
+            "startCol": 17
+          }
+        }
+      ],
+      "opcodes": [
+        "e8",
+        "9b",
+        "fc",
+        "ff",
+        "ff"
+      ],
+      "source": null,
+      "text": " call   401192 <abort>"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "fde_mixed_encoding_extract.cold:"
+    },
+    {
+      "address": 4199671,
+      "labels": [
+        {
+          "name": "abort",
+          "range": {
+            "endCol": 22,
+            "startCol": 17
+          }
+        }
+      ],
+      "opcodes": [
+        "e8",
+        "96",
+        "fc",
+        "ff",
+        "ff"
+      ],
+      "source": null,
+      "text": " call   401192 <abort>"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "classify_object_over_fdes.cold:"
+    },
+    {
+      "address": 4199676,
+      "labels": [
+        {
+          "name": "abort",
+          "range": {
+            "endCol": 22,
+            "startCol": 17
+          }
+        }
+      ],
+      "opcodes": [
+        "e8",
+        "91",
+        "fc",
+        "ff",
+        "ff"
+      ],
+      "source": null,
+      "text": " call   401192 <abort>"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "fde_single_encoding_extract.cold:"
+    },
+    {
+      "address": 4199686,
+      "labels": [
+        {
+          "name": "abort",
+          "range": {
+            "endCol": 22,
+            "startCol": 17
+          }
+        }
+      ],
+      "opcodes": [
+        "e8",
+        "87",
+        "fc",
+        "ff",
+        "ff"
+      ],
+      "source": null,
+      "text": " call   401192 <abort>"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "fde_single_encoding_compare.cold:"
+    },
+    {
+      "address": 4199691,
+      "labels": [
+        {
+          "name": "abort",
+          "range": {
+            "endCol": 22,
+            "startCol": 17
+          }
+        }
+      ],
+      "opcodes": [
+        "e8",
+        "82",
+        "fc",
+        "ff",
+        "ff"
+      ],
+      "source": null,
+      "text": " call   401192 <abort>"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "fde_mixed_encoding_compare.cold:"
+    },
+    {
+      "address": 4199696,
+      "labels": [
+        {
+          "name": "abort",
+          "range": {
+            "endCol": 22,
+            "startCol": 17
+          }
+        }
+      ],
+      "opcodes": [
+        "e8",
+        "7d",
+        "fc",
+        "ff",
+        "ff"
+      ],
+      "source": null,
+      "text": " call   401192 <abort>"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "add_fdes.isra.0.cold:"
+    },
+    {
+      "address": 4199701,
+      "labels": [
+        {
+          "name": "abort",
+          "range": {
+            "endCol": 22,
+            "startCol": 17
+          }
+        }
+      ],
+      "opcodes": [
+        "e8",
+        "78",
+        "fc",
+        "ff",
+        "ff"
+      ],
+      "source": null,
+      "text": " call   401192 <abort>"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "linear_search_fdes.cold:"
+    },
+    {
+      "address": 4199706,
+      "labels": [
+        {
+          "name": "abort",
+          "range": {
+            "endCol": 22,
+            "startCol": 17
+          }
+        }
+      ],
+      "opcodes": [
+        "e8",
+        "73",
+        "fc",
+        "ff",
+        "ff"
+      ],
+      "source": null,
+      "text": " call   401192 <abort>"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "_Unwind_Find_FDE.cold:"
+    },
+    {
+      "address": 4199711,
+      "labels": [
+        {
+          "name": "abort",
+          "range": {
+            "endCol": 22,
+            "startCol": 17
+          }
+        }
+      ],
+      "opcodes": [
+        "e8",
+        "6e",
+        "fc",
+        "ff",
+        "ff"
+      ],
+      "source": null,
+      "text": " call   401192 <abort>"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "base_of_encoded_value.cold:"
+    },
+    {
+      "address": 4199716,
+      "labels": [],
+      "opcodes": [
+        "55"
+      ],
+      "source": null,
+      "text": " push   %rbp"
+    },
+    {
+      "address": 4199717,
+      "labels": [],
+      "opcodes": [
+        "48",
+        "89",
+        "e5"
+      ],
+      "source": null,
+      "text": " mov    %rsp,%rbp"
+    },
+    {
+      "address": 4199720,
+      "labels": [
+        {
+          "name": "abort",
+          "range": {
+            "endCol": 22,
+            "startCol": 17
+          }
+        }
+      ],
+      "opcodes": [
+        "e8",
+        "65",
+        "fc",
+        "ff",
+        "ff"
+      ],
+      "source": null,
+      "text": " call   401192 <abort>"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "read_encoded_value_with_base.cold:"
+    },
+    {
+      "address": 4199725,
+      "labels": [],
+      "opcodes": [
+        "55"
+      ],
+      "source": null,
+      "text": " push   %rbp"
+    },
+    {
+      "address": 4199726,
+      "labels": [],
+      "opcodes": [
+        "48",
+        "89",
+        "e5"
+      ],
+      "source": null,
+      "text": " mov    %rsp,%rbp"
+    },
+    {
+      "address": 4199729,
+      "labels": [
+        {
+          "name": "abort",
+          "range": {
+            "endCol": 22,
+            "startCol": 17
+          }
+        }
+      ],
+      "opcodes": [
+        "e8",
+        "5c",
+        "fc",
+        "ff",
+        "ff"
+      ],
+      "source": null,
+      "text": " call   401192 <abort>"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "btree_release_tree_recursively:"
+    },
+    {
+      "address": 4199744,
+      "labels": [],
+      "opcodes": [
+        "55"
+      ],
+      "source": null,
+      "text": " push   %rbp"
+    },
+    {
+      "address": 4199745,
+      "labels": [],
+      "opcodes": [
+        "48",
+        "89",
+        "e5"
+      ],
+      "source": null,
+      "text": " mov    %rsp,%rbp"
+    },
+    {
+      "address": 4199748,
+      "labels": [],
+      "opcodes": [
+        "41",
+        "55"
+      ],
+      "source": null,
+      "text": " push   %r13"
+    },
+    {
+      "address": 4199750,
+      "labels": [],
+      "opcodes": [
+        "49",
+        "89",
+        "fd"
+      ],
+      "source": null,
+      "text": " mov    %rdi,%r13"
+    },
+    {
+      "address": 4199753,
+      "labels": [],
+      "opcodes": [
+        "48",
+        "89",
+        "f7"
+      ],
+      "source": null,
+      "text": " mov    %rsi,%rdi"
+    },
+    {
+      "address": 4199756,
+      "labels": [],
+      "opcodes": [
+        "41",
+        "54"
+      ],
+      "source": null,
+      "text": " push   %r12"
+    },
+    {
+      "address": 4199758,
+      "labels": [],
+      "opcodes": [
+        "53"
+      ],
+      "source": null,
+      "text": " push   %rbx"
+    },
+    {
+      "address": 4199759,
+      "labels": [],
+      "opcodes": [
+        "48",
+        "89",
+        "f3"
+      ],
+      "source": null,
+      "text": " mov    %rsi,%rbx"
+    },
+    {
+      "address": 4199762,
+      "labels": [],
+      "opcodes": [
+        "48",
+        "83",
+        "ec",
+        "08"
+      ],
+      "source": null,
+      "text": " sub    $0x8,%rsp"
+    },
+    {
+      "address": 4199766,
+      "labels": [],
+      "opcodes": [
+        "e8",
+        "c5",
+        "e9",
+        "07",
+        "00"
+      ],
+      "source": null,
+      "text": " call   47ff20 <version_lock_lock_exclusive>"
+    },
+    {
+      "address": 4199771,
+      "labels": [],
+      "opcodes": [
+        "44",
+        "8b",
+        "63",
+        "0c"
+      ],
+      "source": null,
+      "text": " mov    0xc(%rbx),%r12d"
+    },
+    {
+      "address": 4199775,
+      "labels": [],
+      "opcodes": [
+        "45",
+        "85",
+        "e4"
+      ],
+      "source": null,
+      "text": " test   %r12d,%r12d"
+    },
+    {
+      "address": 4199778,
+      "labels": [
+        {
+          "name": "btree_release_tree_recursively",
+          "range": {
+            "endCol": 47,
+            "startCol": 17
+          }
+        }
+      ],
+      "opcodes": [
+        "75",
+        "25"
+      ],
+      "source": null,
+      "text": " jne    401589 <btree_release_tree_recursively+0x49>"
+    },
+    {
+      "address": 4199780,
+      "labels": [],
+      "opcodes": [
+        "8b",
+        "43",
+        "08"
+      ],
+      "source": null,
+      "text": " mov    0x8(%rbx),%eax"
+    },
+    {
+      "address": 4199783,
+      "labels": [],
+      "opcodes": [
+        "85",
+        "c0"
+      ],
+      "source": null,
+      "text": " test   %eax,%eax"
+    },
+    {
+      "address": 4199785,
+      "labels": [
+        {
+          "name": "btree_release_tree_recursively",
+          "range": {
+            "endCol": 47,
+            "startCol": 17
+          }
+        }
+      ],
+      "opcodes": [
+        "74",
+        "1e"
+      ],
+      "source": null,
+      "text": " je     401589 <btree_release_tree_recursively+0x49>"
+    },
+    {
+      "address": 4199787,
+      "labels": [],
+      "opcodes": [
+        "44",
+        "89",
+        "e0"
+      ],
+      "source": null,
+      "text": " mov    %r12d,%eax"
+    },
+    {
+      "address": 4199790,
+      "labels": [],
+      "opcodes": [
+        "4c",
+        "89",
+        "ef"
+      ],
+      "source": null,
+      "text": " mov    %r13,%rdi"
+    },
+    {
+      "address": 4199793,
+      "labels": [],
+      "opcodes": [
+        "41",
+        "83",
+        "c4",
+        "01"
+      ],
+      "source": null,
+      "text": " add    $0x1,%r12d"
+    },
+    {
+      "address": 4199797,
+      "labels": [],
+      "opcodes": [
+        "48",
+        "c1",
+        "e0",
+        "04"
+      ],
+      "source": null,
+      "text": " shl    $0x4,%rax"
+    },
+    {
+      "address": 4199801,
+      "labels": [],
+      "opcodes": [
+        "48",
+        "8b",
+        "74",
+        "18",
+        "18"
+      ],
+      "source": null,
+      "text": " mov    0x18(%rax,%rbx,1),%rsi"
+    },
+    {
+      "address": 4199806,
+      "labels": [
+        {
+          "name": "btree_release_tree_recursively",
+          "range": {
+            "endCol": 47,
+            "startCol": 17
+          }
+        }
+      ],
+      "opcodes": [
+        "e8",
+        "bd",
+        "ff",
+        "ff",
+        "ff"
+      ],
+      "source": null,
+      "text": " call   401540 <btree_release_tree_recursively>"
+    },
+    {
+      "address": 4199811,
+      "labels": [],
+      "opcodes": [
+        "44",
+        "3b",
+        "63",
+        "08"
+      ],
+      "source": null,
+      "text": " cmp    0x8(%rbx),%r12d"
+    },
+    {
+      "address": 4199815,
+      "labels": [
+        {
+          "name": "btree_release_tree_recursively",
+          "range": {
+            "endCol": 47,
+            "startCol": 17
+          }
+        }
+      ],
+      "opcodes": [
+        "72",
+        "e2"
+      ],
+      "source": null,
+      "text": " jb     40156b <btree_release_tree_recursively+0x2b>"
+    },
+    {
+      "address": 4199817,
+      "labels": [],
+      "opcodes": [
+        "c7",
+        "43",
+        "0c",
+        "02",
+        "00",
+        "00",
+        "00"
+      ],
+      "source": null,
+      "text": " movl   $0x2,0xc(%rbx)"
+    },
+    {
+      "address": 4199824,
+      "labels": [],
+      "opcodes": [
+        "49",
+        "8d",
+        "55",
+        "08"
+      ],
+      "source": null,
+      "text": " lea    0x8(%r13),%rdx"
+    },
+    {
+      "address": 4199828,
+      "labels": [],
+      "opcodes": [
+        "49",
+        "8b",
+        "45",
+        "08"
+      ],
+      "source": null,
+      "text": " mov    0x8(%r13),%rax"
+    },
+    {
+      "address": 4199832,
+      "labels": [],
+      "opcodes": [
+        "48",
+        "89",
+        "43",
+        "18"
+      ],
+      "source": null,
+      "text": " mov    %rax,0x18(%rbx)"
+    },
+    {
+      "address": 4199836,
+      "labels": [],
+      "opcodes": [
+        "f0",
+        "48",
+        "0f",
+        "b1",
+        "1a"
+      ],
+      "source": null,
+      "text": " lock cmpxchg %rbx,(%rdx)"
+    },
+    {
+      "address": 4199841,
+      "labels": [
+        {
+          "name": "btree_release_tree_recursively",
+          "range": {
+            "endCol": 47,
+            "startCol": 17
+          }
+        }
+      ],
+      "opcodes": [
+        "75",
+        "f5"
+      ],
+      "source": null,
+      "text": " jne    401598 <btree_release_tree_recursively+0x58>"
+    },
+    {
+      "address": 4199843,
+      "labels": [],
+      "opcodes": [
+        "48",
+        "83",
+        "c4",
+        "08"
+      ],
+      "source": null,
+      "text": " add    $0x8,%rsp"
+    },
+    {
+      "address": 4199847,
+      "labels": [],
+      "opcodes": [
+        "48",
+        "89",
+        "df"
+      ],
+      "source": null,
+      "text": " mov    %rbx,%rdi"
+    },
+    {
+      "address": 4199850,
+      "labels": [],
+      "opcodes": [
+        "5b"
+      ],
+      "source": null,
+      "text": " pop    %rbx"
+    },
+    {
+      "address": 4199851,
+      "labels": [],
+      "opcodes": [
+        "41",
+        "5c"
+      ],
+      "source": null,
+      "text": " pop    %r12"
+    },
+    {
+      "address": 4199853,
+      "labels": [],
+      "opcodes": [
+        "41",
+        "5d"
+      ],
+      "source": null,
+      "text": " pop    %r13"
+    },
+    {
+      "address": 4199855,
+      "labels": [],
+      "opcodes": [
+        "5d"
+      ],
+      "source": null,
+      "text": " pop    %rbp"
+    },
+    {
+      "address": 4199856,
+      "labels": [],
+      "opcodes": [
+        "e9",
+        "eb",
+        "ee",
+        "07",
+        "00"
+      ],
+      "source": null,
+      "text": " jmp    4804a0 <version_lock_unlock_exclusive>"
+    },
+    {
+      "address": 4199861,
+      "labels": [],
+      "opcodes": [
+        "66",
+        "66",
+        "2e",
+        "0f",
+        "1f",
+        "84",
+        "00"
+      ],
+      "source": null,
+      "text": " data16 cs nopw 0x0(%rax,%rax,1)"
+    },
+    {
+      "address": 4199868,
+      "labels": [],
+      "opcodes": [
+        "00",
+        "00",
+        "00",
+        "00"
+      ],
+      "source": null,
+      "text": " "
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "btree_destroy:"
+    },
+    {
+      "address": 4199872,
+      "labels": [],
+      "opcodes": [
+        "55"
+      ],
+      "source": null,
+      "text": " push   %rbp"
+    },
+    {
+      "address": 4199873,
+      "labels": [],
+      "opcodes": [
+        "31",
+        "f6"
+      ],
+      "source": null,
+      "text": " xor    %esi,%esi"
+    },
+    {
+      "address": 4199875,
+      "labels": [],
+      "opcodes": [
+        "48",
+        "89",
+        "e5"
+      ],
+      "source": null,
+      "text": " mov    %rsp,%rbp"
+    },
+    {
+      "address": 4199878,
+      "labels": [],
+      "opcodes": [
+        "41",
+        "54"
+      ],
+      "source": null,
+      "text": " push   %r12"
+    },
+    {
+      "address": 4199880,
+      "labels": [],
+      "opcodes": [
+        "49",
+        "89",
+        "fc"
+      ],
+      "source": null,
+      "text": " mov    %rdi,%r12"
+    },
+    {
+      "address": 4199883,
+      "labels": [],
+      "opcodes": [
+        "53"
+      ],
+      "source": null,
+      "text": " push   %rbx"
+    },
+    {
+      "address": 4199884,
+      "labels": [],
+      "opcodes": [
+        "48",
+        "87",
+        "37"
+      ],
+      "source": null,
+      "text": " xchg   %rsi,(%rdi)"
+    },
+    {
+      "address": 4199887,
+      "labels": [],
+      "opcodes": [
+        "48",
+        "85",
+        "f6"
+      ],
+      "source": null,
+      "text": " test   %rsi,%rsi"
+    },
+    {
+      "address": 4199890,
+      "labels": [
+        {
+          "name": "btree_destroy",
+          "range": {
+            "endCol": 30,
+            "startCol": 17
+          }
+        }
+      ],
+      "opcodes": [
+        "75",
+        "27"
+      ],
+      "source": null,
+      "text": " jne    4015fb <btree_destroy+0x3b>"
+    },
+    {
+      "address": 4199892,
+      "labels": [],
+      "opcodes": [
+        "49",
+        "8b",
+        "5c",
+        "24",
+        "08"
+      ],
+      "source": null,
+      "text": " mov    0x8(%r12),%rbx"
+    },
+    {
+      "address": 4199897,
+      "labels": [],
+      "opcodes": [
+        "48",
+        "85",
+        "db"
+      ],
+      "source": null,
+      "text": " test   %rbx,%rbx"
+    },
+    {
+      "address": 4199900,
+      "labels": [
+        {
+          "name": "btree_destroy",
+          "range": {
+            "endCol": 30,
+            "startCol": 17
+          }
+        }
+      ],
+      "opcodes": [
+        "74",
+        "18"
+      ],
+      "source": null,
+      "text": " je     4015f6 <btree_destroy+0x36>"
+    },
+    {
+      "address": 4199902,
+      "labels": [],
+      "opcodes": [
+        "66",
+        "90"
+      ],
+      "source": null,
+      "text": " xchg   %ax,%ax"
+    },
+    {
+      "address": 4199904,
+      "labels": [],
+      "opcodes": [
+        "48",
+        "89",
+        "df"
+      ],
+      "source": null,
+      "text": " mov    %rbx,%rdi"
+    },
+    {
+      "address": 4199907,
+      "labels": [],
+      "opcodes": [
+        "48",
+        "8b",
+        "5b",
+        "18"
+      ],
+      "source": null,
+      "text": " mov    0x18(%rbx),%rbx"
+    },
+    {
+      "address": 4199911,
+      "labels": [],
+      "opcodes": [
+        "e8",
+        "44",
+        "96",
+        "00",
+        "00"
+      ],
+      "source": null,
+      "text": " call   40ac30 <__free>"
+    },
+    {
+      "address": 4199916,
+      "labels": [],
+      "opcodes": [
+        "49",
+        "89",
+        "5c",
+        "24",
+        "08"
+      ],
+      "source": null,
+      "text": " mov    %rbx,0x8(%r12)"
+    },
+    {
+      "address": 4199921,
+      "labels": [],
+      "opcodes": [
+        "48",
+        "85",
+        "db"
+      ],
+      "source": null,
+      "text": " test   %rbx,%rbx"
+    },
+    {
+      "address": 4199924,
+      "labels": [
+        {
+          "name": "btree_destroy",
+          "range": {
+            "endCol": 30,
+            "startCol": 17
+          }
+        }
+      ],
+      "opcodes": [
+        "75",
+        "ea"
+      ],
+      "source": null,
+      "text": " jne    4015e0 <btree_destroy+0x20>"
+    },
+    {
+      "address": 4199926,
+      "labels": [],
+      "opcodes": [
+        "5b"
+      ],
+      "source": null,
+      "text": " pop    %rbx"
+    },
+    {
+      "address": 4199927,
+      "labels": [],
+      "opcodes": [
+        "41",
+        "5c"
+      ],
+      "source": null,
+      "text": " pop    %r12"
+    },
+    {
+      "address": 4199929,
+      "labels": [],
+      "opcodes": [
+        "5d"
+      ],
+      "source": null,
+      "text": " pop    %rbp"
+    },
+    {
+      "address": 4199930,
+      "labels": [],
+      "opcodes": [
+        "c3"
+      ],
+      "source": null,
+      "text": " ret"
+    },
+    {
+      "address": 4199931,
+      "labels": [
+        {
+          "name": "btree_release_tree_recursively",
+          "range": {
+            "endCol": 47,
+            "startCol": 17
+          }
+        }
+      ],
+      "opcodes": [
+        "e8",
+        "40",
+        "ff",
+        "ff",
+        "ff"
+      ],
+      "source": null,
+      "text": " call   401540 <btree_release_tree_recursively>"
+    },
+    {
+      "address": 4199936,
+      "labels": [
+        {
+          "name": "btree_destroy",
+          "range": {
+            "endCol": 30,
+            "startCol": 17
+          }
+        }
+      ],
+      "opcodes": [
+        "eb",
+        "d2"
+      ],
+      "source": null,
+      "text": " jmp    4015d4 <btree_destroy+0x14>"
+    },
+    {
+      "address": 4199938,
+      "labels": [],
+      "opcodes": [
+        "66",
+        "66",
+        "2e",
+        "0f",
+        "1f",
+        "84",
+        "00"
+      ],
+      "source": null,
+      "text": " data16 cs nopw 0x0(%rax,%rax,1)"
+    },
+    {
+      "address": 4199945,
+      "labels": [],
+      "opcodes": [
+        "00",
+        "00",
+        "00",
+        "00"
+      ],
+      "source": null,
+      "text": " "
+    },
+    {
+      "address": 4199949,
+      "labels": [],
+      "opcodes": [
+        "0f",
+        "1f",
+        "00"
+      ],
+      "source": null,
+      "text": " nopl   (%rax)"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "release_registered_frames:"
+    },
+    {
+      "address": 4199952,
+      "labels": [],
+      "opcodes": [
+        "f3",
+        "0f",
+        "1e",
+        "fa"
+      ],
+      "source": null,
+      "text": " endbr64"
+    },
+    {
+      "address": 4199956,
+      "labels": [],
+      "opcodes": [
+        "55"
+      ],
+      "source": null,
+      "text": " push   %rbp"
+    },
+    {
+      "address": 4199957,
+      "labels": [],
+      "opcodes": [
+        "48",
+        "8d",
+        "3d",
+        "54",
+        "6c",
+        "0b",
+        "00"
+      ],
+      "source": null,
+      "text": " lea    0xb6c54(%rip),%rdi        # 4b8270 <registered_frames>"
+    },
+    {
+      "address": 4199964,
+      "labels": [],
+      "opcodes": [
+        "48",
+        "89",
+        "e5"
+      ],
+      "source": null,
+      "text": " mov    %rsp,%rbp"
+    },
+    {
+      "address": 4199967,
+      "labels": [
+        {
+          "name": "btree_destroy",
+          "range": {
+            "endCol": 30,
+            "startCol": 17
+          }
+        }
+      ],
+      "opcodes": [
+        "e8",
+        "9c",
+        "ff",
+        "ff",
+        "ff"
+      ],
+      "source": null,
+      "text": " call   4015c0 <btree_destroy>"
+    },
+    {
+      "address": 4199972,
+      "labels": [],
+      "opcodes": [
+        "48",
+        "8d",
+        "3d",
+        "25",
+        "6c",
+        "0b",
+        "00"
+      ],
+      "source": null,
+      "text": " lea    0xb6c25(%rip),%rdi        # 4b8250 <registered_objects>"
+    },
+    {
+      "address": 4199979,
+      "labels": [
+        {
+          "name": "btree_destroy",
+          "range": {
+            "endCol": 30,
+            "startCol": 17
+          }
+        }
+      ],
+      "opcodes": [
+        "e8",
+        "90",
+        "ff",
+        "ff",
+        "ff"
+      ],
+      "source": null,
+      "text": " call   4015c0 <btree_destroy>"
+    },
+    {
+      "address": 4199984,
+      "labels": [],
+      "opcodes": [
+        "c6",
+        "05",
+        "11",
+        "6c",
+        "0b",
+        "00",
+        "01"
+      ],
+      "source": null,
+      "text": " movb   $0x1,0xb6c11(%rip)        # 4b8248 <in_shutdown>"
+    },
+    {
+      "address": 4199991,
+      "labels": [],
+      "opcodes": [
+        "5d"
+      ],
+      "source": null,
+      "text": " pop    %rbp"
+    },
+    {
+      "address": 4199992,
+      "labels": [],
+      "opcodes": [
+        "c3"
+      ],
+      "source": null,
+      "text": " ret"
+    },
+    {
+      "address": 4199993,
+      "labels": [],
+      "opcodes": [
+        "0f",
+        "1f",
+        "80",
+        "00",
+        "00",
+        "00",
+        "00"
+      ],
+      "source": null,
+      "text": " nopl   0x0(%rax)"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "main:"
+    },
+    {
+      "address": 4200000,
+      "labels": [],
+      "opcodes": [
+        "f3",
+        "0f",
+        "1e",
+        "fa"
+      ],
+      "source": null,
+      "text": " endbr64"
+    },
+    {
+      "address": 4200004,
+      "labels": [],
+      "opcodes": [
+        "31",
+        "c0"
+      ],
+      "source": null,
+      "text": " xor    %eax,%eax"
+    },
+    {
+      "address": 4200006,
+      "labels": [],
+      "opcodes": [
+        "c3"
+      ],
+      "source": null,
+      "text": " ret"
+    },
+    {
+      "address": 4200007,
+      "labels": [],
+      "opcodes": [
+        "66",
+        "2e",
+        "0f",
+        "1f",
+        "84",
+        "00",
+        "00"
+      ],
+      "source": null,
+      "text": " cs nopw 0x0(%rax,%rax,1)"
+    },
+    {
+      "address": 4200014,
+      "labels": [],
+      "opcodes": [
+        "00",
+        "00",
+        "00"
+      ],
+      "source": null,
+      "text": " "
+    },
+    {
+      "address": 4200017,
+      "labels": [],
+      "opcodes": [
+        "66",
+        "2e",
+        "0f",
+        "1f",
+        "84",
+        "00",
+        "00"
+      ],
+      "source": null,
+      "text": " cs nopw 0x0(%rax,%rax,1)"
+    },
+    {
+      "address": 4200024,
+      "labels": [],
+      "opcodes": [
+        "00",
+        "00",
+        "00"
+      ],
+      "source": null,
+      "text": " "
+    },
+    {
+      "address": 4200027,
+      "labels": [],
+      "opcodes": [
+        "0f",
+        "1f",
+        "44",
+        "00",
+        "00"
+      ],
+      "source": null,
+      "text": " nopl   0x0(%rax,%rax,1)"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "_IO_stdfiles_init:"
+    },
+    {
+      "address": 4200032,
+      "labels": [],
+      "opcodes": [
+        "f3",
+        "0f",
+        "1e",
+        "fa"
+      ],
+      "source": null,
+      "text": " endbr64"
+    },
+    {
+      "address": 4200036,
+      "labels": [],
+      "opcodes": [
+        "48",
+        "8b",
+        "05",
+        "b5",
+        "0a",
+        "0b",
+        "00"
+      ],
+      "source": null,
+      "text": " mov    0xb0ab5(%rip),%rax        # 4b2120 <_IO_list_all>"
+    },
+    {
+      "address": 4200043,
+      "labels": [],
+      "opcodes": [
+        "48",
+        "85",
+        "c0"
+      ],
+      "source": null,
+      "text": " test   %rax,%rax"
+    },
+    {
+      "address": 4200046,
+      "labels": [
+        {
+          "name": "_IO_stdfiles_init",
+          "range": {
+            "endCol": 34,
+            "startCol": 17
+          }
+        }
+      ],
+      "opcodes": [
+        "74",
+        "24"
+      ],
+      "source": null,
+      "text": " je     401694 <_IO_stdfiles_init+0x34>"
+    },
+    {
+      "address": 4200048,
+      "labels": [],
+      "opcodes": [
+        "48",
+        "8d",
+        "15",
+        "a9",
+        "0a",
+        "0b",
+        "00"
+      ],
+      "source": null,
+      "text": " lea    0xb0aa9(%rip),%rdx        # 4b2120 <_IO_list_all>"
+    },
+    {
+      "address": 4200055,
+      "labels": [],
+      "opcodes": [
+        "66",
+        "0f",
+        "1f",
+        "84",
+        "00",
+        "00",
+        "00"
+      ],
+      "source": null,
+      "text": " nopw   0x0(%rax,%rax,1)"
+    },
+    {
+      "address": 4200062,
+      "labels": [],
+      "opcodes": [
+        "00",
+        "00"
+      ],
+      "source": null,
+      "text": " "
+    },
+    {
+      "address": 4200064,
+      "labels": [],
+      "opcodes": [
+        "48",
+        "89",
+        "90",
+        "b8",
+        "00",
+        "00",
+        "00"
+      ],
+      "source": null,
+      "text": " mov    %rdx,0xb8(%rax)"
+    },
+    {
+      "address": 4200071,
+      "labels": [],
+      "opcodes": [
+        "48",
+        "8d",
+        "50",
+        "68"
+      ],
+      "source": null,
+      "text": " lea    0x68(%rax),%rdx"
+    },
+    {
+      "address": 4200075,
+      "labels": [],
+      "opcodes": [
+        "48",
+        "8b",
+        "40",
+        "68"
+      ],
+      "source": null,
+      "text": " mov    0x68(%rax),%rax"
+    },
+    {
+      "address": 4200079,
+      "labels": [],
+      "opcodes": [
+        "48",
+        "85",
+        "c0"
+      ],
+      "source": null,
+      "text": " test   %rax,%rax"
+    },
+    {
+      "address": 4200082,
+      "labels": [
+        {
+          "name": "_IO_stdfiles_init",
+          "range": {
+            "endCol": 34,
+            "startCol": 17
+          }
+        }
+      ],
+      "opcodes": [
+        "75",
+        "ec"
+      ],
+      "source": null,
+      "text": " jne    401680 <_IO_stdfiles_init+0x20>"
+    },
+    {
+      "address": 4200084,
+      "labels": [],
+      "opcodes": [
+        "c3"
+      ],
+      "source": null,
+      "text": " ret"
+    },
+    {
+      "address": 4200085,
+      "labels": [],
+      "opcodes": [
+        "66",
+        "2e",
+        "0f",
+        "1f",
+        "84",
+        "00",
+        "00"
+      ],
+      "source": null,
+      "text": " cs nopw 0x0(%rax,%rax,1)"
+    },
+    {
+      "address": 4200092,
+      "labels": [],
+      "opcodes": [
+        "00",
+        "00",
+        "00"
+      ],
+      "source": null,
+      "text": " "
+    },
+    {
+      "address": 4200095,
+      "labels": [],
+      "opcodes": [
+        "90"
+      ],
+      "source": null,
+      "text": " nop"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "f:"
+    },
+    {
+      "address": 4200400,
+      "labels": [],
+      "opcodes": [
+        "f3",
+        "0f",
+        "1e",
+        "fa"
+      ],
+      "source": null,
+      "text": " endbr64"
+    },
+    {
+      "address": 4200404,
+      "labels": [],
+      "opcodes": [
+        "f2",
+        "0f",
+        "10",
+        "5f",
+        "08"
+      ],
+      "source": null,
+      "text": " movsd  0x8(%rdi),%xmm3"
+    },
+    {
+      "address": 4200409,
+      "labels": [],
+      "opcodes": [
+        "f2",
+        "0f",
+        "10",
+        "17"
+      ],
+      "source": null,
+      "text": " movsd  (%rdi),%xmm2"
+    },
+    {
+      "address": 4200413,
+      "labels": [],
+      "opcodes": [
+        "53"
+      ],
+      "source": null,
+      "text": " push   %rbx"
+    },
+    {
+      "address": 4200414,
+      "labels": [],
+      "opcodes": [
+        "66",
+        "0f",
+        "ef",
+        "c9"
+      ],
+      "source": null,
+      "text": " pxor   %xmm1,%xmm1"
+    },
+    {
+      "address": 4200418,
+      "labels": [],
+      "opcodes": [
+        "f2",
+        "0f",
+        "10",
+        "05",
+        "26",
+        "48",
+        "08"
+      ],
+      "source": null,
+      "text": " movsd  0x84826(%rip),%xmm0        # 486010 <__rseq_flags+0xc>"
+    },
+    {
+      "address": 4200425,
+      "labels": [],
+      "opcodes": [
+        "00"
+      ],
+      "source": null,
+      "text": " "
+    },
+    {
+      "address": 4200426,
+      "labels": [],
+      "opcodes": [
+        "48",
+        "89",
+        "fb"
+      ],
+      "source": null,
+      "text": " mov    %rdi,%rbx"
+    },
+    {
+      "address": 4200429,
+      "labels": [
+        {
+          "name": "__divdc3",
+          "range": {
+            "endCol": 25,
+            "startCol": 17
+          }
+        }
+      ],
+      "opcodes": [
+        "e8",
+        "6e",
+        "00",
+        "00",
+        "00"
+      ],
+      "source": null,
+      "text": " call   401860 <__divdc3>"
+    },
+    {
+      "address": 4200434,
+      "labels": [],
+      "opcodes": [
+        "f2",
+        "0f",
+        "10",
+        "5b",
+        "18"
+      ],
+      "source": null,
+      "text": " movsd  0x18(%rbx),%xmm3"
+    },
+    {
+      "address": 4200439,
+      "labels": [],
+      "opcodes": [
+        "f2",
+        "0f",
+        "10",
+        "53",
+        "10"
+      ],
+      "source": null,
+      "text": " movsd  0x10(%rbx),%xmm2"
+    },
+    {
+      "address": 4200444,
+      "labels": [
+        {
+          "name": "__divdc3",
+          "range": {
+            "endCol": 25,
+            "startCol": 17
+          }
+        }
+      ],
+      "opcodes": [
+        "e8",
+        "5f",
+        "00",
+        "00",
+        "00"
+      ],
+      "source": null,
+      "text": " call   401860 <__divdc3>"
+    },
+    {
+      "address": 4200449,
+      "labels": [],
+      "opcodes": [
+        "f2",
+        "0f",
+        "10",
+        "5b",
+        "28"
+      ],
+      "source": null,
+      "text": " movsd  0x28(%rbx),%xmm3"
+    },
+    {
+      "address": 4200454,
+      "labels": [],
+      "opcodes": [
+        "f2",
+        "0f",
+        "10",
+        "53",
+        "20"
+      ],
+      "source": null,
+      "text": " movsd  0x20(%rbx),%xmm2"
+    },
+    {
+      "address": 4200459,
+      "labels": [
+        {
+          "name": "__divdc3",
+          "range": {
+            "endCol": 25,
+            "startCol": 17
+          }
+        }
+      ],
+      "opcodes": [
+        "e8",
+        "50",
+        "00",
+        "00",
+        "00"
+      ],
+      "source": null,
+      "text": " call   401860 <__divdc3>"
+    },
+    {
+      "address": 4200464,
+      "labels": [],
+      "opcodes": [
+        "f2",
+        "0f",
+        "10",
+        "5b",
+        "38"
+      ],
+      "source": null,
+      "text": " movsd  0x38(%rbx),%xmm3"
+    },
+    {
+      "address": 4200469,
+      "labels": [],
+      "opcodes": [
+        "f2",
+        "0f",
+        "10",
+        "53",
+        "30"
+      ],
+      "source": null,
+      "text": " movsd  0x30(%rbx),%xmm2"
+    },
+    {
+      "address": 4200474,
+      "labels": [
+        {
+          "name": "__divdc3",
+          "range": {
+            "endCol": 25,
+            "startCol": 17
+          }
+        }
+      ],
+      "opcodes": [
+        "e8",
+        "41",
+        "00",
+        "00",
+        "00"
+      ],
+      "source": null,
+      "text": " call   401860 <__divdc3>"
+    },
+    {
+      "address": 4200479,
+      "labels": [],
+      "opcodes": [
+        "f2",
+        "0f",
+        "10",
+        "5b",
+        "48"
+      ],
+      "source": null,
+      "text": " movsd  0x48(%rbx),%xmm3"
+    },
+    {
+      "address": 4200484,
+      "labels": [],
+      "opcodes": [
+        "f2",
+        "0f",
+        "10",
+        "53",
+        "40"
+      ],
+      "source": null,
+      "text": " movsd  0x40(%rbx),%xmm2"
+    },
+    {
+      "address": 4200489,
+      "labels": [
+        {
+          "name": "__divdc3",
+          "range": {
+            "endCol": 25,
+            "startCol": 17
+          }
+        }
+      ],
+      "opcodes": [
+        "e8",
+        "32",
+        "00",
+        "00",
+        "00"
+      ],
+      "source": null,
+      "text": " call   401860 <__divdc3>"
+    },
+    {
+      "address": 4200494,
+      "labels": [],
+      "opcodes": [
+        "f2",
+        "0f",
+        "10",
+        "5b",
+        "58"
+      ],
+      "source": null,
+      "text": " movsd  0x58(%rbx),%xmm3"
+    },
+    {
+      "address": 4200499,
+      "labels": [],
+      "opcodes": [
+        "f2",
+        "0f",
+        "10",
+        "53",
+        "50"
+      ],
+      "source": null,
+      "text": " movsd  0x50(%rbx),%xmm2"
+    },
+    {
+      "address": 4200504,
+      "labels": [
+        {
+          "name": "__divdc3",
+          "range": {
+            "endCol": 25,
+            "startCol": 17
+          }
+        }
+      ],
+      "opcodes": [
+        "e8",
+        "23",
+        "00",
+        "00",
+        "00"
+      ],
+      "source": null,
+      "text": " call   401860 <__divdc3>"
+    },
+    {
+      "address": 4200509,
+      "labels": [],
+      "opcodes": [
+        "f2",
+        "0f",
+        "10",
+        "5b",
+        "68"
+      ],
+      "source": null,
+      "text": " movsd  0x68(%rbx),%xmm3"
+    },
+    {
+      "address": 4200514,
+      "labels": [],
+      "opcodes": [
+        "f2",
+        "0f",
+        "10",
+        "53",
+        "60"
+      ],
+      "source": null,
+      "text": " movsd  0x60(%rbx),%xmm2"
+    },
+    {
+      "address": 4200519,
+      "labels": [
+        {
+          "name": "__divdc3",
+          "range": {
+            "endCol": 25,
+            "startCol": 17
+          }
+        }
+      ],
+      "opcodes": [
+        "e8",
+        "14",
+        "00",
+        "00",
+        "00"
+      ],
+      "source": null,
+      "text": " call   401860 <__divdc3>"
+    },
+    {
+      "address": 4200524,
+      "labels": [],
+      "opcodes": [
+        "f2",
+        "0f",
+        "10",
+        "5b",
+        "78"
+      ],
+      "source": null,
+      "text": " movsd  0x78(%rbx),%xmm3"
+    },
+    {
+      "address": 4200529,
+      "labels": [],
+      "opcodes": [
+        "f2",
+        "0f",
+        "10",
+        "53",
+        "70"
+      ],
+      "source": null,
+      "text": " movsd  0x70(%rbx),%xmm2"
+    },
+    {
+      "address": 4200534,
+      "labels": [],
+      "opcodes": [
+        "5b"
+      ],
+      "source": null,
+      "text": " pop    %rbx"
+    },
+    {
+      "address": 4200535,
+      "labels": [
+        {
+          "name": "__divdc3",
+          "range": {
+            "endCol": 25,
+            "startCol": 17
+          }
+        }
+      ],
+      "opcodes": [
+        "e9",
+        "04",
+        "00",
+        "00",
+        "00"
+      ],
+      "source": null,
+      "text": " jmp    401860 <__divdc3>"
+    },
+    {
+      "address": 4200540,
+      "labels": [],
+      "opcodes": [
+        "0f",
+        "1f",
+        "40",
+        "00"
+      ],
+      "source": null,
+      "text": " nopl   0x0(%rax)"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "__divdc3:"
+    },
+    {
+      "address": 4200544,
+      "labels": [],
+      "opcodes": [
+        "f3",
+        "0f",
+        "1e",
+        "fa"
+      ],
+      "source": null,
+      "text": " endbr64"
+    },
+    {
+      "address": 4200548,
+      "labels": [],
+      "opcodes": [
+        "66",
+        "0f",
+        "28",
+        "f0"
+      ],
+      "source": null,
+      "text": " movapd %xmm0,%xmm6"
+    },
+    {
+      "address": 4200552,
+      "labels": [],
+      "opcodes": [
+        "f3",
+        "0f",
+        "7e",
+        "05",
+        "20",
+        "48",
+        "08"
+      ],
+      "source": null,
+      "text": " movq   0x84820(%rip),%xmm0        # 486090 <conversion_rate+0x18>"
+    },
+    {
+      "address": 4200559,
+      "labels": [],
+      "opcodes": [
+        "00"
+      ],
+      "source": null,
+      "text": " "
+    },
+    {
+      "address": 4200560,
+      "labels": [],
+      "opcodes": [
+        "66",
+        "0f",
+        "28",
+        "e2"
+      ],
+      "source": null,
+      "text": " movapd %xmm2,%xmm4"
+    },
+    {
+      "address": 4200564,
+      "labels": [],
+      "opcodes": [
+        "66",
+        "0f",
+        "28",
+        "eb"
+      ],
+      "source": null,
+      "text": " movapd %xmm3,%xmm5"
+    },
+    {
+      "address": 4200568,
+      "labels": [],
+      "opcodes": [
+        "66",
+        "0f",
+        "28",
+        "f9"
+      ],
+      "source": null,
+      "text": " movapd %xmm1,%xmm7"
+    },
+    {
+      "address": 4200572,
+      "labels": [],
+      "opcodes": [
+        "66",
+        "0f",
+        "54",
+        "e0"
+      ],
+      "source": null,
+      "text": " andpd  %xmm0,%xmm4"
+    },
+    {
+      "address": 4200576,
+      "labels": [],
+      "opcodes": [
+        "66",
+        "0f",
+        "54",
+        "e8"
+      ],
+      "source": null,
+      "text": " andpd  %xmm0,%xmm5"
+    },
+    {
+      "address": 4200580,
+      "labels": [],
+      "opcodes": [
+        "66",
+        "0f",
+        "2f",
+        "ec"
+      ],
+      "source": null,
+      "text": " comisd %xmm4,%xmm5"
+    },
+    {
+      "address": 4200584,
+      "labels": [
+        {
+          "name": "__divdc3",
+          "range": {
+            "endCol": 25,
+            "startCol": 17
+          }
+        }
+      ],
+      "opcodes": [
+        "0f",
+        "86",
+        "c2",
+        "00",
+        "00",
+        "00"
+      ],
+      "source": null,
+      "text": " jbe    401950 <__divdc3+0xf0>"
+    },
+    {
+      "address": 4200590,
+      "labels": [],
+      "opcodes": [
+        "66",
+        "0f",
+        "2f",
+        "2d",
+        "82",
+        "47",
+        "08"
+      ],
+      "source": null,
+      "text": " comisd 0x84782(%rip),%xmm5        # 486018 <__rseq_flags+0x14>"
+    },
+    {
+      "address": 4200597,
+      "labels": [],
+      "opcodes": [
+        "00"
+      ],
+      "source": null,
+      "text": " "
+    },
+    {
+      "address": 4200598,
+      "labels": [
+        {
+          "name": "__divdc3",
+          "range": {
+            "endCol": 25,
+            "startCol": 17
+          }
+        }
+      ],
+      "opcodes": [
+        "72",
+        "20"
+      ],
+      "source": null,
+      "text": " jb     4018b8 <__divdc3+0x58>"
+    },
+    {
+      "address": 4200600,
+      "labels": [],
+      "opcodes": [
+        "f2",
+        "0f",
+        "10",
+        "0d",
+        "80",
+        "47",
+        "08"
+      ],
+      "source": null,
+      "text": " movsd  0x84780(%rip),%xmm1        # 486020 <__rseq_flags+0x1c>"
+    },
+    {
+      "address": 4200607,
+      "labels": [],
+      "opcodes": [
+        "00"
+      ],
+      "source": null,
+      "text": " "
+    },
+    {
+      "address": 4200608,
+      "labels": [],
+      "opcodes": [
+        "f2",
+        "0f",
+        "59",
+        "d9"
+      ],
+      "source": null,
+      "text": " mulsd  %xmm1,%xmm3"
+    },
+    {
+      "address": 4200612,
+      "labels": [],
+      "opcodes": [
+        "f2",
+        "0f",
+        "59",
+        "f1"
+      ],
+      "source": null,
+      "text": " mulsd  %xmm1,%xmm6"
+    },
+    {
+      "address": 4200616,
+      "labels": [],
+      "opcodes": [
+        "f2",
+        "0f",
+        "59",
+        "f9"
+      ],
+      "source": null,
+      "text": " mulsd  %xmm1,%xmm7"
+    },
+    {
+      "address": 4200620,
+      "labels": [],
+      "opcodes": [
+        "f2",
+        "0f",
+        "59",
+        "d1"
+      ],
+      "source": null,
+      "text": " mulsd  %xmm1,%xmm2"
+    },
+    {
+      "address": 4200624,
+      "labels": [],
+      "opcodes": [
+        "66",
+        "0f",
+        "28",
+        "eb"
+      ],
+      "source": null,
+      "text": " movapd %xmm3,%xmm5"
+    },
+    {
+      "address": 4200628,
+      "labels": [],
+      "opcodes": [
+        "66",
+        "0f",
+        "54",
+        "e8"
+      ],
+      "source": null,
+      "text": " andpd  %xmm0,%xmm5"
+    },
+    {
+      "address": 4200632,
+      "labels": [],
+      "opcodes": [
+        "f2",
+        "0f",
+        "10",
+        "0d",
+        "68",
+        "47",
+        "08"
+      ],
+      "source": null,
+      "text": " movsd  0x84768(%rip),%xmm1        # 486028 <__rseq_flags+0x24>"
+    },
+    {
+      "address": 4200639,
+      "labels": [],
+      "opcodes": [
+        "00"
+      ],
+      "source": null,
+      "text": " "
+    },
+    {
+      "address": 4200640,
+      "labels": [],
+      "opcodes": [
+        "66",
+        "0f",
+        "2f",
+        "cd"
+      ],
+      "source": null,
+      "text": " comisd %xmm5,%xmm1"
+    },
+    {
+      "address": 4200644,
+      "labels": [
+        {
+          "name": "__divdc3",
+          "range": {
+            "endCol": 25,
+            "startCol": 17
+          }
+        }
+      ],
+      "opcodes": [
+        "0f",
+        "86",
+        "16",
+        "02",
+        "00",
+        "00"
+      ],
+      "source": null,
+      "text": " jbe    401ae0 <__divdc3+0x280>"
+    },
+    {
+      "address": 4200650,
+      "labels": [],
+      "opcodes": [
+        "f2",
+        "0f",
+        "10",
+        "0d",
+        "5e",
+        "47",
+        "08"
+      ],
+      "source": null,
+      "text": " movsd  0x8475e(%rip),%xmm1        # 486030 <__rseq_flags+0x2c>"
+    },
+    {
+      "address": 4200657,
+      "labels": [],
+      "opcodes": [
+        "00"
+      ],
+      "source": null,
+      "text": " "
+    },
+    {
+      "address": 4200658,
+      "labels": [],
+      "opcodes": [
+        "f2",
+        "44",
+        "0f",
+        "10",
+        "05",
+        "5d",
+        "47"
+      ],
+      "source": null,
+      "text": " movsd  0x8475d(%rip),%xmm8        # 486038 <__rseq_flags+0x34>"
+    },
+    {
+      "address": 4200665,
+      "labels": [],
+      "opcodes": [
+        "08",
+        "00"
+      ],
+      "source": null,
+      "text": " "
+    },
+    {
+      "address": 4200667,
+      "labels": [],
+      "opcodes": [
+        "f2",
+        "0f",
+        "59",
+        "f1"
+      ],
+      "source": null,
+      "text": " mulsd  %xmm1,%xmm6"
+    },
+    {
+      "address": 4200671,
+      "labels": [],
+      "opcodes": [
+        "f2",
+        "0f",
+        "59",
+        "f9"
+      ],
+      "source": null,
+      "text": " mulsd  %xmm1,%xmm7"
+    },
+    {
+      "address": 4200675,
+      "labels": [],
+      "opcodes": [
+        "f2",
+        "0f",
+        "59",
+        "d1"
+      ],
+      "source": null,
+      "text": " mulsd  %xmm1,%xmm2"
+    },
+    {
+      "address": 4200679,
+      "labels": [],
+      "opcodes": [
+        "f2",
+        "0f",
+        "59",
+        "d9"
+      ],
+      "source": null,
+      "text": " mulsd  %xmm1,%xmm3"
+    },
+    {
+      "address": 4200683,
+      "labels": [],
+      "opcodes": [
+        "66",
+        "0f",
+        "28",
+        "e2"
+      ],
+      "source": null,
+      "text": " movapd %xmm2,%xmm4"
+    },
+    {
+      "address": 4200687,
+      "labels": [],
+      "opcodes": [
+        "66",
+        "44",
+        "0f",
+        "28",
+        "ca"
+      ],
+      "source": null,
+      "text": " movapd %xmm2,%xmm9"
+    },
+    {
+      "address": 4200692,
+      "labels": [],
+      "opcodes": [
+        "f2",
+        "0f",
+        "5e",
+        "e3"
+      ],
+      "source": null,
+      "text": " divsd  %xmm3,%xmm4"
+    },
+    {
+      "address": 4200696,
+      "labels": [],
+      "opcodes": [
+        "f2",
+        "44",
+        "0f",
+        "59",
+        "cc"
+      ],
+      "source": null,
+      "text": " mulsd  %xmm4,%xmm9"
+    },
+    {
+      "address": 4200701,
+      "labels": [],
+      "opcodes": [
+        "66",
+        "0f",
+        "28",
+        "cc"
+      ],
+      "source": null,
+      "text": " movapd %xmm4,%xmm1"
+    },
+    {
+      "address": 4200705,
+      "labels": [],
+      "opcodes": [
+        "66",
+        "0f",
+        "54",
+        "c8"
+      ],
+      "source": null,
+      "text": " andpd  %xmm0,%xmm1"
+    },
+    {
+      "address": 4200709,
+      "labels": [],
+      "opcodes": [
+        "66",
+        "41",
+        "0f",
+        "2f",
+        "c8"
+      ],
+      "source": null,
+      "text": " comisd %xmm8,%xmm1"
+    },
+    {
+      "address": 4200714,
+      "labels": [],
+      "opcodes": [
+        "66",
+        "0f",
+        "28",
+        "ce"
+      ],
+      "source": null,
+      "text": " movapd %xmm6,%xmm1"
+    },
+    {
+      "address": 4200718,
+      "labels": [],
+      "opcodes": [
+        "f2",
+        "44",
+        "0f",
+        "58",
+        "cb"
+      ],
+      "source": null,
+      "text": " addsd  %xmm3,%xmm9"
+    },
+    {
+      "address": 4200723,
+      "labels": [
+        {
+          "name": "__divdc3",
+          "range": {
+            "endCol": 25,
+            "startCol": 17
+          }
+        }
+      ],
+      "opcodes": [
+        "0f",
+        "86",
+        "67",
+        "02",
+        "00",
+        "00"
+      ],
+      "source": null,
+      "text": " jbe    401b80 <__divdc3+0x320>"
+    },
+    {
+      "address": 4200729,
+      "labels": [],
+      "opcodes": [
+        "f2",
+        "0f",
+        "59",
+        "cc"
+      ],
+      "source": null,
+      "text": " mulsd  %xmm4,%xmm1"
+    },
+    {
+      "address": 4200733,
+      "labels": [],
+      "opcodes": [
+        "f2",
+        "0f",
+        "59",
+        "e7"
+      ],
+      "source": null,
+      "text": " mulsd  %xmm7,%xmm4"
+    },
+    {
+      "address": 4200737,
+      "labels": [],
+      "opcodes": [
+        "f2",
+        "0f",
+        "58",
+        "cf"
+      ],
+      "source": null,
+      "text": " addsd  %xmm7,%xmm1"
+    },
+    {
+      "address": 4200741,
+      "labels": [],
+      "opcodes": [
+        "f2",
+        "0f",
+        "5c",
+        "e6"
+      ],
+      "source": null,
+      "text": " subsd  %xmm6,%xmm4"
+    },
+    {
+      "address": 4200745,
+      "labels": [],
+      "opcodes": [
+        "66",
+        "0f",
+        "28",
+        "e9"
+      ],
+      "source": null,
+      "text": " movapd %xmm1,%xmm5"
+    },
+    {
+      "address": 4200749,
+      "labels": [],
+      "opcodes": [
+        "f2",
+        "41",
+        "0f",
+        "5e",
+        "e9"
+      ],
+      "source": null,
+      "text": " divsd  %xmm9,%xmm5"
+    },
+    {
+      "address": 4200754,
+      "labels": [],
+      "opcodes": [
+        "f2",
+        "41",
+        "0f",
+        "5e",
+        "e1"
+      ],
+      "source": null,
+      "text": " divsd  %xmm9,%xmm4"
+    },
+    {
+      "address": 4200759,
+      "labels": [],
+      "opcodes": [
+        "66",
+        "0f",
+        "2e",
+        "ed"
+      ],
+      "source": null,
+      "text": " ucomisd %xmm5,%xmm5"
+    },
+    {
+      "address": 4200763,
+      "labels": [],
+      "opcodes": [
+        "66",
+        "0f",
+        "28",
+        "cc"
+      ],
+      "source": null,
+      "text": " movapd %xmm4,%xmm1"
+    },
+    {
+      "address": 4200767,
+      "labels": [
+        {
+          "name": "__divdc3",
+          "range": {
+            "endCol": 25,
+            "startCol": 17
+          }
+        }
+      ],
+      "opcodes": [
+        "0f",
+        "8a",
+        "c2",
+        "00",
+        "00",
+        "00"
+      ],
+      "source": null,
+      "text": " jp     401a07 <__divdc3+0x1a7>"
+    },
+    {
+      "address": 4200773,
+      "labels": [],
+      "opcodes": [
+        "66",
+        "0f",
+        "28",
+        "c5"
+      ],
+      "source": null,
+      "text": " movapd %xmm5,%xmm0"
+    },
+    {
+      "address": 4200777,
+      "labels": [],
+      "opcodes": [
+        "c3"
+      ],
+      "source": null,
+      "text": " ret"
+    },
+    {
+      "address": 4200778,
+      "labels": [],
+      "opcodes": [
+        "66",
+        "0f",
+        "1f",
+        "44",
+        "00",
+        "00"
+      ],
+      "source": null,
+      "text": " nopw   0x0(%rax,%rax,1)"
+    },
+    {
+      "address": 4200784,
+      "labels": [],
+      "opcodes": [
+        "66",
+        "0f",
+        "2f",
+        "25",
+        "c0",
+        "46",
+        "08"
+      ],
+      "source": null,
+      "text": " comisd 0x846c0(%rip),%xmm4        # 486018 <__rseq_flags+0x14>"
+    },
+    {
+      "address": 4200791,
+      "labels": [],
+      "opcodes": [
+        "00"
+      ],
+      "source": null,
+      "text": " "
+    },
+    {
+      "address": 4200792,
+      "labels": [
+        {
+          "name": "__divdc3",
+          "range": {
+            "endCol": 25,
+            "startCol": 17
+          }
+        }
+      ],
+      "opcodes": [
+        "72",
+        "20"
+      ],
+      "source": null,
+      "text": " jb     40197a <__divdc3+0x11a>"
+    },
+    {
+      "address": 4200794,
+      "labels": [],
+      "opcodes": [
+        "f2",
+        "0f",
+        "10",
+        "0d",
+        "be",
+        "46",
+        "08"
+      ],
+      "source": null,
+      "text": " movsd  0x846be(%rip),%xmm1        # 486020 <__rseq_flags+0x1c>"
+    },
+    {
+      "address": 4200801,
+      "labels": [],
+      "opcodes": [
+        "00"
+      ],
+      "source": null,
+      "text": " "
+    },
+    {
+      "address": 4200802,
+      "labels": [],
+      "opcodes": [
+        "f2",
+        "0f",
+        "59",
+        "d1"
+      ],
+      "source": null,
+      "text": " mulsd  %xmm1,%xmm2"
+    },
+    {
+      "address": 4200806,
+      "labels": [],
+      "opcodes": [
+        "f2",
+        "0f",
+        "59",
+        "f1"
+      ],
+      "source": null,
+      "text": " mulsd  %xmm1,%xmm6"
+    },
+    {
+      "address": 4200810,
+      "labels": [],
+      "opcodes": [
+        "f2",
+        "0f",
+        "59",
+        "f9"
+      ],
+      "source": null,
+      "text": " mulsd  %xmm1,%xmm7"
+    },
+    {
+      "address": 4200814,
+      "labels": [],
+      "opcodes": [
+        "f2",
+        "0f",
+        "59",
+        "d9"
+      ],
+      "source": null,
+      "text": " mulsd  %xmm1,%xmm3"
+    },
+    {
+      "address": 4200818,
+      "labels": [],
+      "opcodes": [
+        "66",
+        "0f",
+        "28",
+        "e2"
+      ],
+      "source": null,
+      "text": " movapd %xmm2,%xmm4"
+    },
+    {
+      "address": 4200822,
+      "labels": [],
+      "opcodes": [
+        "66",
+        "0f",
+        "54",
+        "e0"
+      ],
+      "source": null,
+      "text": " andpd  %xmm0,%xmm4"
+    },
+    {
+      "address": 4200826,
+      "labels": [],
+      "opcodes": [
+        "f2",
+        "0f",
+        "10",
+        "0d",
+        "a6",
+        "46",
+        "08"
+      ],
+      "source": null,
+      "text": " movsd  0x846a6(%rip),%xmm1        # 486028 <__rseq_flags+0x24>"
+    },
+    {
+      "address": 4200833,
+      "labels": [],
+      "opcodes": [
+        "00"
+      ],
+      "source": null,
+      "text": " "
+    },
+    {
+      "address": 4200834,
+      "labels": [],
+      "opcodes": [
+        "66",
+        "0f",
+        "2f",
+        "cc"
+      ],
+      "source": null,
+      "text": " comisd %xmm4,%xmm1"
+    },
+    {
+      "address": 4200838,
+      "labels": [
+        {
+          "name": "__divdc3",
+          "range": {
+            "endCol": 25,
+            "startCol": 17
+          }
+        }
+      ],
+      "opcodes": [
+        "0f",
+        "86",
+        "ec",
+        "00",
+        "00",
+        "00"
+      ],
+      "source": null,
+      "text": " jbe    401a78 <__divdc3+0x218>"
+    },
+    {
+      "address": 4200844,
+      "labels": [],
+      "opcodes": [
+        "f2",
+        "0f",
+        "10",
+        "0d",
+        "9c",
+        "46",
+        "08"
+      ],
+      "source": null,
+      "text": " movsd  0x8469c(%rip),%xmm1        # 486030 <__rseq_flags+0x2c>"
+    },
+    {
+      "address": 4200851,
+      "labels": [],
+      "opcodes": [
+        "00"
+      ],
+      "source": null,
+      "text": " "
+    },
+    {
+      "address": 4200852,
+      "labels": [],
+      "opcodes": [
+        "f2",
+        "44",
+        "0f",
+        "10",
+        "05",
+        "9b",
+        "46"
+      ],
+      "source": null,
+      "text": " movsd  0x8469b(%rip),%xmm8        # 486038 <__rseq_flags+0x34>"
+    },
+    {
+      "address": 4200859,
+      "labels": [],
+      "opcodes": [
+        "08",
+        "00"
+      ],
+      "source": null,
+      "text": " "
+    },
+    {
+      "address": 4200861,
+      "labels": [],
+      "opcodes": [
+        "f2",
+        "0f",
+        "59",
+        "f1"
+      ],
+      "source": null,
+      "text": " mulsd  %xmm1,%xmm6"
+    },
+    {
+      "address": 4200865,
+      "labels": [],
+      "opcodes": [
+        "f2",
+        "0f",
+        "59",
+        "f9"
+      ],
+      "source": null,
+      "text": " mulsd  %xmm1,%xmm7"
+    },
+    {
+      "address": 4200869,
+      "labels": [],
+      "opcodes": [
+        "f2",
+        "0f",
+        "59",
+        "d1"
+      ],
+      "source": null,
+      "text": " mulsd  %xmm1,%xmm2"
+    },
+    {
+      "address": 4200873,
+      "labels": [],
+      "opcodes": [
+        "f2",
+        "0f",
+        "59",
+        "d9"
+      ],
+      "source": null,
+      "text": " mulsd  %xmm1,%xmm3"
+    },
+    {
+      "address": 4200877,
+      "labels": [],
+      "opcodes": [
+        "66",
+        "0f",
+        "28",
+        "cb"
+      ],
+      "source": null,
+      "text": " movapd %xmm3,%xmm1"
+    },
+    {
+      "address": 4200881,
+      "labels": [],
+      "opcodes": [
+        "66",
+        "44",
+        "0f",
+        "28",
+        "cb"
+      ],
+      "source": null,
+      "text": " movapd %xmm3,%xmm9"
+    },
+    {
+      "address": 4200886,
+      "labels": [],
+      "opcodes": [
+        "f2",
+        "0f",
+        "5e",
+        "ca"
+      ],
+      "source": null,
+      "text": " divsd  %xmm2,%xmm1"
+    },
+    {
+      "address": 4200890,
+      "labels": [],
+      "opcodes": [
+        "f2",
+        "44",
+        "0f",
+        "59",
+        "c9"
+      ],
+      "source": null,
+      "text": " mulsd  %xmm1,%xmm9"
+    },
+    {
+      "address": 4200895,
+      "labels": [],
+      "opcodes": [
+        "66",
+        "0f",
+        "28",
+        "e1"
+      ],
+      "source": null,
+      "text": " movapd %xmm1,%xmm4"
+    },
+    {
+      "address": 4200899,
+      "labels": [],
+      "opcodes": [
+        "66",
+        "0f",
+        "54",
+        "e0"
+      ],
+      "source": null,
+      "text": " andpd  %xmm0,%xmm4"
+    },
+    {
+      "address": 4200903,
+      "labels": [],
+      "opcodes": [
+        "66",
+        "41",
+        "0f",
+        "2f",
+        "e0"
+      ],
+      "source": null,
+      "text": " comisd %xmm8,%xmm4"
+    },
+    {
+      "address": 4200908,
+      "labels": [],
+      "opcodes": [
+        "f2",
+        "44",
+        "0f",
+        "58",
+        "ca"
+      ],
+      "source": null,
+      "text": " addsd  %xmm2,%xmm9"
+    },
+    {
+      "address": 4200913,
+      "labels": [
+        {
+          "name": "__divdc3",
+          "range": {
+            "endCol": 25,
+            "startCol": 17
+          }
+        }
+      ],
+      "opcodes": [
+        "0f",
+        "86",
+        "69",
+        "01",
+        "00",
+        "00"
+      ],
+      "source": null,
+      "text": " jbe    401b40 <__divdc3+0x2e0>"
+    },
+    {
+      "address": 4200919,
+      "labels": [],
+      "opcodes": [
+        "66",
+        "0f",
+        "28",
+        "e1"
+      ],
+      "source": null,
+      "text": " movapd %xmm1,%xmm4"
+    },
+    {
+      "address": 4200923,
+      "labels": [],
+      "opcodes": [
+        "66",
+        "0f",
+        "28",
+        "ef"
+      ],
+      "source": null,
+      "text": " movapd %xmm7,%xmm5"
+    },
+    {
+      "address": 4200927,
+      "labels": [],
+      "opcodes": [
+        "f2",
+        "0f",
+        "59",
+        "e9"
+      ],
+      "source": null,
+      "text": " mulsd  %xmm1,%xmm5"
+    },
+    {
+      "address": 4200931,
+      "labels": [],
+      "opcodes": [
+        "66",
+        "0f",
+        "28",
+        "cf"
+      ],
+      "source": null,
+      "text": " movapd %xmm7,%xmm1"
+    },
+    {
+      "address": 4200935,
+      "labels": [],
+      "opcodes": [
+        "f2",
+        "0f",
+        "59",
+        "e6"
+      ],
+      "source": null,
+      "text": " mulsd  %xmm6,%xmm4"
+    },
+    {
+      "address": 4200939,
+      "labels": [],
+      "opcodes": [
+        "f2",
+        "0f",
+        "58",
+        "ee"
+      ],
+      "source": null,
+      "text": " addsd  %xmm6,%xmm5"
+    },
+    {
+      "address": 4200943,
+      "labels": [],
+      "opcodes": [
+        "f2",
+        "0f",
+        "5c",
+        "cc"
+      ],
+      "source": null,
+      "text": " subsd  %xmm4,%xmm1"
+    },
+    {
+      "address": 4200947,
+      "labels": [],
+      "opcodes": [
+        "f2",
+        "41",
+        "0f",
+        "5e",
+        "e9"
+      ],
+      "source": null,
+      "text": " divsd  %xmm9,%xmm5"
+    },
+    {
+      "address": 4200952,
+      "labels": [],
+      "opcodes": [
+        "f2",
+        "41",
+        "0f",
+        "5e",
+        "c9"
+      ],
+      "source": null,
+      "text": " divsd  %xmm9,%xmm1"
+    },
+    {
+      "address": 4200957,
+      "labels": [],
+      "opcodes": [
+        "66",
+        "0f",
+        "2e",
+        "ed"
+      ],
+      "source": null,
+      "text": " ucomisd %xmm5,%xmm5"
+    },
+    {
+      "address": 4200961,
+      "labels": [
+        {
+          "name": "__divdc3",
+          "range": {
+            "endCol": 25,
+            "startCol": 17
+          }
+        }
+      ],
+      "opcodes": [
+        "0f",
+        "8b",
+        "3e",
+        "ff",
+        "ff",
+        "ff"
+      ],
+      "source": null,
+      "text": " jnp    401945 <__divdc3+0xe5>"
+    },
+    {
+      "address": 4200967,
+      "labels": [],
+      "opcodes": [
+        "66",
+        "0f",
+        "2e",
+        "c9"
+      ],
+      "source": null,
+      "text": " ucomisd %xmm1,%xmm1"
+    },
+    {
+      "address": 4200971,
+      "labels": [
+        {
+          "name": "__divdc3",
+          "range": {
+            "endCol": 25,
+            "startCol": 17
+          }
+        }
+      ],
+      "opcodes": [
+        "0f",
+        "8b",
+        "34",
+        "ff",
+        "ff",
+        "ff"
+      ],
+      "source": null,
+      "text": " jnp    401945 <__divdc3+0xe5>"
+    },
+    {
+      "address": 4200977,
+      "labels": [],
+      "opcodes": [
+        "66",
+        "0f",
+        "ef",
+        "e4"
+      ],
+      "source": null,
+      "text": " pxor   %xmm4,%xmm4"
+    },
+    {
+      "address": 4200981,
+      "labels": [],
+      "opcodes": [
+        "ba",
+        "00",
+        "00",
+        "00",
+        "00"
+      ],
+      "source": null,
+      "text": " mov    $0x0,%edx"
+    },
+    {
+      "address": 4200986,
+      "labels": [],
+      "opcodes": [
+        "66",
+        "0f",
+        "2e",
+        "d4"
+      ],
+      "source": null,
+      "text": " ucomisd %xmm4,%xmm2"
+    },
+    {
+      "address": 4200990,
+      "labels": [],
+      "opcodes": [
+        "0f",
+        "9b",
+        "c0"
+      ],
+      "source": null,
+      "text": " setnp  %al"
+    },
+    {
+      "address": 4200993,
+      "labels": [],
+      "opcodes": [
+        "0f",
+        "45",
+        "c2"
+      ],
+      "source": null,
+      "text": " cmovne %edx,%eax"
+    },
+    {
+      "address": 4200996,
+      "labels": [],
+      "opcodes": [
+        "84",
+        "c0"
+      ],
+      "source": null,
+      "text": " test   %al,%al"
+    },
+    {
+      "address": 4200998,
+      "labels": [
+        {
+          "name": "__divdc3",
+          "range": {
+            "endCol": 25,
+            "startCol": 17
+          }
+        }
+      ],
+      "opcodes": [
+        "0f",
+        "84",
+        "84",
+        "01",
+        "00",
+        "00"
+      ],
+      "source": null,
+      "text": " je     401bb0 <__divdc3+0x350>"
+    },
+    {
+      "address": 4201004,
+      "labels": [],
+      "opcodes": [
+        "66",
+        "0f",
+        "2e",
+        "dc"
+      ],
+      "source": null,
+      "text": " ucomisd %xmm4,%xmm3"
+    },
+    {
+      "address": 4201008,
+      "labels": [],
+      "opcodes": [
+        "0f",
+        "9b",
+        "c0"
+      ],
+      "source": null,
+      "text": " setnp  %al"
+    },
+    {
+      "address": 4201011,
+      "labels": [],
+      "opcodes": [
+        "0f",
+        "45",
+        "c2"
+      ],
+      "source": null,
+      "text": " cmovne %edx,%eax"
+    },
+    {
+      "address": 4201014,
+      "labels": [],
+      "opcodes": [
+        "84",
+        "c0"
+      ],
+      "source": null,
+      "text": " test   %al,%al"
+    },
+    {
+      "address": 4201016,
+      "labels": [
+        {
+          "name": "__divdc3",
+          "range": {
+            "endCol": 25,
+            "startCol": 17
+          }
+        }
+      ],
+      "opcodes": [
+        "0f",
+        "84",
+        "72",
+        "01",
+        "00",
+        "00"
+      ],
+      "source": null,
+      "text": " je     401bb0 <__divdc3+0x350>"
+    },
+    {
+      "address": 4201022,
+      "labels": [],
+      "opcodes": [
+        "66",
+        "0f",
+        "2e",
+        "f6"
+      ],
+      "source": null,
+      "text": " ucomisd %xmm6,%xmm6"
+    },
+    {
+      "address": 4201026,
+      "labels": [
+        {
+          "name": "__divdc3",
+          "range": {
+            "endCol": 25,
+            "startCol": 17
+          }
+        }
+      ],
+      "opcodes": [
+        "7b",
+        "0a"
+      ],
+      "source": null,
+      "text": " jnp    401a4e <__divdc3+0x1ee>"
+    },
+    {
+      "address": 4201028,
+      "labels": [],
+      "opcodes": [
+        "66",
+        "0f",
+        "2e",
+        "ff"
+      ],
+      "source": null,
+      "text": " ucomisd %xmm7,%xmm7"
+    },
+    {
+      "address": 4201032,
+      "labels": [
+        {
+          "name": "__divdc3",
+          "range": {
+            "endCol": 25,
+            "startCol": 17
+          }
+        }
+      ],
+      "opcodes": [
+        "0f",
+        "8a",
+        "f7",
+        "fe",
+        "ff",
+        "ff"
+      ],
+      "source": null,
+      "text": " jp     401945 <__divdc3+0xe5>"
+    },
+    {
+      "address": 4201038,
+      "labels": [],
+      "opcodes": [
+        "f3",
+        "0f",
+        "7e",
+        "0d",
+        "4a",
+        "46",
+        "08"
+      ],
+      "source": null,
+      "text": " movq   0x8464a(%rip),%xmm1        # 4860a0 <conversion_rate+0x28>"
+    },
+    {
+      "address": 4201045,
+      "labels": [],
+      "opcodes": [
+        "00"
+      ],
+      "source": null,
+      "text": " "
+    },
+    {
+      "address": 4201046,
+      "labels": [],
+      "opcodes": [
+        "66",
+        "0f",
+        "54",
+        "ca"
+      ],
+      "source": null,
+      "text": " andpd  %xmm2,%xmm1"
+    },
+    {
+      "address": 4201050,
+      "labels": [],
+      "opcodes": [
+        "66",
+        "0f",
+        "56",
+        "0d",
+        "4e",
+        "46",
+        "08"
+      ],
+      "source": null,
+      "text": " orpd   0x8464e(%rip),%xmm1        # 4860b0 <conversion_rate+0x38>"
+    },
+    {
+      "address": 4201057,
+      "labels": [],
+      "opcodes": [
+        "00"
+      ],
+      "source": null,
+      "text": " "
+    },
+    {
+      "address": 4201058,
+      "labels": [],
+      "opcodes": [
+        "f2",
+        "0f",
+        "59",
+        "f1"
+      ],
+      "source": null,
+      "text": " mulsd  %xmm1,%xmm6"
+    },
+    {
+      "address": 4201062,
+      "labels": [],
+      "opcodes": [
+        "f2",
+        "0f",
+        "59",
+        "cf"
+      ],
+      "source": null,
+      "text": " mulsd  %xmm7,%xmm1"
+    },
+    {
+      "address": 4201066,
+      "labels": [],
+      "opcodes": [
+        "66",
+        "0f",
+        "28",
+        "ee"
+      ],
+      "source": null,
+      "text": " movapd %xmm6,%xmm5"
+    },
+    {
+      "address": 4201070,
+      "labels": [],
+      "opcodes": [
+        "66",
+        "0f",
+        "28",
+        "c5"
+      ],
+      "source": null,
+      "text": " movapd %xmm5,%xmm0"
+    },
+    {
+      "address": 4201074,
+      "labels": [],
+      "opcodes": [
+        "c3"
+      ],
+      "source": null,
+      "text": " ret"
+    },
+    {
+      "address": 4201075,
+      "labels": [],
+      "opcodes": [
+        "0f",
+        "1f",
+        "44",
+        "00",
+        "00"
+      ],
+      "source": null,
+      "text": " nopl   0x0(%rax,%rax,1)"
+    },
+    {
+      "address": 4201080,
+      "labels": [],
+      "opcodes": [
+        "f2",
+        "44",
+        "0f",
+        "10",
+        "05",
+        "b7",
+        "45"
+      ],
+      "source": null,
+      "text": " movsd  0x845b7(%rip),%xmm8        # 486038 <__rseq_flags+0x34>"
+    },
+    {
+      "address": 4201087,
+      "labels": [],
+      "opcodes": [
+        "08",
+        "00"
+      ],
+      "source": null,
+      "text": " "
+    },
+    {
+      "address": 4201089,
+      "labels": [],
+      "opcodes": [
+        "66",
+        "0f",
+        "28",
+        "ee"
+      ],
+      "source": null,
+      "text": " movapd %xmm6,%xmm5"
+    },
+    {
+      "address": 4201093,
+      "labels": [],
+      "opcodes": [
+        "66",
+        "44",
+        "0f",
+        "28",
+        "cf"
+      ],
+      "source": null,
+      "text": " movapd %xmm7,%xmm9"
+    },
+    {
+      "address": 4201098,
+      "labels": [],
+      "opcodes": [
+        "66",
+        "0f",
+        "54",
+        "e8"
+      ],
+      "source": null,
+      "text": " andpd  %xmm0,%xmm5"
+    },
+    {
+      "address": 4201102,
+      "labels": [],
+      "opcodes": [
+        "66",
+        "44",
+        "0f",
+        "54",
+        "c8"
+      ],
+      "source": null,
+      "text": " andpd  %xmm0,%xmm9"
+    },
+    {
+      "address": 4201107,
+      "labels": [],
+      "opcodes": [
+        "66",
+        "44",
+        "0f",
+        "2f",
+        "c5"
+      ],
+      "source": null,
+      "text": " comisd %xmm5,%xmm8"
+    },
+    {
+      "address": 4201112,
+      "labels": [
+        {
+          "name": "__divdc3",
+          "range": {
+            "endCol": 25,
+            "startCol": 17
+          }
+        }
+      ],
+      "opcodes": [
+        "0f",
+        "86",
+        "d2",
+        "02",
+        "00",
+        "00"
+      ],
+      "source": null,
+      "text": " jbe    401d70 <__divdc3+0x510>"
+    },
+    {
+      "address": 4201118,
+      "labels": [],
+      "opcodes": [
+        "f2",
+        "0f",
+        "10",
+        "0d",
+        "9a",
+        "45",
+        "08"
+      ],
+      "source": null,
+      "text": " movsd  0x8459a(%rip),%xmm1        # 486040 <__rseq_flags+0x3c>"
+    },
+    {
+      "address": 4201125,
+      "labels": [],
+      "opcodes": [
+        "00"
+      ],
+      "source": null,
+      "text": " "
+    },
+    {
+      "address": 4201126,
+      "labels": [],
+      "opcodes": [
+        "66",
+        "41",
+        "0f",
+        "2f",
+        "c9"
+      ],
+      "source": null,
+      "text": " comisd %xmm9,%xmm1"
+    },
+    {
+      "address": 4201131,
+      "labels": [
+        {
+          "name": "__divdc3",
+          "range": {
+            "endCol": 25,
+            "startCol": 17
+          }
+        }
+      ],
+      "opcodes": [
+        "0f",
+        "86",
+        "fc",
+        "fe",
+        "ff",
+        "ff"
+      ],
+      "source": null,
+      "text": " jbe    4019ad <__divdc3+0x14d>"
+    },
+    {
+      "address": 4201137,
+      "labels": [],
+      "opcodes": [
+        "66",
+        "0f",
+        "2f",
+        "cc"
+      ],
+      "source": null,
+      "text": " comisd %xmm4,%xmm1"
+    },
+    {
+      "address": 4201141,
+      "labels": [
+        {
+          "name": "__divdc3",
+          "range": {
+            "endCol": 25,
+            "startCol": 17
+          }
+        }
+      ],
+      "opcodes": [
+        "0f",
+        "86",
+        "f2",
+        "fe",
+        "ff",
+        "ff"
+      ],
+      "source": null,
+      "text": " jbe    4019ad <__divdc3+0x14d>"
+    },
+    {
+      "address": 4201147,
+      "labels": [],
+      "opcodes": [
+        "f2",
+        "0f",
+        "10",
+        "0d",
+        "6d",
+        "45",
+        "08"
+      ],
+      "source": null,
+      "text": " movsd  0x8456d(%rip),%xmm1        # 486030 <__rseq_flags+0x2c>"
+    },
+    {
+      "address": 4201154,
+      "labels": [],
+      "opcodes": [
+        "00"
+      ],
+      "source": null,
+      "text": " "
+    },
+    {
+      "address": 4201155,
+      "labels": [],
+      "opcodes": [
+        "f2",
+        "0f",
+        "59",
+        "f1"
+      ],
+      "source": null,
+      "text": " mulsd  %xmm1,%xmm6"
+    },
+    {
+      "address": 4201159,
+      "labels": [],
+      "opcodes": [
+        "f2",
+        "0f",
+        "59",
+        "f9"
+      ],
+      "source": null,
+      "text": " mulsd  %xmm1,%xmm7"
+    },
+    {
+      "address": 4201163,
+      "labels": [],
+      "opcodes": [
+        "f2",
+        "0f",
+        "59",
+        "d1"
+      ],
+      "source": null,
+      "text": " mulsd  %xmm1,%xmm2"
+    },
+    {
+      "address": 4201167,
+      "labels": [],
+      "opcodes": [
+        "f2",
+        "0f",
+        "59",
+        "d9"
+      ],
+      "source": null,
+      "text": " mulsd  %xmm1,%xmm3"
+    },
+    {
+      "address": 4201171,
+      "labels": [
+        {
+          "name": "__divdc3",
+          "range": {
+            "endCol": 25,
+            "startCol": 17
+          }
+        }
+      ],
+      "opcodes": [
+        "e9",
+        "d5",
+        "fe",
+        "ff",
+        "ff"
+      ],
+      "source": null,
+      "text": " jmp    4019ad <__divdc3+0x14d>"
+    },
+    {
+      "address": 4201176,
+      "labels": [],
+      "opcodes": [
+        "0f",
+        "1f",
+        "84",
+        "00",
+        "00",
+        "00",
+        "00"
+      ],
+      "source": null,
+      "text": " nopl   0x0(%rax,%rax,1)"
+    },
+    {
+      "address": 4201183,
+      "labels": [],
+      "opcodes": [
+        "00"
+      ],
+      "source": null,
+      "text": " "
+    },
+    {
+      "address": 4201184,
+      "labels": [],
+      "opcodes": [
+        "f2",
+        "44",
+        "0f",
+        "10",
+        "05",
+        "4f",
+        "45"
+      ],
+      "source": null,
+      "text": " movsd  0x8454f(%rip),%xmm8        # 486038 <__rseq_flags+0x34>"
+    },
+    {
+      "address": 4201191,
+      "labels": [],
+      "opcodes": [
+        "08",
+        "00"
+      ],
+      "source": null,
+      "text": " "
+    },
+    {
+      "address": 4201193,
+      "labels": [],
+      "opcodes": [
+        "66",
+        "0f",
+        "28",
+        "e6"
+      ],
+      "source": null,
+      "text": " movapd %xmm6,%xmm4"
+    },
+    {
+      "address": 4201197,
+      "labels": [],
+      "opcodes": [
+        "66",
+        "44",
+        "0f",
+        "28",
+        "cf"
+      ],
+      "source": null,
+      "text": " movapd %xmm7,%xmm9"
+    },
+    {
+      "address": 4201202,
+      "labels": [],
+      "opcodes": [
+        "66",
+        "0f",
+        "54",
+        "e0"
+      ],
+      "source": null,
+      "text": " andpd  %xmm0,%xmm4"
+    },
+    {
+      "address": 4201206,
+      "labels": [],
+      "opcodes": [
+        "66",
+        "44",
+        "0f",
+        "54",
+        "c8"
+      ],
+      "source": null,
+      "text": " andpd  %xmm0,%xmm9"
+    },
+    {
+      "address": 4201211,
+      "labels": [],
+      "opcodes": [
+        "66",
+        "44",
+        "0f",
+        "2f",
+        "c4"
+      ],
+      "source": null,
+      "text": " comisd %xmm4,%xmm8"
+    },
+    {
+      "address": 4201216,
+      "labels": [
+        {
+          "name": "__divdc3",
+          "range": {
+            "endCol": 25,
+            "startCol": 17
+          }
+        }
+      ],
+      "opcodes": [
+        "0f",
+        "86",
+        "92",
+        "02",
+        "00",
+        "00"
+      ],
+      "source": null,
+      "text": " jbe    401d98 <__divdc3+0x538>"
+    },
+    {
+      "address": 4201222,
+      "labels": [],
+      "opcodes": [
+        "f2",
+        "0f",
+        "10",
+        "0d",
+        "32",
+        "45",
+        "08"
+      ],
+      "source": null,
+      "text": " movsd  0x84532(%rip),%xmm1        # 486040 <__rseq_flags+0x3c>"
+    },
+    {
+      "address": 4201229,
+      "labels": [],
+      "opcodes": [
+        "00"
+      ],
+      "source": null,
+      "text": " "
+    },
+    {
+      "address": 4201230,
+      "labels": [],
+      "opcodes": [
+        "66",
+        "41",
+        "0f",
+        "2f",
+        "c9"
+      ],
+      "source": null,
+      "text": " comisd %xmm9,%xmm1"
+    },
+    {
+      "address": 4201235,
+      "labels": [
+        {
+          "name": "__divdc3",
+          "range": {
+            "endCol": 25,
+            "startCol": 17
+          }
+        }
+      ],
+      "opcodes": [
+        "0f",
+        "86",
+        "d2",
+        "fd",
+        "ff",
+        "ff"
+      ],
+      "source": null,
+      "text": " jbe    4018eb <__divdc3+0x8b>"
+    },
+    {
+      "address": 4201241,
+      "labels": [],
+      "opcodes": [
+        "66",
+        "0f",
+        "2f",
+        "cd"
+      ],
+      "source": null,
+      "text": " comisd %xmm5,%xmm1"
+    },
+    {
+      "address": 4201245,
+      "labels": [
+        {
+          "name": "__divdc3",
+          "range": {
+            "endCol": 25,
+            "startCol": 17
+          }
+        }
+      ],
+      "opcodes": [
+        "0f",
+        "86",
+        "c8",
+        "fd",
+        "ff",
+        "ff"
+      ],
+      "source": null,
+      "text": " jbe    4018eb <__divdc3+0x8b>"
+    },
+    {
+      "address": 4201251,
+      "labels": [],
+      "opcodes": [
+        "f2",
+        "0f",
+        "10",
+        "0d",
+        "05",
+        "45",
+        "08"
+      ],
+      "source": null,
+      "text": " movsd  0x84505(%rip),%xmm1        # 486030 <__rseq_flags+0x2c>"
+    },
+    {
+      "address": 4201258,
+      "labels": [],
+      "opcodes": [
+        "00"
+      ],
+      "source": null,
+      "text": " "
+    },
+    {
+      "address": 4201259,
+      "labels": [],
+      "opcodes": [
+        "f2",
+        "0f",
+        "59",
+        "f1"
+      ],
+      "source": null,
+      "text": " mulsd  %xmm1,%xmm6"
+    },
+    {
+      "address": 4201263,
+      "labels": [],
+      "opcodes": [
+        "f2",
+        "0f",
+        "59",
+        "f9"
+      ],
+      "source": null,
+      "text": " mulsd  %xmm1,%xmm7"
+    },
+    {
+      "address": 4201267,
+      "labels": [],
+      "opcodes": [
+        "f2",
+        "0f",
+        "59",
+        "d1"
+      ],
+      "source": null,
+      "text": " mulsd  %xmm1,%xmm2"
+    },
+    {
+      "address": 4201271,
+      "labels": [],
+      "opcodes": [
+        "f2",
+        "0f",
+        "59",
+        "d9"
+      ],
+      "source": null,
+      "text": " mulsd  %xmm1,%xmm3"
+    },
+    {
+      "address": 4201275,
+      "labels": [
+        {
+          "name": "__divdc3",
+          "range": {
+            "endCol": 25,
+            "startCol": 17
+          }
+        }
+      ],
+      "opcodes": [
+        "e9",
+        "ab",
+        "fd",
+        "ff",
+        "ff"
+      ],
+      "source": null,
+      "text": " jmp    4018eb <__divdc3+0x8b>"
+    },
+    {
+      "address": 4201280,
+      "labels": [],
+      "opcodes": [
+        "66",
+        "0f",
+        "28",
+        "cf"
+      ],
+      "source": null,
+      "text": " movapd %xmm7,%xmm1"
+    },
+    {
+      "address": 4201284,
+      "labels": [],
+      "opcodes": [
+        "66",
+        "0f",
+        "28",
+        "e6"
+      ],
+      "source": null,
+      "text": " movapd %xmm6,%xmm4"
+    },
+    {
+      "address": 4201288,
+      "labels": [],
+      "opcodes": [
+        "f2",
+        "0f",
+        "5e",
+        "ca"
+      ],
+      "source": null,
+      "text": " divsd  %xmm2,%xmm1"
+    },
+    {
+      "address": 4201292,
+      "labels": [],
+      "opcodes": [
+        "f2",
+        "0f",
+        "5e",
+        "e2"
+      ],
+      "source": null,
+      "text": " divsd  %xmm2,%xmm4"
+    },
+    {
+      "address": 4201296,
+      "labels": [],
+      "opcodes": [
+        "f2",
+        "0f",
+        "59",
+        "cb"
+      ],
+      "source": null,
+      "text": " mulsd  %xmm3,%xmm1"
+    },
+    {
+      "address": 4201300,
+      "labels": [],
+      "opcodes": [
+        "f2",
+        "0f",
+        "58",
+        "ce"
+      ],
+      "source": null,
+      "text": " addsd  %xmm6,%xmm1"
+    },
+    {
+      "address": 4201304,
+      "labels": [],
+      "opcodes": [
+        "66",
+        "0f",
+        "28",
+        "e9"
+      ],
+      "source": null,
+      "text": " movapd %xmm1,%xmm5"
+    },
+    {
+      "address": 4201308,
+      "labels": [],
+      "opcodes": [
+        "66",
+        "0f",
+        "28",
+        "cf"
+      ],
+      "source": null,
+      "text": " movapd %xmm7,%xmm1"
+    },
+    {
+      "address": 4201312,
+      "labels": [],
+      "opcodes": [
+        "f2",
+        "41",
+        "0f",
+        "5e",
+        "e9"
+      ],
+      "source": null,
+      "text": " divsd  %xmm9,%xmm5"
+    },
+    {
+      "address": 4201317,
+      "labels": [],
+      "opcodes": [
+        "f2",
+        "0f",
+        "59",
+        "e3"
+      ],
+      "source": null,
+      "text": " mulsd  %xmm3,%xmm4"
+    },
+    {
+      "address": 4201321,
+      "labels": [],
+      "opcodes": [
+        "f2",
+        "0f",
+        "5c",
+        "cc"
+      ],
+      "source": null,
+      "text": " subsd  %xmm4,%xmm1"
+    },
+    {
+      "address": 4201325,
+      "labels": [],
+      "opcodes": [
+        "f2",
+        "41",
+        "0f",
+        "5e",
+        "c9"
+      ],
+      "source": null,
+      "text": " divsd  %xmm9,%xmm1"
+    },
+    {
+      "address": 4201330,
+      "labels": [
+        {
+          "name": "__divdc3",
+          "range": {
+            "endCol": 25,
+            "startCol": 17
+          }
+        }
+      ],
+      "opcodes": [
+        "e9",
+        "86",
+        "fe",
+        "ff",
+        "ff"
+      ],
+      "source": null,
+      "text": " jmp    4019fd <__divdc3+0x19d>"
+    },
+    {
+      "address": 4201335,
+      "labels": [],
+      "opcodes": [
+        "66",
+        "0f",
+        "1f",
+        "84",
+        "00",
+        "00",
+        "00"
+      ],
+      "source": null,
+      "text": " nopw   0x0(%rax,%rax,1)"
+    },
+    {
+      "address": 4201342,
+      "labels": [],
+      "opcodes": [
+        "00",
+        "00"
+      ],
+      "source": null,
+      "text": " "
+    },
+    {
+      "address": 4201344,
+      "labels": [],
+      "opcodes": [
+        "f2",
+        "0f",
+        "5e",
+        "cb"
+      ],
+      "source": null,
+      "text": " divsd  %xmm3,%xmm1"
+    },
+    {
+      "address": 4201348,
+      "labels": [],
+      "opcodes": [
+        "f2",
+        "0f",
+        "59",
+        "ca"
+      ],
+      "source": null,
+      "text": " mulsd  %xmm2,%xmm1"
+    },
+    {
+      "address": 4201352,
+      "labels": [],
+      "opcodes": [
+        "f2",
+        "0f",
+        "58",
+        "cf"
+      ],
+      "source": null,
+      "text": " addsd  %xmm7,%xmm1"
+    },
+    {
+      "address": 4201356,
+      "labels": [],
+      "opcodes": [
+        "66",
+        "0f",
+        "28",
+        "e9"
+      ],
+      "source": null,
+      "text": " movapd %xmm1,%xmm5"
+    },
+    {
+      "address": 4201360,
+      "labels": [],
+      "opcodes": [
+        "66",
+        "0f",
+        "28",
+        "cf"
+      ],
+      "source": null,
+      "text": " movapd %xmm7,%xmm1"
+    },
+    {
+      "address": 4201364,
+      "labels": [],
+      "opcodes": [
+        "f2",
+        "0f",
+        "5e",
+        "cb"
+      ],
+      "source": null,
+      "text": " divsd  %xmm3,%xmm1"
+    },
+    {
+      "address": 4201368,
+      "labels": [],
+      "opcodes": [
+        "f2",
+        "41",
+        "0f",
+        "5e",
+        "e9"
+      ],
+      "source": null,
+      "text": " divsd  %xmm9,%xmm5"
+    },
+    {
+      "address": 4201373,
+      "labels": [],
+      "opcodes": [
+        "f2",
+        "0f",
+        "59",
+        "ca"
+      ],
+      "source": null,
+      "text": " mulsd  %xmm2,%xmm1"
+    },
+    {
+      "address": 4201377,
+      "labels": [],
+      "opcodes": [
+        "f2",
+        "0f",
+        "5c",
+        "ce"
+      ],
+      "source": null,
+      "text": " subsd  %xmm6,%xmm1"
+    },
+    {
+      "address": 4201381,
+      "labels": [],
+      "opcodes": [
+        "f2",
+        "41",
+        "0f",
+        "5e",
+        "c9"
+      ],
+      "source": null,
+      "text": " divsd  %xmm9,%xmm1"
+    },
+    {
+      "address": 4201386,
+      "labels": [
+        {
+          "name": "__divdc3",
+          "range": {
+            "endCol": 25,
+            "startCol": 17
+          }
+        }
+      ],
+      "opcodes": [
+        "e9",
+        "4e",
+        "fe",
+        "ff",
+        "ff"
+      ],
+      "source": null,
+      "text": " jmp    4019fd <__divdc3+0x19d>"
+    },
+    {
+      "address": 4201391,
+      "labels": [],
+      "opcodes": [
+        "90"
+      ],
+      "source": null,
+      "text": " nop"
+    },
+    {
+      "address": 4201392,
+      "labels": [],
+      "opcodes": [
+        "f2",
+        "0f",
+        "10",
+        "25",
+        "90",
+        "44",
+        "08"
+      ],
+      "source": null,
+      "text": " movsd  0x84490(%rip),%xmm4        # 486048 <__rseq_flags+0x44>"
+    },
+    {
+      "address": 4201399,
+      "labels": [],
+      "opcodes": [
+        "00"
+      ],
+      "source": null,
+      "text": " "
+    },
+    {
+      "address": 4201400,
+      "labels": [],
+      "opcodes": [
+        "66",
+        "44",
+        "0f",
+        "28",
+        "ce"
+      ],
+      "source": null,
+      "text": " movapd %xmm6,%xmm9"
+    },
+    {
+      "address": 4201405,
+      "labels": [],
+      "opcodes": [
+        "66",
+        "44",
+        "0f",
+        "28",
+        "c2"
+      ],
+      "source": null,
+      "text": " movapd %xmm2,%xmm8"
+    },
+    {
+      "address": 4201410,
+      "labels": [],
+      "opcodes": [
+        "66",
+        "44",
+        "0f",
+        "54",
+        "c8"
+      ],
+      "source": null,
+      "text": " andpd  %xmm0,%xmm9"
+    },
+    {
+      "address": 4201415,
+      "labels": [],
+      "opcodes": [
+        "66",
+        "44",
+        "0f",
+        "54",
+        "c0"
+      ],
+      "source": null,
+      "text": " andpd  %xmm0,%xmm8"
+    },
+    {
+      "address": 4201420,
+      "labels": [],
+      "opcodes": [
+        "66",
+        "44",
+        "0f",
+        "2e",
+        "cc"
+      ],
+      "source": null,
+      "text": " ucomisd %xmm4,%xmm9"
+    },
+    {
+      "address": 4201425,
+      "labels": [
+        {
+          "name": "__divdc3",
+          "range": {
+            "endCol": 25,
+            "startCol": 17
+          }
+        }
+      ],
+      "opcodes": [
+        "0f",
+        "87",
+        "d9",
+        "00",
+        "00",
+        "00"
+      ],
+      "source": null,
+      "text": " ja     401cb0 <__divdc3+0x450>"
+    },
+    {
+      "address": 4201431,
+      "labels": [],
+      "opcodes": [
+        "66",
+        "44",
+        "0f",
+        "28",
+        "d7"
+      ],
+      "source": null,
+      "text": " movapd %xmm7,%xmm10"
+    },
+    {
+      "address": 4201436,
+      "labels": [],
+      "opcodes": [
+        "66",
+        "44",
+        "0f",
+        "54",
+        "d0"
+      ],
+      "source": null,
+      "text": " andpd  %xmm0,%xmm10"
+    },
+    {
+      "address": 4201441,
+      "labels": [],
+      "opcodes": [
+        "66",
+        "44",
+        "0f",
+        "2e",
+        "d4"
+      ],
+      "source": null,
+      "text": " ucomisd %xmm4,%xmm10"
+    },
+    {
+      "address": 4201446,
+      "labels": [
+        {
+          "name": "__divdc3",
+          "range": {
+            "endCol": 25,
+            "startCol": 17
+          }
+        }
+      ],
+      "opcodes": [
+        "0f",
+        "87",
+        "c4",
+        "00",
+        "00",
+        "00"
+      ],
+      "source": null,
+      "text": " ja     401cb0 <__divdc3+0x450>"
+    },
+    {
+      "address": 4201452,
+      "labels": [],
+      "opcodes": [
+        "66",
+        "44",
+        "0f",
+        "2e",
+        "c4"
+      ],
+      "source": null,
+      "text": " ucomisd %xmm4,%xmm8"
+    },
+    {
+      "address": 4201457,
+      "labels": [
+        {
+          "name": "__divdc3",
+          "range": {
+            "endCol": 25,
+            "startCol": 17
+          }
+        }
+      ],
+      "opcodes": [
+        "0f",
+        "86",
+        "c9",
+        "01",
+        "00",
+        "00"
+      ],
+      "source": null,
+      "text": " jbe    401dc0 <__divdc3+0x560>"
+    },
+    {
+      "address": 4201463,
+      "labels": [],
+      "opcodes": [
+        "f2",
+        "44",
+        "0f",
+        "10",
+        "05",
+        "b0",
+        "44"
+      ],
+      "source": null,
+      "text": " movsd  0x844b0(%rip),%xmm8        # 4860b0 <conversion_rate+0x38>"
+    },
+    {
+      "address": 4201470,
+      "labels": [],
+      "opcodes": [
+        "08",
+        "00"
+      ],
+      "source": null,
+      "text": " "
+    },
+    {
+      "address": 4201472,
+      "labels": [],
+      "opcodes": [
+        "66",
+        "41",
+        "0f",
+        "2e",
+        "e1"
+      ],
+      "source": null,
+      "text": " ucomisd %xmm9,%xmm4"
+    },
+    {
+      "address": 4201477,
+      "labels": [
+        {
+          "name": "__divdc3",
+          "range": {
+            "endCol": 25,
+            "startCol": 17
+          }
+        }
+      ],
+      "opcodes": [
+        "0f",
+        "82",
+        "3a",
+        "fd",
+        "ff",
+        "ff"
+      ],
+      "source": null,
+      "text": " jb     401945 <__divdc3+0xe5>"
+    },
+    {
+      "address": 4201483,
+      "labels": [],
+      "opcodes": [
+        "66",
+        "41",
+        "0f",
+        "2e",
+        "e2"
+      ],
+      "source": null,
+      "text": " ucomisd %xmm10,%xmm4"
+    },
+    {
+      "address": 4201488,
+      "labels": [
+        {
+          "name": "__divdc3",
+          "range": {
+            "endCol": 25,
+            "startCol": 17
+          }
+        }
+      ],
+      "opcodes": [
+        "0f",
+        "82",
+        "2f",
+        "fd",
+        "ff",
+        "ff"
+      ],
+      "source": null,
+      "text": " jb     401945 <__divdc3+0xe5>"
+    },
+    {
+      "address": 4201494,
+      "labels": [],
+      "opcodes": [
+        "31",
+        "c0"
+      ],
+      "source": null,
+      "text": " xor    %eax,%eax"
+    },
+    {
+      "address": 4201496,
+      "labels": [],
+      "opcodes": [
+        "66",
+        "0f",
+        "ef",
+        "ed"
+      ],
+      "source": null,
+      "text": " pxor   %xmm5,%xmm5"
+    },
+    {
+      "address": 4201500,
+      "labels": [],
+      "opcodes": [
+        "f3",
+        "0f",
+        "7e",
+        "0d",
+        "7c",
+        "44",
+        "08"
+      ],
+      "source": null,
+      "text": " movq   0x8447c(%rip),%xmm1        # 4860a0 <conversion_rate+0x28>"
+    },
+    {
+      "address": 4201507,
+      "labels": [],
+      "opcodes": [
+        "00"
+      ],
+      "source": null,
+      "text": " "
+    },
+    {
+      "address": 4201508,
+      "labels": [],
+      "opcodes": [
+        "66",
+        "0f",
+        "54",
+        "c3"
+      ],
+      "source": null,
+      "text": " andpd  %xmm3,%xmm0"
+    },
+    {
+      "address": 4201512,
+      "labels": [],
+      "opcodes": [
+        "66",
+        "44",
+        "0f",
+        "2e",
+        "05",
+        "17",
+        "44"
+      ],
+      "source": null,
+      "text": " ucomisd 0x84417(%rip),%xmm8        # 486048 <__rseq_flags+0x44>"
+    },
+    {
+      "address": 4201519,
+      "labels": [],
+      "opcodes": [
+        "08",
+        "00"
+      ],
+      "source": null,
+      "text": " "
+    },
+    {
+      "address": 4201521,
+      "labels": [],
+      "opcodes": [
+        "66",
+        "0f",
+        "28",
+        "e1"
+      ],
+      "source": null,
+      "text": " movapd %xmm1,%xmm4"
+    },
+    {
+      "address": 4201525,
+      "labels": [],
+      "opcodes": [
+        "66",
+        "0f",
+        "54",
+        "d1"
+      ],
+      "source": null,
+      "text": " andpd  %xmm1,%xmm2"
+    },
+    {
+      "address": 4201529,
+      "labels": [],
+      "opcodes": [
+        "0f",
+        "97",
+        "c0"
+      ],
+      "source": null,
+      "text": " seta   %al"
+    },
+    {
+      "address": 4201532,
+      "labels": [],
+      "opcodes": [
+        "f2",
+        "0f",
+        "2a",
+        "e8"
+      ],
+      "source": null,
+      "text": " cvtsi2sd %eax,%xmm5"
+    },
+    {
+      "address": 4201536,
+      "labels": [],
+      "opcodes": [
+        "31",
+        "c0"
+      ],
+      "source": null,
+      "text": " xor    %eax,%eax"
+    },
+    {
+      "address": 4201538,
+      "labels": [],
+      "opcodes": [
+        "66",
+        "0f",
+        "2e",
+        "05",
+        "fe",
+        "43",
+        "08"
+      ],
+      "source": null,
+      "text": " ucomisd 0x843fe(%rip),%xmm0        # 486048 <__rseq_flags+0x44>"
+    },
+    {
+      "address": 4201545,
+      "labels": [],
+      "opcodes": [
+        "00"
+      ],
+      "source": null,
+      "text": " "
+    },
+    {
+      "address": 4201546,
+      "labels": [],
+      "opcodes": [
+        "66",
+        "0f",
+        "28",
+        "c1"
+      ],
+      "source": null,
+      "text": " movapd %xmm1,%xmm0"
+    },
+    {
+      "address": 4201550,
+      "labels": [],
+      "opcodes": [
+        "66",
+        "0f",
+        "54",
+        "cb"
+      ],
+      "source": null,
+      "text": " andpd  %xmm3,%xmm1"
+    },
+    {
+      "address": 4201554,
+      "labels": [],
+      "opcodes": [
+        "66",
+        "0f",
+        "28",
+        "df"
+      ],
+      "source": null,
+      "text": " movapd %xmm7,%xmm3"
+    },
+    {
+      "address": 4201558,
+      "labels": [],
+      "opcodes": [
+        "66",
+        "0f",
+        "55",
+        "e5"
+      ],
+      "source": null,
+      "text": " andnpd %xmm5,%xmm4"
+    },
+    {
+      "address": 4201562,
+      "labels": [],
+      "opcodes": [
+        "0f",
+        "97",
+        "c0"
+      ],
+      "source": null,
+      "text": " seta   %al"
+    },
+    {
+      "address": 4201565,
+      "labels": [],
+      "opcodes": [
+        "66",
+        "0f",
+        "56",
+        "d4"
+      ],
+      "source": null,
+      "text": " orpd   %xmm4,%xmm2"
+    },
+    {
+      "address": 4201569,
+      "labels": [],
+      "opcodes": [
+        "66",
+        "0f",
+        "ef",
+        "e4"
+      ],
+      "source": null,
+      "text": " pxor   %xmm4,%xmm4"
+    },
+    {
+      "address": 4201573,
+      "labels": [],
+      "opcodes": [
+        "f2",
+        "0f",
+        "2a",
+        "e0"
+      ],
+      "source": null,
+      "text": " cvtsi2sd %eax,%xmm4"
+    },
+    {
+      "address": 4201577,
+      "labels": [],
+      "opcodes": [
+        "f2",
+        "0f",
+        "59",
+        "fa"
+      ],
+      "source": null,
+      "text": " mulsd  %xmm2,%xmm7"
+    },
+    {
+      "address": 4201581,
+      "labels": [],
+      "opcodes": [
+        "66",
+        "0f",
+        "55",
+        "c4"
+      ],
+      "source": null,
+      "text": " andnpd %xmm4,%xmm0"
+    },
+    {
+      "address": 4201585,
+      "labels": [],
+      "opcodes": [
+        "66",
+        "0f",
+        "ef",
+        "e4"
+      ],
+      "source": null,
+      "text": " pxor   %xmm4,%xmm4"
+    },
+    {
+      "address": 4201589,
+      "labels": [],
+      "opcodes": [
+        "66",
+        "0f",
+        "56",
+        "c1"
+      ],
+      "source": null,
+      "text": " orpd   %xmm1,%xmm0"
+    },
+    {
+      "address": 4201593,
+      "labels": [],
+      "opcodes": [
+        "66",
+        "0f",
+        "28",
+        "ce"
+      ],
+      "source": null,
+      "text": " movapd %xmm6,%xmm1"
+    },
+    {
+      "address": 4201597,
+      "labels": [],
+      "opcodes": [
+        "f2",
+        "0f",
+        "59",
+        "ca"
+      ],
+      "source": null,
+      "text": " mulsd  %xmm2,%xmm1"
+    },
+    {
+      "address": 4201601,
+      "labels": [],
+      "opcodes": [
+        "f2",
+        "0f",
+        "59",
+        "d8"
+      ],
+      "source": null,
+      "text": " mulsd  %xmm0,%xmm3"
+    },
+    {
+      "address": 4201605,
+      "labels": [],
+      "opcodes": [
+        "f2",
+        "0f",
+        "59",
+        "f0"
+      ],
+      "source": null,
+      "text": " mulsd  %xmm0,%xmm6"
+    },
+    {
+      "address": 4201609,
+      "labels": [],
+      "opcodes": [
+        "f2",
+        "0f",
+        "58",
+        "cb"
+      ],
+      "source": null,
+      "text": " addsd  %xmm3,%xmm1"
+    },
+    {
+      "address": 4201613,
+      "labels": [],
+      "opcodes": [
+        "66",
+        "0f",
+        "28",
+        "e9"
+      ],
+      "source": null,
+      "text": " movapd %xmm1,%xmm5"
+    },
+    {
+      "address": 4201617,
+      "labels": [],
+      "opcodes": [
+        "66",
+        "0f",
+        "28",
+        "cf"
+      ],
+      "source": null,
+      "text": " movapd %xmm7,%xmm1"
+    },
+    {
+      "address": 4201621,
+      "labels": [],
+      "opcodes": [
+        "f2",
+        "0f",
+        "5c",
+        "ce"
+      ],
+      "source": null,
+      "text": " subsd  %xmm6,%xmm1"
+    },
+    {
+      "address": 4201625,
+      "labels": [],
+      "opcodes": [
+        "f2",
+        "0f",
+        "59",
+        "ec"
+      ],
+      "source": null,
+      "text": " mulsd  %xmm4,%xmm5"
+    },
+    {
+      "address": 4201629,
+      "labels": [],
+      "opcodes": [
+        "f2",
+        "0f",
+        "59",
+        "cc"
+      ],
+      "source": null,
+      "text": " mulsd  %xmm4,%xmm1"
+    },
+    {
+      "address": 4201633,
+      "labels": [
+        {
+          "name": "__divdc3",
+          "range": {
+            "endCol": 25,
+            "startCol": 17
+          }
+        }
+      ],
+      "opcodes": [
+        "e9",
+        "9f",
+        "fc",
+        "ff",
+        "ff"
+      ],
+      "source": null,
+      "text": " jmp    401945 <__divdc3+0xe5>"
+    },
+    {
+      "address": 4201638,
+      "labels": [],
+      "opcodes": [
+        "66",
+        "2e",
+        "0f",
+        "1f",
+        "84",
+        "00",
+        "00"
+      ],
+      "source": null,
+      "text": " cs nopw 0x0(%rax,%rax,1)"
+    },
+    {
+      "address": 4201645,
+      "labels": [],
+      "opcodes": [
+        "00",
+        "00",
+        "00"
+      ],
+      "source": null,
+      "text": " "
+    },
+    {
+      "address": 4201648,
+      "labels": [],
+      "opcodes": [
+        "66",
+        "41",
+        "0f",
+        "2e",
+        "e0"
+      ],
+      "source": null,
+      "text": " ucomisd %xmm8,%xmm4"
+    },
+    {
+      "address": 4201653,
+      "labels": [
+        {
+          "name": "__divdc3",
+          "range": {
+            "endCol": 25,
+            "startCol": 17
+          }
+        }
+      ],
+      "opcodes": [
+        "0f",
+        "82",
+        "8a",
+        "fc",
+        "ff",
+        "ff"
+      ],
+      "source": null,
+      "text": " jb     401945 <__divdc3+0xe5>"
+    },
+    {
+      "address": 4201659,
+      "labels": [],
+      "opcodes": [
+        "66",
+        "44",
+        "0f",
+        "28",
+        "c3"
+      ],
+      "source": null,
+      "text": " movapd %xmm3,%xmm8"
+    },
+    {
+      "address": 4201664,
+      "labels": [],
+      "opcodes": [
+        "66",
+        "44",
+        "0f",
+        "54",
+        "c0"
+      ],
+      "source": null,
+      "text": " andpd  %xmm0,%xmm8"
+    },
+    {
+      "address": 4201669,
+      "labels": [],
+      "opcodes": [
+        "66",
+        "41",
+        "0f",
+        "2e",
+        "e0"
+      ],
+      "source": null,
+      "text": " ucomisd %xmm8,%xmm4"
+    },
+    {
+      "address": 4201674,
+      "labels": [
+        {
+          "name": "__divdc3",
+          "range": {
+            "endCol": 25,
+            "startCol": 17
+          }
+        }
+      ],
+      "opcodes": [
+        "0f",
+        "82",
+        "75",
+        "fc",
+        "ff",
+        "ff"
+      ],
+      "source": null,
+      "text": " jb     401945 <__divdc3+0xe5>"
+    },
+    {
+      "address": 4201680,
+      "labels": [],
+      "opcodes": [
+        "31",
+        "c0"
+      ],
+      "source": null,
+      "text": " xor    %eax,%eax"
+    },
+    {
+      "address": 4201682,
+      "labels": [],
+      "opcodes": [
+        "66",
+        "0f",
+        "ef",
+        "e4"
+      ],
+      "source": null,
+      "text": " pxor   %xmm4,%xmm4"
+    },
+    {
+      "address": 4201686,
+      "labels": [],
+      "opcodes": [
+        "f3",
+        "0f",
+        "7e",
+        "0d",
+        "c2",
+        "43",
+        "08"
+      ],
+      "source": null,
+      "text": " movq   0x843c2(%rip),%xmm1        # 4860a0 <conversion_rate+0x28>"
+    },
+    {
+      "address": 4201693,
+      "labels": [],
+      "opcodes": [
+        "00"
+      ],
+      "source": null,
+      "text": " "
+    },
+    {
+      "address": 4201694,
+      "labels": [],
+      "opcodes": [
+        "66",
+        "0f",
+        "54",
+        "c7"
+      ],
+      "source": null,
+      "text": " andpd  %xmm7,%xmm0"
+    },
+    {
+      "address": 4201698,
+      "labels": [],
+      "opcodes": [
+        "66",
+        "44",
+        "0f",
+        "2e",
+        "0d",
+        "5d",
+        "43"
+      ],
+      "source": null,
+      "text": " ucomisd 0x8435d(%rip),%xmm9        # 486048 <__rseq_flags+0x44>"
+    },
+    {
+      "address": 4201705,
+      "labels": [],
+      "opcodes": [
+        "08",
+        "00"
+      ],
+      "source": null,
+      "text": " "
+    },
+    {
+      "address": 4201707,
+      "labels": [],
+      "opcodes": [
+        "66",
+        "0f",
+        "28",
+        "e9"
+      ],
+      "source": null,
+      "text": " movapd %xmm1,%xmm5"
+    },
+    {
+      "address": 4201711,
+      "labels": [],
+      "opcodes": [
+        "0f",
+        "97",
+        "c0"
+      ],
+      "source": null,
+      "text": " seta   %al"
+    },
+    {
+      "address": 4201714,
+      "labels": [],
+      "opcodes": [
+        "f2",
+        "0f",
+        "2a",
+        "e0"
+      ],
+      "source": null,
+      "text": " cvtsi2sd %eax,%xmm4"
+    },
+    {
+      "address": 4201718,
+      "labels": [],
+      "opcodes": [
+        "31",
+        "c0"
+      ],
+      "source": null,
+      "text": " xor    %eax,%eax"
+    },
+    {
+      "address": 4201720,
+      "labels": [],
+      "opcodes": [
+        "66",
+        "0f",
+        "2e",
+        "05",
+        "48",
+        "43",
+        "08"
+      ],
+      "source": null,
+      "text": " ucomisd 0x84348(%rip),%xmm0        # 486048 <__rseq_flags+0x44>"
+    },
+    {
+      "address": 4201727,
+      "labels": [],
+      "opcodes": [
+        "00"
+      ],
+      "source": null,
+      "text": " "
+    },
+    {
+      "address": 4201728,
+      "labels": [],
+      "opcodes": [
+        "66",
+        "0f",
+        "28",
+        "c1"
+      ],
+      "source": null,
+      "text": " movapd %xmm1,%xmm0"
+    },
+    {
+      "address": 4201732,
+      "labels": [],
+      "opcodes": [
+        "66",
+        "0f",
+        "55",
+        "ec"
+      ],
+      "source": null,
+      "text": " andnpd %xmm4,%xmm5"
+    },
+    {
+      "address": 4201736,
+      "labels": [],
+      "opcodes": [
+        "66",
+        "0f",
+        "28",
+        "e6"
+      ],
+      "source": null,
+      "text": " movapd %xmm6,%xmm4"
+    },
+    {
+      "address": 4201740,
+      "labels": [],
+      "opcodes": [
+        "0f",
+        "97",
+        "c0"
+      ],
+      "source": null,
+      "text": " seta   %al"
+    },
+    {
+      "address": 4201743,
+      "labels": [],
+      "opcodes": [
+        "66",
+        "0f",
+        "54",
+        "e1"
+      ],
+      "source": null,
+      "text": " andpd  %xmm1,%xmm4"
+    },
+    {
+      "address": 4201747,
+      "labels": [],
+      "opcodes": [
+        "66",
+        "0f",
+        "54",
+        "cf"
+      ],
+      "source": null,
+      "text": " andpd  %xmm7,%xmm1"
+    },
+    {
+      "address": 4201751,
+      "labels": [],
+      "opcodes": [
+        "66",
+        "0f",
+        "56",
+        "ec"
+      ],
+      "source": null,
+      "text": " orpd   %xmm4,%xmm5"
+    },
+    {
+      "address": 4201755,
+      "labels": [],
+      "opcodes": [
+        "66",
+        "0f",
+        "ef",
+        "e4"
+      ],
+      "source": null,
+      "text": " pxor   %xmm4,%xmm4"
+    },
+    {
+      "address": 4201759,
+      "labels": [],
+      "opcodes": [
+        "f2",
+        "0f",
+        "2a",
+        "e0"
+      ],
+      "source": null,
+      "text": " cvtsi2sd %eax,%xmm4"
+    },
+    {
+      "address": 4201763,
+      "labels": [],
+      "opcodes": [
+        "66",
+        "0f",
+        "28",
+        "f5"
+      ],
+      "source": null,
+      "text": " movapd %xmm5,%xmm6"
+    },
+    {
+      "address": 4201767,
+      "labels": [],
+      "opcodes": [
+        "66",
+        "0f",
+        "55",
+        "c4"
+      ],
+      "source": null,
+      "text": " andnpd %xmm4,%xmm0"
+    },
+    {
+      "address": 4201771,
+      "labels": [],
+      "opcodes": [
+        "66",
+        "0f",
+        "28",
+        "e3"
+      ],
+      "source": null,
+      "text": " movapd %xmm3,%xmm4"
+    },
+    {
+      "address": 4201775,
+      "labels": [],
+      "opcodes": [
+        "f2",
+        "0f",
+        "59",
+        "de"
+      ],
+      "source": null,
+      "text": " mulsd  %xmm6,%xmm3"
+    },
+    {
+      "address": 4201779,
+      "labels": [],
+      "opcodes": [
+        "66",
+        "0f",
+        "56",
+        "c1"
+      ],
+      "source": null,
+      "text": " orpd   %xmm1,%xmm0"
+    },
+    {
+      "address": 4201783,
+      "labels": [],
+      "opcodes": [
+        "66",
+        "0f",
+        "28",
+        "ca"
+      ],
+      "source": null,
+      "text": " movapd %xmm2,%xmm1"
+    },
+    {
+      "address": 4201787,
+      "labels": [],
+      "opcodes": [
+        "f2",
+        "0f",
+        "59",
+        "cd"
+      ],
+      "source": null,
+      "text": " mulsd  %xmm5,%xmm1"
+    },
+    {
+      "address": 4201791,
+      "labels": [],
+      "opcodes": [
+        "f2",
+        "0f",
+        "59",
+        "e0"
+      ],
+      "source": null,
+      "text": " mulsd  %xmm0,%xmm4"
+    },
+    {
+      "address": 4201795,
+      "labels": [],
+      "opcodes": [
+        "f2",
+        "0f",
+        "59",
+        "d0"
+      ],
+      "source": null,
+      "text": " mulsd  %xmm0,%xmm2"
+    },
+    {
+      "address": 4201799,
+      "labels": [],
+      "opcodes": [
+        "f2",
+        "0f",
+        "58",
+        "cc"
+      ],
+      "source": null,
+      "text": " addsd  %xmm4,%xmm1"
+    },
+    {
+      "address": 4201803,
+      "labels": [],
+      "opcodes": [
+        "f2",
+        "0f",
+        "10",
+        "25",
+        "5d",
+        "43",
+        "08"
+      ],
+      "source": null,
+      "text": " movsd  0x8435d(%rip),%xmm4        # 4860b0 <conversion_rate+0x38>"
+    },
+    {
+      "address": 4201810,
+      "labels": [],
+      "opcodes": [
+        "00"
+      ],
+      "source": null,
+      "text": " "
+    },
+    {
+      "address": 4201811,
+      "labels": [],
+      "opcodes": [
+        "66",
+        "0f",
+        "28",
+        "e9"
+      ],
+      "source": null,
+      "text": " movapd %xmm1,%xmm5"
+    },
+    {
+      "address": 4201815,
+      "labels": [],
+      "opcodes": [
+        "66",
+        "0f",
+        "28",
+        "ca"
+      ],
+      "source": null,
+      "text": " movapd %xmm2,%xmm1"
+    },
+    {
+      "address": 4201819,
+      "labels": [],
+      "opcodes": [
+        "f2",
+        "0f",
+        "5c",
+        "cb"
+      ],
+      "source": null,
+      "text": " subsd  %xmm3,%xmm1"
+    },
+    {
+      "address": 4201823,
+      "labels": [],
+      "opcodes": [
+        "f2",
+        "0f",
+        "59",
+        "ec"
+      ],
+      "source": null,
+      "text": " mulsd  %xmm4,%xmm5"
+    },
+    {
+      "address": 4201827,
+      "labels": [],
+      "opcodes": [
+        "f2",
+        "0f",
+        "59",
+        "cc"
+      ],
+      "source": null,
+      "text": " mulsd  %xmm4,%xmm1"
+    },
+    {
+      "address": 4201831,
+      "labels": [
+        {
+          "name": "__divdc3",
+          "range": {
+            "endCol": 25,
+            "startCol": 17
+          }
+        }
+      ],
+      "opcodes": [
+        "e9",
+        "d9",
+        "fb",
+        "ff",
+        "ff"
+      ],
+      "source": null,
+      "text": " jmp    401945 <__divdc3+0xe5>"
+    },
+    {
+      "address": 4201836,
+      "labels": [],
+      "opcodes": [
+        "0f",
+        "1f",
+        "40",
+        "00"
+      ],
+      "source": null,
+      "text": " nopl   0x0(%rax)"
+    },
+    {
+      "address": 4201840,
+      "labels": [],
+      "opcodes": [
+        "66",
+        "45",
+        "0f",
+        "2f",
+        "c1"
+      ],
+      "source": null,
+      "text": " comisd %xmm9,%xmm8"
+    },
+    {
+      "address": 4201845,
+      "labels": [
+        {
+          "name": "__divdc3",
+          "range": {
+            "endCol": 25,
+            "startCol": 17
+          }
+        }
+      ],
+      "opcodes": [
+        "0f",
+        "86",
+        "32",
+        "fc",
+        "ff",
+        "ff"
+      ],
+      "source": null,
+      "text": " jbe    4019ad <__divdc3+0x14d>"
+    },
+    {
+      "address": 4201851,
+      "labels": [],
+      "opcodes": [
+        "f2",
+        "0f",
+        "10",
+        "0d",
+        "bd",
+        "42",
+        "08"
+      ],
+      "source": null,
+      "text": " movsd  0x842bd(%rip),%xmm1        # 486040 <__rseq_flags+0x3c>"
+    },
+    {
+      "address": 4201858,
+      "labels": [],
+      "opcodes": [
+        "00"
+      ],
+      "source": null,
+      "text": " "
+    },
+    {
+      "address": 4201859,
+      "labels": [],
+      "opcodes": [
+        "66",
+        "0f",
+        "2f",
+        "cd"
+      ],
+      "source": null,
+      "text": " comisd %xmm5,%xmm1"
+    },
+    {
+      "address": 4201863,
+      "labels": [
+        {
+          "name": "__divdc3",
+          "range": {
+            "endCol": 25,
+            "startCol": 17
+          }
+        }
+      ],
+      "opcodes": [
+        "0f",
+        "86",
+        "20",
+        "fc",
+        "ff",
+        "ff"
+      ],
+      "source": null,
+      "text": " jbe    4019ad <__divdc3+0x14d>"
+    },
+    {
+      "address": 4201869,
+      "labels": [
+        {
+          "name": "__divdc3",
+          "range": {
+            "endCol": 25,
+            "startCol": 17
+          }
+        }
+      ],
+      "opcodes": [
+        "e9",
+        "1f",
+        "fd",
+        "ff",
+        "ff"
+      ],
+      "source": null,
+      "text": " jmp    401ab1 <__divdc3+0x251>"
+    },
+    {
+      "address": 4201874,
+      "labels": [],
+      "opcodes": [
+        "66",
+        "0f",
+        "1f",
+        "44",
+        "00",
+        "00"
+      ],
+      "source": null,
+      "text": " nopw   0x0(%rax,%rax,1)"
+    },
+    {
+      "address": 4201880,
+      "labels": [],
+      "opcodes": [
+        "66",
+        "45",
+        "0f",
+        "2f",
+        "c1"
+      ],
+      "source": null,
+      "text": " comisd %xmm9,%xmm8"
+    },
+    {
+      "address": 4201885,
+      "labels": [
+        {
+          "name": "__divdc3",
+          "range": {
+            "endCol": 25,
+            "startCol": 17
+          }
+        }
+      ],
+      "opcodes": [
+        "0f",
+        "86",
+        "48",
+        "fb",
+        "ff",
+        "ff"
+      ],
+      "source": null,
+      "text": " jbe    4018eb <__divdc3+0x8b>"
+    },
+    {
+      "address": 4201891,
+      "labels": [],
+      "opcodes": [
+        "f2",
+        "0f",
+        "10",
+        "0d",
+        "95",
+        "42",
+        "08"
+      ],
+      "source": null,
+      "text": " movsd  0x84295(%rip),%xmm1        # 486040 <__rseq_flags+0x3c>"
+    },
+    {
+      "address": 4201898,
+      "labels": [],
+      "opcodes": [
+        "00"
+      ],
+      "source": null,
+      "text": " "
+    },
+    {
+      "address": 4201899,
+      "labels": [],
+      "opcodes": [
+        "66",
+        "0f",
+        "2f",
+        "cc"
+      ],
+      "source": null,
+      "text": " comisd %xmm4,%xmm1"
+    },
+    {
+      "address": 4201903,
+      "labels": [
+        {
+          "name": "__divdc3",
+          "range": {
+            "endCol": 25,
+            "startCol": 17
+          }
+        }
+      ],
+      "opcodes": [
+        "0f",
+        "86",
+        "36",
+        "fb",
+        "ff",
+        "ff"
+      ],
+      "source": null,
+      "text": " jbe    4018eb <__divdc3+0x8b>"
+    },
+    {
+      "address": 4201909,
+      "labels": [
+        {
+          "name": "__divdc3",
+          "range": {
+            "endCol": 25,
+            "startCol": 17
+          }
+        }
+      ],
+      "opcodes": [
+        "e9",
+        "5f",
+        "fd",
+        "ff",
+        "ff"
+      ],
+      "source": null,
+      "text": " jmp    401b19 <__divdc3+0x2b9>"
+    },
+    {
+      "address": 4201914,
+      "labels": [],
+      "opcodes": [
+        "66",
+        "0f",
+        "1f",
+        "44",
+        "00",
+        "00"
+      ],
+      "source": null,
+      "text": " nopw   0x0(%rax,%rax,1)"
+    },
+    {
+      "address": 4201920,
+      "labels": [],
+      "opcodes": [
+        "66",
+        "44",
+        "0f",
+        "28",
+        "db"
+      ],
+      "source": null,
+      "text": " movapd %xmm3,%xmm11"
+    },
+    {
+      "address": 4201925,
+      "labels": [],
+      "opcodes": [
+        "66",
+        "44",
+        "0f",
+        "54",
+        "d8"
+      ],
+      "source": null,
+      "text": " andpd  %xmm0,%xmm11"
+    },
+    {
+      "address": 4201930,
+      "labels": [],
+      "opcodes": [
+        "66",
+        "44",
+        "0f",
+        "2e",
+        "dc"
+      ],
+      "source": null,
+      "text": " ucomisd %xmm4,%xmm11"
+    },
+    {
+      "address": 4201935,
+      "labels": [
+        {
+          "name": "__divdc3",
+          "range": {
+            "endCol": 25,
+            "startCol": 17
+          }
+        }
+      ],
+      "opcodes": [
+        "0f",
+        "87",
+        "2b",
+        "fe",
+        "ff",
+        "ff"
+      ],
+      "source": null,
+      "text": " ja     401c00 <__divdc3+0x3a0>"
+    },
+    {
+      "address": 4201941,
+      "labels": [
+        {
+          "name": "__divdc3",
+          "range": {
+            "endCol": 25,
+            "startCol": 17
+          }
+        }
+      ],
+      "opcodes": [
+        "e9",
+        "6b",
+        "fb",
+        "ff",
+        "ff"
+      ],
+      "source": null,
+      "text": " jmp    401945 <__divdc3+0xe5>"
+    },
+    {
+      "address": 4201946,
+      "labels": [],
+      "opcodes": [
+        "66",
+        "0f",
+        "1f",
+        "44",
+        "00",
+        "00"
+      ],
+      "source": null,
+      "text": " nopw   0x0(%rax,%rax,1)"
+    }
+  ],
+  "labelDefinitions": {
+    "_IO_fputs.cold": 49,
+    "_IO_fwrite.cold": 76,
+    "_IO_new_fclose.cold": 133,
+    "_IO_new_file_underflow.cold": 103,
+    "_IO_stdfiles_init": 349,
+    "_IO_wfile_underflow.cold": 160,
+    "_Unwind_Backtrace.cold": 229,
+    "_Unwind_Find_FDE.cold": 249,
+    "_Unwind_ForcedUnwind_Phase2.cold": 213,
+    "_Unwind_GetGR.cold": 215,
+    "_Unwind_RaiseException.cold": 223,
+    "_Unwind_RaiseException_Phase2.cold": 211,
+    "_Unwind_Resume.cold": 225,
+    "_Unwind_Resume_or_Rethrow.cold": 227,
+    "_Unwind_SetGR.cold": 219,
+    "__divdc3": 399,
+    "_dl_start": 1,
+    "_nl_load_domain.cold": 131,
+    "abort": 6,
+    "add_fdes.isra.0.cold": 245,
+    "base_of_encoded_value.cold": 251,
+    "btree_destroy": 299,
+    "btree_release_tree_recursively": 259,
+    "classify_object_over_fdes.cold": 237,
+    "execute_cfa_program_generic.cold": 205,
+    "execute_cfa_program_specialized.cold": 203,
+    "execute_stack_op.cold": 197,
+    "f": 366,
+    "fde_mixed_encoding_compare.cold": 243,
+    "fde_mixed_encoding_extract.cold": 235,
+    "fde_single_encoding_compare.cold": 241,
+    "fde_single_encoding_extract.cold": 239,
+    "linear_search_fdes.cold": 247,
+    "main": 340,
+    "read_encoded_value.cold": 195,
+    "read_encoded_value_with_base.cold": 255,
+    "release_registered_frames": 328,
+    "uw_frame_state_for.cold": 207,
+    "uw_init_context_1.cold": 209,
+    "uw_install_context_1.cold": 193,
+    "uw_update_context_1.cold": 200
+  }
+}
