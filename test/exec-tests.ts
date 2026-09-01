@@ -164,7 +164,7 @@ describe('Execution tests', async () => {
 
     describe('nsjail unit tests', () => {
         beforeAll(() => {
-            props.initialize(path.resolve('./test/test-properties/execution'), ['test']);
+            props.initialize([path.resolve('./test/test-properties/execution')], ['test']);
         });
         afterAll(() => {
             props.reset();
@@ -253,7 +253,7 @@ describe('Execution tests', async () => {
 
     describe('cewrapper unit tests', () => {
         beforeAll(() => {
-            props.initialize(path.resolve('./test/test-properties/execution'), ['test']);
+            props.initialize([path.resolve('./test/test-properties/execution')], ['test']);
         });
         afterAll(() => {
             props.reset();
@@ -279,7 +279,7 @@ describe('Execution tests', async () => {
 
     describe('Subdirectory execution', () => {
         beforeAll(() => {
-            props.initialize(path.resolve('./test/test-properties/execution'), ['test']);
+            props.initialize([path.resolve('./test/test-properties/execution')], ['test']);
         });
         afterAll(() => {
             props.reset();

@@ -714,7 +714,7 @@ describe('Rust options', () => {
         ce = makeCompilationEnvironment({
             languages,
         });
-        props.initialize(path.resolve('./test/test-properties/rust'), ['local']);
+        props.initialize([path.resolve('./test/test-properties/rust')], ['local']);
     });
 
     afterAll(() => {
@@ -752,7 +752,7 @@ describe('Rust overrides', () => {
         ce = makeCompilationEnvironment({
             languages,
         });
-        props.initialize(path.resolve('./test/test-properties/rust'), ['local']);
+        props.initialize([path.resolve('./test/test-properties/rust')], ['local']);
     });
 
     afterAll(() => {
