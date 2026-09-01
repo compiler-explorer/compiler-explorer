@@ -90,6 +90,20 @@ function initialise(compilerEnv: CompilationEnvironment) {
             this.set(temp.getStats().numRemoved);
         },
     });
+    new Gauge({
+        name: 'ce_compilation_temp_dirs_already_gone',
+        help: 'Total number of temporary directories the temp system found already removed by their owner',
+        async collect() {
+            this.set(temp.getStats().numAlreadyGone);
+        },
+    });
+    new Gauge({
+        name: 'ce_compilation_temp_dirs_held',
+        help: 'Number of temporary directories currently held by something using them',
+        async collect() {
+            this.set(temp.getStats().numHeld);
+        },
+    });
     const tempDirsBusy = new Counter({
         name: 'ce_compilation_temp_dirs_busy',
         help: 'Total number of times the temp dir system was busy',

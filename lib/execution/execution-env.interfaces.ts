@@ -28,6 +28,7 @@ import {BasicExecutionResult, ExecutableExecutionOptions} from '../../types/exec
 export interface IExecutionEnvironment {
     downloadExecutablePackage(hash: string): Promise<void>;
     execute(params: ExecutionParams): Promise<BasicExecutionResult>;
+    cleanup(): Promise<void>;
     execBinary(
         executable: string,
         executeParameters: ExecutableExecutionOptions,

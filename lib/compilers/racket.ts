@@ -189,7 +189,18 @@ export class RacketCompiler extends BaseCompiler {
     ): Promise<OptPipelineOutput | undefined> {
         // Use a separate directory so this is not affected by the main
         // compilation (which races in parallel)
-        const pipelineDir = await this.newTempDir();
+        return await this.withTempDir(pipelineDir =>
+            this.generateOptPipelineIn(pipelineDir, inputFilename, options, filters, optPipelineOptions),
+        );
+    }
+
+    private async generateOptPipelineIn(
+        pipelineDir: string,
+        inputFilename: string,
+        options: string[],
+        filters: ParseFiltersAndOutputOptions,
+        optPipelineOptions: OptPipelineBackendOptions,
+    ): Promise<OptPipelineOutput | undefined> {
         const inputFile = this.filename(inputFilename);
         const pipelineFile = path.join(pipelineDir, path.basename(inputFile));
         await fs.copyFile(inputFile, pipelineFile);
