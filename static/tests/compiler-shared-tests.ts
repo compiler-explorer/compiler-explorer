@@ -142,6 +142,16 @@ describe('CompilerShared override restoration', () => {
         expect(shared.getOverrides()).toEqual(urlOverrides);
     });
 
+    it('seeds the compiler defaults when the state has no overrides', async () => {
+        vi.mocked(compilersService.getCompilersForLang).mockResolvedValue({r1970: rustc1970});
+
+        const shared = new CompilerShared(makeDomRoot(), () => {});
+
+        await shared.updateState({compiler: 'r1970', lang: 'rust'} as any);
+
+        expect(shared.getOverrides()).toEqual([{name: 'edition', value: '2024'}]);
+    });
+
     it('keeps the URL overrides when the pane echoes its state back', async () => {
         vi.mocked(compilersService.getCompilersForLang).mockResolvedValue({r1970: rustc1970});
 
