@@ -25,7 +25,7 @@
 import $ from 'jquery';
 import _ from 'underscore';
 
-import {escapeHTML} from '../../shared/common-utils.js';
+import {escapeHTML, maskRootdirKeepingAppPrefix} from '../../shared/common-utils.js';
 import {CompilationResult} from '../../types/compilation/compilation.interfaces.js';
 import {CompilerInfo} from '../../types/compiler.interfaces.js';
 import * as BootstrapUtils from '../bootstrap-utils.js';
@@ -85,11 +85,8 @@ export class CompilationOptions<P extends Pane<object>> {
             this.statusIcon,
             CompilerService.calculateStatusIcon(stepResult ?? result),
         );
-        const options = stepResult?.compilationOptions;
-        this.setCompilationOptionsPopover(
-            options ? options.join(' ') : '',
-            this.checkForUnwiseArguments(compiler, options, wasCmake),
-        );
+        const options = (stepResult?.compilationOptions ?? []).map(maskRootdirKeepingAppPrefix);
+        this.setCompilationOptionsPopover(options.join(' '), this.checkForUnwiseArguments(compiler, options, wasCmake));
     }
 
     private setCompilationOptionsPopover(content: string | null, warnings: string[]): void {
@@ -130,9 +127,7 @@ export class CompilationOptions<P extends Pane<object>> {
         }
     }
 
-    private checkForUnwiseArguments(compiler: CompilerInfo, optionsArray: string[] | undefined, wasCmake: boolean) {
-        if (!optionsArray) optionsArray = [];
-
+    private checkForUnwiseArguments(compiler: CompilerInfo, optionsArray: string[], wasCmake: boolean) {
         // Check if any options are in the unwiseOptions array and remember them
         const unwiseOptions = _.intersection(
             optionsArray,
