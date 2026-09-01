@@ -25,6 +25,7 @@
 import {Language, LanguageKey} from '../../types/languages.interfaces.js';
 import {optionsHash} from '../options.js';
 import {SentryCapture} from '../sentry.js';
+import {fetchApiJson} from './fetch-utils.js';
 
 export type LanguageMap = Partial<Record<LanguageKey, Language>>;
 
@@ -76,11 +77,9 @@ export class LanguagesService {
     ];
 
     private async fetchLanguages(): Promise<LanguageMap> {
-        const response = await fetch(
+        const languages = await fetchApiJson<Language[]>(
             `${window.httpRoot}api/languages?fields=${LanguagesService.languageFields.join(',')}&hash=${optionsHash}`,
-            {headers: {Accept: 'application/json'}},
         );
-        const languages: Language[] = await response.json();
         const result: LanguageMap = {};
         for (const lang of languages) {
             result[lang.id] = lang;
