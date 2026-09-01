@@ -85,6 +85,15 @@ describe('Individual pane testing', () => {
         });
     }
 
+    // Not driven by PANE_DATA_MAP: a chained compiler is not a distinct component type (it is a
+    // compiler component carrying a sourceCompiler in its state), and those keys double as the
+    // component names for the known-good-state test below. Its tab is titled by
+    // Compiler.getPaneTag, which marks the upstream link with 🔗 rather than a fixed pane name.
+    it('Chained Compiler pane', () => {
+        cy.get('[data-cy="new-add-chained-compiler-btn"]:visible').click();
+        cy.get('span.lm_title:visible').contains('🔗');
+    });
+
     addPaneOpenTest(PANE_DATA_MAP.executor);
     addPaneOpenTest(PANE_DATA_MAP.opt);
     addPaneOpenTest(PANE_DATA_MAP.pp);

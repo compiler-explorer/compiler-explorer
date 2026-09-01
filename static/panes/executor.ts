@@ -79,8 +79,10 @@ function makeAnsiToHtml(color?: string): AnsiToHtml {
 
 export class Executor extends Pane<ExecutorState> {
     private contentRoot: JQuery<HTMLElement>;
-    private readonly sourceEditorId: number | null;
+    private sourceEditorId: number | null;
     private sourceTreeId: number | null;
+    private sourceCompilerId: number | null;
+    private upstreamCompilerName: string | null = null;
     private readonly id: number;
     private deferCompiles: boolean;
     private needsCompile: boolean;
@@ -137,6 +139,9 @@ export class Executor extends Pane<ExecutorState> {
     constructor(hub: Hub, container: Container, state: PaneState & ExecutorState) {
         super(hub, container, state);
         if (this.sourceTreeId) {
+            this.sourceEditorId = null;
+            this.sourceCompilerId = null;
+        } else if (this.sourceCompilerId) {
             this.sourceEditorId = null;
         } else {
             this.sourceEditorId = state.source || 1;
@@ -212,6 +217,7 @@ export class Executor extends Pane<ExecutorState> {
 
     override initializeStateDependentProperties(state: PaneState & ExecutorState) {
         this.sourceTreeId = state.tree ?? null;
+        this.sourceCompilerId = state.sourceCompiler ?? null;
         this.settings = Settings.getStoredSettings();
         this.options = state.options || '';
         this.executionArguments = state.execArgs || '';
@@ -927,9 +933,16 @@ export class Executor extends Pane<ExecutorState> {
         this.container.on('shown', this.resize, this);
         this.container.on('open', () => {
             this.eventHub.emit('executorOpen', this.id, this.sourceEditorId ?? false);
+            if (this.sourceCompilerId) {
+                // Announce ourselves to the upstream compiler so it pushes its current
+                // state (compiler info + last result) to us.
+                this.eventHub.emit('chainedExecutorOpen', this.sourceCompilerId, this.id);
+            }
         });
         this.eventHub.on('editorChange', this.onEditorChange, this);
         this.eventHub.on('editorClose', this.onEditorClose, this);
+        this.eventHub.on('chainLanguageChange', this.onChainLanguageChange, this);
+        this.eventHub.on('chainUpstreamReplaced', this.onChainUpstreamReplaced, this);
         this.eventHub.on('settingsChange', this.onSettingsChange, this);
         this.eventHub.on('requestCompilation', this.onRequestCompilation, this);
         this.eventHub.on('resendExecution', this.onResendExecutionResult, this);
@@ -1126,6 +1139,11 @@ export class Executor extends Pane<ExecutorState> {
     }
 
     getSourceName(): string {
+        if (this.sourceCompilerId) {
+            // A chained executor runs another compiler's output, so it has neither an editor
+            // nor a tree to name; without this it would fall through to "Editor #-1".
+            return '🔗' + (this.upstreamCompilerName ?? 'Compiler #' + this.sourceCompilerId);
+        }
         if (this.sourceTreeId) {
             return 'Tree #' + this.sourceTreeId;
         }
@@ -1152,6 +1170,7 @@ export class Executor extends Pane<ExecutorState> {
             compiler: this.compiler ? this.compiler.id : '',
             source: this.sourceEditorId ?? undefined,
             tree: this.sourceTreeId ?? undefined,
+            sourceCompiler: this.sourceCompilerId ?? undefined,
             options: this.options,
             execArgs: this.executionArguments,
             execStdin: this.executionStdin,
@@ -1188,6 +1207,9 @@ export class Executor extends Pane<ExecutorState> {
     }
 
     getLinkHint(): string {
+        if (this.sourceCompilerId) {
+            return '🔗' + (this.upstreamCompilerName ?? 'Compiler #' + this.sourceCompilerId);
+        }
         if (this.sourceTreeId) {
             return 'Tree #' + this.sourceTreeId;
         }
@@ -1297,25 +1319,54 @@ export class Executor extends Pane<ExecutorState> {
 
     onLanguageChange(editorId: number | boolean, newLangId: string): void {
         if (this.sourceEditorId === editorId && this.currentLangId) {
-            const languages = languagesService.getLanguagesOrFail();
-            const oldLangId = this.currentLangId;
-            this.currentLangId = newLangId;
-            // Store the current selected stuff to come back to it later in the same session (Not state stored!)
-            this.infoByLang[oldLangId] = {
-                compiler: this.compiler?.id ? this.compiler.id : (languages[oldLangId]?.defaultCompiler ?? ''),
-                options: this.options,
-                execArgs: this.executionArguments,
-                execStdin: this.executionStdin,
-            };
-            const info = this.infoByLang[this.currentLangId];
-            this.initLangAndCompiler({compilerName: '', id: 0, lang: newLangId, compiler: info?.compiler ?? ''}).then(
-                () => {
-                    this.updateCompilersSelector(info);
-                    this.updateCompilerUI();
-                    this.updateState();
-                },
-            );
+            void this.applyLanguageChange(newLangId);
         }
+    }
+
+    onChainLanguageChange(sourceCompilerId: number, newLangId: string): void {
+        if (this.sourceCompilerId !== sourceCompilerId || !this.currentLangId) return;
+        void this.applyLanguageChange(newLangId).then(() => {
+            if (this.source) {
+                this.compile();
+            }
+        });
+    }
+
+    onChainUpstreamReplaced(compilerId: number, editorId: number, langId: string, source: string): void {
+        if (compilerId !== this.sourceCompilerId) return;
+        // Our upstream compiler is turning into an editor holding the same text it was
+        // feeding us: become a regular editor-backed executor bound to it. Nulling
+        // sourceCompilerId first means the upstream's imminent compilerClose is ignored.
+        this.sourceCompilerId = null;
+        this.upstreamCompilerName = null;
+        this.sourceEditorId = editorId;
+        const sourceChanged = source !== this.source;
+        this.source = source;
+        if (langId !== this.currentLangId && this.currentLangId) {
+            void this.applyLanguageChange(langId).then(() => this.compile());
+            return;
+        }
+        this.updateState();
+        this.updateTitle();
+        if (sourceChanged) this.compile();
+    }
+
+    private async applyLanguageChange(newLangId: string): Promise<void> {
+        const languages = languagesService.getLanguagesOrFail();
+        const oldLangId = this.currentLangId;
+        this.currentLangId = newLangId;
+        // Store the current selected stuff to come back to it later in the same session (Not state stored!)
+        this.infoByLang[oldLangId] = {
+            compiler: this.compiler?.id ? this.compiler.id : (languages[oldLangId]?.defaultCompiler ?? ''),
+            options: this.options,
+            execArgs: this.executionArguments,
+            execStdin: this.executionStdin,
+        };
+        const info = this.infoByLang[this.currentLangId];
+        await this.initLangAndCompiler({compilerName: '', id: 0, lang: newLangId, compiler: info?.compiler ?? ''});
+        this.updateCompilersSelector(info);
+        this.updateCompilerUI();
+        this.updateState();
     }
 
     async getCurrentLangCompilers(): Promise<CompilerInfo[]> {
@@ -1353,7 +1404,80 @@ export class Executor extends Pane<ExecutorState> {
         return '';
     }
 
-    onCompileResult(compilerId: number, compiler: CompilerInfo, result: CompilationResult): void {}
+    onCompileResult(compilerId: number, _compiler: CompilerInfo, result: CompilationResult): void {
+        if (compilerId !== this.sourceCompilerId) return;
 
-    onCompiler(compilerId: number, compiler: CompilerInfo, options: string, editorId: number, treeId: number): void {}
+        // Both of these report a local result rather than executing: there is nothing to run.
+        // They must also stay ahead of the dedup below, which assumes our last result came from
+        // actually compiling our current source -- untrue once we have reported one of these.
+        if (!CompilerService.isSuccessfulResult(result)) {
+            this.source = '';
+            this.onCompileResponse(this.fakeCompileRequest(), this.errorResult('<Upstream compilation failed>'), false);
+            return;
+        }
+
+        const newSource = CompilerService.getAsmAsText(result);
+        if (!newSource) {
+            // Succeeding without emitting anything is an ordinary state, not a failure.
+            this.source = '';
+            this.onCompileResponse(
+                this.fakeCompileRequest(),
+                this.errorResult('<No output from upstream compiler>'),
+                false,
+            );
+            return;
+        }
+
+        // Skip recompiling when the derived source is unchanged and our last result was for it
+        // (e.g. the upstream re-pushed an identical result during the open handshake).
+        if (newSource === this.source && this.lastResult?.source === newSource) return;
+        this.source = newSource;
+        this.compile();
+    }
+
+    // A minimal request to accompany locally-generated error results (see errorResult callers).
+    private fakeCompileRequest(): CompilationRequest {
+        return {
+            source: this.source,
+            compiler: this.compiler?.id ?? '',
+            options: {
+                userArguments: this.options,
+                executeParameters: {
+                    args: this.executionArguments,
+                    stdin: this.executionStdin,
+                    runtimeTools: this.compilerShared.getRuntimeTools(),
+                },
+                compilerOptions: {
+                    executorRequest: true,
+                    skipAsm: true,
+                    overrides: this.compilerShared.getOverrides(),
+                },
+                filters: {execute: true},
+                tools: [],
+                libraries: [],
+            },
+            lang: this.currentLangId,
+            files: [],
+        };
+    }
+
+    onCompiler(compilerId: number, compiler: CompilerInfo | null, _options: string): void {
+        if (compilerId !== this.sourceCompilerId) return;
+        const newName = compiler?.name ?? null;
+        if (newName !== this.upstreamCompilerName) {
+            this.upstreamCompilerName = newName;
+            this.updateTitle();
+        }
+    }
+
+    protected override onCompilerClose(compilerId: number): void {
+        super.onCompilerClose(compilerId);
+        if (compilerId === this.sourceCompilerId) {
+            // Our upstream compiler closed — detach and become sourceless.
+            this.sourceCompilerId = null;
+            this.source = '';
+            this.updateState();
+            this.updateTitle();
+        }
+    }
 }
