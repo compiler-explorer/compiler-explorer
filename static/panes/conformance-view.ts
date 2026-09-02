@@ -32,7 +32,7 @@ import {CompilationResult} from '../../types/compilation/compilation.interfaces.
 import {CompilerInfo} from '../../types/compiler.interfaces.js';
 import {SelectedLibraryVersion} from '../../types/libraries/libraries.interfaces.js';
 import * as BootstrapUtils from '../bootstrap-utils.js';
-import {CompilationStatus, CompilationStatusCode} from '../compiler-service.interfaces.js';
+import {CompilationStatus} from '../compiler-service.interfaces.js';
 import {CompilerService} from '../compiler-service.js';
 import * as Components from '../components.js';
 import {createDragSource} from '../components.js';
@@ -250,7 +250,7 @@ export class Conformance extends Pane<ConformanceViewState> {
             popCompilerButton.toggleClass('d-none', !compilerId);
             this.saveState();
             // Hide the results icon when a new compiler is selected
-            this.handleStatusIcon(newCompilerEntry.statusIcon, {code: CompilationStatusCode.NONE, compilerOut: 0});
+            this.handleStatusIcon(newCompilerEntry.statusIcon, {code: 0, compilerOut: 0});
             const compiler = await this.compilerService.findCompiler(this.langId, compilerId);
             if (compiler) this.setCompilationOptionsPopover(newCompilerEntry.prependOptions, compiler.options);
             this.updateLibraries();
@@ -402,7 +402,7 @@ export class Conformance extends Pane<ConformanceViewState> {
         const compilerId = this.getCompilerId(compilerEntry);
         if (compilerId === '') return;
         // Hide previous status icons
-        this.handleStatusIcon(compilerEntry.statusIcon, {code: CompilationStatusCode.COMPILING, compilerOut: 0});
+        this.handleStatusIcon(compilerEntry.statusIcon, {code: 4, compilerOut: 0});
 
         this.expandToFiles().then(expanded => {
             const request = {
