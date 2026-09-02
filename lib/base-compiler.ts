@@ -1731,6 +1731,8 @@ export class BaseCompiler {
         const output = await this.runCompiler(this.compiler.exe, newOptions, this.filename(inputFilename), execOptions);
         const compileEnd = performance.now();
 
+        const result = {code: output.code, compilationOptions: newOptions};
+
         // ignore `output.truncated` because we are not interested in `stdout`/`stderr`
 
         if (output.timedOut) {
@@ -1738,6 +1740,7 @@ export class BaseCompiler {
                 error: 'Invocation timed out',
                 results: {},
                 compileTime: output.execTime || compileEnd - compileStart,
+                ...result,
             };
         }
 
@@ -1746,6 +1749,7 @@ export class BaseCompiler {
                 error: `Invocation failed: ${utils.resultLinesToText(output.stderr)}${utils.resultLinesToText(output.stdout)}}`,
                 results: {},
                 compileTime: output.execTime || compileEnd - compileStart,
+                ...result,
             };
         }
 
@@ -1756,12 +1760,14 @@ export class BaseCompiler {
                 results,
                 compileTime: compileEnd - compileStart,
                 parseTime: performance.now() - parseStart,
+                ...result,
             };
         } catch (e: any) {
             return {
                 error: e.toString(),
                 results: {},
                 compileTime: compileEnd - compileStart,
+                ...result,
             };
         }
     }
