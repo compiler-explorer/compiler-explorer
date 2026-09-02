@@ -40,7 +40,10 @@ import {ResultLine} from '../../types/resultline/resultline.interfaces.js';
 import {Filter as AnsiToHtml} from '../ansi-to-html.js';
 import {ArtifactHandler} from '../artifact-handler.js';
 import * as BootstrapUtils from '../bootstrap-utils.js';
-import {CompilationStatus as CompilerServiceCompilationStatus} from '../compiler-service.interfaces.js';
+import {
+    CompilationStatusCode,
+    CompilationStatus as CompilerServiceCompilationStatus,
+} from '../compiler-service.interfaces.js';
 import {CompilerService} from '../compiler-service.js';
 import {ICompilerShared} from '../compiler-shared.interfaces.js';
 import {CompilerShared} from '../compiler-shared.js';
@@ -447,7 +450,7 @@ export class Executor extends Pane<ExecutorState> {
         }
         // this.eventHub.emit('compiling', this.id, this.compiler);
         // Display the spinner
-        this.handleCompilationStatus({code: 4});
+        this.handleCompilationStatus({code: CompilationStatusCode.COMPILING});
         this.pendingBuildRequestSentAt = Date.now();
         // After a short delay, give the user some indication that we're working on their
         // compilation.
@@ -482,7 +485,7 @@ export class Executor extends Pane<ExecutorState> {
         }
         // this.eventHub.emit('compiling', this.id, this.compiler);
         // Display the spinner
-        this.handleCompilationStatus({code: 4});
+        this.handleCompilationStatus({code: CompilationStatusCode.COMPILING});
         this.pendingRequestSentAt = Date.now();
         // After a short delay, give the user some indication that we're working on their
         // compilation.
@@ -722,7 +725,7 @@ export class Executor extends Pane<ExecutorState> {
             }
         }
 
-        this.handleCompilationStatus({code: 1, didExecute: result.didExecute});
+        this.handleCompilationStatus({code: CompilationStatusCode.OK, didExecute: result.didExecute});
         let timeLabelText = '';
         if (cached) {
             timeLabelText = ' - cached';
@@ -731,7 +734,8 @@ export class Executor extends Pane<ExecutorState> {
         }
         this.compileTimeLabel.text(timeLabelText);
 
-        this.setCompilationOptionsPopover(result.buildResult ? result.buildResult.compilationOptions.join(' ') : '');
+        const compilationOptions = result.buildResult?.compilationOptions ?? result.result?.compilationOptions;
+        this.setCompilationOptionsPopover(compilationOptions?.join(' ') ?? null);
 
         if (this.currentLangId) {
             const languages = languagesService.getLanguagesOrFail();
@@ -1258,7 +1262,7 @@ export class Executor extends Pane<ExecutorState> {
 
     private ariaLabel(status: CompilationStatus): string {
         // Compiling...
-        if (status.code === 4) return 'Compiling';
+        if (status.code === CompilationStatusCode.COMPILING) return 'Compiling';
         if (status.didExecute) {
             return 'Program compiled & executed';
         }
@@ -1267,7 +1271,7 @@ export class Executor extends Pane<ExecutorState> {
 
     private color(status: CompilationStatus) {
         // Compiling...
-        if (status.code === 4) return '#888888';
+        if (status.code === CompilationStatusCode.COMPILING) return '#888888';
         if (status.didExecute) return '#12BB12';
         return '#FF1212';
     }
@@ -1282,11 +1286,11 @@ export class Executor extends Pane<ExecutorState> {
                 .removeClass()
                 .addClass('status-icon fas')
                 .css('color', this.color(status))
-                .toggle(status.code !== 0)
+                .toggle(status.code !== CompilationStatusCode.NONE)
                 .attr('aria-label', this.ariaLabel(status))
-                .toggleClass('fa-spinner fa-spin', status.code === 4)
-                .toggleClass('fa-times-circle', status.code !== 4 && !status.didExecute)
-                .toggleClass('fa-check-circle', status.code !== 4 && status.didExecute);
+                .toggleClass('fa-spinner fa-spin', status.code === CompilationStatusCode.COMPILING)
+                .toggleClass('fa-times-circle', status.code !== CompilationStatusCode.COMPILING && !status.didExecute)
+                .toggleClass('fa-check-circle', status.code !== CompilationStatusCode.COMPILING && status.didExecute);
         }
     }
 

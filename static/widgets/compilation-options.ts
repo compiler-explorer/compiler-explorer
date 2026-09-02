@@ -29,6 +29,7 @@ import {escapeHTML, maskRootdirKeepingAppPrefix} from '../../shared/common-utils
 import {CompilationResult} from '../../types/compilation/compilation.interfaces.js';
 import {CompilerInfo} from '../../types/compiler.interfaces.js';
 import * as BootstrapUtils from '../bootstrap-utils.js';
+import {CompilationStatusCode} from '../compiler-service.interfaces.js';
 import {CompilerService} from '../compiler-service.js';
 import {PaneCompilerState} from '../panes/pane.interfaces.js';
 import {Pane} from '../panes/pane.js';
@@ -72,7 +73,10 @@ export class CompilationOptions<P extends Pane<object>> {
     private onCompiling(compilerId: number, compiler: CompilerInfo): void {
         if (this.compilerInfo.compilerId !== compilerId) return;
         // Display the spinner
-        CompilerService.handleCompilationStatus(null, this.statusIcon, {code: 4, compilerOut: 0});
+        CompilerService.handleCompilationStatus(null, this.statusIcon, {
+            code: CompilationStatusCode.COMPILING,
+            compilerOut: 0,
+        });
     }
 
     private onCompileResult(compilerId: number, compiler: CompilerInfo, result: CompilationResult): void {
