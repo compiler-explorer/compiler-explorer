@@ -90,12 +90,13 @@ export class MojoCompiler extends BaseCompiler {
         const execOptions = this.getDefaultExecOptions();
         execOptions.maxOutput = 1024 * 1024 * 1024;
         const output = await this.runCompiler(this.compiler.exe, newOptions, this.compileFilename, execOptions);
+        const result = {code: output.code, compilationOptions: newOptions};
         if (output.code !== 0) {
             console.error('Mojo IR build failed:', newOptions, output.stderr, output.stdout);
-            return {asm: [{text: 'Failed to run compiler to get IR code'}]};
+            return {asm: [{text: 'Failed to run compiler to get IR code'}], ...result};
         }
         const irText = await fs.readFile(llPath, 'utf8');
-        return {asm: irText.split('\n').map(text => ({text}))};
+        return {asm: irText.split('\n').map(text => ({text})), ...result};
     }
 
     override getArgumentParserClass() {

@@ -45,6 +45,8 @@ import {SiteSettings} from './settings.js';
 
 const ASCII_COLORS_RE = new RegExp(/\x1B\[[\d;]*m(.\[K)?/g);
 
+type HasCompilationStatus = Partial<Pick<CompilationResult, 'code' | 'stdout' | 'stderr' | 'inputFilename'>>;
+
 export class CompilerService {
     private readonly base = window.httpRoot;
     private allowStoreCodeDebug: boolean;
@@ -339,12 +341,10 @@ export class CompilerService {
         return [{field: '$order'}, {field: '$score'}, {field: 'name'}];
     }
 
-    public static doesCompilationResultHaveWarnings(result: CompilationResult) {
-        // TODO: Types probably need to be updated here
-
+    public static doesCompilationResultHaveWarnings(result: HasCompilationStatus) {
         const stdout = result.stdout ?? [];
-
         const stderr = result.stderr ?? [];
+
         // TODO: Pass what compiler did this and check if it it's actually skippable
         // Right now we're ignoring outputs that match the input filename
         // Compiler & Executor are capable of giving us the info, but conformance view is not
@@ -358,9 +358,11 @@ export class CompilerService {
         return stdout.length > 0 || stderr.length > 0;
     }
 
-    public static calculateStatusIcon(result: CompilationResult): CompilationStatus {
+    public static calculateStatusIcon(result: HasCompilationStatus): CompilationStatus {
         let code = 1;
-        if (result.code !== 0) {
+        if (result.code === undefined) {
+            code = 5;
+        } else if (result.code !== 0) {
             code = 3;
         } else if (CompilerService.doesCompilationResultHaveWarnings(result)) {
             code = 2;
@@ -369,6 +371,7 @@ export class CompilerService {
     }
 
     private static getAriaLabel(status: CompilationStatus) {
+        if (status.code === 5) return 'Unknown';
         // Compiling...
         if (status.code === 4) return 'Compiling';
         if (status.compilerOut === 0) {
@@ -420,6 +423,7 @@ export class CompilerService {
                 .attr('aria-label', CompilerService.getAriaLabel(status))
                 .toggleClass('fa-spinner fa-spin', status.code === 4)
                 .toggleClass('fa-times-circle', status.code === 3)
+                .toggleClass('fa-circle-question', status.code === 5)
                 .toggleClass('fa-check-circle', status.code === 1 || status.code === 2);
         }
     }

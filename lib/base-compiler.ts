@@ -1486,15 +1486,21 @@ export class BaseCompiler {
         const output = await this.runCompiler(this.compiler.exe, newOptions, this.filename(inputFilename), execOptions);
         if (output.code !== 0) {
             return {
+                code: output.code,
+                compilationOptions: newOptions,
                 asm: [{text: 'Failed to run compiler to get IR code'}],
             };
         }
         const ir = await this.processIrOutput(output, irOptions, filters);
 
         const result: {
+            code: number;
+            compilationOptions?: string[];
             asm: ParsedAsmResultLine[];
             cfg?: Record<string, cfg.CFG>;
         } = {
+            code: output.code,
+            compilationOptions: newOptions,
             asm: ir.asm,
         };
 
@@ -1576,7 +1582,7 @@ export class BaseCompiler {
         optPipelineOptions: OptPipelineBackendOptions,
     ): Promise<OptPipelineOutput | undefined> {
         // These options make Clang produce the pass dumps
-        const newOptions = options
+        const compilationOptions = options
             .filter(option => option !== '-fcolor-diagnostics')
             .concat(unwrap(this.compiler.optPipeline?.arg))
             .concat(optPipelineOptions.fullModule ? unwrap(this.compiler.optPipeline?.moduleScopeArg) : [])
@@ -1589,14 +1595,22 @@ export class BaseCompiler {
         execOptions.maxOutput = 1024 * 1024 * 1024;
 
         const compileStart = performance.now();
-        const output = await this.runCompiler(this.compiler.exe, newOptions, this.filename(inputFilename), execOptions);
+        const output = await this.runCompiler(
+            this.compiler.exe,
+            compilationOptions,
+            this.filename(inputFilename),
+            execOptions,
+        );
         const compileEnd = performance.now();
+
+        const result = {code: output.code, compilationOptions};
 
         if (output.truncated) {
             return {
                 error: 'Exceeded max output limit',
                 results: {},
                 compileTime: output.execTime || compileEnd - compileStart,
+                ...result,
             };
         }
 
@@ -1605,6 +1619,7 @@ export class BaseCompiler {
                 error: 'Invocation timed out',
                 results: {},
                 compileTime: output.execTime || compileEnd - compileStart,
+                ...result,
             };
         }
 
@@ -1613,6 +1628,7 @@ export class BaseCompiler {
                 error: `Invocation failed: ${utils.resultLinesToText(output.stderr)}${utils.resultLinesToText(output.stdout)}}`,
                 results: {},
                 compileTime: output.execTime || compileEnd - compileStart,
+                ...result,
             };
         }
 
@@ -1639,18 +1655,21 @@ export class BaseCompiler {
                     results: await demangler.demangleLLVMPasses(optPipeline),
                     compileTime: compileEnd - compileStart,
                     parseTime: performance.now() - parseStart,
+                    ...result,
                 };
             }
             return {
                 results: optPipeline,
                 compileTime: compileEnd - compileStart,
                 parseTime: performance.now() - parseStart,
+                ...result,
             };
         } catch (e: any) {
             return {
                 error: e.toString(),
                 results: {},
                 compileTime: compileEnd - compileStart,
+                ...result,
             };
         }
     }
