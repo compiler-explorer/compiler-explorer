@@ -302,6 +302,8 @@ export type Arch = 'x86' | 'x86_64' | null;
 export type BuildStep = BasicExecutionResult & {
     compilationOptions: string[];
     step: string;
+    command?: string;
+    env?: Record<string, string>;
 };
 
 export type CompilationInfo = CacheKey &

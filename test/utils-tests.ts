@@ -810,6 +810,42 @@ describe('maskRootdirKeepingAppPrefix', () => {
     });
 });
 
+describe('maskRootdirsInText', () => {
+    const tmp = '/tmp/compiler-explorer-compiler123-4-abc';
+
+    it('masks every temp path, not just the first', () => {
+        expect(utils.maskRootdirsInText(`-I${tmp}/include -I${tmp}/other/include`)).toEqual(
+            '-I/app/include -I/app/other/include',
+        );
+    });
+
+    it('masks a bare temp dir with no trailing slash, as -L and -rpath produce', () => {
+        expect(utils.maskRootdirsInText(`-L${tmp}`)).toEqual('-L/app');
+    });
+
+    // The value that motivated this: a single env var holding four temp paths in two shapes.
+    it('masks a realistic LDFLAGS value completely', () => {
+        expect(
+            utils.maskRootdirsInText(`-L${tmp} -Wl,-rpath,${tmp} -Wl,-rpath,${tmp}/fmt/lib -L${tmp}/fmt/lib`),
+        ).toEqual('-L/app -Wl,-rpath,/app -Wl,-rpath,/app/fmt/lib -L/app/fmt/lib');
+    });
+
+    it('leaves text with no temp paths untouched', () => {
+        expect(utils.maskRootdirsInText('-L/opt/compiler-explorer/gcc-15.2.0/lib64')).toEqual(
+            '-L/opt/compiler-explorer/gcc-15.2.0/lib64',
+        );
+    });
+
+    it('is idempotent', () => {
+        const once = utils.maskRootdirsInText(`-L${tmp} -I${tmp}/include`);
+        expect(utils.maskRootdirsInText(once)).toEqual(once);
+    });
+
+    it.each([undefined, null, ''])('hands %p straight back', input => {
+        expect(utils.maskRootdirsInText(input as unknown as string)).toEqual(input);
+    });
+});
+
 describe('maskRootdir', () => {
     it('masks a CE temp path down to the user-facing filename', () => {
         expect(utils.maskRootdir('/tmp/compiler-explorer-compiler123-4-abc/example.cpp')).toEqual('example.cpp');

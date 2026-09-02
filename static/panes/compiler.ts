@@ -61,6 +61,7 @@ import {toolsService} from '../services/tools.service.js';
 import {SiteSettings} from '../settings.js';
 import * as utils from '../utils.js';
 import {Alert} from '../widgets/alert.js';
+import {displayBuildSteps} from '../widgets/build-steps-widget.js';
 import {CompilationOptions} from '../widgets/compilation-options.js';
 import {CompilerPicker} from '../widgets/compiler-picker.js';
 import {WidgetState} from '../widgets/libs-widget.interfaces.js';
@@ -217,6 +218,7 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
     private initialOptionsFieldPlacehoder: JQuery<HTMLElement>;
     private fullCompilerName: JQuery<HTMLElement>;
     private fullTimingInfo: JQuery<HTMLElement>;
+    private buildStepsInfo: JQuery<HTMLElement>;
     private compilerLicenseButton: JQuery<HTMLElement>;
     private filterBinaryButton: JQuery<HTMLButtonElement>;
     private filterBinaryTitle: JQuery<HTMLElement>;
@@ -1821,6 +1823,9 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
         wasRealReply: boolean,
         timeTaken: number,
     ) {
+        // Only project builds run build steps; in single-file mode the button would open an empty dialog.
+        this.buildStepsInfo.toggleClass('d-none', !result.buildsteps?.length);
+
         // Delete trailing empty lines
         if (Array.isArray(result.asm)) {
             const indexToDiscard = _.findLastIndex(result.asm, line => {
@@ -2588,6 +2593,7 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
         this.initialOptionsFieldPlacehoder = this.optionsField.prop('placeholder');
         this.fullCompilerName = this.domRoot.find('.full-compiler-name');
         this.fullTimingInfo = this.domRoot.find('.full-timing-info');
+        this.buildStepsInfo = this.domRoot.find('.build-steps-info');
         this.compilerLicenseButton = this.domRoot.find('.compiler-license');
 
         this.initFilterButtons();
@@ -3130,6 +3136,10 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
 
         this.fullTimingInfo.off('click').on('click', () => {
             TimingWidget.displayCompilationTiming(this.lastResult, this.lastTimeTaken);
+        });
+
+        this.buildStepsInfo.off('click').on('click', () => {
+            displayBuildSteps(this.lastResult?.buildsteps ?? []);
         });
 
         const optionsChange = _.debounce(e => {

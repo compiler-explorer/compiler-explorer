@@ -52,6 +52,7 @@ import {languagesService} from '../services/languages.service.js';
 import {Settings, SiteSettings} from '../settings.js';
 import * as utils from '../utils.js';
 import {Alert} from '../widgets/alert.js';
+import {displayBuildSteps} from '../widgets/build-steps-widget.js';
 import {CompilerPicker} from '../widgets/compiler-picker.js';
 import {CompilerVersionInfo, setCompilerVersionPopoverForPane} from '../widgets/compiler-version-info.js';
 import {FontScale} from '../widgets/fontscale.js';
@@ -111,6 +112,7 @@ export class Executor extends Pane<ExecutorState> {
     private prependOptions: JQuery<HTMLElement>;
     private fullCompilerName: JQuery<HTMLElement>;
     private fullTimingInfo: JQuery<HTMLElement>;
+    private buildStepsInfo: JQuery<HTMLElement>;
     private libsButton: JQuery<HTMLElement>;
     private compileTimeLabel: JQuery<HTMLElement>;
     private shortCompilerName: JQuery<HTMLElement>;
@@ -660,6 +662,9 @@ export class Executor extends Pane<ExecutorState> {
         wasRealReply: boolean,
         timeTaken: number,
     ): void {
+        // Only project builds run build steps; in single-file mode the button would open an empty dialog.
+        this.buildStepsInfo.toggleClass('d-none', !result.buildsteps?.length);
+
         this.clearPreviousOutput();
         const compileStdout = this.getBuildStdoutFromResult(result);
         const compileStderr = this.getBuildStderrFromResult(result);
@@ -804,6 +809,7 @@ export class Executor extends Pane<ExecutorState> {
         this.prependOptions = this.domRoot.find('.prepend-options');
         this.fullCompilerName = this.domRoot.find('.full-compiler-name');
         this.fullTimingInfo = this.domRoot.find('.full-timing-info');
+        this.buildStepsInfo = this.domRoot.find('.build-steps-info');
         this.setCompilationOptionsPopover(this.compiler?.options ?? null);
 
         this.compileTimeLabel = this.domRoot.find('.compile-time');
@@ -939,6 +945,10 @@ export class Executor extends Pane<ExecutorState> {
 
         this.fullTimingInfo.off('click').on('click', () => {
             TimingWidget.displayCompilationTiming(this.lastResult, this.lastTimeTaken);
+        });
+
+        this.buildStepsInfo.off('click').on('click', () => {
+            displayBuildSteps(this.lastResult?.buildsteps ?? []);
         });
     }
 

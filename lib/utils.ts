@@ -39,7 +39,7 @@ import {BasicExecutionResult, UnprocessedExecResult} from '../types/execution/ex
 import {LanguageKey} from '../types/languages.interfaces.js';
 import type {Fix, ResultLine} from '../types/resultline/resultline.interfaces.js';
 
-export {ce_temp_prefix, maskRootdirKeepingAppPrefix} from '../shared/common-utils.js';
+export {ce_temp_prefix, maskRootdirKeepingAppPrefix, maskRootdirsInText} from '../shared/common-utils.js';
 
 const tabsRe = /\t/g;
 const lineRe = /\r?\n/;
