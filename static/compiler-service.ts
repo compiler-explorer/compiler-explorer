@@ -36,7 +36,7 @@ import ErrorTextStatus = JQuery.Ajax.ErrorTextStatus;
 
 import {CompilationResult, FiledataPair} from '../types/compilation/compilation.interfaces.js';
 import {CompilerInfo} from '../types/compiler.interfaces.js';
-import {CompilationStatus} from './compiler-service.interfaces.js';
+import {CompilationStatus, CompilationStatusCode} from './compiler-service.interfaces.js';
 import {IncludeDownloads, SourceAndFiles} from './download-service.js';
 import {SentryCapture} from './sentry.js';
 import {compilersService} from './services/compilers.service.js';
@@ -371,37 +371,37 @@ export class CompilerService {
     }
 
     private static getAriaLabel(status: CompilationStatus) {
-        if (status.code === 5) return 'Unknown';
+        if (status.code === CompilationStatusCode.UNKNOWN) return 'Unknown';
         // Compiling...
-        if (status.code === 4) return 'Compiling';
+        if (status.code === CompilationStatusCode.COMPILING) return 'Compiling';
         if (status.compilerOut === 0) {
             // StdErr.length > 0
-            if (status.code === 3) return 'Compilation succeeded with errors';
+            if (status.code === CompilationStatusCode.WITH_ERRORS) return 'Compilation succeeded with errors';
             // StdOut.length > 0
-            if (status.code === 2) return 'Compilation succeeded with warnings';
+            if (status.code === CompilationStatusCode.WITH_WARNINGS) return 'Compilation succeeded with warnings';
             return 'Compilation succeeded';
         }
         // StdErr.length > 0
-        if (status.code === 3) return 'Compilation failed with errors';
+        if (status.code === CompilationStatusCode.WITH_ERRORS) return 'Compilation failed with errors';
         // StdOut.length > 0
-        if (status.code === 2) return 'Compilation failed with warnings';
+        if (status.code === CompilationStatusCode.WITH_WARNINGS) return 'Compilation failed with warnings';
         return 'Compilation failed';
     }
 
     private static getColor(status: CompilationStatus) {
         // Compiling...
-        if (status.code === 4) return '#888888';
+        if (status.code === CompilationStatusCode.COMPILING) return '#888888';
         if (status.compilerOut === 0) {
             // StdErr.length > 0
-            if (status.code === 3) return '#FF6645';
+            if (status.code === CompilationStatusCode.WITH_ERRORS) return '#FF6645';
             // StdOut.length > 0
-            if (status.code === 2) return '#FF6500';
+            if (status.code === CompilationStatusCode.WITH_WARNINGS) return '#FF6500';
             return '#12BB12';
         }
         // StdErr.length > 0
-        if (status.code === 3) return '#FF1212';
+        if (status.code === CompilationStatusCode.WITH_ERRORS) return '#FF1212';
         // StdOut.length > 0
-        if (status.code === 2) return '#BB8700';
+        if (status.code === CompilationStatusCode.WITH_WARNINGS) return '#BB8700';
         return '#FF6645';
     }
 
@@ -411,7 +411,9 @@ export class CompilerService {
         status: CompilationStatus,
     ) {
         if (statusLabel != null) {
-            statusLabel.toggleClass('error', status.code === 3).toggleClass('warning', status.code === 2);
+            statusLabel
+                .toggleClass('error', status.code === CompilationStatusCode.WITH_ERRORS)
+                .toggleClass('warning', status.code === CompilationStatusCode.WITH_WARNINGS);
         }
 
         if (statusIcon != null) {
@@ -419,12 +421,15 @@ export class CompilerService {
                 .removeClass()
                 .addClass('status-icon fas')
                 .css('color', CompilerService.getColor(status))
-                .toggle(status.code !== 0)
+                .toggle(status.code !== CompilationStatusCode.NONE)
                 .attr('aria-label', CompilerService.getAriaLabel(status))
-                .toggleClass('fa-spinner fa-spin', status.code === 4)
-                .toggleClass('fa-times-circle', status.code === 3)
-                .toggleClass('fa-circle-question', status.code === 5)
-                .toggleClass('fa-check-circle', status.code === 1 || status.code === 2);
+                .toggleClass('fa-spinner fa-spin', status.code === CompilationStatusCode.COMPILING)
+                .toggleClass('fa-times-circle', status.code === CompilationStatusCode.WITH_ERRORS)
+                .toggleClass('fa-circle-question', status.code === CompilationStatusCode.UNKNOWN)
+                .toggleClass(
+                    'fa-check-circle',
+                    status.code === CompilationStatusCode.OK || status.code === CompilationStatusCode.WITH_WARNINGS,
+                );
         }
     }
 
