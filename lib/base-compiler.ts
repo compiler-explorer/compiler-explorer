@@ -2528,6 +2528,8 @@ export class BaseCompiler {
 
         const result = await this.doExecution(key, executeParameters, bypassCache);
 
+        this.cleanupResult(result);
+
         if (!bypassExecutionCache(bypassCache)) {
             await this.env.cachePut(execKey, result, undefined);
         }
@@ -3737,6 +3739,9 @@ export class BaseCompiler {
         if (result.inputFilename) {
             result.inputFilename = utils.maskRootdir(result.inputFilename);
         }
+
+        if (result.buildResult) this.cleanupResult(result.buildResult);
+        if (result.result) this.cleanupResult(result.result);
     }
 
     postCompilationPreCacheHook(result: CompilationResult): CompilationResult {
