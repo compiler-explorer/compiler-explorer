@@ -726,7 +726,8 @@ export class Executor extends Pane<ExecutorState> {
         }
         this.compileTimeLabel.text(timeLabelText);
 
-        this.setCompilationOptionsPopover(result.buildResult ? result.buildResult.compilationOptions.join(' ') : '');
+        const compilationOptions = result.buildResult?.compilationOptions ?? result.result?.compilationOptions;
+        this.setCompilationOptionsPopover(compilationOptions?.join(' ') ?? null);
 
         if (this.currentLangId) {
             const languages = languagesService.getLanguagesOrFail();

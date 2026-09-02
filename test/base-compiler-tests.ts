@@ -34,6 +34,7 @@ import {RustCompiler} from '../lib/compilers/rust.js';
 import {Win32Compiler} from '../lib/compilers/win32.js';
 import * as props from '../lib/properties.js';
 import {splitArguments} from '../shared/common-utils.js';
+import {CompilationResult} from '../types/compilation/compilation.interfaces.js';
 import {CompilerOverrideType, ConfiguredOverrides} from '../types/compilation/compiler-overrides.interfaces.js';
 import {CompilerInfo} from '../types/compiler.interfaces.js';
 import {SelectedLibraryVersion} from '../types/libraries/libraries.interfaces.js';
@@ -79,6 +80,33 @@ describe('Basic compiler invariants', () => {
                 '/tmp/compiler-explorer-compiler123-4-abc/example.cpp',
             ]),
         ).toEqual(['-O3', '-o', '/app/output.s', '/app/example.cpp']);
+    });
+
+    it('should mask the options of nested results the user is shown', () => {
+        const empty = {code: 0, timedOut: false, stdout: [], stderr: []};
+        const tmp = '/tmp/compiler-explorer-compiler123-4-abc';
+        const result: CompilationResult = {
+            ...empty,
+            compilationOptions: [`${tmp}/example.cpp`],
+            buildResult: {
+                ...empty,
+                downloads: [],
+                executableFilename: `${tmp}/output.s`,
+                compilationOptions: ['-O3', `${tmp}/example.cpp`],
+            },
+            result: {
+                ...empty,
+                compilationOptions: ['-DFOO', `${tmp}/main.cpp`],
+                inputFilename: `${tmp}/main.cpp`,
+            },
+        };
+
+        compiler.cleanupResult(result);
+
+        expect(result.compilationOptions).toEqual(['/app/example.cpp']);
+        expect(result.buildResult?.compilationOptions).toEqual(['-O3', '/app/example.cpp']);
+        expect(result.result?.compilationOptions).toEqual(['-DFOO', '/app/main.cpp']);
+        expect(result.result?.inputFilename).toEqual('main.cpp');
     });
 
     it('should skip version check if forced to', async () => {
