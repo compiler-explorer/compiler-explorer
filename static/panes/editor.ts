@@ -982,7 +982,7 @@ export class Editor extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Edit
         const info = await this.hub.compilerService
             .findCompiler(this.currentLanguage?.id ?? '', states[0].compiler)
             .catch(() => null);
-        return info ? abiExplorerTripleFor(info.instructionSet, info.fullVersion) : undefined;
+        return info ? abiExplorerTripleFor(info.instructionSet, info.fullVersion, info.options) : undefined;
     }
 
     changeLanguage(newLang: string): void {

@@ -227,18 +227,33 @@ const TARGETS: Record<string, {triple?: string; arch: RegExp}> = {
     sparc: {arch: /^sparc/},
 };
 
-/** clang names the target it defaults to in its version banner. */
+/** The target CE aims a compiler at, in the flags its configuration gives it. */
+const CONFIGURED_TARGET_RE = /(?:^|\s)--?target[=\s]\s*(\S+)/;
+
+/** The target a compiler was built to default to, as its version banner reports it. */
 const VERSION_TARGET_RE = /^Target:\s*(\S+)/m;
 
 /**
  * The triple to lay out for, from what CE knows about a compiler without
- * compiling anything: the instruction set it reports, and its version banner.
+ * compiling anything.
  *
- * clang names its default target exactly, which is worth more than an
- * instruction set — but only where the two agree. A clang built for x86-64 and
- * aimed elsewhere by flags baked into its CE configuration still prints the
- * host in its banner, and there the instruction set is right and the banner is
- * not.
+ * In order of what each source actually claims:
+ *
+ * 1. The `-target` in the compiler's configured flags. Every clang is a cross
+ *    compiler, so CE's fleet is largely one clang binary entered many times
+ *    with a different target each time; this flag is the entry's whole point
+ *    and the only exact statement of it.
+ * 2. Failing that, the target the binary defaults to, from its banner. This
+ *    means something only when nothing above overrode it — for a distributed
+ *    cross toolchain like MinGW's clang it is the real answer, and for a
+ *    host clang it is the host.
+ * 3. Failing that, a default for the instruction set CE reports.
+ *
+ * Each candidate must agree with that instruction set to be believed, since
+ * the instruction set is CE's own conclusion about the compiler. A bare
+ * architecture (`wasm32`) is passed over for the mapped triple: clang and ABI
+ * Explorer both take it, but the fuller spelling is the one ABI Explorer's
+ * target list names.
  *
  * Undefined where nothing is known well enough to say, which leaves the link
  * on ABI Explorer's own default.
@@ -246,11 +261,16 @@ const VERSION_TARGET_RE = /^Target:\s*(\S+)/m;
 export function abiExplorerTripleFor(
     instructionSet: string | null | undefined,
     fullVersion?: string,
+    compilerOptions?: string,
 ): string | undefined {
     const known = instructionSet ? TARGETS[instructionSet] : undefined;
     if (!known) return undefined;
+    const believable = (target: string | undefined): target is string =>
+        !!target && target.includes('-') && known.arch.test(target);
+    const configured = compilerOptions ? CONFIGURED_TARGET_RE.exec(compilerOptions)?.[1] : undefined;
+    if (believable(configured)) return configured;
     const printed = fullVersion ? VERSION_TARGET_RE.exec(fullVersion)?.[1] : undefined;
-    if (printed && known.arch.test(printed)) return printed;
+    if (believable(printed)) return printed;
     return known.triple;
 }
 
