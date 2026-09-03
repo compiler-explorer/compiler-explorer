@@ -136,6 +136,9 @@ export class CompileHandler implements ICompileHandler {
     private readonly awsProps: PropertyGetter;
     private readonly appArgs: AppArguments | undefined;
     private clientOptions: ClientOptionsType | null = null;
+    // Serialises background loads of possible-argument stats so repeated setCompilers
+    // calls (e.g. compiler rescans) never stack concurrent S3 fan-outs.
+    private possibleArgumentsLoad: Promise<void> = Promise.resolve();
     private readonly compileCounter = new Counter({
         name: 'ce_compilations_total',
         help: 'Number of compilations',
@@ -336,18 +339,46 @@ export class CompileHandler implements ICompileHandler {
             }
 
             logger.info('Compilers created: ' + compilersCreated);
-            if (this.awsProps) {
-                logger.info('Fetching possible arguments from storage');
-                await Promise.all(
-                    createdCompilers.map(compiler => compiler.possibleArguments.loadFromStorage(this.awsProps)),
-                );
-            }
             this.compilersById = compilersById;
+            this.loadPossibleArgumentsInBackground(createdCompilers);
             return createdCompilers.map(compiler => compiler.getInfo());
         } catch (err) {
             logger.error('Exception while processing compilers:', err);
             return [];
         }
+    }
+
+    private loadPossibleArgumentsInBackground(compilers: BaseCompiler[]): void {
+        this.possibleArgumentsLoad = this.possibleArgumentsLoad.then(() => this.loadPossibleArguments(compilers));
+    }
+
+    // The stats only feed popular-argument ranking, so they're deliberately loaded off the
+    // startup critical path; the server can begin serving before they arrive.
+    private async loadPossibleArguments(compilers: BaseCompiler[]): Promise<void> {
+        logger.info(`Fetching possible arguments from storage for ${compilers.length} compilers`);
+        const startTime = performance.now();
+        let failedCount = 0;
+        await Promise.all(
+            compilers.map(async compiler => {
+                try {
+                    await compiler.possibleArguments.loadFromStorage(this.awsProps);
+                } catch (err) {
+                    failedCount++;
+                    logger.debug(`Failed to load possible arguments for ${compiler.getInfo().id}:`, err);
+                }
+            }),
+        );
+        const durationMs = Math.round(performance.now() - startTime);
+        const message = `Loaded possible arguments for ${compilers.length - failedCount} compilers in ${durationMs}ms`;
+        if (failedCount > 0) {
+            logger.warn(`${message} (${failedCount} failed)`);
+        } else {
+            logger.info(message);
+        }
+    }
+
+    possibleArgumentsLoaded(): Promise<void> {
+        return this.possibleArgumentsLoad;
     }
 
     setPossibleToolchains(toolchains: CompilerOverrideOptions) {
