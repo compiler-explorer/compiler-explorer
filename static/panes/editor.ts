@@ -717,7 +717,7 @@ export class Editor extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Edit
                 this.cppInsightsButton.hide();
                 this.quickBenchButton.hide();
             }
-            // ABI Explorer lays out C as well as C++.
+            // ABI Explorer lays out C and Hylo as well as C++.
             if (abiExplorerLanguageFor(this.currentLanguage?.id)) {
                 this.abiExplorerButton.show();
             } else {

@@ -54,6 +54,15 @@ export const ABI_EXPLORER_URL = 'https://abiexplorer.org/';
 /** What ABI Explorer lays out for when the link does not say. */
 export const ABI_EXPLORER_DEFAULT_TRIPLE = 'x86_64-unknown-linux-gnu';
 
+/**
+ * The ABI Hylo lays types out for.
+ *
+ * A name rather than a choice: its compiler describes exactly one, so ABI
+ * Explorer hides the target selector for Hylo and lays out for this whatever
+ * the link says.
+ */
+export const ABI_EXPLORER_HYLO_TRIPLE = 'hylo';
+
 /** Their validation of the `t` field: anything else is replaced by the default triple. */
 const TRIPLE_RE = /^[\w.-]{1,64}$/;
 
@@ -174,7 +183,7 @@ interface Wire {
 }
 
 function toWire(state: AbiExplorerState): Wire {
-    const triple = state.triple ?? ABI_EXPLORER_DEFAULT_TRIPLE;
+    const triple = state.triple ?? defaultTripleFor(state.lang);
     return {
         v: 2,
         s: state.source,
@@ -192,12 +201,19 @@ function toWire(state: AbiExplorerState): Wire {
     };
 }
 
+/** The target a language lays out for when the caller does not name one. */
+function defaultTripleFor(lang: AbiExplorerLanguage): string {
+    return lang === 'hylo' ? ABI_EXPLORER_HYLO_TRIPLE : ABI_EXPLORER_DEFAULT_TRIPLE;
+}
+
 /**
  * The ABI Explorer language for one of our language ids, or null for a language
  * it cannot lay out — which is also the answer to "should the button be shown?".
+ *
+ * Our ids for the three it knows are its own, so this is a membership test.
  */
 export function abiExplorerLanguageFor(languageId: string | undefined): AbiExplorerLanguage | null {
-    return languageId === 'c' || languageId === 'c++' ? languageId : null;
+    return languageId === 'c' || languageId === 'c++' || languageId === 'hylo' ? languageId : null;
 }
 
 /**
