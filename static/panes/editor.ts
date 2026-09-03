@@ -31,6 +31,13 @@ import * as monacoVim from 'monaco-vim';
 import TomSelect from 'tom-select';
 import _ from 'underscore';
 
+import {
+    type AbiExplorerState,
+    abiExplorerLanguageFor,
+    getAbiExplorerUrl,
+    getAbiExplorerUrlSync,
+    normalizeAbiExplorerStd,
+} from '../abi-explorer.js';
 import * as BootstrapUtils from '../bootstrap-utils.js';
 import * as colour from '../colour.js';
 import * as Components from '../components.js';
@@ -109,6 +116,7 @@ export class Editor extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Edit
     private conformanceViewerButton: JQuery<HTMLElement>;
     private cppInsightsButton: JQuery<HTMLElement>;
     private quickBenchButton: JQuery<HTMLElement>;
+    private abiExplorerButton: JQuery<HTMLElement>;
     private languageInfoButton: JQuery;
     private nothingCtrlSSince?: number;
     private nothingCtrlSTimes?: number;
@@ -643,6 +651,11 @@ export class Editor extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Edit
             this.quickBenchButton.on('mousedown', () => {
                 this.updateOpenInQuickBench();
             });
+
+            this.abiExplorerButton = this.domRoot.find('.open-in-abiexplorer');
+            this.abiExplorerButton.on('mousedown', () => {
+                this.updateOpenInAbiExplorer();
+            });
         }
 
         this.currentCursorPosition = this.domRoot.find('.currentCursorPosition');
@@ -703,6 +716,12 @@ export class Editor extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Edit
             } else {
                 this.cppInsightsButton.hide();
                 this.quickBenchButton.hide();
+            }
+            // ABI Explorer lays out C as well as C++.
+            if (abiExplorerLanguageFor(this.currentLanguage?.id)) {
+                this.abiExplorerButton.show();
+            } else {
+                this.abiExplorerButton.hide();
             }
         }
 
@@ -889,6 +908,35 @@ export class Editor extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Edit
                 Buffer.from(this.asciiEncodeJsonText(JSON.stringify(quickBenchState))).toString('base64');
             this.quickBenchButton.attr('href', link);
         }
+    }
+
+    /**
+     * Point the ABI Explorer button at what the editor currently holds.
+     *
+     * Only the source and the language standard so far: the target triple and
+     * the layout options ABI Explorer offers (packing, -fshort-enums, and the
+     * rest) are meant to follow from the compiler's architecture and settings,
+     * which this does not read yet. Everything it does not set opens on ABI
+     * Explorer's own defaults.
+     */
+    updateOpenInAbiExplorer(): void {
+        if (!options.thirdPartyIntegrationEnabled) return;
+        const lang = abiExplorerLanguageFor(this.currentLanguage?.id);
+        if (!lang) return;
+
+        let std = '';
+        for (const compiler of this.getCompilerStates()) {
+            const match = /-std=(\S+)/.exec(compiler.options ?? '');
+            const normalized = match ? normalizeAbiExplorerStd(lang, match[1]) : '';
+            if (normalized) std = normalized;
+        }
+
+        const state: AbiExplorerState = {source: this.getSource() ?? '', lang, std};
+        // This runs on mousedown, the last event before the link is followed, so
+        // the href has to be right now: set the uncompressed form immediately,
+        // and upgrade it to the shorter compressed one once that is ready.
+        this.abiExplorerButton.attr('href', getAbiExplorerUrlSync(state));
+        getAbiExplorerUrl(state).then(url => this.abiExplorerButton.attr('href', url));
     }
 
     changeLanguage(newLang: string): void {
