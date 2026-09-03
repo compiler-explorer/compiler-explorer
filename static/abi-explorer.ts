@@ -201,6 +201,59 @@ function toWire(state: AbiExplorerState): Wire {
     };
 }
 
+/**
+ * Targets we are confident about, by the instruction set CE reports.
+ *
+ * `triple` is what to lay out for when nothing more exact is known. The
+ * entries without one are instruction sets that cover several ABIs at once —
+ * 32- and 64-bit, big- and little-endian — where picking a default would be a
+ * coin toss. `arch` matches the architecture an exact triple starts with, and
+ * is what decides whether that triple and this instruction set are describing
+ * the same machine.
+ */
+const TARGETS: Record<string, {triple?: string; arch: RegExp}> = {
+    amd64: {triple: 'x86_64-unknown-linux-gnu', arch: /^(x86_64|amd64)/},
+    x86: {triple: 'i386-unknown-linux-gnu', arch: /^(i[3-6]86|x86)$/},
+    aarch64: {triple: 'aarch64-unknown-linux-gnu', arch: /^(aarch64|arm64)/},
+    arm32: {triple: 'arm-unknown-linux-gnueabihf', arch: /^(arm|thumb)(?!64)/},
+    riscv32: {triple: 'riscv32-unknown-elf', arch: /^riscv32/},
+    riscv64: {triple: 'riscv64-unknown-linux-gnu', arch: /^riscv64/},
+    s390x: {triple: 's390x-unknown-linux-gnu', arch: /^s390x/},
+    loongarch: {triple: 'loongarch64-unknown-linux-gnu', arch: /^loongarch/},
+    wasm32: {triple: 'wasm32-unknown-unknown', arch: /^wasm32/},
+    wasm64: {triple: 'wasm64-unknown-unknown', arch: /^wasm64/},
+    powerpc: {arch: /^(powerpc|ppc)/},
+    mips: {arch: /^mips/},
+    sparc: {arch: /^sparc/},
+};
+
+/** clang names the target it defaults to in its version banner. */
+const VERSION_TARGET_RE = /^Target:\s*(\S+)/m;
+
+/**
+ * The triple to lay out for, from what CE knows about a compiler without
+ * compiling anything: the instruction set it reports, and its version banner.
+ *
+ * clang names its default target exactly, which is worth more than an
+ * instruction set — but only where the two agree. A clang built for x86-64 and
+ * aimed elsewhere by flags baked into its CE configuration still prints the
+ * host in its banner, and there the instruction set is right and the banner is
+ * not.
+ *
+ * Undefined where nothing is known well enough to say, which leaves the link
+ * on ABI Explorer's own default.
+ */
+export function abiExplorerTripleFor(
+    instructionSet: string | null | undefined,
+    fullVersion?: string,
+): string | undefined {
+    const known = instructionSet ? TARGETS[instructionSet] : undefined;
+    if (!known) return undefined;
+    const printed = fullVersion ? VERSION_TARGET_RE.exec(fullVersion)?.[1] : undefined;
+    if (printed && known.arch.test(printed)) return printed;
+    return known.triple;
+}
+
 /** The target a language lays out for when the caller does not name one. */
 function defaultTripleFor(lang: AbiExplorerLanguage): string {
     return lang === 'hylo' ? ABI_EXPLORER_HYLO_TRIPLE : ABI_EXPLORER_DEFAULT_TRIPLE;
