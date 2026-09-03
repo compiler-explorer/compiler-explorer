@@ -73,7 +73,7 @@ export class CompilationOptions<P extends Pane<object>> {
     private onCompiling(compilerId: number, compiler: CompilerInfo): void {
         if (this.compilerInfo.compilerId !== compilerId) return;
         // Display the spinner
-        CompilerService.handleCompilationStatus(null, this.statusIcon, {
+        CompilerService.handleCompilationStatus(this.statusIcon, {
             code: CompilationStatusCode.COMPILING,
             compilerOut: 0,
         });
@@ -85,7 +85,6 @@ export class CompilationOptions<P extends Pane<object>> {
         const wasCmake = result.result ? (result.buildsteps?.some(step => step.step === 'cmake') ?? false) : false;
         const stepResult = this.getResult(result);
         CompilerService.handleCompilationStatus(
-            null,
             this.statusIcon,
             CompilerService.calculateStatusIcon(stepResult ?? result),
         );

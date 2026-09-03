@@ -405,17 +405,7 @@ export class CompilerService {
         return '#FF6645';
     }
 
-    public static handleCompilationStatus(
-        statusLabel: JQuery | null,
-        statusIcon: JQuery | null,
-        status: CompilationStatus,
-    ) {
-        if (statusLabel != null) {
-            statusLabel
-                .toggleClass('error', status.code === CompilationStatusCode.WITH_ERRORS)
-                .toggleClass('warning', status.code === CompilationStatusCode.WITH_WARNINGS);
-        }
-
+    public static handleCompilationStatus(statusIcon: JQuery | null, status: CompilationStatus) {
         if (statusIcon != null) {
             statusIcon
                 .removeClass()
