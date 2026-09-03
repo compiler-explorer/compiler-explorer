@@ -43,6 +43,7 @@ import * as BootstrapUtils from '../bootstrap-utils.js';
 import {GraphLayoutCore} from '../graph-layout-core.js';
 import {Hub} from '../hub.js';
 import * as MonacoConfig from '../monaco-config.js';
+import {replaceOptions} from '../tom-select-utils.js';
 import * as utils from '../utils.js';
 import {Toggles} from '../widgets/toggles.js';
 import {CfgState} from './cfg-view.interfaces.js';
@@ -333,25 +334,18 @@ export class Cfg extends Pane<CfgState> {
     override onCompileResult(compilerId: number, compiler: CompilerInfo, result: CompilationResult) {
         if (this.compilerInfo.compilerId !== compilerId) return;
         this.functionSelector.clear(true);
-        this.functionSelector.clearOptions();
         const cfg = this.state.isircfg ? result.irOutput?.cfg : result.cfg;
         if (cfg) {
             this.results = cfg;
             this.contentsAreIr = !!this.state.isircfg || !!result.compilationOptions?.includes('-emit-llvm');
             let selectedFunction: string | null = this.state.selectedFunction;
             const keys = Object.keys(cfg);
-            if (keys.length === 0) {
-                this.functionSelector.addOption({
-                    title: '<No functions available>',
-                    value: '<No functions available>',
-                });
-            }
-            for (const fn of keys) {
-                this.functionSelector.addOption({
-                    title: fn,
-                    value: fn,
-                });
-            }
+            replaceOptions(
+                this.functionSelector,
+                keys.length === 0
+                    ? [{title: '<No functions available>', value: '<No functions available>'}]
+                    : keys.map(fn => ({title: fn, value: fn})),
+            );
             if (keys.length > 0) {
                 if (selectedFunction === '' || !(selectedFunction !== null && selectedFunction in cfg)) {
                     selectedFunction = keys[0];
@@ -365,6 +359,7 @@ export class Cfg extends Pane<CfgState> {
             this.selectFunction(selectedFunction);
         } else {
             // this case can be fallen into with a blank input file
+            replaceOptions(this.functionSelector, []);
             this.selectFunction(null);
         }
     }
