@@ -371,26 +371,42 @@ export class CompilerService {
     }
 
     private static getAriaLabel(status: CompilationStatus) {
-        if (status.code === CompilationStatusCode.UNKNOWN) return 'Unknown';
-        // Compiling...
-        if (status.code === CompilationStatusCode.COMPILING) return 'Compiling';
-        if (status.compilerOut === 0) {
+        const compilationResult = (() => {
+            if (status.code === CompilationStatusCode.UNKNOWN) return 'Unknown';
+            // Compiling...
+            if (status.code === CompilationStatusCode.COMPILING) return 'Compiling';
+            if (status.compilerOut === 0) {
+                // StdErr.length > 0
+                if (status.code === CompilationStatusCode.WITH_ERRORS) return 'Compilation succeeded with errors';
+                // StdOut.length > 0
+                if (status.code === CompilationStatusCode.WITH_WARNINGS) return 'Compilation succeeded with warnings';
+                return 'Compilation succeeded';
+            }
             // StdErr.length > 0
-            if (status.code === CompilationStatusCode.WITH_ERRORS) return 'Compilation succeeded with errors';
+            if (status.code === CompilationStatusCode.WITH_ERRORS) return 'Compilation failed with errors';
             // StdOut.length > 0
-            if (status.code === CompilationStatusCode.WITH_WARNINGS) return 'Compilation succeeded with warnings';
-            return 'Compilation succeeded';
-        }
-        // StdErr.length > 0
-        if (status.code === CompilationStatusCode.WITH_ERRORS) return 'Compilation failed with errors';
-        // StdOut.length > 0
-        if (status.code === CompilationStatusCode.WITH_WARNINGS) return 'Compilation failed with warnings';
-        return 'Compilation failed';
+            if (status.code === CompilationStatusCode.WITH_WARNINGS) return 'Compilation failed with warnings';
+            return 'Compilation failed';
+        })();
+        const executionResult = (() => {
+            switch (status.didExecute) {
+                case undefined:
+                    return '';
+                case true:
+                    return '; execution successful';
+                case false:
+                    return '; execution failed';
+            }
+        })();
+        return `${compilationResult}${executionResult}`;
     }
 
     private static getColor(status: CompilationStatus) {
         // Compiling...
         if (status.code === CompilationStatusCode.COMPILING) return '#888888';
+        if (status.didExecute !== undefined) {
+            return status.didExecute ? '#12BB12' : '#FF1212';
+        }
         if (status.compilerOut === 0) {
             // StdErr.length > 0
             if (status.code === CompilationStatusCode.WITH_ERRORS) return '#FF6645';
@@ -413,13 +429,27 @@ export class CompilerService {
                 .css('color', CompilerService.getColor(status))
                 .toggle(status.code !== CompilationStatusCode.NONE)
                 .attr('aria-label', CompilerService.getAriaLabel(status))
-                .toggleClass('fa-spinner fa-spin', status.code === CompilationStatusCode.COMPILING)
-                .toggleClass('fa-times-circle', status.code === CompilationStatusCode.WITH_ERRORS)
-                .toggleClass('fa-circle-question', status.code === CompilationStatusCode.UNKNOWN)
-                .toggleClass(
-                    'fa-check-circle',
-                    status.code === CompilationStatusCode.OK || status.code === CompilationStatusCode.WITH_WARNINGS,
-                );
+                .toggleClass('fa-spinner fa-spin', status.code === CompilationStatusCode.COMPILING);
+            if (status.didExecute === undefined) {
+                statusIcon
+                    .toggleClass('fa-times-circle', status.code === CompilationStatusCode.WITH_ERRORS)
+                    .toggleClass('fa-circle-question', status.code === CompilationStatusCode.UNKNOWN)
+                    .toggleClass(
+                        'fa-check-circle',
+                        status.code === CompilationStatusCode.OK || status.code === CompilationStatusCode.WITH_WARNINGS,
+                    );
+            } else {
+                statusIcon
+                    .toggleClass('fa-spinner fa-spin', status.code === CompilationStatusCode.COMPILING)
+                    .toggleClass(
+                        'fa-times-circle',
+                        status.code !== CompilationStatusCode.COMPILING && !status.didExecute,
+                    )
+                    .toggleClass(
+                        'fa-check-circle',
+                        status.code !== CompilationStatusCode.COMPILING && status.didExecute,
+                    );
+            }
         }
     }
 
