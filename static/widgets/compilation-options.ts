@@ -31,7 +31,6 @@ import {CompilerInfo} from '../../types/compiler.interfaces.js';
 import * as BootstrapUtils from '../bootstrap-utils.js';
 import {CompilationStatusCode} from '../compiler-service.interfaces.js';
 import {CompilerService} from '../compiler-service.js';
-import {PaneCompilerState} from '../panes/pane.interfaces.js';
 import {Pane} from '../panes/pane.js';
 import {Toggles} from './toggles.js';
 
@@ -39,15 +38,17 @@ type GetResult = (result: CompilationResult) => Pick<CompilationResult, 'code' |
 
 export class CompilationOptions<P extends Pane<object>> {
     private readonly parent: P;
+    private readonly parentId: number;
     private readonly prependOptions: JQuery<HTMLElement>;
     private readonly statusIcon: JQuery<HTMLElement>;
     private readonly getResult: GetResult;
     private readonly filters?: Toggles;
 
-    constructor(pane: P, prependOptions: JQuery<HTMLElement>, getResult: GetResult, filters?: Toggles) {
+    constructor(pane: P, parentId: number, getResult: GetResult, filters?: Toggles) {
         this.parent = pane;
-        this.prependOptions = prependOptions;
-        this.statusIcon = prependOptions.find('.status-icon');
+        this.parentId = parentId;
+        this.prependOptions = pane.domRoot.find('.prepend-options');
+        this.statusIcon = this.prependOptions.find('.status-icon');
         this.getResult = getResult;
         this.filters = filters;
 
@@ -66,12 +67,8 @@ export class CompilationOptions<P extends Pane<object>> {
         });
     }
 
-    private get compilerInfo(): PaneCompilerState {
-        return this.parent.compilerInfo;
-    }
-
     private onCompiling(compilerId: number, compiler: CompilerInfo): void {
-        if (this.compilerInfo.compilerId !== compilerId) return;
+        if (this.parentId !== compilerId) return;
         // Display the spinner
         CompilerService.handleCompilationStatus(this.statusIcon, {
             code: CompilationStatusCode.COMPILING,
@@ -80,7 +77,7 @@ export class CompilationOptions<P extends Pane<object>> {
     }
 
     private onCompileResult(compilerId: number, compiler: CompilerInfo, result: CompilationResult): void {
-        if (this.compilerInfo.compilerId !== compilerId) return;
+        if (this.parentId !== compilerId) return;
 
         const wasCmake = result.result ? (result.buildsteps?.some(step => step.step === 'cmake') ?? false) : false;
         const stepResult = this.getResult(result);
