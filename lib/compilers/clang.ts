@@ -41,11 +41,13 @@ import type {
 import type {PreliminaryCompilerInfo} from '../../types/compiler.interfaces.js';
 import type {ExecutableExecutionOptions, UnprocessedExecResult} from '../../types/execution/execution.interfaces.js';
 import type {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces.js';
+import type {InstructionSet} from '../../types/instructionsets.js';
 import {ArtifactType} from '../../types/tool.interfaces.js';
 import {addArtifactToResult} from '../artifact-utils.js';
 import {BaseCompiler} from '../base-compiler.js';
 import {CompilationEnvironment} from '../compilation-env.js';
 import type {ParsedRequest} from '../handlers/compile.js';
+import {getAmdGpuInstructionSet} from '../instructionsets.js';
 import {AmdgpuAsmParser} from '../parsers/asm-parser-amdgpu.js';
 import {HexagonAsmParser} from '../parsers/asm-parser-hexagon.js';
 import {PTXAsmParser} from '../parsers/asm-parser-ptx.js';
@@ -348,6 +350,17 @@ export class ClangCudaCompiler extends ClangCompiler {
     }
 }
 
+function getAmdgpuInstructionSetFromOptions(options: string[]): InstructionSet | undefined {
+    // Backwards: orderArguments puts the group's --offload-arch before the user's, and
+    // clang honours the last one.
+    for (let i = options.length - 1; i >= 0; --i) {
+        if (options[i].startsWith('--offload-arch=')) {
+            return getAmdGpuInstructionSet(options[i].substring('--offload-arch='.length));
+        }
+    }
+    return undefined;
+}
+
 export class ClangHipCompiler extends ClangCompiler {
     static override get key() {
         return 'clang-hip';
@@ -361,6 +374,10 @@ export class ClangHipCompiler extends ClangCompiler {
 
     override optionsForFilter(filters: ParseFiltersAndOutputOptions, outputFilename: string) {
         return ['-o', this.filename(outputFilename), '-g1', '--no-gpu-bundle-output', filters.binary ? '-c' : '-S'];
+    }
+
+    override getInstructionSetFromCompilerArgs(args: string[]): InstructionSet {
+        return getAmdgpuInstructionSetFromOptions(args) || super.getInstructionSetFromCompilerArgs(args);
     }
 }
 

@@ -88,6 +88,42 @@ const TEST_MATRIX: Record<PropertyKey, [string, string, string, string][]> = {
         ],
     ],
     perl: [['ncmp', 'numeric comparison (&lt;=&gt;)', '<p>numeric comparison (&lt;=&gt;)</p>', '']],
+    amd_cdna4: [
+        [
+            'v_add_f32',
+            'Instruction: V_ADD_F32',
+            'Instruction:</b> V_ADD_F32',
+            'https://gpuopen.com/amd-gpu-architecture-programming-documentation/',
+        ],
+    ],
+    amd_cdna5: [
+        [
+            'v_add_f32',
+            'Instruction: V_ADD_F32',
+            'Instruction:</b> V_ADD_F32',
+            'https://gpuopen.com/amd-gpu-architecture-programming-documentation/',
+        ],
+    ],
+    amd_rdna4: [
+        [
+            'v_add_f32',
+            'Instruction: V_ADD_F32',
+            'Instruction:</b> V_ADD_F32',
+            'https://gpuopen.com/amd-gpu-architecture-programming-documentation/',
+        ],
+        [
+            's_load_dword',
+            'Instruction: S_LOAD_B32',
+            'Aliases:</b> S_LOAD_DWORD',
+            'https://gpuopen.com/amd-gpu-architecture-programming-documentation/',
+        ],
+        [
+            'v_add_f32_e64',
+            'Instruction: V_ADD_F32',
+            '<code>ENC_VOP3</code>',
+            'https://gpuopen.com/amd-gpu-architecture-programming-documentation/',
+        ],
+    ],
     ptx: [
         [
             'add',

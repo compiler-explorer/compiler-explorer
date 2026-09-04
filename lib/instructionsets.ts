@@ -29,6 +29,28 @@ type InstructionSetMethod = {
     path: string[];
 };
 
+// AMD GPU targets, most-specific prefix first.
+const AMD_GPU_TARGETS: [string, InstructionSet][] = [
+    ['gfx125', 'amd_cdna5'],
+    ['gfx12', 'amd_rdna4'],
+    ['gfx115', 'amd_rdna3_5'],
+    ['gfx11', 'amd_rdna3'],
+    ['gfx103', 'amd_rdna2'],
+    ['gfx101', 'amd_rdna1'],
+    ['gfx950', 'amd_cdna4'],
+    ['gfx942', 'amd_cdna3'],
+    ['gfx90a', 'amd_cdna2'],
+    ['gfx908', 'amd_cdna1'],
+];
+
+export function getAmdGpuInstructionSet(target: string): InstructionSet | undefined {
+    const lower = target.toLowerCase();
+    for (const [prefix, instructionSet] of AMD_GPU_TARGETS) {
+        if (lower.startsWith(prefix)) return instructionSet;
+    }
+    return undefined;
+}
+
 export class InstructionSets {
     private defaultInstructionset: InstructionSet = 'amd64';
     private supported: Record<InstructionSet, InstructionSetMethod>;
@@ -172,6 +194,46 @@ export class InstructionSets {
                 path: [],
             },
             ptx: {
+                target: [],
+                path: [],
+            },
+            amd_cdna1: {
+                target: [],
+                path: [],
+            },
+            amd_cdna2: {
+                target: [],
+                path: [],
+            },
+            amd_cdna3: {
+                target: [],
+                path: [],
+            },
+            amd_cdna4: {
+                target: [],
+                path: [],
+            },
+            amd_cdna5: {
+                target: [],
+                path: [],
+            },
+            amd_rdna1: {
+                target: [],
+                path: [],
+            },
+            amd_rdna2: {
+                target: [],
+                path: [],
+            },
+            amd_rdna3: {
+                target: [],
+                path: [],
+            },
+            amd_rdna3_5: {
+                target: [],
+                path: [],
+            },
+            amd_rdna4: {
                 target: [],
                 path: [],
             },
