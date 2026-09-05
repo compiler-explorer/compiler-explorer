@@ -30,7 +30,7 @@ import * as PromClient from 'prom-client';
 import _ from 'underscore';
 import {parseAllDocuments} from 'yaml';
 
-import {splitArguments, unique} from '../shared/common-utils.js';
+import {maskRootdirsInText, splitArguments, unique} from '../shared/common-utils.js';
 import {OptRemark} from '../static/panes/opt-view.interfaces.js';
 import {PPOptions} from '../static/panes/pp-view.interfaces.js';
 import {ParsedAsmResult, ParsedAsmResultLine} from '../types/asmresult/asmresult.interfaces.js';
@@ -2925,6 +2925,24 @@ export class BaseCompiler {
         };
     }
 
+    // Environment that describes the machine CE happens to be running on rather than the build itself, so it is
+    // noise to the user and its contents depend on `environmentPassThrough`. LD_LIBRARY_PATH is deliberately not
+    // here: CE points it at the libraries it set up for this build, so it is part of explaining the build.
+    static readonly buildStepEnvNotShown = new Set(['PATH', 'HOME']);
+
+    buildStepEnvForUser(execParams: ExecutionOptions): Record<string, string> | undefined {
+        if (!execParams.env) return undefined;
+        // ldPath, not env, is where LD_LIBRARY_PATH really comes from: exec() overwrites any inherited value with
+        // it before spawning (and passes it to the jail the same way), so that is what the step actually ran with.
+        const env = {...execParams.env};
+        if (execParams.ldPath?.length) env.LD_LIBRARY_PATH = execParams.ldPath.join(path.delimiter);
+        return Object.fromEntries(
+            Object.entries(env)
+                .filter(([key, value]) => value && !BaseCompiler.buildStepEnvNotShown.has(key))
+                .map(([key, value]) => [key, maskRootdirsInText(value)]),
+        );
+    }
+
     async doBuildstepAndAddToResult(
         result: CompilationResult,
         name: string,
@@ -2936,6 +2954,8 @@ export class BaseCompiler {
             ...(await this.doBuildstep(command, args, execParams)),
             compilationOptions: args,
             step: name,
+            command: maskRootdirsInText(command),
+            env: this.buildStepEnvForUser(execParams),
         };
         logger.debug(name);
         assert(result.buildsteps);

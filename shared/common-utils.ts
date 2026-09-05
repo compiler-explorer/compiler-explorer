@@ -247,3 +247,18 @@ export function maskRootdirKeepingAppPrefix(filepath: string): string {
     // cannot match without the marker anyway.
     return filepath.includes(ce_temp_prefix) ? filepath.replace(TEMPDIR_RE, '/app/') : filepath;
 }
+
+// As TEMPDIR_RE, but global, and the trailing slash is optional so a bare temp dir counts as a path. Both
+// differences only matter for free-form text: an argv entry holds one path and the temp dir is always the
+// prefix of a file within it, neither of which holds for something like `-L/tmp/<prefix>X -Wl,-rpath,...`.
+const TEMPDIR_TEXT_RE = new RegExp(`(?:[A-Za-z]:)?/(?:[^/\\s]+/)*${ce_temp_prefix}[\\w.-]*(/?)`, 'g');
+
+/**
+ * Rewrites every CE temp dir in a string that may hold several paths — an environment value such as
+ * LDFLAGS, rather than a single argument. Use maskRootdirKeepingAppPrefix() for one path on its own.
+ */
+export function maskRootdirsInText(text: string): string {
+    if (!text) return text;
+    // Same cheap guard as above: the regex cannot match without the marker, and it backtracks on long input.
+    return text.includes(ce_temp_prefix) ? text.replace(TEMPDIR_TEXT_RE, '/app$1') : text;
+}

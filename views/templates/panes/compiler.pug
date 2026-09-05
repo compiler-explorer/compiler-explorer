@@ -100,5 +100,7 @@ mixin newPaneButton(classId, text, title, icon)
       span.compile-info.me-1(title="Compilation info" aria-label="Compilation information")
       button.btn.btn-sm.btn-light.full-timing-info(data-trigger="click" style="cursor: pointer;" role="button" aria-label="Show full timing information")
         span.fas.fa-chart-bar
+      button.btn.btn-sm.btn-light.build-steps-info.d-none(data-trigger="click" style="cursor: pointer;" role="button" title="Build steps" aria-label="Show build steps")
+        span.fas.fa-gears
       button.btn.btn-sm.btn-light.compiler-license(data-trigger="click" style="cursor: pointer;" role="button" aria-label="View compiler license")
         span Compiler License

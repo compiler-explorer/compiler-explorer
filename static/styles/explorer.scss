@@ -654,6 +654,70 @@ input.vim-check {
     max-width: 460px;
 }
 
+.build-step {
+    margin-bottom: 1rem;
+}
+
+.build-step:last-child {
+    margin-bottom: 0;
+}
+
+.build-step-header {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+}
+
+.build-step-name {
+    font-weight: bold;
+}
+
+.build-step-time {
+    margin-left: auto;
+    opacity: 0.7;
+}
+
+// The command line is the thing people came to copy, so let it wrap rather than scroll out of reach.
+.build-step-command {
+    font-family: monospace;
+    white-space: pre-wrap;
+    word-break: break-all;
+    margin: 0.25rem 0;
+    padding: 0.4rem;
+    background: rgba(127, 127, 127, 0.12);
+    border-radius: 4px;
+}
+
+.build-step-env {
+    font-family: monospace;
+    margin-top: 0.25rem;
+    width: 100%;
+    table-layout: fixed;
+}
+
+// table-layout: fixed takes the column widths from the first row, so the key column needs a real
+// width here — a shrink-to-fit `width: 1px` would give it literally one pixel.
+.build-step-env-key {
+    vertical-align: top;
+    padding-right: 0.75rem;
+    width: 12em;
+    word-break: break-all;
+}
+
+.build-step-env-value {
+    word-break: break-all;
+}
+
+// Modals here size to their content, and a build command line is long enough to fill the screen.
+// Cap this one and let the command line and env values wrap inside it instead.
+#build-steps {
+    .modal-dialog,
+    .modal-content {
+        width: min(900px, 100%);
+        max-width: min(900px, 100%);
+    }
+}
+
 .navbar-nav a.nav-link {
     font-size: 14px;
     border-radius: 5px;
