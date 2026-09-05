@@ -477,6 +477,26 @@ describe('Cargo build system', () => {
         expect(plan.steps[0].execParams.customCwd).toEqual(ctx.dirPath);
     });
 
+    it('passes the compiler library path to Cargo project execution', async () => {
+        const env = makeRustEnv();
+        const compiler = makeRustCompiler(env, {libPath: ['/opt/rust/lib']});
+        const request = makeParsedRequest();
+        const cacheKey = compiler.getBuildProjectCacheKey(cargoBuildSystem, request, []);
+        vi.spyOn(compiler, 'newTempDir').mockResolvedValue('/tmp/ce-cargo-execution');
+
+        const build = await (compiler as any).prepareProjectBuild(
+            cargoBuildSystem,
+            request,
+            [],
+            {libraries: [], options: []},
+            undefined,
+            cacheKey,
+            'unused-package-hash',
+        );
+
+        expect(build.executeOptions.ldPath).toContain('/opt/rust/lib');
+    });
+
     it('passes the user arguments to cargo, and compiler options through RUSTFLAGS', async () => {
         const env = makeRustEnv();
         const compiler = makeRustCompiler(env);

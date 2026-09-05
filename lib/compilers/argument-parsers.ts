@@ -1115,6 +1115,14 @@ export class GccFortranParser extends GCCParser {
 }
 
 export class FlangParser extends ClangParser {
+    override getHiddenHelpOptions(): string[] {
+        return ['-mllvm', '--help-list-hidden', '-x', 'f95', '/dev/null', '-c'];
+    }
+
+    override getStdVersHelpOptions(): string[] {
+        return ['-std=f9999999', '-x', 'f95', '/dev/null', '-c'];
+    }
+
     override async setCompilerSettingsFromOptions(options: Record<string, Argument>) {
         await super.setCompilerSettingsFromOptions(options);
 

@@ -63,14 +63,17 @@ export class ClangCLCompiler extends Win32Compiler {
         execOptions.maxOutput = 1024 * 1024 * 1024;
 
         const output = await this.runCompiler(this.compiler.exe, newOptions, this.filename(inputFilename), execOptions);
+        const result = {code: output.code, compilationOptions: newOptions};
         if (output.code !== 0) {
             return {
                 asm: [{text: 'Failed to run compiler to get IR code'}],
+                ...result,
             };
         }
         const ir = await this.processIrOutput(output, irOptions, filters);
         return {
             asm: ir.asm,
+            ...result,
         };
     }
 

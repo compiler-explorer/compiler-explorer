@@ -1486,15 +1486,21 @@ export class BaseCompiler {
         const output = await this.runCompiler(this.compiler.exe, newOptions, this.filename(inputFilename), execOptions);
         if (output.code !== 0) {
             return {
+                code: output.code,
+                compilationOptions: newOptions,
                 asm: [{text: 'Failed to run compiler to get IR code'}],
             };
         }
         const ir = await this.processIrOutput(output, irOptions, filters);
 
         const result: {
+            code: number;
+            compilationOptions?: string[];
             asm: ParsedAsmResultLine[];
             cfg?: Record<string, cfg.CFG>;
         } = {
+            code: output.code,
+            compilationOptions: newOptions,
             asm: ir.asm,
         };
 
@@ -1576,7 +1582,7 @@ export class BaseCompiler {
         optPipelineOptions: OptPipelineBackendOptions,
     ): Promise<OptPipelineOutput | undefined> {
         // These options make Clang produce the pass dumps
-        const newOptions = options
+        const compilationOptions = options
             .filter(option => option !== '-fcolor-diagnostics')
             .concat(unwrap(this.compiler.optPipeline?.arg))
             .concat(optPipelineOptions.fullModule ? unwrap(this.compiler.optPipeline?.moduleScopeArg) : [])
@@ -1589,14 +1595,22 @@ export class BaseCompiler {
         execOptions.maxOutput = 1024 * 1024 * 1024;
 
         const compileStart = performance.now();
-        const output = await this.runCompiler(this.compiler.exe, newOptions, this.filename(inputFilename), execOptions);
+        const output = await this.runCompiler(
+            this.compiler.exe,
+            compilationOptions,
+            this.filename(inputFilename),
+            execOptions,
+        );
         const compileEnd = performance.now();
+
+        const result = {code: output.code, compilationOptions};
 
         if (output.truncated) {
             return {
                 error: 'Exceeded max output limit',
                 results: {},
                 compileTime: output.execTime || compileEnd - compileStart,
+                ...result,
             };
         }
 
@@ -1605,6 +1619,7 @@ export class BaseCompiler {
                 error: 'Invocation timed out',
                 results: {},
                 compileTime: output.execTime || compileEnd - compileStart,
+                ...result,
             };
         }
 
@@ -1613,6 +1628,7 @@ export class BaseCompiler {
                 error: `Invocation failed: ${utils.resultLinesToText(output.stderr)}${utils.resultLinesToText(output.stdout)}}`,
                 results: {},
                 compileTime: output.execTime || compileEnd - compileStart,
+                ...result,
             };
         }
 
@@ -1639,18 +1655,21 @@ export class BaseCompiler {
                     results: await demangler.demangleLLVMPasses(optPipeline),
                     compileTime: compileEnd - compileStart,
                     parseTime: performance.now() - parseStart,
+                    ...result,
                 };
             }
             return {
                 results: optPipeline,
                 compileTime: compileEnd - compileStart,
                 parseTime: performance.now() - parseStart,
+                ...result,
             };
         } catch (e: any) {
             return {
                 error: e.toString(),
                 results: {},
                 compileTime: compileEnd - compileStart,
+                ...result,
             };
         }
     }
@@ -2509,6 +2528,8 @@ export class BaseCompiler {
 
         const result = await this.doExecution(key, executeParameters, bypassCache);
 
+        this.cleanupResult(result);
+
         if (!bypassExecutionCache(bypassCache)) {
             await this.env.cachePut(execKey, result, undefined);
         }
@@ -3122,7 +3143,7 @@ export class BaseCompiler {
         const executeOptions: ExecutableExecutionOptions = {
             args: parsedRequest.executeParameters.args || [],
             stdin: parsedRequest.executeParameters.stdin || '',
-            ldPath: this.getSharedLibraryPathsAsLdLibraryPaths(parsedRequest.libraries, dirPath),
+            ldPath: this.getSharedLibraryPathsAsLdLibraryPathsForExecution(cacheKey, dirPath),
             runtimeTools: parsedRequest.executeParameters?.runtimeTools || [],
             env: {},
         };
@@ -3635,6 +3656,8 @@ export class BaseCompiler {
             ];
         }
 
+        this.cleanupResult(result);
+
         if (result.okToCache && !delayCaching) {
             await this.env.cachePut(key, result, undefined);
         }
@@ -3647,7 +3670,6 @@ export class BaseCompiler {
             }
         }
 
-        this.cleanupResult(result);
         result.s3Key = BaseCache.hash(key);
 
         // In worker mode, store large non-cacheable results with short TTL
@@ -3717,6 +3739,9 @@ export class BaseCompiler {
         if (result.inputFilename) {
             result.inputFilename = utils.maskRootdir(result.inputFilename);
         }
+
+        if (result.buildResult) this.cleanupResult(result.buildResult);
+        if (result.result) this.cleanupResult(result.result);
     }
 
     postCompilationPreCacheHook(result: CompilationResult): CompilationResult {
