@@ -33,11 +33,7 @@ import _ from 'underscore';
 import {unwrap, unwrapString} from '../../shared/assert.js';
 import {escapeHTML} from '../../shared/common-utils.js';
 import {CompilationResult} from '../../types/compilation/compilation.interfaces.js';
-import {
-    OptPipelineBackendOptions,
-    OptPipelineOutput,
-    OptPipelineResults,
-} from '../../types/compilation/opt-pipeline-output.interfaces.js';
+import {OptPipelineBackendOptions, OptPipelineResults} from '../../types/compilation/opt-pipeline-output.interfaces.js';
 import {CompilerInfo} from '../../types/compiler.interfaces.js';
 import {Hub} from '../hub.js';
 import {extendConfig} from '../monaco-config.js';
@@ -45,7 +41,7 @@ import {SentryCapture} from '../sentry.js';
 import * as utils from '../utils.js';
 import {CompilationOptions} from '../widgets/compilation-options.js';
 import {Toggles} from '../widgets/toggles.js';
-import {OptPipelineViewState} from './opt-pipeline.interfaces.js';
+import {OptPipelineKind, OptPipelineViewState} from './opt-pipeline.interfaces.js';
 import {MonacoPaneState} from './pane.interfaces.js';
 import {MonacoPane} from './pane.js';
 
@@ -85,7 +81,7 @@ export class OptPipeline extends MonacoPane<monaco.editor.IStandaloneDiffEditor,
 
     constructor(hub: Hub, container: Container, state: OptPipelineViewState & MonacoPaneState) {
         super(hub, container, state);
-        new CompilationOptions(this, this.domRoot.find('.prepend-options'), result => result.optPipelineOutput);
+        new CompilationOptions(this, this.domRoot.find('.prepend-options'), result => result[`${this.kind}Output`]);
         this.groupName = this.domRoot.find('.opt-group-name');
         this.updateGroupName();
         this.passesColumn = this.domRoot.find('.passes-column');
@@ -132,7 +128,7 @@ export class OptPipeline extends MonacoPane<monaco.editor.IStandaloneDiffEditor,
         this.keydownCallback = this.onKeydownCallback.bind(this);
         $(document).on('click', this.clickCallback);
         $(document).on('keydown', this.keydownCallback);
-        this.eventHub.emit('optPipelineViewOpened', this.compilerInfo.compilerId);
+        this.eventHub.emit('optPipelineViewOpened', this.compilerInfo.compilerId, this.kind);
         this.eventHub.emit('requestSettings');
         this.emitOptions(true);
         this.passesFilter.on('input', _.debounce(this.onFiltersChange.bind(this), 250));
@@ -149,7 +145,7 @@ export class OptPipeline extends MonacoPane<monaco.editor.IStandaloneDiffEditor,
 
     override initializeStateDependentProperties(state: OptPipelineViewState & MonacoPaneState) {
         // The compiler value is fetched async via postInit. Reads of `this.compiler`
-        // during synchronous construction (createEditor → getMonacoLanguage,
+        // during synchronous construction (createEditor → monacoLanguage,
         // updateButtons) will see null and fall back to defaults; postInit re-applies
         // the correct values once the fetch resolves.
         this.compiler = null;
@@ -173,16 +169,12 @@ export class OptPipeline extends MonacoPane<monaco.editor.IStandaloneDiffEditor,
         return $('#opt-pipeline').html();
     }
 
-    getMonacoLanguage(): string {
-        let monacoLanguage = 'llvm-ir';
-        if (this.compiler) {
-            monacoLanguage = this.compiler.optPipeline?.monacoLanguage ?? 'llvm-ir';
-        }
-        return monacoLanguage;
+    get monacoLanguage(): string {
+        return this.compiler?.[this.kind]?.monacoLanguage ?? 'llvm-ir';
     }
 
     override createEditor(editorRoot: HTMLElement): void {
-        const monacoLanguage = this.getMonacoLanguage();
+        const monacoLanguage = this.monacoLanguage;
         this.editor = monaco.editor.createDiffEditor(
             editorRoot,
             extendConfig({
@@ -198,7 +190,7 @@ export class OptPipeline extends MonacoPane<monaco.editor.IStandaloneDiffEditor,
     }
 
     updateEditor() {
-        const monacoLanguage = this.getMonacoLanguage();
+        const monacoLanguage = this.monacoLanguage;
         monaco.editor.setModelLanguage(this.originalModel, monacoLanguage);
         monaco.editor.setModelLanguage(this.modifiedModel, monacoLanguage);
     }
@@ -227,10 +219,10 @@ export class OptPipeline extends MonacoPane<monaco.editor.IStandaloneDiffEditor,
     }
 
     updateButtons() {
-        if (!this.compiler?.optPipeline) return;
+        const kind = this.kind;
+        if (!this.compiler?.[kind]) return;
 
-        const {supportedOptions, supportedFilters, initialOptionsState, initialFiltersState} =
-            this.compiler.optPipeline;
+        const {supportedOptions, supportedFilters, initialOptionsState, initialFiltersState} = this.compiler[kind];
         if (supportedOptions) {
             for (const key of ['dump-full-module', '-fno-discard-value-names', 'demangle-symbols']) {
                 this.options.enableToggle(key, supportedOptions.includes(key));
@@ -317,8 +309,8 @@ export class OptPipeline extends MonacoPane<monaco.editor.IStandaloneDiffEditor,
 
     override onCompileResult(compilerId: number, compiler: CompilerInfo, result: CompilationResult): void {
         if (this.compilerInfo.compilerId !== compilerId) return;
-        if (result.optPipelineOutput) {
-            const output: OptPipelineOutput = unwrap(result.optPipelineOutput);
+        const output = result[`${this.kind}Output`];
+        if (output) {
             if (output.error) {
                 this.editor
                     .getModel()
@@ -328,7 +320,7 @@ export class OptPipeline extends MonacoPane<monaco.editor.IStandaloneDiffEditor,
                 this.editor.getModel()?.modified.setValue('');
             }
             this.updateResults(output.results);
-        } else if (compiler.optPipeline) {
+        } else if (compiler[this.kind]) {
             this.updateResults({});
             this.editor.getModel()?.original.setValue('<Error>');
             this.editor.getModel()?.modified.setValue('');
@@ -351,14 +343,14 @@ export class OptPipeline extends MonacoPane<monaco.editor.IStandaloneDiffEditor,
         this.updateGroupName();
         this.updateButtons();
         this.updateEditor();
-        if (compiler && !compiler.optPipeline) {
+        if (compiler && !compiler[this.kind]) {
             //this.editor.setValue('<Opt pipeline output is not supported for this compiler>');
         }
     }
 
     updateGroupName() {
         if (!this.compiler) return;
-        const groupNameText = this.compiler.optPipeline?.groupName || 'Function';
+        const groupNameText = this.compiler[this.kind]?.groupName || 'Function';
         this.groupName.text(`${groupNameText}: `);
     }
 
@@ -527,6 +519,7 @@ export class OptPipeline extends MonacoPane<monaco.editor.IStandaloneDiffEditor,
             selectedGroup: this.state.selectedGroup,
             selectedIndex: this.state.selectedIndex,
             sidebarWidth: this.state.sidebarWidth,
+            kind: this.kind,
         };
     }
 
@@ -550,7 +543,11 @@ export class OptPipeline extends MonacoPane<monaco.editor.IStandaloneDiffEditor,
         $(document).off('click', this.clickCallback);
         $(document).off('keydown', this.keydownCallback);
         this.eventHub.unsubscribe();
-        this.eventHub.emit('optPipelineViewClosed', this.compilerInfo.compilerId);
+        this.eventHub.emit('optPipelineViewClosed', this.compilerInfo.compilerId, this.kind);
         this.editor.dispose();
+    }
+
+    private get kind(): OptPipelineKind {
+        return this.state.kind ?? 'optPipeline';
     }
 }
