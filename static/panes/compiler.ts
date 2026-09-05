@@ -418,6 +418,7 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
                 {
                     readOnly: true,
                     language: 'asm',
+                    colorDecorators: false,
                     glyphMargin: !options.embedded,
                     guides: {
                         bracketPairs: false,
