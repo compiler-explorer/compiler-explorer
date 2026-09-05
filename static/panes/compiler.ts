@@ -343,12 +343,7 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
         this.initCallbacks();
         // Handle initial settings
         this.onSettingsChange(this.settings);
-        new CompilationOptions(
-            this,
-            this.domRoot.find('.prepend-options'),
-            result => result.result ?? result,
-            this.filters,
-        );
+        new CompilationOptions(this, this.id, result => result.result ?? result, this.filters);
 
         this.postInit(state);
     }

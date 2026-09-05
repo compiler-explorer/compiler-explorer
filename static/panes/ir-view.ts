@@ -80,7 +80,7 @@ export class Ir extends MonacoPane<monaco.editor.IStandaloneCodeEditor, IrState>
 
     constructor(hub: Hub, container: Container, state: IrState & MonacoPaneState) {
         super(hub, container, state);
-        new CompilationOptions(this, this.domRoot.find('.prepend-options'), result => result.irOutput);
+        new CompilationOptions(this, this.compilerInfo.compilerId, result => result.irOutput);
         if (state.irOutput) {
             this.showIrResults(state.irOutput ?? []);
         }

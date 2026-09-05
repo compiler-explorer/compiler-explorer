@@ -85,7 +85,7 @@ export class OptPipeline extends MonacoPane<monaco.editor.IStandaloneDiffEditor,
 
     constructor(hub: Hub, container: Container, state: OptPipelineViewState & MonacoPaneState) {
         super(hub, container, state);
-        new CompilationOptions(this, this.domRoot.find('.prepend-options'), result => result.optPipelineOutput);
+        new CompilationOptions(this, this.compilerInfo.compilerId, result => result.optPipelineOutput);
         this.groupName = this.domRoot.find('.opt-group-name');
         this.updateGroupName();
         this.passesColumn = this.domRoot.find('.passes-column');
