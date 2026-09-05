@@ -457,7 +457,7 @@ export class Conformance extends Pane<ConformanceViewState> {
     }
 
     handleStatusIcon(statusIcon: JQuery<HTMLElement> | null, status: CompilationStatus): void {
-        CompilerService.handleCompilationStatus(null, statusIcon, status);
+        CompilerService.handleCompilationStatus(statusIcon, status);
     }
 
     currentState(): ConformanceViewState {

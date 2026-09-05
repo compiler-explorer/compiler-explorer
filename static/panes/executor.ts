@@ -44,7 +44,6 @@ import {
     CompilationStatusCode,
     CompilationStatus as CompilerServiceCompilationStatus,
 } from '../compiler-service.interfaces.js';
-import {CompilerService} from '../compiler-service.js';
 import {ICompilerShared} from '../compiler-shared.interfaces.js';
 import {CompilerShared} from '../compiler-shared.js';
 import {SourceAndFiles} from '../download-service.js';
@@ -118,7 +117,6 @@ export class Executor extends Pane<ExecutorState> {
     private compileTimeLabel: JQuery<HTMLElement>;
     private shortCompilerName: JQuery<HTMLElement>;
     private bottomBar: JQuery<HTMLElement>;
-    private statusLabel: JQuery<HTMLElement>;
     private statusIcon: JQuery<HTMLElement> | null;
     private panelCompilation: JQuery<HTMLElement>;
     private panelArgs: JQuery<HTMLElement>;
@@ -845,7 +843,6 @@ export class Executor extends Pane<ExecutorState> {
 
         this.topBar = this.domRoot.find('.top-bar');
         this.bottomBar = this.domRoot.find('.bottom-bar');
-        this.statusLabel = this.domRoot.find('.status-text');
 
         this.hideable = this.domRoot.find('.hideable');
         this.statusIcon = this.domRoot.find('.status-icon');
@@ -1268,9 +1265,6 @@ export class Executor extends Pane<ExecutorState> {
 
     // TODO: Duplicate with compiler-service.ts?
     handleCompilationStatus(status: CompilationStatus): void {
-        // We want to do some custom styles for the icon, so we don't pass it here and instead do it later
-        CompilerService.handleCompilationStatus(this.statusLabel, null, {compilerOut: 0, ...status});
-
         if (this.statusIcon != null) {
             this.statusIcon
                 .removeClass()
