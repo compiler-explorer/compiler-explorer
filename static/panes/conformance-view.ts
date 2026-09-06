@@ -32,7 +32,6 @@ import {CompilationResult} from '../../types/compilation/compilation.interfaces.
 import {CompilerInfo} from '../../types/compiler.interfaces.js';
 import {SelectedLibraryVersion} from '../../types/libraries/libraries.interfaces.js';
 import * as BootstrapUtils from '../bootstrap-utils.js';
-import {CompilationStatus, CompilationStatusCode} from '../compiler-service.interfaces.js';
 import {CompilerService} from '../compiler-service.js';
 import * as Components from '../components.js';
 import {createDragSource} from '../components.js';
@@ -43,6 +42,7 @@ import {Library, LibraryVersion} from '../options.interfaces.js';
 import {options} from '../options.js';
 import {languagesService} from '../services/languages.service.js';
 import * as utils from '../utils.js';
+import {BaseCompilationOptions} from '../widgets/compilation-options.js';
 import {CompilerPicker} from '../widgets/compiler-picker.js';
 import {Lib} from '../widgets/libs-widget.interfaces.js';
 import {CompilerLibs, LibsWidget} from '../widgets/libs-widget.js';
@@ -55,8 +55,7 @@ type CompilerEntry = {
     parent: JQuery<HTMLElement>;
     picker: CompilerPicker | null;
     optionsField: JQuery<HTMLElement> | null;
-    statusIcon: JQuery<HTMLElement> | null;
-    prependOptions: JQuery<HTMLElement> | null;
+    compilationOptions: BaseCompilationOptions<Conformance>;
 };
 
 type AddCompilerPickerConfig = {
@@ -215,8 +214,7 @@ export class Conformance extends Pane<ConformanceViewState> {
             parent: newSelector,
             picker: null,
             optionsField: null,
-            statusIcon: null,
-            prependOptions: null,
+            compilationOptions: new BaseCompilationOptions(this, newSelector, result => result),
         };
 
         const onOptionsChange = _.debounce(() => {
@@ -242,17 +240,12 @@ export class Conformance extends Pane<ConformanceViewState> {
             this.copyCompilerPicker(config);
         });
 
-        newCompilerEntry.statusIcon = newSelector.find('.status-icon');
-        newCompilerEntry.prependOptions = newSelector.find('.prepend-options');
         const popCompilerButton = newSelector.find('.extract-compiler');
 
         const onCompilerChange = async (compilerId: string) => {
             popCompilerButton.toggleClass('d-none', !compilerId);
             this.saveState();
-            // Hide the results icon when a new compiler is selected
-            this.handleStatusIcon(newCompilerEntry.statusIcon, {code: CompilationStatusCode.NONE, compilerOut: 0});
-            const compiler = await this.compilerService.findCompiler(this.langId, compilerId);
-            if (compiler) this.setCompilationOptionsPopover(newCompilerEntry.prependOptions, compiler.options);
+            newCompilerEntry.compilationOptions.clear();
             this.updateLibraries();
             this.compileChild(newCompilerEntry);
         };
@@ -300,22 +293,6 @@ export class Conformance extends Pane<ConformanceViewState> {
         editorId: number,
         treeId: number,
     ): void {}
-
-    setCompilationOptionsPopover(element: JQuery<HTMLElement> | null, content: string): void {
-        if (element) {
-            const existingPopover = BootstrapUtils.getPopoverInstance(element);
-            if (existingPopover) existingPopover.dispose();
-
-            BootstrapUtils.initPopover(element, {
-                content: content || 'No options in use',
-                template:
-                    '<div class="popover' +
-                    (content ? ' compiler-options-popover' : '') +
-                    '" role="tooltip"><div class="arrow"></div>' +
-                    '<h3 class="popover-header"></h3><div class="popover-body"></div></div>',
-            });
-        }
-    }
 
     removeCompilerPicker(compilerEntry: CompilerEntry): void {
         this.compilerPickers = _.reject(this.compilerPickers, entry => compilerEntry.picker?.id === entry.picker?.id);
@@ -374,16 +351,8 @@ export class Conformance extends Pane<ConformanceViewState> {
     }
 
     onCompileResponse(compilerEntry: CompilerEntry, result: CompilationResult) {
-        let compilationOptions = '';
-        if (result.compilationOptions) {
-            compilationOptions = result.compilationOptions.join(' ');
-        }
-
-        this.setCompilationOptionsPopover(compilerEntry.prependOptions, compilationOptions);
-
+        compilerEntry.compilationOptions.processResult(result);
         this.handleCompileOutIcon(compilerEntry.parent.find('.compiler-out'), result);
-
-        this.handleStatusIcon(compilerEntry.statusIcon, CompilerService.calculateStatusIcon(result));
         this.saveState();
     }
 
@@ -401,8 +370,7 @@ export class Conformance extends Pane<ConformanceViewState> {
     compileChild(compilerEntry: CompilerEntry) {
         const compilerId = this.getCompilerId(compilerEntry);
         if (compilerId === '') return;
-        // Hide previous status icons
-        this.handleStatusIcon(compilerEntry.statusIcon, {code: CompilationStatusCode.COMPILING, compilerOut: 0});
+        compilerEntry.compilationOptions.displaySpinner();
 
         this.expandToFiles().then(expanded => {
             const request = {
@@ -454,10 +422,6 @@ export class Conformance extends Pane<ConformanceViewState> {
         this.addCompilerButton.prop('disabled', compilerCount >= this.maxCompilations);
 
         this.updateTitle();
-    }
-
-    handleStatusIcon(statusIcon: JQuery<HTMLElement> | null, status: CompilationStatus): void {
-        CompilerService.handleCompilationStatus(statusIcon, status);
     }
 
     currentState(): ConformanceViewState {
