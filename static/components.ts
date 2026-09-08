@@ -24,6 +24,7 @@
 
 import GoldenLayout from 'golden-layout';
 
+import type {ParsedAsmResultLine} from '../types/asmresult/asmresult.interfaces.js';
 import {GccDumpOutput} from '../types/compilation/compilation.interfaces.js';
 import {ConfiguredOverrides} from '../types/compilation/compiler-overrides.interfaces.js';
 import {ConfiguredRuntimeTools} from '../types/execution/execution.interfaces.js';
@@ -56,6 +57,7 @@ import {
     HASKELL_STG_VIEW_COMPONENT_NAME,
     IR_VIEW_COMPONENT_NAME,
     ItemConfig,
+    JVM_BYTECODE_VIEW_COMPONENT_NAME,
     LayoutItem,
     LEAN_C_VIEW_COMPONENT_NAME,
     LLVM_OPT_PIPELINE_VIEW_COMPONENT_NAME,
@@ -818,6 +820,28 @@ export function getYulViewWith(
     };
 }
 
+export function getJvmBytecodeViewWith(
+    id: number,
+    source: string,
+    jvmBytecodeOutput: ParsedAsmResultLine[] | undefined,
+    compilerName: string,
+    editorid: number,
+    treeid: number,
+): ComponentConfig<typeof JVM_BYTECODE_VIEW_COMPONENT_NAME> {
+    return {
+        type: 'component',
+        componentName: JVM_BYTECODE_VIEW_COMPONENT_NAME,
+        componentState: {
+            id,
+            source,
+            jvmBytecodeOutput,
+            compilerName,
+            editorid,
+            treeid,
+        },
+    };
+}
+
 /** Get an empty Lean C view component. */
 export function getLeanCView(): ComponentConfig<typeof LEAN_C_VIEW_COMPONENT_NAME> {
     return {
@@ -1295,6 +1319,7 @@ function validateComponentState(componentName: string, state: any): boolean {
         case HASKELL_CORE_VIEW_COMPONENT_NAME:
         case HASKELL_STG_VIEW_COMPONENT_NAME:
         case HASKELL_CMM_VIEW_COMPONENT_NAME:
+        case JVM_BYTECODE_VIEW_COMPONENT_NAME:
         case GNAT_DEBUG_TREE_VIEW_COMPONENT_NAME:
         case GNAT_DEBUG_VIEW_COMPONENT_NAME:
         case RUST_MACRO_EXP_VIEW_COMPONENT_NAME:

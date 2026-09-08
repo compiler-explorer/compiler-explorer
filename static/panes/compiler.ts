@@ -199,6 +199,8 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
     private haskellCoreButton: JQuery<HTMLButtonElement>;
     private haskellStgButton: JQuery<HTMLButtonElement>;
     private haskellCmmButton: JQuery<HTMLButtonElement>;
+    private jvmBytecodeButton: JQuery<HTMLButtonElement>;
+    private jvmBytecodeViewOpen = false;
     private leanCButton: JQuery<HTMLButtonElement>;
     private clojureMacroExpButton: JQuery<HTMLButtonElement>;
     private yulButton: JQuery<HTMLButtonElement>;
@@ -666,6 +668,17 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
             );
         };
 
+        const createJvmBytecodeView = () => {
+            return Components.getJvmBytecodeViewWith(
+                this.id,
+                this.source,
+                this.lastResult?.jvmBytecodeOutput,
+                this.getCompilerName(),
+                this.sourceEditorId ?? 0,
+                this.sourceTreeId ?? 0,
+            );
+        };
+
         const createClojureMacroExpView = () => {
             return Components.getClojureMacroExpViewWith(
                 this.id,
@@ -947,6 +960,18 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
                 this.hub.findParentRowOrColumn(this.container.parent) ||
                 this.container.layoutManager.root.contentItems[0];
             insertPoint.addChild(createLeanCView());
+        });
+
+        createDragSource(this.container.layoutManager, this.jvmBytecodeButton, () => createJvmBytecodeView()).on(
+            'dragStart',
+            hidePaneAdder,
+        );
+
+        this.jvmBytecodeButton.on('click', () => {
+            const insertPoint =
+                this.hub.findParentRowOrColumn(this.container.parent) ||
+                this.container.layoutManager.root.contentItems[0];
+            insertPoint.addChild(createJvmBytecodeView());
         });
 
         createDragSource(this.container.layoutManager, this.rustMacroExpButton, () => createRustMacroExpView()).on(
@@ -2559,6 +2584,7 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
         this.haskellCoreButton = this.domRoot.find('.btn.view-haskellCore');
         this.haskellStgButton = this.domRoot.find('.btn.view-haskellStg');
         this.haskellCmmButton = this.domRoot.find('.btn.view-haskellCmm');
+        this.jvmBytecodeButton = this.domRoot.find('.btn.view-jvmBytecode');
         this.leanCButton = this.domRoot.find('.btn.view-leanC');
         this.clojureMacroExpButton = this.domRoot.find('.btn.view-clojuremacroexp');
         this.yulButton = this.domRoot.find('.btn.view-yul');
@@ -2860,6 +2886,7 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
         this.haskellStgButton.prop('disabled', this.haskellStgViewOpen);
         this.haskellCmmButton.prop('disabled', this.haskellCmmViewOpen);
         this.leanCButton.prop('disabled', this.leanCViewOpen);
+        this.jvmBytecodeButton.prop('disabled', this.jvmBytecodeViewOpen);
         this.rustMacroExpButton.prop('disabled', this.rustMacroExpViewOpen);
         this.rustHirButton.prop('disabled', this.rustHirViewOpen);
         this.clojureMacroExpButton.prop('disabled', this.clojureMacroExpViewOpen);
@@ -2885,6 +2912,7 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
         this.haskellStgButton.toggle(!!this.compiler.supportsHaskellStgView);
         this.haskellCmmButton.toggle(!!this.compiler.supportsHaskellCmmView);
         this.leanCButton.toggle(!!this.compiler.supportsLeanCView);
+        this.jvmBytecodeButton.toggle(!!this.compiler.supportsJvmBytecodeView);
         this.clojureMacroExpButton.toggle(!!this.compiler.supportsClojureMacroExpView);
         this.yulButton.toggle(!!this.compiler.supportsYulView);
         // TODO(jeremy-rifkin): Disable cfg button when binary mode is set?
@@ -3067,6 +3095,18 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
         this.eventHub.on('haskellStgViewClosed', this.onHaskellStgViewClosed, this);
         this.eventHub.on('haskellCmmViewOpened', this.onHaskellCmmViewOpened, this);
         this.eventHub.on('haskellCmmViewClosed', this.onHaskellCmmViewClosed, this);
+        this.eventHub.on('jvmBytecodeViewOpened', id => {
+            if (id === this.id) {
+                this.jvmBytecodeViewOpen = true;
+                this.jvmBytecodeButton.prop('disabled', true);
+            }
+        });
+        this.eventHub.on('jvmBytecodeViewClosed', id => {
+            if (id === this.id) {
+                this.jvmBytecodeViewOpen = false;
+                this.jvmBytecodeButton.prop('disabled', false);
+            }
+        });
         this.eventHub.on('leanCViewOpened', this.onLeanCViewOpened, this);
         this.eventHub.on('leanCViewClosed', this.onLeanCViewClosed, this);
         this.eventHub.on('leanCViewOptionsUpdated', this.onLeanCViewOptionsUpdated, this);
