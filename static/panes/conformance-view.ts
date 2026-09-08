@@ -45,7 +45,7 @@ import * as utils from '../utils.js';
 import {BaseCompilationOptions} from '../widgets/compilation-options.js';
 import {CompilerPicker} from '../widgets/compiler-picker.js';
 import {Lib} from '../widgets/libs-widget.interfaces.js';
-import {CompilerLibs, LibsWidget} from '../widgets/libs-widget.js';
+import {CompilerLibs, LibsWidget, stateLibsToLibs} from '../widgets/libs-widget.js';
 import {PaneRenaming} from '../widgets/pane-renaming.js';
 import {ConformanceViewState} from './conformance-view.interfaces.js';
 import {PaneState} from './pane.interfaces.js';
@@ -57,6 +57,13 @@ type CompilerEntry = {
     optionsField: JQuery<HTMLElement> | null;
     compilationOptions: BaseCompilationOptions<Conformance>;
 };
+
+function areLibsEqual(a: Lib[], b: Lib[]): boolean {
+    if (a.length !== b.length) return false;
+    const key = (lib: Lib) => `${lib.name}/${lib.ver}`;
+    const keys = new Set(a.map(key));
+    return b.every(lib => keys.has(key(lib)));
+}
 
 type AddCompilerPickerConfig = {
     compilerId: string;
@@ -73,6 +80,7 @@ export class Conformance extends Pane<ConformanceViewState> {
     private compilerPickers: CompilerEntry[] = [];
     private expandedSourceAndFiles: SourceAndFiles | null;
     private currentLibs: Lib[];
+    private librariesReady: Promise<void>;
     private readonly stateByLang: Record<string, ConformanceViewState>;
     private libsButton: JQuery<HTMLElement>;
     private conformanceContentRoot: JQuery<HTMLElement>;
@@ -97,7 +105,10 @@ export class Conformance extends Pane<ConformanceViewState> {
         this.initButtons();
         this.initCallbacks();
         this.initFromState(state);
-        this.initLibraries(state);
+        // The widget applies the saved libs only once the library list loads, well after the
+        // first compile, so seed from the state to not lose them in the meantime.
+        this.currentLibs = stateLibsToLibs(state.libs);
+        this.librariesReady = this.initLibraries(state);
         this.handleToolbarUI();
 
         // Dismiss the popover on escape.
@@ -128,7 +139,7 @@ export class Conformance extends Pane<ConformanceViewState> {
 
     onLibsChanged(): void {
         const newLibs = this.libsWidget.get();
-        if (newLibs !== this.currentLibs) {
+        if (!areLibsEqual(newLibs, this.currentLibs)) {
             this.currentLibs = newLibs;
             this.saveState();
             this.compileAll();
@@ -147,7 +158,13 @@ export class Conformance extends Pane<ConformanceViewState> {
             libs,
         );
         // No callback is done on initialization, so make sure we store the current libs
-        this.currentLibs = this.libsWidget.get();
+        await this.libsWidget.stateLoaded;
+        const loadedLibs = this.libsWidget.get();
+        if (!areLibsEqual(loadedLibs, this.currentLibs)) {
+            this.currentLibs = loadedLibs;
+            this.saveState();
+            this.compileAll();
+        }
     }
 
     initButtons(): void {
@@ -508,6 +525,8 @@ export class Conformance extends Pane<ConformanceViewState> {
     }
 
     async updateLibraries(): Promise<void> {
+        // Re-keying carries over the libs in use, so it must wait for those to be restored.
+        await this.librariesReady;
         const compilerIds = this.getCurrentCompilersIds();
         const libs = await this.getOverlappingLibraries(compilerIds);
         this.libsWidget.setNewLangId(this.langId, compilerIds.join('|'), libs);
