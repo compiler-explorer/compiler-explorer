@@ -22,14 +22,19 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
+import * as fsSync from 'node:fs';
 import fs from 'node:fs/promises';
 import path from 'node:path';
+import {Readable} from 'node:stream';
 
 import {afterEach, beforeEach, describe, expect, it, vi} from 'vitest';
 
+import {BaseCompiler} from '../lib/base-compiler.js';
 import {NativeImageCompiler, parseNativeImageDisassembly} from '../lib/compilers/native-image.js';
 import type {UnprocessedExecResult} from '../types/execution/execution.interfaces.js';
 import {makeCompilationEnvironment, makeFakeCompilerInfo} from './utils.js';
+
+vi.mock('node:fs', {spy: true});
 
 const method = {
     name: 'Square.square(int)int',
@@ -145,6 +150,9 @@ describe('Native Image compiler pipeline', () => {
             compiler.getDefaultExecOptions(),
         );
         expect(result.code).toBe(0);
+        expect(exec.mock.calls.find(call => call[0].endsWith('native-image'))?.[1]).toEqual(
+            expect.arrayContaining(['--parallelism=2', '-J-Xmx3g']),
+        );
         expect(result.jvmBytecodeOutput).toEqual(
             expect.arrayContaining([expect.objectContaining({text: expect.stringContaining('imul')})]),
         );
@@ -154,6 +162,83 @@ describe('Native Image compiler pipeline', () => {
             '--features=ce.nativeimage.ExplorerFeature',
         );
         expect(result.stdout.some(line => line.text.includes('iload'))).toBe(false);
+    });
+
+    it('uses configured builder resources and layer', async () => {
+        const tuned = new NativeImageCompiler(
+            makeFakeCompilerInfo({id: 'native', exe: '/graal/bin/native-image', lang: 'java'}),
+            makeCompilationEnvironment({
+                languages: {java: {id: 'java'}},
+                props: {
+                    'compiler.native.frontend': '/graal/bin/javac',
+                    'compiler.native.nativeImageFeature': '/feature.jar',
+                    'compiler.native.nativeImageParallelism': 8,
+                    'compiler.native.nativeImageMaxHeap': '6g',
+                    'compiler.native.nativeImageLayer': '/layers/java base.nil',
+                },
+            }),
+        );
+        const exec = vi
+            .spyOn(tuned, 'exec')
+            .mockImplementation(async exe => execResult('', exe.endsWith('native-image') ? 1 : 0));
+        await tuned.runCompiler(tuned.compiler.exe, [], input, tuned.getDefaultExecOptions());
+        const args = exec.mock.calls.find(call => call[0].endsWith('native-image'))?.[1];
+        expect(args).toContain('--parallelism=8');
+        expect(args).toContain('-J-Xmx6g');
+        expect(args).toContain('-H:LayerUse=/layers/java base.nil');
+        expect(args).not.toContain('--parallelism=2');
+        expect(args).not.toContain('-J-Xmx3g');
+    });
+
+    it('passes only the final optimisation setting to the builder', async () => {
+        const exec = vi
+            .spyOn(compiler, 'exec')
+            .mockImplementation(async exe => execResult('', exe.endsWith('native-image') ? 1 : 0));
+        await compiler.runCompiler(compiler.compiler.exe, ['-O2', '-O2'], input, compiler.getDefaultExecOptions());
+        const args = exec.mock.calls.find(call => call[0].endsWith('native-image'))?.[1];
+        expect(args?.filter(arg => arg === '-O2')).toEqual(['-O2']);
+    });
+
+    it('includes layer contents in the compiler version cache digest', async () => {
+        const layered = new NativeImageCompiler(
+            makeFakeCompilerInfo({id: 'native', exe: '/graal/bin/native-image', lang: 'java'}),
+            makeCompilationEnvironment({
+                languages: {java: {id: 'java'}},
+                props: {
+                    'compiler.native.frontend': '/graal/bin/javac',
+                    'compiler.native.nativeImageFeature': '/feature.jar',
+                    'compiler.native.nativeImageLayer': '/base.nil',
+                },
+            }),
+        );
+        vi.spyOn(BaseCompiler.prototype, 'getVersion').mockResolvedValue(execResult('native-image 25'));
+        vi.spyOn(layered, 'exec').mockResolvedValue(execResult('javac 25'));
+        const stream = vi
+            .spyOn(fsSync, 'createReadStream')
+            .mockReturnValueOnce(Readable.from(['first layer']) as fsSync.ReadStream)
+            .mockReturnValueOnce(Readable.from(['changed layer']) as fsSync.ReadStream);
+        const first = await layered.getVersion();
+        const changed = await layered.getVersion();
+        expect(first?.stdout).not.toEqual(changed?.stdout);
+        expect(stream).toHaveBeenCalledWith('/base.nil');
+    });
+
+    it.each([
+        ['nativeImageParallelism', 0],
+        ['nativeImageParallelism', 1.5],
+        ['nativeImageMaxHeap', '0g'],
+        ['nativeImageMaxHeap', '6g -Dunexpected=true'],
+    ])('rejects invalid %s configuration (%s)', (property, value) => {
+        expect(
+            () =>
+                new NativeImageCompiler(
+                    makeFakeCompilerInfo({id: 'native', exe: '/graal/bin/native-image', lang: 'java'}),
+                    makeCompilationEnvironment({
+                        languages: {java: {id: 'java'}},
+                        props: {[`compiler.native.${property}`]: value},
+                    }),
+                ),
+        ).toThrow(property);
     });
 
     it('stops immediately on frontend diagnostics', async () => {
@@ -178,6 +263,16 @@ describe('Native Image compiler pipeline', () => {
         expect(result.jvmBytecodeOutput?.length).toBeGreaterThan(0);
     });
 
+    it('does not cache native compilation failures and retains bytecode', async () => {
+        vi.spyOn(compiler, 'exec').mockImplementation(async exe =>
+            exe.endsWith('javap') ? execResult(bytecode) : execResult('', exe.endsWith('native-image') ? 1 : 0),
+        );
+        const result = await compiler.runCompiler(compiler.compiler.exe, [], input, compiler.getDefaultExecOptions());
+        expect(result.code).toBe(1);
+        expect(result.okToCache).toBe(false);
+        expect(result.jvmBytecodeOutput?.length).toBeGreaterThan(0);
+    });
+
     it('requires a completion manifest even when native-image exits successfully', async () => {
         vi.spyOn(compiler, 'exec').mockResolvedValue(execResult());
         vi.mocked(fs.stat).mockRejectedValue(new Error('ENOENT'));
@@ -196,11 +291,15 @@ describe('Native Image compiler pipeline', () => {
         expect(result.code).toBe(-1);
     });
 
-    it('rejects builder features and output overrides', async () => {
+    it.each([
+        '--features=Untrusted',
+        '-H:LayerUse=/tmp/user.nil',
+        '-H:LayerCreate=user.nil',
+    ])('rejects user builder option %s', async option => {
         const exec = vi.spyOn(compiler, 'exec');
         const result = await compiler.runCompiler(
             compiler.compiler.exe,
-            ['--features=Untrusted'],
+            [option],
             input,
             compiler.getDefaultExecOptions(),
         );

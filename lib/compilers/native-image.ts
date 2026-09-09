@@ -23,6 +23,7 @@
 // POSSIBILITY OF SUCH DAMAGE.
 
 import {createHash} from 'node:crypto';
+import {createReadStream} from 'node:fs';
 import fs from 'node:fs/promises';
 import path from 'node:path';
 
@@ -122,6 +123,9 @@ export class NativeImageCompiler extends BaseCompiler {
     private readonly feature: string;
     private readonly javap: string;
     private readonly classpath: string;
+    private readonly parallelism: number;
+    private readonly maxHeap: string;
+    private readonly layer: string;
 
     constructor(info: PreliminaryCompilerInfo, env: CompilationEnvironment) {
         super({...info, disabledFilters: ['labels', 'directives', 'commentOnly', 'trim', 'debugCalls']}, env);
@@ -137,6 +141,15 @@ export class NativeImageCompiler extends BaseCompiler {
             path.join(path.dirname(info.exe), 'javap'),
         );
         this.classpath = this.compilerProps<string>(`compiler.${this.compiler.id}.nativeImageClasspath`, '');
+        this.parallelism = this.compilerProps<number>(`compiler.${this.compiler.id}.nativeImageParallelism`, 2);
+        this.maxHeap = this.compilerProps<string>(`compiler.${this.compiler.id}.nativeImageMaxHeap`, '3g');
+        this.layer = this.compilerProps<string>(`compiler.${this.compiler.id}.nativeImageLayer`, '');
+        if (!Number.isSafeInteger(this.parallelism) || this.parallelism < 1) {
+            throw new Error('nativeImageParallelism must be a positive integer');
+        }
+        if (!/^[1-9][0-9]*[kmg]$/i.test(this.maxHeap)) {
+            throw new Error('nativeImageMaxHeap must be a positive integer followed by k, m or g');
+        }
         this.bytecodeParser = new JavaCompiler({...info}, env);
     }
 
@@ -149,9 +162,13 @@ export class NativeImageCompiler extends BaseCompiler {
         for (const file of [this.feature, ...this.classpath.split(path.delimiter).filter(Boolean)]) {
             hash.update(await fs.readFile(file));
         }
+        if (this.layer) {
+            hash.update('Native Image layer\0');
+            for await (const chunk of createReadStream(this.layer)) hash.update(chunk);
+        }
         return {
             ...version,
-            stdout: `${version.stdout}\nFrontend: ${frontend.stdout}${frontend.stderr}\nExtraction adapter and classpath: ${hash.digest('hex')}\n`,
+            stdout: `${version.stdout}\nFrontend: ${frontend.stdout}${frontend.stderr}\nExtraction adapter, classpath and layer: ${hash.digest('hex')}\n`,
         };
     }
 
@@ -288,13 +305,13 @@ export class NativeImageCompiler extends BaseCompiler {
             };
             const nativeArgs = [
                 '--shared',
-                '--no-fallback',
-                '--parallelism=2',
-                '-J-Xmx3g',
+                `--parallelism=${this.parallelism}`,
+                `-J-Xmx${this.maxHeap}`,
                 '-march=x86-64',
+                ...nativeOptions.slice(-1),
                 '-H:+UnlockExperimentalVMOptions',
                 '-H:+TrackNodeSourcePosition',
-                ...nativeOptions,
+                ...(this.layer ? [`-H:LayerUse=${this.layer}`] : []),
                 '--features=ce.nativeimage.ExplorerFeature',
                 `-Dce.nativeimage.classes=${classes}`,
                 `-Dce.nativeimage.output=${manifest}`,
@@ -306,7 +323,10 @@ export class NativeImageCompiler extends BaseCompiler {
                 '-o',
                 path.join(directory, 'unused-image'),
             ];
-            if ((await run(compiler, nativeArgs)).code !== 0) return result;
+            if ((await run(compiler, nativeArgs)).code !== 0) {
+                result.okToCache = false;
+                return result;
+            }
             const stat = await fs.stat(manifest);
             if (stat.size > this.env.ceProps('max-asm-size', 64 * 1024 * 1024))
                 throw new Error('Native Image output exceeds the size limit');
@@ -335,7 +355,7 @@ export class NativeImageCompiler extends BaseCompiler {
                 text: 'Native Image methods extracted; image generation stopped before image creation.',
             });
             result.asm = asm.length ? asm : [{text: '<No compiled methods in submitted classes>'}];
-            result.compilationOptions = nativeOptions;
+            result.compilationOptions = nativeOptions.slice(-1);
             return result;
         } catch (error) {
             return {
