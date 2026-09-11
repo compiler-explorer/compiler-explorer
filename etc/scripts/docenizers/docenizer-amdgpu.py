@@ -15,6 +15,10 @@ Regenerate the affected architectures, verify, and commit the result.
 Architectures: amd_cdna1..5, amd_rdna1, amd_rdna2, amd_rdna3, amd_rdna3_5, amd_rdna4,
 each from the matching amdgpu_isa_<arch>.xml.
 
+--verify re-derives every field from the XML and compares it to the committed .ts, so a
+divergence means the file no longer matches the spec it claims to come from. Generation
+refuses to write a file containing a number it could not read.
+
 Unlike the other docenizers this emits data rather than a switch of pre-rendered HTML,
 because the same encoding, format and operand descriptions recur across thousands of
 instructions. lib/asm-docs/amdgpu-render.ts turns the pooled data back into markup.
@@ -32,19 +36,25 @@ from pathlib import Path
 
 ISA_DOCS_BASE_URL = 'https://gpuopen.com/amd-gpu-architecture-programming-documentation/'
 
-# Map architecture names to their ISA reference guide URLs.
-ARCH_DOC_URLS = {
-    'amd_cdna1': ISA_DOCS_BASE_URL,
-    'amd_cdna2': ISA_DOCS_BASE_URL,
-    'amd_cdna3': ISA_DOCS_BASE_URL,
-    'amd_cdna4': ISA_DOCS_BASE_URL,
-    'amd_cdna5': ISA_DOCS_BASE_URL,
-    'amd_rdna1': ISA_DOCS_BASE_URL,
-    'amd_rdna2': ISA_DOCS_BASE_URL,
-    'amd_rdna3': ISA_DOCS_BASE_URL,
-    'amd_rdna3_5': ISA_DOCS_BASE_URL,
-    'amd_rdna4': ISA_DOCS_BASE_URL,
-}
+# The architectures we ship docs for, each from the matching amdgpu_isa_<arch>.xml.
+ARCHITECTURES = (
+    'amd_cdna1',
+    'amd_cdna2',
+    'amd_cdna3',
+    'amd_cdna4',
+    'amd_cdna5',
+    'amd_rdna1',
+    'amd_rdna2',
+    'amd_rdna3',
+    'amd_rdna3_5',
+    'amd_rdna4',
+)
+
+# Per-architecture overrides for the "More information" link in a tooltip. AMD publishes a
+# separate ISA reference PDF per architecture, but those URLs are versioned and go stale as
+# revisions land, so every architecture currently points at the index page listing them all.
+# Add an entry here to deep-link one architecture.
+ARCH_DOC_URLS: dict[str, str] = {}
 
 # Display names for functional groups and subgroups, following FunctionalGroupNames and
 # FunctionalSubgroupNames in include/amdisa/isa_decoder.h of
@@ -101,11 +111,15 @@ parser.add_argument('-i', '--input', type=str, required=True,
                     help='Path to the AMD ISA XML specification file')
 parser.add_argument('-o', '--output', type=str, required=True,
                     help='Output path for the generated .ts file')
-parser.add_argument('-a', '--arch', type=str, required=True,
+parser.add_argument('-a', '--arch', type=str, required=True, choices=ARCHITECTURES,
                     help='Architecture name (e.g., amd_rdna3, amd_rdna3_5, amd_rdna4)')
 parser.add_argument('--verify', action='store_true',
                     help='Check the existing output against the XML instead of regenerating it. '
                          'The XML is not committed, so this is how regeneration is proved faithful.')
+
+# Values that would not parse as integers, recorded rather than silently becoming 0. Keyed by
+# (element name, raw text) with an occurrence count, so a systematic problem reports once.
+_INT_PROBLEMS: dict[tuple[str, str], int] = {}
 
 
 def _text(elem, child_name: str) -> str:
@@ -116,9 +130,47 @@ def _text(elem, child_name: str) -> str:
     return child.text.strip() if child is not None and child.text else ''
 
 
+def _parse_int(value: str) -> int | None:
+    """Decimal first, then 0x/0o/0b-prefixed. None when neither applies.
+
+    Decimal has to win: base 0 would read a zero-padded '010' as octal, and bare hex without
+    a prefix is genuinely ambiguous, so it is left to fail rather than guessed at.
+    """
+    try:
+        return int(value, 10)
+    except ValueError:
+        pass
+    try:
+        return int(value, 0)
+    except ValueError:
+        return None
+
+
 def _int(elem, child_name: str) -> int:
+    """Integer text of a child element, or 0 when the element is absent or empty.
+
+    The XML omits these elements rather than writing zero, so absent really is 0. Anything
+    else that will not parse is a schema change we must not paper over: an Opcode silently
+    becoming 0 collides with the real opcode 0 and quietly mislabels a tooltip. Those are
+    recorded and reported before anything is written.
+    """
     value = _text(elem, child_name)
-    return int(value) if value.lstrip('-').isdigit() else 0
+    if not value:
+        return 0
+    parsed = _parse_int(value)
+    if parsed is None:
+        key = (child_name, value)
+        _INT_PROBLEMS[key] = _INT_PROBLEMS.get(key, 0) + 1
+        return 0
+    return parsed
+
+
+def int_problems() -> list:
+    """One line per distinct value that would not parse, with how often it occurred."""
+    return [
+        f'{child_name}: cannot parse {value!r} as an integer, treated as 0 ({count} occurrence(s))'
+        for (child_name, value), count in sorted(_INT_PROBLEMS.items())
+    ]
 
 
 def _is_true(elem, child_name: str) -> bool:
@@ -216,6 +268,72 @@ class Pool:
         return self._index[key]
 
 
+# Deriving a spec field from the XML is written once and used by both parse_instructions and
+# verify, so the two cannot drift into disagreeing about what the XML says.
+
+
+def operand_row(op) -> list:
+    """One <Operand> as the pooled row the renderer expects."""
+    flags = 0
+    if op.get('Input', '').upper() == 'TRUE':
+        flags |= OPERAND_FLAG_INPUT
+    if op.get('Output', '').upper() == 'TRUE':
+        flags |= OPERAND_FLAG_OUTPUT
+    if op.get('IsImplicit', '').upper() == 'TRUE':
+        flags |= OPERAND_FLAG_IMPLICIT
+    if op.get('IsBinaryMicrocodeRequired', '').upper() == 'TRUE':
+        flags |= OPERAND_FLAG_BMR
+    return [
+        _text(op, 'FieldName'),
+        _text(op, 'OperandType'),
+        _text(op, 'DataFormatName'),
+        _int(op, 'OperandSize'),
+        flags,
+    ]
+
+
+def encoding_condition(enc) -> tuple:
+    """The <EncodingCondition> text and Id, both empty when the element is absent."""
+    cond = enc.find('EncodingCondition')
+    if cond is None:
+        return '', ''
+    return (cond.text.strip() if cond.text else ''), cond.get('Id', '')
+
+
+def instruction_flags(instr) -> int:
+    """<InstructionFlags> packed into the bitfield mirrored by INSTRUCTION_FLAG_LABELS."""
+    flags_elem = instr.find('InstructionFlags')
+    flags = 0
+    for bit, flag_name in enumerate(INSTRUCTION_FLAG_NAMES):
+        if _is_true(flags_elem, flag_name):
+            flags |= 1 << bit
+    return flags
+
+
+def instruction_subgroups(instr) -> list:
+    """Display names of an instruction's functional subgroups."""
+    subgroups = []
+    for sub in instr.findall('./FunctionalGroup/FunctionalSubgroups/Subgroup'):
+        if sub.text:
+            text = sub.text.strip()
+            # NOT_ASSIGNED means the instruction has no subgroup. Drop it rather than
+            # surfacing the XML's jargon; the renderer omits the field when the list is empty.
+            if text != 'NOT_ASSIGNED':
+                subgroups.append(FUNCTIONAL_SUBGROUP_NAMES.get(text, text))
+    return subgroups
+
+
+def instruction_aliases(instr) -> list:
+    """Legacy GCN spellings this instruction also answers to."""
+    return [a.text.strip() for a in instr.findall('./AliasedInstructionNames/InstructionName') if a.text]
+
+
+def instruction_group_name(instr) -> str:
+    """Raw <FunctionalGroup><Name>, which indexes into the groups section."""
+    group = instr.find('FunctionalGroup')
+    return _text(group, 'Name') if group is not None else ''
+
+
 def parse_instructions(root, operand_pool: Pool, shape_pool: Pool) -> list:
     """<Instructions>: one record per instruction, referencing pooled operands and shapes."""
     section = root.find('.//Instructions')
@@ -231,61 +349,24 @@ def parse_instructions(root, operand_pool: Pool, shape_pool: Pool) -> list:
 
         encodings = []
         for enc in instr.findall('./InstructionEncodings/InstructionEncoding'):
-            operand_indices = []
-            for op in enc.findall('./Operands/Operand'):
-                flags = 0
-                if op.get('Input', '').upper() == 'TRUE':
-                    flags |= OPERAND_FLAG_INPUT
-                if op.get('Output', '').upper() == 'TRUE':
-                    flags |= OPERAND_FLAG_OUTPUT
-                if op.get('IsImplicit', '').upper() == 'TRUE':
-                    flags |= OPERAND_FLAG_IMPLICIT
-                if op.get('IsBinaryMicrocodeRequired', '').upper() == 'TRUE':
-                    flags |= OPERAND_FLAG_BMR
-                row = [
-                    _text(op, 'FieldName'),
-                    _text(op, 'OperandType'),
-                    _text(op, 'DataFormatName'),
-                    _int(op, 'OperandSize'),
-                    flags,
-                ]
-                # Operands are emitted in <Order>, so position in this list is the order.
-                operand_indices.append(operand_pool.intern(tuple(row), row))
-
-            cond_elem = enc.find('EncodingCondition')
-            shape = [
-                _text(enc, 'EncodingName'),
-                cond_elem.text.strip() if cond_elem is not None and cond_elem.text else '',
-                cond_elem.get('Id', '') if cond_elem is not None else '',
-                operand_indices,
+            # Operands are emitted in <Order>, so position in this list is the order.
+            operand_indices = [
+                operand_pool.intern(tuple(row), row)
+                for row in (operand_row(op) for op in enc.findall('./Operands/Operand'))
             ]
+
+            cond_text, cond_id = encoding_condition(enc)
+            shape = [_text(enc, 'EncodingName'), cond_text, cond_id, operand_indices]
             shape_index = shape_pool.intern((shape[0], shape[1], shape[2], tuple(operand_indices)), shape)
             encodings.append([shape_index, _int(enc, 'Opcode')])
-
-        flags = 0
-        flags_elem = instr.find('InstructionFlags')
-        for bit, flag_name in enumerate(INSTRUCTION_FLAG_NAMES):
-            if _is_true(flags_elem, flag_name):
-                flags |= 1 << bit
-
-        subgroups = []
-        for sub in instr.findall('./FunctionalGroup/FunctionalSubgroups/Subgroup'):
-            if sub.text:
-                text = sub.text.strip()
-                # NOT_ASSIGNED means the instruction has no subgroup. Drop it rather than
-                # surfacing the XML's jargon; the renderer omits the field when the list is empty.
-                if text != 'NOT_ASSIGNED':
-                    subgroups.append(FUNCTIONAL_SUBGROUP_NAMES.get(text, text))
-
-        aliases = [a.text.strip() for a in instr.findall('./AliasedInstructionNames/InstructionName') if a.text]
 
         instructions.append([
             name,
             _text(instr, 'Description'),
-            aliases,
-            _text(instr.find('FunctionalGroup'), 'Name') if instr.find('FunctionalGroup') is not None else '',
-            subgroups,
-            flags,
+            instruction_aliases(instr),
+            instruction_group_name(instr),
+            instruction_subgroups(instr),
+            instruction_flags(instr),
             encodings,
         ])
 
@@ -352,33 +433,87 @@ def read_generated_spec(path: str) -> dict:
     return json.loads(match.group(1))
 
 
-def verify(spec: dict, root, output_path: str) -> list:
-    """Compare a generated spec field-by-field against the XML it came from.
+def _brief(value) -> str:
+    """A value short enough to sit on one line of a failure report."""
+    text = json.dumps(value, separators=(',', ':'))
+    return text if len(text) <= 120 else f'{text[:117]}...'
 
-    A bad operand or shape index still produces well-formed output, just describing the
-    wrong instruction, so every divergence is collected rather than failing on the first.
+
+def _compare_section(problems: list, section: str, expected: dict, actual, expected_from: str = 'xml') -> None:
+    """Key-by-key dict comparison, naming the entry rather than dumping both sides."""
+    if not isinstance(actual, dict):
+        problems.append(f'{section}: missing or malformed in generated spec')
+        return
+    for key in sorted(expected.keys() - actual.keys()):
+        problems.append(f'{section}/{key}: in {expected_from} but not in generated spec')
+    for key in sorted(actual.keys() - expected.keys()):
+        problems.append(f'{section}/{key}: in generated spec but not in {expected_from}')
+    for key in sorted(expected.keys() & actual.keys()):
+        if expected[key] != actual[key]:
+            problems.append(f'{section}/{key}: {_brief(expected[key])} != {_brief(actual[key])}')
+
+
+def verify(spec: dict, root, arch: str) -> list:
+    """Compare every field of a generated spec against the XML it came from.
+
+    Covers the documentation url, the pooled sections (encodings, data formats, operand types,
+    functional groups), the two derived maps (suffix encodings and the lookup index), and every
+    field of every instruction row down to the pooled operands each encoding references.
+
+    A bad operand or shape index still produces well-formed output, just describing the wrong
+    instruction, so every divergence is collected rather than failing on the first.
     """
     problems = []
-    xml_instructions = [i for i in root.findall('.//Instructions/Instruction') if _text(i, 'InstructionName')]
 
+    expected_url = ARCH_DOC_URLS.get(arch, ISA_DOCS_BASE_URL)
+    if spec.get('url') != expected_url:
+        problems.append(f'url: {expected_url!r} != {spec.get("url")!r}')
+
+    xml_encodings = parse_encodings(root)
+    _compare_section(problems, 'encodings', xml_encodings, spec.get('encodings'))
+    _compare_section(problems, 'suffixEncodings', build_suffix_encodings(xml_encodings), spec.get('suffixEncodings'))
+    _compare_section(problems, 'formats', parse_data_formats(root), spec.get('formats'))
+    _compare_section(problems, 'operandTypes', parse_operand_types(root), spec.get('operandTypes'))
+    _compare_section(problems, 'groups', parse_functional_groups(root), spec.get('groups'))
+
+    # The index is derived from the instruction list rather than read from the XML, so checking it
+    # against a rebuild catches a stale or hand-edited index no instruction check would notice.
+    _compare_section(
+        problems, 'index', build_index(spec['instructions']), spec.get('index'), 'the instruction list'
+    )
+
+    xml_instructions = [i for i in root.findall('.//Instructions/Instruction') if _text(i, 'InstructionName')]
     if len(xml_instructions) != len(spec['instructions']):
         problems.append(f"instruction count: xml {len(xml_instructions)} != spec {len(spec['instructions'])}")
         return problems
 
     for xml_instr, row in zip(xml_instructions, spec['instructions']):
         name = _text(xml_instr, 'InstructionName')
-        if name != row[0]:
-            problems.append(f'name: xml {name} != spec {row[0]}')
+        if len(row) != 7:
+            problems.append(f'{name}: instruction row has {len(row)} fields, expected 7')
             continue
-        if _text(xml_instr, 'Description') != row[1]:
+        spec_name, description, aliases, group_name, subgroups, flags, encodings = row
+
+        if name != spec_name:
+            problems.append(f'name: xml {name} != spec {spec_name}')
+            continue
+        if _text(xml_instr, 'Description') != description:
             problems.append(f'{name}: description differs')
+        if instruction_aliases(xml_instr) != aliases:
+            problems.append(f'{name}: aliases {_brief(instruction_aliases(xml_instr))} != {_brief(aliases)}')
+        if instruction_group_name(xml_instr) != group_name:
+            problems.append(f'{name}: functional group {instruction_group_name(xml_instr)!r} != {group_name!r}')
+        if instruction_subgroups(xml_instr) != subgroups:
+            problems.append(f'{name}: subgroups {_brief(instruction_subgroups(xml_instr))} != {_brief(subgroups)}')
+        if instruction_flags(xml_instr) != flags:
+            problems.append(f'{name}: flags {instruction_flags(xml_instr)} != {flags}')
 
-        xml_encodings = xml_instr.findall('./InstructionEncodings/InstructionEncoding')
-        if len(xml_encodings) != len(row[6]):
-            problems.append(f'{name}: encoding count {len(xml_encodings)} != {len(row[6])}')
+        xml_instr_encodings = xml_instr.findall('./InstructionEncodings/InstructionEncoding')
+        if len(xml_instr_encodings) != len(encodings):
+            problems.append(f'{name}: encoding count {len(xml_instr_encodings)} != {len(encodings)}')
             continue
 
-        for xml_enc, (shape_index, opcode) in zip(xml_encodings, row[6]):
+        for xml_enc, (shape_index, opcode) in zip(xml_instr_encodings, encodings):
             if not 0 <= shape_index < len(spec['shapes']):
                 problems.append(f'{name}: shape index {shape_index} out of range')
                 continue
@@ -388,9 +523,7 @@ def verify(spec: dict, root, output_path: str) -> list:
             if _int(xml_enc, 'Opcode') != opcode:
                 problems.append(f"{name}/{shape[0]}: opcode {_int(xml_enc, 'Opcode')} != {opcode}")
 
-            cond = xml_enc.find('EncodingCondition')
-            cond_text = cond.text.strip() if cond is not None and cond.text else ''
-            cond_id = cond.get('Id', '') if cond is not None else ''
+            cond_text, cond_id = encoding_condition(xml_enc)
             if cond_text != shape[1]:
                 problems.append(f'{name}/{shape[0]}: condition {cond_text!r} != {shape[1]!r}')
             if cond_id != shape[2]:
@@ -404,25 +537,10 @@ def verify(spec: dict, root, output_path: str) -> list:
                 if not 0 <= operand_index < len(spec['operands']):
                     problems.append(f'{name}/{shape[0]}: operand index {operand_index} out of range')
                     continue
-                flags = 0
-                if xml_op.get('Input', '').upper() == 'TRUE':
-                    flags |= OPERAND_FLAG_INPUT
-                if xml_op.get('Output', '').upper() == 'TRUE':
-                    flags |= OPERAND_FLAG_OUTPUT
-                if xml_op.get('IsImplicit', '').upper() == 'TRUE':
-                    flags |= OPERAND_FLAG_IMPLICIT
-                if xml_op.get('IsBinaryMicrocodeRequired', '').upper() == 'TRUE':
-                    flags |= OPERAND_FLAG_BMR
-                expected = [
-                    _text(xml_op, 'FieldName'),
-                    _text(xml_op, 'OperandType'),
-                    _text(xml_op, 'DataFormatName'),
-                    _int(xml_op, 'OperandSize'),
-                    flags,
-                ]
+                expected = operand_row(xml_op)
                 if expected != spec['operands'][operand_index]:
                     problems.append(
-                        f'{name}/{shape[0]}: operand {expected} != {spec["operands"][operand_index]}'
+                        f'{name}/{shape[0]}: operand {_brief(expected)} != {_brief(spec["operands"][operand_index])}'
                     )
 
     return problems
@@ -439,7 +557,7 @@ def main():
     root = ET.parse(str(input_path)).getroot()
 
     if args.verify:
-        problems = verify(read_generated_spec(args.output), root, args.output)
+        problems = verify(read_generated_spec(args.output), root, args.arch) + int_problems()
         if problems:
             print(f'{args.arch}: FAIL - {len(problems)} divergence(s) from {input_path.name}', file=sys.stderr)
             for problem in problems[:10]:
@@ -470,6 +588,15 @@ def main():
         'instructions': instructions,
         'index': build_index(instructions),
     }
+
+    # Nothing gets written if a number would not parse: a zero standing in for an unread Opcode
+    # is indistinguishable from a real opcode 0 once it is in the committed file.
+    problems = int_problems()
+    if problems:
+        print(f'Error: {input_path.name} has values this script cannot read', file=sys.stderr)
+        for problem in problems:
+            print(f'    {problem}', file=sys.stderr)
+        sys.exit(1)
 
     write_ts_file(spec, args.output)
 
