@@ -47,7 +47,7 @@ import {addArtifactToResult} from '../artifact-utils.js';
 import {BaseCompiler} from '../base-compiler.js';
 import {CompilationEnvironment} from '../compilation-env.js';
 import type {ParsedRequest} from '../handlers/compile.js';
-import {getAmdGpuInstructionSet} from '../instructionsets.js';
+import {getAmdGpuInstructionSet, getAmdGpuInstructionSetFromLabel} from '../instructionsets.js';
 import {AmdgpuAsmParser} from '../parsers/asm-parser-amdgpu.js';
 import {HexagonAsmParser} from '../parsers/asm-parser-hexagon.js';
 import {PTXAsmParser} from '../parsers/asm-parser-ptx.js';
@@ -295,9 +295,14 @@ export class ClangCompiler extends BaseCompiler {
             deviceAsm = await this.extractBitcodeFromBundle(compilationInfo.outputFilename, deviceName);
         }
 
-        return this.llvmIr.isLlvmIr(deviceAsm)
-            ? this.llvmIr.process(deviceAsm, filters)
-            : this.asm.process(deviceAsm, filters);
+        // Bitcode devices show LLVM IR, so an AMDGPU instruction set would be the wrong docs.
+        if (this.llvmIr.isLlvmIr(deviceAsm)) return this.llvmIr.process(deviceAsm, filters);
+
+        const processed = await this.asm.process(deviceAsm, filters);
+        // Offload bundle targets embed the gfx target (hipv4-amdgcn-amd-amdhsa--gfx942); the
+        // device view has nothing else to go on when picking documentation.
+        const instructionSet = getAmdGpuInstructionSetFromLabel(deviceName);
+        return instructionSet ? {...processed, instructionSet} : processed;
     }
 }
 

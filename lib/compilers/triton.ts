@@ -153,7 +153,13 @@ export class TritonCompiler extends BaseCompiler {
                     device = await parser.process(data, filters);
                 }
 
-                Object.assign(devices, {[filename]: device});
+                // Only .amdgcn holds AMD GPU assembly; the IR dumps would get the wrong docs.
+                const instructionSet =
+                    ext === '.amdgcn' ? this.getInstructionSetFromCompilerArgs(compilationInfo.options) : undefined;
+
+                Object.assign(devices, {
+                    [filename]: instructionSet?.startsWith('amd_') ? {...device, instructionSet} : device,
+                });
             }),
         );
         result.devices = devices;

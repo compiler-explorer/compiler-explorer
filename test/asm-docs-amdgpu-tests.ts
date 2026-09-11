@@ -42,7 +42,7 @@ import * as rdna2 from '../lib/asm-docs/generated/asm-docs-amd_rdna2.js';
 import * as rdna3 from '../lib/asm-docs/generated/asm-docs-amd_rdna3.js';
 import * as rdna3_5 from '../lib/asm-docs/generated/asm-docs-amd_rdna3_5.js';
 import * as rdna4 from '../lib/asm-docs/generated/asm-docs-amd_rdna4.js';
-import {getAmdGpuInstructionSet} from '../lib/instructionsets.js';
+import {getAmdGpuInstructionSet, getAmdGpuInstructionSetFromLabel} from '../lib/instructionsets.js';
 import {skipExpensiveTests} from './utils.js';
 
 type GeneratedModule = {
@@ -218,6 +218,36 @@ describe('AMD GPU target mapping', () => {
         for (const target of ['gfx900', 'gfx906', 'sm_80', '', 'gfx']) {
             expect(getAmdGpuInstructionSet(target), target).toBeUndefined();
         }
+    });
+});
+
+describe('AMD GPU target mapping from device-view labels', () => {
+    it('digs the target out of clang offload bundle triples', () => {
+        const expected: [string, string][] = [
+            ['hipv4-amdgcn-amd-amdhsa--gfx942', 'amd_cdna3'],
+            ['hip-amdgcn-amd-amdhsa-gfx90a', 'amd_cdna2'],
+            ['openmp-amdgcn-amd-amdhsa--gfx1100', 'amd_rdna3'],
+            ['hipv4-amdgcn-amd-amdhsa--gfx1250', 'amd_cdna5'],
+        ];
+        for (const [label, instructionSet] of expected) {
+            expect(getAmdGpuInstructionSetFromLabel(label), label).toEqual(instructionSet);
+        }
+    });
+
+    it('digs the target out of SCALE display labels', () => {
+        expect(getAmdGpuInstructionSetFromLabel('AMDGPU (gfx1100)')).toEqual('amd_rdna3');
+        expect(getAmdGpuInstructionSetFromLabel('Device LLVM IR (gfx942)')).toEqual('amd_cdna3');
+    });
+
+    it('ignores labels with no target we ship docs for', () => {
+        // The host and CUDA entries share the device dropdown and must not resolve to AMD docs.
+        for (const label of ['host-x86_64-unknown-linux-gnu', 'cuda-nvptx64-nvidia-cuda-sm_70', 'PTX', 'gfx900', '']) {
+            expect(getAmdGpuInstructionSetFromLabel(label), label).toBeUndefined();
+        }
+    });
+
+    it('skips an unsupported target to find a supported one in the same label', () => {
+        expect(getAmdGpuInstructionSetFromLabel('gfx900-then-gfx942')).toEqual('amd_cdna3');
     });
 });
 

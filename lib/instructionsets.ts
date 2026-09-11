@@ -51,6 +51,20 @@ export function getAmdGpuInstructionSet(target: string): InstructionSet | undefi
     return undefined;
 }
 
+/**
+ * Finds the gfx target embedded in a longer string and maps it. Device-view entries name
+ * themselves in whatever way suits the compiler -- an offload bundle target
+ * (`hipv4-amdgcn-amd-amdhsa--gfx942`) or a display label (`AMDGPU (gfx1100)`) -- so the
+ * target has to be dug out rather than matched from the start.
+ */
+export function getAmdGpuInstructionSetFromLabel(label: string): InstructionSet | undefined {
+    for (const match of label.toLowerCase().matchAll(/gfx[0-9a-z]+/g)) {
+        const instructionSet = getAmdGpuInstructionSet(match[0]);
+        if (instructionSet) return instructionSet;
+    }
+    return undefined;
+}
+
 export class InstructionSets {
     private defaultInstructionset: InstructionSet = 'amd64';
     private supported: Record<InstructionSet, InstructionSetMethod>;
