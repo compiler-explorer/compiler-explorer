@@ -276,17 +276,22 @@ describe('GCC dump output processing', () => {
             expect(output.passDumps!['r.expand']).not.toContain(';; Function std::lib');
         });
 
-        it('masks the temp dir in RTL insn locations', async () => {
+        it('masks the temp dir in RTL insn locations, for the source and other user files', async () => {
             mockFs();
+            // Multi-file compiles write the extra files into the same temp dir, and GCC names them
+            // in insn locations too (an inline function from a local header, say).
             vi.mocked(utils.tryReadTextFile).mockImplementation(async (filename: string) =>
                 path.basename(filename) === 'example.cpp.255r.expand'
-                    ? `;; Function main (main)\n(insn 2 4 3 2 (set (reg:SI 0) (const_int 1)) "${inputFilename}":3:5 -1)\n`
+                    ? `;; Function main (main)\n` +
+                      `(insn 2 4 3 2 (set (reg:SI 0) (const_int 1)) "${inputFilename}":3:5 -1)\n` +
+                      `(insn 3 2 4 2 (set (reg:SI 1) (const_int 2)) "${rootDir}/inl.h":2:14 -1)\n`
                     : dumpFiles[path.basename(filename)],
             );
             const result: any = {inputFilename, stderr: []};
             const output = await compiler.processGccDumpOutput(baseOpts(), result, true, 'example.s');
 
             expect(output.passDumps!['r.expand']).toContain('"/app/example.cpp":3:5');
+            expect(output.passDumps!['r.expand']).toContain('"/app/inl.h":2:14');
             expect(output.passDumps!['r.expand']).not.toContain(rootDir);
         });
 

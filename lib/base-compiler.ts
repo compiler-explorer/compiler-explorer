@@ -3956,11 +3956,12 @@ but nothing was dumped. Possible causes are:
                 const trimmed = raw
                     ? this.trimGccDumpHeaderFunctions(raw, sourceBasename, keepLineno, pass.filename_suffix[0] === 'r')
                     : '';
-                // RTL dumps repeat the absolute source path on every insn location. Mask the temp
-                // dir as we do for other compiler output, so it reads as /app/example.cpp rather
-                // than the scratch directory. A literal split/join, because this runs over the
-                // whole dump and TEMPDIR_RE backtracks on long input.
-                const content = trimmed.split(result.inputFilename).join(`/app/${sourceBasename}`);
+                // RTL dumps repeat the absolute path of the source, and of any other user file
+                // (multi-file compiles), on every insn location. Mask the temp dir as we do for
+                // other compiler output, so they read as /app/example.cpp rather than the scratch
+                // directory. A literal split/join, because this runs over the whole dump and
+                // TEMPDIR_RE backtracks on long input.
+                const content = trimmed.split(`${rootDir}/`).join('/app/');
                 // Skip passes that produced nothing for this source (e.g. an empty ipa-clones
                 // file, or a pass whose only output was header functions we trimmed away). This
                 // is the real "remove empty GCC dumps" behaviour: keep the drop-down to passes
