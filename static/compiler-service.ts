@@ -36,7 +36,7 @@ import ErrorTextStatus = JQuery.Ajax.ErrorTextStatus;
 
 import {CompilationResult, FiledataPair} from '../types/compilation/compilation.interfaces.js';
 import {CompilerInfo} from '../types/compiler.interfaces.js';
-import {CompilationStatus} from './compiler-service.interfaces.js';
+import {CompilationStatus, CompilationStatusCode} from './compiler-service.interfaces.js';
 import {IncludeDownloads, SourceAndFiles} from './download-service.js';
 import {SentryCapture} from './sentry.js';
 import {compilersService} from './services/compilers.service.js';
@@ -44,6 +44,8 @@ import {languagesService} from './services/languages.service.js';
 import {SiteSettings} from './settings.js';
 
 const ASCII_COLORS_RE = new RegExp(/\x1B\[[\d;]*m(.\[K)?/g);
+
+type HasCompilationStatus = Partial<Pick<CompilationResult, 'code' | 'stdout' | 'stderr' | 'inputFilename'>>;
 
 export class CompilerService {
     private readonly base = window.httpRoot;
@@ -339,12 +341,10 @@ export class CompilerService {
         return [{field: '$order'}, {field: '$score'}, {field: 'name'}];
     }
 
-    public static doesCompilationResultHaveWarnings(result: CompilationResult) {
-        // TODO: Types probably need to be updated here
-
+    public static doesCompilationResultHaveWarnings(result: HasCompilationStatus) {
         const stdout = result.stdout ?? [];
-
         const stderr = result.stderr ?? [];
+
         // TODO: Pass what compiler did this and check if it it's actually skippable
         // Right now we're ignoring outputs that match the input filename
         // Compiler & Executor are capable of giving us the info, but conformance view is not
@@ -358,9 +358,11 @@ export class CompilerService {
         return stdout.length > 0 || stderr.length > 0;
     }
 
-    public static calculateStatusIcon(result: CompilationResult): CompilationStatus {
+    public static calculateStatusIcon(result: HasCompilationStatus): CompilationStatus {
         let code = 1;
-        if (result.code !== 0) {
+        if (result.code === undefined) {
+            code = 5;
+        } else if (result.code !== 0) {
             code = 3;
         } else if (CompilerService.doesCompilationResultHaveWarnings(result)) {
             code = 2;
@@ -369,58 +371,79 @@ export class CompilerService {
     }
 
     private static getAriaLabel(status: CompilationStatus) {
-        // Compiling...
-        if (status.code === 4) return 'Compiling';
-        if (status.compilerOut === 0) {
+        const compilationResult = (() => {
+            if (status.code === CompilationStatusCode.UNKNOWN) return 'Unknown';
+            // Compiling...
+            if (status.code === CompilationStatusCode.COMPILING) return 'Compiling';
+            if (status.compilerOut === 0) {
+                // StdErr.length > 0
+                if (status.code === CompilationStatusCode.WITH_ERRORS) return 'Compilation succeeded with errors';
+                // StdOut.length > 0
+                if (status.code === CompilationStatusCode.WITH_WARNINGS) return 'Compilation succeeded with warnings';
+                return 'Compilation succeeded';
+            }
             // StdErr.length > 0
-            if (status.code === 3) return 'Compilation succeeded with errors';
+            if (status.code === CompilationStatusCode.WITH_ERRORS) return 'Compilation failed with errors';
             // StdOut.length > 0
-            if (status.code === 2) return 'Compilation succeeded with warnings';
-            return 'Compilation succeeded';
-        }
-        // StdErr.length > 0
-        if (status.code === 3) return 'Compilation failed with errors';
-        // StdOut.length > 0
-        if (status.code === 2) return 'Compilation failed with warnings';
-        return 'Compilation failed';
+            if (status.code === CompilationStatusCode.WITH_WARNINGS) return 'Compilation failed with warnings';
+            return 'Compilation failed';
+        })();
+        const executionResult = (() => {
+            switch (status.didExecute) {
+                case undefined:
+                    return '';
+                case true:
+                    return '; execution successful';
+                case false:
+                    return '; execution failed';
+            }
+        })();
+        return `${compilationResult}${executionResult}`;
     }
 
     private static getColor(status: CompilationStatus) {
         // Compiling...
-        if (status.code === 4) return '#888888';
+        if (status.code === CompilationStatusCode.COMPILING) return '#888888';
+        if (status.didExecute !== undefined) {
+            return status.didExecute ? '#12BB12' : '#FF1212';
+        }
         if (status.compilerOut === 0) {
             // StdErr.length > 0
-            if (status.code === 3) return '#FF6645';
+            if (status.code === CompilationStatusCode.WITH_ERRORS) return '#FF6645';
             // StdOut.length > 0
-            if (status.code === 2) return '#FF6500';
+            if (status.code === CompilationStatusCode.WITH_WARNINGS) return '#FF6500';
             return '#12BB12';
         }
         // StdErr.length > 0
-        if (status.code === 3) return '#FF1212';
+        if (status.code === CompilationStatusCode.WITH_ERRORS) return '#FF1212';
         // StdOut.length > 0
-        if (status.code === 2) return '#BB8700';
+        if (status.code === CompilationStatusCode.WITH_WARNINGS) return '#BB8700';
         return '#FF6645';
     }
 
-    public static handleCompilationStatus(
-        statusLabel: JQuery | null,
-        statusIcon: JQuery | null,
-        status: CompilationStatus,
-    ) {
-        if (statusLabel != null) {
-            statusLabel.toggleClass('error', status.code === 3).toggleClass('warning', status.code === 2);
-        }
-
+    public static handleCompilationStatus(statusIcon: JQuery | null, status: CompilationStatus) {
         if (statusIcon != null) {
             statusIcon
                 .removeClass()
                 .addClass('status-icon fas')
                 .css('color', CompilerService.getColor(status))
-                .toggle(status.code !== 0)
+                .toggle(status.code !== CompilationStatusCode.NONE)
                 .attr('aria-label', CompilerService.getAriaLabel(status))
-                .toggleClass('fa-spinner fa-spin', status.code === 4)
-                .toggleClass('fa-times-circle', status.code === 3)
-                .toggleClass('fa-check-circle', status.code === 1 || status.code === 2);
+                .toggleClass('fa-spinner fa-spin', status.code === CompilationStatusCode.COMPILING);
+            let error, unknown, okay;
+            if (status.didExecute === undefined) {
+                error = status.code === CompilationStatusCode.WITH_ERRORS;
+                unknown = status.code === CompilationStatusCode.UNKNOWN;
+                okay = status.code === CompilationStatusCode.OK || status.code === CompilationStatusCode.WITH_WARNINGS;
+            } else {
+                error = status.code !== CompilationStatusCode.COMPILING && !status.didExecute;
+                unknown = false;
+                okay = status.code !== CompilationStatusCode.COMPILING && status.didExecute;
+            }
+            statusIcon
+                .toggleClass('fa-times-circle', error)
+                .toggleClass('fa-circle-question', unknown)
+                .toggleClass('fa-check-circle', okay);
         }
     }
 

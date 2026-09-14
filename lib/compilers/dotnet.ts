@@ -579,7 +579,10 @@ do()
         const programDir = path.dirname(inputFilename);
         const programOutputPath = path.join(programDir, 'bin', this.buildConfig, compilerInfo.targetFramework);
         const programDllPath = path.join(programOutputPath, 'CompilerExplorer.dll');
-        const envVarFileContents = ['DOTNET_EnableWriteXorExecute=0'];
+        const envVarFileContents = [
+            'DOTNET_EnableWriteXorExecute=0',
+            ...Object.entries(execOptions.env).map(([key, value]) => `${key}=${value}`),
+        ];
         const isIlDasm = this.compiler.group === 'dotnetildasm';
         const isIlSpy = this.compiler.group === 'dotnetilspy';
         const isCoreRun = this.compiler.group === 'dotnetcoreclr';

@@ -1,11 +1,8 @@
 [package]
 name = "output"
 version = "0.1.0"
-edition = "2021"
+edition = "2024"
 
-# Crates cannot be downloaded here, so [dependencies] will not resolve.
-# Pick the crate you want in the Libraries pane instead and leave it out of
-# this file: it is handed to rustc directly, so `use rand::Rng;` just works.
-[[bin]]
-name = "output.s"
-path = "example.rs"
+# Crates cannot be downloaded here, so only `path` [dependencies] are possible.
+# They can instead be selected via the Libraries pane and are passed to rustc
+# directly without needing to be mentioned here.

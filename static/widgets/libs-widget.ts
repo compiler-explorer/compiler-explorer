@@ -34,7 +34,7 @@ import {compilersService} from '../services/compilers.service.js';
 import {languagesService} from '../services/languages.service.js';
 import {libsService} from '../services/libs.service.js';
 import {Alert} from './alert.js';
-import {Lib, WidgetState} from './libs-widget.interfaces.js';
+import {Lib, StateLib, WidgetState} from './libs-widget.interfaces.js';
 
 const FAV_LIBS_STORE_KEY = 'favlibs';
 
@@ -55,6 +55,19 @@ export const DEFAULT_COMPILER_KEY = '_default_';
 export function toCompilerKey(compiler: CompilerInfo | string | null | undefined): string {
     const id = typeof compiler === 'string' ? compiler : compiler?.id;
     return id === undefined || id === '' ? DEFAULT_COMPILER_KEY : id;
+}
+
+/** Saved libs come as `{name, ver}` today and as `{id, version}` from older links. */
+export function stateLibsToLibs(libs: StateLib[] | undefined): Lib[] {
+    const result: Lib[] = [];
+    for (const lib of libs ?? []) {
+        const name = lib.name ?? lib.id;
+        const ver = lib.ver ?? lib.version;
+        if (name && ver) {
+            result.push({name, ver});
+        }
+    }
+    return result;
 }
 
 export type CompilerLibs = Record<string, Library>;
@@ -253,12 +266,8 @@ export class LibsWidget {
             }
         }
 
-        for (const lib of state.libs ?? []) {
-            if (lib.name && lib.ver) {
-                this.markLibrary(lib.name, lib.ver, true);
-            } else if (lib.id && lib.version) {
-                this.markLibrary(lib.id, lib.version, true);
-            }
+        for (const lib of stateLibsToLibs(state.libs)) {
+            this.markLibrary(lib.name, lib.ver, true);
         }
     }
 

@@ -25,7 +25,7 @@
 import {describe, expect, it} from 'vitest';
 
 import type {CompilerInfo} from '../../../types/compiler.interfaces.js';
-import {DEFAULT_COMPILER_KEY, toCompilerKey} from '../../widgets/libs-widget.js';
+import {DEFAULT_COMPILER_KEY, stateLibsToLibs, toCompilerKey} from '../../widgets/libs-widget.js';
 
 const fakeCompiler = {id: 'g142', name: 'x86-64 gcc 14.2'} as unknown as CompilerInfo;
 
@@ -52,5 +52,24 @@ describe('LibsWidget compiler key', () => {
         for (const shape of [fakeCompiler, 'g142|clang1500', '', null, undefined]) {
             expect(typeof toCompilerKey(shape)).toBe('string');
         }
+    });
+});
+
+describe('LibsWidget saved state libraries', () => {
+    it('reads the {name, ver} shape links are written with today', () => {
+        expect(stateLibsToLibs([{name: 'abseil', ver: '202601071'}])).toEqual([{name: 'abseil', ver: '202601071'}]);
+    });
+
+    it('reads the {id, version} shape older links carry', () => {
+        expect(stateLibsToLibs([{id: 'abseil', version: '202601071'}])).toEqual([{name: 'abseil', ver: '202601071'}]);
+    });
+
+    it('has nothing to say about missing or empty state', () => {
+        expect(stateLibsToLibs(undefined)).toEqual([]);
+        expect(stateLibsToLibs([])).toEqual([]);
+    });
+
+    it('drops half-specified entries rather than asking for version undefined', () => {
+        expect(stateLibsToLibs([{name: 'abseil'}, {ver: '202601071'}, {}])).toEqual([]);
     });
 });

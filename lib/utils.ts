@@ -32,16 +32,17 @@ import {ComponentConfig, ItemConfigType} from 'golden-layout';
 import semverParser from 'semver';
 import _ from 'underscore';
 
+import {maskRootdirKeepingAppPrefix} from '../shared/common-utils.js';
 import type {ParsedAsmResultLine} from '../types/asmresult/asmresult.interfaces.js';
 import type {CacheableValue} from '../types/cache.interfaces.js';
 import {BasicExecutionResult, UnprocessedExecResult} from '../types/execution/execution.interfaces.js';
 import {LanguageKey} from '../types/languages.interfaces.js';
 import type {Fix, ResultLine} from '../types/resultline/resultline.interfaces.js';
 
+export {ce_temp_prefix, maskRootdirKeepingAppPrefix} from '../shared/common-utils.js';
+
 const tabsRe = /\t/g;
 const lineRe = /\r?\n/;
-
-export const ce_temp_prefix = 'compiler-explorer-compiler';
 
 export function splitLines(text: string): string[] {
     if (!text) return [];
@@ -91,37 +92,6 @@ export function expandTabs(line: string): string {
         extraChars += spacesNeeded - 1;
         return '        '.substring(spacesNeeded);
     });
-}
-
-// Matches everything up to and through a CE temp dir, `.../<ce_temp_prefix><suffix>/`.
-// We key off the ce_temp_prefix marker, NOT the live os.tmpdir(): the temp root varies
-// by host/config (macOS /var vs /private/var, an execution.tempDirRoot elsewhere) and
-// the path being masked may have been recorded under a different tmpdir than this one.
-// The marker is the only invariant — it's the same constant we create the dir with.
-// `(?:[A-Za-z]:)?` + `/` handles Windows too; `[^/\s]+` confines the match to one
-// non-empty path token so an embedded `-I/tmp/<prefix>XXX/inc` still masks to
-// `-I/app/inc` (real temp paths never have empty `//` segments).
-// A user path that itself contains a `<ce_temp_prefix>...` segment would be masked too,
-// but that only affects displayed output (never what's compiled/executed) and needs a
-// deliberately odd dir name, so it's not worth a costlier scheme to prevent.
-const TEMPDIR_RE = new RegExp(`(?:[A-Za-z]:)?/(?:[^/\\s]+/)*${ce_temp_prefix}[\\w.-]*/`);
-
-/**
- * Rewrites a CE temp dir down to `/app/`, and stops there. That is the path the compiler
- * is really given, and what `__FILE__` and friends expand to, so anything that shows the
- * user a command line has to keep the prefix. Use maskRootdir() for output lines instead.
- */
-export function maskRootdirKeepingAppPrefix(filepath: string): string {
-    // TODO: this falsy guard is load-bearing against runtime `undefined` that the types
-    // don't catch — not declared `string | undefined` callers (TS would reject those),
-    // but type holes: a JSON.parse(...) result typed `any` (base-compiler cleanup) and a
-    // Record<number,string> index that's really `undefined` when the key is missing
-    // (noUncheckedIndexedAccess is off). Tighten those two sites, then this can go.
-    if (!filepath) return filepath;
-    // TEMPDIR_RE has a repeated path-segment group that backtracks on long input, and this
-    // runs on every output line. Gate it behind a cheap linear substring check: the regex
-    // cannot match without the marker anyway.
-    return filepath.includes(ce_temp_prefix) ? filepath.replace(TEMPDIR_RE, '/app/') : filepath;
 }
 
 /**

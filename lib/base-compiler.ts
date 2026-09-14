@@ -773,42 +773,44 @@ export class BaseCompiler {
 
         // Build dump options to append to the end of the -fdump command-line flag.
         // GCC accepts these options as a list of '-' separated names that may
-        // appear in any order.
+        // appear in any order. A flag is only added when explicitly enabled: API callers can
+        // omit dumpFlags, or any of its members.
+        const dumpFlags = gccDumpOptions.dumpFlags ?? {};
         let flags = '';
-        if (gccDumpOptions.dumpFlags.gimpleFe !== false) {
+        if (dumpFlags.gimpleFe === true) {
             flags += '-gimple';
         }
-        if (gccDumpOptions.dumpFlags.address !== false) {
+        if (dumpFlags.address === true) {
             flags += '-address';
         }
-        if (gccDumpOptions.dumpFlags.alias !== false) {
+        if (dumpFlags.alias === true) {
             flags += '-alias';
         }
-        if (gccDumpOptions.dumpFlags.slim !== false) {
+        if (dumpFlags.slim === true) {
             flags += '-slim';
         }
-        if (gccDumpOptions.dumpFlags.raw !== false) {
+        if (dumpFlags.raw === true) {
             flags += '-raw';
         }
-        if (gccDumpOptions.dumpFlags.details !== false) {
+        if (dumpFlags.details === true) {
             flags += '-details';
         }
-        if (gccDumpOptions.dumpFlags.stats !== false) {
+        if (dumpFlags.stats === true) {
             flags += '-stats';
         }
-        if (gccDumpOptions.dumpFlags.blocks !== false) {
+        if (dumpFlags.blocks === true) {
             flags += '-blocks';
         }
-        if (gccDumpOptions.dumpFlags.vops !== false) {
+        if (dumpFlags.vops === true) {
             flags += '-vops';
         }
-        if (gccDumpOptions.dumpFlags.lineno !== false) {
+        if (dumpFlags.lineno === true) {
             flags += '-lineno';
         }
-        if (gccDumpOptions.dumpFlags.uid !== false) {
+        if (dumpFlags.uid === true) {
             flags += '-uid';
         }
-        if (gccDumpOptions.dumpFlags.all !== false) {
+        if (dumpFlags.all === true) {
             flags += '-all';
         }
 
@@ -1486,15 +1488,21 @@ export class BaseCompiler {
         const output = await this.runCompiler(this.compiler.exe, newOptions, this.filename(inputFilename), execOptions);
         if (output.code !== 0) {
             return {
+                code: output.code,
+                compilationOptions: newOptions,
                 asm: [{text: 'Failed to run compiler to get IR code'}],
             };
         }
         const ir = await this.processIrOutput(output, irOptions, filters);
 
         const result: {
+            code: number;
+            compilationOptions?: string[];
             asm: ParsedAsmResultLine[];
             cfg?: Record<string, cfg.CFG>;
         } = {
+            code: output.code,
+            compilationOptions: newOptions,
             asm: ir.asm,
         };
 
@@ -1576,7 +1584,7 @@ export class BaseCompiler {
         optPipelineOptions: OptPipelineBackendOptions,
     ): Promise<OptPipelineOutput | undefined> {
         // These options make Clang produce the pass dumps
-        const newOptions = options
+        const compilationOptions = options
             .filter(option => option !== '-fcolor-diagnostics')
             .concat(unwrap(this.compiler.optPipeline?.arg))
             .concat(optPipelineOptions.fullModule ? unwrap(this.compiler.optPipeline?.moduleScopeArg) : [])
@@ -1589,14 +1597,22 @@ export class BaseCompiler {
         execOptions.maxOutput = 1024 * 1024 * 1024;
 
         const compileStart = performance.now();
-        const output = await this.runCompiler(this.compiler.exe, newOptions, this.filename(inputFilename), execOptions);
+        const output = await this.runCompiler(
+            this.compiler.exe,
+            compilationOptions,
+            this.filename(inputFilename),
+            execOptions,
+        );
         const compileEnd = performance.now();
+
+        const result = {code: output.code, compilationOptions};
 
         if (output.truncated) {
             return {
                 error: 'Exceeded max output limit',
                 results: {},
                 compileTime: output.execTime || compileEnd - compileStart,
+                ...result,
             };
         }
 
@@ -1605,6 +1621,7 @@ export class BaseCompiler {
                 error: 'Invocation timed out',
                 results: {},
                 compileTime: output.execTime || compileEnd - compileStart,
+                ...result,
             };
         }
 
@@ -1613,6 +1630,7 @@ export class BaseCompiler {
                 error: `Invocation failed: ${utils.resultLinesToText(output.stderr)}${utils.resultLinesToText(output.stdout)}}`,
                 results: {},
                 compileTime: output.execTime || compileEnd - compileStart,
+                ...result,
             };
         }
 
@@ -1639,18 +1657,21 @@ export class BaseCompiler {
                     results: await demangler.demangleLLVMPasses(optPipeline),
                     compileTime: compileEnd - compileStart,
                     parseTime: performance.now() - parseStart,
+                    ...result,
                 };
             }
             return {
                 results: optPipeline,
                 compileTime: compileEnd - compileStart,
                 parseTime: performance.now() - parseStart,
+                ...result,
             };
         } catch (e: any) {
             return {
                 error: e.toString(),
                 results: {},
                 compileTime: compileEnd - compileStart,
+                ...result,
             };
         }
     }
@@ -2002,8 +2023,8 @@ export class BaseCompiler {
      * for origin detection, those prefixes are stripped so the dump reads as it would without
      * -lineno. RTL dumps carry extra brackets that are NOT lineno noise -- `[orig:N]`, hex operands
      * like `[0x..]`, branch probabilities like `[5.50%]` -- so the RTL strip only removes brackets
-     * that contain a path ('/'), leaving those intact. The `"file":line:col` location each insn
-     * prints keeps its `:line:col` but loses the repeated (temp-dir) filename, which is noise.
+     * that contain a path ('/'), leaving those intact. The `"file":line:col` that each insn prints
+     * is NOT a -lineno annotation (GCC emits it either way), so it is left alone.
      */
     trimGccDumpHeaderFunctions(
         content: string,
@@ -2035,10 +2056,6 @@ export class BaseCompiler {
                 // restrict the strip to brackets holding a path separator -- that keeps [orig:N] et al. while
                 // reproducing the readable no-lineno RTL dump.
                 trimmed = trimmed.replace(/\[[^[\]\n]*[/\\\\][^[\]\n]*:\d+(?::\d+)?(?: discrim \d+)?\] ?/g, '');
-                // Each insn also prints its own location as "file":line:col; the filename is the
-                // (long, temp-dir) source path repeated on every line and adds no information, so
-                // drop just the quoted path and keep the :line:col that pinskia asked to retain.
-                trimmed = trimmed.replace(/"[^"\n]*"(?=:\d)/g, '');
             } else {
                 trimmed = trimmed.replace(/\[[^[\]\n]*?:\d+(?::\d+)?(?: discrim \d+)?\] ?/g, '');
             }
@@ -2508,6 +2525,8 @@ export class BaseCompiler {
         }
 
         const result = await this.doExecution(key, executeParameters, bypassCache);
+
+        this.cleanupResult(result);
 
         if (!bypassExecutionCache(bypassCache)) {
             await this.env.cachePut(execKey, result, undefined);
@@ -3718,6 +3737,9 @@ export class BaseCompiler {
         if (result.inputFilename) {
             result.inputFilename = utils.maskRootdir(result.inputFilename);
         }
+
+        if (result.buildResult) this.cleanupResult(result.buildResult);
+        if (result.result) this.cleanupResult(result.result);
     }
 
     postCompilationPreCacheHook(result: CompilationResult): CompilationResult {
@@ -3933,9 +3955,17 @@ but nothing was dumped. Possible causes are:
 
             for (const {filename, pass} of candidates) {
                 const raw = await utils.tryReadTextFile(path.join(rootDir, filename));
-                const content = raw
+                const trimmed = raw
                     ? this.trimGccDumpHeaderFunctions(raw, sourceBasename, keepLineno, pass.filename_suffix[0] === 'r')
                     : '';
+                // RTL dumps repeat the absolute path of the source, and of any other user file
+                // (multi-file compiles), on every insn location. Mask the temp dir as we do for
+                // other compiler output, so they read as /app/example.cpp rather than the scratch
+                // directory. Literal split/join, because this runs over the whole dump and
+                // TEMPDIR_RE backtracks on long input. On Windows the dir has backslashes but GCC
+                // may print either separator, so mask both spellings.
+                let content = trimmed.split(rootDir + path.sep).join('/app/');
+                if (path.sep !== '/') content = content.split(rootDir.replaceAll(path.sep, '/') + '/').join('/app/');
                 // Skip passes that produced nothing for this source (e.g. an empty ipa-clones
                 // file, or a pass whose only output was header functions we trimmed away). This
                 // is the real "remove empty GCC dumps" behaviour: keep the drop-down to passes
