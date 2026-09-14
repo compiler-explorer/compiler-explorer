@@ -300,7 +300,9 @@ describe('GCC dump output processing', () => {
                 path.basename(filename) === 'example.cpp.255r.expand'
                     ? `;; Function main (main)\n` +
                       `(insn 2 4 3 2 (set (reg:SI 0) (const_int 1)) "${inputFilename}":3:5 -1)\n` +
-                      `(insn 3 2 4 2 (set (reg:SI 1) (const_int 2)) "${rootDir}/inl.h":2:14 -1)\n`
+                      `(insn 3 2 4 2 (set (reg:SI 1) (const_int 2)) "${path.join(rootDir, 'inl.h')}":2:14 -1)\n` +
+                      // GCC on Windows may print forward slashes even though the dir uses backslashes.
+                      `(insn 4 3 5 2 (set (reg:SI 2) (const_int 3)) "${rootDir.replaceAll(path.sep, '/')}/fwd.h":7:1 -1)\n`
                     : dumpFiles[path.basename(filename)],
             );
             const result: any = {inputFilename, stderr: []};
@@ -308,6 +310,7 @@ describe('GCC dump output processing', () => {
 
             expect(output.passDumps!['r.expand']).toContain('"/app/example.cpp":3:5');
             expect(output.passDumps!['r.expand']).toContain('"/app/inl.h":2:14');
+            expect(output.passDumps!['r.expand']).toContain('"/app/fwd.h":7:1');
             expect(output.passDumps!['r.expand']).not.toContain(rootDir);
         });
 
