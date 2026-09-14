@@ -151,7 +151,7 @@ describe('GCC dump output processing', () => {
             expect(trimmed).toContain('[orig:117]'); // RTL brackets left intact
         });
 
-        it('keeps non-lineno RTL brackets ([orig:N], hex, %) but drops the insn filename when lineno is disabled', () => {
+        it('keeps non-lineno RTL brackets ([orig:N], hex, %) and the insn location when lineno is disabled', () => {
             const rtlBlock =
                 ';; Function main (main)\n' +
                 '(note 1 0 3 [orig:117] NOTE_INSN_DELETED)\n' +
@@ -161,8 +161,9 @@ describe('GCC dump output processing', () => {
             expect(trimmed).toContain('[orig:117]'); // not a path -> kept
             expect(trimmed).toContain('[0xffffffffffffffe0]'); // hex operand -> kept
             expect(trimmed).toContain('[94.50%]'); // branch probability -> kept
-            expect(trimmed).toContain(':12:15 discrim 1'); // line:col of the insn location -> kept
-            expect(trimmed).not.toContain('"/app/example.cpp"'); // redundant source filename -> dropped
+            // GCC prints the insn's own "file":line:col with or without -lineno, so it is not lineno
+            // noise. Stripping just the filename left a dangling ':12:15'.
+            expect(trimmed).toContain('"/app/example.cpp":12:15 discrim 1');
         });
 
         it('strips forced -lineno [path:line] prefixes from RTL dumps when lineno is disabled (#8826)', () => {
@@ -273,6 +274,25 @@ describe('GCC dump output processing', () => {
 
             expect(output.passDumps!['r.expand']).toContain(';; Function main');
             expect(output.passDumps!['r.expand']).not.toContain(';; Function std::lib');
+        });
+
+        it('masks the temp dir in RTL insn locations, for the source and other user files', async () => {
+            mockFs();
+            // Multi-file compiles write the extra files into the same temp dir, and GCC names them
+            // in insn locations too (an inline function from a local header, say).
+            vi.mocked(utils.tryReadTextFile).mockImplementation(async (filename: string) =>
+                path.basename(filename) === 'example.cpp.255r.expand'
+                    ? `;; Function main (main)\n` +
+                      `(insn 2 4 3 2 (set (reg:SI 0) (const_int 1)) "${inputFilename}":3:5 -1)\n` +
+                      `(insn 3 2 4 2 (set (reg:SI 1) (const_int 2)) "${rootDir}/inl.h":2:14 -1)\n`
+                    : dumpFiles[path.basename(filename)],
+            );
+            const result: any = {inputFilename, stderr: []};
+            const output = await compiler.processGccDumpOutput(baseOpts(), result, true, 'example.s');
+
+            expect(output.passDumps!['r.expand']).toContain('"/app/example.cpp":3:5');
+            expect(output.passDumps!['r.expand']).toContain('"/app/inl.h":2:14');
+            expect(output.passDumps!['r.expand']).not.toContain(rootDir);
         });
 
         it('strips lineno annotations from tree dumps when Line Numbers is off', async () => {

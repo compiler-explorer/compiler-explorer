@@ -2021,8 +2021,8 @@ export class BaseCompiler {
      * for origin detection, those prefixes are stripped so the dump reads as it would without
      * -lineno. RTL dumps carry extra brackets that are NOT lineno noise -- `[orig:N]`, hex operands
      * like `[0x..]`, branch probabilities like `[5.50%]` -- so the RTL strip only removes brackets
-     * that contain a path ('/'), leaving those intact. The `"file":line:col` location each insn
-     * prints keeps its `:line:col` but loses the repeated (temp-dir) filename, which is noise.
+     * that contain a path ('/'), leaving those intact. The `"file":line:col` that each insn prints
+     * is NOT a -lineno annotation (GCC emits it either way), so it is left alone.
      */
     trimGccDumpHeaderFunctions(
         content: string,
@@ -2054,10 +2054,6 @@ export class BaseCompiler {
                 // restrict the strip to brackets holding a path separator -- that keeps [orig:N] et al. while
                 // reproducing the readable no-lineno RTL dump.
                 trimmed = trimmed.replace(/\[[^[\]\n]*[/\\\\][^[\]\n]*:\d+(?::\d+)?(?: discrim \d+)?\] ?/g, '');
-                // Each insn also prints its own location as "file":line:col; the filename is the
-                // (long, temp-dir) source path repeated on every line and adds no information, so
-                // drop just the quoted path and keep the :line:col that pinskia asked to retain.
-                trimmed = trimmed.replace(/"[^"\n]*"(?=:\d)/g, '');
             } else {
                 trimmed = trimmed.replace(/\[[^[\]\n]*?:\d+(?::\d+)?(?: discrim \d+)?\] ?/g, '');
             }
@@ -3957,9 +3953,15 @@ but nothing was dumped. Possible causes are:
 
             for (const {filename, pass} of candidates) {
                 const raw = await utils.tryReadTextFile(path.join(rootDir, filename));
-                const content = raw
+                const trimmed = raw
                     ? this.trimGccDumpHeaderFunctions(raw, sourceBasename, keepLineno, pass.filename_suffix[0] === 'r')
                     : '';
+                // RTL dumps repeat the absolute path of the source, and of any other user file
+                // (multi-file compiles), on every insn location. Mask the temp dir as we do for
+                // other compiler output, so they read as /app/example.cpp rather than the scratch
+                // directory. A literal split/join, because this runs over the whole dump and
+                // TEMPDIR_RE backtracks on long input.
+                const content = trimmed.split(`${rootDir}/`).join('/app/');
                 // Skip passes that produced nothing for this source (e.g. an empty ipa-clones
                 // file, or a pass whose only output was header functions we trimmed away). This
                 // is the real "remove empty GCC dumps" behaviour: keep the drop-down to passes
