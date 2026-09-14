@@ -34,6 +34,7 @@ import {CompilationResult, GccDumpOutput} from '../../types/compilation/compilat
 import {CompilerInfo} from '../../types/compiler.interfaces.js';
 import {Hub} from '../hub.js';
 import * as monacoConfig from '../monaco-config.js';
+import {replaceOptions} from '../tom-select-utils.js';
 import {Toggles} from '../widgets/toggles.js';
 import {GccDumpFiltersState, GccDumpViewSelectedPass, GccDumpViewState} from './gccdump-view.interfaces.js';
 import {MonacoPaneState, PaneState} from './pane.interfaces.js';
@@ -372,20 +373,15 @@ but nothing was dumped. Possible causes are:
         // Pass `() => false` so EVERY option is dropped: TomSelect's default clearOptions filter
         // keeps options belonging to the currently-selected item, which would otherwise leave a
         // stale pass (e.g. a Tree pass after Tree dumps are unchecked) in the drop-down.
-        selectize.clearOptions(() => false);
-
-        for (const p of passes) {
-            selectize.addOption(p);
-        }
+        replaceOptions(selectize, passes, () => false);
 
         if (gccDumpOutput?.selectedPass?.name) {
             selectize.addItem(gccDumpOutput.selectedPass.name, true);
             this.eventHub.emit('gccDumpPassSelected', this.compilerInfo.compilerId, gccDumpOutput.selectedPass, false);
         } else selectize.clear(true);
 
-        // Re-render the drop-down from the new option set. clearOptions()/addOption() only mark
-        // the rendered content stale; neither they nor a later open() actually repaint it, so
-        // without this the drop-down can keep showing the previous pass list.
+        // addItem() above goes through refreshItems(), which re-marks the drop-down stale, so
+        // the repaint replaceOptions() already did is no longer enough on that path.
         selectize.refreshOptions(false);
 
         this.inhibitPassSelect = false;
