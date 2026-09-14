@@ -3961,9 +3961,11 @@ but nothing was dumped. Possible causes are:
                 // RTL dumps repeat the absolute path of the source, and of any other user file
                 // (multi-file compiles), on every insn location. Mask the temp dir as we do for
                 // other compiler output, so they read as /app/example.cpp rather than the scratch
-                // directory. A literal split/join, because this runs over the whole dump and
-                // TEMPDIR_RE backtracks on long input.
-                const content = trimmed.split(`${rootDir}/`).join('/app/');
+                // directory. Literal split/join, because this runs over the whole dump and
+                // TEMPDIR_RE backtracks on long input. On Windows the dir has backslashes but GCC
+                // may print either separator, so mask both spellings.
+                let content = trimmed.split(rootDir + path.sep).join('/app/');
+                if (path.sep !== '/') content = content.split(rootDir.replaceAll(path.sep, '/') + '/').join('/app/');
                 // Skip passes that produced nothing for this source (e.g. an empty ipa-clones
                 // file, or a pass whose only output was header functions we trimmed away). This
                 // is the real "remove empty GCC dumps" behaviour: keep the drop-down to passes
