@@ -192,6 +192,16 @@ Common configuration keys include:
 | objdumperArgs  | String  | Arguments for the object dumper (pipe-separated)    |
 | instructionSet | String  | Default instruction set for the compiler            |
 
+### Running behind a reverse proxy
+
+`trustProxy` in `compiler-explorer.*.properties` is passed straight to Express's
+[`trust proxy`](https://expressjs.com/en/guide/behind-proxies.html) setting and controls how the client IP (`req.ip`,
+used for request logging and short link audit records) is derived from `X-Forwarded-For`. Set it to the number of
+proxies you run in front of Compiler Explorer (for example `trustProxy=1` for a single nginx), or to a comma-separated
+list of proxy subnets. The default, `loopback`, only trusts a proxy on the same host. Do not set it to `true`: that
+trusts every hop, so any client can choose the IP that gets logged by sending its own `X-Forwarded-For` header. The
+public site sets `trustProxy=2` for its CloudFront then ALB chain.
+
 ## Variable Substitution
 
 Some properties support variable substitution to make configuration more flexible. The most common variables are:

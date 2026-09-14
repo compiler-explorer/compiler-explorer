@@ -52,7 +52,9 @@ export function setupBaseServerConfig(
     router: Router,
 ): void {
     webServer
-        .set('trust proxy', true)
+        // Decides how many X-Forwarded-For hops are believed when computing req.ip; see the
+        // trustProxy property. Trusting every hop lets clients pick the IP we log.
+        .set('trust proxy', options.trustProxy)
         .set('view engine', 'pug')
         .use(
             responseTime((req, res, time) => {

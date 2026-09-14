@@ -58,9 +58,16 @@ const MIN_STORED_ID_LENGTH = 9;
 assert(MIN_STORED_ID_LENGTH >= PREFIX_LENGTH, 'MIN_STORED_ID_LENGTH must be at least PREFIX_LENGTH');
 
 export type TestReq = {
-    get: () => string;
     ip?: string;
+    ips?: string[];
 };
+
+// The client address followed by the proxies Express trusted (X-Forwarded-For order), with only
+// the client anonymised. Only trusted hops are used, so a client cannot choose what is recorded.
+export function creationIpFor(req: TestReq): string {
+    const chain = req.ips && req.ips.length > 0 ? req.ips : [req.ip ?? ''];
+    return [anonymizeIp(chain[0]), ...chain.slice(1)].join(', ');
+}
 
 export class StorageS3 extends StorageBase {
     static get key() {
@@ -89,12 +96,7 @@ export class StorageS3 extends StorageBase {
     async storeItem(item: StoredObject, req: express.Request | TestReq) {
         logger.info(`Storing item ${item.prefix}`);
         const now = new Date();
-        let ip = req.get('X-Forwarded-For') || anonymizeIp(req.ip!);
-        const commaIndex = ip.indexOf(',');
-        if (commaIndex > 0) {
-            // Anonymize only client IP
-            ip = `${anonymizeIp(ip.substring(0, commaIndex))}${ip.substring(commaIndex, ip.length)}`;
-        }
+        const ip = creationIpFor(req);
         now.setSeconds(0, 0);
         try {
             await Promise.all([

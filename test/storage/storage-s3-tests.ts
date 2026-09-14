@@ -32,6 +32,7 @@ import {beforeEach, describe, expect, it} from 'vitest';
 
 import * as properties from '../../lib/properties.js';
 import {StorageS3} from '../../lib/storage/index.js';
+import {creationIpFor} from '../../lib/storage/s3.js';
 
 describe('Find unique subhash tests', () => {
     const mockDynamoDb = mockClient(DynamoDB);
@@ -131,7 +132,7 @@ describe('Stores to s3', () => {
             fullHash: 'ABCDEFGHIJKLMNOP',
             config: 'yo',
         };
-        await storage.storeItem(object, {get: () => 'localhost'});
+        await storage.storeItem(object, {ip: 'localhost', ips: []});
         expect(
             mockS3.commandCalls(PutObjectCommand, {
                 Bucket: 'bucket',
@@ -151,6 +152,38 @@ describe('Stores to s3', () => {
                 },
             }),
         ).toHaveLength(1);
+    });
+    it('records the anonymised client followed by the trusted proxy chain', async () => {
+        const storage = new StorageS3(httpRootDir, compilerProps, awsProps);
+        const object = {
+            prefix: 'ABCDEF',
+            uniqueSubHash: 'ABCDEFG',
+            fullHash: 'ABCDEFGHIJKLMNOP',
+            config: 'yo',
+        };
+        await storage.storeItem(object, {ip: '203.0.113.9', ips: ['203.0.113.9', '198.51.100.7']});
+        const calls = mockDynamoDb.commandCalls(PutItemCommand, {TableName: 'table'});
+        expect(calls).toHaveLength(1);
+        expect(calls[0].args[0].input.Item?.creation_ip).toEqual({S: '203.0.113.0, 198.51.100.7'});
+    });
+});
+
+describe('creationIpFor', () => {
+    it('anonymises the client and keeps trusted proxies as-is', () => {
+        expect(creationIpFor({ip: '203.0.113.9', ips: ['203.0.113.9', '198.51.100.7']})).toEqual(
+            '203.0.113.0, 198.51.100.7',
+        );
+    });
+    it('uses req.ip when no proxies were trusted', () => {
+        expect(creationIpFor({ip: '203.0.113.9', ips: []})).toEqual('203.0.113.0');
+        expect(creationIpFor({ip: '203.0.113.9'})).toEqual('203.0.113.0');
+    });
+    it('does not consult anything a client could have supplied', () => {
+        // Whatever the raw X-Forwarded-For said, only what Express resolved counts.
+        expect(creationIpFor({ip: '203.0.113.9', ips: ['203.0.113.9']})).toEqual('203.0.113.0');
+    });
+    it('copes with a request that has no address at all', () => {
+        expect(creationIpFor({})).toEqual('');
     });
 });
 
