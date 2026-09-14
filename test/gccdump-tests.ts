@@ -100,6 +100,22 @@ describe('GCC dump output processing', () => {
         });
     });
 
+    describe('getGccDumpOptions', () => {
+        it('does not throw when dumpFlags is omitted', () => {
+            expect(
+                compiler.getGccDumpOptions({opened: true, treeDump: true, rtlDump: false, ipaDump: false}, 'x.s'),
+            ).toEqual(['-fdump-tree-all-lineno']);
+        });
+
+        it('only adds the flags that are explicitly enabled', () => {
+            const opts = compiler.getGccDumpOptions(
+                {opened: true, treeDump: true, rtlDump: false, ipaDump: false, dumpFlags: {details: true, raw: false}},
+                'x.s',
+            );
+            expect(opts).toEqual(['-fdump-tree-all-details-lineno']);
+        });
+    });
+
     describe('trimGccDumpHeaderFunctions', () => {
         const userBlock = [
             ';; Function main (main, funcdef_no=1, decl_uid=1, cgraph_uid=1, symbol_order=1)',
