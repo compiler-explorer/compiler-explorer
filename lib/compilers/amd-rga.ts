@@ -32,10 +32,22 @@ import type {
     ExecutionOptionsWithEnv,
 } from '../../types/compilation/compilation.interfaces.js';
 import type {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces.js';
+import type {InstructionSet} from '../../types/instructionsets.js';
 import {BaseCompiler} from '../base-compiler.js';
 import * as exec from '../exec.js';
+import {getAmdGpuInstructionSet} from '../instructionsets.js';
 import {logger} from '../logger.js';
 import * as utils from '../utils.js';
+
+function getInstructionSetFromOptions(options: string[]): InstructionSet | undefined {
+    for (const flag of ['--asic', '-c']) {
+        const idx = options.indexOf(flag);
+        if (idx !== -1 && idx + 1 < options.length) {
+            return getAmdGpuInstructionSet(options[idx + 1]);
+        }
+    }
+    return undefined;
+}
 
 // AMD RGA := AMD's Radeon GPU Analyzer (https://gpuopen.com/rga/)
 export class AMDRGACompiler extends BaseCompiler {
@@ -66,8 +78,13 @@ export class AMDRGACompiler extends BaseCompiler {
             execOptions.customCwd = path.dirname(inputFilename);
         }
 
-        const result = await this.execRGA(compiler, options, execOptions);
-        return this.transformToCompilationResult(result, inputFilename);
+        const compilationResult = await this.execRGA(compiler, options, execOptions);
+        const result = this.transformToCompilationResult(compilationResult, inputFilename);
+
+        const iset = getInstructionSetFromOptions(options);
+        if (iset) result.instructionSet = iset;
+
+        return result;
     }
 
     async execRGA(filepath: string, args: string[], execOptions: ExecutionOptions): Promise<any> {
