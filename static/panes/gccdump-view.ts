@@ -192,7 +192,7 @@ export class GccDump extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Gcc
         this.dumpIpaButton = this.domRoot.find("[data-bind='ipaDump']");
         this.dumpIpaTitle = this.dumpIpaButton.prop('title');
 
-        this.optionGimpleFeButton = this.domRoot.find("[data-bind='gimpleFe']");
+        this.optionGimpleFeButton = this.domRoot.find("[data-bind='gimpleFeOption']");
         this.optionGimpleFeTitle = this.optionGimpleFeButton.prop('title');
 
         this.optionAddressButton = this.domRoot.find("[data-bind='addressOption']");
