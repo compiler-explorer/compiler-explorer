@@ -66,6 +66,7 @@ import {LLVMIrBackendOptions} from '../types/compilation/ir.interfaces.js';
 import type {
     OptPipelineBackendOptions,
     OptPipelineOutput,
+    OptPipelineResults,
 } from '../types/compilation/opt-pipeline-output.interfaces.js';
 import type {YulBackendOptions} from '../types/compilation/yul.interfaces.js';
 import type {CompilerInfo, PreliminaryCompilerInfo} from '../types/compiler.interfaces.js';
@@ -125,6 +126,7 @@ import {Packager} from './packager.js';
 import type {IAsmParser} from './parsers/asm-parser.interfaces.js';
 import {AsmParser} from './parsers/asm-parser.js';
 import {LlvmPassDumpParser} from './parsers/llvm-pass-dump-parser.js';
+import {parseMirPassDump} from './parsers/rust-mir-pass-dump-parser.js';
 import type {PropertyGetter} from './properties.interfaces.js';
 import {HeaptrackWrapper} from './runtime-tools/heaptrack-wrapper.js';
 import {LibSegFaultHelper} from './runtime-tools/libsegfault-helper.js';
@@ -1689,6 +1691,65 @@ export class BaseCompiler {
         );
     }
 
+    async generateRustMirOptPipeline(inputFilename: string, options: string[]): Promise<OptPipelineOutput> {
+        const mirDumpDir = await fs.mkdtemp(path.join(path.dirname(this.filename(inputFilename)), 'mir_dump'));
+        const newOptions = [
+            ...options,
+            '-Zdump-mir=all',
+            `-Zdump-mir-dir=${mirDumpDir}`,
+            `-Cextra-filename=${path.basename(mirDumpDir)}`,
+        ];
+        const execOptions = this.getDefaultExecOptions();
+
+        const compileStart = performance.now();
+        const output = await this.runCompiler(this.compiler.exe, newOptions, this.filename(inputFilename), execOptions);
+        const compileEnd = performance.now();
+
+        const result = {code: output.code, compilationOptions: newOptions};
+
+        // ignore `output.truncated` because we are not interested in `stdout`/`stderr`
+
+        if (output.timedOut) {
+            return {
+                error: 'Invocation timed out',
+                results: {},
+                compileTime: output.execTime || compileEnd - compileStart,
+                ...result,
+            };
+        }
+
+        if (output.code) {
+            return {
+                error: `Invocation failed: ${utils.resultLinesToText(output.stderr)}${utils.resultLinesToText(output.stdout)}}`,
+                results: {},
+                compileTime: output.execTime || compileEnd - compileStart,
+                ...result,
+            };
+        }
+
+        try {
+            const parseStart = performance.now();
+            const results = await this.processRustMirOptPipeline(mirDumpDir);
+            return {
+                results,
+                compileTime: compileEnd - compileStart,
+                parseTime: performance.now() - parseStart,
+                ...result,
+            };
+        } catch (e: any) {
+            return {
+                error: e.toString(),
+                results: {},
+                compileTime: compileEnd - compileStart,
+                ...result,
+            };
+        }
+    }
+
+    async processRustMirOptPipeline(mirDumpDir: string): Promise<OptPipelineResults> {
+        return await parseMirPassDump(mirDumpDir);
+    }
+
     getRustMacroExpansionOutputFilename(inputFilename: string) {
         return utils.changeExtension(inputFilename, '.expanded.rs');
     }
@@ -2695,6 +2756,7 @@ export class BaseCompiler {
         const makeClangir = backendOptions.produceClangir && this.compiler.supportsClangirView;
         const makeClojureMacroExp = backendOptions.produceClojureMacroExp && this.compiler.supportsClojureMacroExpView;
         const makeOptPipeline = backendOptions.produceOptPipeline && this.compiler.optPipeline;
+        const makeRustMirOptPipeline = backendOptions.produceRustMirOptPipeline && this.compiler.rustMirOptPipeline;
         const makeRustMir = backendOptions.produceRustMir && this.compiler.supportsRustMirView;
         const makeRustMacroExp = backendOptions.produceRustMacroExp && this.compiler.supportsRustMacroExpView;
         const makeRustHir = backendOptions.produceRustHir && this.compiler.supportsRustHirView;
@@ -2712,6 +2774,7 @@ export class BaseCompiler {
             irResult,
             clangirResult,
             optPipelineResult,
+            rustMirOptPipelineResult,
             rustHirResult,
             rustMacroExpResult,
             clojureMacroExpResult,
@@ -2733,6 +2796,7 @@ export class BaseCompiler {
             makeOptPipeline
                 ? this.generateOptPipeline(inputFilename, options, filters, backendOptions.produceOptPipeline)
                 : undefined,
+            makeRustMirOptPipeline ? this.generateRustMirOptPipeline(inputFilename, options) : undefined,
             makeRustHir ? this.generateRustHir(inputFilename, options) : undefined,
             makeRustMacroExp ? this.generateRustMacroExpansion(inputFilename, options) : undefined,
             makeClojureMacroExp ? this.generateClojureMacroExpansion(inputFilename, options) : undefined,
@@ -2819,6 +2883,7 @@ export class BaseCompiler {
         asmResult.irOutput = irResult;
         asmResult.clangirOutput = clangirResult;
         asmResult.optPipelineOutput = optPipelineResult;
+        asmResult.rustMirOptPipelineOutput = rustMirOptPipelineResult;
 
         asmResult.rustMirOutput = rustMirResult;
         asmResult.rustMacroExpOutput = rustMacroExpResult;
