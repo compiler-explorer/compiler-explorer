@@ -773,42 +773,44 @@ export class BaseCompiler {
 
         // Build dump options to append to the end of the -fdump command-line flag.
         // GCC accepts these options as a list of '-' separated names that may
-        // appear in any order.
+        // appear in any order. A flag is only added when explicitly enabled: API callers can
+        // omit dumpFlags, or any of its members.
+        const dumpFlags = gccDumpOptions.dumpFlags ?? {};
         let flags = '';
-        if (gccDumpOptions.dumpFlags.gimpleFe !== false) {
+        if (dumpFlags.gimpleFe === true) {
             flags += '-gimple';
         }
-        if (gccDumpOptions.dumpFlags.address !== false) {
+        if (dumpFlags.address === true) {
             flags += '-address';
         }
-        if (gccDumpOptions.dumpFlags.alias !== false) {
+        if (dumpFlags.alias === true) {
             flags += '-alias';
         }
-        if (gccDumpOptions.dumpFlags.slim !== false) {
+        if (dumpFlags.slim === true) {
             flags += '-slim';
         }
-        if (gccDumpOptions.dumpFlags.raw !== false) {
+        if (dumpFlags.raw === true) {
             flags += '-raw';
         }
-        if (gccDumpOptions.dumpFlags.details !== false) {
+        if (dumpFlags.details === true) {
             flags += '-details';
         }
-        if (gccDumpOptions.dumpFlags.stats !== false) {
+        if (dumpFlags.stats === true) {
             flags += '-stats';
         }
-        if (gccDumpOptions.dumpFlags.blocks !== false) {
+        if (dumpFlags.blocks === true) {
             flags += '-blocks';
         }
-        if (gccDumpOptions.dumpFlags.vops !== false) {
+        if (dumpFlags.vops === true) {
             flags += '-vops';
         }
-        if (gccDumpOptions.dumpFlags.lineno !== false) {
+        if (dumpFlags.lineno === true) {
             flags += '-lineno';
         }
-        if (gccDumpOptions.dumpFlags.uid !== false) {
+        if (dumpFlags.uid === true) {
             flags += '-uid';
         }
-        if (gccDumpOptions.dumpFlags.all !== false) {
+        if (dumpFlags.all === true) {
             flags += '-all';
         }
 
