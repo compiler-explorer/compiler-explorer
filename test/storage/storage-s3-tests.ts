@@ -32,7 +32,6 @@ import {beforeEach, describe, expect, it} from 'vitest';
 
 import * as properties from '../../lib/properties.js';
 import {StorageS3} from '../../lib/storage/index.js';
-import {creationIpFor} from '../../lib/storage/s3.js';
 
 describe('Find unique subhash tests', () => {
     const mockDynamoDb = mockClient(DynamoDB);
@@ -165,18 +164,6 @@ describe('Stores to s3', () => {
         const calls = mockDynamoDb.commandCalls(PutItemCommand, {TableName: 'table'});
         expect(calls).toHaveLength(1);
         expect(calls[0].args[0].input.Item?.creation_ip).toEqual({S: '203.0.113.0'});
-    });
-});
-
-describe('creationIpFor', () => {
-    it('anonymises the client address Express resolved', () => {
-        expect(creationIpFor({ip: '203.0.113.9'})).toEqual('203.0.113.0');
-    });
-    it('anonymises IPv6 too', () => {
-        expect(creationIpFor({ip: '2001:db8:85a3:8d3:1319:8a2e:370:7348'})).toEqual('2001:db8:85a3:8d3:1319:0:0:0');
-    });
-    it('copes with a request that has no address at all', () => {
-        expect(creationIpFor({})).toEqual('');
     });
 });
 

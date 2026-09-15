@@ -26,10 +26,7 @@ import type {Language, LanguageKey} from '../../types/languages.interfaces.js';
 import type {PropertyGetter} from '../properties.interfaces.js';
 import type {CompilerProps} from '../properties.js';
 
-/**
- * Express `trust proxy` setting: a hop count, a boolean, or a proxy-addr
- * subnet list / keyword such as `loopback`.
- */
+/** Express `trust proxy` value: a hop count, a boolean, or a subnet list / keyword such as `loopback`. */
 export type TrustProxySetting = boolean | number | string;
 
 export interface AppConfiguration {

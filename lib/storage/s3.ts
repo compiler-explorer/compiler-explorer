@@ -61,13 +61,6 @@ export type TestReq = {
     ip?: string;
 };
 
-// Only the anonymised client address, as resolved by Express from the trusted proxy hops, is recorded.
-// Nothing taken from the raw X-Forwarded-For header, so a client can neither choose what is stored
-// nor cause a real address to be stored unanonymised.
-export function creationIpFor(req: TestReq): string {
-    return anonymizeIp(req.ip ?? '');
-}
-
 export class StorageS3 extends StorageBase {
     static get key() {
         return 's3';
@@ -95,7 +88,8 @@ export class StorageS3 extends StorageBase {
     async storeItem(item: StoredObject, req: express.Request | TestReq) {
         logger.info(`Storing item ${item.prefix}`);
         const now = new Date();
-        const ip = creationIpFor(req);
+        // req.ip is what Express resolved from the trusted proxy hops; never read the raw X-Forwarded-For header.
+        const ip = anonymizeIp(req.ip ?? '');
         now.setSeconds(0, 0);
         try {
             await Promise.all([
