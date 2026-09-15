@@ -156,6 +156,7 @@ describe('compiler-discovery module', () => {
         const mockCompilerFinder = {
             compileHandler: {
                 findCompiler: vi.fn().mockReturnValue(mockCompilerInstance),
+                possibleArgumentsLoaded: vi.fn().mockResolvedValue(undefined),
             },
         } as unknown as CompilerFinder;
 
