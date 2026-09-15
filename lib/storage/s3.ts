@@ -59,14 +59,13 @@ assert(MIN_STORED_ID_LENGTH >= PREFIX_LENGTH, 'MIN_STORED_ID_LENGTH must be at l
 
 export type TestReq = {
     ip?: string;
-    ips?: string[];
 };
 
-// The client address followed by the proxies Express trusted (X-Forwarded-For order), with only
-// the client anonymised. Only trusted hops are used, so a client cannot choose what is recorded.
+// Only the anonymised client address, as resolved by Express from the trusted proxy hops, is recorded.
+// Nothing taken from the raw X-Forwarded-For header, so a client can neither choose what is stored
+// nor cause a real address to be stored unanonymised.
 export function creationIpFor(req: TestReq): string {
-    const chain = req.ips && req.ips.length > 0 ? req.ips : [req.ip ?? ''];
-    return [anonymizeIp(chain[0]), ...chain.slice(1)].join(', ');
+    return anonymizeIp(req.ip ?? '');
 }
 
 export class StorageS3 extends StorageBase {
