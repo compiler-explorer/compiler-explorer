@@ -113,6 +113,7 @@ export async function initialiseApplication(options: ApplicationOptions): Promis
         manifestPath: distPath,
         extraBodyClass: config.extraBodyClass,
         maxUploadSize: config.maxUploadSize,
+        trustProxy: config.trustProxy,
     };
 
     const serverDependencies = {
