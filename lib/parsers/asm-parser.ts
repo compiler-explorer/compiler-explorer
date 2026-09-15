@@ -394,9 +394,9 @@ export class AsmParser extends AsmRegex implements IAsmParser {
         this.relocationRe = /^\s*(?<address>[\da-f]+):\s*(?<relocname>(R_[\dA-Z_]+))\s*(?<relocdata>.*)/;
         this.relocDataSymNameRe = /^(?<symname>[^\d-+][\w.]*)?\s*(?<addend_or_value>.*)$/;
         if (process.platform === 'win32') {
-            this.lineRe = /^([A-Z]:\/[^:]+):(?<line>\d+).*/;
+            this.lineRe = /^(?:; )?([A-Z]:\/[^:]+):(?<line>\d+).*/;
         } else {
-            this.lineRe = /^(\/[^:]+):(?<line>\d+).*/;
+            this.lineRe = /^(?:; )?(\/[^:]+):(?<line>\d+).*/;
         }
 
         // labelRe is made very greedy as it's also used with demangled objdump output (eg. it can have c++ template with <>).
