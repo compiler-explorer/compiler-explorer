@@ -59,6 +59,47 @@ describe('AsmParser comment filtering', () => {
     });
 });
 
+describe('AsmParser binary source lines', () => {
+    const parser = new AsmParser();
+    const objdump = `0000000000401020 <square(int)>:
+square(int)():
+/app/example.cpp:4
+  401020:	89 f8                	mov    eax,edi
+/opt/compiler-explorer/gcc-15.1.0/include/c++/15.1.0/bits/stl_algobase.h:238
+  401022:	0f af c7             	imul   eax,edi
+/app/example.cpp:5
+  401025:	c3                   	ret`;
+
+    it('should only mark lines from the main source file as main source', () => {
+        const result = parser.processBinaryAsm(objdump, {});
+        expect(result.asm.map(line => line.source)).toEqual([
+            null,
+            {file: null, line: 4, mainsource: true},
+            {
+                file: '/opt/compiler-explorer/gcc-15.1.0/include/c++/15.1.0/bits/stl_algobase.h',
+                line: 238,
+                mainsource: false,
+            },
+            {file: null, line: 5, mainsource: true},
+        ]);
+    });
+
+    it('should name the main source file when filenames are not masked', () => {
+        const result = parser.processBinaryAsm(objdump, {dontMaskFilenames: true});
+        expect(result.asm[1].source).toEqual({file: 'example.cpp', line: 4, mainsource: true});
+    });
+
+    it('should keep code inlined from other files when filtering library code', () => {
+        const result = parser.processBinaryAsm(objdump, {libraryCode: true});
+        expect(result.asm.map(line => line.text)).toEqual([
+            'square(int):',
+            ' mov    eax,edi',
+            ' imul   eax,edi',
+            ' ret',
+        ]);
+    });
+});
+
 describe('AsmParser directive filtering', () => {
     const parser = new AsmParser();
     // GCC wraps inline asm in #APP/#NO_APP and interleaves its own .loc markers there.

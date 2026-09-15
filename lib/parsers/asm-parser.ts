@@ -651,15 +651,12 @@ export class AsmParser extends AsmRegex implements IAsmParser {
             let match = line.match(this.lineRe);
             if (match) {
                 assert(match.groups);
-                if (dontMaskFilenames) {
-                    source = {
-                        file: utils.maskRootdir(match[1]),
-                        line: Number.parseInt(match.groups.line, 10),
-                        mainsource: true,
-                    };
-                } else {
-                    source = {file: null, line: Number.parseInt(match.groups.line, 10), mainsource: true};
-                }
+                const mainsource = this.stdInLooking.test(match[1]);
+                source = {
+                    file: dontMaskFilenames || !mainsource ? utils.maskRootdir(match[1]) : null,
+                    line: Number.parseInt(match.groups.line, 10),
+                    mainsource,
+                };
                 continue;
             }
 
@@ -682,11 +679,9 @@ export class AsmParser extends AsmRegex implements IAsmParser {
 
             if (!func || !this.isUserFunction(func)) continue;
 
-            // note: normally the source.file will be null if it's code from example.ext but with
-            //  filters.dontMaskFilenames it will be filled with the actual filename instead we can test
-            //  source.mainsource in that situation
-            const isMainsource = source && (source.file === null || source.mainsource);
-            if (filters.libraryCode && !isMainsource) {
+            // library code is code without line information: code inlined from another file of the program
+            // is still the user's, even though it doesn't belong to the main source
+            if (filters.libraryCode && !source) {
                 if (mayRemovePreviousLabel && asm.length > 0) {
                     const lastLine = asm[asm.length - 1];
                     if (lastLine.text && this.labelDef.test(lastLine.text)) {
