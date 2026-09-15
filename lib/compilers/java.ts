@@ -180,39 +180,40 @@ export class JavaCompiler extends BaseCompiler implements SimpleOutputFilenameCo
         executeParameters: ExecutableExecutionOptions,
     ): Promise<CompilationResult> {
         const executionPackageHash = this.env.getExecutableHash(key);
-        const compileResult = await this.getOrBuildExecutable(key, BypassCache.None, executionPackageHash);
-        if (compileResult.code === 0) {
-            const extraXXFlags: string[] = [];
-            if (Semver.gte(utils.asSafeVer(this.compiler.semver), '11.0.0', true)) {
-                extraXXFlags.push('-XX:-UseDynamicNumberOfCompilerThreads');
+        return await this.withBuiltExecutable(key, BypassCache.None, executionPackageHash, async compileResult => {
+            if (compileResult.code === 0) {
+                const extraXXFlags: string[] = [];
+                if (Semver.gte(utils.asSafeVer(this.compiler.semver), '11.0.0', true)) {
+                    extraXXFlags.push('-XX:-UseDynamicNumberOfCompilerThreads');
+                }
+                assert(compileResult.dirPath !== undefined);
+                executeParameters.args = [
+                    '-Xss136K', // Reduce thread stack size
+                    '-XX:CICompilerCount=2', // Reduce JIT compilation threads. 2 is minimum
+                    '-XX:-UseDynamicNumberOfGCThreads',
+                    '-XX:+UseSerialGC', // Disable parallell/concurrent garbage collector
+                    ...extraXXFlags,
+                    await this.getMainClassName(compileResult.dirPath),
+                    '-cp',
+                    compileResult.dirPath,
+                    ...executeParameters.args,
+                ];
+                const result = await this.runExecutable(this.javaRuntime, executeParameters, compileResult.dirPath);
+                return {
+                    ...result,
+                    didExecute: true,
+                    buildResult: compileResult,
+                };
             }
-            assert(compileResult.dirPath !== undefined);
-            executeParameters.args = [
-                '-Xss136K', // Reduce thread stack size
-                '-XX:CICompilerCount=2', // Reduce JIT compilation threads. 2 is minimum
-                '-XX:-UseDynamicNumberOfGCThreads',
-                '-XX:+UseSerialGC', // Disable parallell/concurrent garbage collector
-                ...extraXXFlags,
-                await this.getMainClassName(compileResult.dirPath),
-                '-cp',
-                compileResult.dirPath,
-                ...executeParameters.args,
-            ];
-            const result = await this.runExecutable(this.javaRuntime, executeParameters, compileResult.dirPath);
             return {
-                ...result,
-                didExecute: true,
+                stdout: compileResult.stdout,
+                stderr: compileResult.stderr,
+                code: compileResult.code,
+                didExecute: false,
                 buildResult: compileResult,
+                timedOut: false,
             };
-        }
-        return {
-            stdout: compileResult.stdout,
-            stderr: compileResult.stderr,
-            code: compileResult.code,
-            didExecute: false,
-            buildResult: compileResult,
-            timedOut: false,
-        };
+        });
     }
 
     async getMainClassName(dirPath: string) {

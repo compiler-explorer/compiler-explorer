@@ -57,6 +57,8 @@ export class RemoteExecutionEnvironment implements IExecutionEnvironment {
         throw new Error('Method not implemented.');
     }
 
+    async cleanup(): Promise<void> {}
+
     private async queueRemoteExecution(params: ExecutionParams) {
         await this.execQueue.push(this.triple, {
             guid: this.guid,

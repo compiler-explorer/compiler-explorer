@@ -187,6 +187,7 @@ export class ClangCompiler extends BaseCompiler {
         stackUsageOutput: StackUsageInfo[] | undefined,
         bypassCache: BypassCache,
         customBuildPath?: string,
+        delayCaching?: boolean,
     ) {
         const compilationInfo = this.getCompilationInfo(key, result, customBuildPath);
 
@@ -207,6 +208,7 @@ export class ClangCompiler extends BaseCompiler {
             stackUsageOutput,
             bypassCache,
             customBuildPath,
+            delayCaching,
         );
     }
 
