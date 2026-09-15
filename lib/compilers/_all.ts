@@ -174,6 +174,7 @@ export {SwiftCompiler} from './swift.js';
 export {TableGenCompiler} from './tablegen.js';
 export {TenDRACompiler} from './tendra.js';
 export {TIC2000} from './tic2000.js';
+export {TileLangCompiler} from './tilelang.js';
 export {TinyCCompiler} from './tinyc.js';
 export {TinyGoCompiler} from './tinygo.js';
 export {ToitCompiler} from './toit.js';
