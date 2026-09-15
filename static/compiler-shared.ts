@@ -36,6 +36,7 @@ export class CompilerShared implements ICompilerShared {
     private overridesWidget: CompilerOverridesWidget;
     private runtimeToolsButton: JQuery<HTMLElement>;
     private runtimeToolsWidget?: RuntimeToolsWidget;
+    private pendingUpdate?: AbortController;
 
     constructor(domRoot: JQuery, onChange: () => void) {
         this.domRoot = domRoot;
@@ -51,21 +52,34 @@ export class CompilerShared implements ICompilerShared {
         return this.runtimeToolsWidget?.get();
     }
 
-    public updateState(state: CompilerState | ExecutorState) {
-        this.overridesWidget.setCompiler(state.compiler, state.lang);
+    public async updateState(state: CompilerState | ExecutorState): Promise<void> {
+        this.pendingUpdate?.abort();
+        const controller = new AbortController();
+        this.pendingUpdate = controller;
+        const {signal} = controller;
 
+        // Apply the configuration before awaiting the compiler list, so that a re-entrant
+        // updateState() (e.g. a pane opening during layout init) reads it back instead of
+        // an empty widget.
         if (state.overrides) {
             this.overridesWidget.set(state.overrides);
         }
 
         if (this.runtimeToolsWidget) {
-            this.runtimeToolsWidget.setCompiler(state.compiler, state.lang);
             if (state.runtimeTools) {
                 this.runtimeToolsWidget.set(state.runtimeTools);
             } else {
                 this.runtimeToolsWidget.setDefaults();
             }
         }
+
+        await this.overridesWidget.setCompiler(state.compiler, state.lang, signal);
+
+        if (signal.aborted) {
+            return;
+        }
+
+        await this.runtimeToolsWidget?.setCompiler(state.compiler, state.lang, signal);
     }
 
     private initButtons(onChange: () => void) {
