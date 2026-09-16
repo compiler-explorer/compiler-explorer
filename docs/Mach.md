@@ -11,6 +11,20 @@ let a project use a path dependency in place. Once it does
 ([briar-systems/mach#3484](https://github.com/briar-systems/mach/issues/3484)), the adapter can drop the pull and the
 copy.
 
+## Diagnostics
+
+`lib/parsers/mach-diagnostics.ts` reads the diagnostics `mach build` prints and places markers:
+
+- **Headlines:** each diagnostic's headline goes at its primary location, with the diagnostic's severity.
+- **Related locations:** each gets the label under its snippet.
+- **Fix edits:** each goes where its replacement lands.
+- **Trailers:** `= note:` and `= help:` lines are added to the headline's message.
+- **Files:** named by their path from `src/`, which is how the project tree names them. std's files belong to no
+  editor and get no markers.
+
+The parser follows the text layout `mach.cli.diagnostic` renders. Once mach can emit machine-readable diagnostics,
+the adapter will read those instead.
+
 ## Installing a compiler
 
 The compiler does not ship with std. A project declares std as a dependency, so each compiler needs a copy of the std

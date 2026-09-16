@@ -37,6 +37,7 @@ import type {BasicExecutionResult, UnprocessedExecResult} from '../../types/exec
 import type {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces.js';
 import {BaseCompiler} from '../base-compiler.js';
 import {CompilationEnvironment} from '../compilation-env.js';
+import {parseMachDiagnostics} from '../parsers/mach-diagnostics.js';
 import * as temp from '../temp.js';
 import * as utils from '../utils.js';
 import {MachParser} from './argument-parsers.js';
@@ -347,8 +348,8 @@ export class MachCompiler extends BaseCompiler {
     override processExecutionResult(input: UnprocessedExecResult, inputFilename?: string): BasicExecutionResult {
         return {
             ...input,
-            stdout: utils.parseRustOutput(input.stdout, inputFilename),
-            stderr: utils.parseRustOutput(input.stderr, inputFilename),
+            stdout: parseMachDiagnostics(input.stdout, inputFilename),
+            stderr: parseMachDiagnostics(input.stderr, inputFilename),
         };
     }
 }

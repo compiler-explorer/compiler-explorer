@@ -289,12 +289,13 @@ describe('Mach multi-file projects', () => {
 /**
  * The shapes covered here are ones `mach.cli.diagnostic` renders at 5.2.1: the `error:` and `warning:` headlines, the
  * `--> file:line:col` frame and its gutter, a related frame underlined with `-`, the `= note:`, `= help:` and `= fix:`
- * trailer, a fix edit's own location, the elided and truncated span bodies, a `Fail` with no location, and the
- * `N errors / M warnings` summary. Each capture is compiler output with the temp directory rewritten to a stable path,
- * verbatim except that std.txt keeps only the first of its errors.
+ * trailer, a fix's edits at their own locations, the elided and truncated span bodies, a `Fail` with no location, and
+ * the `N errors / M warnings` summary. Each capture is compiler output with the temp directory rewritten to a stable
+ * path, verbatim except that std.txt keeps only the first of its errors.
  */
 describe('Mach diagnostics', () => {
-    const inputFilename = '/tmp/compiler-explorer-compiler-mach/src/example.mach';
+    const root = '/tmp/compiler-explorer-compiler-mach';
+    const inputFilename = `${root}/src/example.mach`;
     let compiler: MachCompiler;
 
     beforeAll(() => {
@@ -304,168 +305,181 @@ describe('Mach diagnostics', () => {
         );
     });
 
+    function parseText(stderr: string) {
+        return compiler.processExecutionResult({code: 1, stdout: '', stderr} as any, inputFilename).stderr;
+    }
+
     function parse(name: string) {
-        const capture = readFileSync(path.join(__dirname, 'mach', 'diagnostics', `${name}.txt`), 'utf8');
-        return compiler.processExecutionResult({code: 1, stdout: '', stderr: capture} as any, inputFilename).stderr;
+        return parseText(readFileSync(path.join(__dirname, 'mach', 'diagnostics', `${name}.txt`), 'utf8'));
     }
 
-    /** What the editor gets: the line the marker hangs off, and the marker itself. */
-    function marks(name: string) {
-        return parse(name)
+    /** Every marker as [file, line, column, severity, text]. */
+    function marks(lines: ReturnType<typeof parse>) {
+        return lines
             .filter(line => line.tag)
-            .map(line => ({on: line.text, ...line.tag}));
+            .map(({tag}) => [tag!.file, tag!.line, tag!.column, tag!.severity, tag!.text]);
     }
 
-    function texts(name: string) {
-        return parse(name).map(line => line.text);
+    function texts(lines: ReturnType<typeof parse>) {
+        return lines.map(line => line.text);
     }
 
-    it('marks an error at its span and leaves the summary as output', () => {
-        expect(marks('error')).toEqual([
-            {
-                on: 'error: unresolved identifier `bogus`',
-                file: 'example.mach',
-                line: 7,
-                column: 9,
-                text: 'error: unresolved identifier `bogus`',
-                severity: 3,
-            },
-            {on: ' --> <source>:7:9', file: 'example.mach', line: 7, column: 9, text: '', severity: 3},
+    it('marks an error at its location, and shows paths from the project root', () => {
+        expect(marks(parse('error'))).toEqual([
+            ['example.mach', 7, 9, 3, 'error: unresolved identifier `bogus`'],
+            // the location line links to its place; its empty text keeps it out of the editor
+            ['example.mach', 7, 9, 3, ''],
         ]);
-        expect(texts('error')).toContain('1 error / 0 warnings');
+        expect(texts(parse('error'))).toEqual(
+            expect.arrayContaining([' --> src/example.mach:7:9', '1 error / 0 warnings']),
+        );
     });
 
-    it('marks a warning at severity warning', () => {
-        expect(marks('warning')[0]).toMatchObject({
-            line: 8,
-            column: 3,
-            severity: 2,
-            text: 'warning: documented component matches no parameter, field, generic, or `ret` of this declaration',
-        });
-        expect(texts('warning')).toContain('0 errors / 1 warning');
-    });
-
-    it('keeps a warning and an error apart when both are reported', () => {
-        expect(marks('warning-and-error').map(m => [m.line, m.severity, m.text !== ''])).toEqual([
+    it('marks a warning at warning severity, and keeps it apart from an error', () => {
+        expect(marks(parse('warning'))[0]).toEqual([
+            'example.mach',
+            8,
+            3,
+            2,
+            'warning: documented component matches no parameter, field, generic, or `ret` of this declaration',
+        ]);
+        expect(
+            marks(parse('warning-and-error')).map(([, line, , severity, text]) => [line, severity, text !== '']),
+        ).toEqual([
             [8, 2, true],
-            // the location line's own marker is always an error: upstream leaves its text empty so it never shows
-            [8, 3, false],
+            [8, 2, false],
             [13, 3, true],
             [13, 3, false],
         ]);
-        expect(texts('warning-and-error')).toContain('1 error / 1 warning');
     });
 
-    it('renders every trailer line, and marks the fix edit at its own location', () => {
-        expect(texts('note-and-fix')).toEqual(
-            expect.arrayContaining([
-                '  = note: mach has no implicit widening; cast the value with `value::Type`',
-                '  = fix: cast the value to `i64`',
-                '    -> replace with `::i64`',
-            ]),
-        );
-        // the headline marks the expression; the fix marks the column the replacement goes at
-        expect(marks('note-and-fix').map(m => [m.line, m.column, m.text])).toEqual([
-            [8, 5, 'error: type mismatch: expected i64, found i32'],
-            [8, 5, ''],
-            [8, 10, '  = fix: cast the value to `i64`'],
-            [8, 10, ''],
+    it('folds note and help trailers into the headline, and marks each fix edit where it goes', () => {
+        expect(marks(parse('note-and-fix'))).toEqual([
+            [
+                'example.mach',
+                8,
+                5,
+                3,
+                'error: type mismatch: expected i64, found i32\nnote: mach has no implicit widening; cast the value with `value::Type`',
+            ],
+            ['example.mach', 8, 5, 3, ''],
+            ['example.mach', 8, 10, 3, ''],
+            ['example.mach', 8, 10, 1, 'fix: cast the value to `i64` (replace with `::i64`)'],
+        ]);
+        expect(marks(parse('help-and-fix'))).toEqual([
+            ['example.mach', 9, 9, 3, 'error: unresolved identifier `helpr`\nhelp: did you mean `helper`?'],
+            ['example.mach', 9, 9, 3, ''],
+            ['example.mach', 9, 9, 3, ''],
+            // the fix is labelled with its only edit, which is not repeated
+            ['example.mach', 9, 9, 1, 'fix: replace with `helper`'],
         ]);
     });
 
-    it('renders a help child and marks its fix', () => {
-        expect(texts('help-and-fix')).toContain('  = help: did you mean `helper`?');
-        expect(marks('help-and-fix').map(m => [m.line, m.column])).toEqual([
-            [9, 9],
-            [9, 9],
-            [9, 9],
-            [9, 9],
+    it('marks both edits of a two-edit fix over a multi-line span, and leaves the span body as output', () => {
+        const fixes = marks(parse('two-edit-fix')).filter(([, , , severity]) => severity === 1);
+        expect(fixes).toEqual([
+            ['example.mach', 8, 9, 1, 'fix: cast the value to `i64` (replace with `(`)'],
+            ['example.mach', 10, 10, 1, 'fix: cast the value to `i64` (replace with `)::i64`)'],
         ]);
-    });
-
-    it('marks both edits of a two-edit fix over a multi-line span', () => {
-        expect(marks('two-edit-fix').map(m => [m.line, m.column, m.text])).toEqual([
-            [8, 5, 'error: type mismatch: expected i64, found i32'],
-            [8, 5, ''],
-            [8, 9, '   = fix: cast the value to `i64`'],
-            [8, 9, ''],
-            [10, 10, '     -> replace with `(`'],
-            [10, 10, ''],
-        ]);
-        // the span body is output, never a marker
-        expect(texts('two-edit-fix')).toEqual(expect.arrayContaining([' 9 |         +', '   | ---------']));
+        expect(texts(parse('two-edit-fix'))).toEqual(expect.arrayContaining([' 9 |         +', '   | ---------']));
     });
 
     it('leaves an elided span body and a truncated long line as plain output', () => {
-        expect(texts('elided-span')).toContain('   | ...');
-        expect(marks('elided-span').map(m => m.line)).toEqual([8, 8, 8, 8, 20, 20]);
-
-        expect(texts('long-line').find(line => line.startsWith('7 |'))).toMatch(/\.\.\.$/);
-        expect(marks('long-line').map(m => [m.line, m.column])).toEqual([
+        expect(texts(parse('elided-span'))).toContain('   | ...');
+        expect(marks(parse('elided-span')).map(([, line]) => line)).toEqual([8, 8, 8, 8, 20, 20]);
+        expect(texts(parse('long-line')).find(line => line.startsWith('7 |'))).toMatch(/\.\.\.$/);
+        expect(marks(parse('long-line')).map(([, line, column]) => [line, column])).toEqual([
             [7, 9],
             [7, 9],
         ]);
     });
 
-    it('names a second file by the path the project knows it by', () => {
-        // the file is written at src/util/fmt.mach, and src is the root CE's extra files are rooted at, so the name
-        // the editor gets is the tree's own `util/fmt.mach`
-        expect(marks('second-file')[0]).toMatchObject({file: 'util/fmt.mach', line: 2, column: 9});
-    });
-
-    it('names a std file from outside the source root, so it matches no file of the project', () => {
-        // the first of the errors std raises for a freestanding target, trimmed to that error and the summary
-        expect(marks('std')[0]).toMatchObject({
-            file: '../dep/std/src/system/os/secret.mach',
-            line: 667,
-            column: 5,
-            severity: 3,
-        });
-    });
-
-    it('marks a help headline at help severity', () => {
-        // no caller in the compiler emits a top-level `help:` at 5.2.1, so this one is rendered the way the
-        // renderer's severity label writes it rather than captured from a build
-        const severities = (headline: string) =>
-            compiler
-                .processExecutionResult(
-                    {
-                        code: 0,
-                        stdout: '',
-                        stderr: `${headline}\n --> ${inputFilename}:3:1\n  |\n3 | ret 0;\n  | ^^^^^^\n`,
-                    } as any,
-                    inputFilename,
-                )
-                .stderr.filter(line => line.tag)
-                .map(line => line.tag!.severity)[0];
-
-        expect(severities('error: it broke')).toEqual(3);
-        expect(severities('warning: it creaks')).toEqual(2);
-        expect(severities('help: try this')).toEqual(1);
-    });
-
-    it('marks a related frame with the label that explains it', () => {
-        expect(marks('related').map(m => [m.line, m.text, m.severity])).toEqual([
-            [6, 'error: duplicate definition: `dup` is already bound in this scope', 3],
-            [6, '', 3],
-            [5, '', 3],
-            [5, 'previous definition here', 1],
+    it('marks a related frame with the label under it', () => {
+        expect(marks(parse('related'))).toEqual([
+            ['example.mach', 6, 5, 3, 'error: duplicate definition: `dup` is already bound in this scope'],
+            ['example.mach', 6, 5, 3, ''],
+            ['example.mach', 5, 5, 3, ''],
+            ['example.mach', 5, 5, 1, 'previous definition here'],
         ]);
-        // the gutter bar the related frame follows is output, never a marker
-        expect(marks('related').map(m => m.text)).not.toContain('  |');
-        expect(texts('related')).toContain('  |     --- previous definition here');
+    });
+
+    it('names a second file by the path the project tree knows it by', () => {
+        expect(marks(parse('second-file'))[0]).toEqual([
+            'util/fmt.mach',
+            2,
+            9,
+            3,
+            'error: unresolved identifier `nope`',
+        ]);
+    });
+
+    it('marks nothing in a std file, which belongs to no editor, but still shows where it is', () => {
+        expect(marks(parse('std'))).toEqual([]);
+        expect(texts(parse('std'))).toContain('   --> dep/std/src/system/os/secret.mach:667:5');
     });
 
     it('marks nothing for a failure that carries no location', () => {
-        expect(texts('fail')).toEqual(['error: no mach.toml in the project directory']);
-        expect(marks('fail')).toEqual([]);
+        expect(texts(parse('fail'))).toEqual(['error: no mach.toml in the project directory']);
+        expect(marks(parse('fail'))).toEqual([]);
+    });
+
+    it('reads every headline of the severity catalog at its own severity', () => {
+        // no caller in the compiler emits a top-level `info:` or `help:` at 5.2.1, so these are rendered the way the
+        // renderer's severity label writes them rather than captured from a build
+        const severity = (headline: string) =>
+            marks(parseText(`${headline}\n --> ${inputFilename}:3:1\n  |\n3 | ret 0;\n  | ^^^^^^\n`))[0][3];
+        expect(severity('error: it broke')).toEqual(3);
+        expect(severity('warning: it creaks')).toEqual(2);
+        expect(severity('info: a remark')).toEqual(1);
+        expect(severity('help: try this')).toEqual(1);
+        expect(severity('error: unknown Severity tag 9: odd')).toEqual(3);
+    });
+
+    it('reads through colour escapes', () => {
+        const coloured = `\x1b[31merror: it broke\x1b[0m\n \x1b[34m-->\x1b[0m ${inputFilename}:3:1\n`;
+        expect(marks(parseText(coloured))[0]).toEqual(['example.mach', 3, 1, 3, 'error: it broke']);
+    });
+
+    describe('does not mark', () => {
+        it("a headline in another compiler's layout", () => {
+            // rustc's `error[E0308]:` is not a mach headline, so its location marks nothing
+            expect(marks(parseText(`error[E0308]: mismatched types\n --> ${inputFilename}:3:1\n`))).toEqual([]);
+        });
+
+        it('a location that follows no headline, gutter bar or fix', () => {
+            const output = ['error: first', ` --> ${inputFilename}:3:1`, '', ` --> ${inputFilename}:9:1`].join('\n');
+            expect(marks(parseText(output)).map(([, line]) => line)).toEqual([3, 3]);
+        });
+
+        it('a label under the primary frame as a related location', () => {
+            const output = ['error: first', ` --> ${inputFilename}:3:1`, '  |', '3 | ret 0;', '  | ^^^ here'].join(
+                '\n',
+            );
+            expect(marks(parseText(output)).map(([, , , , text]) => text)).toEqual(['error: first', '']);
+        });
+
+        it('an edit once its diagnostic has ended', () => {
+            const output = [
+                'error: first',
+                ` --> ${inputFilename}:3:1`,
+                '  = fix: do it',
+                '',
+                ` --> ${inputFilename}:9:1`,
+                '    -> replace with `x`',
+            ].join('\n');
+            expect(marks(parseText(output)).map(([, line]) => line)).toEqual([3, 3]);
+        });
+
+        it('a trailer as its own marker', () => {
+            const output = ['error: first', ` --> ${inputFilename}:3:1`, '  |', '  = note: see here'].join('\n');
+            expect(marks(parseText(output))).toEqual([
+                ['example.mach', 3, 1, 3, 'error: first\nnote: see here'],
+                ['example.mach', 3, 1, 3, ''],
+            ]);
+        });
     });
 });
-/**
- * Under the production sandbox the compile directory is bind-mounted at `/app`, so the project root the adapter
- * passes to `mach build` is `/app` and the DWARF comp_dir it records is `/app` too. The capture below is a real
- * objdump of an object built with the project root at `/app`.
- */
+
 describe('Mach asm with an /app project root', () => {
     it('attributes an /app source line to the editor', () => {
         const objdump = readFileSync(path.join(__dirname, 'mach', 'app-objdump.asm'), 'utf8');
