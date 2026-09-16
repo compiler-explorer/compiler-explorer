@@ -31,6 +31,7 @@ import {afterAll, afterEach, beforeAll, beforeEach, describe, expect, it, vi} fr
 
 import {MachCompiler} from '../lib/compilers/mach.js';
 import {AsmParser} from '../lib/parsers/asm-parser.js';
+import {parseProperties} from '../lib/properties.js';
 import {LanguageKey} from '../types/languages.interfaces.js';
 import {makeCompilationEnvironment, makeFakeCompilerInfo, makeFakeParseFiltersAndOutputOptions} from './utils.js';
 
@@ -443,5 +444,20 @@ describe('Mach asm with an /app project root', () => {
             line: 9,
             mainsource: true,
         });
+    });
+});
+
+describe('Mach binary asm', () => {
+    // a Hello World executable, trimmed to the head of each function: std and its runtime are linked in beside main
+    const objdump = readFileSync(path.join(__dirname, 'mach', 'hello-binary.asm'), 'utf8');
+
+    it.each(['amazon', 'defaults'])('shows only the user functions under the %s properties', env => {
+        const file = path.join(__dirname, '..', 'etc', 'config', `mach.${env}.properties`);
+        const props = parseProperties(readFileSync(file, 'utf8'), file);
+        const parsed = new AsmParser((key: string) => props[key]).process(
+            objdump,
+            makeFakeParseFiltersAndOutputOptions({binary: true, directives: true}),
+        );
+        expect(parsed.asm.map(line => line.text).filter(text => text.endsWith(':'))).toEqual(['main:']);
     });
 });
