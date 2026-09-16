@@ -1,0 +1,13 @@
+error: unresolved identifier `helpr`
+ --> /tmp/compiler-explorer-compiler-mach/src/example.mach:9:9
+  |
+9 |     ret helpr();
+  |         ^^^^^
+  |
+  = help: did you mean `helper`?
+  = fix: replace with `helper`
+ --> /tmp/compiler-explorer-compiler-mach/src/example.mach:9:9
+    -> replace with `helper`
+
+1 error / 0 warnings
+

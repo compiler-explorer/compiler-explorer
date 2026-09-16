@@ -1,0 +1,17 @@
+error: type mismatch: expected i64, found i32
+  --> /tmp/compiler-explorer-compiler-mach/src/example.mach:8:5
+   |
+ 8 |     ret x
+   |     ^^^^^
+   | ...
+21 |         ;
+   | ---------
+   |
+   = note: mach has no implicit widening; cast the value with `value::Type`
+   = fix: cast the value to `i64`
+  --> /tmp/compiler-explorer-compiler-mach/src/example.mach:8:9
+     -> replace with `(`
+  --> /tmp/compiler-explorer-compiler-mach/src/example.mach:20:12
+     -> replace with `)::i64`
+
+1 error / 0 warnings

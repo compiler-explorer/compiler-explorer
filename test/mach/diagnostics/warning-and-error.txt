@@ -1,0 +1,14 @@
+warning: documented component matches no parameter, field, generic, or `ret` of this declaration
+ --> /tmp/compiler-explorer-compiler-mach/src/example.mach:8:3
+  |
+8 | # z: misspelled
+  |   ^
+
+error: unresolved identifier `bogus`
+  --> /tmp/compiler-explorer-compiler-mach/src/example.mach:13:9
+   |
+13 |     ret bogus();
+   |         ^^^^^
+
+1 error / 1 warning
+
