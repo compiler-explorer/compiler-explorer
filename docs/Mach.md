@@ -22,8 +22,8 @@ release it was released and tested with. The adapter looks for that copy in this
 The second is the layout both godbolt.org and the local defaults use:
 
 ```
-/opt/compiler-explorer/mach-5.2.0/
-├── mach          from the release tarball, mach-5.2.0-x86_64-linux.tar.gz
+/opt/compiler-explorer/mach-5.2.1/
+├── mach          from the release tarball, mach-5.2.1-x86_64-linux.tar.gz
 ├── LICENSE
 └── std/          briar-systems/mach-std at the release paired with this compiler (v3.2.0)
 ```
@@ -32,7 +32,7 @@ For a local install, unpack a release into `/opt/mach` and check out its std int
 `etc/config/mach.defaults.properties`. If mach lives somewhere else, for example `/usr/local/bin/mach`, point
 `compiler.mach.exe` at it and set `compiler.mach.stdPath` to a std checkout.
 
-Use the std release the compiler was released with. mach 5.2.0 pairs with std 3.2.0, and the two version numbers are
+Use the std release the compiler was released with. mach 5.2.1 pairs with std 3.2.0, and the two version numbers are
 independent.
 
 If a compiler has no std where the adapter looks, it logs an error that names the `stdPath` key and offers no
@@ -55,7 +55,7 @@ Two things currently exclude a tuple:
 - **Flat images.** `object=raw` has no debug model, and the compilation profile asks for debug information, which
   the asm view needs to map lines back to source.
 
-With mach 5.2.0 and std 3.2.0, the probe offers `linux-x86_64`, `linux-aarch64`, `linux-riscv64-{lp64,lp64f,lp64d}`,
+With mach 5.2.1 and std 3.2.0, the probe offers `linux-x86_64`, `linux-aarch64`, `linux-riscv64-{lp64,lp64f,lp64d}`,
 `darwin-x86_64`, `darwin-aarch64` and `windows-x86_64`.
 
 For targets other than x86, Compiler Explorer disassembles with `llvmObjdumper`, because the GNU objdump it uses for

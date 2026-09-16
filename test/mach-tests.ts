@@ -39,7 +39,7 @@ const languages = {
     mach: {id: 'mach' as LanguageKey, extensions: ['.mach']},
 };
 
-// `mach info targets` as mach 5.2.0 prints it.
+// `mach info targets` as mach 5.2.1 prints it.
 const infoTargets = `linux-x86_64          isa=x86_64    os=linux         abi=sysv64   object=elf
 linux-aarch64         isa=aarch64   os=linux         abi=aapcs64  object=elf
 linux-riscv64         isa=rv64gc    os=linux         abi=lp64     object=elf
@@ -65,12 +65,12 @@ freestanding-riscv32  isa=rv32imac  os=freestanding  abi=ilp32    object=raw
 freestanding-spirv    isa=spirv     os=freestanding  abi=spirv    object=spv
 `;
 
-// the formats that register a debug model in mach 5.2.0; the flat images refuse the adapter's debug profile, since they
+// the formats that register a debug model in mach 5.2.1; the flat images refuse the adapter's debug profile, since they
 // carry neither a debug model nor linkable objects.
 const debugCapableFormats = new Set(['elf', 'macho', 'coff', 'spv']);
 
 /**
- * Stands in for one probe build, reproducing what mach 5.2.0 with std 3.2.0 answers for the probe module: std has no layer for a
+ * Stands in for one probe build, reproducing what mach 5.2.1 with std 3.2.0 answers for the probe module: std has no layer for a
  * freestanding os, so a `use std.print` there fails inside std whatever the object format, and a format with no debug
  * model refuses the profile's debug information.
  */
@@ -105,7 +105,7 @@ async function makeStd() {
 
 function makeMach(stdPath: string) {
     return new MachCompiler(
-        makeFakeCompilerInfo({id: 'mach', exe: '/opt/compiler-explorer/mach-5.2.0/mach', lang: 'mach'}),
+        makeFakeCompilerInfo({id: 'mach', exe: '/opt/compiler-explorer/mach-5.2.1/mach', lang: 'mach'}),
         makeCompilationEnvironment({languages, props: {'compiler.mach.stdPath': stdPath}}),
     );
 }
@@ -191,10 +191,10 @@ describe('Mach project layout', () => {
     it('takes std from beside the executable by default', () => {
         const env = makeCompilationEnvironment({languages});
         const installed = new MachCompiler(
-            makeFakeCompilerInfo({id: 'mach520', exe: '/opt/compiler-explorer/mach-5.2.0/mach', lang: 'mach'}),
+            makeFakeCompilerInfo({id: 'mach521', exe: '/opt/compiler-explorer/mach-5.2.1/mach', lang: 'mach'}),
             env,
         );
-        expect(installed.manifest([])).toContain('[dep.std]\npath = "/opt/compiler-explorer/mach-5.2.0/std"\n');
+        expect(installed.manifest([])).toContain('[dep.std]\npath = "/opt/compiler-explorer/mach-5.2.1/std"\n');
     });
 
     it('refuses to offer any target when the compiler has no std', async () => {
@@ -266,7 +266,7 @@ describe('Mach multi-file projects', () => {
         ]);
         expect(await fs.readFile(path.join(dirPath, 'src', 'util', 'fmt.mach'), 'utf8')).toEqual('fmt');
         expect(pull).toHaveBeenCalledWith(
-            '/opt/compiler-explorer/mach-5.2.0/mach',
+            '/opt/compiler-explorer/mach-5.2.1/mach',
             ['dep', 'pull', dirPath],
             expect.objectContaining({customCwd: dirPath}),
         );
@@ -287,7 +287,7 @@ describe('Mach multi-file projects', () => {
     });
 });
 /**
- * The shapes covered here are ones `mach.cli.diagnostic` renders at 5.2.0: the `error:` and `warning:` headlines, the
+ * The shapes covered here are ones `mach.cli.diagnostic` renders at 5.2.1: the `error:` and `warning:` headlines, the
  * `--> file:line:col` frame and its gutter, a related frame underlined with `-`, the `= note:`, `= help:` and `= fix:`
  * trailer, a fix edit's own location, the elided and truncated span bodies, a `Fail` with no location, and the
  * `N errors / M warnings` summary. Each capture is compiler output with the temp directory rewritten to a stable path,
@@ -299,7 +299,7 @@ describe('Mach diagnostics', () => {
 
     beforeAll(() => {
         compiler = new MachCompiler(
-            makeFakeCompilerInfo({id: 'mach', exe: '/opt/compiler-explorer/mach-5.2.0/mach', lang: 'mach'}),
+            makeFakeCompilerInfo({id: 'mach', exe: '/opt/compiler-explorer/mach-5.2.1/mach', lang: 'mach'}),
             makeCompilationEnvironment({languages}),
         );
     });
@@ -424,7 +424,7 @@ describe('Mach diagnostics', () => {
     });
 
     it('marks a help headline at help severity', () => {
-        // no caller in the compiler emits a top-level `help:` at 5.2.0, so this one is rendered the way the
+        // no caller in the compiler emits a top-level `help:` at 5.2.1, so this one is rendered the way the
         // renderer's severity label writes it rather than captured from a build
         const severities = (headline: string) =>
             compiler
