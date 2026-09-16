@@ -6,6 +6,11 @@
 runs `mach build` on the project root. The asm view is `objdump` run over the module's object file, and execution
 runs the linked binary.
 
+`mach dep pull` copies std into every compilation's project, which costs about 66 ms at std 3.2.0. mach does not yet
+let a project use a path dependency in place. Once it does
+([briar-systems/mach#3484](https://github.com/briar-systems/mach/issues/3484)), the adapter can drop the pull and the
+copy.
+
 ## Installing a compiler
 
 The compiler does not ship with std. A project declares std as a dependency, so each compiler needs a copy of the std
@@ -52,3 +57,8 @@ Two things currently exclude a tuple:
 
 With mach 5.2.0 and std 3.2.0, the probe offers `linux-x86_64`, `linux-aarch64`, `linux-riscv64-{lp64,lp64f,lp64d}`,
 `darwin-x86_64`, `darwin-aarch64` and `windows-x86_64`.
+
+For targets other than x86, Compiler Explorer disassembles with `llvmObjdumper`, because the GNU objdump it uses for
+x86 cannot read other architectures. mach's line tables are correct for those targets, but the asm view maps no lines
+back to the source until the asm parser reads llvm-objdump's `; `-prefixed line records
+([compiler-explorer#9128](https://github.com/compiler-explorer/compiler-explorer/pull/9128)).
