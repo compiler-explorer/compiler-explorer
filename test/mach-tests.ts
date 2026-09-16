@@ -288,9 +288,10 @@ describe('Mach multi-file projects', () => {
 });
 /**
  * The shapes covered here are ones `mach.cli.diagnostic` renders at 5.2.0: the `error:` and `warning:` headlines, the
- * `--> file:line:col` frame and its gutter, the `= note:`, `= help:` and `= fix:` trailer, a fix edit's own location,
- * the elided and truncated span bodies, a `Fail` with no location, and the `N errors / M warnings` summary. Each
- * capture is verbatim compiler output with the temp directory rewritten to a stable path.
+ * `--> file:line:col` frame and its gutter, a related frame underlined with `-`, the `= note:`, `= help:` and `= fix:`
+ * trailer, a fix edit's own location, the elided and truncated span bodies, a `Fail` with no location, and the
+ * `N errors / M warnings` summary. Each capture is compiler output with the temp directory rewritten to a stable path,
+ * verbatim except that std.txt keeps only the first of its errors.
  */
 describe('Mach diagnostics', () => {
     const inputFilename = '/tmp/compiler-explorer-compiler-mach/src/example.mach';
@@ -404,6 +405,55 @@ describe('Mach diagnostics', () => {
             [7, 9],
             [7, 9],
         ]);
+    });
+
+    it('names a second file by the path the project knows it by', () => {
+        // the file is written at src/util/fmt.mach, and src is the root CE's extra files are rooted at, so the name
+        // the editor gets is the tree's own `util/fmt.mach`
+        expect(marks('second-file')[0]).toMatchObject({file: 'util/fmt.mach', line: 2, column: 9});
+    });
+
+    it('names a std file from outside the source root, so it matches no file of the project', () => {
+        // the first of the errors std raises for a freestanding target, trimmed to that error and the summary
+        expect(marks('std')[0]).toMatchObject({
+            file: '../dep/std/src/system/os/secret.mach',
+            line: 667,
+            column: 5,
+            severity: 3,
+        });
+    });
+
+    it('marks a help headline at help severity', () => {
+        // no caller in the compiler emits a top-level `help:` at 5.2.0, so this one is rendered the way the
+        // renderer's severity label writes it rather than captured from a build
+        const severities = (headline: string) =>
+            compiler
+                .processExecutionResult(
+                    {
+                        code: 0,
+                        stdout: '',
+                        stderr: `${headline}\n --> ${inputFilename}:3:1\n  |\n3 | ret 0;\n  | ^^^^^^\n`,
+                    } as any,
+                    inputFilename,
+                )
+                .stderr.filter(line => line.tag)
+                .map(line => line.tag!.severity)[0];
+
+        expect(severities('error: it broke')).toEqual(3);
+        expect(severities('warning: it creaks')).toEqual(2);
+        expect(severities('help: try this')).toEqual(1);
+    });
+
+    it('marks a related frame with the label that explains it', () => {
+        expect(marks('related').map(m => [m.line, m.text, m.severity])).toEqual([
+            [6, 'error: duplicate definition: `dup` is already bound in this scope', 3],
+            [6, '', 3],
+            [5, '', 3],
+            [5, 'previous definition here', 1],
+        ]);
+        // the gutter bar the related frame follows is output, never a marker
+        expect(marks('related').map(m => m.text)).not.toContain('  |');
+        expect(texts('related')).toContain('  |     --- previous definition here');
     });
 
     it('marks nothing for a failure that carries no location', () => {

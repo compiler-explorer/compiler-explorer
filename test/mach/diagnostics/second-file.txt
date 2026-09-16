@@ -1,0 +1,8 @@
+error: unresolved identifier `nope`
+ --> /tmp/compiler-explorer-compiler-mach/src/util/fmt.mach:2:9
+  |
+2 |     ret nope();
+  |         ^^^^
+
+1 error / 0 warnings
+
