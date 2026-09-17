@@ -6,8 +6,8 @@
 runs `mach build` on the project root. The asm view is `objdump` run over the module's object file, and execution
 runs the linked binary.
 
-`mach dep pull` copies std into every compilation's project, which costs about 66 ms at std 3.2.0. mach does not yet
-let a project use a path dependency in place. Once it does
+`mach dep pull` copies std into every compilation's project, which costs about 77 ms with std 5.3.0 (5.5 MB, 303
+files). mach does not yet let a project use a path dependency in place. Once it does
 ([briar-systems/mach#3484](https://github.com/briar-systems/mach/issues/3484)), the adapter can drop the pull and the
 copy.
 
@@ -36,18 +36,34 @@ release it was released and tested with. The adapter looks for that copy in this
 The second is the layout both godbolt.org and the local defaults use:
 
 ```
-/opt/compiler-explorer/mach-5.2.1/
-├── mach          from the release tarball, mach-5.2.1-x86_64-linux.tar.gz
+/opt/compiler-explorer/mach-5.4.0/
+├── mach          from the release tarball, mach-5.4.0-x86_64-linux.tar.gz
 ├── LICENSE
-└── std/          briar-systems/mach-std at the release paired with this compiler (v3.2.0)
+└── std/          briar-systems/mach-std at the release paired with this compiler (v5.3.0)
 ```
 
 For a local install, unpack a release into `/opt/mach` and check out its std into `/opt/mach/std`. That matches
 `etc/config/mach.defaults.properties`. If mach lives somewhere else, for example `/usr/local/bin/mach`, point
 `compiler.mach.exe` at it and set `compiler.mach.stdPath` to a std checkout.
 
-Use the std release the compiler was released with. mach 5.2.1 pairs with std 3.2.0, and the two version numbers are
-independent.
+Pair each compiler with the newest std release that builds with it. The two version numbers are independent. From std
+5.2.0 on, std states the compilers it accepts in its own `[project].mach`, and older std releases state none. The
+pairs godbolt.org installs were each checked by building the three examples and running Hello World:
+
+| compiler | std |
+| --- | --- |
+| 5.4.0 | 5.3.0 |
+| 5.3.1 | 5.3.0 |
+| 5.2.1 | 5.1.0 |
+| 5.1.0 | 3.2.1 |
+| 5.0.4 | 3.2.1 |
+
+godbolt.org offers the newest release and the latest patch of each older 5.x minor.
+
+From 5.3.0, mach reads a compiler range from `[project].mach`. It warns when a project states none, and a later
+release will require one. The adapter writes `mach = "^<major>.<minor>"` of the compiler into every manifest it
+generates, but only for compilers from 5.3.0 on, because older ones refuse the key. A compiler with no configured
+`semver` gets no range.
 
 If a compiler has no std where the adapter looks, it logs an error that names the `stdPath` key and offers no
 targets.
@@ -69,8 +85,9 @@ Two things currently exclude a tuple:
 - **Flat images.** `object=raw` has no debug model, and the compilation profile asks for debug information, which
   the asm view needs to map lines back to source.
 
-With mach 5.2.1 and std 3.2.0, the probe offers `linux-x86_64`, `linux-aarch64`, `linux-riscv64-{lp64,lp64f,lp64d}`,
-`darwin-x86_64`, `darwin-aarch64` and `windows-x86_64`.
+With mach 5.1.0 or later, the probe offers `linux-x86_64`, `linux-aarch64`, `linux-riscv64-{lp64,lp64f,lp64d}`,
+`darwin-x86_64`, `darwin-aarch64` and `windows-x86_64`. mach 5.0.4 offers the same list without `windows-x86_64`,
+because its COFF output has no debug model yet.
 
 For targets other than x86, Compiler Explorer disassembles with `llvmObjdumper`, because the GNU objdump it uses for
 x86 cannot read other architectures. mach's line tables are correct for those targets, but the asm view maps no lines
