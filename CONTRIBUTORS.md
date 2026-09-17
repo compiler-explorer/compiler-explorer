@@ -178,3 +178,4 @@ From oldest to newest contributor, we would like to thank:
 - [Connor Simms](https://github.com/connorsimms)
 - [Macsen Casaus](https://github.com/macsencasaus)
 - [Anson Mansfield](https://github.com/AJMansfield)
+- [Matt Black](https://github.com/mattsblack)
