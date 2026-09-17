@@ -25,6 +25,8 @@
 import fs from 'node:fs/promises';
 import path from 'node:path';
 
+import Semver from 'semver';
+
 import type {
     CacheKey,
     CompilationCacheKey,
@@ -65,6 +67,9 @@ const probeSource = [
     '}',
     '',
 ].join('\n');
+
+/** The first release that reads `[project].mach`; older releases refuse the key outright. */
+const compilerRangeVersion = '5.3.0';
 
 /**
  * The profile every compilation builds under. A target that cannot be resolved against it produces no view at all, so
@@ -217,7 +222,7 @@ export class MachCompiler extends BaseCompiler {
         await fs.mkdir(path.join(dirPath, 'src'), {recursive: true});
         await fs.writeFile(path.join(dirPath, 'src', 'probe.mach'), probeSource);
 
-        const lines = ['[project]', 'id = "probe"', 'version = "0.0.0"', 'src = "src"', 'out = "out"', '', ...profile];
+        const lines = [...this.projectSection('probe'), ...profile];
         for (const [index, target] of tuples.entries())
             lines.push(...targetSection({...target, name: probeKey(index)}));
         lines.push(
@@ -251,9 +256,23 @@ export class MachCompiler extends BaseCompiler {
         return result.code === 0;
     }
 
+    /**
+     * The `[project]` table of a generated manifest. A compiler that reads `[project].mach` is told the range it is
+     * part of, as `^major.minor`, which is what mach asks for when the key is missing. An older one refuses the key.
+     */
+    projectSection(id: string): string[] {
+        const lines = ['[project]', `id = "${id}"`, 'version = "0.0.0"'];
+        // a compiler with no configured version is not guessed at: without the key it only warns
+        const version = Semver.parse(this.compiler.semver);
+        if (version && Semver.gte(version, compilerRangeVersion))
+            lines.push(`mach = "^${version.major}.${version.minor}"`);
+        lines.push('src = "src"', 'out = "out"', '');
+        return lines;
+    }
+
     manifest(targets: MachTarget[]): string {
         const id = this.projectId;
-        const lines = ['[project]', `id = "${id}"`, 'version = "0.0.0"', 'src = "src"', 'out = "out"', '', ...profile];
+        const lines = [...this.projectSection(id), ...profile];
         for (const t of targets) lines.push(...targetSection(t));
         lines.push(
             `[artifact.${id}]`,

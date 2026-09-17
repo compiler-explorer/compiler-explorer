@@ -188,6 +188,23 @@ describe('Mach project layout', () => {
         expect(compiler.getExecutableFilename(root, 'output')).toEqual(path.join(root, 'out', 'bin', 'example'));
     });
 
+    it('states the compiler range only to a compiler that reads it', () => {
+        const env = makeCompilationEnvironment({languages});
+        const at = (semver?: string) =>
+            new MachCompiler(makeFakeCompilerInfo({id: 'mach', exe: '/usr/bin/mach', lang: 'mach', semver}), env)
+                .manifest([])
+                .split('\n')
+                .filter(line => line.startsWith('mach = '));
+        // 5.3.0 is the first release that reads `[project].mach`; 5.2.1 and older refuse the key
+        expect(at('5.4.0')).toEqual(['mach = "^5.4"']);
+        expect(at('5.3.1')).toEqual(['mach = "^5.3"']);
+        expect(at('5.3.0')).toEqual(['mach = "^5.3"']);
+        expect(at('5.2.1')).toEqual([]);
+        expect(at('5.0.4')).toEqual([]);
+        // a compiler with no configured version gets no guessed range
+        expect(at(undefined)).toEqual([]);
+    });
+
     it('takes std from beside the executable by default', () => {
         const env = makeCompilationEnvironment({languages});
         const installed = new MachCompiler(
