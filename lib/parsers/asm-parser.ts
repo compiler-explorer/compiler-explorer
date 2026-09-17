@@ -673,6 +673,8 @@ export class AsmParser extends AsmRegex implements IAsmParser {
                         labels: labelsInLine,
                     });
                     labelDefinitions[func] = asm.length;
+                    // each function's label may be dropped again, not only the first after user code
+                    mayRemovePreviousLabel = true;
                     if (process.platform === 'win32') source = null;
                 }
                 continue;
