@@ -171,12 +171,23 @@ function definition(): monaco.languages.IMonarchLanguage {
                 [/[(),=]/, 'delimiter'],
             ],
 
+            // only an identifier in braces is a local, as mach reads it: any other brace belongs to the isa's own
+            // syntax, such as aarch64's `{v0.16b}`, and closes with its own `}` rather than the block's
             asm: [
                 [/\}/, {token: '@brackets', next: '@pop'}],
+                {include: '@asmBody'},
+            ],
+
+            asmGroup: [
+                [/\}/, {token: '', next: '@pop'}],
+                {include: '@asmBody'},
+            ],
+
+            asmBody: [
                 [/#.*$/, 'comment'],
                 [/\{[a-zA-Z_]\w*\}/, 'variable'],
+                [/\{/, {token: '', next: '@asmGroup'}],
                 [/[^}#{]+/, ''],
-                [/\{/, ''],
             ],
 
             string: [
