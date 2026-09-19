@@ -302,7 +302,7 @@ export class MachCompiler extends BaseCompiler {
 
         await fs.writeFile(path.join(dirPath, 'mach.toml'), this.manifest(await this.targets()));
 
-        // copies std into the project; goes away once mach can use a path dependency in place (briar-systems/mach#3484)
+        // dep/std is realized per compile by design: mach reads nothing outside the project root
         const pull = await this.exec(this.compiler.exe, ['dep', 'pull', dirPath], {
             ...this.getDefaultExecOptions(),
             customCwd: dirPath,

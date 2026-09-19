@@ -7,9 +7,9 @@ runs `mach build` on the project root. The asm view is `objdump` run over the mo
 runs the linked binary.
 
 `mach dep pull` copies std into every compilation's project, which costs about 77 ms with std 5.3.0 (5.5 MB, 303
-files). mach does not yet let a project use a path dependency in place. Once it does
-([briar-systems/mach#3484](https://github.com/briar-systems/mach/issues/3484)), the adapter can drop the pull and the
-copy.
+files). That is by design: mach reads nothing outside the project root, so every dependency is realized under
+`dep/`. The copy can only get cheaper on the host side, for example by keeping the temporary directory on the same
+filesystem as the std tree so the copy can hardlink or reflink.
 
 ## Diagnostics
 
