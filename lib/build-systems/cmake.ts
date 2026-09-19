@@ -64,6 +64,14 @@ export class CMakeBuildSystem extends BaseBuildSystem {
             ctx.toolchainPath,
         );
 
+        const cmakePrefixPaths = compiler.getCMakePrefixPaths(ctx.libsAndOptions.libraries);
+        if (cmakePrefixPaths.length > 0) {
+            const existingPrefixPath = makeExecParams.env.CMAKE_PREFIX_PATH || process.env.CMAKE_PREFIX_PATH;
+            makeExecParams.env.CMAKE_PREFIX_PATH = [existingPrefixPath, ...cmakePrefixPaths]
+                .filter(Boolean)
+                .join(path.delimiter);
+        }
+
         const toolchainparam = compiler.getCMakeExtToolchainParam(ctx.parsedRequest.backendOptions.overrides || []);
 
         const partArgs: string[] = [

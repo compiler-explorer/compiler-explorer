@@ -43,6 +43,7 @@ import {
 import {MakeBuildSystem} from '../lib/build-systems/make.js';
 import {MavenBuildSystem} from '../lib/build-systems/maven.js';
 import {CompilationEnvironment} from '../lib/compilation-env.js';
+import {LLVMMOSCompiler} from '../lib/compilers/llvm-mos.js';
 import {RustCompiler} from '../lib/compilers/rust.js';
 import {ParsedRequest} from '../lib/handlers/compile.js';
 import {
@@ -109,7 +110,7 @@ function makeContext(compiler: BaseCompiler, env: CompilationEnvironment, parsed
         key: compiler.getBuildProjectCacheKey(cmakeBuildSystem, parsedRequest, []),
         parsedRequest,
         files: [],
-        libsAndOptions: {libraries: [], options: []},
+        libsAndOptions: {libraries: parsedRequest.libraries, options: parsedRequest.options},
         toolchainPath: undefined,
         buildSystemArgs: getBuildSystemArgs(parsedRequest.backendOptions),
     };
@@ -344,6 +345,71 @@ describe('CMake build system', () => {
             expect(step.execParams.env.CXXFLAGS).toContain('-fsome-flag');
         }
         expect(plan.getCompilationOptions()).toContain('-fsome-flag');
+    });
+
+    it('leaves CMAKE_PREFIX_PATH unset without configured selected library prefixes', async () => {
+        const env = makeEnv();
+        const compiler = makeCompiler(env);
+        (compiler as any).supportedLibraries = {
+            unconfigured: {versions: {v1: {path: [], libpath: [], options: []}}},
+        };
+        const request = makeParsedRequest();
+        request.libraries = [{id: 'unconfigured', version: 'v1'}];
+
+        const plan = await cmakeBuildSystem.getBuildPlan(makeContext(compiler, env, request));
+
+        expect(plan.steps[0].execParams.env).not.toHaveProperty('CMAKE_PREFIX_PATH');
+    });
+
+    it('appends selected library prefixes to CMAKE_PREFIX_PATH', async () => {
+        const env = makeEnv();
+        const compiler = makeCompiler(env);
+        (compiler as any).supportedLibraries = {
+            package: {
+                versions: {
+                    v1: {
+                        cmakeprefixpath: ['/opt/package', '/opt/package-extra'],
+                        path: [],
+                        libpath: [],
+                        options: [],
+                    },
+                },
+            },
+        };
+        const request = makeParsedRequest({overrides: [envOverride({CMAKE_PREFIX_PATH: '/existing'})]});
+        request.libraries = [{id: 'package', version: 'v1'}];
+
+        const plan = await cmakeBuildSystem.getBuildPlan(makeContext(compiler, env, request));
+
+        expect(plan.steps[0].execParams.env.CMAKE_PREFIX_PATH).toEqual(
+            ['/existing', '/opt/package', '/opt/package-extra'].join(path.delimiter),
+        );
+    });
+
+    it('combines LLVM-MOS and selected library prefixes', () => {
+        const env = makeEnv();
+        const compiler = new LLVMMOSCompiler(
+            makeFakeCompilerInfo({
+                exe: '/opt/compiler-explorer/llvm-mos/bin/mos-clang++',
+                lang: 'c++',
+                ldPath: [],
+                libPath: [],
+                supportsBinary: true,
+            }),
+            env,
+        );
+        (compiler as any).supportedLibraries = {
+            package: {
+                versions: {
+                    v1: {cmakeprefixpath: ['/opt/package']},
+                },
+            },
+        };
+
+        expect(compiler.getCMakePrefixPaths([{id: 'package', version: 'v1'}])).toEqual([
+            '/opt/compiler-explorer/llvm-mos',
+            '/opt/package',
+        ]);
     });
 
     it('asks for the ninja generator when configured to', async () => {
