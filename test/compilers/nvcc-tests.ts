@@ -22,9 +22,9 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import {describe, expect, it} from 'vitest';
+import {afterEach, beforeEach, describe, expect, it, vi} from 'vitest';
 
-import {NvccCompiler} from '../../lib/compilers/index.js';
+import {NvccCompiler, NvccWin32Compiler} from '../../lib/compilers/index.js';
 import {makeCompilationEnvironment} from '../utils.js';
 
 describe('nvcc tests', () => {
@@ -127,5 +127,87 @@ main:
         const result = removeBlob(asm);
         expect(result).toContain('#APP');
         expect(result).toContain('nop');
+    });
+});
+
+describe('NvccWin32Compiler tests', () => {
+    const languages = {cuda: {id: 'cuda'}};
+    const info = {exe: 'nvcc.exe', remote: true, lang: 'cuda', ldPath: []};
+    let platformDescriptor: PropertyDescriptor;
+    let compiler: NvccWin32Compiler;
+
+    beforeEach(() => {
+        platformDescriptor = Object.getOwnPropertyDescriptor(process, 'platform')!;
+        Object.defineProperty(process, 'platform', {configurable: true, value: 'win32'});
+        compiler = new NvccWin32Compiler(info as any, makeCompilationEnvironment({languages}));
+    });
+
+    afterEach(() => {
+        Object.defineProperty(process, 'platform', platformDescriptor);
+        vi.restoreAllMocks();
+    });
+
+    it('rejects construction on non-Windows platforms', () => {
+        Object.defineProperty(process, 'platform', {configurable: true, value: 'linux'});
+
+        expect(() => new NvccWin32Compiler(info as any, makeCompilationEnvironment({languages}))).toThrow(
+            'NvccWin32Compiler can only be used on Windows',
+        );
+    });
+
+    it('generates options for assembly output', () => {
+        expect(
+            (compiler as any).optionsForFilter({binary: false, binaryObject: false, execute: false}, 'output.s'),
+        ).toEqual([
+            '-o',
+            'output.obj',
+            '-g',
+            '-lineinfo',
+            '--keep-device-functions',
+            '-c',
+            '-keep',
+            '-keep-dir',
+            '.',
+            '-Xcompiler',
+            '/nologo,/FA,/c,/Faoutput.s,/Fooutput.obj,/Zi,/Fdoutput.pdb',
+        ]);
+    });
+
+    it('generates options for binary-object output and normalises Windows paths', () => {
+        expect(
+            (compiler as any).optionsForFilter(
+                {binary: false, binaryObject: true, execute: false},
+                'C:\\build\\output.obj',
+            ),
+        ).toEqual([
+            '-o',
+            'C:\\build\\output.obj',
+            '-g',
+            '-lineinfo',
+            '--keep-device-functions',
+            '-c',
+            '-keep',
+            '-keep-dir',
+            '.',
+            '-Xcompiler',
+            '/nologo,/c,/FoC:/build/output.obj,/Zi',
+        ]);
+    });
+
+    it('generates options for executable output', () => {
+        expect(
+            (compiler as any).optionsForFilter(
+                {binary: true, binaryObject: false, execute: true},
+                'C:\\build\\output.exe',
+            ),
+        ).toEqual([
+            '-o',
+            'C:\\build\\output.exe',
+            '-g',
+            '-lineinfo',
+            '--keep-device-functions',
+            '-Xcompiler',
+            '/nologo,/FeC:/build/output.exe,/Zi',
+        ]);
     });
 });
