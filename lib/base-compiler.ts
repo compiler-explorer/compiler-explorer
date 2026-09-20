@@ -84,6 +84,11 @@ import {type ToolResult, type ToolTypeKey} from '../types/tool.interfaces.js';
 import {moveArtifactsIntoResult} from './artifact-utils.js';
 import {assert, unwrap} from './assert.js';
 import {copyCopperSpicePlugins} from './binaries/copperspice-utils.js';
+import {
+    type CMakePackageDescription,
+    CMakePackageGenerator,
+    type CMakePackageLibrary,
+} from './build-systems/cmake-package-generator.js';
 import type {BuildContext, BuildPlan, BuildSystemDriver} from './build-systems/index.js';
 import {cmakeBuildSystem, getBuildSystemArgs} from './build-systems/index.js';
 import type {BuildEnvDownloadInfo} from './buildenvsetup/buildenv.interfaces.js';
@@ -2982,13 +2987,51 @@ export class BaseCompiler {
         return libsAndOptions;
     }
 
-    getCMakePrefixPaths(libraries: SelectedLibraryVersion[]): string[] {
-        return _.union(
-            libraries.flatMap(selectedLib => {
-                const foundVersion = this.findLibVersion(selectedLib);
-                return foundVersion?.cmakeprefixpath || [];
-            }),
-        );
+    /** What find_package() can resolve for the selected libraries; used to explain a CMake failure. */
+    async describeCMakePackages(
+        libraries: SelectedLibraryVersion[],
+        dirPath: string,
+    ): Promise<CMakePackageDescription[]> {
+        return this.makeCMakePackageGenerator(dirPath).describePackages(this.resolveCMakeLibraries(libraries));
+    }
+
+    /** Library ids this compiler offers but the user has not picked, so a failure can say "select it". */
+    unselectedLibraryIds(libraries: SelectedLibraryVersion[]): string[] {
+        const selected = new Set(libraries.map(lib => lib.id));
+        return Object.keys(this.supportedLibraries ?? {}).filter(id => !selected.has(id));
+    }
+
+    /**
+     * Prefixes handed to CMake for the selected libraries, in decreasing order of specificity:
+     * any `cmakeprefixpath` configured for the library, then real install trees the library's own
+     * package provides, then packages generated from the library's properties for the majority of
+     * libraries that ship no CMake config of their own.
+     */
+    async getCMakePrefixPaths(libraries: SelectedLibraryVersion[], dirPath: string): Promise<string[]> {
+        const configured = libraries.flatMap(selectedLib => {
+            const foundVersion = this.findLibVersion(selectedLib);
+            return foundVersion?.cmakeprefixpath || [];
+        });
+
+        const generator = this.makeCMakePackageGenerator(dirPath);
+        const prefixes = await generator.prefixPaths(this.resolveCMakeLibraries(libraries));
+
+        return _.uniq([...configured, ...prefixes]);
+    }
+
+    private makeCMakePackageGenerator(dirPath: string): CMakePackageGenerator {
+        return new CMakePackageGenerator(dirPath, {
+            // Paths baked into the generated config must be the ones the build itself will see.
+            buildDirPath: exec.maybeRemapJailedDir(dirPath),
+            packagesExtractedPerLib: !this.buildenvsetup?.extractAllToRoot,
+        });
+    }
+
+    private resolveCMakeLibraries(libraries: SelectedLibraryVersion[]): CMakePackageLibrary[] {
+        return libraries.flatMap(selectedLib => {
+            const foundVersion = this.findLibVersion(selectedLib);
+            return foundVersion ? [{id: selectedLib.id, version: foundVersion}] : [];
+        });
     }
 
     getExtraCMakeArgs(key: ParsedRequest): string[] {
@@ -3283,6 +3326,11 @@ export class BaseCompiler {
         result: CompilationResult,
         buildPlan: BuildPlan,
     ): Promise<boolean> {
+        // What every step printed so far. A step that succeeds can still say why a later one fails: a
+        // find_package() without REQUIRED only warns, so CMake configures cleanly and the build then fails
+        // on a missing header, with the explanation sitting in the earlier step's output.
+        const transcript: string[] = [];
+
         for (const step of buildPlan.steps) {
             const stepResult = await this.doBuildstepAndAddToResult(
                 result,
@@ -3292,13 +3340,22 @@ export class BaseCompiler {
                 step.execParams,
             );
 
+            // Both streams: cargo diagnoses on stderr, maven says everything on stdout.
+            transcript.push([...stepResult.stdout, ...stepResult.stderr].map(line => line.text).join('\n'));
+
             if (stepResult.code !== 0) {
-                // Both streams: cargo diagnoses on stderr, maven says everything on stdout. Awaited because
-                // working out what to say can mean looking at what is installed, which is only worth it here.
-                const explanation = await step.explainFailure?.(
-                    [...stepResult.stdout, ...stepResult.stderr].map(line => line.text).join('\n'),
-                );
+                // Awaited because working out what to say can mean looking at what is installed, which is
+                // only worth it here.
+                const explanation = await step.explainFailure?.(transcript.join('\n'));
+                if (explanation) {
+                    // Shown as a notification that fades, so it is kept short; it also goes into the log
+                    // below, next to the error, for anyone reading back.
+                    result.hints = [...(result.hints ?? []), explanation];
+                }
                 result.result = {
+                    // The compiler pane is handed this inner result, not the outer one, so a hint set only on
+                    // the outer never reaches the user.
+                    hints: explanation ? [explanation] : undefined,
                     dirPath,
                     timedOut: false,
                     stdout: [],

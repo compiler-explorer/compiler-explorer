@@ -47,9 +47,9 @@ export class LLVMMOSCompiler extends ClangCompiler {
         this.toolchainPath = path.normalize(path.join(path.dirname(this.compiler.exe), '..'));
     }
 
-    override getCMakePrefixPaths(libraries: SelectedLibraryVersion[]): string[] {
+    override async getCMakePrefixPaths(libraries: SelectedLibraryVersion[], dirPath: string): Promise<string[]> {
         const toolchainPrefix = this.toolchainPath ? [this.toolchainPath] : [];
-        return _.union(toolchainPrefix, super.getCMakePrefixPaths(libraries));
+        return _.union(toolchainPrefix, await super.getCMakePrefixPaths(libraries, dirPath));
     }
 
     override fixFiltersBeforeCacheKey(filters: ParseFiltersAndOutputOptions, options: string[], files: FiledataPair[]) {

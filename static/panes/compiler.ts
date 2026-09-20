@@ -79,7 +79,7 @@ import fileSaver from 'file-saver';
 
 import {unwrap, unwrapString} from '../../shared/assert.js';
 import type {BuildSystemId} from '../../shared/build-systems.js';
-import {escapeHTML, splitArguments} from '../../shared/common-utils.js';
+import {escapeHTML, LIBRARIES_ICON_TOKEN, splitArguments} from '../../shared/common-utils.js';
 import {ClangirBackendOptions} from '../../types/compilation/clangir.interfaces.js';
 import {LLVMIrBackendOptions} from '../../types/compilation/ir.interfaces.js';
 import {YulBackendOptions} from '../../types/compilation/yul.interfaces.js';
@@ -3194,7 +3194,13 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
     checkForHints(result: {hints?: string[]}): void {
         if (result.hints) {
             result.hints.forEach(hint => {
-                this.alertSystem.notify(this.htmlEncode(hint), {
+                // Encode first, because a hint can quote compiler output, then put the icon in: markup
+                // cannot travel in the text itself without also letting that output through.
+                // split/join rather than replaceAll: the frontend is transpiled to an older target.
+                const text = this.htmlEncode(hint)
+                    .split(LIBRARIES_ICON_TOKEN)
+                    .join('<span class="fas fa-book"></span>');
+                this.alertSystem.notify(text, {
                     group: 'hints',
                     collapseSimilar: false,
                 });

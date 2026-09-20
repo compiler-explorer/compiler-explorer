@@ -34,6 +34,7 @@ export type LibraryVersion = {
     path: string[];
     options: string[];
     packagedheaders?: boolean;
+    skipcmakepackage?: boolean;
 };
 
 export type Library = {
