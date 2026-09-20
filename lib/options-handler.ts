@@ -54,7 +54,6 @@ export type VersionInfo = {
     dependencies: string[];
     path: string[];
     libpath: string[];
-    cmakeprefixpath: string[];
     skipcmakepackage?: boolean;
     liblink: string[];
     lookupname?: PropertyValue;
@@ -340,7 +339,6 @@ export class ClientOptionsHandler implements ClientOptionsSource {
                                 ),
                                 path: [],
                                 libpath: [],
-                                cmakeprefixpath: [],
                                 liblink: splitIntoArray(
                                     this.compilerProps<string>(lang, libVersionName + '.liblink'),
                                     libraries[lang][lib].liblink,
@@ -373,14 +371,6 @@ export class ClientOptionsHandler implements ClientOptionsSource {
                             const libpath = this.compilerProps<string>(lang, libVersionName + '.libpath');
                             if (libpath) {
                                 versionObject.libpath = libpath.split(path.delimiter);
-                            }
-
-                            const cmakeprefixpath = this.compilerProps<string>(
-                                lang,
-                                libVersionName + '.cmakeprefixpath',
-                            );
-                            if (cmakeprefixpath) {
-                                versionObject.cmakeprefixpath = cmakeprefixpath.split(path.delimiter);
                             }
 
                             const options = this.compilerProps<string>(lang, libVersionName + '.options');

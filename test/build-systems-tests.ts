@@ -368,29 +368,27 @@ describe('CMake build system', () => {
         expect(plan.steps[0].execParams.env).not.toHaveProperty('CMAKE_PREFIX_PATH');
     });
 
-    it('appends selected library prefixes to CMAKE_PREFIX_PATH', async () => {
-        const env = makeEnv();
-        const compiler = makeCompiler(env);
-        (compiler as any).supportedLibraries = {
-            package: {
-                versions: {
-                    v1: {
-                        cmakeprefixpath: ['/opt/package', '/opt/package-extra'],
-                        path: [],
-                        libpath: [],
-                        options: [],
-                    },
+    it('appends a generated package prefix to an inherited CMAKE_PREFIX_PATH', async () => {
+        const dirPath = await fs.mkdtemp(path.join(os.tmpdir(), 'ce-cmake-prefix-'));
+        try {
+            const env = makeEnv();
+            const compiler = makeCompiler(env);
+            (compiler as any).supportedLibraries = {
+                package: {
+                    versions: {v1: {version: '1.0', path: ['/opt/package/include'], libpath: [], options: []}},
                 },
-            },
-        };
-        const request = makeParsedRequest({overrides: [envOverride({CMAKE_PREFIX_PATH: '/existing'})]});
-        request.libraries = [{id: 'package', version: 'v1'}];
+            };
+            const request = makeParsedRequest({overrides: [envOverride({CMAKE_PREFIX_PATH: '/existing'})]});
+            request.libraries = [{id: 'package', version: 'v1'}];
 
-        const plan = await cmakeBuildSystem.getBuildPlan(makeContext(compiler, env, request));
+            const plan = await cmakeBuildSystem.getBuildPlan(makeContext(compiler, env, request, dirPath));
 
-        expect(plan.steps[0].execParams.env.CMAKE_PREFIX_PATH).toEqual(
-            ['/existing', '/opt/package', '/opt/package-extra'].join(path.delimiter),
-        );
+            expect(plan.steps[0].execParams.env.CMAKE_PREFIX_PATH).toEqual(
+                ['/existing', path.join(dirPath, GENERATED_PACKAGE_DIRNAME, 'package')].join(path.delimiter),
+            );
+        } finally {
+            await fs.rm(dirPath, {recursive: true, force: true});
+        }
     });
 
     it('surfaces a failure explanation as a hint, not only in the build log', async () => {
@@ -476,16 +474,13 @@ describe('CMake build system', () => {
             env,
         );
         (compiler as any).supportedLibraries = {
-            package: {
-                versions: {
-                    v1: {cmakeprefixpath: ['/opt/package']},
-                },
-            },
+            package: {versions: {v1: {version: '1.0', path: ['/opt/package/include'], libpath: [], options: []}}},
         };
 
-        expect(await compiler.getCMakePrefixPaths([{id: 'package', version: 'v1'}], '/tmp/ce-build')).toEqual([
+        const dirPath = '/tmp/ce-build';
+        expect(await compiler.getCMakePrefixPaths([{id: 'package', version: 'v1'}], dirPath)).toEqual([
             '/opt/compiler-explorer/llvm-mos',
-            '/opt/package',
+            path.join(dirPath, GENERATED_PACKAGE_DIRNAME, 'package'),
         ]);
     });
 

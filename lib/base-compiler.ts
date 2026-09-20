@@ -3002,21 +3002,13 @@ export class BaseCompiler {
     }
 
     /**
-     * Prefixes handed to CMake for the selected libraries, in decreasing order of specificity:
-     * any `cmakeprefixpath` configured for the library, then real install trees the library's own
-     * package provides, then packages generated from the library's properties for the majority of
-     * libraries that ship no CMake config of their own.
+     * Prefixes handed to CMake for the selected libraries: real install trees the library's own package
+     * provides, then packages generated from the library's properties for the majority of libraries that
+     * ship no CMake config of their own.
      */
     async getCMakePrefixPaths(libraries: SelectedLibraryVersion[], dirPath: string): Promise<string[]> {
-        const configured = libraries.flatMap(selectedLib => {
-            const foundVersion = this.findLibVersion(selectedLib);
-            return foundVersion?.cmakeprefixpath || [];
-        });
-
         const generator = this.makeCMakePackageGenerator(dirPath);
-        const prefixes = await generator.prefixPaths(this.resolveCMakeLibraries(libraries));
-
-        return _.uniq([...configured, ...prefixes]);
+        return _.uniq(await generator.prefixPaths(this.resolveCMakeLibraries(libraries)));
     }
 
     private makeCMakePackageGenerator(dirPath: string): CMakePackageGenerator {
