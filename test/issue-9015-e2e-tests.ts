@@ -21,12 +21,14 @@
 // CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
-//
-// End-to-end coverage for issue #9015.
-//
-// Drives a real BaseCompiler.compile() in compilation-worker mode against an in-memory S3 that
-// records the exact object keys written, then replays what ce-router does with the s3Key it was
-// handed: GetObject on COMPILATION_RESULTS_PREFIX + s3Key.
+
+/**
+ * End-to-end coverage for issue #9015.
+ *
+ * Drives a real BaseCompiler.compile() in compilation-worker mode against an in-memory S3 that
+ * records the exact object keys written, then replays what ce-router does with the s3Key it was
+ * handed: GetObject on COMPILATION_RESULTS_PREFIX + s3Key.
+ */
 
 import fs from 'node:fs';
 import path from 'node:path';
