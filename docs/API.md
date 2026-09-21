@@ -32,6 +32,37 @@ One useful optional field is `releaseTrack`, which categorises each compiler as 
 `experimental`. See [AddingACompiler.md](AddingACompiler.md#release-track) for the categorisation rules and how to
 override them.
 
+#### Deduplicating repeated fields with `?dedupe=`
+
+`possibleOverrides` and `possibleRuntimeTools` hold large values that repeat verbatim across most compilers of a
+language: for C on godbolt.org, `possibleOverrides` alone is 84% of the response, and a single 63KB `toolchain`
+override is repeated across ~150 compilers. Adding `?dedupe=possibleOverrides,possibleRuntimeTools` interns those
+values into a shared table, which cuts the C response from 13.6MB to 1.85MB.
+
+Only `possibleOverrides` and `possibleRuntimeTools` are supported; any other name in the list is ignored.
+
+When the parameter names at least one supported field, the response is an object rather than the usual bare array,
+and each deduplicated field holds indices into the matching `refs` table instead of the values themselves:
+
+```json
+{
+  "compilers": [
+    {"id": "g142", "possibleOverrides": [0, 1]},
+    {"id": "g143", "possibleOverrides": [0]}
+  ],
+  "refs": {
+    "possibleOverrides": [{"type": "options", "name": "toolchain", "...": "..."}, {"...": "..."}]
+  }
+}
+```
+
+Expanding `refs[field][index]` back into each compiler reproduces the undeduplicated response exactly. The tables
+only contain values actually referenced by the compilers in the response.
+
+This is purely opt-in: omit `dedupe` and you get today's shape. It is also ignored for `?fields=all`. Clients that
+want to work against instances both with and without support should keep the field in `fields` as well and branch on
+whether the response is an array.
+
 ### `GET /api/compilers/<language-id>` - return a list of compilers with matching language
 
 Returns a list of compilers for the provided language id. In text form, there's a simple formatting of the ID of the

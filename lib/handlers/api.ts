@@ -27,7 +27,13 @@ import _ from 'underscore';
 
 import {BuildSystems} from '../../shared/build-systems.js';
 import {isString, unique} from '../../shared/common-utils.js';
-import {CompilerInfo} from '../../types/compiler.interfaces.js';
+import {
+    CompilerInfo,
+    DEDUPABLE_COMPILER_FIELDS,
+    DedupableCompilerField,
+    DedupedCompilerInfo,
+    DedupedCompilerList,
+} from '../../types/compiler.interfaces.js';
 import {Language, LanguageKey} from '../../types/languages.interfaces.js';
 import {assert, unwrap, unwrapString} from '../assert.js';
 import {ClientStateNormalizer} from '../clientstate-normalizer.js';
@@ -67,6 +73,8 @@ export class ApiHandler {
         releaseBuildNumber: '',
     };
     private readonly compilationEnvironment: CompilationEnvironment;
+    /** Per dedupable field, a map from every value seen in {@link compilers} to the first value with that content. */
+    private readonly canonicalDedupeValues = new Map<DedupableCompilerField, Map<unknown, unknown>>();
 
     constructor(
         public readonly compileHandler: CompileHandler,
@@ -207,7 +215,75 @@ export class ApiHandler {
         });
     }
 
-    outputList(list: CompilerInfo[] | Language[], title: string, req: express.Request, res: express.Response) {
+    /**
+     * The supported fields named by a `?dedupe=` request, or an empty array if the client didn't ask for any. An
+     * empty result means the response keeps its historic bare-array shape.
+     */
+    private parseDedupeFields(dedupe: unknown, allowed: boolean): DedupableCompilerField[] {
+        if (!allowed || !isString(dedupe)) return [];
+        return DEDUPABLE_COMPILER_FIELDS.filter(field => dedupe.split(',').includes(field));
+    }
+
+    /**
+     * Values of a dedupable field repeat verbatim across compilers (the `toolchain` override alone is one 63KB
+     * object shared by ~150 compilers), so serialising each compiler's copy dominates the response. Interning them
+     * by content is only worth doing once per compiler list, hence the cache.
+     */
+    private getCanonicalDedupeValues(field: DedupableCompilerField): Map<unknown, unknown> {
+        let canonical = this.canonicalDedupeValues.get(field);
+        if (!canonical) {
+            canonical = new Map<unknown, unknown>();
+            const byContent = new Map<string, unknown>();
+            for (const compiler of this.compilers) {
+                for (const value of compiler[field] ?? []) {
+                    const content = JSON.stringify(value);
+                    if (!byContent.has(content)) byContent.set(content, value);
+                    canonical.set(value, byContent.get(content));
+                }
+            }
+            this.canonicalDedupeValues.set(field, canonical);
+        }
+        return canonical;
+    }
+
+    private dedupeList(list: Record<string, unknown>[], fields: DedupableCompilerField[]): DedupedCompilerList {
+        const tables = fields.map(field => ({
+            field,
+            table: [] as unknown[],
+            canonical: this.getCanonicalDedupeValues(field),
+            indices: new Map<unknown, number>(),
+        }));
+
+        const compilers = list.map(entry => {
+            const deduped: Record<string, unknown> = {...entry};
+            for (const {field, table, canonical, indices} of tables) {
+                const values = entry[field];
+                if (!Array.isArray(values)) continue;
+                deduped[field] = values.map(value => {
+                    const shared = canonical.get(value) ?? value;
+                    let index = indices.get(shared);
+                    if (index === undefined) {
+                        index = table.length;
+                        table.push(shared);
+                        indices.set(shared, index);
+                    }
+                    return index;
+                });
+            }
+            return deduped as DedupedCompilerInfo;
+        });
+
+        const refs = Object.fromEntries(tables.map(({field, table}) => [field, table])) as DedupedCompilerList['refs'];
+        return {compilers, refs};
+    }
+
+    outputList(
+        list: CompilerInfo[] | Language[],
+        title: string,
+        req: express.Request,
+        res: express.Response,
+        dedupable = false,
+    ) {
         if (req.accepts(['text', 'json']) === 'json') {
             if (req.query.fields === 'all') {
                 res.send(list);
@@ -222,14 +298,18 @@ export class ApiHandler {
                     'monaco',
                     'instructionSet',
                 ];
+                let fields = defaultfields;
                 if (req.query.fields) {
                     assert(isString(req.query.fields));
-                    const filteredList = this.filterCompilerProperties(list, req.query.fields.split(','));
-                    res.send(filteredList);
-                } else {
-                    const filteredList = this.filterCompilerProperties(list, defaultfields);
-                    res.send(filteredList);
+                    fields = req.query.fields.split(',');
                 }
+                const filteredList = this.filterCompilerProperties(list, fields);
+                const dedupeFields = this.parseDedupeFields(req.query.dedupe, dedupable);
+                res.send(
+                    dedupeFields.length > 0
+                        ? this.dedupeList(filteredList as Record<string, unknown>[], dedupeFields)
+                        : filteredList,
+                );
             }
             return;
         }
@@ -425,7 +505,7 @@ export class ApiHandler {
                 : compiler,
         );
 
-        this.outputList(slimmedCompilers, 'Compiler Name', req, res);
+        this.outputList(slimmedCompilers, 'Compiler Name', req, res, true);
     }
 
     handleReleaseName(req: express.Request, res: express.Response) {
@@ -438,6 +518,7 @@ export class ApiHandler {
 
     setCompilers(compilers: CompilerInfo[]) {
         this.compilers = compilers;
+        this.canonicalDedupeValues.clear();
         this.usedLangIds = unique(this.compilers.map(compiler => compiler.lang));
     }
 
