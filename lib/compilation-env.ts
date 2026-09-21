@@ -181,23 +181,19 @@ export class CompilationEnvironment {
         }
     }
 
-    // Returns the key the value was stored under, relative to the cache's own path.
+    hasSharedCache(): boolean {
+        return this.cache.isShared;
+    }
+
+    // Stores a value for another process to fetch and returns the key it went under, relative to
+    // the cache's own path, or undefined when there is nowhere a reader could fetch it from.
     async tempCachePutWithTTL(
         object: CacheableValue,
         jsonString: string,
         ttlDays: number,
         creator: string | undefined,
-    ): Promise<string> {
-        const key = BaseCache.hash(object);
-
-        // Check if cache is S3Cache to use TTL functionality with temp path
-        if (this.cache instanceof S3Cache) {
-            await this.cache.putWithTTLAndPath(key, Buffer.from(jsonString), ttlDays, 'temp', creator);
-            return `temp/${key}`;
-        }
-        // Fallback to regular put for non-S3 caches
-        await this.cache.put(key, jsonString, creator);
-        return key;
+    ): Promise<string | undefined> {
+        return this.cache.putShared(BaseCache.hash(object), Buffer.from(jsonString), ttlDays, creator);
     }
 
     getExecutableHash(object: CacheableValue): string {

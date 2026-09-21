@@ -34,6 +34,7 @@ import {splitArguments, unique} from '../shared/common-utils.js';
 import {OptRemark} from '../static/panes/opt-view.interfaces.js';
 import {PPOptions} from '../static/panes/pp-view.interfaces.js';
 import {ParsedAsmResult, ParsedAsmResultLine} from '../types/asmresult/asmresult.interfaces.js';
+import {CacheableValue} from '../types/cache.interfaces.js';
 import {ClangirBackendOptions} from '../types/compilation/clangir.interfaces.js';
 import {
     ActiveTool,
@@ -3104,7 +3105,6 @@ export class BaseCompiler {
                         );
                         if (cached) {
                             cached.retreivedFromCache = true;
-                            cached.s3Key = BaseCache.hash(cacheKey);
 
                             delete cached.inputFilename;
                             delete cached.dirPath;
@@ -3395,24 +3395,9 @@ export class BaseCompiler {
         }
 
         this.cleanupResult(fullResult);
-        fullResult.s3Key = BaseCache.hash(cacheKey);
-
-        // In worker mode, store large non-cacheable results with short TTL
-        if (this.isCompilationWorker && !fullResult.result?.okToCache && fullResult) {
-            // Check if result is large enough to require S3 storage
-            const resultString = JSON.stringify(fullResult);
-            const resultSize = resultString.length;
-
-            if (resultSize > WEBSOCKET_SIZE_THRESHOLD) {
-                // Too big for the websocket: hand the reader an out-of-band key instead
-                fullResult.s3Key = await this.env.tempCachePutWithTTL(
-                    cacheKey,
-                    resultString,
-                    TEMP_STORAGE_TTL_DAYS,
-                    undefined,
-                );
-            }
-        }
+        // Never the cached copy: afterCmakeCompilation cached it before the cleanup just above, so
+        // it still names the temporary directories we mask here.
+        await this.storeOversizedResult(fullResult, cacheKey, false);
 
         return fullResult;
     }
@@ -3487,7 +3472,6 @@ export class BaseCompiler {
                 const cacheRetrieveTimeEnd = process.hrtime.bigint();
                 result.retreivedFromCacheTime = utils.deltaTimeNanoToMili(cacheRetrieveTimeStart, cacheRetrieveTimeEnd);
                 result.retreivedFromCache = true;
-                result.s3Key = BaseCache.hash(key);
                 if (doExecute) {
                     const queueTime = performance.now();
                     result.execResult = await this.env.enqueue(
@@ -3505,6 +3489,7 @@ export class BaseCompiler {
                         await this.doTempfolderCleanup(result.execResult.buildResult);
                     }
                 }
+                await this.storeOversizedResult(result, key as any, !result.execResult);
                 return result;
             }
         }
@@ -3671,21 +3656,32 @@ export class BaseCompiler {
             }
         }
 
-        result.s3Key = BaseCache.hash(key);
-
-        // In worker mode, store large non-cacheable results with short TTL
-        if (this.isCompilationWorker && !result.okToCache && !delayCaching) {
-            // Check if result is large enough to require S3 storage
-            const resultString = JSON.stringify(result);
-            const resultSize = resultString.length;
-
-            if (resultSize > WEBSOCKET_SIZE_THRESHOLD) {
-                // Too big for the websocket: hand the reader an out-of-band key instead
-                result.s3Key = await this.env.tempCachePutWithTTL(key, resultString, TEMP_STORAGE_TTL_DAYS, undefined);
-            }
-        }
+        // The cmake flow finishes the result off itself, so it stores it there rather than here.
+        // What was cached above is this result without the execResult attached since.
+        if (!delayCaching) await this.storeOversizedResult(result, key, !!result.okToCache && !result.execResult);
 
         return result;
+    }
+
+    // A result too big for the websocket is fetched from storage instead, so the worker reports
+    // where to find it. When the cache already holds this exact payload the reader is pointed at
+    // that; otherwise a copy goes under temp/, which is not a key cacheGet reads, so a result we
+    // were told not to cache can never come back as a cache hit. Callers say which case they are
+    // in, because the two flows cache at different points: see the call sites.
+    protected async storeOversizedResult(
+        result: CompilationResult,
+        key: CacheableValue,
+        cacheHoldsThisPayload: boolean,
+    ): Promise<void> {
+        if (!this.isCompilationWorker) return;
+        const resultString = JSON.stringify(result);
+        if (resultString.length <= WEBSOCKET_SIZE_THRESHOLD) return;
+        if (cacheHoldsThisPayload) {
+            if (this.env.hasSharedCache()) result.s3Key = BaseCache.hash(key);
+            return;
+        }
+        const s3Key = await this.env.tempCachePutWithTTL(key, resultString, TEMP_STORAGE_TTL_DAYS, undefined);
+        if (s3Key) result.s3Key = s3Key;
     }
 
     async afterCmakeCompilation(

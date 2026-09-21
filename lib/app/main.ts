@@ -170,6 +170,11 @@ export async function initialiseApplication(options: ApplicationOptions): Promis
     }
 
     if (isCompilationWorker) {
+        // A worker hands large results to its reader through shared storage, so without one it
+        // would drop every result over the websocket size limit. Say so now rather than per
+        // compilation, where it surfaces only as the reader timing out.
+        if (!compilationEnvironment.hasSharedCache())
+            throw new Error('Compilation worker mode needs a cacheConfig with an S3 layer to hand results over');
         startCompilationWorkerThread(ceProps, awsProps, compilationEnvironment, appArgs);
     }
 
