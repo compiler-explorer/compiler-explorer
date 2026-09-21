@@ -59,7 +59,7 @@ export type RemoteCompilationRequest = {
     /** The original, CMake-only spelling of buildSystem. Still sent by producers we don't deploy in lockstep with. */
     isCMake?: boolean;
     queueTimeMs?: number;
-    headers: Record<string, string>;
+    headers: Record<string, string | string[]>;
     queryStringParameters: Record<string, string>;
 };
 
@@ -125,6 +125,16 @@ export function getRequestedBuildSystem(msg: RemoteCompilationRequest): BuildSys
         return buildSystem;
     }
     return msg.isCMake ? cmakeBuildSystem : undefined;
+}
+
+/**
+ * Whether a queued request's recorded content-type names JSON. Producers record the caller's header verbatim, so it
+ * can carry parameters (`application/json; charset=utf-8`) or arrive repeated. This matches what `req.is('json')`
+ * decides for the same header on the HTTP route, so a request compiles the same way whichever path it arrived by.
+ */
+export function isJsonContentType(contentType: string | string[] | undefined): boolean {
+    const value = Array.isArray(contentType) ? contentType[0] : contentType;
+    return value?.split(';')[0].trim().toLowerCase() === 'application/json';
 }
 
 export class SqsCompilationQueueBase {
@@ -352,7 +362,7 @@ async function doOneCompilation(
                 throw new Error(`Compiler with ID ${msg.compilerId} not found for language ${msg.lang}`);
             }
 
-            const isJson = msg.headers['content-type'] === 'application/json';
+            const isJson = isJsonContentType(msg.headers['content-type']);
             const query = msg.queryStringParameters;
 
             const parsedRequest = CompileHandler.parseRequestReusable(
