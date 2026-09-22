@@ -151,39 +151,46 @@ function doCompile(compiler: BaseCompiler): Promise<CompilationResult> {
     );
 }
 
-describe('Issue 9015: a worker reports where it actually put a large result', () => {
-    beforeEach(() => installFakeS3());
+// Both suites drive a real compilation, and the stand-in compiler below is a shell script, which
+// Windows cannot spawn. What they cover - which key an oversized result is reported under, and
+// where it is stored - has no platform-specific part; the script is only a way to produce a result
+// that is both too large for the websocket and marked okToCache: false.
+describe.skipIf(process.platform === 'win32')(
+    'Issue 9015: a worker reports where it actually put a large result',
+    () => {
+        beforeEach(() => installFakeS3());
 
-    it.each([
-        // Exactly what etc/config/compiler-explorer.amazon.properties has.
-        ['layered, as deployed', `InMemory(25);S3(${BUCKET},cache,us-east-1)`],
-        ['a bare S3 cache', `S3(${BUCKET},cache,us-east-1)`],
-    ])('is fetchable by ce-router with %s', async (_name, cacheConfig) => {
-        const compiler = makeWorkerCompiler(makeWorkerEnvironment(cacheConfig));
-        const result = await doCompile(compiler);
+        it.each([
+            // Exactly what etc/config/compiler-explorer.amazon.properties has.
+            ['layered, as deployed', `InMemory(25);S3(${BUCKET},cache,us-east-1)`],
+            ['a bare S3 cache', `S3(${BUCKET},cache,us-east-1)`],
+        ])('is fetchable by ce-router with %s', async (_name, cacheConfig) => {
+            const compiler = makeWorkerCompiler(makeWorkerEnvironment(cacheConfig));
+            const result = await doCompile(compiler);
 
-        // Preconditions: this is the shape of result the issue is about.
-        expect(result.okToCache).toBe(false);
-        expect(JSON.stringify(result).length).toBeGreaterThan(31 * 1024);
-        expect(result.s3Key).toBeDefined();
+            // Preconditions: this is the shape of result the issue is about.
+            expect(result.okToCache).toBe(false);
+            expect(JSON.stringify(result).length).toBeGreaterThan(31 * 1024);
+            expect(result.s3Key).toBeDefined();
 
-        await expect(routerFetch(result.s3Key!)).resolves.toHaveProperty('asm');
+            await expect(routerFetch(result.s3Key!)).resolves.toHaveProperty('asm');
 
-        // Hand the same bucket state to ce-router's own test, which runs the real ResultWaiter.
-        if (process.env.ISSUE_9015_DUMP) {
-            fs.writeFileSync(
-                process.env.ISSUE_9015_DUMP,
-                JSON.stringify({
-                    bucket: BUCKET,
-                    s3Key: result.s3Key,
-                    objects: Object.fromEntries([...s3Objects].map(([k, v]) => [k, v.toString('utf8')])),
-                }),
-            );
-        }
-    });
-});
+            // Hand the same bucket state to ce-router's own test, which runs the real ResultWaiter.
+            if (process.env.ISSUE_9015_DUMP) {
+                fs.writeFileSync(
+                    process.env.ISSUE_9015_DUMP,
+                    JSON.stringify({
+                        bucket: BUCKET,
+                        s3Key: result.s3Key,
+                        objects: Object.fromEntries([...s3Objects].map(([k, v]) => [k, v.toString('utf8')])),
+                    }),
+                );
+            }
+        });
+    },
+);
 
-describe('Issue 9015, second half: where that result is stored', () => {
+describe.skipIf(process.platform === 'win32')('Issue 9015, second half: where that result is stored', () => {
     beforeEach(() => installFakeS3());
 
     // The result goes under temp/, which is not a key cacheGet reads, so a result we were told not
