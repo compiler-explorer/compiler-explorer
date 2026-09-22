@@ -479,7 +479,7 @@ describe('CMake build system', () => {
 
         const dirPath = '/tmp/ce-build';
         expect(await compiler.getCMakePrefixPaths([{id: 'package', version: 'v1'}], dirPath)).toEqual([
-            '/opt/compiler-explorer/llvm-mos',
+            path.normalize('/opt/compiler-explorer/llvm-mos'),
             path.join(dirPath, GENERATED_PACKAGE_DIRNAME, 'package'),
         ]);
     });

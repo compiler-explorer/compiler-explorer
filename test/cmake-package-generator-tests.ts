@@ -229,12 +229,12 @@ describe('CMakePackageGenerator jailed builds', () => {
     const gen = new CMakePackageGenerator(hostDir, {buildDirPath: '/app'});
 
     it('embeds the build-visible extraction dir, not the host one', () => {
-        expect(gen.libraryDirsFor(fmtLib())).toEqual(['/app/fmt/lib']);
+        expect(gen.libraryDirsFor(fmtLib())).toEqual([path.join('/app', 'fmt', 'lib')]);
     });
 
     it('embeds the build-visible include dir for packagedheaders libraries', () => {
         const lib = makeLib('qt', {packagedheaders: true});
-        expect(gen.includeDirsFor(lib)).toEqual(['/app/qt/include']);
+        expect(gen.includeDirsFor(lib)).toEqual([path.join('/app', 'qt', 'include')]);
     });
 
     it('never leaks the host compilation dir into the rendered config', () => {
