@@ -2983,6 +2983,15 @@ export class BaseCompiler {
         return libsAndOptions;
     }
 
+    getCMakePrefixPaths(libraries: SelectedLibraryVersion[]): string[] {
+        return _.union(
+            libraries.flatMap(selectedLib => {
+                const foundVersion = this.findLibVersion(selectedLib);
+                return foundVersion?.cmakeprefixpath || [];
+            }),
+        );
+    }
+
     getExtraCMakeArgs(key: ParsedRequest): string[] {
         if (this.lang.id === 'assembly' && this.compiler.exe) {
             return [`-DCMAKE_ASM_COMPILER=${this.compiler.exe}`];
