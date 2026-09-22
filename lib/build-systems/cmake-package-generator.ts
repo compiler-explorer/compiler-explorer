@@ -283,6 +283,9 @@ export class CMakePackageGenerator {
         for (const linkName of linkNames) {
             const variable = `_ce_${name}_${linkName}_LIBRARY`;
             resolvedVars.push(variable);
+            const notFound =
+                `Compiler Explorer: library '${lib.id}' declares link library '${linkName}' ` +
+                `but it was not found in ${escapeCMakeString(libraryDirs.join(', '))}`;
             lines.push(
                 `find_library(${variable}`,
                 `  NAMES ${linkName}`,
@@ -291,8 +294,7 @@ export class CMakePackageGenerator {
                 `if(NOT ${variable})`,
                 // Silently omitting the target turns a missing binary into an inscrutable
                 // undefined-reference at link time, long after the cause is visible.
-                `  message(FATAL_ERROR "Compiler Explorer: library '${lib.id}' declares link library `,
-                `'${linkName}' but it was not found in ${escapeCMakeString(libraryDirs.join(', '))}")`,
+                `  message(FATAL_ERROR "${notFound}")`,
                 'endif()',
                 `add_library(${name}::${linkName} UNKNOWN IMPORTED)`,
                 `set_target_properties(${name}::${linkName} PROPERTIES`,
@@ -304,16 +306,22 @@ export class CMakePackageGenerator {
             );
         }
 
-        // The aggregate target: what `find_package(foo)` users reach for as `foo::foo`.
-        lines.push(`add_library(${name}::${name} INTERFACE IMPORTED)`);
-        if (includeDirs.length > 0) {
-            lines.push(
-                `set_target_properties(${name}::${name} PROPERTIES`,
-                `  INTERFACE_INCLUDE_DIRECTORIES ${quotedList(includeDirs)}`,
-                ')',
-            );
+        // The aggregate target: what `find_package(foo)` users reach for as `foo::foo`. When the
+        // library id is itself one of its link names - benchmark, re2, fmt at some versions - the
+        // loop above has already created `foo::foo` as the imported library, and CMake rejects a
+        // second add_library() for it. That target is then the aggregate, and linking it to itself
+        // would be a cycle, so only the remaining link names are attached.
+        if (!linkNames.includes(name)) {
+            lines.push(`add_library(${name}::${name} INTERFACE IMPORTED)`);
+            if (includeDirs.length > 0) {
+                lines.push(
+                    `set_target_properties(${name}::${name} PROPERTIES`,
+                    `  INTERFACE_INCLUDE_DIRECTORIES ${quotedList(includeDirs)}`,
+                    ')',
+                );
+            }
         }
-        for (const linkName of linkNames) {
+        for (const linkName of linkNames.filter(linkName => linkName !== name)) {
             lines.push(
                 `set_property(TARGET ${name}::${name} APPEND PROPERTY INTERFACE_LINK_LIBRARIES ${name}::${linkName})`,
             );

@@ -197,6 +197,39 @@ describe('CMakePackageGenerator config rendering', () => {
         expect(config).toContain('message(FATAL_ERROR');
     });
 
+    // A CE library id is often also its link name: benchmark, re2, and fmt at 4.0.0 all are. The
+    // per-link target and the aggregate are then the same name, and CMake rejects the second
+    // add_library() with "another target with the same name already exists".
+    it('creates the aggregate only once when the library id is also its link name', () => {
+        const config = gen.renderConfig(
+            makeLib('benchmark', {
+                version: '1.6.2',
+                path: ['/opt/compiler-explorer/libs/google-benchmark/1.6.2/include'],
+                staticliblink: ['benchmark'],
+            }),
+        );
+        expect(config.match(/add_library\(benchmark::benchmark /g)).toHaveLength(1);
+        expect(config).toContain('add_library(benchmark::benchmark UNKNOWN IMPORTED)');
+        expect(config).not.toContain('add_library(benchmark::benchmark INTERFACE IMPORTED)');
+    });
+
+    it('never links the aggregate to itself, which would be a dependency cycle', () => {
+        const config = gen.renderConfig(makeLib('re2', {path: ['/opt/re2/include'], staticliblink: ['re2']}));
+        expect(config).not.toContain('set_property(TARGET re2::re2 APPEND PROPERTY INTERFACE_LINK_LIBRARIES re2::re2)');
+        // The unqualified `re2` target linking to `re2::re2` is a different target, and correct.
+        expect(config).toContain('set_target_properties(re2 PROPERTIES INTERFACE_LINK_LIBRARIES re2::re2)');
+    });
+
+    it('still attaches the other link libraries when one of them is the library id', () => {
+        const config = gen.renderConfig(
+            makeLib('benchmark', {path: ['/opt/b/include'], staticliblink: ['benchmark', 'benchmark_main']}),
+        );
+        expect(config).toContain('add_library(benchmark::benchmark_main UNKNOWN IMPORTED)');
+        expect(config).toContain(
+            'set_property(TARGET benchmark::benchmark APPEND PROPERTY INTERFACE_LINK_LIBRARIES benchmark::benchmark_main)',
+        );
+    });
+
     it('guards against being included twice', () => {
         expect(gen.renderConfig(fmtLib())).toContain('if(TARGET fmt::fmt)');
     });
