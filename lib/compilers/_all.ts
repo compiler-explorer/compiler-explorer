@@ -93,6 +93,7 @@ export {GCCCompiler} from './gcc.js';
 export {GCCCobolCompiler} from './gcccobol.js';
 export {GCCRSCompiler} from './gccrs.js';
 export {GCCGimpleCompiler} from './gimple.js';
+export {GleamCompiler} from './gleam.js';
 export {GLSLCompiler} from './glsl.js';
 export {GM2Compiler} from './gm2.js';
 export {GnuCobolCompiler} from './gnucobol.js';
