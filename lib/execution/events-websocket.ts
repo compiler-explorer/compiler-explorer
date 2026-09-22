@@ -201,7 +201,11 @@ export class PersistentEventsSender extends EventsWsBase {
                 `Max websocket reconnection attempts (${this.maxReconnectAttempts}) reached for ${this.events_url}`,
             );
             this.hasPermanentlyFailed = true;
-            this.rejectQueuedMessages(new Error('WebSocket connection failed permanently'));
+            const error = new Error('WebSocket connection failed permanently');
+            this.rejectQueuedMessages(error);
+            // Their timeouts were cleared when the socket closed and nothing will reschedule them, so without
+            // this they stay in the map forever and isReadyForNewMessages() never returns true again.
+            this.rejectPendingAcks(error);
             return;
         }
 
@@ -245,6 +249,14 @@ export class PersistentEventsSender extends EventsWsBase {
                 message.reject(error);
             }
         }
+    }
+
+    private rejectPendingAcks(error: Error): void {
+        for (const [, pending] of this.pendingAcks.entries()) {
+            clearTimeout(pending.timeout);
+            pending.reject(error);
+        }
+        this.pendingAcks.clear();
     }
 
     private handleAcknowledgment(guid: string): void {
@@ -420,11 +432,7 @@ export class PersistentEventsSender extends EventsWsBase {
         this.stopHeartbeat();
 
         // Only clear pending acknowledgments if this is an intentional close
-        for (const [, pending] of this.pendingAcks.entries()) {
-            clearTimeout(pending.timeout);
-            pending.reject(new Error('WebSocket connection closing'));
-        }
-        this.pendingAcks.clear();
+        this.rejectPendingAcks(new Error('WebSocket connection closing'));
 
         // Reject any queued messages
         this.rejectQueuedMessages(new Error('WebSocket connection closing'));
