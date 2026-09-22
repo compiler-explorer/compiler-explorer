@@ -100,6 +100,16 @@ export abstract class BaseCache implements Cache {
         return this.putInternal(key, value, creator);
     }
 
+    // An in-memory cache is private to this process and an on-disk one to this machine, so by
+    // default there is nowhere a reader in another process could fetch from.
+    get isShared(): boolean {
+        return false;
+    }
+
+    async putShared(key: string, value: Buffer, ttlDays: number, creator?: string): Promise<string | undefined> {
+        return undefined;
+    }
+
     abstract getInternal(key: string): Promise<GetResult>;
 
     abstract putInternal(key: string, value: Buffer, creator?: string): Promise<void>;
