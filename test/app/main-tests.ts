@@ -54,10 +54,11 @@ vi.mock('../../lib/execution/execution-query.js');
 vi.mock('../../lib/execution/execution-triple.js');
 vi.mock('../../lib/execution/sqs-execution-queue.js');
 vi.mock('../../lib/compilation/sqs-compilation-queue.js');
+const sharedCache = vi.hoisted(() => ({available: true}));
 vi.mock('../../lib/compilation-env.js', () => ({
     CompilationEnvironment: class {
         setCompilerFinder = vi.fn();
-        hasSharedCache = vi.fn().mockReturnValue(true);
+        hasSharedCache = vi.fn(() => sharedCache.available);
         constructor(
             _compilerProps: any,
             _awsProps: any,
@@ -192,6 +193,7 @@ describe('Main module', () => {
 
     // Setup mocks
     beforeEach(() => {
+        sharedCache.available = true;
         vi.spyOn(logger, 'info').mockImplementation(() => logger);
         vi.spyOn(logger, 'warn').mockImplementation(() => logger);
         vi.spyOn(logger, 'debug').mockImplementation(() => logger);
@@ -389,6 +391,23 @@ describe('Main module', () => {
         });
 
         expect(await healthcheckStatusAfterStartup()).toEqual(200);
+    });
+
+    it('should refuse to start a compilation worker without shared storage', async () => {
+        vi.mocked(mockConfig.ceProps).mockImplementation((key: string, defaultValue?: any) => {
+            if (key === 'compilequeue.is_worker') return true;
+            return defaultValue;
+        });
+        sharedCache.available = false;
+
+        await expect(
+            initialiseApplication({
+                appArgs: mockAppArgs,
+                config: mockConfig as any,
+                distPath: '/test/dist',
+                awsProps: vi.fn() as any,
+            }),
+        ).rejects.toThrow('cacheConfig with an S3 layer');
     });
 
     it('should throw an error if no compilers are found', async () => {
