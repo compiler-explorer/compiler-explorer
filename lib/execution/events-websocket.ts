@@ -171,6 +171,8 @@ export class PersistentEventsSender extends EventsWsBase {
                 const message = JSON.parse(data.toString());
                 if (message.type === 'ack' && message.guid) {
                     this.handleAcknowledgment(message.guid);
+                } else if (message.type === 'nack' && message.guid) {
+                    this.handleNoListeners(message.guid, message.reason);
                 }
             } catch (error) {
                 logger.warn('Failed to parse WebSocket message:', error);
@@ -267,6 +269,22 @@ export class PersistentEventsSender extends EventsWsBase {
             pending.resolve();
             logger.debug(`Received acknowledgment for ${guid}`);
         }
+    }
+
+    /**
+     * Give up on a result the events server says nobody is waiting for.
+     *
+     * Retrying would send it twice more over nine seconds to the same empty room, and this
+     * worker pulls no new work until the map is empty, so the time is taken out of throughput
+     * on a queue that is usually deep precisely because requests have been timing out.
+     */
+    private handleNoListeners(guid: string, reason?: string): void {
+        const pending = this.pendingAcks.get(guid);
+        if (!pending) return;
+        clearTimeout(pending.timeout);
+        this.pendingAcks.delete(guid);
+        logger.warn(`No listeners for ${guid} (${reason ?? 'unspecified'}), abandoning the result`);
+        pending.reject(new Error(`No listeners for ${guid}`));
     }
 
     private setupAckTimeout(guid: string, messageData: any, resolve: () => void, reject: (error: any) => void): void {
