@@ -25,12 +25,14 @@
 import fs from 'node:fs/promises';
 
 import express from 'express';
+import request from 'supertest';
 import {afterEach, beforeEach, describe, expect, it, vi} from 'vitest';
 
 import {initialiseApplication} from '../../lib/app/main.js';
 import * as server from '../../lib/app/server.js';
 import {AppArguments} from '../../lib/app.interfaces.js';
 import * as aws from '../../lib/aws.js';
+import * as compilationQueueModule from '../../lib/compilation/sqs-compilation-queue.js';
 import {CompilationQueue} from '../../lib/compilation-queue.js';
 import * as exec from '../../lib/exec.js';
 import {RemoteExecutionQuery} from '../../lib/execution/execution-query.js';
@@ -51,9 +53,17 @@ vi.mock('../../lib/exec.js');
 vi.mock('../../lib/execution/execution-query.js');
 vi.mock('../../lib/execution/execution-triple.js');
 vi.mock('../../lib/execution/sqs-execution-queue.js');
+vi.mock('../../lib/compilation/sqs-compilation-queue.js');
+const sharedCache = vi.hoisted(() => ({available: true}));
 vi.mock('../../lib/compilation-env.js', () => ({
     CompilationEnvironment: class {
         setCompilerFinder = vi.fn();
+        hasSharedCache = vi.fn(() => sharedCache.available);
+        constructor(
+            _compilerProps: any,
+            _awsProps: any,
+            public compilationQueue: any,
+        ) {}
     },
 }));
 vi.mock('../../lib/compilation-queue.js');
@@ -80,6 +90,7 @@ vi.mock('../../lib/handlers/compile.js', () => ({
             possibleArguments: {possibleArguments: []},
         });
         handle = vi.fn();
+        hasLanguages = vi.fn().mockReturnValue(true);
     },
 }));
 vi.mock('../../lib/handlers/noscript.js', () => ({
@@ -182,6 +193,7 @@ describe('Main module', () => {
 
     // Setup mocks
     beforeEach(() => {
+        sharedCache.available = true;
         vi.spyOn(logger, 'info').mockImplementation(() => logger);
         vi.spyOn(logger, 'warn').mockImplementation(() => logger);
         vi.spyOn(logger, 'debug').mockImplementation(() => logger);
@@ -200,6 +212,7 @@ describe('Main module', () => {
 
         const mockCompilationQueue = {
             queue: vi.fn(),
+            enqueue: vi.fn(async (job: () => Promise<void>) => await job()),
         };
         vi.mocked(CompilationQueue.fromProps).mockReturnValue(mockCompilationQueue as unknown as CompilationQueue);
 
@@ -303,6 +316,7 @@ describe('Main module', () => {
             if (key === 'execqueue.is_worker') return true;
             return defaultValue;
         });
+        vi.mocked(execQueue.startExecutionWorkerThread).mockReturnValue(() => true);
 
         await initialiseApplication({
             appArgs: mockAppArgs,
@@ -313,6 +327,87 @@ describe('Main module', () => {
 
         expect(execTriple.initHostSpecialties).toHaveBeenCalled();
         expect(execQueue.startExecutionWorkerThread).toHaveBeenCalled();
+    });
+
+    // The worker's health predicate is only useful if it reaches the controller; before #9150 it was
+    // computed and thrown away, so a permanently failed worker kept reporting healthy.
+    async function healthcheckStatusAfterStartup(): Promise<number> {
+        const {healthcheckController} = vi.mocked(server.setupWebServer).mock.lastCall![2];
+        const app = express();
+        app.use(healthcheckController.createRouter());
+        const response = await request(app).get('/healthcheck');
+        return response.status;
+    }
+
+    it('should report unhealthy when the execution worker has failed permanently', async () => {
+        vi.mocked(mockConfig.ceProps).mockImplementation((key: string, defaultValue?: any) => {
+            if (key === 'execqueue.is_worker') return true;
+            if (key === 'healthCheckMinFreeSpaceMiB') return 0;
+            return defaultValue;
+        });
+        vi.mocked(execQueue.startExecutionWorkerThread).mockReturnValue(() => false);
+
+        await initialiseApplication({
+            appArgs: mockAppArgs,
+            config: mockConfig as any,
+            distPath: '/test/dist',
+            awsProps: vi.fn() as any,
+        });
+
+        expect(await healthcheckStatusAfterStartup()).toEqual(500);
+    });
+
+    it('should report unhealthy when the compilation worker has failed permanently', async () => {
+        vi.mocked(mockConfig.ceProps).mockImplementation((key: string, defaultValue?: any) => {
+            if (key === 'compilequeue.is_worker') return true;
+            if (key === 'healthCheckMinFreeSpaceMiB') return 0;
+            return defaultValue;
+        });
+        vi.mocked(compilationQueueModule.startCompilationWorkerThread).mockReturnValue(() => false);
+
+        await initialiseApplication({
+            appArgs: mockAppArgs,
+            config: mockConfig as any,
+            distPath: '/test/dist',
+            awsProps: vi.fn() as any,
+        });
+
+        expect(await healthcheckStatusAfterStartup()).toEqual(500);
+    });
+
+    it('should report healthy when the compilation worker is still working', async () => {
+        vi.mocked(mockConfig.ceProps).mockImplementation((key: string, defaultValue?: any) => {
+            if (key === 'compilequeue.is_worker') return true;
+            if (key === 'healthCheckMinFreeSpaceMiB') return 0;
+            return defaultValue;
+        });
+        vi.mocked(compilationQueueModule.startCompilationWorkerThread).mockReturnValue(() => true);
+
+        await initialiseApplication({
+            appArgs: mockAppArgs,
+            config: mockConfig as any,
+            distPath: '/test/dist',
+            awsProps: vi.fn() as any,
+        });
+
+        expect(await healthcheckStatusAfterStartup()).toEqual(200);
+    });
+
+    it('should refuse to start a compilation worker without shared storage', async () => {
+        vi.mocked(mockConfig.ceProps).mockImplementation((key: string, defaultValue?: any) => {
+            if (key === 'compilequeue.is_worker') return true;
+            return defaultValue;
+        });
+        sharedCache.available = false;
+
+        await expect(
+            initialiseApplication({
+                appArgs: mockAppArgs,
+                config: mockConfig as any,
+                distPath: '/test/dist',
+                awsProps: vi.fn() as any,
+            }),
+        ).rejects.toThrow('cacheConfig with an S3 layer');
     });
 
     it('should throw an error if no compilers are found', async () => {

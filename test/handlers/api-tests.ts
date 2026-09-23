@@ -84,6 +84,7 @@ describe('API handling', () => {
             {
                 handle: res => res.send('compile'),
                 handleCmake: res => res.send('cmake'),
+                handleBuildProject: res => res.send('build'),
                 handlePopularArguments: res => res.send('ok'),
                 handleOptimizationArguments: res => res.send('ok'),
             } as unknown as CompileHandler, // TODO(mrg) ideally fake this out or make it a higher-level interface
@@ -176,6 +177,7 @@ describe('API tools endpoint', () => {
             {
                 handle: res => res.send('compile'),
                 handleCmake: res => res.send('cmake'),
+                handleBuildProject: res => res.send('build'),
                 handlePopularArguments: res => res.send('ok'),
                 handleOptimizationArguments: res => res.send('ok'),
             } as unknown as CompileHandler,
@@ -258,6 +260,7 @@ describe('API compilers tools slimming', () => {
             {
                 handle: res => res.send('compile'),
                 handleCmake: res => res.send('cmake'),
+                handleBuildProject: res => res.send('build'),
                 handlePopularArguments: res => res.send('ok'),
                 handleOptimizationArguments: res => res.send('ok'),
             } as unknown as CompileHandler,
@@ -323,6 +326,7 @@ describe('API libraries field filtering', () => {
             {
                 handle: res => res.send('compile'),
                 handleCmake: res => res.send('cmake'),
+                handleBuildProject: res => res.send('build'),
                 handlePopularArguments: res => res.send('ok'),
                 handleOptimizationArguments: res => res.send('ok'),
             } as unknown as CompileHandler,

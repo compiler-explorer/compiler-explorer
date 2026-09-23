@@ -22,6 +22,7 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
+import type {TreeBuildSystem} from '../shared/build-systems.js';
 import {LanguageKey} from '../types/languages.interfaces.js';
 
 export class ClientStateCompilerOptions {
@@ -217,7 +218,9 @@ export class ClientStateTree {
     id = 1;
     cmakeArgs = '';
     customOutputFilename = '';
+    /** Superseded by buildSystem, but still written so links made here open on an older deployment. */
     isCMakeProject = false;
+    buildSystem: TreeBuildSystem = 'none';
     compilerLanguageId: LanguageKey = 'c++';
     files: MultifileFile[] = [];
     newFileId = 1;
@@ -232,7 +235,9 @@ export class ClientStateTree {
         this.id = jsondata.id;
         this.cmakeArgs = jsondata.cmakeArgs;
         this.customOutputFilename = jsondata.customOutputFilename;
-        this.isCMakeProject = jsondata.isCMakeProject;
+        // Links predating pluggable build systems only carry the CMake boolean.
+        this.buildSystem = jsondata.buildSystem ?? (jsondata.isCMakeProject ? 'cmake' : 'none');
+        this.isCMakeProject = this.buildSystem === 'cmake';
         this.compilerLanguageId = jsondata.compilerLanguageId;
 
         let requiresFix = jsondata.newFileId === undefined;

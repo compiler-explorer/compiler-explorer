@@ -56,6 +56,7 @@ describe('Compiler tests', () => {
         app.post('/noscript/compile', formParser, compileHandler.handle.bind(compileHandler));
         app.post('/:compiler/compile', textParser, compileHandler.handle.bind(compileHandler));
         app.post('/:compiler/cmake', compileHandler.handleCmake.bind(compileHandler));
+        app.post('/:compiler/build/:buildSystem', compileHandler.handleBuildProject.bind(compileHandler));
     });
 
     it('throws for unknown compilers', async () => {
@@ -354,6 +355,26 @@ describe('Compiler tests', () => {
                     contents: 'Hello, World!\nHow are you?\n',
                 },
             ]);
+        });
+
+        it('builds projects through the generic build endpoint', async () => {
+            await setFakeResult();
+            const res = await request(app)
+                .post('/fake-for-test/build/cmake')
+                .set('Accept', 'application/json')
+                .send({options: {userArguments: '-O1'}, source: 'I am a program', files: []})
+                .expect('Content-Type', /json/)
+                .expect(200);
+            expect(res.body.input.options.options).toEqual(['-O1']);
+        });
+
+        it('rejects unknown build systems', async () => {
+            await setFakeResult();
+            await request(app)
+                .post('/fake-for-test/build/nosuchbuildsystem')
+                .set('Accept', 'application/json')
+                .send({options: {}, source: '', files: []})
+                .expect(404);
         });
     });
 

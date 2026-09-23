@@ -28,6 +28,30 @@ For Claude Code on the command line:
 claude mcp add --transport http compiler-explorer https://godbolt.org/mcp
 ```
 
+## Registry listing
+
+The server is listed in the [official MCP Registry](https://registry.modelcontextprotocol.io)
+as `io.github.compiler-explorer/compiler-explorer`. The registry stores *metadata* only — it
+records where the endpoint lives, not what is running behind it — so publishing is deliberately
+not part of a deploy. Nothing here changes when the site updates.
+
+The published record is [`server.json`](../server.json) in the repository root. Re-publish only
+when that file changes:
+
+1. Edit `server.json` and bump its `version`. Published versions are immutable and the registry
+   rejects a repeat of one that already exists. It versions the metadata record, and has nothing
+   to do with CE's `gh-NNNNN` build numbers.
+2. Install [`mcp-publisher`](https://github.com/modelcontextprotocol/registry/releases) and run:
+
+   ```sh
+   mcp-publisher login github   # requires Owner/admin on the compiler-explorer org
+   mcp-publisher validate
+   mcp-publisher publish
+   ```
+
+The `io.github.compiler-explorer/*` namespace is granted by GitHub org ownership, so no DNS
+records or domain proofs are involved.
+
 ## Tools
 
 Successful responses are JSON in a single `text` content block. Error responses set

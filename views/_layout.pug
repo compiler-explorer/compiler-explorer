@@ -8,9 +8,9 @@ html(lang="en")
 
     script
       | (function () {
-      |   var isIE11 = !!window.MSInputMethodContext && !!document.documentMode;
+      |   var tooOld = !window.globalThis || !String.prototype.replaceAll;
       |   var storedState = '#{storedStateId}';
-      |   if (isIE11) {
+      |   if (tooOld) {
       |     if (storedState) {
       |       location.href = '#{httpRoot}noscript/z/' + storedState;
       |     } else {

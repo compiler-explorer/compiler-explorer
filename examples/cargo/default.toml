@@ -1,0 +1,8 @@
+[package]
+name = "output"
+version = "0.1.0"
+edition = "2024"
+
+# Crates cannot be downloaded here, so only `path` [dependencies] are possible.
+# They can instead be selected via the Libraries pane and are passed to rustc
+# directly without needing to be mentioned here.

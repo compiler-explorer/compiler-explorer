@@ -166,11 +166,20 @@ export async function initialiseApplication(options: ApplicationOptions): Promis
 
     if (isExecutionWorker) {
         await initHostSpecialties();
-        startExecutionWorkerThread(ceProps, awsProps, compilationEnvironment);
+        controllers.healthcheckController.setExecutionWorkerHealthCheck(
+            startExecutionWorkerThread(ceProps, awsProps, compilationEnvironment),
+        );
     }
 
     if (isCompilationWorker) {
-        startCompilationWorkerThread(ceProps, awsProps, compilationEnvironment, appArgs);
+        // A worker hands large results to its reader through shared storage, so without one it
+        // would drop every result over the websocket size limit. Say so now rather than per
+        // compilation, where it surfaces only as the reader timing out.
+        if (!compilationEnvironment.hasSharedCache())
+            throw new Error('Compilation worker mode needs a cacheConfig with an S3 layer to hand results over');
+        controllers.healthcheckController.setCompilationWorkerHealthCheck(
+            startCompilationWorkerThread(ceProps, awsProps, compilationEnvironment, appArgs),
+        );
     }
 
     startListening(webServer, appArgs);

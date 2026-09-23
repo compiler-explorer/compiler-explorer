@@ -104,9 +104,9 @@ export class JavaCompiler extends BaseCompiler implements SimpleOutputFilenameCo
     }
 
     async readdir(dirPath: string): Promise<string[]> {
-        // Separate method allows override to find classfiles
-        // that are not in root of dirPath
-        return fs.readdir(dirPath);
+        // Recursive because anything with a package puts its class files in a matching directory tree, which a build
+        // system does by default. For a flat directory this returns exactly what a shallow read would.
+        return fs.readdir(dirPath, {recursive: true});
     }
 
     override async objdump(outputFilename: string, result: any, maxSize: number) {

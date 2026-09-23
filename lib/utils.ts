@@ -32,16 +32,17 @@ import {ComponentConfig, ItemConfigType} from 'golden-layout';
 import semverParser from 'semver';
 import _ from 'underscore';
 
+import {maskRootdirKeepingAppPrefix} from '../shared/common-utils.js';
 import type {ParsedAsmResultLine} from '../types/asmresult/asmresult.interfaces.js';
 import type {CacheableValue} from '../types/cache.interfaces.js';
 import {BasicExecutionResult, UnprocessedExecResult} from '../types/execution/execution.interfaces.js';
 import {LanguageKey} from '../types/languages.interfaces.js';
 import type {Fix, ResultLine} from '../types/resultline/resultline.interfaces.js';
 
+export {ce_temp_prefix, maskRootdirKeepingAppPrefix} from '../shared/common-utils.js';
+
 const tabsRe = /\t/g;
 const lineRe = /\r?\n/;
-
-export const ce_temp_prefix = 'compiler-explorer-compiler';
 
 export function splitLines(text: string): string[] {
     if (!text) return [];
@@ -93,37 +94,17 @@ export function expandTabs(line: string): string {
     });
 }
 
-// Matches everything up to and through a CE temp dir, `.../<ce_temp_prefix><suffix>/`.
-// We key off the ce_temp_prefix marker, NOT the live os.tmpdir(): the temp root varies
-// by host/config (macOS /var vs /private/var, an execution.tempDirRoot elsewhere) and
-// the path being masked may have been recorded under a different tmpdir than this one.
-// The marker is the only invariant — it's the same constant we create the dir with.
-// `(?:[A-Za-z]:)?` + `/` handles Windows too; `[^/\s]+` confines the match to one
-// non-empty path token so an embedded `-I/tmp/<prefix>XXX/inc` still masks to
-// `-I/app/inc` (real temp paths never have empty `//` segments).
-// A user path that itself contains a `<ce_temp_prefix>...` segment would be masked too,
-// but that only affects displayed output (never what's compiled/executed) and needs a
-// deliberately odd dir name, so it's not worth a costlier scheme to prevent.
-const TEMPDIR_RE = new RegExp(`(?:[A-Za-z]:)?/(?:[^/\\s]+/)*${ce_temp_prefix}[\\w.-]*/`);
-
 /**
  * Removes the root dir from the given filepath, so that it will match to the user's filenames used
  *  note: will keep /app/ if instead of filepath something like '-I/tmp/path' is used
  */
 export function maskRootdir(filepath: string): string {
-    // TODO: this falsy guard is load-bearing against runtime `undefined` that the types
-    // don't catch — not declared `string | undefined` callers (TS would reject those),
-    // but type holes: a JSON.parse(...) result typed `any` (base-compiler cleanup) and a
-    // Record<number,string> index that's really `undefined` when the key is missing
-    // (noUncheckedIndexedAccess is off). Tighten those two sites, then this can go.
+    // Same load-bearing guard as the function above: it hands a falsy argument straight
+    // back, so an undefined that slipped through a type hole must not reach the strip.
     if (!filepath) return filepath;
-    // TEMPDIR_RE has a repeated path-segment group that backtracks on long input, and
-    // maskRootdir runs on every output line. Gate it behind a cheap linear substring
-    // check: the regex cannot match without the marker anyway. The trailing /app/ strip
-    // is anchored (no backtracking) and must run regardless, as paths may already be
-    // /app/-rooted from an earlier mask.
-    const masked = filepath.includes(ce_temp_prefix) ? filepath.replace(TEMPDIR_RE, '/app/') : filepath;
-    return masked.replace(/^\/app\//, '');
+    // The trailing /app/ strip is anchored (no backtracking) and must run regardless, as
+    // paths may already be /app/-rooted from an earlier mask.
+    return maskRootdirKeepingAppPrefix(filepath).replace(/^\/app\//, '');
 }
 
 export function changeExtension(filename: string, newExtension: string): string {
@@ -539,6 +520,23 @@ export const APP_ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)
 
 export function resolvePathFromAppRoot(...args: string[]) {
     return path.resolve(APP_ROOT, ...args);
+}
+
+/**
+ * Whether `candidate` is strictly inside `dirPath`, compared a segment at a time: a string-prefix test would also
+ * accept a sibling whose name merely starts with dirPath's. Compares paths and not what they point at, so a symlink
+ * leading out of `dirPath` counts as inside.
+ */
+export function isPathInside(dirPath: string, candidate: string): boolean {
+    const relative = path.relative(dirPath, candidate);
+    return relative !== '' && relative !== '..' && !relative.startsWith(`..${path.sep}`) && !path.isAbsolute(relative);
+}
+
+/** Join user-supplied `filename` onto `dirPath`, throwing if the result would escape it. */
+export function resolveWithinDir(dirPath: string, filename: string): string {
+    const normalized = path.normalize(path.join(dirPath, filename));
+    if (!isPathInside(dirPath, normalized)) throw new Error('Invalid filename');
+    return normalized;
 }
 
 export async function fileExists(filename: string): Promise<boolean> {

@@ -62,6 +62,16 @@ class OdinVersion {
             return false;
         }
     }
+
+    lte(version: OdinVersion) {
+        if (this.year < version.year) {
+            return true;
+        } else if (this.year === version.year) {
+            return this.month <= version.month;
+        } else {
+            return false;
+        }
+    }
 }
 
 export class OdinCompiler extends BaseCompiler {
@@ -124,12 +134,27 @@ export class OdinCompiler extends BaseCompiler {
         filters: ParseFiltersAndOutputOptions,
     ) {
         let newOutputFilename = outputFilename;
-        if (!filters.binary && !filters.execute) newOutputFilename = outputFilename.replace(/.s$/, '.S');
+
+        const version = new OdinVersion(this.compiler.version);
+        if (version.lte(new OdinVersion('dev-2026-07a'))) {
+            if (!filters.binary && !filters.execute) newOutputFilename = outputFilename.replace(/.s$/, '.S');
+        }
+
         return super.checkOutputFileAndDoPostProcess(asmResult, newOutputFilename, filters);
     }
 
     override getIrOutputFilename(inputFilename: string): string {
-        return this.filename(path.dirname(inputFilename) + '/output.ll');
+        const outputDir = path.dirname(inputFilename);
+        let outputFile = '/output.ll';
+
+        const version = new OdinVersion(this.compiler.version);
+        const filenameIssueStart = new OdinVersion('dev-2026-07a');
+        const filenameIssueEnd = new OdinVersion('dev-2026-08');
+        if (version.gte(filenameIssueStart) && version.lte(filenameIssueEnd)) {
+            outputFile = '/outputoutput.ll';
+        }
+
+        return outputDir + outputFile;
     }
 
     override async postProcessAsm(result, filters?: ParseFiltersAndOutputOptions) {

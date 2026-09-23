@@ -7,6 +7,7 @@ mixin optionButton(bind, isActive, text, title)
 #ir
   .top-bar.btn-toolbar.bg-light(role="toolbar")
     include ../../font-size
+    include ../widgets/compilation-options
     .btn-group.btn-group-sm.wrap(role="group")
       .button-checkbox
         button.btn.btn-sm.btn-light.wrap-lines(type="button" title="Wrap lines" data-bind="wrap" aria-pressed="false" aria-label="Wrap lines")

@@ -229,9 +229,9 @@ export function getTree(id?: number): ComponentConfig<typeof TREE_COMPONENT_NAME
     return {
         type: 'component',
         componentName: TREE_COMPONENT_NAME,
+        // Build system arguments are prefilled from its descriptor when one is picked, not hardcoded here.
         componentState: {
             id,
-            cmakeArgs: '-DCMAKE_BUILD_TYPE=Debug',
         },
     };
 }

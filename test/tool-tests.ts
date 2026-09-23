@@ -35,6 +35,7 @@ import {
 } from '../lib/toolchain-utils.js';
 import {ToolEnv} from '../lib/tooling/base-tool.interface.js';
 import {BrontoRefactorTool} from '../lib/tooling/bronto-refactor-tool.js';
+import {ClangTidyTool} from '../lib/tooling/clang-tidy-tool.js';
 import {CompilerDropinTool} from '../lib/tooling/compiler-dropin-tool.js';
 import {CompilationInfo} from '../types/compilation/compilation.interfaces.js';
 import {ToolInfo} from '../types/tool.interfaces.js';
@@ -243,6 +244,46 @@ describe('CompilerDropInTool', () => {
             '-fno-crash-diagnostics',
             '/app/example.cpp',
         ]);
+    });
+});
+
+describe('ClangTidyTool', () => {
+    const configuredToolExe = '/opt/compiler-explorer/clang-trunk/bin/clang-tidy';
+    const tool = new ClangTidyTool({exe: configuredToolExe} as ToolInfo, {} as ToolEnv);
+
+    it('Should use clang-tidy from the selected Clang CUDA toolchain', () => {
+        const compilationInfo = {
+            compiler: {
+                compilerType: 'clang-cuda',
+                exe: '/opt/compiler-explorer/clang-20.1.0/bin/clang++',
+            },
+        } as unknown as CompilationInfo;
+
+        expect(tool.getToolExe(compilationInfo)).toBe(
+            path.join('/opt/compiler-explorer/clang-20.1.0/bin', 'clang-tidy'),
+        );
+    });
+
+    it('Should preserve a version suffix when selecting clang-tidy', () => {
+        const compilationInfo = {
+            compiler: {
+                compilerType: 'clang-cuda',
+                exe: '/usr/bin/clang++-18',
+            },
+        } as unknown as CompilationInfo;
+
+        expect(tool.getToolExe(compilationInfo)).toBe(path.join('/usr/bin', 'clang-tidy-18'));
+    });
+
+    it('Should use the configured executable for other compiler types', () => {
+        const compilationInfo = {
+            compiler: {
+                compilerType: 'clang',
+                exe: '/opt/compiler-explorer/clang-20.1.0/bin/clang++',
+            },
+        } as unknown as CompilationInfo;
+
+        expect(tool.getToolExe(compilationInfo)).toBe(configuredToolExe);
     });
 });
 

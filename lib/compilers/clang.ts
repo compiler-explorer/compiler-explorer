@@ -27,6 +27,7 @@ import path from 'node:path';
 
 import _ from 'underscore';
 
+import {splitArguments} from '../../shared/common-utils.js';
 import {OptRemark} from '../../static/panes/opt-view.interfaces.js';
 import type {
     ActiveTool,
@@ -44,6 +45,7 @@ import {ArtifactType} from '../../types/tool.interfaces.js';
 import {addArtifactToResult} from '../artifact-utils.js';
 import {BaseCompiler} from '../base-compiler.js';
 import {CompilationEnvironment} from '../compilation-env.js';
+import type {ParsedRequest} from '../handlers/compile.js';
 import {AmdgpuAsmParser} from '../parsers/asm-parser-amdgpu.js';
 import {HexagonAsmParser} from '../parsers/asm-parser-hexagon.js';
 import {PTXAsmParser} from '../parsers/asm-parser-ptx.js';
@@ -297,6 +299,11 @@ export class ClangCompiler extends BaseCompiler {
     }
 }
 
+function getCudaPath(args: string[]): string | undefined {
+    const arg = args.find(arg => arg.startsWith('--cuda-path='));
+    return arg ? arg.substring('--cuda-path='.length) : undefined;
+}
+
 export class ClangCudaCompiler extends ClangCompiler {
     static override get key() {
         return 'clang-cuda';
@@ -310,6 +317,15 @@ export class ClangCudaCompiler extends ClangCompiler {
 
     override getCompilerResultLanguageId(filters?: ParseFiltersAndOutputOptions): string | undefined {
         return 'ptx';
+    }
+
+    override getExtraCMakeArgs(key: ParsedRequest): string[] {
+        // CMake locates the toolkit through nvcc, so an nvcc compiler needs no help. Clang is told
+        // where it is with --cuda-path, which CMake reads neither from the flags nor from the
+        // compiler, and it refuses to enable the CUDA language for Clang without a toolkit.
+        const args = super.getExtraCMakeArgs(key);
+        const cudaPath = getCudaPath(key.options) ?? getCudaPath(splitArguments(this.compiler.options));
+        return cudaPath ? [...args, `-DCUDAToolkit_ROOT=${cudaPath}`] : args;
     }
 
     override optionsForFilter(filters: ParseFiltersAndOutputOptions, outputFilename: string) {

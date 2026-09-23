@@ -207,13 +207,13 @@ export class Tool extends MonacoPane<monaco.editor.IStandaloneCodeEditor, ToolSt
             this.eventHub.emit('toolSettingsChange', this.compilerInfo.compilerId);
         }, 800);
 
-        this.optionsField.on('change', optionsChange).on('keyup', optionsChange);
+        this.optionsField.on('change', optionsChange).on('input', optionsChange);
 
         if (state.args) {
             this.optionsField.val(state.args);
         }
 
-        this.localStdinField.on('change', optionsChange).on('keyup', optionsChange);
+        this.localStdinField.on('change', optionsChange).on('input', optionsChange);
 
         if (state.stdin) {
             if (!this.monacoStdin) {

@@ -1,0 +1,115 @@
+{
+    "sessions": [
+        {
+            "id": 1,
+            "language": "cmake",
+            "source": "add_executable(output main.cpp)\n",
+            "conformanceview": false,
+            "compilers": [],
+            "executors": [],
+            "filename": "CMakeLists.txt"
+        },
+        {
+            "id": 2,
+            "language": "c++",
+            "source": "int apply() { return 0; }\n",
+            "conformanceview": false,
+            "compilers": [],
+            "executors": [],
+            "filename": "plugin.cpp"
+        },
+        {
+            "id": 3,
+            "language": "c++",
+            "source": "int main() {}\n",
+            "conformanceview": false,
+            "compilers": [],
+            "executors": [],
+            "filename": "main.cpp"
+        }
+    ],
+    "trees": [
+        {
+            "id": 1,
+            "cmakeArgs": "",
+            "customOutputFilename": "output",
+            "isCMakeProject": true,
+            "buildSystem": "cmake",
+            "compilerLanguageId": "c++",
+            "files": [
+                {
+                    "isIncluded": true,
+                    "isOpen": true,
+                    "isMainSource": true,
+                    "filename": "CMakeLists.txt",
+                    "content": "add_executable(output main.cpp)\n",
+                    "editorId": 1,
+                    "langId": "c++"
+                },
+                {
+                    "isIncluded": true,
+                    "isOpen": false,
+                    "isMainSource": false,
+                    "filename": "config.h",
+                    "content": "#pragma once\n",
+                    "editorId": -1,
+                    "langId": "c++"
+                },
+                {
+                    "isIncluded": true,
+                    "isOpen": true,
+                    "isMainSource": false,
+                    "filename": "plugin.cpp",
+                    "content": "int apply() { return 0; }\n",
+                    "editorId": 2,
+                    "langId": "c++"
+                },
+                {
+                    "isIncluded": true,
+                    "isOpen": true,
+                    "isMainSource": false,
+                    "filename": "main.cpp",
+                    "content": "int main() {}\n",
+                    "editorId": 3,
+                    "langId": "c++"
+                }
+            ],
+            "newFileId": 5,
+            "compilers": [],
+            "executors": [
+                {
+                    "compilerVisible": true,
+                    "compilerOutputVisible": true,
+                    "arguments": "",
+                    "argumentsVisible": false,
+                    "stdin": "",
+                    "stdinVisible": false,
+                    "compiler": {
+                        "id": "clang2110",
+                        "options": "-Wno-invalid-offsetof",
+                        "filters": {
+                            "binary": false,
+                            "binaryObject": false,
+                            "commentOnly": true,
+                            "demangle": true,
+                            "directives": true,
+                            "execute": false,
+                            "intel": true,
+                            "labels": true,
+                            "libraryCode": false,
+                            "trim": false,
+                            "debugCalls": false
+                        },
+                        "libs": [],
+                        "specialoutputs": [],
+                        "tools": [],
+                        "overrides": []
+                    },
+                    "wrap": false,
+                    "runtimeTools": [],
+                    "overrides": []
+                }
+            ]
+        }
+    ]
+}

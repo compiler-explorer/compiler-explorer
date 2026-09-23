@@ -22,7 +22,6 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import {StorageClass} from '@aws-sdk/client-s3';
 import {createMs, ms} from 'enhanced-ms';
 
 import {FiledataPair} from '../types/compilation/compilation.interfaces.js';
@@ -39,6 +38,10 @@ const formatMs = createMs({
     formatOptions: {includedUnits: ['hour', 'minute', 'second', 'millisecond'], useAbbreviations: true},
 });
 
+/**
+ * How a compilation was built. Project builds record the build system's id, so these values line up with
+ * `BuildSystemId` — `KnownBuildMethod.CMake` and the `'cmake'` build system are the same thing.
+ */
 export enum KnownBuildMethod {
     Compile = 'compile',
     CMake = 'cmake',
@@ -144,9 +147,7 @@ class StatsNoter implements IStatsNoter {
             // async write to S3
             const key = makeKey(new Date(Date.now()));
             this._s3
-                .put(key, Buffer.from(toFlush.map(x => JSON.stringify(x)).join('\n')), this._path, {
-                    redundancy: StorageClass.REDUCED_REDUNDANCY,
-                })
+                .put(key, Buffer.from(toFlush.map(x => JSON.stringify(x)).join('\n')), this._path, {})
                 .then(() => {})
                 .catch(e => {
                     logger.warn(`Caught exception trying to log compilations to ${key}: ${e}`);

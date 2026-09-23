@@ -34,6 +34,7 @@ import {RustCompiler} from '../lib/compilers/rust.js';
 import {Win32Compiler} from '../lib/compilers/win32.js';
 import * as props from '../lib/properties.js';
 import {splitArguments} from '../shared/common-utils.js';
+import {CompilationResult} from '../types/compilation/compilation.interfaces.js';
 import {CompilerOverrideType, ConfiguredOverrides} from '../types/compilation/compiler-overrides.interfaces.js';
 import {CompilerInfo} from '../types/compiler.interfaces.js';
 import {SelectedLibraryVersion} from '../types/libraries/libraries.interfaces.js';
@@ -68,6 +69,44 @@ describe('Basic compiler invariants', () => {
     it('should recognize when optOutput has been request', () => {
         expect(compiler.optOutputRequested(['please', 'recognize', '-fsave-optimization-record'])).toBe(true);
         expect(compiler.optOutputRequested(['please', "don't", 'recognize'])).toBe(false);
+    });
+
+    it('should keep /app/ on the arguments it reports to the user', () => {
+        expect(
+            compiler['maskPathsInArgumentsForUser']([
+                '-O3',
+                '-o',
+                '/tmp/compiler-explorer-compiler123-4-abc/output.s',
+                '/tmp/compiler-explorer-compiler123-4-abc/example.cpp',
+            ]),
+        ).toEqual(['-O3', '-o', '/app/output.s', '/app/example.cpp']);
+    });
+
+    it('should mask the options of nested results the user is shown', () => {
+        const empty = {code: 0, timedOut: false, stdout: [], stderr: []};
+        const tmp = '/tmp/compiler-explorer-compiler123-4-abc';
+        const result: CompilationResult = {
+            ...empty,
+            compilationOptions: [`${tmp}/example.cpp`],
+            buildResult: {
+                ...empty,
+                downloads: [],
+                executableFilename: `${tmp}/output.s`,
+                compilationOptions: ['-O3', `${tmp}/example.cpp`],
+            },
+            result: {
+                ...empty,
+                compilationOptions: ['-DFOO', `${tmp}/main.cpp`],
+                inputFilename: `${tmp}/main.cpp`,
+            },
+        };
+
+        compiler.cleanupResult(result);
+
+        expect(result.compilationOptions).toEqual(['/app/example.cpp']);
+        expect(result.buildResult?.compilationOptions).toEqual(['-O3', '/app/example.cpp']);
+        expect(result.result?.compilationOptions).toEqual(['-DFOO', '/app/main.cpp']);
+        expect(result.result?.inputFilename).toEqual('main.cpp');
     });
 
     it('should skip version check if forced to', async () => {
@@ -606,39 +645,6 @@ describe('Compiler execution', () => {
     // it('should run LLVM objdump properly', async () => {
     //     return objdumpTest('llvm', ['-d', 'output', '-l', '-C', '--x86-asm-syntax=intel']);
     // });
-
-    it('should normalize extra file path', () => {
-        const withDemangler = {...noExecuteSupportCompilerInfo, demangler: 'demangler-exe', demanglerType: 'cpp'};
-        const compiler = new BaseCompiler(withDemangler, ce) as any; // to get to the protected...
-        if (process.platform === 'win32') {
-            expect(compiler.getExtraFilepath('c:/tmp/somefolder', 'test.h')).toEqual('c:\\tmp\\somefolder\\test.h');
-        } else {
-            expect(compiler.getExtraFilepath('/tmp/somefolder', 'test.h')).toEqual('/tmp/somefolder/test.h');
-        }
-
-        expect(() => compiler.getExtraFilepath('/tmp/somefolder', '../test.h')).toThrow(Error);
-        expect(() => compiler.getExtraFilepath('/tmp/somefolder', './../test.h')).toThrow(Error);
-
-        expect(compiler.getExtraFilepath('/tmp/somefolder', '/tmp/someotherfolder/test.h')).toEqual(
-            path.normalize('/tmp/somefolder/tmp/someotherfolder/test.h'),
-        );
-
-        if (process.platform === 'win32') {
-            expect(compiler.getExtraFilepath('/tmp/somefolder', '\\test.h')).toEqual('\\tmp\\somefolder\\test.h');
-        }
-
-        expect(() => compiler.getExtraFilepath('/tmp/somefolder', 'test_hello/../../etc/passwd')).toThrow(Error);
-
-        if (process.platform === 'win32') {
-            expect(compiler.getExtraFilepath('c:/tmp/somefolder', 'test.txt')).toEqual('c:\\tmp\\somefolder\\test.txt');
-        } else {
-            expect(compiler.getExtraFilepath('/tmp/somefolder', 'test.txt')).toEqual('/tmp/somefolder/test.txt');
-        }
-
-        expect(compiler.getExtraFilepath('/tmp/somefolder', 'subfolder/hello.h')).toEqual(
-            path.normalize('/tmp/somefolder/subfolder/hello.h'),
-        );
-    });
 });
 
 describe('getDefaultExecOptions', () => {

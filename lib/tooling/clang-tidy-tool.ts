@@ -43,6 +43,19 @@ export class ClangTidyTool extends BaseTool {
         this.addOptionsToToolArgs = false;
     }
 
+    override getToolExe(compilationInfo: CompilationInfo): string {
+        if (compilationInfo.compiler.compilerType !== 'clang-cuda') {
+            return super.getToolExe(compilationInfo);
+        }
+
+        const compilerPath = path.parse(compilationInfo.compiler.exe);
+        const clangTidyName = compilerPath.base.replace(/^clang(?:\+\+)?/, 'clang-tidy');
+
+        return clangTidyName === compilerPath.base
+            ? super.getToolExe(compilationInfo)
+            : path.join(compilerPath.dir, clangTidyName);
+    }
+
     override async runTool(
         compilationInfo: CompilationInfo,
         inputFilepath: string,

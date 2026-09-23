@@ -27,6 +27,14 @@ import path from 'path-browserify';
 import _ from 'underscore';
 
 import {unwrap} from '../shared/assert.js';
+import {
+    type BuildSystemDescriptor,
+    getBuildSystemByManifestFilename,
+    getBuildSystemByManifestLanguageId,
+    getBuildSystemDescriptor,
+    getBuildSystemsForLanguage,
+    type TreeBuildSystem,
+} from '../shared/build-systems.js';
 import {FiledataPair} from '../types/compilation/compilation.interfaces.js';
 import {LanguageKey} from '../types/languages.interfaces.js';
 import {Hub} from './hub.js';
@@ -45,7 +53,12 @@ export interface MultifileFile {
 }
 
 export interface MultifileServiceState {
+    /**
+     * Superseded by `buildSystem`, which is the source of truth. Still read, because every shared link made before
+     * build systems were pluggable has it, and still written, so a link made here opens on an older deployment.
+     */
     isCMakeProject: boolean;
+    buildSystem: TreeBuildSystem;
     compilerLanguageId: LanguageKey;
     files: MultifileFile[];
     newFileId: number;
@@ -54,7 +67,7 @@ export interface MultifileServiceState {
 export class MultifileService {
     private files: Array<MultifileFile>;
     private compilerLanguageId: LanguageKey;
-    private isCMakeProject: boolean;
+    private buildSystem: TreeBuildSystem;
     private hub: Hub;
     private newFileId: number;
     private alertSystem: any;
@@ -64,11 +77,17 @@ export class MultifileService {
     private readonly cmakeMainSourceFilename: string;
     private readonly maxFilesize: number;
 
+    /** Links predating pluggable build systems only carry the CMake boolean. */
+    private static buildSystemFromState(state: Partial<MultifileServiceState>): TreeBuildSystem {
+        if (state.buildSystem) return state.buildSystem;
+        return state.isCMakeProject ? 'cmake' : 'none';
+    }
+
     constructor(hub: Hub, alertSystem: Alert, state: MultifileServiceState) {
         this.hub = hub;
         this.alertSystem = alertSystem;
 
-        this.isCMakeProject = state.isCMakeProject || false;
+        this.buildSystem = MultifileService.buildSystemFromState(state);
         this.compilerLanguageId = state.compilerLanguageId;
         this.files = state.files || [];
         this.newFileId = state.newFileId || 1;
@@ -86,6 +105,9 @@ export class MultifileService {
 
     private isValidFilename(filename: string): boolean {
         if (MultifileService.isHiddenFile(filename)) return false;
+
+        // Before the extension checks below, which a Makefile has nothing for them to match on.
+        if (getBuildSystemByManifestFilename(filename)) return true;
 
         const filenameExt = path.extname(filename);
         if (this.validExtraFilenameExtensions.includes(filenameExt)) {
@@ -120,6 +142,11 @@ export class MultifileService {
             return sorted[0].id;
         }
 
+        // A build system's manifest is highlighted as whatever that build system reads it as, which for a Makefile is
+        // the only way to tell: it has no extension, so the check above cannot see it and it would open as C++.
+        const manifestOf = getBuildSystemByManifestFilename(filename);
+        if (manifestOf) return manifestOf.manifestLanguageId;
+
         if (this.isCMakeFile(filename)) {
             return this.cmakeLangId;
         }
@@ -132,7 +159,8 @@ export class MultifileService {
         this.newFileId = 1;
 
         const zipFilename = path.basename(f.name, '.zip');
-        const mainSourcefilename = this.getDefaultMainCMakeFilename();
+        // A loaded project is most often a CMake one, so keep looking for CMakeLists.txt when no build system is set.
+        const mainSourcefilename = this.getBuildSystemDescriptor()?.manifestFilename ?? this.cmakeMainSourceFilename;
         const zip = await JSZip.loadAsync(f);
 
         zip.forEach(async (relativePath, zipEntry) => {
@@ -193,7 +221,8 @@ export class MultifileService {
 
     public getState(): MultifileServiceState {
         return {
-            isCMakeProject: this.isCMakeProject,
+            buildSystem: this.buildSystem,
+            isCMakeProject: this.buildSystem === 'cmake',
             compilerLanguageId: this.compilerLanguageId,
             files: this.files,
             newFileId: this.newFileId,
@@ -204,26 +233,35 @@ export class MultifileService {
         return this.compilerLanguageId;
     }
 
-    public isCompatibleWithCMake(): boolean {
-        return (
-            this.compilerLanguageId === 'c++' ||
-            this.compilerLanguageId === 'c' ||
-            this.compilerLanguageId === 'fortran' ||
-            this.compilerLanguageId === 'cuda' ||
-            this.compilerLanguageId === 'assembly'
-        );
+    /** The build systems that can build this tree's language. */
+    public getAvailableBuildSystems(): BuildSystemDescriptor[] {
+        return getBuildSystemsForLanguage(this.compilerLanguageId);
     }
 
     public setLanguageId(id: LanguageKey) {
         this.compilerLanguageId = id;
+
+        // The chosen build system may not be able to build the new language.
+        if (this.buildSystem !== 'none' && !this.getAvailableBuildSystems().some(bs => bs.id === this.buildSystem)) {
+            this.buildSystem = 'none';
+        }
     }
 
-    public isACMakeProject(): boolean {
-        return this.isCompatibleWithCMake() && this.isCMakeProject;
+    public getBuildSystem(): TreeBuildSystem {
+        return this.buildSystem;
     }
 
-    public setAsCMakeProject(yes: boolean) {
-        this.isCMakeProject = yes;
+    /** The descriptor of the chosen build system, or undefined if this tree isn't built by one. */
+    public getBuildSystemDescriptor(): BuildSystemDescriptor | undefined {
+        return this.buildSystem === 'none' ? undefined : getBuildSystemDescriptor(this.buildSystem);
+    }
+
+    public usesBuildSystem(): boolean {
+        return this.getBuildSystemDescriptor() !== undefined;
+    }
+
+    public setBuildSystem(buildSystem: TreeBuildSystem) {
+        this.buildSystem = buildSystem;
     }
 
     private checkFileEditor(file?: MultifileFile) {
@@ -289,8 +327,9 @@ export class MultifileService {
     }
 
     private isMainSourceFile(file: MultifileFile): boolean {
-        if (this.isCMakeProject) {
-            if (file.filename === this.getDefaultMainCMakeFilename()) {
+        const buildSystem = this.getBuildSystemDescriptor();
+        if (buildSystem) {
+            if (file.filename === buildSystem.manifestFilename) {
                 this.setAsMainSource(file.fileId);
             } else {
                 return false;
@@ -438,10 +477,6 @@ export class MultifileService {
         }
     }
 
-    private getDefaultMainCMakeFilename() {
-        return this.cmakeMainSourceFilename;
-    }
-
     private static getDefaultMainSourceFilename(langId) {
         const languages = languagesService.getLanguagesOrFail();
         // Language may be missing if the link was shared from an instance with
@@ -462,8 +497,11 @@ export class MultifileService {
             }
 
             if (!suggestedFilename) {
-                if (langId === this.cmakeLangId) {
-                    suggestedFilename = this.getDefaultMainCMakeFilename();
+                // Writing a manifest means writing it under the name its build system looks for, which is not a name
+                // the language's extension would ever suggest: a Cargo.toml is not an example.toml.
+                const manifestOf = getBuildSystemByManifestLanguageId(langId);
+                if (manifestOf) {
+                    suggestedFilename = manifestOf.manifestFilename;
                 } else {
                     suggestedFilename = MultifileService.getDefaultMainSourceFilename(langId);
                 }

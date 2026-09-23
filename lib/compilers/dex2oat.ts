@@ -783,8 +783,9 @@ export class Dex2OatCompiler extends BaseCompiler {
         execOptions.maxOutput = 1024 * 1024 * 1024;
 
         const compileStart = performance.now();
-        await this.runCompiler(this.compiler.exe, options, inputFilename, execOptions);
+        const output = await this.runCompiler(this.compiler.exe, options, inputFilename, execOptions);
         const compileEnd = performance.now();
+        const result = {code: output.code, compilationOptions: options};
 
         try {
             const classesCfg = dirPath + '/classes.cfg';
@@ -796,12 +797,14 @@ export class Dex2OatCompiler extends BaseCompiler {
                 results: optPipeline,
                 parseTime: parseEnd - parseStart,
                 compileTime: compileEnd - compileStart,
+                ...result,
             };
         } catch (e: any) {
             return {
                 error: e.toString(),
                 results: {},
                 compileTime: compileEnd - compileStart,
+                ...result,
             };
         }
     }

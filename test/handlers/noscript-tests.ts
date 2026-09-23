@@ -22,6 +22,8 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
+import zlib from 'node:zlib';
+
 import express from 'express';
 import request from 'supertest';
 import {beforeAll, describe, expect, it} from 'vitest';
@@ -78,6 +80,37 @@ describe('NoScriptHandler clientstate', () => {
             ],
         };
         const encoded = Buffer.from(JSON.stringify(clientstate)).toString('base64');
+        const response = await request(app).get(`/noscript/clientstate/${encoded}`);
+        expect(response.status).toBe(200);
+    });
+
+    it('should return 200 for GoldenLayout format in /noscript/clientstate', async () => {
+        const goldenLayout = {
+            content: [
+                {
+                    type: 'column',
+                    content: [],
+                },
+            ],
+        };
+        const encoded = Buffer.from(JSON.stringify(goldenLayout)).toString('base64');
+        const response = await request(app).get(`/noscript/clientstate/${encoded}`);
+        expect(response.status).toBe(200);
+    });
+
+    it('should return 200 for gzip-compressed clientstate', async () => {
+        const clientstate = {
+            sessions: [
+                {
+                    id: 1,
+                    language: 'c++',
+                    source: 'int main() { return 0; }',
+                    compilers: [{id: 'g121', options: ''}],
+                },
+            ],
+        };
+        const compressed = zlib.deflateSync(Buffer.from(JSON.stringify(clientstate)));
+        const encoded = compressed.toString('base64');
         const response = await request(app).get(`/noscript/clientstate/${encoded}`);
         expect(response.status).toBe(200);
     });

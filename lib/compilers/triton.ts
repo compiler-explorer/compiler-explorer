@@ -157,8 +157,9 @@ export class TritonCompiler extends BaseCompiler {
         const optOptions = [...options, '--opt_pipeline_file', outputFilename];
 
         const compileStart = performance.now();
-        await this.runCompiler(this.compiler.exe, optOptions, inputFilename, execOptions);
+        const output = await this.runCompiler(this.compiler.exe, optOptions, inputFilename, execOptions);
         const compileEnd = performance.now();
+        const result = {code: output.code, compilationOptions: optOptions};
 
         // Read the output file and parse it
         try {
@@ -173,12 +174,14 @@ export class TritonCompiler extends BaseCompiler {
                 results: llvmOptPipeline,
                 compileTime: compileEnd - compileStart,
                 parseTime: parseEnd - parseStart,
+                ...result,
             };
         } catch (e: any) {
             return {
                 error: e.toString(),
                 results: {},
                 compileTime: compileEnd - compileStart,
+                ...result,
             };
         }
     }

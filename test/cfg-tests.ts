@@ -52,6 +52,14 @@ describe('Cfg test cases', () => {
     // TODO: Consider replacing with https://github.com/vitest-dev/vitest/issues/703
     const files = fsSync.readdirSync(testcasespath);
 
+    describe('base', () => {
+        for (const filename of files.filter(x => x.includes('cfg-base'))) {
+            it(filename, async () => {
+                await DoCfgTest('', path.join(testcasespath, filename));
+            });
+        }
+    });
+
     describe('gcc', () => {
         for (const filename of files.filter(x => x.includes('gcc'))) {
             it(filename, async () => {

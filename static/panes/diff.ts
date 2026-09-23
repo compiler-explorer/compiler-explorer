@@ -31,6 +31,7 @@ import {CompilationResult} from '../../types/compilation/compilation.interfaces.
 import {CompilerInfo} from '../../types/compiler.interfaces.js';
 import {ResultLine} from '../../types/resultline/resultline.interfaces.js';
 import {Hub} from '../hub.js';
+import {replaceOptions} from '../tom-select-utils.js';
 import {DiffState, DiffType} from './diff.interfaces.js';
 import {MonacoPaneState} from './pane.interfaces.js';
 import {MonacoPane} from './pane.js';
@@ -475,8 +476,7 @@ export class Diff extends MonacoPane<monaco.editor.IStandaloneDiffEditor, DiffSt
             side.source || side.difftype === DiffType.Source
                 ? [{id: DiffType.Source.toString(), name: 'Source'}]
                 : this.getDiffableOptions();
-        difftypePicker.clearOptions();
-        difftypePicker.addOptions(options);
+        replaceOptions(difftypePicker, options);
         difftypePicker.setValue(
             encodeSelectizeValue({
                 difftype: side.difftype || DiffType.ASM,
@@ -613,14 +613,12 @@ export class Diff extends MonacoPane<monaco.editor.IStandaloneDiffEditor, DiffSt
 
         if (!this.lhs.source) {
             const lhsoptions = this.getDiffableOptions(this.selectize.lhs, lhsextraoptions);
-            this.selectize.lhsdifftype.clearOptions();
-            this.selectize.lhsdifftype.addOptions(lhsoptions);
+            replaceOptions(this.selectize.lhsdifftype, lhsoptions);
         }
 
         if (!this.rhs.source) {
             const rhsoptions = this.getDiffableOptions(this.selectize.rhs, rhsextraoptions);
-            this.selectize.rhsdifftype.clearOptions();
-            this.selectize.rhsdifftype.addOptions(rhsoptions);
+            replaceOptions(this.selectize.rhsdifftype, rhsoptions);
         }
     }
 

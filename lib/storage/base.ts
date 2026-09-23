@@ -97,11 +97,15 @@ export function getSafeHash(inputConfig: Record<string, any>) {
     return {config, configHash};
 }
 
-function configFor(req: express.Request) {
+// Extract the state object to store from a shortener POST. The state may be a
+// ClientState ({sessions}) or a GoldenLayout ({content}), posted either bare or
+// wrapped under an optional `config` key. It is the (unwrapped) state object
+// that gets stored and later delivered via /z/ and /clientstate.
+export function configFor(req: express.Request) {
     if (req.body.config) {
         return req.body.config;
     }
-    if (req.body.sessions) {
+    if (req.body.sessions || req.body.content) {
         return req.body;
     }
     return null;
