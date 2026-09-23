@@ -73,6 +73,7 @@ This file provides guidance to AI Agents when working with code in this reposito
   - `compilequeue.queue_url`: SQS queue URL for compilation requests (both regular and CMake)
   - `compilequeue.events_url`: WebSocket URL for sending compilation results
   - `compilequeue.worker_threads=2`: Number of concurrent worker threads
+  - `execqueue.request_deadline_ms=60000`: How long the caller waits, measured from the SQS SentTimestamp of its request. A result produced after that reaches nobody, so the worker stops retrying the acknowledgement rather than spending its full budget on a result that cannot be delivered. Read by `PersistentEventsSender`, so one value covers both compilations and executions. Must track ce-router's own request deadline.
   - `compilequeue.poll_interval_ms=1000`: Interval between poll attempts after processing or errors (default: 1000ms). Note: SQS long polling means actual wait time is up to 20 seconds when queue is empty
   - `--instance-color <color>`: Optional command-line parameter to differentiate deployment instances. When specified (blue or green), modifies the queue URL by appending the color to the queue name (e.g., `staging-compilation-queue-blue.fifo`)
 - **Implementation**: Located in `/lib/compilation/sqs-compilation-queue.ts` with shared parsing utilities in `/lib/compilation/compilation-request-parser.ts`
