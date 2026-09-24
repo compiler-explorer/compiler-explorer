@@ -61,6 +61,7 @@ import './mlir-mode';
 import './modula2-mode';
 import './mojo-mode';
 import './nc-mode';
+import './nexium-mode';
 import './nim-mode';
 import './nix-mode';
 import './ocaml-mode';

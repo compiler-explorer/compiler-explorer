@@ -296,6 +296,12 @@
           - 'etc/config/mojo.*.properties'
           - 'static/modes/mojo-mode.ts'
 
+'lang-nexium':
+  - changed-files:
+      - any-glob-to-any-file:
+          - 'lib/compilers/nexium.ts'
+          - 'etc/config/nexium.*.properties'
+          - 'static/modes/nexium-mode.ts'
 'lang-nim':
   - changed-files:
       - any-glob-to-any-file:

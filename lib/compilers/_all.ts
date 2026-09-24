@@ -123,6 +123,7 @@ export {MovfuscatorCompiler} from './movfuscator.js';
 export {MrustcCompiler} from './mrustc.js';
 export {Msp430Compiler} from './msp430.js';
 export {NasmCompiler} from './nasm.js';
+export {NexiumCompiler} from './nexium.js';
 export {NimCompiler} from './nim.js';
 export {NixCompiler} from './nix.js';
 export {NorcroftCompiler} from './norcroft.js';

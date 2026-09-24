@@ -84,6 +84,7 @@ export type LanguageKey =
     | 'mlir'
     | 'modula2'
     | 'mojo'
+    | 'nexium'
     | 'nim'
     | 'nix'
     | 'numba'

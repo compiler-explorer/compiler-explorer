@@ -708,6 +708,17 @@ const definitions: Record<LanguageKey, LanguageDefinition> = {
         monacoDisassembly: null,
         digitSeparator: '_',
     },
+    nexium: {
+        name: 'Nexium',
+        monaco: 'nexium',
+        extensions: ['.nx'],
+        alias: [],
+        logoFilename: 'nexium.svg',
+        logoFilenameDark: null,
+        formatter: null,
+        previewFilter: null,
+        monacoDisassembly: null,
+    },
     nim: {
         name: 'Nim',
         monaco: 'nim',
