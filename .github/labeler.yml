@@ -444,6 +444,13 @@
           - 'etc/config/tablegen.*.properties'
           - 'static/modes/tablegen-mode.ts'
 
+'lang-tilelang':
+  - changed-files:
+      - any-glob-to-any-file:
+          - 'lib/compilers/tilelang.ts'
+          - 'etc/config/tilelang.*.properties'
+          - 'etc/scripts/tilelang_wrapper.py'
+
 'lang-toit':
   - changed-files:
       - any-glob-to-any-file:

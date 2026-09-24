@@ -112,6 +112,7 @@ export type LanguageKey =
     | 'sway'
     | 'swift'
     | 'tablegen'
+    | 'tilelang'
     | 'toit'
     | 'triton'
     | 'typescript'
