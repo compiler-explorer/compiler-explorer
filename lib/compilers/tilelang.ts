@@ -44,7 +44,7 @@ export class TileLangCompiler extends BaseCompiler {
     }
 
     override getCompilerResultLanguageId(_filters?: ParseFiltersAndOutputOptions): string | undefined {
-        // Default compile-only target is CPU C (D7). CUDA-in-CE is later.
+        // Default compile-only target is CPU C. CUDA-in-CE is later.
         return 'nc';
     }
 

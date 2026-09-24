@@ -59,6 +59,14 @@ def main(argv: list[str] | None = None) -> int:
     try:
         from tilelang.tools.compile_only import cli_main
     except ModuleNotFoundError as exc:
+        if exc.name == "tilelang.tools.compile_only":
+            version = getattr(sys.modules.get("tilelang"), "__version__", "unknown")
+            print(
+                f"tilelang compile-only error: tilelang {version} has no tilelang.tools.compile_only. "
+                "It needs tilelang 0.1.14 or newer.",
+                file=sys.stderr,
+            )
+            return 1
         print(
             "tilelang compile-only error: tilelang is not importable. "
             "Use a Python with tilelang installed. "
