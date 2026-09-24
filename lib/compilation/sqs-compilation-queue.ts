@@ -59,6 +59,8 @@ export type RemoteCompilationRequest = {
     /** The original, CMake-only spelling of buildSystem. Still sent by producers we don't deploy in lockstep with. */
     isCMake?: boolean;
     queueTimeMs?: number;
+    /** SQS SentTimestamp, so the result sender can tell when the caller stops waiting. */
+    sentTimestampMs?: number;
     headers: Record<string, string | string[]>;
     queryStringParameters: Record<string, string>;
 };
@@ -263,6 +265,7 @@ export class SqsCompilationWorkerMode extends SqsCompilationQueueBase {
                                 if (sentTimestamp) {
                                     const queueTimeMs = Date.now() - Number.parseInt(sentTimestamp, 10);
                                     compilationRequest.queueTimeMs = queueTimeMs;
+                                    compilationRequest.sentTimestampMs = Number.parseInt(sentTimestamp, 10);
                                 }
                                 return compilationRequest;
                             }
@@ -282,6 +285,7 @@ export class SqsCompilationWorkerMode extends SqsCompilationQueueBase {
                     if (sentTimestamp) {
                         const queueTimeMs = Date.now() - Number.parseInt(sentTimestamp, 10);
                         parsed.queueTimeMs = queueTimeMs;
+                        parsed.sentTimestampMs = Number.parseInt(sentTimestamp, 10);
                     }
 
                     return parsed as RemoteCompilationRequest;
@@ -306,6 +310,7 @@ async function sendCompilationResultViaWebsocket(
     guid: string,
     result: CompilationResult,
     totalTimeMs: number,
+    sentTimestampMs?: number,
 ) {
     try {
         const basicResult = {
@@ -327,7 +332,7 @@ async function sendCompilationResultViaWebsocket(
             webResult = basicResult;
         }
 
-        await persistentSender.send(guid, webResult);
+        await persistentSender.send(guid, webResult, sentTimestampMs);
         logger.info(`Successfully sent compilation result for ${guid} via WebSocket (total time: ${totalTimeMs}ms)`);
     } catch (error) {
         logger.error('WebSocket send error:', error);
@@ -424,7 +429,7 @@ async function doOneCompilation(
             const endTime = Date.now();
             const duration = endTime - startTime;
 
-            await sendCompilationResultViaWebsocket(persistentSender, msg.guid, result, duration);
+            await sendCompilationResultViaWebsocket(persistentSender, msg.guid, result, duration, msg.sentTimestampMs);
 
             logger.info(`Completed ${compilationType} request ${msg.guid} in ${duration}ms`);
         } catch (e: any) {
@@ -455,7 +460,13 @@ async function doOneCompilation(
                 errorResult.queueTime = msg.queueTimeMs;
             }
 
-            await sendCompilationResultViaWebsocket(persistentSender, msg.guid, errorResult, duration);
+            await sendCompilationResultViaWebsocket(
+                persistentSender,
+                msg.guid,
+                errorResult,
+                duration,
+                msg.sentTimestampMs,
+            );
         }
     }
 }

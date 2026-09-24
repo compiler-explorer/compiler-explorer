@@ -99,15 +99,21 @@ export class PersistentEventsSender extends EventsWsBase {
             resolve: () => void;
             reject: (error: any) => void;
             messageData: any;
+            expiresAtMs?: number;
         }
     >();
     private maxRetries = 3;
     private ackTimeoutMs = 3000;
     private requireAcknowledgments = true;
+    // How long the caller waits, measured from when its request was queued. One value for
+    // compilations and executions alike, since one sender carries both. Must track ce-router's
+    // own request deadline: a result produced after it reaches nobody.
+    private requestDeadlineMs: number;
 
     constructor(props: PropertyGetter, requireAcknowledgments = true) {
         super(props);
         this.requireAcknowledgments = requireAcknowledgments;
+        this.requestDeadlineMs = props<number>('execqueue.request_deadline_ms', 60000);
         this.connect();
     }
 
@@ -269,14 +275,36 @@ export class PersistentEventsSender extends EventsWsBase {
         }
     }
 
-    private setupAckTimeout(guid: string, messageData: any, resolve: () => void, reject: (error: any) => void): void {
+    /**
+     * Whether a result can still reach anyone.
+     *
+     * An unacknowledged result is usually worth resending - the subscriber may be a router
+     * that is reconnecting, and its subscriptions come back with it. Once the requester's own
+     * deadline has passed there is nobody left to reconnect for, so further retries cannot
+     * succeed, and this worker pulls no new work until the result stops being outstanding.
+     */
+    private hasExpired(expiresAtMs: number | undefined): boolean {
+        return expiresAtMs !== undefined && Date.now() >= expiresAtMs;
+    }
+
+    private setupAckTimeout(
+        guid: string,
+        messageData: any,
+        resolve: () => void,
+        reject: (error: any) => void,
+        expiresAtMs?: number,
+    ): void {
         const timeout = setTimeout(() => {
             const pending = this.pendingAcks.get(guid);
             if (pending) {
                 pending.retryCount++;
-                if (pending.retryCount < this.maxRetries) {
+                if (this.hasExpired(expiresAtMs)) {
+                    logger.warn(`No acknowledgment for ${guid} and its deadline has passed, giving up`);
+                    this.pendingAcks.delete(guid);
+                    reject(new Error(`Gave up on ${guid}: the requester's deadline passed`));
+                } else if (pending.retryCount < this.maxRetries) {
                     logger.warn(`No acknowledgment for ${guid}, retry ${pending.retryCount}/${this.maxRetries}`);
-                    this.sendWithRetry(guid, messageData, pending.retryCount, resolve, reject);
+                    this.sendWithRetry(guid, messageData, pending.retryCount, resolve, reject, expiresAtMs);
                 } else {
                     logger.error(`Max retries (${this.maxRetries}) reached for ${guid}, giving up`);
                     this.pendingAcks.delete(guid);
@@ -291,6 +319,7 @@ export class PersistentEventsSender extends EventsWsBase {
             resolve,
             reject,
             messageData,
+            expiresAtMs,
         });
     }
 
@@ -300,6 +329,7 @@ export class PersistentEventsSender extends EventsWsBase {
         retryCount: number,
         resolve: () => void,
         reject: (error: any) => void,
+        expiresAtMs?: number,
     ): void {
         if (!this.isConnected || this.ws?.readyState !== WebSocket.OPEN) {
             reject(new Error('WebSocket not connected'));
@@ -312,9 +342,13 @@ export class PersistentEventsSender extends EventsWsBase {
             const timeout = setTimeout(() => {
                 const pending = this.pendingAcks.get(guid);
                 if (pending) {
-                    if (retryCount < this.maxRetries) {
+                    if (this.hasExpired(expiresAtMs)) {
+                        logger.warn(`No acknowledgment for ${guid} and its deadline has passed, giving up`);
+                        this.pendingAcks.delete(guid);
+                        reject(new Error(`Gave up on ${guid}: the requester's deadline passed`));
+                    } else if (retryCount < this.maxRetries) {
                         logger.warn(`No acknowledgment for ${guid}, retry ${retryCount + 1}/${this.maxRetries}`);
-                        this.sendWithRetry(guid, messageData, retryCount + 1, resolve, reject);
+                        this.sendWithRetry(guid, messageData, retryCount + 1, resolve, reject, expiresAtMs);
                     } else {
                         logger.error(`Max retries (${this.maxRetries}) reached for ${guid}, giving up`);
                         this.pendingAcks.delete(guid);
@@ -329,6 +363,7 @@ export class PersistentEventsSender extends EventsWsBase {
                 resolve,
                 reject,
                 messageData,
+                expiresAtMs,
             });
         } catch (error) {
             reject(error);
@@ -385,7 +420,13 @@ export class PersistentEventsSender extends EventsWsBase {
         }
     }
 
-    async send(guid: string, result: CompilationResult): Promise<void> {
+    /**
+     * @param sentTimestampMs When the request was queued, from the SQS SentTimestamp. Retries
+     *     stop once the deadline measured from it has passed, since a result can no longer
+     *     reach anyone; the acknowledgement itself is still asked for as usual.
+     */
+    async send(guid: string, result: CompilationResult, sentTimestampMs?: number): Promise<void> {
+        const expiresAtMs = sentTimestampMs === undefined ? undefined : sentTimestampMs + this.requestDeadlineMs;
         return new Promise((resolve, reject) => {
             if (this.isConnected && this.ws?.readyState === WebSocket.OPEN) {
                 const messageData = {
@@ -393,7 +434,7 @@ export class PersistentEventsSender extends EventsWsBase {
                     ...result,
                 };
                 if (this.requireAcknowledgments) {
-                    this.setupAckTimeout(guid, messageData, resolve, reject);
+                    this.setupAckTimeout(guid, messageData, resolve, reject, expiresAtMs);
                 }
 
                 try {
