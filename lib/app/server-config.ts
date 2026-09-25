@@ -52,7 +52,7 @@ export function setupBaseServerConfig(
     router: Router,
 ): void {
     webServer
-        .set('trust proxy', true)
+        .set('trust proxy', options.trustProxy)
         .set('view engine', 'pug')
         .use(
             responseTime((req, res, time) => {
