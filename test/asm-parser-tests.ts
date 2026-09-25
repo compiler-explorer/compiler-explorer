@@ -105,6 +105,35 @@ nop
     });
 });
 
+describe('AsmParser numeric local labels', () => {
+    const parser = new AsmParser();
+    const filters = {directives: true, labels: true};
+
+    it('should keep a local label referenced forwards', () => {
+        const input = ['square:', '  bne $2,$0,1f', '  break 7', '1:', '  mflo $2', '  jr $31'].join('\n');
+        const lines = parser.processAsm(input, filters).asm.map(line => line.text);
+        expect(lines).toContain('1:');
+    });
+
+    it('should keep a local label referenced backwards', () => {
+        const input = ['loop:', '2:', '  add r0, r0, #1', '  b 2b', '  ret'].join('\n');
+        const lines = parser.processAsm(input, filters).asm.map(line => line.text);
+        expect(lines).toContain('2:');
+    });
+
+    it('should still drop a local label nothing refers to', () => {
+        const input = ['square:', '  mov r0, #0x1f', '1:', '  ret'].join('\n');
+        const lines = parser.processAsm(input, filters).asm.map(line => line.text);
+        expect(lines).not.toContain('1:');
+    });
+
+    it('should not read a NEON element size as a reference', () => {
+        const input = ['square:', '  add v0.16b, v1.16b, v2.16b', '16:', '  ret'].join('\n');
+        const lines = parser.processAsm(input, filters).asm.map(line => line.text);
+        expect(lines).not.toContain('16:');
+    });
+});
+
 describe('PTXAsmParser tests', () => {
     const parser = new PTXAsmParser();
 
