@@ -31,6 +31,8 @@ import {describe, expect, it, vi} from 'vitest';
 
 import {BaseCompiler} from '../lib/base-compiler.js';
 import {CargoBuildSystem} from '../lib/build-systems/cargo.js';
+import {CMakeBuildSystem} from '../lib/build-systems/cmake.js';
+import {GENERATED_PACKAGE_DIRNAME} from '../lib/build-systems/cmake-package-generator.js';
 import type {BuildContext, BuildPlan} from '../lib/build-systems/index.js';
 import {
     cargoBuildSystem,
@@ -43,6 +45,7 @@ import {
 import {MakeBuildSystem} from '../lib/build-systems/make.js';
 import {MavenBuildSystem} from '../lib/build-systems/maven.js';
 import {CompilationEnvironment} from '../lib/compilation-env.js';
+import {LLVMMOSCompiler} from '../lib/compilers/llvm-mos.js';
 import {RustCompiler} from '../lib/compilers/rust.js';
 import {ParsedRequest} from '../lib/handlers/compile.js';
 import {
@@ -53,6 +56,7 @@ import {
     isBuildSystemId,
     isManifestLanguageId,
 } from '../shared/build-systems.js';
+import {LIBRARIES_ICON_TOKEN} from '../shared/common-utils.js';
 import {BypassCache} from '../types/compilation/compilation.interfaces.js';
 import {CompilerInfo} from '../types/compiler.interfaces.js';
 import {makeCompilationEnvironment, makeFakeCompilerInfo} from './utils.js';
@@ -99,8 +103,12 @@ function makeParsedRequest(backendOptions: Record<string, any> = {}): ParsedRequ
     } as unknown as ParsedRequest;
 }
 
-function makeContext(compiler: BaseCompiler, env: CompilationEnvironment, parsedRequest: ParsedRequest): BuildContext {
-    const dirPath = '/tmp/ce-fake-build';
+function makeContext(
+    compiler: BaseCompiler,
+    env: CompilationEnvironment,
+    parsedRequest: ParsedRequest,
+    dirPath = '/tmp/ce-fake-build',
+): BuildContext {
     return {
         compiler,
         env,
@@ -109,7 +117,7 @@ function makeContext(compiler: BaseCompiler, env: CompilationEnvironment, parsed
         key: compiler.getBuildProjectCacheKey(cmakeBuildSystem, parsedRequest, []),
         parsedRequest,
         files: [],
-        libsAndOptions: {libraries: [], options: []},
+        libsAndOptions: {libraries: parsedRequest.libraries, options: parsedRequest.options},
         toolchainPath: undefined,
         buildSystemArgs: getBuildSystemArgs(parsedRequest.backendOptions),
     };
@@ -344,6 +352,136 @@ describe('CMake build system', () => {
             expect(step.execParams.env.CXXFLAGS).toContain('-fsome-flag');
         }
         expect(plan.getCompilationOptions()).toContain('-fsome-flag');
+    });
+
+    it('leaves CMAKE_PREFIX_PATH unset without configured selected library prefixes', async () => {
+        const env = makeEnv();
+        const compiler = makeCompiler(env);
+        (compiler as any).supportedLibraries = {
+            unconfigured: {versions: {v1: {path: [], libpath: [], options: []}}},
+        };
+        const request = makeParsedRequest();
+        request.libraries = [{id: 'unconfigured', version: 'v1'}];
+
+        const plan = await cmakeBuildSystem.getBuildPlan(makeContext(compiler, env, request));
+
+        expect(plan.steps[0].execParams.env).not.toHaveProperty('CMAKE_PREFIX_PATH');
+    });
+
+    it('appends a generated package prefix to an inherited CMAKE_PREFIX_PATH', async () => {
+        const dirPath = await fs.mkdtemp(path.join(os.tmpdir(), 'ce-cmake-prefix-'));
+        try {
+            const env = makeEnv();
+            const compiler = makeCompiler(env);
+            (compiler as any).supportedLibraries = {
+                package: {
+                    versions: {v1: {version: '1.0', path: ['/opt/package/include'], libpath: [], options: []}},
+                },
+            };
+            const request = makeParsedRequest({overrides: [envOverride({CMAKE_PREFIX_PATH: '/existing'})]});
+            request.libraries = [{id: 'package', version: 'v1'}];
+
+            const plan = await cmakeBuildSystem.getBuildPlan(makeContext(compiler, env, request, dirPath));
+
+            expect(plan.steps[0].execParams.env.CMAKE_PREFIX_PATH).toEqual(
+                ['/existing', path.join(dirPath, GENERATED_PACKAGE_DIRNAME, 'package')].join(path.delimiter),
+            );
+        } finally {
+            await fs.rm(dirPath, {recursive: true, force: true});
+        }
+    });
+
+    it('surfaces a failure explanation as a hint, not only in the build log', async () => {
+        const env = makeEnv();
+        const compiler = makeCompiler(env);
+        (compiler as any).supportedLibraries = {};
+        const result: any = {buildsteps: [], stdout: [], stderr: []};
+        const plan = {
+            getCompilationOptions: () => [],
+            steps: [
+                {
+                    name: 'cmake',
+                    exe: '/bin/false',
+                    args: [],
+                    execParams: {env: {}} as any,
+                    failureMessage: '<failed>',
+                    explainFailure: () => 'did you mean find_package(Qt6)?',
+                },
+            ],
+        };
+        vi.spyOn(compiler as any, 'doBuildstepAndAddToResult').mockResolvedValue({
+            code: 1,
+            stdout: [],
+            stderr: [{text: 'Could not find a package configuration file provided by "qt"'}],
+        });
+
+        const ok = await (compiler as any).runBuildPlanSteps('/tmp/x', result, plan);
+
+        expect(ok).toBe(false);
+        expect(result.hints).toEqual(['did you mean find_package(Qt6)?']);
+        // And on the inner result, which is the object the compiler pane is actually handed.
+        expect(result.result.hints).toEqual(['did you mean find_package(Qt6)?']);
+        // Still in the log too, so it sits next to the error for anyone reading back.
+        expect(result.result.stderr).toEqual([{text: 'did you mean find_package(Qt6)?'}]);
+        vi.restoreAllMocks();
+    });
+
+    it('generates a package for a library that ships none and puts it on CMAKE_PREFIX_PATH', async () => {
+        const dirPath = await fs.mkdtemp(path.join(os.tmpdir(), 'ce-cmake-wiring-'));
+        try {
+            const env = makeEnv();
+            const compiler = makeCompiler(env);
+            // Shaped like the real fmt entry: headers on disk, the static lib from a conan package.
+            (compiler as any).supportedLibraries = {
+                fmt: {
+                    versions: {
+                        v1: {
+                            version: '12.0.0',
+                            path: ['/opt/compiler-explorer/libs/fmt/12.0.0/include'],
+                            libpath: [],
+                            staticliblink: ['fmtd'],
+                            liblink: [],
+                            options: [],
+                        },
+                    },
+                },
+            };
+            const request = makeParsedRequest();
+            request.libraries = [{id: 'fmt', version: 'v1'}];
+
+            const plan = await cmakeBuildSystem.getBuildPlan(makeContext(compiler, env, request, dirPath));
+
+            const prefix = path.join(dirPath, GENERATED_PACKAGE_DIRNAME, 'fmt');
+            expect(plan.steps[0].execParams.env.CMAKE_PREFIX_PATH).toContain(prefix);
+            const config = await fs.readFile(path.join(prefix, 'lib', 'cmake', 'fmt', 'fmtConfig.cmake'), 'utf8');
+            expect(config).toContain('add_library(fmt::fmt INTERFACE IMPORTED)');
+            expect(config).toContain('NAMES fmtd');
+        } finally {
+            await fs.rm(dirPath, {recursive: true, force: true});
+        }
+    });
+
+    it('combines LLVM-MOS and selected library prefixes', async () => {
+        const env = makeEnv();
+        const compiler = new LLVMMOSCompiler(
+            makeFakeCompilerInfo({
+                exe: '/opt/compiler-explorer/llvm-mos/bin/mos-clang++',
+                lang: 'c++',
+                ldPath: [],
+                libPath: [],
+                supportsBinary: true,
+            }),
+            env,
+        );
+        (compiler as any).supportedLibraries = {
+            package: {versions: {v1: {version: '1.0', path: ['/opt/package/include'], libpath: [], options: []}}},
+        };
+
+        const dirPath = '/tmp/ce-build';
+        expect(await compiler.getCMakePrefixPaths([{id: 'package', version: 'v1'}], dirPath)).toEqual([
+            path.normalize('/opt/compiler-explorer/llvm-mos'),
+            path.join(dirPath, GENERATED_PACKAGE_DIRNAME, 'package'),
+        ]);
     });
 
     it('asks for the ninja generator when configured to', async () => {
@@ -1187,5 +1325,253 @@ describe('Make build system', () => {
             const ctx = makeMakeContext(compiler, env, makeParsedRequest({customOutputFilename: outside}));
             expect(() => makeBuildSystem.getArtifactFilename(ctx)).toThrow(Error);
         }
+    });
+});
+
+describe('CMake failure explanations', () => {
+    const fmtAvailable = {
+        libId: 'fmt',
+        packageNames: ['fmt'],
+        targets: ['fmt::fmt', 'fmt::fmtd', 'fmt'],
+        linkNames: ['fmtd'],
+        generated: true,
+    };
+    const qtAvailable = {
+        libId: 'qt',
+        packageNames: ['Qt6', 'Qt6Core', 'Qt6Network', 'Qt6Sql', 'Qt6Xml', 'Qt6Test', 'Qt6DBus'],
+        targets: ['Qt6::Core', 'Qt6::Network', 'Qt6::Sql', 'Qt6Core::Core'],
+        linkNames: ['Qt6Core'],
+        generated: false,
+    };
+    const missingPackage = 'Could not find a package configuration file provided by "qt"';
+
+    it('names the library to select when a header from it is missing', () => {
+        const output = [
+            '/app/example.cpp:1:10: fatal error: fmt/core.h: No such file or directory',
+            '    1 | #include <fmt/core.h>',
+            'compilation terminated.',
+        ].join('\n');
+        expect(CMakeBuildSystem.explainFailure(output, [], ['fmt', 'boost'])).toBe(
+            `Select "fmt" in the ${LIBRARIES_ICON_TOKEN} Libraries pane to get fmt/core.h.`,
+        );
+    });
+
+    it('handles a single-file header spelling', () => {
+        const output = 'example.cpp:1:10: fatal error: re2.h: No such file or directory';
+        expect(CMakeBuildSystem.explainFailure(output, [], ['re2'])).toContain('Select "re2"');
+    });
+
+    it('stays quiet for a missing header that is not one of our libraries', () => {
+        const output = 'example.cpp:1:10: fatal error: mystuff/thing.h: No such file or directory';
+        expect(CMakeBuildSystem.explainFailure(output, [], ['fmt'])).toBeUndefined();
+    });
+
+    it('explains a build failure using output from an earlier step that only warned', () => {
+        // find_package without REQUIRED: cmake exits 0 with a warning, the build then fails on the header.
+        const transcript = [
+            'CMake Warning at CMakeLists.txt:4 (find_package):',
+            '  Could not find a package configuration file provided by "fmt" with any of',
+            '  the following names:',
+            '    fmtConfig.cmake',
+            'Step build returned: 2',
+            '/app/example.cpp:1:10: fatal error: fmt/core.h: No such file or directory',
+        ].join('\n');
+        expect(CMakeBuildSystem.explainFailure(transcript, [], ['fmt'])).toContain('Select "fmt"');
+    });
+
+    it('ignores output that is not a failure it understands', () => {
+        expect(CMakeBuildSystem.explainFailure('error: no such file or directory', [fmtAvailable])).toBeUndefined();
+        expect(CMakeBuildSystem.explainFailure("error: 'x' was not declared", [fmtAvailable])).toBeUndefined();
+    });
+
+    it('keeps every message short enough to read before the notification fades', () => {
+        // Qt-sized on purpose: small fixtures hid a 103-character message that real Qt produced.
+        const bigQt = {
+            libId: 'qt',
+            packageNames: Array.from({length: 29}, (_, i) => `Qt6Component${i}`),
+            targets: [
+                'Qt6::Platform',
+                'Qt6::GlobalConfig',
+                'Qt6::GlobalConfigPrivate',
+                ...Array.from({length: 26}, (_, i) => `Qt6::Component${i}`),
+            ],
+            linkNames: ['Qt6Core'],
+            generated: false,
+        };
+        const outputs = [
+            missingPackage,
+            'Could not find a package configuration file provided by "fmt" (requested version 13.0.0)',
+            'Target "output.s" links to:\n\n    Qt6::Gui\n\n  but the target was not found.',
+            '/usr/bin/ld: cannot find -lfmt: No such file or directory',
+            'CMake Error: Could not find a configuration file for package "Qt6" that is compatible',
+            'ld: warning: libicui18n.so.70, needed by /app/qt/lib/libQt6Core.so, not found',
+            'Could not find a package configuration file provided by "nonesuch"',
+        ];
+        for (const output of outputs) {
+            const message = CMakeBuildSystem.explainFailure(output, [fmtAvailable, bigQt], ['re2'])!;
+            expect(message, output).toBeDefined();
+            const visible = message.split(LIBRARIES_ICON_TOKEN).join('');
+            expect(visible.length, visible).toBeLessThanOrEqual(80);
+            expect(message, message).not.toContain('\n');
+        }
+    });
+
+    it('answers with the package the user meant, and what to link', () => {
+        const message = CMakeBuildSystem.explainFailure(missingPackage, [qtAvailable])!;
+        expect(message).toContain('Did you mean find_package(Qt6)?');
+        // Core, not whichever component happens to sort first.
+        expect(message).toContain('Qt6::Core');
+        expect(message).not.toContain('Qt6::Concurrent');
+    });
+
+    it('suggests a real component rather than internal plumbing', () => {
+        const qt = {
+            libId: 'qt',
+            packageNames: ['Qt6', 'Qt6Core'],
+            targets: ['Qt6::Platform', 'Qt6::GlobalConfigPrivate', 'Qt6::Core'],
+            linkNames: ['Qt6Core'],
+            generated: false,
+        };
+        expect(CMakeBuildSystem.explainFailure(missingPackage, [qt])).toContain('Qt6::Core');
+    });
+
+    it('matches case-insensitively', () => {
+        const output = 'Could not find a package configuration file provided by "FMT"';
+        expect(CMakeBuildSystem.explainFailure(output, [fmtAvailable])).toContain('find_package(fmt)');
+    });
+
+    it('says so when the package exists but the call still failed', () => {
+        const output = 'Could not find a package configuration file provided by "fmt" (requested version 13.0.0)';
+        expect(CMakeBuildSystem.explainFailure(output, [fmtAvailable])).toContain('check the version');
+    });
+
+    it('says so when the library exists here but was not selected', () => {
+        const output = 'Could not find a package configuration file provided by "fmt"';
+        expect(CMakeBuildSystem.explainFailure(output, [qtAvailable], ['fmt', 'boost'])).toBe(
+            `Select "fmt" in the ${LIBRARIES_ICON_TOKEN} Libraries pane.`,
+        );
+    });
+
+    it('prefers a selected library over an unselected one of the same name', () => {
+        const output = 'Could not find a package configuration file provided by "fmt" (requested version 13.0.0)';
+        expect(CMakeBuildSystem.explainFailure(output, [fmtAvailable], ['fmt'])).toContain('check the version');
+    });
+
+    it('points at the Libraries pane when nothing is selected', () => {
+        const output = 'Could not find a package configuration file provided by "whatever"';
+        expect(CMakeBuildSystem.explainFailure(output, [])).toContain('Libraries pane');
+    });
+
+    it('recognises module mode as well as config mode', () => {
+        const output = 'By not providing "FindFoo.cmake" in CMAKE_MODULE_PATH this project has asked CMake';
+        expect(CMakeBuildSystem.explainFailure(output, [fmtAvailable])).toContain('fmt');
+    });
+
+    it('names a bounded set of alternatives when nothing matches', () => {
+        const output = 'Could not find a package configuration file provided by "nonesuch"';
+        const message = CMakeBuildSystem.explainFailure(output, [fmtAvailable, qtAvailable])!;
+        expect(message).toContain('No package "nonesuch"');
+        expect(message).toContain('more');
+    });
+
+    it('suggests the closest target when target_link_libraries names one that does not exist', () => {
+        // Real CMake output: the name is on its own line, not inline and quoted.
+        const output = [
+            'CMake Error at CMakeLists.txt:5 (target_link_libraries):',
+            '  Target "output.s" links to:',
+            '',
+            '    Qt6::Gui',
+            '',
+            '  but the target was not found.  Possible reasons include:',
+        ].join('\n');
+        expect(CMakeBuildSystem.explainFailure(output, [qtAvailable])).toContain('No target "Qt6::Gui"');
+    });
+
+    it('never suggests the name the user already wrote', () => {
+        // find_package(Qt6 CONFIG REQUIRED) with no COMPONENTS: the package is found, Qt6::Core is not.
+        const output = 'Target "output.s" links to:\n\n    Qt6::Core\n\n  but the target was not found.';
+        const message = CMakeBuildSystem.explainFailure(output, [qtAvailable])!;
+        expect(message).not.toContain('did you mean Qt6::Core');
+        expect(message).toBe('Qt6::Core comes from find_package(Qt6 COMPONENTS Core).');
+    });
+
+    it('handles a target with no namespace', () => {
+        const plain = {
+            libId: 'thing',
+            packageNames: ['thing'],
+            targets: ['thing'],
+            linkNames: ['thing'],
+            generated: true,
+        };
+        const output = 'Target "output.s" links to:\n\n    thing\n\n  but the target was not found.';
+        expect(CMakeBuildSystem.explainFailure(output, [plain])).toBe('thing comes from find_package(thing).');
+    });
+
+    it('still understands the older single-line target wording', () => {
+        const output = 'Target "output.s" links to target "Qt6::Gui" but the target was not found.';
+        expect(CMakeBuildSystem.explainFailure(output, [qtAvailable])).toContain('No target "Qt6::Gui"');
+    });
+
+    it('recognises the version-mismatch wording, which differs from a missing package', () => {
+        const output = [
+            'CMake Error at CMakeLists.txt:3 (find_package):',
+            '  Could not find a configuration file for package "Qt6" that is compatible',
+            '  with requested version "99.0.0".',
+        ].join('\n');
+        expect(CMakeBuildSystem.explainFailure(output, [qtAvailable])).toBe(
+            'Qt6 is here - check the version you asked for.',
+        );
+    });
+
+    it('steers a cannot-find -l towards the imported target', () => {
+        const output = '/usr/bin/ld: cannot find -lfmt: No such file or directory';
+        expect(CMakeBuildSystem.explainFailure(output, [fmtAvailable])).toBe('No -lfmt - link fmt::fmt instead.');
+    });
+
+    it('recognises qt_version_tag as Qt headers used without linking Qt', () => {
+        const output = [
+            'ld: CMakeFiles/output.s.dir/example.cpp.o:(.qtversion[qt_version_tag_use]+0x0): undefined',
+            "reference to `qt_version_tag'",
+            'collect2: error: ld returned 1 exit status',
+        ].join('\n');
+        expect(CMakeBuildSystem.explainFailure(output, [qtAvailable])).toBe(
+            'Qt is not linked: add target_link_libraries(output.s PRIVATE Qt6::Core)',
+        );
+    });
+
+    it('still names a target for qt_version_tag when qt is not among the selected libraries', () => {
+        const output = "undefined reference to `qt_version_tag'";
+        expect(CMakeBuildSystem.explainFailure(output, [fmtAvailable])).toContain(
+            'target_link_libraries(output.s PRIVATE Qt6::Core)',
+        );
+    });
+
+    it("names the library to link when a selected library's symbol is undefined", () => {
+        const output = [
+            "ld: CMakeFiles/output.s.dir/example.cpp.o: in function `main':",
+            'example.cpp:(.text+0x51): undefined reference to `fmt::v12::vprint(fmt::v12::basic_string_view<char>,' +
+                " fmt::v12::basic_format_args<fmt::v12::context>)'",
+            'collect2: error: ld returned 1 exit status',
+        ].join('\n');
+        expect(CMakeBuildSystem.explainFailure(output, [fmtAvailable])).toBe(
+            'fmt is not linked: add target_link_libraries(output.s PRIVATE fmt::fmt)',
+        );
+    });
+
+    it('stays quiet when the undefined symbol belongs to no selected library', () => {
+        const output = "undefined reference to `mylib::helper()'";
+        expect(CMakeBuildSystem.explainFailure(output, [fmtAvailable])).toBeUndefined();
+    });
+
+    it('stays quiet on an undefined reference that is not one we can diagnose', () => {
+        const output = "undefined reference to `my_own_function()'\ncollect2: error: ld returned 1 exit status";
+        expect(CMakeBuildSystem.explainFailure(output, [fmtAvailable])).toBeUndefined();
+    });
+
+    it('says a missing shared library is not the user to fix', () => {
+        const output = 'ld: warning: libicui18n.so.70, needed by /app/qt/lib/libQt6Core.so, not found';
+        expect(CMakeBuildSystem.explainFailure(output, [qtAvailable])).toBe(
+            'libicui18n.so.70 is missing here - please report it.',
+        );
     });
 });

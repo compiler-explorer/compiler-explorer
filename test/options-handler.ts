@@ -205,6 +205,7 @@ describe('Options handler', () => {
                     examples: ['abc', 'def'],
                     options: [],
                     packagedheaders: false,
+                    skipcmakepackage: false,
                     versions: {
                         noPaths: {
                             $order: 2,
@@ -219,6 +220,7 @@ describe('Options handler', () => {
                             options: ['-DHELLO123', '-DETC', '--some thing with spaces'],
                             hidden: false,
                             packagedheaders: false,
+                            skipcmakepackage: false,
                         },
                         onePath: {
                             $order: 0,
@@ -232,6 +234,7 @@ describe('Options handler', () => {
                             options: [],
                             hidden: false,
                             packagedheaders: false,
+                            skipcmakepackage: false,
                         },
                         twoPaths: {
                             $order: 1,
@@ -245,6 +248,7 @@ describe('Options handler', () => {
                             options: [],
                             hidden: false,
                             packagedheaders: false,
+                            skipcmakepackage: false,
                         },
                     },
                 },
@@ -258,6 +262,7 @@ describe('Options handler', () => {
                     examples: [],
                     options: [],
                     packagedheaders: false,
+                    skipcmakepackage: false,
                     versions: {
                         std: {
                             $order: 0,
@@ -271,6 +276,7 @@ describe('Options handler', () => {
                             options: [],
                             hidden: false,
                             packagedheaders: false,
+                            skipcmakepackage: false,
                         },
                     },
                 },
@@ -284,6 +290,7 @@ describe('Options handler', () => {
                     examples: [],
                     options: [],
                     packagedheaders: false,
+                    skipcmakepackage: false,
                     versions: {
                         trunk: {
                             $order: 0,
@@ -297,6 +304,7 @@ describe('Options handler', () => {
                             options: [],
                             hidden: true,
                             packagedheaders: false,
+                            skipcmakepackage: false,
                         },
                     },
                 },
