@@ -1,0 +1,51 @@
+error[E0616]: field `secret` of struct `Thing` is private
+ --> /app/example.rs:5:15
+  |
+5 |     let _ = t.secret;
+  |               ^^^^^^ private field
+
+error[E0599]: no variant, associated function, or constant named `Fast` found for enum `Mode` in the current scope
+ --> /app/example.rs:6:14
+  |
+6 |     a::Mode::Fast;
+  |              ^^^^ variant, associated function, or constant not found in `Mode`
+  |
+ ::: /app/a/mod.rs:3:1
+  |
+3 | pub enum Mode { Slow }
+  | ------------- variant, associated function, or constant `Fast` not found for this enum
+
+error[E0308]: mismatched types
+ --> /app/example.rs:7:22
+  |
+7 |     let _: a::Pair = a::make();
+  |            -------   ^^^^^^^^^ expected `Pair`, found `u8`
+  |            |
+  |            expected due to this
+  |
+help: try wrapping the expression in `a::Pair`
+  |
+7 |     let _: a::Pair = a::Pair(a::make());
+  |                      ++++++++         +
+
+error[E0061]: this function takes 1 argument but 2 arguments were supplied
+ --> /app/example.rs:8:5
+  |
+8 |     a::needs(1, 2);
+  |     ^^^^^^^^    - unexpected argument #2 of type `{integer}`
+  |
+note: function defined here
+ --> /app/a/mod.rs:6:8
+  |
+6 | pub fn needs(x: u8) -> u8 { x }
+  |        ^^^^^
+help: remove the extra argument
+  |
+8 -     a::needs(1, 2);
+8 +     a::needs(1);
+  |
+
+error: aborting due to 4 previous errors
+
+Some errors have detailed explanations: E0061, E0308, E0599, E0616.
+For more information about an error, try `rustc --explain E0061`.
