@@ -44,6 +44,10 @@ export class SolidityCompiler extends BaseCompiler {
         return ClangParser;
     }
 
+    override getIncludeArguments() {
+        return [];
+    }
+
     override optionsForFilter() {
         return [
             // We use --combined-json instead of `--asm-json` to have compacted json
@@ -62,6 +66,75 @@ export class SolidityCompiler extends BaseCompiler {
 
     override getOutputFilename(dirPath: string) {
         return path.join(dirPath, 'contracts/combined.json');
+    }
+
+    private handleCurrentJSONLayout(asm: any, sourceName: string, contractName: string) {
+        return asm.sources[sourceName].AST.nodes
+            .find(node => {
+                return node.nodeType === 'ContractDefinition' && node.name === contractName;
+            })!
+            .nodes.filter(node => {
+                return node.nodeType === 'FunctionDefinition';
+            })
+            .map(node => {
+                const [begin, length] = node.src.split(':').map(x => Number.parseInt(x, 10));
+
+                let name = node.kind === 'constructor' ? 'constructor' : node.name;
+
+                // encode the args into the name so we can
+                // differentiate between overloads
+                if (node.parameters.parameters.length > 0) {
+                    name +=
+                        '_' +
+                        node.parameters.parameters
+                            .map(paramNode => {
+                                return paramNode.typeName.name;
+                            })
+                            .join('_');
+                }
+
+                return {
+                    name: name,
+                    begin: begin,
+                    end: begin + length,
+                    tagCount: 0,
+                };
+            });
+    }
+
+    private handleOldJSONLayout(asm: any, sourceName: string, contractName: string) {
+        return (
+            asm.sources[sourceName].AST.children.find(node => {
+                return node.name === 'ContractDefinition' && node.attributes.name === contractName;
+            }).children ?? []
+        )
+            .filter(node => {
+                return node.name === 'FunctionDefinition';
+            })
+            .map(node => {
+                const [begin, length] = node.src.split(':').map(x => Number.parseInt(x, 10));
+
+                let name = node.attributes.isConstructor ? 'constructor' : node.attributes.name;
+
+                // encode the args into the name so we can
+                // differentiate between overloads
+                if (node.children[0].children.length > 0) {
+                    name +=
+                        '_' +
+                        node.children[0].children
+                            .map(paramNode => {
+                                return paramNode.attributes.type;
+                            })
+                            .join('_');
+                }
+
+                return {
+                    name: name,
+                    begin: begin,
+                    end: begin + length,
+                    tagCount: 0,
+                };
+            });
     }
 
     override async processAsm(result) {
@@ -89,10 +162,18 @@ export class SolidityCompiler extends BaseCompiler {
         if (!asm.contracts) {
             return {asm: [{text: result.asm}]};
         }
+
         return {
             asm: (Object.entries(asm.contracts) as [string, any][])
+                // Imported source files can contribute abstract/interfaces or
+                // otherwise non-deployable contracts without an assembly
+                // .code section. They are valid solc output but cannot be
+                // rendered as deployable contract assembly.
+                .filter(([, data]) => data?.asm?.['.code']?.length)
                 .filter(([_name, data]) => 'asm' in data) // ignore external contracts
-                .sort(([_name1, data1], [_name2, data2]) => data1.asm['.code'][0].begin - data2.asm['.code'][0].begin)
+                .sort(([_name1, data1], [_name2, data2]) => {
+                    return data1.asm['.code'][0].begin - data2.asm['.code'][0].begin;
+                })
                 .map(([name, data]) => {
                     // name is in the format of file:contract
                     // e.g. MyFile.sol:MyContract
@@ -102,74 +183,10 @@ export class SolidityCompiler extends BaseCompiler {
                     // tags (jumpdests) to show what function they're
                     // part of. here we parse the AST so we know what
                     // range of characters belongs to each function.
-                    let contractFunctions;
                     // the layout of this JSON has changed between versions...
-                    if (hasOldJSONLayout) {
-                        contractFunctions = (
-                            asm.sources[sourceName].AST.children.find(node => {
-                                return node.name === 'ContractDefinition' && node.attributes.name === contractName;
-                            }).children ?? []
-                        )
-                            .filter(node => {
-                                return node.name === 'FunctionDefinition';
-                            })
-                            .map(node => {
-                                const [begin, length] = node.src.split(':').map(x => Number.parseInt(x, 10));
-
-                                let name = node.attributes.isConstructor ? 'constructor' : node.attributes.name;
-
-                                // encode the args into the name so we can
-                                // differentiate between overloads
-                                if (node.children[0].children.length > 0) {
-                                    name +=
-                                        '_' +
-                                        node.children[0].children
-                                            .map(paramNode => {
-                                                return paramNode.attributes.type;
-                                            })
-                                            .join('_');
-                                }
-
-                                return {
-                                    name: name,
-                                    begin: begin,
-                                    end: begin + length,
-                                    tagCount: 0,
-                                };
-                            });
-                    } else {
-                        contractFunctions = asm.sources[sourceName].AST.nodes
-                            .find(node => {
-                                return node.nodeType === 'ContractDefinition' && node.name === contractName;
-                            })
-                            .nodes.filter(node => {
-                                return node.nodeType === 'FunctionDefinition';
-                            })
-                            .map(node => {
-                                const [begin, length] = node.src.split(':').map(x => Number.parseInt(x, 10));
-
-                                let name = node.kind === 'constructor' ? 'constructor' : node.name;
-
-                                // encode the args into the name so we can
-                                // differentiate between overloads
-                                if (node.parameters.parameters.length > 0) {
-                                    name +=
-                                        '_' +
-                                        node.parameters.parameters
-                                            .map(paramNode => {
-                                                return paramNode.typeName.name;
-                                            })
-                                            .join('_');
-                                }
-
-                                return {
-                                    name: name,
-                                    begin: begin,
-                                    end: begin + length,
-                                    tagCount: 0,
-                                };
-                            });
-                    }
+                    const contractFunctions = hasOldJSONLayout
+                        ? this.handleOldJSONLayout(asm, sourceName, contractName)
+                        : this.handleCurrentJSONLayout(asm, sourceName, contractName);
 
                     // solc generates some code, for things like detecting
                     // and reverting if a multiplication results in
