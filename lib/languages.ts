@@ -926,6 +926,18 @@ const definitions: Record<LanguageKey, LanguageDefinition> = {
         previewFilter: null,
         monacoDisassembly: null,
     },
+    salam: {
+        name: 'Salam',
+        monaco: 'salam',
+        extensions: ['.salam'],
+        alias: [],
+        logoFilename: 'salam.svg',
+        logoFilenameDark: null,
+        formatter: null,
+        previewFilter: null,
+        monacoDisassembly: null,
+        digitSeparator: '_',
+    },
     sfpi: {
         name: 'SFPI C++',
         monaco: 'cppp',

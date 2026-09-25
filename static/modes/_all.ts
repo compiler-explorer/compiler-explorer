@@ -71,6 +71,7 @@ import './perl-concise-mode';
 import './razorforge-mode';
 import './rust-mode';
 import './sail-mode';
+import './salam-mode';
 import './slang-mode';
 import './spice-mode';
 import './spirv-mode';

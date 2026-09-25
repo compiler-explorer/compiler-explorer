@@ -389,6 +389,12 @@
           - 'lib/compilers/rust.ts'
           - 'etc/config/rust.*.properties'
 
+'lang-salam':
+  - changed-files:
+      - any-glob-to-any-file:
+          - 'lib/compilers/salam.ts'
+          - 'etc/config/salam.*.properties'
+
 'lang-scala':
   - changed-files:
       - any-glob-to-any-file:

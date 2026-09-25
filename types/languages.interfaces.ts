@@ -103,6 +103,7 @@ export type LanguageKey =
     | 'ruby'
     | 'rust'
     | 'sail'
+    | 'salam'
     | 'scala'
     | 'sfpi'
     | 'slang'
