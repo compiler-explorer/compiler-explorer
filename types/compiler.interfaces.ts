@@ -190,3 +190,21 @@ export type CompilerInfo = {
 export type PreliminaryCompilerInfo = Omit<CompilerInfo, 'version' | 'fullVersion' | 'baseName' | 'disabledFilters'> & {
     version?: string;
 };
+
+/**
+ * `CompilerInfo` fields that `/api/compilers` can return deduplicated, on request via `?dedupe=`. Each holds an
+ * array whose elements repeat verbatim across most compilers of a language.
+ */
+export const DEDUPABLE_COMPILER_FIELDS = ['possibleOverrides', 'possibleRuntimeTools'] as const;
+
+export type DedupableCompilerField = (typeof DEDUPABLE_COMPILER_FIELDS)[number];
+
+/** A compiler whose deduplicated fields hold indices into the matching {@link DedupedCompilerList.refs} table. */
+export type DedupedCompilerInfo = Omit<Partial<CompilerInfo>, DedupableCompilerField> &
+    Partial<Record<DedupableCompilerField, number[]>>;
+
+/** The envelope `/api/compilers` returns in place of a bare array when `?dedupe=` names a supported field. */
+export type DedupedCompilerList = {
+    compilers: DedupedCompilerInfo[];
+    refs: {[F in DedupableCompilerField]?: NonNullable<CompilerInfo[F]>};
+};
