@@ -31,6 +31,15 @@ import * as monacoVim from 'monaco-vim';
 import TomSelect from 'tom-select';
 import _ from 'underscore';
 
+import {
+    type AbiExplorerLanguage,
+    type AbiExplorerState,
+    abiExplorerLanguageFor,
+    abiExplorerTripleFor,
+    getAbiExplorerUrl,
+    getAbiExplorerUrlSync,
+    normalizeAbiExplorerStd,
+} from '../abi-explorer.js';
 import * as BootstrapUtils from '../bootstrap-utils.js';
 import * as colour from '../colour.js';
 import * as Components from '../components.js';
@@ -51,6 +60,7 @@ import {assert, unwrap} from '../../shared/assert.js';
 import {getBuildSystemByManifestFilename, isManifestLanguageId} from '../../shared/build-systems.js';
 import {escapeHTML, isString} from '../../shared/common-utils.js';
 import {CompilationResult} from '../../types/compilation/compilation.interfaces.js';
+import {CompilerOverrideType} from '../../types/compilation/compiler-overrides.interfaces.js';
 import {CompilerInfo} from '../../types/compiler.interfaces.js';
 import {Language, LanguageKey} from '../../types/languages.interfaces.js';
 import {MessageWithLocation, ResultLine} from '../../types/resultline/resultline.interfaces.js';
@@ -109,6 +119,7 @@ export class Editor extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Edit
     private conformanceViewerButton: JQuery<HTMLElement>;
     private cppInsightsButton: JQuery<HTMLElement>;
     private quickBenchButton: JQuery<HTMLElement>;
+    private abiExplorerButton: JQuery<HTMLElement>;
     private languageInfoButton: JQuery;
     private nothingCtrlSSince?: number;
     private nothingCtrlSTimes?: number;
@@ -643,6 +654,11 @@ export class Editor extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Edit
             this.quickBenchButton.on('mousedown', () => {
                 this.updateOpenInQuickBench();
             });
+
+            this.abiExplorerButton = this.domRoot.find('.open-in-abiexplorer');
+            this.abiExplorerButton.on('mousedown', () => {
+                this.updateOpenInAbiExplorer();
+            });
         }
 
         this.currentCursorPosition = this.domRoot.find('.currentCursorPosition');
@@ -703,6 +719,12 @@ export class Editor extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Edit
             } else {
                 this.cppInsightsButton.hide();
                 this.quickBenchButton.hide();
+            }
+            // ABI Explorer lays out C and Hylo as well as C++.
+            if (abiExplorerLanguageFor(this.currentLanguage?.id)) {
+                this.abiExplorerButton.show();
+            } else {
+                this.abiExplorerButton.hide();
             }
         }
 
@@ -889,6 +911,78 @@ export class Editor extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Edit
                 Buffer.from(this.asciiEncodeJsonText(JSON.stringify(quickBenchState))).toString('base64');
             this.quickBenchButton.attr('href', link);
         }
+    }
+
+    /**
+     * Point the ABI Explorer button at what the editor currently holds.
+     *
+     * Best effort, deliberately. An editor can have any number of compilers on
+     * it, so which one a reader means by "this code's layout" is a question
+     * with no answer here; the link is a starting point, and ABI Explorer puts
+     * the language, standard and target in plain controls at the top of its
+     * page, a click from whatever we guessed wrong.
+     */
+    updateOpenInAbiExplorer(): void {
+        if (!options.thirdPartyIntegrationEnabled) return;
+        const lang = abiExplorerLanguageFor(this.currentLanguage?.id);
+        if (!lang) return;
+
+        const states = this.getCompilerStates();
+        const state: AbiExplorerState = {
+            source: this.getSource() ?? '',
+            lang,
+            std: this.abiExplorerStd(lang, states),
+        };
+        // This runs on mousedown, the last event before the link is followed, so
+        // the href has to be right now: the uncompressed link goes on at once,
+        // and the compressed one — carrying the target, which costs a compiler
+        // lookup — replaces it as soon as both are ready.
+        this.abiExplorerButton.attr('href', getAbiExplorerUrlSync(state));
+        void this.abiExplorerTriple(states)
+            .then(triple => getAbiExplorerUrl(triple ? {...state, triple} : state))
+            .then(url => this.abiExplorerButton.attr('href', url));
+    }
+
+    /**
+     * The standard to lay out with: the last one an attached compiler names,
+     * whether typed as a flag or picked from its overrides.
+     *
+     * The override wins over the flag box on the same compiler, being the more
+     * explicit choice of the two. Which compiler wins when several are attached
+     * is arbitrary, as it is for the other two integrations here.
+     */
+    private abiExplorerStd(lang: AbiExplorerLanguage, states: any[]): string {
+        let std = '';
+        for (const state of states) {
+            const typed = /-std=(\S+)/.exec(state.options ?? '')?.[1];
+            const picked = (state.overrides ?? []).find(
+                (ov: {name: string; value?: string}) => ov.name === CompilerOverrideType.stdver,
+            )?.value;
+            for (const candidate of [typed, picked]) {
+                const normalized = candidate ? normalizeAbiExplorerStd(lang, candidate) : '';
+                if (normalized) std = normalized;
+            }
+        }
+        return std;
+    }
+
+    /**
+     * The target to lay out for, or undefined to leave ABI Explorer on its own.
+     *
+     * Only where exactly one compiler is attached. With several there is no
+     * saying which target was meant, and every one of them is a machine whose
+     * layout differs from the others, so the honest answer is to name none.
+     *
+     * Read off the compiler itself rather than its flags: for most of CE's
+     * cross compilers the target is which binary runs, and appears in no
+     * argument.
+     */
+    private async abiExplorerTriple(states: any[]): Promise<string | undefined> {
+        if (states.length !== 1) return undefined;
+        const info = await this.hub.compilerService
+            .findCompiler(this.currentLanguage?.id ?? '', states[0].compiler)
+            .catch(() => null);
+        return info ? abiExplorerTripleFor(info.instructionSet, info.fullVersion, info.options) : undefined;
     }
 
     changeLanguage(newLang: string): void {
