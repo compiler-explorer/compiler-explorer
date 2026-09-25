@@ -46,7 +46,7 @@ scripts:
 prereqs: $(NODE_MODULES)
 
 $(NODE_MODULES): package.json package-lock.json | node-installed
-	$(NPM) clean-install $(NPM_FLAGS)
+	$(NPM) clean-install --allow-git=root $(NPM_FLAGS)
 	@rm -rf node_modules/.cache/esm/*
 	@touch $@
 
