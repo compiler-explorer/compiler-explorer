@@ -1,0 +1,7 @@
+error: std.system.os.secret: unsupported target
+   --> /tmp/compiler-explorer-compiler-mach/dep/std/src/system/os/secret.mach:667:5
+    |
+667 |     $error("std.system.os.secret: unsupported target");
+    |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+23 errors / 0 warnings

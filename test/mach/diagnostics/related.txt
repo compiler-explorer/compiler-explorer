@@ -1,0 +1,13 @@
+error: duplicate definition: `dup` is already bound in this scope
+ --> /tmp/compiler-explorer-compiler-mach/src/example.mach:6:5
+  |
+6 | fun dup() i64 { ret 2; }
+  |     ^^^
+  |
+ --> /tmp/compiler-explorer-compiler-mach/src/example.mach:5:5
+  |
+5 | fun dup() i64 { ret 1; }
+  |     --- previous definition here
+
+1 error / 0 warnings
+

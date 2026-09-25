@@ -36,6 +36,7 @@ import {logger} from '../logger.js';
 import {getExamplesRoot} from '../sources/builtin.js';
 import * as utils from '../utils.js';
 import {JuliaCompiler} from './julia.js';
+import type {MachCompiler} from './mach.js';
 
 export class BaseParser {
     protected readonly compiler: BaseCompiler;
@@ -600,6 +601,26 @@ export class MojoParser extends BaseParser {
     override async parse() {
         await this.getOptions('-help');
         return this.compiler;
+    }
+}
+
+export class MachParser extends BaseParser {
+    override async parse() {
+        await this.getOptions('help build');
+        return this.compiler;
+    }
+
+    override async getOptions(helpArg: string) {
+        const optionFinder = /^ {2}(--?[\w-]+(?: <[^>]+>)?) {2,}(.*)/;
+        const result = await this.compiler.execCompilerCached(this.compiler.compiler.exe, splitArguments(helpArg));
+        const options = result.code === 0 ? this.parseLines(result.stdout, optionFinder) : {};
+        this.compiler.possibleArguments.populateOptions(options);
+        return options;
+    }
+
+    override async getPossibleTargets(): Promise<string[]> {
+        const targets = await (this.compiler as MachCompiler).targets();
+        return targets.map(target => target.name);
     }
 }
 

@@ -1,0 +1,8 @@
+error: unresolved identifier `bogus`
+ --> /tmp/compiler-explorer-compiler-mach/src/example.mach:7:9
+  |
+7 |     ret bogus(1111111111, 1111111111, 1111111111, 1111111111, 1111111111, 1111111111, 1111111111, 1111111111, 1111111111...
+  |         ^^^^^
+
+1 error / 0 warnings
+
