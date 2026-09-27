@@ -66,8 +66,8 @@ export class EventsWsSender extends EventsWsBase {
             this.ws!.on('open', async () => {
                 this.ws!.send(
                     JSON.stringify({
-                        guid: guid,
                         ...result,
+                        guid: guid,
                     }),
                 );
                 resolve();
@@ -302,8 +302,8 @@ export class PersistentEventsSender extends EventsWsBase {
                 try {
                     this.ws.send(
                         JSON.stringify({
-                            guid: message.guid,
                             ...message.result,
+                            guid: message.guid,
                         }),
                     );
                     message.resolve();
@@ -510,9 +510,13 @@ export class PersistentEventsSender extends EventsWsBase {
         const expiresAtMs = sentTimestampMs === undefined ? undefined : sentTimestampMs + this.requestDeadlineMs;
         return new Promise((resolve, reject) => {
             if (this.isConnected && this.ws?.readyState === WebSocket.OPEN) {
+                // The guid goes last: a result can carry one of its own - a remote execution's
+                // result arrives with the guid it was fetched under and is cached that way - and
+                // spreading over it would label this frame with an unrelated request's guid,
+                // leaving the router that is waiting for this one to time out.
                 const messageData = {
-                    guid: guid,
                     ...result,
+                    guid: guid,
                 };
                 if (this.requireAcknowledgments) {
                     this.setupAckTimeout(guid, messageData, resolve, reject, expiresAtMs);
@@ -608,6 +612,10 @@ export class EventsWsWaiter extends EventsWsBase {
                 clearInterval(t);
                 try {
                     const data = JSON.parse(message.toString());
+                    // The frame carries the guid it was relayed under. Returned as part of the
+                    // result it reaches the cache, and every later compile that reuses that entry
+                    // sends its own result labelled with this execution's guid.
+                    delete data.guid;
                     resolve(data);
                 } catch (e) {
                     reject(e);
