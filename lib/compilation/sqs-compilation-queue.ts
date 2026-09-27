@@ -322,20 +322,34 @@ async function sendCompilationResultViaWebsocket(
         const resultSize = JSON.stringify(basicResult).length;
 
         let webResult;
-        if (result.s3Key && resultSize > WEBSOCKET_SIZE_THRESHOLD) {
+        const viaS3 = Boolean(result.s3Key) && resultSize > WEBSOCKET_SIZE_THRESHOLD;
+        if (viaS3) {
             webResult = {
                 s3Key: result.s3Key,
                 okToCache: result.okToCache ?? false,
                 execTime: result.execTime !== undefined ? result.execTime : totalTimeMs,
             };
         } else {
+            if (resultSize > WEBSOCKET_SIZE_THRESHOLD) {
+                // The threshold is what the events websocket can carry, so without an s3Key to
+                // point at instead there is nothing to do but try - and a frame the transport
+                // refuses is dropped where neither end can see it, leaving the router waiting out
+                // its deadline for a result that was ready.
+                logger.warn(
+                    `Sending ${guid} inline at ${resultSize} bytes with no s3Key, over the ` +
+                        `${WEBSOCKET_SIZE_THRESHOLD} byte threshold`,
+                );
+            }
             webResult = basicResult;
         }
 
         await persistentSender.send(guid, webResult, sentTimestampMs);
-        logger.info(`Successfully sent compilation result for ${guid} via WebSocket (total time: ${totalTimeMs}ms)`);
+        logger.info(
+            `Successfully sent compilation result for ${guid} via WebSocket ` +
+                `(${resultSize} bytes, ${viaS3 ? 's3Key reference' : 'inline'}, total time: ${totalTimeMs}ms)`,
+        );
     } catch (error) {
-        logger.error('WebSocket send error:', error);
+        logger.error(`WebSocket send error for ${guid}:`, error);
     }
 }
 
