@@ -44,6 +44,83 @@ function makeSender() {
     return {sender, sent};
 }
 
+function makeSenderWithPending(guid: string, retryCount = 0) {
+    const sent: string[] = [];
+    const rejected: Error[] = [];
+    const sender = Object.create(PersistentEventsSender.prototype) as any;
+    sender.maxRetries = 3;
+    sender.ackTimeoutMs = 3000;
+    sender.stableConnectionMs = 30_000;
+    sender.lastOpenedAt = 0;
+    sender.reconnectAttempts = 0;
+    sender.reconnectDelay = 1000;
+    sender.ws = {readyState: 1, send: (d: string) => sent.push(d), terminate: vi.fn()};
+    sender.pendingAcks = new Map([
+        [
+            guid,
+            {
+                timeout: setTimeout(() => {}, 60_000),
+                retryCount,
+                resolve: vi.fn(),
+                reject: (e: Error) => rejected.push(e),
+                messageData: {guid},
+            },
+        ],
+    ]);
+    return {sender, sent, rejected};
+}
+
+describe('Retrying an acknowledgement across reconnections', () => {
+    beforeEach(() => vi.useFakeTimers());
+    afterEach(() => vi.useRealTimers());
+
+    // Reconnections arriving faster than ackTimeoutMs replace the timer before it fires, so
+    // without spending budget here the same result is resent forever and pendingAcks never
+    // empties - which keeps the worker from ever pulling new work again.
+    it('spends a retry per reconnection', () => {
+        const {sender} = makeSenderWithPending('guid');
+        sender.retryPendingAcknowledgments();
+        expect(sender.pendingAcks.get('guid').retryCount).toBe(1);
+        sender.retryPendingAcknowledgments();
+        expect(sender.pendingAcks.get('guid').retryCount).toBe(2);
+    });
+
+    it('gives up once the budget is spent, so the worker can take work again', () => {
+        const {sender, rejected} = makeSenderWithPending('guid', 3);
+        sender.retryPendingAcknowledgments();
+        expect(sender.pendingAcks.size).toBe(0);
+        expect(rejected).toHaveLength(1);
+    });
+});
+
+describe('Reconnection budget', () => {
+    beforeEach(() => vi.useFakeTimers());
+    afterEach(() => vi.useRealTimers());
+
+    it('is not reset by a connection that closed straight away', () => {
+        const {sender} = makeSenderWithPending('guid');
+        const first = Date.now();
+        sender.noteConnectionOpened(first);
+        sender.reconnectAttempts = 2;
+
+        // Opened again a second later: that connection proved nothing.
+        sender.noteConnectionOpened(first + 1000);
+
+        expect(sender.reconnectAttempts).toBe(2);
+    });
+
+    it('is reset by a connection that lasted', () => {
+        const {sender} = makeSenderWithPending('guid');
+        const first = Date.now();
+        sender.noteConnectionOpened(first);
+        sender.reconnectAttempts = 2;
+
+        sender.noteConnectionOpened(first + 30_000);
+
+        expect(sender.reconnectAttempts).toBe(0);
+    });
+});
+
 describe('Keeping the events websocket honest', () => {
     beforeEach(() => vi.useFakeTimers());
     afterEach(() => vi.useRealTimers());
