@@ -91,6 +91,9 @@ export class PersistentEventsSender extends EventsWsBase {
     private hasPermanentlyFailed = false;
     private heartbeatInterval: NodeJS.Timeout | undefined;
     private heartbeatIntervalMs = 30000; // 30 seconds
+    private pongTimer: NodeJS.Timeout | undefined;
+    private pongTimeoutMs = 10000;
+    private lastActivityTime = 0;
     private pendingAcks = new Map<
         string,
         {
@@ -143,6 +146,7 @@ export class PersistentEventsSender extends EventsWsBase {
         this.ws.on('open', () => {
             this.isConnected = true;
             this.isConnecting = false;
+            this.recordActivity();
             this.reconnectAttempts = 0;
             this.reconnectDelay = 1000;
             logger.info(`Persistent WebSocket connection established to ${this.events_url}`);
@@ -160,21 +164,27 @@ export class PersistentEventsSender extends EventsWsBase {
             this.scheduleReconnect();
         });
 
-        this.ws.on('close', () => {
+        this.ws.on('close', (code: number, reason: Buffer) => {
             this.isConnected = false;
             this.isConnecting = false;
             this.stopHeartbeat();
 
             if (!this.expectClose) {
-                logger.warn(`Persistent WebSocket connection closed unexpectedly for ${this.events_url}`);
+                logger.warn(
+                    `Persistent WebSocket closed unexpectedly for ${this.events_url}: ` +
+                        `code ${code}${reason?.length ? `, reason "${reason.toString()}"` : ''}`,
+                );
                 this.pauseAckTimeouts();
                 this.scheduleReconnect();
             }
         });
 
         this.ws.on('message', (data: any) => {
+            const text = data.toString();
+            this.recordActivity();
+            if (text.trim() === 'pong') return;
             try {
-                const message = JSON.parse(data.toString());
+                const message = JSON.parse(text);
                 if (message.type === 'ack' && message.guid) {
                     this.handleAcknowledgment(message.guid);
                 }
@@ -186,15 +196,55 @@ export class PersistentEventsSender extends EventsWsBase {
         this.ws.on('pong', () => {});
     }
 
+    /**
+     * API Gateway answers protocol-level pings at its edge, so ws.ping() cannot tell whether
+     * the Lambda backend is still receiving. The events server replies to a "ping" text frame
+     * with "pong", which round-trips the backend.
+     */
     private startHeartbeat(): void {
-        this.heartbeatInterval = setInterval(() => {
-            if (this.ws?.readyState === WebSocket.OPEN) {
-                this.ws.ping();
-            }
-        }, this.heartbeatIntervalMs);
+        this.stopHeartbeat();
+        this.heartbeatInterval = setInterval(() => this.sendHeartbeat(), this.heartbeatIntervalMs);
+    }
+
+    private sendHeartbeat(): void {
+        if (this.ws?.readyState !== WebSocket.OPEN) return;
+        // A pong is still outstanding; that timer will terminate us. Don't stack another.
+        if (this.pongTimer) return;
+
+        try {
+            this.ws.send('ping');
+        } catch (error) {
+            logger.warn('Failed to send heartbeat ping:', error);
+        }
+
+        this.pongTimer = setTimeout(() => {
+            this.pongTimer = undefined;
+            const staleFor = this.lastActivityTime ? Date.now() - this.lastActivityTime : -1;
+            logger.warn(
+                `Events websocket heartbeat timed out: nothing inbound within ${this.pongTimeoutMs}ms ` +
+                    `(last activity ${staleFor}ms ago). Terminating what is left of the connection.`,
+            );
+            // terminate() rather than close(): a dead peer never answers the closing
+            // handshake. The close handler drives the reconnect.
+            this.ws?.terminate();
+        }, this.pongTimeoutMs);
+    }
+
+    /** Anything inbound proves the peer is alive, pong or not. */
+    private recordActivity(): void {
+        this.lastActivityTime = Date.now();
+        this.clearPongTimer();
+    }
+
+    private clearPongTimer(): void {
+        if (this.pongTimer) {
+            clearTimeout(this.pongTimer);
+            this.pongTimer = undefined;
+        }
     }
 
     private stopHeartbeat(): void {
+        this.clearPongTimer();
         if (this.heartbeatInterval) {
             clearInterval(this.heartbeatInterval);
             this.heartbeatInterval = undefined;
