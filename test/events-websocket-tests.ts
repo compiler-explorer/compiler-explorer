@@ -24,7 +24,7 @@
 
 import {afterEach, beforeEach, describe, expect, it, vi} from 'vitest';
 
-import {PersistentEventsSender} from '../lib/execution/events-websocket.js';
+import {EventsWsWaiter, PersistentEventsSender} from '../lib/execution/events-websocket.js';
 
 // The heartbeat only touches the socket and two timers, so a stand-in socket suffices.
 function makeSender() {
@@ -172,5 +172,32 @@ describe('Keeping the events websocket honest', () => {
         sender.sendHeartbeat();
         expect(sender.pongTimer).toBe(first);
         expect(sent).toEqual(['ping']);
+    });
+});
+
+describe('Labelling a result with the right guid', () => {
+    // A remote execution's result arrives carrying the guid it was relayed under, and is cached
+    // that way. Spreading it over the outgoing frame's guid sent later compiles out under that
+    // execution's guid, so no router recognised them and each waited out its full deadline.
+    it('keeps the guid of the request being answered when the result carries one of its own', async () => {
+        const {sender, sent} = makeSender();
+        sender.requireAcknowledgments = false;
+        sender.messageQueue = [];
+
+        await sender.send('the-real-guid', {code: 0, guid: 'a-stale-execution-guid'} as any);
+
+        expect(JSON.parse(sent[0]).guid).toEqual('the-real-guid');
+    });
+
+    it('does not return the transport guid as part of an execution result', () => {
+        const waiter = Object.create(EventsWsWaiter.prototype) as any;
+        const handlers: Record<string, (m: any) => void> = {};
+        waiter.timeout = 10_000;
+        waiter.ws = {on: (event: string, fn: (m: any) => void) => (handlers[event] = fn)};
+
+        const result = waiter.data();
+        handlers.message(Buffer.from(JSON.stringify({guid: 'an-execution-guid', code: 0})));
+
+        return expect(result).resolves.toEqual({code: 0});
     });
 });
