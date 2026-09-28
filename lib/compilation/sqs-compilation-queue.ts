@@ -351,6 +351,15 @@ export async function sendCompilationResultViaWebsocket(
             // Over this size API Gateway closes the connection rather than refusing the frame, and
             // that connection is shared, so one oversized result costs every other result this
             // worker has in flight. Send the key and let the router fetch the rest.
+            if (!result.s3Key) {
+                // Whatever produced a result this size was meant to have stored it already, so
+                // storing it here is a repair, not the design: worth saying out loud, or the path
+                // that skipped it stays invisible.
+                logger.warn(
+                    `Sending ${guid} at ${resultSize} bytes with no s3Key, over the ` +
+                        `${WEBSOCKET_SIZE_THRESHOLD} byte threshold: storing it now`,
+                );
+            }
             const s3Key = result.s3Key ?? (await storeResultForRouter(compilationEnvironment, guid, basicResult));
             if (s3Key) {
                 webResult = {
