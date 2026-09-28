@@ -29,8 +29,10 @@ import {
     getRequestedBuildSystem,
     isJsonContentType,
     type RemoteCompilationRequest,
+    sendCompilationResultViaWebsocket,
 } from '../lib/compilation/sqs-compilation-queue.js';
 import {CompileHandler} from '../lib/handlers/compile.js';
+import {WEBSOCKET_SIZE_THRESHOLD} from '../types/compilation/compilation.interfaces.js';
 
 function makeMessage(fields: Partial<RemoteCompilationRequest>): RemoteCompilationRequest {
     return fields as RemoteCompilationRequest;
@@ -110,5 +112,92 @@ describe('Parsing a queued request whose content-type carries a charset', () => 
         expect(withCharset.libraries).toEqual([{id: 'fmt', version: '901'}]);
         expect(withCharset.filters).toMatchObject({intel: false, binary: true});
         expect(withCharset).toEqual(bare);
+    });
+});
+
+describe('Sending a result too large for the events websocket', () => {
+    const oversized = {
+        code: 0,
+        okToCache: true,
+        stdout: [{text: 'x'.repeat(WEBSOCKET_SIZE_THRESHOLD * 2)}],
+    } as any;
+
+    function makeSender() {
+        const sent: any[] = [];
+        return {
+            sent,
+            sender: {send: async (_guid: string, payload: any) => sent.push(payload)} as any,
+        };
+    }
+
+    function makeEnv(storedKey: string | undefined) {
+        const stored: {key: any; json: string}[] = [];
+        return {
+            stored,
+            env: {
+                tempCachePutWithTTL: async (key: any, json: string) => {
+                    stored.push({key, json});
+                    return storedKey;
+                },
+            } as any,
+        };
+    }
+
+    it('stores it and sends only the key', async () => {
+        const {sent, sender} = makeSender();
+        const {stored, env} = makeEnv('temp/abc123');
+
+        await sendCompilationResultViaWebsocket(sender, env, 'a-guid', oversized, 5);
+
+        expect(sent[0].s3Key).toEqual('temp/abc123');
+        expect(sent[0].stdout).toBeUndefined();
+        expect(stored.map(entry => entry.key)).toContain('a-guid');
+    });
+
+    // Without the request that produced it there is no way back to the path that failed to store
+    // the result in the first place.
+    it('saves the request alongside it under its own key', async () => {
+        const {sender} = makeSender();
+        const {stored, env} = makeEnv('temp/abc123');
+        const request = {guid: 'a-guid', source: 'int main() {}'};
+
+        await sendCompilationResultViaWebsocket(sender, env, 'a-guid', oversized, 5, undefined, request);
+
+        const saved = stored.find(entry => entry.key === 'a-guid_faultyrequest');
+        expect(saved).toBeDefined();
+        expect(JSON.parse(saved!.json)).toEqual(request);
+    });
+
+    it('reuses an s3Key the compiler already assigned', async () => {
+        const {sent, sender} = makeSender();
+        const {stored, env} = makeEnv('temp/unused');
+
+        await sendCompilationResultViaWebsocket(sender, env, 'a-guid', {...oversized, s3Key: 'cache/known'}, 5);
+
+        expect(sent[0].s3Key).toEqual('cache/known');
+        expect(stored).toHaveLength(0);
+    });
+
+    // Sending it anyway closes the shared connection with a 1009, taking every other result this
+    // worker has in flight with it.
+    it('sends an error rather than the payload when it cannot be stored', async () => {
+        const {sent, sender} = makeSender();
+        const {env} = makeEnv(undefined);
+
+        await sendCompilationResultViaWebsocket(sender, env, 'a-guid', oversized, 5);
+
+        expect(sent[0].code).toEqual(-1);
+        expect(JSON.stringify(sent[0]).length).toBeLessThan(WEBSOCKET_SIZE_THRESHOLD);
+    });
+
+    it('leaves a result that fits alone', async () => {
+        const {sent, sender} = makeSender();
+        const {stored, env} = makeEnv('temp/unused');
+
+        await sendCompilationResultViaWebsocket(sender, env, 'a-guid', {code: 0, stdout: []} as any, 5);
+
+        expect(sent[0].stdout).toEqual([]);
+        expect(sent[0].s3Key).toBeUndefined();
+        expect(stored).toHaveLength(0);
     });
 });
