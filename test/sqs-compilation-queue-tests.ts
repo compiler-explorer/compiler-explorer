@@ -131,12 +131,12 @@ describe('Sending a result too large for the events websocket', () => {
     }
 
     function makeEnv(storedKey: string | undefined) {
-        const stored: string[] = [];
+        const stored: {key: any; json: string}[] = [];
         return {
             stored,
             env: {
-                tempCachePutWithTTL: async (_key: any, json: string) => {
-                    stored.push(json);
+                tempCachePutWithTTL: async (key: any, json: string) => {
+                    stored.push({key, json});
                     return storedKey;
                 },
             } as any,
@@ -151,7 +151,21 @@ describe('Sending a result too large for the events websocket', () => {
 
         expect(sent[0].s3Key).toEqual('temp/abc123');
         expect(sent[0].stdout).toBeUndefined();
-        expect(stored).toHaveLength(1);
+        expect(stored.map(entry => entry.key)).toContain('a-guid');
+    });
+
+    // Without the request that produced it there is no way back to the path that failed to store
+    // the result in the first place.
+    it('saves the request alongside it under its own key', async () => {
+        const {sender} = makeSender();
+        const {stored, env} = makeEnv('temp/abc123');
+        const request = {guid: 'a-guid', source: 'int main() {}'};
+
+        await sendCompilationResultViaWebsocket(sender, env, 'a-guid', oversized, 5, undefined, request);
+
+        const saved = stored.find(entry => entry.key === 'a-guid_faultyrequest');
+        expect(saved).toBeDefined();
+        expect(JSON.parse(saved!.json)).toEqual(request);
     });
 
     it('reuses an s3Key the compiler already assigned', async () => {

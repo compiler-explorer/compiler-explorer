@@ -307,23 +307,24 @@ export class SqsCompilationWorkerMode extends SqsCompilationQueueBase {
 }
 
 /**
- * Puts a result somewhere the router can fetch it, for the cases the compiler did not already do so
- * itself. Returns the key it went under, or undefined if it could not be stored.
+ * Puts a value where the router, or a person investigating, can fetch it later. The key is derived
+ * from keyFor, so callers naming it differently get a different object. Returns the key it went
+ * under, or undefined if it could not be stored.
  */
-async function storeResultForRouter(
+async function storeInTempCache(
     compilationEnvironment: CompilationEnvironment,
-    guid: string,
-    result: CompilationResult,
+    keyFor: string,
+    value: unknown,
 ): Promise<string | undefined> {
     try {
         return await compilationEnvironment.tempCachePutWithTTL(
-            guid,
-            JSON.stringify(result),
+            keyFor,
+            JSON.stringify(value),
             TEMP_STORAGE_TTL_DAYS,
             undefined,
         );
     } catch (error) {
-        logger.error(`Failed to store oversized result for ${guid}:`, error);
+        logger.error(`Failed to store ${keyFor} in the temp cache:`, error);
         return undefined;
     }
 }
@@ -335,6 +336,7 @@ export async function sendCompilationResultViaWebsocket(
     result: CompilationResult,
     totalTimeMs: number,
     sentTimestampMs?: number,
+    request?: unknown,
 ) {
     try {
         const basicResult = {
@@ -354,13 +356,20 @@ export async function sendCompilationResultViaWebsocket(
             if (!result.s3Key) {
                 // Whatever produced a result this size was meant to have stored it already, so
                 // storing it here is a repair, not the design: worth saying out loud, or the path
-                // that skipped it stays invisible.
+                // that skipped it stays invisible. The request goes alongside it, because knowing
+                // which one did this is the only way to find the path that skipped it.
+                const requestKey = await storeInTempCache(
+                    compilationEnvironment,
+                    `${guid}_faultyrequest`,
+                    request ?? null,
+                );
                 logger.warn(
                     `Sending ${guid} at ${resultSize} bytes with no s3Key, over the ` +
-                        `${WEBSOCKET_SIZE_THRESHOLD} byte threshold: storing it now`,
+                        `${WEBSOCKET_SIZE_THRESHOLD} byte threshold: storing it now` +
+                        (requestKey ? `, request saved at ${requestKey}` : ''),
                 );
             }
-            const s3Key = result.s3Key ?? (await storeResultForRouter(compilationEnvironment, guid, basicResult));
+            const s3Key = result.s3Key ?? (await storeInTempCache(compilationEnvironment, guid, basicResult));
             if (s3Key) {
                 webResult = {
                     s3Key: s3Key,
@@ -498,6 +507,7 @@ async function doOneCompilation(
                 result,
                 duration,
                 msg.sentTimestampMs,
+                msg,
             );
 
             logger.info(`Completed ${compilationType} request ${msg.guid} in ${duration}ms`);
@@ -536,6 +546,7 @@ async function doOneCompilation(
                 errorResult,
                 duration,
                 msg.sentTimestampMs,
+                msg,
             );
         }
     }
