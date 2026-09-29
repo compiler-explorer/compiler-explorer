@@ -156,8 +156,7 @@ describe('Sending a result too large for the events websocket', () => {
         expect(stored.map(entry => entry.key)).toContain('a-guid');
     });
 
-    // Without the request that produced it there is no way back to the path that failed to store
-    // the result in the first place.
+    // The result alone does not identify the path that failed to store it; the request does.
     it('saves the request alongside it under its own key', async () => {
         const {sender} = makeSender();
         const {stored, env} = makeEnv('temp/abc123');
@@ -180,8 +179,7 @@ describe('Sending a result too large for the events websocket', () => {
         expect(stored).toHaveLength(0);
     });
 
-    // Sending it anyway closes the shared connection with a 1009, taking every other result this
-    // worker has in flight with it.
+    // Sending it anyway closes the shared connection, taking every result in flight with it.
     it('sends an error rather than the payload when it cannot be stored', async () => {
         const {sent, sender} = makeSender();
         const {env} = makeEnv(undefined);
@@ -205,9 +203,7 @@ describe('Sending a result too large for the events websocket', () => {
 });
 
 describe('Deleting a collected message without waiting for it', () => {
-    // Nothing awaits the delete, so a failure must not escape: an unhandled rejection would end
-    // the process, and a synchronous throw would come out of pop() and lose a message that has
-    // already been collected.
+    // A failure here must not escape: nothing awaits it, and the message is already collected.
     function makeWorker(deleteMessage: (params: any) => any) {
         const worker: any = Object.create(SqsCompilationWorkerMode.prototype);
         worker.queue_url = 'https://sqs.example/queue.fifo';

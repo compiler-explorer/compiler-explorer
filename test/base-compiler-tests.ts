@@ -823,9 +823,7 @@ describe('Rust overrides', () => {
 });
 
 describe('Pointing a reader at a result still being written to the cache', () => {
-    // The cache write no longer blocks the compile, but an oversized result tells the reader to
-    // fetch that very object, so the key must not be handed out before the write has landed - or
-    // at all, if it failed.
+    // An oversized result points the reader at the object the cache write is still creating.
     function makeWorker() {
         const languages = {
             'c++': {id: 'c++', name: 'C++', monaco: 'cppp', extensions: ['.cpp']},

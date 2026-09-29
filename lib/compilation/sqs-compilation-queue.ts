@@ -224,12 +224,8 @@ export class SqsCompilationWorkerMode extends SqsCompilationQueueBase {
         }
     }
 
-    /**
-     * Nothing waits for this, so nothing can be allowed to escape it: a rejection with no handler
-     * would take the process down, and a synchronous throw would come out of pop() instead. What
-     * a failure costs is a message that becomes visible again and is compiled a second time, so
-     * it is reported rather than swallowed.
-     */
+    // Nothing awaits this, so nothing may escape it: an unhandled rejection ends the process, and
+    // a throw would surface in pop(). A failure means the message is delivered and compiled twice.
     private deleteMessageInBackground(url: string, receiptHandle: string): void {
         try {
             this.sqs
@@ -256,11 +252,8 @@ export class SqsCompilationWorkerMode extends SqsCompilationQueueBase {
         if (queued_messages.Messages && queued_messages.Messages.length === 1) {
             const queued_message = queued_messages.Messages[0];
 
-            // Deleted as soon as it is in hand rather than on the way out. FIFO holds the rest of
-            // the group until this one is gone, so every other worker waits on it, while nothing
-            // below needs it to have landed - including the S3 fetch for an overflow message,
-            // which used to happen first. A failure has to be loud: the message becomes visible
-            // again and is compiled a second time.
+            // FIFO holds the rest of the group until this one is gone, so every other worker waits
+            // on this call; nothing below needs it to have landed.
             if (queued_message.ReceiptHandle) {
                 this.deleteMessageInBackground(url, queued_message.ReceiptHandle);
             }
@@ -365,17 +358,12 @@ export async function sendCompilationResultViaWebsocket(
         let webResult;
         let sentAs: string;
         if (resultSize > WEBSOCKET_SIZE_THRESHOLD) {
-            // Over this size API Gateway closes the connection rather than refusing the frame, and
-            // that connection is shared, so one oversized result costs every other result this
-            // worker has in flight. Send the key and let the router fetch the rest.
+            // Over this size API Gateway closes the shared connection rather than refusing the
+            // frame, costing every other result in flight. Send the key, not the payload.
             let repairedKey: string | undefined;
             if (!result.s3Key) {
-                // Whatever produced a result this size was meant to have stored it already, so
-                // storing it here is a repair, not the design: worth saying out loud, or the path
-                // that skipped it stays invisible. The request goes alongside it, because knowing
-                // which one did this is the only way to find the path that skipped it.
-                // Both stores at once: the request is saved for whoever investigates later and
-                // the result for the router to fetch now, and neither needs the other.
+                // Storing it here is a repair: something upstream should have. Say so, and keep
+                // the request too, or the path that skipped it stays invisible.
                 const [requestKey, storedKey] = await Promise.all([
                     storeInTempCache(compilationEnvironment, `${guid}_faultyrequest`, request ?? null),
                     storeInTempCache(compilationEnvironment, guid, basicResult),

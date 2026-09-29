@@ -3644,9 +3644,8 @@ export class BaseCompiler {
 
         this.cleanupResult(result);
 
-        // Not awaited: the result is finished and this write only serves later requests. The
-        // promise is kept because storeOversizedResult may point the reader at this very object,
-        // and must not do so before it exists.
+        // Only later requests need this write. The promise is kept because an oversized result
+        // may point the reader at this very object.
         let cacheWrite: Promise<boolean> | undefined;
         if (result.okToCache && !delayCaching) {
             cacheWrite = this.env.cachePut(key, result, undefined).then(
@@ -3689,8 +3688,7 @@ export class BaseCompiler {
         const resultString = JSON.stringify(result);
         if (resultString.length <= WEBSOCKET_SIZE_THRESHOLD) return;
         if (cacheHoldsThisPayload) {
-            // The reader fetches this key from the cache, so wait for the write that puts it
-            // there, and say nothing about it if that write did not succeed.
+            // The reader fetches this key, so it must not hear of it before the write lands.
             if (cacheWrite && !(await cacheWrite)) return;
             if (this.env.hasSharedCache()) result.s3Key = BaseCache.hash(key);
             return;
