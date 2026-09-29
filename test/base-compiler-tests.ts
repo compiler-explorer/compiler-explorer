@@ -34,7 +34,7 @@ import {RustCompiler} from '../lib/compilers/rust.js';
 import {Win32Compiler} from '../lib/compilers/win32.js';
 import * as props from '../lib/properties.js';
 import {splitArguments} from '../shared/common-utils.js';
-import {CompilationResult} from '../types/compilation/compilation.interfaces.js';
+import {BypassCache, CompilationResult} from '../types/compilation/compilation.interfaces.js';
 import {CompilerOverrideType, ConfiguredOverrides} from '../types/compilation/compiler-overrides.interfaces.js';
 import {CompilerInfo} from '../types/compiler.interfaces.js';
 import {SelectedLibraryVersion} from '../types/libraries/libraries.interfaces.js';
@@ -852,5 +852,47 @@ describe('Storing a result too large for the events websocket', () => {
         await (compiler as any).storeOversizedResult(result, {k: 1}, true);
 
         expect(result.s3Key).toBeDefined();
+    });
+});
+
+describe('An executor request whose result is too large to send', () => {
+    // Executor requests return before afterCompilation, so if this path does not store an oversized
+    // result nothing else will, and it goes to the router inline - which at websocket message size
+    // closes the shared connection rather than failing on its own.
+    it('is stored rather than returned bare', async () => {
+        const languages = {
+            'c++': {id: 'c++', name: 'C++', monaco: 'cppp', extensions: ['.cpp'], supportsExecute: true},
+        } as any;
+        const env = makeCompilationEnvironment({languages});
+        const compiler = new BaseCompiler(
+            makeFakeCompilerInfo({
+                remote: undefined,
+                lang: 'c++',
+                exe: '/dev/null',
+                options: '',
+                supportsExecute: true,
+            }),
+            env,
+        );
+
+        const execResult = {code: 0, stdout: [], stderr: [], okToCache: true} as unknown as CompilationResult;
+        vi.spyOn(compiler as any, 'handleExecution').mockResolvedValue(execResult);
+        const stored = vi.spyOn(compiler as any, 'storeOversizedResult').mockResolvedValue(undefined);
+
+        const result = await compiler.compile(
+            'int main() {}',
+            [],
+            {executorRequest: true},
+            makeFakeParseFiltersAndOutputOptions({execute: true}),
+            BypassCache.None,
+            [],
+            {args: [], stdin: ''} as any,
+            [],
+            [],
+        );
+
+        expect(result).toBe(execResult);
+        expect(stored).toHaveBeenCalledOnce();
+        expect(stored.mock.calls[0][0]).toBe(execResult);
     });
 });
