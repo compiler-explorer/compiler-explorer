@@ -44,7 +44,7 @@ export class CompilerShared implements ICompilerShared {
         this.initCallbacks();
     }
 
-    public getOverrides(): ConfiguredOverrides | undefined {
+    public getOverrides(): ConfiguredOverrides {
         return this.overridesWidget.get();
     }
 
