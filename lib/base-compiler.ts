@@ -3506,6 +3506,11 @@ export class BaseCompiler {
                         if (execResult?.buildResult) {
                             await this.doTempfolderCleanup(execResult.buildResult);
                         }
+                        // Returning from here skips afterCompilation, so this is the only chance to
+                        // put an oversized one where a reader can fetch it. The compilation cache
+                        // holds the build under this key, not what running it printed, so the
+                        // result needs a copy of its own.
+                        await this.storeOversizedResult(execResult, key as any, false);
                         return execResult;
                     }
 
