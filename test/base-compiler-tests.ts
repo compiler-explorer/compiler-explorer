@@ -24,7 +24,7 @@
 
 import path from 'node:path';
 
-import {afterAll, beforeAll, describe, expect, it} from 'vitest';
+import {afterAll, beforeAll, describe, expect, it, vi} from 'vitest';
 
 import {BaseCompiler} from '../lib/base-compiler.js';
 import {BuildEnvSetupBase} from '../lib/buildenvsetup/index.js';
@@ -819,5 +819,57 @@ describe('Rust overrides', () => {
                 },
             ]),
         ).toEqual(['-C', 'debuginfo=2', '-o', 'output.txt', '--crate-type', 'bin', '-Clinker=/usr/aarch64/bin/gcc']);
+    });
+});
+
+describe('Pointing a reader at a result still being written to the cache', () => {
+    // The cache write no longer blocks the compile, but an oversized result tells the reader to
+    // fetch that very object, so the key must not be handed out before the write has landed - or
+    // at all, if it failed.
+    function makeWorker() {
+        const languages = {
+            'c++': {id: 'c++', name: 'C++', monaco: 'cppp', extensions: ['.cpp']},
+        } as any;
+        const env = makeCompilationEnvironment({languages});
+        (env as any).hasSharedCache = () => true;
+        const compiler = new BaseCompiler(makeFakeCompilerInfo({lang: 'c++', exe: '/dev/null', options: ''}), env);
+        (compiler as any).isCompilationWorker = true;
+        const result = {code: 0, stdout: [{text: 'x'.repeat(64 * 1024)}]} as unknown as CompilationResult;
+        return {compiler, result};
+    }
+
+    it('waits for the write before handing out the key', async () => {
+        const {compiler, result} = makeWorker();
+        let landed: (ok: boolean) => void = () => {};
+        const cacheWrite = new Promise<boolean>(resolve => {
+            landed = resolve;
+        });
+
+        const stored = (compiler as any).storeOversizedResult(result, {k: 1}, true, cacheWrite);
+        await Promise.resolve();
+        expect(result.s3Key).toBeUndefined();
+
+        landed(true);
+        await stored;
+        expect(result.s3Key).toBeDefined();
+    });
+
+    it('hands out no key at all when the write failed', async () => {
+        const {compiler, result} = makeWorker();
+
+        await (compiler as any).storeOversizedResult(result, {k: 1}, true, Promise.resolve(false));
+
+        expect(result.s3Key).toBeUndefined();
+    });
+
+    it('still stores when nothing was written to the cache', async () => {
+        const {compiler, result} = makeWorker();
+        const put = vi.fn().mockResolvedValue('temp/abc');
+        (compiler as any).env.tempCachePutWithTTL = put;
+
+        await (compiler as any).storeOversizedResult(result, {k: 1}, false, undefined);
+
+        expect(result.s3Key).toEqual('temp/abc');
+        expect(put).toHaveBeenCalledOnce();
     });
 });
