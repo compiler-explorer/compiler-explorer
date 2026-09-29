@@ -822,8 +822,7 @@ describe('Rust overrides', () => {
     });
 });
 
-describe('Pointing a reader at a result still being written to the cache', () => {
-    // An oversized result points the reader at the object the cache write is still creating.
+describe('Storing a result too large for the events websocket', () => {
     function makeWorker() {
         const languages = {
             'c++': {id: 'c++', name: 'C++', monaco: 'cppp', extensions: ['.cpp']},
@@ -836,38 +835,22 @@ describe('Pointing a reader at a result still being written to the cache', () =>
         return {compiler, result};
     }
 
-    it('waits for the write before handing out the key', async () => {
-        const {compiler, result} = makeWorker();
-        let landed: (ok: boolean) => void = () => {};
-        const cacheWrite = new Promise<boolean>(resolve => {
-            landed = resolve;
-        });
-
-        const stored = (compiler as any).storeOversizedResult(result, {k: 1}, true, cacheWrite);
-        await Promise.resolve();
-        expect(result.s3Key).toBeUndefined();
-
-        landed(true);
-        await stored;
-        expect(result.s3Key).toBeDefined();
-    });
-
-    it('hands out no key at all when the write failed', async () => {
-        const {compiler, result} = makeWorker();
-
-        await (compiler as any).storeOversizedResult(result, {k: 1}, true, Promise.resolve(false));
-
-        expect(result.s3Key).toBeUndefined();
-    });
-
-    it('still stores when nothing was written to the cache', async () => {
+    it('keeps its own copy when the cache does not hold this payload', async () => {
         const {compiler, result} = makeWorker();
         const put = vi.fn().mockResolvedValue('temp/abc');
         (compiler as any).env.tempCachePutWithTTL = put;
 
-        await (compiler as any).storeOversizedResult(result, {k: 1}, false, undefined);
+        await (compiler as any).storeOversizedResult(result, {k: 1}, false);
 
         expect(result.s3Key).toEqual('temp/abc');
         expect(put).toHaveBeenCalledOnce();
+    });
+
+    it('points at the cache when it already holds this payload', async () => {
+        const {compiler, result} = makeWorker();
+
+        await (compiler as any).storeOversizedResult(result, {k: 1}, true);
+
+        expect(result.s3Key).toBeDefined();
     });
 });

@@ -3644,17 +3644,8 @@ export class BaseCompiler {
 
         this.cleanupResult(result);
 
-        // Only later requests need this write. The promise is kept because an oversized result
-        // may point the reader at this very object.
-        let cacheWrite: Promise<boolean> | undefined;
         if (result.okToCache && !delayCaching) {
-            cacheWrite = this.env.cachePut(key, result, undefined).then(
-                () => true,
-                cacheError => {
-                    logger.warn(`Failed to cache result for ${this.compiler.id}:`, cacheError);
-                    return false;
-                },
-            );
+            await this.env.cachePut(key, result, undefined);
         }
 
         if (doExecute && result.code === 0) {
@@ -3667,8 +3658,7 @@ export class BaseCompiler {
 
         // The cmake flow finishes the result off itself, so it stores it there rather than here.
         // What was cached above is this result without the execResult attached since.
-        if (!delayCaching)
-            await this.storeOversizedResult(result, key, !!result.okToCache && !result.execResult, cacheWrite);
+        if (!delayCaching) await this.storeOversizedResult(result, key, !!result.okToCache && !result.execResult);
 
         return result;
     }
@@ -3682,14 +3672,11 @@ export class BaseCompiler {
         result: CompilationResult,
         key: CacheableValue,
         cacheHoldsThisPayload: boolean,
-        cacheWrite?: Promise<boolean>,
     ): Promise<void> {
         if (!this.isCompilationWorker) return;
         const resultString = JSON.stringify(result);
         if (resultString.length <= WEBSOCKET_SIZE_THRESHOLD) return;
         if (cacheHoldsThisPayload) {
-            // The reader fetches this key, so it must not hear of it before the write lands.
-            if (cacheWrite && !(await cacheWrite)) return;
             if (this.env.hasSharedCache()) result.s3Key = BaseCache.hash(key);
             return;
         }
