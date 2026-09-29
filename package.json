@@ -132,7 +132,7 @@
     "vitest-fetch-mock": "^0.4.5",
     "webpack": "^5.108.3",
     "webpack-cli": "^7.1.0",
-    "webpack-dev-middleware": "^8.0.3",
+    "webpack-dev-middleware": "^8.3.0",
     "webpack-manifest-plugin": "^6.0.1"
   },
   "optionalDependencies": {
