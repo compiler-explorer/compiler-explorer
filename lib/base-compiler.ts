@@ -3644,8 +3644,18 @@ export class BaseCompiler {
 
         this.cleanupResult(result);
 
+        // Not awaited: the result is finished and this write only serves later requests. The
+        // promise is kept because storeOversizedResult may point the reader at this very object,
+        // and must not do so before it exists.
+        let cacheWrite: Promise<boolean> | undefined;
         if (result.okToCache && !delayCaching) {
-            await this.env.cachePut(key, result, undefined);
+            cacheWrite = this.env.cachePut(key, result, undefined).then(
+                () => true,
+                cacheError => {
+                    logger.warn(`Failed to cache result for ${this.compiler.id}:`, cacheError);
+                    return false;
+                },
+            );
         }
 
         if (doExecute && result.code === 0) {
@@ -3658,7 +3668,8 @@ export class BaseCompiler {
 
         // The cmake flow finishes the result off itself, so it stores it there rather than here.
         // What was cached above is this result without the execResult attached since.
-        if (!delayCaching) await this.storeOversizedResult(result, key, !!result.okToCache && !result.execResult);
+        if (!delayCaching)
+            await this.storeOversizedResult(result, key, !!result.okToCache && !result.execResult, cacheWrite);
 
         return result;
     }
@@ -3672,11 +3683,15 @@ export class BaseCompiler {
         result: CompilationResult,
         key: CacheableValue,
         cacheHoldsThisPayload: boolean,
+        cacheWrite?: Promise<boolean>,
     ): Promise<void> {
         if (!this.isCompilationWorker) return;
         const resultString = JSON.stringify(result);
         if (resultString.length <= WEBSOCKET_SIZE_THRESHOLD) return;
         if (cacheHoldsThisPayload) {
+            // The reader fetches this key from the cache, so wait for the write that puts it
+            // there, and say nothing about it if that write did not succeed.
+            if (cacheWrite && !(await cacheWrite)) return;
             if (this.env.hasSharedCache()) result.s3Key = BaseCache.hash(key);
             return;
         }
