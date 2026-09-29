@@ -93,7 +93,7 @@ export const LAYOUT_SETTLE_MS = 2000;
 
 // Loading a page never produces input, so the first thing the user does is a reliable
 // sign that the layout has finished writing to itself.
-const SETTLE_EVENTS = ['keydown', 'pointerdown', 'paste'] as const;
+const SETTLE_EVENTS = ['keydown', 'pointerdown', 'paste', 'drop'] as const;
 
 // Base class that handles state tracking and embedded link updates
 export class SharingBase {

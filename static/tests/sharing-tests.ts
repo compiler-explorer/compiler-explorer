@@ -92,6 +92,8 @@ describe('SharingBase URL freshness', () => {
     });
 
     afterEach(() => {
+        // Settling removes the instance's document listeners, so none outlive the test.
+        vi.runOnlyPendingTimers();
         vi.useRealTimers();
         options.embedded = wasEmbedded;
     });
@@ -145,11 +147,22 @@ describe('SharingBase URL freshness', () => {
         expect(replaceState).toHaveBeenCalledWith(null, '', '/');
     });
 
+    it('drops the shortlink URL when a file is dropped in before the layout settles', () => {
+        const layout = newSharing(DURING_INIT);
+
+        layout.change(AFTER_INIT);
+        vi.advanceTimersByTime(LAYOUT_SETTLE_MS / 4);
+        document.body.dispatchEvent(new Event('drop', {bubbles: true}));
+        layout.change(USER_EDITED);
+
+        expect(replaceState).toHaveBeenCalledWith(null, '', '/');
+    });
+
     it('only arms the settle timer where the URL can actually be rewritten', () => {
         newSharing(DURING_INIT);
         expect(vi.getTimerCount()).toBe(1);
 
-        vi.clearAllTimers();
+        vi.runOnlyPendingTimers();
         options.embedded = true;
         newSharing(DURING_INIT);
 
