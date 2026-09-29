@@ -5,13 +5,13 @@ levels:
     description: 'Enormous thanks to our corporate sponsors. Please visit their websites below:'
     class: corporate
     sponsors:
-      # - name: Solid Sands
-      #   description: The one-stop shop for C and C++ compiler and library testing, validation and safety services.
-      #   img: https://static.ce-cdn.net/SOLID+SANDS-LOGO-RGB-500px.png
-      #   url: https://solidsands.com/
-      #   priority: 100
-      #   topIconShowEvery: 3
-      #   statsId: solid_sands
+      - name: Solid Sands
+        description: The one-stop shop for C and C++ compiler and library testing, validation and safety services.
+        img: https://static.ce-cdn.net/SOLID+SANDS-LOGO-RGB-500px.png
+        url: https://solidsands.com/
+        priority: 100
+        topIconShowEvery: 3
+        statsId: solid_sands
       - name: Intel
         description: We engineer solutions for our customers’ greatest challenges with reliable, cloud to edge computing, inspired by Moore’s Law.
         icon: https://static.ce-cdn.net/intel/logo-classicblue-3000px-single-colour.png
@@ -28,33 +28,33 @@ levels:
         topIconShowEvery: 3
         displayType: SideBySide
         statsId: google
-      # - name: CLion
-      #   description: CLion is a powerful, cross-platform IDE for C and C++ that boosts your productivity – and it’s free for learning, contributing to open-source projects, creating content, developing educational courses, and programming as a hobby.
-      #   icon: https://static.ce-cdn.net/jetbrains/Jetbrains.png
-      #   icon_dark: https://static.ce-cdn.net/jetbrains/JetbrainsWhite.png
-      #   img: https://static.ce-cdn.net/jetbrains/ClionWhite.png
-      #   url: https://jb.gg/clion_ce
-      #   topIconShowEvery: 3
-      #   displayType: SideBySide
-      #   statsId: jetbrains
-      # - name: Cppcon
-      #   description: Join the CppCon family live &amp; in-person this September in Aurora, Colorado, USA! Pre-register for CppCon 2025 at <a href="https://www.CppCon.org" target="_blank">www.CppCon.org</a>.
-      #   img: https://static.ce-cdn.net/cppcon/cppcon-white-gold-5.svg
-      #   icon: https://static.ce-cdn.net/cppcon/cppcon-blue-gold-5.svg
-      #   icon_dark: https://static.ce-cdn.net/cppcon/cppcon-white-gold-5.svg
-      #   url: https://cppcon.org/
-      #   displayType: SideBySide
-      #   topIconShowEvery: 3
-      #   statsId: cppcon
-      # - name: Andreas Fertig
-      #   description: Modern C++ training that helps your team write robust, efficient code. Delivered in person or remotely by Andreas Fertig, C++ expert, ISO C++ committee member and creator of C++ Insights.
-      #   img: https://static.ce-cdn.net/andreasfertig/logo3-dark.svg
-      #   icon: https://static.ce-cdn.net/andreasfertig/logo3.svg
-      #   icon_dark: https://static.ce-cdn.net/andreasfertig/logo3-dark.svg
-      #   url: https://andreasfertig.com/compiler-explorer/
-      #   displayType: SideBySide
-      #   topIconShowEvery: 3
-      #   statsId: andreasfertig
+      - name: CLion
+        description: CLion is a powerful, cross-platform IDE for C and C++ that boosts your productivity – and it’s free for learning, contributing to open-source projects, creating content, developing educational courses, and programming as a hobby.
+        icon: https://static.ce-cdn.net/jetbrains/Jetbrains.png
+        icon_dark: https://static.ce-cdn.net/jetbrains/JetbrainsWhite.png
+        img: https://static.ce-cdn.net/jetbrains/ClionWhite.png
+        url: https://jb.gg/clion_ce
+        topIconShowEvery: 3
+        displayType: SideBySide
+        statsId: jetbrains
+      - name: Cppcon
+        description: Join the CppCon family live &amp; in-person this September in Aurora, Colorado, USA! Pre-register for CppCon 2025 at <a href="https://www.CppCon.org" target="_blank">www.CppCon.org</a>.
+        img: https://static.ce-cdn.net/cppcon/cppcon-white-gold-5.svg
+        icon: https://static.ce-cdn.net/cppcon/cppcon-blue-gold-5.svg
+        icon_dark: https://static.ce-cdn.net/cppcon/cppcon-white-gold-5.svg
+        url: https://cppcon.org/
+        displayType: SideBySide
+        topIconShowEvery: 3
+        statsId: cppcon
+      - name: Andreas Fertig
+        description: Modern C++ training that helps your team write robust, efficient code. Delivered in person or remotely by Andreas Fertig, C++ expert, ISO C++ committee member and creator of C++ Insights.
+        img: https://static.ce-cdn.net/andreasfertig/logo3-dark.svg
+        icon: https://static.ce-cdn.net/andreasfertig/logo3.svg
+        icon_dark: https://static.ce-cdn.net/andreasfertig/logo3-dark.svg
+        url: https://andreasfertig.com/compiler-explorer/
+        displayType: SideBySide
+        topIconShowEvery: 3
+        statsId: andreasfertig
       - name: PVS Studio
         description: PVS-Studio is a cross-platform SAST solution for C, C++, and more, built to detect bugs and potential vulnerabilities early in the development cycle, helping enhance code quality, security, and safety.
         img: https://static.ce-cdn.net/pvs/logo_120px_sized.svg
