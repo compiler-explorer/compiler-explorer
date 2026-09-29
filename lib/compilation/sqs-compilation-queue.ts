@@ -224,6 +224,22 @@ export class SqsCompilationWorkerMode extends SqsCompilationQueueBase {
         }
     }
 
+    /**
+     * Nothing waits for this, so nothing can be allowed to escape it: a rejection with no handler
+     * would take the process down, and a synchronous throw would come out of pop() instead. What
+     * a failure costs is a message that becomes visible again and is compiled a second time, so
+     * it is reported rather than swallowed.
+     */
+    private deleteMessageInBackground(url: string, receiptHandle: string): void {
+        try {
+            this.sqs
+                .deleteMessage({QueueUrl: url, ReceiptHandle: receiptHandle})
+                .catch(deleteError => logger.error(`Failed to delete message from ${url}:`, deleteError));
+        } catch (deleteError) {
+            logger.error(`Failed to ask for deletion of a message from ${url}:`, deleteError);
+        }
+    }
+
     async pop(): Promise<RemoteCompilationRequest | undefined> {
         const url = this.queue_url;
 
@@ -246,9 +262,7 @@ export class SqsCompilationWorkerMode extends SqsCompilationQueueBase {
             // which used to happen first. A failure has to be loud: the message becomes visible
             // again and is compiled a second time.
             if (queued_message.ReceiptHandle) {
-                this.sqs
-                    .deleteMessage({QueueUrl: url, ReceiptHandle: queued_message.ReceiptHandle})
-                    .catch(deleteError => logger.error(`Failed to delete message from ${url}:`, deleteError));
+                this.deleteMessageInBackground(url, queued_message.ReceiptHandle);
             }
             if (queued_message.Body) {
                 const json = queued_message.Body;
