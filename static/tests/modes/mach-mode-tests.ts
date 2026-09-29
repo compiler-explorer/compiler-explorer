@@ -22,7 +22,6 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-
 import * as monaco from 'monaco-editor';
 import {describe, expect, it} from 'vitest';
 
@@ -31,26 +30,22 @@ import '../../modes/mach-mode.js';
 /** Each line's tokens as [text, type], with the language suffix and whitespace-only tokens dropped. */
 function tokens(source: string): [string, string][][] {
     const lines = source.split('\n');
-    return monaco.editor.tokenize(source, 'mach').map((row, index) =>
-        row
-            .map((token, i): [string, string] => [
-                lines[index].slice(token.offset, row[i + 1]?.offset),
-                token.type.replace(/\.mach$/, ''),
-            ])
-            .filter(([text]) => text.trim() !== ''),
-    );
+    return monaco.editor
+        .tokenize(source, 'mach')
+        .map((row, index) =>
+            row
+                .map((token, i): [string, string] => [
+                    lines[index].slice(token.offset, row[i + 1]?.offset),
+                    token.type.replace(/\.mach$/, ''),
+                ])
+                .filter(([text]) => text.trim() !== ''),
+        );
 }
 
 describe('mach mode', () => {
     it('keeps a braced aarch64 register list inside the asm block', () => {
         const rows = tokens(
-            [
-                'asm aarch64 {',
-                '    ld1 {v0.16b}, [x1], 16',
-                '    eor v0.16b, v0.16b, v1.16b',
-                '}',
-                'ret 0;',
-            ].join('\n'),
+            ['asm aarch64 {', '    ld1 {v0.16b}, [x1], 16', '    eor v0.16b, v0.16b, v1.16b', '}', 'ret 0;'].join('\n'),
         );
         expect(rows[1]).toEqual([['    ld1 {v0.16b}, [x1], 16', '']]);
         // were the register list's `}` to close the block, this line would read as mach

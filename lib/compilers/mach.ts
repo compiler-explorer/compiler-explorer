@@ -25,8 +25,6 @@
 import fs from 'node:fs/promises';
 import path from 'node:path';
 
-import Semver from 'semver';
-
 import type {
     CacheKey,
     CompilationCacheKey,
@@ -37,9 +35,10 @@ import type {
 import type {PreliminaryCompilerInfo} from '../../types/compiler.interfaces.js';
 import type {BasicExecutionResult, UnprocessedExecResult} from '../../types/execution/execution.interfaces.js';
 import type {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces.js';
+import type {ResultLine} from '../../types/resultline/resultline.interfaces.js';
 import {BaseCompiler} from '../base-compiler.js';
 import {CompilationEnvironment} from '../compilation-env.js';
-import {parseMachDiagnostics} from '../parsers/mach-diagnostics.js';
+import {parseMachDiagnostics, toEditorColumns} from '../parsers/mach-diagnostics.js';
 import * as temp from '../temp.js';
 import * as utils from '../utils.js';
 import {MachParser} from './argument-parsers.js';
@@ -68,8 +67,12 @@ const probeSource = [
     '',
 ].join('\n');
 
-/** The first release that reads `[project].mach`; older releases refuse the key outright. */
-const compilerRangeVersion = '5.3.0';
+/**
+ * The compilers every generated manifest accepts, as `[project].mach`, which a root manifest must state. It is what
+ * the adapter itself needs rather than the version of the compiler at hand: 6.5.0 is the first release that writes
+ * the diagnostic records `parseMachDiagnostics` reads.
+ */
+const compilerRange = '^6.5';
 
 /**
  * The profile every compilation builds under. A target that cannot be resolved against it produces no view at all, so
@@ -256,18 +259,17 @@ export class MachCompiler extends BaseCompiler {
         return result.code === 0;
     }
 
-    /**
-     * The `[project]` table of a generated manifest. A compiler that reads `[project].mach` is told the range it is
-     * part of, as `^major.minor`, which is what mach asks for when the key is missing. An older one refuses the key.
-     */
+    /** The `[project]` table of a generated manifest. */
     projectSection(id: string): string[] {
-        const lines = ['[project]', `id = "${id}"`, 'version = "0.0.0"'];
-        // a compiler with no configured version is not guessed at: without the key it only warns
-        const version = Semver.parse(this.compiler.semver);
-        if (version && Semver.gte(version, compilerRangeVersion))
-            lines.push(`mach = "^${version.major}.${version.minor}"`);
-        lines.push('src = "src"', 'out = "out"', '');
-        return lines;
+        return [
+            '[project]',
+            `id = "${id}"`,
+            'version = "0.0.0"',
+            `mach = "${compilerRange}"`,
+            'src = "src"',
+            'out = "out"',
+            '',
+        ];
     }
 
     manifest(targets: MachTarget[]): string {
@@ -324,7 +326,7 @@ export class MachCompiler extends BaseCompiler {
     }
 
     override optionsForFilter(filters: ParseFiltersAndOutputOptions, outputFilename: string) {
-        // the object's disassembly is the asm view: mach's text listing is not an assembler file
+        // the object's disassembly is the asm view: only the object carries the line table that maps it to source
         if (!filters.binary) filters.binaryObject = true;
         return ['--emit', filters.binary ? 'exe' : 'obj'];
     }
@@ -340,7 +342,7 @@ export class MachCompiler extends BaseCompiler {
         staticLibLinks: string[],
     ) {
         // an absolute project root makes the DWARF comp_dir absolute, which objdump needs to name source lines
-        return ['build', this.projectRoot(inputFilename), ...options, ...userOptions];
+        return ['build', this.projectRoot(inputFilename), '--diagnostics=json', ...options, ...userOptions];
     }
 
     override async runCompiler(
@@ -350,8 +352,27 @@ export class MachCompiler extends BaseCompiler {
         execOptions: ExecutionOptionsWithEnv,
         filters?: ParseFiltersAndOutputOptions,
     ): Promise<CompilationResult> {
-        execOptions.customCwd = this.projectRoot(inputFilename);
-        return super.runCompiler(compiler, options, inputFilename, execOptions, filters);
+        const projectRoot = this.projectRoot(inputFilename);
+        execOptions.customCwd = projectRoot;
+        const result = await super.runCompiler(compiler, options, inputFilename, execOptions, filters);
+        result.stderr = await this.inEditorColumns(result.stderr, path.join(projectRoot, 'src'));
+        return result;
+    }
+
+    /**
+     * mach counts columns in UTF-8 bytes and the editor in UTF-16 units, so every marker is remapped against the line
+     * it marks. The sources are read from the project as written, since the paths a result is reported under may be
+     * the sandbox's rather than this host's.
+     */
+    private async inEditorColumns(lines: ResultLine[], srcDir: string): Promise<ResultLine[]> {
+        const files = new Map<string, string[]>();
+        for (const line of lines) {
+            const file = line.tag?.file;
+            if (file === undefined || files.has(file)) continue;
+            const text = await fs.readFile(path.join(srcDir, file), 'utf8').catch(() => undefined);
+            if (text !== undefined) files.set(file, utils.splitLines(text));
+        }
+        return toEditorColumns(lines, (file, line) => files.get(file)?.[line - 1]);
     }
 
     override async buildExecutable(
