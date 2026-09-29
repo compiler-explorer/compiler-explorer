@@ -31,7 +31,9 @@ import {afterAll, afterEach, beforeAll, beforeEach, describe, expect, it, vi} fr
 
 import {MachCompiler} from '../lib/compilers/mach.js';
 import {AsmParser} from '../lib/parsers/asm-parser.js';
+import {toEditorColumns} from '../lib/parsers/mach-diagnostics.js';
 import {parseProperties} from '../lib/properties.js';
+import * as utils from '../lib/utils.js';
 import {LanguageKey} from '../types/languages.interfaces.js';
 import {makeCompilationEnvironment, makeFakeCompilerInfo, makeFakeParseFiltersAndOutputOptions} from './utils.js';
 
@@ -39,7 +41,7 @@ const languages = {
     mach: {id: 'mach' as LanguageKey, extensions: ['.mach']},
 };
 
-// `mach info targets` as mach 5.2.1 prints it.
+// `mach info targets` as mach 6.7.0 prints it.
 const infoTargets = `linux-x86_64          isa=x86_64    os=linux         abi=sysv64   object=elf
 linux-aarch64         isa=aarch64   os=linux         abi=aapcs64  object=elf
 linux-riscv64         isa=rv64gc    os=linux         abi=lp64     object=elf
@@ -65,12 +67,12 @@ freestanding-riscv32  isa=rv32imac  os=freestanding  abi=ilp32    object=raw
 freestanding-spirv    isa=spirv     os=freestanding  abi=spirv    object=spv
 `;
 
-// the formats that register a debug model in mach 5.2.1; the flat images refuse the adapter's debug profile, since they
+// the formats that register a debug model in mach 6.7.0; the flat images refuse the adapter's debug profile, since they
 // carry neither a debug model nor linkable objects.
 const debugCapableFormats = new Set(['elf', 'macho', 'coff', 'spv']);
 
 /**
- * Stands in for one probe build, reproducing what mach 5.2.1 with std 3.2.0 answers for the probe module: std has no layer for a
+ * Stands in for one probe build, reproducing what mach 6.7.0 with std 9.4.1 answers for the probe module: std has no layer for a
  * freestanding os, so a `use std.print` there fails inside std whatever the object format, and a format with no debug
  * model refuses the profile's debug information.
  */
@@ -84,13 +86,17 @@ async function fakeProbe(root: string, key: string) {
     const usesStdOs = /^use .*\bstd\.(?!types\b)/m.test(source);
 
     if (os === 'freestanding' && usesStdOs) {
-        return {code: 2, stdout: '23 errors / 0 warnings', stderr: 'error: std.system.os.secret: unsupported target'};
+        return {
+            code: 1,
+            stdout: '',
+            stderr: 'error[comptime.user_error]: std.print needs the files capability (std.system.capability.HAS_FILES)',
+        };
     }
     if (!debugCapableFormats.has(of)) {
         return {
             code: 2,
             stdout: '',
-            stderr: 'error: debug info was requested, but this target registers no debug model',
+            stderr: 'error[compiler.internal]: debug info was requested, but this target registers no debug model',
         };
     }
     return {code: 0, stdout: '', stderr: ''};
@@ -105,7 +111,7 @@ async function makeStd() {
 
 function makeMach(stdPath: string) {
     return new MachCompiler(
-        makeFakeCompilerInfo({id: 'mach', exe: '/opt/compiler-explorer/mach-5.2.1/mach', lang: 'mach'}),
+        makeFakeCompilerInfo({id: 'mach', exe: '/opt/compiler-explorer/mach-6.7.0/mach', lang: 'mach'}),
         makeCompilationEnvironment({languages, props: {'compiler.mach.stdPath': stdPath}}),
     );
 }
@@ -178,6 +184,7 @@ describe('Mach project layout', () => {
         expect(compiler.orderArguments(['--emit', 'obj'], input, [], [], [], [], ['-O2'], [])).toEqual([
             'build',
             root,
+            '--diagnostics=json',
             '--emit',
             'obj',
             '-O2',
@@ -188,30 +195,24 @@ describe('Mach project layout', () => {
         expect(compiler.getExecutableFilename(root, 'output')).toEqual(path.join(root, 'out', 'bin', 'example'));
     });
 
-    it('states the compiler range only to a compiler that reads it', () => {
+    it('states the compilers whose diagnostic records the adapter reads, whatever the compiler at hand', () => {
         const env = makeCompilationEnvironment({languages});
         const at = (semver?: string) =>
             new MachCompiler(makeFakeCompilerInfo({id: 'mach', exe: '/usr/bin/mach', lang: 'mach', semver}), env)
                 .manifest([])
                 .split('\n')
                 .filter(line => line.startsWith('mach = '));
-        // 5.3.0 is the first release that reads `[project].mach`; 5.2.1 and older refuse the key
-        expect(at('5.4.0')).toEqual(['mach = "^5.4"']);
-        expect(at('5.3.1')).toEqual(['mach = "^5.3"']);
-        expect(at('5.3.0')).toEqual(['mach = "^5.3"']);
-        expect(at('5.2.1')).toEqual([]);
-        expect(at('5.0.4')).toEqual([]);
-        // a compiler with no configured version gets no guessed range
-        expect(at(undefined)).toEqual([]);
+        expect(at('6.7.0')).toEqual(['mach = "^6.5"']);
+        expect(at(undefined)).toEqual(['mach = "^6.5"']);
     });
 
     it('takes std from beside the executable by default', () => {
         const env = makeCompilationEnvironment({languages});
         const installed = new MachCompiler(
-            makeFakeCompilerInfo({id: 'mach521', exe: '/opt/compiler-explorer/mach-5.2.1/mach', lang: 'mach'}),
+            makeFakeCompilerInfo({id: 'mach670', exe: '/opt/compiler-explorer/mach-6.7.0/mach', lang: 'mach'}),
             env,
         );
-        expect(installed.manifest([])).toContain('[dep.std]\npath = "/opt/compiler-explorer/mach-5.2.1/std"\n');
+        expect(installed.manifest([])).toContain('[dep.std]\npath = "/opt/compiler-explorer/mach-6.7.0/std"\n');
     });
 
     it('refuses to offer any target when the compiler has no std', async () => {
@@ -283,7 +284,7 @@ describe('Mach multi-file projects', () => {
         ]);
         expect(await fs.readFile(path.join(dirPath, 'src', 'util', 'fmt.mach'), 'utf8')).toEqual('fmt');
         expect(pull).toHaveBeenCalledWith(
-            '/opt/compiler-explorer/mach-5.2.1/mach',
+            '/opt/compiler-explorer/mach-6.7.0/mach',
             ['dep', 'pull', dirPath],
             expect.objectContaining({customCwd: dirPath}),
         );
@@ -304,11 +305,10 @@ describe('Mach multi-file projects', () => {
     });
 });
 /**
- * The shapes covered here are ones `mach.cli.diagnostic` renders at 5.2.1: the `error:` and `warning:` headlines, the
- * `--> file:line:col` frame and its gutter, a related frame underlined with `-`, the `= note:`, `= help:` and `= fix:`
- * trailer, a fix's edits at their own locations, the elided and truncated span bodies, a `Fail` with no location, and
- * the `N errors / M warnings` summary. Each capture is compiler output with the temp directory rewritten to a stable
- * path, verbatim except that std.txt keeps only the first of its errors.
+ * Each capture is what `mach build --diagnostics=json` wrote to stderr at 6.7.0 with std 9.4.1, verbatim: the
+ * diagnostic, failure and summary records of an error, a warning, both at once, help and a one-edit fix, a note and a
+ * two-edit fix over a multi-line span, a related site, a second file, a std file, a link failure and two command-line
+ * refusals with no location, and a line with non-ASCII text before the span.
  */
 describe('Mach diagnostics', () => {
     const root = '/tmp/compiler-explorer-compiler-mach';
@@ -317,7 +317,7 @@ describe('Mach diagnostics', () => {
 
     beforeAll(() => {
         compiler = new MachCompiler(
-            makeFakeCompilerInfo({id: 'mach', exe: '/opt/compiler-explorer/mach-5.2.1/mach', lang: 'mach'}),
+            makeFakeCompilerInfo({id: 'mach', exe: '/opt/compiler-explorer/mach-6.7.0/mach', lang: 'mach'}),
             makeCompilationEnvironment({languages}),
         );
     });
@@ -326,174 +326,183 @@ describe('Mach diagnostics', () => {
         return compiler.processExecutionResult({code: 1, stdout: '', stderr} as any, inputFilename).stderr;
     }
 
-    function parse(name: string) {
-        return parseText(readFileSync(path.join(__dirname, 'mach', 'diagnostics', `${name}.txt`), 'utf8'));
+    function capture(name: string) {
+        return readFileSync(path.join(__dirname, 'mach', 'diagnostics', `${name}.ndjson`), 'utf8');
     }
 
-    /** Every marker as [file, line, column, severity, text]. */
+    function parse(name: string) {
+        return parseText(capture(name));
+    }
+
+    /** Every marker as [file, line, column, endline, endcolumn, severity, text]. */
     function marks(lines: ReturnType<typeof parse>) {
         return lines
             .filter(line => line.tag)
-            .map(({tag}) => [tag!.file, tag!.line, tag!.column, tag!.severity, tag!.text]);
+            .map(({tag}) => [
+                tag!.file,
+                tag!.line,
+                tag!.column,
+                tag!.endline,
+                tag!.endcolumn,
+                tag!.severity,
+                tag!.text,
+            ]);
     }
 
     function texts(lines: ReturnType<typeof parse>) {
         return lines.map(line => line.text);
     }
 
-    it('marks an error at its location, and shows paths from the project root', () => {
-        expect(marks(parse('error'))).toEqual([
-            ['example.mach', 7, 9, 3, 'error: unresolved identifier `bogus`'],
-            // the location line links to its place; its empty text keeps it out of the editor
-            ['example.mach', 7, 9, 3, ''],
+    it('renders an error as its headline and location, marks its span, and ends with the tally', () => {
+        const lines = parse('error');
+        expect(texts(lines)).toEqual([
+            'error[name.unresolved]: unresolved identifier `bogus`',
+            ' --> src/example.mach:2:9',
+            '1 error / 0 warnings',
         ]);
-        expect(texts(parse('error'))).toEqual(
-            expect.arrayContaining([' --> src/example.mach:7:9', '1 error / 0 warnings']),
-        );
+        expect(marks(lines)).toEqual([
+            ['example.mach', 2, 9, 2, 14, 3, 'error[name.unresolved]: unresolved identifier `bogus`'],
+        ]);
     });
 
     it('marks a warning at warning severity, and keeps it apart from an error', () => {
-        expect(marks(parse('warning'))[0]).toEqual([
-            'example.mach',
-            8,
-            3,
-            2,
-            'warning: documented component matches no parameter, field, generic, or `ret` of this declaration',
+        expect(marks(parse('warning'))).toEqual([
+            ['example.mach', 1, 20, 1, 25, 2, 'warning[import.unused]: unused import `usize`'],
         ]);
+        const both = parse('warning-and-error');
+        expect(marks(both).map(([, line, , , , severity]) => [line, severity])).toEqual([
+            [4, 3],
+            [1, 2],
+        ]);
+        expect(texts(both).at(-1)).toEqual('1 error / 1 warning');
+    });
+
+    it('shows no tally for a build with nothing to report', () => {
         expect(
-            marks(parse('warning-and-error')).map(([, line, , severity, text]) => [line, severity, text !== '']),
-        ).toEqual([
-            [8, 2, true],
-            [8, 2, false],
-            [13, 3, true],
-            [13, 3, false],
+            parseText(
+                '{"schema":1,"record":"summary","errors":0,"warnings":0,"notes":0,"outcome":"success","exit_code":0}',
+            ),
+        ).toEqual([]);
+    });
+
+    it('folds help into the marker and offers the fix as a quick fix over the span it replaces', () => {
+        const lines = parse('help-and-fix');
+        expect(texts(lines)).toEqual([
+            'error[name.unresolved]: unresolved identifier `helpr`',
+            ' --> src/example.mach:6:9',
+            '  = help: did you mean `helper`?',
+            '  = fix: replace with `helper`',
+            '1 error / 0 warnings',
+        ]);
+        expect(lines[0].tag).toEqual({
+            file: 'example.mach',
+            line: 6,
+            column: 9,
+            endline: 6,
+            endcolumn: 14,
+            severity: 3,
+            text: 'error[name.unresolved]: unresolved identifier `helpr`\nhelp: did you mean `helper`?',
+            fixes: [
+                {
+                    title: 'replace with `helper`',
+                    edits: [{file: 'example.mach', line: 6, column: 9, endline: 6, endcolumn: 14, text: 'helper'}],
+                },
+            ],
+        });
+    });
+
+    it('folds a note into the marker, and offers every edit of a two-edit fix as one quick fix', () => {
+        const [headline] = parse('two-edit-fix');
+        expect(headline.tag?.text).toEqual(
+            'error[type.mismatch]: type mismatch: expected i64, found i32\n' +
+                'note: mach has no implicit widening; cast the value with `value::Type`',
+        );
+        // the primary span covers all three lines of the expression
+        expect([headline.tag?.line, headline.tag?.column, headline.tag?.endline, headline.tag?.endcolumn]).toEqual([
+            2, 5, 4, 11,
+        ]);
+        // an insertion is an empty edit where its text goes
+        expect(headline.tag?.fixes).toEqual([
+            {
+                title: 'cast the value to `i64`',
+                edits: [
+                    {file: 'example.mach', line: 2, column: 9, endline: 2, endcolumn: 9, text: '('},
+                    {file: 'example.mach', line: 4, column: 10, endline: 4, endcolumn: 10, text: ')::i64'},
+                ],
+            },
         ]);
     });
 
-    it('folds note and help trailers into the headline, and marks each fix edit where it goes', () => {
-        expect(marks(parse('note-and-fix'))).toEqual([
+    it('marks a related site with its label', () => {
+        const lines = parse('related');
+        expect(texts(lines)).toContain(' --> src/example.mach:1:5: previous definition here');
+        expect(marks(lines)).toEqual([
             [
                 'example.mach',
-                8,
+                2,
                 5,
+                2,
+                8,
                 3,
-                'error: type mismatch: expected i64, found i32\nnote: mach has no implicit widening; cast the value with `value::Type`',
+                'error[name.duplicate]: duplicate definition: `dup` is already bound in this scope',
             ],
-            ['example.mach', 8, 5, 3, ''],
-            ['example.mach', 8, 10, 3, ''],
-            ['example.mach', 8, 10, 1, 'fix: cast the value to `i64` (replace with `::i64`)'],
-        ]);
-        expect(marks(parse('help-and-fix'))).toEqual([
-            ['example.mach', 9, 9, 3, 'error: unresolved identifier `helpr`\nhelp: did you mean `helper`?'],
-            ['example.mach', 9, 9, 3, ''],
-            ['example.mach', 9, 9, 3, ''],
-            // the fix is labelled with its only edit, which is not repeated
-            ['example.mach', 9, 9, 1, 'fix: replace with `helper`'],
-        ]);
-    });
-
-    it('marks both edits of a two-edit fix over a multi-line span, and leaves the span body as output', () => {
-        const fixes = marks(parse('two-edit-fix')).filter(([, , , severity]) => severity === 1);
-        expect(fixes).toEqual([
-            ['example.mach', 8, 9, 1, 'fix: cast the value to `i64` (replace with `(`)'],
-            ['example.mach', 10, 10, 1, 'fix: cast the value to `i64` (replace with `)::i64`)'],
-        ]);
-        expect(texts(parse('two-edit-fix'))).toEqual(expect.arrayContaining([' 9 |         +', '   | ---------']));
-    });
-
-    it('leaves an elided span body and a truncated long line as plain output', () => {
-        expect(texts(parse('elided-span'))).toContain('   | ...');
-        expect(marks(parse('elided-span')).map(([, line]) => line)).toEqual([8, 8, 8, 8, 20, 20]);
-        expect(texts(parse('long-line')).find(line => line.startsWith('7 |'))).toMatch(/\.\.\.$/);
-        expect(marks(parse('long-line')).map(([, line, column]) => [line, column])).toEqual([
-            [7, 9],
-            [7, 9],
-        ]);
-    });
-
-    it('marks a related frame with the label under it', () => {
-        expect(marks(parse('related'))).toEqual([
-            ['example.mach', 6, 5, 3, 'error: duplicate definition: `dup` is already bound in this scope'],
-            ['example.mach', 6, 5, 3, ''],
-            ['example.mach', 5, 5, 3, ''],
-            ['example.mach', 5, 5, 1, 'previous definition here'],
+            ['example.mach', 1, 5, 1, 8, 1, 'previous definition here'],
         ]);
     });
 
     it('names a second file by the path the project tree knows it by', () => {
-        expect(marks(parse('second-file'))[0]).toEqual([
-            'util/fmt.mach',
-            2,
-            9,
-            3,
-            'error: unresolved identifier `nope`',
+        expect(marks(parse('second-file'))).toEqual([
+            ['util/fmt.mach', 2, 9, 2, 13, 3, 'error[name.unresolved]: unresolved identifier `nope`'],
         ]);
     });
 
     it('marks nothing in a std file, which belongs to no editor, but still shows where it is', () => {
-        expect(marks(parse('std'))).toEqual([]);
-        expect(texts(parse('std'))).toContain('   --> dep/std/src/system/os/secret.mach:667:5');
+        const lines = parse('std');
+        expect(marks(lines)).toEqual([]);
+        expect(texts(lines)).toContain(' --> dep/std/src/print.mach:24:5');
     });
 
-    it('marks nothing for a failure that carries no location', () => {
-        expect(texts(parse('fail'))).toEqual(['error: no mach.toml in the project directory']);
-        expect(marks(parse('fail'))).toEqual([]);
+    it.each(['link', 'unknown-target', 'flag-conflict'])('shows a %s failure with no location, unmarked', name => {
+        const lines = parse(name);
+        expect(marks(lines)).toEqual([]);
+        expect(texts(lines)).toHaveLength(2);
+        expect(texts(lines)[0]).toMatch(/^error\[[a-z_.]+]: /);
     });
 
-    it('reads every headline of the severity catalog at its own severity', () => {
-        // no caller in the compiler emits a top-level `info:` or `help:` at 5.2.1, so these are rendered the way the
-        // renderer's severity label writes them rather than captured from a build
-        const severity = (headline: string) =>
-            marks(parseText(`${headline}\n --> ${inputFilename}:3:1\n  |\n3 | ret 0;\n  | ^^^^^^\n`))[0][3];
-        expect(severity('error: it broke')).toEqual(3);
-        expect(severity('warning: it creaks')).toEqual(2);
-        expect(severity('info: a remark')).toEqual(1);
-        expect(severity('help: try this')).toEqual(1);
-        expect(severity('error: unknown Severity tag 9: odd')).toEqual(3);
+    it('turns byte columns into the editor columns of a line with non-ASCII text before the span', () => {
+        const source = utils.splitLines(readFileSync(path.join(__dirname, 'mach', 'diagnostics', 'utf8.mach'), 'utf8'));
+        const [headline] = toEditorColumns(parse('utf8'), (file, line) =>
+            file === 'example.mach' ? source[line - 1] : undefined,
+        );
+        // `é` and `ö` are two bytes each: byte column 39 is the 37th character
+        expect([headline.tag?.column, headline.tag?.endcolumn]).toEqual([37, 41]);
+        expect(source[1].slice(36, 40)).toEqual('nope');
     });
 
-    it('reads through colour escapes', () => {
-        const coloured = `\x1b[31merror: it broke\x1b[0m\n \x1b[34m-->\x1b[0m ${inputFilename}:3:1\n`;
-        expect(marks(parseText(coloured))[0]).toEqual(['example.mach', 3, 1, 3, 'error: it broke']);
+    it('remaps the edits of a quick fix with the marker', () => {
+        const [headline] = toEditorColumns(parse('help-and-fix'), () => '    ret hélpr();');
+        expect(headline.tag?.fixes?.[0].edits[0]).toMatchObject({column: 9, endcolumn: 13});
     });
 
-    describe('does not mark', () => {
-        it("a headline in another compiler's layout", () => {
-            // rustc's `error[E0308]:` is not a mach headline, so its location marks nothing
-            expect(marks(parseText(`error[E0308]: mismatched types\n --> ${inputFilename}:3:1\n`))).toEqual([]);
+    describe('shows as written', () => {
+        it('a line that is not a record', () => {
+            expect(parseText(`building in ${root}/out`)).toEqual([{text: 'building in out'}]);
         });
 
-        it('a location that follows no headline, gutter bar or fix', () => {
-            const output = ['error: first', ` --> ${inputFilename}:3:1`, '', ` --> ${inputFilename}:9:1`].join('\n');
-            expect(marks(parseText(output)).map(([, line]) => line)).toEqual([3, 3]);
+        it('a record of a schema this reader does not know', () => {
+            const record = '{"schema":2,"record":"diagnostic"}';
+            expect(parseText(record)).toEqual([{text: record}]);
         });
+    });
 
-        it('a label under the primary frame as a related location', () => {
-            const output = ['error: first', ` --> ${inputFilename}:3:1`, '  |', '3 | ret 0;', '  | ^^^ here'].join(
-                '\n',
-            );
-            expect(marks(parseText(output)).map(([, , , , text]) => text)).toEqual(['error: first', '']);
-        });
+    it('skips a record that is not a diagnostic', () => {
+        expect(parseText('{"schema":1,"record":"test","name":"example#t","outcome":"pass"}')).toEqual([]);
+    });
 
-        it('an edit once its diagnostic has ended', () => {
-            const output = [
-                'error: first',
-                ` --> ${inputFilename}:3:1`,
-                '  = fix: do it',
-                '',
-                ` --> ${inputFilename}:9:1`,
-                '    -> replace with `x`',
-            ].join('\n');
-            expect(marks(parseText(output)).map(([, line]) => line)).toEqual([3, 3]);
-        });
-
-        it('a trailer as its own marker', () => {
-            const output = ['error: first', ` --> ${inputFilename}:3:1`, '  |', '  = note: see here'].join('\n');
-            expect(marks(parseText(output))).toEqual([
-                ['example.mach', 3, 1, 3, 'error: first\nnote: see here'],
-                ['example.mach', 3, 1, 3, ''],
-            ]);
-        });
+    it('offers no quick fix whose edits reach outside the marked editor', () => {
+        const record = JSON.parse(capture('help-and-fix').split('\n')[0]);
+        record.fixes[0].edits[0].file = 'src/other.mach';
+        expect(parseText(JSON.stringify(record))[0].tag?.fixes).toBeUndefined();
     });
 });
 
