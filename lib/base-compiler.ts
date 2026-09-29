@@ -317,16 +317,10 @@ export class BaseCompiler {
         if (!this.compiler.instructionSet) {
             const isets = new InstructionSets();
             if (this.buildenvsetup) {
-                this.compiler.instructionSet = isets.getCompilerInstructionSetHint(
-                    this.buildenvsetup.compilerArch,
-                    this.compiler.exe,
-                );
+                this.compiler.instructionSet = isets.getCompilerInstructionSetHint(this.buildenvsetup.compilerArch);
             } else {
                 const temp = new BuildEnvSetupBase(this.compiler, this.env);
-                this.compiler.instructionSet = isets.getCompilerInstructionSetHint(
-                    temp.compilerArch,
-                    this.compiler.exe,
-                );
+                this.compiler.instructionSet = isets.getCompilerInstructionSetHint(temp.compilerArch);
             }
         }
 
@@ -603,7 +597,7 @@ export class BaseCompiler {
             const archHint = this.getTargetHintFromCompilerArgs(args);
             if (archHint) {
                 const isets = new InstructionSets();
-                return isets.getCompilerInstructionSetHint(archHint, this.compiler.exe);
+                return isets.getCompilerInstructionSetHint(archHint);
             }
         } catch (e) {
             logger.debug('Unexpected error in getInstructionSetFromCompilerArgs(): ', e);
