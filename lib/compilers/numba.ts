@@ -22,7 +22,6 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import fs from 'node:fs/promises';
 import path from 'node:path';
 
 import type {CompilationResult} from '../../types/compilation/compilation.interfaces.js';
@@ -36,7 +35,7 @@ import {BaseCompiler} from '../base-compiler.js';
 import {CompilationEnvironment} from '../compilation-env.js';
 import {AsmParser} from '../parsers/asm-parser.js';
 import {NumbaPassDumpParser} from '../parsers/numba-pass-dump-parser.js';
-import {resolvePathFromAppRoot} from '../utils.js';
+import {resolvePathFromAppRoot, resultLinesToText} from '../utils.js';
 import {BaseParser} from './argument-parsers.js';
 
 export class NumbaCompiler extends BaseCompiler {
@@ -104,56 +103,57 @@ export class NumbaCompiler extends BaseCompiler {
         filters: ParseFiltersAndOutputOptions,
         optPipelineOptions: OptPipelineBackendOptions,
     ): Promise<OptPipelineOutput | undefined> {
-        const pipelineDir = await this.newTempDir();
-        const inputFile = this.filename(inputFilename);
-        const pipelineFile = path.join(pipelineDir, path.basename(inputFile));
-        await fs.copyFile(inputFile, pipelineFile);
+        const pipelineOptions = options.slice();
+        const outputFlag = pipelineOptions.indexOf('--outputfile');
+        if (outputFlag !== -1) {
+            pipelineOptions[outputFlag + 1] = path.join(await this.newTempDir(), 'pipeline.s');
+        }
 
         const execOptions = this.getDefaultExecOptions();
         execOptions.maxOutput = 1024 * 1024 * 1024;
         execOptions.env.NUMBA_DEBUG_PRINT_AFTER = 'all';
 
         const compileStart = performance.now();
-        const output = await this.runCompiler(this.compiler.exe, options, pipelineFile, execOptions);
+        const output = await this.runCompiler(
+            this.compiler.exe,
+            pipelineOptions,
+            this.filename(inputFilename),
+            execOptions,
+        );
         const compileEnd = performance.now();
+        const compileTime = output.execTime || compileEnd - compileStart;
+        const result = {code: output.code, compilationOptions: pipelineOptions};
 
-        if (output.timedOut) {
-            return {
-                error: 'Invocation timed out',
-                results: {},
-                compileTime: output.execTime || compileEnd - compileStart,
-            };
+        if (output.truncated) {
+            return {error: 'Exceeded max output limit', results: {}, compileTime, ...result};
         }
-
+        if (output.timedOut) {
+            return {error: 'Invocation timed out', results: {}, compileTime, ...result};
+        }
         if (output.code !== 0) {
-            return;
+            return {
+                error: `Invocation failed: ${resultLinesToText(output.stderr)}`,
+                results: {},
+                compileTime,
+                ...result,
+            };
         }
 
         try {
             const parseStart = performance.now();
             const results = await this.processOptPipeline(output, filters, optPipelineOptions);
-            const parseEnd = performance.now();
-            return {
-                results,
-                compileTime: compileEnd - compileStart,
-                parseTime: parseEnd - parseStart,
-            };
-        } catch (e: any) {
-            return {
-                error: e.toString(),
-                results: {},
-                compileTime: compileEnd - compileStart,
-            };
+            return {results, compileTime, parseTime: performance.now() - parseStart, ...result};
+        } catch (e: unknown) {
+            return {error: String(e), results: {}, compileTime, ...result};
         }
     }
 
     override async processOptPipeline(
         output: CompilationResult,
-        filters: ParseFiltersAndOutputOptions,
-        optPipelineOptions: OptPipelineBackendOptions,
+        _filters: ParseFiltersAndOutputOptions,
+        _optPipelineOptions: OptPipelineBackendOptions,
     ) {
-        // Numba writes pass dumps to stdout via print()
-        return this.passDumpParser.process(output.stdout, filters, optPipelineOptions);
+        return this.passDumpParser.process(output.stdout);
     }
 
     override optionsForFilter(filters: ParseFiltersAndOutputOptions, outputFilename: string): string[] {

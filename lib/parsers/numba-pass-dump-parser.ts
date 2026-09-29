@@ -22,94 +22,74 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import type {
-    OptPipelineBackendOptions,
-    OptPipelineResults,
-    Pass,
-} from '../../types/compilation/opt-pipeline-output.interfaces.js';
-import type {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces.js';
+import type {OptPipelineResults, Pass} from '../../types/compilation/opt-pipeline-output.interfaces.js';
 import type {ResultLine} from '../../types/resultline/resultline.interfaces.js';
 
-// Numba's NUMBA_DEBUG_PRINT_AFTER=all produces headers like:
-//   ------__main__.example: nopython: AFTER translate_bytecode------
-// Variable-width dashes pad each side to a fixed total width.
-const passHeader = /^-{2,}\s*(.+?):\s*(nopython|object):\s*AFTER\s+(.+?)\s*-{2,}$/;
+const passHeader = /^-*(.+): (?:[^:]+): AFTER (.+?)-*$/;
+const firstPass = 'translate_bytecode';
 
-type PassDump = {
-    passName: string;
-    functionName: string;
-    lines: ResultLine[];
-};
+function sameLines(left: ResultLine[], right: ResultLine[]): boolean {
+    if (left.length !== right.length) return false;
+    for (let i = 0; i < left.length; i++) {
+        if (left[i].text !== right[i].text) return false;
+    }
+    return true;
+}
+
+function freshKey(results: OptPipelineResults, name: string): string {
+    if (!(name in results)) return name;
+    let n = 2;
+    let key = `${name} [${n}]`;
+    while (key in results) {
+        n++;
+        key = `${name} [${n}]`;
+    }
+    return key;
+}
 
 export class NumbaPassDumpParser {
-    breakdownOutputIntoPassDumps(logLines: ResultLine[]): PassDump[] {
-        const dumps: PassDump[] = [];
-        let current: PassDump | null = null;
+    process(output: ResultLine[]): OptPipelineResults {
+        const results: OptPipelineResults = Object.create(null);
+        const groupFor = new Map<string, string>();
+        let functionName: string | undefined;
+        let passName: string | undefined;
+        let lines: ResultLine[] = [];
 
-        for (const line of logLines) {
-            const match = line.text.match(passHeader);
-            if (match) {
-                if (current) {
-                    dumps.push(current);
-                }
-                current = {
-                    functionName: match[1],
-                    passName: match[3],
-                    lines: [],
-                };
+        const flush = () => {
+            if (!functionName || !passName) return;
+            const key = groupFor.get(functionName);
+            if (!key) return;
+            const passes = results[key];
+            const before = passes.length > 0 ? passes[passes.length - 1].after : [];
+            const pass: Pass = {
+                name: passName,
+                machine: false,
+                before,
+                after: lines,
+                irChanged: !sameLines(before, lines),
+            };
+            passes.push(pass);
+        };
+
+        for (const line of output) {
+            const match = passHeader.exec(line.text);
+            if (!match) {
+                if (passName) lines.push(line);
                 continue;
             }
-            if (current) {
-                current.lines.push(line);
+            flush();
+            functionName = match[1];
+            passName = match[2];
+            lines = [];
+            let key = groupFor.get(functionName);
+            if (key && passName === firstPass && results[key].length > 0) key = undefined;
+            if (!key) {
+                key = freshKey(results, functionName);
+                groupFor.set(functionName, key);
+                results[key] = [];
             }
         }
-        if (current) {
-            dumps.push(current);
-        }
-        return dumps;
-    }
-
-    associatePassDumpsWithGroups(dumps: PassDump[]): Record<string, PassDump[]> {
-        const grouped: Record<string, PassDump[]> = {};
-        for (const dump of dumps) {
-            if (!(dump.functionName in grouped)) {
-                grouped[dump.functionName] = [];
-            }
-            grouped[dump.functionName].push(dump);
-        }
-        return grouped;
-    }
-
-    matchPassDumps(grouped: Record<string, PassDump[]>): OptPipelineResults {
-        const results: OptPipelineResults = {};
-        for (const [group, dumps] of Object.entries(grouped)) {
-            const passes: Pass[] = [];
-            for (let i = 0; i < dumps.length; i++) {
-                const prev = i > 0 ? dumps[i - 1] : null;
-                const curr = dumps[i];
-                const before = prev ? prev.lines : [];
-                const after = curr.lines;
-                const irChanged = before.map(l => l.text).join('\n') !== after.map(l => l.text).join('\n');
-                passes.push({
-                    name: curr.passName,
-                    machine: false,
-                    before,
-                    after,
-                    irChanged,
-                });
-            }
-            results[group] = passes;
-        }
+        flush();
         return results;
-    }
-
-    process(
-        output: ResultLine[],
-        _filters: ParseFiltersAndOutputOptions,
-        _optPipelineOptions: OptPipelineBackendOptions,
-    ): OptPipelineResults {
-        const dumps = this.breakdownOutputIntoPassDumps(output);
-        const grouped = this.associatePassDumpsWithGroups(dumps);
-        return this.matchPassDumps(grouped);
     }
 }
