@@ -55,7 +55,7 @@ levels:
         displayType: SideBySide
         topIconShowEvery: 3
         statsId: andreasfertig
-      - name: PVS Studio
+      - name: PVS-Studio
         description: PVS-Studio is a cross-platform SAST solution for C, C++, and more, built to detect bugs and potential vulnerabilities early in the development cycle, helping enhance code quality, security, and safety.
         img: https://static.ce-cdn.net/pvs/wordmark_120px_sized.svg
         icon: https://static.ce-cdn.net/pvs/wordmark_24px_sized.svg
