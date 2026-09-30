@@ -218,7 +218,8 @@ describe('Mach project layout', () => {
             makeFakeCompilerInfo({id: 'mach670', exe: '/opt/compiler-explorer/mach-6.7.0/mach', lang: 'mach'}),
             env,
         );
-        expect(installed.manifest([])).toContain('[dep.std]\npath = "/opt/compiler-explorer/mach-6.7.0/std"\n');
+        const std = path.join('/opt/compiler-explorer/mach-6.7.0', 'std');
+        expect(installed.manifest([])).toContain(`[dep.std]\npath = ${JSON.stringify(std)}\n`);
     });
 
     it('refuses to offer any target when the compiler has no std', async () => {
@@ -287,7 +288,7 @@ describe('Mach multi-file projects', () => {
             'src',
             path.join('src', 'example.mach'),
             path.join('src', 'other.mach'),
-            'src/util',
+            path.join('src', 'util'),
             path.join('src', 'util', 'fmt.mach'),
         ]);
         expect(await fs.readFile(path.join(dirPath, 'src', 'util', 'fmt.mach'), 'utf8')).toEqual('fmt');
@@ -497,7 +498,8 @@ describe('Mach diagnostics', () => {
 
     describe('shows as written', () => {
         it('a line that is not a record', () => {
-            expect(parseText(`building in ${root}/out`)).toEqual([{text: 'building in out'}]);
+            // mach names the project root the way the host writes paths
+            expect(parseText(`building in ${root}${path.sep}out`)).toEqual([{text: 'building in out'}]);
         });
 
         it('a record of a schema this reader does not know', () => {
@@ -522,7 +524,8 @@ describe('Mach diagnostics', () => {
  * passes to `mach build` is `/app` and the DWARF comp_dir it records is `/app` too. The capture below is a real
  * objdump of an object built with the project root at `/app`.
  */
-describe('Mach asm with an /app project root', () => {
+// the sandbox that mounts the project at /app is linux only
+describe.skipIf(process.platform === 'win32')('Mach asm with an /app project root', () => {
     it('attributes an /app source line to the editor', () => {
         const objdump = readFileSync(path.join(__dirname, 'mach', 'app-objdump.asm'), 'utf8');
         const parsed = new AsmParser().process(
