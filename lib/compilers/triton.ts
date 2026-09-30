@@ -32,8 +32,10 @@ import type {
 } from '../../types/compilation/opt-pipeline-output.interfaces.js';
 import type {PreliminaryCompilerInfo} from '../../types/compiler.interfaces.js';
 import {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces.js';
+import type {InstructionSet} from '../../types/instructionsets.js';
 import {BaseCompiler} from '../base-compiler.js';
 import {CompilationEnvironment} from '../compilation-env.js';
+import {getAmdGpuInstructionSet} from '../instructionsets.js';
 import type {IAsmParser} from '../parsers/asm-parser.interfaces.js';
 import {AmdgpuAsmParser} from '../parsers/asm-parser-amdgpu.js';
 import {MlirAsmParser} from '../parsers/asm-parser-mlir.js';
@@ -94,6 +96,19 @@ export class TritonCompiler extends BaseCompiler {
         return ['-I', this.compilerWrapperPath, '--output_file', outputFilename];
     }
 
+    override getInstructionSetFromCompilerArgs(args: string[]): InstructionSet {
+        if (this.compiler.group === 'triton_amd') {
+            // Last wins: orderArguments puts the group's --arch before the user's, and
+            // argparse honours the final occurrence. gfx942 mirrors the wrapper's own
+            // default for the hip backend.
+            const idx = args.lastIndexOf('--arch');
+            const target = idx !== -1 && idx + 1 < args.length ? args[idx + 1] : 'gfx942';
+            const instructionSet = getAmdGpuInstructionSet(target);
+            if (instructionSet) return instructionSet;
+        }
+        return super.getInstructionSetFromCompilerArgs(args);
+    }
+
     override getArgumentParserClass() {
         return BaseParser;
     }
@@ -138,7 +153,13 @@ export class TritonCompiler extends BaseCompiler {
                     device = await parser.process(data, filters);
                 }
 
-                Object.assign(devices, {[filename]: device});
+                // Only .amdgcn holds AMD GPU assembly; the IR dumps would get the wrong docs.
+                const instructionSet =
+                    ext === '.amdgcn' ? this.getInstructionSetFromCompilerArgs(compilationInfo.options) : undefined;
+
+                Object.assign(devices, {
+                    [filename]: instructionSet?.startsWith('amd_') ? {...device, instructionSet} : device,
+                });
             }),
         );
         result.devices = devices;

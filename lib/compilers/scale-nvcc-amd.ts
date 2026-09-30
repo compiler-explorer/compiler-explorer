@@ -33,6 +33,7 @@ import type {ParseFiltersAndOutputOptions} from '../../types/features/filters.in
 import {unwrap} from '../assert.js';
 import {BaseCompiler} from '../base-compiler.js';
 import {CompilationEnvironment} from '../compilation-env.js';
+import {getAmdGpuInstructionSet} from '../instructionsets.js';
 import {logger} from '../logger.js';
 import {AmdgpuAsmParser} from '../parsers/asm-parser-amdgpu.js';
 import {ClangParser} from './argument-parsers.js';
@@ -252,14 +253,18 @@ export class ScaleNvccAMDCompiler extends BaseCompiler {
                         const asm = await fs.readFile(Path.join(dirPath, name), 'utf8');
 
                         const nameAndArch = `AMDGPU (${archAndCode.toLowerCase()})`;
+                        const processed = await this.postProcessAsm(
+                            {
+                                okToCache: demangle,
+                                ...this.amdgpuAsmParser.process(asm, {...filters, binary: false}),
+                            },
+                            {...filters, binary: false},
+                        );
+                        // Lets the device view find the right asm docs; the label alone is not
+                        // a valid instruction set. The .bc devices show LLVM IR, so are skipped.
+                        const instructionSet = getAmdGpuInstructionSet(archAndCode);
                         Object.assign(devices, {
-                            [nameAndArch]: await this.postProcessAsm(
-                                {
-                                    okToCache: demangle,
-                                    ...this.amdgpuAsmParser.process(asm, {...filters, binary: false}),
-                                },
-                                {...filters, binary: false},
-                            ),
+                            [nameAndArch]: instructionSet ? {...processed, instructionSet} : processed,
                         });
                     } catch (err) {
                         logger.error('[extractDeviceCode]: exception running postProcessAsm for', name, err);
