@@ -26,6 +26,7 @@ import type {OptPipelineResults, Pass} from '../../types/compilation/opt-pipelin
 import type {ResultLine} from '../../types/resultline/resultline.interfaces.js';
 
 const passHeader = /^-*(.+): (?:[^:]+): AFTER (.+?)-*$/;
+const dumpLine = /^(?:label \d+:|[ \t].*)?$/;
 const firstPass = 'translate_bytecode';
 
 function sameLines(left: ResultLine[], right: ResultLine[]): boolean {
@@ -74,7 +75,7 @@ export class NumbaPassDumpParser {
         for (const line of output) {
             const match = passHeader.exec(line.text);
             if (!match) {
-                if (passName) lines.push(line);
+                if (passName && dumpLine.test(line.text)) lines.push(line);
                 continue;
             }
             flush();

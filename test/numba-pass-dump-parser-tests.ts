@@ -121,19 +121,46 @@ describe('numba-pass-dump-parser', () => {
     it('should keep one group when other functions are interleaved', () => {
         const output = lines(
             centred('__main__.foo: nopython: AFTER translate_bytecode'),
-            'foo',
+            '    foo',
             centred('__main__.bar: nopython: AFTER translate_bytecode'),
-            'bar',
+            '    bar',
             centred('__main__.foo: nopython: AFTER fixup_args'),
-            'foo2',
+            '    foo2',
         );
 
         const results = parser.process(output);
 
         expect(Object.keys(results)).toEqual(['__main__.foo', '__main__.bar']);
         expect(results['__main__.foo'].map(pass => pass.name)).toEqual(['translate_bytecode', 'fixup_args']);
-        expect(results['__main__.foo'][1].before.map(line => line.text)).toEqual(['foo']);
-        expect(results['__main__.foo'][1].after.map(line => line.text)).toEqual(['foo2']);
+        expect(results['__main__.foo'][1].before.map(line => line.text)).toEqual(['    foo']);
+        expect(results['__main__.foo'][1].after.map(line => line.text)).toEqual(['    foo2']);
+    });
+
+    it('should drop user prints that share stdout with the dumps', () => {
+        const fIr = ['label 0:', '    return x', ''];
+        const gIr = ['label 0:', '    return a'];
+        const output = lines(
+            centred('__main__.f: nopython: AFTER translate_bytecode'),
+            ...fIr,
+            centred('__main__.f: nopython: AFTER dump_parfor_diagnostics'),
+            ...fIr,
+            'after f',
+            centred('__main__.g: nopython: AFTER translate_bytecode'),
+            ...gIr,
+            centred('__main__.g: nopython: AFTER dump_parfor_diagnostics'),
+            ...gIr,
+            'in g 3',
+        );
+
+        const results = parser.process(output);
+        const fLast = results['__main__.f'][results['__main__.f'].length - 1];
+        const gLast = results['__main__.g'][results['__main__.g'].length - 1];
+
+        expect(fLast.name).toBe('dump_parfor_diagnostics');
+        expect(fLast.after.map(line => line.text)).toEqual(fIr);
+        expect(fLast.irChanged).toBe(false);
+        expect(gLast.after.map(line => line.text)).toEqual(gIr);
+        expect(gLast.irChanged).toBe(false);
     });
 
     it('should accept function names that collide with Object.prototype', () => {
