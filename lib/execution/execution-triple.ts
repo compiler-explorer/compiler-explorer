@@ -50,7 +50,7 @@ export async function initHostSpecialties(): Promise<void> {
     }
 }
 
-class CurrentHostExecHelper {
+export class CurrentHostExecHelper {
     static isetCanRunOnCurrentHost(value: InstructionSet): boolean {
         // os.arch() Possible values are `'arm'`, `'arm64'`, `'ia32'`, `'loong64'`,`'mips'`, `'mipsel'`, `'ppc'`, `'ppc64'`, `'riscv64'`, `'s390'`, `'s390x'`, and `'x64'`.
 
