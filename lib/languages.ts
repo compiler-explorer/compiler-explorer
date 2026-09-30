@@ -1030,6 +1030,17 @@ const definitions: Record<LanguageKey, LanguageDefinition> = {
         previewFilter: null,
         monacoDisassembly: null,
     },
+    tilelang: {
+        name: 'TileLang',
+        monaco: 'python',
+        extensions: ['.py'],
+        alias: ['tile-lang'],
+        logoFilename: null,
+        logoFilenameDark: null,
+        formatter: null,
+        previewFilter: null,
+        monacoDisassembly: 'nc',
+    },
     toit: {
         name: 'Toit',
         monaco: 'toit',

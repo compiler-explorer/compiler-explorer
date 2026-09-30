@@ -66,8 +66,8 @@ export class EventsWsSender extends EventsWsBase {
             this.ws!.on('open', async () => {
                 this.ws!.send(
                     JSON.stringify({
-                        guid: guid,
                         ...result,
+                        guid: guid,
                     }),
                 );
                 resolve();
@@ -91,6 +91,12 @@ export class PersistentEventsSender extends EventsWsBase {
     private hasPermanentlyFailed = false;
     private heartbeatInterval: NodeJS.Timeout | undefined;
     private heartbeatIntervalMs = 30000; // 30 seconds
+    private pongTimer: NodeJS.Timeout | undefined;
+    /** A connection shorter than this did not really work, so it earns no backoff reset. */
+    private stableConnectionMs = 30000;
+    private lastOpenedAt = 0;
+    private pongTimeoutMs = 10000;
+    private lastActivityTime = 0;
     private pendingAcks = new Map<
         string,
         {
@@ -99,15 +105,21 @@ export class PersistentEventsSender extends EventsWsBase {
             resolve: () => void;
             reject: (error: any) => void;
             messageData: any;
+            expiresAtMs?: number;
         }
     >();
     private maxRetries = 3;
     private ackTimeoutMs = 3000;
     private requireAcknowledgments = true;
+    // How long the caller waits, measured from when its request was queued. One value for
+    // compilations and executions alike, since one sender carries both. Must track ce-router's
+    // own request deadline: a result produced after it reaches nobody.
+    private requestDeadlineMs: number;
 
     constructor(props: PropertyGetter, requireAcknowledgments = true) {
         super(props);
         this.requireAcknowledgments = requireAcknowledgments;
+        this.requestDeadlineMs = props<number>('execqueue.request_deadline_ms', 60000);
         this.connect();
     }
 
@@ -137,8 +149,8 @@ export class PersistentEventsSender extends EventsWsBase {
         this.ws.on('open', () => {
             this.isConnected = true;
             this.isConnecting = false;
-            this.reconnectAttempts = 0;
-            this.reconnectDelay = 1000;
+            this.recordActivity();
+            this.noteConnectionOpened(Date.now());
             logger.info(`Persistent WebSocket connection established to ${this.events_url}`);
 
             this.startHeartbeat();
@@ -154,21 +166,27 @@ export class PersistentEventsSender extends EventsWsBase {
             this.scheduleReconnect();
         });
 
-        this.ws.on('close', () => {
+        this.ws.on('close', (code: number, reason: Buffer) => {
             this.isConnected = false;
             this.isConnecting = false;
             this.stopHeartbeat();
 
             if (!this.expectClose) {
-                logger.warn(`Persistent WebSocket connection closed unexpectedly for ${this.events_url}`);
+                logger.warn(
+                    `Persistent WebSocket closed unexpectedly for ${this.events_url}: ` +
+                        `code ${code}${reason?.length ? `, reason "${reason.toString()}"` : ''}`,
+                );
                 this.pauseAckTimeouts();
                 this.scheduleReconnect();
             }
         });
 
         this.ws.on('message', (data: any) => {
+            const text = data.toString();
+            this.recordActivity();
+            if (text.trim() === 'pong') return;
             try {
-                const message = JSON.parse(data.toString());
+                const message = JSON.parse(text);
                 if (message.type === 'ack' && message.guid) {
                     this.handleAcknowledgment(message.guid);
                 }
@@ -180,15 +198,69 @@ export class PersistentEventsSender extends EventsWsBase {
         this.ws.on('pong', () => {});
     }
 
+    /**
+     * API Gateway answers protocol-level pings at its edge, so ws.ping() cannot tell whether
+     * the Lambda backend is still receiving. The events server replies to a "ping" text frame
+     * with "pong", which round-trips the backend.
+     */
     private startHeartbeat(): void {
-        this.heartbeatInterval = setInterval(() => {
-            if (this.ws?.readyState === WebSocket.OPEN) {
-                this.ws.ping();
-            }
-        }, this.heartbeatIntervalMs);
+        this.stopHeartbeat();
+        this.heartbeatInterval = setInterval(() => this.sendHeartbeat(), this.heartbeatIntervalMs);
+    }
+
+    private sendHeartbeat(): void {
+        if (this.ws?.readyState !== WebSocket.OPEN) return;
+        // A pong is still outstanding; that timer will terminate us. Don't stack another.
+        if (this.pongTimer) return;
+
+        try {
+            this.ws.send('ping');
+        } catch (error) {
+            logger.warn('Failed to send heartbeat ping:', error);
+        }
+
+        this.pongTimer = setTimeout(() => {
+            this.pongTimer = undefined;
+            const staleFor = this.lastActivityTime ? Date.now() - this.lastActivityTime : -1;
+            logger.warn(
+                `Events websocket heartbeat timed out: nothing inbound within ${this.pongTimeoutMs}ms ` +
+                    `(last activity ${staleFor}ms ago). Terminating what is left of the connection.`,
+            );
+            // terminate() rather than close(): a dead peer never answers the closing
+            // handshake. The close handler drives the reconnect.
+            this.ws?.terminate();
+        }, this.pongTimeoutMs);
+    }
+
+    /** Anything inbound proves the peer is alive, pong or not. */
+    /**
+     * Reset the reconnection budget only for a connection that lasted. Resetting on every open
+     * means a socket that closes immediately reports "attempt 1/5" forever, never reaches
+     * maxReconnectAttempts, and so never fails its healthcheck.
+     */
+    private noteConnectionOpened(openedAt: number): void {
+        if (this.lastOpenedAt === 0 || openedAt - this.lastOpenedAt >= this.stableConnectionMs) {
+            this.reconnectAttempts = 0;
+            this.reconnectDelay = 1000;
+        }
+        this.lastOpenedAt = openedAt;
+    }
+
+    /** Anything inbound proves the peer is alive, pong or not. */
+    private recordActivity(): void {
+        this.lastActivityTime = Date.now();
+        this.clearPongTimer();
+    }
+
+    private clearPongTimer(): void {
+        if (this.pongTimer) {
+            clearTimeout(this.pongTimer);
+            this.pongTimer = undefined;
+        }
     }
 
     private stopHeartbeat(): void {
+        this.clearPongTimer();
         if (this.heartbeatInterval) {
             clearInterval(this.heartbeatInterval);
             this.heartbeatInterval = undefined;
@@ -201,7 +273,11 @@ export class PersistentEventsSender extends EventsWsBase {
                 `Max websocket reconnection attempts (${this.maxReconnectAttempts}) reached for ${this.events_url}`,
             );
             this.hasPermanentlyFailed = true;
-            this.rejectQueuedMessages(new Error('WebSocket connection failed permanently'));
+            const error = new Error('WebSocket connection failed permanently');
+            this.rejectQueuedMessages(error);
+            // Their timeouts were cleared when the socket closed and nothing will reschedule them, so without
+            // this they stay in the map forever and isReadyForNewMessages() never returns true again.
+            this.rejectPendingAcks(error);
             return;
         }
 
@@ -226,8 +302,8 @@ export class PersistentEventsSender extends EventsWsBase {
                 try {
                     this.ws.send(
                         JSON.stringify({
-                            guid: message.guid,
                             ...message.result,
+                            guid: message.guid,
                         }),
                     );
                     message.resolve();
@@ -247,6 +323,14 @@ export class PersistentEventsSender extends EventsWsBase {
         }
     }
 
+    private rejectPendingAcks(error: Error): void {
+        for (const [, pending] of this.pendingAcks.entries()) {
+            clearTimeout(pending.timeout);
+            pending.reject(error);
+        }
+        this.pendingAcks.clear();
+    }
+
     private handleAcknowledgment(guid: string): void {
         const pending = this.pendingAcks.get(guid);
         if (pending) {
@@ -257,14 +341,36 @@ export class PersistentEventsSender extends EventsWsBase {
         }
     }
 
-    private setupAckTimeout(guid: string, messageData: any, resolve: () => void, reject: (error: any) => void): void {
+    /**
+     * Whether a result can still reach anyone.
+     *
+     * An unacknowledged result is usually worth resending - the subscriber may be a router
+     * that is reconnecting, and its subscriptions come back with it. Once the requester's own
+     * deadline has passed there is nobody left to reconnect for, so further retries cannot
+     * succeed, and this worker pulls no new work until the result stops being outstanding.
+     */
+    private hasExpired(expiresAtMs: number | undefined): boolean {
+        return expiresAtMs !== undefined && Date.now() >= expiresAtMs;
+    }
+
+    private setupAckTimeout(
+        guid: string,
+        messageData: any,
+        resolve: () => void,
+        reject: (error: any) => void,
+        expiresAtMs?: number,
+    ): void {
         const timeout = setTimeout(() => {
             const pending = this.pendingAcks.get(guid);
             if (pending) {
                 pending.retryCount++;
-                if (pending.retryCount < this.maxRetries) {
+                if (this.hasExpired(expiresAtMs)) {
+                    logger.warn(`No acknowledgment for ${guid} and its deadline has passed, giving up`);
+                    this.pendingAcks.delete(guid);
+                    reject(new Error(`Gave up on ${guid}: the requester's deadline passed`));
+                } else if (pending.retryCount < this.maxRetries) {
                     logger.warn(`No acknowledgment for ${guid}, retry ${pending.retryCount}/${this.maxRetries}`);
-                    this.sendWithRetry(guid, messageData, pending.retryCount, resolve, reject);
+                    this.sendWithRetry(guid, messageData, pending.retryCount, resolve, reject, expiresAtMs);
                 } else {
                     logger.error(`Max retries (${this.maxRetries}) reached for ${guid}, giving up`);
                     this.pendingAcks.delete(guid);
@@ -279,6 +385,7 @@ export class PersistentEventsSender extends EventsWsBase {
             resolve,
             reject,
             messageData,
+            expiresAtMs,
         });
     }
 
@@ -288,6 +395,7 @@ export class PersistentEventsSender extends EventsWsBase {
         retryCount: number,
         resolve: () => void,
         reject: (error: any) => void,
+        expiresAtMs?: number,
     ): void {
         if (!this.isConnected || this.ws?.readyState !== WebSocket.OPEN) {
             reject(new Error('WebSocket not connected'));
@@ -300,9 +408,13 @@ export class PersistentEventsSender extends EventsWsBase {
             const timeout = setTimeout(() => {
                 const pending = this.pendingAcks.get(guid);
                 if (pending) {
-                    if (retryCount < this.maxRetries) {
+                    if (this.hasExpired(expiresAtMs)) {
+                        logger.warn(`No acknowledgment for ${guid} and its deadline has passed, giving up`);
+                        this.pendingAcks.delete(guid);
+                        reject(new Error(`Gave up on ${guid}: the requester's deadline passed`));
+                    } else if (retryCount < this.maxRetries) {
                         logger.warn(`No acknowledgment for ${guid}, retry ${retryCount + 1}/${this.maxRetries}`);
-                        this.sendWithRetry(guid, messageData, retryCount + 1, resolve, reject);
+                        this.sendWithRetry(guid, messageData, retryCount + 1, resolve, reject, expiresAtMs);
                     } else {
                         logger.error(`Max retries (${this.maxRetries}) reached for ${guid}, giving up`);
                         this.pendingAcks.delete(guid);
@@ -317,6 +429,7 @@ export class PersistentEventsSender extends EventsWsBase {
                 resolve,
                 reject,
                 messageData,
+                expiresAtMs,
             });
         } catch (error) {
             reject(error);
@@ -331,7 +444,22 @@ export class PersistentEventsSender extends EventsWsBase {
 
     private retryPendingAcknowledgments(): void {
         for (const [guid, pending] of this.pendingAcks.entries()) {
-            logger.info(`Retrying pending acknowledgment for ${guid} after reconnection`);
+            // Each reconnection costs a retry. Without this the budget is never spent when
+            // reconnections arrive faster than ackTimeoutMs: the timer below is replaced
+            // before it can fire, so the same result is resent indefinitely and pendingAcks
+            // never empties - which also keeps isReadyForNewMessages() false forever.
+            pending.retryCount++;
+            if (pending.retryCount > this.maxRetries) {
+                logger.error(`Max retries (${this.maxRetries}) reached for ${guid} across reconnections, giving up`);
+                clearTimeout(pending.timeout);
+                this.pendingAcks.delete(guid);
+                pending.reject(new Error(`Failed to receive acknowledgment after ${this.maxRetries} retries`));
+                continue;
+            }
+            logger.info(
+                `Retrying pending acknowledgment for ${guid} after reconnection, ` +
+                    `retry ${pending.retryCount}/${this.maxRetries}`,
+            );
             try {
                 if (this.ws?.readyState === WebSocket.OPEN) {
                     this.ws.send(JSON.stringify(pending.messageData));
@@ -373,15 +501,25 @@ export class PersistentEventsSender extends EventsWsBase {
         }
     }
 
-    async send(guid: string, result: CompilationResult): Promise<void> {
+    /**
+     * @param sentTimestampMs When the request was queued, from the SQS SentTimestamp. Retries
+     *     stop once the deadline measured from it has passed, since a result can no longer
+     *     reach anyone; the acknowledgement itself is still asked for as usual.
+     */
+    async send(guid: string, result: CompilationResult, sentTimestampMs?: number): Promise<void> {
+        const expiresAtMs = sentTimestampMs === undefined ? undefined : sentTimestampMs + this.requestDeadlineMs;
         return new Promise((resolve, reject) => {
             if (this.isConnected && this.ws?.readyState === WebSocket.OPEN) {
+                // The guid goes last: a result can carry one of its own - a remote execution's
+                // result arrives with the guid it was fetched under and is cached that way - and
+                // spreading over it would label this frame with an unrelated request's guid,
+                // leaving the router that is waiting for this one to time out.
                 const messageData = {
-                    guid: guid,
                     ...result,
+                    guid: guid,
                 };
                 if (this.requireAcknowledgments) {
-                    this.setupAckTimeout(guid, messageData, resolve, reject);
+                    this.setupAckTimeout(guid, messageData, resolve, reject, expiresAtMs);
                 }
 
                 try {
@@ -420,11 +558,7 @@ export class PersistentEventsSender extends EventsWsBase {
         this.stopHeartbeat();
 
         // Only clear pending acknowledgments if this is an intentional close
-        for (const [, pending] of this.pendingAcks.entries()) {
-            clearTimeout(pending.timeout);
-            pending.reject(new Error('WebSocket connection closing'));
-        }
-        this.pendingAcks.clear();
+        this.rejectPendingAcks(new Error('WebSocket connection closing'));
 
         // Reject any queued messages
         this.rejectQueuedMessages(new Error('WebSocket connection closing'));
@@ -478,6 +612,10 @@ export class EventsWsWaiter extends EventsWsBase {
                 clearInterval(t);
                 try {
                     const data = JSON.parse(message.toString());
+                    // The frame carries the guid it was relayed under. Returned as part of the
+                    // result it reaches the cache, and every later compile that reuses that entry
+                    // sends its own result labelled with this execution's guid.
+                    delete data.guid;
                     resolve(data);
                 } catch (e) {
                     reject(e);

@@ -98,6 +98,7 @@ describe('Server Module', () => {
                 staticRoot: '/static',
                 httpRoot: '',
                 sentrySlowRequestMs: 500,
+                trustProxy: 2,
                 manifestPath: '/mocked/dist', // Use absolute path for testing
                 extraBodyClass: '',
                 maxUploadSize: '1mb',

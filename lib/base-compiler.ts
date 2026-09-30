@@ -34,6 +34,7 @@ import {splitArguments, unique} from '../shared/common-utils.js';
 import {OptRemark} from '../static/panes/opt-view.interfaces.js';
 import {PPOptions} from '../static/panes/pp-view.interfaces.js';
 import {ParsedAsmResult, ParsedAsmResultLine} from '../types/asmresult/asmresult.interfaces.js';
+import {CacheableValue} from '../types/cache.interfaces.js';
 import {ClangirBackendOptions} from '../types/compilation/clangir.interfaces.js';
 import {
     ActiveTool,
@@ -316,16 +317,10 @@ export class BaseCompiler {
         if (!this.compiler.instructionSet) {
             const isets = new InstructionSets();
             if (this.buildenvsetup) {
-                this.compiler.instructionSet = isets.getCompilerInstructionSetHint(
-                    this.buildenvsetup.compilerArch,
-                    this.compiler.exe,
-                );
+                this.compiler.instructionSet = isets.getCompilerInstructionSetHint(this.buildenvsetup.compilerArch);
             } else {
                 const temp = new BuildEnvSetupBase(this.compiler, this.env);
-                this.compiler.instructionSet = isets.getCompilerInstructionSetHint(
-                    temp.compilerArch,
-                    this.compiler.exe,
-                );
+                this.compiler.instructionSet = isets.getCompilerInstructionSetHint(temp.compilerArch);
             }
         }
 
@@ -602,7 +597,7 @@ export class BaseCompiler {
             const archHint = this.getTargetHintFromCompilerArgs(args);
             if (archHint) {
                 const isets = new InstructionSets();
-                return isets.getCompilerInstructionSetHint(archHint, this.compiler.exe);
+                return isets.getCompilerInstructionSetHint(archHint);
             }
         } catch (e) {
             logger.debug('Unexpected error in getInstructionSetFromCompilerArgs(): ', e);
@@ -2031,6 +2026,7 @@ export class BaseCompiler {
         sourceBasename: string,
         keepLineno: boolean,
         isRtlDump: boolean,
+        keepLibraryFunctions = false,
     ): string {
         // Splitting on a lookahead keeps each `;; Function` header with its block and leaves the
         // preamble (text before the first function) as the first piece, so join('') is lossless.
@@ -2040,8 +2036,8 @@ export class BaseCompiler {
             !piece.includes(sourceBasename) && /\/usr\/|\/opt\/|\/include\//.test(piece);
 
         const kept =
-            pieces.length <= 1
-                ? pieces // no function markers (e.g. IPA summary dump): keep whole
+            pieces.length <= 1 || keepLibraryFunctions
+                ? pieces // no function markers (e.g. IPA summary dump), or library functions wanted: keep whole
                 : pieces.filter((piece, index) => index === 0 || !isHeaderFunction(piece));
 
         let trimmed = kept.join('');
@@ -3104,7 +3100,6 @@ export class BaseCompiler {
                         );
                         if (cached) {
                             cached.retreivedFromCache = true;
-                            cached.s3Key = BaseCache.hash(cacheKey);
 
                             delete cached.inputFilename;
                             delete cached.dirPath;
@@ -3395,21 +3390,9 @@ export class BaseCompiler {
         }
 
         this.cleanupResult(fullResult);
-        fullResult.s3Key = BaseCache.hash(cacheKey);
-
-        // In worker mode, store large non-cacheable results with short TTL
-        if (this.isCompilationWorker && !fullResult.result?.okToCache && fullResult) {
-            // Check if result is large enough to require S3 storage
-            const resultString = JSON.stringify(fullResult);
-            const resultSize = resultString.length;
-
-            if (resultSize > WEBSOCKET_SIZE_THRESHOLD) {
-                // Store with 1-day TTL for temporary retrieval in temp/ subdirectory
-                await this.env.tempCachePutWithTTL(cacheKey, resultString, TEMP_STORAGE_TTL_DAYS, undefined);
-                // Set s3Key with temp/ prefix to reflect storage location
-                fullResult.s3Key = `temp/${BaseCache.hash(cacheKey)}`;
-            }
-        }
+        // Never the cached copy: afterCmakeCompilation cached it before the cleanup just above, so
+        // it still names the temporary directories we mask here.
+        await this.storeOversizedResult(fullResult, cacheKey, false);
 
         return fullResult;
     }
@@ -3484,7 +3467,6 @@ export class BaseCompiler {
                 const cacheRetrieveTimeEnd = process.hrtime.bigint();
                 result.retreivedFromCacheTime = utils.deltaTimeNanoToMili(cacheRetrieveTimeStart, cacheRetrieveTimeEnd);
                 result.retreivedFromCache = true;
-                result.s3Key = BaseCache.hash(key);
                 if (doExecute) {
                     const queueTime = performance.now();
                     result.execResult = await this.env.enqueue(
@@ -3502,6 +3484,7 @@ export class BaseCompiler {
                         await this.doTempfolderCleanup(result.execResult.buildResult);
                     }
                 }
+                await this.storeOversizedResult(result, key as any, !result.execResult);
                 return result;
             }
         }
@@ -3518,6 +3501,11 @@ export class BaseCompiler {
                         if (execResult?.buildResult) {
                             await this.doTempfolderCleanup(execResult.buildResult);
                         }
+                        // Returning from here skips afterCompilation, so this is the only chance to
+                        // put an oversized one where a reader can fetch it. The compilation cache
+                        // holds the build under this key, not what running it printed, so the
+                        // result needs a copy of its own.
+                        await this.storeOversizedResult(execResult, key as any, false);
                         return execResult;
                     }
 
@@ -3668,23 +3656,32 @@ export class BaseCompiler {
             }
         }
 
-        result.s3Key = BaseCache.hash(key);
-
-        // In worker mode, store large non-cacheable results with short TTL
-        if (this.isCompilationWorker && !result.okToCache && !delayCaching) {
-            // Check if result is large enough to require S3 storage
-            const resultString = JSON.stringify(result);
-            const resultSize = resultString.length;
-
-            if (resultSize > WEBSOCKET_SIZE_THRESHOLD) {
-                // Store with 1-day TTL for temporary retrieval in temp/ subdirectory
-                await this.env.tempCachePutWithTTL(key, resultString, TEMP_STORAGE_TTL_DAYS, undefined);
-                // Set s3Key with temp/ prefix to reflect storage location
-                result.s3Key = `temp/${BaseCache.hash(key)}`;
-            }
-        }
+        // The cmake flow finishes the result off itself, so it stores it there rather than here.
+        // What was cached above is this result without the execResult attached since.
+        if (!delayCaching) await this.storeOversizedResult(result, key, !!result.okToCache && !result.execResult);
 
         return result;
+    }
+
+    // A result too big for the websocket is fetched from storage instead, so the worker reports
+    // where to find it. When the cache already holds this exact payload the reader is pointed at
+    // that; otherwise a copy goes under temp/, which is not a key cacheGet reads, so a result we
+    // were told not to cache can never come back as a cache hit. Callers say which case they are
+    // in, because the two flows cache at different points: see the call sites.
+    protected async storeOversizedResult(
+        result: CompilationResult,
+        key: CacheableValue,
+        cacheHoldsThisPayload: boolean,
+    ): Promise<void> {
+        if (!this.isCompilationWorker) return;
+        const resultString = JSON.stringify(result);
+        if (resultString.length <= WEBSOCKET_SIZE_THRESHOLD) return;
+        if (cacheHoldsThisPayload) {
+            if (this.env.hasSharedCache()) result.s3Key = BaseCache.hash(key);
+            return;
+        }
+        const s3Key = await this.env.tempCachePutWithTTL(key, resultString, TEMP_STORAGE_TTL_DAYS, undefined);
+        if (s3Key) result.s3Key = s3Key;
     }
 
     async afterCmakeCompilation(
@@ -3956,7 +3953,13 @@ but nothing was dumped. Possible causes are:
             for (const {filename, pass} of candidates) {
                 const raw = await utils.tryReadTextFile(path.join(rootDir, filename));
                 const trimmed = raw
-                    ? this.trimGccDumpHeaderFunctions(raw, sourceBasename, keepLineno, pass.filename_suffix[0] === 'r')
+                    ? this.trimGccDumpHeaderFunctions(
+                          raw,
+                          sourceBasename,
+                          keepLineno,
+                          pass.filename_suffix[0] === 'r',
+                          opts.libraryFunctions ?? false,
+                      )
                     : '';
                 // RTL dumps repeat the absolute path of the source, and of any other user file
                 // (multi-file compiles), on every insn location. Mask the temp dir as we do for

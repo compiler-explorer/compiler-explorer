@@ -74,15 +74,53 @@ main():
 ; /tmp/project/dep/std/src/print.mach:64
        4: 00008067     	ret`;
 
-    it('should read source lines from gnu objdump', () => {
+    it.skipIf(process.platform === 'win32')('should read source lines from gnu objdump', () => {
         const result = parser.processBinaryAsm(gnuObjdump, {});
         expect(result.asm.map(line => line.source?.line)).toEqual([undefined, 7, 64]);
     });
 
-    it('should read source lines from llvm-objdump', () => {
+    it.skipIf(process.platform === 'win32')('should read source lines from llvm-objdump', () => {
         const result = parser.processBinaryAsm(llvmObjdump, {});
         expect(result.asm.map(line => line.text)).toEqual(['main:', ' addi\tsp, sp, -0x60', ' ret']);
         expect(result.asm.map(line => line.source?.line)).toEqual([undefined, 7, 64]);
+    });
+
+    it.skipIf(process.platform === 'win32')(
+        'should keep the function label when filtering library code in llvm-objdump output',
+        () => {
+            const result = parser.processBinaryAsm(llvmObjdump, {libraryCode: true});
+            expect(result.asm[0].text).toEqual('main:');
+        },
+    );
+});
+
+describe('AsmParser library code filtering in binary asm', () => {
+    const parser = new AsmParser();
+    const objdump = [
+        '0000000000401000 <lib_a>:',
+        '  401000:\tc3                   \tret',
+        '0000000000401001 <lib_b>:',
+        '  401001:\tc3                   \tret',
+        '0000000000401002 <lib_c>:',
+        '  401002:\tc3                   \tret',
+        '0000000000401003 <main>:',
+        '/tmp/compiler-explorer-compiler/example.c:3',
+        '  401003:\tc3                   \tret',
+    ].join('\n');
+
+    it.skipIf(process.platform === 'win32')('should drop the label of every consecutive library function', () => {
+        const result = parser.processBinaryAsm(objdump, {libraryCode: true});
+        expect(result.asm.map(line => line.text)).toEqual(['main:', ' ret']);
+    });
+
+    it('should keep every label when library code is shown', () => {
+        const result = parser.processBinaryAsm(objdump, {libraryCode: false});
+        expect(result.asm.map(line => line.text).filter(text => text.endsWith(':'))).toEqual([
+            'lib_a:',
+            'lib_b:',
+            'lib_c:',
+            'main:',
+        ]);
     });
 });
 
@@ -129,6 +167,35 @@ nop
         const lines = result.asm.map(line => line.text.trim());
         expect(lines).toContain('.rept 5');
         expect(lines).not.toContain('.p2align 4');
+    });
+});
+
+describe('AsmParser numeric local labels', () => {
+    const parser = new AsmParser();
+    const filters = {directives: true, labels: true};
+
+    it('should keep a local label referenced forwards', () => {
+        const input = ['square:', '  bne $2,$0,1f', '  break 7', '1:', '  mflo $2', '  jr $31'].join('\n');
+        const lines = parser.processAsm(input, filters).asm.map(line => line.text);
+        expect(lines).toContain('1:');
+    });
+
+    it('should keep a local label referenced backwards', () => {
+        const input = ['loop:', '2:', '  add r0, r0, #1', '  b 2b', '  ret'].join('\n');
+        const lines = parser.processAsm(input, filters).asm.map(line => line.text);
+        expect(lines).toContain('2:');
+    });
+
+    it('should still drop a local label nothing refers to', () => {
+        const input = ['square:', '  mov r0, #0x1f', '1:', '  ret'].join('\n');
+        const lines = parser.processAsm(input, filters).asm.map(line => line.text);
+        expect(lines).not.toContain('1:');
+    });
+
+    it('should not read a NEON element size as a reference', () => {
+        const input = ['square:', '  add v0.16b, v1.16b, v2.16b', '16:', '  ret'].join('\n');
+        const lines = parser.processAsm(input, filters).asm.map(line => line.text);
+        expect(lines).not.toContain('16:');
     });
 });
 
