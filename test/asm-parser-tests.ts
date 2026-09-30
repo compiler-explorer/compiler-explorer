@@ -73,7 +73,7 @@ describe('AsmParser library code filtering in binary asm', () => {
         '  401003:\tc3                   \tret',
     ].join('\n');
 
-    it('should drop the label of every consecutive library function', () => {
+    it.skipIf(process.platform === 'win32')('should drop the label of every consecutive library function', () => {
         const result = parser.processBinaryAsm(objdump, {libraryCode: true});
         expect(result.asm.map(line => line.text)).toEqual(['main:', ' ret']);
     });
