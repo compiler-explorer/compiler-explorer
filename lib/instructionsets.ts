@@ -180,43 +180,33 @@ export class InstructionSets {
             },
             amd_cdna1: {
                 target: [],
-                path: [],
             },
             amd_cdna2: {
                 target: [],
-                path: [],
             },
             amd_cdna3: {
                 target: [],
-                path: [],
             },
             amd_cdna4: {
                 target: [],
-                path: [],
             },
             amd_cdna5: {
                 target: [],
-                path: [],
             },
             amd_rdna1: {
                 target: [],
-                path: [],
             },
             amd_rdna2: {
                 target: [],
-                path: [],
             },
             amd_rdna3: {
                 target: [],
-                path: [],
             },
             amd_rdna3_5: {
                 target: [],
-                path: [],
             },
             amd_rdna4: {
                 target: [],
-                path: [],
             },
             x86: {
                 target: [],
