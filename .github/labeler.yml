@@ -282,6 +282,13 @@
           - 'etc/config/llvm.*.properties'
           - 'static/modes/llvm-ir-mode.ts'
 
+'lang-mach':
+  - changed-files:
+      - any-glob-to-any-file:
+          - 'lib/compilers/mach.ts'
+          - 'etc/config/mach.*.properties'
+          - 'static/modes/mach-mode.ts'
+
 'lang-modula2':
   - changed-files:
       - any-glob-to-any-file:

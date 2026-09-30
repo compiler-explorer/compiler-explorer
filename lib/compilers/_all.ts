@@ -115,6 +115,7 @@ export {LLVMmcaTool} from './llvm-mca.js';
 export {LLVMMOSCompiler} from './llvm-mos.js';
 export {LuaCompiler} from './lua.js';
 export {M68kCompiler} from './m68k.js';
+export {MachCompiler} from './mach.js';
 export {MadPascalCompiler} from './madpascal.js';
 export {MicroPythonCompiler} from './micropython.js';
 export {MLIRCompiler} from './mlir.js';

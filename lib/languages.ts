@@ -685,6 +685,18 @@ const definitions: Record<LanguageKey, LanguageDefinition> = {
         previewFilter: null,
         monacoDisassembly: null,
     },
+    mach: {
+        name: 'Mach',
+        monaco: 'mach',
+        extensions: ['.mach'],
+        alias: [],
+        logoFilename: 'mach.svg',
+        logoFilenameDark: null,
+        formatter: null,
+        previewFilter: null,
+        monacoDisassembly: null,
+        digitSeparator: '_',
+    },
     modula2: {
         name: 'Modula-2',
         monaco: 'modula2',
