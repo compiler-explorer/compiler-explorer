@@ -24,11 +24,12 @@
 
 import {S3} from '@aws-sdk/client-s3';
 import {SQS} from '@aws-sdk/client-sqs';
-import {Counter} from 'prom-client';
+import {Counter, Histogram} from 'prom-client';
 
 import {
     CompilationResult,
     FiledataPair,
+    TEMP_STORAGE_TTL_DAYS,
     WEBSOCKET_SIZE_THRESHOLD,
 } from '../../types/compilation/compilation.interfaces.js';
 import type {BuildSystemDriver} from '../build-systems/index.js';
@@ -59,7 +60,9 @@ export type RemoteCompilationRequest = {
     /** The original, CMake-only spelling of buildSystem. Still sent by producers we don't deploy in lockstep with. */
     isCMake?: boolean;
     queueTimeMs?: number;
-    headers: Record<string, string>;
+    /** SQS SentTimestamp, so the result sender can tell when the caller stops waiting. */
+    sentTimestampMs?: number;
+    headers: Record<string, string | string[]>;
     queryStringParameters: Record<string, string>;
 };
 
@@ -72,6 +75,12 @@ export type S3OverflowMessage = {
     originalSize: number;
     timestamp: string;
 };
+
+const queueWaitHistogram = new Histogram({
+    name: 'ce_sqs_compilation_queue_wait_seconds',
+    help: 'Time a compilation request spent in SQS before a worker collected it',
+    buckets: [0.05, 0.1, 0.25, 0.5, 1, 2, 5, 10, 20, 40, 60],
+});
 
 const sqsCompileCounter = new Counter({
     name: 'ce_sqs_compilations_total',
@@ -125,6 +134,16 @@ export function getRequestedBuildSystem(msg: RemoteCompilationRequest): BuildSys
         return buildSystem;
     }
     return msg.isCMake ? cmakeBuildSystem : undefined;
+}
+
+/**
+ * Whether a queued request's recorded content-type names JSON. Producers record the caller's header verbatim, so it
+ * can carry parameters (`application/json; charset=utf-8`) or arrive repeated. This matches what `req.is('json')`
+ * decides for the same header on the HTTP route, so a request compiles the same way whichever path it arrived by.
+ */
+export function isJsonContentType(contentType: string | string[] | undefined): boolean {
+    const value = Array.isArray(contentType) ? contentType[0] : contentType;
+    return value?.split(';')[0].trim().toLowerCase() === 'application/json';
 }
 
 export class SqsCompilationQueueBase {
@@ -253,6 +272,7 @@ export class SqsCompilationWorkerMode extends SqsCompilationQueueBase {
                                 if (sentTimestamp) {
                                     const queueTimeMs = Date.now() - Number.parseInt(sentTimestamp, 10);
                                     compilationRequest.queueTimeMs = queueTimeMs;
+                                    compilationRequest.sentTimestampMs = Number.parseInt(sentTimestamp, 10);
                                 }
                                 return compilationRequest;
                             }
@@ -272,6 +292,7 @@ export class SqsCompilationWorkerMode extends SqsCompilationQueueBase {
                     if (sentTimestamp) {
                         const queueTimeMs = Date.now() - Number.parseInt(sentTimestamp, 10);
                         parsed.queueTimeMs = queueTimeMs;
+                        parsed.sentTimestampMs = Number.parseInt(sentTimestamp, 10);
                     }
 
                     return parsed as RemoteCompilationRequest;
@@ -291,11 +312,37 @@ export class SqsCompilationWorkerMode extends SqsCompilationQueueBase {
     }
 }
 
-async function sendCompilationResultViaWebsocket(
+/**
+ * Puts a value where the router, or a person investigating, can fetch it later. The key is derived
+ * from keyFor, so callers naming it differently get a different object. Returns the key it went
+ * under, or undefined if it could not be stored.
+ */
+async function storeInTempCache(
+    compilationEnvironment: CompilationEnvironment,
+    keyFor: string,
+    value: unknown,
+): Promise<string | undefined> {
+    try {
+        return await compilationEnvironment.tempCachePutWithTTL(
+            keyFor,
+            JSON.stringify(value),
+            TEMP_STORAGE_TTL_DAYS,
+            undefined,
+        );
+    } catch (error) {
+        logger.error(`Failed to store ${keyFor} in the temp cache:`, error);
+        return undefined;
+    }
+}
+
+export async function sendCompilationResultViaWebsocket(
     persistentSender: PersistentEventsSender,
+    compilationEnvironment: CompilationEnvironment,
     guid: string,
     result: CompilationResult,
     totalTimeMs: number,
+    sentTimestampMs?: number,
+    request?: unknown,
 ) {
     try {
         const basicResult = {
@@ -307,20 +354,65 @@ async function sendCompilationResultViaWebsocket(
         const resultSize = JSON.stringify(basicResult).length;
 
         let webResult;
-        if (result.s3Key && resultSize > WEBSOCKET_SIZE_THRESHOLD) {
-            webResult = {
-                s3Key: result.s3Key,
-                okToCache: result.okToCache ?? false,
-                execTime: result.execTime !== undefined ? result.execTime : totalTimeMs,
-            };
+        let sentAs: string;
+        if (resultSize > WEBSOCKET_SIZE_THRESHOLD) {
+            // Over this size API Gateway closes the connection rather than refusing the frame, and
+            // that connection is shared, so one oversized result costs every other result this
+            // worker has in flight. Send the key and let the router fetch the rest.
+            if (!result.s3Key) {
+                // Whatever produced a result this size was meant to have stored it already, so
+                // storing it here is a repair, not the design: worth saying out loud, or the path
+                // that skipped it stays invisible. The request goes alongside it, because knowing
+                // which one did this is the only way to find the path that skipped it.
+                const requestKey = await storeInTempCache(
+                    compilationEnvironment,
+                    `${guid}_faultyrequest`,
+                    request ?? null,
+                );
+                logger.warn(
+                    `Sending ${guid} at ${resultSize} bytes with no s3Key, over the ` +
+                        `${WEBSOCKET_SIZE_THRESHOLD} byte threshold: storing it now` +
+                        (requestKey ? `, request saved at ${requestKey}` : ''),
+                );
+            }
+            const s3Key = result.s3Key ?? (await storeInTempCache(compilationEnvironment, guid, basicResult));
+            if (s3Key) {
+                webResult = {
+                    s3Key: s3Key,
+                    okToCache: basicResult.okToCache,
+                    execTime: basicResult.execTime,
+                };
+                sentAs = 's3Key reference';
+            } else {
+                logger.error(
+                    `Could not store ${guid} at ${resultSize} bytes, which is too large to send: ` +
+                        'returning an error to the user instead',
+                );
+                webResult = {
+                    code: -1,
+                    stderr: [{text: 'The compilation result was too large to return'}],
+                    stdout: [],
+                    okToCache: false,
+                    timedOut: false,
+                    inputFilename: '',
+                    asm: [],
+                    tools: [],
+                    execTime: basicResult.execTime,
+                };
+                sentAs = 'too-large error';
+            }
         } else {
             webResult = basicResult;
+            sentAs = 'inline';
         }
 
-        await persistentSender.send(guid, webResult);
-        logger.info(`Successfully sent compilation result for ${guid} via WebSocket (total time: ${totalTimeMs}ms)`);
+        await persistentSender.send(guid, webResult, sentTimestampMs);
+        logger.info(
+            `Successfully sent compilation result for ${guid} via WebSocket ` +
+                `(${resultSize} bytes, ${sentAs}, total time: ${totalTimeMs}ms)`,
+        );
     } catch (error) {
-        logger.error('WebSocket send error:', error);
+        logger.error(`WebSocket send error for ${guid}:`, error);
     }
 }
 
@@ -344,6 +436,16 @@ async function doOneCompilation(
         // fail, and the logs for that failure want to say which build system was asked for.
         const compilationType = msg.buildSystem ?? (msg.isCMake ? 'cmake' : 'compile');
 
+        // How long this sat in the queue, which is the half of a slow request the worker's own
+        // timings cannot show: "Completed in 60s" reads the same whether the compile was slow or
+        // nobody collected the message until its requester had already given up.
+        const queuedMs = msg.sentTimestampMs === undefined ? undefined : startTime - msg.sentTimestampMs;
+        if (queuedMs !== undefined) queueWaitHistogram.observe(queuedMs / 1000);
+        logger.info(
+            `Picked up ${compilationType} request ${msg.guid}` +
+                (queuedMs === undefined ? '' : ` after ${queuedMs}ms queued`),
+        );
+
         try {
             // Inside the try: an unknown build system is reported to the user like any other failed compilation.
             const buildSystem = getRequestedBuildSystem(msg);
@@ -352,7 +454,7 @@ async function doOneCompilation(
                 throw new Error(`Compiler with ID ${msg.compilerId} not found for language ${msg.lang}`);
             }
 
-            const isJson = msg.headers['content-type'] === 'application/json';
+            const isJson = isJsonContentType(msg.headers['content-type']);
             const query = msg.queryStringParameters;
 
             const parsedRequest = CompileHandler.parseRequestReusable(
@@ -414,7 +516,15 @@ async function doOneCompilation(
             const endTime = Date.now();
             const duration = endTime - startTime;
 
-            await sendCompilationResultViaWebsocket(persistentSender, msg.guid, result, duration);
+            await sendCompilationResultViaWebsocket(
+                persistentSender,
+                compilationEnvironment,
+                msg.guid,
+                result,
+                duration,
+                msg.sentTimestampMs,
+                msg,
+            );
 
             logger.info(`Completed ${compilationType} request ${msg.guid} in ${duration}ms`);
         } catch (e: any) {
@@ -445,7 +555,15 @@ async function doOneCompilation(
                 errorResult.queueTime = msg.queueTimeMs;
             }
 
-            await sendCompilationResultViaWebsocket(persistentSender, msg.guid, errorResult, duration);
+            await sendCompilationResultViaWebsocket(
+                persistentSender,
+                compilationEnvironment,
+                msg.guid,
+                errorResult,
+                duration,
+                msg.sentTimestampMs,
+                msg,
+            );
         }
     }
 }

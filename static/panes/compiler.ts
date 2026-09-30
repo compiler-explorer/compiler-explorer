@@ -292,6 +292,8 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
     private compilerShared: ICompilerShared;
     private artifactHandler: ArtifactHandler;
 
+    gccDumpLibraryFunctions: boolean = false;
+
     constructor(hub: Hub, container: Container, state: MonacoPaneState & CompilerState) {
         state.id = state.id || hub.nextCompilerId();
         super(hub, container, state);
@@ -1370,6 +1372,7 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
                     rtlDump: this.rtlDumpEnabled,
                     ipaDump: this.ipaDumpEnabled,
                     dumpFlags: this.dumpFlags,
+                    libraryFunctions: this.gccDumpLibraryFunctions,
                 },
                 produceOptInfo: this.wantOptInfo ?? false,
                 produceStackUsageInfo: this.stackUsageViewOpen,
@@ -2397,6 +2400,7 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
                 uid: dumpOpts.uidOption,
                 all: dumpOpts.allOption,
             };
+            this.gccDumpLibraryFunctions = dumpOpts.libraryFunctionsOption;
 
             if (reqCompile) {
                 this.compile();

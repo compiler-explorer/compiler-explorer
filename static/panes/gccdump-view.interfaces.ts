@@ -54,6 +54,7 @@ export type GccDumpFiltersState = {
     statsOption: boolean;
     uidOption: boolean;
     vopsOption: boolean;
+    libraryFunctionsOption: boolean;
 };
 
 // state = selected pass + all option flags

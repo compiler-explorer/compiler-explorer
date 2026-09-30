@@ -1523,6 +1523,10 @@ export class Editor extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Edit
                             return undefined;
                         }
                     }
+                } else if (obj.tag.file?.startsWith('../')) {
+                    // a file outside the compilation's sources, such as a standard library's: without a tree this
+                    // editor holds only the compilation's own source, so the diagnostic marks no line here
+                    return undefined;
                 }
 
                 let colBegin = 0;
