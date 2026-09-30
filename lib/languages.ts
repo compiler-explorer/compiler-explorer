@@ -690,7 +690,7 @@ const definitions: Record<LanguageKey, LanguageDefinition> = {
         monaco: 'mach',
         extensions: ['.mach'],
         alias: [],
-        logoFilename: 'mach.svg',
+        logoFilename: 'mach-tile.svg',
         logoFilenameDark: null,
         formatter: null,
         previewFilter: null,
