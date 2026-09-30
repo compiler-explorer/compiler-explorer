@@ -625,9 +625,9 @@ export class MachParser extends BaseParser {
 }
 
 export class PorfforParser extends BaseParser {
-    static override async parse(compiler: BaseCompiler) {
-        await this.getOptions(compiler, '--help');
-        return compiler;
+    override async parse() {
+        await this.getOptions('--help');
+        return this.compiler;
     }
 }
 

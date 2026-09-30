@@ -23,11 +23,9 @@
 // POSSIBILITY OF SUCH DAMAGE.
 
 import path from 'node:path';
-import _ from 'underscore';
 
-import {CacheKey, CompilationResult, ExecutionOptionsWithEnv} from '../../types/compilation/compilation.interfaces.js';
+import {CacheKey} from '../../types/compilation/compilation.interfaces.js';
 import type {PreliminaryCompilerInfo} from '../../types/compiler.interfaces.js';
-import {ExecutableExecutionOptions} from '../../types/execution/execution.interfaces.js';
 import type {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces.js';
 import {SelectedLibraryVersion} from '../../types/libraries/libraries.interfaces.js';
 import {unwrap} from '../assert.js';
@@ -36,7 +34,8 @@ import {CompilationEnvironment} from '../compilation-env.js';
 import {PorfforParser} from './argument-parsers.js';
 
 export class PorfforCompiler extends BaseCompiler {
-    target = 'wasm';
+    ccPath: string;
+    target = 'c';
 
     static get key(): string {
         return 'porffor';
@@ -44,29 +43,25 @@ export class PorfforCompiler extends BaseCompiler {
 
     constructor(compilerInfo: PreliminaryCompilerInfo, env: CompilationEnvironment) {
         super(compilerInfo, env);
-
+        this.ccPath = this.compilerProps<string>(`compiler.${this.compiler.id}.cc`);
         this.compiler.supportsIntel = true;
     }
 
-    override async handleInterpreting(
-        key: CacheKey,
-        executeParameters: ExecutableExecutionOptions,
-    ): Promise<CompilationResult> {
-        // Prevent the interpreter (which uses node) from inheriting our NODE_OPTIONS.
-        executeParameters.env.NODE_OPTIONS = '';
-
-        return super.handleInterpreting(key, executeParameters);
+    override getCompilerResultLanguageId(filters?: ParseFiltersAndOutputOptions): string | undefined {
+        return 'c';
     }
 
-    override getDefaultExecOptions(): ExecutionOptionsWithEnv {
-        const opts = super.getDefaultExecOptions();
-        opts.env.NODE_OPTIONS = '';
+    override getDefaultExecOptions() {
+        const execOptions = super.getDefaultExecOptions();
+        if (this.ccPath) {
+            execOptions.env.CC = this.ccPath;
+        }
 
-        return opts;
+        return execOptions;
     }
 
     getTargetFromOptions(options: string[]): string {
-        return options.find(o => o.startsWith('--target='))?.substring(9) ?? 'wasm';
+        return options[0] === 'c' || options[0] === 'native' ? options[0] : 'c';
     }
 
     override optionsForFilter(
@@ -77,9 +72,25 @@ export class PorfforCompiler extends BaseCompiler {
         const options = unwrap(userOptions);
 
         this.target = this.getTargetFromOptions(options);
-        if (this.target === 'wasm' || this.target == 'native') filters.binary = true;
+        if (this.target === 'native') filters.binary = true;
 
-        return ['-d', `-o=${this.filename(outputFilename)}`];
+        return [this.target, '-d', `-o=${this.filename(outputFilename)}`];
+    }
+
+    override orderArguments(
+        options: string[],
+        inputFilename: string,
+        libIncludes: string[],
+        libOptions: string[],
+        libPaths: string[],
+        libLinks: string[],
+        userOptions: string[],
+        staticLibLinks: string[],
+    ) {
+        return [options[0], this.filename(inputFilename)].concat(
+            options.slice(1),
+            userOptions[0] === 'c' || userOptions[0] === 'native' ? userOptions.slice(1) : userOptions,
+        );
     }
 
     getOutputExtension(target: string): string {
@@ -91,9 +102,34 @@ export class PorfforCompiler extends BaseCompiler {
                 return '';
             }
             default: {
-                return '.wasm';
+                return '.c';
             }
         }
+    }
+
+    override async objdump(
+        outputFilename: string,
+        result: any,
+        maxSize: number,
+        intelAsm: boolean,
+        demangle: boolean,
+        staticReloc: boolean,
+        dynamicReloc: boolean,
+        filters: ParseFiltersAndOutputOptions,
+    ) {
+        const objdumpResult = await super.objdump(
+            outputFilename,
+            result,
+            maxSize,
+            intelAsm,
+            demangle,
+            staticReloc,
+            dynamicReloc,
+            filters,
+        );
+
+        objdumpResult.languageId = 'asm';
+        return objdumpResult;
     }
 
     override getOutputFilename(dirPath: string, outputFilebase: string, key?: CacheKey): string {
