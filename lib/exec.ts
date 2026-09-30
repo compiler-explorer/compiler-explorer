@@ -336,9 +336,10 @@ export function getSandboxNsjailOptions(command: string, args: string[], options
         let relativeCommand = command;
         if (command.startsWith(options.customCwd)) {
             relativeCommand = path.relative(options.customCwd, command);
-            if (path.dirname(relativeCommand) === '.') {
-                relativeCommand = `./${relativeCommand}`;
-            }
+        }
+        // dumb-init looks a bare name up on PATH, so name a file in the cwd explicitly
+        if (path.dirname(relativeCommand) === '.') {
+            relativeCommand = `./${relativeCommand}`;
         }
         return getNsJailOptions('sandbox', relativeCommand, args, options);
     }

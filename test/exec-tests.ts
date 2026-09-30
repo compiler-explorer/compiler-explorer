@@ -324,6 +324,14 @@ describe('Execution tests', async () => {
                 './output.s',
             ]);
         });
+        it('Should make a bare executable name relative to the cwd', () => {
+            // Remote execution hands over just the file name; dumb-init would search PATH for it.
+            const {args} = exec.getSandboxNsjailOptions('output.s', [], {
+                customCwd: '/tmp/hellow',
+            });
+
+            expect(args.slice(-2)).toEqual(['/usr/local/bin/dumb-init', './output.s']);
+        });
         it('Should remap env vars', () => {
             const {args, options} = exec.getSandboxNsjailOptions('/tmp/hellow/output.s', [], {
                 customCwd: '/tmp/hellow',
