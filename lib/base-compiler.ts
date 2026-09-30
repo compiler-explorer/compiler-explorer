@@ -2033,17 +2033,17 @@ export class BaseCompiler {
         isRtlDump: boolean,
         keepLibraryFunctions = false,
     ): string {
+        // Splitting on a lookahead keeps each `;; Function` header with its block and leaves the
+        // preamble (text before the first function) as the first piece, so join('') is lossless.
         const pieces = content.split(/(?=^;; Function )/m);
 
         const isHeaderFunction = (piece: string) =>
             !piece.includes(sourceBasename) && /\/usr\/|\/opt\/|\/include\//.test(piece);
 
         const kept =
-            pieces.length <= 1
-                ? pieces
-                : keepLibraryFunctions
-                  ? pieces
-                  : pieces.filter((piece, index) => index === 0 || !isHeaderFunction(piece));
+            pieces.length <= 1 || keepLibraryFunctions
+                ? pieces // no function markers (e.g. IPA summary dump), or library functions wanted: keep whole
+                : pieces.filter((piece, index) => index === 0 || !isHeaderFunction(piece));
 
         let trimmed = kept.join('');
         if (!keepLineno) {
