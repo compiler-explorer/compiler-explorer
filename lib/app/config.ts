@@ -36,7 +36,7 @@ import {languages as allLanguages} from '../languages.js';
 import {logger} from '../logger.js';
 import type {PropertyGetter} from '../properties.interfaces.js';
 import * as props from '../properties.js';
-import type {AppConfiguration} from './config.interfaces.js';
+import type {AppConfiguration, TrustProxySetting} from './config.interfaces.js';
 
 /**
  * Measures event loop lag to monitor server performance.
@@ -175,6 +175,7 @@ export function loadConfiguration(appArgs: AppArguments): AppConfiguration {
 
     const staticUrl = ceProps<string | undefined>('staticUrl');
     const staticRoot = urljoin(staticUrl || httpRoot, '/');
+    const trustProxy = ceProps<TrustProxySetting>('trustProxy', 'loopback');
 
     return {
         ceProps,
@@ -187,5 +188,6 @@ export function loadConfiguration(appArgs: AppArguments): AppConfiguration {
         httpRoot,
         staticRoot,
         staticUrl,
+        trustProxy,
     };
 }

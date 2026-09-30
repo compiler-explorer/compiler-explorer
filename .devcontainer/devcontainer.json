@@ -2,7 +2,7 @@
   "name": "compiler-explorer",
   "dockerFile": "Dockerfile",
   "build": {
-    "args": { "NODE_MAJOR_VERSION": "20" }
+    "args": { "NODE_MAJOR_VERSION": "26" }
   },
   "postCreateCommand": [".devcontainer/post-create.sh"],
   "portsAttributes": {

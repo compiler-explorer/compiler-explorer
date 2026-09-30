@@ -24,7 +24,7 @@
 
 import {S3} from '@aws-sdk/client-s3';
 import {SQS} from '@aws-sdk/client-sqs';
-import {Counter} from 'prom-client';
+import {Counter, Histogram} from 'prom-client';
 
 import {
     CompilationResult,
@@ -75,6 +75,12 @@ export type S3OverflowMessage = {
     originalSize: number;
     timestamp: string;
 };
+
+const queueWaitHistogram = new Histogram({
+    name: 'ce_sqs_compilation_queue_wait_seconds',
+    help: 'Time a compilation request spent in SQS before a worker collected it',
+    buckets: [0.05, 0.1, 0.25, 0.5, 1, 2, 5, 10, 20, 40, 60],
+});
 
 const sqsCompileCounter = new Counter({
     name: 'ce_sqs_compilations_total',
@@ -429,6 +435,16 @@ async function doOneCompilation(
         // Named from the request rather than from a resolved driver, because resolving is itself something that can
         // fail, and the logs for that failure want to say which build system was asked for.
         const compilationType = msg.buildSystem ?? (msg.isCMake ? 'cmake' : 'compile');
+
+        // How long this sat in the queue, which is the half of a slow request the worker's own
+        // timings cannot show: "Completed in 60s" reads the same whether the compile was slow or
+        // nobody collected the message until its requester had already given up.
+        const queuedMs = msg.sentTimestampMs === undefined ? undefined : startTime - msg.sentTimestampMs;
+        if (queuedMs !== undefined) queueWaitHistogram.observe(queuedMs / 1000);
+        logger.info(
+            `Picked up ${compilationType} request ${msg.guid}` +
+                (queuedMs === undefined ? '' : ` after ${queuedMs}ms queued`),
+        );
 
         try {
             // Inside the try: an unknown build system is reported to the user like any other failed compilation.

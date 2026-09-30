@@ -93,6 +93,7 @@ export type GccDumpOptions = {
     rtlDump?: boolean;
     ipaDump?: boolean;
     dumpFlags?: GccDumpFlags;
+    libraryFunctions?: boolean;
 };
 
 export type GccDumpOutput = {

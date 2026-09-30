@@ -22,6 +22,7 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
+import {readFileSync} from 'node:fs';
 import fs from 'node:fs/promises';
 import path from 'node:path';
 import {fileURLToPath} from 'node:url';
@@ -432,6 +433,7 @@ describe('Rust compiler output', () => {
 
     it('attaches filenames to errors from multiple files', () => {
         // https://godbolt.org/z/nWE3PTeGf
+        // the compilation's files are written beside its main source, at /app, so that is what the names are relative to
         expect(
             utils.parseRustOutput(
                 `warning: function \`f1\` is never used
@@ -441,7 +443,7 @@ warning: function \`f2\` is never used
  --> /app/m.rs:1:4
 
 warning: 2 warnings emitted`,
-                'example.rs',
+                '/app/example.rs',
             ),
         ).toEqual([
             {
@@ -488,6 +490,96 @@ warning: 2 warnings emitted`,
             {text: ''},
             {text: 'warning: 2 warnings emitted'},
         ]);
+    });
+
+    /**
+     * Real rustc 1.96 output for small crates compiled as `/app/example.rs`, the path the sandbox gives the main
+     * source. The captures sit in test/rust/diagnostics, and the toolchain's own path is rewritten to a godbolt-style one.
+     */
+    function rustMarks(capture: string) {
+        const output = readFileSync(path.join(__dirname, 'rust', 'diagnostics', `${capture}.txt`), 'utf8');
+        return utils
+            .parseRustOutput(output, '/app/example.rs')
+            .filter(line => line.tag?.text)
+            .map(line => [line.tag?.file, line.tag?.line, line.tag?.severity, line.tag?.text]);
+    }
+
+    it('names each file of a crate by its path from the main source, so mod.rs files stay apart', () => {
+        // `mod a; mod b; mod util;` with a/mod.rs, b/mod.rs and util/fmt.rs: by basename, both mod.rs were `mod.rs`
+        expect(rustMarks('multi-file-crate')).toEqual([
+            ['b/mod.rs', 2, 3, 'error[E0308]: mismatched types'],
+            ['example.rs', 9, 3, 'error[E0308]: mismatched types'],
+            ['a/mod.rs', 1, 1, 'note: function defined here'],
+            ['example.rs', 10, 3, 'error[E0308]: mismatched types'],
+            ['example.rs', 5, 1, 'note: function defined here'],
+            ['example.rs', 14, 3, 'error[E0425]: cannot find function `missing_fn` in this scope'],
+            ['util/fmt.rs', 2, 2, 'warning: unused variable: `z`'],
+        ]);
+    });
+
+    it('names a standard library file by its distance from the main source, so it matches no file of the crate', () => {
+        // by basename the note was `mod.rs`, which a crate's own mod.rs editor would have taken
+        expect(rustMarks('std-note')).toEqual([
+            ['example.rs', 3, 3, 'error[E0308]: mismatched types'],
+            [
+                '../opt/compiler-explorer/rust-1.96.0/lib/rustlib/src/rust/library/alloc/src/vec/mod.rs',
+                1003,
+                1,
+                'note: method defined here',
+            ],
+        ]);
+    });
+
+    it('marks a help with its own location at help severity, not as an error', () => {
+        // span_help renders `help:` over a `-->`; it was read as an error headline
+        expect(rustMarks('span-help')).toEqual([
+            ['example.rs', 2, 2, 'warning: unused import: `a::Speak`'],
+            ['example.rs', 7, 3, 'error[E0277]: the trait bound `Dog: Speak` is not satisfied'],
+            ['example.rs', 4, 1, 'help: the trait `Speak` is not implemented for `Dog`'],
+            ['a/mod.rs', 3, 1, 'help: the trait `Speak` is implemented for `Cat`'],
+            ['a/mod.rs', 4, 1, 'note: required by a bound in `talk`'],
+            ['example.rs', 9, 3, 'error[E0054]: cannot cast `i32` as `bool`'],
+        ]);
+    });
+
+    it('marks a location in another file inside a snippet with the label under it', () => {
+        // `::: a/mod.rs:3:1` names the enum the variant was looked up in; it was not recognised at all
+        expect(rustMarks('secondary-file')).toEqual([
+            ['example.rs', 5, 3, 'error[E0616]: field `secret` of struct `Thing` is private'],
+            [
+                'example.rs',
+                6,
+                3,
+                'error[E0599]: no variant, associated function, or constant named `Fast` found for enum `Mode` in the current scope',
+            ],
+            ['a/mod.rs', 3, 1, 'variant, associated function, or constant `Fast` not found for this enum'],
+            ['example.rs', 7, 3, 'error[E0308]: mismatched types'],
+            ['example.rs', 8, 3, 'error[E0061]: this function takes 1 argument but 2 arguments were supplied'],
+            ['a/mod.rs', 6, 1, 'note: function defined here'],
+        ]);
+    });
+
+    it('ends a secondary location that has no label at the next headline', () => {
+        // the underline in the help's snippet belongs to the help, not to the unlabelled enum above it
+        const output = [
+            'error: first',
+            ' --> /app/example.rs:1:1',
+            '  |',
+            ' ::: /app/a/mod.rs:3:1',
+            '  |',
+            '3 | pub enum Mode { Slow }',
+            '  | -------------',
+            'help: consider this',
+            '  |',
+            '1 | x',
+            '  | - a label of the help',
+        ].join('\n');
+        expect(
+            utils
+                .parseRustOutput(output, '/app/example.rs')
+                .filter(line => line.tag?.text)
+                .map(line => [line.tag?.file, line.tag?.line, line.tag?.text]),
+        ).toEqual([['example.rs', 1, 'error: first']]);
     });
 });
 

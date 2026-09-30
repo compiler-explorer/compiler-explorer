@@ -59,6 +59,115 @@ describe('AsmParser comment filtering', () => {
     });
 });
 
+describe('AsmParser binary line records', () => {
+    const parser = new AsmParser();
+    const gnuObjdump = `0000000000000000 <main>:
+main():
+/tmp/project/src/example.mach:7
+   0:	55                   	push   rbp
+/tmp/project/dep/std/src/print.mach:64
+   1:	c3                   	ret`;
+    const llvmObjdump = `0000000000000000 <main>:
+; main():
+; /tmp/project/src/example.mach:7
+       0: fa010113     	addi	sp, sp, -0x60
+; /tmp/project/dep/std/src/print.mach:64
+       4: 00008067     	ret`;
+
+    it.skipIf(process.platform === 'win32')('should read source lines from gnu objdump', () => {
+        const result = parser.processBinaryAsm(gnuObjdump, {});
+        expect(result.asm.map(line => line.source?.line)).toEqual([undefined, 7, 64]);
+    });
+
+    it.skipIf(process.platform === 'win32')('should read source lines from llvm-objdump', () => {
+        const result = parser.processBinaryAsm(llvmObjdump, {});
+        expect(result.asm.map(line => line.text)).toEqual(['main:', ' addi\tsp, sp, -0x60', ' ret']);
+        expect(result.asm.map(line => line.source?.line)).toEqual([undefined, 7, 64]);
+    });
+
+    it.skipIf(process.platform === 'win32')(
+        'should keep the function label when filtering library code in llvm-objdump output',
+        () => {
+            const result = parser.processBinaryAsm(llvmObjdump, {libraryCode: true});
+            expect(result.asm[0].text).toEqual('main:');
+        },
+    );
+});
+
+describe('AsmParser binary source lines', () => {
+    const parser = new AsmParser();
+    const objdump = `0000000000401020 <square(int)>:
+square(int)():
+/app/example.cpp:4
+  401020:	89 f8                	mov    eax,edi
+/opt/compiler-explorer/gcc-15.1.0/include/c++/15.1.0/bits/stl_algobase.h:238
+  401022:	0f af c7             	imul   eax,edi
+/app/example.cpp:5
+  401025:	c3                   	ret`;
+
+    it.skipIf(process.platform === 'win32')('should only mark lines from the main source file as main source', () => {
+        const result = parser.processBinaryAsm(objdump, {});
+        expect(result.asm.map(line => line.source)).toEqual([
+            null,
+            {file: null, line: 4, mainsource: true},
+            {
+                file: '/opt/compiler-explorer/gcc-15.1.0/include/c++/15.1.0/bits/stl_algobase.h',
+                line: 238,
+                mainsource: false,
+            },
+            {file: null, line: 5, mainsource: true},
+        ]);
+    });
+
+    it.skipIf(process.platform === 'win32')('should name the main source file when filenames are not masked', () => {
+        const result = parser.processBinaryAsm(objdump, {dontMaskFilenames: true});
+        expect(result.asm[1].source).toEqual({file: 'example.cpp', line: 4, mainsource: true});
+    });
+
+    it.skipIf(process.platform === 'win32')(
+        'should keep code inlined from other files when filtering library code',
+        () => {
+            const result = parser.processBinaryAsm(objdump, {libraryCode: true});
+            expect(result.asm.map(line => line.text)).toEqual([
+                'square(int):',
+                ' mov    eax,edi',
+                ' imul   eax,edi',
+                ' ret',
+            ]);
+        },
+    );
+});
+
+describe('AsmParser library code filtering in binary asm', () => {
+    const parser = new AsmParser();
+    const objdump = [
+        '0000000000401000 <lib_a>:',
+        '  401000:\tc3                   \tret',
+        '0000000000401001 <lib_b>:',
+        '  401001:\tc3                   \tret',
+        '0000000000401002 <lib_c>:',
+        '  401002:\tc3                   \tret',
+        '0000000000401003 <main>:',
+        '/tmp/compiler-explorer-compiler/example.c:3',
+        '  401003:\tc3                   \tret',
+    ].join('\n');
+
+    it.skipIf(process.platform === 'win32')('should drop the label of every consecutive library function', () => {
+        const result = parser.processBinaryAsm(objdump, {libraryCode: true});
+        expect(result.asm.map(line => line.text)).toEqual(['main:', ' ret']);
+    });
+
+    it('should keep every label when library code is shown', () => {
+        const result = parser.processBinaryAsm(objdump, {libraryCode: false});
+        expect(result.asm.map(line => line.text).filter(text => text.endsWith(':'))).toEqual([
+            'lib_a:',
+            'lib_b:',
+            'lib_c:',
+            'main:',
+        ]);
+    });
+});
+
 describe('AsmParser directive filtering', () => {
     const parser = new AsmParser();
     // GCC wraps inline asm in #APP/#NO_APP and interleaves its own .loc markers there.
@@ -102,6 +211,35 @@ nop
         const lines = result.asm.map(line => line.text.trim());
         expect(lines).toContain('.rept 5');
         expect(lines).not.toContain('.p2align 4');
+    });
+});
+
+describe('AsmParser numeric local labels', () => {
+    const parser = new AsmParser();
+    const filters = {directives: true, labels: true};
+
+    it('should keep a local label referenced forwards', () => {
+        const input = ['square:', '  bne $2,$0,1f', '  break 7', '1:', '  mflo $2', '  jr $31'].join('\n');
+        const lines = parser.processAsm(input, filters).asm.map(line => line.text);
+        expect(lines).toContain('1:');
+    });
+
+    it('should keep a local label referenced backwards', () => {
+        const input = ['loop:', '2:', '  add r0, r0, #1', '  b 2b', '  ret'].join('\n');
+        const lines = parser.processAsm(input, filters).asm.map(line => line.text);
+        expect(lines).toContain('2:');
+    });
+
+    it('should still drop a local label nothing refers to', () => {
+        const input = ['square:', '  mov r0, #0x1f', '1:', '  ret'].join('\n');
+        const lines = parser.processAsm(input, filters).asm.map(line => line.text);
+        expect(lines).not.toContain('1:');
+    });
+
+    it('should not read a NEON element size as a reference', () => {
+        const input = ['square:', '  add v0.16b, v1.16b, v2.16b', '16:', '  ret'].join('\n');
+        const lines = parser.processAsm(input, filters).asm.map(line => line.text);
+        expect(lines).not.toContain('16:');
     });
 });
 
