@@ -59,6 +59,41 @@ describe('AsmParser comment filtering', () => {
     });
 });
 
+describe('AsmParser binary line records', () => {
+    const parser = new AsmParser();
+    const gnuObjdump = `0000000000000000 <main>:
+main():
+/tmp/project/src/example.mach:7
+   0:	55                   	push   rbp
+/tmp/project/dep/std/src/print.mach:64
+   1:	c3                   	ret`;
+    const llvmObjdump = `0000000000000000 <main>:
+; main():
+; /tmp/project/src/example.mach:7
+       0: fa010113     	addi	sp, sp, -0x60
+; /tmp/project/dep/std/src/print.mach:64
+       4: 00008067     	ret`;
+
+    it.skipIf(process.platform === 'win32')('should read source lines from gnu objdump', () => {
+        const result = parser.processBinaryAsm(gnuObjdump, {});
+        expect(result.asm.map(line => line.source?.line)).toEqual([undefined, 7, 64]);
+    });
+
+    it.skipIf(process.platform === 'win32')('should read source lines from llvm-objdump', () => {
+        const result = parser.processBinaryAsm(llvmObjdump, {});
+        expect(result.asm.map(line => line.text)).toEqual(['main:', ' addi\tsp, sp, -0x60', ' ret']);
+        expect(result.asm.map(line => line.source?.line)).toEqual([undefined, 7, 64]);
+    });
+
+    it.skipIf(process.platform === 'win32')(
+        'should keep the function label when filtering library code in llvm-objdump output',
+        () => {
+            const result = parser.processBinaryAsm(llvmObjdump, {libraryCode: true});
+            expect(result.asm[0].text).toEqual('main:');
+        },
+    );
+});
+
 describe('AsmParser binary source lines', () => {
     const parser = new AsmParser();
     const objdump = `0000000000401020 <square(int)>:
