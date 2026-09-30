@@ -2026,6 +2026,7 @@ export class BaseCompiler {
         sourceBasename: string,
         keepLineno: boolean,
         isRtlDump: boolean,
+        keepLibraryFunctions = false,
     ): string {
         // Splitting on a lookahead keeps each `;; Function` header with its block and leaves the
         // preamble (text before the first function) as the first piece, so join('') is lossless.
@@ -2035,8 +2036,8 @@ export class BaseCompiler {
             !piece.includes(sourceBasename) && /\/usr\/|\/opt\/|\/include\//.test(piece);
 
         const kept =
-            pieces.length <= 1
-                ? pieces // no function markers (e.g. IPA summary dump): keep whole
+            pieces.length <= 1 || keepLibraryFunctions
+                ? pieces // no function markers (e.g. IPA summary dump), or library functions wanted: keep whole
                 : pieces.filter((piece, index) => index === 0 || !isHeaderFunction(piece));
 
         let trimmed = kept.join('');
@@ -3952,7 +3953,13 @@ but nothing was dumped. Possible causes are:
             for (const {filename, pass} of candidates) {
                 const raw = await utils.tryReadTextFile(path.join(rootDir, filename));
                 const trimmed = raw
-                    ? this.trimGccDumpHeaderFunctions(raw, sourceBasename, keepLineno, pass.filename_suffix[0] === 'r')
+                    ? this.trimGccDumpHeaderFunctions(
+                          raw,
+                          sourceBasename,
+                          keepLineno,
+                          pass.filename_suffix[0] === 'r',
+                          opts.libraryFunctions ?? false,
+                      )
                     : '';
                 // RTL dumps repeat the absolute path of the source, and of any other user file
                 // (multi-file compiles), on every insn location. Mask the temp dir as we do for
