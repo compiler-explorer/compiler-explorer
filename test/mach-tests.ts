@@ -166,6 +166,16 @@ describe('Mach project layout', () => {
         expect(calls.filter((args: string[]) => args[0] === 'build')).toHaveLength(23);
     });
 
+    it('keeps the probed targets for discovery to write out, and reuses them on a prediscovered start', async () => {
+        expect(compiler.getInfo().cachedMachTargets).toEqual(compiler.targets());
+        const prediscovered = makeMach(stdPath);
+        prediscovered.getInfo().cachedMachTargets = compiler.targets();
+        const exec = vi.spyOn(prediscovered, 'exec');
+        expect(await start(prediscovered)).toBe(prediscovered);
+        expect(exec).not.toHaveBeenCalled();
+        expect(prediscovered.targets()).toEqual(compiler.targets());
+    });
+
     it('declares every offered target with its object format, the source entry and the bundled std', async () => {
         const manifest = compiler.manifest(compiler.targets());
         expect(manifest).toContain(
