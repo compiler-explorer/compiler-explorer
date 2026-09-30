@@ -38,6 +38,8 @@ import type {ParseFiltersAndOutputOptions} from '../../types/features/filters.in
 import type {ResultLine} from '../../types/resultline/resultline.interfaces.js';
 import {BaseCompiler} from '../base-compiler.js';
 import {CompilationEnvironment} from '../compilation-env.js';
+import {logger} from '../logger.js';
+import {ClientOptionsType} from '../options-handler.js';
 import {parseMachDiagnostics, toEditorColumns} from '../parsers/mach-diagnostics.js';
 import * as temp from '../temp.js';
 import * as utils from '../utils.js';
@@ -146,8 +148,8 @@ export class MachCompiler extends BaseCompiler {
     }
 
     private readonly stdPath: string;
-    /** The probe runs once per compiler: every compilation needs the same answer to write its manifest. */
-    private buildable?: Promise<MachTarget[]>;
+    /** Settled by the probe in `initialise`, so that every compilation writes its manifest from the same answer. */
+    private buildable?: MachTarget[];
 
     constructor(info: PreliminaryCompilerInfo, env: CompilationEnvironment) {
         super(info, env);
@@ -155,6 +157,27 @@ export class MachCompiler extends BaseCompiler {
             this.compilerProps<string>(`compiler.${this.compiler.id}.stdPath`) ??
             path.join(path.dirname(this.compiler.exe), 'std');
         this.compiler.supportsTarget = true;
+    }
+
+    /**
+     * The probe runs here on every start, prediscovered or not, since a prediscovered start skips the override
+     * discovery that would otherwise read the targets. It runs first because that discovery reads them. A compiler
+     * whose probe fails is dropped, the way one whose version check fails is.
+     */
+    override async initialise(
+        mtime: Date,
+        clientOptions: ClientOptionsType,
+        isPrediscovered = false,
+    ): Promise<BaseCompiler | null> {
+        if (!this.getRemote()) {
+            try {
+                this.buildable = await this.probeTargets();
+            } catch (e) {
+                logger.error(`${this.compiler.id}: target probe failed:`, e);
+                return null;
+            }
+        }
+        return super.initialise(mtime, clientOptions, isPrediscovered);
     }
 
     override getArgumentParserClass() {
@@ -171,7 +194,8 @@ export class MachCompiler extends BaseCompiler {
 
     /** Every (isa, os, abi, object) tuple `mach info targets` reports, named after mach's own platform name. */
     async supportedTuples(): Promise<MachTarget[]> {
-        const result = await this.execCompilerCached(this.compiler.exe, ['info', 'targets']);
+        // uncached: this runs once per start, before initialise() has set up the compiler cache
+        const result = await this.exec(this.compiler.exe, ['info', 'targets'], this.getDefaultExecOptions());
         if (result.code !== 0) throw new Error(`mach info targets failed: ${result.stderr}`);
 
         const rows: MachTarget[] = [];
@@ -190,9 +214,9 @@ export class MachCompiler extends BaseCompiler {
      * layer for. Neither is knowable from what `mach info targets` prints, and both move between releases, so the
      * answer comes from building rather than from a list here.
      */
-    async targets(): Promise<MachTarget[]> {
-        this.buildable ??= this.probeTargets();
-        return await this.buildable;
+    targets(): MachTarget[] {
+        if (!this.buildable) throw new Error(`${this.compiler.id}: targets read before initialise() probed them`);
+        return this.buildable;
     }
 
     private async probeTargets(): Promise<MachTarget[]> {
@@ -302,7 +326,7 @@ export class MachCompiler extends BaseCompiler {
         await fs.writeFile(inputFilename, source);
         if (files && files.length > 0) await this.writeMultipleFiles(files, srcDir);
 
-        await fs.writeFile(path.join(dirPath, 'mach.toml'), this.manifest(await this.targets()));
+        await fs.writeFile(path.join(dirPath, 'mach.toml'), this.manifest(this.targets()));
 
         // dep/std is realized per compile by design: mach reads nothing outside the project root
         const pull = await this.exec(this.compiler.exe, ['dep', 'pull', dirPath], {
@@ -385,6 +409,10 @@ export class MachCompiler extends BaseCompiler {
         return super.buildExecutable(compiler, options, inputFilename, execOptions);
     }
 
+    /**
+     * Reads `mach build` output only: a program's own output reaches the execution environment's
+     * `processUserExecutableExecutionResult` instead, so nothing it prints is taken for a diagnostic.
+     */
     override processExecutionResult(input: UnprocessedExecResult, inputFilename?: string): BasicExecutionResult {
         return {
             ...input,

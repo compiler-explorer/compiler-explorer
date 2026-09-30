@@ -619,7 +619,7 @@ export class MachParser extends BaseParser {
     }
 
     override async getPossibleTargets(): Promise<string[]> {
-        const targets = await (this.compiler as MachCompiler).targets();
+        const targets = (this.compiler as MachCompiler).targets();
         return targets.map(target => target.name);
     }
 }
