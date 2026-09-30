@@ -58,6 +58,7 @@ export class CompilersService {
         'license',
         'remote',
         'optPipeline',
+        'rustMirOptPipeline',
         'irArg',
         'minIrArgs',
         'hidden',
