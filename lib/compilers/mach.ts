@@ -32,7 +32,7 @@ import type {
     ExecutionOptionsWithEnv,
     FiledataPair,
 } from '../../types/compilation/compilation.interfaces.js';
-import type {PreliminaryCompilerInfo} from '../../types/compiler.interfaces.js';
+import type {MachTarget, PreliminaryCompilerInfo} from '../../types/compiler.interfaces.js';
 import type {BasicExecutionResult, UnprocessedExecResult} from '../../types/execution/execution.interfaces.js';
 import type {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces.js';
 import type {ResultLine} from '../../types/resultline/resultline.interfaces.js';
@@ -44,15 +44,6 @@ import {parseMachDiagnostics, toEditorColumns} from '../parsers/mach-diagnostics
 import * as temp from '../temp.js';
 import * as utils from '../utils.js';
 import {MachParser} from './argument-parsers.js';
-
-/** One platform tuple the compiler supports, keyed by the name a user passes to `--target`. */
-export type MachTarget = {
-    name: string;
-    isa: string;
-    os: string;
-    abi: string;
-    object: string;
-};
 
 /**
  * What the probe compiles. Every compilation realizes std into the project, and two of the three examples import it,
@@ -160,8 +151,8 @@ export class MachCompiler extends BaseCompiler {
     }
 
     /**
-     * The probe runs here on every start, prediscovered or not, since a prediscovered start skips the override
-     * discovery that would otherwise read the targets. It runs first because that discovery reads them. A compiler
+     * The probe runs here, first, because override discovery reads the targets. Its answer is kept on the compiler
+     * info, so discovery writes it out and a prediscovered start reuses it rather than probing again. A compiler
      * whose probe fails is dropped, the way one whose version check fails is.
      */
     override async initialise(
@@ -169,9 +160,12 @@ export class MachCompiler extends BaseCompiler {
         clientOptions: ClientOptionsType,
         isPrediscovered = false,
     ): Promise<BaseCompiler | null> {
-        if (!this.getRemote()) {
+        if (isPrediscovered && this.compiler.cachedMachTargets) {
+            this.buildable = this.compiler.cachedMachTargets;
+        } else if (!this.getRemote()) {
             try {
                 this.buildable = await this.probeTargets();
+                this.compiler.cachedMachTargets = this.buildable;
             } catch (e) {
                 logger.error(`${this.compiler.id}: target probe failed:`, e);
                 return null;
