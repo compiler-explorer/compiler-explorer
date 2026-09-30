@@ -59,6 +59,36 @@ describe('AsmParser comment filtering', () => {
     });
 });
 
+describe('AsmParser library code filtering in binary asm', () => {
+    const parser = new AsmParser();
+    const objdump = [
+        '0000000000401000 <lib_a>:',
+        '  401000:\tc3                   \tret',
+        '0000000000401001 <lib_b>:',
+        '  401001:\tc3                   \tret',
+        '0000000000401002 <lib_c>:',
+        '  401002:\tc3                   \tret',
+        '0000000000401003 <main>:',
+        '/tmp/compiler-explorer-compiler/example.c:3',
+        '  401003:\tc3                   \tret',
+    ].join('\n');
+
+    it('should drop the label of every consecutive library function', () => {
+        const result = parser.processBinaryAsm(objdump, {libraryCode: true});
+        expect(result.asm.map(line => line.text)).toEqual(['main:', ' ret']);
+    });
+
+    it('should keep every label when library code is shown', () => {
+        const result = parser.processBinaryAsm(objdump, {libraryCode: false});
+        expect(result.asm.map(line => line.text).filter(text => text.endsWith(':'))).toEqual([
+            'lib_a:',
+            'lib_b:',
+            'lib_c:',
+            'main:',
+        ]);
+    });
+});
+
 describe('AsmParser directive filtering', () => {
     const parser = new AsmParser();
     // GCC wraps inline asm in #APP/#NO_APP and interleaves its own .loc markers there.
