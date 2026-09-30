@@ -63,14 +63,15 @@ every manifest it generates. That range is what the adapter needs, not the versi
 the first release that writes the diagnostic records the adapter reads, so an older compiler is refused with a
 diagnostic that names the range.
 
-If a compiler has no std where the adapter looks, it logs an error that names the `stdPath` key and offers no
-targets.
+If a compiler has no std where the adapter looks, it logs an error that names the `stdPath` key and the compiler is
+not offered.
 
 ## Targets
 
-The target list comes from probing, not from a hard-coded list. At startup, each compiler takes every tuple from
-`mach info targets` and builds a small module that uses `std.print` for it, under the same profile compilations use.
-Only the tuples that build are offered. When several tuples share a platform name, the adapter tells them apart by
+The target list comes from probing, not from a hard-coded list. At every startup, prediscovered or not, each compiler
+takes every tuple from `mach info targets` and builds a small module that uses `std.print` for it, under the same
+profile compilations use. Only the tuples that build are offered, and compilations reuse that list rather than probing
+again. A compiler whose probe fails is not offered. When several tuples share a platform name, the adapter tells them apart by
 appending the abi, and then the object format if that is still not enough, e.g. `linux-riscv64-lp64d`.
 
 Two things currently exclude a tuple:

@@ -30,6 +30,7 @@ import path from 'node:path';
 import {afterAll, afterEach, beforeAll, beforeEach, describe, expect, it, vi} from 'vitest';
 
 import {MachCompiler} from '../lib/compilers/mach.js';
+import {logger} from '../lib/logger.js';
 import {AsmParser} from '../lib/parsers/asm-parser.js';
 import {toEditorColumns} from '../lib/parsers/mach-diagnostics.js';
 import {parseProperties} from '../lib/properties.js';
@@ -109,9 +110,23 @@ async function makeStd() {
     return dir;
 }
 
+/** Starts a compiler the way a prediscovered deploy does, which skips version and override discovery. */
+function start(compiler: MachCompiler) {
+    return compiler.initialise(new Date(), {libs: {}} as any, true);
+}
+
+/** Answers `mach info targets`, `mach dep pull` and each probe build the way mach 6.7.0 with std 9.4.1 does. */
+function fakeMach(compiler: MachCompiler) {
+    vi.spyOn(compiler, 'exec').mockImplementation(async (_exe, args) => {
+        if (args[0] === 'info') return {code: 0, stdout: infoTargets, stderr: ''} as any;
+        if (args[0] === 'dep') return {code: 0, stdout: '', stderr: ''} as any;
+        return (await fakeProbe(args[1], args[5])) as any;
+    });
+}
+
 function makeMach(stdPath: string) {
     return new MachCompiler(
-        makeFakeCompilerInfo({id: 'mach', exe: '/opt/compiler-explorer/mach-6.7.0/mach', lang: 'mach'}),
+        makeFakeCompilerInfo({id: 'mach', exe: '/opt/compiler-explorer/mach-6.7.0/mach', lang: 'mach', libsArr: []}),
         makeCompilationEnvironment({languages, props: {'compiler.mach.stdPath': stdPath}}),
     );
 }
@@ -123,16 +138,8 @@ describe('Mach project layout', () => {
     beforeAll(async () => {
         stdPath = await makeStd();
         compiler = makeMach(stdPath);
-        vi.spyOn(compiler, 'execCompilerCached').mockResolvedValue({
-            code: 0,
-            stdout: infoTargets,
-            stderr: '',
-        } as any);
-        vi.spyOn(compiler, 'exec').mockImplementation(async (_exe, args) =>
-            args[0] === 'dep'
-                ? ({code: 0, stdout: '', stderr: ''} as any)
-                : ((await fakeProbe(args[1], args[5])) as any),
-        );
+        fakeMach(compiler);
+        expect(await start(compiler)).toBe(compiler);
     });
 
     afterAll(async () => {
@@ -140,7 +147,7 @@ describe('Mach project layout', () => {
     });
 
     it('offers only the tuples that build under the profile, named by the dimensions that disambiguate them', async () => {
-        expect((await compiler.targets()).map(t => t.name)).toEqual([
+        expect(compiler.targets().map(t => t.name)).toEqual([
             'linux-x86_64',
             'linux-aarch64',
             'linux-riscv64-lp64',
@@ -152,8 +159,7 @@ describe('Mach project layout', () => {
         ]);
     });
 
-    it('probes every tuple `mach info targets` reports, against one project with std realized once', async () => {
-        await compiler.targets();
+    it('probes every tuple `mach info targets` reports at startup, against one project with std realized once', async () => {
         expect((await compiler.supportedTuples()).length).toEqual(23);
         const calls = (compiler.exec as any).mock.calls.map((call: any[]) => call[1]);
         expect(calls.filter((args: string[]) => args[0] === 'dep')).toHaveLength(1);
@@ -161,7 +167,7 @@ describe('Mach project layout', () => {
     });
 
     it('declares every offered target with its object format, the source entry and the bundled std', async () => {
-        const manifest = compiler.manifest(await compiler.targets());
+        const manifest = compiler.manifest(compiler.targets());
         expect(manifest).toContain(
             '[target.linux-riscv64-lp64d]\nisa = "rv64gc"\nos = "linux"\nabi = "lp64d"\nof = "elf"\n',
         );
@@ -225,7 +231,11 @@ describe('Mach project layout', () => {
             }),
             env,
         );
-        await expect(bare.targets()).rejects.toThrow('set compiler.machbare.stdPath');
+        const error = vi.spyOn(logger, 'error').mockImplementation(() => logger);
+        expect(await start(bare)).toBeNull();
+        expect(String((error.mock.calls[0] as unknown[])[1])).toContain('set compiler.machbare.stdPath');
+        error.mockRestore();
+        expect(() => bare.targets()).toThrow('targets read before initialise() probed them');
     });
 
     it('takes std from stdPath when a compiler names one', () => {
@@ -246,15 +256,13 @@ describe('Mach multi-file projects', () => {
     beforeAll(async () => {
         stdPath = await makeStd();
         compiler = makeMach(stdPath);
-        vi.spyOn(compiler, 'execCompilerCached').mockResolvedValue({
-            code: 0,
-            stdout: infoTargets,
-            stderr: '',
-        } as any);
+        fakeMach(compiler);
+        await start(compiler);
     });
 
     beforeEach(async () => {
         dirPath = await fs.mkdtemp(path.join(os.tmpdir(), 'ce-mach-layout'));
+        vi.mocked(compiler.exec).mockClear();
     });
 
     afterEach(async () => {
@@ -283,11 +291,14 @@ describe('Mach multi-file projects', () => {
             path.join('src', 'util', 'fmt.mach'),
         ]);
         expect(await fs.readFile(path.join(dirPath, 'src', 'util', 'fmt.mach'), 'utf8')).toEqual('fmt');
-        expect(pull).toHaveBeenCalledWith(
-            '/opt/compiler-explorer/mach-6.7.0/mach',
-            ['dep', 'pull', dirPath],
-            expect.objectContaining({customCwd: dirPath}),
-        );
+        // the pull is the only thing a compilation runs here: the targets were probed at startup
+        expect(pull.mock.calls).toEqual([
+            [
+                '/opt/compiler-explorer/mach-6.7.0/mach',
+                ['dep', 'pull', dirPath],
+                expect.objectContaining({customCwd: dirPath}),
+            ],
+        ]);
     });
 
     it('refuses an extra file that would land outside the project', async () => {
