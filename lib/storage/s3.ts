@@ -58,7 +58,6 @@ const MIN_STORED_ID_LENGTH = 9;
 assert(MIN_STORED_ID_LENGTH >= PREFIX_LENGTH, 'MIN_STORED_ID_LENGTH must be at least PREFIX_LENGTH');
 
 export type TestReq = {
-    get: () => string;
     ip?: string;
 };
 
@@ -89,12 +88,8 @@ export class StorageS3 extends StorageBase {
     async storeItem(item: StoredObject, req: express.Request | TestReq) {
         logger.info(`Storing item ${item.prefix}`);
         const now = new Date();
-        let ip = req.get('X-Forwarded-For') || anonymizeIp(req.ip!);
-        const commaIndex = ip.indexOf(',');
-        if (commaIndex > 0) {
-            // Anonymize only client IP
-            ip = `${anonymizeIp(ip.substring(0, commaIndex))}${ip.substring(commaIndex, ip.length)}`;
-        }
+        // req.ip is what Express resolved from the trusted proxy hops; never read the raw X-Forwarded-For header.
+        const ip = anonymizeIp(req.ip ?? '');
         now.setSeconds(0, 0);
         try {
             await Promise.all([
