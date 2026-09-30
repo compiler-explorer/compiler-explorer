@@ -687,7 +687,7 @@ export class AsmParser extends AsmRegex implements IAsmParser {
                 continue;
             }
 
-            if (func && line === `${func}():`) continue;
+            if (func && (line === `${func}():` || line === `; ${func}():`)) continue;
 
             if (!func || !this.isUserFunction(func)) continue;
 
