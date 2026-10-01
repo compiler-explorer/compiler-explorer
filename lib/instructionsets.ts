@@ -31,16 +31,21 @@ type InstructionSetMethod = {
     target: string[];
 };
 
-// AMD GPU targets, most-specific prefix first.
+// AMD GPU targets, most-specific prefix first; `gfx12-5-generic` is not `gfx125`, so the
+// hyphenated generics have to precede the prefix they would otherwise fall through to.
 const AMD_GPU_TARGETS: [string, InstructionSet][] = [
+    ['gfx12-5-generic', 'amd_cdna5'],
     ['gfx125', 'amd_cdna5'],
     ['gfx12', 'amd_rdna4'],
     ['gfx115', 'amd_rdna3_5'],
     ['gfx11', 'amd_rdna3'],
+    ['gfx10-3-generic', 'amd_rdna2'],
+    ['gfx10-1-generic', 'amd_rdna1'],
     ['gfx103', 'amd_rdna2'],
     ['gfx101', 'amd_rdna1'],
     ['gfx950', 'amd_cdna4'],
-    ['gfx942', 'amd_cdna3'],
+    ['gfx9-4-generic', 'amd_cdna3'],
+    ['gfx94', 'amd_cdna3'],
     ['gfx90a', 'amd_cdna2'],
     ['gfx908', 'amd_cdna1'],
 ];
@@ -60,7 +65,8 @@ export function getAmdGpuInstructionSet(target: string): InstructionSet | undefi
  * target has to be dug out rather than matched from the start.
  */
 export function getAmdGpuInstructionSetFromLabel(label: string): InstructionSet | undefined {
-    for (const match of label.toLowerCase().matchAll(/gfx[0-9a-z]+/g)) {
+    // Generics are the only hyphenated names; a broader class would swallow `gfx900-then-gfx942`.
+    for (const match of label.toLowerCase().matchAll(/gfx\d+(?:-\d+)*-generic|gfx[0-9a-z]+/g)) {
         const instructionSet = getAmdGpuInstructionSet(match[0]);
         if (instructionSet) return instructionSet;
     }
