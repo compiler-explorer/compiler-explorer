@@ -69,7 +69,7 @@ export class SolidityZKsyncCompiler extends BaseCompiler {
         filters: ParseFiltersAndOutputOptions,
         produceOptRemarks = false,
     ) {
-        const artifacts = await fs.readdir(outputDirectory).catch(() => []);
+        const artifacts = await fs.readdir(outputDirectory, {recursive: true}).catch(() => []);
         const zasmArtifacts = artifacts.filter(artifact => artifact.endsWith('.zasm')).sort();
         const outputFilename = path.join(outputDirectory, 'combined.zasm');
 
