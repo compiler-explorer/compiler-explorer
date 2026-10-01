@@ -230,6 +230,7 @@ export class GleamCompiler extends BaseCompiler {
             ...executeParameters,
             env: {
                 ...executeParameters.env,
+                ...Object.fromEntries(this.compiler.envVars),
                 PATH: [executeParameters.env.PATH, this.getDefaultExecOptions().env.PATH]
                     .filter(Boolean)
                     .join(path.delimiter),

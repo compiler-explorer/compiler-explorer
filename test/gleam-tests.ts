@@ -28,10 +28,11 @@ import path from 'node:path';
 import {afterEach, describe, expect, it, vi} from 'vitest';
 
 import {GleamCompiler} from '../lib/compilers/gleam.js';
+import {LocalExecutionEnvironment} from '../lib/execution/_all.js';
 import type {ClientOptionsType} from '../lib/options-handler.js';
 import type {CompilationResult, ExecutionOptionsWithEnv} from '../types/compilation/compilation.interfaces.js';
 import type {CompilerInfo} from '../types/compiler.interfaces.js';
-import type {UnprocessedExecResult} from '../types/execution/execution.interfaces.js';
+import type {BasicExecutionResult, UnprocessedExecResult} from '../types/execution/execution.interfaces.js';
 import {makeCompilationEnvironment, makeFakeCompilerInfo, newTempDir} from './utils.js';
 
 const languages = {gleam: {id: 'gleam'}};
@@ -47,7 +48,7 @@ const execResult = (stdout = ''): UnprocessedExecResult => ({
     truncated: false,
 });
 
-function makeCompiler(target = 'erlang', runtime = 'erl', name = '') {
+function makeCompiler(target = 'erlang', runtime = 'erl', name = '', envVars: [string, string][] = []) {
     const env = makeCompilationEnvironment({
         languages,
         props: {
@@ -66,6 +67,7 @@ function makeCompiler(target = 'erlang', runtime = 'erl', name = '') {
             ldPath: [],
             libPath: [],
             libsArr: [],
+            envVars,
         }) as CompilerInfo,
         env,
     );
@@ -86,6 +88,31 @@ describe('GleamCompiler', () => {
         await compiler.initialise(new Date(), {libs: {gleam: {}}} as unknown as ClientOptionsType, true);
 
         expect(compiler.compiler.name).toBe('Gleam 1.18.1');
+    });
+
+    it('passes compiler environment variables to the execution wrapper', async () => {
+        const compiler = makeCompiler('erlang', 'erl', '', [['ESCRIPT_EMULATOR', '/opt/erlang/erlexec']]);
+        expect(compiler.compiler.envVars).toEqual([['ESCRIPT_EMULATOR', '/opt/erlang/erlexec']]);
+        const execBinary = vi
+            .spyOn(LocalExecutionEnvironment.prototype, 'execBinary')
+            .mockResolvedValue({} as BasicExecutionResult);
+
+        await compiler.runExecutable(
+            'program',
+            {args: [], env: {USER_VALUE: 'preserved'}, ldPath: [], runtimeTools: [], stdin: ''},
+            '/tmp',
+        );
+
+        expect(execBinary).toHaveBeenCalledWith(
+            'program',
+            expect.objectContaining({
+                env: expect.objectContaining({
+                    USER_VALUE: 'preserved',
+                    ESCRIPT_EMULATOR: '/opt/erlang/erlexec',
+                }),
+            }),
+            '/tmp',
+        );
     });
 
     it('rejects an unsupported compilation target', () => {
