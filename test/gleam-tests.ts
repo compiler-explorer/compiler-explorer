@@ -113,6 +113,7 @@ describe('GleamCompiler', () => {
             }),
             '/tmp',
         );
+        expect(execBinary.mock.calls[0][1].env.PATH).toBeUndefined();
     });
 
     it('rejects an unsupported compilation target', () => {

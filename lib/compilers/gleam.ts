@@ -173,7 +173,7 @@ export class GleamCompiler extends BaseCompiler {
     ): Promise<BasicExecutionResult> {
         return await super.runExecutable(
             executable,
-            this.target === 'erlang' ? this.withOtpLauncherPath(executeParameters) : executeParameters,
+            this.target === 'erlang' ? this.withOtpLauncherEnvironment(executeParameters) : executeParameters,
             homeDir,
         );
     }
@@ -225,15 +225,12 @@ export class GleamCompiler extends BaseCompiler {
         };
     }
 
-    private withOtpLauncherPath(executeParameters: ExecutableExecutionOptions): ExecutableExecutionOptions {
+    private withOtpLauncherEnvironment(executeParameters: ExecutableExecutionOptions): ExecutableExecutionOptions {
         return {
             ...executeParameters,
             env: {
                 ...executeParameters.env,
                 ...Object.fromEntries(this.compiler.envVars),
-                PATH: [executeParameters.env.PATH, this.getDefaultExecOptions().env.PATH]
-                    .filter(Boolean)
-                    .join(path.delimiter),
             },
         };
     }
