@@ -91,8 +91,14 @@ describe('GleamCompiler', () => {
     });
 
     it('passes compiler environment variables to the execution wrapper', async () => {
-        const compiler = makeCompiler('erlang', 'erl', '', [['ESCRIPT_EMULATOR', '/opt/erlang/erlexec']]);
-        expect(compiler.compiler.envVars).toEqual([['ESCRIPT_EMULATOR', '/opt/erlang/erlexec']]);
+        const compiler = makeCompiler('erlang', 'erl', '', [
+            ['ESCRIPT_EMULATOR', '/opt/erlang/erlexec'],
+            ['ERL_FLAGS', '+S 1 +SDcpu 1 +SDio 1'],
+        ]);
+        expect(compiler.compiler.envVars).toEqual([
+            ['ESCRIPT_EMULATOR', '/opt/erlang/erlexec'],
+            ['ERL_FLAGS', '+S 1 +SDcpu 1 +SDio 1'],
+        ]);
         const execBinary = vi
             .spyOn(LocalExecutionEnvironment.prototype, 'execBinary')
             .mockResolvedValue({} as BasicExecutionResult);
@@ -109,6 +115,7 @@ describe('GleamCompiler', () => {
                 env: expect.objectContaining({
                     USER_VALUE: 'preserved',
                     ESCRIPT_EMULATOR: '/opt/erlang/erlexec',
+                    ERL_FLAGS: '+S 1 +SDcpu 1 +SDio 1',
                 }),
             }),
             '/tmp',
