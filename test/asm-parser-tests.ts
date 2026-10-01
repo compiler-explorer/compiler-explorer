@@ -94,6 +94,159 @@ main():
     );
 });
 
+describe('AsmParser binary source records before the function label', () => {
+    const parser = new AsmParser();
+    const cases: [string, string][] = [
+        ['POSIX', '/tmp/example.cpp'],
+        ['Windows forward slash', 'C:/tmp/example.cpp'],
+        ['Windows backslash', 'C:\\tmp\\example.cpp'],
+    ];
+
+    for (const [style, file] of cases) {
+        it(`should keep a ${style} source line that objdump printed before the label`, () => {
+            const asm = [
+                `${file}:3`,
+                '0000000000401000 <foo>:',
+                '  401000:\tc3                   \tret',
+                '  401001:\t90                   \tnop',
+                `${file}:9`,
+                '  401002:\tc3                   \tret',
+            ].join('\n');
+            const result = parser.processBinaryAsm(asm, {});
+            expect(result.asm.map(line => line.source?.line)).toEqual([undefined, 3, 3, 9]);
+        });
+    }
+});
+
+describe('AsmParser binary source corner cases', () => {
+    const parser = new AsmParser();
+    const label = '0000000000000000 <foo>:';
+    const mov = '  10: 48 89 e5  mov %rsp,%rbp';
+    const nop = '  11: 90        nop';
+    const maskedExample = (line: number) => ({file: null, line, mainsource: true});
+
+    function dump(sourceRecord?: string, sourceAfterLabel = false): string {
+        const lines: string[] = [];
+        if (sourceRecord !== undefined && !sourceAfterLabel) lines.push(sourceRecord);
+        lines.push(label);
+        if (sourceRecord !== undefined && sourceAfterLabel) lines.push(sourceRecord);
+        lines.push(mov, nop);
+        return lines.join('\n');
+    }
+
+    function instructions(asm: string, filters: Partial<ParseFiltersAndOutputOptions> = {}) {
+        const result = parser.processBinaryAsm(asm, filters);
+        return result.asm.filter(line => line.address !== undefined);
+    }
+
+    it('should map a POSIX source record before the label when filenames are masked', () => {
+        const kept = instructions(dump('/tmp/example.cpp:3'));
+        expect(kept).toHaveLength(2);
+        expect(kept.map(line => line.source)).toEqual([maskedExample(3), maskedExample(3)]);
+    });
+
+    it('should map a Windows forward-slash source record before the label', () => {
+        const kept = instructions(dump('C:/tmp/example.cpp:3'));
+        expect(kept).toHaveLength(2);
+        expect(kept.map(line => line.source)).toEqual([maskedExample(3), maskedExample(3)]);
+    });
+
+    it('should map a Windows backslash source record before the label', () => {
+        const record = 'C:\\tmp\\example.cpp:3';
+        expect(record).toBe('C:\\tmp\\example.cpp:3');
+        expect(record.includes('\\')).toBe(true);
+        const kept = instructions(dump(record));
+        expect(kept).toHaveLength(2);
+        expect(kept.map(line => line.source)).toEqual([maskedExample(3), maskedExample(3)]);
+    });
+
+    it('should map a source record printed after the label', () => {
+        const kept = instructions(dump('/tmp/example.cpp:4', true));
+        expect(kept).toHaveLength(2);
+        expect(kept.map(line => line.source)).toEqual([maskedExample(4), maskedExample(4)]);
+    });
+
+    it('should emit instructions with null source when objdump has no line record', () => {
+        const kept = instructions(dump());
+        expect(kept).toHaveLength(2);
+        expect(kept.map(line => line.source)).toEqual([null, null]);
+    });
+
+    it('should keep a sourced instruction when library code is filtered', () => {
+        const kept = instructions(dump('/tmp/example.cpp:3'), {libraryCode: true});
+        expect(kept).toHaveLength(2);
+        expect(kept.map(line => line.source)).toEqual([maskedExample(3), maskedExample(3)]);
+    });
+
+    it('should drop an instruction with no source when library code is filtered', () => {
+        const kept = instructions(dump(), {libraryCode: true});
+        expect(kept).toEqual([]);
+    });
+
+    it('should take the line record that precedes each function label', () => {
+        const asm = ['/tmp/a.cpp:3', label, mov, '/tmp/b.cpp:9', '0000000000000011 <bar>:', nop].join('\n');
+        const result = parser.process(asm, {binary: true});
+        const kept = result.asm.filter(line => line.address !== undefined);
+        expect(kept).toHaveLength(2);
+        expect(kept[0].source).toEqual({file: '/tmp/a.cpp', line: 3, mainsource: false});
+        expect(kept[1].source).toEqual({file: '/tmp/b.cpp', line: 9, mainsource: false});
+    });
+
+    it('should keep the path when filenames are not masked', () => {
+        const kept = instructions(dump('/tmp/example.cpp:3'), {dontMaskFilenames: true});
+        expect(kept).toHaveLength(2);
+        expect(kept.map(line => line.source)).toEqual([
+            {file: '/tmp/example.cpp', line: 3, mainsource: true},
+            {file: '/tmp/example.cpp', line: 3, mainsource: true},
+        ]);
+    });
+
+    it('should keep spaces in an unmasked Windows path', () => {
+        const kept = instructions(dump('C:/Program Files/example.cpp:12'), {dontMaskFilenames: true});
+        expect(kept).toHaveLength(2);
+        expect(kept.map(line => line.source)).toEqual([
+            {file: 'C:/Program Files/example.cpp', line: 12, mainsource: true},
+            {file: 'C:/Program Files/example.cpp', line: 12, mainsource: true},
+        ]);
+    });
+
+    it('should read the line number and ignore a trailing discriminator', () => {
+        const kept = instructions(dump('/tmp/example.cpp:8 (discriminator 2)'));
+        expect(kept).toHaveLength(2);
+        expect(kept.map(line => line.source)).toEqual([maskedExample(8), maskedExample(8)]);
+    });
+
+    it('should read the line number and ignore a trailing column', () => {
+        const kept = instructions(dump('/tmp/example.cpp:8:2'));
+        expect(kept).toHaveLength(2);
+        expect(kept.map(line => line.source)).toEqual([maskedExample(8), maskedExample(8)]);
+        expect(kept.every(line => !Object.hasOwn(line.source ?? {}, 'column'))).toBe(true);
+    });
+
+    it('should not treat an opcode line as a file:line record', () => {
+        const kept = instructions([label, mov].join('\n'));
+        expect(kept).toHaveLength(1);
+        expect(kept[0].source).toBeNull();
+    });
+
+    it('should ignore a relative source path', () => {
+        const kept = instructions(dump('path/to/example.cpp:3'));
+        expect(kept).toHaveLength(2);
+        expect(kept.map(line => line.source)).toEqual([null, null]);
+    });
+
+    it('should ignore a lowercase drive letter', () => {
+        const kept = instructions(dump('c:/tmp/example.cpp:3'));
+        expect(kept).toHaveLength(2);
+        expect(kept.map(line => line.source)).toEqual([null, null]);
+    });
+
+    it('should keep a single-line error document', () => {
+        const result = parser.processBinaryAsm('<No output file>', {});
+        expect(result.asm).toEqual([{text: '<No output file>', source: null}]);
+    });
+});
+
 describe('AsmParser binary source lines', () => {
     const parser = new AsmParser();
     const objdump = `0000000000401020 <square(int)>:
@@ -578,7 +731,7 @@ describe('ResolcRiscVAsmParser tests', () => {
         }
     }
 
-    it.skipIf(process.platform === 'win32')('should identify RISC-V instruction info and source line numbers', () => {
+    it('should identify RISC-V instruction info and source line numbers', () => {
         const filters: Partial<ParseFiltersAndOutputOptions> = {binaryObject: true};
         const riscv = `
 000000000000027a <__entry>:
