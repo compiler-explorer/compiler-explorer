@@ -175,7 +175,10 @@ describe('GleamCompiler', () => {
             1,
             'gleam',
             ['build', '--no-print-progress'],
-            expect.objectContaining({customCwd: projectDir, env: {PATH: '/opt/otp/bin:/compiler/bin'}}),
+            expect.objectContaining({
+                customCwd: projectDir,
+                env: {PATH: ['/opt/otp/bin', '/compiler/bin'].join(path.delimiter)},
+            }),
         );
         expect(exec).toHaveBeenNthCalledWith(
             2,
@@ -208,7 +211,10 @@ describe('GleamCompiler', () => {
         expect(exec).toHaveBeenCalledWith(
             'gleam',
             ['export', 'escript'],
-            expect.objectContaining({customCwd: projectDir, env: {PATH: '/opt/otp/bin:/compiler/bin'}}),
+            expect.objectContaining({
+                customCwd: projectDir,
+                env: {PATH: ['/opt/otp/bin', '/compiler/bin'].join(path.delimiter)},
+            }),
         );
         expect(compiler.getExecutableFilename(projectDir)).toBe(path.join(projectDir, 'compiler_explorer'));
     });
