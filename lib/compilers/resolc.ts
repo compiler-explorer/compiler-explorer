@@ -30,6 +30,7 @@ import type {CompilationResult} from '../../types/compilation/compilation.interf
 import type {LLVMIrBackendOptions} from '../../types/compilation/ir.interfaces.js';
 import type {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces.js';
 import type {Language} from '../../types/languages.interfaces.js';
+import type {SelectedLibraryVersion} from '../../types/libraries/libraries.interfaces.js';
 import {assert} from '../assert.js';
 import {BaseCompiler} from '../base-compiler.js';
 import {maybeRemapJailedDir} from '../exec.js';
@@ -92,8 +93,11 @@ export class ResolcCompiler extends BaseCompiler {
         return [];
     }
 
-    override getIncludeArguments(): string[] {
-        return [];
+    override getIncludeArguments(libraries: SelectedLibraryVersion[]): string[] {
+        const libraryPaths = libraries.flatMap(selectedLib => this.findLibVersion(selectedLib)?.path ?? []);
+        if (libraryPaths.length === 0) return [];
+
+        return ['--allow-paths', [...new Set(libraryPaths)].join(',')];
     }
 
     override getArgumentParserClass(): typeof BaseParser {
@@ -276,7 +280,7 @@ export class ResolcCompiler extends BaseCompiler {
      * ```
      */
     private getSolidityContractName(dirPath: string): string {
-        const nameRe = /contract[\s\n]+(?<name>[\w$]+)[\s\n]*{/;
+        const nameRe = /contract[\s\n]+(?<name>[\w$]+)(?:[\s\n]+is[^{}]+)?[\s\n]*{/;
 
         return this.getContractName(dirPath, nameRe);
     }
