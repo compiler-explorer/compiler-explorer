@@ -40,30 +40,56 @@ SetTestMode();
 
 const missingCeParser = '/usr/local/bin/asm-parser-does-not-exist';
 const missingPlainParser = '/opt/plain-parser-does-not-exist';
-
-type RecordedMissingParser = {id: string; parserPath: string};
-
-function recordedMissingParsers(handler: CompileHandler): RecordedMissingParser[] {
-    return (handler as unknown as {missingExternalParsers: RecordedMissingParser[]}).missingExternalParsers;
-}
+const existingParser = process.execPath;
 
 function errorMessages(): string[] {
     return vi.mocked(logger.error).mock.calls.map(call => String(call[0]));
 }
 
-function parserCompiler(id: string, parserId: string, parserPath: string): PreliminaryCompilerInfo {
+function warnMessages(): string[] {
+    return vi.mocked(logger.warn).mock.calls.map(call => String(call[0]));
+}
+
+function exitTimers(): number[] {
+    return vi.mocked(global.setTimeout).mock.calls.flatMap(call => {
+        const callback = call[0];
+        if (typeof callback !== 'function') return [];
+        const source = callback.toString();
+        // Vitest rewrites `process.exit` to a namespace import in the callback source.
+        if (source.includes('process.exit') || source.includes('.exit(1)')) {
+            return [Number(call[1])];
+        }
+        return [];
+    });
+}
+
+function missingParserCompiler(id: string, parserId: string, parserPath: string): PreliminaryCompilerInfo {
     return makeFakeCompilerInfo({
         id,
         lang: 'c++',
-        exe: process.execPath,
+        exe: existingParser,
         compilerType: 'default',
         externalparser: {id: parserId, exe: parserPath, args: ''},
+    }) as PreliminaryCompilerInfo;
+}
+
+function existingParserCompiler(id: string): PreliminaryCompilerInfo {
+    return makeFakeCompilerInfo({
+        id,
+        lang: 'c++',
+        exe: existingParser,
+        compilerType: 'default',
+        version: 'test-version',
+        mtime: new Date(0),
+        libsArr: [],
+        externalparser: {id: 'CEAsmParser', exe: existingParser, args: ''},
     }) as PreliminaryCompilerInfo;
 }
 
 describe('External parser constructors', () => {
     beforeEach(() => {
         vi.useFakeTimers();
+        vi.spyOn(global, 'setTimeout');
         vi.spyOn(process, 'exit').mockImplementation(() => undefined as never);
     });
 
@@ -73,41 +99,46 @@ describe('External parser constructors', () => {
         vi.restoreAllMocks();
     });
 
-    it('throws MissingExternalParserError and does not schedule process.exit', () => {
+    it('ExternalParserBase throws MissingExternalParserError and does not arm process.exit', () => {
         expect(fs.existsSync(missingCeParser)).toBe(false);
-        expect(fs.existsSync(missingPlainParser)).toBe(false);
-
-        const ceInfo = makeFakeCompilerInfo({
+        const info = makeFakeCompilerInfo({
             id: 'gccrs',
             externalparser: {id: 'CEAsmParser', exe: missingCeParser, args: ''},
         });
-        const plainInfo = makeFakeCompilerInfo({
-            id: 'rustc',
-            externalparser: {id: 'plain', exe: missingPlainParser, args: ''},
-        });
 
-        expect(() => new ExternalParserBase(ceInfo, {} as never, vi.fn() as never)).toThrow(MissingExternalParserError);
-        expect(() => new PlainParser(plainInfo, {} as never, vi.fn() as never)).toThrow(MissingExternalParserError);
-
+        expect(() => new ExternalParserBase(info, {} as never, vi.fn() as never)).toThrow(MissingExternalParserError);
         try {
-            new ExternalParserBase(ceInfo, {} as never, vi.fn() as never);
+            new ExternalParserBase(info, {} as never, vi.fn() as never);
+            expect.fail('constructor returned');
         } catch (err) {
             expect(err).toBeInstanceOf(MissingExternalParserError);
             expect((err as MissingExternalParserError).compilerId).toBe('gccrs');
             expect((err as MissingExternalParserError).parserPath).toBe(missingCeParser);
         }
 
+        expect(exitTimers()).toEqual([]);
         vi.runAllTimers();
         expect(process.exit).not.toHaveBeenCalled();
     });
 
-    it('constructs when the parser binary exists', () => {
+    it('PlainParser throws MissingExternalParserError and does not arm process.exit', () => {
+        expect(fs.existsSync(missingPlainParser)).toBe(false);
         const info = makeFakeCompilerInfo({
-            id: 'gccrs',
-            externalparser: {id: 'plain', exe: process.execPath, args: ''},
+            id: 'rustc',
+            externalparser: {id: 'plain', exe: missingPlainParser, args: ''},
         });
-        expect(() => new PlainParser(info, {} as never, vi.fn() as never)).not.toThrow();
-        expect(() => new ExternalParserBase(info, {} as never, vi.fn() as never)).not.toThrow();
+
+        expect(() => new PlainParser(info, {} as never, vi.fn() as never)).toThrow(MissingExternalParserError);
+        try {
+            new PlainParser(info, {} as never, vi.fn() as never);
+            expect.fail('constructor returned');
+        } catch (err) {
+            expect(err).toBeInstanceOf(MissingExternalParserError);
+            expect((err as MissingExternalParserError).compilerId).toBe('rustc');
+            expect((err as MissingExternalParserError).parserPath).toBe(missingPlainParser);
+        }
+
+        expect(exitTimers()).toEqual([]);
         vi.runAllTimers();
         expect(process.exit).not.toHaveBeenCalled();
     });
@@ -115,6 +146,7 @@ describe('External parser constructors', () => {
 
 describe('CompileHandler missing external parser', () => {
     const appArgs = {devMode: false, exitOnCompilerFailure: false} as AppArguments;
+    const clientOptions = {libs: {'c++': []}};
     let handler: CompileHandler;
 
     beforeAll(() => {
@@ -128,12 +160,13 @@ describe('CompileHandler missing external parser', () => {
     beforeEach(() => {
         appArgs.devMode = false;
         appArgs.exitOnCompilerFailure = false;
-        recordedMissingParsers(handler).length = 0;
         vi.useFakeTimers();
+        vi.spyOn(global, 'setTimeout');
         vi.spyOn(process, 'exit').mockImplementation(() => undefined as never);
         vi.spyOn(logger, 'error').mockImplementation(() => logger);
         vi.spyOn(logger, 'warn').mockImplementation(() => logger);
         vi.spyOn(logger, 'info').mockImplementation(() => logger);
+        vi.spyOn(logger, 'debug').mockImplementation(() => logger);
     });
 
     afterEach(() => {
@@ -142,76 +175,128 @@ describe('CompileHandler missing external parser', () => {
         vi.restoreAllMocks();
     });
 
-    it('records a missing parser from create and does not log Unable to stat', async () => {
-        const created = await handler.create(parserCompiler('gccrs', 'CEAsmParser', missingCeParser));
-
-        expect(created).toBeNull();
-        expect(recordedMissingParsers(handler)).toEqual([{id: 'gccrs', parserPath: missingCeParser}]);
-        const warnings = vi.mocked(logger.warn).mock.calls.map(call => String(call[0]));
-        expect(warnings.some(message => message.includes('Unable to stat'))).toBe(false);
-        vi.runAllTimers();
-        expect(process.exit).not.toHaveBeenCalled();
-    });
-
-    it('still logs Unable to stat when the compiler binary itself is missing', async () => {
-        const created = await handler.create({
-            id: 'missing-gcc',
-            lang: 'c++',
-            exe: '/no/such/ce-compiler-binary',
-            compilerType: 'default',
-        } as PreliminaryCompilerInfo);
-
-        expect(created).toBeNull();
-        expect(recordedMissingParsers(handler)).toEqual([]);
-        const warnings = vi.mocked(logger.warn).mock.calls.map(call => String(call[0]));
-        expect(warnings.some(message => message.includes('Unable to stat missing-gcc compiler binary'))).toBe(true);
-    });
-
-    it('arms a single exit outside devMode and the log names every compiler id and parser path', async () => {
+    it('one missing parser outside devMode arms a single 5s exit and leaves the compiler unloaded', async () => {
         const created = await handler.setCompilers(
-            [
-                parserCompiler('gccrs', 'CEAsmParser', missingCeParser),
-                parserCompiler('rustc', 'plain', missingPlainParser),
-            ],
-            null as never,
+            [missingParserCompiler('gccrs', 'CEAsmParser', missingCeParser)],
+            clientOptions as never,
         );
 
-        expect(created).toEqual([]);
-        expect(process.exit).not.toHaveBeenCalled();
-
-        const errors = errorMessages();
-        const summary = errors.find(message => message.includes('gccrs') && message.includes('rustc'));
+        expect(created.map(compiler => compiler.id)).not.toContain('gccrs');
+        const summary = errorMessages().find(message => message.includes('gccrs'));
         expect(summary).toBeDefined();
         expect(summary).toContain(missingCeParser);
-        expect(summary).toContain(missingPlainParser);
-        expect(errors.filter(message => message.includes(missingCeParser)).length).toBe(1);
-        expect(errors.some(message => message.includes('Exiting in 5s so log transports can flush'))).toBe(true);
-
-        await vi.advanceTimersByTimeAsync(4999);
+        expect(exitTimers()).toEqual([5000]);
         expect(process.exit).not.toHaveBeenCalled();
-        await vi.advanceTimersByTimeAsync(1);
+
+        await vi.advanceTimersByTimeAsync(5000);
         expect(process.exit).toHaveBeenCalledTimes(1);
         expect(process.exit).toHaveBeenCalledWith(1);
     });
 
-    it('does not exit in devMode', async () => {
-        appArgs.devMode = true;
+    it('two missing parsers in one setCompilers call arm exactly one exit and one summary', async () => {
+        const created = await handler.setCompilers(
+            [
+                missingParserCompiler('gccrs', 'CEAsmParser', missingCeParser),
+                missingParserCompiler('rustc', 'plain', missingPlainParser),
+            ],
+            clientOptions as never,
+        );
 
-        await handler.setCompilers([parserCompiler('gccrs', 'CEAsmParser', missingCeParser)], null as never);
-
-        const errors = errorMessages();
-        expect(errors.some(message => message.includes('gccrs') && message.includes(missingCeParser))).toBe(true);
-        expect(errors.some(message => message.includes('non-fatal only because devMode is on'))).toBe(true);
-        await vi.runAllTimersAsync();
+        expect(created.map(compiler => compiler.id)).toEqual([]);
+        expect(exitTimers()).toEqual([5000]);
+        const summaries = errorMessages().filter(
+            message => message.includes('gccrs') || message.includes('rustc') || message.includes(missingCeParser),
+        );
+        expect(summaries).toHaveLength(1);
+        expect(summaries[0]).toContain('gccrs');
+        expect(summaries[0]).toContain('rustc');
+        expect(summaries[0]).toContain(missingCeParser);
+        expect(summaries[0]).toContain(missingPlainParser);
         expect(process.exit).not.toHaveBeenCalled();
     });
 
-    it('does not also take the immediate exitOnCompilerFailure path for a missing parser', async () => {
+    it('devMode does not arm an exit and reports the miss as non-fatal', async () => {
+        appArgs.devMode = true;
+
+        const created = await handler.setCompilers(
+            [missingParserCompiler('gccrs', 'CEAsmParser', missingCeParser)],
+            clientOptions as never,
+        );
+
+        expect(created.map(compiler => compiler.id)).not.toContain('gccrs');
+        expect(exitTimers()).toEqual([]);
+        expect(process.exit).not.toHaveBeenCalled();
+        expect(errorMessages().some(message => message.includes('non-fatal only because devMode is on'))).toBe(true);
+        await vi.advanceTimersByTimeAsync(5000);
+        expect(process.exit).not.toHaveBeenCalled();
+    });
+
+    it('an existing parser binary creates the compiler and does not arm an exit', async () => {
+        expect(fs.existsSync(existingParser)).toBe(true);
+
+        const created = await handler.setCompilers([existingParserCompiler('clang-ok')], clientOptions as never);
+
+        expect(created.map(compiler => compiler.id)).toContain('clang-ok');
+        expect(errorMessages().some(message => message.includes('MissingExternalParserError'))).toBe(false);
+        expect(errorMessages().some(message => message.includes('Missing external parser'))).toBe(false);
+        expect(exitTimers()).toEqual([]);
+        expect(process.exit).not.toHaveBeenCalled();
+    });
+
+    it('a missing compiler binary logs Unable to stat and does not arm a missing-parser exit', async () => {
+        const created = await handler.setCompilers(
+            [
+                {
+                    id: 'missing-gcc',
+                    lang: 'c++',
+                    exe: '/no/such/ce-compiler-binary',
+                    compilerType: 'default',
+                } as PreliminaryCompilerInfo,
+            ],
+            clientOptions as never,
+        );
+
+        expect(created).toEqual([]);
+        expect(warnMessages().some(message => message.includes('Unable to stat missing-gcc compiler binary'))).toBe(
+            true,
+        );
+        expect(exitTimers()).toEqual([]);
+        expect(process.exit).not.toHaveBeenCalled();
+        await vi.advanceTimersByTimeAsync(5000);
+        expect(process.exit).not.toHaveBeenCalled();
+    });
+
+    it('a later setCompilers call resets the missing-parser list and does not arm another exit', async () => {
+        await handler.setCompilers(
+            [missingParserCompiler('gccrs', 'CEAsmParser', missingCeParser)],
+            clientOptions as never,
+        );
+        expect(exitTimers()).toEqual([5000]);
+        expect(errorMessages().some(message => message.includes('gccrs'))).toBe(true);
+
+        vi.mocked(logger.error).mockClear();
+        const created = await handler.setCompilers([existingParserCompiler('clang-ok')], clientOptions as never);
+
+        expect(created.map(compiler => compiler.id)).toContain('clang-ok');
+        expect(exitTimers()).toEqual([5000]);
+        expect(errorMessages().some(message => message.includes('gccrs'))).toBe(false);
+        expect(errorMessages().some(message => message.includes(missingCeParser))).toBe(false);
+        expect(process.exit).not.toHaveBeenCalled();
+    });
+
+    it('exitOnCompilerFailure does not schedule a second exit for the same missing parser', async () => {
         appArgs.exitOnCompilerFailure = true;
 
-        await handler.setCompilers([parserCompiler('gccrs', 'CEAsmParser', missingCeParser)], null as never);
+        const created = await handler.setCompilers(
+            [missingParserCompiler('gccrs', 'CEAsmParser', missingCeParser)],
+            clientOptions as never,
+        );
 
+        expect(created.map(compiler => compiler.id)).not.toContain('gccrs');
         expect(process.exit).not.toHaveBeenCalled();
+        expect(exitTimers()).toEqual([5000]);
+        expect(errorMessages().some(message => message.includes('exitOnCompilerFailure'))).toBe(false);
+
         await vi.advanceTimersByTimeAsync(5000);
         expect(process.exit).toHaveBeenCalledTimes(1);
         expect(process.exit).toHaveBeenCalledWith(1);
