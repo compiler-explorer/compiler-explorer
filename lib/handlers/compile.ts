@@ -333,25 +333,26 @@ export class CompileHandler implements ICompileHandler {
             }
 
             const missingParsers = this.missingExternalParsers;
-            if (missingParsers.length > 0) {
-                const described = missingParsers.map(missing => `${missing.id} (${missing.parserPath})`).join(', ');
-                logger.error(`Missing external parser: ${described}`);
-                if (this.appArgs?.devMode) {
-                    logger.error(
-                        'Missing external parsers are non-fatal only because devMode is on; affected compilers were not loaded',
-                    );
-                } else {
-                    logger.error('Exiting in 5s so log transports can flush');
-                    setTimeout(() => process.exit(1), 5000);
-                }
+            const described = missingParsers.map(missing => `${missing.id} (${missing.parserPath})`).join(', ');
+            if (missingParsers.length > 0) logger.error(`Missing external parser: ${described}`);
+
+            const devMode = this.appArgs?.devMode === true;
+            // Returning here would let startup reach startListening before the process exits.
+            const haltForMissingParsers = missingParsers.length > 0 && !devMode;
+            if (missingParsers.length > 0 && devMode) {
+                logger.error(
+                    'Missing external parsers are non-fatal only because devMode is on; affected compilers were not loaded',
+                );
+            } else if (haltForMissingParsers) {
+                logger.error('Exiting in 5s so log transports can flush. The server will not listen.');
             }
 
             const failedCount = totalCompilers - compilersCreated;
             if (failedCount > 0) {
                 logger.error(`Failed to create ${failedCount} out of ${totalCompilers} compilers`);
 
-                // Missing parsers exit via the single flush timer above. An immediate
-                // exitOnCompilerFailure exit as well would fire twice for that same failure.
+                // Missing parsers have their own flush-then-exit below. An immediate
+                // exitOnCompilerFailure exit as well would exit twice for that same failure.
                 const otherFailures = failedCount - missingParsers.length;
                 if (this.appArgs?.exitOnCompilerFailure && otherFailures > 0) {
                     logger.error('Exiting due to compiler creation failures (exitOnCompilerFailure=true)');
@@ -359,19 +360,26 @@ export class CompileHandler implements ICompileHandler {
                 }
             }
 
-            logger.info('Compilers created: ' + compilersCreated);
-            if (this.awsProps) {
-                logger.info('Fetching possible arguments from storage');
-                await Promise.all(
-                    createdCompilers.map(compiler => compiler.possibleArguments.loadFromStorage(this.awsProps)),
-                );
+            if (!haltForMissingParsers) {
+                logger.info('Compilers created: ' + compilersCreated);
+                if (this.awsProps) {
+                    logger.info('Fetching possible arguments from storage');
+                    await Promise.all(
+                        createdCompilers.map(compiler => compiler.possibleArguments.loadFromStorage(this.awsProps)),
+                    );
+                }
+                this.compilersById = compilersById;
+                return createdCompilers.map(compiler => compiler.getInfo());
             }
-            this.compilersById = compilersById;
-            return createdCompilers.map(compiler => compiler.getInfo());
         } catch (err) {
             logger.error('Exception while processing compilers:', err);
             return [];
         }
+
+        await new Promise<void>(resolve => {
+            setTimeout(resolve, 5000);
+        });
+        process.exit(1);
     }
 
     setPossibleToolchains(toolchains: CompilerOverrideOptions) {
