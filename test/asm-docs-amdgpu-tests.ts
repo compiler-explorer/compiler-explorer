@@ -298,7 +298,9 @@ describe('AMD GPU asm-docs lookup behaviour', () => {
             ['cdna4', cdna4],
         ] as const) {
             const info = arch.getAsmOpcode('v_mov_b32_dpp');
-            expect(info?.html, name).toMatch(/<summary><code>VOP1_VOP_DPP<\/code>[^<]*<i>[^<]*<\/i> <b>&larr; active<\/b>/);
+            expect(info?.html, name).toMatch(
+                /<summary><code>VOP1_VOP_DPP<\/code>[^<]*<i>[^<]*<\/i> <b>&larr; active<\/b>/,
+            );
         }
     });
 
