@@ -22,6 +22,8 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
+import path from 'node:path';
+
 import type {SelectedLibraryVersion} from '../../types/libraries/libraries.interfaces.js';
 import {BaseCompiler} from '../base-compiler.js';
 import {resultLinesToText} from '../utils.js';
@@ -56,8 +58,34 @@ export class SolxCompiler extends BaseCompiler {
     }
 
     override async processAsm(result) {
+        const assembly = resultLinesToText(result.stdout);
+        const sectionHeaders = [...assembly.matchAll(/^======= .+ =======$/gm)];
+        const sections = sectionHeaders.map((header, index) =>
+            assembly.slice(header.index, sectionHeaders[index + 1]?.index),
+        );
+        const sourceSections = sections.filter(section => this.isSourceSection(section));
+
         return {
-            asm: [{text: resultLinesToText(result.stdout)}],
+            asm: [
+                {
+                    text:
+                        sourceSections.length === 0
+                            ? assembly
+                            : this.orderSourceSections(assembly, sections, sourceSections),
+                },
+            ],
         };
+    }
+
+    private orderSourceSections(assembly: string, sections: string[], sourceSections: string[]): string {
+        const preamble = assembly.slice(0, assembly.indexOf(sections[0]));
+        const importedSections = sections.filter(section => !sourceSections.includes(section));
+        return `${preamble}${[...sourceSections, ...importedSections].join('')}`;
+    }
+
+    private isSourceSection(section: string): boolean {
+        const header = /^======= (?<source>.+):[^:]+ =======$/.exec(section.split('\n', 1)[0]);
+        const source = header?.groups?.source ?? '';
+        return source === '<source>' || path.basename(source) === this.compileFilename;
     }
 }
