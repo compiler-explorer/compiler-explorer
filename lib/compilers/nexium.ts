@@ -26,9 +26,11 @@ import fs from 'node:fs/promises';
 import path from 'node:path';
 
 import type {CompilationResult, ExecutionOptionsWithEnv} from '../../types/compilation/compilation.interfaces.js';
+import type {PreliminaryCompilerInfo} from '../../types/compiler.interfaces.js';
 import type {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces.js';
 import type {SelectedLibraryVersion} from '../../types/libraries/libraries.interfaces.js';
 import {BaseCompiler} from '../base-compiler.js';
+import {CompilationEnvironment} from '../compilation-env.js';
 
 // Nexium (https://londopy.github.io/nexium/) compiles to C and drives a C
 // compiler. Without the binary filter, the output pane shows the C that
@@ -38,6 +40,22 @@ import {BaseCompiler} from '../base-compiler.js';
 export class NexiumCompiler extends BaseCompiler {
     static get key() {
         return 'nexium';
+    }
+
+    // the C compiler nx drives (NX_CC); without one, nx takes the system's
+    ccPath: string;
+
+    constructor(compiler: PreliminaryCompilerInfo, env: CompilationEnvironment) {
+        super(compiler, env);
+        this.ccPath = this.compilerProps<string>(`compiler.${this.compiler.id}.cc`);
+    }
+
+    override getDefaultExecOptions() {
+        const execOptions = super.getDefaultExecOptions();
+        if (this.ccPath) {
+            execOptions.env.NX_CC = this.ccPath;
+        }
+        return execOptions;
     }
 
     // the emitted C is the whole translation unit: the runtime, then the
@@ -70,7 +88,7 @@ export class NexiumCompiler extends BaseCompiler {
         filters?: ParseFiltersAndOutputOptions,
     ): Promise<CompilationResult> {
         if (!execOptions) {
-            execOptions = super.getDefaultExecOptions();
+            execOptions = this.getDefaultExecOptions();
         }
         const dir = path.dirname(inputFilename);
         if (!execOptions.customCwd) execOptions.customCwd = dir;
