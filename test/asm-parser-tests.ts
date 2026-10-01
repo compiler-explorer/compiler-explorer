@@ -74,24 +74,21 @@ main():
 ; /tmp/project/dep/std/src/print.mach:64
        4: 00008067     	ret`;
 
-    it.skipIf(process.platform === 'win32')('should read source lines from gnu objdump', () => {
+    it('should read source lines from gnu objdump', () => {
         const result = parser.processBinaryAsm(gnuObjdump, {});
         expect(result.asm.map(line => line.source?.line)).toEqual([undefined, 7, 64]);
     });
 
-    it.skipIf(process.platform === 'win32')('should read source lines from llvm-objdump', () => {
+    it('should read source lines from llvm-objdump', () => {
         const result = parser.processBinaryAsm(llvmObjdump, {});
         expect(result.asm.map(line => line.text)).toEqual(['main:', ' addi\tsp, sp, -0x60', ' ret']);
         expect(result.asm.map(line => line.source?.line)).toEqual([undefined, 7, 64]);
     });
 
-    it.skipIf(process.platform === 'win32')(
-        'should keep the function label when filtering library code in llvm-objdump output',
-        () => {
-            const result = parser.processBinaryAsm(llvmObjdump, {libraryCode: true});
-            expect(result.asm[0].text).toEqual('main:');
-        },
-    );
+    it('should keep the function label when filtering library code in llvm-objdump output', () => {
+        const result = parser.processBinaryAsm(llvmObjdump, {libraryCode: true});
+        expect(result.asm[0].text).toEqual('main:');
+    });
 });
 
 describe('AsmParser binary source records before the function label', () => {
@@ -258,7 +255,7 @@ square(int)():
 /app/example.cpp:5
   401025:	c3                   	ret`;
 
-    it.skipIf(process.platform === 'win32')('should only mark lines from the main source file as main source', () => {
+    it('should only mark lines from the main source file as main source', () => {
         const result = parser.processBinaryAsm(objdump, {});
         expect(result.asm.map(line => line.source)).toEqual([
             null,
@@ -272,23 +269,20 @@ square(int)():
         ]);
     });
 
-    it.skipIf(process.platform === 'win32')('should name the main source file when filenames are not masked', () => {
+    it('should name the main source file when filenames are not masked', () => {
         const result = parser.processBinaryAsm(objdump, {dontMaskFilenames: true});
         expect(result.asm[1].source).toEqual({file: 'example.cpp', line: 4, mainsource: true});
     });
 
-    it.skipIf(process.platform === 'win32')(
-        'should keep code inlined from other files when filtering library code',
-        () => {
-            const result = parser.processBinaryAsm(objdump, {libraryCode: true});
-            expect(result.asm.map(line => line.text)).toEqual([
-                'square(int):',
-                ' mov    eax,edi',
-                ' imul   eax,edi',
-                ' ret',
-            ]);
-        },
-    );
+    it('should keep code inlined from other files when filtering library code', () => {
+        const result = parser.processBinaryAsm(objdump, {libraryCode: true});
+        expect(result.asm.map(line => line.text)).toEqual([
+            'square(int):',
+            ' mov    eax,edi',
+            ' imul   eax,edi',
+            ' ret',
+        ]);
+    });
 });
 
 describe('AsmParser library code filtering in binary asm', () => {
@@ -305,7 +299,7 @@ describe('AsmParser library code filtering in binary asm', () => {
         '  401003:\tc3                   \tret',
     ].join('\n');
 
-    it.skipIf(process.platform === 'win32')('should drop the label of every consecutive library function', () => {
+    it('should drop the label of every consecutive library function', () => {
         const result = parser.processBinaryAsm(objdump, {libraryCode: true});
         expect(result.asm.map(line => line.text)).toEqual(['main:', ' ret']);
     });
