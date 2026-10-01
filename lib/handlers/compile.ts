@@ -56,6 +56,7 @@ import {cmakeBuildSystem, getBuildSystem} from '../build-systems/index.js';
 import {parseExecutionParameters, parseTools, parseUserArguments} from '../compilation/compilation-request-parser.js';
 import {CompilationEnvironment} from '../compilation-env.js';
 import {getCompilerTypeByKey} from '../compilers/index.js';
+import {MissingExternalParserError} from '../external-parsers/missing-external-parser-error.js';
 import {logger} from '../logger.js';
 import {ClientOptionsType} from '../options-handler.js';
 import {PropertyGetter} from '../properties.interfaces.js';
@@ -136,6 +137,7 @@ export class CompileHandler implements ICompileHandler {
     private readonly awsProps: PropertyGetter;
     private readonly appArgs: AppArguments | undefined;
     private clientOptions: ClientOptionsType | null = null;
+    private missingExternalParsers: {id: string; parserPath: string}[] = [];
     private readonly compileCounter = new Counter({
         name: 'ce_compilations_total',
         help: 'Number of compilations',
@@ -298,6 +300,10 @@ export class CompileHandler implements ICompileHandler {
                 const compilerObj = new compilerClass(compiler, this.compilerEnv);
                 return compilerObj.initialise(modificationTime, this.clientOptions, isPrediscovered);
             } catch (err) {
+                if (err instanceof MissingExternalParserError) {
+                    this.missingExternalParsers.push({id: err.compilerId, parserPath: err.parserPath});
+                    return null;
+                }
                 logger.warn(`Unable to stat ${compiler.id} compiler binary: `, err);
                 return null;
             }
@@ -312,6 +318,7 @@ export class CompileHandler implements ICompileHandler {
     ): Promise<CompilerInfo[]> {
         // Be careful not to update this.compilersById until we can replace it entirely.
         const compilersById: Partial<Record<LanguageKey, Record<string, BaseCompiler>>> = {};
+        this.missingExternalParsers = [];
         try {
             this.clientOptions = clientOptions;
             const totalCompilers = compilers.length;
@@ -325,11 +332,28 @@ export class CompileHandler implements ICompileHandler {
                 compilersCreated++;
             }
 
+            const missingParsers = this.missingExternalParsers;
+            if (missingParsers.length > 0) {
+                const described = missingParsers.map(missing => `${missing.id} (${missing.parserPath})`).join(', ');
+                logger.error(`Missing external parser: ${described}`);
+                if (this.appArgs?.devMode) {
+                    logger.error(
+                        'Missing external parsers are non-fatal only because devMode is on; affected compilers were not loaded',
+                    );
+                } else {
+                    logger.error('Exiting in 5s so log transports can flush');
+                    setTimeout(() => process.exit(1), 5000);
+                }
+            }
+
             const failedCount = totalCompilers - compilersCreated;
             if (failedCount > 0) {
                 logger.error(`Failed to create ${failedCount} out of ${totalCompilers} compilers`);
 
-                if (this.appArgs?.exitOnCompilerFailure) {
+                // Missing parsers exit via the single flush timer above. An immediate
+                // exitOnCompilerFailure exit as well would fire twice for that same failure.
+                const otherFailures = failedCount - missingParsers.length;
+                if (this.appArgs?.exitOnCompilerFailure && otherFailures > 0) {
                     logger.error('Exiting due to compiler creation failures (exitOnCompilerFailure=true)');
                     process.exit(1);
                 }
