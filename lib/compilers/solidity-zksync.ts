@@ -36,6 +36,10 @@ export class SolidityZKsyncCompiler extends BaseCompiler {
         return [];
     }
 
+    override getIncludeArguments() {
+        return [];
+    }
+
     override getArgumentParserClass() {
         return ZksolcParser;
     }

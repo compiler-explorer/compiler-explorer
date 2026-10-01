@@ -92,6 +92,10 @@ export class ResolcCompiler extends BaseCompiler {
         return [];
     }
 
+    override getIncludeArguments(): string[] {
+        return [];
+    }
+
     override getArgumentParserClass(): typeof BaseParser {
         return ResolcParser;
     }

@@ -22,6 +22,7 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
+import type {SelectedLibraryVersion} from '../../types/libraries/libraries.interfaces.js';
 import {BaseCompiler} from '../base-compiler.js';
 import {resultLinesToText} from '../utils.js';
 import {SolxParser} from './argument-parsers.js';
@@ -33,6 +34,13 @@ export class SolxCompiler extends BaseCompiler {
 
     override getSharedLibraryPathsAsArguments() {
         return [];
+    }
+
+    override getIncludeArguments(libraries: SelectedLibraryVersion[]) {
+        const libraryPaths = libraries.flatMap(selectedLib => this.findLibVersion(selectedLib)?.path ?? []);
+        if (libraryPaths.length === 0) return [];
+
+        return ['--allow-paths', [...new Set(libraryPaths)].join(',')];
     }
 
     override getArgumentParserClass() {
