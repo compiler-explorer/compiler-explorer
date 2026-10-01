@@ -210,12 +210,29 @@ describe('AMD GPU target mapping', () => {
         }
     });
 
+    it('covers the early MI300 revisions and the generic targets', () => {
+        // `gfx12-5-generic` is CDNA5 despite sharing only `gfx12` with RDNA4.
+        const expected: [string, string][] = [
+            ['gfx940', 'amd_cdna3'],
+            ['gfx941', 'amd_cdna3'],
+            ['gfx9-4-generic', 'amd_cdna3'],
+            ['gfx10-1-generic', 'amd_rdna1'],
+            ['gfx10-3-generic', 'amd_rdna2'],
+            ['gfx11-generic', 'amd_rdna3'],
+            ['gfx12-generic', 'amd_rdna4'],
+            ['gfx12-5-generic', 'amd_cdna5'],
+        ];
+        for (const [target, instructionSet] of expected) {
+            expect(getAmdGpuInstructionSet(target), target).toEqual(instructionSet);
+        }
+    });
+
     it('is case insensitive', () => {
         expect(getAmdGpuInstructionSet('GFX1100')).toEqual('amd_rdna3');
     });
 
     it('returns undefined for targets we ship no docs for', () => {
-        for (const target of ['gfx900', 'gfx906', 'sm_80', '', 'gfx']) {
+        for (const target of ['gfx900', 'gfx906', 'gfx9-generic', 'sm_80', '', 'gfx']) {
             expect(getAmdGpuInstructionSet(target), target).toBeUndefined();
         }
     });
@@ -249,6 +266,11 @@ describe('AMD GPU target mapping from device-view labels', () => {
     it('skips an unsupported target to find a supported one in the same label', () => {
         expect(getAmdGpuInstructionSetFromLabel('gfx900-then-gfx942')).toEqual('amd_cdna3');
     });
+
+    it('digs a hyphenated generic target out of a triple', () => {
+        expect(getAmdGpuInstructionSetFromLabel('hipv4-amdgcn-amd-amdhsa--gfx9-4-generic')).toEqual('amd_cdna3');
+        expect(getAmdGpuInstructionSetFromLabel('openmp-amdgcn-amd-amdhsa--gfx12-5-generic')).toEqual('amd_cdna5');
+    });
 });
 
 describe('AMD GPU asm-docs lookup behaviour', () => {
@@ -265,6 +287,21 @@ describe('AMD GPU asm-docs lookup behaviour', () => {
 
         const narrow = rdna4.getAsmOpcode('v_add_f32_e32');
         expect(narrow?.html).toMatch(/<summary><code>ENC_VOP2<\/code>[^<]*<i>[^<]*<\/i> <b>&larr; active<\/b>/);
+    });
+
+    it('resolves the _dpp suffix on the CDNA targets that name it without a width', () => {
+        // CDNA1-4 name the encoding VOP_DPP, without the width CDNA5 and the RDNA targets carry.
+        for (const [name, arch] of [
+            ['cdna1', cdna1],
+            ['cdna2', cdna2],
+            ['cdna3', cdna3],
+            ['cdna4', cdna4],
+        ] as const) {
+            const info = arch.getAsmOpcode('v_mov_b32_dpp');
+            expect(info?.html, name).toMatch(
+                /<summary><code>VOP1_VOP_DPP<\/code>[^<]*<i>[^<]*<\/i> <b>&larr; active<\/b>/,
+            );
+        }
     });
 
     it('keeps every encoding when one is marked active', () => {
