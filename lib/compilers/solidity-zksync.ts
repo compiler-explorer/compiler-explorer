@@ -70,12 +70,22 @@ export class SolidityZKsyncCompiler extends BaseCompiler {
         produceOptRemarks = false,
     ) {
         const artifacts = await fs.readdir(outputDirectory, {recursive: true}).catch(() => []);
-        const zasmArtifacts = artifacts.filter(artifact => artifact.endsWith('.zasm')).sort();
+        const sourceArtifactPrefix = `${this.compileFilename}${path.sep}`;
+        const legacySourceArtifactPrefix = `${this.compileFilename}:`;
+
+        const isSourceArtifact = (artifact: string) =>
+            artifact.startsWith(sourceArtifactPrefix) || artifact.startsWith(legacySourceArtifactPrefix);
+
+        const zasmArtifacts = artifacts.filter(artifact => artifact.endsWith('.zasm'));
+        const sourceArtifacts = zasmArtifacts.filter(isSourceArtifact).sort();
+        const importedArtifacts = zasmArtifacts.filter(artifact => !isSourceArtifact(artifact)).sort();
+        const orderedArtifacts = [...sourceArtifacts, ...importedArtifacts];
+
         const outputFilename = path.join(outputDirectory, 'combined.zasm');
 
-        if (zasmArtifacts.length > 0) {
+        if (orderedArtifacts.length > 0) {
             const output = await Promise.all(
-                zasmArtifacts.map(artifact => fs.readFile(path.join(outputDirectory, artifact), 'utf8')),
+                orderedArtifacts.map(artifact => fs.readFile(path.join(outputDirectory, artifact), 'utf8')),
             );
             await fs.writeFile(outputFilename, output.join('\n'));
         }
