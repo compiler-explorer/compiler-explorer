@@ -113,7 +113,8 @@ export class GleamCompiler extends BaseCompiler {
 
     override async initialise(mtime: Date, clientOptions: ClientOptionsType, isPrediscovered = false) {
         const compiler = await super.initialise(mtime, clientOptions, isPrediscovered);
-        if (compiler && this.compiler.version) {
+        const configuredName = this.compilerProps<string>(`compiler.${this.compiler.id}.name`, '');
+        if (compiler && this.compiler.version && !configuredName) {
             this.compiler.name = GleamCompiler.getDisplayName(this.compiler.version, this.target);
         }
         return compiler;

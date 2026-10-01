@@ -28,6 +28,7 @@ import path from 'node:path';
 import {afterEach, describe, expect, it, vi} from 'vitest';
 
 import {GleamCompiler} from '../lib/compilers/gleam.js';
+import type {ClientOptionsType} from '../lib/options-handler.js';
 import type {CompilationResult, ExecutionOptionsWithEnv} from '../types/compilation/compilation.interfaces.js';
 import type {CompilerInfo} from '../types/compiler.interfaces.js';
 import type {UnprocessedExecResult} from '../types/execution/execution.interfaces.js';
@@ -46,22 +47,25 @@ const execResult = (stdout = ''): UnprocessedExecResult => ({
     truncated: false,
 });
 
-function makeCompiler(target = 'erlang', runtime = 'erl') {
+function makeCompiler(target = 'erlang', runtime = 'erl', name = '') {
     const env = makeCompilationEnvironment({
         languages,
         props: {
             'compiler.gleam.stdlib': '/opt/gleam/stdlib',
             'compiler.gleam.runtime': runtime,
             'compiler.gleam.target': target,
+            'compiler.gleam.name': name,
         },
     });
     return new GleamCompiler(
         makeFakeCompilerInfo({
             id: 'gleam',
             exe: 'gleam',
+            name,
             lang: 'gleam',
             ldPath: [],
             libPath: [],
+            libsArr: [],
         }) as CompilerInfo,
         env,
     );
@@ -73,6 +77,15 @@ describe('GleamCompiler', () => {
     it('formats target-specific names using the discovered Gleam version', () => {
         expect(GleamCompiler.getDisplayName('1.18.1', 'erlang')).toBe('Gleam 1.18.1 (BEAM)');
         expect(GleamCompiler.getDisplayName('1.18.1', 'javascript')).toBe('Gleam 1.18.1 (JavaScript)');
+    });
+
+    it('preserves an explicitly configured compiler name', async () => {
+        const compiler = makeCompiler('erlang', 'erl', 'Gleam 1.18.1');
+        compiler.compiler.version = '1.18.1';
+
+        await compiler.initialise(new Date(), {libs: {gleam: {}}} as unknown as ClientOptionsType, true);
+
+        expect(compiler.compiler.name).toBe('Gleam 1.18.1');
     });
 
     it('rejects an unsupported compilation target', () => {
