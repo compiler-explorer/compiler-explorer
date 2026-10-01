@@ -22,8 +22,12 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
+import fs from 'node:fs/promises';
 import path from 'node:path';
 
+import type {CompilationResult} from '../../types/compilation/compilation.interfaces.js';
+import type {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces.js';
+import type {SelectedLibraryVersion} from '../../types/libraries/libraries.interfaces.js';
 import {BaseCompiler} from '../base-compiler.js';
 import {ZksolcParser} from './argument-parsers.js';
 
@@ -36,8 +40,11 @@ export class SolidityZKsyncCompiler extends BaseCompiler {
         return [];
     }
 
-    override getIncludeArguments() {
-        return [];
+    override getIncludeArguments(libraries: SelectedLibraryVersion[]) {
+        const libraryPaths = libraries.flatMap(selectedLib => this.findLibVersion(selectedLib)?.path ?? []);
+        if (libraryPaths.length === 0) return [];
+
+        return ['--allow-paths', [...new Set(libraryPaths)].join(',')];
     }
 
     override getArgumentParserClass() {
@@ -45,7 +52,7 @@ export class SolidityZKsyncCompiler extends BaseCompiler {
     }
 
     override optionsForFilter(): string[] {
-        return ['--combined-json', 'asm', '-o', 'contracts'];
+        return ['--asm', '-o', 'contracts'];
     }
 
     override isCfgCompiler() {
@@ -53,20 +60,30 @@ export class SolidityZKsyncCompiler extends BaseCompiler {
     }
 
     override getOutputFilename(dirPath: string) {
-        return path.join(dirPath, 'contracts/combined.json');
+        return path.join(dirPath, 'contracts');
     }
 
-    override async processAsm(result) {
-        // Handle "error" documents.
-        if (!result.asm.includes('\n') && result.asm[0] === '<') {
-            return {asm: [{text: result.asm}]};
+    override async checkOutputFileAndDoPostProcess(
+        asmResult: CompilationResult,
+        outputDirectory: string,
+        filters: ParseFiltersAndOutputOptions,
+        produceOptRemarks = false,
+    ) {
+        const artifacts = await fs.readdir(outputDirectory).catch(() => []);
+        const zasmArtifacts = artifacts.filter(artifact => artifact.endsWith('.zasm')).sort();
+        const outputFilename = path.join(outputDirectory, 'combined.zasm');
+
+        if (zasmArtifacts.length > 0) {
+            const output = await Promise.all(
+                zasmArtifacts.map(artifact => fs.readFile(path.join(outputDirectory, artifact), 'utf8')),
+            );
+            await fs.writeFile(outputFilename, output.join('\n'));
         }
 
-        const combinedJson = JSON.parse(result.asm);
-        const asm: any[] = [];
-        for (const build of Object.values(combinedJson.contracts) as JSON[]) {
-            asm.push({text: build['asm']});
-        }
-        return {asm};
+        return super.checkOutputFileAndDoPostProcess(asmResult, outputFilename, filters, produceOptRemarks);
+    }
+
+    override async processAsm(result: CompilationResult) {
+        return {asm: [{text: result.asm as string}]};
     }
 }
