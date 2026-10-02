@@ -22,12 +22,13 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import {beforeAll, describe, expect, it} from 'vitest';
+import {beforeAll, describe, expect, it, vi} from 'vitest';
 
 import type {CompilationEnvironment} from '../lib/compilation-env.js';
 import {BaseParser} from '../lib/compilers/argument-parsers.js';
 import {decode_symbols, NumbaCompiler} from '../lib/compilers/numba.js';
 import type {AsmResultSource} from '../types/asmresult/asmresult.interfaces.js';
+import type {CompilationResult} from '../types/compilation/compilation.interfaces.js';
 import type {LanguageKey} from '../types/languages.interfaces.js';
 import {makeCompilationEnvironment, makeFakeCompilerInfo} from './utils.js';
 
@@ -147,6 +148,49 @@ describe('Numba', () => {
                 'has_finalizer=True)):',
             'example::square(Array<double, 1, C, mutable, aligned>):',
         ]);
+    });
+
+    function fakeCompileResult(overrides: Partial<CompilationResult> = {}): CompilationResult {
+        return {
+            code: 0,
+            timedOut: false,
+            stdout: [],
+            stderr: [],
+            ...overrides,
+        };
+    }
+
+    it('should dump passes on a separate output file and report failures', async () => {
+        const compiler = new NumbaCompiler(makeFakeCompilerInfo(info), ce);
+        const options = ['-I', 'numba_wrapper.py', '--outputfile', '/tmp/asm.s', '--inputfile', '/tmp/example.py'];
+        const run = vi.spyOn(compiler, 'runCompiler').mockResolvedValue(
+            fakeCompileResult({
+                stdout: [
+                    {text: '------<dynamic>.square: nopython: AFTER translate_bytecode------'},
+                    {text: 'label 0:'},
+                ],
+            }),
+        );
+
+        const parsed = await compiler.generateOptPipeline('/tmp/example.py', options, filters, {});
+
+        const [, args, input, execOptions] = run.mock.calls[0];
+        expect(args[args.indexOf('--outputfile') + 1]).not.toBe('/tmp/asm.s');
+        expect(args[args.indexOf('--inputfile') + 1]).toBe('/tmp/example.py');
+        expect(input).toBe('/tmp/example.py');
+        expect(options[options.indexOf('--outputfile') + 1]).toBe('/tmp/asm.s');
+        expect(execOptions.env.NUMBA_DEBUG_PRINT_AFTER).toBe('all');
+        expect(parsed?.results['<dynamic>.square'][0].name).toBe('translate_bytecode');
+
+        run.mockResolvedValue(fakeCompileResult({code: 255, stderr: [{text: 'File "<source>", line 4'}]}));
+        const failed = await compiler.generateOptPipeline('/tmp/example.py', options, filters, {});
+        expect(failed?.error).toContain('File "<source>", line 4');
+        expect(failed?.results).toEqual({});
+
+        run.mockResolvedValue(fakeCompileResult({truncated: true, stdout: [{text: 'label 0:'}]}));
+        const truncated = await compiler.generateOptPipeline('/tmp/example.py', options, filters, {});
+        expect(truncated?.error).toBe('Exceeded max output limit');
+        expect(truncated?.results).toEqual({});
     });
 
     it('should invert the encoding accurately', () => {
