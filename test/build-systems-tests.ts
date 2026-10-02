@@ -407,8 +407,8 @@ describe('CMake build system', () => {
         };
 
         expect(compiler.getCMakePrefixPaths([{id: 'package', version: 'v1'}])).toEqual([
-            '/opt/compiler-explorer/llvm-mos',
-            '/opt/package',
+            path.normalize('/opt/compiler-explorer/llvm-mos'),
+            path.normalize('/opt/package'),
         ]);
     });
 
