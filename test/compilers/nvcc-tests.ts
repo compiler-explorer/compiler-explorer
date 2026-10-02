@@ -175,13 +175,10 @@ describe('NvccWin32Compiler tests', () => {
 
     it('generates options for binary-object output and normalises Windows paths', () => {
         expect(
-            (compiler as any).optionsForFilter(
-                {binary: false, binaryObject: true, execute: false},
-                'C:\\build\\output.obj',
-            ),
+            (compiler as any).optionsForFilter({binary: false, binaryObject: true, execute: false}, 'output.obj'),
         ).toEqual([
             '-o',
-            'C:\\build\\output.obj',
+            'output.obj',
             '-g',
             '-lineinfo',
             '--keep-device-functions',
@@ -190,24 +187,21 @@ describe('NvccWin32Compiler tests', () => {
             '-keep-dir',
             '.',
             '-Xcompiler',
-            '/nologo,/c,/FoC:/build/output.obj,/Zi',
+            '/nologo,/c,/Fooutput.obj,/Zi',
         ]);
     });
 
     it('generates options for executable output', () => {
         expect(
-            (compiler as any).optionsForFilter(
-                {binary: true, binaryObject: false, execute: true},
-                'C:\\build\\output.exe',
-            ),
+            (compiler as any).optionsForFilter({binary: true, binaryObject: false, execute: true}, 'output.exe'),
         ).toEqual([
             '-o',
-            'C:\\build\\output.exe',
+            'output.exe',
             '-g',
             '-lineinfo',
             '--keep-device-functions',
             '-Xcompiler',
-            '/nologo,/FeC:/build/output.exe,/Zi',
+            '/nologo,/Feoutput.exe,/Zi',
         ]);
     });
 });
