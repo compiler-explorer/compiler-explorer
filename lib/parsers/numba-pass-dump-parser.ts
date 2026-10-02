@@ -27,6 +27,8 @@ import type {ResultLine} from '../../types/resultline/resultline.interfaces.js';
 
 const passHeader = /^-*(.+): (?:[^:]+): AFTER (.+?)-*$/;
 const dumpLine = /^(?:label \d+:|[ \t].*)?$/;
+const parforBegin = /^-*begin parfor \d+-*$/;
+const parforEnd = /^-*end parfor \d+-*$/;
 const firstPass = 'translate_bytecode';
 
 function sameLines(left: ResultLine[], right: ResultLine[]): boolean {
@@ -55,6 +57,7 @@ export class NumbaPassDumpParser {
         let functionName: string | undefined;
         let passName: string | undefined;
         let lines: ResultLine[] = [];
+        let parforDepth = 0;
 
         const flush = () => {
             if (!functionName || !passName) return;
@@ -75,9 +78,18 @@ export class NumbaPassDumpParser {
         for (const line of output) {
             const match = passHeader.exec(line.text);
             if (!match) {
-                if (passName && dumpLine.test(line.text)) lines.push(line);
+                if (!passName) continue;
+                const text = line.text;
+                const inParfor = parforDepth > 0;
+                const opensParfor = parforBegin.test(text);
+                if (opensParfor || inParfor || dumpLine.test(text)) {
+                    if (opensParfor) parforDepth++;
+                    else if (inParfor && parforEnd.test(text)) parforDepth--;
+                    lines.push(line);
+                }
                 continue;
             }
+            parforDepth = 0;
             flush();
             functionName = match[1];
             passName = match[2];

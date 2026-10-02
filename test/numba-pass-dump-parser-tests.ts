@@ -163,6 +163,55 @@ describe('numba-pass-dump-parser', () => {
         expect(gLast.irChanged).toBe(false);
     });
 
+    it('should keep nested parfor blocks and still drop prints outside them', () => {
+        // Taken from a Numba 0.61.0 dump of nested prange. Parfor.dump centres
+        // its markers to 20 columns, and a parfor body can contain another parfor.
+        const parfor = [
+            '---begin parfor 2---',
+            'index_var =  parfor_index.33',
+            'params =  None',
+            "races =  {'t.3'}",
+            'LoopNest(index_variable = parfor_index.33, range = (0, $42binary_subscr.6, 1))',
+            'init block:',
+            'label 60:',
+            "    $56for_iter.1 = iternext(value=$phi56.0) ['$56for_iter.1', '$phi56.0']",
+            'label 110:',
+            '---begin parfor 1---',
+            'index_var =  parfor_index.31',
+            "races =  {'t.2'}",
+            'init block:',
+            'label 114:',
+            "    j = parfor_index.31                      ['j', 'parfor_index.31']",
+            '----end parfor 1----',
+            "    $110for_iter.2 = iternext(value=$phi110.1) ['$110for_iter.2', '$phi110.1']",
+            'label 138:',
+            "    t.3 = t.2                                ['t.2', 't.3']",
+            '----end parfor 2----',
+        ];
+        const output = lines(
+            centred('__main__.nested: nopython: AFTER parfor_pass'),
+            'label 56:',
+            ...parfor,
+            'after nested',
+            centred('__main__.nested: nopython: AFTER parfor_pass'),
+            'begin parfor 1000000',
+            'index_var =  parfor_index.3',
+            'end parfor 100000000',
+            'after nested',
+        );
+
+        const results = parser.process(output);
+        const passes = results['__main__.nested'];
+
+        expect(passes[0].after.map(line => line.text)).toEqual(['label 56:', ...parfor]);
+        expect(passes[1].after.map(line => line.text)).toEqual([
+            'begin parfor 1000000',
+            'index_var =  parfor_index.3',
+            'end parfor 100000000',
+        ]);
+        expect(passes[1].irChanged).toBe(true);
+    });
+
     it('should accept function names that collide with Object.prototype', () => {
         for (const name of ['constructor', '__proto__', 'toString']) {
             const results = parser.process(lines(`${name}: nopython: AFTER translate_bytecode`, 'label 0:'));
