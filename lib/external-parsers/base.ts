@@ -30,9 +30,9 @@ import {CompilerInfo} from '../../types/compiler.interfaces.js';
 import type {TypicalExecutionFunc, UnprocessedExecResult} from '../../types/execution/execution.interfaces.js';
 import type {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces.js';
 import {CompilationEnvironment} from '../compilation-env.js';
-import {logger} from '../logger.js';
 import {maskRootdir} from '../utils.js';
 import {IExternalParser} from './external-parser.interface.js';
+import {MissingExternalParserError} from './missing-external-parser-error.js';
 
 const starterScriptName = 'dump-and-parse.sh';
 
@@ -49,11 +49,7 @@ export class ExternalParserBase implements IExternalParser {
         this.objdumperPath = compilerInfo.objdumper;
         this.parserPath = compilerInfo.externalparser.exe;
         if (!fs.existsSync(this.parserPath)) {
-            const msg = `External parser for compiler ${compilerInfo.id} does not exist: "${this.parserPath}"`;
-            logger.error(msg);
-            // Delay exit to allow async log transports (e.g., Loki) to flush
-            setTimeout(() => process.exit(1), 5000);
-            throw new Error(msg);
+            throw new MissingExternalParserError(compilerInfo.id, this.parserPath);
         }
         this.execFunc = execFunc;
     }
