@@ -189,6 +189,13 @@
           - 'lib/compilers/gimple.ts'
           - 'etc/config/gimple.*.properties'
 
+'lang-gleam':
+  - changed-files:
+      - any-glob-to-any-file:
+          - 'lib/compilers/gleam.ts'
+          - 'etc/config/gleam.*.properties'
+          - 'static/modes/gleam-mode.ts'
+
 'lang-hlsl':
   - changed-files:
       - any-glob-to-any-file:
