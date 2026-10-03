@@ -22,7 +22,7 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import {CompilerInfo} from '../../types/compiler.interfaces.js';
+import {CompilerInfo, DEDUPABLE_COMPILER_FIELDS, DedupedCompilerList} from '../../types/compiler.interfaces.js';
 import {optionsHash} from '../options.js';
 import {SentryCapture} from '../sentry.js';
 
@@ -103,12 +103,33 @@ export class CompilersService {
         'supportsFiltersInBinary',
     ];
 
+    /**
+     * Expand a `?dedupe=` envelope back into plain `CompilerInfo`s. The table entries are shared between every
+     * compiler that references them, so nothing downstream may mutate a deduplicated field in place.
+     */
+    private static rehydrate(body: DedupedCompilerList): CompilerInfo[] {
+        return body.compilers.map(entry => {
+            const compiler = entry as unknown as CompilerInfo;
+            for (const field of DEDUPABLE_COMPILER_FIELDS) {
+                const indices = entry[field];
+                const table: unknown[] | undefined = body.refs[field];
+                if (indices && table) {
+                    (compiler as Record<string, unknown>)[field] = indices.map(index => table[index]);
+                }
+            }
+            return compiler;
+        });
+    }
+
     private async fetchCompilersForLang(langId: string): Promise<Record<string, CompilerInfo>> {
+        // `possibleOverrides` stays in `fields` so that an instance predating `dedupe` still answers usefully: it
+        // ignores the unknown parameter and sends today's inline shape, which `Array.isArray` picks out below.
         const response = await fetch(
-            `${window.httpRoot}api/compilers/${encodeURIComponent(langId)}?fields=${CompilersService.compilerFields.join(',')}&hash=${optionsHash}`,
+            `${window.httpRoot}api/compilers/${encodeURIComponent(langId)}?fields=${CompilersService.compilerFields.join(',')}&dedupe=${DEDUPABLE_COMPILER_FIELDS.join(',')}&hash=${optionsHash}`,
             {headers: {Accept: 'application/json'}},
         );
-        const compilers: CompilerInfo[] = await response.json();
+        const body: CompilerInfo[] | DedupedCompilerList = await response.json();
+        const compilers = Array.isArray(body) ? body : CompilersService.rehydrate(body);
         const result: Record<string, CompilerInfo> = {};
         for (const compiler of compilers) {
             result[compiler.id] = compiler;

@@ -32,6 +32,10 @@ import {CompileHandler} from '../../lib/handlers/compile.js';
 import {ClientOptionsHandler} from '../../lib/options-handler.js';
 import {CompilerProps, fakeProps} from '../../lib/properties.js';
 import {StorageNull} from '../../lib/storage/index.js';
+import {
+    CompilerOverrideNameAndOptions,
+    CompilerOverrideType,
+} from '../../types/compilation/compiler-overrides.interfaces.js';
 import {CompilerInfo} from '../../types/compiler.interfaces.js';
 import {Language, LanguageKey} from '../../types/languages.interfaces.js';
 import {ToolInfo} from '../../types/tool.interfaces.js';
@@ -314,6 +318,167 @@ describe('API compilers tools slimming', () => {
             {id: 'msvc', tools: ['MicrosoftAnalysisTool', 'llvm-pdbutil']},
         ]);
         expect(JSON.stringify(res.body)).not.toContain('/secret/path/to/clang-tidy');
+    });
+});
+
+describe('API compiler field deduplication', () => {
+    let app: express.Express;
+
+    // Byte-identical across the two GCCs, and the whole point of `?dedupe=`: on godbolt.org this one object is
+    // repeated across ~150 compilers and accounts for 71% of the /api/compilers/c response.
+    const toolchainOverride = {
+        type: 'options',
+        name: CompilerOverrideType.toolchain,
+        display_title: 'Toolchain',
+        description: 'Toolchain',
+        flags: ['--gcc-toolchain=<value>'],
+        values: [{name: 'gcc 12', value: '/opt/gcc12'}],
+    } satisfies CompilerOverrideNameAndOptions;
+    const archOverride = {
+        type: 'options',
+        name: CompilerOverrideType.arch,
+        display_title: 'Target architecture',
+        description: 'Arch',
+        flags: ['--target=<value>'],
+        values: [{name: 'x86_64', value: 'x86_64'}],
+    } satisfies CompilerOverrideNameAndOptions;
+
+    beforeAll(() => {
+        app = express();
+        const apiHandler = new ApiHandler(
+            {
+                handle: res => res.send('compile'),
+                handleCmake: res => res.send('cmake'),
+                handleBuildProject: res => res.send('build'),
+                handlePopularArguments: res => res.send('ok'),
+                handleOptimizationArguments: res => res.send('ok'),
+            } as unknown as CompileHandler,
+            fakeProps({}),
+            new StorageNull('/', new CompilerProps(languages, fakeProps({}))),
+            'default',
+            {ceProps: (key, def) => def} as CompilationEnvironment,
+        );
+        app.use(express.json());
+        app.use('/api', apiHandler.handle);
+
+        apiHandler.setCompilers([
+            makeFakeCompilerInfo({
+                id: 'gcc900',
+                name: 'GCC 9.0.0',
+                lang: 'c++',
+                // Deliberately distinct objects with identical content, as the compiler-finder builds them.
+                possibleOverrides: [{...toolchainOverride}, {...archOverride}],
+            }),
+            makeFakeCompilerInfo({
+                id: 'gcc1000',
+                name: 'GCC 10.0.0',
+                lang: 'c++',
+                possibleOverrides: [{...toolchainOverride}],
+            }),
+            makeFakeCompilerInfo({
+                id: 'rustc',
+                name: 'rustc',
+                lang: 'rust',
+                possibleOverrides: [{...archOverride}],
+            }),
+        ]);
+        apiHandler.setLanguages(languages);
+    });
+
+    it('keeps the bare-array shape when dedupe is not requested', async () => {
+        const res = await request(app)
+            .get('/api/compilers/c++?fields=id,possibleOverrides')
+            .set('Accept', 'application/json')
+            .expect(200);
+
+        expect(res.body).toEqual([
+            {id: 'gcc900', possibleOverrides: [toolchainOverride, archOverride]},
+            {id: 'gcc1000', possibleOverrides: [toolchainOverride]},
+        ]);
+    });
+
+    it('interns values with identical content into a shared table', async () => {
+        const res = await request(app)
+            .get('/api/compilers/c++?fields=id,possibleOverrides&dedupe=possibleOverrides')
+            .set('Accept', 'application/json')
+            .expect(200);
+
+        expect(res.body).toEqual({
+            compilers: [
+                {id: 'gcc900', possibleOverrides: [0, 1]},
+                {id: 'gcc1000', possibleOverrides: [0]},
+            ],
+            refs: {possibleOverrides: [toolchainOverride, archOverride]},
+        });
+    });
+
+    it('rehydrates back to exactly the inline response', async () => {
+        const inline = await request(app)
+            .get('/api/compilers/c++?fields=id,name,possibleOverrides')
+            .set('Accept', 'application/json')
+            .expect(200);
+        const deduped = await request(app)
+            .get('/api/compilers/c++?fields=id,name,possibleOverrides&dedupe=possibleOverrides')
+            .set('Accept', 'application/json')
+            .expect(200);
+
+        const rehydrated = deduped.body.compilers.map(compiler => ({
+            ...compiler,
+            possibleOverrides: compiler.possibleOverrides.map(i => deduped.body.refs.possibleOverrides[i]),
+        }));
+        expect(rehydrated).toEqual(inline.body);
+    });
+
+    it('does not leak values only referenced by other languages', async () => {
+        const res = await request(app)
+            .get('/api/compilers/rust?fields=id,possibleOverrides&dedupe=possibleOverrides')
+            .set('Accept', 'application/json')
+            .expect(200);
+
+        expect(res.body.refs.possibleOverrides).toEqual([archOverride]);
+    });
+
+    it('ignores dedupe for fields=all so remote instance discovery is unaffected', async () => {
+        const res = await request(app)
+            .get('/api/compilers/c++?fields=all&dedupe=possibleOverrides')
+            .set('Accept', 'application/json')
+            .expect(200);
+
+        expect(Array.isArray(res.body)).toBe(true);
+        expect(res.body[0].possibleOverrides).toEqual([toolchainOverride, archOverride]);
+    });
+
+    it('ignores unsupported field names in dedupe', async () => {
+        const res = await request(app)
+            .get('/api/compilers/c++?fields=id,name&dedupe=name,id')
+            .set('Accept', 'application/json')
+            .expect(200);
+
+        expect(res.body).toEqual([
+            {id: 'gcc900', name: 'GCC 9.0.0'},
+            {id: 'gcc1000', name: 'GCC 10.0.0'},
+        ]);
+    });
+
+    it('returns an empty table for a dedupable field that was not requested', async () => {
+        const res = await request(app)
+            .get('/api/compilers/c++?fields=id&dedupe=possibleOverrides')
+            .set('Accept', 'application/json')
+            .expect(200);
+
+        expect(res.body).toEqual({
+            compilers: [{id: 'gcc900'}, {id: 'gcc1000'}],
+            refs: {possibleOverrides: []},
+        });
+    });
+
+    it('still serves the plain-text listing', async () => {
+        const res = await request(app)
+            .get('/api/compilers/c++?fields=id,possibleOverrides&dedupe=possibleOverrides')
+            .set('Accept', 'text/plain')
+            .expect(200);
+
+        expect(res.text).toContain('gcc900');
     });
 });
 
