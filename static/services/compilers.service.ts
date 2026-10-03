@@ -91,6 +91,7 @@ export class CompilersService {
         'supportsHaskellStgView',
         'supportsHaskellCmmView',
         'supportsLeanCView',
+        'supportsJvmBytecodeView',
         'supportsClojureMacroExpView',
         'supportsYulView',
         'supportsCfg',
