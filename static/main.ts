@@ -74,7 +74,7 @@ import {languagesService} from './services/languages.service.js';
 import {Settings, SiteSettings} from './settings.js';
 import {initialiseSharing} from './sharing.js';
 import {Themer} from './themes.js';
-import {deserialiseState} from './url.js';
+import {deserialiseState, parseSavedLayoutState} from './url.js';
 import {formatISODate, updateAndCalcTopBarHeight} from './utils.js';
 import {Alert} from './widgets/alert.js';
 import {HistoryWidget} from './widgets/history-widget.js';
@@ -361,7 +361,11 @@ function findConfig(
             }
             if (!config) {
                 const savedState = sessionThenLocalStorage.get('gl', null);
-                if (savedState) config = JSON.parse(savedState);
+                if (savedState) {
+                    config = parseSavedLayoutState(savedState);
+                    // Drop unusable state so we don't trip over it again on the next load
+                    if (!config) sessionThenLocalStorage.remove('gl');
+                }
             }
             if (!config?.content || config.content?.length === 0) {
                 config = defaultConfig;
