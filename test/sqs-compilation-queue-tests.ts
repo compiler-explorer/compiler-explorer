@@ -22,16 +22,18 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import {describe, expect, it} from 'vitest';
+import {describe, expect, it, vi} from 'vitest';
 
 import {cargoBuildSystem, cmakeBuildSystem} from '../lib/build-systems/index.js';
 import {
     getRequestedBuildSystem,
     isJsonContentType,
     type RemoteCompilationRequest,
+    SqsCompilationWorkerMode,
     sendCompilationResultViaWebsocket,
 } from '../lib/compilation/sqs-compilation-queue.js';
 import {CompileHandler} from '../lib/handlers/compile.js';
+import {logger} from '../lib/logger.js';
 import {WEBSOCKET_SIZE_THRESHOLD} from '../types/compilation/compilation.interfaces.js';
 
 function makeMessage(fields: Partial<RemoteCompilationRequest>): RemoteCompilationRequest {
@@ -154,8 +156,7 @@ describe('Sending a result too large for the events websocket', () => {
         expect(stored.map(entry => entry.key)).toContain('a-guid');
     });
 
-    // Without the request that produced it there is no way back to the path that failed to store
-    // the result in the first place.
+    // The result alone does not identify the path that failed to store it; the request does.
     it('saves the request alongside it under its own key', async () => {
         const {sender} = makeSender();
         const {stored, env} = makeEnv('temp/abc123');
@@ -178,8 +179,7 @@ describe('Sending a result too large for the events websocket', () => {
         expect(stored).toHaveLength(0);
     });
 
-    // Sending it anyway closes the shared connection with a 1009, taking every other result this
-    // worker has in flight with it.
+    // Sending it anyway closes the shared connection, taking every result in flight with it.
     it('sends an error rather than the payload when it cannot be stored', async () => {
         const {sent, sender} = makeSender();
         const {env} = makeEnv(undefined);
@@ -199,5 +199,62 @@ describe('Sending a result too large for the events websocket', () => {
         expect(sent[0].stdout).toEqual([]);
         expect(sent[0].s3Key).toBeUndefined();
         expect(stored).toHaveLength(0);
+    });
+});
+
+describe('Deleting a collected message without waiting for it', () => {
+    // A failure here must not escape: nothing awaits it, and the message is already collected.
+    function makeWorker(deleteMessage: (params: any) => any) {
+        const worker: any = Object.create(SqsCompilationWorkerMode.prototype);
+        worker.queue_url = 'https://sqs.example/queue.fifo';
+        worker.sqs = {deleteMessage};
+        worker.receiveMsg = async () => ({
+            Messages: [
+                {
+                    Body: JSON.stringify({guid: 'a-guid', compilerId: 'g132'}),
+                    ReceiptHandle: 'a-receipt-handle',
+                    Attributes: {SentTimestamp: '1700000000000'},
+                },
+            ],
+        });
+        return worker;
+    }
+
+    it('reports a rejected delete rather than leaving it unhandled', async () => {
+        const worker = makeWorker(async () => {
+            throw new Error('AWS said no');
+        });
+        const reported = vi.spyOn(logger, 'error').mockImplementation(() => logger);
+
+        await expect(worker.pop()).resolves.toMatchObject({guid: 'a-guid'});
+        await new Promise(resolve => setImmediate(resolve));
+
+        expect(reported).toHaveBeenCalled();
+        reported.mockRestore();
+    });
+
+    it('returns the message when the delete throws before it even starts', async () => {
+        const worker = makeWorker(() => {
+            throw new Error('thrown, not rejected');
+        });
+
+        await expect(worker.pop()).resolves.toMatchObject({guid: 'a-guid'});
+    });
+
+    it('asks for the delete before parsing, not after', async () => {
+        const order: string[] = [];
+        const worker = makeWorker(() => {
+            order.push('delete');
+            return Promise.resolve();
+        });
+        const originallyOverflow = worker.isS3OverflowMessage.bind(worker);
+        worker.isS3OverflowMessage = (msg: any) => {
+            order.push('parse');
+            return originallyOverflow(msg);
+        };
+
+        await worker.pop();
+
+        expect(order).toEqual(['delete', 'parse']);
     });
 });
