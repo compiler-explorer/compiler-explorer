@@ -247,3 +247,10 @@ export function maskRootdirKeepingAppPrefix(filepath: string): string {
     // cannot match without the marker anyway.
     return filepath.includes(ce_temp_prefix) ? filepath.replace(TEMPDIR_RE, '/app/') : filepath;
 }
+
+/**
+ * Placeholder for the Libraries button's icon inside a compilation hint. Hints are HTML-encoded before
+ * display, because they can quote compiler output, so markup cannot travel in the text itself; the
+ * frontend swaps this token for the icon after encoding. Plain ASCII so encoding leaves it alone.
+ */
+export const LIBRARIES_ICON_TOKEN = '{librariesIcon}';

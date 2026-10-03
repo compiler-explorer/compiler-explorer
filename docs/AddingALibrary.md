@@ -150,10 +150,6 @@ libs.rangesv3.versions.0110.version=0.11.0
 libs.rangesv3.versions.0110.path=/opt/compiler-explorer/libs/rangesv3/0.11.0/include
 ```
 
-If you're adding a new library and plan to submit a PR for it, please make sure that its identifier appears in
-alphabetical order in the `libs` property. You should also put all its related configuration in that same order when
-defining it. This helps us keep the config manageable until further automation can be implemented. Thank you!
-
 ## Setting default libraries
 
 The `defaultLibs` key specifies an array of libs/versions which will be enabled by default when the user visits the
