@@ -24,7 +24,7 @@
 
 import express, {Express} from 'express';
 import request from 'supertest';
-import {beforeAll, describe, expect, it} from 'vitest';
+import {beforeAll, describe, expect, it, vi} from 'vitest';
 
 import {CompileHandler, SetTestMode} from '../../lib/handlers/compile.js';
 import {fakeProps} from '../../lib/properties.js';
@@ -61,6 +61,31 @@ describe('Compiler tests', () => {
 
     it('throws for unknown compilers', async () => {
         await request(app).post('/NOT_A_COMPILER/compile').expect(404);
+    });
+
+    it('keeps valid compilers when another has an unknown class', async () => {
+        const exit = vi.spyOn(process, 'exit').mockImplementation(() => {
+            throw new Error('Unexpected process exit');
+        });
+        try {
+            const compilers = await compileHandler.setCompilers(
+                [
+                    {id: 'missing', lang: 'a', compilerType: 'not-registered', exe: 'missing'},
+                    {
+                        id: 'available',
+                        lang: 'a',
+                        compilerType: 'fake-for-test',
+                        exe: 'fake',
+                        fakeResult: {code: 0, stdout: [], stderr: [], asm: []},
+                    },
+                ],
+                null,
+            );
+            expect(exit).not.toHaveBeenCalled();
+            expect(compilers.map(compiler => compiler.id)).toEqual(['available']);
+        } finally {
+            exit.mockRestore();
+        }
     });
 
     describe('Noscript API', () => {

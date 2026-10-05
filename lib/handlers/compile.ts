@@ -264,7 +264,7 @@ export class CompileHandler implements ICompileHandler {
             logger.error(`Compiler ID: ${compiler.id}`);
             logger.error(e);
             logger.error(e.stack);
-            process.exit(1);
+            return null;
         }
 
         // attempt to resolve non absolute exe paths
