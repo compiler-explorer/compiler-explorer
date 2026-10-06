@@ -3437,7 +3437,7 @@ export class BaseCompiler {
         const optionsError = this.checkOptions(options);
         if (optionsError) throw optionsError;
 
-        const filenameError = this.checkCustomOutputFilename(backendOptions.customOutputFilename);
+        const filenameError = utils.checkCustomOutputFilename(backendOptions.customOutputFilename);
         if (filenameError) throw filenameError;
 
         const libsAndOptions = {libraries, options};
@@ -4163,14 +4163,6 @@ but nothing was dumped. Possible causes are:
     /** Throws if `filename` is not inside `dirPath`. */
     assertInsideDir(dirPath: string, filename: string) {
         if (!utils.isPathInside(dirPath, filename)) throw new Error('Invalid filename');
-    }
-
-    /** Returns an error message if `filename` names a path that would leave the directory it is joined onto. */
-    checkCustomOutputFilename(filename: string | undefined) {
-        if (!filename) return null;
-        const probeDir = path.join(path.sep, 'ce-compilation-dir');
-        if (!utils.isPathInside(probeDir, path.join(probeDir, filename))) return 'Invalid filename';
-        return null;
     }
 
     checkOptions(options: string[]) {

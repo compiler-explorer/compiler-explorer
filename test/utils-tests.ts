@@ -1019,3 +1019,23 @@ describe('resolveWithinDir', () => {
         }
     });
 });
+
+describe('checkCustomOutputFilename', () => {
+    it('accepts a filename that stays inside the compilation directory', () => {
+        for (const filename of [undefined, null, '', 'output.s', 'sub/dir/out.o', 'a/../b.s', '/abs/but/contained']) {
+            expect(utils.checkCustomOutputFilename(filename)).toBeNull();
+        }
+    });
+
+    it('rejects a filename that escapes the compilation directory', () => {
+        for (const filename of ['..', '../x', 'a/../../x', '../../../../some/other/path']) {
+            expect(utils.checkCustomOutputFilename(filename)).toBe('Invalid filename');
+        }
+    });
+
+    it('rejects a filename that is not a string', () => {
+        for (const filename of [0, 5, false, true, {}, ['out.s']]) {
+            expect(utils.checkCustomOutputFilename(filename)).toBe('Invalid filename');
+        }
+    });
+});

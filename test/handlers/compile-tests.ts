@@ -225,6 +225,14 @@ describe('Compiler tests', () => {
                 });
         }
 
+        it('rejects an output filename that escapes the compilation directory as a bad request', async () => {
+            for (const customOutputFilename of ['../../escape', 5]) {
+                await makeFakeJson('I am a program', {compilerOptions: {customOutputFilename}})
+                    .expect('Content-Type', /json/)
+                    .expect(400, {error: true, message: 'Invalid filename'});
+            }
+        });
+
         it('handles JSON output', async () => {
             await setFakeResult({
                 code: 0,

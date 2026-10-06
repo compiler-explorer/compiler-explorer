@@ -109,18 +109,6 @@ describe('Basic compiler invariants', () => {
         expect(result.result?.inputFilename).toEqual('main.cpp');
     });
 
-    it('should accept a custom output filename that stays inside the compilation directory', () => {
-        for (const filename of [undefined, '', 'output.s', 'sub/dir/out.o', 'a/../b.s', '/abs/but/contained']) {
-            expect(compiler.checkCustomOutputFilename(filename)).toBeNull();
-        }
-    });
-
-    it('should reject a custom output filename that escapes the compilation directory', () => {
-        for (const filename of ['..', '../x', 'a/../../x', '../../../../some/other/path']) {
-            expect(compiler.checkCustomOutputFilename(filename)).toBe('Invalid filename');
-        }
-    });
-
     it('should check the final output path, whatever produced it', () => {
         expect(() => compiler.assertInsideDir('/tmp/ce-dir', '/tmp/ce-dir/output.s')).not.toThrow();
         for (const outside of ['/etc/passwd', '/tmp/ce-dir', '/tmp/ce-dir/../other', '/tmp/ce-dir-sibling/output.s']) {
