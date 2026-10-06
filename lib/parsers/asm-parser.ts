@@ -406,11 +406,9 @@ export class AsmParser extends AsmRegex implements IAsmParser {
         this.asmOpcodeRe = /^\s*(?<address>[\da-f]+):\s*(?<opcodes>([\da-f]{2} ?)+)\s*(?<disasm>.*)/;
         this.relocationRe = /^\s*(?<address>[\da-f]+):\s*(?<relocname>(R_[\dA-Z_]+))\s*(?<relocdata>.*)/;
         this.relocDataSymNameRe = /^(?<symname>[^\d-+][\w.]*)?\s*(?<addend_or_value>.*)$/;
-        if (process.platform === 'win32') {
-            this.lineRe = /^(?:; )?([A-Z]:\/[^:]+):(?<line>\d+).*/;
-        } else {
-            this.lineRe = /^(?:; )?(\/[^:]+):(?<line>\d+).*/;
-        }
+        // The path is whatever objdump printed, not the host: `/file:N`, `C:/file:N`, or `C:\file:N`.
+        // llvm-objdump prefixes that same record with `; `.
+        this.lineRe = /^(?:; )?(?<file>(?:[A-Z]:[\\/]|\/)[^:]+):(?<line>\d+).*/;
 
         // labelRe is made very greedy as it's also used with demangled objdump output (eg. it can have c++ template with <>).
         this.labelRe = /^([\da-f]+)\s+<(.+)>:$/;
@@ -665,9 +663,12 @@ export class AsmParser extends AsmRegex implements IAsmParser {
             let match = line.match(this.lineRe);
             if (match) {
                 assert(match.groups);
-                const mainsource = this.stdInLooking.test(match[1]);
+                // Subclasses that override lineRe (SASS) capture the path as group 1 and do not name it `file`.
+                const file = match.groups.file ?? match[1];
+                assert(file);
+                const mainsource = this.stdInLooking.test(file);
                 source = {
-                    file: dontMaskFilenames || !mainsource ? utils.maskRootdir(match[1]) : null,
+                    file: dontMaskFilenames || !mainsource ? utils.maskRootdir(file) : null,
                     line: Number.parseInt(match.groups.line, 10),
                     mainsource,
                 };
@@ -686,7 +687,6 @@ export class AsmParser extends AsmRegex implements IAsmParser {
                     labelDefinitions[func] = asm.length;
                     // each function's label may be dropped again, not only the first after user code
                     mayRemovePreviousLabel = true;
-                    if (process.platform === 'win32') source = null;
                 }
                 continue;
             }
