@@ -1189,3 +1189,49 @@ describe('Make build system', () => {
         }
     });
 });
+
+describe('Project build output path', () => {
+    // Called directly, so request parsing never sees these names. CMake's artifact sits a level deeper, in build/.
+    const cases = [
+        ['cmake', cmakeBuildSystem, '../../ce-compilation-dir/secret'],
+        ['make', makeBuildSystem, '../ce-compilation-dir/secret'],
+    ] as const;
+
+    for (const [name, buildSystem, customOutputFilename] of cases) {
+        it(`refuses a ${name} artifact outside the compilation directory before building anything`, async () => {
+            const env = makeCompilationEnvironment({
+                languages: {'c++': {id: 'c++'}},
+                props: {make: '/usr/bin/make', cmake: '/usr/bin/cmake'},
+            });
+            const compiler = new BaseCompiler(
+                makeFakeCompilerInfo({exe: '/usr/bin/g++', lang: 'c++', ldPath: [], libPath: []}),
+                env,
+            );
+            vi.spyOn(buildSystem, 'getUnsupportedReason').mockResolvedValue(undefined);
+            const runProjectBuild = vi.spyOn(compiler as any, 'runProjectBuild');
+            const exec = vi.spyOn(compiler, 'exec');
+            const dirs: string[] = [];
+            const newTempDir = compiler.newTempDir.bind(compiler);
+            vi.spyOn(compiler, 'newTempDir').mockImplementation(async () => {
+                dirs.push(await newTempDir());
+                return dirs.at(-1)!;
+            });
+
+            try {
+                await expect(
+                    compiler.buildProject(
+                        buildSystem,
+                        [],
+                        makeParsedRequest({customOutputFilename}),
+                        BypassCache.Compilation,
+                    ),
+                ).rejects.toThrow('Invalid filename');
+                expect(runProjectBuild).not.toHaveBeenCalled();
+                expect(exec).not.toHaveBeenCalled();
+            } finally {
+                vi.restoreAllMocks();
+                for (const dir of dirs) await fs.rm(dir, {recursive: true, force: true});
+            }
+        });
+    }
+});

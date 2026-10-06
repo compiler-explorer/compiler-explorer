@@ -2305,11 +2305,13 @@ export class BaseCompiler {
                     inputFilename = path.join(dirPath, path.basename(buildResults.inputFilename));
                 }
 
+                const executableFilename = this.getExecutableFilename(dirPath, this.outputFilebase, key);
+                this.assertInsideDir(dirPath, executableFilename);
                 return Object.assign({}, buildResults, {
                     code: 0,
                     inputFilename: inputFilename,
                     dirPath: dirPath,
-                    executableFilename: this.getExecutableFilename(dirPath, this.outputFilebase, key),
+                    executableFilename,
                     packageDownloadAndUnzipTime: utils.deltaTimeNanoToMili(startTime, endTime),
                 });
             }
