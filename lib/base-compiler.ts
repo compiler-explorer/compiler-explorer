@@ -3437,8 +3437,8 @@ export class BaseCompiler {
         const optionsError = this.checkOptions(options);
         if (optionsError) throw optionsError;
 
-        const filenameError = utils.checkCustomOutputFilename(backendOptions.customOutputFilename);
-        if (filenameError) throw filenameError;
+        // Request parsing has already rejected a bad filename; reaching here with one is a bug.
+        assert(utils.checkCustomOutputFilename(backendOptions.customOutputFilename) === null, 'Invalid filename');
 
         const libsAndOptions = {libraries, options};
         if (this.tryAutodetectLibraries(libsAndOptions)) {

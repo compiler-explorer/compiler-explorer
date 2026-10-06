@@ -116,7 +116,7 @@ describe('Basic compiler invariants', () => {
         }
     });
 
-    it('should reject an escaping custom output filename before compiling', async () => {
+    it('should assert on an escaping custom output filename that reached compile()', async () => {
         await expect(
             compiler.compile(
                 'int main(){}',
@@ -129,7 +129,7 @@ describe('Basic compiler invariants', () => {
                 [],
                 [],
             ),
-        ).rejects.toBe('Invalid filename');
+        ).rejects.toThrow('Invalid filename');
     });
 
     it('should refuse to compile when the output path is outside the directory', async () => {
