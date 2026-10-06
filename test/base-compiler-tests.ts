@@ -863,6 +863,39 @@ describe('Rust overrides', () => {
     });
 });
 
+describe('Storing a result too large for the events websocket', () => {
+    function makeWorker() {
+        const languages = {
+            'c++': {id: 'c++', name: 'C++', monaco: 'cppp', extensions: ['.cpp']},
+        } as any;
+        const env = makeCompilationEnvironment({languages});
+        (env as any).hasSharedCache = () => true;
+        const compiler = new BaseCompiler(makeFakeCompilerInfo({lang: 'c++', exe: '/dev/null', options: ''}), env);
+        (compiler as any).isCompilationWorker = true;
+        const result = {code: 0, stdout: [{text: 'x'.repeat(64 * 1024)}]} as unknown as CompilationResult;
+        return {compiler, result};
+    }
+
+    it('keeps its own copy when the cache does not hold this payload', async () => {
+        const {compiler, result} = makeWorker();
+        const put = vi.fn().mockResolvedValue('temp/abc');
+        (compiler as any).env.tempCachePutWithTTL = put;
+
+        await (compiler as any).storeOversizedResult(result, {k: 1}, false);
+
+        expect(result.s3Key).toEqual('temp/abc');
+        expect(put).toHaveBeenCalledOnce();
+    });
+
+    it('points at the cache when it already holds this payload', async () => {
+        const {compiler, result} = makeWorker();
+
+        await (compiler as any).storeOversizedResult(result, {k: 1}, true);
+
+        expect(result.s3Key).toBeDefined();
+    });
+});
+
 describe('An executor request whose result is too large to send', () => {
     // Executor requests return before afterCompilation, so if this path does not store an oversized
     // result nothing else will, and it goes to the router inline - which at websocket message size
