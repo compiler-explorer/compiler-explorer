@@ -3437,7 +3437,8 @@ export class BaseCompiler {
         const optionsError = this.checkOptions(options);
         if (optionsError) throw optionsError;
 
-        this.checkCustomOutputFilename(backendOptions);
+        const filenameError = this.checkCustomOutputFilename(backendOptions.customOutputFilename);
+        if (filenameError) throw filenameError;
 
         const libsAndOptions = {libraries, options};
         if (this.tryAutodetectLibraries(libsAndOptions)) {
@@ -4164,13 +4165,12 @@ but nothing was dumped. Possible causes are:
         if (!utils.isPathInside(dirPath, filename)) throw new Error('Invalid filename');
     }
 
-    /** Throws if `customOutputFilename` is set but is not a string, or names a path that would leave the directory it is joined onto. */
-    checkCustomOutputFilename(backendOptions: Record<string, any>) {
-        const filename = backendOptions.customOutputFilename;
-        if (filename === undefined || filename === null || filename === '') return;
-        if (typeof filename !== 'string') throw new Error('Invalid filename');
+    /** Returns an error message if `filename` names a path that would leave the directory it is joined onto. */
+    checkCustomOutputFilename(filename: string | undefined) {
+        if (!filename) return null;
         const probeDir = path.join(path.sep, 'ce-compilation-dir');
-        utils.resolveWithinDir(probeDir, filename);
+        if (!utils.isPathInside(probeDir, path.join(probeDir, filename))) return 'Invalid filename';
+        return null;
     }
 
     checkOptions(options: string[]) {

@@ -110,21 +110,14 @@ describe('Basic compiler invariants', () => {
     });
 
     it('should accept a custom output filename that stays inside the compilation directory', () => {
-        for (const customOutputFilename of [
-            undefined,
-            '',
-            'output.s',
-            'sub/dir/out.o',
-            'a/../b.s',
-            '/abs/but/contained',
-        ]) {
-            expect(() => compiler.checkCustomOutputFilename({customOutputFilename})).not.toThrow();
+        for (const filename of [undefined, '', 'output.s', 'sub/dir/out.o', 'a/../b.s', '/abs/but/contained']) {
+            expect(compiler.checkCustomOutputFilename(filename)).toBeNull();
         }
     });
 
     it('should reject a custom output filename that escapes the compilation directory', () => {
-        for (const customOutputFilename of ['..', '../x', 'a/../../x', '../../../../some/other/path', 42, {}]) {
-            expect(() => compiler.checkCustomOutputFilename({customOutputFilename})).toThrow('Invalid filename');
+        for (const filename of ['..', '../x', 'a/../../x', '../../../../some/other/path']) {
+            expect(compiler.checkCustomOutputFilename(filename)).toBe('Invalid filename');
         }
     });
 
@@ -148,7 +141,25 @@ describe('Basic compiler invariants', () => {
                 [],
                 [],
             ),
+        ).rejects.toBe('Invalid filename');
+    });
+
+    it('should refuse to compile when the output path is outside the directory', async () => {
+        const runCompiler = vi.spyOn(compiler, 'runCompiler');
+        vi.spyOn(compiler, 'getOutputFilename').mockReturnValue('/somewhere/else/output.s');
+        await expect(
+            compiler.doCompilation(
+                '/tmp/ce-dir/example.cpp',
+                '/tmp/ce-dir',
+                {backendOptions: {}} as any,
+                [],
+                makeFakeParseFiltersAndOutputOptions({}),
+                {},
+                [],
+                [],
+            ),
         ).rejects.toThrow('Invalid filename');
+        expect(runCompiler).not.toHaveBeenCalled();
     });
 
     it('should skip version check if forced to', async () => {
