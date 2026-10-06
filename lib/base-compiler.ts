@@ -4159,12 +4159,12 @@ but nothing was dumped. Possible causes are:
         return result;
     }
 
-    /** Whatever getOutputFilename and its overrides came up with, it must still be inside the compilation directory. */
+    /** Throws if `filename` is not inside `dirPath`. */
     assertInsideDir(dirPath: string, filename: string) {
         if (!utils.isPathInside(dirPath, filename)) throw new Error('Invalid filename');
     }
 
-    /** A custom output filename comes straight from the request, and must stay inside the compilation directory. */
+    /** Throws if `customOutputFilename` is set but is not a string, or names a path that would leave the directory it is joined onto. */
     checkCustomOutputFilename(backendOptions: Record<string, any>) {
         const filename = backendOptions.customOutputFilename;
         if (filename === undefined || filename === null || filename === '') return;
