@@ -109,6 +109,48 @@ describe('Basic compiler invariants', () => {
         expect(result.result?.inputFilename).toEqual('main.cpp');
     });
 
+    it('should accept a custom output filename that stays inside the compilation directory', () => {
+        for (const customOutputFilename of [
+            undefined,
+            '',
+            'output.s',
+            'sub/dir/out.o',
+            'a/../b.s',
+            '/abs/but/contained',
+        ]) {
+            expect(() => compiler.checkCustomOutputFilename({customOutputFilename})).not.toThrow();
+        }
+    });
+
+    it('should reject a custom output filename that escapes the compilation directory', () => {
+        for (const customOutputFilename of ['..', '../x', 'a/../../x', '../../../../some/other/path', 42, {}]) {
+            expect(() => compiler.checkCustomOutputFilename({customOutputFilename})).toThrow('Invalid filename');
+        }
+    });
+
+    it('should check the final output path, whatever produced it', () => {
+        expect(() => compiler.assertInsideDir('/tmp/ce-dir', '/tmp/ce-dir/output.s')).not.toThrow();
+        for (const outside of ['/etc/passwd', '/tmp/ce-dir', '/tmp/ce-dir/../other', '/tmp/ce-dir-sibling/output.s']) {
+            expect(() => compiler.assertInsideDir('/tmp/ce-dir', outside)).toThrow('Invalid filename');
+        }
+    });
+
+    it('should reject an escaping custom output filename before compiling', async () => {
+        await expect(
+            compiler.compile(
+                'int main(){}',
+                [],
+                {customOutputFilename: '../../escape'},
+                makeFakeParseFiltersAndOutputOptions({}),
+                BypassCache.None,
+                [],
+                {},
+                [],
+                [],
+            ),
+        ).rejects.toThrow('Invalid filename');
+    });
+
     it('should skip version check if forced to', async () => {
         const newConfig: Partial<CompilerInfo> = {...info, explicitVersion: '123'};
         const forcedVersionCompiler = new BaseCompiler(newConfig as CompilerInfo, ce);

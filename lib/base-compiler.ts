@@ -2183,6 +2183,7 @@ export class BaseCompiler {
         const inputFilename = writeSummary.inputFilename;
 
         const outputFilename = this.getExecutableFilename(dirPath, this.outputFilebase, key);
+        this.assertInsideDir(dirPath, outputFilename);
 
         const buildFilters: ParseFiltersAndOutputOptions = Object.assign({}, key.filters);
         buildFilters.binaryObject = false;
@@ -2661,6 +2662,7 @@ export class BaseCompiler {
         const inputFilenameSafe = this.filename(inputFilename);
 
         const outputFilename = this.getOutputFilename(dirPath, this.outputFilebase, key);
+        this.assertInsideDir(dirPath, outputFilename);
 
         const overrides = this.sanitizeCompilerOverrides(backendOptions.overrides || []);
 
@@ -3435,6 +3437,8 @@ export class BaseCompiler {
         const optionsError = this.checkOptions(options);
         if (optionsError) throw optionsError;
 
+        this.checkCustomOutputFilename(backendOptions);
+
         const libsAndOptions = {libraries, options};
         if (this.tryAutodetectLibraries(libsAndOptions)) {
             libraries = libsAndOptions.libraries;
@@ -4153,6 +4157,20 @@ but nothing was dumped. Possible causes are:
             logger.error('Error during post-processing: ', result);
         }
         return result;
+    }
+
+    /** Whatever getOutputFilename and its overrides came up with, it must still be inside the compilation directory. */
+    assertInsideDir(dirPath: string, filename: string) {
+        if (!utils.isPathInside(dirPath, filename)) throw new Error('Invalid filename');
+    }
+
+    /** A custom output filename comes straight from the request, and must stay inside the compilation directory. */
+    checkCustomOutputFilename(backendOptions: Record<string, any>) {
+        const filename = backendOptions.customOutputFilename;
+        if (filename === undefined || filename === null || filename === '') return;
+        if (typeof filename !== 'string') throw new Error('Invalid filename');
+        const probeDir = path.join(path.sep, 'ce-compilation-dir');
+        utils.resolveWithinDir(probeDir, filename);
     }
 
     checkOptions(options: string[]) {
