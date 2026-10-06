@@ -1044,6 +1044,15 @@ describe('checkCustomOutputFilename', () => {
         }
     });
 
+    it('lets a build system that names its artifact from a subdirectory reach the project root', () => {
+        for (const filename of ['../output.s', '../src/main.o', 'out/../../output.s']) {
+            expect(utils.checkCustomOutputFilename(filename, 'build')).toBeNull();
+        }
+        for (const filename of ['..', '../..', '../../x', '/../../x', '../../build/x']) {
+            expect(utils.checkCustomOutputFilename(filename, 'build')).toBe('Invalid filename');
+        }
+    });
+
     it('rejects a filename that is not a string', () => {
         for (const filename of [0, 5, false, true, {}, ['out.s']]) {
             expect(utils.checkCustomOutputFilename(filename)).toBe('Invalid filename');

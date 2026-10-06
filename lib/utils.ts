@@ -569,14 +569,15 @@ export function resolveWithinDir(dirPath: string, filename: string): string {
 
 /**
  * Returns an error message if a request's `customOutputFilename` is not a string, or names a path that would leave the
- * directory it is joined onto.
+ * compilation directory. `buildDir` is where the name is resolved from, relative to that directory: a CMake artifact
+ * is named from `build`, so `../` reaches the project's own files.
  */
-export function checkCustomOutputFilename(filename: unknown): string | null {
+export function checkCustomOutputFilename(filename: unknown, buildDir = '.'): string | null {
     if (filename === undefined || filename === null || filename === '') return null;
     if (typeof filename !== 'string') return 'Invalid filename';
-    // No directory exists yet when a request is parsed. Joining onto '.' rather than normalising keeps a leading
-    // separator from hiding a '..', as path.join(dir, '/../x') leaves dir.
-    const relative = path.join('.', filename);
+    // No directory exists yet when a request is parsed. Joining rather than normalising keeps a leading separator
+    // from hiding a '..', as path.join(dir, '/../x') leaves dir.
+    const relative = path.join(buildDir, filename);
     if (relative === '.' || relative === '..' || relative.startsWith('..' + path.sep)) return 'Invalid filename';
     return null;
 }
