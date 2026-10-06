@@ -56,6 +56,7 @@ import {cmakeBuildSystem, getBuildSystem} from '../build-systems/index.js';
 import {parseExecutionParameters, parseTools, parseUserArguments} from '../compilation/compilation-request-parser.js';
 import {CompilationEnvironment} from '../compilation-env.js';
 import {getCompilerTypeByKey} from '../compilers/index.js';
+import {MissingExternalParserError} from '../external-parsers/missing-external-parser-error.js';
 import {logger} from '../logger.js';
 import {ClientOptionsType} from '../options-handler.js';
 import {PropertyGetter} from '../properties.interfaces.js';
@@ -136,6 +137,7 @@ export class CompileHandler implements ICompileHandler {
     private readonly awsProps: PropertyGetter;
     private readonly appArgs: AppArguments | undefined;
     private clientOptions: ClientOptionsType | null = null;
+    private missingExternalParsers: {id: string; parserPath: string}[] = [];
     private readonly compileCounter = new Counter({
         name: 'ce_compilations_total',
         help: 'Number of compilations',
@@ -298,6 +300,10 @@ export class CompileHandler implements ICompileHandler {
                 const compilerObj = new compilerClass(compiler, this.compilerEnv);
                 return compilerObj.initialise(modificationTime, this.clientOptions, isPrediscovered);
             } catch (err) {
+                if (err instanceof MissingExternalParserError) {
+                    this.missingExternalParsers.push({id: err.compilerId, parserPath: err.parserPath});
+                    return null;
+                }
                 logger.warn(`Unable to stat ${compiler.id} compiler binary: `, err);
                 return null;
             }
@@ -312,6 +318,7 @@ export class CompileHandler implements ICompileHandler {
     ): Promise<CompilerInfo[]> {
         // Be careful not to update this.compilersById until we can replace it entirely.
         const compilersById: Partial<Record<LanguageKey, Record<string, BaseCompiler>>> = {};
+        this.missingExternalParsers = [];
         try {
             this.clientOptions = clientOptions;
             const totalCompilers = compilers.length;
@@ -325,29 +332,54 @@ export class CompileHandler implements ICompileHandler {
                 compilersCreated++;
             }
 
+            const missingParsers = this.missingExternalParsers;
+            const described = missingParsers.map(missing => `${missing.id} (${missing.parserPath})`).join(', ');
+            if (missingParsers.length > 0) logger.error(`Missing external parser: ${described}`);
+
+            const devMode = this.appArgs?.devMode === true;
+            // Returning here would let startup reach startListening before the process exits.
+            const haltForMissingParsers = missingParsers.length > 0 && !devMode;
+            if (missingParsers.length > 0 && devMode) {
+                logger.error(
+                    'Missing external parsers are non-fatal only because devMode is on; affected compilers were not loaded',
+                );
+            } else if (haltForMissingParsers) {
+                logger.error('Exiting in 5s so log transports can flush. The server will not listen.');
+            }
+
             const failedCount = totalCompilers - compilersCreated;
             if (failedCount > 0) {
                 logger.error(`Failed to create ${failedCount} out of ${totalCompilers} compilers`);
 
-                if (this.appArgs?.exitOnCompilerFailure) {
+                // Missing parsers have their own flush-then-exit below. An immediate
+                // exitOnCompilerFailure exit as well would exit twice for that same failure.
+                const otherFailures = failedCount - missingParsers.length;
+                if (this.appArgs?.exitOnCompilerFailure && otherFailures > 0) {
                     logger.error('Exiting due to compiler creation failures (exitOnCompilerFailure=true)');
                     process.exit(1);
                 }
             }
 
-            logger.info('Compilers created: ' + compilersCreated);
-            if (this.awsProps) {
-                logger.info('Fetching possible arguments from storage');
-                await Promise.all(
-                    createdCompilers.map(compiler => compiler.possibleArguments.loadFromStorage(this.awsProps)),
-                );
+            if (!haltForMissingParsers) {
+                logger.info('Compilers created: ' + compilersCreated);
+                if (this.awsProps) {
+                    logger.info('Fetching possible arguments from storage');
+                    await Promise.all(
+                        createdCompilers.map(compiler => compiler.possibleArguments.loadFromStorage(this.awsProps)),
+                    );
+                }
+                this.compilersById = compilersById;
+                return createdCompilers.map(compiler => compiler.getInfo());
             }
-            this.compilersById = compilersById;
-            return createdCompilers.map(compiler => compiler.getInfo());
         } catch (err) {
             logger.error('Exception while processing compilers:', err);
             return [];
         }
+
+        await new Promise<void>(resolve => {
+            setTimeout(resolve, 5000);
+        });
+        process.exit(1);
     }
 
     setPossibleToolchains(toolchains: CompilerOverrideOptions) {
