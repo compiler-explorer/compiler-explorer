@@ -2636,8 +2636,11 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
         await this.libsWidget.stateLoaded;
     }
 
+    // Never rejects: callers await this while compiles are deferred, and a failed library fetch must not leave
+    // the pane unable to compile. On failure the libs widget just keeps its previous state.
     async updateLibraries(): Promise<void> {
-        if (this.libsWidget) {
+        if (!this.libsWidget) return;
+        try {
             let filteredLibraries: LanguageLibs = {};
             if (this.compiler) {
                 filteredLibraries = await LibUtils.getSupportedLibraries(
@@ -2648,6 +2651,8 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
             }
 
             await this.libsWidget.setNewLangId(this.currentLangId ?? '', this.compiler?.id ?? '', filteredLibraries);
+        } catch (e) {
+            SentryCapture(e, 'Compiler.updateLibraries');
         }
     }
 
