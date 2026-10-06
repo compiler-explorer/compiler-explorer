@@ -212,6 +212,60 @@ nop
         expect(lines).toContain('.rept 5');
         expect(lines).not.toContain('.p2align 4');
     });
+
+    // What GCC 13.2 and later emit for a file that only includes <iostream>, cut down.
+    it('should filter the debug info after an #APP block that is never closed', () => {
+        const result = parser.processAsm(
+            `	.text
+.Ltext0:
+	.file 0 "/app" "/app/example.cpp"
+#APP
+	.globl _ZSt21ios_base_library_initv
+.Letext0:
+	.file 1 "<built-in>"
+	.section	.debug_info,"",@progbits
+.Ldebug_info0:
+	.long	0x1c5d
+	.value	0x5
+	.section	.debug_abbrev,"",@progbits
+.Ldebug_abbrev0:
+	.uleb128 0x1
+	.ident	"GCC: (GNU) 16.2.0"
+	.section	.note.GNU-stack,"",@progbits`,
+            {directives: true, labels: true, commentOnly: true},
+        );
+        expect(result.asm.map(line => line.text.trim())).toEqual(['.globl _ZSt21ios_base_library_initv']);
+    });
+
+    it('should keep the directives of top-level asm that ends the unit', () => {
+        const result = parser.processAsm(
+            `	.globl	_Z1fv
+_Z1fv:
+	ret
+	.size	_Z1fv, .-_Z1fv
+#APP
+	.rept 3
+nop
+.endr
+.Letext0:
+	.section	.debug_info,"",@progbits
+.Ldebug_info0:
+	.long	0x57`,
+            {directives: true, labels: true, commentOnly: true},
+        );
+        expect(result.asm.map(line => line.text.trim())).toEqual(['_Z1fv:', 'ret', '.rept 3', 'nop', '.endr']);
+    });
+
+    it('should close an unterminated #APP block at the .ident when there is no debug info', () => {
+        const result = parser.processAsm(
+            `#APP
+	.globl _ZSt21ios_base_library_initv
+	.ident	"GCC: (GNU) 16.2.0"
+	.section	.note.GNU-stack,"",@progbits`,
+            {directives: true, commentOnly: true},
+        );
+        expect(result.asm.map(line => line.text.trim())).toEqual(['.globl _ZSt21ios_base_library_initv']);
+    });
 });
 
 describe('AsmParser numeric local labels', () => {
