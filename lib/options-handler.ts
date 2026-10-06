@@ -54,6 +54,7 @@ export type VersionInfo = {
     dependencies: string[];
     path: string[];
     libpath: string[];
+    skipcmakepackage?: boolean;
     liblink: string[];
     lookupname?: PropertyValue;
     lookupversion?: PropertyValue;
@@ -73,6 +74,7 @@ export type OptionsHandlerLibrary = {
     examples: string[];
     options: string[];
     packagedheaders?: boolean;
+    skipcmakepackage?: boolean;
     lookupname?: string;
 };
 
@@ -314,6 +316,7 @@ export class ClientOptionsHandler implements ClientOptionsSource {
                         examples: splitIntoArray(this.compilerProps<string>(lang, libBaseName + '.examples')),
                         options: splitArguments(this.compilerProps(lang, libBaseName + '.options', '')),
                         packagedheaders: this.compilerProps<boolean>(lang, libBaseName + '.packagedheaders', false),
+                        skipcmakepackage: this.compilerProps<boolean>(lang, libBaseName + '.skipcmakepackage', false),
                     };
                     const libLookupname = this.compilerProps<string>(lang, libBaseName + '.lookupname');
                     if (libLookupname) {
@@ -379,6 +382,12 @@ export class ClientOptionsHandler implements ClientOptionsSource {
                                 lang,
                                 libVersionName + '.packagedheaders',
                                 libraries[lang][lib].packagedheaders,
+                            );
+
+                            versionObject.skipcmakepackage = this.compilerProps<boolean>(
+                                lang,
+                                libVersionName + '.skipcmakepackage',
+                                libraries[lang][lib].skipcmakepackage,
                             );
 
                             libraries[lang][lib].versions[version] = versionObject;
