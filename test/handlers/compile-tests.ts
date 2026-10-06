@@ -247,6 +247,15 @@ describe('Compiler tests', () => {
             }
         });
 
+        it('lets a CMake project inspect a library it linked from the project root', async () => {
+            await setFakeResult();
+            const customOutputFilename = '../fmt/lib/libfmtd.a';
+            const res = await makeFakeCmakeJson('I am a program', {compilerOptions: {customOutputFilename}})
+                .expect('Content-Type', /json/)
+                .expect(200);
+            expect(res.body.input.options.backendOptions.customOutputFilename).toEqual(customOutputFilename);
+        });
+
         it('handles JSON output', async () => {
             await setFakeResult({
                 code: 0,
