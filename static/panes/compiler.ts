@@ -454,7 +454,7 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
         const result = await this.compilerService.processFromLangAndCompiler(langId ?? null, compilerId);
         this.compiler = result?.compiler ?? null;
         this.currentLangId = result?.langId ?? null;
-        this.updateLibraries();
+        await this.updateLibraries();
     }
 
     override close(): void {
@@ -2647,7 +2647,7 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
                 );
             }
 
-            this.libsWidget.setNewLangId(this.currentLangId ?? '', this.compiler?.id ?? '', filteredLibraries);
+            await this.libsWidget.setNewLangId(this.currentLangId ?? '', this.compiler?.id ?? '', filteredLibraries);
         }
     }
 
@@ -3233,7 +3233,7 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
         this.deferCompiles = true;
         this.needsCompile = true;
 
-        this.updateLibraries();
+        await this.updateLibraries();
         this.updateState();
         this.updateCompilerUI();
 
