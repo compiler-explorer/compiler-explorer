@@ -1028,7 +1028,18 @@ describe('checkCustomOutputFilename', () => {
     });
 
     it('rejects a filename that escapes the compilation directory', () => {
-        for (const filename of ['..', '../x', 'a/../../x', '../../../../some/other/path']) {
+        for (const filename of [
+            '.',
+            'a/..',
+            '..',
+            '../x',
+            'a/../../x',
+            '../../../../some/other/path',
+            '/../x',
+            '//..//x',
+            '../ce-compilation-dir/x',
+            '../../ce-compilation-dir/x',
+        ]) {
             expect(utils.checkCustomOutputFilename(filename)).toBe('Invalid filename');
         }
     });

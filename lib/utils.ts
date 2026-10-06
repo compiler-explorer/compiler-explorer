@@ -574,8 +574,10 @@ export function resolveWithinDir(dirPath: string, filename: string): string {
 export function checkCustomOutputFilename(filename: unknown): string | null {
     if (filename === undefined || filename === null || filename === '') return null;
     if (typeof filename !== 'string') return 'Invalid filename';
-    const probeDir = path.join(path.sep, 'ce-compilation-dir');
-    if (!isPathInside(probeDir, path.join(probeDir, filename))) return 'Invalid filename';
+    // No directory exists yet when a request is parsed. Joining onto '.' rather than normalising keeps a leading
+    // separator from hiding a '..', as path.join(dir, '/../x') leaves dir.
+    const relative = path.join('.', filename);
+    if (relative === '.' || relative === '..' || relative.startsWith('..' + path.sep)) return 'Invalid filename';
     return null;
 }
 
