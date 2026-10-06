@@ -109,6 +109,47 @@ describe('Basic compiler invariants', () => {
         expect(result.result?.inputFilename).toEqual('main.cpp');
     });
 
+    it('should check the final output path, whatever produced it', () => {
+        expect(() => compiler.assertInsideDir('/tmp/ce-dir', '/tmp/ce-dir/output.s')).not.toThrow();
+        for (const outside of ['/etc/passwd', '/tmp/ce-dir', '/tmp/ce-dir/../other', '/tmp/ce-dir-sibling/output.s']) {
+            expect(() => compiler.assertInsideDir('/tmp/ce-dir', outside)).toThrow('Invalid filename');
+        }
+    });
+
+    it('should assert on an escaping custom output filename that reached compile()', async () => {
+        await expect(
+            compiler.compile(
+                'int main(){}',
+                [],
+                {customOutputFilename: '../../escape'},
+                makeFakeParseFiltersAndOutputOptions({}),
+                BypassCache.None,
+                [],
+                {},
+                [],
+                [],
+            ),
+        ).rejects.toThrow('Invalid filename');
+    });
+
+    it('should refuse to compile when the output path is outside the directory', async () => {
+        const runCompiler = vi.spyOn(compiler, 'runCompiler');
+        vi.spyOn(compiler, 'getOutputFilename').mockReturnValue('/somewhere/else/output.s');
+        await expect(
+            compiler.doCompilation(
+                '/tmp/ce-dir/example.cpp',
+                '/tmp/ce-dir',
+                {backendOptions: {}} as any,
+                [],
+                makeFakeParseFiltersAndOutputOptions({}),
+                {},
+                [],
+                [],
+            ),
+        ).rejects.toThrow('Invalid filename');
+        expect(runCompiler).not.toHaveBeenCalled();
+    });
+
     it('should skip version check if forced to', async () => {
         const newConfig: Partial<CompilerInfo> = {...info, explicitVersion: '123'};
         const forcedVersionCompiler = new BaseCompiler(newConfig as CompilerInfo, ce);

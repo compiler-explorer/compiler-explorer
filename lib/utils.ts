@@ -567,6 +567,18 @@ export function resolveWithinDir(dirPath: string, filename: string): string {
     return normalized;
 }
 
+/**
+ * Returns an error message if a request's `customOutputFilename` is not a string, or names a path that would leave the
+ * directory it is joined onto.
+ */
+export function checkCustomOutputFilename(filename: unknown): string | null {
+    if (filename === undefined || filename === null || filename === '') return null;
+    if (typeof filename !== 'string') return 'Invalid filename';
+    const probeDir = path.join(path.sep, 'ce-compilation-dir');
+    if (!isPathInside(probeDir, path.join(probeDir, filename))) return 'Invalid filename';
+    return null;
+}
+
 export async function fileExists(filename: string): Promise<boolean> {
     try {
         const stat = await fs.stat(filename);

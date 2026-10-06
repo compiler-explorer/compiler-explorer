@@ -2183,6 +2183,7 @@ export class BaseCompiler {
         const inputFilename = writeSummary.inputFilename;
 
         const outputFilename = this.getExecutableFilename(dirPath, this.outputFilebase, key);
+        this.assertInsideDir(dirPath, outputFilename);
 
         const buildFilters: ParseFiltersAndOutputOptions = Object.assign({}, key.filters);
         buildFilters.binaryObject = false;
@@ -2661,6 +2662,7 @@ export class BaseCompiler {
         const inputFilenameSafe = this.filename(inputFilename);
 
         const outputFilename = this.getOutputFilename(dirPath, this.outputFilebase, key);
+        this.assertInsideDir(dirPath, outputFilename);
 
         const overrides = this.sanitizeCompilerOverrides(backendOptions.overrides || []);
 
@@ -3435,6 +3437,9 @@ export class BaseCompiler {
         const optionsError = this.checkOptions(options);
         if (optionsError) throw optionsError;
 
+        // Request parsing has already rejected a bad filename; reaching here with one is a bug.
+        assert(utils.checkCustomOutputFilename(backendOptions.customOutputFilename) === null, 'Invalid filename');
+
         const libsAndOptions = {libraries, options};
         if (this.tryAutodetectLibraries(libsAndOptions)) {
             libraries = libsAndOptions.libraries;
@@ -4153,6 +4158,11 @@ but nothing was dumped. Possible causes are:
             logger.error('Error during post-processing: ', result);
         }
         return result;
+    }
+
+    /** Throws if `filename` is not inside `dirPath`. */
+    assertInsideDir(dirPath: string, filename: string) {
+        if (!utils.isPathInside(dirPath, filename)) throw new Error('Invalid filename');
     }
 
     checkOptions(options: string[]) {

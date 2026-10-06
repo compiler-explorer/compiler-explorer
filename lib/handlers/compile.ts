@@ -443,6 +443,8 @@ export class CompileHandler implements ICompileHandler {
             execReqParams.stdin = execParams.stdin;
             execReqParams.runtimeTools = execParams.runtimeTools;
             backendOptions = requestOptions.compilerOptions || {};
+            const filenameError = utils.checkCustomOutputFilename(backendOptions.customOutputFilename);
+            if (filenameError) throw new Error(filenameError);
             filters = {...compiler.getDefaultFilters(), ...requestOptions.filters};
             inputTools = requestOptions.tools || [];
             libraries = requestOptions.libraries || [];
