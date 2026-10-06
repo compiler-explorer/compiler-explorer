@@ -81,6 +81,7 @@ export class AsmParser extends AsmRegex implements IAsmParser {
     protected endAppBlock: RegExp;
     protected startAsmNesting: RegExp;
     protected endAsmNesting: RegExp;
+    protected endOfUnit: RegExp;
     protected cudaBeginDef: RegExp;
     protected cudaEndDef: RegExp;
     protected binaryHideFuncRe: RegExp | null;
@@ -110,6 +111,8 @@ export class AsmParser extends AsmRegex implements IAsmParser {
             this.parsingState.enterCustomAssembly();
         } else if (this.endAppBlock.test(line.trim()) || this.endAsmNesting.test(line.trim())) {
             this.parsingState.exitCustomAssembly();
+        } else if (this.parsingState.isInCustomAssembly() && this.endOfUnit.test(line.trim())) {
+            this.parsingState.closeCustomAssembly();
         } else {
             this.parsingState.setVLIWPacket(this.checkVLIWpacket(line, this.parsingState.inVLIWpacket));
         }
@@ -381,6 +384,10 @@ export class AsmParser extends AsmRegex implements IAsmParser {
         this.endAppBlock = /^#NO_APP.*$/;
         this.startAsmNesting = /^# Begin ASM.*$/;
         this.endAsmNesting = /^# End ASM.*$/;
+        // GCC writes #NO_APP only when it next emits a function or a variable, so asm that ends the unit leaves its
+        // #APP block open. What follows is GCC's own end-of-unit output: the debug info, which opens with .Letext0,
+        // or the .ident when there is none.
+        this.endOfUnit = /^(\.Letext\d+:|\.ident\s)/;
         this.cudaBeginDef = /\.(entry|func)\s+(?:\([^)]*\)\s*)?([$.A-Z_a-z][\w$.]*)\($/;
         this.cudaEndDef = /^\s*\)\s*$/;
 
