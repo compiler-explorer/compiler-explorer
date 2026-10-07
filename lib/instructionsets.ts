@@ -133,6 +133,9 @@ export class InstructionSets {
             sh: {
                 target: ['sh'],
             },
+            sm83: {
+                target: ['sm83'],
+            },
             sparc: {
                 target: ['sparc', 'sparc64'],
             },
