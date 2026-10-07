@@ -208,6 +208,7 @@ export class ApiHandler {
     }
 
     outputList(list: CompilerInfo[] | Language[], title: string, req: express.Request, res: express.Response) {
+        res.vary('Accept');
         if (req.accepts(['text', 'json']) === 'json') {
             if (req.query.fields === 'all') {
                 res.send(list);

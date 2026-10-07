@@ -225,6 +225,37 @@ describe('Compiler tests', () => {
                 });
         }
 
+        it('rejects an output filename that escapes the compilation directory as a bad request', async () => {
+            for (const customOutputFilename of ['../../escape', '../out.s', '../ce-compilation-dir/x', 5]) {
+                await makeFakeJson('I am a program', {compilerOptions: {customOutputFilename}})
+                    .expect('Content-Type', /json/)
+                    .expect(400, {error: true, message: 'Invalid filename'});
+            }
+        });
+
+        it('lets a CMake output filename reach the project root, which is one level above the build', async () => {
+            await setFakeResult();
+            const res = await makeFakeCmakeJson('I am a program', {compilerOptions: {customOutputFilename: '../out.s'}})
+                .expect('Content-Type', /json/)
+                .expect(200);
+            expect(res.body.input.options.backendOptions.customOutputFilename).toEqual('../out.s');
+
+            for (const customOutputFilename of ['../../escape', '../../ce-compilation-dir/x']) {
+                await makeFakeCmakeJson('I am a program', {compilerOptions: {customOutputFilename}})
+                    .expect('Content-Type', /json/)
+                    .expect(400, {error: true, message: 'Invalid filename'});
+            }
+        });
+
+        it('lets a CMake project inspect a library it linked from the project root', async () => {
+            await setFakeResult();
+            const customOutputFilename = '../fmt/lib/libfmtd.a';
+            const res = await makeFakeCmakeJson('I am a program', {compilerOptions: {customOutputFilename}})
+                .expect('Content-Type', /json/)
+                .expect(200);
+            expect(res.body.input.options.backendOptions.customOutputFilename).toEqual(customOutputFilename);
+        });
+
         it('handles JSON output', async () => {
             await setFakeResult({
                 code: 0,

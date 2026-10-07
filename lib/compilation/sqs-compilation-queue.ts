@@ -462,6 +462,7 @@ async function doOneCompilation(
                 query,
                 isJson ? msg : msg.source,
                 compiler,
+                buildSystem,
             );
 
             let result: CompilationResult;

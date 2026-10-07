@@ -1019,3 +1019,43 @@ describe('resolveWithinDir', () => {
         }
     });
 });
+
+describe('checkCustomOutputFilename', () => {
+    it('accepts a filename that stays inside the compilation directory', () => {
+        for (const filename of [undefined, null, '', 'output.s', 'sub/dir/out.o', 'a/../b.s', '/abs/but/contained']) {
+            expect(utils.checkCustomOutputFilename(filename)).toBeNull();
+        }
+    });
+
+    it('rejects a filename that escapes the compilation directory', () => {
+        for (const filename of [
+            '.',
+            'a/..',
+            '..',
+            '../x',
+            'a/../../x',
+            '../../../../some/other/path',
+            '/../x',
+            '//..//x',
+            '../ce-compilation-dir/x',
+            '../../ce-compilation-dir/x',
+        ]) {
+            expect(utils.checkCustomOutputFilename(filename)).toBe('Invalid filename');
+        }
+    });
+
+    it('lets a build system that names its artifact from a subdirectory reach the project root', () => {
+        for (const filename of ['../output.s', '../src/main.o', 'out/../../output.s']) {
+            expect(utils.checkCustomOutputFilename(filename, 'build')).toBeNull();
+        }
+        for (const filename of ['..', '../..', '../../x', '/../../x', '../../build/x']) {
+            expect(utils.checkCustomOutputFilename(filename, 'build')).toBe('Invalid filename');
+        }
+    });
+
+    it('rejects a filename that is not a string', () => {
+        for (const filename of [0, 5, false, true, {}, ['out.s']]) {
+            expect(utils.checkCustomOutputFilename(filename)).toBe('Invalid filename');
+        }
+    });
+});

@@ -1,0 +1,3 @@
+pub fun greet() i64 {
+    var s: *u8 = "héllo wörld"; ret nope;
+}
