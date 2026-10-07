@@ -339,3 +339,40 @@ describe('llvm-ir processIr filters', () => {
         });
     });
 });
+
+describe('llvm-ir isLlvmIr', () => {
+    let llvmIrParser: LlvmIrParser;
+
+    beforeAll(() => {
+        const fakeProps = new properties.CompilerProps(languages, properties.fakeProps({}));
+        const compilerProps = (fakeProps.get as any).bind(fakeProps, 'c++');
+        llvmIrParser = new LlvmIrParser(compilerProps, undefined as unknown as LLVMIRDemangler);
+    });
+
+    it('should detect IR with debug info', () => {
+        const ir = [
+            'define dso_local void @_Z4skepi(i32 noundef %0) #0 !dbg !10 {',
+            '  call void @llvm.dbg.declare(metadata ptr %2, metadata !16, metadata !DIExpression()), !dbg !17',
+            '  ret void, !dbg !18',
+            '}',
+            '!0 = distinct !DICompileUnit(language: DW_LANG_C_plus_plus_14, file: !1)',
+            '!1 = !DIFile(filename: "/app/example.cpp", directory: "/app")',
+        ].join('\n');
+        expect(llvmIrParser.isLlvmIr(ir)).toBe(true);
+    });
+
+    // Issue #9239: clang -fsycl embeds the device IR as a string in the host assembly
+    it('should not detect assembly that embeds IR in an offloading section', () => {
+        const asm = [
+            '_Z4skepi:                               # @_Z4skepi',
+            '\tretq',
+            '\t.type\t.Lllvm.embedded.object,@object  # @llvm.embedded.object',
+            '\t.section\t.llvm.offloading,"e",@llvm_offloading',
+            '.Lllvm.embedded.object:',
+            '\t.asciz\t"\\020\\377define spir_kernel void @_ZTS2KN(i32 noundef %0) !dbg !11 {\\n  ret void\\n}\\n' +
+                '!0 = distinct !DICompileUnit(language: DW_LANG_C_plus_plus_14, file: !1)\\n"',
+            '\t.size\t.Lllvm.embedded.object, 2280',
+        ].join('\n');
+        expect(llvmIrParser.isLlvmIr(asm)).toBe(false);
+    });
+});
