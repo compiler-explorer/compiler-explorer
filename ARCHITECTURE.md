@@ -155,7 +155,8 @@ constructor to swap the assembly parser.
 
 The compiler's identity comes from `CompilerInfo` (`types/compiler.interfaces.ts`), built from properties by
 `CompilerFinder.compilerConfigFor`. `initialise()` probes the version (`versionFlag`/`versionRe`); a compiler whose
-version cannot be read is silently dropped.
+version cannot be read is dropped. The drop is logged and the server
+carries on unless started with `--exit-on-compiler-failure`.
 
 ### 3.4 Environment, queue, caches, temp
 
@@ -330,7 +331,10 @@ webpack 5.
 * Relative imports end in `.js` even though files are `.ts` (webpack `extensionAlias`; same rule server-side for ESM).
 * `static/` must not import from `lib/`. Enforced by `etc/scripts/check-frontend-imports.js` (a `git grep` for
   `from '../...lib/'`). Share via `types/` or `shared/`.
-* No component has a reference to another; everything goes through the event bus (section 5.3).
+* Panes do not hold references to each other; cross-pane data flows through the event bus (section 5.3). The
+  exceptions are id lookups through the hub (`hub.getEditorById()`/`getTreeById()`, used by the compiler, executor,
+  output and tree panes) and `Editor.getCompilerStates()`, which reads compiler pane state straight out of the
+  GoldenLayout tree.
 * Every piece of pane state ends up in the URL, so keep state small and never rename keys.
 
 ### 5.2 Boot (`static/main.ts`)
@@ -436,8 +440,10 @@ Patterns:
 * **Compiler class**: `new FooCompiler(makeFakeCompilerInfo({exe:'/dev/null', lang:'foo'}), ce)`, then
   `vi.spyOn(compiler, 'exec').mockResolvedValue({code:0, stdout:'', stderr:''})` and call `postProcess`,
   `optionsForFilter`, etc. Examples: `test/golang-tests.ts`, `test/mach-tests.ts`, `test/compilers/*`.
-* **Handler**: build a tiny Express app with supertest; seed `CompileHandler.setCompilers([{compilerType:
-  'fake-for-test', fakeResult: {...}}])` (`lib/compilers/fake-for-test.ts`). Example: `test/handlers/compile-tests.ts`.
+* **Handler**: build a tiny Express app with supertest, construct a `CompileHandler`, then
+  `await handler.setCompilers([{compilerType: 'fake-for-test', exe: 'fake', fakeResult: {...}}], null)`
+  (`lib/compilers/fake-for-test.ts`; the second argument is the client options). Example:
+  `test/handlers/compile-tests.ts`.
 * **Asm filter goldens**: drop `foo.asm` in `test/filters-cases/` (prefix `ptx-`, `sass-`, `ca65-`, ... picks the
   parser; `-bin.asm` adds binary variants) and run `npx vitest run -u test/filter-tests.ts` to write
   `foo.asm.*.json` via `toMatchFileSnapshot`. Same `-u` flow for `test/demangle-cases/`. These suites are gated by
@@ -456,8 +462,9 @@ Patterns:
   Port 10240.
 * `npm run check` = ts-check (5 tsconfig projects) + biome lint-check + frontend-import check + license-header check
   + `test-min`. Pre-commit (`.husky/pre-commit` + `lint-staged.config.mjs`) runs biome fix, full ts-check and
-  `vitest related` on staged `.ts`, `test:props` on `.properties`, then the two scripts. New `.ts`/`.js` files need the
-  BSD-2 banner (copy from any file and fix the year).
+  `vitest related` on staged `.ts`, `test:props` on `.properties`, then `check-frontend-imports.js` and
+  `check-license-headers.js` over the whole tree. New `.ts`/`.js` files need the BSD-2 banner (copy from any file and
+  fix the year).
 * CI (`.github/workflows/`): `test-and-deploy.yml` (lint, license, full tests with coverage, ts-check, Python wrapper
   tests; on push to the org repo builds a dist tarball, uploads to S3 and tags `gh-<run>`), `test-win.yml`,
   `test-frontend.yml` (Cypress, push only), `check-infra-settings.yml`, CodeQL, actionlint. Releases to godbolt.org
@@ -488,8 +495,9 @@ Patterns:
    while the shipped default is `none`, so set both explicitly.
 4. Property resolution is per key, `defaults` always loads, specific-beats-general across levels, `compilers=` is
    replaced wholesale, `+=` is same-file only, `#` cannot appear in values.
-5. Silent drops: compilers with no detectable version, tools whose exe is missing. Loud failures: unknown
-   `compilerType`, duplicate registry keys.
+5. Logged but non-fatal drops: compilers with no detectable version (`Failed to create N out of M compilers`), tools
+   whose exe is missing (`Unable to stat tools.<id> tool binary`). Fatal: unknown `compilerType`, duplicate registry
+   keys.
 6. A `@` in a `compilers=` entry means "remote CE instance"; requests are proxied over HTTP, not compiled locally.
 7. `req.body` on the compile route can be an object or a string. Compile *failures* still return HTTP 200 with
    `code: -1`; only malformed requests get 400.
