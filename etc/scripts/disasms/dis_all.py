@@ -23,13 +23,19 @@
 # ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 # POSSIBILITY OF SUCH DAMAGE.
 
+from __future__ import print_function
+
 import os
 import sys
-import dis
+import dis as dis_module
 import argparse
 import traceback
 
-from dis import dis, disassemble, distb, _have_code, _disassemble_bytes, _try_compile
+from dis import dis, disassemble, distb, _have_code
+
+PY2 = sys.version_info[0] == 2
+# Any Python version older than 3.7 doesn't support recursive disassembly, so we use our own function
+NEEDS_DIS37 = sys.version_info < (3, 7)
 
 parser = argparse.ArgumentParser(description='Disassembles Python source code given by an input file and writes the output to a file')
 parser.add_argument('-i', '--inputfile', type=str,
@@ -57,7 +63,7 @@ def _disassemble_recursive(co, depth=None):
 
 def _disassemble_str(source, **kwargs):
     """Compile the source string, then disassemble the code object."""
-    _disassemble_recursive(_try_compile(source, '<dis>'), **kwargs)
+    _disassemble_recursive(dis_module._try_compile(source, '<dis>'), **kwargs)
 
 
 # This function is copied from Py 3.7 and compatible with Py 3.3, 3.4, 3.5 to support recursive diassemble
@@ -99,7 +105,7 @@ def dis37(x=None, depth=None):
     elif hasattr(x, 'co_code'): # Code object
         _disassemble_recursive(x, depth=depth)
     elif isinstance(x, (bytes, bytearray)): # Raw bytecode
-        _disassemble_bytes(x)
+        dis_module._disassemble_bytes(x)
     elif isinstance(x, str):    # Source code
         _disassemble_str(x, depth=depth)
     else:
@@ -114,8 +120,13 @@ if __name__ == '__main__':
         parser.print_help(sys.stderr)
         sys.exit(1)
 
-    with open(args.inputfile, 'r', encoding='utf8') as fp:
-        source = fp.read()
+    # Python 2 rejects coding declarations in unicode source, so it compiles the raw bytes
+    if PY2:
+        with open(args.inputfile, 'rb') as fp:
+            source = fp.read()
+    else:
+        with open(args.inputfile, 'r', encoding='utf8') as fp:
+            source = fp.read()
 
     name = os.path.basename(args.inputfile)
 
@@ -126,18 +137,24 @@ if __name__ == '__main__':
         optimize = 2
 
     try:
-        code = compile(source, name, 'exec', optimize=optimize)
+        if PY2:
+            if optimize:
+                sys.stderr.write('Warning: -O and -OO are not supported on Python 2 and were ignored\n')
+            code = compile(source, name, 'exec')
+        else:
+            code = compile(source, name, 'exec', optimize=optimize)
     except Exception as e:
         # redirect any other by compile(..) to stderr in order to hide traceback of this script
         sys.stderr.write(''.join(traceback.format_exception_only(type(e), e)))
         sys.exit(255)
 
     if args.outputfile:
-        sys.stdout = open(args.outputfile, 'w', encoding='utf8')
+        if PY2:
+            sys.stdout = open(args.outputfile, 'w')
+        else:
+            sys.stdout = open(args.outputfile, 'w', encoding='utf8')
 
-    if sys.version_info < (3, 7):
-        # Any Python version older than 3.7 doesn't support recursive diassembly,
-        # so we call our own function
+    if NEEDS_DIS37:
         dis37(code)
     else:
         dis(code)
