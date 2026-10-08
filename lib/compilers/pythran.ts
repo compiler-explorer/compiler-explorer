@@ -39,7 +39,10 @@ export class PythranCompiler extends BaseCompiler {
 
     constructor(info: PreliminaryCompilerInfo, env: CompilationEnvironment) {
         super(info, env);
-        this.cpp_compiler_root = this.compilerProps<string>(`compiler.${this.compiler.id}.cpp_compiler_root`);
+        this.cpp_compiler_root = this.compilerProps<string>(
+            `compiler.${this.compiler.id}.cpp_compiler_root`,
+            this.compilerProps<string>(`group.${this.compiler.group}.cpp_compiler_root`),
+        );
     }
 
     override getSharedLibraryPaths(libraries: SelectedLibraryVersion[], dirPath?: string): string[] {
