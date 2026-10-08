@@ -150,6 +150,13 @@ const TEST_MATRIX: Record<PropertyKey, [string, string, string, string][]> = {
     ],
     riscv64: [
         ['SGT', 'Psuedo Instruction.', '<b>SGT</b> rd, rs, rt', 'https://five-embeddev.github.io/riscv-docs-html/'],
+        ['VANDN.VV', '(ISA: Zvbb)', '<b>VANDN.VV</b> vd, vs2, vs1, vm', 'https://instructionsets.com/risc-v/vandn_vv/'],
+        [
+            'CZERO.EQZ',
+            '(ISA: Zicond)',
+            '<b>CZERO.EQZ</b> rd, rs1, rs2',
+            'https://instructionsets.com/risc-v/czero_eqz/',
+        ],
     ],
     wdc65c816: [
         [

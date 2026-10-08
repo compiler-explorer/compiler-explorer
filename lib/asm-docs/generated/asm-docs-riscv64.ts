@@ -6467,6 +6467,384 @@ export function getAsmOpcode(opcode: string | undefined): AssemblyInstructionInf
                 "url": "https://five-embeddev.github.io/riscv-docs-html/"
             };
 
+        case "VANDN.VV":
+            return {
+                "html": "<div><span class=\"opcode\"><b>VANDN.VV</b> vd, vs2, vs1, vm</span><br><div>Inverts each bit of the elements of vs1 and ANDs them with the corresponding bits of the elements of vs2, writing the result to vd.</div><br><div><b>ISA</b>: Zvbb</div></div>",
+                "tooltip": "Inverts each bit of the elements of vs1 and ANDs them with the corresponding bits of the elements of vs2, writing the result to vd.\n\n(ISA: Zvbb)",
+                "url": "https://instructionsets.com/risc-v/vandn_vv/"
+            };
+
+        case "VROL.VV":
+            return {
+                "html": "<div><span class=\"opcode\"><b>VROL.VV</b> vd, vs2, vs1, vm</span><br><div>Rotates each element of vs2 left by the amount in the corresponding element of vs1. Only the low log2(SEW) bits of the rotate amount are used.</div><br><div><b>ISA</b>: Zvbb</div></div>",
+                "tooltip": "Rotates each element of vs2 left by the amount in the corresponding element of vs1. Only the low log2(SEW) bits of the rotate amount are used.\n\n(ISA: Zvbb)",
+                "url": "https://instructionsets.com/risc-v/vrol_vv/"
+            };
+
+        case "VROR.VV":
+            return {
+                "html": "<div><span class=\"opcode\"><b>VROR.VV</b> vd, vs2, vs1, vm</span><br><div>Rotates each element of vs2 right by the amount in the corresponding element of vs1. Only the low log2(SEW) bits of the rotate amount are used.</div><br><div><b>ISA</b>: Zvbb</div></div>",
+                "tooltip": "Rotates each element of vs2 right by the amount in the corresponding element of vs1. Only the low log2(SEW) bits of the rotate amount are used.\n\n(ISA: Zvbb)",
+                "url": "https://instructionsets.com/risc-v/vror_vv/"
+            };
+
+        case "VROL.VX":
+            return {
+                "html": "<div><span class=\"opcode\"><b>VROL.VX</b> vd, vs2, rs1, vm</span><br><div>Rotates each element of vs2 left by the amount in scalar register rs1. Only the low log2(SEW) bits of the rotate amount are used.</div><br><div><b>ISA</b>: Zvbb</div></div>",
+                "tooltip": "Rotates each element of vs2 left by the amount in scalar register rs1. Only the low log2(SEW) bits of the rotate amount are used.\n\n(ISA: Zvbb)",
+                "url": "https://instructionsets.com/risc-v/vrol_vx/"
+            };
+
+        case "VROR.VX":
+            return {
+                "html": "<div><span class=\"opcode\"><b>VROR.VX</b> vd, vs2, rs1, vm</span><br><div>Rotates each element of vs2 right by the amount in scalar register rs1. Only the low log2(SEW) bits of the rotate amount are used.</div><br><div><b>ISA</b>: Zvbb</div></div>",
+                "tooltip": "Rotates each element of vs2 right by the amount in scalar register rs1. Only the low log2(SEW) bits of the rotate amount are used.\n\n(ISA: Zvbb)",
+                "url": "https://instructionsets.com/risc-v/vror_vx/"
+            };
+
+        case "VBREV8.V":
+            return {
+                "html": "<div><span class=\"opcode\"><b>VBREV8.V</b> vd, vs2, vm</span><br><div>Reverses the order of the bits within each byte of every element of vs2 and writes the result to vd. Byte order is unchanged.</div><br><div><b>ISA</b>: Zvbb</div></div>",
+                "tooltip": "Reverses the order of the bits within each byte of every element of vs2 and writes the result to vd. Byte order is unchanged.\n\n(ISA: Zvbb)",
+                "url": "https://instructionsets.com/risc-v/vbrev8_v/"
+            };
+
+        case "VREV8.V":
+            return {
+                "html": "<div><span class=\"opcode\"><b>VREV8.V</b> vd, vs2, vm</span><br><div>Reverses the order of the bytes within every element of vs2, effectively an endian swap, and writes the result to vd.</div><br><div><b>ISA</b>: Zvbb</div></div>",
+                "tooltip": "Reverses the order of the bytes within every element of vs2, effectively an endian swap, and writes the result to vd.\n\n(ISA: Zvbb)",
+                "url": "https://instructionsets.com/risc-v/vrev8_v/"
+            };
+
+        case "VCLZ.V":
+            return {
+                "html": "<div><span class=\"opcode\"><b>VCLZ.V</b> vd, vs2, vm</span><br><div>Counts the number of leading zero bits in each active vector element, writing counts to vd.</div><br><div><b>ISA</b>: Zvbb</div></div>",
+                "tooltip": "Counts the number of leading zero bits in each active vector element, writing counts to vd.\n\n(ISA: Zvbb)",
+                "url": "https://instructionsets.com/risc-v/vclz_v/"
+            };
+
+        case "VCTZ.V":
+            return {
+                "html": "<div><span class=\"opcode\"><b>VCTZ.V</b> vd, vs2, vm</span><br><div>Counts the number of trailing zero bits in each active vector element, writing counts to vd.</div><br><div><b>ISA</b>: Zvbb</div></div>",
+                "tooltip": "Counts the number of trailing zero bits in each active vector element, writing counts to vd.\n\n(ISA: Zvbb)",
+                "url": "https://instructionsets.com/risc-v/vctz_v/"
+            };
+
+        case "VCPOP.V":
+            return {
+                "html": "<div><span class=\"opcode\"><b>VCPOP.V</b> vd, vs2, vm</span><br><div>Performs a population count on each element of vs2 and writes the counts to the corresponding elements of vd.</div><br><div><b>ISA</b>: Zvbb</div></div>",
+                "tooltip": "Performs a population count on each element of vs2 and writes the counts to the corresponding elements of vd.\n\n(ISA: Zvbb)",
+                "url": "https://instructionsets.com/risc-v/vcpop_v/"
+            };
+
+        case "VWSLL.VV":
+            return {
+                "html": "<div><span class=\"opcode\"><b>VWSLL.VV</b> vd, vs2, vs1, vm</span><br><div>Performs a widening operation, producing results twice as wide as the source elements. Results are written to vd using 2\u00d7 the element grouping (EEW). The number of elements and masking are governed by vl and vm.</div><br><div><b>ISA</b>: Zvbb</div></div>",
+                "tooltip": "Performs a widening operation, producing results twice as wide as the source elements. Results are written to vd using 2\u00d7 the element grouping (EEW). The number of elements and masking are governed by vl and vm.\n\n(ISA: Zvbb)",
+                "url": "https://instructionsets.com/risc-v/vwsll_vv/"
+            };
+
+        case "VAESDF.VV":
+            return {
+                "html": "<div><span class=\"opcode\"><b>VAESDF.VV</b> vd, vs2</span><br><div>Performs one final-round AES decryption (InvShiftRows and InvSubBytes, then XOR with the round key) on each element group. Operates on each 128-bit element group (EGW=128, SEW=32). The round state comes from vd and the round key from vs2 (.vv) or from the first element group of vs2 (.vs); the result is written to vd.</div><br><div><b>ISA</b>: Zvkned</div></div>",
+                "tooltip": "Performs one final-round AES decryption (InvShiftRows and InvSubBytes, then XOR with the round key) on each element group. Operates on each 128-bit element group (EGW=128, SEW=32). The round state comes from vd and the round key from vs2 (.vv) or from the first element group of vs2 (.vs); the result is written to vd.\n\n(ISA: Zvkned)",
+                "url": "https://instructionsets.com/risc-v/vaesdf_vv/"
+            };
+
+        case "VAESDM.VV":
+            return {
+                "html": "<div><span class=\"opcode\"><b>VAESDM.VV</b> vd, vs2</span><br><div>Performs one middle-round AES decryption (InvShiftRows and InvSubBytes, XOR with the round key, then InvMixColumns) on each element group. Operates on each 128-bit element group (EGW=128, SEW=32). The round state comes from vd and the round key from vs2 (.vv) or from the first element group of vs2 (.vs); the result is written to vd.</div><br><div><b>ISA</b>: Zvkned</div></div>",
+                "tooltip": "Performs one middle-round AES decryption (InvShiftRows and InvSubBytes, XOR with the round key, then InvMixColumns) on each element group. Operates on each 128-bit element group (EGW=128, SEW=32). The round state comes from vd and the round key from vs2 (.vv) or from the first element group of vs2 (.vs); the result is written to vd.\n\n(ISA: Zvkned)",
+                "url": "https://instructionsets.com/risc-v/vaesdm_vv/"
+            };
+
+        case "VAESEF.VV":
+            return {
+                "html": "<div><span class=\"opcode\"><b>VAESEF.VV</b> vd, vs2</span><br><div>Performs one final-round AES encryption (SubBytes and ShiftRows, then XOR with the round key) on each element group. Operates on each 128-bit element group (EGW=128, SEW=32). The round state comes from vd and the round key from vs2 (.vv) or from the first element group of vs2 (.vs); the result is written to vd.</div><br><div><b>ISA</b>: Zvkned</div></div>",
+                "tooltip": "Performs one final-round AES encryption (SubBytes and ShiftRows, then XOR with the round key) on each element group. Operates on each 128-bit element group (EGW=128, SEW=32). The round state comes from vd and the round key from vs2 (.vv) or from the first element group of vs2 (.vs); the result is written to vd.\n\n(ISA: Zvkned)",
+                "url": "https://instructionsets.com/risc-v/vaesef_vv/"
+            };
+
+        case "VAESEM.VV":
+            return {
+                "html": "<div><span class=\"opcode\"><b>VAESEM.VV</b> vd, vs2</span><br><div>Performs one middle-round AES encryption (SubBytes, ShiftRows and MixColumns, then XOR with the round key) on each element group. Operates on each 128-bit element group (EGW=128, SEW=32). The round state comes from vd and the round key from vs2 (.vv) or from the first element group of vs2 (.vs); the result is written to vd.</div><br><div><b>ISA</b>: Zvkned</div></div>",
+                "tooltip": "Performs one middle-round AES encryption (SubBytes, ShiftRows and MixColumns, then XOR with the round key) on each element group. Operates on each 128-bit element group (EGW=128, SEW=32). The round state comes from vd and the round key from vs2 (.vv) or from the first element group of vs2 (.vs); the result is written to vd.\n\n(ISA: Zvkned)",
+                "url": "https://instructionsets.com/risc-v/vaesem_vv/"
+            };
+
+        case "VAESKF1.VI":
+            return {
+                "html": "<div><span class=\"opcode\"><b>VAESKF1.VI</b> vd, vs2, uimm</span><br><div>Performs one round of the AES-128 key schedule: generates the next round key from the previous one in vs2. uimm[3:0] is the round number, 1 to 10; out-of-range values are mapped into range.</div><br><div><b>ISA</b>: Zvkned</div></div>",
+                "tooltip": "Performs one round of the AES-128 key schedule: generates the next round key from the previous one in vs2. uimm[3:0] is the round number, 1 to 10; out-of-range values are mapped into range.\n\n(ISA: Zvkned)",
+                "url": "https://instructionsets.com/risc-v/vaeskf1_vi/"
+            };
+
+        case "VAESKF2.VI":
+            return {
+                "html": "<div><span class=\"opcode\"><b>VAESKF2.VI</b> vd, vs2, uimm</span><br><div>Performs one round of the AES-256 key schedule: generates the next round key from the two previous round keys (vd and vs2). uimm[3:0] is the round number, 2 to 14; out-of-range values are mapped into range.</div><br><div><b>ISA</b>: Zvkned</div></div>",
+                "tooltip": "Performs one round of the AES-256 key schedule: generates the next round key from the two previous round keys (vd and vs2). uimm[3:0] is the round number, 2 to 14; out-of-range values are mapped into range.\n\n(ISA: Zvkned)",
+                "url": "https://instructionsets.com/risc-v/vaeskf2_vi/"
+            };
+
+        case "VSHA2CH.VV":
+            return {
+                "html": "<div><span class=\"opcode\"><b>VSHA2CH.VV</b> vd, vs2, vs1</span><br><div>Vector SHA-2 two rounds of compression (high). With SEW=32 two rounds of SHA-256 are performed; vs1 supplies the message-schedule words plus round constants (the two most significant words are used), vs2 the current state {a,b,e,f} and vd the state {c,d,g,h}; vd receives the next state {a,b,e,f}.</div><br><div><b>ISA</b>: Zvknha</div></div>",
+                "tooltip": "Vector SHA-2 two rounds of compression (high). With SEW=32 two rounds of SHA-256 are performed; vs1 supplies the message-schedule words plus round constants (the two most significant words are used), vs2 the current state {a,b,e,f} and vd the state {c,d,g,h}; vd receives the next state {a,b,e,f}.\n\n(ISA: Zvknha)",
+                "url": "https://instructionsets.com/risc-v/vsha2ch_vv/"
+            };
+
+        case "VSHA2CL.VV":
+            return {
+                "html": "<div><span class=\"opcode\"><b>VSHA2CL.VV</b> vd, vs2, vs1</span><br><div>Vector SHA-2 two rounds of compression (low). Identical to VSHA2CH.VV except that the two least significant message-schedule words of vs1 are used. With SEW=32 two rounds of SHA-256 are performed.</div><br><div><b>ISA</b>: Zvknha</div></div>",
+                "tooltip": "Vector SHA-2 two rounds of compression (low). Identical to VSHA2CH.VV except that the two least significant message-schedule words of vs1 are used. With SEW=32 two rounds of SHA-256 are performed.\n\n(ISA: Zvknha)",
+                "url": "https://instructionsets.com/risc-v/vsha2cl_vv/"
+            };
+
+        case "VSHA2MS.VV":
+            return {
+                "html": "<div><span class=\"opcode\"><b>VSHA2MS.VV</b> vd, vs2, vs1</span><br><div>Vector SHA-2 message schedule. Eleven of the last sixteen message-schedule words, taken from vd (oldest), vs2 and vs1 (most recent), are processed to produce the next four message-schedule words, written to vd.</div><br><div><b>ISA</b>: Zvknha</div></div>",
+                "tooltip": "Vector SHA-2 message schedule. Eleven of the last sixteen message-schedule words, taken from vd (oldest), vs2 and vs1 (most recent), are processed to produce the next four message-schedule words, written to vd.\n\n(ISA: Zvknha)",
+                "url": "https://instructionsets.com/risc-v/vsha2ms_vv/"
+            };
+
+        case "VGHSH.VV":
+            return {
+                "html": "<div><span class=\"opcode\"><b>VGHSH.VV</b> vd, vs2, vs1</span><br><div>Performs a single iteration of GHASH: the partial hash Y in vd is added to the cipher-text block X in vs1, and the sum is multiplied by the hash subkey H in vs2 over GF(2^128) modulo x^128 + x^7 + x^2 + x + 1. The result Y&#x27; is written to vd. SEW must be 32.</div><br><div><b>ISA</b>: Zvkg</div></div>",
+                "tooltip": "Performs a single iteration of GHASH: the partial hash Y in vd is added to the cipher-text block X in vs1, and the sum is multiplied by the hash subkey H in vs2 over GF(2^128) modulo x^128 + x^7 + x^2 + x + 1. The result Y' is written to vd. SEW must be 32.\n\n(ISA: Zvkg)",
+                "url": "https://instructionsets.com/risc-v/vghsh_vv/"
+            };
+
+        case "VCLMUL.VV":
+            return {
+                "html": "<div><span class=\"opcode\"><b>VCLMUL.VV</b> vd, vs2, vs1, vm</span><br><div>Carry-less multiplies each 64-bit element of vs2 by the corresponding element of vs1 and writes the low 64 bits of the 128-bit product to vd. Defined only for SEW=64.</div><br><div><b>ISA</b>: Zvbc</div></div>",
+                "tooltip": "Carry-less multiplies each 64-bit element of vs2 by the corresponding element of vs1 and writes the low 64 bits of the 128-bit product to vd. Defined only for SEW=64.\n\n(ISA: Zvbc)",
+                "url": "https://instructionsets.com/risc-v/vclmul_vv/"
+            };
+
+        case "VCLMULH.VV":
+            return {
+                "html": "<div><span class=\"opcode\"><b>VCLMULH.VV</b> vd, vs2, vs1, vm</span><br><div>Carry-less multiplies each 64-bit element of vs2 by the corresponding element of vs1 and writes the high 64 bits of the 128-bit product to vd. Defined only for SEW=64.</div><br><div><b>ISA</b>: Zvbc</div></div>",
+                "tooltip": "Carry-less multiplies each 64-bit element of vs2 by the corresponding element of vs1 and writes the high 64 bits of the 128-bit product to vd. Defined only for SEW=64.\n\n(ISA: Zvbc)",
+                "url": "https://instructionsets.com/risc-v/vclmulh_vv/"
+            };
+
+        case "VANDN.VX":
+            return {
+                "html": "<div><span class=\"opcode\"><b>VANDN.VX</b> vd, vs2, rs1, vm</span><br><div>Inverts each bit of the scalar rs1 (sign-extended or truncated to SEW) and ANDs it with the corresponding bits of every element of vs2, writing the result to vd.</div><br><div><b>ISA</b>: Zvbb</div></div>",
+                "tooltip": "Inverts each bit of the scalar rs1 (sign-extended or truncated to SEW) and ANDs it with the corresponding bits of every element of vs2, writing the result to vd.\n\n(ISA: Zvbb)",
+                "url": "https://instructionsets.com/risc-v/vandn_vx/"
+            };
+
+        case "VWSLL.VX":
+            return {
+                "html": "<div><span class=\"opcode\"><b>VWSLL.VX</b> vd, vs2, rs1, vm</span><br><div>Performs a widening operation, producing results twice as wide as the source elements. Results are written to vd using 2\u00d7 the element grouping (EEW). The number of elements and masking are governed by vl and vm.</div><br><div><b>ISA</b>: Zvbb</div></div>",
+                "tooltip": "Performs a widening operation, producing results twice as wide as the source elements. Results are written to vd using 2\u00d7 the element grouping (EEW). The number of elements and masking are governed by vl and vm.\n\n(ISA: Zvbb)",
+                "url": "https://instructionsets.com/risc-v/vwsll_vx/"
+            };
+
+        case "VWSLL.VI":
+            return {
+                "html": "<div><span class=\"opcode\"><b>VWSLL.VI</b> vd, vs2, imm, vm</span><br><div>Performs a widening operation, producing results twice as wide as the source elements. Results are written to vd using 2\u00d7 the element grouping (EEW). The number of elements and masking are governed by vl and vm.</div><br><div><b>ISA</b>: Zvbb</div></div>",
+                "tooltip": "Performs a widening operation, producing results twice as wide as the source elements. Results are written to vd using 2\u00d7 the element grouping (EEW). The number of elements and masking are governed by vl and vm.\n\n(ISA: Zvbb)",
+                "url": "https://instructionsets.com/risc-v/vwsll_vi/"
+            };
+
+        case "NTL.P1":
+            return {
+                "html": "<div><span class=\"opcode\"><b>NTL.P1</b> </span><br><div>NTL.P1 is a HINT that changes no architectural state. It indicates that the explicit memory accesses of the immediately following instruction have poor temporal locality within the capacity of the innermost level of private cache. It is encoded as ADD x0, x0, x2.</div><br><div><b>ISA</b>: Zihintntl</div></div>",
+                "tooltip": "NTL.P1 is a HINT that changes no architectural state. It indicates that the explicit memory accesses of the immediately following instruction have poor temporal locality within the capacity of the innermost level of private cache. It is encoded as ADD x0, x0, x2.\n\n(ISA: Zihintntl)",
+                "url": "https://instructionsets.com/risc-v/ntl_p1/"
+            };
+
+        case "NTL.PALL":
+            return {
+                "html": "<div><span class=\"opcode\"><b>NTL.PALL</b> </span><br><div>NTL.PALL is a HINT that changes no architectural state. It indicates that the explicit memory accesses of the immediately following instruction have poor temporal locality within the capacity of any level of private cache. It is encoded as ADD x0, x0, x3.</div><br><div><b>ISA</b>: Zihintntl</div></div>",
+                "tooltip": "NTL.PALL is a HINT that changes no architectural state. It indicates that the explicit memory accesses of the immediately following instruction have poor temporal locality within the capacity of any level of private cache. It is encoded as ADD x0, x0, x3.\n\n(ISA: Zihintntl)",
+                "url": "https://instructionsets.com/risc-v/ntl_pall/"
+            };
+
+        case "NTL.S1":
+            return {
+                "html": "<div><span class=\"opcode\"><b>NTL.S1</b> </span><br><div>NTL.S1 is a HINT that changes no architectural state. It indicates that the explicit memory accesses of the immediately following instruction have poor temporal locality within the capacity of the innermost level of shared cache. It is encoded as ADD x0, x0, x4.</div><br><div><b>ISA</b>: Zihintntl</div></div>",
+                "tooltip": "NTL.S1 is a HINT that changes no architectural state. It indicates that the explicit memory accesses of the immediately following instruction have poor temporal locality within the capacity of the innermost level of shared cache. It is encoded as ADD x0, x0, x4.\n\n(ISA: Zihintntl)",
+                "url": "https://instructionsets.com/risc-v/ntl_s1/"
+            };
+
+        case "NTL.ALL":
+            return {
+                "html": "<div><span class=\"opcode\"><b>NTL.ALL</b> </span><br><div>NTL.ALL is a HINT that changes no architectural state. It indicates that the explicit memory accesses of the immediately following instruction have poor temporal locality within the capacity of any level of cache. It is encoded as ADD x0, x0, x5.</div><br><div><b>ISA</b>: Zihintntl</div></div>",
+                "tooltip": "NTL.ALL is a HINT that changes no architectural state. It indicates that the explicit memory accesses of the immediately following instruction have poor temporal locality within the capacity of any level of cache. It is encoded as ADD x0, x0, x5.\n\n(ISA: Zihintntl)",
+                "url": "https://instructionsets.com/risc-v/ntl_all/"
+            };
+
+        case "FLI.S":
+            return {
+                "html": "<div><span class=\"opcode\"><b>FLI.S</b> rd, rs1</span><br><div>Loads one of 32 single-precision floating-point constants, selected by the 5-bit rs1 field (an index, not a register), into floating-point register rd. The table contains -1.0, the minimum positive normal number, 2^-16, 2^-15, 2^-8, 2^-7, 0.0625, 0.125, fractions from 0.25 to 0.875, 1.0 to 1.75, 2.0, 2.5, 3, 4, 8, 16, 2^7, 2^8, 2^15, 2^16, +infinity and the canonical NaN. It sets no exception flags. The assembler also accepts the value directly, for example FLI.S ft0, 1.0.</div><br><div><b>ISA</b>: Zfa</div></div>",
+                "tooltip": "Loads one of 32 single-precision floating-point constants, selected by the 5-bit rs1 field (an index, not a register), into floating-point register rd. The table contains -1.0, the minimum positive normal number, 2^-16, 2^-15, 2^-8, 2^-7, 0.0625, 0.125, fractions from 0.25 to 0.875, 1.0 to 1.75, 2.0, 2.5, 3, 4, 8, 16, 2^7, 2^8, 2^15, 2^16, +infinity and the canonical NaN. It sets no exception flags. The assembler also accepts the value directly, for example FLI.S ft0, 1.0.\n\n(ISA: Zfa)",
+                "url": "https://instructionsets.com/risc-v/fli_s/"
+            };
+
+        case "FLI.D":
+            return {
+                "html": "<div><span class=\"opcode\"><b>FLI.D</b> rd, rs1</span><br><div>Loads one of 32 double-precision floating-point constants, selected by the 5-bit rs1 field (an index, not a register), into floating-point register rd. The table contains -1.0, the minimum positive normal number, 2^-16, 2^-15, 2^-8, 2^-7, 0.0625, 0.125, fractions from 0.25 to 0.875, 1.0 to 1.75, 2.0, 2.5, 3, 4, 8, 16, 2^7, 2^8, 2^15, 2^16, +infinity and the canonical NaN. It sets no exception flags. The assembler also accepts the value directly, for example FLI.D ft0, 1.0.</div><br><div><b>ISA</b>: Zfa</div></div>",
+                "tooltip": "Loads one of 32 double-precision floating-point constants, selected by the 5-bit rs1 field (an index, not a register), into floating-point register rd. The table contains -1.0, the minimum positive normal number, 2^-16, 2^-15, 2^-8, 2^-7, 0.0625, 0.125, fractions from 0.25 to 0.875, 1.0 to 1.75, 2.0, 2.5, 3, 4, 8, 16, 2^7, 2^8, 2^15, 2^16, +infinity and the canonical NaN. It sets no exception flags. The assembler also accepts the value directly, for example FLI.D ft0, 1.0.\n\n(ISA: Zfa)",
+                "url": "https://instructionsets.com/risc-v/fli_d/"
+            };
+
+        case "FLI.H":
+            return {
+                "html": "<div><span class=\"opcode\"><b>FLI.H</b> rd, rs1</span><br><div>Loads one of 32 half-precision floating-point constants, selected by the 5-bit rs1 field (an index, not a register), into floating-point register rd. The table contains -1.0, the minimum positive normal number, 2^-16, 2^-15, 2^-8, 2^-7, 0.0625, 0.125, fractions from 0.25 to 0.875, 1.0 to 1.75, 2.0, 2.5, 3, 4, 8, 16, 2^7, 2^8, 2^15, 2^16, +infinity and the canonical NaN. It sets no exception flags. The assembler also accepts the value directly, for example FLI.H ft0, 1.0.</div><br><div><b>ISA</b>: Zfa</div></div>",
+                "tooltip": "Loads one of 32 half-precision floating-point constants, selected by the 5-bit rs1 field (an index, not a register), into floating-point register rd. The table contains -1.0, the minimum positive normal number, 2^-16, 2^-15, 2^-8, 2^-7, 0.0625, 0.125, fractions from 0.25 to 0.875, 1.0 to 1.75, 2.0, 2.5, 3, 4, 8, 16, 2^7, 2^8, 2^15, 2^16, +infinity and the canonical NaN. It sets no exception flags. The assembler also accepts the value directly, for example FLI.H ft0, 1.0.\n\n(ISA: Zfa)",
+                "url": "https://instructionsets.com/risc-v/fli_h/"
+            };
+
+        case "FMINM.S":
+            return {
+                "html": "<div><span class=\"opcode\"><b>FMINM.S</b> rd, rs1, rs2</span><br><div>Defined like FMIN.S (-0.0 is less than +0.0; a signalling NaN input sets the invalid flag) except that if either input is NaN the result is the canonical NaN.</div><br><div><b>ISA</b>: Zfa</div></div>",
+                "tooltip": "Defined like FMIN.S (-0.0 is less than +0.0; a signalling NaN input sets the invalid flag) except that if either input is NaN the result is the canonical NaN.\n\n(ISA: Zfa)",
+                "url": "https://instructionsets.com/risc-v/fminm_s/"
+            };
+
+        case "FMAXM.S":
+            return {
+                "html": "<div><span class=\"opcode\"><b>FMAXM.S</b> rd, rs1, rs2</span><br><div>Defined like FMAX.S (+0.0 is greater than -0.0; a signalling NaN input sets the invalid flag) except that if either input is NaN the result is the canonical NaN.</div><br><div><b>ISA</b>: Zfa</div></div>",
+                "tooltip": "Defined like FMAX.S (+0.0 is greater than -0.0; a signalling NaN input sets the invalid flag) except that if either input is NaN the result is the canonical NaN.\n\n(ISA: Zfa)",
+                "url": "https://instructionsets.com/risc-v/fmaxm_s/"
+            };
+
+        case "FROUND.S":
+            return {
+                "html": "<div><span class=\"opcode\"><b>FROUND.S</b> rd, rs1, rm</span><br><div>Rounds the single-precision value in rs1 to an integer according to the rounding mode in the rm field and writes that integer, still in single-precision format, to rd. Zero and infinite inputs are copied unmodified. A signalling NaN input sets the invalid flag; no other exception flags are set (FROUNDNX.S also sets inexact).</div><br><div><b>ISA</b>: Zfa</div></div>",
+                "tooltip": "Rounds the single-precision value in rs1 to an integer according to the rounding mode in the rm field and writes that integer, still in single-precision format, to rd. Zero and infinite inputs are copied unmodified. A signalling NaN input sets the invalid flag; no other exception flags are set (FROUNDNX.S also sets inexact).\n\n(ISA: Zfa)",
+                "url": "https://instructionsets.com/risc-v/fround_s/"
+            };
+
+        case "AMOCAS.W":
+            return {
+                "html": "<div><span class=\"opcode\"><b>AMOCAS.W</b> rd, rs2, (rs1)</span><br><div>Atomically loads the 32-bit value at the address in rs1 and compares it with the 32-bit value in rd. If they are bitwise equal it stores the value in rs2 to that address. The value loaded from memory is always written to rd.</div><br><div><b>ISA</b>: Zacas</div></div>",
+                "tooltip": "Atomically loads the 32-bit value at the address in rs1 and compares it with the 32-bit value in rd. If they are bitwise equal it stores the value in rs2 to that address. The value loaded from memory is always written to rd.\n\n(ISA: Zacas)",
+                "url": "https://instructionsets.com/risc-v/amocas_w/"
+            };
+
+        case "AMOCAS.D":
+            return {
+                "html": "<div><span class=\"opcode\"><b>AMOCAS.D</b> rd, rs2, (rs1)</span><br><div>Atomically loads the 64-bit value at the address in rs1 and compares it with the 64-bit value in rd. If they are bitwise equal it stores the value in rs2 to that address. The value loaded from memory is always written to rd. On RV32 rd and rs2 each name an even/odd register pair.</div><br><div><b>ISA</b>: Zacas</div></div>",
+                "tooltip": "Atomically loads the 64-bit value at the address in rs1 and compares it with the 64-bit value in rd. If they are bitwise equal it stores the value in rs2 to that address. The value loaded from memory is always written to rd. On RV32 rd and rs2 each name an even/odd register pair.\n\n(ISA: Zacas)",
+                "url": "https://instructionsets.com/risc-v/amocas_d/"
+            };
+
+        case "CZERO.EQZ":
+            return {
+                "html": "<div><span class=\"opcode\"><b>CZERO.EQZ</b> rd, rs1, rs2</span><br><div>CZERO.EQZ conditionally zeroes rd: it writes zero to rd if rs2 equals zero, otherwise writes the value of rs1 to rd. Useful for branch-free conditional selection.</div><br><div><b>ISA</b>: Zicond</div></div>",
+                "tooltip": "CZERO.EQZ conditionally zeroes rd: it writes zero to rd if rs2 equals zero, otherwise writes the value of rs1 to rd. Useful for branch-free conditional selection.\n\n(ISA: Zicond)",
+                "url": "https://instructionsets.com/risc-v/czero_eqz/"
+            };
+
+        case "CZERO.NEZ":
+            return {
+                "html": "<div><span class=\"opcode\"><b>CZERO.NEZ</b> rd, rs1, rs2</span><br><div>CZERO.NEZ conditionally zeroes rd: it writes zero to rd if rs2 is non-zero, otherwise writes rs1 to rd. Useful for branch-free conditional selection.</div><br><div><b>ISA</b>: Zicond</div></div>",
+                "tooltip": "CZERO.NEZ conditionally zeroes rd: it writes zero to rd if rs2 is non-zero, otherwise writes rs1 to rd. Useful for branch-free conditional selection.\n\n(ISA: Zicond)",
+                "url": "https://instructionsets.com/risc-v/czero_nez/"
+            };
+
+        case "PACK":
+            return {
+                "html": "<div><span class=\"opcode\"><b>PACK</b> rd, rs1, rs2</span><br><div>Pack two words into a register: Packs the lower halves of rs1 and rs2 into rd. Operation: R[rd] = (R[rs2] &lt;&lt; XLEN/2) | (R[rs1] &amp; ((1 &lt;&lt; XLEN/2)-1));.</div><br><div><b>ISA</b>: Zbkb</div></div>",
+                "tooltip": "Pack two words into a register: Packs the lower halves of rs1 and rs2 into rd. Operation: R[rd] = (R[rs2] << XLEN/2) | (R[rs1] & ((1 << XLEN/2)-1));.\n\n(ISA: Zbkb)",
+                "url": "https://instructionsets.com/risc-v/pack/"
+            };
+
+        case "PACKH":
+            return {
+                "html": "<div><span class=\"opcode\"><b>PACKH</b> rd, rs1, rs2</span><br><div>Pack Byte: Packs the lower bytes of rs1 and rs2 into a 16-bit value. Operation: R[rd] = (R[rs2] &lt;&lt; 8) | (R[rs1] &amp; 0xFF);.</div><br><div><b>ISA</b>: Zbkb</div></div>",
+                "tooltip": "Pack Byte: Packs the lower bytes of rs1 and rs2 into a 16-bit value. Operation: R[rd] = (R[rs2] << 8) | (R[rs1] & 0xFF);.\n\n(ISA: Zbkb)",
+                "url": "https://instructionsets.com/risc-v/packh/"
+            };
+
+        case "VLSEG3E8.V":
+            return {
+                "html": "<div><span class=\"opcode\"><b>VLSEG3E8.V</b> vd, (rs1), vm</span><br><div>Performs a vector strided load of 3-bit elements from/to memory. The number of elements transferred is determined by vl. Masking is controlled by vm.</div><br><div><b>ISA</b>: V</div></div>",
+                "tooltip": "Performs a vector strided load of 3-bit elements from/to memory. The number of elements transferred is determined by vl. Masking is controlled by vm.\n\n(ISA: V)",
+                "url": "https://instructionsets.com/risc-v/vlseg3e8_v/"
+            };
+
+        case "VSSEG3E8.V":
+            return {
+                "html": "<div><span class=\"opcode\"><b>VSSEG3E8.V</b> vs3, (rs1), vm</span><br><div>Performs a vector strided store of 3-bit elements from/to memory. The number of elements transferred is determined by vl. Masking is controlled by vm.</div><br><div><b>ISA</b>: V</div></div>",
+                "tooltip": "Performs a vector strided store of 3-bit elements from/to memory. The number of elements transferred is determined by vl. Masking is controlled by vm.\n\n(ISA: V)",
+                "url": "https://instructionsets.com/risc-v/vsseg3e8_v/"
+            };
+
+        case "VLSEG4E8.V":
+            return {
+                "html": "<div><span class=\"opcode\"><b>VLSEG4E8.V</b> vd, (rs1), vm</span><br><div>Performs a vector strided load of 4-bit elements from/to memory. The number of elements transferred is determined by vl. Masking is controlled by vm.</div><br><div><b>ISA</b>: V</div></div>",
+                "tooltip": "Performs a vector strided load of 4-bit elements from/to memory. The number of elements transferred is determined by vl. Masking is controlled by vm.\n\n(ISA: V)",
+                "url": "https://instructionsets.com/risc-v/vlseg4e8_v/"
+            };
+
+        case "VSSEG4E8.V":
+            return {
+                "html": "<div><span class=\"opcode\"><b>VSSEG4E8.V</b> vs3, (rs1), vm</span><br><div>Performs a vector strided store of 4-bit elements from/to memory. The number of elements transferred is determined by vl. Masking is controlled by vm.</div><br><div><b>ISA</b>: V</div></div>",
+                "tooltip": "Performs a vector strided store of 4-bit elements from/to memory. The number of elements transferred is determined by vl. Masking is controlled by vm.\n\n(ISA: V)",
+                "url": "https://instructionsets.com/risc-v/vsseg4e8_v/"
+            };
+
+        case "VLSEG2E16.V":
+            return {
+                "html": "<div><span class=\"opcode\"><b>VLSEG2E16.V</b> vd, (rs1), vm</span><br><div>Performs a vector strided load of 2-bit elements from/to memory. The number of elements transferred is determined by vl. Masking is controlled by vm.</div><br><div><b>ISA</b>: V</div></div>",
+                "tooltip": "Performs a vector strided load of 2-bit elements from/to memory. The number of elements transferred is determined by vl. Masking is controlled by vm.\n\n(ISA: V)",
+                "url": "https://instructionsets.com/risc-v/vlseg2e16_v/"
+            };
+
+        case "VSSEG2E16.V":
+            return {
+                "html": "<div><span class=\"opcode\"><b>VSSEG2E16.V</b> vs3, (rs1), vm</span><br><div>Performs a vector strided store of 2-bit elements from/to memory. The number of elements transferred is determined by vl. Masking is controlled by vm.</div><br><div><b>ISA</b>: V</div></div>",
+                "tooltip": "Performs a vector strided store of 2-bit elements from/to memory. The number of elements transferred is determined by vl. Masking is controlled by vm.\n\n(ISA: V)",
+                "url": "https://instructionsets.com/risc-v/vsseg2e16_v/"
+            };
+
+        case "VMSGT.VV":
+            return {
+                "html": "<div><span class=\"opcode\"><b>VMSGT.VV</b> vd, vs2, vs1, vm</span><br><div>VMSGT.VV is not a native encoding. The assembler accepts it as a pseudo-instruction and emits vmslt.vv vd, vs1, vs2, vm (operands swapped).</div><br><div><b>ISA</b>: pseudo</div></div>",
+                "tooltip": "VMSGT.VV is not a native encoding. The assembler accepts it as a pseudo-instruction and emits vmslt.vv vd, vs1, vs2, vm (operands swapped).\n\n(ISA: pseudo)",
+                "url": "https://instructionsets.com/risc-v/vmsgt_vv/"
+            };
+
+        case "VMSGTU.VV":
+            return {
+                "html": "<div><span class=\"opcode\"><b>VMSGTU.VV</b> vd, vs2, vs1, vm</span><br><div>VMSGTU.VV is not a native encoding. The assembler accepts it as a pseudo-instruction and emits vmsltu.vv vd, vs1, vs2, vm (operands swapped).</div><br><div><b>ISA</b>: pseudo</div></div>",
+                "tooltip": "VMSGTU.VV is not a native encoding. The assembler accepts it as a pseudo-instruction and emits vmsltu.vv vd, vs1, vs2, vm (operands swapped).\n\n(ISA: pseudo)",
+                "url": "https://instructionsets.com/risc-v/vmsgtu_vv/"
+            };
+
+        case "VMSGE.VV":
+            return {
+                "html": "<div><span class=\"opcode\"><b>VMSGE.VV</b> vd, vs2, vs1, vm</span><br><div>VMSGE.VV is not a native encoding. The assembler accepts it as a pseudo-instruction and emits vmsle.vv vd, vs1, vs2, vm (operands swapped).</div><br><div><b>ISA</b>: pseudo</div></div>",
+                "tooltip": "VMSGE.VV is not a native encoding. The assembler accepts it as a pseudo-instruction and emits vmsle.vv vd, vs1, vs2, vm (operands swapped).\n\n(ISA: pseudo)",
+                "url": "https://instructionsets.com/risc-v/vmsge_vv/"
+            };
+
+        case "VMSGEU.VV":
+            return {
+                "html": "<div><span class=\"opcode\"><b>VMSGEU.VV</b> vd, vs2, vs1, vm</span><br><div>VMSGEU.VV is not a native encoding. The assembler accepts it as a pseudo-instruction and emits vmsleu.vv vd, vs1, vs2, vm (operands swapped).</div><br><div><b>ISA</b>: pseudo</div></div>",
+                "tooltip": "VMSGEU.VV is not a native encoding. The assembler accepts it as a pseudo-instruction and emits vmsleu.vv vd, vs1, vs2, vm (operands swapped).\n\n(ISA: pseudo)",
+                "url": "https://instructionsets.com/risc-v/vmsgeu_vv/"
+            };
+
+        case "VMSLT.VI":
+            return {
+                "html": "<div><span class=\"opcode\"><b>VMSLT.VI</b> vd, vs2, imm, vm</span><br><div>VMSLT.VI is not a native encoding. The assembler accepts it as a pseudo-instruction and emits vmsle.vi vd, vs2, imm-1, vm (immediate decremented by one).</div><br><div><b>ISA</b>: pseudo</div></div>",
+                "tooltip": "VMSLT.VI is not a native encoding. The assembler accepts it as a pseudo-instruction and emits vmsle.vi vd, vs2, imm-1, vm (immediate decremented by one).\n\n(ISA: pseudo)",
+                "url": "https://instructionsets.com/risc-v/vmslt_vi/"
+            };
+
+        case "VMSLTU.VI":
+            return {
+                "html": "<div><span class=\"opcode\"><b>VMSLTU.VI</b> vd, vs2, imm, vm</span><br><div>VMSLTU.VI is not a native encoding. The assembler accepts it as a pseudo-instruction and emits vmsleu.vi vd, vs2, imm-1, vm (immediate decremented by one).</div><br><div><b>ISA</b>: pseudo</div></div>",
+                "tooltip": "VMSLTU.VI is not a native encoding. The assembler accepts it as a pseudo-instruction and emits vmsleu.vi vd, vs2, imm-1, vm (immediate decremented by one).\n\n(ISA: pseudo)",
+                "url": "https://instructionsets.com/risc-v/vmsltu_vi/"
+            };
+
         case "SGT":
             return {
                 "html": "<div><span class=\"opcode\"><b>SGT</b> rd, rs, rt</span><br><div><b>Equivalent ASM:</b><pre>slt rd, rt, rs</pre></div><br><div><b>ISA</b>: (pseudo)</div></div>",
