@@ -30,6 +30,7 @@ export type LibraryVersion = {
     dependencies: string[];
     liblink: string[];
     libpath: string[];
+    cmakeprefixpath: string[];
     path: string[];
     options: string[];
     packagedheaders?: boolean;
