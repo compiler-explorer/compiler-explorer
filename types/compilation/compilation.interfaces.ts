@@ -231,6 +231,7 @@ export type CompilationResult = {
     haskellStgOutput?: ResultLine[];
     haskellCmmOutput?: ResultLine[];
     leanCOutput?: ResultLine[];
+    jvmBytecodeOutput?: ParsedAsmResultLine[];
 
     clojureMacroExpOutput?: ResultLine[];
 
