@@ -68,6 +68,7 @@ export const InstructionSetsList = [
     's390x',
     'sass',
     'sh',
+    'sm83',
     'sparc',
     'spirv',
     'vax',
