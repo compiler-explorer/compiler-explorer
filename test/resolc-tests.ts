@@ -22,6 +22,7 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
+import fs from 'node:fs';
 import path from 'node:path';
 
 import {beforeAll, describe, expect, it} from 'vitest';
@@ -33,7 +34,7 @@ import type {ParsedAsmResult, ParsedAsmResultLine} from '../types/asmresult/asmr
 import type {CompilerInfo} from '../types/compiler.interfaces.js';
 import type {ParseFiltersAndOutputOptions} from '../types/features/filters.interfaces.js';
 import type {LanguageKey} from '../types/languages.interfaces.js';
-import {makeCompilationEnvironment, makeFakeCompilerInfo, makeFakeLlvmIrBackendOptions} from './utils.js';
+import {makeCompilationEnvironment, makeFakeCompilerInfo, makeFakeLlvmIrBackendOptions, newTempDir} from './utils.js';
 
 const languages = {
     solidity: {id: 'solidity' as LanguageKey},
@@ -118,6 +119,17 @@ describe('Resolc', () => {
             const filenameWithoutExtension = path.normalize('test/resolc/artifacts/test_resolc_example.sol.Square');
             const inputFilename = path.normalize('test/resolc/example.sol');
             expectCorrectOutputFilenames(compiler, inputFilename, filenameWithoutExtension);
+        });
+
+        it.each([
+            'interface I {}\ncontract Impl is I {}',
+            'interface A {}\ninterface B {}\ncontract Impl is A, B {}',
+        ])('should find an inherited contract after interfaces', source => {
+            const compiler = makeCompiler(compilerInfo);
+            const dirPath = newTempDir();
+            fs.writeFileSync(path.join(dirPath, 'example.sol'), source);
+
+            expect(compiler.getOutputFilename(dirPath)).toMatch(/\.Impl\.pvmasm$/);
         });
 
         describe('To RISC-V', () => {
