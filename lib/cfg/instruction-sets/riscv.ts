@@ -33,10 +33,11 @@ export class RiscvInstructionSetInfo extends BaseInstructionSetInfo {
     // beq, bne, blt, bge, bltu, bgeu, and the pseudo-instructions bgt, ble, bgtu, bleu,
     // beqz, bnez, bltz, bgez, bgtz, blez (plus the compressed c.beqz, c.bnez)
     static conditionalJumps = /^(?:c\.)?b(?:eq|ne|lt|ge|gt|le)[uz]?$/;
-    // jr through any register other than ra is an indirect jump (e.g. a jump table)
-    static unconditionalJumps = /^(?:c\.)?jr?$/;
     // A tail call leaves the function, so like a return it has no successor within it
     static returnInstructions = /^(?:[ms]?ret|tail)$/;
+    // Registers may be printed with ABI or architectural names (clang's -riscv-arch-reg-names)
+    static zeroRegister = /^(?:zero|x0)$/;
+    static returnAddressRegister = /^(?:ra|x1)$/;
 
     override isJmpInstruction(instruction: string) {
         const instype = this.getInstructionType(instruction);
@@ -44,12 +45,34 @@ export class RiscvInstructionSetInfo extends BaseInstructionSetInfo {
     }
 
     override getInstructionType(instruction: string) {
-        const [opcode, firstOperand] = instruction.trim().toLowerCase().split(/\s+/, 2);
+        const [opcode, ...operands] = instruction
+            .trim()
+            .toLowerCase()
+            .split(/[\s,]+/);
         if (RiscvInstructionSetInfo.conditionalJumps.test(opcode)) return InstructionType.conditionalJmpInst;
         if (RiscvInstructionSetInfo.returnInstructions.test(opcode)) return InstructionType.retInst;
-        if (RiscvInstructionSetInfo.unconditionalJumps.test(opcode)) {
-            return opcode.endsWith('jr') && firstOperand === 'ra' ? InstructionType.retInst : InstructionType.jmp;
+        // j and jr are aliases of jal and jalr that link to zero, i.e. discard the return address.
+        // The single-operand forms of jal and jalr link to ra, so they are calls.
+        const linksToZero = operands.length > 1 && RiscvInstructionSetInfo.zeroRegister.test(operands[0]);
+        switch (opcode.replace(/^c\./, '')) {
+            case 'j':
+                return InstructionType.jmp;
+            case 'jal':
+                return linksToZero ? InstructionType.jmp : InstructionType.notRetInst;
+            case 'jr':
+                return this.getIndirectJumpType(operands[0]);
+            case 'jalr':
+                return linksToZero ? this.getIndirectJumpType(operands[1]) : InstructionType.notRetInst;
         }
         return InstructionType.notRetInst;
+    }
+
+    // A jump through ra is a return; through any other register it is an indirect jump (e.g. a jump table).
+    // The register may be written as a base address, e.g. 0(ra).
+    private getIndirectJumpType(target = '') {
+        const register = target.replace(/^.*\((\w+)\)$/, '$1');
+        return RiscvInstructionSetInfo.returnAddressRegister.test(register)
+            ? InstructionType.retInst
+            : InstructionType.jmp;
     }
 }
