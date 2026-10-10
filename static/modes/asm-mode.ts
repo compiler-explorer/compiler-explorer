@@ -62,7 +62,7 @@ function definition(): monaco.languages.IMonarchLanguage {
                 // braces and parentheses at the start of the line (e.g. nvcc output)
                 [/[(){}]/, {token: 'operator', next: '@rest'}],
                 // msvc can have strings at the start of a line in a inSegDirList
-                [/`/, {token: 'string.backtick', bracket: '@open', next: '@segDirMsvcstring'}],
+                [/`(?=.*')/, {token: 'string.backtick', bracket: '@open', next: '@segDirMsvcstring'}],
 
                 // whitespace
                 {include: '@whitespace'},
@@ -98,8 +98,10 @@ function definition(): monaco.languages.IMonarchLanguage {
                 // strings
                 [/"([^"\\]|\\.)*$/, 'string.invalid'], // non-terminated string
                 [/"/, {token: 'string.quote', bracket: '@open', next: '@string'}],
-                // `msvc does this, sometimes'
-                [/`/, {token: 'string.backtick', bracket: '@open', next: '@msvcstring'}],
+                // `msvc does this, sometimes'. These never span lines, so a backtick with no closing quote on its line
+                // is something else, e.g. nvdisasm's label references (BRA `(.L_x_0)) or IAR's section names (`.text`)
+                [/`(?=.*')/, {token: 'string.backtick', bracket: '@open', next: '@msvcstring'}],
+                [/`/, 'operator'],
                 [/'/, {token: 'string.singlequote', bracket: '@open', next: '@sstring'}],
 
                 // characters
