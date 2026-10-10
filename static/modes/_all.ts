@@ -76,6 +76,7 @@ import './slang-mode';
 import './spice-mode';
 import './spirv-mode';
 import './sway-mode';
+import './swift-mode';
 import './tablegen-mode';
 import './toml-mode';
 import './v-mode';
