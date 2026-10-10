@@ -26,12 +26,12 @@ import * as fsSync from 'node:fs';
 import fs from 'node:fs/promises';
 import path from 'node:path';
 
-import {describe, expect, it} from 'vitest';
+import {afterEach, describe, expect, it, vi} from 'vitest';
 
 import {unwrap} from '../lib/assert.js';
 import {BaseCompiler} from '../lib/base-compiler.js';
 import {CompilationEnvironment} from '../lib/compilation-env.js';
-import {CppDemangler, Win32Demangler} from '../lib/demangler/index.js';
+import {CppDemangler, LLVMWin32Demangler, Win32Demangler} from '../lib/demangler/index.js';
 import {LLVMIRDemangler} from '../lib/demangler/llvm.js';
 import {PrefixTree} from '../lib/demangler/prefix-tree.js';
 import * as exec from '../lib/exec.js';
@@ -512,6 +512,118 @@ describe.skipIf(process.platform === 'win32')('LLVM IR demangler', () => {
                     );
                 })
                 .catch(catchCppfiltNonexistence),
+        ]);
+    });
+});
+
+describe('LLVM IR demangler with Windows demanglers', () => {
+    afterEach(() => {
+        vi.restoreAllMocks();
+    });
+
+    function makeCompilerWithDemangler(stdoutFor: (input: string) => string) {
+        const compiler = new DummyCompiler();
+        vi.spyOn(compiler, 'getDefaultExecOptions').mockReturnValue({env: {}});
+        const execSpy = vi.spyOn(compiler, 'exec').mockImplementation(async (_exe, _args, options) => ({
+            code: 0,
+            okToCache: true,
+            filenameTransform: f => f,
+            stdout: stdoutFor(options.input ?? ''),
+            stderr: '',
+            execTime: 0,
+            timedOut: false,
+            truncated: false,
+        }));
+        return {compiler, execSpy};
+    }
+
+    it('does not map the undname banner onto symbols', async () => {
+        const {compiler, execSpy} = makeCompilerWithDemangler(() =>
+            [
+                'Microsoft (R) C++ Name Undecorator',
+                'Copyright (C) Microsoft Corporation. All rights reserved.',
+                '',
+                'Undecoration of :- "?longFunctionName@@YA?AUCustomS@@U1@@Z"',
+                'is :- "CustomS __cdecl longFunctionName(CustomS)"',
+                '',
+                'Undecoration of :- "llvm.memcpy.p0.p0.i64"',
+                'is :- "llvm.memcpy.p0.p0.i64"',
+                '',
+            ].join('\n'),
+        );
+        const demangler = new LLVMIRDemangler(new Win32Demangler('undname.exe', compiler));
+
+        const output = await demangler.process({
+            asm: [
+                {text: 'define dso_local i64 @"?longFunctionName@@YA?AUCustomS@@U1@@Z"(i64 %0) {'},
+                {text: '  call void @llvm.memcpy.p0.p0.i64(ptr align 4 %2, ptr align 4 %3, i64 8, i1 false)'},
+            ],
+        });
+
+        expect(output.asm.map(line => line.text)).toEqual([
+            'define dso_local i64 @"CustomS __cdecl longFunctionName(CustomS)"(i64 %0) {',
+            '  call void @llvm.memcpy.p0.p0.i64(ptr align 4 %2, ptr align 4 %3, i64 8, i1 false)',
+        ]);
+        expect(execSpy.mock.calls[0][1]).toContain('?longFunctionName@@YA?AUCustomS@@U1@@Z');
+    });
+
+    it('demangles clang-cl IR of a class with a vftable, despite symbols llvm-undname cannot demangle', async () => {
+        // Real llvm-undname results. It can't demangle the other names it gets: the unnamed vftable `0`, and the
+        // fragments `6B` and `8` that the unquoted symbol pattern picks out of quoted names.
+        const demangled: Record<string, string> = {
+            '??_R4S@@6B@': "const S::`RTTI Complete Object Locator'",
+            '?f@S@@UEAAHXZ': 'virtual int S::f(void)',
+            '??_R0?AUS@@@8': "struct S `RTTI Type Descriptor'",
+            '??_7type_info@@6B@': "const type_info::`vftable'",
+            '??_7S@@6B@': "const S::`vftable'",
+            '?g@@YAHXZ': 'int g(void)',
+            '??0S@@QEAA@XZ': 'S::S(void)',
+        };
+        // Like llvm-undname: echo each name, print its demangling only on success, then an empty line
+        const {compiler} = makeCompilerWithDemangler(input =>
+            utils
+                .splitLines(input)
+                .filter(Boolean)
+                .map(name => (name in demangled ? `${name}\n${demangled[name]}\n\n` : `${name}\n\n`))
+                .join(''),
+        );
+        const demangler = new LLVMIRDemangler(new LLVMWin32Demangler('llvm-undname.exe', compiler));
+
+        // From clang-cl 18.1 for: struct S { virtual int f(); }; int S::f() { return 1; } int g() { S s; return s.f(); }
+        const output = await demangler.process({
+            asm: [
+                {
+                    text: '@0 = private unnamed_addr constant { [2 x ptr] } { [2 x ptr] [ptr @"??_R4S@@6B@", ptr @"?f@S@@UEAAHXZ"] }, comdat($"??_7S@@6B@")',
+                },
+                {
+                    text: '@"??_R0?AUS@@@8" = linkonce_odr global %rtti.TypeDescriptor7 { ptr @"??_7type_info@@6B@", ptr null, [8 x i8] c".?AUS@@\\00" }, comdat',
+                },
+                {
+                    text: '@"??_7S@@6B@" = unnamed_addr alias ptr, getelementptr inbounds ({ [2 x ptr] }, ptr @0, i32 0, i32 0, i32 1)',
+                },
+                {
+                    text: 'define dso_local noundef i32 @"?f@S@@UEAAHXZ"(ptr noundef nonnull align 8 dereferenceable(8) %0) unnamed_addr align 2 {',
+                },
+                {text: 'define dso_local noundef i32 @"?g@@YAHXZ"() {'},
+                {
+                    text: '  %2 = call noundef ptr @"??0S@@QEAA@XZ"(ptr noundef nonnull align 8 dereferenceable(8) %1) #2',
+                },
+                {
+                    text: 'define linkonce_odr dso_local noundef ptr @"??0S@@QEAA@XZ"(ptr noundef nonnull returned align 8 dereferenceable(8) %0) unnamed_addr comdat align 2 {',
+                },
+                {text: '  store ptr @"??_7S@@6B@", ptr %3, align 8'},
+            ],
+        });
+
+        expect(output.asm.map(line => line.text)).toEqual([
+            '@0 = private unnamed_addr constant { [2 x ptr] } { [2 x ptr] [ptr @"const S::`RTTI Complete Object Locator\'", ptr @"virtual int S::f(void)"] }, comdat($"const S::`vftable\'")',
+            '@"struct S `RTTI Type Descriptor\'" = linkonce_odr global %rtti.TypeDescriptor7 { ptr @"const type_info::`vftable\'", ptr null, [8 x i8] c".?AUS@@\\00" }, comdat',
+            '@"const S::`vftable\'" = unnamed_addr alias ptr, getelementptr inbounds ({ [2 x ptr] }, ptr @0, i32 0, i32 0, i32 1)',
+            'define dso_local noundef i32 @"virtual int S::f(void)"(ptr noundef nonnull align 8 dereferenceable(8) %0) unnamed_addr align 2 {',
+            'define dso_local noundef i32 @"int g(void)"() {',
+            '  %2 = call noundef ptr @"S::S(void)"(ptr noundef nonnull align 8 dereferenceable(8) %1) #2',
+            'define linkonce_odr dso_local noundef ptr @"S::S(void)"(ptr noundef nonnull returned align 8 dereferenceable(8) %0) unnamed_addr comdat align 2 {',
+            '  store ptr @"const S::`vftable\'", ptr %3, align 8',
         ]);
     });
 });
