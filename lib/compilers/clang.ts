@@ -38,6 +38,7 @@ import type {
     CompilationResult,
     ExecutionOptionsWithEnv,
 } from '../../types/compilation/compilation.interfaces.js';
+import type {ConfiguredOverrides} from '../../types/compilation/compiler-overrides.interfaces.js';
 import type {PreliminaryCompilerInfo} from '../../types/compiler.interfaces.js';
 import type {ExecutableExecutionOptions, UnprocessedExecResult} from '../../types/execution/execution.interfaces.js';
 import type {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces.js';
@@ -146,6 +147,20 @@ export class ClangCompiler extends BaseCompiler {
             };
         }
         return super.runExecutable(executable, executeParameters, homeDir);
+    }
+
+    override fixIncompatibleOptions(
+        options: string[],
+        userOptions: string[],
+        overrides: ConfiguredOverrides,
+    ): [string[], ConfiguredOverrides] {
+        // On RISC-V an explicit -march takes precedence over the ISA implied by -mcpu, so a configured default
+        // -march would otherwise silently discard the extensions of a CPU the user selected.
+        const isRiscv = this.compiler.instructionSet === 'riscv32' || this.compiler.instructionSet === 'riscv64';
+        if (isRiscv && userOptions.some(option => option.startsWith('-mcpu=') || option.startsWith('-march='))) {
+            options = options.filter(option => !option.startsWith('-march='));
+        }
+        return super.fixIncompatibleOptions(options, userOptions, overrides);
     }
 
     // Clang cross-compile with -stdlib=libc++ is currently (up to at least 18.1.0) broken:
