@@ -50,8 +50,12 @@ export type replaceAction = {
 
 export class PrefixTree {
     root: Node = [];
+    readonly identifierChar?: RegExp;
 
-    constructor(mappings: [string, string][]) {
+    // If `identifierChar` is given, a match directly followed by such a character is not a match: it is only the
+    // start of a longer identifier.
+    constructor(mappings: [string, string][], identifierChar?: RegExp) {
+        this.identifierChar = identifierChar;
         if (mappings) {
             for (const [from, to] of mappings) this.add(from, to);
         }
@@ -79,9 +83,14 @@ export class PrefixTree {
             assert(character !== undefined, 'Undefined code point encountered in PrefixTree');
             node = node[character];
             if (!node) break;
-            if (node.result) match = [needle.substring(start, i + 1), node.result];
+            if (node.result && !this.continuesIdentifier(needle, i + 1))
+                match = [needle.substring(start, i + 1), node.result];
         }
         return match;
+    }
+
+    private continuesIdentifier(text: string, index: number) {
+        return index < text.length && !!this.identifierChar?.test(text[index]);
     }
 
     findExact(needle: string) {

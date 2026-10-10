@@ -30,6 +30,7 @@ import {afterEach, describe, expect, it, vi} from 'vitest';
 
 import {unwrap} from '../lib/assert.js';
 import {BaseCompiler} from '../lib/base-compiler.js';
+import {CFG, generateStructure} from '../lib/cfg/cfg.js';
 import {CompilationEnvironment} from '../lib/compilation-env.js';
 import {CppDemangler, LLVMWin32Demangler, Win32Demangler} from '../lib/demangler/index.js';
 import {LLVMIRDemangler} from '../lib/demangler/llvm.js';
@@ -462,6 +463,25 @@ describe('Demangler prefix tree', () => {
         expect(replacements.findExact('Oh noes')).toBeNull();
         expect(replacements.findExact('')).toBeNull();
     });
+    it('should only replace whole identifiers when given identifier characters', () => {
+        const tree = new PrefixTree(
+            [
+                ['_Z3bari', 'bar(int)'],
+                ['_Z3bari.cold', 'bar(int) [clone .cold]'],
+            ],
+            /[-\w$.]/,
+        );
+        expect(tree.replaceAll('call @_Z3bari(i32 %x)').newText).toEqual('call @bar(int)(i32 %x)');
+        expect(tree.replaceAll('$_Z3bari = comdat any').newText).toEqual('$bar(int) = comdat any');
+        expect(tree.replaceAll('call @_Z3bari.cold(i32 %x)').newText).toEqual('call @bar(int) [clone .cold](i32 %x)');
+        expect(tree.replaceAll('_Z3bari.exit:   ; preds = %_Z3bari.exit8').newText).toEqual(
+            '_Z3bari.exit:   ; preds = %_Z3bari.exit8',
+        );
+        expect(tree.replaceAllText('_Z3bari.exit:   ; preds = %_Z3bari.exit8')).toEqual(
+            '_Z3bari.exit:   ; preds = %_Z3bari.exit8',
+        );
+        expect(tree.replaceAllText('ends with _Z3bari')).toEqual('ends with bar(int)');
+    });
 });
 
 // FIXME: The `c++filt` installed on `windows-2019` runners is so old that it produces
@@ -489,6 +509,94 @@ describe.skipIf(process.platform === 'win32')('LLVM IR demangler', () => {
                 })
                 .catch(catchCppfiltNonexistence),
         ]);
+    });
+
+    it('leaves labels named after inlined functions alone, keeping the IR CFG intact', () => {
+        // clang trunk -O2 IR, keeping value names, for:
+        //   void ext(int); void ext2(int);
+        //   int bar(int x) { if (x > 5) { ext(x); return 1; } ext2(x); return 0; }
+        //   int foo(int y) { return bar(y) + bar(y + 1); }
+        const ir = `define dso_local noundef range(i32 0, 2) i32 @_Z3bari(i32 noundef %x) local_unnamed_addr {
+entry:
+  %cmp = icmp sgt i32 %x, 5
+  br i1 %cmp, label %if.then, label %if.end
+
+if.then:                                          ; preds = %entry
+  tail call void @_Z3exti(i32 noundef %x)
+  br label %return
+
+if.end:                                           ; preds = %entry
+  tail call void @_Z4ext2i(i32 noundef %x)
+  br label %return
+
+return:                                           ; preds = %if.end, %if.then
+  %retval.0 = phi i32 [ 1, %if.then ], [ 0, %if.end ]
+  ret i32 %retval.0
+}
+
+declare void @_Z3exti(i32 noundef) local_unnamed_addr #1
+
+declare void @_Z4ext2i(i32 noundef) local_unnamed_addr #1
+
+define dso_local noundef range(i32 0, 3) i32 @_Z3fooi(i32 noundef %y) local_unnamed_addr {
+entry:
+  %cmp.i = icmp sgt i32 %y, 5
+  %add10 = add nsw i32 %y, 1
+  br i1 %cmp.i, label %_Z3bari.exit.thread, label %_Z3bari.exit
+
+_Z3bari.exit.thread:                              ; preds = %entry
+  tail call void @_Z3exti(i32 noundef %y)
+  br label %if.then.i7
+
+_Z3bari.exit:                                     ; preds = %entry
+  tail call void @_Z4ext2i(i32 noundef %y)
+  %cmp.i4 = icmp eq i32 %y, 5
+  br i1 %cmp.i4, label %if.then.i7, label %if.end.i5
+
+if.then.i7:                                       ; preds = %_Z3bari.exit.thread, %_Z3bari.exit
+  %add14 = phi i32 [ %add10, %_Z3bari.exit.thread ], [ 6, %_Z3bari.exit ]
+  %retval.0.i13 = phi i32 [ 1, %_Z3bari.exit.thread ], [ 0, %_Z3bari.exit ]
+  tail call void @_Z3exti(i32 noundef %add14)
+  br label %_Z3bari.exit8
+
+if.end.i5:                                        ; preds = %_Z3bari.exit
+  tail call void @_Z4ext2i(i32 noundef %add10)
+  br label %_Z3bari.exit8
+
+_Z3bari.exit8:                                    ; preds = %if.then.i7, %if.end.i5
+  %retval.0.i12 = phi i32 [ %retval.0.i13, %if.then.i7 ], [ 0, %if.end.i5 ]
+  %retval.0.i6 = phi i32 [ 1, %if.then.i7 ], [ 0, %if.end.i5 ]
+  %add2 = add nuw nsw i32 %retval.0.i6, %retval.0.i12
+  ret i32 %add2
+}`;
+        const irLines = () => ir.split('\n').map(text => ({text}));
+        const shape = ({nodes, edges}: CFG) => ({
+            nodes: nodes.map(node => node.id),
+            edges: edges.map(({from, to}) => [from, to]),
+        });
+        const compilerInfo = makeFakeCompilerInfo({compilerType: '', version: 'clang'});
+
+        const baseDemangler = new DummyCppDemangler(cppfiltpath, new DummyCompiler(), ['-n']);
+        const demangler = new LLVMIRDemangler(baseDemangler);
+
+        return demangler
+            .process({asm: irLines()})
+            .then(async output => {
+                const text = output.asm.map(line => line.text);
+                expect(text).toContain('  tail call void @ext2(int)(i32 noundef %y)');
+                expect(text).toContain('  br i1 %cmp.i, label %_Z3bari.exit.thread, label %_Z3bari.exit');
+                expect(text).toContain('_Z3bari.exit:                                     ; preds = %entry');
+
+                const mangledCfg = await generateStructure(compilerInfo, irLines(), true);
+                const demangledCfg = await generateStructure(
+                    compilerInfo,
+                    output.asm.map(line => ({text: line.text})),
+                    true,
+                );
+                expect(shape(mangledCfg._Z3fooi).nodes).toHaveLength(6);
+                expect(shape(demangledCfg['foo(int)'])).toEqual(shape(mangledCfg._Z3fooi));
+            })
+            .catch(catchCppfiltNonexistence);
     });
 
     it('demangles quoted identifiers', () => {
