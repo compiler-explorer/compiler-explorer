@@ -29,8 +29,9 @@ import * as swift from 'monaco-editor/esm/vs/basic-languages/swift/swift';
 function definition(): monaco.languages.IMonarchLanguage {
     const swiftPatched = $.extend(true, {}, swift.language); // deep copy
 
-    // Upstream reads `/**/` as the opening `/**` of a doc comment, so everything after it is highlighted as a
-    // comment. Drop this once https://github.com/microsoft/monaco-editor/pull/5378 lands in our monaco-editor.
+    // Hopefully temporary: upstream reads `/**/` as the opening `/**` of a doc comment, so everything after it is
+    // highlighted as a comment (https://github.com/microsoft/monaco-editor/issues/5377). Drop this, and the `swiftp`
+    // id, once https://github.com/microsoft/monaco-editor/pull/5378 lands in our monaco-editor.
     swiftPatched.tokenizer.comment.unshift([/\/\*\*\//, 'comment']);
 
     return swiftPatched;

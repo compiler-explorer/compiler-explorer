@@ -70,6 +70,7 @@ import './openclc-mode';
 import './ptx-mode';
 import './perl-concise-mode';
 import './razorforge-mode';
+import './ruby-mode';
 import './rust-mode';
 import './sail-mode';
 import './slang-mode';

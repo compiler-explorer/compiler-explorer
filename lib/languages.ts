@@ -901,7 +901,7 @@ const definitions: Record<LanguageKey, LanguageDefinition> = {
     },
     ruby: {
         name: 'Ruby',
-        monaco: 'ruby',
+        monaco: 'rubyp',
         extensions: ['.rb'],
         alias: [],
         logoFilename: 'ruby.svg',
