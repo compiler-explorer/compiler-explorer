@@ -67,6 +67,7 @@ function definition(): monaco.languages.IMonarchLanguage {
                 [/[(){}]/, {token: 'operator', next: '@rest'}],
                 // msvc can have strings at the start of a line in a inSegDirList
                 [/`(?=@msvcstringTail)/, {token: 'string.backtick', bracket: '@open', next: '@segDirMsvcstring'}],
+                [/`/, {token: 'operator', next: '@rest'}],
 
                 // whitespace
                 {include: '@whitespace'},

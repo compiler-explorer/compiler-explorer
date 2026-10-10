@@ -87,6 +87,7 @@ describe('asm mode', () => {
 
     it('does not let an unterminated backtick at the start of a line swallow the next line', () => {
         const rows = tokens(['`(.L_x_0)', '\tret\t0'].join('\n'));
+        expect(rows[0][0]).toEqual(['`', 'operator']);
         expect(rows[0].some(([, type]) => type.startsWith('string'))).toBe(false);
         expect(rows[1][0]).toEqual(['ret', 'keyword']);
     });
