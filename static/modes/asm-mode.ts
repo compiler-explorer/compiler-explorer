@@ -31,6 +31,10 @@ function definition(): monaco.languages.IMonarchLanguage {
         // C# style strings
         escapes: /\\(?:[abfnrtv\\"']|x[0-9A-Fa-f]{1,4}|u[0-9A-Fa-f]{4}|U[0-9A-Fa-f]{8})/,
 
+        // The rest of an msvcstring up to and including its closing quote, consuming quotes in '' pairs as
+        // msvcstringCommon does, so that a lone '' (e.g. in a trailing comment) doesn't count as a close
+        msvcstringTail: /(?:[^\\']|\\.|'')*'(?!')/,
+
         registers: /%?\b(r[0-9]+[dbw]?|([er]?([abcd][xhl]|cs|fs|ds|ss|sp|bp|ip|sil?|dil?))|[xyz]mm[0-9]+|sp|fp|lr)\b/,
 
         intelOperators: /PTR|(D|Q|[XYZ]MM)?WORD/,
@@ -62,7 +66,7 @@ function definition(): monaco.languages.IMonarchLanguage {
                 // braces and parentheses at the start of the line (e.g. nvcc output)
                 [/[(){}]/, {token: 'operator', next: '@rest'}],
                 // msvc can have strings at the start of a line in a inSegDirList
-                [/`(?=.*')/, {token: 'string.backtick', bracket: '@open', next: '@segDirMsvcstring'}],
+                [/`(?=@msvcstringTail)/, {token: 'string.backtick', bracket: '@open', next: '@segDirMsvcstring'}],
 
                 // whitespace
                 {include: '@whitespace'},
@@ -100,7 +104,7 @@ function definition(): monaco.languages.IMonarchLanguage {
                 [/"/, {token: 'string.quote', bracket: '@open', next: '@string'}],
                 // `msvc does this, sometimes'. These never span lines, so a backtick with no closing quote on its line
                 // is something else, e.g. nvdisasm's label references (BRA `(.L_x_0)) or IAR's section names (`.text`)
-                [/`(?=.*')/, {token: 'string.backtick', bracket: '@open', next: '@msvcstring'}],
+                [/`(?=@msvcstringTail)/, {token: 'string.backtick', bracket: '@open', next: '@msvcstring'}],
                 [/`/, 'operator'],
                 [/'/, {token: 'string.singlequote', bracket: '@open', next: '@sstring'}],
 

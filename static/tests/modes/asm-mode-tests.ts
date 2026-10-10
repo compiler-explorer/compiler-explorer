@@ -59,6 +59,12 @@ describe('asm mode', () => {
         expect(rows[5][0]).toEqual(['MOV', 'keyword']);
     });
 
+    it("does not count an escaped '' as the closing quote of a backtick string", () => {
+        const rows = tokens([" BRA `(.L_x_0) ; ''", '\tret\t0'].join('\n'));
+        expect(rows[0][1]).toEqual(['`', 'operator']);
+        expect(rows[1][0]).toEqual(['ret', 'keyword']);
+    });
+
     it('still reads an MSVC backtick string after an opcode', () => {
         const rows = tokens(["\tlea\trcx, OFFSET FLAT:`string'", '\tret\t0'].join('\n'));
         expect(rows[0].slice(-3)).toEqual([
