@@ -1,0 +1,223 @@
+{
+    "asm": [
+        {
+            "text": "bar(int):",
+            "source": null,
+            "labels": []
+        },
+        {
+            "text": "        addiu   $sp,$sp,-32",
+            "source": {
+                "file": null,
+                "line": 2,
+                "column": 16
+            },
+            "labels": []
+        },
+        {
+            "text": "        slt     $2,$4,6",
+            "source": {
+                "file": null,
+                "line": 2,
+                "column": 18
+            },
+            "labels": []
+        },
+        {
+            "text": "        beq     $2,$0,$L6",
+            "source": {
+                "file": null,
+                "line": 2,
+                "column": 18
+            },
+            "labels": [
+                {
+                    "name": "$L6",
+                    "range": {
+                        "startCol": 23,
+                        "endCol": 26
+                    }
+                }
+            ]
+        },
+        {
+            "text": "        sw      $31,28($sp)",
+            "source": {
+                "file": null,
+                "line": 2,
+                "column": 18
+            },
+            "labels": []
+        },
+        {
+            "text": "",
+            "source": null,
+            "labels": []
+        },
+        {
+            "text": "        jal     ext2(int)",
+            "source": {
+                "file": null,
+                "line": 2,
+                "column": 55
+            },
+            "labels": []
+        },
+        {
+            "text": "        nop",
+            "source": {
+                "file": null,
+                "line": 2,
+                "column": 55
+            },
+            "labels": []
+        },
+        {
+            "text": "",
+            "source": null,
+            "labels": []
+        },
+        {
+            "text": "        lw      $31,28($sp)",
+            "source": {
+                "file": null,
+                "line": 2,
+                "column": 70
+            },
+            "labels": []
+        },
+        {
+            "text": "        move    $2,$0",
+            "source": {
+                "file": null,
+                "line": 2,
+                "column": 67
+            },
+            "labels": []
+        },
+        {
+            "text": "        jr      $31",
+            "source": {
+                "file": null,
+                "line": 2,
+                "column": 70
+            },
+            "labels": []
+        },
+        {
+            "text": "        addiu   $sp,$sp,32",
+            "source": {
+                "file": null,
+                "line": 2,
+                "column": 70
+            },
+            "labels": []
+        },
+        {
+            "text": "",
+            "source": null,
+            "labels": []
+        },
+        {
+            "text": "$L6:",
+            "source": null,
+            "labels": []
+        },
+        {
+            "text": "        jal     ext(int)",
+            "source": {
+                "file": null,
+                "line": 2,
+                "column": 34
+            },
+            "labels": []
+        },
+        {
+            "text": "        nop",
+            "source": {
+                "file": null,
+                "line": 2,
+                "column": 34
+            },
+            "labels": []
+        },
+        {
+            "text": "",
+            "source": null,
+            "labels": []
+        },
+        {
+            "text": "        lw      $31,28($sp)",
+            "source": {
+                "file": null,
+                "line": 2,
+                "column": 70
+            },
+            "labels": []
+        },
+        {
+            "text": "        li      $2,1                        # 0x1",
+            "source": {
+                "file": null,
+                "line": 2,
+                "column": 46
+            },
+            "labels": []
+        },
+        {
+            "text": "        jr      $31",
+            "source": {
+                "file": null,
+                "line": 2,
+                "column": 70
+            },
+            "labels": []
+        },
+        {
+            "text": "        addiu   $sp,$sp,32",
+            "source": {
+                "file": null,
+                "line": 2,
+                "column": 70
+            },
+            "labels": []
+        },
+        {
+            "text": "",
+            "source": null,
+            "labels": []
+        }
+    ],
+    "cfg": {
+        "bar(int):": {
+            "nodes": [
+                {
+                    "id": "bar(int):",
+                    "label": "bar(int):\n        addiu   $sp,$sp,-32\n        slt     $2,$4,6\n        beq     $2,$0,$L6\n        sw      $31,28($sp)"
+                },
+                {
+                    "id": "bar(int):@5",
+                    "label": "bar(int):@5\n        jal     ext2(int)\n        nop\n        lw      $31,28($sp)\n        move    $2,$0\n        jr      $31\n        addiu   $sp,$sp,32"
+                },
+                {
+                    "id": "$L6:",
+                    "label": "$L6:\n        jal     ext(int)\n        nop\n        lw      $31,28($sp)\n        li      $2,1                        # 0x1\n        jr      $31\n        addiu   $sp,$sp,32"
+                }
+            ],
+            "edges": [
+                {
+                    "from": "bar(int):",
+                    "to": "$L6:",
+                    "arrows": "to",
+                    "color": "green"
+                },
+                {
+                    "from": "bar(int):",
+                    "to": "bar(int):@5",
+                    "arrows": "to",
+                    "color": "red"
+                }
+            ]
+        }
+    }
+}

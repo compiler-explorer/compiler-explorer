@@ -1,0 +1,221 @@
+{
+    "asm": [
+        {
+            "text": "sum(int*, int):",
+            "source": null,
+            "labels": []
+        },
+        {
+            "text": "        blez    $5,$L4",
+            "source": {
+                "file": null,
+                "line": 3,
+                "column": 23
+            },
+            "labels": [
+                {
+                    "name": "$L4",
+                    "range": {
+                        "startCol": 20,
+                        "endCol": 23
+                    }
+                }
+            ]
+        },
+        {
+            "text": "        sll     $5,$5,2",
+            "source": {
+                "file": null,
+                "line": 3,
+                "column": 23
+            },
+            "labels": []
+        },
+        {
+            "text": "",
+            "source": null,
+            "labels": []
+        },
+        {
+            "text": "        addu    $5,$4,$5",
+            "source": {
+                "file": null,
+                "line": 3,
+                "column": 23
+            },
+            "labels": []
+        },
+        {
+            "text": "        move    $2,$0",
+            "source": {
+                "file": null,
+                "line": 2,
+                "column": 9
+            },
+            "labels": []
+        },
+        {
+            "text": "$L3:",
+            "source": null,
+            "labels": []
+        },
+        {
+            "text": "        lw      $3,0($4)",
+            "source": {
+                "file": null,
+                "line": 4,
+                "column": 11
+            },
+            "labels": []
+        },
+        {
+            "text": "        addiu   $4,$4,4",
+            "source": {
+                "file": null,
+                "line": 3,
+                "column": 23
+            },
+            "labels": []
+        },
+        {
+            "text": "        bne     $4,$5,$L3",
+            "source": {
+                "file": null,
+                "line": 3,
+                "column": 23
+            },
+            "labels": [
+                {
+                    "name": "$L3",
+                    "range": {
+                        "startCol": 23,
+                        "endCol": 26
+                    }
+                }
+            ]
+        },
+        {
+            "text": "        addu    $2,$2,$3",
+            "source": {
+                "file": null,
+                "line": 3,
+                "column": 23
+            },
+            "labels": []
+        },
+        {
+            "text": "",
+            "source": null,
+            "labels": []
+        },
+        {
+            "text": "        jr      $31",
+            "source": {
+                "file": null,
+                "line": 3,
+                "column": 23
+            },
+            "labels": []
+        },
+        {
+            "text": "        nop",
+            "source": {
+                "file": null,
+                "line": 3,
+                "column": 23
+            },
+            "labels": []
+        },
+        {
+            "text": "",
+            "source": null,
+            "labels": []
+        },
+        {
+            "text": "$L4:",
+            "source": null,
+            "labels": []
+        },
+        {
+            "text": "        jr      $31",
+            "source": {
+                "file": null,
+                "line": 6,
+                "column": 1
+            },
+            "labels": []
+        },
+        {
+            "text": "        move    $2,$0",
+            "source": {
+                "file": null,
+                "line": 6,
+                "column": 1
+            },
+            "labels": []
+        },
+        {
+            "text": "",
+            "source": null,
+            "labels": []
+        }
+    ],
+    "cfg": {
+        "sum(int*, int):": {
+            "nodes": [
+                {
+                    "id": "sum(int*, int):",
+                    "label": "sum(int*, int):\n        blez    $5,$L4\n        sll     $5,$5,2"
+                },
+                {
+                    "id": "sum(int*, int):@3",
+                    "label": "sum(int*, int):@3\n        addu    $5,$4,$5\n        move    $2,$0"
+                },
+                {
+                    "id": "$L3:",
+                    "label": "$L3:\n        lw      $3,0($4)\n        addiu   $4,$4,4\n        bne     $4,$5,$L3\n        addu    $2,$2,$3"
+                },
+                {
+                    "id": "$L3:@10",
+                    "label": "$L3:@10\n        jr      $31\n        nop"
+                },
+                {
+                    "id": "$L4:",
+                    "label": "$L4:\n        jr      $31\n        move    $2,$0"
+                }
+            ],
+            "edges": [
+                {
+                    "from": "sum(int*, int):",
+                    "to": "$L4:",
+                    "arrows": "to",
+                    "color": "green"
+                },
+                {
+                    "from": "sum(int*, int):",
+                    "to": "sum(int*, int):@3",
+                    "arrows": "to",
+                    "color": "red"
+                },
+                {
+                    "from": "sum(int*, int):@3",
+                    "to": "$L3:",
+                    "arrows": "to",
+                    "color": "grey"
+                },
+                {
+                    "from": "$L3:",
+                    "to": "$L3:",
+                    "arrows": "to",
+                    "color": "green"
+                },
+                {
+                    "from": "$L3:",
+                    "to": "$L3:@10",
+                    "arrows": "to",
+                    "color": "red"
+                }
+            ]
+        }
+    }
+}

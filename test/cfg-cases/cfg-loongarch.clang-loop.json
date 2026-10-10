@@ -1,0 +1,542 @@
+{
+    "asm": [
+        {
+            "text": "sum(int*, int):",
+            "source": null,
+            "labels": []
+        },
+        {
+            "text": "        blez    $a1, .LBB0_3",
+            "source": {
+                "file": null,
+                "line": 3,
+                "column": 5
+            },
+            "labels": [
+                {
+                    "name": ".LBB0_3",
+                    "range": {
+                        "startCol": 22,
+                        "endCol": 29
+                    }
+                }
+            ]
+        },
+        {
+            "text": "        ori     $a2, $zero, 8",
+            "source": {
+                "file": null,
+                "line": 0,
+                "column": 5
+            },
+            "labels": []
+        },
+        {
+            "text": "        bgeu    $a1, $a2, .LBB0_4",
+            "source": {
+                "file": null,
+                "line": 3,
+                "column": 5
+            },
+            "labels": [
+                {
+                    "name": ".LBB0_4",
+                    "range": {
+                        "startCol": 27,
+                        "endCol": 34
+                    }
+                }
+            ]
+        },
+        {
+            "text": "        move    $a2, $zero",
+            "source": {
+                "file": null,
+                "line": 0,
+                "column": 5
+            },
+            "labels": []
+        },
+        {
+            "text": "        move    $a3, $zero",
+            "source": {
+                "file": null,
+                "line": 0,
+                "column": 5
+            },
+            "labels": []
+        },
+        {
+            "text": "        b       .LBB0_7",
+            "source": {
+                "file": null,
+                "line": 3,
+                "column": 5
+            },
+            "labels": [
+                {
+                    "name": ".LBB0_7",
+                    "range": {
+                        "startCol": 17,
+                        "endCol": 24
+                    }
+                }
+            ]
+        },
+        {
+            "text": ".LBB0_3:",
+            "source": null,
+            "labels": []
+        },
+        {
+            "text": "        move    $a3, $zero",
+            "source": {
+                "file": null,
+                "line": 0,
+                "column": 5
+            },
+            "labels": []
+        },
+        {
+            "text": "        addi.w  $a0, $a3, 0",
+            "source": {
+                "file": null,
+                "line": 5,
+                "column": 5
+            },
+            "labels": []
+        },
+        {
+            "text": "        ret",
+            "source": {
+                "file": null,
+                "line": 5,
+                "column": 5
+            },
+            "labels": []
+        },
+        {
+            "text": ".LBB0_4:",
+            "source": null,
+            "labels": []
+        },
+        {
+            "text": "        bstrpick.d      $a2, $a1, 30, 3",
+            "source": {
+                "file": null,
+                "line": 0,
+                "column": 5
+            },
+            "labels": []
+        },
+        {
+            "text": "        slli.d  $a2, $a2, 3",
+            "source": {
+                "file": null,
+                "line": 0,
+                "column": 5
+            },
+            "labels": []
+        },
+        {
+            "text": "        vrepli.b        $vr0, 0",
+            "source": {
+                "file": null,
+                "line": 0,
+                "column": 5
+            },
+            "labels": []
+        },
+        {
+            "text": "        addi.d  $a3, $a0, 16",
+            "source": {
+                "file": null,
+                "line": 3,
+                "column": 5
+            },
+            "labels": []
+        },
+        {
+            "text": "        move    $a4, $a2",
+            "source": {
+                "file": null,
+                "line": 3,
+                "column": 5
+            },
+            "labels": []
+        },
+        {
+            "text": "        vori.b  $vr1, $vr0, 0",
+            "source": {
+                "file": null,
+                "line": 3,
+                "column": 5
+            },
+            "labels": []
+        },
+        {
+            "text": ".LBB0_5:",
+            "source": null,
+            "labels": []
+        },
+        {
+            "text": "        vld     $vr2, $a3, -16",
+            "source": {
+                "file": null,
+                "line": 4,
+                "column": 14
+            },
+            "labels": []
+        },
+        {
+            "text": "        vld     $vr3, $a3, 0",
+            "source": {
+                "file": null,
+                "line": 4,
+                "column": 14
+            },
+            "labels": []
+        },
+        {
+            "text": "        vadd.w  $vr0, $vr2, $vr0",
+            "source": {
+                "file": null,
+                "line": 4,
+                "column": 11
+            },
+            "labels": []
+        },
+        {
+            "text": "        vadd.w  $vr1, $vr3, $vr1",
+            "source": {
+                "file": null,
+                "line": 4,
+                "column": 11
+            },
+            "labels": []
+        },
+        {
+            "text": "        addi.d  $a4, $a4, -8",
+            "source": {
+                "file": null,
+                "line": 3,
+                "column": 5
+            },
+            "labels": []
+        },
+        {
+            "text": "        addi.d  $a3, $a3, 32",
+            "source": {
+                "file": null,
+                "line": 3,
+                "column": 5
+            },
+            "labels": []
+        },
+        {
+            "text": "        bnez    $a4, .LBB0_5",
+            "source": {
+                "file": null,
+                "line": 3,
+                "column": 5
+            },
+            "labels": [
+                {
+                    "name": ".LBB0_5",
+                    "range": {
+                        "startCol": 22,
+                        "endCol": 29
+                    }
+                }
+            ]
+        },
+        {
+            "text": "        vadd.w  $vr0, $vr1, $vr0",
+            "source": {
+                "file": null,
+                "line": 3,
+                "column": 5
+            },
+            "labels": []
+        },
+        {
+            "text": "        vhaddw.d.w      $vr0, $vr0, $vr0",
+            "source": {
+                "file": null,
+                "line": 3,
+                "column": 5
+            },
+            "labels": []
+        },
+        {
+            "text": "        vhaddw.q.d      $vr0, $vr0, $vr0",
+            "source": {
+                "file": null,
+                "line": 3,
+                "column": 5
+            },
+            "labels": []
+        },
+        {
+            "text": "        vpickve2gr.d    $a3, $vr0, 0",
+            "source": {
+                "file": null,
+                "line": 3,
+                "column": 5
+            },
+            "labels": []
+        },
+        {
+            "text": "        beq     $a2, $a1, .LBB0_9",
+            "source": {
+                "file": null,
+                "line": 3,
+                "column": 5
+            },
+            "labels": [
+                {
+                    "name": ".LBB0_9",
+                    "range": {
+                        "startCol": 27,
+                        "endCol": 34
+                    }
+                }
+            ]
+        },
+        {
+            "text": ".LBB0_7:",
+            "source": null,
+            "labels": []
+        },
+        {
+            "text": "        alsl.d  $a0, $a2, $a0, 2",
+            "source": {
+                "file": null,
+                "line": 3,
+                "column": 5
+            },
+            "labels": []
+        },
+        {
+            "text": "        sub.d   $a1, $a1, $a2",
+            "source": {
+                "file": null,
+                "line": 3,
+                "column": 5
+            },
+            "labels": []
+        },
+        {
+            "text": ".LBB0_8:",
+            "source": null,
+            "labels": []
+        },
+        {
+            "text": "        ld.w    $a2, $a0, 0",
+            "source": {
+                "file": null,
+                "line": 4,
+                "column": 14
+            },
+            "labels": []
+        },
+        {
+            "text": "        add.d   $a3, $a2, $a3",
+            "source": {
+                "file": null,
+                "line": 4,
+                "column": 11
+            },
+            "labels": []
+        },
+        {
+            "text": "        addi.d  $a1, $a1, -1",
+            "source": {
+                "file": null,
+                "line": 3,
+                "column": 23
+            },
+            "labels": []
+        },
+        {
+            "text": "        addi.d  $a0, $a0, 4",
+            "source": {
+                "file": null,
+                "line": 3,
+                "column": 23
+            },
+            "labels": []
+        },
+        {
+            "text": "        bnez    $a1, .LBB0_8",
+            "source": {
+                "file": null,
+                "line": 3,
+                "column": 5
+            },
+            "labels": [
+                {
+                    "name": ".LBB0_8",
+                    "range": {
+                        "startCol": 22,
+                        "endCol": 29
+                    }
+                }
+            ]
+        },
+        {
+            "text": ".LBB0_9:",
+            "source": null,
+            "labels": []
+        },
+        {
+            "text": "        addi.w  $a0, $a3, 0",
+            "source": {
+                "file": null,
+                "line": 5,
+                "column": 5
+            },
+            "labels": []
+        },
+        {
+            "text": "        ret",
+            "source": {
+                "file": null,
+                "line": 5,
+                "column": 5
+            },
+            "labels": []
+        },
+        {
+            "text": "",
+            "source": null,
+            "labels": []
+        }
+    ],
+    "cfg": {
+        "sum(int*, int):": {
+            "nodes": [
+                {
+                    "id": "sum(int*, int):",
+                    "label": "sum(int*, int):\n        blez    $a1, .LBB0_3"
+                },
+                {
+                    "id": "sum(int*, int):@2",
+                    "label": "sum(int*, int):@2\n        ori     $a2, $zero, 8\n        bgeu    $a1, $a2, .LBB0_4"
+                },
+                {
+                    "id": "sum(int*, int):@4",
+                    "label": "sum(int*, int):@4\n        move    $a2, $zero\n        move    $a3, $zero\n        b       .LBB0_7"
+                },
+                {
+                    "id": ".LBB0_3:",
+                    "label": ".LBB0_3:\n        move    $a3, $zero\n        addi.w  $a0, $a3, 0\n        ret"
+                },
+                {
+                    "id": ".LBB0_4:",
+                    "label": ".LBB0_4:\n        bstrpick.d      $a2, $a1, 30, 3\n        slli.d  $a2, $a2, 3\n        vrepli.b        $vr0, 0\n        addi.d  $a3, $a0, 16\n        move    $a4, $a2\n        vori.b  $vr1, $vr0, 0"
+                },
+                {
+                    "id": ".LBB0_5:",
+                    "label": ".LBB0_5:\n        vld     $vr2, $a3, -16\n        vld     $vr3, $a3, 0\n        vadd.w  $vr0, $vr2, $vr0\n        vadd.w  $vr1, $vr3, $vr1\n        addi.d  $a4, $a4, -8\n        addi.d  $a3, $a3, 32\n        bnez    $a4, .LBB0_5"
+                },
+                {
+                    "id": ".LBB0_5:@26",
+                    "label": ".LBB0_5:@26\n        vadd.w  $vr0, $vr1, $vr0\n        vhaddw.d.w      $vr0, $vr0, $vr0\n        vhaddw.q.d      $vr0, $vr0, $vr0\n        vpickve2gr.d    $a3, $vr0, 0\n        beq     $a2, $a1, .LBB0_9"
+                },
+                {
+                    "id": ".LBB0_7:",
+                    "label": ".LBB0_7:\n        alsl.d  $a0, $a2, $a0, 2\n        sub.d   $a1, $a1, $a2"
+                },
+                {
+                    "id": ".LBB0_8:",
+                    "label": ".LBB0_8:\n        ld.w    $a2, $a0, 0\n        add.d   $a3, $a2, $a3\n        addi.d  $a1, $a1, -1\n        addi.d  $a0, $a0, 4\n        bnez    $a1, .LBB0_8"
+                },
+                {
+                    "id": ".LBB0_9:",
+                    "label": ".LBB0_9:\n        addi.w  $a0, $a3, 0\n        ret"
+                }
+            ],
+            "edges": [
+                {
+                    "from": "sum(int*, int):",
+                    "to": ".LBB0_3:",
+                    "arrows": "to",
+                    "color": "green"
+                },
+                {
+                    "from": "sum(int*, int):",
+                    "to": "sum(int*, int):@2",
+                    "arrows": "to",
+                    "color": "red"
+                },
+                {
+                    "from": "sum(int*, int):@2",
+                    "to": ".LBB0_4:",
+                    "arrows": "to",
+                    "color": "green"
+                },
+                {
+                    "from": "sum(int*, int):@2",
+                    "to": "sum(int*, int):@4",
+                    "arrows": "to",
+                    "color": "red"
+                },
+                {
+                    "from": "sum(int*, int):@4",
+                    "to": ".LBB0_7:",
+                    "arrows": "to",
+                    "color": "blue"
+                },
+                {
+                    "from": ".LBB0_4:",
+                    "to": ".LBB0_5:",
+                    "arrows": "to",
+                    "color": "grey"
+                },
+                {
+                    "from": ".LBB0_5:",
+                    "to": ".LBB0_5:",
+                    "arrows": "to",
+                    "color": "green"
+                },
+                {
+                    "from": ".LBB0_5:",
+                    "to": ".LBB0_5:@26",
+                    "arrows": "to",
+                    "color": "red"
+                },
+                {
+                    "from": ".LBB0_5:@26",
+                    "to": ".LBB0_9:",
+                    "arrows": "to",
+                    "color": "green"
+                },
+                {
+                    "from": ".LBB0_5:@26",
+                    "to": ".LBB0_7:",
+                    "arrows": "to",
+                    "color": "red"
+                },
+                {
+                    "from": ".LBB0_7:",
+                    "to": ".LBB0_8:",
+                    "arrows": "to",
+                    "color": "grey"
+                },
+                {
+                    "from": ".LBB0_8:",
+                    "to": ".LBB0_8:",
+                    "arrows": "to",
+                    "color": "green"
+                },
+                {
+                    "from": ".LBB0_8:",
+                    "to": ".LBB0_9:",
+                    "arrows": "to",
+                    "color": "red"
+                }
+            ]
+        }
+    }
+}
