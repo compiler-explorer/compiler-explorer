@@ -1,0 +1,280 @@
+{
+    "asm": [
+        {
+            "text": "sum_until_zero(int const*, unsigned int, int):",
+            "source": null,
+            "labels": []
+        },
+        {
+            "text": "        beqz    a1, .LBB0_5",
+            "source": {
+                "file": null,
+                "line": 3,
+                "column": 5
+            },
+            "labels": [
+                {
+                    "name": ".LBB0_5",
+                    "range": {
+                        "startCol": 21,
+                        "endCol": 28
+                    }
+                }
+            ]
+        },
+        {
+            "text": "        mv      a3, a0",
+            "source": {
+                "file": null,
+                "line": 0,
+                "column": 5
+            },
+            "labels": []
+        },
+        {
+            "text": "        li      a0, 0",
+            "source": {
+                "file": null,
+                "line": 0,
+                "column": 5
+            },
+            "labels": []
+        },
+        {
+            "text": "        slli    a1, a1, 32",
+            "source": {
+                "file": null,
+                "line": 3,
+                "column": 28
+            },
+            "labels": []
+        },
+        {
+            "text": "        srli    a1, a1, 32",
+            "source": {
+                "file": null,
+                "line": 3,
+                "column": 28
+            },
+            "labels": []
+        },
+        {
+            "text": ".LBB0_2:",
+            "source": null,
+            "labels": []
+        },
+        {
+            "text": "        lw      a4, 0(a3)",
+            "source": {
+                "file": null,
+                "line": 4,
+                "column": 13
+            },
+            "labels": []
+        },
+        {
+            "text": "        beqz    a4, .LBB0_4",
+            "source": {
+                "file": null,
+                "line": 4,
+                "column": 18
+            },
+            "labels": [
+                {
+                    "name": ".LBB0_4",
+                    "range": {
+                        "startCol": 21,
+                        "endCol": 28
+                    }
+                }
+            ]
+        },
+        {
+            "text": "        slt     a5, a4, a2",
+            "source": {
+                "file": null,
+                "line": 6,
+                "column": 18
+            },
+            "labels": []
+        },
+        {
+            "text": "        neg     a5, a5",
+            "source": {
+                "file": null,
+                "line": 6,
+                "column": 18
+            },
+            "labels": []
+        },
+        {
+            "text": "        and     a4, a4, a5",
+            "source": {
+                "file": null,
+                "line": 6,
+                "column": 18
+            },
+            "labels": []
+        },
+        {
+            "text": "        addi    a1, a1, -1",
+            "source": {
+                "file": null,
+                "line": 3,
+                "column": 28
+            },
+            "labels": []
+        },
+        {
+            "text": "        addw    a0, a0, a4",
+            "source": {
+                "file": null,
+                "line": 6,
+                "column": 18
+            },
+            "labels": []
+        },
+        {
+            "text": "        addi    a3, a3, 4",
+            "source": {
+                "file": null,
+                "line": 3,
+                "column": 28
+            },
+            "labels": []
+        },
+        {
+            "text": "        bnez    a1, .LBB0_2",
+            "source": {
+                "file": null,
+                "line": 3,
+                "column": 5
+            },
+            "labels": [
+                {
+                    "name": ".LBB0_2",
+                    "range": {
+                        "startCol": 21,
+                        "endCol": 28
+                    }
+                }
+            ]
+        },
+        {
+            "text": ".LBB0_4:",
+            "source": null,
+            "labels": []
+        },
+        {
+            "text": "        ret",
+            "source": {
+                "file": null,
+                "line": 9,
+                "column": 5
+            },
+            "labels": []
+        },
+        {
+            "text": ".LBB0_5:",
+            "source": null,
+            "labels": []
+        },
+        {
+            "text": "        li      a0, 0",
+            "source": {
+                "file": null,
+                "line": 0,
+                "column": 5
+            },
+            "labels": []
+        },
+        {
+            "text": "        ret",
+            "source": {
+                "file": null,
+                "line": 9,
+                "column": 5
+            },
+            "labels": []
+        },
+        {
+            "text": "",
+            "source": null,
+            "labels": []
+        }
+    ],
+    "cfg": {
+        "sum_until_zero(int const*, unsigned int, int):": {
+            "nodes": [
+                {
+                    "id": "sum_until_zero(int const*, unsigned int, int):",
+                    "label": "sum_until_zero(int const*, unsigned int, int):\n        beqz    a1, .LBB0_5"
+                },
+                {
+                    "id": "sum_until_zero(int const*, unsigned int, int):@2",
+                    "label": "sum_until_zero(int const*, unsigned int, int):@2\n        mv      a3, a0\n        li      a0, 0\n        slli    a1, a1, 32\n        srli    a1, a1, 32"
+                },
+                {
+                    "id": ".LBB0_2:",
+                    "label": ".LBB0_2:\n        lw      a4, 0(a3)\n        beqz    a4, .LBB0_4"
+                },
+                {
+                    "id": ".LBB0_2:@9",
+                    "label": ".LBB0_2:@9\n        slt     a5, a4, a2\n        neg     a5, a5\n        and     a4, a4, a5\n        addi    a1, a1, -1\n        addw    a0, a0, a4\n        addi    a3, a3, 4\n        bnez    a1, .LBB0_2"
+                },
+                {
+                    "id": ".LBB0_4:",
+                    "label": ".LBB0_4:\n        ret"
+                },
+                {
+                    "id": ".LBB0_5:",
+                    "label": ".LBB0_5:\n        li      a0, 0\n        ret"
+                }
+            ],
+            "edges": [
+                {
+                    "from": "sum_until_zero(int const*, unsigned int, int):",
+                    "to": ".LBB0_5:",
+                    "arrows": "to",
+                    "color": "green"
+                },
+                {
+                    "from": "sum_until_zero(int const*, unsigned int, int):",
+                    "to": "sum_until_zero(int const*, unsigned int, int):@2",
+                    "arrows": "to",
+                    "color": "red"
+                },
+                {
+                    "from": "sum_until_zero(int const*, unsigned int, int):@2",
+                    "to": ".LBB0_2:",
+                    "arrows": "to",
+                    "color": "grey"
+                },
+                {
+                    "from": ".LBB0_2:",
+                    "to": ".LBB0_4:",
+                    "arrows": "to",
+                    "color": "green"
+                },
+                {
+                    "from": ".LBB0_2:",
+                    "to": ".LBB0_2:@9",
+                    "arrows": "to",
+                    "color": "red"
+                },
+                {
+                    "from": ".LBB0_2:@9",
+                    "to": ".LBB0_2:",
+                    "arrows": "to",
+                    "color": "green"
+                },
+                {
+                    "from": ".LBB0_2:@9",
+                    "to": ".LBB0_4:",
+                    "arrows": "to",
+                    "color": "red"
+                }
+            ]
+        }
+    }
+}
