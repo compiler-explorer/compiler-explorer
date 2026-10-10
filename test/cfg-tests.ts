@@ -29,6 +29,7 @@ import path from 'node:path';
 import {describe, expect, it} from 'vitest';
 
 import {generateStructure} from '../lib/cfg/cfg.js';
+import {InstructionType, RiscvInstructionSetInfo} from '../lib/cfg/instruction-sets/index.js';
 import {CompilerInfo} from '../types/compiler.interfaces.js';
 import {makeFakeCompilerInfo, resolvePathFromTestRoot} from './utils.js';
 
@@ -61,7 +62,7 @@ describe('Cfg test cases', () => {
     });
 
     describe('gcc', () => {
-        for (const filename of files.filter(x => x.includes('gcc'))) {
+        for (const filename of files.filter(x => x.startsWith('cfg-gcc'))) {
             it(filename, async () => {
                 await DoCfgTest('g++', path.join(testcasespath, filename));
             });
@@ -69,7 +70,7 @@ describe('Cfg test cases', () => {
     });
 
     describe('clang', () => {
-        for (const filename of files.filter(x => x.includes('clang'))) {
+        for (const filename of files.filter(x => x.startsWith('cfg-clang'))) {
             it(filename, async () => {
                 await DoCfgTest('clang', path.join(testcasespath, filename));
             });
@@ -126,5 +127,40 @@ describe('Cfg test cases', () => {
                 await DoCfgTest('python', path.join(testcasespath, filename), false, xtensaCompilerInfo);
             });
         }
+    });
+
+    describe('riscv', () => {
+        for (const filename of files.filter(x => x.startsWith('cfg-riscv'))) {
+            // As configured on godbolt.org: clang is detected from its version, while the rv32gcc/rv64gcc
+            // groups have no dedicated cfg parser and use the base one
+            const isClang = filename.includes('clang');
+            const riscvCompilerInfo = makeFakeCompilerInfo({
+                instructionSet: 'riscv64',
+                group: isClang ? 'rv64clang' : 'rv64gcc',
+                version: isClang ? 'clang' : 'gcc',
+                compilerType: '',
+            });
+            it(filename, async () => {
+                await DoCfgTest('', path.join(testcasespath, filename), false, riscvCompilerInfo);
+            });
+        }
+
+        it.each([
+            ['bgeu    a0, a1, .LBB0_2', InstructionType.conditionalJmpInst],
+            ['bltz    a0, .L3', InstructionType.conditionalJmpInst],
+            ['c.bnez  a0, .L3', InstructionType.conditionalJmpInst],
+            ['j       .L3', InstructionType.jmp],
+            ['jr      a5', InstructionType.jmp],
+            ['jr      ra', InstructionType.retInst],
+            ['ret', InstructionType.retInst],
+            ['mret', InstructionType.retInst],
+            ['tail    foo', InstructionType.retInst],
+            ['call    foo', InstructionType.notRetInst],
+            ['jal     foo', InstructionType.notRetInst],
+            ['jalr    a5', InstructionType.notRetInst],
+            ['sb      a0, 0(sp)', InstructionType.notRetInst],
+        ])('classifies %s', (inst, expected) => {
+            expect(new RiscvInstructionSetInfo().getInstructionType(`        ${inst}`)).toEqual(expected);
+        });
     });
 });
