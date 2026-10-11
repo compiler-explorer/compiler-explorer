@@ -38,7 +38,7 @@ import {ComponentConfig, NewToolSettings, TOOL_INPUT_VIEW_COMPONENT_NAME, ToolSt
 import * as Components from '../components.js';
 import {Hub} from '../hub.js';
 import * as monacoConfig from '../monaco-config.js';
-import {toolsService} from '../services/tools.service.js';
+import {toolsService, type ToolEntry} from '../services/tools.service.js';
 import * as utils from '../utils.js';
 import {Toggles} from '../widgets/toggles.js';
 import {MonacoPaneState} from './pane.interfaces.js';
@@ -68,6 +68,7 @@ export class Tool extends MonacoPane<monaco.editor.IStandaloneCodeEditor, ToolSt
     monacoStdinField = '';
     normalAnsiToHtml: AnsiToHtml.Filter;
     optionsField: JQuery;
+    private argChoicesApplied = false;
     localStdinField: JQuery;
     createToolInputView: () => ComponentConfig<typeof TOOL_INPUT_VIEW_COMPONENT_NAME>;
 
@@ -223,6 +224,32 @@ export class Tool extends MonacoPane<monaco.editor.IStandaloneCodeEditor, ToolSt
             }
         }
     }
+
+    private applyArgChoices(toolInfo: ToolEntry) {
+        const choices = toolInfo.argChoices;
+        if (this.argChoicesApplied || !choices || choices.length === 0) return;
+        this.argChoicesApplied = true;
+
+        const current = unwrapString(this.optionsField.val());
+        const defaultArg = toolInfo.args ?? '';
+        const initial = choices.includes(current) ? current : choices.includes(defaultArg) ? defaultArg : choices[0];
+
+        const select = $(
+            '<select class="tool-arg-choices form-select form-select-sm" aria-label="Tool mode"></select>',
+        );
+        for (const choice of choices) {
+            select.append($('<option></option>').val(choice).text(choice));
+        }
+        select.val(initial);
+        select.on('change', () => {
+            this.optionsField.val(unwrapString(select.val())).trigger('change');
+        });
+
+        this.optionsField.val(initial).addClass('d-none').after(select);
+        this.showPanel(this.toggleArgs, this.panelArgs);
+        if (initial !== current) this.optionsField.trigger('change');
+    }
+
 
     getInputArgs() {
         return unwrapString(this.optionsField.val());
@@ -433,6 +460,7 @@ export class Tool extends MonacoPane<monaco.editor.IStandaloneCodeEditor, ToolSt
                 : undefined;
 
             if (toolInfo) {
+                this.applyArgChoices(toolInfo);
                 this.toggleStdin.prop('disabled', false);
 
                 if (this.monacoStdin && !this.monacoEditorOpen && !this.monacoEditorHasBeenAutoOpened) {

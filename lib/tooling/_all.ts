@@ -47,3 +47,4 @@ export {SonarTool} from './sonar-tool.js';
 export {StringsTool} from './strings-tool.js';
 export {TestingTool} from './testing-tool.js';
 export {x86to6502Tool} from './x86to6502-tool.js';
+export {EcppsIrTool} from './ecpps-ir.js';

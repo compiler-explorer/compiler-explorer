@@ -37,6 +37,7 @@ export {Cc65Compiler} from './cc65.js';
 export {CerberusCompiler} from './cerberus.js';
 export {CircleCompiler} from './circle.js';
 export {CIRCTCompiler} from './circt.js';
+export {EcppsCompiler} from './ecpps.js';
 export {CL430Compiler} from './cl430.js';
 export {
     ClangCompiler,

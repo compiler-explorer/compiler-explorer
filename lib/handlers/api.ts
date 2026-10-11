@@ -326,6 +326,7 @@ export class ApiHandler {
                 languageId: tool.tool.languageId || languageId,
                 allowStdin: tool.tool.stdinHint !== 'disabled',
                 args: tool.tool.args,
+                argChoices: tool.tool.argChoices,
                 monacoStdin: tool.tool.monacoStdin,
                 icon: tool.tool.icon,
                 darkIcon: tool.tool.darkIcon,
