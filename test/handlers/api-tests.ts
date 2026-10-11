@@ -103,6 +103,13 @@ describe('API handling', () => {
         app.use('/api', apiHandler.handle);
         apiHandler.setCompilers(compilers);
         apiHandler.setLanguages(languages);
+        apiHandler.setOptions({
+            options: {
+                defaultCompiler: {},
+                defaultLibs: {},
+                compileOptions: {'c++': '-O2', pascal: '-O3'},
+            },
+        } as unknown as ClientOptionsHandler);
     });
 
     it('should respond to plain text compiler requests', async () => {
@@ -165,6 +172,16 @@ describe('API handling', () => {
             .set('Accept', 'application/json')
             .expect('Content-Type', /json/)
             .expect(200, [languages['c++'], languages.pascal]);
+    });
+    it('should include language default options in filtered JSON requests', async () => {
+        await request(app)
+            .get('/api/languages?fields=id,defaultOptions')
+            .set('Accept', 'application/json')
+            .expect('Content-Type', /json/)
+            .expect(200, [
+                {id: 'c++', defaultOptions: '-O2'},
+                {id: 'pascal', defaultOptions: '-O3'},
+            ]);
     });
     it('should mark list responses as varying on Accept', async () => {
         const res = await request(app).get('/api/languages').set('Accept', 'application/json').expect(200);
