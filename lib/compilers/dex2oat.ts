@@ -63,6 +63,7 @@ const BOOTCLASSPATH_LOCATIONS = [
 
 export class Dex2OatCompiler extends BaseCompiler {
     readonly fullOutputFlag = '--full-output';
+    readonly bootImageExtensionFlag = '--boot-image-extension';
 
     static get key() {
         return 'dex2oat';
@@ -197,6 +198,7 @@ export class Dex2OatCompiler extends BaseCompiler {
 
         let useDefaultInsnSet = true;
         let useDefaultCompilerFilter = true;
+        let compileAsBootImage = false;
         let d8Flags: string | undefined;
 
         // The items in 'options' before the source file are user inputs.
@@ -214,6 +216,8 @@ export class Dex2OatCompiler extends BaseCompiler {
                 userOptions.push(option);
             } else if (option === this.fullOutputFlag) {
                 this.fullOutput = true;
+            } else if (option === this.bootImageExtensionFlag) {
+                compileAsBootImage = true;
             } else if (option === '--d8-flags') {
                 d8Flags = options[++i];
             } else {
@@ -252,8 +256,8 @@ export class Dex2OatCompiler extends BaseCompiler {
 
         await d8Compiler.generateSmali(path.join(d8DirPath, dexFile), 64 * 1024 * 1024);
 
-        const profileAndResult = await this.generateProfile(d8DirPath, dexFile);
-        if (profileAndResult && profileAndResult.result.code !== 0) {
+        const profileAndResult = await this.generateProfile(d8DirPath, dexFile, compileAsBootImage);
+        if (profileAndResult.result.code !== 0) {
             return {
                 ...this.transformToCompilationResult(profileAndResult.result, inputFilename),
                 languageId: this.getCompilerResultLanguageId(filters),
@@ -265,9 +269,16 @@ export class Dex2OatCompiler extends BaseCompiler {
         let match;
         if (this.versionPrefixRegex.test(this.compiler.id)) {
             match = this.compiler.id.match(this.versionPrefixRegex);
-            versionPrefix = Number.parseInt(match![2], 10);
+            versionPrefix = Number.parseInt(match![3], 10);
         } else if (this.latestVersionRegex.test(this.compiler.id)) {
             isLatest = true;
+        }
+
+        const bootClassPathJars = BOOTCLASSPATH_JARS.map(f => path.join(this.artArtifactDir, f));
+        const bootClassPathLocations = [...BOOTCLASSPATH_LOCATIONS];
+        if (compileAsBootImage) {
+            bootClassPathJars.push(`${d8DirPath}/${dexFile}`);
+            bootClassPathLocations.push('/system/framework/classes.dex');
         }
 
         const dex2oatOptions = [
@@ -278,12 +289,14 @@ export class Dex2OatCompiler extends BaseCompiler {
             '--copy-dex-files=always',
             ...(versionPrefix >= 34 || isLatest ? ['--runtime-arg', '-Xgc:CMC'] : []),
             '--runtime-arg',
-            '-Xbootclasspath:' + BOOTCLASSPATH_JARS.map(f => path.join(this.artArtifactDir, f)).join(':'),
+            '-Xbootclasspath:' + bootClassPathJars.join(':'),
             '--runtime-arg',
-            '-Xbootclasspath-locations:' + BOOTCLASSPATH_LOCATIONS.join(':'),
+            '-Xbootclasspath-locations:' + bootClassPathLocations.join(':'),
             `--boot-image=${this.artArtifactDir}/app/system/framework/boot.art`,
             `--oat-file=${d8DirPath}/classes.odex`,
-            `--app-image-file=${d8DirPath}/classes.art`,
+            ...(compileAsBootImage
+                ? [`--image=${d8DirPath}/classes.art`, '--single-image']
+                : [`--app-image-file=${d8DirPath}/classes.art`]),
             '--force-allow-oj-inlines',
             `--dump-cfg=${d8DirPath}/classes.cfg`,
             ...userOptions,
@@ -292,24 +305,16 @@ export class Dex2OatCompiler extends BaseCompiler {
             dex2oatOptions.push('--instruction-set=arm64');
         }
         if (useDefaultCompilerFilter) {
-            if (profileAndResult == null) {
-                dex2oatOptions.push('--compiler-filter=speed');
-            } else {
-                dex2oatOptions.push('--compiler-filter=speed-profile');
-            }
+            dex2oatOptions.push('--compiler-filter=speed-profile');
         }
-        if (profileAndResult != null) {
-            dex2oatOptions.push(`--profile-file=${profileAndResult.path}`);
-        }
+        dex2oatOptions.push(`--profile-file=${profileAndResult.path}`);
 
         execOptions.customCwd = d8DirPath;
         this.cwd = d8DirPath;
 
         const result = await this.exec(this.compiler.exe, dex2oatOptions, execOptions);
-        if (profileAndResult != null) {
-            result.stdout = profileAndResult.result.stdout + result.stdout;
-            result.stderr = profileAndResult.result.stderr + result.stderr;
-        }
+        result.stdout = profileAndResult.result.stdout + result.stdout;
+        result.stderr = profileAndResult.result.stderr + result.stderr;
         return {
             ...this.transformToCompilationResult(result, d8OutputFilename),
             languageId: this.getCompilerResultLanguageId(filters),
@@ -321,21 +326,68 @@ export class Dex2OatCompiler extends BaseCompiler {
         return super.getIncludeArguments(libraries, dirPath);
     }
 
+    parseSmaliForDefaultProfile(profileLines: string[], smaliLines: string[]) {
+        let classDescriptor = '';
+        for (const l of smaliLines) {
+            if (this.smaliClassRegex.test(l)) {
+                classDescriptor = l.match(this.smaliClassRegex)![1];
+                profileLines.push(classDescriptor);
+            } else if (classDescriptor && this.smaliMethodStartRegex.test(l)) {
+                const methodSignature = l.match(this.smaliMethodStartRegex)![1].split(/\s/).slice(-1)[0];
+                profileLines.push(`HS${classDescriptor}->${methodSignature}`);
+            }
+        }
+    }
+
+    private async generateDefaultProfile(d8DirPath: string, profilePath: string): Promise<void> {
+        const files = await fs.readdir(d8DirPath);
+        const smaliFiles = files.filter(f => f.endsWith('.smali'));
+        const profileLines: string[] = [];
+        for (const smaliFile of smaliFiles) {
+            const rawSmaliText = await fs.readFile(path.join(d8DirPath, smaliFile), 'utf8');
+            this.parseSmaliForDefaultProfile(profileLines, rawSmaliText.split(/\n/));
+        }
+        await fs.writeFile(profilePath, profileLines.join('\n') + '\n', 'utf8');
+    }
+
     private async generateProfile(
         d8DirPath: string,
         dexFile: string,
-    ): Promise<{path: string; result: UnprocessedExecResult} | null> {
-        const humanReadableFormatProfile = `${d8DirPath}/profile.prof.txt`;
-        try {
-            await fs.access(humanReadableFormatProfile);
-        } catch {
-            // No profile. This is expected.
-            return null;
-        }
-
+        compileAsBootImage: boolean,
+    ): Promise<{path: string; result: UnprocessedExecResult}> {
         const execOptions = this.getDefaultExecOptions();
         execOptions.customCwd = d8DirPath;
         const binaryFormatProfile = `${d8DirPath}/profile.prof`;
+        const humanReadableFormatProfile = `${d8DirPath}/profile.prof.txt`;
+        let hasHumanReadableProfile = true;
+        try {
+            await fs.access(humanReadableFormatProfile);
+        } catch {
+            hasHumanReadableProfile = false;
+        }
+
+        if (!hasHumanReadableProfile && !compileAsBootImage) {
+            const result = await this.exec(
+                this.profmanPath,
+                [
+                    `--generate-test-profile=${binaryFormatProfile}`,
+                    '--generate-test-profile-method-percentage=100',
+                    '--generate-test-profile-class-percentage=100',
+                    '--generate-test-profile-seed=0',
+                    `--apk=${d8DirPath}/${dexFile}`,
+                    '--dex-location=/system/framework/classes.dex',
+                ],
+                execOptions,
+            );
+            return {path: binaryFormatProfile, result: result};
+        }
+
+        if (!hasHumanReadableProfile) {
+            // profman --generate-test-profile always generates an app profile and ignores
+            // --output-profile-type=boot, so synthesize a human-readable profile from .smali.
+            await this.generateDefaultProfile(d8DirPath, humanReadableFormatProfile);
+        }
+
         const result = await this.exec(
             this.profmanPath,
             [
@@ -345,7 +397,7 @@ export class Dex2OatCompiler extends BaseCompiler {
                 ...BOOTCLASSPATH_JARS.map(f => `--apk=${path.join(this.artArtifactDir, f)}`),
                 ...BOOTCLASSPATH_LOCATIONS.map(f => `--dex-location=${f}`),
                 `--reference-profile-file=${binaryFormatProfile}`,
-                '--output-profile-type=app',
+                `--output-profile-type=${compileAsBootImage ? 'boot' : 'app'}`,
             ],
             execOptions,
         );
@@ -831,6 +883,19 @@ export class Dex2OatCompiler extends BaseCompiler {
             flags: ['<value>'],
             values: [
                 {name: 'Yes', value: this.fullOutputFlag},
+                {name: 'No', value: ''},
+            ],
+        });
+
+        this.compiler.possibleOverrides?.push({
+            type: 'options',
+            name: CompilerOverrideType.boot_image_extension,
+            display_title: 'Compile as boot image extension',
+            description:
+                'Compile as a platform boot image extension (--image) instead of an app image (--app-image-file)',
+            flags: ['<value>'],
+            values: [
+                {name: 'Yes', value: this.bootImageExtensionFlag},
                 {name: 'No', value: ''},
             ],
         });
