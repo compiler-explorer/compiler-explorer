@@ -761,6 +761,56 @@ describe('Target hints', () => {
     });
 });
 
+describe('Configured -march versus user-selected CPU', () => {
+    let ce: CompilationEnvironment;
+
+    const riscvOptions = '-target riscv64-unknown-linux-gnu -march=rv64gc -mabi=lp64d';
+
+    function makeCompiler(options: string) {
+        return new ClangCompiler(makeFakeCompilerInfo({exe: 'clang', lang: 'c++', ldPath: [], options}), ce);
+    }
+
+    function prepareArguments(compiler: ClangCompiler, userOptions: string[]) {
+        return compiler.prepareArguments(
+            userOptions,
+            makeFakeParseFiltersAndOutputOptions({}),
+            {},
+            'example.cpp',
+            'output.s',
+            [],
+            [],
+        );
+    }
+
+    beforeAll(() => {
+        ce = makeCompilationEnvironment({languages});
+    });
+
+    it('keeps the configured -march when the user does not pick a CPU or architecture', () => {
+        const args = prepareArguments(makeCompiler(riscvOptions), ['-O3']);
+        expect(args).toContain('-march=rv64gc');
+    });
+
+    it('drops the configured RISC-V -march when the user picks a CPU', () => {
+        const args = prepareArguments(makeCompiler(riscvOptions), ['-O3', '-mcpu=sifive-p670']);
+        expect(args.filter(arg => arg.startsWith('-march='))).toEqual([]);
+        expect(args).toContain('-mcpu=sifive-p670');
+        expect(args).toContain('-mabi=lp64d');
+        expect(args).toContain('riscv64-unknown-linux-gnu');
+    });
+
+    it('leaves only the user -march when the user picks a RISC-V architecture', () => {
+        const args = prepareArguments(makeCompiler(riscvOptions), ['-march=rv64gcv_zbb']);
+        expect(args.filter(arg => arg.startsWith('-march='))).toEqual(['-march=rv64gcv_zbb']);
+    });
+
+    it('keeps the configured -march for other architectures', () => {
+        const compiler = makeCompiler('-target aarch64-linux-gnu -march=armv8.8-a+sve2');
+        const args = prepareArguments(compiler, ['-mcpu=cortex-a53']);
+        expect(args).toContain('-march=armv8.8-a+sve2');
+    });
+});
+
 describe('Rust options', () => {
     let ce: CompilationEnvironment;
     const executingCompilerInfo = makeFakeCompilerInfo({

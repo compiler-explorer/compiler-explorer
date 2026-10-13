@@ -285,6 +285,8 @@ export type DemanglerExecutionOptions = ExecutionOptions & {
     overrideSymbols?: string[];
     // Don't apply translations to the input - return it as-is.
     skipTranslation?: boolean;
+    // Characters that can continue an identifier: a symbol directly followed by one is left untranslated.
+    identifierChar?: RegExp;
 };
 
 export type BuildResult = CompilationResult & {
