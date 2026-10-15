@@ -724,7 +724,6 @@ export class Editor extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Edit
                 this.cppInsightsButton.hide();
                 this.quickBenchButton.hide();
             }
-            // ABI Explorer lays out C and Hylo as well as C++.
             if (abiExplorerLanguageFor(this.currentLanguage?.id)) {
                 this.abiExplorerButton.show();
             } else {
@@ -917,11 +916,6 @@ export class Editor extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Edit
         }
     }
 
-    /**
-     * Point the ABI Explorer button at what the editor currently holds: one
-     * buffer per attached compiler, each with that compiler's standard and
-     * target, as far as they can be known without compiling.
-     */
     updateOpenInAbiExplorer(): void {
         if (!options.thirdPartyIntegrationEnabled) return;
         const lang = abiExplorerLanguageFor(this.currentLanguage?.id);

@@ -50,9 +50,7 @@ export type AbiExplorerLanguage = 'c' | 'c++' | 'hylo';
 
 export const ABI_EXPLORER_URL = 'https://abiexplorer.org/';
 
-/** What one attached compiler says about how the code is built. */
 export interface AbiExplorerCompiler {
-    /** Shown as the name of the buffer in ABI Explorer. */
     name: string;
     /** Already normalised; see `normalizeAbiExplorerStd`. Empty for the language default. */
     std: string;
@@ -154,7 +152,6 @@ export function abiExplorerTripleFor(
     return known?.triple;
 }
 
-/** The ABI Explorer language for one of our language ids, or null for one it cannot lay out. */
 export function abiExplorerLanguageFor(languageId: string | undefined): AbiExplorerLanguage | null {
     return languageId === 'c' || languageId === 'c++' || languageId === 'hylo' ? languageId : null;
 }
