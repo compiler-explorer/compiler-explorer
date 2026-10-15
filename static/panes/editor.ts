@@ -120,6 +120,8 @@ export class Editor extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Edit
     private cppInsightsButton: JQuery<HTMLElement>;
     private quickBenchButton: JQuery<HTMLElement>;
     private abiExplorerButton: JQuery<HTMLElement>;
+    private abiExplorerCompilers = new Map<string, CompilerInfo>();
+    private abiExplorerUpdate = 0;
     private languageInfoButton: JQuery;
     private nothingCtrlSSince?: number;
     private nothingCtrlSTimes?: number;
@@ -656,7 +658,9 @@ export class Editor extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Edit
             });
 
             this.abiExplorerButton = this.domRoot.find('.open-in-abiexplorer');
-            this.abiExplorerButton.on('mousedown', () => {
+            // Hover and focus come before the click with time to spare, so the compiler lookups behind the
+            // link are done by the time mousedown, the last event before it is followed, needs them.
+            this.abiExplorerButton.on('mouseenter focus mousedown', () => {
                 this.updateOpenInAbiExplorer();
             });
         }
@@ -925,15 +929,34 @@ export class Editor extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Edit
 
         const source = this.getSource() ?? '';
         const states = this.getCompilerStates();
-        // This runs on mousedown, the last event before the link is followed, so
-        // the href has to be right now: the uncompressed link goes on at once,
-        // and the compressed one, with targets that cost a compiler lookup,
-        // replaces it as soon as it is ready.
-        const known = states.map(state => ({name: '', std: this.abiExplorerStd(state), triple: ''}));
-        this.abiExplorerButton.attr('href', getAbiExplorerUrlSync(abiExplorerState(source, lang, known)));
-        void Promise.all(states.map(state => this.abiExplorerCompiler(state)))
-            .then(compilers => getAbiExplorerUrl(abiExplorerState(source, lang, compilers)))
-            .then(url => this.abiExplorerButton.attr('href', url));
+        const describe = () =>
+            abiExplorerState(
+                source,
+                lang,
+                states.map(state => this.abiExplorerCompiler(state)),
+            );
+        // The href has to be right the moment it is set, as this may be the mousedown: the uncompressed link from
+        // what is already known goes on at once, and the compressed one replaces it once any lookups are done.
+        this.abiExplorerButton.attr('href', getAbiExplorerUrlSync(describe()));
+        const update = ++this.abiExplorerUpdate;
+        void Promise.all(states.map(state => this.lookUpAbiExplorerCompiler(state.compiler)))
+            .then(() => getAbiExplorerUrl(describe()))
+            .then(url => {
+                if (update === this.abiExplorerUpdate) this.abiExplorerButton.attr('href', url);
+            });
+    }
+
+    private abiExplorerCompilerKey(compilerId: string): string {
+        return `${this.currentLanguage?.id ?? ''} ${compilerId}`;
+    }
+
+    private async lookUpAbiExplorerCompiler(compilerId: string): Promise<void> {
+        const key = this.abiExplorerCompilerKey(compilerId);
+        if (this.abiExplorerCompilers.has(key)) return;
+        const info = await this.hub.compilerService
+            .findCompiler(this.currentLanguage?.id ?? '', compilerId)
+            .catch(() => null);
+        if (info) this.abiExplorerCompilers.set(key, info);
     }
 
     /** The standard a compiler pane builds with; its override wins over the flags box, being the more explicit. */
@@ -946,10 +969,8 @@ export class Editor extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Edit
         return std ? normalizeAbiExplorerStd(std) : '';
     }
 
-    private async abiExplorerCompiler(state: any): Promise<AbiExplorerCompiler> {
-        const info = await this.hub.compilerService
-            .findCompiler(this.currentLanguage?.id ?? '', state.compiler)
-            .catch(() => null);
+    private abiExplorerCompiler(state: any): AbiExplorerCompiler {
+        const info = this.abiExplorerCompilers.get(this.abiExplorerCompilerKey(state.compiler));
         return {
             name: info?.name ?? '',
             std: this.abiExplorerStd(state),
