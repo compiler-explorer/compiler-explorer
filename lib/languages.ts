@@ -901,7 +901,7 @@ const definitions: Record<LanguageKey, LanguageDefinition> = {
     },
     ruby: {
         name: 'Ruby',
-        monaco: 'ruby',
+        monaco: 'rubyp',
         extensions: ['.rb'],
         alias: [],
         logoFilename: 'ruby.svg',
@@ -954,7 +954,7 @@ const definitions: Record<LanguageKey, LanguageDefinition> = {
 
     snowball: {
         name: 'Snowball',
-        monaco: 'swift',
+        monaco: 'swiftp',
         extensions: ['.sn'],
         alias: [],
         logoFilename: 'snowball.svg',
@@ -1021,7 +1021,7 @@ const definitions: Record<LanguageKey, LanguageDefinition> = {
     },
     swift: {
         name: 'Swift',
-        monaco: 'swift',
+        monaco: 'swiftp',
         extensions: ['.swift'],
         alias: [],
         logoFilename: 'swift.svg',
