@@ -18,6 +18,7 @@
   },
   "main": "./app.ts",
   "dependencies": {
+    "@ambrus-toth/abi-explorer-share-link": "0.1.1",
     "@aws-sdk/client-dynamodb": "^3.1079.0",
     "@aws-sdk/client-ec2": "^3.1079.0",
     "@aws-sdk/client-s3": "^3.1079.0",
