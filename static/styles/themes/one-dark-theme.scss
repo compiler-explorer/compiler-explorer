@@ -35,18 +35,6 @@ html[data-theme='one-dark'] {
 
 a {
     color: #45bbe0 !important;
-
-    &.navbar-brand {
-        img.logo {
-            &.inverse {
-                display: block !important;
-            }
-
-            &.normal {
-                display: none !important;
-            }
-        }
-    }
 }
 
 body {

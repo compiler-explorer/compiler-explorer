@@ -93,6 +93,20 @@ export class S3Cache extends BaseCache {
         }
     }
 
+    override get isShared(): boolean {
+        return true;
+    }
+
+    override async putShared(
+        key: string,
+        value: Buffer,
+        ttlDays: number,
+        creator?: string,
+    ): Promise<string | undefined> {
+        await this.putWithTTLAndPath(key, value, ttlDays, 'temp', creator);
+        return `temp/${key}`;
+    }
+
     async putWithTTLAndPath(
         key: string,
         value: Buffer,

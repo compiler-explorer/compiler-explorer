@@ -46,7 +46,6 @@ import {getAssemblyDocumentation} from '../api/api.js';
 import * as BootstrapUtils from '../bootstrap-utils.js';
 import * as codeLensHandler from '../codelens-handler.js';
 import * as colour from '../colour.js';
-import {CompilationStatus} from '../compiler-service.interfaces.js';
 import {CompilerService} from '../compiler-service.js';
 import {COMPILER_COMPONENT_NAME, ComponentConfig, NewToolSettings} from '../components.interfaces.js';
 import * as Components from '../components.js';
@@ -245,7 +244,6 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
     private noBinaryFiltersButtons: JQuery<HTMLButtonElement>;
     private shortCompilerName: JQuery<HTMLElement>;
     private bottomBar: JQuery<HTMLElement>;
-    private statusLabel: JQuery<HTMLElement>;
     private libsWidget: LibsWidget | null;
     private isLabelCtxKey: monaco.editor.IContextKey<boolean>;
     private revealJumpStackHasElementsCtxKey: monaco.editor.IContextKey<boolean>;
@@ -293,6 +291,8 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
     private mouseUpThrottledFunction?: ((e: monaco.editor.IEditorMouseEvent) => void) & _.Cancelable;
     private compilerShared: ICompilerShared;
     private artifactHandler: ArtifactHandler;
+
+    gccDumpLibraryFunctions: boolean = false;
 
     constructor(hub: Hub, container: Container, state: MonacoPaneState & CompilerState) {
         state.id = state.id || hub.nextCompilerId();
@@ -345,12 +345,7 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
         this.initCallbacks();
         // Handle initial settings
         this.onSettingsChange(this.settings);
-        new CompilationOptions(
-            this,
-            this.domRoot.find('.prepend-options'),
-            result => result.result ?? result,
-            this.filters,
-        );
+        new CompilationOptions(this, this.id, result => result.result ?? result, this.filters);
 
         this.postInit(state);
     }
@@ -418,6 +413,7 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
                 {
                     readOnly: true,
                     language: 'asm',
+                    colorDecorators: false,
                     glyphMargin: !options.embedded,
                     guides: {
                         bracketPairs: false,
@@ -458,7 +454,7 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
         const result = await this.compilerService.processFromLangAndCompiler(langId ?? null, compilerId);
         this.compiler = result?.compiler ?? null;
         this.currentLangId = result?.langId ?? null;
-        this.updateLibraries();
+        await this.updateLibraries();
     }
 
     override close(): void {
@@ -1376,6 +1372,7 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
                     rtlDump: this.rtlDumpEnabled,
                     ipaDump: this.ipaDumpEnabled,
                     dumpFlags: this.dumpFlags,
+                    libraryFunctions: this.gccDumpLibraryFunctions,
                 },
                 produceOptInfo: this.wantOptInfo ?? false,
                 produceStackUsageInfo: this.stackUsageViewOpen,
@@ -1926,8 +1923,6 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
 
         this.updateButtons();
 
-        this.handleCompilationStatus(CompilerService.calculateStatusIcon(result));
-
         this.checkForHints(result);
 
         this.offerFilesIfPossible(result);
@@ -2405,6 +2400,7 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
                 uid: dumpOpts.uidOption,
                 all: dumpOpts.allOption,
             };
+            this.gccDumpLibraryFunctions = dumpOpts.libraryFunctionsOption;
 
             if (reqCompile) {
                 this.compile();
@@ -2602,7 +2598,6 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
 
         this.topBar = this.domRoot.find('.top-bar');
         this.bottomBar = this.domRoot.find('.bottom-bar');
-        this.statusLabel = this.domRoot.find('.status-text');
 
         this.hideable = this.domRoot.find('.hideable');
 
@@ -2641,8 +2636,11 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
         await this.libsWidget.stateLoaded;
     }
 
+    // Never rejects: callers await this while compiles are deferred, and a failed library fetch must not leave
+    // the pane unable to compile. On failure the libs widget just keeps its previous state.
     async updateLibraries(): Promise<void> {
-        if (this.libsWidget) {
+        if (!this.libsWidget) return;
+        try {
             let filteredLibraries: LanguageLibs = {};
             if (this.compiler) {
                 filteredLibraries = await LibUtils.getSupportedLibraries(
@@ -2652,7 +2650,9 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
                 );
             }
 
-            this.libsWidget.setNewLangId(this.currentLangId ?? '', this.compiler?.id ?? '', filteredLibraries);
+            await this.libsWidget.setNewLangId(this.currentLangId ?? '', this.compiler?.id ?? '', filteredLibraries);
+        } catch (e) {
+            SentryCapture(e, 'Compiler.updateLibraries');
         }
     }
 
@@ -3238,7 +3238,7 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
         this.deferCompiles = true;
         this.needsCompile = true;
 
-        this.updateLibraries();
+        await this.updateLibraries();
         this.updateState();
         this.updateCompilerUI();
 
@@ -3754,10 +3754,6 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
                 dismissTime: 5000,
             });
         }
-    }
-
-    handleCompilationStatus(status: CompilationStatus): void {
-        CompilerService.handleCompilationStatus(this.statusLabel, null, status);
     }
 
     onLanguageChange(editorId: number | boolean, newLangId: LanguageKey, treeId?: number | boolean): void {

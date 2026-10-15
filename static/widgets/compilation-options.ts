@@ -31,28 +31,24 @@ import {CompilerInfo} from '../../types/compiler.interfaces.js';
 import * as BootstrapUtils from '../bootstrap-utils.js';
 import {CompilationStatusCode} from '../compiler-service.interfaces.js';
 import {CompilerService} from '../compiler-service.js';
-import {PaneCompilerState} from '../panes/pane.interfaces.js';
 import {Pane} from '../panes/pane.js';
 import {Toggles} from './toggles.js';
 
 type GetResult = (result: CompilationResult) => Pick<CompilationResult, 'code' | 'compilationOptions'> | undefined;
 
-export class CompilationOptions<P extends Pane<object>> {
-    private readonly parent: P;
+export class BaseCompilationOptions<P extends Pane<object>> {
+    protected readonly parent: P;
     private readonly prependOptions: JQuery<HTMLElement>;
     private readonly statusIcon: JQuery<HTMLElement>;
     private readonly getResult: GetResult;
     private readonly filters?: Toggles;
 
-    constructor(pane: P, prependOptions: JQuery<HTMLElement>, getResult: GetResult, filters?: Toggles) {
+    constructor(pane: P, domRoot: JQuery<HTMLElement>, getResult: GetResult, filters?: Toggles) {
         this.parent = pane;
-        this.prependOptions = prependOptions;
-        this.statusIcon = prependOptions.find('.status-icon');
+        this.prependOptions = domRoot.find('.prepend-options');
+        this.statusIcon = this.prependOptions.find('.status-icon');
         this.getResult = getResult;
         this.filters = filters;
-
-        pane.eventHub.on('compiling', this.onCompiling.bind(this));
-        pane.eventHub.on('compileResult', this.onCompileResult.bind(this));
 
         $(document).on('mouseup', e => {
             const target = $(e.target);
@@ -66,31 +62,30 @@ export class CompilationOptions<P extends Pane<object>> {
         });
     }
 
-    private get compilerInfo(): PaneCompilerState {
-        return this.parent.compilerInfo;
-    }
-
-    private onCompiling(compilerId: number, compiler: CompilerInfo): void {
-        if (this.compilerInfo.compilerId !== compilerId) return;
-        // Display the spinner
-        CompilerService.handleCompilationStatus(null, this.statusIcon, {
+    displaySpinner(): void {
+        CompilerService.handleCompilationStatus(this.statusIcon, {
             code: CompilationStatusCode.COMPILING,
             compilerOut: 0,
         });
     }
 
-    private onCompileResult(compilerId: number, compiler: CompilerInfo, result: CompilationResult): void {
-        if (this.compilerInfo.compilerId !== compilerId) return;
+    clear(): void {
+        CompilerService.handleCompilationStatus(this.statusIcon, {
+            code: CompilationStatusCode.NONE,
+            compilerOut: 0,
+        });
+    }
 
+    processResult(result: CompilationResult, compiler?: CompilerInfo, didExecute?: boolean): void {
         const wasCmake = result.result ? (result.buildsteps?.some(step => step.step === 'cmake') ?? false) : false;
         const stepResult = this.getResult(result);
-        CompilerService.handleCompilationStatus(
-            null,
-            this.statusIcon,
-            CompilerService.calculateStatusIcon(stepResult ?? result),
-        );
+        CompilerService.handleCompilationStatus(this.statusIcon, {
+            didExecute,
+            ...CompilerService.calculateStatusIcon(stepResult ?? result),
+        });
         const options = (stepResult?.compilationOptions ?? []).map(maskRootdirKeepingAppPrefix);
-        this.setCompilationOptionsPopover(options.join(' '), this.checkForUnwiseArguments(compiler, options, wasCmake));
+        const warnings = compiler ? this.checkForUnwiseArguments(compiler, options, wasCmake) : [];
+        this.setCompilationOptionsPopover(options.join(' '), warnings);
     }
 
     private setCompilationOptionsPopover(content: string | null, warnings: string[]): void {
@@ -154,5 +149,48 @@ export class CompilationOptions<P extends Pane<object>> {
         }
 
         return warnings;
+    }
+}
+
+abstract class PaneCompilationOptions<P extends Pane<object>> extends BaseCompilationOptions<P> {
+    private readonly parentId: number;
+
+    constructor(pane: P, parentId: number, getResult: GetResult, filters?: Toggles) {
+        super(pane, pane.domRoot, getResult, filters);
+        this.parentId = parentId;
+        this.initCallbacks();
+    }
+
+    protected initCallbacks(): void {}
+
+    protected onCompiling(compilerId: number): void {
+        if (this.parentId !== compilerId) return;
+        this.displaySpinner();
+    }
+
+    protected onCompileResult(compilerId: number, compiler: CompilerInfo, result: CompilationResult): void {
+        if (this.parentId !== compilerId) return;
+        this.processResult(result, compiler);
+    }
+
+    protected onExecuteResult(compilerId: number, compiler: CompilerInfo, result: CompilationResult): void {
+        if (this.parentId !== compilerId) return;
+        this.processResult(result, compiler, result.didExecute);
+    }
+}
+
+export class CompilationOptions<P extends Pane<object>> extends PaneCompilationOptions<P> {
+    protected override initCallbacks(): void {
+        super.initCallbacks();
+        this.parent.eventHub.on('compiling', this.onCompiling.bind(this));
+        this.parent.eventHub.on('compileResult', this.onCompileResult.bind(this));
+    }
+}
+
+export class ExecutionCompilationOptions<P extends Pane<object>> extends PaneCompilationOptions<P> {
+    protected override initCallbacks(): void {
+        super.initCallbacks();
+        this.parent.eventHub.on('executeCompiling', this.onCompiling.bind(this));
+        this.parent.eventHub.on('executeResult', this.onExecuteResult.bind(this));
     }
 }

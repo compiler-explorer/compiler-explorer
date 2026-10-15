@@ -7,6 +7,33 @@ This document describes how that works, and the incremental plan for turning it 
 Cargo (Rust), Maven/Gradle (Java, Kotlin) and others can be added without another round of special-casing. All the
 phases below have landed.
 
+## Using it: what ends up in the compiler pane
+
+Whatever the build system, the compiler pane shows the **disassembly of one binary file** that the build produced. It
+does not show assembly text that the build wrote out.
+
+- The file it disassembles is the one in the tree pane's **output file** box. If that box is empty, each build system
+  has its own default name. For CMake and Make it is `output.s`, relative to the project root (`build/` for CMake).
+- That file is always passed to objdump (the binary filter is forced on), even when its name ends in `.s`. It must be
+  an executable, or an object file if you only want the disassembly. A text `.s` file, such as one written by
+  `gcc -S` or `rustc --emit=asm`, gives an empty disassembly.
+- The same file is what gets run, when execution is ticked in the compiler pane or an executor pane is used. So it
+  must be something objdump can read and also something that can be executed. In practice that means a linked
+  executable, not an object file.
+- The file has to exist after the build. CE knows a file only by the name in the box, so a Make rule named
+  `example.s` must actually write `example.s`. If the rule writes something else, or nothing, the result is empty or
+  an error.
+- With Make, the compiler selected in the pane reaches the Makefile only through environment variables (`$(CC)`,
+  `$(CXX)`, `$(RUSTC)`, `$(CXXFLAGS)`, `$(RUSTFLAGS)` and so on; see Phase 6 below). A recipe that names a compiler
+  directly ignores the selection in the pane.
+
+For example, with the output file box set to `example`, this Rust Makefile works:
+
+```make
+example: example.rs
+	$(RUSTC) $(RUSTFLAGS) -o example example.rs
+```
+
 ## How it works
 
 ### Backend

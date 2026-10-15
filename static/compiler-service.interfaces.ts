@@ -34,4 +34,5 @@ export enum CompilationStatusCode {
 export interface CompilationStatus {
     code: CompilationStatusCode;
     compilerOut: number | undefined;
+    didExecute?: boolean;
 }

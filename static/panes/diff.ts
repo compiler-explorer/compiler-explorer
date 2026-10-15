@@ -31,6 +31,7 @@ import {CompilationResult} from '../../types/compilation/compilation.interfaces.
 import {CompilerInfo} from '../../types/compiler.interfaces.js';
 import {ResultLine} from '../../types/resultline/resultline.interfaces.js';
 import {Hub} from '../hub.js';
+import {replaceOptions} from '../tom-select-utils.js';
 import {DiffState, DiffType} from './diff.interfaces.js';
 import {MonacoPaneState} from './pane.interfaces.js';
 import {MonacoPane} from './pane.js';
@@ -59,13 +60,6 @@ function decodeSelectizeValue(value: string): DiffTypeAndExtra {
         difftype: Number.parseInt(value, 10),
         extraoption: '',
     };
-}
-
-function replaceOptions(picker: TomSelect, options: any[]): void {
-    picker.clearOptions();
-    picker.addOptions(options);
-    // addOptions() doesn't re-render an open dropdown, leaving the user staring at an empty list.
-    if (picker.isOpen) picker.refreshOptions(false);
 }
 
 function isSourceEntryId(id: number | string | undefined): boolean {

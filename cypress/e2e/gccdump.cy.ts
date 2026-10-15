@@ -59,6 +59,19 @@ describe('GCC Tree/RTL dump', () => {
         cy.get('.ts-dropdown .option:visible', {timeout: 10000}).should('have.length.greaterThan', 0);
     });
 
+    it('should show the ON/OFF state in every dump option tooltip', () => {
+        setupAndWaitForCompilation();
+        openGccDump();
+        // Each option button is looked up by its data-bind to format its tooltip, so a lookup that
+        // doesn't match the template leaves that button's tooltip unformatted.
+        gccDumpPane()
+            .find('.dump-filters .button-checkbox button')
+            .should('have.length.greaterThan', 0)
+            .each($button => {
+                expect($button.attr('title'), $button.attr('data-bind')).to.match(/^\[(ON|OFF)\] /);
+            });
+    });
+
     it('should display tree dump content when a pass is selected', () => {
         setupAndWaitForCompilation();
         openGccDump();

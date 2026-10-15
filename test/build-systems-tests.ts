@@ -589,6 +589,40 @@ describe('Cargo build system', () => {
         expect(() => cargoBuildSystem.getArtifactFilename(ctx)).toThrow(Error);
     });
 
+    it('ignores an artifact record pointing at a file outside the project', async () => {
+        const env = makeRustEnv();
+        const compiler = makeRustCompiler(env);
+        const ctx = makeCargoContext(compiler, env, makeParsedRequest());
+        const artifact = cargoBuildSystem.getArtifactFilename(ctx);
+
+        const copied: [string, string][] = [];
+        const result = {
+            buildsteps: [
+                {
+                    step: 'cargo',
+                    // The executable path is only cargo's stdout: a record naming a host file, absolute or by way of
+                    // an /app/ that climbs out, must not become a copy from the host.
+                    stdout: [
+                        {text: '{"reason":"compiler-artifact","executable":"/etc/passwd"}'},
+                        {text: '{"reason":"compiler-artifact","executable":"/app/../../../../etc/passwd"}'},
+                    ],
+                },
+            ],
+        } as any;
+
+        const nothingToInspect = await cargoBuildSystem.finaliseArtifact(
+            ctx,
+            result,
+            artifact,
+            async (from: string, to: string) => {
+                copied.push([from, to]);
+            },
+        );
+
+        expect(copied).toEqual([]);
+        expect(nothingToInspect).toMatch(/did not build an executable/);
+    });
+
     it('takes a bin named for the artifact without its extension, which is how cargo would spell it', async () => {
         const env = makeRustEnv();
         const compiler = makeRustCompiler(env);
@@ -1188,4 +1222,50 @@ describe('Make build system', () => {
             expect(() => makeBuildSystem.getArtifactFilename(ctx)).toThrow(Error);
         }
     });
+});
+
+describe('Project build output path', () => {
+    // Called directly, so request parsing never sees these names. CMake's artifact sits a level deeper, in build/.
+    const cases = [
+        ['cmake', cmakeBuildSystem, '../../ce-compilation-dir/secret'],
+        ['make', makeBuildSystem, '../ce-compilation-dir/secret'],
+    ] as const;
+
+    for (const [name, buildSystem, customOutputFilename] of cases) {
+        it(`refuses a ${name} artifact outside the compilation directory before building anything`, async () => {
+            const env = makeCompilationEnvironment({
+                languages: {'c++': {id: 'c++'}},
+                props: {make: '/usr/bin/make', cmake: '/usr/bin/cmake'},
+            });
+            const compiler = new BaseCompiler(
+                makeFakeCompilerInfo({exe: '/usr/bin/g++', lang: 'c++', ldPath: [], libPath: []}),
+                env,
+            );
+            vi.spyOn(buildSystem, 'getUnsupportedReason').mockResolvedValue(undefined);
+            const runProjectBuild = vi.spyOn(compiler as any, 'runProjectBuild');
+            const exec = vi.spyOn(compiler, 'exec');
+            const dirs: string[] = [];
+            const newTempDir = compiler.newTempDir.bind(compiler);
+            vi.spyOn(compiler, 'newTempDir').mockImplementation(async () => {
+                dirs.push(await newTempDir());
+                return dirs.at(-1)!;
+            });
+
+            try {
+                await expect(
+                    compiler.buildProject(
+                        buildSystem,
+                        [],
+                        makeParsedRequest({customOutputFilename}),
+                        BypassCache.Compilation,
+                    ),
+                ).rejects.toThrow('Invalid filename');
+                expect(runProjectBuild).not.toHaveBeenCalled();
+                expect(exec).not.toHaveBeenCalled();
+            } finally {
+                vi.restoreAllMocks();
+                for (const dir of dirs) await fs.rm(dir, {recursive: true, force: true});
+            }
+        });
+    }
 });

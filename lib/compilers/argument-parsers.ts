@@ -36,6 +36,7 @@ import {logger} from '../logger.js';
 import {getExamplesRoot} from '../sources/builtin.js';
 import * as utils from '../utils.js';
 import {JuliaCompiler} from './julia.js';
+import type {MachCompiler} from './mach.js';
 
 export class BaseParser {
     protected readonly compiler: BaseCompiler;
@@ -603,6 +604,26 @@ export class MojoParser extends BaseParser {
     }
 }
 
+export class MachParser extends BaseParser {
+    override async parse() {
+        await this.getOptions('help build');
+        return this.compiler;
+    }
+
+    override async getOptions(helpArg: string) {
+        const optionFinder = /^ {2}(--?[\w-]+(?: <[^>]+>)?) {2,}(.*)/;
+        const result = await this.compiler.execCompilerCached(this.compiler.compiler.exe, splitArguments(helpArg));
+        const options = result.code === 0 ? this.parseLines(result.stdout, optionFinder) : {};
+        this.compiler.possibleArguments.populateOptions(options);
+        return options;
+    }
+
+    override async getPossibleTargets(): Promise<string[]> {
+        const targets = (this.compiler as MachCompiler).targets();
+        return targets.map(target => target.name);
+    }
+}
+
 export class ICCParser extends GCCParser {
     override async setCompilerSettingsFromOptions(options: Record<string, Argument>) {
         const keys = _.keys(options);
@@ -1115,6 +1136,14 @@ export class GccFortranParser extends GCCParser {
 }
 
 export class FlangParser extends ClangParser {
+    override getHiddenHelpOptions(): string[] {
+        return ['-mllvm', '--help-list-hidden', '-x', 'f95', '/dev/null', '-c'];
+    }
+
+    override getStdVersHelpOptions(): string[] {
+        return ['-std=f9999999', '-x', 'f95', '/dev/null', '-c'];
+    }
+
     override async setCompilerSettingsFromOptions(options: Record<string, Argument>) {
         await super.setCompilerSettingsFromOptions(options);
 

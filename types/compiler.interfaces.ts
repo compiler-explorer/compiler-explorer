@@ -180,10 +180,20 @@ export type CompilerInfo = {
         initialFiltersState?: Record<string, boolean>;
     };
     cachedPossibleArguments?: any;
+    cachedMachTargets?: MachTarget[];
     nvdisasm?: string;
     ptxas?: string;
     mtime?: any;
     $order: number;
+};
+
+/** One platform tuple a Mach compiler supports, keyed by the name a user passes to `--target`. */
+export type MachTarget = {
+    name: string;
+    isa: string;
+    os: string;
+    abi: string;
+    object: string;
 };
 
 // Compiler information collected by the compiler-finder

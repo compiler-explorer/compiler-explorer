@@ -181,6 +181,7 @@ describe('Execution tests', async () => {
                 exec.getNsJailCfgFilePath('sandbox'),
                 '--env=HOME=/app',
                 '--',
+                '/usr/local/bin/dumb-init',
                 '/path/to/compiler',
                 '1',
                 '2',
@@ -215,6 +216,7 @@ describe('Execution tests', async () => {
                 '/some/custom/cwd:/app',
                 '--env=HOME=/app',
                 '--',
+                '/usr/local/bin/dumb-init',
                 './exec',
                 '/app/file',
                 '/not/custom/file',
@@ -298,6 +300,7 @@ describe('Execution tests', async () => {
                 '/tmp/hellow:/app',
                 '--env=HOME=/app',
                 '--',
+                '/usr/local/bin/dumb-init',
                 './output.s',
             ]);
         });
@@ -317,6 +320,7 @@ describe('Execution tests', async () => {
                 '/tmp/hellow:/app',
                 '--env=HOME=/app',
                 '--',
+                '/usr/local/bin/dumb-init',
                 './output.s',
             ]);
         });
@@ -337,6 +341,7 @@ describe('Execution tests', async () => {
                 '--env=SOME_DOTNET_THING=/app/dotnet',
                 '--env=HOME=/app',
                 '--',
+                '/usr/local/bin/dumb-init',
                 './output.s',
             ]);
         });
@@ -358,6 +363,7 @@ describe('Execution tests', async () => {
                 '--env=CXX_FLAGS=-L/usr/lib -L/app/curl/lib -L/app/fmt/lib',
                 '--env=HOME=/app',
                 '--',
+                '/usr/local/bin/dumb-init',
                 './output.s',
             ]);
         });
@@ -379,6 +385,7 @@ describe('Execution tests', async () => {
                 '--env=LD_LIBRARY_PATH=' + ['/usr/lib', '/app/lib'].join(path.delimiter),
                 '--env=HOME=/app',
                 '--',
+                '/usr/local/bin/dumb-init',
                 './output.s',
             ]);
         });
@@ -399,6 +406,7 @@ describe('Execution tests', async () => {
                     '/tmp/hellow:/app',
                     '--env=HOME=/app',
                     '--',
+                    '/usr/local/bin/dumb-init',
                     'subdir/output.s',
                 ]);
             }
@@ -423,6 +431,7 @@ describe('Execution tests', async () => {
                     '/tmp/hellow:/app',
                     '--env=HOME=/app',
                     '--',
+                    '/usr/local/bin/dumb-init',
                     '/opt/compiler-explorer/cmake/bin/cmake',
                     '..',
                 ]);
@@ -461,6 +470,7 @@ describe('Execution tests', async () => {
                     '/tmp/hellow:/app',
                     '--env=HOME=/app',
                     '--',
+                    '/usr/local/bin/dumb-init',
                     '/opt/compiler-explorer/compiler/bin/g++',
                     '-c',
                     '-S',

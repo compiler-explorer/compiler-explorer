@@ -72,6 +72,7 @@ export type EventMap = {
     // Right now nothing emits this event, but it might be useful at some point so we keep it
     compilerSetDecorations: (compilerId: number, lineNums: number[], revealLine: boolean, column?: number) => void;
     compiling: (compilerId: number, compiler: CompilerInfo) => void;
+    executeCompiling: (executorId: number, compiler: CompilerInfo) => void;
     conformanceViewClose: (editorId: number) => void;
     conformanceViewOpen: (editorId: number) => void;
     copyShortLinkToClip: () => void;

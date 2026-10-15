@@ -119,7 +119,7 @@ export class CompilerPicker {
             dropdownParent: 'body',
             closeAfterSelect: true,
             plugins: ['dropdown_input'],
-            maxOptions: 1000,
+            maxOptions: options.length,
             onChange: (val: string) => {
                 // TODO(jeremy-rifkin) I don't think this can be undefined.
                 // Typing here needs improvement later anyway.
