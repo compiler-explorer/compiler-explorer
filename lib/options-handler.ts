@@ -257,6 +257,9 @@ export class ClientOptionsHandler implements ClientOptionsSource {
                                 includeKey: this.compilerProps<string>(lang, toolBaseName + '.includeKey'),
                                 options: splitArguments(this.compilerProps<string>(lang, toolBaseName + '.options')),
                                 args: this.compilerProps<string>(lang, toolBaseName + '.args'),
+                                argChoices: splitIntoArray(
+                                    this.compilerProps<string>(lang, toolBaseName + '.argChoices'),
+                                ).filter(Boolean),
                                 languageId: this.compilerProps<string>(
                                     lang,
                                     toolBaseName + '.languageId',
