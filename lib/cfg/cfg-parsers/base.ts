@@ -65,6 +65,12 @@ export type AssemblyLine = {
     source?: ResultLineSource | undefined;
 };
 
+// GNU as numeric local labels never name a function. GCC puts one on MIPS PIC calls for their R_MIPS_JALR
+// relocation, e.g. `1:      jalr    $25`
+function isNumericLabel(text: string) {
+    return /^\d+:/.test(text);
+}
+
 export class BaseCFGParser {
     static get key() {
         return 'base';
@@ -73,7 +79,7 @@ export class BaseCFGParser {
     constructor(public readonly instructionSetInfo: BaseInstructionSetInfo) {}
 
     public filterData(assembly: AssemblyLine[]): AssemblyLine[] {
-        const jmpLabelRegex = /\.L\d+:/;
+        const jmpLabelRegex = /[.$]L\d+:/;
         const isCode = (x: AssemblyLine) =>
             x?.text && (x.source !== null || jmpLabelRegex.test(x.text) || this.isFunctionName(x));
         return this.filterTextSection(assembly).map(_.clone).filter(isCode);
@@ -133,7 +139,11 @@ export class BaseCFGParser {
                 result.push(_.clone(rangeBb));
                 rangeBb = newRangeWith(rangeBb, this.getBbId(inst), this.getBbFirstInstIdx(cur));
             } else if (this.instructionSetInfo.isJmpInstruction(inst)) {
-                rangeBb.actionPos.push(cur);
+                const endsAfterDelaySlot =
+                    this.instructionSetInfo.hasDelaySlot(inst) &&
+                    cur + 1 < last &&
+                    !this.isBasicBlockEnd(asmArr[cur + 1].text, inst);
+                rangeBb.actionPos.push(endsAfterDelaySlot ? cur + 1 : cur);
             }
             ++cur;
         }
@@ -144,7 +154,12 @@ export class BaseCFGParser {
     }
 
     protected isFunctionName(line: AssemblyLine) {
-        return line.text.trim().indexOf('.') !== 0 || line.text.startsWith('.omp_');
+        const text = line.text.trim();
+        return (!this.isLocalLabelOrDirective(text) && !isNumericLabel(text)) || line.text.startsWith('.omp_');
+    }
+
+    protected isLocalLabelOrDirective(text: string) {
+        return this.instructionSetInfo.localLabelPrefixes.some(prefix => text.startsWith(prefix));
     }
 
     public async processFuncNames(code: AssemblyLine[], fullRes?: CompilationResult): Promise<AssemblyLine[]> {
@@ -185,15 +200,20 @@ export class BaseCFGParser {
     }
 
     protected isFunctionEnd(x: string) {
-        return x[0] !== ' ' && (x[0] !== '.' || x.startsWith('.omp_')) && x.includes(':');
+        return (
+            x[0] !== ' ' &&
+            (!this.isLocalLabelOrDirective(x) || x.startsWith('.omp_')) &&
+            !isNumericLabel(x) &&
+            x.includes(':')
+        );
     }
 
     protected isBasicBlockEnd(inst: string, prevInst: string) {
-        return inst[0] === '.' || prevInst.includes(' ret');
+        return this.isLocalLabelOrDirective(inst) || prevInst.includes(' ret');
     }
 
     protected extractJmpTargetName(inst: string) {
-        return inst.match(/\.L\d+/) + ':';
+        return inst.match(/[.$]L\d+/) + ':';
     }
 
     protected extractNodeIdFromInst(inst: string) {
@@ -308,7 +328,7 @@ export class BaseCFGParser {
         */
 
         for (const [i, x] of arrOfCanonicalBasicBlock.entries()) {
-            const lastInst = asmArr[x.end - 1].text;
+            const lastInst = this.getBlockTerminator(asmArr, x);
             switch (this.instructionSetInfo.getInstructionType(lastInst)) {
                 case InstructionType.jmp: {
                     //we have to deal only with jmp destination, jmp instruction are always taken.
@@ -342,6 +362,15 @@ export class BaseCFGParser {
         }
         logger.debug(edges);
         return edges;
+    }
+
+    // The instruction that decides where control goes after the block, which a delay slot may follow
+    protected getBlockTerminator(asmArr: AssemblyLine[], bb: CanonicalBB) {
+        const beforeLast = bb.end - 2;
+        if (beforeLast >= bb.start && this.instructionSetInfo.hasDelaySlot(asmArr[beforeLast].text)) {
+            return asmArr[beforeLast].text;
+        }
+        return asmArr[bb.end - 1].text;
     }
 
     public generateFunctionCfg(code: AssemblyLine[], fn: Range) {

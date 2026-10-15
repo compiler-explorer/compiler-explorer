@@ -1,0 +1,311 @@
+{
+    "asm": [
+        {
+            "text": "bar(int):",
+            "source": null,
+            "labels": []
+        },
+        {
+            "text": "        daddiu  $sp,$sp,-16",
+            "source": {
+                "file": null,
+                "line": 2,
+                "column": 16
+            },
+            "labels": []
+        },
+        {
+            "text": "        sd      $28,0($sp)",
+            "source": {
+                "file": null,
+                "line": 2,
+                "column": 16
+            },
+            "labels": []
+        },
+        {
+            "text": "        lui     $28,%hi(%neg(%gp_rel(bar(int))))",
+            "source": {
+                "file": null,
+                "line": 2,
+                "column": 16
+            },
+            "labels": [
+                {
+                    "name": "bar(int)",
+                    "range": {
+                        "startCol": 38,
+                        "endCol": 46
+                    }
+                }
+            ]
+        },
+        {
+            "text": "        daddu   $28,$28,$25",
+            "source": {
+                "file": null,
+                "line": 2,
+                "column": 16
+            },
+            "labels": []
+        },
+        {
+            "text": "        slt     $2,$4,6",
+            "source": {
+                "file": null,
+                "line": 2,
+                "column": 18
+            },
+            "labels": []
+        },
+        {
+            "text": "        sd      $31,8($sp)",
+            "source": {
+                "file": null,
+                "line": 2,
+                "column": 16
+            },
+            "labels": []
+        },
+        {
+            "text": "        beq     $2,$0,.L6",
+            "source": {
+                "file": null,
+                "line": 2,
+                "column": 18
+            },
+            "labels": [
+                {
+                    "name": ".L6",
+                    "range": {
+                        "startCol": 23,
+                        "endCol": 26
+                    }
+                }
+            ]
+        },
+        {
+            "text": "        daddiu  $28,$28,%lo(%neg(%gp_rel(bar(int))))",
+            "source": {
+                "file": null,
+                "line": 2,
+                "column": 18
+            },
+            "labels": [
+                {
+                    "name": "bar(int)",
+                    "range": {
+                        "startCol": 42,
+                        "endCol": 50
+                    }
+                }
+            ]
+        },
+        {
+            "text": "",
+            "source": null,
+            "labels": []
+        },
+        {
+            "text": "        ld      $25,%call16(_Z4ext2i)($28)",
+            "source": {
+                "file": null,
+                "line": 2,
+                "column": 55
+            },
+            "labels": []
+        },
+        {
+            "text": "1:      jalr        $25",
+            "source": {
+                "file": null,
+                "line": 2,
+                "column": 55
+            },
+            "labels": []
+        },
+        {
+            "text": "        nop",
+            "source": {
+                "file": null,
+                "line": 2,
+                "column": 55
+            },
+            "labels": []
+        },
+        {
+            "text": "",
+            "source": null,
+            "labels": []
+        },
+        {
+            "text": "        ld      $31,8($sp)",
+            "source": {
+                "file": null,
+                "line": 2,
+                "column": 70
+            },
+            "labels": []
+        },
+        {
+            "text": "        ld      $28,0($sp)",
+            "source": {
+                "file": null,
+                "line": 2,
+                "column": 70
+            },
+            "labels": []
+        },
+        {
+            "text": "        move    $2,$0",
+            "source": {
+                "file": null,
+                "line": 2,
+                "column": 67
+            },
+            "labels": []
+        },
+        {
+            "text": "        jr      $31",
+            "source": {
+                "file": null,
+                "line": 2,
+                "column": 70
+            },
+            "labels": []
+        },
+        {
+            "text": "        daddiu  $sp,$sp,16",
+            "source": {
+                "file": null,
+                "line": 2,
+                "column": 70
+            },
+            "labels": []
+        },
+        {
+            "text": "",
+            "source": null,
+            "labels": []
+        },
+        {
+            "text": ".L6:",
+            "source": null,
+            "labels": []
+        },
+        {
+            "text": "        ld      $25,%call16(_Z3exti)($28)",
+            "source": {
+                "file": null,
+                "line": 2,
+                "column": 34
+            },
+            "labels": []
+        },
+        {
+            "text": "1:      jalr        $25",
+            "source": {
+                "file": null,
+                "line": 2,
+                "column": 34
+            },
+            "labels": []
+        },
+        {
+            "text": "        nop",
+            "source": {
+                "file": null,
+                "line": 2,
+                "column": 34
+            },
+            "labels": []
+        },
+        {
+            "text": "",
+            "source": null,
+            "labels": []
+        },
+        {
+            "text": "        ld      $31,8($sp)",
+            "source": {
+                "file": null,
+                "line": 2,
+                "column": 70
+            },
+            "labels": []
+        },
+        {
+            "text": "        ld      $28,0($sp)",
+            "source": {
+                "file": null,
+                "line": 2,
+                "column": 70
+            },
+            "labels": []
+        },
+        {
+            "text": "        li      $2,1                        # 0x1",
+            "source": {
+                "file": null,
+                "line": 2,
+                "column": 46
+            },
+            "labels": []
+        },
+        {
+            "text": "        jr      $31",
+            "source": {
+                "file": null,
+                "line": 2,
+                "column": 70
+            },
+            "labels": []
+        },
+        {
+            "text": "        daddiu  $sp,$sp,16",
+            "source": {
+                "file": null,
+                "line": 2,
+                "column": 70
+            },
+            "labels": []
+        },
+        {
+            "text": "",
+            "source": null,
+            "labels": []
+        }
+    ],
+    "cfg": {
+        "bar(int):": {
+            "nodes": [
+                {
+                    "id": "bar(int):",
+                    "label": "bar(int):\n        daddiu  $sp,$sp,-16\n        sd      $28,0($sp)\n        lui     $28,%hi(%neg(%gp_rel(bar(int))))\n        daddu   $28,$28,$25\n        slt     $2,$4,6\n        sd      $31,8($sp)\n        beq     $2,$0,.L6\n        daddiu  $28,$28,%lo(%neg(%gp_rel(bar(int))))"
+                },
+                {
+                    "id": "bar(int):@9",
+                    "label": "bar(int):@9\n        ld      $25,%call16(_Z4ext2i)($28)\n1:      jalr        $25\n        nop\n        ld      $31,8($sp)\n        ld      $28,0($sp)\n        move    $2,$0\n        jr      $31\n        daddiu  $sp,$sp,16"
+                },
+                {
+                    "id": ".L6:",
+                    "label": ".L6:\n        ld      $25,%call16(_Z3exti)($28)\n1:      jalr        $25\n        nop\n        ld      $31,8($sp)\n        ld      $28,0($sp)\n        li      $2,1                        # 0x1\n        jr      $31\n        daddiu  $sp,$sp,16"
+                }
+            ],
+            "edges": [
+                {
+                    "from": "bar(int):",
+                    "to": ".L6:",
+                    "arrows": "to",
+                    "color": "green"
+                },
+                {
+                    "from": "bar(int):",
+                    "to": "bar(int):@9",
+                    "arrows": "to",
+                    "color": "red"
+                }
+            ]
+        }
+    }
+}
