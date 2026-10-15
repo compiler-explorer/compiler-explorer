@@ -1,5 +1,7 @@
 $ErrorActionPreference = 'Stop'
 
+Add-Type -AssemblyName System.IO.Compression.FileSystem
+
 Set-Location -Path $PSScriptRoot/../..
 $ROOT=Get-Location
 
@@ -80,7 +82,7 @@ New-Item -Path $ROOT -Name "out/dist-bin" -Force -ItemType "directory"
 
 # This part is different from build-dist.sh (zip instead of tarxz)
 if ($IsWindows -or $ENV:OS) {
-    Compress-Archive -Path "./*" -DestinationPath "$ROOT/out/dist-bin/$RELEASE_FILE_NAME.zip"
+    [System.IO.Compression.ZipFile]::CreateFromDirectory("$ROOT/out/dist", "$ROOT/out/dist-bin/$RELEASE_FILE_NAME.zip")
 } else {
     $env:XZ_OPT="-1 -T 0"
     tar -Jcf "$ROOT/out/dist-bin/$RELEASE_FILE_NAME.tar.xz" .
@@ -89,7 +91,7 @@ if ($IsWindows -or $ENV:OS) {
 New-Item -Path $ROOT -Name "out/webpack" -Force -ItemType "directory"
 Push-Location -Path "$ROOT/out/webpack"
 if ($IsWindows -or $ENV:OS) {
-    Compress-Archive -Path "static/*" -DestinationPath "$ROOT/out/dist-bin/$RELEASE_FILE_NAME.static.zip"
+    [System.IO.Compression.ZipFile]::CreateFromDirectory("$ROOT/out/webpack/static", "$ROOT/out/dist-bin/$RELEASE_FILE_NAME.static.zip")
 } else {
     tar -Jcf "$ROOT/out/dist-bin/$RELEASE_FILE_NAME.static.tar.xz" --transform="s,^static/,," static/*
 }

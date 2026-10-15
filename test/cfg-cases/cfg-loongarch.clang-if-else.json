@@ -1,0 +1,211 @@
+{
+    "asm": [
+        {
+            "text": "bar(int):",
+            "source": null,
+            "labels": []
+        },
+        {
+            "text": "        addi.d  $sp, $sp, -16",
+            "source": {
+                "file": null,
+                "line": 2
+            },
+            "labels": []
+        },
+        {
+            "text": "        st.d    $ra, $sp, 8",
+            "source": {
+                "file": null,
+                "line": 2
+            },
+            "labels": []
+        },
+        {
+            "text": "        ori     $a1, $zero, 6",
+            "source": {
+                "file": null,
+                "line": 2
+            },
+            "labels": []
+        },
+        {
+            "text": "        blt     $a0, $a1, .LBB0_2",
+            "source": {
+                "file": null,
+                "line": 2,
+                "column": 24
+            },
+            "labels": [
+                {
+                    "name": ".LBB0_2",
+                    "range": {
+                        "startCol": 27,
+                        "endCol": 34
+                    }
+                }
+            ]
+        },
+        {
+            "text": "        pcaddu18i       $ra, %call36(_Z3exti)",
+            "source": {
+                "file": null,
+                "line": 2,
+                "column": 31
+            },
+            "labels": []
+        },
+        {
+            "text": "        jirl    $ra, $ra, 0",
+            "source": {
+                "file": null,
+                "line": 2,
+                "column": 31
+            },
+            "labels": []
+        },
+        {
+            "text": "        ori     $a0, $zero, 1",
+            "source": {
+                "file": null,
+                "line": 0,
+                "column": 31
+            },
+            "labels": []
+        },
+        {
+            "text": "        b       .LBB0_3",
+            "source": {
+                "file": null,
+                "line": 2,
+                "column": 39
+            },
+            "labels": [
+                {
+                    "name": ".LBB0_3",
+                    "range": {
+                        "startCol": 17,
+                        "endCol": 24
+                    }
+                }
+            ]
+        },
+        {
+            "text": ".LBB0_2:",
+            "source": null,
+            "labels": []
+        },
+        {
+            "text": "        pcaddu18i       $ra, %call36(_Z4ext2i)",
+            "source": {
+                "file": null,
+                "line": 2,
+                "column": 51
+            },
+            "labels": []
+        },
+        {
+            "text": "        jirl    $ra, $ra, 0",
+            "source": {
+                "file": null,
+                "line": 2,
+                "column": 51
+            },
+            "labels": []
+        },
+        {
+            "text": "        move    $a0, $zero",
+            "source": {
+                "file": null,
+                "line": 0,
+                "column": 51
+            },
+            "labels": []
+        },
+        {
+            "text": ".LBB0_3:",
+            "source": null,
+            "labels": []
+        },
+        {
+            "text": "        ld.d    $ra, $sp, 8",
+            "source": {
+                "file": null,
+                "line": 2,
+                "column": 70
+            },
+            "labels": []
+        },
+        {
+            "text": "        addi.d  $sp, $sp, 16",
+            "source": {
+                "file": null,
+                "line": 2,
+                "column": 70
+            },
+            "labels": []
+        },
+        {
+            "text": "        ret",
+            "source": {
+                "file": null,
+                "line": 2,
+                "column": 70
+            },
+            "labels": []
+        },
+        {
+            "text": "",
+            "source": null,
+            "labels": []
+        }
+    ],
+    "cfg": {
+        "bar(int):": {
+            "nodes": [
+                {
+                    "id": "bar(int):",
+                    "label": "bar(int):\n        addi.d  $sp, $sp, -16\n        st.d    $ra, $sp, 8\n        ori     $a1, $zero, 6\n        blt     $a0, $a1, .LBB0_2"
+                },
+                {
+                    "id": "bar(int):@5",
+                    "label": "bar(int):@5\n        pcaddu18i       $ra, %call36(_Z3exti)\n        jirl    $ra, $ra, 0\n        ori     $a0, $zero, 1\n        b       .LBB0_3"
+                },
+                {
+                    "id": ".LBB0_2:",
+                    "label": ".LBB0_2:\n        pcaddu18i       $ra, %call36(_Z4ext2i)\n        jirl    $ra, $ra, 0\n        move    $a0, $zero"
+                },
+                {
+                    "id": ".LBB0_3:",
+                    "label": ".LBB0_3:\n        ld.d    $ra, $sp, 8\n        addi.d  $sp, $sp, 16\n        ret"
+                }
+            ],
+            "edges": [
+                {
+                    "from": "bar(int):",
+                    "to": ".LBB0_2:",
+                    "arrows": "to",
+                    "color": "green"
+                },
+                {
+                    "from": "bar(int):",
+                    "to": "bar(int):@5",
+                    "arrows": "to",
+                    "color": "red"
+                },
+                {
+                    "from": "bar(int):@5",
+                    "to": ".LBB0_3:",
+                    "arrows": "to",
+                    "color": "blue"
+                },
+                {
+                    "from": ".LBB0_2:",
+                    "to": ".LBB0_3:",
+                    "arrows": "to",
+                    "color": "grey"
+                }
+            ]
+        }
+    }
+}
