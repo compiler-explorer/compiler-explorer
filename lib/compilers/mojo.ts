@@ -22,9 +22,12 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
+import semver from 'semver';
+
 import type {LLVMIrBackendOptions} from '../../types/compilation/ir.interfaces.js';
 import type {PreliminaryCompilerInfo} from '../../types/compiler.interfaces.js';
 import type {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces.js';
+import type {SelectedLibraryVersion} from '../../types/libraries/libraries.interfaces.js';
 import {BaseCompiler} from '../base-compiler.js';
 import type {CompilationEnvironment} from '../compilation-env.js';
 import {MojoParser} from './argument-parsers.js';
@@ -53,8 +56,19 @@ export class MojoCompiler extends BaseCompiler {
         ];
     }
 
-    override getSharedLibraryPathsAsArguments() {
-        return [];
+    override getSharedLibraryPathsAsArguments(
+        libraries: SelectedLibraryVersion[],
+        libDownloadPath: string | undefined,
+        toolchainPath: string | undefined,
+        dirPath: string,
+    ) {
+        const version = semver.coerce(this.compiler.version);
+        // Older Mojo releases reject -Xlinker.
+        if (!version || semver.lt(version, '0.26.1')) {
+            return [];
+        }
+
+        return super.getSharedLibraryPathsAsArguments(libraries, libDownloadPath, toolchainPath, dirPath);
     }
 
     override async generateIR(
