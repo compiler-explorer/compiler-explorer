@@ -3,6 +3,51 @@
     {
       "labels": [],
       "source": null,
+      "text": ".plt:"
+    },
+    {
+      "address": 4202528,
+      "labels": [],
+      "opcodes": [
+        "ff",
+        "35",
+        "e2",
+        "7f",
+        "01",
+        "00"
+      ],
+      "source": null,
+      "text": " pushq  0x17fe2(%rip)        # 41a008 <_GLOBAL_OFFSET_TABLE_+0x8>"
+    },
+    {
+      "address": 4202534,
+      "labels": [],
+      "opcodes": [
+        "ff",
+        "25",
+        "e4",
+        "7f",
+        "01",
+        "00"
+      ],
+      "source": null,
+      "text": " jmpq   *0x17fe4(%rip)        # 41a010 <_GLOBAL_OFFSET_TABLE_+0x10>"
+    },
+    {
+      "address": 4202540,
+      "labels": [],
+      "opcodes": [
+        "0f",
+        "1f",
+        "40",
+        "00"
+      ],
+      "source": null,
+      "text": " nopl   0x0(%rax)"
+    },
+    {
+      "labels": [],
+      "source": null,
       "text": "_ZSt29_Rb_tree_insert_and_rebalancebPSt18_Rb_tree_node_baseS0_RS_@plt:"
     },
     {
@@ -34,7 +79,15 @@
     },
     {
       "address": 4202555,
-      "labels": [],
+      "labels": [
+        {
+          "name": ".plt",
+          "range": {
+            "endCol": 21,
+            "startCol": 17
+          }
+        }
+      ],
       "opcodes": [
         "e9",
         "e0",
@@ -79,7 +132,15 @@
     },
     {
       "address": 4202571,
-      "labels": [],
+      "labels": [
+        {
+          "name": ".plt",
+          "range": {
+            "endCol": 21,
+            "startCol": 17
+          }
+        }
+      ],
       "opcodes": [
         "e9",
         "d0",
@@ -124,7 +185,15 @@
     },
     {
       "address": 4202587,
-      "labels": [],
+      "labels": [
+        {
+          "name": ".plt",
+          "range": {
+            "endCol": 21,
+            "startCol": 17
+          }
+        }
+      ],
       "opcodes": [
         "e9",
         "c0",
@@ -169,7 +238,15 @@
     },
     {
       "address": 4202603,
-      "labels": [],
+      "labels": [
+        {
+          "name": ".plt",
+          "range": {
+            "endCol": 21,
+            "startCol": 17
+          }
+        }
+      ],
       "opcodes": [
         "e9",
         "b0",
@@ -214,7 +291,15 @@
     },
     {
       "address": 4202619,
-      "labels": [],
+      "labels": [
+        {
+          "name": ".plt",
+          "range": {
+            "endCol": 21,
+            "startCol": 17
+          }
+        }
+      ],
       "opcodes": [
         "e9",
         "a0",
@@ -259,7 +344,15 @@
     },
     {
       "address": 4202635,
-      "labels": [],
+      "labels": [
+        {
+          "name": ".plt",
+          "range": {
+            "endCol": 21,
+            "startCol": 17
+          }
+        }
+      ],
       "opcodes": [
         "e9",
         "90",
@@ -304,7 +397,15 @@
     },
     {
       "address": 4202651,
-      "labels": [],
+      "labels": [
+        {
+          "name": ".plt",
+          "range": {
+            "endCol": 21,
+            "startCol": 17
+          }
+        }
+      ],
       "opcodes": [
         "e9",
         "80",
@@ -349,7 +450,15 @@
     },
     {
       "address": 4202683,
-      "labels": [],
+      "labels": [
+        {
+          "name": ".plt",
+          "range": {
+            "endCol": 21,
+            "startCol": 17
+          }
+        }
+      ],
       "opcodes": [
         "e9",
         "60",
@@ -394,7 +503,15 @@
     },
     {
       "address": 4202699,
-      "labels": [],
+      "labels": [
+        {
+          "name": ".plt",
+          "range": {
+            "endCol": 21,
+            "startCol": 17
+          }
+        }
+      ],
       "opcodes": [
         "e9",
         "50",
@@ -439,10 +556,71 @@
     },
     {
       "address": 4202715,
-      "labels": [],
+      "labels": [
+        {
+          "name": ".plt",
+          "range": {
+            "endCol": 21,
+            "startCol": 17
+          }
+        }
+      ],
       "opcodes": [
         "e9",
         "40",
+        "ff",
+        "ff",
+        "ff"
+      ],
+      "source": null,
+      "text": " jmpq   402020 <.plt>"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "__cxa_allocate_exception@plt:"
+    },
+    {
+      "address": 4202720,
+      "labels": [],
+      "opcodes": [
+        "ff",
+        "25",
+        "8a",
+        "7f",
+        "01",
+        "00"
+      ],
+      "source": null,
+      "text": " jmpq   *0x17f8a(%rip)        # 41a070 <__cxa_allocate_exception@CXXABI_1.3>"
+    },
+    {
+      "address": 4202726,
+      "labels": [],
+      "opcodes": [
+        "68",
+        "0b",
+        "00",
+        "00",
+        "00"
+      ],
+      "source": null,
+      "text": " pushq  $0xb"
+    },
+    {
+      "address": 4202731,
+      "labels": [
+        {
+          "name": ".plt",
+          "range": {
+            "endCol": 21,
+            "startCol": 17
+          }
+        }
+      ],
+      "opcodes": [
+        "e9",
+        "30",
         "ff",
         "ff",
         "ff"
@@ -484,7 +662,15 @@
     },
     {
       "address": 4202747,
-      "labels": [],
+      "labels": [
+        {
+          "name": ".plt",
+          "range": {
+            "endCol": 21,
+            "startCol": 17
+          }
+        }
+      ],
       "opcodes": [
         "e9",
         "20",
@@ -529,7 +715,15 @@
     },
     {
       "address": 4202763,
-      "labels": [],
+      "labels": [
+        {
+          "name": ".plt",
+          "range": {
+            "endCol": 21,
+            "startCol": 17
+          }
+        }
+      ],
       "opcodes": [
         "e9",
         "10",
@@ -574,7 +768,15 @@
     },
     {
       "address": 4202779,
-      "labels": [],
+      "labels": [
+        {
+          "name": ".plt",
+          "range": {
+            "endCol": 21,
+            "startCol": 17
+          }
+        }
+      ],
       "opcodes": [
         "e9",
         "00",
@@ -619,10 +821,124 @@
     },
     {
       "address": 4202795,
-      "labels": [],
+      "labels": [
+        {
+          "name": ".plt",
+          "range": {
+            "endCol": 21,
+            "startCol": 17
+          }
+        }
+      ],
       "opcodes": [
         "e9",
         "f0",
+        "fe",
+        "ff",
+        "ff"
+      ],
+      "source": null,
+      "text": " jmpq   402020 <.plt>"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "__cxa_guard_abort@plt:"
+    },
+    {
+      "address": 4202800,
+      "labels": [],
+      "opcodes": [
+        "ff",
+        "25",
+        "62",
+        "7f",
+        "01",
+        "00"
+      ],
+      "source": null,
+      "text": " jmpq   *0x17f62(%rip)        # 41a098 <__cxa_guard_abort@CXXABI_1.3>"
+    },
+    {
+      "address": 4202806,
+      "labels": [],
+      "opcodes": [
+        "68",
+        "10",
+        "00",
+        "00",
+        "00"
+      ],
+      "source": null,
+      "text": " pushq  $0x10"
+    },
+    {
+      "address": 4202811,
+      "labels": [
+        {
+          "name": ".plt",
+          "range": {
+            "endCol": 21,
+            "startCol": 17
+          }
+        }
+      ],
+      "opcodes": [
+        "e9",
+        "e0",
+        "fe",
+        "ff",
+        "ff"
+      ],
+      "source": null,
+      "text": " jmpq   402020 <.plt>"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "__cxa_guard_release@plt:"
+    },
+    {
+      "address": 4202816,
+      "labels": [],
+      "opcodes": [
+        "ff",
+        "25",
+        "5a",
+        "7f",
+        "01",
+        "00"
+      ],
+      "source": null,
+      "text": " jmpq   *0x17f5a(%rip)        # 41a0a0 <__cxa_guard_release@CXXABI_1.3>"
+    },
+    {
+      "address": 4202822,
+      "labels": [],
+      "opcodes": [
+        "68",
+        "11",
+        "00",
+        "00",
+        "00"
+      ],
+      "source": null,
+      "text": " pushq  $0x11"
+    },
+    {
+      "address": 4202827,
+      "labels": [
+        {
+          "name": ".plt",
+          "range": {
+            "endCol": 21,
+            "startCol": 17
+          }
+        }
+      ],
+      "opcodes": [
+        "e9",
+        "d0",
         "fe",
         "ff",
         "ff"
@@ -664,7 +980,15 @@
     },
     {
       "address": 4202843,
-      "labels": [],
+      "labels": [
+        {
+          "name": ".plt",
+          "range": {
+            "endCol": 21,
+            "startCol": 17
+          }
+        }
+      ],
       "opcodes": [
         "e9",
         "c0",
@@ -709,10 +1033,71 @@
     },
     {
       "address": 4202859,
-      "labels": [],
+      "labels": [
+        {
+          "name": ".plt",
+          "range": {
+            "endCol": 21,
+            "startCol": 17
+          }
+        }
+      ],
       "opcodes": [
         "e9",
         "b0",
+        "fe",
+        "ff",
+        "ff"
+      ],
+      "source": null,
+      "text": " jmpq   402020 <.plt>"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "__cxa_free_exception@plt:"
+    },
+    {
+      "address": 4202864,
+      "labels": [],
+      "opcodes": [
+        "ff",
+        "25",
+        "42",
+        "7f",
+        "01",
+        "00"
+      ],
+      "source": null,
+      "text": " jmpq   *0x17f42(%rip)        # 41a0b8 <__cxa_free_exception@CXXABI_1.3>"
+    },
+    {
+      "address": 4202870,
+      "labels": [],
+      "opcodes": [
+        "68",
+        "14",
+        "00",
+        "00",
+        "00"
+      ],
+      "source": null,
+      "text": " pushq  $0x14"
+    },
+    {
+      "address": 4202875,
+      "labels": [
+        {
+          "name": ".plt",
+          "range": {
+            "endCol": 21,
+            "startCol": 17
+          }
+        }
+      ],
+      "opcodes": [
+        "e9",
+        "a0",
         "fe",
         "ff",
         "ff"
@@ -754,7 +1139,15 @@
     },
     {
       "address": 4202891,
-      "labels": [],
+      "labels": [
+        {
+          "name": ".plt",
+          "range": {
+            "endCol": 21,
+            "startCol": 17
+          }
+        }
+      ],
       "opcodes": [
         "e9",
         "90",
@@ -799,7 +1192,15 @@
     },
     {
       "address": 4202907,
-      "labels": [],
+      "labels": [
+        {
+          "name": ".plt",
+          "range": {
+            "endCol": 21,
+            "startCol": 17
+          }
+        }
+      ],
       "opcodes": [
         "e9",
         "80",
@@ -844,7 +1245,15 @@
     },
     {
       "address": 4202923,
-      "labels": [],
+      "labels": [
+        {
+          "name": ".plt",
+          "range": {
+            "endCol": 21,
+            "startCol": 17
+          }
+        }
+      ],
       "opcodes": [
         "e9",
         "70",
@@ -889,7 +1298,15 @@
     },
     {
       "address": 4202939,
-      "labels": [],
+      "labels": [
+        {
+          "name": ".plt",
+          "range": {
+            "endCol": 21,
+            "startCol": 17
+          }
+        }
+      ],
       "opcodes": [
         "e9",
         "60",
@@ -934,7 +1351,15 @@
     },
     {
       "address": 4202955,
-      "labels": [],
+      "labels": [
+        {
+          "name": ".plt",
+          "range": {
+            "endCol": 21,
+            "startCol": 17
+          }
+        }
+      ],
       "opcodes": [
         "e9",
         "50",
@@ -979,7 +1404,15 @@
     },
     {
       "address": 4202971,
-      "labels": [],
+      "labels": [
+        {
+          "name": ".plt",
+          "range": {
+            "endCol": 21,
+            "startCol": 17
+          }
+        }
+      ],
       "opcodes": [
         "e9",
         "40",
@@ -1024,7 +1457,15 @@
     },
     {
       "address": 4202987,
-      "labels": [],
+      "labels": [
+        {
+          "name": ".plt",
+          "range": {
+            "endCol": 21,
+            "startCol": 17
+          }
+        }
+      ],
       "opcodes": [
         "e9",
         "30",
@@ -1069,7 +1510,15 @@
     },
     {
       "address": 4203003,
-      "labels": [],
+      "labels": [
+        {
+          "name": ".plt",
+          "range": {
+            "endCol": 21,
+            "startCol": 17
+          }
+        }
+      ],
       "opcodes": [
         "e9",
         "20",
@@ -1114,7 +1563,15 @@
     },
     {
       "address": 4203019,
-      "labels": [],
+      "labels": [
+        {
+          "name": ".plt",
+          "range": {
+            "endCol": 21,
+            "startCol": 17
+          }
+        }
+      ],
       "opcodes": [
         "e9",
         "10",
@@ -1159,7 +1616,15 @@
     },
     {
       "address": 4203051,
-      "labels": [],
+      "labels": [
+        {
+          "name": ".plt",
+          "range": {
+            "endCol": 21,
+            "startCol": 17
+          }
+        }
+      ],
       "opcodes": [
         "e9",
         "f0",
@@ -1204,7 +1669,15 @@
     },
     {
       "address": 4203067,
-      "labels": [],
+      "labels": [
+        {
+          "name": ".plt",
+          "range": {
+            "endCol": 21,
+            "startCol": 17
+          }
+        }
+      ],
       "opcodes": [
         "e9",
         "e0",
@@ -1249,7 +1722,15 @@
     },
     {
       "address": 4203083,
-      "labels": [],
+      "labels": [
+        {
+          "name": ".plt",
+          "range": {
+            "endCol": 21,
+            "startCol": 17
+          }
+        }
+      ],
       "opcodes": [
         "e9",
         "d0",
@@ -1294,7 +1775,15 @@
     },
     {
       "address": 4203099,
-      "labels": [],
+      "labels": [
+        {
+          "name": ".plt",
+          "range": {
+            "endCol": 21,
+            "startCol": 17
+          }
+        }
+      ],
       "opcodes": [
         "e9",
         "c0",
@@ -1339,7 +1828,15 @@
     },
     {
       "address": 4203115,
-      "labels": [],
+      "labels": [
+        {
+          "name": ".plt",
+          "range": {
+            "endCol": 21,
+            "startCol": 17
+          }
+        }
+      ],
       "opcodes": [
         "e9",
         "b0",
@@ -1384,7 +1881,15 @@
     },
     {
       "address": 4203131,
-      "labels": [],
+      "labels": [
+        {
+          "name": ".plt",
+          "range": {
+            "endCol": 21,
+            "startCol": 17
+          }
+        }
+      ],
       "opcodes": [
         "e9",
         "a0",
@@ -1429,7 +1934,15 @@
     },
     {
       "address": 4203147,
-      "labels": [],
+      "labels": [
+        {
+          "name": ".plt",
+          "range": {
+            "endCol": 21,
+            "startCol": 17
+          }
+        }
+      ],
       "opcodes": [
         "e9",
         "90",
@@ -1474,10 +1987,71 @@
     },
     {
       "address": 4203179,
-      "labels": [],
+      "labels": [
+        {
+          "name": ".plt",
+          "range": {
+            "endCol": 21,
+            "startCol": 17
+          }
+        }
+      ],
       "opcodes": [
         "e9",
         "70",
+        "fd",
+        "ff",
+        "ff"
+      ],
+      "source": null,
+      "text": " jmpq   402020 <.plt>"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "__cxa_throw@plt:"
+    },
+    {
+      "address": 4203216,
+      "labels": [],
+      "opcodes": [
+        "ff",
+        "25",
+        "92",
+        "7e",
+        "01",
+        "00"
+      ],
+      "source": null,
+      "text": " jmpq   *0x17e92(%rip)        # 41a168 <__cxa_throw@CXXABI_1.3>"
+    },
+    {
+      "address": 4203222,
+      "labels": [],
+      "opcodes": [
+        "68",
+        "2a",
+        "00",
+        "00",
+        "00"
+      ],
+      "source": null,
+      "text": " pushq  $0x2a"
+    },
+    {
+      "address": 4203227,
+      "labels": [
+        {
+          "name": ".plt",
+          "range": {
+            "endCol": 21,
+            "startCol": 17
+          }
+        }
+      ],
+      "opcodes": [
+        "e9",
+        "40",
         "fd",
         "ff",
         "ff"
@@ -1519,7 +2093,15 @@
     },
     {
       "address": 4203243,
-      "labels": [],
+      "labels": [
+        {
+          "name": ".plt",
+          "range": {
+            "endCol": 21,
+            "startCol": 17
+          }
+        }
+      ],
       "opcodes": [
         "e9",
         "30",
@@ -1564,7 +2146,15 @@
     },
     {
       "address": 4203259,
-      "labels": [],
+      "labels": [
+        {
+          "name": ".plt",
+          "range": {
+            "endCol": 21,
+            "startCol": 17
+          }
+        }
+      ],
       "opcodes": [
         "e9",
         "20",
@@ -1609,10 +2199,71 @@
     },
     {
       "address": 4203275,
-      "labels": [],
+      "labels": [
+        {
+          "name": ".plt",
+          "range": {
+            "endCol": 21,
+            "startCol": 17
+          }
+        }
+      ],
       "opcodes": [
         "e9",
         "10",
+        "fd",
+        "ff",
+        "ff"
+      ],
+      "source": null,
+      "text": " jmpq   402020 <.plt>"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "__cxa_guard_acquire@plt:"
+    },
+    {
+      "address": 4203280,
+      "labels": [],
+      "opcodes": [
+        "ff",
+        "25",
+        "72",
+        "7e",
+        "01",
+        "00"
+      ],
+      "source": null,
+      "text": " jmpq   *0x17e72(%rip)        # 41a188 <__cxa_guard_acquire@CXXABI_1.3>"
+    },
+    {
+      "address": 4203286,
+      "labels": [],
+      "opcodes": [
+        "68",
+        "2e",
+        "00",
+        "00",
+        "00"
+      ],
+      "source": null,
+      "text": " pushq  $0x2e"
+    },
+    {
+      "address": 4203291,
+      "labels": [
+        {
+          "name": ".plt",
+          "range": {
+            "endCol": 21,
+            "startCol": 17
+          }
+        }
+      ],
+      "opcodes": [
+        "e9",
+        "00",
         "fd",
         "ff",
         "ff"
@@ -1654,7 +2305,15 @@
     },
     {
       "address": 4203307,
-      "labels": [],
+      "labels": [
+        {
+          "name": ".plt",
+          "range": {
+            "endCol": 21,
+            "startCol": 17
+          }
+        }
+      ],
       "opcodes": [
         "e9",
         "f0",
@@ -1699,7 +2358,15 @@
     },
     {
       "address": 4203323,
-      "labels": [],
+      "labels": [
+        {
+          "name": ".plt",
+          "range": {
+            "endCol": 21,
+            "startCol": 17
+          }
+        }
+      ],
       "opcodes": [
         "e9",
         "e0",
@@ -1744,7 +2411,15 @@
     },
     {
       "address": 4203355,
-      "labels": [],
+      "labels": [
+        {
+          "name": ".plt",
+          "range": {
+            "endCol": 21,
+            "startCol": 17
+          }
+        }
+      ],
       "opcodes": [
         "e9",
         "c0",
@@ -1850,7 +2525,15 @@
     },
     {
       "address": 4203376,
-      "labels": [],
+      "labels": [
+        {
+          "name": "__cxa_allocate_exception@plt",
+          "range": {
+            "endCol": 45,
+            "startCol": 17
+          }
+        }
+      ],
       "opcodes": [
         "e8",
         "6b",
@@ -2022,7 +2705,15 @@
     },
     {
       "address": 4203420,
-      "labels": [],
+      "labels": [
+        {
+          "name": "__cxa_throw@plt",
+          "range": {
+            "endCol": 32,
+            "startCol": 17
+          }
+        }
+      ],
       "opcodes": [
         "e8",
         "2f",
@@ -2069,7 +2760,15 @@
     },
     {
       "address": 4203431,
-      "labels": [],
+      "labels": [
+        {
+          "name": "__cxa_free_exception@plt",
+          "range": {
+            "endCol": 41,
+            "startCol": 17
+          }
+        }
+      ],
       "opcodes": [
         "e8",
         "c4",
@@ -21055,7 +21754,15 @@
     },
     {
       "address": 4207893,
-      "labels": [],
+      "labels": [
+        {
+          "name": "__cxa_guard_acquire@plt",
+          "range": {
+            "endCol": 40,
+            "startCol": 17
+          }
+        }
+      ],
       "opcodes": [
         "e8",
         "f6",
@@ -21144,7 +21851,15 @@
     },
     {
       "address": 4207914,
-      "labels": [],
+      "labels": [
+        {
+          "name": "__cxa_guard_release@plt",
+          "range": {
+            "endCol": 40,
+            "startCol": 17
+          }
+        }
+      ],
       "opcodes": [
         "e8",
         "11",
@@ -21420,7 +22135,15 @@
     },
     {
       "address": 4207973,
-      "labels": [],
+      "labels": [
+        {
+          "name": "__cxa_guard_acquire@plt",
+          "range": {
+            "endCol": 40,
+            "startCol": 17
+          }
+        }
+      ],
       "opcodes": [
         "e8",
         "a6",
@@ -21509,7 +22232,15 @@
     },
     {
       "address": 4207994,
-      "labels": [],
+      "labels": [
+        {
+          "name": "__cxa_guard_release@plt",
+          "range": {
+            "endCol": 40,
+            "startCol": 17
+          }
+        }
+      ],
       "opcodes": [
         "e8",
         "c1",
@@ -25709,7 +26440,15 @@
     },
     {
       "address": 4208828,
-      "labels": [],
+      "labels": [
+        {
+          "name": "__cxa_guard_acquire@plt",
+          "range": {
+            "endCol": 40,
+            "startCol": 17
+          }
+        }
+      ],
       "opcodes": [
         "e8",
         "4f",
@@ -26103,7 +26842,15 @@
     },
     {
       "address": 4208910,
-      "labels": [],
+      "labels": [
+        {
+          "name": "__cxa_guard_release@plt",
+          "range": {
+            "endCol": 40,
+            "startCol": 17
+          }
+        }
+      ],
       "opcodes": [
         "e8",
         "2d",
@@ -26174,7 +26921,15 @@
     },
     {
       "address": 4208925,
-      "labels": [],
+      "labels": [
+        {
+          "name": "__cxa_guard_abort@plt",
+          "range": {
+            "endCol": 38,
+            "startCol": 17
+          }
+        }
+      ],
       "opcodes": [
         "e8",
         "0e",
@@ -26398,7 +27153,15 @@
     },
     {
       "address": 4208972,
-      "labels": [],
+      "labels": [
+        {
+          "name": "__cxa_guard_acquire@plt",
+          "range": {
+            "endCol": 40,
+            "startCol": 17
+          }
+        }
+      ],
       "opcodes": [
         "e8",
         "bf",
@@ -26792,7 +27555,15 @@
     },
     {
       "address": 4209054,
-      "labels": [],
+      "labels": [
+        {
+          "name": "__cxa_guard_release@plt",
+          "range": {
+            "endCol": 40,
+            "startCol": 17
+          }
+        }
+      ],
       "opcodes": [
         "e8",
         "9d",
@@ -26863,7 +27634,15 @@
     },
     {
       "address": 4209069,
-      "labels": [],
+      "labels": [
+        {
+          "name": "__cxa_guard_abort@plt",
+          "range": {
+            "endCol": 38,
+            "startCol": 17
+          }
+        }
+      ],
       "opcodes": [
         "e8",
         "7e",
@@ -45097,100 +45876,107 @@
     }
   ],
   "labelDefinitions": {
-    "_Unwind_Resume@plt": 133,
-    "_Z9regexTestv": 749,
-    "_Z9regexTestv.cold": 211,
-    "_ZNKSt5ctypeIcE13_M_widen_initEv@plt": 101,
-    "_ZNKSt5ctypeIcE8do_widenEc": 918,
-    "_ZNKSt5ctypeIcE9do_narrowEcc": 923,
-    "_ZNKSt6locale2id5_M_idEv@plt": 41,
-    "_ZNKSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEE7compareEPKc@plt": 5,
-    "_ZNKSt7__cxx1112regex_traitsIcE5valueEci.isra.0": 573,
-    "_ZNKSt7__cxx1112regex_traitsIcE5valueEci.isra.0.cold": 180,
-    "_ZNSi10_M_extractIlEERSiRT_@plt": 85,
-    "_ZNSt11regex_errorD1Ev@plt": 93,
-    "_ZNSt13runtime_errorC2EPKc@plt": 149,
-    "_ZNSt16_Sp_counted_baseILN9__gnu_cxx12_Lock_policyE2EE10_M_releaseEv": 1861,
-    "_ZNSt17_Function_handlerIFbcENSt8__detail11_AnyMatcherINSt7__cxx1112regex_traitsIcEELb0ELb0ELb0EEEE10_M_managerERSt9_Any_dataRKS8_St18_Manager_operation": 1043,
-    "_ZNSt17_Function_handlerIFbcENSt8__detail11_AnyMatcherINSt7__cxx1112regex_traitsIcEELb0ELb0ELb0EEEE9_M_invokeERKSt9_Any_dataOc": 1312,
-    "_ZNSt17_Function_handlerIFbcENSt8__detail11_AnyMatcherINSt7__cxx1112regex_traitsIcEELb0ELb0ELb1EEEE10_M_managerERSt9_Any_dataRKS8_St18_Manager_operation": 1056,
-    "_ZNSt17_Function_handlerIFbcENSt8__detail11_AnyMatcherINSt7__cxx1112regex_traitsIcEELb0ELb0ELb1EEEE9_M_invokeERKSt9_Any_dataOc": 1289,
-    "_ZNSt17_Function_handlerIFbcENSt8__detail11_AnyMatcherINSt7__cxx1112regex_traitsIcEELb0ELb1ELb0EEEE10_M_managerERSt9_Any_dataRKS8_St18_Manager_operation": 1078,
-    "_ZNSt17_Function_handlerIFbcENSt8__detail11_AnyMatcherINSt7__cxx1112regex_traitsIcEELb0ELb1ELb0EEEE9_M_invokeERKSt9_Any_dataOc": 1615,
-    "_ZNSt17_Function_handlerIFbcENSt8__detail11_AnyMatcherINSt7__cxx1112regex_traitsIcEELb0ELb1ELb1EEEE10_M_managerERSt9_Any_dataRKS8_St18_Manager_operation": 1100,
-    "_ZNSt17_Function_handlerIFbcENSt8__detail11_AnyMatcherINSt7__cxx1112regex_traitsIcEELb0ELb1ELb1EEEE9_M_invokeERKSt9_Any_dataOc": 1573,
-    "_ZNSt17_Function_handlerIFbcENSt8__detail11_AnyMatcherINSt7__cxx1112regex_traitsIcEELb1ELb0ELb0EEEE10_M_managerERSt9_Any_dataRKS8_St18_Manager_operation": 1122,
-    "_ZNSt17_Function_handlerIFbcENSt8__detail11_AnyMatcherINSt7__cxx1112regex_traitsIcEELb1ELb0ELb0EEEE9_M_invokeERKSt9_Any_dataOc": 928,
-    "_ZNSt17_Function_handlerIFbcENSt8__detail11_AnyMatcherINSt7__cxx1112regex_traitsIcEELb1ELb0ELb1EEEE10_M_managerERSt9_Any_dataRKS8_St18_Manager_operation": 1135,
-    "_ZNSt17_Function_handlerIFbcENSt8__detail11_AnyMatcherINSt7__cxx1112regex_traitsIcEELb1ELb0ELb1EEEE9_M_invokeERKSt9_Any_dataOc": 938,
-    "_ZNSt17_Function_handlerIFbcENSt8__detail11_AnyMatcherINSt7__cxx1112regex_traitsIcEELb1ELb1ELb0EEEE10_M_managerERSt9_Any_dataRKS8_St18_Manager_operation": 1157,
-    "_ZNSt17_Function_handlerIFbcENSt8__detail11_AnyMatcherINSt7__cxx1112regex_traitsIcEELb1ELb1ELb0EEEE9_M_invokeERKSt9_Any_dataOc": 1497,
-    "_ZNSt17_Function_handlerIFbcENSt8__detail11_AnyMatcherINSt7__cxx1112regex_traitsIcEELb1ELb1ELb1EEEE10_M_managerERSt9_Any_dataRKS8_St18_Manager_operation": 1179,
-    "_ZNSt17_Function_handlerIFbcENSt8__detail11_AnyMatcherINSt7__cxx1112regex_traitsIcEELb1ELb1ELb1EEEE9_M_invokeERKSt9_Any_dataOc": 1535,
-    "_ZNSt17_Function_handlerIFbcENSt8__detail12_CharMatcherINSt7__cxx1112regex_traitsIcEELb0ELb0EEEE10_M_managerERSt9_Any_dataRKS8_St18_Manager_operation": 1201,
-    "_ZNSt17_Function_handlerIFbcENSt8__detail12_CharMatcherINSt7__cxx1112regex_traitsIcEELb0ELb0EEEE9_M_invokeERKSt9_Any_dataOc": 948,
-    "_ZNSt17_Function_handlerIFbcENSt8__detail12_CharMatcherINSt7__cxx1112regex_traitsIcEELb0ELb1EEEE10_M_managerERSt9_Any_dataRKS8_St18_Manager_operation": 1223,
-    "_ZNSt17_Function_handlerIFbcENSt8__detail12_CharMatcherINSt7__cxx1112regex_traitsIcEELb0ELb1EEEE9_M_invokeERKSt9_Any_dataOc": 954,
-    "_ZNSt17_Function_handlerIFbcENSt8__detail12_CharMatcherINSt7__cxx1112regex_traitsIcEELb1ELb0EEEE10_M_managerERSt9_Any_dataRKS8_St18_Manager_operation": 1245,
-    "_ZNSt17_Function_handlerIFbcENSt8__detail12_CharMatcherINSt7__cxx1112regex_traitsIcEELb1ELb0EEEE9_M_invokeERKSt9_Any_dataOc": 1335,
-    "_ZNSt17_Function_handlerIFbcENSt8__detail12_CharMatcherINSt7__cxx1112regex_traitsIcEELb1ELb1EEEE10_M_managerERSt9_Any_dataRKS8_St18_Manager_operation": 1267,
-    "_ZNSt17_Function_handlerIFbcENSt8__detail12_CharMatcherINSt7__cxx1112regex_traitsIcEELb1ELb1EEEE9_M_invokeERKSt9_Any_dataOc": 1354,
-    "_ZNSt17_Function_handlerIFbcENSt8__detail15_BracketMatcherINSt7__cxx1112regex_traitsIcEELb0ELb0EEEE9_M_invokeERKSt9_Any_dataOc": 960,
-    "_ZNSt17_Function_handlerIFbcENSt8__detail15_BracketMatcherINSt7__cxx1112regex_traitsIcEELb0ELb1EEEE9_M_invokeERKSt9_Any_dataOc": 971,
-    "_ZNSt17_Function_handlerIFbcENSt8__detail15_BracketMatcherINSt7__cxx1112regex_traitsIcEELb1ELb0EEEE9_M_invokeERKSt9_Any_dataOc": 983,
-    "_ZNSt17_Function_handlerIFbcENSt8__detail15_BracketMatcherINSt7__cxx1112regex_traitsIcEELb1ELb1EEEE9_M_invokeERKSt9_Any_dataOc": 995,
-    "_ZNSt23_Sp_counted_ptr_inplaceINSt8__detail4_NFAINSt7__cxx1112regex_traitsIcEEEESaIS5_ELN9__gnu_cxx12_Lock_policyE2EE10_M_destroyEv": 1015,
-    "_ZNSt23_Sp_counted_ptr_inplaceINSt8__detail4_NFAINSt7__cxx1112regex_traitsIcEEEESaIS5_ELN9__gnu_cxx12_Lock_policyE2EE10_M_disposeEv": 1967,
-    "_ZNSt23_Sp_counted_ptr_inplaceINSt8__detail4_NFAINSt7__cxx1112regex_traitsIcEEEESaIS5_ELN9__gnu_cxx12_Lock_policyE2EE14_M_get_deleterERKSt9type_info": 1019,
-    "_ZNSt23_Sp_counted_ptr_inplaceINSt8__detail4_NFAINSt7__cxx1112regex_traitsIcEEEESaIS5_ELN9__gnu_cxx12_Lock_policyE2EED0Ev": 1011,
-    "_ZNSt23_Sp_counted_ptr_inplaceINSt8__detail4_NFAINSt7__cxx1112regex_traitsIcEEEESaIS5_ELN9__gnu_cxx12_Lock_policyE2EED1Ev": 1007,
-    "_ZNSt6localeC1ERKS_@plt": 53,
-    "_ZNSt6localeC1Ev@plt": 153,
-    "_ZNSt6localeD1Ev@plt": 125,
-    "_ZNSt6localeaSERKS_@plt": 97,
-    "_ZNSt6vectorImSaImEE17_M_realloc_insertIJRKmEEEvN9__gnu_cxx17__normal_iteratorIPmS1_EEDpOT_": 2647,
-    "_ZNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEE12_M_constructEmc@plt": 105,
-    "_ZNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEE12_M_constructIPcEEvT_S7_St20forward_iterator_tag.isra.0": 520,
-    "_ZNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEE14_M_replace_auxEmmmc@plt": 145,
-    "_ZNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEE9_M_assignERKS4_@plt": 49,
-    "_ZNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEE9_M_createERmm@plt": 137,
-    "_ZNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEE9_M_mutateEmmPKcm@plt": 141,
-    "_ZNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEE9push_backEc@plt": 69,
-    "_ZNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEaSEOS4_.isra.0": 338,
-    "_ZNSt7__cxx1115basic_stringbufIcSt11char_traitsIcESaIcEE7_M_syncEPcmm@plt": 113,
-    "_ZNSt7__cxx1119basic_istringstreamIcSt11char_traitsIcESaIcEED1Ev@plt": 37,
-    "_ZNSt8_Rb_treeIlSt4pairIKllESt10_Select1stIS2_ESt4lessIlESaIS2_EE8_M_eraseEPSt13_Rb_tree_nodeIS2_E.isra.0": 1373,
-    "_ZNSt8__detail6_StateIcEC1EOS1_": 2007,
-    "_ZNSt8__detail6_StateIcED1Ev": 1952,
-    "_ZNSt8__detail8_ScannerIcE14_M_scan_normalEv": 2288,
-    "_ZNSt8__detail8_ScannerIcE16_M_scan_in_braceEv": 2511,
-    "_ZNSt8__detail8_ScannerIcE17_M_eat_escape_awkEv": 2031,
-    "_ZNSt8__detail8_ScannerIcE18_M_eat_escape_ecmaEv": 1657,
-    "_ZNSt8__detail8_ScannerIcE19_M_eat_escape_posixEv": 2196,
-    "_ZNSt8__detail9_CompilerINSt7__cxx1112regex_traitsIcEEE6_M_popEv": 1904,
-    "_ZNSt8ios_baseC2Ev@plt": 9,
-    "_ZNSt8ios_baseD2Ev@plt": 17,
-    "_ZNSt9basic_iosIcSt11char_traitsIcEE4initEPSt15basic_streambufIcS1_E@plt": 117,
-    "_ZSt13__adjust_heapIN9__gnu_cxx17__normal_iteratorIPcSt6vectorIcSaIcEEEElcNS0_5__ops15_Iter_less_iterEEvT_T0_SA_T1_T2_.isra.0": 233,
-    "_ZSt16__introsort_loopIN9__gnu_cxx17__normal_iteratorIPcSt6vectorIcSaIcEEEElNS0_5__ops15_Iter_less_iterEEvT_S9_T0_T1_.isra.0": 395,
-    "_ZSt16__throw_bad_castv@plt": 109,
-    "_ZSt17__throw_bad_allocv@plt": 21,
-    "_ZSt18_Rb_tree_decrementPSt18_Rb_tree_node_base@plt": 89,
-    "_ZSt18_Rb_tree_incrementPSt18_Rb_tree_node_base@plt": 57,
-    "_ZSt19__throw_logic_errorPKc@plt": 61,
-    "_ZSt19__throw_regex_errorNSt15regex_constants10error_typeE@plt": 13,
-    "_ZSt19__throw_regex_errorNSt15regex_constants10error_typeEPKc": 157,
-    "_ZSt20__throw_length_errorPKc@plt": 45,
-    "_ZSt29_Rb_tree_insert_and_rebalancebPSt18_Rb_tree_node_baseS0_RS_@plt": 1,
-    "_ZSt9use_facetINSt7__cxx117collateIcEEERKT_RKSt6locale@plt": 73,
-    "_ZSt9use_facetISt5ctypeIcEERKT_RKSt6locale@plt": 29,
-    "_ZdlPvm@plt": 81,
-    "_Znwm@plt": 77,
-    "main": 225,
-    "memcmp@plt": 33,
-    "memcpy@plt": 65,
-    "memmove@plt": 129,
-    "strchr@plt": 25,
-    "strcmp@plt": 121
+    ".plt": 1,
+    "_Unwind_Resume@plt": 157,
+    "_Z9regexTestv": 777,
+    "_Z9regexTestv.cold": 239,
+    "_ZNKSt5ctypeIcE13_M_widen_initEv@plt": 121,
+    "_ZNKSt5ctypeIcE8do_widenEc": 946,
+    "_ZNKSt5ctypeIcE9do_narrowEcc": 951,
+    "_ZNKSt6locale2id5_M_idEv@plt": 49,
+    "_ZNKSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEE7compareEPKc@plt": 9,
+    "_ZNKSt7__cxx1112regex_traitsIcE5valueEci.isra.0": 601,
+    "_ZNKSt7__cxx1112regex_traitsIcE5valueEci.isra.0.cold": 208,
+    "_ZNSi10_M_extractIlEERSiRT_@plt": 105,
+    "_ZNSt11regex_errorD1Ev@plt": 113,
+    "_ZNSt13runtime_errorC2EPKc@plt": 177,
+    "_ZNSt16_Sp_counted_baseILN9__gnu_cxx12_Lock_policyE2EE10_M_releaseEv": 1889,
+    "_ZNSt17_Function_handlerIFbcENSt8__detail11_AnyMatcherINSt7__cxx1112regex_traitsIcEELb0ELb0ELb0EEEE10_M_managerERSt9_Any_dataRKS8_St18_Manager_operation": 1071,
+    "_ZNSt17_Function_handlerIFbcENSt8__detail11_AnyMatcherINSt7__cxx1112regex_traitsIcEELb0ELb0ELb0EEEE9_M_invokeERKSt9_Any_dataOc": 1340,
+    "_ZNSt17_Function_handlerIFbcENSt8__detail11_AnyMatcherINSt7__cxx1112regex_traitsIcEELb0ELb0ELb1EEEE10_M_managerERSt9_Any_dataRKS8_St18_Manager_operation": 1084,
+    "_ZNSt17_Function_handlerIFbcENSt8__detail11_AnyMatcherINSt7__cxx1112regex_traitsIcEELb0ELb0ELb1EEEE9_M_invokeERKSt9_Any_dataOc": 1317,
+    "_ZNSt17_Function_handlerIFbcENSt8__detail11_AnyMatcherINSt7__cxx1112regex_traitsIcEELb0ELb1ELb0EEEE10_M_managerERSt9_Any_dataRKS8_St18_Manager_operation": 1106,
+    "_ZNSt17_Function_handlerIFbcENSt8__detail11_AnyMatcherINSt7__cxx1112regex_traitsIcEELb0ELb1ELb0EEEE9_M_invokeERKSt9_Any_dataOc": 1643,
+    "_ZNSt17_Function_handlerIFbcENSt8__detail11_AnyMatcherINSt7__cxx1112regex_traitsIcEELb0ELb1ELb1EEEE10_M_managerERSt9_Any_dataRKS8_St18_Manager_operation": 1128,
+    "_ZNSt17_Function_handlerIFbcENSt8__detail11_AnyMatcherINSt7__cxx1112regex_traitsIcEELb0ELb1ELb1EEEE9_M_invokeERKSt9_Any_dataOc": 1601,
+    "_ZNSt17_Function_handlerIFbcENSt8__detail11_AnyMatcherINSt7__cxx1112regex_traitsIcEELb1ELb0ELb0EEEE10_M_managerERSt9_Any_dataRKS8_St18_Manager_operation": 1150,
+    "_ZNSt17_Function_handlerIFbcENSt8__detail11_AnyMatcherINSt7__cxx1112regex_traitsIcEELb1ELb0ELb0EEEE9_M_invokeERKSt9_Any_dataOc": 956,
+    "_ZNSt17_Function_handlerIFbcENSt8__detail11_AnyMatcherINSt7__cxx1112regex_traitsIcEELb1ELb0ELb1EEEE10_M_managerERSt9_Any_dataRKS8_St18_Manager_operation": 1163,
+    "_ZNSt17_Function_handlerIFbcENSt8__detail11_AnyMatcherINSt7__cxx1112regex_traitsIcEELb1ELb0ELb1EEEE9_M_invokeERKSt9_Any_dataOc": 966,
+    "_ZNSt17_Function_handlerIFbcENSt8__detail11_AnyMatcherINSt7__cxx1112regex_traitsIcEELb1ELb1ELb0EEEE10_M_managerERSt9_Any_dataRKS8_St18_Manager_operation": 1185,
+    "_ZNSt17_Function_handlerIFbcENSt8__detail11_AnyMatcherINSt7__cxx1112regex_traitsIcEELb1ELb1ELb0EEEE9_M_invokeERKSt9_Any_dataOc": 1525,
+    "_ZNSt17_Function_handlerIFbcENSt8__detail11_AnyMatcherINSt7__cxx1112regex_traitsIcEELb1ELb1ELb1EEEE10_M_managerERSt9_Any_dataRKS8_St18_Manager_operation": 1207,
+    "_ZNSt17_Function_handlerIFbcENSt8__detail11_AnyMatcherINSt7__cxx1112regex_traitsIcEELb1ELb1ELb1EEEE9_M_invokeERKSt9_Any_dataOc": 1563,
+    "_ZNSt17_Function_handlerIFbcENSt8__detail12_CharMatcherINSt7__cxx1112regex_traitsIcEELb0ELb0EEEE10_M_managerERSt9_Any_dataRKS8_St18_Manager_operation": 1229,
+    "_ZNSt17_Function_handlerIFbcENSt8__detail12_CharMatcherINSt7__cxx1112regex_traitsIcEELb0ELb0EEEE9_M_invokeERKSt9_Any_dataOc": 976,
+    "_ZNSt17_Function_handlerIFbcENSt8__detail12_CharMatcherINSt7__cxx1112regex_traitsIcEELb0ELb1EEEE10_M_managerERSt9_Any_dataRKS8_St18_Manager_operation": 1251,
+    "_ZNSt17_Function_handlerIFbcENSt8__detail12_CharMatcherINSt7__cxx1112regex_traitsIcEELb0ELb1EEEE9_M_invokeERKSt9_Any_dataOc": 982,
+    "_ZNSt17_Function_handlerIFbcENSt8__detail12_CharMatcherINSt7__cxx1112regex_traitsIcEELb1ELb0EEEE10_M_managerERSt9_Any_dataRKS8_St18_Manager_operation": 1273,
+    "_ZNSt17_Function_handlerIFbcENSt8__detail12_CharMatcherINSt7__cxx1112regex_traitsIcEELb1ELb0EEEE9_M_invokeERKSt9_Any_dataOc": 1363,
+    "_ZNSt17_Function_handlerIFbcENSt8__detail12_CharMatcherINSt7__cxx1112regex_traitsIcEELb1ELb1EEEE10_M_managerERSt9_Any_dataRKS8_St18_Manager_operation": 1295,
+    "_ZNSt17_Function_handlerIFbcENSt8__detail12_CharMatcherINSt7__cxx1112regex_traitsIcEELb1ELb1EEEE9_M_invokeERKSt9_Any_dataOc": 1382,
+    "_ZNSt17_Function_handlerIFbcENSt8__detail15_BracketMatcherINSt7__cxx1112regex_traitsIcEELb0ELb0EEEE9_M_invokeERKSt9_Any_dataOc": 988,
+    "_ZNSt17_Function_handlerIFbcENSt8__detail15_BracketMatcherINSt7__cxx1112regex_traitsIcEELb0ELb1EEEE9_M_invokeERKSt9_Any_dataOc": 999,
+    "_ZNSt17_Function_handlerIFbcENSt8__detail15_BracketMatcherINSt7__cxx1112regex_traitsIcEELb1ELb0EEEE9_M_invokeERKSt9_Any_dataOc": 1011,
+    "_ZNSt17_Function_handlerIFbcENSt8__detail15_BracketMatcherINSt7__cxx1112regex_traitsIcEELb1ELb1EEEE9_M_invokeERKSt9_Any_dataOc": 1023,
+    "_ZNSt23_Sp_counted_ptr_inplaceINSt8__detail4_NFAINSt7__cxx1112regex_traitsIcEEEESaIS5_ELN9__gnu_cxx12_Lock_policyE2EE10_M_destroyEv": 1043,
+    "_ZNSt23_Sp_counted_ptr_inplaceINSt8__detail4_NFAINSt7__cxx1112regex_traitsIcEEEESaIS5_ELN9__gnu_cxx12_Lock_policyE2EE10_M_disposeEv": 1995,
+    "_ZNSt23_Sp_counted_ptr_inplaceINSt8__detail4_NFAINSt7__cxx1112regex_traitsIcEEEESaIS5_ELN9__gnu_cxx12_Lock_policyE2EE14_M_get_deleterERKSt9type_info": 1047,
+    "_ZNSt23_Sp_counted_ptr_inplaceINSt8__detail4_NFAINSt7__cxx1112regex_traitsIcEEEESaIS5_ELN9__gnu_cxx12_Lock_policyE2EED0Ev": 1039,
+    "_ZNSt23_Sp_counted_ptr_inplaceINSt8__detail4_NFAINSt7__cxx1112regex_traitsIcEEEESaIS5_ELN9__gnu_cxx12_Lock_policyE2EED1Ev": 1035,
+    "_ZNSt6localeC1ERKS_@plt": 61,
+    "_ZNSt6localeC1Ev@plt": 181,
+    "_ZNSt6localeD1Ev@plt": 145,
+    "_ZNSt6localeaSERKS_@plt": 117,
+    "_ZNSt6vectorImSaImEE17_M_realloc_insertIJRKmEEEvN9__gnu_cxx17__normal_iteratorIPmS1_EEDpOT_": 2675,
+    "_ZNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEE12_M_constructEmc@plt": 125,
+    "_ZNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEE12_M_constructIPcEEvT_S7_St20forward_iterator_tag.isra.0": 548,
+    "_ZNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEE14_M_replace_auxEmmmc@plt": 173,
+    "_ZNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEE9_M_assignERKS4_@plt": 57,
+    "_ZNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEE9_M_createERmm@plt": 161,
+    "_ZNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEE9_M_mutateEmmPKcm@plt": 165,
+    "_ZNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEE9push_backEc@plt": 89,
+    "_ZNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEaSEOS4_.isra.0": 366,
+    "_ZNSt7__cxx1115basic_stringbufIcSt11char_traitsIcESaIcEE7_M_syncEPcmm@plt": 133,
+    "_ZNSt7__cxx1119basic_istringstreamIcSt11char_traitsIcESaIcEED1Ev@plt": 41,
+    "_ZNSt8_Rb_treeIlSt4pairIKllESt10_Select1stIS2_ESt4lessIlESaIS2_EE8_M_eraseEPSt13_Rb_tree_nodeIS2_E.isra.0": 1401,
+    "_ZNSt8__detail6_StateIcEC1EOS1_": 2035,
+    "_ZNSt8__detail6_StateIcED1Ev": 1980,
+    "_ZNSt8__detail8_ScannerIcE14_M_scan_normalEv": 2316,
+    "_ZNSt8__detail8_ScannerIcE16_M_scan_in_braceEv": 2539,
+    "_ZNSt8__detail8_ScannerIcE17_M_eat_escape_awkEv": 2059,
+    "_ZNSt8__detail8_ScannerIcE18_M_eat_escape_ecmaEv": 1685,
+    "_ZNSt8__detail8_ScannerIcE19_M_eat_escape_posixEv": 2224,
+    "_ZNSt8__detail9_CompilerINSt7__cxx1112regex_traitsIcEEE6_M_popEv": 1932,
+    "_ZNSt8ios_baseC2Ev@plt": 13,
+    "_ZNSt8ios_baseD2Ev@plt": 21,
+    "_ZNSt9basic_iosIcSt11char_traitsIcEE4initEPSt15basic_streambufIcS1_E@plt": 137,
+    "_ZSt13__adjust_heapIN9__gnu_cxx17__normal_iteratorIPcSt6vectorIcSaIcEEEElcNS0_5__ops15_Iter_less_iterEEvT_T0_SA_T1_T2_.isra.0": 261,
+    "_ZSt16__introsort_loopIN9__gnu_cxx17__normal_iteratorIPcSt6vectorIcSaIcEEEElNS0_5__ops15_Iter_less_iterEEvT_S9_T0_T1_.isra.0": 423,
+    "_ZSt16__throw_bad_castv@plt": 129,
+    "_ZSt17__throw_bad_allocv@plt": 25,
+    "_ZSt18_Rb_tree_decrementPSt18_Rb_tree_node_base@plt": 109,
+    "_ZSt18_Rb_tree_incrementPSt18_Rb_tree_node_base@plt": 73,
+    "_ZSt19__throw_logic_errorPKc@plt": 77,
+    "_ZSt19__throw_regex_errorNSt15regex_constants10error_typeE@plt": 17,
+    "_ZSt19__throw_regex_errorNSt15regex_constants10error_typeEPKc": 185,
+    "_ZSt20__throw_length_errorPKc@plt": 53,
+    "_ZSt29_Rb_tree_insert_and_rebalancebPSt18_Rb_tree_node_baseS0_RS_@plt": 5,
+    "_ZSt9use_facetINSt7__cxx117collateIcEEERKT_RKSt6locale@plt": 93,
+    "_ZSt9use_facetISt5ctypeIcEERKT_RKSt6locale@plt": 33,
+    "_ZdlPvm@plt": 101,
+    "_Znwm@plt": 97,
+    "__cxa_allocate_exception@plt": 45,
+    "__cxa_free_exception@plt": 81,
+    "__cxa_guard_abort@plt": 65,
+    "__cxa_guard_acquire@plt": 169,
+    "__cxa_guard_release@plt": 69,
+    "__cxa_throw@plt": 153,
+    "main": 253,
+    "memcmp@plt": 37,
+    "memcpy@plt": 85,
+    "memmove@plt": 149,
+    "strchr@plt": 29,
+    "strcmp@plt": 141
   }
 }
