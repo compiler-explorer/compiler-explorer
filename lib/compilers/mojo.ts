@@ -22,11 +22,11 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import fs from 'node:fs/promises';
-
+import type {LLVMIrBackendOptions} from '../../types/compilation/ir.interfaces.js';
+import type {PreliminaryCompilerInfo} from '../../types/compiler.interfaces.js';
 import type {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces.js';
 import {BaseCompiler} from '../base-compiler.js';
-import {changeExtension} from '../utils.js';
+import type {CompilationEnvironment} from '../compilation-env.js';
 import {MojoParser} from './argument-parsers.js';
 
 export class MojoCompiler extends BaseCompiler {
@@ -34,7 +34,7 @@ export class MojoCompiler extends BaseCompiler {
         return 'mojo';
     }
 
-    constructor(info, env) {
+    constructor(info: PreliminaryCompilerInfo, env: CompilationEnvironment) {
         super(info, env);
         this.compiler.supportsOptOutput = true;
         this.compiler.supportsIrView = true;
@@ -61,12 +61,11 @@ export class MojoCompiler extends BaseCompiler {
     override async generateIR(
         inputFilename: string,
         options: string[],
-        irOptions: any,
+        irOptions: LLVMIrBackendOptions,
         produceCfg: boolean,
-        filters: any,
+        filters: ParseFiltersAndOutputOptions,
     ) {
-        // Remove -o/--emit and their values from options
-        const filteredOptions: string[] = options.filter(
+        const newOptions = options.filter(
             (opt, idx, arr) =>
                 opt !== '-o' &&
                 opt !== '--emit' &&
@@ -74,19 +73,8 @@ export class MojoCompiler extends BaseCompiler {
                 arr[idx - 1] !== '-o' &&
                 arr[idx - 1] !== '--emit',
         );
-        // Compute the .ll output path
-        const llPath = changeExtension(inputFilename, '.ll');
-        const newOptions = [...filteredOptions, '--emit=llvm', '-o', llPath];
-        const execOptions = this.getDefaultExecOptions();
-        execOptions.maxOutput = 1024 * 1024 * 1024;
-        const output = await this.runCompiler(this.compiler.exe, newOptions, this.compileFilename, execOptions);
-        const result = {code: output.code, compilationOptions: newOptions};
-        if (output.code !== 0) {
-            console.error('Mojo IR build failed:', newOptions, output.stderr, output.stdout);
-            return {asm: [{text: 'Failed to run compiler to get IR code'}], ...result};
-        }
-        const irText = await fs.readFile(llPath, 'utf8');
-        return {asm: irText.split('\n').map(text => ({text})), ...result};
+        newOptions.push('-o', this.getIrOutputFilename(inputFilename));
+        return await super.generateIR(inputFilename, newOptions, irOptions, produceCfg, filters);
     }
 
     override getArgumentParserClass() {
