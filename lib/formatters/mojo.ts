@@ -34,7 +34,10 @@ export class MojoFormatter extends BaseFormatter {
 
     override async format(source: string, _options: FormatOptions): Promise<UnprocessedExecResult> {
         const args = ['format', '--quiet', '-'];
-        const result = await exec.execute(this.formatterInfo.exe, args, {input: source});
+        const result = await exec.execute(this.formatterInfo.exe, args, {
+            input: source,
+            env: {MODULAR_CRASH_REPORTING_ENABLED: 'false'},
+        });
         if (result.code !== 0) {
             // The CLI echoes stdin on failure; clear it so the API returns the diagnostic from stderr.
             result.stdout = '';
