@@ -275,7 +275,7 @@ export class Dex2OatCompiler extends BaseCompiler {
         }
 
         const bootClassPathJars = BOOTCLASSPATH_JARS.map(f => path.join(this.artArtifactDir, f));
-        const bootClassPathLocations = [...BOOTCLASSPATH_LOCATIONS];
+        const bootClassPathLocations: string[] = [...BOOTCLASSPATH_LOCATIONS];
         if (compileAsBootImage) {
             bootClassPathJars.push(`${d8DirPath}/${dexFile}`);
             bootClassPathLocations.push('/system/framework/classes.dex');
