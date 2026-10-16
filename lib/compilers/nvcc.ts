@@ -36,6 +36,7 @@ import {BaseCompiler} from '../base-compiler.js';
 import {CompilationEnvironment} from '../compilation-env.js';
 import {PTXAsmParser} from '../parsers/asm-parser-ptx.js';
 import {SassAsmParser} from '../parsers/asm-parser-sass.js';
+import {VcAsmParser} from '../parsers/asm-parser-vc.js';
 import {asSafeVer} from '../utils.js';
 import {ClangParser} from './argument-parsers.js';
 
@@ -233,5 +234,54 @@ export class NvccCompiler extends BaseCompiler {
             result.devices = devices;
         }
         return result;
+    }
+}
+
+// Refer to "etc/config/cuda.dev.win32.properties" for proper configuration
+export class NvccWin32Compiler extends NvccCompiler {
+    static override get key() {
+        return 'nvcc-win32';
+    }
+
+    constructor(info: PreliminaryCompilerInfo, env: CompilationEnvironment) {
+        super(info, env);
+        this.asm = new VcAsmParser(this.compilerProps);
+
+        if (process.platform !== 'win32') {
+            throw new Error('NvccWin32Compiler can only be used on Windows');
+        }
+    }
+
+    override optionsForFilter(filters: ParseFiltersAndOutputOptions, outputFilename: string, userOptions?: string[]) {
+        let compilerOptions: string[] = [];
+        let nvccOutput = outputFilename;
+        if (!filters.binary && !filters.binaryObject) {
+            // Caller expects that `outputFilename` is an assembly file
+            const outputObj = outputFilename.replace(/\.\w+$/, '.obj');
+            const outputPdb = outputFilename.replace(/\.\w+$/, '.pdb');
+            compilerOptions = [
+                '/nologo',
+                '/FA',
+                '/c',
+                '/Fa' + this.filename(outputFilename),
+                '/Fo' + this.filename(outputObj.replaceAll('\\', '/')),
+                '/Zi',
+                '/Fd' + this.filename(outputPdb),
+            ];
+            nvccOutput = outputObj;
+        } else if (filters.binaryObject) {
+            // Caller expects that `outputFilename` is an object file
+            compilerOptions = ['/nologo', '/c', '/Fo' + this.filename(outputFilename.replaceAll('\\', '/')), '/Zi'];
+            nvccOutput = outputFilename;
+        } else {
+            // Caller expects that `outputFilename` is the executable
+            compilerOptions = ['/nologo', '/Fe' + this.filename(outputFilename.replaceAll('\\', '/')), '/Zi'];
+            nvccOutput = outputFilename;
+        }
+        const nvccOptions = ['-o', this.filename(nvccOutput), '-g', '-lineinfo', '--keep-device-functions'];
+        if (!filters.execute) {
+            nvccOptions.push('-c', '-keep', '-keep-dir', Path.dirname(outputFilename));
+        }
+        return [...nvccOptions, '-Xcompiler', compilerOptions.join(',')];
     }
 }
