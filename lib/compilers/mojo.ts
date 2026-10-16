@@ -36,7 +36,6 @@ export class MojoCompiler extends BaseCompiler {
 
     constructor(info: PreliminaryCompilerInfo, env: CompilationEnvironment) {
         super(info, env);
-        this.compiler.supportsOptOutput = true;
         this.compiler.supportsIrView = true;
         this.compiler.irArg = ['--emit', 'llvm'];
         this.compiler.minIrArgs = ['--emit=llvm'];
