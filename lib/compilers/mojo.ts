@@ -23,7 +23,6 @@
 // POSSIBILITY OF SUCH DAMAGE.
 
 import fs from 'node:fs/promises';
-import path from 'node:path';
 
 import type {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces.js';
 import {BaseCompiler} from '../base-compiler.js';
@@ -43,28 +42,14 @@ export class MojoCompiler extends BaseCompiler {
         this.compiler.minIrArgs = ['--emit=llvm'];
     }
 
-    override getOutputFilename(dirPath: string, inputFileBase: string) {
-        // This method tells CE where to find the assembly output
-        const outputPath = path.join(dirPath, inputFileBase + '.s');
-        return outputPath;
-    }
-
-    override optionsForFilter(filters: ParseFiltersAndOutputOptions, outputFilename: string, userOptions: string[]) {
-        if (filters.binary) return ['build'];
-        return ['build', '--emit=asm', '-o', outputFilename];
+    override optionsForFilter(filters: ParseFiltersAndOutputOptions, outputFilename: string) {
+        const options = ['build', '-o', outputFilename];
+        if (!filters.binary) options.push('--emit=asm');
+        return options;
     }
 
     override getSharedLibraryPathsAsArguments() {
         return [];
-    }
-
-    override getExecutableFilename(dirPath: string, outputFilebase: string) {
-        const executablePath = path.join(dirPath, 'example');
-        return executablePath;
-    }
-
-    override getIrOutputFilename(inputFilename: string): string {
-        return inputFilename.replace(/\.mojo$/, '.ll');
     }
 
     override async generateIR(
