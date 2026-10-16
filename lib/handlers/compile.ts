@@ -261,10 +261,18 @@ export class CompileHandler implements ICompileHandler {
         try {
             compilerClass = getCompilerTypeByKey(type);
         } catch (e: any) {
-            logger.error(`Compiler ID: ${compiler.id}`);
-            logger.error(e);
-            logger.error(e.stack);
-            process.exit(1);
+            if (compiler.remote) {
+                // A remote compiler is only forwarded to the instance that hosts it, so it doesn't need its own
+                // class here. The remote may run a newer version that knows compiler types this one doesn't.
+                logger.warn(`Compiler ID: ${compiler.id}: unknown remote compiler type '${type}', using 'default'`);
+                compilerClass = getCompilerTypeByKey('default');
+            } else {
+                // An invalid local compiler configuration must still stop startup.
+                logger.error(`Compiler ID: ${compiler.id}`);
+                logger.error(e);
+                logger.error(e.stack);
+                process.exit(1);
+            }
         }
 
         // attempt to resolve non absolute exe paths
