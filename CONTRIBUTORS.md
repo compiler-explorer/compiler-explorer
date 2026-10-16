@@ -180,3 +180,4 @@ From oldest to newest contributor, we would like to thank:
 - [Apurva Modak](https://github.com/asmodak-amd)
 - [Anson Mansfield](https://github.com/AJMansfield)
 - [Matt Black](https://github.com/mattsblack)
+- [Philip Craig](https://github.com/philipcraig)
