@@ -711,7 +711,7 @@ const definitions: Record<LanguageKey, LanguageDefinition> = {
     mojo: {
         name: 'Mojo',
         monaco: 'mojo',
-        extensions: ['.mojo', '.🔥'],
+        extensions: ['.mojo'],
         alias: [],
         logoFilename: 'mojo.svg',
         logoFilenameDark: null,
