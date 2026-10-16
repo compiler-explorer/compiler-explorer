@@ -230,6 +230,18 @@ export class SqsCompilationWorkerMode extends SqsCompilationQueueBase {
         }
     }
 
+    // Nothing awaits this, so nothing may escape it: an unhandled rejection ends the process, and
+    // a throw would surface in pop(). A failure means the message is delivered and compiled twice.
+    private deleteMessageInBackground(url: string, receiptHandle: string): void {
+        try {
+            this.sqs
+                .deleteMessage({QueueUrl: url, ReceiptHandle: receiptHandle})
+                .catch(deleteError => logger.error(`Failed to delete message from ${url}:`, deleteError));
+        } catch (deleteError) {
+            logger.error(`Failed to ask for deletion of a message from ${url}:`, deleteError);
+        }
+    }
+
     async pop(): Promise<RemoteCompilationRequest | undefined> {
         const url = this.queue_url;
 
@@ -246,66 +258,62 @@ export class SqsCompilationWorkerMode extends SqsCompilationQueueBase {
         if (queued_messages.Messages && queued_messages.Messages.length === 1) {
             const queued_message = queued_messages.Messages[0];
 
-            try {
-                if (queued_message.Body) {
-                    const json = queued_message.Body;
-                    let parsed;
-                    try {
-                        parsed = JSON.parse(json);
-                    } catch (parseError) {
-                        logger.error(
-                            `JSON.parse failed: ${parseError instanceof Error ? parseError.message : String(parseError)}`,
-                        );
-                        throw parseError;
-                    }
-
-                    if (this.isS3OverflowMessage(parsed)) {
-                        logger.info(
-                            `Received S3 overflow message for ${parsed.guid}, original size: ${parsed.originalSize} bytes`,
-                        );
-
-                        try {
-                            const compilationRequest = await this.fetchFromS3(parsed.s3Bucket, parsed.s3Key);
-
-                            if (compilationRequest) {
-                                const sentTimestamp = queued_message.Attributes?.SentTimestamp;
-                                if (sentTimestamp) {
-                                    const queueTimeMs = Date.now() - Number.parseInt(sentTimestamp, 10);
-                                    compilationRequest.queueTimeMs = queueTimeMs;
-                                    compilationRequest.sentTimestampMs = Number.parseInt(sentTimestamp, 10);
-                                }
-                                return compilationRequest;
-                            }
-                        } catch (s3Error) {
-                            logger.error(
-                                `Failed to fetch S3 overflow message for ${parsed.guid}: ${s3Error instanceof Error ? s3Error.message : String(s3Error)}`,
-                            );
-                            throw new Error(
-                                `S3 overflow fetch failed for ${parsed.guid}: ${s3Error instanceof Error ? s3Error.message : String(s3Error)}`,
-                            );
-                        }
-
-                        return undefined;
-                    }
-
-                    const sentTimestamp = queued_message.Attributes?.SentTimestamp;
-                    if (sentTimestamp) {
-                        const queueTimeMs = Date.now() - Number.parseInt(sentTimestamp, 10);
-                        parsed.queueTimeMs = queueTimeMs;
-                        parsed.sentTimestampMs = Number.parseInt(sentTimestamp, 10);
-                    }
-
-                    return parsed as RemoteCompilationRequest;
-                }
-                return undefined;
-            } finally {
-                if (queued_message.ReceiptHandle) {
-                    await this.sqs.deleteMessage({
-                        QueueUrl: url,
-                        ReceiptHandle: queued_message.ReceiptHandle,
-                    });
-                }
+            // FIFO holds the rest of the group until this one is gone, so every other worker waits
+            // on this call; nothing below needs it to have landed.
+            if (queued_message.ReceiptHandle) {
+                this.deleteMessageInBackground(url, queued_message.ReceiptHandle);
             }
+            if (queued_message.Body) {
+                const json = queued_message.Body;
+                let parsed;
+                try {
+                    parsed = JSON.parse(json);
+                } catch (parseError) {
+                    logger.error(
+                        `JSON.parse failed: ${parseError instanceof Error ? parseError.message : String(parseError)}`,
+                    );
+                    throw parseError;
+                }
+
+                if (this.isS3OverflowMessage(parsed)) {
+                    logger.info(
+                        `Received S3 overflow message for ${parsed.guid}, original size: ${parsed.originalSize} bytes`,
+                    );
+
+                    try {
+                        const compilationRequest = await this.fetchFromS3(parsed.s3Bucket, parsed.s3Key);
+
+                        if (compilationRequest) {
+                            const sentTimestamp = queued_message.Attributes?.SentTimestamp;
+                            if (sentTimestamp) {
+                                const queueTimeMs = Date.now() - Number.parseInt(sentTimestamp, 10);
+                                compilationRequest.queueTimeMs = queueTimeMs;
+                                compilationRequest.sentTimestampMs = Number.parseInt(sentTimestamp, 10);
+                            }
+                            return compilationRequest;
+                        }
+                    } catch (s3Error) {
+                        logger.error(
+                            `Failed to fetch S3 overflow message for ${parsed.guid}: ${s3Error instanceof Error ? s3Error.message : String(s3Error)}`,
+                        );
+                        throw new Error(
+                            `S3 overflow fetch failed for ${parsed.guid}: ${s3Error instanceof Error ? s3Error.message : String(s3Error)}`,
+                        );
+                    }
+
+                    return undefined;
+                }
+
+                const sentTimestamp = queued_message.Attributes?.SentTimestamp;
+                if (sentTimestamp) {
+                    const queueTimeMs = Date.now() - Number.parseInt(sentTimestamp, 10);
+                    parsed.queueTimeMs = queueTimeMs;
+                    parsed.sentTimestampMs = Number.parseInt(sentTimestamp, 10);
+                }
+
+                return parsed as RemoteCompilationRequest;
+            }
+            return undefined;
         }
 
         return undefined;
@@ -356,26 +364,24 @@ export async function sendCompilationResultViaWebsocket(
         let webResult;
         let sentAs: string;
         if (resultSize > WEBSOCKET_SIZE_THRESHOLD) {
-            // Over this size API Gateway closes the connection rather than refusing the frame, and
-            // that connection is shared, so one oversized result costs every other result this
-            // worker has in flight. Send the key and let the router fetch the rest.
+            // Over this size API Gateway closes the shared connection rather than refusing the
+            // frame, costing every other result in flight. Send the key, not the payload.
+            let repairedKey: string | undefined;
             if (!result.s3Key) {
-                // Whatever produced a result this size was meant to have stored it already, so
-                // storing it here is a repair, not the design: worth saying out loud, or the path
-                // that skipped it stays invisible. The request goes alongside it, because knowing
-                // which one did this is the only way to find the path that skipped it.
-                const requestKey = await storeInTempCache(
-                    compilationEnvironment,
-                    `${guid}_faultyrequest`,
-                    request ?? null,
-                );
+                // Storing it here is a repair: something upstream should have. Say so, and keep
+                // the request too, or the path that skipped it stays invisible.
+                const [requestKey, storedKey] = await Promise.all([
+                    storeInTempCache(compilationEnvironment, `${guid}_faultyrequest`, request ?? null),
+                    storeInTempCache(compilationEnvironment, guid, basicResult),
+                ]);
                 logger.warn(
                     `Sending ${guid} at ${resultSize} bytes with no s3Key, over the ` +
                         `${WEBSOCKET_SIZE_THRESHOLD} byte threshold: storing it now` +
                         (requestKey ? `, request saved at ${requestKey}` : ''),
                 );
+                repairedKey = storedKey;
             }
-            const s3Key = result.s3Key ?? (await storeInTempCache(compilationEnvironment, guid, basicResult));
+            const s3Key = result.s3Key ?? repairedKey;
             if (s3Key) {
                 webResult = {
                     s3Key: s3Key,
