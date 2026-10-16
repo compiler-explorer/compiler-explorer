@@ -48,6 +48,7 @@ import {
     HASKELL_STG_VIEW_COMPONENT_NAME,
     InferComponentState,
     IR_VIEW_COMPONENT_NAME,
+    JVM_BYTECODE_VIEW_COMPONENT_NAME,
     LEAN_C_VIEW_COMPONENT_NAME,
     LLVM_OPT_PIPELINE_VIEW_COMPONENT_NAME,
     OPT_PIPELINE_VIEW_COMPONENT_NAME,
@@ -85,6 +86,7 @@ import {HaskellCmm as HaskellCmmView} from './panes/haskellcmm-view.js';
 import {HaskellCore as HaskellCoreView} from './panes/haskellcore-view.js';
 import {HaskellStg as HaskellStgView} from './panes/haskellstg-view.js';
 import {Ir as IrView} from './panes/ir-view.js';
+import {JvmBytecode} from './panes/jvm-bytecode-view.js';
 import {LeanC as LeanCView} from './panes/leanc-view.js';
 import {OptPipeline} from './panes/opt-pipeline.js';
 import {Opt as OptView} from './panes/opt-view.js';
@@ -161,6 +163,7 @@ export class Hub {
         );
         layout.registerComponent(HASKELL_STG_VIEW_COMPONENT_NAME, (c: GLC, s: any) => this.haskellStgViewFactory(c, s));
         layout.registerComponent(HASKELL_CMM_VIEW_COMPONENT_NAME, (c: GLC, s: any) => this.haskellCmmViewFactory(c, s));
+        layout.registerComponent(JVM_BYTECODE_VIEW_COMPONENT_NAME, (c: GLC, s: any) => new JvmBytecode(this, c, s));
         layout.registerComponent(LEAN_C_VIEW_COMPONENT_NAME, (c: GLC, s: any) => this.leanCViewFactory(c, s));
         layout.registerComponent(GNAT_DEBUG_TREE_VIEW_COMPONENT_NAME, (c: GLC, s: any) =>
             this.gnatDebugTreeViewFactory(c, s),
