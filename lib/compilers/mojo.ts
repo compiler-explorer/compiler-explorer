@@ -43,9 +43,15 @@ export class MojoCompiler extends BaseCompiler {
     }
 
     override optionsForFilter(filters: ParseFiltersAndOutputOptions, outputFilename: string) {
-        const options = ['build', '-o', outputFilename];
-        if (!filters.binary) options.push('--emit=asm');
-        return options;
+        return [
+            'build',
+            ...super.optionsForFilter(filters, outputFilename).map(option => {
+                if (option === '-S') return '--emit=asm';
+                // Full debug info changes generated code; line tables suffice for source mapping.
+                if (option === '-g') return '-g1';
+                return option;
+            }),
+        ];
     }
 
     override getSharedLibraryPathsAsArguments() {
