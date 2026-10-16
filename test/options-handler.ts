@@ -60,10 +60,12 @@ const optionsProps = {
     'libs.fakelib.versions.onePath.version': 'one path',
     'libs.fakelib.versions.onePath.path': '/dev/null',
     'libs.fakelib.versions.onePath.libpath': '/lib/null',
+    'libs.fakelib.versions.onePath.cmakeprefixpath': '/opt/fakelib/one',
     'libs.fakelib.versions.onePath.liblink': 'hello',
     'libs.fakelib.versions.twoPaths.version': 'two paths',
     'libs.fakelib.versions.twoPaths.path': '/dev/null:/dev/urandom',
     'libs.fakelib.versions.twoPaths.libpath': '/lib/null:/lib/urandom',
+    'libs.fakelib.versions.twoPaths.cmakeprefixpath': '/opt/fakelib/two:/opt/fakelib/other',
     'libs.fakelib.versions.twoPaths.liblink': 'hello1:hello2',
     'libs.fakelib.versions.noPaths.version': 'no paths',
     'libs.fakelib.versions.noPaths.path': '',
@@ -99,6 +101,9 @@ if (process.platform === 'win32') {
     );
     optionsProps['libs.fakelib.versions.twoPaths.libpath'] = optionsProps[
         'libs.fakelib.versions.twoPaths.libpath'
+    ].replace(':', ';');
+    optionsProps['libs.fakelib.versions.twoPaths.cmakeprefixpath'] = optionsProps[
+        'libs.fakelib.versions.twoPaths.cmakeprefixpath'
     ].replace(':', ';');
 }
 
@@ -212,6 +217,7 @@ describe('Options handler', () => {
                             version: 'no paths',
                             liblink: [],
                             libpath: [],
+                            cmakeprefixpath: [],
                             staticliblink: [],
                             dependencies: [],
                             alias: [],
@@ -228,6 +234,7 @@ describe('Options handler', () => {
                             dependencies: [],
                             liblink: ['hello'],
                             libpath: ['/lib/null'],
+                            cmakeprefixpath: ['/opt/fakelib/one'],
                             alias: [],
                             options: [],
                             hidden: false,
@@ -240,6 +247,7 @@ describe('Options handler', () => {
                             dependencies: [],
                             liblink: ['hello1', 'hello2'],
                             libpath: ['/lib/null', '/lib/urandom'],
+                            cmakeprefixpath: ['/opt/fakelib/two', '/opt/fakelib/other'],
                             version: 'two paths',
                             alias: [],
                             options: [],
@@ -262,6 +270,7 @@ describe('Options handler', () => {
                         std: {
                             $order: 0,
                             libpath: [],
+                            cmakeprefixpath: [],
                             path: [],
                             version: 'std',
                             alias: [],
@@ -288,6 +297,7 @@ describe('Options handler', () => {
                         trunk: {
                             $order: 0,
                             libpath: [],
+                            cmakeprefixpath: [],
                             path: [],
                             version: 'trunk',
                             alias: ['master'],
