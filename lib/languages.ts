@@ -502,6 +502,17 @@ const definitions: Record<LanguageKey, LanguageDefinition> = {
         previewFilter: null,
         monacoDisassembly: null,
     },
+    gleam: {
+        name: 'Gleam',
+        monaco: 'gleam',
+        extensions: ['.gleam'],
+        alias: [],
+        logoFilename: null,
+        logoFilenameDark: null,
+        formatter: null,
+        previewFilter: null,
+        monacoDisassembly: 'erlang',
+    },
     glsl: {
         name: 'GLSL',
         monaco: 'glsl',
