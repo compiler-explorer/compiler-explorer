@@ -161,7 +161,9 @@ If it fails with a bounce lock, stop and tell me; don't bypass it. If it fails o
 
 ### Verify staging
 
-- **Smoke compile**: use the `compiler-explorer-staging` MCP if it's connected. Otherwise pick a current GCC id
+- **Smoke compile**: use the `compiler-explorer-staging` MCP. Staging serves it, so it only comes up once the
+  staging deploy is live. A failed connection at session start is expected, so don't report it. After the deploy,
+  reconnect it (look it up with ToolSearch). If it still won't connect, pick a current GCC id
   from `https://godbolt.org/staging/api/compilers/c++?fields=id,name` and check that `code` is 0 and real asm
   comes back. Without the `Accept` header the API returns text, not JSON:
 
