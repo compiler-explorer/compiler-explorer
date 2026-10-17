@@ -36,7 +36,7 @@ import type {BuildSystemDriver} from '../build-systems/index.js';
 import {cmakeBuildSystem, getBuildSystem} from '../build-systems/index.js';
 import {CompilationEnvironment} from '../compilation-env.js';
 import {PersistentEventsSender} from '../execution/events-websocket.js';
-import {CompileHandler} from '../handlers/compile.js';
+import {CompileHandler, type ParsedRequest} from '../handlers/compile.js';
 import {logger} from '../logger.js';
 import {PropertyGetter} from '../properties.interfaces.js';
 import {SentryCapture} from '../sentry.js';
@@ -416,7 +416,7 @@ export async function sendCompilationResultViaWebsocket(
     }
 }
 
-async function doOneCompilation(
+export async function doOneCompilation(
     queue: SqsCompilationWorkerMode,
     compilationEnvironment: CompilationEnvironment,
     persistentSender: PersistentEventsSender,
@@ -446,9 +446,17 @@ async function doOneCompilation(
                 (queuedMs === undefined ? '' : ` after ${queuedMs}ms queued`),
         );
 
+        // A request that cannot be parsed is the caller's fault, which ce-router answers with a 400 rather than the
+        // 200 it gives a compilation that failed.
+        let badRequest = false;
         try {
-            // Inside the try: an unknown build system is reported to the user like any other failed compilation.
-            const buildSystem = getRequestedBuildSystem(msg);
+            let buildSystem: BuildSystemDriver | undefined;
+            try {
+                buildSystem = getRequestedBuildSystem(msg);
+            } catch (e) {
+                badRequest = true;
+                throw e;
+            }
             const compiler = compilationEnvironment.findCompiler(msg.lang as any, msg.compilerId);
             if (!compiler) {
                 throw new Error(`Compiler with ID ${msg.compilerId} not found for language ${msg.lang}`);
@@ -457,13 +465,19 @@ async function doOneCompilation(
             const isJson = isJsonContentType(msg.headers['content-type']);
             const query = msg.queryStringParameters;
 
-            const parsedRequest = CompileHandler.parseRequestReusable(
-                isJson,
-                query,
-                isJson ? msg : msg.source,
-                compiler,
-                buildSystem,
-            );
+            let parsedRequest: ParsedRequest;
+            try {
+                parsedRequest = CompileHandler.parseRequestReusable(
+                    isJson,
+                    query,
+                    isJson ? msg : msg.source,
+                    compiler,
+                    buildSystem,
+                );
+            } catch (e) {
+                badRequest = true;
+                throw e;
+            }
 
             let result: CompilationResult;
             const files = (msg.files || []) as FiledataPair[];
@@ -550,6 +564,7 @@ async function doOneCompilation(
                 inputFilename: '',
                 asm: [],
                 tools: [],
+                ...(badRequest ? {error: true, message: errorMessage} : {}),
             };
 
             if (msg.queueTimeMs !== undefined) {

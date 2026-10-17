@@ -26,6 +26,7 @@ import {describe, expect, it} from 'vitest';
 
 import {cargoBuildSystem, cmakeBuildSystem} from '../lib/build-systems/index.js';
 import {
+    doOneCompilation,
     getRequestedBuildSystem,
     isJsonContentType,
     type RemoteCompilationRequest,
@@ -199,5 +200,48 @@ describe('Sending a result too large for the events websocket', () => {
         expect(sent[0].stdout).toEqual([]);
         expect(sent[0].s3Key).toBeUndefined();
         expect(stored).toHaveLength(0);
+    });
+});
+
+describe('Reporting a queued request that failed', () => {
+    async function runWorker(options: Record<string, any>, compile: () => Promise<any>) {
+        const sent: any[] = [];
+        const msg = makeMessage({
+            guid: 'a-guid',
+            lang: 'c++',
+            compilerId: 'fake',
+            headers: {'content-type': 'application/json'},
+            queryStringParameters: {},
+            source: 'int main(){}',
+            options,
+        });
+        const compiler = {
+            lang: {id: 'c++'},
+            getInfo: () => ({id: 'fake'}),
+            getDefaultFilters: () => ({}),
+            compile,
+        };
+        await doOneCompilation(
+            {pop: async () => msg} as any,
+            {findCompiler: () => compiler, statsNoter: {noteCompilation: () => {}}} as any,
+            {isReadyForNewMessages: () => true, send: async (_guid: string, payload: any) => sent.push(payload)} as any,
+        );
+        return sent[0];
+    }
+
+    it("marks a request it could not parse as the caller's error", async () => {
+        const result = await runWorker({compilerOptions: {customOutputFilename: '../escape'}}, async () => ({}));
+
+        expect(result).toMatchObject({error: true, message: 'Invalid filename', code: -1});
+    });
+
+    it('leaves a compilation that threw as an ordinary failed result', async () => {
+        const result = await runWorker({}, async () => {
+            throw new Error('compiler exploded');
+        });
+
+        expect(result.code).toEqual(-1);
+        expect(result.stderr).toEqual([{text: 'compiler exploded'}]);
+        expect(result.error).toBeUndefined();
     });
 });
