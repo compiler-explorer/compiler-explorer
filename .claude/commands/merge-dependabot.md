@@ -76,21 +76,32 @@ a staging deploy would only waste time and instances. Do this for every PR, not 
 
 ```bash
 cp etc/config/*.local.properties ../dependabot-<N>/etc/config/
+sed -i '/^staticUrl=/d' ../dependabot-<N>/etc/config/compiler-explorer.local.properties
 cd ../dependabot-<N>
 make run EXTRA_ARGS='--port 10241 --language c++'
 ```
 
+My `compiler-explorer.local.properties` points `staticUrl` at the production CDN. Strip that line from the
+worktree copy (never from the main checkout), or the page will request this build's bundles from the CDN, get
+403s, and render a blank layout with no console errors.
+
 `make run` does the production webpack and ts build, then starts `out/dist/app.js`. Run it in the background,
-wait for the startup to finish (`Listening on http://localhost:10241/`), and watch its output for errors or
-stack traces. Port 10241 avoids clashing with a dev instance I may have running on 10240.
+wait for the startup to finish (`Listening on http://localhost:10241/`), and check that it says
+`serving static files from './out/webpack/static'`. Port 10241 avoids clashing with a dev instance I may have
+running on 10240.
+
+The startup log is noisy, and that noise isn't a failure: `Unable to stat ... compiler binary`, orphaned group
+warnings and `Failed to create N out of M compilers` just mean those compilers aren't installed locally. A real
+failure is a build error, a crash before `Listening on`, or stack traces from request handling.
 
 Then check it:
 - **Smoke compile**: the curl command from "Verify staging" below, against `http://localhost:10241/`.
 - **Browser check** (claude-in-chrome): open http://localhost:10241 in a new tab, check the console for errors,
-  and run a compile from the editor. If the bumped package backs a visible feature, exercise that too.
+  and run a compile from the editor. Console capture only starts on the first `read_console_messages` call, so call
+  it once before loading the page or reload after the first call. Otherwise load-time errors are missed. If the bumped package backs a visible feature, exercise that too.
 
 Any build failure, startup error, console error or failed compile means skip the PR and report it. Stop the server
-when you're done.
+when you're done: kill the `node` process listening on 10241 (stopping the background `make` alone doesn't).
 
 Remove the worktree afterwards with `git worktree remove --force ../dependabot-<N>`. `--force` is needed because
 `.venv`/`node_modules` are untracked.
