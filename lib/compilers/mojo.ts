@@ -49,6 +49,7 @@ export class MojoCompiler extends BaseCompiler {
             'build',
             ...super.optionsForFilter(filters, outputFilename).map(option => {
                 if (option === '-S') return '--emit=asm';
+                if (option === '-c') return '--emit=object';
                 // Full debug info changes generated code; line tables suffice for source mapping.
                 if (option === '-g') return '-g1';
                 return option;
