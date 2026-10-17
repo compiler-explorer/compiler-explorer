@@ -25,9 +25,12 @@
 import fs from 'node:fs';
 import path from 'node:path';
 
+import semverParser from 'semver';
+
 import {splitArguments} from '../shared/common-utils.js';
 import {CompilerOverrideOptions} from '../types/compilation/compiler-overrides.interfaces.js';
 import {PreliminaryCompilerInfo} from '../types/compiler.interfaces.js';
+import {asSafeVer} from './utils.js';
 
 export const clang_style_toolchain_flag = '--gcc-toolchain=';
 export const icc_style_toolchain_flag = '--gxx-name=';
@@ -133,6 +136,62 @@ export async function getPossibleGccToolchainsFromCompilerInfo(
                 overrideOptions.push({
                     name: compiler.name,
                     value: toolchainPath,
+                });
+            }
+        }
+    }
+    return overrideOptions;
+}
+
+function isDrivableCCompiler(compiler: PreliminaryCompilerInfo): boolean {
+    // zig cc's instruction set is only filled in once the compiler is initialised
+    if (compiler.compilerType === 'zigcc') return !compiler.instructionSet || compiler.instructionSet === 'amd64';
+    const categories = compiler.compilerCategories || [];
+    // clang cross-compiles from its configured -target, --gcc-toolchain and --sysroot, the sysroot being the libc
+    // that the C nx emits needs; a cross gcc would need a -march for its own architecture, which nx does not pass
+    if (categories.includes('clang')) {
+        if (compiler.instructionSet === 'amd64') return true;
+        const options = splitArguments(compiler.options);
+        return (
+            getTargetFromCompilerCommand(compiler.options) !== undefined &&
+            options.some(option => option.startsWith('--sysroot'))
+        );
+    }
+    // -std=gnu11 needs gcc 4.7
+    if (categories.includes('gcc')) {
+        return compiler.instructionSet === 'amd64' && semverParser.gte(asSafeVer(compiler.semver), '4.7.0', true);
+    }
+    return false;
+}
+
+export function getTargetFromCompilerCommand(command: string): string | undefined {
+    const args = splitArguments(command);
+    for (let i = 0; i < args.length; i++) {
+        if ((args[i] === '-target' || args[i] === '--target') && i + 1 < args.length) return args[i + 1];
+        if (args[i].startsWith('--target=')) return args[i].substring('--target='.length);
+    }
+    return undefined;
+}
+
+// C compilers for languages that drive a C compiler of the user's choice, such as Nexium; the value is the
+// compiler's command line, its configured options included (clang's -target and --gcc-toolchain, for one)
+export function getPossibleCCompilersFromCompilerInfo(compilers: PreliminaryCompilerInfo[]): CompilerOverrideOptions {
+    const overrideOptions: CompilerOverrideOptions = [];
+    for (const compiler of compilers) {
+        if (
+            compiler.lang === 'c' &&
+            isDrivableCCompiler(compiler) &&
+            !compiler.hidden &&
+            !compiler.remote &&
+            compiler.exe &&
+            path.isAbsolute(compiler.exe)
+        ) {
+            const zigCc = compiler.compilerType === 'zigcc' ? ['cc'] : [];
+            const command = [compiler.exe, ...zigCc, ...splitArguments(compiler.options)].join(' ');
+            if (!overrideOptions.find(opt => opt.value === command)) {
+                overrideOptions.push({
+                    name: compiler.name,
+                    value: command,
                 });
             }
         }

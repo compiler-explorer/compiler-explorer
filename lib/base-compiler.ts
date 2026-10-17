@@ -135,6 +135,7 @@ import {
     clang_style_sysroot_flag,
     getSpecificTargetBasedOnToolchainPath,
     getSysrootByToolchainPath,
+    getTargetFromCompilerCommand,
     getToolchainFlagFromOptions,
     getToolchainPath,
     getToolchainPathWithOptionsArr,
@@ -1187,6 +1188,33 @@ export class BaseCompiler {
         }
 
         return undefined;
+    }
+
+    // For languages that compile to C: the C compilers of this installation, each value a full command line. A
+    // cross compiler only suits a compiler whose objdumper reads any architecture.
+    protected addCCompilerOverride(description: string, allowCrossCompilers: boolean) {
+        const values = this.env
+            .getPossibleCCompilers()
+            .filter(option => allowCrossCompilers || getTargetFromCompilerCommand(option.value) === undefined);
+        if (values.length === 0) return;
+        this.compiler.possibleOverrides?.push({
+            type: 'options',
+            name: CompilerOverrideType.c_compiler,
+            display_title: 'C compiler',
+            description,
+            flags: [],
+            values,
+        });
+    }
+
+    // only a command this compiler offered: the value becomes a command line
+    getOverriddenCCompiler(overrides: ConfiguredOverrides): string | undefined {
+        const possible = this.compiler.possibleOverrides?.find(ov => ov.name === CompilerOverrideType.c_compiler);
+        const override = overrides.find(ov => ov.name === CompilerOverrideType.c_compiler);
+        if (!possible || possible.type !== 'options' || !override || override.name === CompilerOverrideType.env) {
+            return undefined;
+        }
+        return possible.values.some(option => option.value === override.value) ? override.value : undefined;
     }
 
     changeOptionsBasedOnOverrides(options: string[], overrides: ConfiguredOverrides): string[] {

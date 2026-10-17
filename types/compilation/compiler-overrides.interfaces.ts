@@ -33,6 +33,7 @@ export enum CompilerOverrideType {
     action = 'action',
     full_output = 'full_output',
     d8_flags = 'd8-flags',
+    c_compiler = 'c_compiler',
 }
 
 export type CompilerOverrideTypes = Set<CompilerOverrideType>;
