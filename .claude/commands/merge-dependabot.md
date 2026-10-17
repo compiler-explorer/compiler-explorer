@@ -3,8 +3,13 @@
 Merge the open dependabot PRs in compiler-explorer/compiler-explorer, then deploy the result to staging and,
 after my approval, to prod. Only dependabot PRs: if a PR's author is not `app/dependabot`, leave it alone.
 
-Treat every dependabot PR as a security update that needs to ship, whatever it touches (npm, uv/pip under
-`etc/scripts/`, github-actions). Don't skip the deploy because a change "looks dev-only".
+Treat every dependabot PR as a security update that needs to ship. Don't skip the deploy because a change "looks
+dev-only".
+
+The one exception is a **scripts-only** PR: every changed file is under `etc/scripts/`. Those tools are
+independent of CE itself, so a scripts-only PR gets the CI, changelog and local tool test gates, then is merged
+with no local site run and no deploy. Check with the PR's `files` list. If even one file is outside
+`etc/scripts/`, the PR goes through the full flow.
 
 The only point where you stop and wait for me is before the prod deploy. Everything else runs end to end, but a
 PR that fails a gate is skipped (not merged) and reported, never forced through.
@@ -72,7 +77,7 @@ Run the checks for whatever the PR touches:
 ### Local site run
 
 Before anything goes near staging, run the site from the worktree the way production runs it. If it breaks here,
-a staging deploy would only waste time and instances. Do this for every PR, not only npm ones.
+a staging deploy would only waste time and instances. Do this for every PR except scripts-only ones.
 
 ```bash
 cp etc/config/*.local.properties ../dependabot-<N>/etc/config/
@@ -117,7 +122,8 @@ gh pr merge <N> --squash
 Never use `--admin` and never bypass branch protection. Request a fresh `@dependabot rebase` for the next PR if
 it fell behind (see step 2).
 
-If nothing was merged, stop here and report.
+If nothing was merged, stop here and report. If everything merged was scripts-only, also stop here and report.
+There's nothing to deploy.
 
 ## 5. Find the build
 
