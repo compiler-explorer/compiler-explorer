@@ -32,6 +32,7 @@ export enum CompilerOverrideType {
     stdver = 'stdver',
     action = 'action',
     full_output = 'full_output',
+    boot_image_extension = 'boot_image_extension',
     d8_flags = 'd8-flags',
     c_compiler = 'c_compiler',
 }

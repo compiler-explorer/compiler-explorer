@@ -23,6 +23,18 @@
 // POSSIBILITY OF SUCH DAMAGE.
 
 export {Amd64DocumentationProvider} from './amd64.js';
+export {
+    CDNA1DocumentationProvider,
+    CDNA2DocumentationProvider,
+    CDNA3DocumentationProvider,
+    CDNA4DocumentationProvider,
+    CDNA5DocumentationProvider,
+    RDNA1DocumentationProvider,
+    RDNA2DocumentationProvider,
+    RDNA3DocumentationProvider,
+    RDNA4DocumentationProvider,
+    RDNA35DocumentationProvider,
+} from './amdgpu.js';
 export {Arm32DocumentationProvider, ArmArch64DocumentationProvider} from './arm.js';
 export {AvrDocumentationProvider} from './avr.js';
 export {EvmDocumentationProvider} from './evm.js';

@@ -166,6 +166,10 @@ describe('API handling', () => {
             .expect('Content-Type', /json/)
             .expect(200, [languages['c++'], languages.pascal]);
     });
+    it('should mark list responses as varying on Accept', async () => {
+        const res = await request(app).get('/api/languages').set('Accept', 'application/json').expect(200);
+        expect(res.headers.vary).toMatch(/\bAccept\b/);
+    });
 });
 
 describe('API tools endpoint', () => {

@@ -39,6 +39,8 @@ export type RemoteExecutionMessage = {
     guid: string;
     hash: string;
     params: ExecutionParams;
+    /** SQS SentTimestamp, so the result sender can tell when the caller stops waiting. */
+    sentTimestampMs?: number;
 };
 
 export class SqsExecuteQueueBase {
@@ -94,6 +96,7 @@ export class SqsWorkerMode extends SqsExecuteQueueBase {
                 QueueUrl: url,
                 MaxNumberOfMessages: 1,
                 WaitTimeSeconds: 20, // Long polling - wait up to 20 seconds for a message
+                MessageSystemAttributeNames: ['SentTimestamp'],
             });
         } catch (e) {
             logger.error(`Error retreiving message from queue with URL: ${url}`);
@@ -112,7 +115,10 @@ export class SqsWorkerMode extends SqsExecuteQueueBase {
             try {
                 if (queued_message.Body) {
                     const json = queued_message.Body;
-                    return JSON.parse(json) as RemoteExecutionMessage;
+                    const parsed = JSON.parse(json) as RemoteExecutionMessage;
+                    const sentTimestamp = queued_message.Attributes?.SentTimestamp;
+                    if (sentTimestamp) parsed.sentTimestampMs = Number.parseInt(sentTimestamp, 10);
+                    return parsed;
                 }
                 return undefined;
             } finally {
@@ -134,9 +140,10 @@ async function sendResultViaWebsocket(
     guid: string,
     result: BasicExecutionResult,
     totalTimeMs?: number,
+    sentTimestampMs?: number,
 ) {
     try {
-        await persistentSender.send(guid, result);
+        await persistentSender.send(guid, result, sentTimestampMs);
         const timingInfo = totalTimeMs !== undefined ? ` (total time: ${totalTimeMs}ms)` : '';
         logger.info(`Successfully sent execution result for ${guid} via WebSocket${timingInfo}`);
     } catch (error) {
@@ -167,7 +174,7 @@ async function doOneExecution(
             const endTime = Date.now();
             const duration = endTime - startTime;
 
-            await sendResultViaWebsocket(persistentSender, msg.guid, result, duration);
+            await sendResultViaWebsocket(persistentSender, msg.guid, result, duration, msg.sentTimestampMs);
         } catch (e) {
             // todo: e is undefined somehow?
             logger.error(e);
@@ -188,6 +195,7 @@ async function doOneExecution(
                     execTime: 0,
                 },
                 duration,
+                msg.sentTimestampMs,
             );
         }
     }

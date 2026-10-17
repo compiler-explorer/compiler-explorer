@@ -261,10 +261,18 @@ export class CompileHandler implements ICompileHandler {
         try {
             compilerClass = getCompilerTypeByKey(type);
         } catch (e: any) {
-            logger.error(`Compiler ID: ${compiler.id}`);
-            logger.error(e);
-            logger.error(e.stack);
-            process.exit(1);
+            if (compiler.remote) {
+                // A remote compiler is only forwarded to the instance that hosts it, so it doesn't need its own
+                // class here. The remote may run a newer version that knows compiler types this one doesn't.
+                logger.warn(`Compiler ID: ${compiler.id}: unknown remote compiler type '${type}', using 'default'`);
+                compilerClass = getCompilerTypeByKey('default');
+            } else {
+                // An invalid local compiler configuration must still stop startup.
+                logger.error(`Compiler ID: ${compiler.id}`);
+                logger.error(e);
+                logger.error(e.stack);
+                process.exit(1);
+            }
         }
 
         // attempt to resolve non absolute exe paths
@@ -425,7 +433,13 @@ export class CompileHandler implements ICompileHandler {
         return body;
     }
 
-    static parseRequestReusable(isJson: boolean, query: any, body: any, compiler: BaseCompiler): ParsedRequest {
+    static parseRequestReusable(
+        isJson: boolean,
+        query: any,
+        body: any,
+        compiler: BaseCompiler,
+        buildSystem?: BuildSystemDriver,
+    ): ParsedRequest {
         let source: string;
         let options: string;
         let backendOptions: Record<string, any> = {};
@@ -447,6 +461,11 @@ export class CompileHandler implements ICompileHandler {
             execReqParams.stdin = execParams.stdin;
             execReqParams.runtimeTools = execParams.runtimeTools;
             backendOptions = requestOptions.compilerOptions || {};
+            const filenameError = utils.checkCustomOutputFilename(
+                backendOptions.customOutputFilename,
+                buildSystem?.getBuildPath('.'),
+            );
+            if (filenameError) throw new Error(filenameError);
             filters = {...compiler.getDefaultFilters(), ...requestOptions.filters};
             inputTools = requestOptions.tools || [];
             libraries = requestOptions.libraries || [];
@@ -510,12 +529,12 @@ export class CompileHandler implements ICompileHandler {
         };
     }
 
-    parseRequest(req: express.Request, compiler: BaseCompiler): ParsedRequest {
+    parseRequest(req: express.Request, compiler: BaseCompiler, buildSystem?: BuildSystemDriver): ParsedRequest {
         const isJson = !!req.is('json');
         const query = req.query as CompileRequestQueryArgs;
         const body = req.body;
 
-        return CompileHandler.parseRequestReusable(isJson, query, body, compiler);
+        return CompileHandler.parseRequestReusable(isJson, query, body, compiler, buildSystem);
     }
 
     handlePopularArguments(req: express.Request, res: express.Response) {
@@ -615,7 +634,7 @@ export class CompileHandler implements ICompileHandler {
 
             if (buildSystem.id === 'cmake') this.cmakeCounter.inc({language: compiler.lang.id});
             this.projectBuildCounter.inc({language: compiler.lang.id, build_system: buildSystem.id});
-            const parsedRequest = this.parseRequest(req, compiler);
+            const parsedRequest = this.parseRequest(req, compiler, buildSystem);
             this.compilerEnv.statsNoter.noteCompilation(
                 compiler.getInfo().id,
                 parsedRequest,

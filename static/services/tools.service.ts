@@ -24,6 +24,7 @@
 
 import {optionsHash} from '../options.js';
 import {SentryCapture} from '../sentry.js';
+import {fetchJson} from './fetch-json.js';
 
 export type ToolEntry = {
     id: string;
@@ -63,10 +64,9 @@ export class ToolsService {
     }
 
     private async fetchToolsForLang(langId: string): Promise<Record<string, ToolEntry>> {
-        const response = await fetch(`${window.httpRoot}api/tools/${encodeURIComponent(langId)}?hash=${optionsHash}`, {
-            headers: {Accept: 'application/json'},
-        });
-        const toolsArr: ToolEntry[] = await response.json();
+        const toolsArr = await fetchJson<ToolEntry[]>(
+            `${window.httpRoot}api/tools/${encodeURIComponent(langId)}?hash=${optionsHash}`,
+        );
         const result: Record<string, ToolEntry> = {};
         for (const tool of toolsArr) {
             result[tool.id] = tool;

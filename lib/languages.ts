@@ -685,6 +685,18 @@ const definitions: Record<LanguageKey, LanguageDefinition> = {
         previewFilter: null,
         monacoDisassembly: null,
     },
+    mach: {
+        name: 'Mach',
+        monaco: 'mach',
+        extensions: ['.mach'],
+        alias: [],
+        logoFilename: 'mach-tile.svg',
+        logoFilenameDark: null,
+        formatter: null,
+        previewFilter: null,
+        monacoDisassembly: null,
+        digitSeparator: '_',
+    },
     modula2: {
         name: 'Modula-2',
         monaco: 'modula2',
@@ -699,7 +711,7 @@ const definitions: Record<LanguageKey, LanguageDefinition> = {
     mojo: {
         name: 'Mojo',
         monaco: 'mojo',
-        extensions: ['.mojo', '.🔥'],
+        extensions: ['.mojo'],
         alias: [],
         logoFilename: 'mojo.svg',
         logoFilenameDark: null,
@@ -900,7 +912,7 @@ const definitions: Record<LanguageKey, LanguageDefinition> = {
     },
     ruby: {
         name: 'Ruby',
-        monaco: 'ruby',
+        monaco: 'rubyp',
         extensions: ['.rb'],
         alias: [],
         logoFilename: 'ruby.svg',
@@ -953,7 +965,7 @@ const definitions: Record<LanguageKey, LanguageDefinition> = {
 
     snowball: {
         name: 'Snowball',
-        monaco: 'swift',
+        monaco: 'swiftp',
         extensions: ['.sn'],
         alias: [],
         logoFilename: 'snowball.svg',
@@ -1020,7 +1032,7 @@ const definitions: Record<LanguageKey, LanguageDefinition> = {
     },
     swift: {
         name: 'Swift',
-        monaco: 'swift',
+        monaco: 'swiftp',
         extensions: ['.swift'],
         alias: [],
         logoFilename: 'swift.svg',
@@ -1040,6 +1052,17 @@ const definitions: Record<LanguageKey, LanguageDefinition> = {
         formatter: null,
         previewFilter: null,
         monacoDisassembly: null,
+    },
+    tilelang: {
+        name: 'TileLang',
+        monaco: 'python',
+        extensions: ['.py'],
+        alias: ['tile-lang'],
+        logoFilename: null,
+        logoFilenameDark: null,
+        formatter: null,
+        previewFilter: null,
+        monacoDisassembly: 'nc',
     },
     toit: {
         name: 'Toit',

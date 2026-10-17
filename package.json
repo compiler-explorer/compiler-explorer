@@ -18,6 +18,7 @@
   },
   "main": "./app.ts",
   "dependencies": {
+    "@ambrus-toth/abi-explorer-share-link": "0.1.1",
     "@aws-sdk/client-dynamodb": "^3.1079.0",
     "@aws-sdk/client-ec2": "^3.1079.0",
     "@aws-sdk/client-s3": "^3.1079.0",
@@ -26,7 +27,7 @@
     "@aws-sdk/credential-providers": "^3.1079.0",
     "@flatten-js/interval-tree": "^2.0.3",
     "@fortawesome/fontawesome-free": "^7.3.0",
-    "@modelcontextprotocol/sdk": "^1.30.0",
+    "@modelcontextprotocol/sdk": "^1.31.0",
     "@orchidjs/sifter": "^1.1.0",
     "@popperjs/core": "^2.11.8",
     "@sentry/browser": "^10.63.0",
@@ -38,7 +39,7 @@
     "chart.js": "^4.5.1",
     "clipboard": "^2.0.11",
     "commander": "^15.0.0",
-    "compression": "^1.8.1",
+    "compression": "^1.8.2",
     "copy-webpack-plugin": "^14.0.0",
     "cross-env": "^10.1.0",
     "enhanced-ms": "^5.0.0",
@@ -56,7 +57,7 @@
     "marked": "^18.0.5",
     "monaco-editor": "^0.55.1",
     "monaco-vim": "^0.4.4",
-    "morgan": "^1.12.0",
+    "morgan": "^1.12.1",
     "node-targz": "^0.2.0",
     "p-queue": "^9.3.0",
     "path-browserify": "^1.0.1",
@@ -132,7 +133,7 @@
     "vitest-fetch-mock": "^0.4.5",
     "webpack": "^5.108.3",
     "webpack-cli": "^7.1.0",
-    "webpack-dev-middleware": "^8.0.3",
+    "webpack-dev-middleware": "^8.3.0",
     "webpack-manifest-plugin": "^6.0.1"
   },
   "optionalDependencies": {

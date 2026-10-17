@@ -134,6 +134,17 @@ export class DeviceAsm extends MonacoPane<monaco.editor.IStandaloneCodeEditor, D
             run: this.onAsmToolTip.bind(this),
         });
     }
+
+    /**
+     * The compiler tells us the instruction set per device when it knows it. Fall back to the
+     * device name, which is what CUDA relies on: its devices are literally named "PTX"/"SASS".
+     */
+    private getSelectedDeviceInstructionSet(): InstructionSet {
+        const reported = this.devices?.[this.selectedDevice]?.instructionSet;
+        if (reported) return reported;
+        return this.selectedDevice.split(' ')[0].toLowerCase() as InstructionSet;
+    }
+
     async onAsmToolTip(ed: monaco.editor.ICodeEditor) {
         const pos = ed.getPosition();
         if (!pos || !ed.getModel()) return;
@@ -160,10 +171,7 @@ export class DeviceAsm extends MonacoPane<monaco.editor.IStandaloneCodeEditor, D
         }
 
         try {
-            const asmHelp = await Compiler.getAsmInfo(
-                word.word,
-                this.selectedDevice.split(' ')[0].toLowerCase() as InstructionSet,
-            );
+            const asmHelp = await Compiler.getAsmInfo(word.word, this.getSelectedDeviceInstructionSet());
             if (asmHelp) {
                 this.alertSystem.alert(opcode + ' help', asmHelp.html + appendInfo(asmHelp.url), {
                     onClose: () => {
@@ -472,7 +480,7 @@ export class DeviceAsm extends MonacoPane<monaco.editor.IStandaloneCodeEditor, D
                 try {
                     const response = await Compiler.getAsmInfo(
                         currentWord.word,
-                        this.selectedDevice.split(' ')[0].toLowerCase() as InstructionSet,
+                        this.getSelectedDeviceInstructionSet(),
                     );
                     if (!response) return;
                     this.decorations.asmToolTip = [

@@ -75,6 +75,10 @@ export class GccDump extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Gcc
     optionUidTitle: string;
     optionAllButton: JQuery<HTMLElement>;
     optionAllTitle: string;
+
+    optionLibraryFunctionsButton: JQuery<HTMLElement>;
+    optionLibraryFunctionsTitle: string;
+
     inhibitPassSelect = false;
     cursorSelectionThrottledFunction: ((e: any) => void) & _.Cancelable;
     selectedPass: string | null = null;
@@ -227,6 +231,9 @@ export class GccDump extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Gcc
 
         this.optionAllButton = this.domRoot.find("[data-bind='allOption']");
         this.optionAllTitle = this.optionAllButton.prop('title');
+
+        this.optionLibraryFunctionsButton = this.domRoot.find("[data-bind='libraryFunctionsOption']");
+        this.optionLibraryFunctionsTitle = this.optionLibraryFunctionsButton.prop('title');
     }
 
     override registerCallbacks() {
@@ -291,6 +298,7 @@ export class GccDump extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Gcc
         formatButtonTitle(this.optionLinenoButton, this.optionLinenoTitle);
         formatButtonTitle(this.optionUidButton, this.optionUidTitle);
         formatButtonTitle(this.optionAllButton, this.optionAllTitle);
+        formatButtonTitle(this.optionLibraryFunctionsButton, this.optionLibraryFunctionsTitle);
     }
 
     // Disable view's menu when invalid compiler has been

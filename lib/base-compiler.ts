@@ -318,16 +318,10 @@ export class BaseCompiler {
         if (!this.compiler.instructionSet) {
             const isets = new InstructionSets();
             if (this.buildenvsetup) {
-                this.compiler.instructionSet = isets.getCompilerInstructionSetHint(
-                    this.buildenvsetup.compilerArch,
-                    this.compiler.exe,
-                );
+                this.compiler.instructionSet = isets.getCompilerInstructionSetHint(this.buildenvsetup.compilerArch);
             } else {
                 const temp = new BuildEnvSetupBase(this.compiler, this.env);
-                this.compiler.instructionSet = isets.getCompilerInstructionSetHint(
-                    temp.compilerArch,
-                    this.compiler.exe,
-                );
+                this.compiler.instructionSet = isets.getCompilerInstructionSetHint(temp.compilerArch);
             }
         }
 
@@ -604,7 +598,7 @@ export class BaseCompiler {
             const archHint = this.getTargetHintFromCompilerArgs(args);
             if (archHint) {
                 const isets = new InstructionSets();
-                return isets.getCompilerInstructionSetHint(archHint, this.compiler.exe);
+                return isets.getCompilerInstructionSetHint(archHint);
             }
         } catch (e) {
             logger.debug('Unexpected error in getInstructionSetFromCompilerArgs(): ', e);
@@ -2060,6 +2054,7 @@ export class BaseCompiler {
         sourceBasename: string,
         keepLineno: boolean,
         isRtlDump: boolean,
+        keepLibraryFunctions = false,
     ): string {
         // Splitting on a lookahead keeps each `;; Function` header with its block and leaves the
         // preamble (text before the first function) as the first piece, so join('') is lossless.
@@ -2069,8 +2064,8 @@ export class BaseCompiler {
             !piece.includes(sourceBasename) && /\/usr\/|\/opt\/|\/include\//.test(piece);
 
         const kept =
-            pieces.length <= 1
-                ? pieces // no function markers (e.g. IPA summary dump): keep whole
+            pieces.length <= 1 || keepLibraryFunctions
+                ? pieces // no function markers (e.g. IPA summary dump), or library functions wanted: keep whole
                 : pieces.filter((piece, index) => index === 0 || !isHeaderFunction(piece));
 
         let trimmed = kept.join('');
@@ -2216,6 +2211,7 @@ export class BaseCompiler {
         const inputFilename = writeSummary.inputFilename;
 
         const outputFilename = this.getExecutableFilename(dirPath, this.outputFilebase, key);
+        this.assertInsideDir(dirPath, outputFilename);
 
         const buildFilters: ParseFiltersAndOutputOptions = Object.assign({}, key.filters);
         buildFilters.binaryObject = false;
@@ -2337,11 +2333,13 @@ export class BaseCompiler {
                     inputFilename = path.join(dirPath, path.basename(buildResults.inputFilename));
                 }
 
+                const executableFilename = this.getExecutableFilename(dirPath, this.outputFilebase, key);
+                this.assertInsideDir(dirPath, executableFilename);
                 return Object.assign({}, buildResults, {
                     code: 0,
                     inputFilename: inputFilename,
                     dirPath: dirPath,
-                    executableFilename: this.getExecutableFilename(dirPath, this.outputFilebase, key),
+                    executableFilename,
                     packageDownloadAndUnzipTime: utils.deltaTimeNanoToMili(startTime, endTime),
                 });
             }
@@ -2694,6 +2692,7 @@ export class BaseCompiler {
         const inputFilenameSafe = this.filename(inputFilename);
 
         const outputFilename = this.getOutputFilename(dirPath, this.outputFilebase, key);
+        this.assertInsideDir(dirPath, outputFilename);
 
         const overrides = this.sanitizeCompilerOverrides(backendOptions.overrides || []);
 
@@ -3468,6 +3467,9 @@ export class BaseCompiler {
         const optionsError = this.checkOptions(options);
         if (optionsError) throw optionsError;
 
+        // Request parsing has already rejected a bad filename; reaching here with one is a bug.
+        assert(utils.checkCustomOutputFilename(backendOptions.customOutputFilename) === null, 'Invalid filename');
+
         const libsAndOptions = {libraries, options};
         if (this.tryAutodetectLibraries(libsAndOptions)) {
             libraries = libsAndOptions.libraries;
@@ -3534,6 +3536,11 @@ export class BaseCompiler {
                         if (execResult?.buildResult) {
                             await this.doTempfolderCleanup(execResult.buildResult);
                         }
+                        // Returning from here skips afterCompilation, so this is the only chance to
+                        // put an oversized one where a reader can fetch it. The compilation cache
+                        // holds the build under this key, not what running it printed, so the
+                        // result needs a copy of its own.
+                        await this.storeOversizedResult(execResult, key as any, false);
                         return execResult;
                     }
 
@@ -3981,7 +3988,13 @@ but nothing was dumped. Possible causes are:
             for (const {filename, pass} of candidates) {
                 const raw = await utils.tryReadTextFile(path.join(rootDir, filename));
                 const trimmed = raw
-                    ? this.trimGccDumpHeaderFunctions(raw, sourceBasename, keepLineno, pass.filename_suffix[0] === 'r')
+                    ? this.trimGccDumpHeaderFunctions(
+                          raw,
+                          sourceBasename,
+                          keepLineno,
+                          pass.filename_suffix[0] === 'r',
+                          opts.libraryFunctions ?? false,
+                      )
                     : '';
                 // RTL dumps repeat the absolute path of the source, and of any other user file
                 // (multi-file compiles), on every insn location. Mask the temp dir as we do for
@@ -4175,6 +4188,11 @@ but nothing was dumped. Possible causes are:
             logger.error('Error during post-processing: ', result);
         }
         return result;
+    }
+
+    /** Throws if `filename` is not inside `dirPath`. */
+    assertInsideDir(dirPath: string, filename: string) {
+        if (!utils.isPathInside(dirPath, filename)) throw new Error('Invalid filename');
     }
 
     checkOptions(options: string[]) {

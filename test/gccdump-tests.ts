@@ -220,6 +220,21 @@ describe('GCC dump output processing', () => {
             expect(trimmed).toContain('x = 1;');
             expect(trimmed).not.toContain('[example.cpp:10:8]');
         });
+
+        it('keeps library/header functions when keepLibraryFunctions is true', () => {
+            const userBlock = ';; Function main (main, funcdef_no=1)\n[example.cpp:3:5] x = 1;\n';
+            const headerBlock =
+                ';; Function std::foo (_ZSt3foo, funcdef_no=2)\n[/usr/include/c++/13/foo.h:10:2] y = 2;\n';
+            const trimmed = compiler.trimGccDumpHeaderFunctions(
+                userBlock + headerBlock,
+                'example.cpp',
+                true,
+                false,
+                true,
+            );
+            expect(trimmed).toContain(';; Function main');
+            expect(trimmed).toContain(';; Function std::foo');
+        });
     });
 
     describe('processGccDumpOutput (enumeration path)', () => {

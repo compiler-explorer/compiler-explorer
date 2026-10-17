@@ -26,7 +26,39 @@ import lzstring from 'lz-string';
 import _ from 'underscore';
 
 import * as urlSerialization from '../shared/url-serialization.js';
+import {GoldenLayoutConfig} from './components.interfaces.js';
 import * as Components from './components.js';
+
+const ITEM_TYPES = new Set(['row', 'column', 'stack', 'component']);
+
+function isPlainObject(value: unknown): value is Record<string, unknown> {
+    return typeof value === 'object' && value !== null && !Array.isArray(value);
+}
+
+function isValidItemConfig(item: unknown): boolean {
+    if (!isPlainObject(item)) return false;
+    if (typeof item.type !== 'string' || !ITEM_TYPES.has(item.type)) return false;
+    if (item.type === 'component' && typeof item.componentName !== 'string') return false;
+    if (item.content === undefined) return item.type === 'component';
+    return Array.isArray(item.content) && item.content.every(isValidItemConfig);
+}
+
+/**
+ * Parses a layout previously saved to local/session storage. Storage contents are untrusted: they may have been
+ * truncated, edited by hand, or written by an older version of the site, so anything that doesn't look like a
+ * GoldenLayout config yields null instead of throwing.
+ */
+export function parseSavedLayoutState(savedState: string): GoldenLayoutConfig | null {
+    let parsed: unknown;
+    try {
+        parsed = JSON.parse(savedState);
+    } catch {
+        return null;
+    }
+    if (!isPlainObject(parsed) || !Array.isArray(parsed.content)) return null;
+    if (!parsed.content.every(isValidItemConfig)) return null;
+    return parsed as GoldenLayoutConfig;
+}
 
 export function convertOldState(state: any): any {
     const sc = state.compilers[0];
