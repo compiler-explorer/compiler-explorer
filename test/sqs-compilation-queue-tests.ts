@@ -204,7 +204,7 @@ describe('Sending a result too large for the events websocket', () => {
 });
 
 describe('Reporting a queued request that failed', () => {
-    async function runWorker(options: Record<string, any>, compile: () => Promise<any>) {
+    async function runWorker(options: Record<string, any>, compile: () => Promise<any>, compilerExists = true) {
         const sent: any[] = [];
         const msg = makeMessage({
             guid: 'a-guid',
@@ -223,7 +223,10 @@ describe('Reporting a queued request that failed', () => {
         };
         await doOneCompilation(
             {pop: async () => msg} as any,
-            {findCompiler: () => compiler, statsNoter: {noteCompilation: () => {}}} as any,
+            {
+                findCompiler: () => (compilerExists ? compiler : undefined),
+                statsNoter: {noteCompilation: () => {}},
+            } as any,
             {isReadyForNewMessages: () => true, send: async (_guid: string, payload: any) => sent.push(payload)} as any,
         );
         return sent[0];
@@ -233,6 +236,12 @@ describe('Reporting a queued request that failed', () => {
         const result = await runWorker({compilerOptions: {customOutputFilename: '../escape'}}, async () => ({}));
 
         expect(result).toMatchObject({error: true, message: 'Invalid filename', code: -1});
+    });
+
+    it("marks a compiler that does not exist as the caller's error", async () => {
+        const result = await runWorker({}, async () => ({}), false);
+
+        expect(result).toMatchObject({error: true, message: expect.stringMatching(/not found/), code: -1});
     });
 
     it('leaves a compilation that threw as an ordinary failed result', async () => {
