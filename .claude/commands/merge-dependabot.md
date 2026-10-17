@@ -69,6 +69,29 @@ Run the checks for whatever the PR touches:
   it has any. Otherwise run the tool with `--help`, or the smallest invocation that exercises the bumped package
 - **github-actions**: CI on the PR is the test, so nothing extra locally
 
+### Local site run
+
+Before anything goes near staging, run the site from the worktree the way production runs it. If it breaks here,
+a staging deploy would only waste time and instances. Do this for every PR, not only npm ones.
+
+```bash
+cp etc/config/*.local.properties ../dependabot-<N>/etc/config/
+cd ../dependabot-<N>
+make run EXTRA_ARGS='--port 10241 --language c++'
+```
+
+`make run` does the production webpack and ts build, then starts `out/dist/app.js`. Run it in the background,
+wait for the startup to finish (`Listening on http://localhost:10241/`), and watch its output for errors or
+stack traces. Port 10241 avoids clashing with a dev instance I may have running on 10240.
+
+Then check it:
+- **Smoke compile**: the curl command from "Verify staging" below, against `http://localhost:10241/`.
+- **Browser check** (claude-in-chrome): open http://localhost:10241 in a new tab, check the console for errors,
+  and run a compile from the editor. If the bumped package backs a visible feature, exercise that too.
+
+Any build failure, startup error, console error or failed compile means skip the PR and report it. Stop the server
+when you're done.
+
 Remove the worktree afterwards with `git worktree remove --force ../dependabot-<N>`. `--force` is needed because
 `.venv`/`node_modules` are untracked.
 
