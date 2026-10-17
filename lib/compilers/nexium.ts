@@ -34,8 +34,8 @@ import {CompilationEnvironment} from '../compilation-env.js';
 
 // Nexium (https://londopy.github.io/nexium/) compiles to C and drives a C
 // compiler. Without the binary filter, the output pane shows the C that
-// `nx emit-c` writes, with the runtime it inlines folded away unless the
-// "library code" filter is on; with the binary filter, `nx build` produces
+// `nx emit-c` writes, with the runtime it inlines folded away by the
+// "library functions" filter; with the binary filter, `nx build` produces
 // an executable that Compiler Explorer disassembles as usual.
 export class NexiumCompiler extends BaseCompiler {
     static get key() {
@@ -125,14 +125,14 @@ export class NexiumCompiler extends BaseCompiler {
         }
         let lines: string[] = result.asm.split('\n');
         // the inlined runtime is library code
-        if (!filters.libraryCode) {
+        if (filters.libraryCode) {
             const start = lines.findIndex(line => NexiumCompiler.programStart.test(line));
             if (start > 0) lines = lines.slice(start);
         }
-        if (!filters.commentOnly) {
+        if (filters.commentOnly) {
             lines = lines.filter(line => !line.trimStart().startsWith('/*') || !line.trimEnd().endsWith('*/'));
         }
-        if (!filters.directives) lines = lines.filter(line => !line.trimStart().startsWith('#'));
+        if (filters.directives) lines = lines.filter(line => !line.trimStart().startsWith('#'));
         if (filters.trim) lines = lines.map(line => line.trimStart()).filter(line => line !== '');
         const out: string[] = [];
         let blank = false;
