@@ -715,7 +715,7 @@ const definitions: Record<LanguageKey, LanguageDefinition> = {
         alias: [],
         logoFilename: 'mojo.svg',
         logoFilenameDark: null,
-        formatter: 'mblack',
+        formatter: 'mojo',
         previewFilter: null,
         monacoDisassembly: null,
         digitSeparator: '_',
