@@ -191,6 +191,7 @@ export class ApiHandler {
             if (this.options) {
                 newLangObj.defaultCompiler = this.options.options.defaultCompiler[unwrap(lang).id];
                 newLangObj.defaultLibs = this.options.options.defaultLibs[unwrap(lang).id];
+                newLangObj.defaultOptions = this.options.options.compileOptions[unwrap(lang).id];
             }
             return newLangObj;
         });
