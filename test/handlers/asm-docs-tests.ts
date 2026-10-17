@@ -46,6 +46,20 @@ const TEST_MATRIX: Record<PropertyKey, [string, string, string, string][]> = {
             'Shifts the bits in the first operand',
             'www.felixcloutier.com',
         ], // regression test for #3541
+        // AT&T forms with digits in the mnemonic (#8951) or a size suffix after `abs`
+        [
+            'cvtsi2sdl',
+            'Converts a signed doubleword integer',
+            'Converts a signed doubleword integer',
+            'www.felixcloutier.com/x86/CVTSI2SD',
+        ],
+        [
+            'vcvttsd2siq',
+            'Converts a double precision floating-point value',
+            'Converts a double precision floating-point value',
+            'www.felixcloutier.com/x86/CVTTSD2SI',
+        ],
+        ['movabsq', 'Copies the second operand', 'Copies the second operand', 'www.felixcloutier.com/x86/MOV'],
     ],
     arm32: [
         [
