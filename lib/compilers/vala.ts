@@ -64,7 +64,7 @@ export class ValaCompiler extends BaseCompiler {
     }
 
     override async populatePossibleOverrides() {
-        this.addCCompilerOverride('The C compiler valac builds the binary with.', false);
+        this.addCCompilerOverride(false);
         await super.populatePossibleOverrides();
     }
 

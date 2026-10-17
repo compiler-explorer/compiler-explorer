@@ -182,6 +182,9 @@ export const c_default_toolchain_description =
     'Change the default GCC toolchain for this compiler. ' +
     'This may or may not affect header usage (e.g. libstdc++ version) and linking to GCCs pre-built binaries.';
 
+export const c_default_c_compiler_description =
+    'Change the C compiler that builds the binary from the C this compiler emits.';
+
 export const c_value_placeholder = '<value>';
 
 export interface SimpleOutputFilenameCompiler {
@@ -1186,7 +1189,7 @@ export class BaseCompiler {
 
     // For languages that compile to C: the C compilers of this installation, each value a full command line. A
     // cross compiler only suits a compiler whose objdumper reads any architecture.
-    protected addCCompilerOverride(description: string, allowCrossCompilers: boolean) {
+    protected addCCompilerOverride(allowCrossCompilers: boolean) {
         const values = this.env
             .getPossibleCCompilers()
             .filter(option => allowCrossCompilers || getTargetFromCompilerCommand(option.value) === undefined);
@@ -1195,7 +1198,7 @@ export class BaseCompiler {
             type: 'options',
             name: CompilerOverrideType.c_compiler,
             display_title: 'C compiler',
-            description,
+            description: c_default_c_compiler_description,
             flags: [],
             values,
         });

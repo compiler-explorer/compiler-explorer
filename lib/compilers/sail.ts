@@ -57,7 +57,7 @@ export class SailCompiler extends BaseCompiler {
 
     override async populatePossibleOverrides() {
         // the binary links the host's zlib and gmp
-        this.addCCompilerOverride('The C compiler that builds the model from the C that Sail emits.', false);
+        this.addCCompilerOverride(false);
         await super.populatePossibleOverrides();
     }
 

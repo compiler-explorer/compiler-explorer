@@ -152,7 +152,7 @@ export class NexiumCompiler extends BaseCompiler {
 
     override async populatePossibleOverrides() {
         // llvm-objdump reads any architecture, so a cross clang's binary can be shown
-        this.addCCompilerOverride('The C compiler nx builds the binary with.', true);
+        this.addCCompilerOverride(true);
         await super.populatePossibleOverrides();
     }
 
