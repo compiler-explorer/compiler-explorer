@@ -362,6 +362,10 @@ export class CompileHandler implements ICompileHandler {
         this.compilerEnv.setPossibleToolchains(toolchains);
     }
 
+    setPossibleCCompilers(cCompilers: CompilerOverrideOptions) {
+        this.compilerEnv.setPossibleCCompilers(cCompilers);
+    }
+
     compilerAliasMatch(compiler: BaseCompiler, compilerId: string): boolean {
         return compiler.compiler.alias?.includes(compilerId);
     }
