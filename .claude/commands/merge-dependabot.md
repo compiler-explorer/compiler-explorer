@@ -69,7 +69,8 @@ Run the checks for whatever the PR touches:
   it has any. Otherwise run the tool with `--help`, or the smallest invocation that exercises the bumped package
 - **github-actions**: CI on the PR is the test, so nothing extra locally
 
-Remove the worktree afterwards (`git worktree remove ../dependabot-<N>`).
+Remove the worktree afterwards with `git worktree remove --force ../dependabot-<N>`. `--force` is needed because
+`.venv`/`node_modules` are untracked.
 
 ## 4. Merge
 
@@ -94,9 +95,9 @@ git fetch origin --tags
 git tag --points-at origin/main | grep '^gh-'
 ```
 
-Confirm the build was uploaded: `ce admin exec ce --env staging builds list`.
+Confirm the build was uploaded: `ce admin exec -- ce --env staging builds list`.
 
-All `ce` commands run on the admin node through `ce admin exec ...`, using the local
+All `ce` commands run on the admin node through `ce admin exec -- ...`, using the local
 `/opt/compiler-explorer/infra/bin/ce`. Running there lets the deploy do its HTTP health checks.
 
 ## 6. Staging
@@ -112,7 +113,7 @@ gh run watch -R compiler-explorer/infra <run-id>
 Deploy (takes a while, so run it in the background and wait for it to finish):
 
 ```bash
-ce admin exec ce --env staging blue-green deploy gh-xxxx --skip-confirmation
+ce admin exec -- ce --env staging blue-green deploy gh-xxxx --skip-confirmation
 ```
 
 If it fails with a bounce lock, stop and tell me; don't bypass it. If it fails on a hash mismatch, stop and tell me
@@ -120,14 +121,20 @@ If it fails with a bounce lock, stop and tell me; don't bypass it. If it fails o
 
 ### Verify staging
 
-- **Smoke compile**: use the `compiler-explorer-staging` MCP if it's connected, or otherwise POST to
-  `https://godbolt.org/staging/api/compiler/<id>/compile` with a current GCC id from
-  `https://godbolt.org/staging/api/compilers/c++?fields=id,name`. Check that valid asm comes back.
+- **Smoke compile**: use the `compiler-explorer-staging` MCP if it's connected. Otherwise pick a current GCC id
+  from `https://godbolt.org/staging/api/compilers/c++?fields=id,name` and check that `code` is 0 and real asm
+  comes back. Without the `Accept` header the API returns text, not JSON:
+
+  ```bash
+  curl -s https://godbolt.org/staging/api/compiler/<id>/compile \
+      -H 'Content-Type: application/json' -H 'Accept: application/json' \
+      -d '{"source":"int square(int x){return x*x;}","options":{"userArguments":"-O2"}}'
+  ```
 - **Browser check** (claude-in-chrome): open https://godbolt.org/staging in a new tab, confirm the version via
   Other > Version Tree matches `gh-xxxx`, check the console for errors, and run a compile from the editor.
   If a bumped package backs a visible feature (e.g. a docenizer → asm docs tooltips), exercise that feature too.
 
-If staging fails anything: don't go to prod. Run `ce admin exec ce --env staging blue-green rollback --skip-confirmation`,
+If staging fails anything: don't go to prod. Run `ce admin exec -- ce --env staging blue-green rollback --skip-confirmation`,
 work out which merged PR is likely responsible, and report back. Don't open revert PRs without asking me.
 
 ## 7. Stop for approval
@@ -150,15 +157,15 @@ gh workflow run -R compiler-explorer/infra 'Compiler discovery' \
     -f environment=prod -f branch=main -f buildnumber=gh-xxxx
 gh run watch -R compiler-explorer/infra <run-id>
 
-ce admin exec ce --env prod blue-green deploy gh-xxxx --skip-confirmation --no-notify
+ce admin exec -- ce --env prod blue-green deploy gh-xxxx --skip-confirmation --no-notify
 ```
 
 Always pass `--no-notify`: dependabot PRs don't get "now live" comments.
 
-Afterwards, run a smoke compile against https://godbolt.org and check `ce admin exec ce --env prod blue-green status`.
-If prod misbehaves, roll back right away (`ce admin exec ce --env prod blue-green rollback --skip-confirmation`)
+Afterwards, run a smoke compile against https://godbolt.org and check `ce admin exec -- ce --env prod blue-green status`.
+If prod misbehaves, roll back right away (`ce admin exec -- ce --env prod blue-green rollback --skip-confirmation`)
 and tell me.
 
-Once prod is live, clean up staging: `ce admin exec ce --env staging blue-green cleanup --skip-confirmation`.
+Once prod is live, clean up staging: `ce admin exec -- ce --env staging blue-green cleanup --skip-confirmation`.
 Leave prod's old colour up for rollback, and remind me to run `ce --env prod blue-green cleanup` once it's
 proven stable.
