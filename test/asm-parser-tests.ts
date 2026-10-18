@@ -91,7 +91,7 @@ main():
     });
 });
 
-describe('AsmParser binary source records before the function label', () => {
+describe('AsmParser binary source records after the function label', () => {
     const parser = new AsmParser();
     const cases: [string, string][] = [
         ['POSIX', '/tmp/example.cpp'],
@@ -100,10 +100,10 @@ describe('AsmParser binary source records before the function label', () => {
     ];
 
     for (const [style, file] of cases) {
-        it(`should keep a ${style} source line that objdump printed before the label`, () => {
+        it(`should keep a ${style} source line that objdump printed after the label`, () => {
             const asm = [
-                `${file}:3`,
                 '0000000000401000 <foo>:',
+                `${file}:3`,
                 '  401000:\tc3                   \tret',
                 '  401001:\t90                   \tnop',
                 `${file}:9`,
@@ -122,11 +122,10 @@ describe('AsmParser binary source corner cases', () => {
     const nop = '  11: 90        nop';
     const maskedExample = (line: number) => ({file: null, line, mainsource: true});
 
-    function dump(sourceRecord?: string, sourceAfterLabel = false): string {
-        const lines: string[] = [];
-        if (sourceRecord !== undefined && !sourceAfterLabel) lines.push(sourceRecord);
-        lines.push(label);
-        if (sourceRecord !== undefined && sourceAfterLabel) lines.push(sourceRecord);
+    // objdump -l prints a function's first line record after its label.
+    function dump(sourceRecord?: string): string {
+        const lines = [label];
+        if (sourceRecord !== undefined) lines.push(sourceRecord);
         lines.push(mov, nop);
         return lines.join('\n');
     }
@@ -136,31 +135,25 @@ describe('AsmParser binary source corner cases', () => {
         return result.asm.filter(line => line.address !== undefined);
     }
 
-    it('should map a POSIX source record before the label when filenames are masked', () => {
+    it('should map a POSIX source record when filenames are masked', () => {
         const kept = instructions(dump('/tmp/example.cpp:3'));
         expect(kept).toHaveLength(2);
         expect(kept.map(line => line.source)).toEqual([maskedExample(3), maskedExample(3)]);
     });
 
-    it('should map a Windows forward-slash source record before the label', () => {
+    it('should map a Windows forward-slash source record', () => {
         const kept = instructions(dump('C:/tmp/example.cpp:3'));
         expect(kept).toHaveLength(2);
         expect(kept.map(line => line.source)).toEqual([maskedExample(3), maskedExample(3)]);
     });
 
-    it('should map a Windows backslash source record before the label', () => {
+    it('should map a Windows backslash source record', () => {
         const record = 'C:\\tmp\\example.cpp:3';
         expect(record).toBe('C:\\tmp\\example.cpp:3');
         expect(record.includes('\\')).toBe(true);
         const kept = instructions(dump(record));
         expect(kept).toHaveLength(2);
         expect(kept.map(line => line.source)).toEqual([maskedExample(3), maskedExample(3)]);
-    });
-
-    it('should map a source record printed after the label', () => {
-        const kept = instructions(dump('/tmp/example.cpp:4', true));
-        expect(kept).toHaveLength(2);
-        expect(kept.map(line => line.source)).toEqual([maskedExample(4), maskedExample(4)]);
     });
 
     it('should emit instructions with null source when objdump has no line record', () => {
@@ -180,8 +173,8 @@ describe('AsmParser binary source corner cases', () => {
         expect(kept).toEqual([]);
     });
 
-    it('should take the line record that precedes each function label', () => {
-        const asm = ['/tmp/a.cpp:3', label, mov, '/tmp/b.cpp:9', '0000000000000011 <bar>:', nop].join('\n');
+    it('should take the line record that follows each function label', () => {
+        const asm = [label, '/tmp/a.cpp:3', mov, '0000000000000011 <bar>:', '/tmp/b.cpp:9', nop].join('\n');
         const result = parser.process(asm, {binary: true});
         const kept = result.asm.filter(line => line.address !== undefined);
         expect(kept).toHaveLength(2);
@@ -282,6 +275,77 @@ square(int)():
             ' imul   eax,edi',
             ' ret',
         ]);
+    });
+});
+
+describe('AsmParser binary source lines in functions without debug info', () => {
+    const parser = new AsmParser();
+    // Reconstructed from real mingw gcc 11.3 output on winstaging (`-O1 -g`, "Link to binary", an example.c
+    // with square() and main()). The API returns only parsed asm, so the label, `func():` and `file:line` lines
+    // are rebuilt around the real addresses, opcodes and instructions; the temp directory in the path is a
+    // stand-in. _setargv and _matherr are mingw CRT code that has no line records.
+    const example = 'C:/Users/ce/AppData/Local/Temp/compiler-explorer-compiler/example.c';
+    const objdump = [
+        '',
+        '00000001400017d0 <square>:',
+        'square():',
+        `${example}:2`,
+        '   1400017d0:\t0f af c9             \timul   ecx,ecx',
+        `${example}:3`,
+        '   1400017d3:\t89 c8                \tmov    eax,ecx',
+        '   1400017d5:\tc3                   \tret',
+        '',
+        '00000001400017d6 <main>:',
+        'main():',
+        `${example}:5`,
+        '   1400017d6:\t48 83 ec 28          \tsub    rsp,0x28',
+        '   1400017da:\te8 c8 00 00 00       \tcall   1400018a7 <__main>',
+        '   1400017df:\tb8 09 00 00 00       \tmov    eax,0x9',
+        '   1400017e4:\t48 83 c4 28          \tadd    rsp,0x28',
+        '   1400017e8:\tc3                   \tret',
+        '   1400017e9:\t90                   \tnop',
+        '',
+        '00000001400018d0 <_setargv>:',
+        '   1400018d0:\t55                   \tpush   rbp',
+        '   1400018d1:\t48 89 e5             \tmov    rbp,rsp',
+        '   1400018d4:\tb8 00 00 00 00       \tmov    eax,0x0',
+        '   1400018d9:\t5d                   \tpop    rbp',
+        '   1400018da:\tc3                   \tret',
+        '',
+        '00000001400019f0 <_matherr>:',
+        '   1400019f0:\t55                   \tpush   rbp',
+        '   1400019f1:\t53                   \tpush   rbx',
+        '   1400019f2:\t48 81 ec 88 00 00 00 \tsub    rsp,0x88',
+    ].join('\n');
+
+    function linesByFunction(filters: Partial<ParseFiltersAndOutputOptions> = {}) {
+        const result: Record<string, (number | null | undefined)[]> = {};
+        let current = '';
+        for (const line of parser.processBinaryAsm(objdump, filters).asm) {
+            if (line.address === undefined) {
+                current = line.text.replace(/:$/, '');
+                result[current] = [];
+            } else {
+                result[current].push(line.source?.line);
+            }
+        }
+        return result;
+    }
+
+    it('should not carry the last source line into the next function', () => {
+        expect(linesByFunction()).toEqual({
+            square: [2, 3, 3],
+            main: [5, 5, 5, 5, 5, 5],
+            _setargv: [undefined, undefined, undefined, undefined, undefined],
+            _matherr: [undefined, undefined, undefined],
+        });
+    });
+
+    it('should filter out functions without debug info as library code', () => {
+        expect(linesByFunction({libraryCode: true})).toEqual({
+            square: [2, 3, 3],
+            main: [5, 5, 5, 5, 5, 5],
+        });
     });
 });
 

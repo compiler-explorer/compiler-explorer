@@ -678,6 +678,10 @@ export class AsmParser extends AsmRegex implements IAsmParser {
             match = line.match(this.labelRe);
             if (match) {
                 func = match[2];
+                // Don't let a function with no line records (e.g. CRT code without debug info) inherit the previous
+                // function's line; objdump prints a function's first record after its label. `.L` labels are local
+                // labels inside a function (RISC-V keeps `.Lpcrel_hi*` in the symbol table), not new functions.
+                if (!func.startsWith('.L')) source = null;
                 if (func && this.isUserFunction(func)) {
                     asm.push({
                         text: func + ':',
