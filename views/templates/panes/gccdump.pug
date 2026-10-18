@@ -36,4 +36,6 @@ mixin optionButton(bind, isActive, text, title)
         +optionButton("statsOption", false, "Pass Stats", "Dump statistics (not honored by every dump option)")
         +optionButton("uidOption", false, "Unique IDs", "Show variable UIDs")
         +optionButton("vopsOption", false, "Virtual Operands", "Show virtual operands")
+        div.dropdown-divider
+        +optionButton("libraryFunctionsOption", false, "Library Functions", "Show functions from system headers (normally filtered out)")
   .monaco-placeholder

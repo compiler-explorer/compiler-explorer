@@ -296,6 +296,55 @@ compiler.clang_p3334.notification=Experimental cross static; see <a href="https:
 The `notification` field creates a tooltip linking to documentation. For GCC compilers, also add `demangler`,
 `objdumper`, and `isNightly=true` properties, as necessary (check some of the other compilers around for inspiration).
 
+### Release track
+
+Each compiler is also categorised by `releaseTrack`, exposed via the `/api/compilers?fields=all` endpoint and used by
+features like the MCP `list_compilers` `latestPerMajor` knob. The four values are:
+
+- **`stable`** — a numbered release (`gcc 14.2.0`, `rust 1.95.0`, ...). The default for anything with a real semver
+  *without* a prerelease segment.
+- **`nightly`** — the canonical bleeding-edge build of an upstream project (`gcc snapshot`, `clang trunk`, `rust
+  nightly`, `flang trunk`, `.NET main`, ...).
+- **`prerelease`** — a release-candidate / beta of an upcoming numbered release (`rust beta`, `dxc 1.8.2306-preview`).
+- **`experimental`** — a feature-branch fork or proposal implementation that isn't on the release path. This covers
+  most of the c++ paper-prototype compilers (`gcc-contracts-trunk`, `clang_p2996`, `clang_clangir`, ...).
+
+The track is normally inferred from `isSemVer`, `isNightly`, and `semver` — no extra config needed in the common case.
+The rules are:
+
+1. **Real numbered semver** with a prerelease segment (`1.28.0-preview`, `1.0.0-rc1`):
+   - if `isNightly=true` → `nightly` (the maintainer's "rolling preview" signal wins)
+   - otherwise → `prerelease`
+2. **Real numbered semver** without a prerelease segment → `stable`.
+3. semver contains `trunk`/`main`, or the bare tag (parens stripped) is one of `nightly`, `main`, `master`, `tip`
+   → `nightly`. Catches `gcc snapshot` (`semver=(trunk)`), `clang trunk`, `rust nightly`, Go `(tip)`, etc. Note that
+   `(snapshot)` is **not** in this list because CE configs use it both for genuine nightlies and descriptively on
+   stable releases built from an upstream snapshot (e.g. IBM Advance Toolchain `power64 AT12.0`); compilers with
+   `semver=(snapshot)` that should classify as nightly need an explicit `releaseTrack=nightly` override.
+4. semver tag is `beta` / `alpha` / `rc` / `rc1` / ... → `prerelease`. Catches `rust beta`.
+5. **`isNightly=true` with an empty semver** → `nightly`. CE convention is that a parenthesised tag like `(contracts)`
+   names a *specific* feature fork, while no semver at all means "the canonical nightly build, nothing fancy". This
+   catches `wasm32clang`, `flangtrunk`, all the `dotnettrunk*` compilers, `rustccggcc-master`, etc. without per-compiler
+   overrides.
+6. `isNightly=true` with a non-canonical tag (`(contracts)`, `(modules)`, `(P2034 lambdas)`) → `experimental` —
+   compilers tracking a specific language proposal, distinct from the canonical nightly.
+7. Anything else → `stable` as the safe fallback.
+
+If the heuristic gets it wrong for some edge case, set the `releaseTrack` property explicitly. Per-compiler:
+
+```ini
+compiler.rustccggcc-master.releaseTrack=nightly
+```
+
+Or per-group, when every compiler in the group shares the same track:
+
+```ini
+group.wasmclang.releaseTrack=nightly
+```
+
+Valid values: `stable`, `nightly`, `prerelease`, `experimental`. An invalid value will fail compiler discovery loudly
+at startup rather than silently mislabelling the compiler.
+
 ## Putting it all together
 
 Hopefully that's enough to get an idea. The ideal case of a GCC-like compiler should be a pull request to add a couple

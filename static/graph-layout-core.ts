@@ -173,7 +173,12 @@ function calculateTreePacking(left: BoundingBox, right: BoundingBox, narrowLayou
         offset -= rightBound;
         offsets.push(offset);
     }
-    return offsets.length === 0 ? 0 : offsets.reduce((a, b) => Math.min(a, b));
+    // For rows that only exist in the right tree, the constraint is that the
+    // right subtree must not be shifted to negative columns.
+    for (const rightRow of right.rows.slice(left.rows.length)) {
+        offsets.push(-left.width - rightRow.start);
+    }
+    return offsets.length === 0 ? 0 : offsets.reduce((a, b) => Math.max(a, b));
 }
 
 function combineRowBounds(left: RowBound[], right: RowBound[]) {

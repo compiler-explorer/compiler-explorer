@@ -29,13 +29,14 @@ import process from 'node:process';
 import PromClient from 'prom-client';
 import urljoin from 'url-join';
 
+import {BuildSystems} from '../../shared/build-systems.js';
 import type {Language, LanguageKey} from '../../types/languages.interfaces.js';
 import {AppArguments} from '../app.interfaces.js';
 import {languages as allLanguages} from '../languages.js';
 import {logger} from '../logger.js';
 import type {PropertyGetter} from '../properties.interfaces.js';
 import * as props from '../properties.js';
-import type {AppConfiguration} from './config.interfaces.js';
+import type {AppConfiguration, TrustProxySetting} from './config.interfaces.js';
 
 /**
  * Measures event loop lag to monitor server performance.
@@ -90,8 +91,11 @@ export function filterLanguages(
                 }
             }
         }
-        // Always keep cmake for IDE mode, just in case
-        filteredLangs[existingLanguages.cmake.id] = existingLanguages.cmake;
+        // Always keep the build system manifest languages for IDE mode, just in case
+        for (const buildSystem of Object.values(BuildSystems)) {
+            const manifestLang = existingLanguages[buildSystem.manifestLanguageId];
+            if (manifestLang) filteredLangs[manifestLang.id] = manifestLang;
+        }
         return filteredLangs as Record<LanguageKey, Language>;
     }
     return existingLanguages;
@@ -171,6 +175,7 @@ export function loadConfiguration(appArgs: AppArguments): AppConfiguration {
 
     const staticUrl = ceProps<string | undefined>('staticUrl');
     const staticRoot = urljoin(staticUrl || httpRoot, '/');
+    const trustProxy = ceProps<TrustProxySetting>('trustProxy', 'loopback');
 
     return {
         ceProps,
@@ -183,5 +188,6 @@ export function loadConfiguration(appArgs: AppArguments): AppConfiguration {
         httpRoot,
         staticRoot,
         staticUrl,
+        trustProxy,
     };
 }

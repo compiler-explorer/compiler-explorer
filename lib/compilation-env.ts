@@ -181,17 +181,19 @@ export class CompilationEnvironment {
         }
     }
 
-    async tempCachePutWithTTL(object: CacheableValue, result: object, ttlDays: number, creator: string | undefined) {
-        const key = BaseCache.hash(object);
-        const jsonData = JSON.stringify(result);
+    hasSharedCache(): boolean {
+        return this.cache.isShared;
+    }
 
-        // Check if cache is S3Cache to use TTL functionality with temp path
-        if (this.cache instanceof S3Cache) {
-            return this.cache.putWithTTLAndPath(key, Buffer.from(jsonData), ttlDays, 'temp', creator);
-        } else {
-            // Fallback to regular put for non-S3 caches
-            return this.cache.put(key, jsonData, creator);
-        }
+    // Stores a value for another process to fetch and returns the key it went under, relative to
+    // the cache's own path, or undefined when there is nowhere a reader could fetch it from.
+    async tempCachePutWithTTL(
+        object: CacheableValue,
+        jsonString: string,
+        ttlDays: number,
+        creator: string | undefined,
+    ): Promise<string | undefined> {
+        return this.cache.putShared(BaseCache.hash(object), Buffer.from(jsonString), ttlDays, creator);
     }
 
     getExecutableHash(object: CacheableValue): string {

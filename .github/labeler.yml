@@ -14,8 +14,9 @@
 'lang-algol68':
   - changed-files:
       - any-glob-to-any-file:
-          - 'lib/compilers/gac.ts'
+          - 'lib/compilers/ga68.ts'
           - 'etc/config/algol68.*.properties'
+          - 'static/modes/algol68-mode.ts'
 
 'lang-android-java':
   - changed-files:
@@ -104,6 +105,13 @@
           - 'lib/compilers/clojure.ts'
           - 'etc/config/clojure.*.properties'
 
+'lang-co2':
+  - changed-files:
+      - any-glob-to-any-file:
+          - 'lib/compilers/co2.ts'
+          - 'etc/config/co2.*.properties'
+          - 'static/modes/co2-mode.ts'
+
 'lang-cobol':
   - changed-files:
       - any-glob-to-any-file:
@@ -132,6 +140,15 @@
           - lib/compilers/nvcc.ts
           - etc/config/cuda.*.properties
           - static/modes/cuda-mode.ts
+          - lib/compilers/scale-nvcc-nvidia.ts
+          - lib/compilers/scale-nvcc-amd.ts
+
+
+'lang-cutedsl':
+  - changed-files:
+      - any-glob-to-any-file:
+          - 'lib/compilers/cutedsl.ts'
+          - 'etc/config/cutedsl.*.properties'
 
 'lang-d':
   - changed-files:
@@ -245,6 +262,13 @@
           - 'lib/compilers/kotlin.ts'
           - 'etc/config/kotlin.*.properties'
 
+'lang-lean':
+  - changed-files:
+      - any-glob-to-any-file:
+          - 'lib/compilers/lean.ts'
+          - 'etc/config/lean.*.properties'
+          - 'static/modes/lean-mode.ts'
+
 'lang-llvm':
   - changed-files:
       - any-glob-to-any-file:
@@ -257,6 +281,13 @@
           - 'lib/tooling/llvm-dwarfdump-tool.ts'
           - 'etc/config/llvm.*.properties'
           - 'static/modes/llvm-ir-mode.ts'
+
+'lang-mach':
+  - changed-files:
+      - any-glob-to-any-file:
+          - 'lib/compilers/mach.ts'
+          - 'etc/config/mach.*.properties'
+          - 'static/modes/mach-mode.ts'
 
 'lang-modula2':
   - changed-files:
@@ -272,6 +303,12 @@
           - 'etc/config/mojo.*.properties'
           - 'static/modes/mojo-mode.ts'
 
+'lang-nexium':
+  - changed-files:
+      - any-glob-to-any-file:
+          - 'lib/compilers/nexium.ts'
+          - 'etc/config/nexium.*.properties'
+          - 'static/modes/nexium-mode.ts'
 'lang-nim':
   - changed-files:
       - any-glob-to-any-file:
@@ -347,6 +384,12 @@
           - 'lib/compilers/racket.ts'
           - 'etc/config/racket.*.properties'
 
+'lang-razorforge':
+  - changed-files:
+      - any-glob-to-any-file:
+          - 'lib/compilers/razorforge.ts'
+          - 'etc/config/razorforge.*.properties'
+
 'lang-ruby':
   - changed-files:
       - any-glob-to-any-file:
@@ -413,6 +456,13 @@
           - 'lib/compilers/tablegen.ts'
           - 'etc/config/tablegen.*.properties'
           - 'static/modes/tablegen-mode.ts'
+
+'lang-tilelang':
+  - changed-files:
+      - any-glob-to-any-file:
+          - 'lib/compilers/tilelang.ts'
+          - 'etc/config/tilelang.*.properties'
+          - 'etc/scripts/tilelang_wrapper.py'
 
 'lang-toit':
   - changed-files:

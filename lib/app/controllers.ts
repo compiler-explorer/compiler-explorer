@@ -24,6 +24,7 @@
 
 import express from 'express';
 
+import type {Source} from '../../types/source.interfaces.js';
 import {CompilationQueue} from '../compilation-queue.js';
 import {FormattingService} from '../formatting-service.js';
 import {AssemblyDocumentationController} from '../handlers/api/assembly-documentation-controller.js';
@@ -33,7 +34,6 @@ import {NoScriptController} from '../handlers/api/noscript-controller.js';
 import {SiteTemplateController} from '../handlers/api/site-template-controller.js';
 import {SourceController} from '../handlers/api/source-controller.js';
 import {CompileHandler} from '../handlers/compile.js';
-import {sources} from '../sources/index.js';
 
 export interface ApiControllers {
     siteTemplateController: SiteTemplateController;
@@ -46,20 +46,24 @@ export interface ApiControllers {
 
 /**
  * Initialize all API controllers used by the application
+ * @param sources - The configured source providers (e.g. builtin examples)
  * @param compileHandler - The compile handler instance
  * @param formattingService - The formatting service instance
  * @param compilationQueue - The compilation queue instance
  * @param healthCheckFilePath - Optional path to health check file
+ * @param healthCheckMinFreeSpaceMiB - Minimum free space on the temp filesystem to be healthy (0 disables)
  * @param isExecutionWorker - Whether the server is running as an execution worker
  * @param isCompilationWorker - Whether the server is running as a compilation worker
  * @param formDataHandler - Handler for form data
  * @returns Object containing all initialized controllers
  */
 export function setupControllersAndHandlers(
+    sources: Source[],
     compileHandler: CompileHandler,
     formattingService: FormattingService,
     compilationQueue: CompilationQueue,
     healthCheckFilePath: string | null,
+    healthCheckMinFreeSpaceMiB: number,
     isExecutionWorker: boolean,
     isCompilationWorker: boolean,
     formDataHandler: express.Handler,
@@ -77,6 +81,7 @@ export function setupControllersAndHandlers(
         healthCheckFilePath,
         compileHandler,
         isExecutionWorker,
+        healthCheckMinFreeSpaceMiB,
     );
 
     return {

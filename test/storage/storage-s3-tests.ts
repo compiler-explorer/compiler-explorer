@@ -131,7 +131,7 @@ describe('Stores to s3', () => {
             fullHash: 'ABCDEFGHIJKLMNOP',
             config: 'yo',
         };
-        await storage.storeItem(object, {get: () => 'localhost'});
+        await storage.storeItem(object, {ip: 'localhost'});
         expect(
             mockS3.commandCalls(PutObjectCommand, {
                 Bucket: 'bucket',
@@ -151,6 +151,19 @@ describe('Stores to s3', () => {
                 },
             }),
         ).toHaveLength(1);
+    });
+    it('records only the anonymised client address', async () => {
+        const storage = new StorageS3(httpRootDir, compilerProps, awsProps);
+        const object = {
+            prefix: 'ABCDEF',
+            uniqueSubHash: 'ABCDEFG',
+            fullHash: 'ABCDEFGHIJKLMNOP',
+            config: 'yo',
+        };
+        await storage.storeItem(object, {ip: '203.0.113.9'});
+        const calls = mockDynamoDb.commandCalls(PutItemCommand, {TableName: 'table'});
+        expect(calls).toHaveLength(1);
+        expect(calls[0].args[0].input.Item?.creation_ip).toEqual({S: '203.0.113.0'});
     });
 });
 

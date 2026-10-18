@@ -41,7 +41,10 @@ import {
 import {CompilerInfo} from '../../types/compiler.interfaces.js';
 import {Hub} from '../hub.js';
 import {extendConfig} from '../monaco-config.js';
+import {SentryCapture} from '../sentry.js';
+import {replaceOptions} from '../tom-select-utils.js';
 import * as utils from '../utils.js';
+import {CompilationOptions} from '../widgets/compilation-options.js';
 import {Toggles} from '../widgets/toggles.js';
 import {OptPipelineViewState} from './opt-pipeline.interfaces.js';
 import {MonacoPaneState} from './pane.interfaces.js';
@@ -83,6 +86,7 @@ export class OptPipeline extends MonacoPane<monaco.editor.IStandaloneDiffEditor,
 
     constructor(hub: Hub, container: Container, state: OptPipelineViewState & MonacoPaneState) {
         super(hub, container, state);
+        new CompilationOptions(this, this.compilerInfo.compilerId, result => result.optPipelineOutput);
         this.groupName = this.domRoot.find('.opt-group-name');
         this.updateGroupName();
         this.passesColumn = this.domRoot.find('.passes-column');
@@ -145,17 +149,24 @@ export class OptPipeline extends MonacoPane<monaco.editor.IStandaloneDiffEditor,
     }
 
     override initializeStateDependentProperties(state: OptPipelineViewState & MonacoPaneState) {
-        const langId = state.lang;
-        const compilerId = state.compiler;
-        if (langId && compilerId) {
-            const result = this.hub.compilerService.processFromLangAndCompiler(langId, compilerId);
+        // The compiler value is fetched async via postInit. Reads of `this.compiler`
+        // during synchronous construction (createEditor → getMonacoLanguage,
+        // updateButtons) will see null and fall back to defaults; postInit re-applies
+        // the correct values once the fetch resolves.
+        this.compiler = null;
+        const {lang: langId, compiler: compilerId} = state;
+        if (langId && compilerId) this.postInit(langId, compilerId);
+    }
+
+    private async postInit(langId: string, compilerId: string) {
+        try {
+            const result = await this.hub.compilerService.processFromLangAndCompiler(langId, compilerId);
             this.compiler = result?.compiler ?? null;
-        } else {
-            // With older state that's missing `lang` and `compiler`,
-            // we fallback to previous functionality (the compiler info is
-            // currently only used to tweak the UI for newer languages that did
-            // not offer this view previously).
-            this.compiler = null;
+            this.updateGroupName();
+            this.updateButtons();
+            this.updateEditor();
+        } catch (e) {
+            SentryCapture(e, 'OptPipeline.postInit');
         }
     }
 
@@ -217,7 +228,7 @@ export class OptPipeline extends MonacoPane<monaco.editor.IStandaloneDiffEditor,
     }
 
     updateButtons() {
-        if (!this.compiler || !this.compiler.optPipeline) return;
+        if (!this.compiler?.optPipeline) return;
 
         const {supportedOptions, supportedFilters, initialOptionsState, initialFiltersState} =
             this.compiler.optPipeline;
@@ -357,20 +368,13 @@ export class OptPipeline extends MonacoPane<monaco.editor.IStandaloneDiffEditor,
         //const groups = Object.keys(result);
         let selectedGroup = this.state.selectedGroup; // one of the .clear calls below will end up resetting this
         this.groupSelector.clear();
-        this.groupSelector.clearOptions();
         const keys = Object.keys(results);
-        if (keys.length === 0) {
-            this.groupSelector.addOption({
-                title: '<No groups available>',
-                value: '<No groups available>',
-            });
-        }
-        for (const fn of keys) {
-            this.groupSelector.addOption({
-                title: fn,
-                value: fn,
-            });
-        }
+        replaceOptions(
+            this.groupSelector,
+            keys.length === 0
+                ? [{title: '<No groups available>', value: '<No groups available>'}]
+                : keys.map(fn => ({title: fn, value: fn})),
+        );
         this.passesList.empty();
         if (keys.length > 0) {
             if (selectedGroup === '' || !(selectedGroup in results)) {

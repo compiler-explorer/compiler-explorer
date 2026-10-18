@@ -28,10 +28,11 @@ import {LanguageKey} from '../../types/languages.interfaces.js';
 import {isMobileViewer} from '../app/url-handlers.js';
 import {unwrapString} from '../assert.js';
 import {ClientState} from '../clientstate.js';
-import {ClientStateNormalizer} from '../clientstate-normalizer.js';
+import {configToClientState, extractJsonFromBufferAndInflateIfRequired} from '../clientstate-normalizer.js';
 import {logger} from '../logger.js';
 import {ClientOptionsHandler} from '../options-handler.js';
-import {StorageBase} from '../storage/index.js';
+import {getSafeHash, StorageBase} from '../storage/index.js';
+import {extractShortId} from '../url-utils.js';
 import {RenderConfig} from './handler.interfaces.js';
 import {cached, csp} from './middleware.js';
 
@@ -54,7 +55,7 @@ export class NoScriptHandler {
                 /^\/noscript\/clientstate\/(?<clientstatebase64>.*)/,
                 cached,
                 csp,
-                this.clientStateHandlerNoScript.bind(this),
+                this.unstoredStateHandlerNoScript.bind(this),
             )
             .get('/noscript/sponsors', cached, csp, (req, res) => {
                 res.render(
@@ -80,17 +81,7 @@ export class NoScriptHandler {
         this.storageHandler
             .expandId(id)
             .then(result => {
-                const config = JSON.parse(result.config);
-
-                let clientstate: ClientState;
-                if (config.content) {
-                    const normalizer = new ClientStateNormalizer();
-                    normalizer.fromGoldenLayout(config);
-
-                    clientstate = normalizer.normalized;
-                } else {
-                    clientstate = new ClientState(config);
-                }
+                const clientstate = configToClientState(JSON.parse(result.config));
 
                 this.renderNoScriptLayout(clientstate, req, res);
 
@@ -107,11 +98,11 @@ export class NoScriptHandler {
             });
     }
 
-    clientStateHandlerNoScript(req: express.Request, res: express.Response, next: express.NextFunction) {
+    unstoredStateHandlerNoScript(req: express.Request, res: express.Response, next: express.NextFunction) {
         try {
             const buffer = Buffer.from(unwrapString(req.params.clientstatebase64), 'base64');
-            const config = JSON.parse(buffer.toString());
-            const clientstate = new ClientState(config);
+            const config = extractJsonFromBufferAndInflateIfRequired(buffer);
+            const clientstate = configToClientState(config);
 
             this.renderNoScriptLayout(clientstate, req, res);
         } catch (err) {
@@ -224,11 +215,11 @@ export class NoScriptHandler {
         }
 
         // Generating shareable URL
-        const shareableUrl = await this.generateShareableUrl(state);
+        const shareableUrl = await this.generateShareableUrl(state, req);
 
         const httpRoot = (this.renderConfig as any).httpRoot || '/';
-        const relativeUrl = shareableUrl.substring(shareableUrl.lastIndexOf('/z/') + 1);
-        const shortlink = `${req.protocol}://${req.get('host')}${httpRoot}${relativeUrl}`;
+        const shortId = extractShortId(shareableUrl);
+        const shortlink = `${req.protocol}://${req.get('host')}${httpRoot}z/${shortId}`;
 
         logger.debug('Shareable URL:', shortlink);
 
@@ -251,10 +242,10 @@ export class NoScriptHandler {
         res.render('noscript/share', renderConfig);
     }
 
-    async generateShareableUrl(state: ClientState): Promise<string> {
+    async generateShareableUrl(state: ClientState, req: express.Request): Promise<string> {
         try {
             // Creating the stored object like the main handler does
-            const {config, configHash} = StorageBase.getSafeHash(state);
+            const {config, configHash} = getSafeHash(state);
 
             // Finding or create the unique subhash
             const result = await this.storageHandler.findUniqueSubhash(configHash);
@@ -267,7 +258,7 @@ export class NoScriptHandler {
                     config: config,
                 };
 
-                await this.storageHandler.storeItem(storedObject, {} as express.Request);
+                await this.storageHandler.storeItem(storedObject, req);
             }
 
             return `/z/${result.uniqueSubHash}`;
@@ -276,7 +267,7 @@ export class NoScriptHandler {
             // Fallback to direct encoding
             const stateString = JSON.stringify(state);
             const base64State = Buffer.from(stateString).toString('base64url');
-            return `/#${base64State}`;
+            return `clientstate/${base64State}`;
         }
     }
 }

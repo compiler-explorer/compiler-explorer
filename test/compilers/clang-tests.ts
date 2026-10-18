@@ -27,7 +27,7 @@ import path from 'node:path';
 
 import {describe, expect, it} from 'vitest';
 
-import {ClangCompiler} from '../../lib/compilers/index.js';
+import {ClangCompiler, ClangCudaCompiler} from '../../lib/compilers/index.js';
 import {makeCompilationEnvironment} from '../utils.js';
 
 describe('clang tests', () => {
@@ -152,5 +152,39 @@ Args:
                 optType: 'Analysis',
             },
         ]);
+    });
+});
+
+describe('clang-cuda cmake tests', () => {
+    const languages = {cuda: {id: 'cuda'}};
+    const makeCompiler = (options: string) =>
+        new ClangCudaCompiler(
+            {
+                exe: '/opt/compiler-explorer/clang-19.1.0/bin/clang++',
+                remote: true,
+                lang: 'cuda',
+                ldPath: [],
+                options,
+            } as any,
+            makeCompilationEnvironment({languages}),
+        );
+    const request = (options: string[] = []) => ({options}) as any;
+
+    it('names the cuda toolkit root from the compiler options', () => {
+        const compiler = makeCompiler('--cuda-path=/opt/compiler-explorer/cuda/12.5.1 --cuda-gpu-arch=sm_90');
+        expect(compiler.getExtraCMakeArgs(request())).toEqual([
+            '-DCUDAToolkit_ROOT=/opt/compiler-explorer/cuda/12.5.1',
+        ]);
+    });
+
+    it("prefers the user's cuda path over the compiler's", () => {
+        const compiler = makeCompiler('--cuda-path=/opt/compiler-explorer/cuda/12.5.1');
+        expect(compiler.getExtraCMakeArgs(request(['--cuda-path=/some/other/cuda']))).toEqual([
+            '-DCUDAToolkit_ROOT=/some/other/cuda',
+        ]);
+    });
+
+    it('adds nothing when no cuda path is given', () => {
+        expect(makeCompiler('--cuda-gpu-arch=sm_90').getExtraCMakeArgs(request())).toEqual([]);
     });
 });

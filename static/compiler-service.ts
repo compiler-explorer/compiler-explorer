@@ -27,6 +27,7 @@ import $ from 'jquery';
 import {LRUCache} from 'lru-cache';
 import _ from 'underscore';
 
+import type {BuildSystemId} from '../shared/build-systems.js';
 import {ResultLine} from '../types/resultline/resultline.interfaces.js';
 import {options} from './options.js';
 
@@ -35,18 +36,21 @@ import ErrorTextStatus = JQuery.Ajax.ErrorTextStatus;
 
 import {CompilationResult, FiledataPair} from '../types/compilation/compilation.interfaces.js';
 import {CompilerInfo} from '../types/compiler.interfaces.js';
-import {CompilationStatus} from './compiler-service.interfaces.js';
+import {CompilationStatus, CompilationStatusCode} from './compiler-service.interfaces.js';
 import {IncludeDownloads, SourceAndFiles} from './download-service.js';
 import {SentryCapture} from './sentry.js';
+import {compilersService} from './services/compilers.service.js';
+import {languagesService} from './services/languages.service.js';
 import {SiteSettings} from './settings.js';
 
 const ASCII_COLORS_RE = new RegExp(/\x1B\[[\d;]*m(.\[K)?/g);
+
+type HasCompilationStatus = Partial<Pick<CompilationResult, 'code' | 'stdout' | 'stderr' | 'inputFilename'>>;
 
 export class CompilerService {
     private readonly base = window.httpRoot;
     private allowStoreCodeDebug: boolean;
     private cache: LRUCache<string, CompilationResult>;
-    private readonly compilersByLang: Record<string, Record<string, CompilerInfo>>;
 
     constructor(eventHub: EventEmitter) {
         this.allowStoreCodeDebug = true;
@@ -55,36 +59,30 @@ export class CompilerService {
             sizeCalculation: n => JSON.stringify(n).length,
         });
 
-        this.compilersByLang = {};
-
-        for (const compiler of options.compilers) {
-            if (!(compiler.lang in this.compilersByLang)) this.compilersByLang[compiler.lang] = {};
-            this.compilersByLang[compiler.lang][compiler.id] = compiler;
-        }
-
         eventHub.on(
             'settingsChange',
             (newSettings: SiteSettings) => (this.allowStoreCodeDebug = newSettings.allowStoreCodeDebug),
         );
     }
 
-    private getDefaultCompilerForLang(langId: string) {
-        return options.defaultCompiler[langId];
+    private async getDefaultCompilerForLang(langId: string): Promise<string> {
+        const languages = await languagesService.getLanguages();
+        return languages[langId]?.defaultCompiler ?? '';
     }
 
-    public processFromLangAndCompiler(
+    public async processFromLangAndCompiler(
         langId: string | null,
         compilerId: string,
-    ): {langId: string | null; compiler: CompilerInfo | null} | null {
+    ): Promise<{langId: string | null; compiler: CompilerInfo | null} | null> {
         try {
             if (langId) {
                 if (!compilerId) {
-                    compilerId = this.getDefaultCompilerForLang(langId);
+                    compilerId = await this.getDefaultCompilerForLang(langId);
                 }
 
-                const foundCompiler = this.findCompiler(langId, compilerId);
+                const foundCompiler = await this.findCompiler(langId, compilerId);
                 if (!foundCompiler) {
-                    const compilers = Object.values(this.getCompilersForLang(langId) ?? {});
+                    const compilers = Object.values((await this.getCompilersForLang(langId)) ?? {});
                     if (compilers.length > 0) {
                         return {
                             compiler: compilers[0],
@@ -92,7 +90,6 @@ export class CompilerService {
                         };
                     }
                     return {
-                        // There were no compilers, so return null, the selection will show up empty
                         compiler: null,
                         langId: langId,
                     };
@@ -103,38 +100,35 @@ export class CompilerService {
                 };
             }
             if (compilerId) {
-                const matchingCompilers = Object.values(options.languages).map(lang => {
-                    const compiler = this.findCompiler(lang.id, compilerId);
+                for (const lang of Object.values(languagesService.getLanguagesOrFail())) {
+                    const compiler = await this.findCompiler(lang.id, compilerId);
                     if (compiler) {
                         return {
                             langId: lang.id,
                             compiler: compiler,
                         };
                     }
-                    return null;
-                });
-                // Ensure that if no compiler is present, we return null instead of undefined
-                return matchingCompilers.find(compiler => compiler !== null) ?? null;
+                }
+                return null;
             }
-            const languages = Object.values(options.languages);
+            const languages = Object.values(languagesService.getLanguagesOrFail());
             if (languages.length > 0) {
                 const firstLang = languages[0];
                 return this.processFromLangAndCompiler(firstLang.id, compilerId);
             }
-            // TODO: What now? No languages loaded
             return null;
         } catch (e) {
             SentryCapture(e, 'processFromLangAndCompiler');
         }
-        // TODO: What now? Found no compilers!
         return {
             langId: langId,
             compiler: null,
         };
     }
 
-    public getGroupsInUse(langId: string): {value: string; label: string}[] {
-        return _.uniq(Object.values(this.getCompilersForLang(langId) ?? {}), false, compiler => compiler.group)
+    public async getGroupsInUse(langId: string): Promise<{value: string; label: string}[]> {
+        const compilers = (await this.getCompilersForLang(langId)) ?? {};
+        return _.uniq(Object.values(compilers), false, compiler => compiler.group)
             .map(compiler => {
                 return {value: compiler.group, label: compiler.groupName || compiler.group};
             })
@@ -145,8 +139,8 @@ export class CompilerService {
             );
     }
 
-    getCompilersForLang(langId: string): Record<string, CompilerInfo> | undefined {
-        return langId in this.compilersByLang ? this.compilersByLang[langId] : undefined;
+    async getCompilersForLang(langId: string): Promise<Record<string, CompilerInfo>> {
+        return compilersService.getCompilersForLang(langId);
     }
 
     private findCompilerInList(compilers: Record<string, CompilerInfo>, compilerId: string) {
@@ -161,9 +155,9 @@ export class CompilerService {
         return null;
     }
 
-    findCompiler(langId: string, compilerId: string): CompilerInfo | null {
+    async findCompiler(langId: string, compilerId: string): Promise<CompilerInfo | null> {
         if (!compilerId) return null;
-        const compilers = this.getCompilersForLang(langId) ?? {};
+        const compilers = await this.getCompilersForLang(langId);
         return this.findCompilerInList(compilers, compilerId);
     }
 
@@ -175,6 +169,7 @@ export class CompilerService {
         errorThrown: string,
     ) {
         let error = errorThrown;
+        let isNetworkError = false;
         if (!error) {
             switch (textStatus) {
                 case 'timeout':
@@ -184,16 +179,24 @@ export class CompilerService {
                     error = 'Request was aborted';
                     break;
                 case 'error':
-                    switch (xhr.status) {
-                        case 500:
-                            error = 'Request failed: internal server error';
-                            break;
-                        case 504:
-                            error = 'Request failed: gateway timeout';
-                            break;
-                        default:
-                            error = 'Request failed: HTTP error code ' + xhr.status;
-                            break;
+                    if (xhr.status === 0) {
+                        // HTTP status 0 means the request never reached the server (network failure)
+                        isNetworkError = true;
+                        error = navigator.onLine
+                            ? 'Could not reach Compiler Explorer. Check your internet connection and try again.'
+                            : 'Could not reach Compiler Explorer: your browser appears to be offline.';
+                    } else {
+                        switch (xhr.status) {
+                            case 500:
+                                error = 'Request failed: internal server error';
+                                break;
+                            case 504:
+                                error = 'Request failed: gateway timeout';
+                                break;
+                            default:
+                                error = 'Request failed: HTTP error code ' + xhr.status;
+                                break;
+                        }
                     }
                     break;
                 default:
@@ -204,6 +207,7 @@ export class CompilerService {
         const requestError = new Error(error);
         // Attach request context to the error for debugging
         (requestError as any).request = request;
+        (requestError as any).isNetworkError = isNetworkError;
         reject(requestError);
     }
 
@@ -249,7 +253,7 @@ export class CompilerService {
         });
     }
 
-    public submitCMake(request: Record<string, any>) {
+    public submitBuild(buildSystem: BuildSystemId, request: Record<string, any>) {
         request.allowStoreCodeDebug = this.allowStoreCodeDebug;
         const jsonRequest = JSON.stringify(request);
         if (options.doCache && !request.bypassCache) {
@@ -266,7 +270,7 @@ export class CompilerService {
             const compilerId = encodeURIComponent(request.compiler);
             $.ajax({
                 type: 'POST',
-                url: `${this.getBaseUrl()}api/compiler/${compilerId}/cmake`,
+                url: `${this.getBaseUrl()}api/compiler/${compilerId}/build/${buildSystem}`,
                 dataType: 'json',
                 contentType: 'application/json',
                 data: jsonRequest,
@@ -337,12 +341,10 @@ export class CompilerService {
         return [{field: '$order'}, {field: '$score'}, {field: 'name'}];
     }
 
-    public static doesCompilationResultHaveWarnings(result: CompilationResult) {
-        // TODO: Types probably need to be updated here
-
+    public static doesCompilationResultHaveWarnings(result: HasCompilationStatus) {
         const stdout = result.stdout ?? [];
-
         const stderr = result.stderr ?? [];
+
         // TODO: Pass what compiler did this and check if it it's actually skippable
         // Right now we're ignoring outputs that match the input filename
         // Compiler & Executor are capable of giving us the info, but conformance view is not
@@ -356,9 +358,11 @@ export class CompilerService {
         return stdout.length > 0 || stderr.length > 0;
     }
 
-    public static calculateStatusIcon(result: CompilationResult): CompilationStatus {
+    public static calculateStatusIcon(result: HasCompilationStatus): CompilationStatus {
         let code = 1;
-        if (result.code !== 0) {
+        if (result.code === undefined) {
+            code = 5;
+        } else if (result.code !== 0) {
             code = 3;
         } else if (CompilerService.doesCompilationResultHaveWarnings(result)) {
             code = 2;
@@ -367,58 +371,79 @@ export class CompilerService {
     }
 
     private static getAriaLabel(status: CompilationStatus) {
-        // Compiling...
-        if (status.code === 4) return 'Compiling';
-        if (status.compilerOut === 0) {
+        const compilationResult = (() => {
+            if (status.code === CompilationStatusCode.UNKNOWN) return 'Unknown';
+            // Compiling...
+            if (status.code === CompilationStatusCode.COMPILING) return 'Compiling';
+            if (status.compilerOut === 0) {
+                // StdErr.length > 0
+                if (status.code === CompilationStatusCode.WITH_ERRORS) return 'Compilation succeeded with errors';
+                // StdOut.length > 0
+                if (status.code === CompilationStatusCode.WITH_WARNINGS) return 'Compilation succeeded with warnings';
+                return 'Compilation succeeded';
+            }
             // StdErr.length > 0
-            if (status.code === 3) return 'Compilation succeeded with errors';
+            if (status.code === CompilationStatusCode.WITH_ERRORS) return 'Compilation failed with errors';
             // StdOut.length > 0
-            if (status.code === 2) return 'Compilation succeeded with warnings';
-            return 'Compilation succeeded';
-        }
-        // StdErr.length > 0
-        if (status.code === 3) return 'Compilation failed with errors';
-        // StdOut.length > 0
-        if (status.code === 2) return 'Compilation failed with warnings';
-        return 'Compilation failed';
+            if (status.code === CompilationStatusCode.WITH_WARNINGS) return 'Compilation failed with warnings';
+            return 'Compilation failed';
+        })();
+        const executionResult = (() => {
+            switch (status.didExecute) {
+                case undefined:
+                    return '';
+                case true:
+                    return '; execution successful';
+                case false:
+                    return '; execution failed';
+            }
+        })();
+        return `${compilationResult}${executionResult}`;
     }
 
     private static getColor(status: CompilationStatus) {
         // Compiling...
-        if (status.code === 4) return '#888888';
+        if (status.code === CompilationStatusCode.COMPILING) return '#888888';
+        if (status.didExecute !== undefined) {
+            return status.didExecute ? '#12BB12' : '#FF1212';
+        }
         if (status.compilerOut === 0) {
             // StdErr.length > 0
-            if (status.code === 3) return '#FF6645';
+            if (status.code === CompilationStatusCode.WITH_ERRORS) return '#FF6645';
             // StdOut.length > 0
-            if (status.code === 2) return '#FF6500';
+            if (status.code === CompilationStatusCode.WITH_WARNINGS) return '#FF6500';
             return '#12BB12';
         }
         // StdErr.length > 0
-        if (status.code === 3) return '#FF1212';
+        if (status.code === CompilationStatusCode.WITH_ERRORS) return '#FF1212';
         // StdOut.length > 0
-        if (status.code === 2) return '#BB8700';
+        if (status.code === CompilationStatusCode.WITH_WARNINGS) return '#BB8700';
         return '#FF6645';
     }
 
-    public static handleCompilationStatus(
-        statusLabel: JQuery | null,
-        statusIcon: JQuery | null,
-        status: CompilationStatus,
-    ) {
-        if (statusLabel != null) {
-            statusLabel.toggleClass('error', status.code === 3).toggleClass('warning', status.code === 2);
-        }
-
+    public static handleCompilationStatus(statusIcon: JQuery | null, status: CompilationStatus) {
         if (statusIcon != null) {
             statusIcon
                 .removeClass()
                 .addClass('status-icon fas')
                 .css('color', CompilerService.getColor(status))
-                .toggle(status.code !== 0)
+                .toggle(status.code !== CompilationStatusCode.NONE)
                 .attr('aria-label', CompilerService.getAriaLabel(status))
-                .toggleClass('fa-spinner fa-spin', status.code === 4)
-                .toggleClass('fa-times-circle', status.code === 3)
-                .toggleClass('fa-check-circle', status.code === 1 || status.code === 2);
+                .toggleClass('fa-spinner fa-spin', status.code === CompilationStatusCode.COMPILING);
+            let error, unknown, okay;
+            if (status.didExecute === undefined) {
+                error = status.code === CompilationStatusCode.WITH_ERRORS;
+                unknown = status.code === CompilationStatusCode.UNKNOWN;
+                okay = status.code === CompilationStatusCode.OK || status.code === CompilationStatusCode.WITH_WARNINGS;
+            } else {
+                error = status.code !== CompilationStatusCode.COMPILING && !status.didExecute;
+                unknown = false;
+                okay = status.code !== CompilationStatusCode.COMPILING && status.didExecute;
+            }
+            statusIcon
+                .toggleClass('fa-times-circle', error)
+                .toggleClass('fa-circle-question', unknown)
+                .toggleClass('fa-check-circle', okay);
         }
     }
 

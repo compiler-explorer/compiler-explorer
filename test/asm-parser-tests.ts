@@ -59,6 +59,244 @@ describe('AsmParser comment filtering', () => {
     });
 });
 
+describe('AsmParser binary line records', () => {
+    const parser = new AsmParser();
+    const gnuObjdump = `0000000000000000 <main>:
+main():
+/tmp/project/src/example.mach:7
+   0:	55                   	push   rbp
+/tmp/project/dep/std/src/print.mach:64
+   1:	c3                   	ret`;
+    const llvmObjdump = `0000000000000000 <main>:
+; main():
+; /tmp/project/src/example.mach:7
+       0: fa010113     	addi	sp, sp, -0x60
+; /tmp/project/dep/std/src/print.mach:64
+       4: 00008067     	ret`;
+
+    it.skipIf(process.platform === 'win32')('should read source lines from gnu objdump', () => {
+        const result = parser.processBinaryAsm(gnuObjdump, {});
+        expect(result.asm.map(line => line.source?.line)).toEqual([undefined, 7, 64]);
+    });
+
+    it.skipIf(process.platform === 'win32')('should read source lines from llvm-objdump', () => {
+        const result = parser.processBinaryAsm(llvmObjdump, {});
+        expect(result.asm.map(line => line.text)).toEqual(['main:', ' addi\tsp, sp, -0x60', ' ret']);
+        expect(result.asm.map(line => line.source?.line)).toEqual([undefined, 7, 64]);
+    });
+
+    it.skipIf(process.platform === 'win32')(
+        'should keep the function label when filtering library code in llvm-objdump output',
+        () => {
+            const result = parser.processBinaryAsm(llvmObjdump, {libraryCode: true});
+            expect(result.asm[0].text).toEqual('main:');
+        },
+    );
+});
+
+describe('AsmParser binary source lines', () => {
+    const parser = new AsmParser();
+    const objdump = `0000000000401020 <square(int)>:
+square(int)():
+/app/example.cpp:4
+  401020:	89 f8                	mov    eax,edi
+/opt/compiler-explorer/gcc-15.1.0/include/c++/15.1.0/bits/stl_algobase.h:238
+  401022:	0f af c7             	imul   eax,edi
+/app/example.cpp:5
+  401025:	c3                   	ret`;
+
+    it.skipIf(process.platform === 'win32')('should only mark lines from the main source file as main source', () => {
+        const result = parser.processBinaryAsm(objdump, {});
+        expect(result.asm.map(line => line.source)).toEqual([
+            null,
+            {file: null, line: 4, mainsource: true},
+            {
+                file: '/opt/compiler-explorer/gcc-15.1.0/include/c++/15.1.0/bits/stl_algobase.h',
+                line: 238,
+                mainsource: false,
+            },
+            {file: null, line: 5, mainsource: true},
+        ]);
+    });
+
+    it.skipIf(process.platform === 'win32')('should name the main source file when filenames are not masked', () => {
+        const result = parser.processBinaryAsm(objdump, {dontMaskFilenames: true});
+        expect(result.asm[1].source).toEqual({file: 'example.cpp', line: 4, mainsource: true});
+    });
+
+    it.skipIf(process.platform === 'win32')(
+        'should keep code inlined from other files when filtering library code',
+        () => {
+            const result = parser.processBinaryAsm(objdump, {libraryCode: true});
+            expect(result.asm.map(line => line.text)).toEqual([
+                'square(int):',
+                ' mov    eax,edi',
+                ' imul   eax,edi',
+                ' ret',
+            ]);
+        },
+    );
+});
+
+describe('AsmParser library code filtering in binary asm', () => {
+    const parser = new AsmParser();
+    const objdump = [
+        '0000000000401000 <lib_a>:',
+        '  401000:\tc3                   \tret',
+        '0000000000401001 <lib_b>:',
+        '  401001:\tc3                   \tret',
+        '0000000000401002 <lib_c>:',
+        '  401002:\tc3                   \tret',
+        '0000000000401003 <main>:',
+        '/tmp/compiler-explorer-compiler/example.c:3',
+        '  401003:\tc3                   \tret',
+    ].join('\n');
+
+    it.skipIf(process.platform === 'win32')('should drop the label of every consecutive library function', () => {
+        const result = parser.processBinaryAsm(objdump, {libraryCode: true});
+        expect(result.asm.map(line => line.text)).toEqual(['main:', ' ret']);
+    });
+
+    it('should keep every label when library code is shown', () => {
+        const result = parser.processBinaryAsm(objdump, {libraryCode: false});
+        expect(result.asm.map(line => line.text).filter(text => text.endsWith(':'))).toEqual([
+            'lib_a:',
+            'lib_b:',
+            'lib_c:',
+            'main:',
+        ]);
+    });
+});
+
+describe('AsmParser directive filtering', () => {
+    const parser = new AsmParser();
+    // GCC wraps inline asm in #APP/#NO_APP and interleaves its own .loc markers there.
+    const inlineAsm = `square(int):
+	pushq	%rbp
+#APP
+# 3 "/app/example.cpp" 1
+	.rept 5
+nop
+.endr
+# 0 "" 2
+	.loc 1 4 5 view .LVU3
+#NO_APP
+	movl	%edi, %eax
+	.loc 1 5 1
+	popq	%rbp
+	ret`;
+
+    it('should keep inline asm directives when filtering directives', () => {
+        const result = parser.processAsm(inlineAsm, {directives: true});
+        const lines = result.asm.map(line => line.text.trim());
+        expect(lines).toContain('.rept 5');
+        expect(lines).toContain('.endr');
+    });
+
+    it('should still drop source location markers inside an inline asm block', () => {
+        const result = parser.processAsm(inlineAsm, {directives: true});
+        const lines = result.asm.map(line => line.text.trim());
+        expect(lines.some(line => line.startsWith('.loc'))).toBe(false);
+    });
+
+    it('should keep filtering directives once the inline asm block has ended', () => {
+        const result = parser.processAsm(
+            `#APP
+	.rept 5
+#NO_APP
+	.p2align 4
+	ret`,
+            {directives: true},
+        );
+        const lines = result.asm.map(line => line.text.trim());
+        expect(lines).toContain('.rept 5');
+        expect(lines).not.toContain('.p2align 4');
+    });
+
+    // What GCC 13.2 and later emit for a file that only includes <iostream>, cut down.
+    it('should filter the debug info after an #APP block that is never closed', () => {
+        const result = parser.processAsm(
+            `	.text
+.Ltext0:
+	.file 0 "/app" "/app/example.cpp"
+#APP
+	.globl _ZSt21ios_base_library_initv
+.Letext0:
+	.file 1 "<built-in>"
+	.section	.debug_info,"",@progbits
+.Ldebug_info0:
+	.long	0x1c5d
+	.value	0x5
+	.section	.debug_abbrev,"",@progbits
+.Ldebug_abbrev0:
+	.uleb128 0x1
+	.ident	"GCC: (GNU) 16.2.0"
+	.section	.note.GNU-stack,"",@progbits`,
+            {directives: true, labels: true, commentOnly: true},
+        );
+        expect(result.asm.map(line => line.text.trim())).toEqual(['.globl _ZSt21ios_base_library_initv']);
+    });
+
+    it('should keep the directives of top-level asm that ends the unit', () => {
+        const result = parser.processAsm(
+            `	.globl	_Z1fv
+_Z1fv:
+	ret
+	.size	_Z1fv, .-_Z1fv
+#APP
+	.rept 3
+nop
+.endr
+.Letext0:
+	.section	.debug_info,"",@progbits
+.Ldebug_info0:
+	.long	0x57`,
+            {directives: true, labels: true, commentOnly: true},
+        );
+        expect(result.asm.map(line => line.text.trim())).toEqual(['_Z1fv:', 'ret', '.rept 3', 'nop', '.endr']);
+    });
+
+    it('should close an unterminated #APP block at the .ident when there is no debug info', () => {
+        const result = parser.processAsm(
+            `#APP
+	.globl _ZSt21ios_base_library_initv
+	.ident	"GCC: (GNU) 16.2.0"
+	.section	.note.GNU-stack,"",@progbits`,
+            {directives: true, commentOnly: true},
+        );
+        expect(result.asm.map(line => line.text.trim())).toEqual(['.globl _ZSt21ios_base_library_initv']);
+    });
+});
+
+describe('AsmParser numeric local labels', () => {
+    const parser = new AsmParser();
+    const filters = {directives: true, labels: true};
+
+    it('should keep a local label referenced forwards', () => {
+        const input = ['square:', '  bne $2,$0,1f', '  break 7', '1:', '  mflo $2', '  jr $31'].join('\n');
+        const lines = parser.processAsm(input, filters).asm.map(line => line.text);
+        expect(lines).toContain('1:');
+    });
+
+    it('should keep a local label referenced backwards', () => {
+        const input = ['loop:', '2:', '  add r0, r0, #1', '  b 2b', '  ret'].join('\n');
+        const lines = parser.processAsm(input, filters).asm.map(line => line.text);
+        expect(lines).toContain('2:');
+    });
+
+    it('should still drop a local label nothing refers to', () => {
+        const input = ['square:', '  mov r0, #0x1f', '1:', '  ret'].join('\n');
+        const lines = parser.processAsm(input, filters).asm.map(line => line.text);
+        expect(lines).not.toContain('1:');
+    });
+
+    it('should not read a NEON element size as a reference', () => {
+        const input = ['square:', '  add v0.16b, v1.16b, v2.16b', '16:', '  ret'].join('\n');
+        const lines = parser.processAsm(input, filters).asm.map(line => line.text);
+        expect(lines).not.toContain('16:');
+    });
+});
+
 describe('PTXAsmParser tests', () => {
     const parser = new PTXAsmParser();
 
@@ -341,6 +579,44 @@ module {
 
             const constLine = result.asm.find(line => line.text.includes('arith.constant 1024'));
             expect(constLine).toBeDefined();
+        });
+
+        it('should resolve nested named MLIR locations', () => {
+            const input = `#loc = loc("<source>":16:0)
+#loc1 = loc("<source>":17:24)
+#loc2 = loc("<source>":18:28)
+#loc19 = loc("pid"(#loc1))
+#loc20 = loc("block_start"(#loc2))
+#loc21 = loc(unknown)
+#loc22 = loc("unknown_value"(#loc21))
+module {
+  tt.func public @kernel(%x_ptr: !tt.ptr<f32> loc("x_ptr"(#loc))) attributes {noinline = false} {
+    %pid = tt.get_program_id x : i32 loc(#loc19)
+    %block_start = arith.muli %pid, %c1024_i32 : i32 loc(#loc20)
+    %unknown = arith.constant 0 : i32 loc(#loc22)
+  } loc(#loc)
+}`;
+
+            const result = parser.processAsm(input, {});
+
+            expect(result.asm[0].text).toBe('module {');
+            expect(result.asm.find(line => line.text.includes('#loc'))).toBeUndefined();
+            expect(result.asm.find(line => line.text.includes('loc('))).toBeUndefined();
+
+            const functionLine = result.asm.find(line => line.text.includes('tt.func public @kernel'));
+            expect(functionLine?.source?.line).toBe(16);
+            expect(functionLine?.source?.column).toBe(0);
+
+            const pidLine = result.asm.find(line => line.text.includes('%pid = tt.get_program_id'));
+            expect(pidLine?.source?.line).toBe(17);
+            expect(pidLine?.source?.column).toBe(24);
+
+            const blockStartLine = result.asm.find(line => line.text.includes('%block_start = arith.muli'));
+            expect(blockStartLine?.source?.line).toBe(18);
+            expect(blockStartLine?.source?.column).toBe(28);
+
+            const unknownLine = result.asm.find(line => line.text.includes('%unknown = arith.constant'));
+            expect(unknownLine?.source).toBeNull();
         });
     });
 });

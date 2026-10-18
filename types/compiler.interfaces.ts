@@ -33,8 +33,25 @@ export type Remote = {
     target: string;
     path: string;
     cmakePath: string;
+    /**
+     * Base of the generic build system route; the build system id is appended. Optional because sub-servers running an
+     * older version don't have the route at all — see `CompileHandler.getRemoteBuildUrl`.
+     */
+    buildPath?: string;
     basePath: string;
 };
+
+// What kind of release a compiler represents. Inferred from isSemVer/isNightly/semver
+// in compiler-finder, with optional `compiler.releaseTrack=` / `group.releaseTrack=`
+// override in .properties for cases the heuristic gets wrong.
+//
+// - 'stable':       a numbered release (gcc 14.2.0, rust 1.95.0, ...)
+// - 'nightly':      the canonical bleeding-edge build (gcc snapshot, clang trunk, rust nightly)
+// - 'prerelease':   release-candidate / beta of an upcoming numbered release (rust beta)
+// - 'experimental': feature-branch fork or proposal implementation that isn't on the
+//                   release path (gcc contracts-trunk, gcc modules-trunk, ...)
+export const RELEASE_TRACKS = ['stable', 'nightly', 'prerelease', 'experimental'] as const;
+export type ReleaseTrack = (typeof RELEASE_TRACKS)[number];
 
 export type CompilerInfo = {
     id: string;
@@ -59,6 +76,7 @@ export type CompilerInfo = {
     objdumper: string;
     objdumperType: string;
     objdumperArgs: string[];
+    llvmDisassembler: string;
     llvmObjdumper: string;
     intelAsm: string;
     supportsAsmDocs: boolean;
@@ -91,6 +109,7 @@ export type CompilerInfo = {
     supportsHaskellCoreView?: boolean;
     supportsHaskellStgView?: boolean;
     supportsHaskellCmmView?: boolean;
+    supportsLeanCView?: boolean;
     supportsClojureMacroExpView?: boolean;
     supportsYulView?: boolean;
     supportsCfg?: boolean;
@@ -120,6 +139,7 @@ export type CompilerInfo = {
     isSemVer: boolean;
     semver: string;
     isNightly: boolean;
+    releaseTrack: ReleaseTrack;
     libsArr: Library['id'][];
     tools: Record<ToolInfo['id'], Tool>;
     unwiseOptions: string[];
@@ -160,9 +180,20 @@ export type CompilerInfo = {
         initialFiltersState?: Record<string, boolean>;
     };
     cachedPossibleArguments?: any;
+    cachedMachTargets?: MachTarget[];
     nvdisasm?: string;
+    ptxas?: string;
     mtime?: any;
     $order: number;
+};
+
+/** One platform tuple a Mach compiler supports, keyed by the name a user passes to `--target`. */
+export type MachTarget = {
+    name: string;
+    isa: string;
+    os: string;
+    abi: string;
+    object: string;
 };
 
 // Compiler information collected by the compiler-finder

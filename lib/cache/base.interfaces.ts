@@ -22,6 +22,8 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
+import type {Buffer} from 'buffer';
+
 import type {GetResult} from '../../types/cache.interfaces.js';
 
 export type CacheStats = {
@@ -47,4 +49,13 @@ export interface Cache {
     get(key: string): Promise<GetResult>;
 
     put(key: string, value: any, creator?: string): Promise<void>;
+
+    /** Whether another process can read what this holds. */
+    readonly isShared: boolean;
+
+    /**
+     * Store a value somewhere another process can fetch it, returning the key it went under
+     * relative to this cache's own path, or undefined if there is nowhere that could serve it.
+     */
+    putShared(key: string, value: Buffer, ttlDays: number, creator?: string): Promise<string | undefined>;
 }

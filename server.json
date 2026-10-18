@@ -1,0 +1,26 @@
+{
+  "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+  "name": "io.github.compiler-explorer/compiler-explorer",
+  "title": "Compiler Explorer",
+  "description": "Compile code with thousands of compilers, inspect the assembly, and share godbolt.org links",
+  "version": "1.0.0",
+  "websiteUrl": "https://godbolt.org/",
+  "repository": {
+    "url": "https://github.com/compiler-explorer/compiler-explorer",
+    "source": "github",
+    "id": "4414698"
+  },
+  "icons": [
+    {
+      "src": "https://static.ce-cdn.net/site-logo.svg",
+      "mimeType": "image/svg+xml",
+      "sizes": ["any"]
+    }
+  ],
+  "remotes": [
+    {
+      "type": "streamable-http",
+      "url": "https://godbolt.org/mcp"
+    }
+  ]
+}

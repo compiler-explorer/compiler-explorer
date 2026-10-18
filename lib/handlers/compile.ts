@@ -43,13 +43,16 @@ import {
     UnparsedExecutionParams,
 } from '../../types/compilation/compilation.interfaces.js';
 import {CompilerOverrideOptions} from '../../types/compilation/compiler-overrides.interfaces.js';
-import {CompilerInfo, PreliminaryCompilerInfo} from '../../types/compiler.interfaces.js';
+import {CompilerInfo, PreliminaryCompilerInfo, Remote} from '../../types/compiler.interfaces.js';
 import {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces.js';
 import {LanguageKey} from '../../types/languages.interfaces.js';
 import {SelectedLibraryVersion} from '../../types/libraries/libraries.interfaces.js';
 import {ResultLine} from '../../types/resultline/resultline.interfaces.js';
 import {AppArguments} from '../app.interfaces.js';
+import {unwrapString} from '../assert.js';
 import {BaseCompiler} from '../base-compiler.js';
+import type {BuildSystemDriver} from '../build-systems/index.js';
+import {cmakeBuildSystem, getBuildSystem} from '../build-systems/index.js';
 import {parseExecutionParameters, parseTools, parseUserArguments} from '../compilation/compilation-request-parser.js';
 import {CompilationEnvironment} from '../compilation-env.js';
 import {getCompilerTypeByKey} from '../compilers/index.js';
@@ -143,6 +146,8 @@ export class CompileHandler implements ICompileHandler {
         help: 'Number of executions',
         labelNames: ['language'],
     });
+    // The CMake-only counters predate other build systems and are kept for existing dashboards; the project build
+    // counters below cover every build system.
     private readonly cmakeCounter = new Counter({
         name: 'ce_cmake_compilations_total',
         help: 'Number of CMake compilations',
@@ -152,6 +157,16 @@ export class CompileHandler implements ICompileHandler {
         name: 'ce_cmake_executions_total',
         help: 'Number of executions after CMake',
         labelNames: ['language'],
+    });
+    private readonly projectBuildCounter = new Counter({
+        name: 'ce_project_build_compilations_total',
+        help: 'Number of build system compilations',
+        labelNames: ['language', 'build_system'],
+    });
+    private readonly projectBuildExecuteCounter = new Counter({
+        name: 'ce_project_build_executions_total',
+        help: 'Number of executions after a build system compilation',
+        labelNames: ['language', 'build_system'],
     });
 
     constructor(compilationEnvironment: CompilationEnvironment, awsProps: PropertyGetter, appArgs?: AppArguments) {
@@ -246,10 +261,18 @@ export class CompileHandler implements ICompileHandler {
         try {
             compilerClass = getCompilerTypeByKey(type);
         } catch (e: any) {
-            logger.error(`Compiler ID: ${compiler.id}`);
-            logger.error(e);
-            logger.error(e.stack);
-            process.exit(1);
+            if (compiler.remote) {
+                // A remote compiler is only forwarded to the instance that hosts it, so it doesn't need its own
+                // class here. The remote may run a newer version that knows compiler types this one doesn't.
+                logger.warn(`Compiler ID: ${compiler.id}: unknown remote compiler type '${type}', using 'default'`);
+                compilerClass = getCompilerTypeByKey('default');
+            } else {
+                // An invalid local compiler configuration must still stop startup.
+                logger.error(`Compiler ID: ${compiler.id}`);
+                logger.error(e);
+                logger.error(e.stack);
+                process.exit(1);
+            }
         }
 
         // attempt to resolve non absolute exe paths
@@ -406,7 +429,13 @@ export class CompileHandler implements ICompileHandler {
         return body;
     }
 
-    static parseRequestReusable(isJson: boolean, query: any, body: any, compiler: BaseCompiler): ParsedRequest {
+    static parseRequestReusable(
+        isJson: boolean,
+        query: any,
+        body: any,
+        compiler: BaseCompiler,
+        buildSystem?: BuildSystemDriver,
+    ): ParsedRequest {
         let source: string;
         let options: string;
         let backendOptions: Record<string, any> = {};
@@ -428,6 +457,11 @@ export class CompileHandler implements ICompileHandler {
             execReqParams.stdin = execParams.stdin;
             execReqParams.runtimeTools = execParams.runtimeTools;
             backendOptions = requestOptions.compilerOptions || {};
+            const filenameError = utils.checkCustomOutputFilename(
+                backendOptions.customOutputFilename,
+                buildSystem?.getBuildPath('.'),
+            );
+            if (filenameError) throw new Error(filenameError);
             filters = {...compiler.getDefaultFilters(), ...requestOptions.filters};
             inputTools = requestOptions.tools || [];
             libraries = requestOptions.libraries || [];
@@ -491,12 +525,12 @@ export class CompileHandler implements ICompileHandler {
         };
     }
 
-    parseRequest(req: express.Request, compiler: BaseCompiler): ParsedRequest {
+    parseRequest(req: express.Request, compiler: BaseCompiler, buildSystem?: BuildSystemDriver): ParsedRequest {
         const isJson = !!req.is('json');
         const query = req.query as CompileRequestQueryArgs;
         const body = req.body;
 
-        return CompileHandler.parseRequestReusable(isJson, query, body, compiler);
+        return CompileHandler.parseRequestReusable(isJson, query, body, compiler, buildSystem);
     }
 
     handlePopularArguments(req: express.Request, res: express.Response) {
@@ -540,7 +574,33 @@ export class CompileHandler implements ICompileHandler {
         next(error);
     }
 
+    /** The original CMake-only endpoint, kept because it is documented API. */
     handleCmake(req: express.Request, res: express.Response, next: express.NextFunction) {
+        this.handleProjectBuildWith(cmakeBuildSystem, req, res, next);
+    }
+
+    handleBuildProject(req: express.Request, res: express.Response, next: express.NextFunction) {
+        const buildSystem = getBuildSystem(unwrapString(req.params.buildSystem));
+        if (!buildSystem) {
+            res.status(404).send({error: true, message: `Unknown build system '${req.params.buildSystem}'`});
+            return;
+        }
+        this.handleProjectBuildWith(buildSystem, req, res, next);
+    }
+
+    private getRemoteBuildUrl(remote: Remote, buildSystem: BuildSystemDriver): string | undefined {
+        // Sub-servers that predate /build/:buildSystem only understand /cmake, and CMake is the only build system they
+        // can have compilers for anyway, so keep proxying CMake to where it has always gone.
+        if (buildSystem.id === 'cmake') return remote.cmakePath;
+        return remote.buildPath ? `${remote.buildPath}/${buildSystem.id}` : undefined;
+    }
+
+    private handleProjectBuildWith(
+        buildSystem: BuildSystemDriver,
+        req: express.Request,
+        res: express.Response,
+        next: express.NextFunction,
+    ) {
         const compiler = this.compilerFor(req);
         if (!compiler) {
             res.sendStatus(404);
@@ -549,7 +609,15 @@ export class CompileHandler implements ICompileHandler {
 
         const remote = compiler.getRemote();
         if (remote) {
-            req.url = remote.cmakePath;
+            const remoteUrl = this.getRemoteBuildUrl(remote, buildSystem);
+            if (!remoteUrl) {
+                res.status(404).send({
+                    error: true,
+                    message: `Build system '${buildSystem.id}' is not available on this compiler`,
+                });
+                return;
+            }
+            req.url = remoteUrl;
             this.proxy.web(req, res, {target: remote.target, changeOrigin: true}, (e: any) => {
                 logger.error('Proxy error: ', e);
                 next(e);
@@ -560,21 +628,27 @@ export class CompileHandler implements ICompileHandler {
         try {
             if (req.body.files === undefined) throw new Error('Missing files property');
 
-            this.cmakeCounter.inc({language: compiler.lang.id});
-            const parsedRequest = this.parseRequest(req, compiler);
+            if (buildSystem.id === 'cmake') this.cmakeCounter.inc({language: compiler.lang.id});
+            this.projectBuildCounter.inc({language: compiler.lang.id, build_system: buildSystem.id});
+            const parsedRequest = this.parseRequest(req, compiler, buildSystem);
             this.compilerEnv.statsNoter.noteCompilation(
                 compiler.getInfo().id,
                 parsedRequest,
                 req.body.files as FiledataPair[],
-                KnownBuildMethod.CMake,
+                buildSystem.id,
             );
             compiler
                 // Backwards compatibility: bypassCache used to be a boolean.
                 // Convert a boolean input to an enum's underlying numeric value
-                .cmake(req.body.files, parsedRequest, req.body.bypassCache * 1)
+                .buildProject(buildSystem, req.body.files, parsedRequest, req.body.bypassCache * 1)
                 .then(result => {
-                    if (result.didExecute || result.execResult?.didExecute)
-                        this.cmakeExecuteCounter.inc({language: compiler.lang.id});
+                    if (result.didExecute || result.execResult?.didExecute) {
+                        if (buildSystem.id === 'cmake') this.cmakeExecuteCounter.inc({language: compiler.lang.id});
+                        this.projectBuildExecuteCounter.inc({
+                            language: compiler.lang.id,
+                            build_system: buildSystem.id,
+                        });
+                    }
                     delete result.s3Key; // Remove s3Key before sending to user
                     res.send(result);
                 })

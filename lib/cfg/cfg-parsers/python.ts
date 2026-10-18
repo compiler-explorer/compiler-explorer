@@ -37,7 +37,9 @@ export class PythonCFGParser extends BaseCFGParser {
     }
 
     override isFunctionEnd(x: string) {
-        return x.startsWith('Disassembly of');
+        // After processFuncNames, function headers are renamed but still don't start with spaces.
+        // All Python bytecode instructions start with spaces, so any non-space-starting line is a function boundary.
+        return !x.startsWith(' ');
     }
 
     private isJmpTarget(inst: string) {
@@ -64,13 +66,30 @@ export class PythonCFGParser extends BaseCFGParser {
         ) {
             i++;
         }
-        return bytecode.slice(i).filter(x => x.text && x.text.trim() !== '');
+        // Filter out empty lines and ExceptionTable sections
+        let inExceptionTable = false;
+        return bytecode.slice(i).filter(x => {
+            if (!x.text || x.text.trim() === '') return false;
+            if (x.text.startsWith('ExceptionTable:')) {
+                inExceptionTable = true;
+                return false;
+            }
+            if (inExceptionTable) {
+                if (x.text.startsWith('Disassembly of') || x.text.startsWith('Function #')) {
+                    inExceptionTable = false;
+                    return true;
+                }
+                return false;
+            }
+            return true;
+        });
     }
 
     override async processFuncNames(bytecode: AssemblyLine[], fullRes?: CompilationResult): Promise<AssemblyLine[]> {
         // replace 'Disassembly of' with function name
         const res: ResultLine[] = [];
-        let src: string | null = null;
+        const src: string | null = fullRes?.inputFilename ? await fs.readFile(fullRes.inputFilename, 'utf8') : null;
+        const srcLines = src ? src.split('\n') : null;
 
         let funcIdx = 0;
 
@@ -80,12 +99,9 @@ export class PythonCFGParser extends BaseCFGParser {
             if (line.text.startsWith('Disassembly of')) {
                 const srcLineStr = line.text.match(/line (\d+)/)?.[1];
                 const srcLineNum = srcLineStr ? Number.parseInt(srcLineStr, 10) : null;
-                if (srcLineNum && fullRes && fullRes.inputFilename) {
-                    if (src === null) {
-                        src = await fs.readFile(fullRes.inputFilename, 'utf8');
-                        const srcLine = src.split('\n')[srcLineNum - 1];
-                        funcName = srcLine.match(/def (\w+)\(/)?.[1];
-                    }
+                if (srcLineNum && srcLines) {
+                    const srcLine = srcLines[srcLineNum - 1];
+                    funcName = srcLine?.match(/def (\w+)\(/)?.[1];
                 }
                 if (funcName) line.text = funcName;
                 else line.text = `Function #${funcIdx++}`;

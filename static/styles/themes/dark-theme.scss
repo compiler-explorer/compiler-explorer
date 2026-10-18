@@ -15,18 +15,6 @@ html[data-theme='dark'] {
 
 a {
     color: #45bbe0 !important;
-
-    &.navbar-brand {
-        img.logo {
-            &.inverse {
-                display: block !important;
-            }
-
-            &.normal {
-                display: none !important;
-            }
-        }
-    }
 }
 
 body {
@@ -194,6 +182,10 @@ textarea.form-control {
 
 .cppi-logo-sec {
     fill: #e2e2e2 !important;
+}
+
+.abi-logo-sec {
+    fill: #8a8a8a !important;
 }
 
 .currentCursorPosition {
@@ -663,6 +655,10 @@ textarea.form-control {
             background-color: #383838 !important;
         }
     }
+}
+
+select.compiler-picker {
+    background-color: #444;
 }
 
 /* Override arrow specifically with the same selector as TomSelect uses */

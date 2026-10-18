@@ -83,9 +83,11 @@ describe('Execution tests', async () => {
                     timedOut: false,
                 });
             });
-            it('handles timouts', async () => {
+            it('handles timeouts', async () => {
+                // Start-Sleep actually blocks; the bare string "sleep 5" is just echoed by PowerShell and
+                // exits immediately, making the timeout a race against process startup (flaky on CI).
                 await expect(
-                    testExecOutput(exec.execute('powershell', ['-Command', '"sleep 5"'], {timeoutMs: 10})),
+                    testExecOutput(exec.execute('powershell', ['-Command', 'Start-Sleep -Seconds 5'], {timeoutMs: 10})),
                 ).resolves.toEqual({
                     code: 1,
                     okToCache: false,
@@ -134,7 +136,7 @@ describe('Execution tests', async () => {
                     timedOut: false,
                 });
             });
-            it('handles timouts', async () => {
+            it('handles timeouts', async () => {
                 await expect(testExecOutput(exec.execute('sleep', ['5'], {timeoutMs: 10}))).resolves.toEqual({
                     code: -1,
                     okToCache: false,
@@ -179,6 +181,7 @@ describe('Execution tests', async () => {
                 exec.getNsJailCfgFilePath('sandbox'),
                 '--env=HOME=/app',
                 '--',
+                '/usr/local/bin/dumb-init',
                 '/path/to/compiler',
                 '1',
                 '2',
@@ -213,6 +216,7 @@ describe('Execution tests', async () => {
                 '/some/custom/cwd:/app',
                 '--env=HOME=/app',
                 '--',
+                '/usr/local/bin/dumb-init',
                 './exec',
                 '/app/file',
                 '/not/custom/file',
@@ -296,6 +300,7 @@ describe('Execution tests', async () => {
                 '/tmp/hellow:/app',
                 '--env=HOME=/app',
                 '--',
+                '/usr/local/bin/dumb-init',
                 './output.s',
             ]);
         });
@@ -315,6 +320,7 @@ describe('Execution tests', async () => {
                 '/tmp/hellow:/app',
                 '--env=HOME=/app',
                 '--',
+                '/usr/local/bin/dumb-init',
                 './output.s',
             ]);
         });
@@ -335,6 +341,7 @@ describe('Execution tests', async () => {
                 '--env=SOME_DOTNET_THING=/app/dotnet',
                 '--env=HOME=/app',
                 '--',
+                '/usr/local/bin/dumb-init',
                 './output.s',
             ]);
         });
@@ -356,6 +363,7 @@ describe('Execution tests', async () => {
                 '--env=CXX_FLAGS=-L/usr/lib -L/app/curl/lib -L/app/fmt/lib',
                 '--env=HOME=/app',
                 '--',
+                '/usr/local/bin/dumb-init',
                 './output.s',
             ]);
         });
@@ -377,6 +385,7 @@ describe('Execution tests', async () => {
                 '--env=LD_LIBRARY_PATH=' + ['/usr/lib', '/app/lib'].join(path.delimiter),
                 '--env=HOME=/app',
                 '--',
+                '/usr/local/bin/dumb-init',
                 './output.s',
             ]);
         });
@@ -397,6 +406,7 @@ describe('Execution tests', async () => {
                     '/tmp/hellow:/app',
                     '--env=HOME=/app',
                     '--',
+                    '/usr/local/bin/dumb-init',
                     'subdir/output.s',
                 ]);
             }
@@ -421,6 +431,7 @@ describe('Execution tests', async () => {
                     '/tmp/hellow:/app',
                     '--env=HOME=/app',
                     '--',
+                    '/usr/local/bin/dumb-init',
                     '/opt/compiler-explorer/cmake/bin/cmake',
                     '..',
                 ]);
@@ -459,6 +470,7 @@ describe('Execution tests', async () => {
                     '/tmp/hellow:/app',
                     '--env=HOME=/app',
                     '--',
+                    '/usr/local/bin/dumb-init',
                     '/opt/compiler-explorer/compiler/bin/g++',
                     '-c',
                     '-S',

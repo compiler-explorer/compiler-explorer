@@ -27,6 +27,7 @@ import path from 'node:path';
 
 import _ from 'underscore';
 
+import {splitArguments} from '../../shared/common-utils.js';
 import {OptRemark} from '../../static/panes/opt-view.interfaces.js';
 import type {
     ActiveTool,
@@ -37,13 +38,17 @@ import type {
     CompilationResult,
     ExecutionOptionsWithEnv,
 } from '../../types/compilation/compilation.interfaces.js';
+import type {ConfiguredOverrides} from '../../types/compilation/compiler-overrides.interfaces.js';
 import type {PreliminaryCompilerInfo} from '../../types/compiler.interfaces.js';
 import type {ExecutableExecutionOptions, UnprocessedExecResult} from '../../types/execution/execution.interfaces.js';
 import type {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces.js';
+import type {InstructionSet} from '../../types/instructionsets.js';
 import {ArtifactType} from '../../types/tool.interfaces.js';
 import {addArtifactToResult} from '../artifact-utils.js';
 import {BaseCompiler} from '../base-compiler.js';
 import {CompilationEnvironment} from '../compilation-env.js';
+import type {ParsedRequest} from '../handlers/compile.js';
+import {getAmdGpuInstructionSet, getAmdGpuInstructionSetFromLabel} from '../instructionsets.js';
 import {AmdgpuAsmParser} from '../parsers/asm-parser-amdgpu.js';
 import {HexagonAsmParser} from '../parsers/asm-parser-hexagon.js';
 import {PTXAsmParser} from '../parsers/asm-parser-ptx.js';
@@ -142,6 +147,20 @@ export class ClangCompiler extends BaseCompiler {
             };
         }
         return super.runExecutable(executable, executeParameters, homeDir);
+    }
+
+    override fixIncompatibleOptions(
+        options: string[],
+        userOptions: string[],
+        overrides: ConfiguredOverrides,
+    ): [string[], ConfiguredOverrides] {
+        // On RISC-V an explicit -march takes precedence over the ISA implied by -mcpu, so a configured default
+        // -march would otherwise silently discard the extensions of a CPU the user selected.
+        const isRiscv = this.compiler.instructionSet === 'riscv32' || this.compiler.instructionSet === 'riscv64';
+        if (isRiscv && userOptions.some(option => option.startsWith('-mcpu=') || option.startsWith('-march='))) {
+            options = options.filter(option => !option.startsWith('-march='));
+        }
+        return super.fixIncompatibleOptions(options, userOptions, overrides);
     }
 
     // Clang cross-compile with -stdlib=libc++ is currently (up to at least 18.1.0) broken:
@@ -291,10 +310,20 @@ export class ClangCompiler extends BaseCompiler {
             deviceAsm = await this.extractBitcodeFromBundle(compilationInfo.outputFilename, deviceName);
         }
 
-        return this.llvmIr.isLlvmIr(deviceAsm)
-            ? this.llvmIr.process(deviceAsm, filters)
-            : this.asm.process(deviceAsm, filters);
+        // Bitcode devices show LLVM IR, so an AMDGPU instruction set would be the wrong docs.
+        if (this.llvmIr.isLlvmIr(deviceAsm)) return this.llvmIr.process(deviceAsm, filters);
+
+        const processed = await this.asm.process(deviceAsm, filters);
+        // Offload bundle targets embed the gfx target (hipv4-amdgcn-amd-amdhsa--gfx942); the
+        // device view has nothing else to go on when picking documentation.
+        const instructionSet = getAmdGpuInstructionSetFromLabel(deviceName);
+        return instructionSet ? {...processed, instructionSet} : processed;
     }
+}
+
+function getCudaPath(args: string[]): string | undefined {
+    const arg = args.find(arg => arg.startsWith('--cuda-path='));
+    return arg ? arg.substring('--cuda-path='.length) : undefined;
 }
 
 export class ClangCudaCompiler extends ClangCompiler {
@@ -310,6 +339,15 @@ export class ClangCudaCompiler extends ClangCompiler {
 
     override getCompilerResultLanguageId(filters?: ParseFiltersAndOutputOptions): string | undefined {
         return 'ptx';
+    }
+
+    override getExtraCMakeArgs(key: ParsedRequest): string[] {
+        // CMake locates the toolkit through nvcc, so an nvcc compiler needs no help. Clang is told
+        // where it is with --cuda-path, which CMake reads neither from the flags nor from the
+        // compiler, and it refuses to enable the CUDA language for Clang without a toolkit.
+        const args = super.getExtraCMakeArgs(key);
+        const cudaPath = getCudaPath(key.options) ?? getCudaPath(splitArguments(this.compiler.options));
+        return cudaPath ? [...args, `-DCUDAToolkit_ROOT=${cudaPath}`] : args;
     }
 
     override optionsForFilter(filters: ParseFiltersAndOutputOptions, outputFilename: string) {
@@ -332,6 +370,17 @@ export class ClangCudaCompiler extends ClangCompiler {
     }
 }
 
+function getAmdgpuInstructionSetFromOptions(options: string[]): InstructionSet | undefined {
+    // Backwards: orderArguments puts the group's --offload-arch before the user's, and
+    // clang honours the last one.
+    for (let i = options.length - 1; i >= 0; --i) {
+        if (options[i].startsWith('--offload-arch=')) {
+            return getAmdGpuInstructionSet(options[i].substring('--offload-arch='.length));
+        }
+    }
+    return undefined;
+}
+
 export class ClangHipCompiler extends ClangCompiler {
     static override get key() {
         return 'clang-hip';
@@ -345,6 +394,10 @@ export class ClangHipCompiler extends ClangCompiler {
 
     override optionsForFilter(filters: ParseFiltersAndOutputOptions, outputFilename: string) {
         return ['-o', this.filename(outputFilename), '-g1', '--no-gpu-bundle-output', filters.binary ? '-c' : '-S'];
+    }
+
+    override getInstructionSetFromCompilerArgs(args: string[]): InstructionSet {
+        return getAmdgpuInstructionSetFromOptions(args) || super.getInstructionSetFromCompilerArgs(args);
     }
 }
 
@@ -435,5 +488,21 @@ export class Z80ClangCompiler extends ClangCompiler {
 
         this.compiler.supportsIntel = false;
         this.compiler.irArg = ['-Xclang', '-emit-llvm'];
+    }
+}
+
+export class TIClangCompiler extends ClangCompiler {
+    static override get key() {
+        return 'ticlang';
+    }
+
+    constructor(info: PreliminaryCompilerInfo, env: CompilationEnvironment) {
+        super(info, env);
+
+        this.compiler.supportsIntel = false;
+    }
+
+    override couldSupportASTDump(_version: string) {
+        return true;
     }
 }

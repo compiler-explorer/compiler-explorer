@@ -27,6 +27,7 @@ import EventEmitter from 'events';
 import $ from 'jquery';
 import {editor} from 'monaco-editor';
 
+import * as BootstrapUtils from '../bootstrap-utils.js';
 import {options} from '../options.js';
 import {Settings} from '../settings.js';
 
@@ -39,6 +40,13 @@ function getDefaultFontScale() {
 }
 
 function makeFontSizeDropdown(elem: JQuery, obj: FontScale, buttonDropdown: JQuery) {
+    // Create the dropdown eagerly with an explicit boundary rather than relying on a
+    // data-bs-boundary attribute: the menu must escape the pane it lives in, and passing
+    // the option here keeps Bootstrap from ever type-checking an undefined boundary.
+    // 'viewport' is honoured by Popper at runtime, but @popperjs/core's Boundary type only
+    // covers 'clippingParents' and elements, hence the cast.
+    BootstrapUtils.getOrCreateDropdownInstance(buttonDropdown, {boundary: 'viewport' as unknown as Element});
+
     function onClickEvent(this: JQuery) {
         // Toggle off the selection of the others
         $(this).addClass('active').siblings().removeClass('active');

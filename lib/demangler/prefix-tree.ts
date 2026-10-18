@@ -50,8 +50,12 @@ export type replaceAction = {
 
 export class PrefixTree {
     root: Node = [];
+    readonly identifierChar?: RegExp;
 
-    constructor(mappings: [string, string][]) {
+    // If `identifierChar` is given, a match directly followed by such a character is not a match: it is only the
+    // start of a longer identifier.
+    constructor(mappings: [string, string][], identifierChar?: RegExp) {
+        this.identifierChar = identifierChar;
         if (mappings) {
             for (const [from, to] of mappings) this.add(from, to);
         }
@@ -71,17 +75,22 @@ export class PrefixTree {
     // Finds the longest possible match by walking along the N-way tree until we
     // mismatch or reach the end of the input string. Along the way, we note the
     // most recent match (if any), which will be our return value.
-    findLongestMatch(needle: string) {
+    findLongestMatch(needle: string, start = 0) {
         let node = this.root;
         let match: [string, string] | [null, null] = [null, null];
-        for (let i = 0; i < needle.length; ++i) {
+        for (let i = start; i < needle.length; ++i) {
             const character = needle.codePointAt(i);
             assert(character !== undefined, 'Undefined code point encountered in PrefixTree');
             node = node[character];
             if (!node) break;
-            if (node.result) match = [needle.substring(0, i + 1), node.result];
+            if (node.result && !this.continuesIdentifier(needle, i + 1))
+                match = [needle.substring(start, i + 1), node.result];
         }
         return match;
+    }
+
+    private continuesIdentifier(text: string, index: number) {
+        return index < text.length && !!this.identifierChar?.test(text[index]);
     }
 
     findExact(needle: string) {
@@ -104,11 +113,10 @@ export class PrefixTree {
         const mapRanges: Record<number, Record<number, charRange>> = {};
         const mapNames: Record<string, string> = {};
         // Loop over each possible replacement point in the line.
-        // Use a binary search to find the replacements (allowing a prefix match). If we couldn't find a match, skip
-        // on, else use the replacement, and skip by that amount.
+        // Walk the prefix tree to find the longest replacement at the current index. If no match is found, emit the
+        // current character; otherwise emit the replacement and advance by the matched length.
         while (idxInOld < line.length) {
-            const lineBit = line.substring(idxInOld);
-            const [oldValue, newValue] = this.findLongestMatch(lineBit);
+            const [oldValue, newValue] = this.findLongestMatch(line, idxInOld);
             if (oldValue) {
                 // We found a replacement.
                 newText += newValue;
@@ -139,5 +147,25 @@ export class PrefixTree {
             mapRanges: mapRanges,
             mapNames: mapNames,
         };
+    }
+
+    // Like replaceAll, but only computes the replaced text. Skips building the
+    // mapRanges/mapNames metadata, which callers that don't need source-position
+    // mapping (e.g. opt-pipeline pass-dump demangling) would otherwise allocate
+    // per line and immediately discard.
+    replaceAllText(line: string): string {
+        let newText = '';
+        let idxInOld = 0;
+        while (idxInOld < line.length) {
+            const [oldValue, newValue] = this.findLongestMatch(line, idxInOld);
+            if (oldValue) {
+                newText += newValue;
+                idxInOld += oldValue.length;
+            } else {
+                newText += line[idxInOld];
+                idxInOld++;
+            }
+        }
+        return newText;
     }
 }

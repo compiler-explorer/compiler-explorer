@@ -24,7 +24,7 @@
 
 import express, {Express} from 'express';
 import request from 'supertest';
-import {beforeAll, describe, expect, it} from 'vitest';
+import {beforeAll, describe, expect, it, vi} from 'vitest';
 
 import {CompileHandler, SetTestMode} from '../../lib/handlers/compile.js';
 import {fakeProps} from '../../lib/properties.js';
@@ -56,10 +56,57 @@ describe('Compiler tests', () => {
         app.post('/noscript/compile', formParser, compileHandler.handle.bind(compileHandler));
         app.post('/:compiler/compile', textParser, compileHandler.handle.bind(compileHandler));
         app.post('/:compiler/cmake', compileHandler.handleCmake.bind(compileHandler));
+        app.post('/:compiler/build/:buildSystem', compileHandler.handleBuildProject.bind(compileHandler));
     });
 
     it('throws for unknown compilers', async () => {
         await request(app).post('/NOT_A_COMPILER/compile').expect(404);
+    });
+
+    it('creates remote compilers with an unknown local class', async () => {
+        const exit = vi.spyOn(process, 'exit').mockImplementation(() => {
+            throw new Error('Unexpected process exit');
+        });
+        try {
+            const compilers = await compileHandler.setCompilers(
+                [
+                    {
+                        id: 'remote-newer-type',
+                        lang: 'c++',
+                        compilerType: 'not-registered',
+                        exe: '/dev/null',
+                        version: 'remote 1.0',
+                        remote: {
+                            target: 'http://remote.invalid',
+                            path: '/api/compiler/remote-newer-type/compile',
+                            cmakePath: '/api/compiler/remote-newer-type/cmake',
+                        },
+                    },
+                ],
+                null,
+            );
+            expect(exit).not.toHaveBeenCalled();
+            expect(compilers.map(compiler => [compiler.id, compiler.compilerType])).toEqual([
+                ['remote-newer-type', 'not-registered'],
+            ]);
+        } finally {
+            exit.mockRestore();
+        }
+    });
+
+    it('still exits for local compilers with an unknown class', async () => {
+        const exit = vi.spyOn(process, 'exit').mockImplementation(() => {
+            throw new Error('process.exit');
+        });
+        try {
+            await compileHandler.setCompilers(
+                [{id: 'local-unknown', lang: 'a', compilerType: 'not-registered', exe: 'missing'}],
+                null,
+            );
+            expect(exit).toHaveBeenCalledWith(1);
+        } finally {
+            exit.mockRestore();
+        }
     });
 
     describe('Noscript API', () => {
@@ -224,6 +271,37 @@ describe('Compiler tests', () => {
                 });
         }
 
+        it('rejects an output filename that escapes the compilation directory as a bad request', async () => {
+            for (const customOutputFilename of ['../../escape', '../out.s', '../ce-compilation-dir/x', 5]) {
+                await makeFakeJson('I am a program', {compilerOptions: {customOutputFilename}})
+                    .expect('Content-Type', /json/)
+                    .expect(400, {error: true, message: 'Invalid filename'});
+            }
+        });
+
+        it('lets a CMake output filename reach the project root, which is one level above the build', async () => {
+            await setFakeResult();
+            const res = await makeFakeCmakeJson('I am a program', {compilerOptions: {customOutputFilename: '../out.s'}})
+                .expect('Content-Type', /json/)
+                .expect(200);
+            expect(res.body.input.options.backendOptions.customOutputFilename).toEqual('../out.s');
+
+            for (const customOutputFilename of ['../../escape', '../../ce-compilation-dir/x']) {
+                await makeFakeCmakeJson('I am a program', {compilerOptions: {customOutputFilename}})
+                    .expect('Content-Type', /json/)
+                    .expect(400, {error: true, message: 'Invalid filename'});
+            }
+        });
+
+        it('lets a CMake project inspect a library it linked from the project root', async () => {
+            await setFakeResult();
+            const customOutputFilename = '../fmt/lib/libfmtd.a';
+            const res = await makeFakeCmakeJson('I am a program', {compilerOptions: {customOutputFilename}})
+                .expect('Content-Type', /json/)
+                .expect(200);
+            expect(res.body.input.options.backendOptions.customOutputFilename).toEqual(customOutputFilename);
+        });
+
         it('handles JSON output', async () => {
             await setFakeResult({
                 code: 0,
@@ -354,6 +432,26 @@ describe('Compiler tests', () => {
                     contents: 'Hello, World!\nHow are you?\n',
                 },
             ]);
+        });
+
+        it('builds projects through the generic build endpoint', async () => {
+            await setFakeResult();
+            const res = await request(app)
+                .post('/fake-for-test/build/cmake')
+                .set('Accept', 'application/json')
+                .send({options: {userArguments: '-O1'}, source: 'I am a program', files: []})
+                .expect('Content-Type', /json/)
+                .expect(200);
+            expect(res.body.input.options.options).toEqual(['-O1']);
+        });
+
+        it('rejects unknown build systems', async () => {
+            await setFakeResult();
+            await request(app)
+                .post('/fake-for-test/build/nosuchbuildsystem')
+                .set('Accept', 'application/json')
+                .send({options: {}, source: '', files: []})
+                .expect(404);
         });
     });
 

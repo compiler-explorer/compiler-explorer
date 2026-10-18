@@ -35,9 +35,16 @@ import * as fss from 'node:fs';
 import * as puppeteer from 'puppeteer';
 import * as yaml from 'yaml';
 
-const godbolt = 'https://godbolt.org';
-const output_dir = '../../views/resources/template_screenshots';
+// A template of a feature that has not been deployed yet cannot be shot against production: the reference carries
+// the layout, but the site rendering it still has to understand it. Point CE_URL at a local instance for those.
+const godbolt = process.env.CE_URL ?? 'https://godbolt.org';
+// Where the site template loader looks for them: getStaticImage() resolves 'template_screenshots' against
+// window.staticRoot, which is served from public/.
+const output_dir = '../../public/template_screenshots';
 const config = '../config/site-templates.yaml';
+// How long to let a template finish before shooting it. A screenshot taken early catches "<Compiling...>" rather
+// than the result, and a Maven build of a Kotlin project is slow enough to lose that race at ten seconds.
+const settle_ms = Number.parseInt(process.env.CE_SETTLE_MS ?? '30000');
 
 // Note: Hardcoded, may need to be updated in the future
 // array of pairs [theme, colourScheme]
@@ -100,7 +107,7 @@ async function generateScreenshot(url: string, output_path: string, settings, wi
             element.parentNode!.removeChild(element);
         }
     });
-    await sleep(10000); // wait for things to settle
+    await sleep(settle_ms); // wait for things to settle
     await page.screenshot({path: output_path});
 
     await browser.close();

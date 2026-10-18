@@ -296,9 +296,11 @@ export class FPCCompiler extends BaseCompiler {
     }
 
     getExtraAsmHint(asm: string, currentFileId: number) {
-        if (asm.startsWith('# [')) {
-            const bracketEndPos = asm.indexOf(']', 3);
-            let valueInBrackets = asm.substring(3, bracketEndPos);
+        // FPC's source-line comments use '# [' on x86 but '// [' on ARM/AArch64.
+        const prefixLen = asm.startsWith('# [') ? 3 : asm.startsWith('// [') ? 4 : 0;
+        if (prefixLen > 0) {
+            const bracketEndPos = asm.indexOf(']', prefixLen);
+            let valueInBrackets = asm.substring(prefixLen, bracketEndPos);
             const colonPos = valueInBrackets.indexOf(':');
             if (colonPos !== -1) {
                 valueInBrackets = valueInBrackets.substring(0, colonPos - 1);
@@ -320,9 +322,11 @@ export class FPCCompiler extends BaseCompiler {
     }
 
     tryGetFilenumber(asm: string, files: Record<string, number>) {
-        if (asm.startsWith('# [')) {
-            const bracketEndPos = asm.indexOf(']', 3);
-            let valueInBrackets = asm.substring(3, bracketEndPos);
+        // FPC's source-line comments use '# [' on x86 but '// [' on ARM/AArch64.
+        const prefixLen = asm.startsWith('# [') ? 3 : asm.startsWith('// [') ? 4 : 0;
+        if (prefixLen > 0) {
+            const bracketEndPos = asm.indexOf(']', prefixLen);
+            let valueInBrackets = asm.substring(prefixLen, bracketEndPos);
             const colonPos = valueInBrackets.indexOf(':');
             if (colonPos !== -1) {
                 valueInBrackets = valueInBrackets.substring(0, colonPos - 1);

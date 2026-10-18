@@ -26,8 +26,10 @@ import path from 'node:path';
 
 import {splitArguments} from '../../shared/common-utils.js';
 import {CompilationInfo} from '../../types/compilation/compilation.interfaces.js';
+import {ResultLine} from '../../types/resultline/resultline.interfaces.js';
 import {ToolInfo} from '../../types/tool.interfaces.js';
 import {OptionsHandlerLibrary} from '../options-handler.js';
+import {LineParseOption, parseOutput} from '../utils.js';
 import {ToolEnv} from './base-tool.interface.js';
 import {BaseTool} from './base-tool.js';
 
@@ -40,6 +42,19 @@ export class BrontoRefactorTool extends BaseTool {
         super(toolInfo, env);
 
         this.addOptionsToToolArgs = false;
+    }
+
+    // bronto-refactor's stdout is the refactored source code, not diagnostics. The default
+    // FileWithLine matcher would happily mistake e.g. `r.fetch_add(2, ...)` for a
+    // `filename:line:` reference and tag it as an error. We deliberately list the options we
+    // want rather than subtracting from DefaultLineParseOptions, so any future addition to
+    // the defaults is an explicit decision here.
+    protected override parseOutput(lines: string, inputFilename?: string, pathPrefix?: string): ResultLine[] {
+        return parseOutput(lines, inputFilename, pathPrefix, [
+            LineParseOption.SourceMasking,
+            LineParseOption.RootMasking,
+            LineParseOption.SourceWithLineMessage,
+        ]);
     }
 
     override async runTool(

@@ -22,6 +22,7 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
+import {readFileSync} from 'node:fs';
 import fs from 'node:fs/promises';
 import path from 'node:path';
 import {fileURLToPath} from 'node:url';
@@ -108,6 +109,9 @@ describe('Parses compiler output', () => {
                 text: '<source>(1) Oh noes',
             },
         ]);
+    });
+    it('does not treat c2rust AST node lines as source locations', () => {
+        expect(utils.parseOutput('CTypeId(42): Located {', 'example.c')).toEqual([{text: 'CTypeId(42): Located {'}]);
     });
     it('replaces all references to input source', () => {
         expect(utils.parseOutput('bob.cpp:1 error in bob.cpp', 'bob.cpp')).toEqual([
@@ -429,6 +433,7 @@ describe('Rust compiler output', () => {
 
     it('attaches filenames to errors from multiple files', () => {
         // https://godbolt.org/z/nWE3PTeGf
+        // the compilation's files are written beside its main source, at /app, so that is what the names are relative to
         expect(
             utils.parseRustOutput(
                 `warning: function \`f1\` is never used
@@ -438,7 +443,7 @@ warning: function \`f2\` is never used
  --> /app/m.rs:1:4
 
 warning: 2 warnings emitted`,
-                'example.rs',
+                '/app/example.rs',
             ),
         ).toEqual([
             {
@@ -485,6 +490,96 @@ warning: 2 warnings emitted`,
             {text: ''},
             {text: 'warning: 2 warnings emitted'},
         ]);
+    });
+
+    /**
+     * Real rustc 1.96 output for small crates compiled as `/app/example.rs`, the path the sandbox gives the main
+     * source. The captures sit in test/rust/diagnostics, and the toolchain's own path is rewritten to a godbolt-style one.
+     */
+    function rustMarks(capture: string) {
+        const output = readFileSync(path.join(__dirname, 'rust', 'diagnostics', `${capture}.txt`), 'utf8');
+        return utils
+            .parseRustOutput(output, '/app/example.rs')
+            .filter(line => line.tag?.text)
+            .map(line => [line.tag?.file, line.tag?.line, line.tag?.severity, line.tag?.text]);
+    }
+
+    it('names each file of a crate by its path from the main source, so mod.rs files stay apart', () => {
+        // `mod a; mod b; mod util;` with a/mod.rs, b/mod.rs and util/fmt.rs: by basename, both mod.rs were `mod.rs`
+        expect(rustMarks('multi-file-crate')).toEqual([
+            ['b/mod.rs', 2, 3, 'error[E0308]: mismatched types'],
+            ['example.rs', 9, 3, 'error[E0308]: mismatched types'],
+            ['a/mod.rs', 1, 1, 'note: function defined here'],
+            ['example.rs', 10, 3, 'error[E0308]: mismatched types'],
+            ['example.rs', 5, 1, 'note: function defined here'],
+            ['example.rs', 14, 3, 'error[E0425]: cannot find function `missing_fn` in this scope'],
+            ['util/fmt.rs', 2, 2, 'warning: unused variable: `z`'],
+        ]);
+    });
+
+    it('names a standard library file by its distance from the main source, so it matches no file of the crate', () => {
+        // by basename the note was `mod.rs`, which a crate's own mod.rs editor would have taken
+        expect(rustMarks('std-note')).toEqual([
+            ['example.rs', 3, 3, 'error[E0308]: mismatched types'],
+            [
+                '../opt/compiler-explorer/rust-1.96.0/lib/rustlib/src/rust/library/alloc/src/vec/mod.rs',
+                1003,
+                1,
+                'note: method defined here',
+            ],
+        ]);
+    });
+
+    it('marks a help with its own location at help severity, not as an error', () => {
+        // span_help renders `help:` over a `-->`; it was read as an error headline
+        expect(rustMarks('span-help')).toEqual([
+            ['example.rs', 2, 2, 'warning: unused import: `a::Speak`'],
+            ['example.rs', 7, 3, 'error[E0277]: the trait bound `Dog: Speak` is not satisfied'],
+            ['example.rs', 4, 1, 'help: the trait `Speak` is not implemented for `Dog`'],
+            ['a/mod.rs', 3, 1, 'help: the trait `Speak` is implemented for `Cat`'],
+            ['a/mod.rs', 4, 1, 'note: required by a bound in `talk`'],
+            ['example.rs', 9, 3, 'error[E0054]: cannot cast `i32` as `bool`'],
+        ]);
+    });
+
+    it('marks a location in another file inside a snippet with the label under it', () => {
+        // `::: a/mod.rs:3:1` names the enum the variant was looked up in; it was not recognised at all
+        expect(rustMarks('secondary-file')).toEqual([
+            ['example.rs', 5, 3, 'error[E0616]: field `secret` of struct `Thing` is private'],
+            [
+                'example.rs',
+                6,
+                3,
+                'error[E0599]: no variant, associated function, or constant named `Fast` found for enum `Mode` in the current scope',
+            ],
+            ['a/mod.rs', 3, 1, 'variant, associated function, or constant `Fast` not found for this enum'],
+            ['example.rs', 7, 3, 'error[E0308]: mismatched types'],
+            ['example.rs', 8, 3, 'error[E0061]: this function takes 1 argument but 2 arguments were supplied'],
+            ['a/mod.rs', 6, 1, 'note: function defined here'],
+        ]);
+    });
+
+    it('ends a secondary location that has no label at the next headline', () => {
+        // the underline in the help's snippet belongs to the help, not to the unlabelled enum above it
+        const output = [
+            'error: first',
+            ' --> /app/example.rs:1:1',
+            '  |',
+            ' ::: /app/a/mod.rs:3:1',
+            '  |',
+            '3 | pub enum Mode { Slow }',
+            '  | -------------',
+            'help: consider this',
+            '  |',
+            '1 | x',
+            '  | - a label of the help',
+        ].join('\n');
+        expect(
+            utils
+                .parseRustOutput(output, '/app/example.rs')
+                .filter(line => line.tag?.text)
+                .map(line => [line.tag?.file, line.tag?.line, line.tag?.text]),
+        ).toEqual([['example.rs', 1, 'error: first']]);
     });
 });
 
@@ -779,5 +874,188 @@ describe('output files', async () => {
         expect(await utils.tryReadTextFile(filepath)).toEqual('hello');
         await utils.ensureFileExists(filepath);
         expect(await utils.tryReadTextFile(filepath)).toEqual('hello');
+    });
+});
+
+describe('maskRootdirKeepingAppPrefix', () => {
+    it('keeps the /app/ prefix, which is the path the compiler is given', () => {
+        expect(utils.maskRootdirKeepingAppPrefix('/tmp/compiler-explorer-compiler123-4-abc/example.cpp')).toEqual(
+            '/app/example.cpp',
+        );
+    });
+
+    it('masks an embedded temp path the same way maskRootdir does', () => {
+        expect(utils.maskRootdirKeepingAppPrefix('-I/tmp/compiler-explorer-compiler123-4-abc/include')).toEqual(
+            '-I/app/include',
+        );
+    });
+
+    it('leaves non-temp paths untouched', () => {
+        expect(utils.maskRootdirKeepingAppPrefix('/usr/include/stdio.h')).toEqual('/usr/include/stdio.h');
+    });
+
+    it('is idempotent, so masking an already-masked path is a no-op', () => {
+        const once = utils.maskRootdirKeepingAppPrefix('/tmp/compiler-explorer-compiler123-4-abc/example.cpp');
+        expect(utils.maskRootdirKeepingAppPrefix(once)).toEqual(once);
+        const embedded = utils.maskRootdirKeepingAppPrefix('-I/tmp/compiler-explorer-compiler123-4-abc/include');
+        expect(utils.maskRootdirKeepingAppPrefix(embedded)).toEqual(embedded);
+    });
+});
+
+describe('maskRootdir', () => {
+    it('masks a CE temp path down to the user-facing filename', () => {
+        expect(utils.maskRootdir('/tmp/compiler-explorer-compiler123-4-abc/example.cpp')).toEqual('example.cpp');
+    });
+
+    it('keeps /app/ when the temp path is embedded (e.g. a -I include flag)', () => {
+        expect(utils.maskRootdir('-I/tmp/compiler-explorer-compiler123-4-abc/include')).toEqual('-I/app/include');
+    });
+
+    // The recorded path's tmpdir root need not match this process's os.tmpdir(), so
+    // masking keys off the ce_temp_prefix marker, not the root.
+    it.each([
+        ['/tmp', '/tmp/compiler-explorer-compilerXYZ/example.cpp'],
+        ['/usr/tmp', '/usr/tmp/compiler-explorer-compilerXYZ/example.cpp'],
+        ['macOS /private/var', '/private/var/folders/ab/xyz/T/compiler-explorer-compilerXYZ/example.cpp'],
+        ['Windows', 'C:/Users/ce/AppData/Local/Temp/compiler-explorer-compilerXYZ/example.cpp'],
+    ])('masks a temp path rooted at %s regardless of the local tmpdir', (_root, input) => {
+        expect(utils.maskRootdir(input)).toEqual('example.cpp');
+    });
+
+    it('leaves non-temp paths untouched', () => {
+        expect(utils.maskRootdir('/usr/include/stdio.h')).toEqual('/usr/include/stdio.h');
+    });
+
+    // Callers reach here through type holes that hand over an undefined, which is what the
+    // falsy guard is for. Both entry points have to survive it, not just one.
+    it.each([undefined, null, ''])('hands %p straight back', input => {
+        expect(utils.maskRootdir(input as unknown as string)).toEqual(input);
+        expect(utils.maskRootdirKeepingAppPrefix(input as unknown as string)).toEqual(input);
+    });
+
+    // The marker segment must be followed by `/`, so a bare dir with no trailing slash
+    // is left alone. (Real inputs always name a file inside the dir.)
+    it('leaves a bare temp dir with no trailing slash untouched', () => {
+        expect(utils.maskRootdir('/tmp/compiler-explorer-compiler123-4-abc')).toEqual(
+            '/tmp/compiler-explorer-compiler123-4-abc',
+        );
+    });
+
+    it('masks a bare temp dir with a trailing slash to empty', () => {
+        expect(utils.maskRootdir('/tmp/compiler-explorer-compiler123-4-abc/')).toEqual('');
+    });
+
+    it('leaves paths with invalid marker suffix chars untouched', () => {
+        expect(utils.maskRootdir('/tmp/compiler-explorer-compiler+bad/example.cpp')).toEqual(
+            '/tmp/compiler-explorer-compiler+bad/example.cpp',
+        );
+    });
+
+    it('handles long non-matching path-like inputs without altering them', () => {
+        const input = `-I/${'segment/'.repeat(4000)}not-temp/include`;
+        expect(utils.maskRootdir(input)).toEqual(input);
+    });
+
+    // The regex stops at whitespace (so multi-token output lines aren't over-masked),
+    // so a temp root containing a space is only masked from the last space onward.
+    it('masks only from the last space in a spaced temp root (documented limitation)', () => {
+        expect(utils.maskRootdir('/tmp/with space/compiler-explorer-compilerXXX/example.cpp')).toEqual(
+            '/tmp/with space/app/example.cpp',
+        );
+    });
+
+    it('passes empty input through unchanged', () => {
+        expect(utils.maskRootdir('')).toEqual('');
+    });
+});
+
+describe('resolveWithinDir', () => {
+    it('joins a filename onto the directory', () => {
+        if (process.platform === 'win32') {
+            expect(utils.resolveWithinDir('c:/tmp/somefolder', 'test.h')).toEqual('c:\\tmp\\somefolder\\test.h');
+            expect(utils.resolveWithinDir('c:/tmp/somefolder', 'test.txt')).toEqual('c:\\tmp\\somefolder\\test.txt');
+        } else {
+            expect(utils.resolveWithinDir('/tmp/somefolder', 'test.h')).toEqual('/tmp/somefolder/test.h');
+            expect(utils.resolveWithinDir('/tmp/somefolder', 'test.txt')).toEqual('/tmp/somefolder/test.txt');
+        }
+    });
+
+    it('allows a subdirectory of the directory', () => {
+        expect(utils.resolveWithinDir('/tmp/somefolder', 'subfolder/hello.h')).toEqual(
+            path.normalize('/tmp/somefolder/subfolder/hello.h'),
+        );
+    });
+
+    it('rejects a filename that traverses out of the directory', () => {
+        expect(() => utils.resolveWithinDir('/tmp/somefolder', '../test.h')).toThrow(Error);
+        expect(() => utils.resolveWithinDir('/tmp/somefolder', './../test.h')).toThrow(Error);
+        expect(() => utils.resolveWithinDir('/tmp/somefolder', 'test_hello/../../etc/passwd')).toThrow(Error);
+    });
+
+    it('rejects a sibling that shares the directory name as a prefix', () => {
+        expect(() => utils.resolveWithinDir('/tmp/somefolder', '../somefolder-evil/test.h')).toThrow(Error);
+        expect(() => utils.resolveWithinDir('/tmp/somefolder', '../somefolder.txt')).toThrow(Error);
+    });
+
+    it('rejects a filename that resolves to the directory itself', () => {
+        expect(() => utils.resolveWithinDir('/tmp/somefolder', '')).toThrow(Error);
+        expect(() => utils.resolveWithinDir('/tmp/somefolder', '.')).toThrow(Error);
+    });
+
+    it('reports containment without joining', () => {
+        expect(utils.isPathInside('/tmp/somefolder', '/tmp/somefolder/test.h')).toBe(true);
+        expect(utils.isPathInside('/tmp/somefolder', '/tmp/somefolder/sub/test.h')).toBe(true);
+        expect(utils.isPathInside('/tmp/somefolder', '/tmp/somefolder')).toBe(false);
+        expect(utils.isPathInside('/tmp/somefolder', '/tmp/somefolder-evil/test.h')).toBe(false);
+        expect(utils.isPathInside('/tmp/somefolder', '/tmp/test.h')).toBe(false);
+    });
+
+    it('anchors an absolute filename inside the directory rather than honouring it', () => {
+        expect(utils.resolveWithinDir('/tmp/somefolder', '/tmp/someotherfolder/test.h')).toEqual(
+            path.normalize('/tmp/somefolder/tmp/someotherfolder/test.h'),
+        );
+        if (process.platform === 'win32') {
+            expect(utils.resolveWithinDir('/tmp/somefolder', '\\test.h')).toEqual('\\tmp\\somefolder\\test.h');
+        }
+    });
+});
+
+describe('checkCustomOutputFilename', () => {
+    it('accepts a filename that stays inside the compilation directory', () => {
+        for (const filename of [undefined, null, '', 'output.s', 'sub/dir/out.o', 'a/../b.s', '/abs/but/contained']) {
+            expect(utils.checkCustomOutputFilename(filename)).toBeNull();
+        }
+    });
+
+    it('rejects a filename that escapes the compilation directory', () => {
+        for (const filename of [
+            '.',
+            'a/..',
+            '..',
+            '../x',
+            'a/../../x',
+            '../../../../some/other/path',
+            '/../x',
+            '//..//x',
+            '../ce-compilation-dir/x',
+            '../../ce-compilation-dir/x',
+        ]) {
+            expect(utils.checkCustomOutputFilename(filename)).toBe('Invalid filename');
+        }
+    });
+
+    it('lets a build system that names its artifact from a subdirectory reach the project root', () => {
+        for (const filename of ['../output.s', '../src/main.o', 'out/../../output.s']) {
+            expect(utils.checkCustomOutputFilename(filename, 'build')).toBeNull();
+        }
+        for (const filename of ['..', '../..', '../../x', '/../../x', '../../build/x']) {
+            expect(utils.checkCustomOutputFilename(filename, 'build')).toBe('Invalid filename');
+        }
+    });
+
+    it('rejects a filename that is not a string', () => {
+        for (const filename of [0, 5, false, true, {}, ['out.s']]) {
+            expect(utils.checkCustomOutputFilename(filename)).toBe('Invalid filename');
+        }
     });
 });

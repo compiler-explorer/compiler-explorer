@@ -1,0 +1,149 @@
+// Copyright (c) 2026, Compiler Explorer Authors
+// All rights reserved.
+//
+// Redistribution and use in source and binary forms, with or without
+// modification, are permitted provided that the following conditions are met:
+//
+//     * Redistributions of source code must retain the above copyright notice,
+//       this list of conditions and the following disclaimer.
+//     * Redistributions in binary form must reproduce the above copyright
+//       notice, this list of conditions and the following disclaimer in the
+//       documentation and/or other materials provided with the distribution.
+//
+// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+// AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+// IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+// ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
+// LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+// CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+// SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+// INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+// CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+// ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+// POSSIBILITY OF SUCH DAMAGE.
+
+import type {BuildSystemDescriptor, BuildSystemId} from '../../shared/build-systems.js';
+import type {
+    CmakeCacheKey,
+    CompilationResult,
+    ExecutionOptionsWithEnv,
+    FiledataPair,
+    LibsAndOptions,
+} from '../../types/compilation/compilation.interfaces.js';
+import type {BaseCompiler} from '../base-compiler.js';
+import type {CompilationEnvironment} from '../compilation-env.js';
+import type {ParsedRequest} from '../handlers/compile.js';
+
+/** A single command in a build system's plan, for example CMake's configure step. */
+export type BuildSystemStep = {
+    /** Shown to the user as the name of this build step */
+    name: string;
+    exe: string;
+    args: string[];
+    execParams: ExecutionOptionsWithEnv;
+    /** Placeholder shown in the assembly pane if this step fails */
+    failureMessage: string;
+    /**
+     * Given everything the step printed when it failed, both streams together because a build tool is free to
+     * diagnose on either, an extra line to show the user. For turning a build tool's own diagnostics into something
+     * actionable in Compiler Explorer's terms.
+     */
+    explainFailure?: (output: string) => string | undefined | Promise<string | undefined>;
+    /** Whether a failure of this step reports the effective compilation options back to the user */
+    reportsCompilationOptions?: boolean;
+};
+
+export type BuildPlan = {
+    steps: BuildSystemStep[];
+    /**
+     * The flags the build system ends up handing the compiler, shown to the user. Resolved lazily because a build
+     * system may only know them once its steps have run.
+     */
+    getCompilationOptions: () => string[];
+};
+
+/** Everything a driver needs to know about the build it has been asked to run. */
+export type BuildContext = {
+    compiler: BaseCompiler;
+    env: CompilationEnvironment;
+    /** The project root: where the manifest and all the user's files are written */
+    dirPath: string;
+    /** Where the build steps run, and where the artifact is looked for */
+    buildPath: string;
+    key: CmakeCacheKey;
+    parsedRequest: ParsedRequest;
+    files: FiledataPair[];
+    libsAndOptions: LibsAndOptions;
+    toolchainPath: string | undefined;
+    /** The arguments the user gave the build system itself, as opposed to the compiler */
+    buildSystemArgs: string[];
+};
+
+/**
+ * What running a build amounts to: something to execute, with any arguments that go in front of the user's own, or a
+ * sentence saying why there is nothing to execute. `args` is returned rather than applied so that a plan can be asked
+ * for before it is known whether the run happens here or on another machine.
+ */
+export type ExecutionPlan = {executable: string; args?: string[]} | {cannotRun: string};
+
+/**
+ * A build system, as far as {@link BaseCompiler.buildProject} is concerned. Everything that is *not* specific to a
+ * build system — temp directories, caching, the compilation queue, execution, post-compilation tools — stays in the
+ * orchestrator; this interface covers only the parts that differ between CMake, Cargo, Maven and friends.
+ */
+export interface BuildSystemDriver {
+    readonly id: BuildSystemId;
+
+    /** What the frontend knows about this build system, including the manifest filename. */
+    readonly descriptor: BuildSystemDescriptor;
+
+    /** Why this compiler cannot be built with this build system, or undefined if it can. */
+    getUnsupportedReason(compiler: BaseCompiler): Promise<string | undefined>;
+
+    /** Coerce the request into the shape this build system needs. Runs before the cache key is computed. */
+    applyRequestDefaults(compiler: BaseCompiler, parsedRequest: ParsedRequest): void;
+
+    /** Where builds happen, given the project root. */
+    getBuildPath(dirPath: string): string;
+
+    /** Write the manifest and the rest of the project into the project root. */
+    writeProjectFiles(ctx: BuildContext): Promise<{inputFilename: string}>;
+
+    /** Create whatever the build steps expect to already exist. Runs after the files are written. */
+    prepareBuildDirectory(ctx: BuildContext): Promise<void>;
+
+    /** The commands to run, in order. */
+    getBuildPlan(ctx: BuildContext): Promise<BuildPlan>;
+
+    /** The artifact to post-process and, if asked, execute. */
+    getArtifactFilename(ctx: BuildContext): string;
+
+    /**
+     * Runs once every step has succeeded, before the artifact is post-processed. Where a build system reports what it
+     * built rather than putting it at a path we chose, this is where that gets reconciled — see the Cargo driver.
+     *
+     * Returns a message explaining why there is nothing to inspect, when a build system can succeed without producing
+     * an artifact at all. That is not an error: a library-only crate, or an argument like `--help`, gets a plain
+     * explanation rather than a failed compilation.
+     */
+    finaliseArtifact(
+        ctx: BuildContext,
+        result: CompilationResult,
+        artifactFilename: string,
+    ): Promise<string | undefined>;
+
+    /**
+     * How to run what was built, or why it cannot be run. Only the build system knows whether the artifact path is
+     * even the right question: Maven runs the compiled classes when the project builds no jar. Saying why in its own
+     * words is the point -- the alternative is the caller guessing from a missing file, and telling the user only
+     * that something it named is absent.
+     */
+    prepareExecution(ctx: BuildContext, artifactFilename: string): Promise<ExecutionPlan>;
+
+    /** Turn the built artifact into something to show the user, usually by disassembling it. */
+    postProcessArtifact(
+        ctx: BuildContext,
+        result: CompilationResult,
+        artifactFilename: string,
+    ): Promise<CompilationResult>;
+}

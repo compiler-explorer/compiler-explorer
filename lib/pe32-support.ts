@@ -276,7 +276,7 @@ export class PELabelReconstructor {
                 }
 
                 const lineInfo = this.mapFileReader.getLineInfoByAddress(undefined, address);
-                if (lineInfo && currentSegment && currentSegment.unitName) {
+                if (lineInfo && currentSegment?.unitName) {
                     this.asmLines.splice(lineIdx, 0, '/app/' + currentSegment.unitName + ':' + lineInfo.lineNumber);
                     lineIdx++;
                 } else if (segmentChanged && currentSegment) {

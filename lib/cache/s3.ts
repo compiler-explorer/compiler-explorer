@@ -24,8 +24,6 @@
 
 import {Buffer} from 'buffer';
 
-import {StorageClass} from '@aws-sdk/client-s3';
-
 import type {GetResult} from '../../types/cache.interfaces.js';
 import {logger} from '../logger.js';
 import type {S3HandlerOptions} from '../s3-handler.interfaces.js';
@@ -74,7 +72,6 @@ export class S3Cache extends BaseCache {
     override async putInternal(key: string, value: Buffer, creator?: string): Promise<void> {
         const options: S3HandlerOptions = {
             metadata: creator ? {CreatedBy: creator} : {},
-            redundancy: StorageClass.REDUCED_REDUNDANCY,
         };
         try {
             await this.s3.put(key, value, this.path, options);
@@ -87,7 +84,6 @@ export class S3Cache extends BaseCache {
         const expiresDate = new Date(Date.now() + ttlDays * 24 * 60 * 60 * 1000);
         const options: S3HandlerOptions = {
             metadata: creator ? {CreatedBy: creator} : {},
-            redundancy: StorageClass.REDUCED_REDUNDANCY,
             expires: expiresDate,
         };
         try {
@@ -95,6 +91,20 @@ export class S3Cache extends BaseCache {
         } catch (e) {
             this.onError(e, 'write');
         }
+    }
+
+    override get isShared(): boolean {
+        return true;
+    }
+
+    override async putShared(
+        key: string,
+        value: Buffer,
+        ttlDays: number,
+        creator?: string,
+    ): Promise<string | undefined> {
+        await this.putWithTTLAndPath(key, value, ttlDays, 'temp', creator);
+        return `temp/${key}`;
     }
 
     async putWithTTLAndPath(
@@ -107,7 +117,6 @@ export class S3Cache extends BaseCache {
         const expiresDate = new Date(Date.now() + ttlDays * 24 * 60 * 60 * 1000);
         const options: S3HandlerOptions = {
             metadata: creator ? {CreatedBy: creator} : {},
-            redundancy: StorageClass.REDUCED_REDUNDANCY,
             expires: expiresDate,
         };
         try {

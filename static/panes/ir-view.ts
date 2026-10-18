@@ -41,6 +41,7 @@ import {Hub} from '../hub.js';
 import {extendConfig} from '../monaco-config.js';
 import {SentryCapture} from '../sentry.js';
 import {Alert} from '../widgets/alert.js';
+import {CompilationOptions} from '../widgets/compilation-options.js';
 import {Toggles} from '../widgets/toggles.js';
 import {Compiler} from './compiler.js';
 import {IrState} from './ir-view.interfaces.js';
@@ -79,6 +80,7 @@ export class Ir extends MonacoPane<monaco.editor.IStandaloneCodeEditor, IrState>
 
     constructor(hub: Hub, container: Container, state: IrState & MonacoPaneState) {
         super(hub, container, state);
+        new CompilationOptions(this, this.compilerInfo.compilerId, result => result.irOutput);
         if (state.irOutput) {
             this.showIrResults(state.irOutput ?? []);
         }
@@ -152,7 +154,7 @@ export class Ir extends MonacoPane<monaco.editor.IStandaloneCodeEditor, IrState>
         const pos = ed.getPosition();
         if (!pos || !ed.getModel()) return;
         const word = ed.getModel()?.getWordAtPosition(pos);
-        if (!word || !word.word) return;
+        if (!word?.word) return;
         const opcode = word.word.toUpperCase();
 
         function newGitHubIssueUrl(): string {

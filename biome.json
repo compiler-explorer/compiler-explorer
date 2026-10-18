@@ -14,7 +14,8 @@
       "!static/policies/*.html",
       "!lib/storage/data/**/*",
       "!lib/asm-docs/generated/**/*",
-      "!test/**/*.json"
+      "!test/**/*.json",
+      "!**/*.svg"
     ]
   },
   "overrides": [
@@ -58,7 +59,8 @@
         "noStaticOnlyClass": "off",
         "noForEach": "off",
         "useLiteralKeys": "off",
-        "noThisInStatic": "off"
+        "noThisInStatic": "off",
+        "useOptionalChain": "off"
       }
     }
   },
