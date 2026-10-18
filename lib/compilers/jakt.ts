@@ -29,11 +29,14 @@ import type {ParseFiltersAndOutputOptions} from '../../types/features/filters.in
 import {SelectedLibraryVersion} from '../../types/libraries/libraries.interfaces.js';
 import {BaseCompiler} from '../base-compiler.js';
 import {CompilationEnvironment} from '../compilation-env.js';
+import {AsmParserCpp} from '../parsers/asm-parser-cpp.js';
 
 export class JaktCompiler extends BaseCompiler {
     static get key() {
         return 'jakt';
     }
+
+    generatedCodeParser = new AsmParserCpp();
 
     constructor(info: PreliminaryCompilerInfo, env: CompilationEnvironment) {
         super(info, env);
@@ -43,6 +46,12 @@ export class JaktCompiler extends BaseCompiler {
 
     override getCompilerResultLanguageId(filters?: ParseFiltersAndOutputOptions): string | undefined {
         return 'cppp';
+    }
+
+    override async processAsm(result, filters: ParseFiltersAndOutputOptions, options: string[]) {
+        // the binary output is a disassembly; otherwise it is the generated C++, which the asm parser would mangle
+        if (filters.binary) return super.processAsm(result, filters, options);
+        return this.generatedCodeParser.process(result.asm, filters);
     }
 
     override async objdump(

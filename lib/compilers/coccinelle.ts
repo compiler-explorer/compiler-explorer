@@ -33,6 +33,7 @@ import {SelectedLibraryVersion} from '../../types/libraries/libraries.interfaces
 import {BaseCompiler} from '../base-compiler.js';
 import {CompilationEnvironment} from '../compilation-env.js';
 import {logger} from '../logger.js';
+import {AsmParserCpp} from '../parsers/asm-parser-cpp.js';
 import * as utils from '../utils.js';
 
 export class CoccinelleCCompiler extends BaseCompiler {
@@ -60,6 +61,8 @@ export class CoccinelleCCompiler extends BaseCompiler {
         this.joinSpatchStdinAndStderr = true;
         this.verbose = false;
         this.permittedOptions = ['--debug', '--help', '--iso-limit=0', '--quiet', '--verbose', '--very-quiet.'];
+        // the output is the patched C or C++, which the asm parser would mangle
+        this.asm = new AsmParserCpp();
         // ...
     }
 
