@@ -84,6 +84,11 @@ export class Graceful {
         Graceful.updateRegistration();
     }
 
+    /** Whether this signal is handled here, exiting once every exit listener has finished. */
+    public static handlesSignal(signal: string) {
+        return Graceful.isRegistered && Graceful.DEADLY_SIGNALS.includes(signal);
+    }
+
     public static exit(code?: number | string, signal = 'SIGTERM') {
         const exitSignal = typeof code === 'string' ? code : signal;
 

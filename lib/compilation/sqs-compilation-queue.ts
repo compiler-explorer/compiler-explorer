@@ -38,9 +38,11 @@ import {CompilationEnvironment} from '../compilation-env.js';
 import {PersistentEventsSender} from '../execution/events-websocket.js';
 import {CompileHandler} from '../handlers/compile.js';
 import {logger} from '../logger.js';
+import {Graceful} from '../node-graceful.js';
 import {PropertyGetter} from '../properties.interfaces.js';
 import {SentryCapture} from '../sentry.js';
 import {KnownBuildMethod} from '../stats.js';
+import {sleep} from '../utils.js';
 
 export type RemoteCompilationRequest = {
     guid: string;
@@ -62,6 +64,8 @@ export type RemoteCompilationRequest = {
     queueTimeMs?: number;
     /** SQS SentTimestamp, so the result sender can tell when the caller stops waiting. */
     sentTimestampMs?: number;
+    /** SQS ApproximateReceiveCount: above 1 means an earlier receive never deleted the message. */
+    receiveCount?: number;
     headers: Record<string, string | string[]>;
     queryStringParameters: Record<string, string>;
 };
@@ -187,13 +191,23 @@ export class SqsCompilationQueueBase {
 }
 
 export class SqsCompilationWorkerMode extends SqsCompilationQueueBase {
+    private draining = false;
+
+    startDraining() {
+        this.draining = true;
+    }
+
+    isDraining() {
+        return this.draining;
+    }
+
     private async receiveMsg(url: string) {
         try {
             return await this.sqs.receiveMessage({
                 QueueUrl: url,
                 MaxNumberOfMessages: 1,
                 WaitTimeSeconds: 20, // Long polling - wait up to 20 seconds for a message
-                MessageSystemAttributeNames: ['SentTimestamp'],
+                MessageSystemAttributeNames: ['SentTimestamp', 'ApproximateReceiveCount'],
             });
         } catch (e) {
             logger.error(`Error retrieving compilation message from queue with URL: ${url}`);
@@ -246,6 +260,15 @@ export class SqsCompilationWorkerMode extends SqsCompilationQueueBase {
         if (queued_messages.Messages && queued_messages.Messages.length === 1) {
             const queued_message = queued_messages.Messages[0];
 
+            // A long poll that started before shutdown can still be handed a message. Left undeleted it would stay
+            // invisible, and hold up the rest of its FIFO group, until the visibility timeout expires.
+            if (this.draining) {
+                await this.makeVisibleAgain(url, queued_message.ReceiptHandle);
+                return undefined;
+            }
+
+            const receiveCount = queued_message.Attributes?.ApproximateReceiveCount;
+
             try {
                 if (queued_message.Body) {
                     const json = queued_message.Body;
@@ -274,6 +297,7 @@ export class SqsCompilationWorkerMode extends SqsCompilationQueueBase {
                                     compilationRequest.queueTimeMs = queueTimeMs;
                                     compilationRequest.sentTimestampMs = Number.parseInt(sentTimestamp, 10);
                                 }
+                                if (receiveCount) compilationRequest.receiveCount = Number.parseInt(receiveCount, 10);
                                 return compilationRequest;
                             }
                         } catch (s3Error) {
@@ -294,6 +318,7 @@ export class SqsCompilationWorkerMode extends SqsCompilationQueueBase {
                         parsed.queueTimeMs = queueTimeMs;
                         parsed.sentTimestampMs = Number.parseInt(sentTimestamp, 10);
                     }
+                    if (receiveCount) parsed.receiveCount = Number.parseInt(receiveCount, 10);
 
                     return parsed as RemoteCompilationRequest;
                 }
@@ -309,6 +334,22 @@ export class SqsCompilationWorkerMode extends SqsCompilationQueueBase {
         }
 
         return undefined;
+    }
+
+    private async makeVisibleAgain(url: string, receiptHandle: string | undefined) {
+        if (!receiptHandle) return;
+        try {
+            await this.sqs.changeMessageVisibility({
+                QueueUrl: url,
+                ReceiptHandle: receiptHandle,
+                VisibilityTimeout: 0,
+            });
+            logger.info('Returned a compilation message to the queue while draining');
+        } catch (e) {
+            logger.error(
+                `Failed to return a compilation message to the queue while draining: ${e instanceof Error ? e.message : String(e)}`,
+            );
+        }
     }
 }
 
@@ -443,7 +484,8 @@ async function doOneCompilation(
         if (queuedMs !== undefined) queueWaitHistogram.observe(queuedMs / 1000);
         logger.info(
             `Picked up ${compilationType} request ${msg.guid}` +
-                (queuedMs === undefined ? '' : ` after ${queuedMs}ms queued`),
+                (queuedMs === undefined ? '' : ` after ${queuedMs}ms queued`) +
+                (msg.receiveCount && msg.receiveCount > 1 ? ` (receive #${msg.receiveCount})` : ''),
         );
 
         try {
@@ -597,30 +639,32 @@ export function startCompilationWorkerThread(
 
     const persistentSender = new PersistentEventsSender(compilationEventsProps);
 
-    // Handle graceful shutdown
-    const shutdown = async () => {
-        logger.info('Shutting down compilation worker - closing persistent WebSocket connection');
-        await persistentSender.close();
-        process.exit(0);
-    };
-
-    process.on('SIGINT', shutdown);
-    process.on('SIGTERM', shutdown);
-
     logger.info(`Starting ${numThreads} compilation worker threads with ${pollIntervalMs}ms poll interval`);
 
-    for (let i = 0; i < numThreads; i++) {
-        const doCompilationWork = async () => {
+    const runThread = async (startDelayMs: number) => {
+        await sleep(startDelayMs);
+        while (!queue.isDraining()) {
             try {
                 await doOneCompilation(queue, compilationEnvironment, persistentSender);
             } catch (error) {
                 logger.error('Error in compilation worker thread:', error);
                 SentryCapture(error, 'compilation worker thread error');
             }
-            setTimeout(doCompilationWork, pollIntervalMs);
-        };
-        setTimeout(doCompilationWork, 1500 + i * 30);
-    }
+            await sleep(pollIntervalMs);
+        }
+    };
+    const threads = Array.from({length: numThreads}, (_, i) => runThread(1500 + i * 30));
+
+    // Exiting with a receive still open can strand a message SQS has already handed to it, which stalls its whole
+    // FIFO group for the visibility timeout. So stop polling, let the open receives and running compilations finish,
+    // and only then close the connection their results go out on. Graceful bounds how long this may take.
+    Graceful.on('exit', async () => {
+        logger.info('Draining compilation worker - finishing open receives and running compilations');
+        queue.startDraining();
+        await Promise.allSettled(threads);
+        logger.info('Compilation worker drained - closing persistent WebSocket connection');
+        await persistentSender.close();
+    });
 
     return () => !persistentSender.hasFailedPermanently();
 }
