@@ -221,7 +221,7 @@ export abstract class Pane<S> {
 
     /** Update the pane's title, called when the pane name or compiler info changes */
     protected updateTitle() {
-        this.container.setTitle(escapeHTML(this.getPaneName()));
+        this.container.setTitle(this.getPaneName());
     }
 
     /** Close the pane if the compiler this pane was attached to closes */

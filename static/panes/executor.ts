@@ -27,7 +27,6 @@ import $ from 'jquery';
 import _ from 'underscore';
 
 import type {BuildSystemId} from '../../shared/build-systems.js';
-import {escapeHTML} from '../../shared/common-utils.js';
 import {
     BypassCache,
     CompilationRequest,
@@ -1178,7 +1177,7 @@ export class Executor extends Pane<ExecutorState> {
 
     override updateTitle(): void {
         const name = this.paneName ? this.paneName : this.getPaneName();
-        this.container.setTitle(escapeHTML(name));
+        this.container.setTitle(name);
     }
 
     updateCompilerName() {
