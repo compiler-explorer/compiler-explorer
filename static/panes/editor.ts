@@ -58,7 +58,7 @@ import {Container} from 'golden-layout';
 
 import {assert, unwrap} from '../../shared/assert.js';
 import {getBuildSystemByManifestFilename, isManifestLanguageId} from '../../shared/build-systems.js';
-import {escapeHTML, isString} from '../../shared/common-utils.js';
+import {isString} from '../../shared/common-utils.js';
 import {CompilationResult} from '../../types/compilation/compilation.interfaces.js';
 import {CompilerOverrideType} from '../../types/compilation/compiler-overrides.interfaces.js';
 import {CompilerInfo} from '../../types/compiler.interfaces.js';
@@ -2033,7 +2033,7 @@ export class Editor extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Edit
         if (manifestOf) {
             this.changeLanguage(manifestOf.manifestLanguageId);
         }
-        this.container.setTitle(escapeHTML(customName));
+        this.container.setTitle(customName);
     }
 
     // Called every time we change language, so we get the relevant code
