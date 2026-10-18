@@ -26,15 +26,22 @@ import fs from 'node:fs';
 
 import {beforeAll, describe, expect, it, vi} from 'vitest';
 
+import {CoccinelleCCompiler, CoccinelleCPlusPlusCompiler} from '../lib/compilers/coccinelle.js';
+import {DotNetIlSpyCompiler} from '../lib/compilers/dotnet.js';
 import {MrustcCompiler} from '../lib/compilers/mrustc.js';
 import {PythranCompiler} from '../lib/compilers/pythran.js';
+import {TableGenCompiler} from '../lib/compilers/tablegen.js';
+import {TileLangCompiler} from '../lib/compilers/tilelang.js';
 import {ValaCompiler} from '../lib/compilers/vala.js';
 import {ParsedAsmResultLine} from '../types/asmresult/asmresult.interfaces.js';
 import {LanguageKey} from '../types/languages.interfaces.js';
 import {makeCompilationEnvironment, makeFakeCompilerInfo, makeFakeParseFiltersAndOutputOptions} from './utils.js';
 
 // The fixtures are the raw output of valac 0.56.6, mrustc (master) and pythran 0.15 on godbolt.org for a function
-// that switches on an int, with a default case.
+// that switches on an int, with a default case. Likewise the C# that ILSpy (trunk) decompiles from a switch, the
+// C++ that llvm-tblgen (trunk) generates from the searchable_tables example, and the C that TileLang 0.1.14 generates
+// from its default example. Spatch is not installed on godbolt.org, so the Coccinelle fixtures are the output of
+// spatch 1.1.1 (Ubuntu 24.04) for a patch on the same switch.
 const fixture = (name: string) => fs.readFileSync(`./test/generated-c/${name}`, 'utf8');
 
 // the filters the site turns on by default
@@ -139,5 +146,92 @@ describe('Pythran generated C++', () => {
         );
         expect(process).not.toHaveBeenCalled();
         process.mockRestore();
+    });
+});
+
+describe('Coccinelle patched C and C++', () => {
+    it.each([
+        ['C', CoccinelleCCompiler, 'coccinelle_for_c', 'coccinelle-switch.c', '#include <stdio.h>'],
+        ['C++', CoccinelleCPlusPlusCompiler, 'coccinelle_for_cpp', 'coccinelle-switch.cpp', '#include <cstdio>'],
+    ])('keeps the %s intact with the default filters', async (_, ctor, lang, name, include) => {
+        const output = fixture(name);
+        const coccinelle = makeCompiler(ctor, lang);
+        const lines = texts((await coccinelle.processAsm({asm: output}, defaultFilters, [])).asm);
+        // spatch ends its output with a blank line, which is kept
+        expect(lines).toEqual(output.replace(/\n$/, '').split('\n'));
+        expect(lines).toContain(include);
+        expect(lines).toContain('#define LIMIT 10');
+        expect(lines).toContain('/* Classify a number */');
+        expect(lines).toContain('\tdefault:');
+    });
+
+    it('keeps public: in the C++', async () => {
+        const output = fixture('coccinelle-switch.cpp');
+        const coccinelle = makeCompiler(CoccinelleCPlusPlusCompiler, 'coccinelle_for_cpp');
+        const lines = texts((await coccinelle.processAsm({asm: output}, defaultFilters, [])).asm);
+        expect(lines).toContain('public:');
+    });
+});
+
+describe('ILSpy decompiled C#', () => {
+    let ilspy: DotNetIlSpyCompiler;
+    const output = fixture('ilspy-switch.cs');
+
+    beforeAll(() => {
+        const ce = makeCompilationEnvironment({
+            languages: {csharp: {id: 'csharp'}},
+            props: {'compiler.ilspy.clrDir': '/dev/null'},
+        });
+        ilspy = new DotNetIlSpyCompiler(makeFakeCompilerInfo({id: 'ilspy', exe: '/dev/null', lang: 'csharp'}), ce);
+    });
+
+    it('keeps the C# intact with the default filters', async () => {
+        const lines = texts((await ilspy.processAsm({asm: output}, defaultFilters)).asm);
+        expect(lines).toEqual(output.trimEnd().split('\n'));
+        expect(lines).toContain('\t\tcase 1:');
+        expect(lines).toContain('\t\tdefault:');
+    });
+});
+
+describe('TableGen generated C++', () => {
+    let tablegen: TableGenCompiler;
+    const output = fixture('tablegen-searchable-tables.inc');
+
+    beforeAll(() => {
+        tablegen = makeCompiler(TableGenCompiler, 'tablegen');
+    });
+
+    it('keeps the C++ intact with the default filters', async () => {
+        const lines = texts((await tablegen.processAsm({asm: output}, defaultFilters, [])).asm);
+        expect(lines).toEqual(output.trimEnd().split('\n'));
+        expect(lines).toContain('#ifdef GET_PAIR_DECL');
+        expect(lines).toContain('#pragma GCC diagnostic push');
+        expect(lines).toContain('  ;');
+    });
+});
+
+describe('TileLang generated C', () => {
+    let tilelang: TileLangCompiler;
+    const output = fixture('tilelang-add.c');
+
+    beforeAll(() => {
+        tilelang = makeCompiler(TileLangCompiler, 'tilelang');
+    });
+
+    it('keeps the C intact with the default filters', async () => {
+        const lines = texts((await tilelang.processAsm({asm: output}, defaultFilters, [])).asm);
+        expect(lines).toContain('#include <tl_templates/cpp/common.h>');
+        expect(lines).toContain('#ifdef __cplusplus');
+        expect(lines[0]).toMatch(/^\/\/ tilelang target:/);
+    });
+
+    it('hides #line with the directives filter and maps lines to the source', async () => {
+        const asm = (await tilelang.processAsm({asm: output}, defaultFilters, [])).asm;
+        expect(texts(asm).filter(line => line.includes('#line'))).toEqual([]);
+        const sourceOf = (text: string) => asm.find(line => line.text.trim() === text)?.source;
+        expect(sourceOf('for (int32_t i = 0; i < 8; ++i) {')).toEqual({file: '/app/example.py', line: 12});
+        const unfiltered = makeFakeParseFiltersAndOutputOptions({});
+        const all = texts((await tilelang.processAsm({asm: output}, unfiltered, [])).asm);
+        expect(all).toEqual(output.trimEnd().split('\n'));
     });
 });
