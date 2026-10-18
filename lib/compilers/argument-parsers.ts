@@ -599,7 +599,16 @@ export class PascalParser extends BaseParser {
 
 export class MojoParser extends BaseParser {
     override async parse() {
-        await this.getOptions('-help');
+        const result = await this.compiler.execCompilerCached(this.compiler.compiler.exe, ['build', '--help']);
+        const options =
+            result.code === 0
+                ? this.parseLines(
+                      result.stdout + result.stderr,
+                      /^ {8}(--?[\w-]+(?:[ =]<[^>]+>)?) {2,}(.*)$/,
+                      /^ {8}(--?[\w-]+(?:[ =]<[^>]+>)?)(?:,.*)?$/,
+                  )
+                : {};
+        this.compiler.possibleArguments.populateOptions(options);
         return this.compiler;
     }
 }
