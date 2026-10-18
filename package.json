@@ -172,5 +172,11 @@
     "webpack": "node --no-warnings=ExperimentalWarning --import=tsx ./node_modules/webpack-cli/bin/cli.js --config-node-env=production --config webpack.config.esm.ts"
   },
   "license": "BSD-2-Clause",
-  "packageManager": "npm@11.2.0"
+  "packageManager": "npm@11.2.0",
+  "allowScripts": {
+    "cypress": true,
+    "esbuild": true,
+    "@parcel/watcher": false,
+    "protobufjs": false
+  }
 }
