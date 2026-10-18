@@ -91,7 +91,7 @@ main():
     });
 });
 
-describe('AsmParser binary source records before the function label', () => {
+describe('AsmParser binary source records after the function label', () => {
     const parser = new AsmParser();
     const cases: [string, string][] = [
         ['POSIX', '/tmp/example.cpp'],
@@ -100,10 +100,10 @@ describe('AsmParser binary source records before the function label', () => {
     ];
 
     for (const [style, file] of cases) {
-        it(`should keep a ${style} source line that objdump printed before the label`, () => {
+        it(`should keep a ${style} source line that objdump printed after the label`, () => {
             const asm = [
-                `${file}:3`,
                 '0000000000401000 <foo>:',
+                `${file}:3`,
                 '  401000:\tc3                   \tret',
                 '  401001:\t90                   \tnop',
                 `${file}:9`,
@@ -122,11 +122,10 @@ describe('AsmParser binary source corner cases', () => {
     const nop = '  11: 90        nop';
     const maskedExample = (line: number) => ({file: null, line, mainsource: true});
 
-    function dump(sourceRecord?: string, sourceAfterLabel = false): string {
-        const lines: string[] = [];
-        if (sourceRecord !== undefined && !sourceAfterLabel) lines.push(sourceRecord);
-        lines.push(label);
-        if (sourceRecord !== undefined && sourceAfterLabel) lines.push(sourceRecord);
+    // objdump -l prints a function's first line record after its label.
+    function dump(sourceRecord?: string): string {
+        const lines = [label];
+        if (sourceRecord !== undefined) lines.push(sourceRecord);
         lines.push(mov, nop);
         return lines.join('\n');
     }
@@ -136,31 +135,25 @@ describe('AsmParser binary source corner cases', () => {
         return result.asm.filter(line => line.address !== undefined);
     }
 
-    it('should map a POSIX source record before the label when filenames are masked', () => {
+    it('should map a POSIX source record when filenames are masked', () => {
         const kept = instructions(dump('/tmp/example.cpp:3'));
         expect(kept).toHaveLength(2);
         expect(kept.map(line => line.source)).toEqual([maskedExample(3), maskedExample(3)]);
     });
 
-    it('should map a Windows forward-slash source record before the label', () => {
+    it('should map a Windows forward-slash source record', () => {
         const kept = instructions(dump('C:/tmp/example.cpp:3'));
         expect(kept).toHaveLength(2);
         expect(kept.map(line => line.source)).toEqual([maskedExample(3), maskedExample(3)]);
     });
 
-    it('should map a Windows backslash source record before the label', () => {
+    it('should map a Windows backslash source record', () => {
         const record = 'C:\\tmp\\example.cpp:3';
         expect(record).toBe('C:\\tmp\\example.cpp:3');
         expect(record.includes('\\')).toBe(true);
         const kept = instructions(dump(record));
         expect(kept).toHaveLength(2);
         expect(kept.map(line => line.source)).toEqual([maskedExample(3), maskedExample(3)]);
-    });
-
-    it('should map a source record printed after the label', () => {
-        const kept = instructions(dump('/tmp/example.cpp:4', true));
-        expect(kept).toHaveLength(2);
-        expect(kept.map(line => line.source)).toEqual([maskedExample(4), maskedExample(4)]);
     });
 
     it('should emit instructions with null source when objdump has no line record', () => {
@@ -180,8 +173,8 @@ describe('AsmParser binary source corner cases', () => {
         expect(kept).toEqual([]);
     });
 
-    it('should take the line record that precedes each function label', () => {
-        const asm = ['/tmp/a.cpp:3', label, mov, '/tmp/b.cpp:9', '0000000000000011 <bar>:', nop].join('\n');
+    it('should take the line record that follows each function label', () => {
+        const asm = [label, '/tmp/a.cpp:3', mov, '0000000000000011 <bar>:', '/tmp/b.cpp:9', nop].join('\n');
         const result = parser.process(asm, {binary: true});
         const kept = result.asm.filter(line => line.address !== undefined);
         expect(kept).toHaveLength(2);
