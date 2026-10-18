@@ -12,4 +12,12 @@ The saved regression fixtures are real darwin/arm64 output from the pinned CLI, 
 
 A [verified Linux amd64 smoke run](https://github.com/kimjooyoon/compiler-explorer/actions/runs/39154930655) checked the pinned 839 compiler through five direct CLI invocations and eight real CE `app.ts` HTTP requests. The CLI checks covered build identity, valid/repeated/changed emission and flat refusal. The HTTP checks covered discovery, valid/repeated/changed source, invalid input/options, explicit executor refusal and an ignored execution filter. This verifies the selected scalar activity body and its typecheck/emission behaviour; generated Go was not executed. Production nsjail operation and hosted availability remain unverified. Installer packaging and complete dependency notices remain follow-up requirements.
 
+## Use the existing MCP endpoint
+
+On a self-hosted Compiler Explorer instance with this backend and its pinned compiler configured, use the existing [`/mcp` endpoint](MCP.md). Discover the Gooo compiler with `list_compilers` and `language: "gooo"`, then inspect its `supportsExecute` and `supportsBinary` values. The compiler has the `experimental` release track; when using `latestPerMajor: true`, also set `includeExperimental: true` to include it.
+
+Call `compile` with `language: "gooo"`, the returned compiler ID, `options: "--activity Double"`, `execute: false`, and the source from `examples/gooo/default.gooo`. The tool returns JSON inside its text content. For this backend, `asm` contains Go function source. Check the embedded `code`: a successful JSON-RPC response or an absent `isError` does not mean that compilation passed. A nonzero compilation code is a refusal; preserve its diagnostic.
+
+This uses the same source-output backend through Compiler Explorer's existing MCP transport. It does not execute generated Go or establish that Gooo is installed on a public Compiler Explorer deployment.
+
 Compiler source: <https://github.com/kimjooyoon/meta-ontology-go/tree/83928fa4538245abe33b08549da47f8cbdc50ed2> (MIT). The existing language request is <https://github.com/compiler-explorer/compiler-explorer/issues/9258>.
