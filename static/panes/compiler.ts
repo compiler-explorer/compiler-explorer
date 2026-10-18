@@ -3147,7 +3147,6 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
         this.optionsField.on('change input', e => {
             if (!this.initialStateLoaded) {
                 this.optionsChangedBeforeInitialStateLoad = true;
-                this.options = unwrapString($(e.target).val());
             }
             optionsChange(e);
         });

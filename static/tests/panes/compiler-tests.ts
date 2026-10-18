@@ -161,7 +161,41 @@ describe('Compiler default options', () => {
         await initializing;
 
         expect(fixture.displayedOptions()).toBe(expectedOptions);
-        expect(fixture.sentOptions[fixture.sentOptions.length - 1]).toBe(expectedOptions);
         expect(optionsChanged).not.toHaveBeenCalled();
+    });
+
+    it.each(['-Og', ''])('persists and compiles options %s before initial state loads', async expectedOptions => {
+        const fixture = compilerWithOptions('-O3');
+        fixture.compiler.initCallbacks();
+        let finishInit = () => {};
+        Reflect.set(
+            fixture.compiler,
+            'initLangAndCompiler',
+            () =>
+                new Promise<void>(resolve => {
+                    finishInit = () => {
+                        Reflect.set(fixture.compiler, 'currentLangId', 'c++');
+                        resolve();
+                    };
+                }),
+        );
+        const initializing = Reflect.get(fixture.compiler, 'postInit').call(fixture.compiler, {
+            compiler: 'gdefault',
+        });
+
+        fixture.optionsField.val(expectedOptions).trigger('input');
+        await vi.waitFor(
+            () => {
+                expect(fixture.compiler.updateState).toHaveBeenCalledTimes(1);
+                expect(fixture.compiler.compile).toHaveBeenCalledTimes(1);
+                expect(fixture.sentOptions).toEqual([expectedOptions]);
+            },
+            {timeout: 2000},
+        );
+        finishInit();
+        await initializing;
+
+        expect(fixture.displayedOptions()).toBe(expectedOptions);
+        expect(fixture.sentOptions).toEqual([expectedOptions, expectedOptions]);
     });
 });
