@@ -1038,6 +1038,16 @@ export class BaseCompiler {
         });
     }
 
+    // A library that brings its own dynamic linker (e.g. glibc) finds its libraries through that loader. Putting them
+    // on LD_LIBRARY_PATH would make the host-built compiler and tools load a foreign libc.
+    private withoutOwnDynamicLinker(libraries: SelectedLibraryVersion[]): SelectedLibraryVersion[] {
+        return libraries.filter(selectedLib => this.findLibVersion(selectedLib)?.dynamicLinker === undefined);
+    }
+
+    private usesLibrarySysroot(libraries: SelectedLibraryVersion[]): boolean {
+        return libraries.some(selectedLib => !!this.findLibVersion(selectedLib)?.sysroot);
+    }
+
     getSharedLibraryBinPaths(libraries: SelectedLibraryVersion[], dirPath?: string): string[] {
         return libraries.flatMap(selectedLib => {
             const foundVersion = this.findLibVersion(selectedLib);
@@ -1076,6 +1086,8 @@ export class BaseCompiler {
             [pathFlag + libDownloadPath],
             this.compiler.libPath.map(path => pathFlag + path),
             toolchainLibraryPaths.map(path => pathFlag + path),
+            // --sysroot stops clang looking outside the sysroot for the GCC runtime (libgcc_s, libstdc++)
+            this.usesLibrarySysroot(libraries) ? toolchainLibraryPaths.map(path => libPathFlag + path) : [],
             this.getSharedLibraryPaths(libraries, dirPath).map(path => pathFlag + path),
             this.getSharedLibraryPaths(libraries, dirPath).map(path => libPathFlag + path),
             this.getSharedLibraryDynamicLinker(libraries, dirPath).map(path => dynamicLinkerFlag + path),
@@ -1090,7 +1102,7 @@ export class BaseCompiler {
         return _.union(
             paths.split(path.delimiter).filter(p => !!p),
             this.compiler.ldPath,
-            this.getSharedLibraryPaths(libraries, dirPath),
+            this.getSharedLibraryPaths(this.withoutOwnDynamicLinker(libraries), dirPath),
         );
     }
 
@@ -1104,7 +1116,7 @@ export class BaseCompiler {
             this.compiler.ldPath,
             this.getExtraLdPaths(key),
             this.compiler.libPath,
-            this.getSharedLibraryPaths(key.libraries, dirPath),
+            this.getSharedLibraryPaths(this.withoutOwnDynamicLinker(key.libraries), dirPath),
         );
     }
 
