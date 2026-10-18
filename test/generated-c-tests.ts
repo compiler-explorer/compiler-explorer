@@ -30,6 +30,7 @@ import {CoccinelleCCompiler, CoccinelleCPlusPlusCompiler} from '../lib/compilers
 import {DotNetIlSpyCompiler} from '../lib/compilers/dotnet.js';
 import {MrustcCompiler} from '../lib/compilers/mrustc.js';
 import {PythranCompiler} from '../lib/compilers/pythran.js';
+import {SPIRVToolsCompiler} from '../lib/compilers/spirv-tools.js';
 import {TableGenCompiler} from '../lib/compilers/tablegen.js';
 import {TileLangCompiler} from '../lib/compilers/tilelang.js';
 import {ValaCompiler} from '../lib/compilers/vala.js';
@@ -39,8 +40,8 @@ import {makeCompilationEnvironment, makeFakeCompilerInfo, makeFakeParseFiltersAn
 
 // The fixtures are the raw output of valac 0.56.6, mrustc (master) and pythran 0.15 on godbolt.org for a function
 // that switches on an int, with a default case. Likewise the C# that ILSpy (trunk) decompiles from a switch, the
-// C++ that llvm-tblgen (trunk) generates from the searchable_tables example, and the C that TileLang 0.1.14 generates
-// from its default example. Spatch is not installed on godbolt.org, so the Coccinelle fixtures are the output of
+// C++ that llvm-tblgen (trunk) generates from the searchable_tables example, the C that TileLang 0.1.14 generates
+// from its default example, and the GLSL and MSL that spirv-cross (sdk-321) writes for the SPIR-V default example. Spatch is not installed on godbolt.org, so the Coccinelle fixtures are the output of
 // spatch 1.1.1 (Ubuntu 24.04) for a patch on the same switch.
 const fixture = (name: string) => fs.readFileSync(`./test/generated-c/${name}`, 'utf8');
 
@@ -233,5 +234,34 @@ describe('TileLang generated C', () => {
         const unfiltered = makeFakeParseFiltersAndOutputOptions({});
         const all = texts((await tilelang.processAsm({asm: output}, unfiltered, [])).asm);
         expect(all).toEqual(output.trimEnd().split('\n'));
+    });
+});
+
+describe('spirv-cross generated shaders', () => {
+    let spirvTools: SPIRVToolsCompiler;
+
+    beforeAll(() => {
+        spirvTools = makeCompiler(SPIRVToolsCompiler, 'spirv');
+    });
+
+    it.each([
+        ['GLSL', 'spirv-cross-glsl.glsl', '#version 450'],
+        ['MSL', 'spirv-cross-msl.metal', '#include <metal_stdlib>'],
+    ])('keeps the %s intact with the default filters', async (_, name, firstLine) => {
+        const output = fixture(name);
+        const lines = texts((await spirvTools.processAsm({asm: output}, defaultFilters, [])).asm);
+        expect(lines).toEqual(output.trimEnd().split('\n'));
+        expect(lines[0]).toEqual(firstLine);
+    });
+
+    it('leaves SPIR-V to the SPIR-V parser', async () => {
+        const process = vi.spyOn(spirvTools.generatedCodeParser, 'process');
+        await spirvTools.processAsm(
+            {asm: '; SPIR-V\n; Version: 1.0\n               OpCapability Shader'},
+            defaultFilters,
+            [],
+        );
+        expect(process).not.toHaveBeenCalled();
+        process.mockRestore();
     });
 });
