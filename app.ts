@@ -33,6 +33,7 @@ import {loadConfiguration} from './lib/app/config.js';
 import {initialiseApplication} from './lib/app/main.js';
 import {setBaseDirectory} from './lib/assert.js';
 import {initialiseLogging, logger} from './lib/logger.js';
+import {Graceful} from './lib/node-graceful.js';
 import * as props from './lib/properties.js';
 import * as utils from './lib/utils.js';
 
@@ -48,7 +49,9 @@ process.on('SIGQUIT', signalHandler('SIGQUIT'));
 function signalHandler(name: string) {
     return () => {
         logger.info(`stopping process: ${name}`);
-        process.exit(0);
+        // Graceful's own listener for this signal runs next, and exits once its listeners have
+        // finished (e.g. a queue worker draining its in-flight requests).
+        if (!Graceful.handlesSignal(name)) process.exit(0);
     };
 }
 
