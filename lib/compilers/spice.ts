@@ -48,12 +48,12 @@ export class SpiceCompiler extends BaseCompiler {
         this.compiler.supportsIrView = true;
 
         // The --abort-after-dump option was introduced in v0.19.3. Do not use it before that.
-        if (Semver.lte(asSafeVer(this.compiler.semver), '0.19.2', true)) {
-            this.compiler.irArg = ['-ir'];
-            this.compiler.minIrArgs = ['-ir'];
-        } else {
+        if (Semver.gte(asSafeVer(this.compiler.semver), '0.19.3', true)) {
             this.compiler.irArg = ['-ir', '--abort-after-dump'];
             this.compiler.minIrArgs = ['-ir', '--abort-after-dump'];
+        } else {
+            this.compiler.irArg = ['-ir'];
+            this.compiler.minIrArgs = ['-ir'];
         }
 
         this.compiler.optPipeline = {
@@ -73,6 +73,11 @@ export class SpiceCompiler extends BaseCompiler {
         userOptions: string[],
     ): string[] {
         const options = ['build', '-g', '-o', outputFilename, '--dump-to-files', '-asm', '--abort-after-dump'];
+
+        // The -q option to silence the compile progress bar was introduced in v0.28.2. Do not use it before that.
+        if (Semver.gte(asSafeVer(this.compiler.semver), '0.28.2', true)) {
+            options.push('-q');
+        }
 
         if (filters.intel) {
             options.push('-llvm', '--x86-asm-syntax=intel');
