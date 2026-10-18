@@ -637,10 +637,6 @@ export class AsmParser extends AsmRegex implements IAsmParser {
         let source: AsmResultSource | undefined | null = null;
         let func: string | null = null;
         let mayRemovePreviousLabel = true;
-        // objdump only prints a line record when the line changes, so `source` carries over from one instruction to
-        // the next. It must not carry into the next function: one with no line records of its own (such as CRT code
-        // built without debug info) would otherwise inherit the last line of the function before it. objdump prints
-        // a function's first record after its label, so clearing the source at each label loses nothing.
 
         // Handle "error" documents.
         if (asmLines.length === 1 && asmLines[0][0] === '<') {
@@ -682,8 +678,9 @@ export class AsmParser extends AsmRegex implements IAsmParser {
             match = line.match(this.labelRe);
             if (match) {
                 func = match[2];
-                // `.L` labels are assembler-local labels inside a function (RISC-V keeps `.Lpcrel_hi*` in the
-                // symbol table), not the start of a new one.
+                // Don't let a function with no line records (e.g. CRT code without debug info) inherit the previous
+                // function's line; objdump prints a function's first record after its label. `.L` labels are local
+                // labels inside a function (RISC-V keeps `.Lpcrel_hi*` in the symbol table), not new functions.
                 if (!func.startsWith('.L')) source = null;
                 if (func && this.isUserFunction(func)) {
                     asm.push({
