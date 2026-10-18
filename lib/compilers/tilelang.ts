@@ -26,6 +26,7 @@ import type {PreliminaryCompilerInfo} from '../../types/compiler.interfaces.js';
 import type {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces.js';
 import {BaseCompiler} from '../base-compiler.js';
 import {CompilationEnvironment} from '../compilation-env.js';
+import {AsmParserCpp} from '../parsers/asm-parser-cpp.js';
 import {resolvePathFromAppRoot} from '../utils.js';
 import {BaseParser} from './argument-parsers.js';
 
@@ -41,6 +42,8 @@ export class TileLangCompiler extends BaseCompiler {
         this.compilerWrapperPath =
             this.compilerProps('compilerWrapper', '') ||
             resolvePathFromAppRoot('etc', 'scripts', 'tilelang_wrapper.py');
+        // the output is the generated C, which the asm parser would mangle
+        this.asm = new AsmParserCpp();
     }
 
     override getCompilerResultLanguageId(_filters?: ParseFiltersAndOutputOptions): string | undefined {
