@@ -285,6 +285,77 @@ square(int)():
     });
 });
 
+describe('AsmParser binary source lines in functions without debug info', () => {
+    const parser = new AsmParser();
+    // Reconstructed from real mingw gcc 11.3 output on winstaging (`-O1 -g`, "Link to binary", an example.c
+    // with square() and main()). The API returns only parsed asm, so the label, `func():` and `file:line` lines
+    // are rebuilt around the real addresses, opcodes and instructions; the temp directory in the path is a
+    // stand-in. _setargv and _matherr are mingw CRT code that has no line records.
+    const example = 'C:/Users/ce/AppData/Local/Temp/compiler-explorer-compiler/example.c';
+    const objdump = [
+        '',
+        '00000001400017d0 <square>:',
+        'square():',
+        `${example}:2`,
+        '   1400017d0:\t0f af c9             \timul   ecx,ecx',
+        `${example}:3`,
+        '   1400017d3:\t89 c8                \tmov    eax,ecx',
+        '   1400017d5:\tc3                   \tret',
+        '',
+        '00000001400017d6 <main>:',
+        'main():',
+        `${example}:5`,
+        '   1400017d6:\t48 83 ec 28          \tsub    rsp,0x28',
+        '   1400017da:\te8 c8 00 00 00       \tcall   1400018a7 <__main>',
+        '   1400017df:\tb8 09 00 00 00       \tmov    eax,0x9',
+        '   1400017e4:\t48 83 c4 28          \tadd    rsp,0x28',
+        '   1400017e8:\tc3                   \tret',
+        '   1400017e9:\t90                   \tnop',
+        '',
+        '00000001400018d0 <_setargv>:',
+        '   1400018d0:\t55                   \tpush   rbp',
+        '   1400018d1:\t48 89 e5             \tmov    rbp,rsp',
+        '   1400018d4:\tb8 00 00 00 00       \tmov    eax,0x0',
+        '   1400018d9:\t5d                   \tpop    rbp',
+        '   1400018da:\tc3                   \tret',
+        '',
+        '00000001400019f0 <_matherr>:',
+        '   1400019f0:\t55                   \tpush   rbp',
+        '   1400019f1:\t53                   \tpush   rbx',
+        '   1400019f2:\t48 81 ec 88 00 00 00 \tsub    rsp,0x88',
+    ].join('\n');
+
+    function linesByFunction(filters: Partial<ParseFiltersAndOutputOptions> = {}) {
+        const result: Record<string, (number | null | undefined)[]> = {};
+        let current = '';
+        for (const line of parser.processBinaryAsm(objdump, filters).asm) {
+            if (line.address === undefined) {
+                current = line.text.replace(/:$/, '');
+                result[current] = [];
+            } else {
+                result[current].push(line.source?.line);
+            }
+        }
+        return result;
+    }
+
+    it('should not carry the last source line into the next function', () => {
+        expect(linesByFunction()).toEqual({
+            square: [2, 3, 3],
+            main: [5, 5, 5, 5, 5, 5],
+            _setargv: [undefined, undefined, undefined, undefined, undefined],
+            _matherr: [undefined, undefined, undefined],
+        });
+    });
+
+    it('should filter out functions without debug info as library code', () => {
+        expect(linesByFunction({libraryCode: true})).toEqual({
+            square: [2, 3, 3],
+            main: [5, 5, 5, 5, 5, 5],
+        });
+    });
+});
+
 describe('AsmParser library code filtering in binary asm', () => {
     const parser = new AsmParser();
     const objdump = [
