@@ -175,7 +175,7 @@ describe('Numba', () => {
         const parsed = await compiler.generateOptPipeline('/tmp/example.py', options, filters, {});
 
         const [, args, input, execOptions] = run.mock.calls[0];
-        expect(args[args.indexOf('--outputfile') + 1]).not.toBe('/tmp/asm.s');
+        expect(args[args.indexOf('--outputfile') + 1]).toBe('/tmp/pipeline.s');
         expect(args[args.indexOf('--inputfile') + 1]).toBe('/tmp/example.py');
         expect(input).toBe('/tmp/example.py');
         expect(options[options.indexOf('--outputfile') + 1]).toBe('/tmp/asm.s');
