@@ -38,6 +38,18 @@ sudo apt-get install autoconf bison flex gcc g++ git libprotobuf-dev \
   libnl-route-3-dev libtool make pkg-config protobuf-compiler
 ```
 
+### Install `dumb-init`
+
+Compiler Explorer executes programs in the sandbox using `dumb-init` as an init system so that signals are handled
+correctly. `dumb-init` is expected in `/usr/local/lib`:
+
+```bash
+git clone --branch ce https://github.com/compiler-explorer/dumb-init
+cd dumb-init
+make
+sudo cp dumb-init /usr/local/lib/dumb-init
+```
+
 ### Build from source
 
 ```bash
