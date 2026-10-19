@@ -34,6 +34,7 @@ import type {ParseFiltersAndOutputOptions} from '../../types/features/filters.in
 import {unwrap} from '../assert.js';
 import {BaseCompiler} from '../base-compiler.js';
 import {CompilationEnvironment} from '../compilation-env.js';
+import {MlirAsmParser} from '../parsers/asm-parser-mlir.js';
 import {PTXAsmParser} from '../parsers/asm-parser-ptx.js';
 import {SassAsmParser} from '../parsers/asm-parser-sass.js';
 import {VcAsmParser} from '../parsers/asm-parser-vc.js';
@@ -47,6 +48,7 @@ export class NvccCompiler extends BaseCompiler {
 
     deviceAsmParser: SassAsmParser;
     ptxParser: PTXAsmParser;
+    tileIrParser: MlirAsmParser;
 
     constructor(info: PreliminaryCompilerInfo, env: CompilationEnvironment) {
         super(info, env);
@@ -54,6 +56,7 @@ export class NvccCompiler extends BaseCompiler {
         this.compiler.supportsDeviceAsmView = true;
         this.deviceAsmParser = new SassAsmParser(this.compilerProps);
         this.ptxParser = new PTXAsmParser(this.compilerProps);
+        this.tileIrParser = new MlirAsmParser();
     }
 
     // TODO: (for all of CUDA)
@@ -100,6 +103,22 @@ export class NvccCompiler extends BaseCompiler {
             result.asm = this.postProcessObjdumpOutput(stdout);
         } else {
             result.asm = `<No output: ${Path.basename(unwrap(nvdisasm))} returned ${code}>`;
+        }
+        return result;
+    }
+
+    async tileirdisasm(outputFilename: string, result: any, maxOutput: number) {
+        const {tileirdisasm} = this.compiler;
+        const {code, execTime, stdout} = await this.exec(unwrap(tileirdisasm), [outputFilename], {
+            maxOutput,
+            customCwd: result.dirPath,
+        });
+
+        if (code === 0) {
+            result.objdumpTime = execTime;
+            result.asm = stdout;
+        } else {
+            result.asm = `<No output: ${Path.basename(unwrap(tileirdisasm))} returned ${code}>`;
         }
         return result;
     }
@@ -210,16 +229,28 @@ export class NvccCompiler extends BaseCompiler {
             const maxSize = this.env.ceProps('max-asm-size', 64 * 1024 * 1024);
             await Promise.all(
                 files
-                    .filter(f => f.endsWith('.ptx') || f.endsWith('.cubin'))
+                    .filter(
+                        f =>
+                            f.endsWith('.ptx') ||
+                            f.endsWith('.cubin') ||
+                            (f.endsWith('.tilebc') && !!this.compiler.tileirdisasm),
+                    )
                     .map(async name => {
-                        const type = name.endsWith('.ptx') ? 'PTX' : 'SASS';
+                        const type = name.endsWith('.ptx') ? 'PTX' : name.endsWith('.tilebc') ? 'Tile IR' : 'SASS';
                         const {asm} =
                             type === 'PTX'
                                 ? {asm: await fs.readFile(Path.join(dirPath, name), 'utf8')}
-                                : await this.nvdisasm(Path.join(dirPath, name), {dirPath}, maxSize);
+                                : type === 'Tile IR'
+                                  ? await this.tileirdisasm(Path.join(dirPath, name), {dirPath}, maxSize)
+                                  : await this.nvdisasm(Path.join(dirPath, name), {dirPath}, maxSize);
                         const archAndCode = name.split('.').slice(1, -1).join(', ') || '';
                         const nameAndArch = type + (archAndCode ? ` (${archAndCode.toLowerCase()})` : '');
-                        const parser = type === 'PTX' ? this.ptxParser : this.deviceAsmParser;
+                        const parser =
+                            type === 'PTX'
+                                ? this.ptxParser
+                                : type === 'Tile IR'
+                                  ? this.tileIrParser
+                                  : this.deviceAsmParser;
                         Object.assign(devices, {
                             [nameAndArch]: await this.postProcessAsm(
                                 {
