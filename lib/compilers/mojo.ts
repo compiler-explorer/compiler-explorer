@@ -91,6 +91,15 @@ export class MojoCompiler extends BaseCompiler {
         return await super.generateIR(inputFilename, newOptions, irOptions, produceCfg, filters);
     }
 
+    protected override isOutputLikelyLlvmIr(options: string[]) {
+        const index = options.findLastIndex(option => option === '--emit' || option.startsWith('--emit='));
+        const emit = options[index];
+        return (
+            (emit === '--emit' ? options[index + 1] === 'llvm' : emit === '--emit=llvm') ||
+            super.isOutputLikelyLlvmIr(options)
+        );
+    }
+
     override getArgumentParserClass() {
         return MojoParser;
     }
