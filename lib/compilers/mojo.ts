@@ -22,17 +22,28 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
+import fs from 'node:fs/promises';
+import path from 'node:path';
+
 import semver from 'semver';
 
+import type {CompilationInfo, CompilationResult} from '../../types/compilation/compilation.interfaces.js';
 import type {LLVMIrBackendOptions} from '../../types/compilation/ir.interfaces.js';
 import type {PreliminaryCompilerInfo} from '../../types/compiler.interfaces.js';
 import type {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces.js';
 import type {SelectedLibraryVersion} from '../../types/libraries/libraries.interfaces.js';
 import {BaseCompiler} from '../base-compiler.js';
 import type {CompilationEnvironment} from '../compilation-env.js';
+import {getAmdGpuInstructionSetFromLabel} from '../instructionsets.js';
+import type {ClientOptionsType} from '../options-handler.js';
+import type {IAsmParser} from '../parsers/asm-parser.interfaces.js';
+import {AmdgpuAsmParser} from '../parsers/asm-parser-amdgpu.js';
+import {PTXAsmParser} from '../parsers/asm-parser-ptx.js';
 import {MojoParser} from './argument-parsers.js';
 
 export class MojoCompiler extends BaseCompiler {
+    private deviceParsers: Record<string, IAsmParser>;
+
     static get key() {
         return 'mojo';
     }
@@ -42,6 +53,19 @@ export class MojoCompiler extends BaseCompiler {
         this.compiler.supportsIrView = true;
         this.compiler.irArg = ['--emit', 'llvm'];
         this.compiler.minIrArgs = ['--emit=llvm'];
+        this.deviceParsers = {
+            '.ptx': new PTXAsmParser(this.compilerProps),
+            '.amdgcn': new AmdgpuAsmParser(),
+        };
+    }
+
+    override async initialise(mtime: Date, clientOptions: ClientOptionsType, isPrediscovered = false) {
+        const compiler = await super.initialise(mtime, clientOptions, isPrediscovered);
+        if (!compiler || this.getRemote()) return compiler;
+
+        const version = semver.coerce(this.compiler.version);
+        this.compiler.supportsDeviceAsmView = !!version && semver.gte(version, '0.26.2');
+        return compiler;
     }
 
     override optionsForFilter(filters: ParseFiltersAndOutputOptions, outputFilename: string) {
@@ -88,6 +112,77 @@ export class MojoCompiler extends BaseCompiler {
         );
         newOptions.push('-o', this.getIrOutputFilename(inputFilename));
         return await super.generateIR(inputFilename, newOptions, irOptions, produceCfg, filters);
+    }
+
+    override async extractDeviceCode(
+        result: CompilationResult,
+        filters: ParseFiltersAndOutputOptions,
+        compilationInfo: CompilationInfo,
+    ) {
+        if (
+            !this.compiler.supportsDeviceAsmView ||
+            result.code !== 0 ||
+            !result.dirPath ||
+            filters.binary ||
+            filters.binaryObject
+        ) {
+            return result;
+        }
+
+        const devices = {...result.devices};
+        const outputFilenames = [compilationInfo.outputFilename];
+        if (result.irOutput?.code === 0 && compilationInfo.inputFilename) {
+            outputFilenames.push(this.getIrOutputFilename(compilationInfo.inputFilename));
+        }
+        const prefixesByDirectory = new Map<string, string[]>();
+        for (const filename of outputFilenames) {
+            const {dir, name} = path.parse(filename);
+            const prefixes = prefixesByDirectory.get(dir) ?? [];
+            prefixes.push(name + '_');
+            prefixesByDirectory.set(dir, prefixes);
+        }
+        for (const [directory, prefixes] of prefixesByDirectory) {
+            const files = await fs.readdir(directory, {withFileTypes: true});
+            for (const file of files.sort((a, b) => a.name.localeCompare(b.name))) {
+                const ext = path.extname(file.name);
+                const parser = this.deviceParsers[ext];
+                if (
+                    !file.isFile() ||
+                    !prefixes.some(prefix => file.name.startsWith(prefix)) ||
+                    (!parser && ext !== '.ll')
+                ) {
+                    continue;
+                }
+
+                const filename = path.join(directory, file.name);
+                const deviceName = path.relative(result.dirPath, filename);
+                try {
+                    const data = await fs.readFile(filename, 'utf8');
+                    const parsed = parser
+                        ? await parser.process(data, filters)
+                        : await this.llvmIr.processFromFilters(data, filters);
+                    const instructionSet =
+                        ext === '.ptx' ? 'ptx' : ext === '.amdgcn' ? getAmdGpuInstructionSetFromLabel(data) : 'llvm';
+                    devices[deviceName] = {
+                        code: 0,
+                        timedOut: false,
+                        stdout: [],
+                        stderr: [],
+                        ...parsed,
+                        instructionSet,
+                    };
+                } catch (err) {
+                    devices[deviceName] = {
+                        code: -1,
+                        timedOut: false,
+                        stdout: [],
+                        stderr: [{text: `Unable to process device output: ${err}`}],
+                    };
+                }
+            }
+        }
+        result.devices = devices;
+        return result;
     }
 
     override getArgumentParserClass() {
