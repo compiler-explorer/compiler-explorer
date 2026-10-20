@@ -3794,6 +3794,8 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
                 this.updateState();
                 this.updateCompilerUI();
                 this.setAssembly({asm: this.fakeAsm('')});
+                // The libraries widget asks for a compile whenever its language changes, whatever compileOnChange says
+                if (!this.settings.compileOnChange) this.needsCompile = false;
                 this.undefer();
                 this.sendCompiler();
             });

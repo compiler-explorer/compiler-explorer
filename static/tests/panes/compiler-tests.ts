@@ -220,7 +220,8 @@ describe('Compiler language change', () => {
             currentLangId: 'c++',
             infoByLang: {},
             settings: {compileOnChange},
-            initLangAndCompiler: vi.fn(async () => {}),
+            // Like updateLibraries(), whose libraries widget reports a change once it has the new language
+            initLangAndCompiler: vi.fn(async () => compiler.onLibsChanged()),
             updateCompilersSelector: vi.fn(),
             updateState: vi.fn(),
             updateCompilerUI: vi.fn(),
