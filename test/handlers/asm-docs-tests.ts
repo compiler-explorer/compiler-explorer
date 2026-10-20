@@ -46,6 +46,20 @@ const TEST_MATRIX: Record<PropertyKey, [string, string, string, string][]> = {
             'Shifts the bits in the first operand',
             'www.felixcloutier.com',
         ], // regression test for #3541
+        // AT&T forms with digits in the mnemonic (#8951) or a size suffix after `abs`
+        [
+            'cvtsi2sdl',
+            'Converts a signed doubleword integer',
+            'Converts a signed doubleword integer',
+            'www.felixcloutier.com/x86/CVTSI2SD',
+        ],
+        [
+            'vcvttsd2siq',
+            'Converts a double precision floating-point value',
+            'Converts a double precision floating-point value',
+            'www.felixcloutier.com/x86/CVTTSD2SI',
+        ],
+        ['movabsq', 'Copies the second operand', 'Copies the second operand', 'www.felixcloutier.com/x86/MOV'],
     ],
     arm32: [
         [
@@ -150,6 +164,13 @@ const TEST_MATRIX: Record<PropertyKey, [string, string, string, string][]> = {
     ],
     riscv64: [
         ['SGT', 'Psuedo Instruction.', '<b>SGT</b> rd, rs, rt', 'https://five-embeddev.github.io/riscv-docs-html/'],
+        ['VANDN.VV', '(ISA: Zvbb)', '<b>VANDN.VV</b> vd, vs2, vs1, vm', 'https://instructionsets.com/risc-v/vandn_vv/'],
+        [
+            'CZERO.EQZ',
+            '(ISA: Zicond)',
+            '<b>CZERO.EQZ</b> rd, rs1, rs2',
+            'https://instructionsets.com/risc-v/czero_eqz/',
+        ],
     ],
     wdc65c816: [
         [

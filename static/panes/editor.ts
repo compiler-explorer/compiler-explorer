@@ -31,6 +31,15 @@ import * as monacoVim from 'monaco-vim';
 import TomSelect from 'tom-select';
 import _ from 'underscore';
 
+import {
+    type AbiExplorerCompiler,
+    abiExplorerLanguageFor,
+    abiExplorerState,
+    abiExplorerTripleFor,
+    getAbiExplorerUrl,
+    getAbiExplorerUrlSync,
+    normalizeAbiExplorerStd,
+} from '../abi-explorer.js';
 import * as BootstrapUtils from '../bootstrap-utils.js';
 import * as colour from '../colour.js';
 import * as Components from '../components.js';
@@ -49,8 +58,9 @@ import {Container} from 'golden-layout';
 
 import {assert, unwrap} from '../../shared/assert.js';
 import {getBuildSystemByManifestFilename, isManifestLanguageId} from '../../shared/build-systems.js';
-import {escapeHTML, isString} from '../../shared/common-utils.js';
+import {isString} from '../../shared/common-utils.js';
 import {CompilationResult} from '../../types/compilation/compilation.interfaces.js';
+import {CompilerOverrideType} from '../../types/compilation/compiler-overrides.interfaces.js';
 import {CompilerInfo} from '../../types/compiler.interfaces.js';
 import {Language, LanguageKey} from '../../types/languages.interfaces.js';
 import {MessageWithLocation, ResultLine} from '../../types/resultline/resultline.interfaces.js';
@@ -109,6 +119,9 @@ export class Editor extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Edit
     private conformanceViewerButton: JQuery<HTMLElement>;
     private cppInsightsButton: JQuery<HTMLElement>;
     private quickBenchButton: JQuery<HTMLElement>;
+    private abiExplorerButton: JQuery<HTMLElement>;
+    private abiExplorerCompilers = new Map<string, CompilerInfo>();
+    private abiExplorerUpdate = 0;
     private languageInfoButton: JQuery;
     private nothingCtrlSSince?: number;
     private nothingCtrlSTimes?: number;
@@ -643,6 +656,13 @@ export class Editor extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Edit
             this.quickBenchButton.on('mousedown', () => {
                 this.updateOpenInQuickBench();
             });
+
+            this.abiExplorerButton = this.domRoot.find('.open-in-abiexplorer');
+            // Hover and focus come before the click with time to spare, so the compiler lookups behind the
+            // link are done by the time mousedown, the last event before it is followed, needs them.
+            this.abiExplorerButton.on('mouseenter focus mousedown', () => {
+                this.updateOpenInAbiExplorer();
+            });
         }
 
         this.currentCursorPosition = this.domRoot.find('.currentCursorPosition');
@@ -703,6 +723,11 @@ export class Editor extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Edit
             } else {
                 this.cppInsightsButton.hide();
                 this.quickBenchButton.hide();
+            }
+            if (abiExplorerLanguageFor(this.currentLanguage?.id)) {
+                this.abiExplorerButton.show();
+            } else {
+                this.abiExplorerButton.hide();
             }
         }
 
@@ -889,6 +914,62 @@ export class Editor extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Edit
                 Buffer.from(this.asciiEncodeJsonText(JSON.stringify(quickBenchState))).toString('base64');
             this.quickBenchButton.attr('href', link);
         }
+    }
+
+    updateOpenInAbiExplorer(): void {
+        if (!options.thirdPartyIntegrationEnabled) return;
+        const lang = abiExplorerLanguageFor(this.currentLanguage?.id);
+        if (!lang) return;
+
+        const source = this.getSource() ?? '';
+        const states = this.getCompilerStates();
+        const describe = () =>
+            abiExplorerState(
+                source,
+                lang,
+                states.map(state => this.abiExplorerCompiler(state)),
+            );
+        // The href has to be right the moment it is set, as this may be the mousedown: the uncompressed link from
+        // what is already known goes on at once, and the compressed one replaces it once any lookups are done.
+        this.abiExplorerButton.attr('href', getAbiExplorerUrlSync(describe()));
+        const update = ++this.abiExplorerUpdate;
+        void Promise.all(states.map(state => this.lookUpAbiExplorerCompiler(state.compiler)))
+            .then(() => getAbiExplorerUrl(describe()))
+            .then(url => {
+                if (update === this.abiExplorerUpdate) this.abiExplorerButton.attr('href', url);
+            });
+    }
+
+    private abiExplorerCompilerKey(compilerId: string): string {
+        return `${this.currentLanguage?.id ?? ''} ${compilerId}`;
+    }
+
+    private async lookUpAbiExplorerCompiler(compilerId: string): Promise<void> {
+        const key = this.abiExplorerCompilerKey(compilerId);
+        if (this.abiExplorerCompilers.has(key)) return;
+        const info = await this.hub.compilerService
+            .findCompiler(this.currentLanguage?.id ?? '', compilerId)
+            .catch(() => null);
+        if (info) this.abiExplorerCompilers.set(key, info);
+    }
+
+    /** The standard a compiler pane builds with; its override wins over the flags box, being the more explicit. */
+    private abiExplorerStd(state: any): string {
+        const picked = (state.overrides ?? []).find(
+            (ov: {name: string; value?: string}) => ov.name === CompilerOverrideType.stdver,
+        )?.value;
+        const typed = /-std=(\S+)/.exec(state.options ?? '')?.[1];
+        const std = picked || typed;
+        return std ? normalizeAbiExplorerStd(std) : '';
+    }
+
+    private abiExplorerCompiler(state: any): AbiExplorerCompiler {
+        const info = this.abiExplorerCompilers.get(this.abiExplorerCompilerKey(state.compiler));
+        return {
+            name: info?.name ?? '',
+            std: this.abiExplorerStd(state),
+            triple: (info && abiExplorerTripleFor(info.instructionSet, info.fullVersion, info.options)) ?? '',
+        };
     }
 
     changeLanguage(newLang: string): void {
@@ -1952,7 +2033,7 @@ export class Editor extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Edit
         if (manifestOf) {
             this.changeLanguage(manifestOf.manifestLanguageId);
         }
-        this.container.setTitle(escapeHTML(customName));
+        this.container.setTitle(customName);
     }
 
     // Called every time we change language, so we get the relevant code

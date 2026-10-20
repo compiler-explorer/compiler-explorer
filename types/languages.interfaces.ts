@@ -61,6 +61,7 @@ export type LanguageKey =
     | 'fortran'
     | 'fsharp'
     | 'gimple'
+    | 'gleam'
     | 'glsl'
     | 'go'
     | 'haskell'
@@ -85,6 +86,7 @@ export type LanguageKey =
     | 'mlir'
     | 'modula2'
     | 'mojo'
+    | 'nexium'
     | 'nim'
     | 'nix'
     | 'numba'
@@ -104,6 +106,7 @@ export type LanguageKey =
     | 'ruby'
     | 'rust'
     | 'sail'
+    | 'salam'
     | 'scala'
     | 'sfpi'
     | 'slang'
@@ -156,6 +159,8 @@ export interface Language {
     defaultCompiler?: string;
     /** Default libraries for the language. This is populated when handed to the frontend. */
     defaultLibs?: string;
+    /** Default compiler options for the language. This is populated when handed to the frontend. */
+    defaultOptions?: string;
     digitSeparator?: string;
     /** Hint to display when no assembly is generated (e.g., for inlined functions) */
     noAsmHint?: string;

@@ -84,8 +84,13 @@ export class PythonCompiler extends BaseCompiler {
         return {asm: bytecodeResult};
     }
 
+    getIsolationOptions(): string[] {
+        // Python 2 (e.g. PyPy 2.7) has no -I; -E -s is the closest equivalent
+        return /^Python 2\./.test(this.compiler.version ?? '') ? ['-E', '-s'] : ['-I'];
+    }
+
     override optionsForFilter(filters: ParseFiltersAndOutputOptions, outputFilename: string) {
-        return ['-I', this.disasmScriptPath, '--outputfile', outputFilename, '--inputfile'];
+        return [...this.getIsolationOptions(), this.disasmScriptPath, '--outputfile', outputFilename, '--inputfile'];
     }
 
     override couldSupportASTDump(version: string) {
@@ -106,7 +111,7 @@ export class PythonCompiler extends BaseCompiler {
     }
 
     override async generateAST(inputFilename: string, options: string[]): Promise<ResultLine[]> {
-        const astOptions = ['-I', this.astScriptPath, this.filename(inputFilename)];
+        const astOptions = [...this.getIsolationOptions(), this.astScriptPath, this.filename(inputFilename)];
         const execOptions = this.getDefaultExecOptions();
         const result: CompilationResult = await this.runCompiler(
             this.compiler.exe,

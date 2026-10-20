@@ -159,6 +159,7 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
     private needsCompile: boolean;
     private deviceViewOpen: boolean;
     private options: string;
+    private optionsChangedBeforeInitialStateLoad = false;
     private source: string;
     private assembly: Assembly[];
     private lastResult: CompilationResult | null;
@@ -352,6 +353,11 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
 
     private async postInit(state: MonacoPaneState & CompilerState) {
         await this.initLangAndCompiler(state);
+        if (state.options === undefined && !this.optionsChangedBeforeInitialStateLoad) {
+            this.options =
+                languagesService.getLanguagesOrFail()[this.currentLangId as LanguageKey]?.defaultOptions ?? '';
+            this.optionsField.val(this.options);
+        }
         // The lang/compiler are now resolved from our own state. Only after this point may we
         // react to languageChange broadcasts; an earlier one (e.g. the editor's initial firstTime
         // broadcast, which can arrive while the await above is still pending) would otherwise reset
@@ -3138,7 +3144,12 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
 
         // "input" rather than "keyup": it covers every edit, including the ones that
         // involve no keystroke at all (middle-click paste, drag and drop, autofill).
-        this.optionsField.on('change', optionsChange).on('input', optionsChange);
+        this.optionsField.on('change input', e => {
+            if (!this.initialStateLoaded) {
+                this.optionsChangedBeforeInitialStateLoad = true;
+            }
+            optionsChange(e);
+        });
 
         this.mouseMoveThrottledFunction = _.throttle(this.onMouseMove.bind(this), 50);
         this.editor.onMouseMove(e => {
@@ -3188,6 +3199,7 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
 
     onOptionsChange(options: string): void {
         if (this.options !== options) {
+            if (!this.initialStateLoaded) this.optionsChangedBeforeInitialStateLoad = true;
             this.options = options;
             this.updateState();
             this.compile();

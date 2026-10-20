@@ -18,6 +18,7 @@
   },
   "main": "./app.ts",
   "dependencies": {
+    "@ambrus-toth/abi-explorer-share-link": "0.1.1",
     "@aws-sdk/client-dynamodb": "^3.1079.0",
     "@aws-sdk/client-ec2": "^3.1079.0",
     "@aws-sdk/client-s3": "^3.1079.0",
@@ -26,7 +27,7 @@
     "@aws-sdk/credential-providers": "^3.1079.0",
     "@flatten-js/interval-tree": "^2.0.3",
     "@fortawesome/fontawesome-free": "^7.3.0",
-    "@modelcontextprotocol/sdk": "^1.30.0",
+    "@modelcontextprotocol/sdk": "^1.31.0",
     "@orchidjs/sifter": "^1.1.0",
     "@popperjs/core": "^2.11.8",
     "@sentry/browser": "^10.63.0",
@@ -38,14 +39,14 @@
     "chart.js": "^4.5.1",
     "clipboard": "^2.0.11",
     "commander": "^15.0.0",
-    "compression": "^1.8.1",
+    "compression": "^1.8.2",
     "copy-webpack-plugin": "^14.0.0",
     "cross-env": "^10.1.0",
     "enhanced-ms": "^5.0.0",
     "events": "^3.3.0",
     "express": "^5.2.1",
     "file-saver": "^2.0.5",
-    "golden-layout": "github:compiler-explorer/golden-layout#v1.6.0",
+    "golden-layout": "npm:@compiler-explorer/golden-layout@1.6.3",
     "http-proxy": "^1.18.1",
     "jquery": "^4.0.0",
     "js-cookie": "^3.0.8",
@@ -171,5 +172,11 @@
     "webpack": "node --no-warnings=ExperimentalWarning --import=tsx ./node_modules/webpack-cli/bin/cli.js --config-node-env=production --config webpack.config.esm.ts"
   },
   "license": "BSD-2-Clause",
-  "packageManager": "npm@11.2.0"
+  "packageManager": "npm@11.2.0",
+  "allowScripts": {
+    "cypress": true,
+    "esbuild": true,
+    "@parcel/watcher": false,
+    "protobufjs": false
+  }
 }

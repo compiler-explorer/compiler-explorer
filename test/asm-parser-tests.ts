@@ -74,24 +74,167 @@ main():
 ; /tmp/project/dep/std/src/print.mach:64
        4: 00008067     	ret`;
 
-    it.skipIf(process.platform === 'win32')('should read source lines from gnu objdump', () => {
+    it('should read source lines from gnu objdump', () => {
         const result = parser.processBinaryAsm(gnuObjdump, {});
         expect(result.asm.map(line => line.source?.line)).toEqual([undefined, 7, 64]);
     });
 
-    it.skipIf(process.platform === 'win32')('should read source lines from llvm-objdump', () => {
+    it('should read source lines from llvm-objdump', () => {
         const result = parser.processBinaryAsm(llvmObjdump, {});
         expect(result.asm.map(line => line.text)).toEqual(['main:', ' addi\tsp, sp, -0x60', ' ret']);
         expect(result.asm.map(line => line.source?.line)).toEqual([undefined, 7, 64]);
     });
 
-    it.skipIf(process.platform === 'win32')(
-        'should keep the function label when filtering library code in llvm-objdump output',
-        () => {
-            const result = parser.processBinaryAsm(llvmObjdump, {libraryCode: true});
-            expect(result.asm[0].text).toEqual('main:');
-        },
-    );
+    it('should keep the function label when filtering library code in llvm-objdump output', () => {
+        const result = parser.processBinaryAsm(llvmObjdump, {libraryCode: true});
+        expect(result.asm[0].text).toEqual('main:');
+    });
+});
+
+describe('AsmParser binary source records after the function label', () => {
+    const parser = new AsmParser();
+    const cases: [string, string][] = [
+        ['POSIX', '/tmp/example.cpp'],
+        ['Windows forward slash', 'C:/tmp/example.cpp'],
+        ['Windows backslash', 'C:\\tmp\\example.cpp'],
+    ];
+
+    for (const [style, file] of cases) {
+        it(`should keep a ${style} source line that objdump printed after the label`, () => {
+            const asm = [
+                '0000000000401000 <foo>:',
+                `${file}:3`,
+                '  401000:\tc3                   \tret',
+                '  401001:\t90                   \tnop',
+                `${file}:9`,
+                '  401002:\tc3                   \tret',
+            ].join('\n');
+            const result = parser.processBinaryAsm(asm, {});
+            expect(result.asm.map(line => line.source?.line)).toEqual([undefined, 3, 3, 9]);
+        });
+    }
+});
+
+describe('AsmParser binary source corner cases', () => {
+    const parser = new AsmParser();
+    const label = '0000000000000000 <foo>:';
+    const mov = '  10: 48 89 e5  mov %rsp,%rbp';
+    const nop = '  11: 90        nop';
+    const maskedExample = (line: number) => ({file: null, line, mainsource: true});
+
+    // objdump -l prints a function's first line record after its label.
+    function dump(sourceRecord?: string): string {
+        const lines = [label];
+        if (sourceRecord !== undefined) lines.push(sourceRecord);
+        lines.push(mov, nop);
+        return lines.join('\n');
+    }
+
+    function instructions(asm: string, filters: Partial<ParseFiltersAndOutputOptions> = {}) {
+        const result = parser.processBinaryAsm(asm, filters);
+        return result.asm.filter(line => line.address !== undefined);
+    }
+
+    it('should map a POSIX source record when filenames are masked', () => {
+        const kept = instructions(dump('/tmp/example.cpp:3'));
+        expect(kept).toHaveLength(2);
+        expect(kept.map(line => line.source)).toEqual([maskedExample(3), maskedExample(3)]);
+    });
+
+    it('should map a Windows forward-slash source record', () => {
+        const kept = instructions(dump('C:/tmp/example.cpp:3'));
+        expect(kept).toHaveLength(2);
+        expect(kept.map(line => line.source)).toEqual([maskedExample(3), maskedExample(3)]);
+    });
+
+    it('should map a Windows backslash source record', () => {
+        const record = 'C:\\tmp\\example.cpp:3';
+        expect(record).toBe('C:\\tmp\\example.cpp:3');
+        expect(record.includes('\\')).toBe(true);
+        const kept = instructions(dump(record));
+        expect(kept).toHaveLength(2);
+        expect(kept.map(line => line.source)).toEqual([maskedExample(3), maskedExample(3)]);
+    });
+
+    it('should emit instructions with null source when objdump has no line record', () => {
+        const kept = instructions(dump());
+        expect(kept).toHaveLength(2);
+        expect(kept.map(line => line.source)).toEqual([null, null]);
+    });
+
+    it('should keep a sourced instruction when library code is filtered', () => {
+        const kept = instructions(dump('/tmp/example.cpp:3'), {libraryCode: true});
+        expect(kept).toHaveLength(2);
+        expect(kept.map(line => line.source)).toEqual([maskedExample(3), maskedExample(3)]);
+    });
+
+    it('should drop an instruction with no source when library code is filtered', () => {
+        const kept = instructions(dump(), {libraryCode: true});
+        expect(kept).toEqual([]);
+    });
+
+    it('should take the line record that follows each function label', () => {
+        const asm = [label, '/tmp/a.cpp:3', mov, '0000000000000011 <bar>:', '/tmp/b.cpp:9', nop].join('\n');
+        const result = parser.process(asm, {binary: true});
+        const kept = result.asm.filter(line => line.address !== undefined);
+        expect(kept).toHaveLength(2);
+        expect(kept[0].source).toEqual({file: '/tmp/a.cpp', line: 3, mainsource: false});
+        expect(kept[1].source).toEqual({file: '/tmp/b.cpp', line: 9, mainsource: false});
+    });
+
+    it('should keep the path when filenames are not masked', () => {
+        const kept = instructions(dump('/tmp/example.cpp:3'), {dontMaskFilenames: true});
+        expect(kept).toHaveLength(2);
+        expect(kept.map(line => line.source)).toEqual([
+            {file: '/tmp/example.cpp', line: 3, mainsource: true},
+            {file: '/tmp/example.cpp', line: 3, mainsource: true},
+        ]);
+    });
+
+    it('should keep spaces in an unmasked Windows path', () => {
+        const kept = instructions(dump('C:/Program Files/example.cpp:12'), {dontMaskFilenames: true});
+        expect(kept).toHaveLength(2);
+        expect(kept.map(line => line.source)).toEqual([
+            {file: 'C:/Program Files/example.cpp', line: 12, mainsource: true},
+            {file: 'C:/Program Files/example.cpp', line: 12, mainsource: true},
+        ]);
+    });
+
+    it('should read the line number and ignore a trailing discriminator', () => {
+        const kept = instructions(dump('/tmp/example.cpp:8 (discriminator 2)'));
+        expect(kept).toHaveLength(2);
+        expect(kept.map(line => line.source)).toEqual([maskedExample(8), maskedExample(8)]);
+    });
+
+    it('should read the line number and ignore a trailing column', () => {
+        const kept = instructions(dump('/tmp/example.cpp:8:2'));
+        expect(kept).toHaveLength(2);
+        expect(kept.map(line => line.source)).toEqual([maskedExample(8), maskedExample(8)]);
+        expect(kept.every(line => !Object.hasOwn(line.source ?? {}, 'column'))).toBe(true);
+    });
+
+    it('should not treat an opcode line as a file:line record', () => {
+        const kept = instructions([label, mov].join('\n'));
+        expect(kept).toHaveLength(1);
+        expect(kept[0].source).toBeNull();
+    });
+
+    it('should ignore a relative source path', () => {
+        const kept = instructions(dump('path/to/example.cpp:3'));
+        expect(kept).toHaveLength(2);
+        expect(kept.map(line => line.source)).toEqual([null, null]);
+    });
+
+    it('should ignore a lowercase drive letter', () => {
+        const kept = instructions(dump('c:/tmp/example.cpp:3'));
+        expect(kept).toHaveLength(2);
+        expect(kept.map(line => line.source)).toEqual([null, null]);
+    });
+
+    it('should keep a single-line error document', () => {
+        const result = parser.processBinaryAsm('<No output file>', {});
+        expect(result.asm).toEqual([{text: '<No output file>', source: null}]);
+    });
 });
 
 describe('AsmParser binary source lines', () => {
@@ -105,7 +248,7 @@ square(int)():
 /app/example.cpp:5
   401025:	c3                   	ret`;
 
-    it.skipIf(process.platform === 'win32')('should only mark lines from the main source file as main source', () => {
+    it('should only mark lines from the main source file as main source', () => {
         const result = parser.processBinaryAsm(objdump, {});
         expect(result.asm.map(line => line.source)).toEqual([
             null,
@@ -119,23 +262,91 @@ square(int)():
         ]);
     });
 
-    it.skipIf(process.platform === 'win32')('should name the main source file when filenames are not masked', () => {
+    it('should name the main source file when filenames are not masked', () => {
         const result = parser.processBinaryAsm(objdump, {dontMaskFilenames: true});
         expect(result.asm[1].source).toEqual({file: 'example.cpp', line: 4, mainsource: true});
     });
 
-    it.skipIf(process.platform === 'win32')(
-        'should keep code inlined from other files when filtering library code',
-        () => {
-            const result = parser.processBinaryAsm(objdump, {libraryCode: true});
-            expect(result.asm.map(line => line.text)).toEqual([
-                'square(int):',
-                ' mov    eax,edi',
-                ' imul   eax,edi',
-                ' ret',
-            ]);
-        },
-    );
+    it('should keep code inlined from other files when filtering library code', () => {
+        const result = parser.processBinaryAsm(objdump, {libraryCode: true});
+        expect(result.asm.map(line => line.text)).toEqual([
+            'square(int):',
+            ' mov    eax,edi',
+            ' imul   eax,edi',
+            ' ret',
+        ]);
+    });
+});
+
+describe('AsmParser binary source lines in functions without debug info', () => {
+    const parser = new AsmParser();
+    // Reconstructed from real mingw gcc 11.3 output on winstaging (`-O1 -g`, "Link to binary", an example.c
+    // with square() and main()). The API returns only parsed asm, so the label, `func():` and `file:line` lines
+    // are rebuilt around the real addresses, opcodes and instructions; the temp directory in the path is a
+    // stand-in. _setargv and _matherr are mingw CRT code that has no line records.
+    const example = 'C:/Users/ce/AppData/Local/Temp/compiler-explorer-compiler/example.c';
+    const objdump = [
+        '',
+        '00000001400017d0 <square>:',
+        'square():',
+        `${example}:2`,
+        '   1400017d0:\t0f af c9             \timul   ecx,ecx',
+        `${example}:3`,
+        '   1400017d3:\t89 c8                \tmov    eax,ecx',
+        '   1400017d5:\tc3                   \tret',
+        '',
+        '00000001400017d6 <main>:',
+        'main():',
+        `${example}:5`,
+        '   1400017d6:\t48 83 ec 28          \tsub    rsp,0x28',
+        '   1400017da:\te8 c8 00 00 00       \tcall   1400018a7 <__main>',
+        '   1400017df:\tb8 09 00 00 00       \tmov    eax,0x9',
+        '   1400017e4:\t48 83 c4 28          \tadd    rsp,0x28',
+        '   1400017e8:\tc3                   \tret',
+        '   1400017e9:\t90                   \tnop',
+        '',
+        '00000001400018d0 <_setargv>:',
+        '   1400018d0:\t55                   \tpush   rbp',
+        '   1400018d1:\t48 89 e5             \tmov    rbp,rsp',
+        '   1400018d4:\tb8 00 00 00 00       \tmov    eax,0x0',
+        '   1400018d9:\t5d                   \tpop    rbp',
+        '   1400018da:\tc3                   \tret',
+        '',
+        '00000001400019f0 <_matherr>:',
+        '   1400019f0:\t55                   \tpush   rbp',
+        '   1400019f1:\t53                   \tpush   rbx',
+        '   1400019f2:\t48 81 ec 88 00 00 00 \tsub    rsp,0x88',
+    ].join('\n');
+
+    function linesByFunction(filters: Partial<ParseFiltersAndOutputOptions> = {}) {
+        const result: Record<string, (number | null | undefined)[]> = {};
+        let current = '';
+        for (const line of parser.processBinaryAsm(objdump, filters).asm) {
+            if (line.address === undefined) {
+                current = line.text.replace(/:$/, '');
+                result[current] = [];
+            } else {
+                result[current].push(line.source?.line);
+            }
+        }
+        return result;
+    }
+
+    it('should not carry the last source line into the next function', () => {
+        expect(linesByFunction()).toEqual({
+            square: [2, 3, 3],
+            main: [5, 5, 5, 5, 5, 5],
+            _setargv: [undefined, undefined, undefined, undefined, undefined],
+            _matherr: [undefined, undefined, undefined],
+        });
+    });
+
+    it('should filter out functions without debug info as library code', () => {
+        expect(linesByFunction({libraryCode: true})).toEqual({
+            square: [2, 3, 3],
+            main: [5, 5, 5, 5, 5, 5],
+        });
+    });
 });
 
 describe('AsmParser library code filtering in binary asm', () => {
@@ -152,7 +363,7 @@ describe('AsmParser library code filtering in binary asm', () => {
         '  401003:\tc3                   \tret',
     ].join('\n');
 
-    it.skipIf(process.platform === 'win32')('should drop the label of every consecutive library function', () => {
+    it('should drop the label of every consecutive library function', () => {
         const result = parser.processBinaryAsm(objdump, {libraryCode: true});
         expect(result.asm.map(line => line.text)).toEqual(['main:', ' ret']);
     });
@@ -632,7 +843,7 @@ describe('ResolcRiscVAsmParser tests', () => {
         }
     }
 
-    it.skipIf(process.platform === 'win32')('should identify RISC-V instruction info and source line numbers', () => {
+    it('should identify RISC-V instruction info and source line numbers', () => {
         const filters: Partial<ParseFiltersAndOutputOptions> = {binaryObject: true};
         const riscv = `
 000000000000027a <__entry>:

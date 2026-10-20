@@ -27,7 +27,7 @@ import $ from 'jquery';
 import _ from 'underscore';
 
 import {unwrapString} from '../../shared/assert.js';
-import {escapeHTML, unique} from '../../shared/common-utils.js';
+import {unique} from '../../shared/common-utils.js';
 import {CompilationResult} from '../../types/compilation/compilation.interfaces.js';
 import {CompilerInfo} from '../../types/compiler.interfaces.js';
 import {SelectedLibraryVersion} from '../../types/libraries/libraries.interfaces.js';
@@ -214,7 +214,7 @@ export class Conformance extends Pane<ConformanceViewState> {
             compilerText = ' ' + this.compilerPickers.length + '/' + this.maxCompilations;
         }
         const name = this.paneName ? this.paneName + compilerText : this.getPaneName() + compilerText;
-        this.container.setTitle(escapeHTML(name));
+        this.container.setTitle(name);
     }
 
     addCompilerPicker(config?: AddCompilerPickerConfig): void {
