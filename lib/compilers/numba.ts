@@ -106,7 +106,7 @@ export class NumbaCompiler extends BaseCompiler {
         const pipelineOptions = options.slice();
         const outputFlag = pipelineOptions.indexOf('--outputfile');
         if (outputFlag !== -1) {
-            pipelineOptions[outputFlag + 1] = path.join(await this.newTempDir(), 'pipeline.s');
+            pipelineOptions[outputFlag + 1] = path.join(path.dirname(inputFilename), 'pipeline.s');
         }
 
         const execOptions = this.getDefaultExecOptions();
