@@ -359,6 +359,13 @@ describe('AMD GPU asm-docs lookup behaviour', () => {
         }
     });
 
+    it('renders every range of a bit field split across non-contiguous bits', () => {
+        // ENC_VOP3P's OPSEL_HI is split into bits [60:59] and [14:14]; a field that only read
+        // the first <Range> would show just one of them and report the wrong width.
+        const html = rdna4.getAsmOpcode('v_pk_mad_i16')!.html;
+        expect(html).toContain('[60:59], [14:14]');
+    });
+
     it('does not invent matches for unknown opcodes or bogus suffixes', () => {
         for (const opcode of ['not_an_opcode', 'v_add_f32_e99', '_e32', '', undefined]) {
             expect(rdna4.getAsmOpcode(opcode), `${opcode} should not resolve`).toBeUndefined();

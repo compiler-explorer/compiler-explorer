@@ -28,8 +28,12 @@
 
 import type {AssemblyInstructionInfo} from '../../types/assembly-docs.interfaces.js';
 
-/** Bit range of a single field within an encoding: [name, description, bitOffset, bitCount]. */
-export type BitField = [string, string, number, number];
+/** One contiguous bit range: [bitOffset, bitCount]. */
+export type BitRange = [number, number];
+
+/** A single field within an encoding: [name, description, ranges]. More than one range
+ * means the field is split across non-contiguous bits. */
+export type BitField = [string, string, BitRange[]];
 
 /** [description, bitCount, fields] */
 export type EncodingMeta = [string, number, BitField[]];
@@ -131,6 +135,23 @@ function table(headers: readonly string[], rows: string[][]): string {
     return `<table style="${TABLE_STYLE}"><tr>${head}</tr>${body}</table>`;
 }
 
+/** Highest bit a field's ranges reach, used to sort fields high-bit-first. */
+function highestBit(ranges: readonly BitRange[]): number {
+    return Math.max(...ranges.map(([offset, count]) => offset + count - 1));
+}
+
+/** Each range as `[hi:lo]`, most-significant first, comma-joined when there's more than one. */
+function formatBitRanges(ranges: readonly BitRange[]): string {
+    return [...ranges]
+        .sort((a, b) => b[0] - a[0])
+        .map(([offset, count]) => `[${offset + count - 1}:${offset}]`)
+        .join(', ');
+}
+
+function totalWidth(ranges: readonly BitRange[]): number {
+    return ranges.reduce((sum, [, count]) => sum + count, 0);
+}
+
 /** `OPR_VGPR` -> `VGPR`, `FMT_NUM_F32` -> `f32`. The full name stays in the cell's title. */
 function shortenIdentifier(name: string): string {
     if (name.startsWith('OPR_')) return name.slice(4);
@@ -208,11 +229,11 @@ function renderEncoding(spec: AmdIsaSpec, shapeIndex: number, opcode: number, is
         // Sorted high bit first so the layout reads like a bit diagram; the spec's own order
         // is whatever the XML listed.
         const rows = [...bitFields]
-            .sort((a, b) => b[2] - a[2])
-            .map(([name, description, offset, count]) => [
+            .sort((a, b) => highestBit(b[2]) - highestBit(a[2]))
+            .map(([name, description, ranges]) => [
                 `<code>${escapeHtml(name)}</code>`,
-                `<span style="white-space:nowrap">[${offset + count - 1}:${offset}]</span>`,
-                String(count),
+                `<span style="white-space:nowrap">${formatBitRanges(ranges)}</span>`,
+                String(totalWidth(ranges)),
                 escapeHtml(description),
             ]);
         parts.push(`<p style="margin:4px 0 0 8px"><b>Bit layout</b></p>`);
@@ -241,13 +262,13 @@ function buildHtml(spec: AmdIsaSpec, instruction: InstrRow, activeEncodings: rea
 
     const group = spec.groups[groupName];
     if (group) {
-        parts.push(field('Functional Group', group[0]));
+        const groupLabel = subgroups.length > 0 ? `${group[0]} (${subgroups.join(', ')})` : group[0];
+        parts.push(field('Functional Group', groupLabel));
         if (group[1]) parts.push(`<p style="margin:0 0 12px 8px"><i>${escapeHtml(group[1])}</i></p>`);
     }
-    if (subgroups.length > 0) parts.push(field('Functional Sub-Groups', subgroups.join(', ')));
 
     const flagLabels = INSTRUCTION_FLAG_LABELS.filter((_, bit) => (flags & (1 << bit)) !== 0);
-    if (flagLabels.length > 0) parts.push(field('Flags', flagLabels.join(', ')));
+    if (flagLabels.length > 0) parts.push(field('Control-Flow Attributes', flagLabels.join(', ')));
 
     if (encodings.length > 0) {
         // The suffix tells us which form is live, so lead with it.
