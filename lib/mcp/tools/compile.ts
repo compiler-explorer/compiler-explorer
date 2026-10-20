@@ -25,7 +25,8 @@
 import type {McpServer} from '@modelcontextprotocol/sdk/server/mcp.js';
 import {z} from 'zod';
 
-import {BypassCache} from '../../../types/compilation/compilation.interfaces.js';
+import {BypassCache, type CompilationResult} from '../../../types/compilation/compilation.interfaces.js';
+import type {Remote} from '../../../types/compiler.interfaces.js';
 import type {LanguageKey} from '../../../types/languages.interfaces.js';
 import type {ApiHandler} from '../../handlers/api.js';
 import {CompileHandler} from '../../handlers/compile.js';
@@ -35,6 +36,27 @@ import {truncateLines} from '../utils.js';
 const DEFAULT_MAX_ASM_LINES = 500;
 const DEFAULT_MAX_STDOUT_LINES = 100;
 const DEFAULT_MAX_STDERR_LINES = 100;
+
+/**
+ * Compile on the sub-server that actually hosts this compiler.
+ *
+ * Remote-hosted compilers (Windows boxes, for instance) have no executable on this node, so calling
+ * `compile()` on the local object fails when it tries to launch the compiler. `CompileHandler.handle`
+ * proxies the incoming request in that case; a tool call has no request to proxy, so post an
+ * equivalent one instead. The remote returns the same JSON shape as `compile()` returns locally.
+ */
+async function compileOnRemote(remote: Remote, body: unknown): Promise<CompilationResult> {
+    const url = `${remote.target}${remote.path}`;
+    const response = await fetch(url, {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json', Accept: 'application/json'},
+        body: JSON.stringify(body),
+    });
+    if (!response.ok) {
+        throw new Error(`Status ${response.status} on POST ${url}`);
+    }
+    return (await response.json()) as CompilationResult;
+}
 
 export function registerCompileTool(server: McpServer, compileHandler: CompileHandler, apiHandler: ApiHandler): void {
     server.tool(
@@ -185,18 +207,27 @@ export function registerCompileTool(server: McpServer, compileHandler: CompileHa
                     },
                 };
 
-                const parsed = CompileHandler.parseRequestReusable(true, {}, body, baseCompiler);
-                const result = await baseCompiler.compile(
-                    parsed.source,
-                    parsed.options,
-                    parsed.backendOptions,
-                    parsed.filters,
-                    BypassCache.None,
-                    parsed.tools,
-                    parsed.executeParameters,
-                    parsed.libraries,
-                    [],
-                );
+                const remote = baseCompiler.getRemote();
+                // `CompilationResult` describes the wire shape, which is wider than what a local
+                // compile() hands back (`asm` may be a string there); the JSON a sub-server returns is
+                // the narrow one, so line up with the local branch rather than widening everything below.
+                let result: Awaited<ReturnType<typeof baseCompiler.compile>>;
+                if (remote) {
+                    result = (await compileOnRemote(remote, body)) as typeof result;
+                } else {
+                    const parsed = CompileHandler.parseRequestReusable(true, {}, body, baseCompiler);
+                    result = await baseCompiler.compile(
+                        parsed.source,
+                        parsed.options,
+                        parsed.backendOptions,
+                        parsed.filters,
+                        BypassCache.None,
+                        parsed.tools,
+                        parsed.executeParameters,
+                        parsed.libraries,
+                        [],
+                    );
+                }
 
                 const asmCap = maxAsmLines ?? DEFAULT_MAX_ASM_LINES;
                 const stdoutCap = maxStdoutLines ?? DEFAULT_MAX_STDOUT_LINES;

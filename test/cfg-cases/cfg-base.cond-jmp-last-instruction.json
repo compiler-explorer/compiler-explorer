@@ -1,0 +1,40 @@
+{
+  "asm": [
+    {
+      "text": "main:",
+      "source": null
+    },
+    {
+      "text": "  cmp eax, 0",
+      "source": null
+    },
+    {
+      "text": "  je .L2",
+      "source": null
+    }
+  ],
+  "cfg": {
+    "main:": {
+      "nodes": [
+        {
+          "id": "main:",
+          "label": "main:\n  cmp eax, 0\n  je .L2"
+        }
+      ],
+      "edges": [
+        {
+          "from": "main:",
+          "to": ".L2:",
+          "arrows": "to",
+          "color": "green"
+        },
+        {
+          "from": "main:",
+          "to": "main:@3",
+          "arrows": "to",
+          "color": "red"
+        }
+      ]
+    }
+  }
+}

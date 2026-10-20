@@ -23,7 +23,7 @@
 // POSSIBILITY OF SUCH DAMAGE.
 
 import type {ParsedAsmResult} from '../../types/asmresult/asmresult.interfaces.js';
-import type {ExecutionOptions} from '../../types/compilation/compilation.interfaces.js';
+import type {DemanglerExecutionOptions} from '../../types/compilation/compilation.interfaces.js';
 import {BaseCompiler} from '../base-compiler.js';
 import {SymbolStore} from '../symbol-store.js';
 import {BaseDemangler} from './base.js';
@@ -221,7 +221,7 @@ export class PascalDemangler extends BaseDemangler {
         return text;
     }
 
-    public override async process(result: ParsedAsmResult, execOptions?: ExecutionOptions) {
+    public override async process(result: ParsedAsmResult, execOptions?: DemanglerExecutionOptions) {
         const options = execOptions || {};
         this.result = result;
 

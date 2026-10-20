@@ -205,6 +205,15 @@ describe('S3 tests', () => {
         expect(err.toString()).toEqual('Error: Some s3 error');
     });
 
+    it('should store objects as STANDARD', async () => {
+        const cache = new S3Cache('test', 'test.bucket', 'cache', 'uk-north-1');
+        await cache.put('a key', 'a value', 'bob');
+        await cache.putWithTTL('a ttl key', Buffer.from('a value'), 1, 'bob');
+        await cache.putWithTTLAndPath('a prefixed key', Buffer.from('a value'), 1, 'prefix', 'bob');
+        const puts = mockS3.commandCalls(PutObjectCommand);
+        expect(puts.map(put => put.args[0].input.StorageClass)).toEqual(['STANDARD', 'STANDARD', 'STANDARD']);
+    });
+
     // BE VERY CAREFUL - the below can be used with sufficient permissions to test on prod (With mocks off)...
     // basicTests(() => new S3Cache(''test', storage.godbolt.org', 'cache', 'us-east-1'));
 });

@@ -22,194 +22,227 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
+import os from 'node:os';
+
 import {InstructionSet} from '../types/instructionsets.js';
+import {CurrentHostExecHelper} from './execution/execution-triple.js';
 
 type InstructionSetMethod = {
     target: string[];
-    path: string[];
 };
 
+// AMD GPU targets, most-specific prefix first; `gfx12-5-generic` is not `gfx125`, so the
+// hyphenated generics have to precede the prefix they would otherwise fall through to.
+const AMD_GPU_TARGETS: [string, InstructionSet][] = [
+    ['gfx12-5-generic', 'amd_cdna5'],
+    ['gfx125', 'amd_cdna5'],
+    ['gfx12', 'amd_rdna4'],
+    ['gfx115', 'amd_rdna3_5'],
+    ['gfx11', 'amd_rdna3'],
+    ['gfx10-3-generic', 'amd_rdna2'],
+    ['gfx10-1-generic', 'amd_rdna1'],
+    ['gfx103', 'amd_rdna2'],
+    ['gfx101', 'amd_rdna1'],
+    ['gfx950', 'amd_cdna4'],
+    ['gfx9-4-generic', 'amd_cdna3'],
+    ['gfx94', 'amd_cdna3'],
+    ['gfx90a', 'amd_cdna2'],
+    ['gfx908', 'amd_cdna1'],
+];
+
+export function getAmdGpuInstructionSet(target: string): InstructionSet | undefined {
+    const lower = target.toLowerCase();
+    for (const [prefix, instructionSet] of AMD_GPU_TARGETS) {
+        if (lower.startsWith(prefix)) return instructionSet;
+    }
+    return undefined;
+}
+
+/**
+ * Finds the gfx target embedded in a longer string and maps it. Device-view entries name
+ * themselves in whatever way suits the compiler -- an offload bundle target
+ * (`hipv4-amdgcn-amd-amdhsa--gfx942`) or a display label (`AMDGPU (gfx1100)`) -- so the
+ * target has to be dug out rather than matched from the start.
+ */
+export function getAmdGpuInstructionSetFromLabel(label: string): InstructionSet | undefined {
+    // Generics are the only hyphenated names; a broader class would swallow `gfx900-then-gfx942`.
+    for (const match of label.toLowerCase().matchAll(/gfx\d+(?:-\d+)*-generic|gfx[0-9a-z]+/g)) {
+        const instructionSet = getAmdGpuInstructionSet(match[0]);
+        if (instructionSet) return instructionSet;
+    }
+    return undefined;
+}
+
 export class InstructionSets {
-    private defaultInstructionset: InstructionSet = 'amd64';
+    private defaultInstructionset: InstructionSet = CurrentHostExecHelper.getInstructionSetByNodeJSArch(os.arch());
     private supported: Record<InstructionSet, InstructionSetMethod>;
 
     constructor() {
         this.supported = {
             aarch64: {
                 target: ['aarch64'],
-                path: ['/aarch64-'],
             },
             arm32: {
                 target: ['arm'],
-                path: ['/arm-'],
             },
             avr: {
                 target: ['avr'],
-                path: ['/avr-'],
             },
             c6x: {
                 target: ['c6x'],
-                path: ['/tic6x-'],
             },
             dex: {
                 target: [],
-                path: [],
             },
             ebpf: {
                 target: ['bpf'],
-                path: ['/bpf-'],
             },
             ez80: {
                 target: ['ez80'],
-                path: [],
             },
             hppa: {
                 target: ['hppa'],
-                path: ['/hppa-'],
             },
             kvx: {
                 target: ['kvx'],
-                path: ['/kvx-', '/k1-'],
             },
             loongarch: {
                 target: ['loongarch'],
-                path: ['/loongarch64-'],
             },
             m68k: {
                 target: ['m68k'],
-                path: ['/m68k-'],
             },
             mips: {
                 target: ['mips'],
-                path: ['/mips', '/mipsel-', '/mips64el-', '/mips64-', '/nanomips-'],
             },
             mrisc32: {
                 target: ['mrisc32'],
-                path: [],
             },
             msp430: {
                 target: ['msp430'],
-                path: ['/msp430-'],
             },
             powerpc: {
                 target: ['powerpc', 'ppc64', 'ppc'],
-                path: ['/powerpc-', '/powerpc64-', '/powerpc64le-'],
             },
             riscv64: {
                 target: ['rv64', 'riscv64'],
-                path: ['/riscv64-'],
             },
             riscv32: {
                 target: ['rv32', 'riscv32'],
-                path: ['/riscv32-'],
             },
             sh: {
                 target: ['sh'],
-                path: ['/sh-'],
+            },
+            sm83: {
+                target: ['sm83'],
             },
             sparc: {
                 target: ['sparc', 'sparc64'],
-                path: ['/sparc-', '/sparc64-'],
             },
             s390x: {
                 target: ['s390x'],
-                path: ['/s390x-'],
             },
             vax: {
                 target: ['vax'],
-                path: ['/vax-'],
             },
             wasm32: {
                 target: ['wasm32'],
-                path: [],
             },
             wasm64: {
                 target: ['wasm64'],
-                path: [],
             },
             xtensa: {
                 target: ['xtensa'],
-                path: ['/xtensa-'],
             },
             z180: {
                 target: ['z180'],
-                path: [],
             },
             z80: {
                 target: ['z80'],
-                path: [],
             },
             6502: {
                 target: [],
-                path: [],
             },
             wdc65c816: {
                 target: [],
-                path: [],
             },
             core: {
                 target: [],
-                path: [],
             },
             java: {
                 target: [],
-                path: [],
             },
             llvm: {
                 target: [],
-                path: [],
             },
             perl: {
                 target: [],
-                path: [],
             },
             python: {
                 target: [],
-                path: [],
             },
             mpy: {
                 target: [],
-                path: [],
             },
             ptx: {
                 target: [],
-                path: [],
+            },
+            amd_cdna1: {
+                target: [],
+            },
+            amd_cdna2: {
+                target: [],
+            },
+            amd_cdna3: {
+                target: [],
+            },
+            amd_cdna4: {
+                target: [],
+            },
+            amd_cdna5: {
+                target: [],
+            },
+            amd_rdna1: {
+                target: [],
+            },
+            amd_rdna2: {
+                target: [],
+            },
+            amd_rdna3: {
+                target: [],
+            },
+            amd_rdna3_5: {
+                target: [],
+            },
+            amd_rdna4: {
+                target: [],
             },
             x86: {
                 target: [],
-                path: [],
             },
             amd64: {
                 target: ['x86_64'],
-                path: ['/x86_64'],
             },
             evm: {
                 target: [],
-                path: [],
             },
             eravm: {
                 target: [],
-                path: [],
             },
             mos6502: {
                 target: [],
-                path: [],
             },
             sass: {
                 target: [],
-                path: [],
             },
             beam: {
                 target: [],
-                path: [],
             },
             hook: {
                 target: [],
-                path: [],
             },
             spirv: {
                 target: [],
-                path: [],
             },
         };
     }
@@ -222,7 +255,7 @@ export class InstructionSets {
         return this.supported[instructionSet].target[0];
     }
 
-    getCompilerInstructionSetHint(compilerArch: string | boolean, exe?: string): InstructionSet {
+    getCompilerInstructionSetHint(compilerArch: string | boolean): InstructionSet {
         if (compilerArch && typeof compilerArch === 'string') {
             for (const [instructionSet, method] of Object.entries(this.supported) as [
                 InstructionSet,
@@ -230,17 +263,6 @@ export class InstructionSets {
             ][]) {
                 for (const target of method.target) {
                     if (compilerArch.includes(target)) {
-                        return instructionSet;
-                    }
-                }
-            }
-        } else {
-            for (const [instructionSet, method] of Object.entries(this.supported) as [
-                InstructionSet,
-                InstructionSetMethod,
-            ][]) {
-                for (const path of method.path) {
-                    if (exe?.includes(path)) {
                         return instructionSet;
                     }
                 }

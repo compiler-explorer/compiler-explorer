@@ -6,7 +6,7 @@ build-backend = "setuptools.build_meta"
 name = "shortlink-migration"
 version = "0.1.0"
 description = "Migrate Compiler Explorer shortlinks from local storage to AWS S3/DynamoDB"
-requires-python = ">=3.8"
+requires-python = ">=3.10"
 dependencies = [
     "boto3>=1.26.0",
 ]

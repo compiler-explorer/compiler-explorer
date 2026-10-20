@@ -137,6 +137,21 @@ export class SourceLineHandler {
         }
     }
 
+    /**
+     * Whether the line is one of the source-location directives this handler consumes,
+     * rather than something the compiler was asked to assemble.
+     */
+    isSourceLocationDirective(line: string): boolean {
+        return (
+            this.sourceTag.test(line) ||
+            this.sourceD2Tag.test(line) ||
+            this.sourceCVTag.test(line) ||
+            this.source6502Dbg.test(line) ||
+            this.source6502DbgEnd.test(line) ||
+            this.sourceStab.test(line)
+        );
+    }
+
     processSourceLine(
         line: string,
         context: SourceHandlerContext,

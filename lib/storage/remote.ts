@@ -26,6 +26,7 @@ import * as express from 'express';
 
 import {logger} from '../logger.js';
 import {CompilerProps} from '../properties.js';
+import {extractShortId} from '../url-utils.js';
 import {ExpandedShortLink, StorageBase} from './base.js';
 
 export class StorageRemote extends StorageBase {
@@ -78,8 +79,8 @@ export class StorageRemote extends StorageBase {
             return;
         }
 
-        const relativeUrl = url.substring(url.lastIndexOf('/z/') + 1);
-        const shortlink = `${req.protocol}://${req.get('host')}${this.httpRootDir}${relativeUrl}`;
+        const shortId = extractShortId(url);
+        const shortlink = `${req.protocol}://${req.get('host')}${this.httpRootDir}z/${shortId}`;
 
         res.send({url: shortlink});
     }

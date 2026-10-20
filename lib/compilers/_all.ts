@@ -22,6 +22,7 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
+export {AburiCompiler} from './aburi.js';
 export {AdaCompiler} from './ada.js';
 export {AMDRGACompiler} from './amd-rga.js';
 export {AnalysisTool} from './analysis-tool.js';
@@ -44,6 +45,7 @@ export {
     ClangHexagonCompiler,
     ClangHipCompiler,
     ClangIntelCompiler,
+    TIClangCompiler,
     Z80ClangCompiler,
 } from './clang.js';
 export {ClangCLCompiler} from './clangcl.js';
@@ -51,12 +53,14 @@ export {CleanCompiler} from './clean.js';
 export {ClojureCompiler} from './clojure.js';
 export {CLSPVCompiler} from './clspv.js';
 export {CMakeScriptCompiler} from './cmakescript.js';
+export {Co2ccCompiler, Co2RustcCompiler} from './co2.js';
 export {CoccinelleCCompiler, CoccinelleCPlusPlusCompiler} from './coccinelle.js';
 export {CodonCompiler} from './codon.js';
 export {CompCertCompiler} from './compcert.js';
 export {CppFrontCompiler} from './cppfront.js';
 export {CprocCompiler} from './cproc.js';
 export {CrystalCompiler} from './crystal.js';
+export {CuteDslCompiler} from './cutedsl.js';
 export {D8Compiler} from './d8.js';
 export {DartCompiler} from './dart.js';
 export {DefaultCompiler} from './default.js';
@@ -83,11 +87,13 @@ export {FakeCompiler} from './fake-for-test.js';
 export {FlangCompiler} from './flang.js';
 export {FlangFC1Compiler} from './flang-fc1.js';
 export {FortranCompiler} from './fortran.js';
+export {FXCCompiler} from './fxc.js';
 export {GA68Compiler} from './ga68.js';
 export {GCCCompiler} from './gcc.js';
 export {GCCCobolCompiler} from './gcccobol.js';
 export {GCCRSCompiler} from './gccrs.js';
 export {GCCGimpleCompiler} from './gimple.js';
+export {GleamCompiler} from './gleam.js';
 export {GLSLCompiler} from './glsl.js';
 export {GM2Compiler} from './gm2.js';
 export {GnuCobolCompiler} from './gnucobol.js';
@@ -103,11 +109,14 @@ export {JavaCompiler} from './java.js';
 export {JuliaCompiler} from './julia.js';
 export {KotlinCompiler} from './kotlin.js';
 export {LDCCompiler} from './ldc.js';
+export {LeanCompiler} from './lean.js';
 export {LFortranCompiler} from './lfortran.js';
 export {LLCCompiler} from './llc.js';
 export {LLVMmcaTool} from './llvm-mca.js';
 export {LLVMMOSCompiler} from './llvm-mos.js';
+export {LuaCompiler} from './lua.js';
 export {M68kCompiler} from './m68k.js';
+export {MachCompiler} from './mach.js';
 export {MadPascalCompiler} from './madpascal.js';
 export {MicroPythonCompiler} from './micropython.js';
 export {MLIRCompiler} from './mlir.js';
@@ -116,11 +125,12 @@ export {MovfuscatorCompiler} from './movfuscator.js';
 export {MrustcCompiler} from './mrustc.js';
 export {Msp430Compiler} from './msp430.js';
 export {NasmCompiler} from './nasm.js';
+export {NexiumCompiler} from './nexium.js';
 export {NimCompiler} from './nim.js';
 export {NixCompiler} from './nix.js';
 export {NorcroftCompiler} from './norcroft.js';
 export {NumbaCompiler} from './numba.js';
-export {NvccCompiler} from './nvcc.js';
+export {NvccCompiler, NvccWin32Compiler} from './nvcc.js';
 export {NvcppCompiler} from './nvcpp.js';
 export {NvrtcCompiler} from './nvrtc.js';
 export {OCamlCompiler} from './ocaml.js';
@@ -140,6 +150,7 @@ export {QNXCompiler} from './qnx.js';
 export {R8Compiler} from './r8.js';
 export {RacketCompiler} from './racket.js';
 export {RakuCompiler} from './raku.js';
+export {RazorForgeCompiler} from './razorforge.js';
 export {ResolcCompiler} from './resolc.js';
 export {RGACompiler} from './rga.js';
 export {RubyCompiler} from './ruby.js';
@@ -147,8 +158,13 @@ export {RustCompiler} from './rust.js';
 export {RustcCgCraneliftCompiler} from './rustc-cg-cranelift.js';
 export {RustcCgGCCCompiler} from './rustc-cg-gcc.js';
 export {SailCompiler} from './sail.js';
+export {SalamCompiler} from './salam.js';
 export {ScalaCompiler} from './scala.js';
+export {ScaleNvccAMDCompiler} from './scale-nvcc-amd.js';
+export {ScaleNvccNvidiaCompiler} from './scale-nvcc-nvidia.js';
 export {SdccCompiler} from './sdcc.js';
+export {SfpiCompiler} from './sfpi.js';
+export {ShaderExplorerCompiler} from './shader-explorer.js';
 export {SlangCompiler} from './slang.js';
 export {SnowballCompiler} from './snowball.js';
 export {SolidityCompiler} from './solidity.js';
@@ -162,6 +178,7 @@ export {SwiftCompiler} from './swift.js';
 export {TableGenCompiler} from './tablegen.js';
 export {TenDRACompiler} from './tendra.js';
 export {TIC2000} from './tic2000.js';
+export {TileLangCompiler} from './tilelang.js';
 export {TinyCCompiler} from './tinyc.js';
 export {TinyGoCompiler} from './tinygo.js';
 export {ToitCompiler} from './toit.js';

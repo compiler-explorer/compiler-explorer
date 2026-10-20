@@ -87,6 +87,7 @@ export class CompilerFinder {
             target: `${uriSchema}://${host}:${port}`,
             path: urljoin('/', uriBase, 'api/compiler', compilerId, 'compile'),
             cmakePath: urljoin('/', uriBase, 'api/compiler', compilerId, 'cmake'),
+            buildPath: urljoin('/', uriBase, 'api/compiler', compilerId, 'build'),
             basePath: urljoin('/', uriBase),
         };
     }
@@ -273,9 +274,11 @@ export class CompilerFinder {
             demanglerType: props('demanglerType', ''),
             demanglerArgs: splitArrayPropsOrEmpty('demanglerArgs', '|'),
             nvdisasm: props('nvdisasm', ''),
+            ptxas: props('ptxas', ''),
             objdumper: props('objdumper', ''),
             objdumperType: props('objdumperType', ''),
             objdumperArgs: splitArrayPropsOrEmpty('objdumperArgs', '|'),
+            llvmDisassembler: props('llvmDisassembler', ''),
             llvmObjdumper: props('llvmObjdumper', ''),
             intelAsm: props('intelAsm', ''),
             supportsAsmDocs: props('supportsAsmDocs', true),

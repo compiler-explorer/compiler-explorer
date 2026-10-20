@@ -27,6 +27,7 @@ import path from 'node:path';
 import {LLVMIrBackendOptions} from '../../types/compilation/ir.interfaces.js';
 import type {PreliminaryCompilerInfo} from '../../types/compiler.interfaces.js';
 import type {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces.js';
+import {ResultLine} from '../../types/resultline/resultline.interfaces.js';
 import {unwrap} from '../assert.js';
 import {CompilationEnvironment} from '../compilation-env.js';
 import {Win32Compiler} from './win32.js';
@@ -39,8 +40,9 @@ export class ClangCLCompiler extends Win32Compiler {
     constructor(info: PreliminaryCompilerInfo, env: CompilationEnvironment) {
         super(info, env);
 
+        this.supportsMapFile = false;
         this.compiler.supportsIrView = true;
-        this.compiler.irArg = ['-Xclang', '-emit-llvm'];
+        this.compiler.irArg = ['-Xclang', '-emit-llvm', '-c'];
         this.compiler.minIrArgs = ['-emit-llvm'];
         this.compiler.supportsIntel = false;
         this.compiler.includeFlag = '/clang:-isystem';
@@ -54,24 +56,29 @@ export class ClangCLCompiler extends Win32Compiler {
         filters: ParseFiltersAndOutputOptions,
     ) {
         // These options make Clang produce an IR
-        const newOptions = options
-            .filter(option => option !== '/FA' && !option.startsWith('/Fa'))
-            .concat(unwrap(this.compiler.irArg));
+        const newOptions = this.optionsForIntermediate(options).concat(unwrap(this.compiler.irArg));
 
         const execOptions = this.getDefaultExecOptions();
         // A higher max output is needed for when the user includes headers
         execOptions.maxOutput = 1024 * 1024 * 1024;
 
         const output = await this.runCompiler(this.compiler.exe, newOptions, this.filename(inputFilename), execOptions);
+        const result = {code: output.code, compilationOptions: newOptions};
         if (output.code !== 0) {
             return {
                 asm: [{text: 'Failed to run compiler to get IR code'}],
+                ...result,
             };
         }
         const ir = await this.processIrOutput(output, irOptions, filters);
         return {
             asm: ir.asm,
+            ...result,
         };
+    }
+
+    override generateAST(inputFilename: string, options: string[]): Promise<ResultLine[]> {
+        return super.generateAST(inputFilename, this.optionsForIntermediate(options));
     }
 
     override getIrOutputFilename(inputFilename: string): string {
@@ -83,5 +90,14 @@ export class ClangCLCompiler extends Win32Compiler {
 
         // Force the debugging info flag or we can't source locations.
         return ['/Z7'].concat(options);
+    }
+
+    protected optionsForIntermediate(options: string[]) {
+        options = options.filter(option => option !== '/FA' && !option.startsWith('/Fa'));
+        const linkIdx = options.indexOf('/link');
+        if (linkIdx !== -1) {
+            return options.slice(0, linkIdx);
+        }
+        return options;
     }
 }

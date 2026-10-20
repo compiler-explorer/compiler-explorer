@@ -36,7 +36,7 @@ import {
 } from '../../types/execution/execution.interfaces.js';
 import * as BootstrapUtils from '../bootstrap-utils.js';
 import {localStorage} from '../local.js';
-import {options} from '../options.js';
+import {compilersService} from '../services/compilers.service.js';
 
 const FAV_RUNTIMETOOLS_STORE_KEY = 'favruntimetools';
 
@@ -350,15 +350,21 @@ export class RuntimeToolsWidget {
         this.updateButton();
     }
 
-    setCompiler(compilerId: string, languageId?: string) {
-        this.compiler = options.compilers.find(c => c.id === compilerId);
+    async setCompiler(compilerId: string, languageId: string | undefined, signal: AbortSignal) {
+        if (languageId) {
+            const compilers = await compilersService.getCompilersForLang(languageId);
+
+            if (signal.aborted) {
+                return;
+            }
+            this.compiler = compilers[compilerId];
+        } else {
+            this.compiler = undefined;
+        }
     }
 
-    get(): ConfiguredRuntimeTools | undefined {
-        if (this.compiler) {
-            return this.configured;
-        }
-        return undefined;
+    get(): ConfiguredRuntimeTools {
+        return this.configured;
     }
 
     private getFavorites(): FavRuntimeTools {
@@ -371,7 +377,7 @@ export class RuntimeToolsWidget {
 
     private updateButton() {
         const selected = this.get();
-        if (selected && selected.length > 0) {
+        if (selected.length > 0) {
             this.dropdownButton
                 .addClass('btn-success')
                 .removeClass('btn-light')

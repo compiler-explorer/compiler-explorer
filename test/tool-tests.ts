@@ -22,9 +22,11 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
+import fs from 'node:fs/promises';
+import os from 'node:os';
 import path from 'node:path';
 
-import {describe, expect, it} from 'vitest';
+import {afterEach, describe, expect, it, vi} from 'vitest';
 
 import {
     getToolchainFlagFromOptions,
@@ -34,7 +36,10 @@ import {
     replaceToolchainArg,
 } from '../lib/toolchain-utils.js';
 import {ToolEnv} from '../lib/tooling/base-tool.interface.js';
+import {BaseTool} from '../lib/tooling/base-tool.js';
 import {BrontoRefactorTool} from '../lib/tooling/bronto-refactor-tool.js';
+import {ClangQueryTool} from '../lib/tooling/clang-query-tool.js';
+import {ClangTidyTool} from '../lib/tooling/clang-tidy-tool.js';
 import {CompilerDropinTool} from '../lib/tooling/compiler-dropin-tool.js';
 import {CompilationInfo} from '../types/compilation/compilation.interfaces.js';
 import {ToolInfo} from '../types/tool.interfaces.js';
@@ -246,6 +251,46 @@ describe('CompilerDropInTool', () => {
     });
 });
 
+describe('ClangTidyTool', () => {
+    const configuredToolExe = '/opt/compiler-explorer/clang-trunk/bin/clang-tidy';
+    const tool = new ClangTidyTool({exe: configuredToolExe} as ToolInfo, {} as ToolEnv);
+
+    it('Should use clang-tidy from the selected Clang CUDA toolchain', () => {
+        const compilationInfo = {
+            compiler: {
+                compilerType: 'clang-cuda',
+                exe: '/opt/compiler-explorer/clang-20.1.0/bin/clang++',
+            },
+        } as unknown as CompilationInfo;
+
+        expect(tool.getToolExe(compilationInfo)).toBe(
+            path.join('/opt/compiler-explorer/clang-20.1.0/bin', 'clang-tidy'),
+        );
+    });
+
+    it('Should preserve a version suffix when selecting clang-tidy', () => {
+        const compilationInfo = {
+            compiler: {
+                compilerType: 'clang-cuda',
+                exe: '/usr/bin/clang++-18',
+            },
+        } as unknown as CompilationInfo;
+
+        expect(tool.getToolExe(compilationInfo)).toBe(path.join('/usr/bin', 'clang-tidy-18'));
+    });
+
+    it('Should use the configured executable for other compiler types', () => {
+        const compilationInfo = {
+            compiler: {
+                compilerType: 'clang',
+                exe: '/opt/compiler-explorer/clang-20.1.0/bin/clang++',
+            },
+        } as unknown as CompilationInfo;
+
+        expect(tool.getToolExe(compilationInfo)).toBe(configuredToolExe);
+    });
+});
+
 describe('BrontoRefactorTool', () => {
     function runTool(stdout: string, stderr: string) {
         const tool = new BrontoRefactorTool({} as ToolInfo, {} as ToolEnv);
@@ -295,5 +340,36 @@ describe('BrontoRefactorTool', () => {
             text: 'error: something went wrong',
             severity: 3,
         });
+    });
+});
+
+describe('ClangQueryTool', () => {
+    afterEach(() => {
+        vi.restoreAllMocks();
+    });
+
+    it('Should write the tool options to compile_flags.txt for non-clang++ compilers', async () => {
+        const dir = await fs.mkdtemp(path.join(os.tmpdir(), 'clang-query-'));
+        try {
+            const source = path.join(dir, 'example.c');
+            await fs.writeFile(source, 'int main() {}');
+            vi.spyOn(BaseTool.prototype, 'runTool').mockResolvedValue({stdout: [], stderr: []} as any);
+
+            const tool = new ClangQueryTool(
+                {id: 'clangquerytrunk', options: ['-xc', '-std=c11']} as unknown as ToolInfo,
+                {} as ToolEnv,
+            );
+            const compilationInfo = {
+                compiler: {exe: '/opt/compiler-explorer/gcc-14.1.0/bin/gcc'},
+                options: ['-O2', source],
+                libraries: [],
+            } as unknown as CompilationInfo;
+            await tool.runTool(compilationInfo, source, [], 'match functionDecl()');
+
+            const flags = (await fs.readFile(path.join(dir, 'compile_flags.txt'), 'utf8')).split('\n');
+            expect(flags).toEqual(['-O2', '-xc', '-std=c11']);
+        } finally {
+            await fs.rm(dir, {recursive: true, force: true});
+        }
     });
 });

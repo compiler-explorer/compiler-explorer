@@ -27,12 +27,11 @@ import $ from 'jquery';
 import _ from 'underscore';
 
 import {unwrapString} from '../../shared/assert.js';
-import {escapeHTML, unique} from '../../shared/common-utils.js';
+import {unique} from '../../shared/common-utils.js';
 import {CompilationResult} from '../../types/compilation/compilation.interfaces.js';
 import {CompilerInfo} from '../../types/compiler.interfaces.js';
 import {SelectedLibraryVersion} from '../../types/libraries/libraries.interfaces.js';
 import * as BootstrapUtils from '../bootstrap-utils.js';
-import {CompilationStatus} from '../compiler-service.interfaces.js';
 import {CompilerService} from '../compiler-service.js';
 import * as Components from '../components.js';
 import {createDragSource} from '../components.js';
@@ -41,10 +40,12 @@ import {Hub} from '../hub.js';
 import * as LibUtils from '../lib-utils.js';
 import {Library, LibraryVersion} from '../options.interfaces.js';
 import {options} from '../options.js';
+import {languagesService} from '../services/languages.service.js';
 import * as utils from '../utils.js';
+import {BaseCompilationOptions} from '../widgets/compilation-options.js';
 import {CompilerPicker} from '../widgets/compiler-picker.js';
 import {Lib} from '../widgets/libs-widget.interfaces.js';
-import {CompilerLibs, LibsWidget} from '../widgets/libs-widget.js';
+import {CompilerLibs, LibsWidget, stateLibsToLibs} from '../widgets/libs-widget.js';
 import {PaneRenaming} from '../widgets/pane-renaming.js';
 import {ConformanceViewState} from './conformance-view.interfaces.js';
 import {PaneState} from './pane.interfaces.js';
@@ -54,9 +55,15 @@ type CompilerEntry = {
     parent: JQuery<HTMLElement>;
     picker: CompilerPicker | null;
     optionsField: JQuery<HTMLElement> | null;
-    statusIcon: JQuery<HTMLElement> | null;
-    prependOptions: JQuery<HTMLElement> | null;
+    compilationOptions: BaseCompilationOptions<Conformance>;
 };
+
+function areLibsEqual(a: Lib[], b: Lib[]): boolean {
+    if (a.length !== b.length) return false;
+    const key = (lib: Lib) => `${lib.name}/${lib.ver}`;
+    const keys = new Set(a.map(key));
+    return b.every(lib => keys.has(key(lib)));
+}
 
 type AddCompilerPickerConfig = {
     compilerId: string;
@@ -73,6 +80,7 @@ export class Conformance extends Pane<ConformanceViewState> {
     private compilerPickers: CompilerEntry[] = [];
     private expandedSourceAndFiles: SourceAndFiles | null;
     private currentLibs: Lib[];
+    private librariesReady: Promise<void>;
     private readonly stateByLang: Record<string, ConformanceViewState>;
     private libsButton: JQuery<HTMLElement>;
     private conformanceContentRoot: JQuery<HTMLElement>;
@@ -85,7 +93,7 @@ export class Conformance extends Pane<ConformanceViewState> {
         super(hub, container, state);
         this.compilerService = hub.compilerService;
         this.maxCompilations = options.cvCompilerCountMax;
-        this.langId = state.langId || _.keys(options.languages)[0];
+        this.langId = state.langId || _.keys(languagesService.getLanguagesOrFail())[0];
         this.source = state.source ?? '';
         this.sourceNeedsExpanding = true;
         this.expandedSourceAndFiles = null;
@@ -97,7 +105,10 @@ export class Conformance extends Pane<ConformanceViewState> {
         this.initButtons();
         this.initCallbacks();
         this.initFromState(state);
-        this.initLibraries(state);
+        // The widget applies the saved libs only once the library list loads, well after the
+        // first compile, so seed from the state to not lose them in the meantime.
+        this.currentLibs = stateLibsToLibs(state.libs);
+        this.librariesReady = this.initLibraries(state);
         this.handleToolbarUI();
 
         // Dismiss the popover on escape.
@@ -128,25 +139,32 @@ export class Conformance extends Pane<ConformanceViewState> {
 
     onLibsChanged(): void {
         const newLibs = this.libsWidget.get();
-        if (newLibs !== this.currentLibs) {
+        if (!areLibsEqual(newLibs, this.currentLibs)) {
             this.currentLibs = newLibs;
             this.saveState();
             this.compileAll();
         }
     }
 
-    initLibraries(state: PaneState & ConformanceViewState): void {
+    async initLibraries(state: PaneState & ConformanceViewState): Promise<void> {
         const compilerIds = this.getCurrentCompilersIds();
+        const libs = await this.getOverlappingLibraries(compilerIds);
         this.libsWidget = new LibsWidget(
             this.langId,
             compilerIds.join('|'),
             this.libsButton,
             state,
             this.onLibsChanged.bind(this),
-            this.getOverlappingLibraries(compilerIds),
+            libs,
         );
         // No callback is done on initialization, so make sure we store the current libs
-        this.currentLibs = this.libsWidget.get();
+        await this.libsWidget.stateLoaded;
+        const loadedLibs = this.libsWidget.get();
+        if (!areLibsEqual(loadedLibs, this.currentLibs)) {
+            this.currentLibs = loadedLibs;
+            this.saveState();
+            this.compileAll();
+        }
     }
 
     initButtons(): void {
@@ -196,7 +214,7 @@ export class Conformance extends Pane<ConformanceViewState> {
             compilerText = ' ' + this.compilerPickers.length + '/' + this.maxCompilations;
         }
         const name = this.paneName ? this.paneName + compilerText : this.getPaneName() + compilerText;
-        this.container.setTitle(escapeHTML(name));
+        this.container.setTitle(name);
     }
 
     addCompilerPicker(config?: AddCompilerPickerConfig): void {
@@ -205,7 +223,7 @@ export class Conformance extends Pane<ConformanceViewState> {
                 // Compiler id which is being used
                 compilerId: '',
                 // Options which are in use
-                options: options.compileOptions[this.langId],
+                options: '',
             };
         }
         const newSelector = this.selectorTemplate.clone();
@@ -213,8 +231,7 @@ export class Conformance extends Pane<ConformanceViewState> {
             parent: newSelector,
             picker: null,
             optionsField: null,
-            statusIcon: null,
-            prependOptions: null,
+            compilationOptions: new BaseCompilationOptions(this, newSelector, result => result),
         };
 
         const onOptionsChange = _.debounce(() => {
@@ -226,7 +243,7 @@ export class Conformance extends Pane<ConformanceViewState> {
             .find('.conformance-options')
             .val(config.options)
             .on('change', onOptionsChange)
-            .on('keyup', onOptionsChange);
+            .on('input', onOptionsChange);
 
         newSelector.find('.close-compiler').on('click', () => {
             this.removeCompilerPicker(newCompilerEntry);
@@ -240,17 +257,12 @@ export class Conformance extends Pane<ConformanceViewState> {
             this.copyCompilerPicker(config);
         });
 
-        newCompilerEntry.statusIcon = newSelector.find('.status-icon');
-        newCompilerEntry.prependOptions = newSelector.find('.prepend-options');
         const popCompilerButton = newSelector.find('.extract-compiler');
 
-        const onCompilerChange = (compilerId: string) => {
+        const onCompilerChange = async (compilerId: string) => {
             popCompilerButton.toggleClass('d-none', !compilerId);
             this.saveState();
-            // Hide the results icon when a new compiler is selected
-            this.handleStatusIcon(newCompilerEntry.statusIcon, {code: 0, compilerOut: 0});
-            const compiler = this.compilerService.findCompiler(this.langId, compilerId);
-            if (compiler) this.setCompilationOptionsPopover(newCompilerEntry.prependOptions, compiler.options);
+            newCompilerEntry.compilationOptions.clear();
             this.updateLibraries();
             this.compileChild(newCompilerEntry);
         };
@@ -298,22 +310,6 @@ export class Conformance extends Pane<ConformanceViewState> {
         editorId: number,
         treeId: number,
     ): void {}
-
-    setCompilationOptionsPopover(element: JQuery<HTMLElement> | null, content: string): void {
-        if (element) {
-            const existingPopover = BootstrapUtils.getPopoverInstance(element);
-            if (existingPopover) existingPopover.dispose();
-
-            BootstrapUtils.initPopover(element, {
-                content: content || 'No options in use',
-                template:
-                    '<div class="popover' +
-                    (content ? ' compiler-options-popover' : '') +
-                    '" role="tooltip"><div class="arrow"></div>' +
-                    '<h3 class="popover-header"></h3><div class="popover-body"></div></div>',
-            });
-        }
-    }
 
     removeCompilerPicker(compilerEntry: CompilerEntry): void {
         this.compilerPickers = _.reject(this.compilerPickers, entry => compilerEntry.picker?.id === entry.picker?.id);
@@ -372,31 +368,26 @@ export class Conformance extends Pane<ConformanceViewState> {
     }
 
     onCompileResponse(compilerEntry: CompilerEntry, result: CompilationResult) {
-        let compilationOptions = '';
-        if (result.compilationOptions) {
-            compilationOptions = result.compilationOptions.join(' ');
-        }
-
-        this.setCompilationOptionsPopover(compilerEntry.prependOptions, compilationOptions);
-
+        compilerEntry.compilationOptions.processResult(result);
         this.handleCompileOutIcon(compilerEntry.parent.find('.compiler-out'), result);
-
-        this.handleStatusIcon(compilerEntry.statusIcon, CompilerService.calculateStatusIcon(result));
         this.saveState();
     }
 
     private getCompilerId(compilerEntry?: CompilerEntry): string {
-        if (compilerEntry?.picker?.tomSelect) {
-            return unwrapString(compilerEntry.picker.tomSelect.getValue());
+        const picker = compilerEntry?.picker;
+        if (picker?.tomSelect) {
+            return unwrapString(picker.tomSelect.getValue());
         }
-        return '';
+        // tomSelect is built asynchronously, so it may not exist yet on a freshly-restored
+        // pane. lastCompilerId is set synchronously and mirrors the selection, so fall back
+        // to it (e.g. when a restored view is asked to compile before the picker is ready).
+        return picker?.lastCompilerId ?? '';
     }
 
     compileChild(compilerEntry: CompilerEntry) {
         const compilerId = this.getCompilerId(compilerEntry);
         if (compilerId === '') return;
-        // Hide previous status icons
-        this.handleStatusIcon(compilerEntry.statusIcon, {code: 4, compilerOut: 0});
+        compilerEntry.compilationOptions.displaySpinner();
 
         this.expandToFiles().then(expanded => {
             const request = {
@@ -412,7 +403,7 @@ export class Conformance extends Pane<ConformanceViewState> {
                 files: expanded.files,
             };
 
-            this.currentLibs.forEach(item => {
+            (this.currentLibs ?? []).forEach(item => {
                 request.options.libraries.push({
                     id: item.name,
                     version: item.ver,
@@ -450,10 +441,6 @@ export class Conformance extends Pane<ConformanceViewState> {
         this.updateTitle();
     }
 
-    handleStatusIcon(statusIcon: JQuery<HTMLElement> | null, status: CompilationStatus): void {
-        CompilerService.handleCompilationStatus(null, statusIcon, status);
-    }
-
     currentState(): ConformanceViewState {
         const compilers = this.compilerPickers.map(compilerEntry => ({
             compilerId: this.getCompilerId(compilerEntry),
@@ -481,10 +468,10 @@ export class Conformance extends Pane<ConformanceViewState> {
         this.conformanceContentRoot.outerHeight(this.domRoot.height() ?? 0 - topBarHeight);
     }
 
-    getOverlappingLibraries(compilerIds: string[]): CompilerLibs {
-        const compilers = compilerIds.map(compilerId => {
-            return this.compilerService.findCompiler(this.langId, compilerId);
-        });
+    async getOverlappingLibraries(compilerIds: string[]): Promise<CompilerLibs> {
+        const compilers = await Promise.all(
+            compilerIds.map(compilerId => this.compilerService.findCompiler(this.langId, compilerId)),
+        );
 
         const langId = this.langId;
 
@@ -492,7 +479,7 @@ export class Conformance extends Pane<ConformanceViewState> {
         let first = true;
         for (const compiler of compilers) {
             if (!compiler) continue;
-            const filteredLibraries = LibUtils.getSupportedLibraries(compiler.libsArr, langId, compiler.remote);
+            const filteredLibraries = await LibUtils.getSupportedLibraries(compiler.libsArr, langId, compiler.remote);
 
             if (first) {
                 libraries = _.extend({}, filteredLibraries);
@@ -537,9 +524,12 @@ export class Conformance extends Pane<ConformanceViewState> {
         );
     }
 
-    updateLibraries(): void {
+    async updateLibraries(): Promise<void> {
+        // Re-keying carries over the libs in use, so it must wait for those to be restored.
+        await this.librariesReady;
         const compilerIds = this.getCurrentCompilersIds();
-        this.libsWidget.setNewLangId(this.langId, compilerIds.join('|'), this.getOverlappingLibraries(compilerIds));
+        const libs = await this.getOverlappingLibraries(compilerIds);
+        this.libsWidget.setNewLangId(this.langId, compilerIds.join('|'), libs);
     }
 
     onLanguageChange(editorId: number | boolean, newLangId: string): void {

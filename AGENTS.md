@@ -1,6 +1,6 @@
-# CLAUDE.md
+# AGENTS.md
 
-This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
+This file provides guidance to AI Agents when working with code in this repository.
 
 ## Build & Test Commands
 - Build: `npm run webpack`, `npm start`
@@ -16,6 +16,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 ## Important Workflow Requirements
 - ⚠️ NEVER BYPASS PRE-COMMIT HOOKS! NEVER use `git commit -n` or `--no-verify` ⚠️
 - ⚠️ NEVER amend commits (`git commit --amend`) or force push (`git push --force` / `--force-with-lease`) ⚠️
+- ⚠️ NEVER include shared links (e.g. `/z/`, `/e#`, `/clientstate/`, or full godbolt.org short URLs) in commit messages ⚠️
 - ALWAYS run `make pre-commit` or at minimum `npm run ts-check` and `npm run lint` before committing
 - The full process must always be:
   1. Make changes
@@ -50,6 +51,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
   In this case, the function name already clearly states what it does.
 - Comments should provide additional context or explain "why" something is done, not just restate "what" is being done.
 - Only add function header comments when they provide meaningful information beyond what the function name and signature convey.
+- Don't add comments narrating a change's history, the bug it fixes, or warning against code you deliberately *didn't* write (e.g. options intentionally not passed). That rationale belongs in the commit/PR/issue; regression protection belongs in a test.
 - Use British English spellings for things like "initialise" and "colour", but only in new code. It's a preference not a hard requirement
 - Use modern Typescript features like optional chaining when updating existing code or adding new code
 
@@ -60,13 +62,19 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
   - This separation is enforced by pre-commit hooks (`npm run check-frontend-imports`)
   - Violations will cause build failures and prevent commits
 
+## Security Review Calibration
+- Internal, CE-controlled endpoints (e.g. the conan library server) are not hostile: treat crafted-content hardening there as hygiene. Apply small fixes inline, file larger ones as follow-up issues, and don't block PRs on them.
+- The genuinely hostile input surface is user-submitted source code and compilation output, handled by nsjail sandboxing and the `/nosym/tmp` nosymfollow mount in production.
+- Prioritise robustness failures (promises that never settle, hangs, resource leaks) over crafted-input scenarios: the former have caused real outages (issue #8811).
+
 ## Worker Mode Configuration
 - **Compilation Workers**: New feature for offloading compilation tasks to dedicated worker instances
   - `compilequeue.is_worker=true`: Enables compilation worker mode (similar to execution workers)
   - `compilequeue.queue_url`: SQS queue URL for compilation requests (both regular and CMake)
   - `compilequeue.events_url`: WebSocket URL for sending compilation results
   - `compilequeue.worker_threads=2`: Number of concurrent worker threads
-  - `compilequeue.poll_interval_ms=1000`: Interval between poll attempts after processing or errors (default: 1000ms). Note: SQS long polling means actual wait time is up to 20 seconds when queue is empty
+  - `execqueue.request_deadline_ms=60000`: How long the caller waits, measured from the SQS SentTimestamp of its request. A result produced after that reaches nobody, so the worker stops retrying the acknowledgement rather than spending its full budget on a result that cannot be delivered. Read by `PersistentEventsSender`, so one value covers both compilations and executions. Must track ce-router's own request deadline.
+  - `compilequeue.poll_interval_ms`: Idle time between finishing one message and polling for the next. 50 on AWS, 1000 elsewhere. It costs nothing on an empty queue, where `WaitTimeSeconds=20` long polling blocks regardless, so it is purely per-message latency while work is waiting: at 1000ms a thread spends a second idle between messages, which capped a prod instance near 44 pickups a minute however much compile capacity it had spare
   - `--instance-color <color>`: Optional command-line parameter to differentiate deployment instances. When specified (blue or green), modifies the queue URL by appending the color to the queue name (e.g., `staging-compilation-queue-blue.fifo`)
 - **Implementation**: Located in `/lib/compilation/sqs-compilation-queue.ts` with shared parsing utilities in `/lib/compilation/compilation-request-parser.ts`
 - **Queue Architecture**: Uses single AWS SQS FIFO queue for reliable message delivery, messages contain isCMake flag to distinguish compilation types

@@ -134,6 +134,17 @@ export class DeviceAsm extends MonacoPane<monaco.editor.IStandaloneCodeEditor, D
             run: this.onAsmToolTip.bind(this),
         });
     }
+
+    /**
+     * The compiler tells us the instruction set per device when it knows it. Fall back to the
+     * device name, which is what CUDA relies on: its devices are literally named "PTX"/"SASS".
+     */
+    private getSelectedDeviceInstructionSet(): InstructionSet {
+        const reported = this.devices?.[this.selectedDevice]?.instructionSet;
+        if (reported) return reported;
+        return this.selectedDevice.split(' ')[0].toLowerCase() as InstructionSet;
+    }
+
     async onAsmToolTip(ed: monaco.editor.ICodeEditor) {
         const pos = ed.getPosition();
         if (!pos || !ed.getModel()) return;
@@ -160,10 +171,7 @@ export class DeviceAsm extends MonacoPane<monaco.editor.IStandaloneCodeEditor, D
         }
 
         try {
-            const asmHelp = await Compiler.getAsmInfo(
-                word.word,
-                this.selectedDevice.split(' ')[0].toLowerCase() as InstructionSet,
-            );
+            const asmHelp = await Compiler.getAsmInfo(word.word, this.getSelectedDeviceInstructionSet());
             if (asmHelp) {
                 this.alertSystem.alert(opcode + ' help', asmHelp.html + appendInfo(asmHelp.url), {
                     onClose: () => {
@@ -240,9 +248,7 @@ export class DeviceAsm extends MonacoPane<monaco.editor.IStandaloneCodeEditor, D
         this.makeDeviceSelector(deviceNames);
         this.updateDeviceAsm();
 
-        // Why call this explicitly instead of just listening to the "colours" event?
-        // Because the recolouring happens before this editors value is set using "showDeviceAsmResults".
-        this.onColours(this.compilerInfo.compilerId, this.lastColours, this.lastColourScheme);
+        this.reapplyColours();
     }
 
     override onCompileResult(id: number, compiler: CompilerInfo, result: CompilationResult): void {
@@ -294,7 +300,7 @@ export class DeviceAsm extends MonacoPane<monaco.editor.IStandaloneCodeEditor, D
         this.selectedDevice = this.selectize.getValue() as string;
         this.updateState();
         this.updateDeviceAsm();
-        this.onColours(this.compilerInfo.compilerId, this.lastColours, this.lastColourScheme);
+        this.reapplyColours();
     }
 
     updateDeviceAsm(): void {
@@ -337,6 +343,7 @@ export class DeviceAsm extends MonacoPane<monaco.editor.IStandaloneCodeEditor, D
             }
             this.isAwaitingInitialResults = true;
         }
+        this.reapplyColours();
     }
 
     override onCompiler(
@@ -354,21 +361,30 @@ export class DeviceAsm extends MonacoPane<monaco.editor.IStandaloneCodeEditor, D
             if (compiler && !compiler.supportsDeviceAsmView) {
                 this.editor.setValue('<Device output is not supported for this compiler>');
             }
+            this.reapplyColours();
         }
     }
 
-    onColours(id: number, colours: Record<number, number>, scheme: string): void {
-        this.lastColours = colours;
-        this.lastColourScheme = scheme;
+    private reapplyColours(): void {
+        // Why call this explicitly instead of just listening to the "colours" event?
+        // Because the recolouring happens before this editor's value is set using "showDeviceAsmResults".
+        if (this.compilerInfo.editorId != null) {
+            this.onColours(this.compilerInfo.editorId, this.lastColours, this.lastColourScheme);
+        }
+    }
 
-        if (id === this.compilerInfo.compilerId && this.deviceCode) {
+    onColours(editorId: number, colours: Record<number, number>, scheme: string): void {
+        if (editorId === this.compilerInfo.editorId && this.deviceCode) {
+            this.lastColours = colours;
+            this.lastColourScheme = scheme;
+
             const irColours: Record<number, number> = {};
             this.deviceCode.forEach((x: ResultLine, index: number) => {
                 if (
                     x.source &&
                     (x.source.file == null || x.source.mainsource) &&
                     x.source.line > 0 &&
-                    colours[x.source.line - 1]
+                    colours[x.source.line - 1] !== undefined
                 ) {
                     irColours[index] = colours[x.source.line - 1];
                 }
@@ -390,6 +406,36 @@ export class DeviceAsm extends MonacoPane<monaco.editor.IStandaloneCodeEditor, D
 
     async onMouseMove(e: any) {
         if (e === null || e.target === null || e.target.position === null) return;
+        const hoverShowSource = this.settings.hoverShowSource === true;
+        const hoverDeviceCode = this.deviceCode[e.target.position.lineNumber - 1];
+
+        if (hoverShowSource && hoverDeviceCode) {
+            this.clearLinkedLines();
+            const source = hoverDeviceCode.source;
+            if (source && (source.file == null || source.mainsource) && this.compilerInfo.editorId != null) {
+                const sourceColBegin = -1;
+                const sourceColEnd = -1;
+                this.eventHub.emit(
+                    'editorLinkLine',
+                    this.compilerInfo.editorId,
+                    source.line,
+                    sourceColBegin,
+                    sourceColEnd,
+                    false,
+                );
+                this.eventHub.emit(
+                    'panesLinkLine',
+                    this.compilerInfo.compilerId,
+                    source.line,
+                    sourceColBegin,
+                    sourceColEnd,
+                    false,
+                    this.getPaneName(),
+                    this.compilerInfo.editorId,
+                );
+            }
+        }
+
         const currentWord = this.editor.getModel()?.getWordAtPosition(e.target.position);
         if (currentWord?.word) {
             let word = currentWord.word;
@@ -434,7 +480,7 @@ export class DeviceAsm extends MonacoPane<monaco.editor.IStandaloneCodeEditor, D
                 try {
                     const response = await Compiler.getAsmInfo(
                         currentWord.word,
-                        this.selectedDevice.split(' ')[0].toLowerCase() as InstructionSet,
+                        this.getSelectedDeviceInstructionSet(),
                     );
                     if (!response) return;
                     this.decorations.asmToolTip = [
@@ -486,8 +532,13 @@ export class DeviceAsm extends MonacoPane<monaco.editor.IStandaloneCodeEditor, D
         _colEnd: number,
         revealLine: boolean,
         sender: string,
+        editorId?: number,
     ): void {
-        if (Number(compilerId) === this.compilerInfo.compilerId && this.deviceCode) {
+        if (
+            Number(compilerId) === this.compilerInfo.compilerId &&
+            (editorId == null || editorId === this.compilerInfo.editorId) &&
+            this.deviceCode
+        ) {
             const lineNums: number[] = [];
             this.deviceCode.forEach((line: ResultLine, i: number) => {
                 if (

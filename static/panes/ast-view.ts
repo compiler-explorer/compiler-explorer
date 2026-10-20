@@ -181,7 +181,7 @@ export class Ast extends MonacoPane<monaco.editor.IStandaloneCodeEditor, AstStat
 
         // TODO: This is inelegant. Previously took advantage of fourth argument for the compileResult event.
         // I'm guessing it's not part of the TS rewrite because it's not always passed by the emitter.
-        const lang = compiler.lang === 'c++' ? 'cpp' : compiler.lang;
+        const lang = compiler.lang === 'c++' ? 'clang-ast' : compiler.lang;
         const model = this.editor.getModel();
         if (model != null && this.getCurrentEditorLanguage() !== lang) {
             monaco.editor.setModelLanguage(model, lang);

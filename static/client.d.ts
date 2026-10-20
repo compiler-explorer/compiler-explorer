@@ -36,6 +36,11 @@ declare module '*.pug' {
     export default content;
 }
 
+// Side-effect CSS/SCSS imports; webpack handles the actual bundling. TS6 defaults
+// noUncheckedSideEffectImports to true, so these need ambient declarations.
+declare module '*.css';
+declare module '*.scss';
+
 declare module '*.svg' {
     const src: string;
     export default src;

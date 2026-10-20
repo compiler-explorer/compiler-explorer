@@ -25,10 +25,11 @@
 import express, {Request, Response} from 'express';
 import _ from 'underscore';
 
-import {AppArguments} from '../app.interfaces.js';
+import type {Options as FrontendOptions} from '../../static/options.interfaces.js';
 import * as normalizer from '../clientstate-normalizer.js';
 import {GoldenLayoutRootStruct} from '../clientstate-normalizer.js';
 import type {ShortLinkMetaData} from '../handlers/handler.interfaces.js';
+import type {ClientOptionsType} from '../options-handler.js';
 import * as utils from '../utils.js';
 import {
     PugRequireHandler,
@@ -38,22 +39,37 @@ import {
     ServerDependencies,
     ServerOptions,
 } from './server.interfaces.js';
-import {getFaviconFilename} from './static-assets.js';
+import {getFaviconFilename, getLogoOverlayFilename} from './static-assets.js';
 import {isMobileViewer} from './url-handlers.js';
 
-/**
- * Create rendering-related functions
- * @param pugRequireHandler - Handler for Pug requires
- * @param options - Server options
- * @param dependencies - Server dependencies
- * @param appArgs - App arguments
- * @returns Rendering functions
- */
+// Heavy fields (compilers, libs, tools, ...) are absent on purpose — they are lazy-loaded.
+const FRONTEND_INLINE_OPTION_KEYS = [
+    'sharingEnabled',
+    'urlShortenService',
+    'supportsExecute',
+    'supportsLibraryCodeFilter',
+    'sentryDsn',
+    'sentryEnvironment',
+    'release',
+    'gitReleaseCommit',
+    'cookieDomainRe',
+    'localStoragePrefix',
+    'cvCompilerCountMax',
+    'defaultFontScale',
+    'doCache',
+    'thirdPartyIntegrationEnabled',
+    'statusTrackingEnabled',
+    'compilerVersionsUrl',
+    'policies',
+    'motdUrl',
+    'pageloadUrl',
+    'explainApiEndpoint',
+] as const satisfies readonly (keyof ClientOptionsType & keyof FrontendOptions)[];
+
 export function createRenderHandlers(
     pugRequireHandler: PugRequireHandler,
     options: ServerOptions,
     dependencies: ServerDependencies,
-    appArgs: AppArguments,
 ): {
     renderConfig: RenderConfigFunction;
     renderGoldenLayout: RenderGoldenLayoutHandler;
@@ -84,16 +100,22 @@ export function createRenderHandlers(
             allExtraOptions.slides = glnormalizer.generatePresentationModeMobileViewerSlides(clientstate);
         }
 
-        const options: RenderConfig = _.extend({}, allExtraOptions, clientOptionsHandler.get());
+        const all = clientOptionsHandler.get();
+        const options: RenderConfig = _.extend({}, allExtraOptions, all);
         options.optionsHash = clientOptionsHandler.getHash();
-        options.compilerExplorerOptions = JSON.stringify(allExtraOptions);
+        const inlinedClientOptions: Partial<ClientOptionsType> = {};
+        for (const k of FRONTEND_INLINE_OPTION_KEYS) {
+            (inlinedClientOptions as any)[k] = all[k];
+        }
+        options.compilerExplorerOptions = JSON.stringify({...inlinedClientOptions, ...allExtraOptions});
         options.extraBodyClass = options.embedded ? 'embedded' : extraBodyClass;
         options.httpRoot = httpRoot;
         options.staticRoot = staticRoot;
         options.storageSolution = options.storageSolution || storageSolution;
         options.require = pugRequireHandler;
         options.sponsors = sponsorConfig;
-        options.faviconFilename = getFaviconFilename(appArgs.devMode, appArgs.env);
+        options.faviconFilename = getFaviconFilename(extraBodyClass);
+        options.logoOverlayFilename = getLogoOverlayFilename(extraBodyClass);
         return options;
     };
 

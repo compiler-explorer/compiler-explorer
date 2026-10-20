@@ -4,7 +4,7 @@ This script migrates Compiler Explorer shortlinks from local file storage to AWS
 
 ## Prerequisites
 
-- Python 3.8+
+- Python 3.10+
 - [uv](https://docs.astral.sh/uv/) (for dependency management)
 - AWS credentials configured (via AWS CLI, environment variables, or IAM role)
 

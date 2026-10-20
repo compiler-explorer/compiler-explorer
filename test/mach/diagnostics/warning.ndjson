@@ -1,0 +1,2 @@
+{"schema":1,"record":"diagnostic","severity":"warning","code":"import.unused","message":"unused import `usize`","origin":"resolve","primary":{"file":"src/example.mach","line":1,"column":20,"end_line":1,"end_column":25,"byte_start":19,"byte_end":24},"related":[],"notes":[],"help":[],"fixes":[]}
+{"schema":1,"record":"summary","errors":0,"warnings":1,"notes":0,"outcome":"success","exit_code":0}

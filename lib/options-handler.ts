@@ -23,6 +23,7 @@
 // POSSIBILITY OF SUCH DAMAGE.
 
 import fs from 'node:fs';
+import http from 'node:http';
 import https from 'node:https';
 import path from 'node:path';
 
@@ -59,6 +60,8 @@ export type VersionInfo = {
     options: string[];
     hidden: boolean;
     packagedheaders?: boolean;
+    sysroot?: string;
+    dynamicLinker?: string;
     $order?: number;
 };
 export type OptionsHandlerLibrary = {
@@ -228,10 +231,10 @@ export class ClientOptionsHandler implements ClientOptionsSource {
             explainApiEndpoint: ceProps('explainApiEndpoint', ''),
             pageloadUrl: ceProps('pageloadUrl', ''),
         };
-        // Will be immediately replaced with actual values
+        // Replaced with real values by the first setCompilers() call, which
+        // always happens before the server starts listening.
         this.optionsJSON = '';
         this.optionsHash = '';
-        this._updateOptionsHash();
     }
 
     parseTools(baseTools: Record<string, string>) {
@@ -261,7 +264,7 @@ export class ClientOptionsHandler implements ClientOptionsSource {
                                     toolBaseName + '.languageId',
                                 ) as LanguageKey,
                                 stdinHint: this.compilerProps<string>(lang, toolBaseName + '.stdinHint'),
-                                monacoStdin: this.compilerProps<string>(lang, toolBaseName + '.monacoStdin'),
+                                monacoStdin: this.compilerProps<boolean>(lang, toolBaseName + '.monacoStdin'),
                                 icon: this.compilerProps<string>(lang, toolBaseName + '.icon'),
                                 darkIcon: this.compilerProps<string>(lang, toolBaseName + '.darkIcon'),
                                 compilerLanguage: lang as LanguageKey,
@@ -357,10 +360,19 @@ export class ClientOptionsHandler implements ClientOptionsSource {
                                 versionObject.lookupname = libraries[lang][lib].lookupname;
                             }
 
+                            const sysroot = this.compilerProps<string>(lang, libVersionName + '.sysroot');
+                            if (sysroot !== undefined) {
+                                versionObject.sysroot = sysroot;
+                            }
+
                             const includes = this.compilerProps<string>(lang, libVersionName + '.path');
                             if (includes) {
                                 versionObject.path = includes.split(path.delimiter);
-                            } else if (version !== 'autodetect' && !versionObject.packagedheaders) {
+                            } else if (
+                                version !== 'autodetect' &&
+                                !versionObject.packagedheaders &&
+                                !versionObject.sysroot
+                            ) {
                                 logger.warn(`Library ${lib} ${version} (${lang}) has no include paths`);
                             }
 
@@ -379,6 +391,11 @@ export class ClientOptionsHandler implements ClientOptionsSource {
                                 libVersionName + '.packagedheaders',
                                 libraries[lang][lib].packagedheaders,
                             );
+
+                            const dynamicLinker = this.compilerProps<string>(lang, libVersionName + '.dynamicLinker');
+                            if (dynamicLinker !== undefined) {
+                                versionObject.dynamicLinker = dynamicLinker;
+                            }
 
                             libraries[lang][lib].versions[version] = versionObject;
                         }
@@ -423,24 +440,31 @@ export class ClientOptionsHandler implements ClientOptionsSource {
             return await new Promise(resolve => {
                 const url = ClientOptionsHandler.getRemoteUrlForLibraries(remoteUrl, language);
                 logger.info(`Fetching remote libraries from ${url}`);
+                const requestLib = url.startsWith('https:') ? https : http;
                 let fullData = '';
-                https.get(url, res => {
-                    res.on('data', data => {
-                        fullData += data;
-                    });
-                    res.on('end', () => {
-                        try {
-                            const libsArr = JSON.parse(fullData);
+                requestLib
+                    .get(url, res => {
+                        res.on('data', data => {
+                            fullData += data;
+                        });
+                        res.on('end', () => {
+                            try {
+                                const libsArr = JSON.parse(fullData);
 
-                            this.remoteLibs[remoteId] = this.libArrayToObject(libsArr);
-                        } catch (e) {
-                            logger.error('Error while fetching remote libraries, but continuing.', e);
-                            this.remoteLibs[remoteId] = {};
-                        }
+                                this.remoteLibs[remoteId] = this.libArrayToObject(libsArr);
+                            } catch (e) {
+                                logger.error('Error while fetching remote libraries, but continuing.', e);
+                                this.remoteLibs[remoteId] = {};
+                            }
 
+                            resolve(this.remoteLibs[remoteId]);
+                        });
+                    })
+                    .on('error', e => {
+                        logger.error('Error while fetching remote libraries, but continuing.', e);
+                        this.remoteLibs[remoteId] = {};
                         resolve(this.remoteLibs[remoteId]);
                     });
-                });
             });
         }
         return this.remoteLibs[remoteId];
@@ -508,6 +532,16 @@ export class ClientOptionsHandler implements ClientOptionsSource {
             // Set $order to -index on array. As group is an array, iteration order is guaranteed.
             for (const compiler of group) {
                 compiler['$order'] = -order++;
+            }
+        }
+
+        // Mirror $order onto the input compilers so other consumers (notably
+        // the api handler used by lazy-load) see the same ordering as the
+        // deep-copied client options here.
+        for (let i = 0; i < compilers.length; i++) {
+            const order = copiedCompilers[i].$order;
+            if (order !== undefined) {
+                compilers[i].$order = order;
             }
         }
 

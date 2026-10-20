@@ -1,4 +1,6 @@
 link(rel="icon" href=`${staticRoot}${faviconFilename}`)
+if !embedded
+  link(rel="search" type="application/opensearchdescription+xml" href=`${httpRoot}search.xml` title="Compiler Explorer shortcut")
 meta(charset="utf-8")
 - var userScalable = mobileViewer ? "yes" : "no"
 meta(name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=" + userScalable + ", shrink-to-fit=no")

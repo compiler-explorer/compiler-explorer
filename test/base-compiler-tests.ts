@@ -24,7 +24,7 @@
 
 import path from 'node:path';
 
-import {afterAll, beforeAll, describe, expect, it} from 'vitest';
+import {afterAll, beforeAll, describe, expect, it, vi} from 'vitest';
 
 import {BaseCompiler} from '../lib/base-compiler.js';
 import {BuildEnvSetupBase} from '../lib/buildenvsetup/index.js';
@@ -34,6 +34,7 @@ import {RustCompiler} from '../lib/compilers/rust.js';
 import {Win32Compiler} from '../lib/compilers/win32.js';
 import * as props from '../lib/properties.js';
 import {splitArguments} from '../shared/common-utils.js';
+import {BypassCache, CompilationResult} from '../types/compilation/compilation.interfaces.js';
 import {CompilerOverrideType, ConfiguredOverrides} from '../types/compilation/compiler-overrides.interfaces.js';
 import {CompilerInfo} from '../types/compiler.interfaces.js';
 import {SelectedLibraryVersion} from '../types/libraries/libraries.interfaces.js';
@@ -68,6 +69,85 @@ describe('Basic compiler invariants', () => {
     it('should recognize when optOutput has been request', () => {
         expect(compiler.optOutputRequested(['please', 'recognize', '-fsave-optimization-record'])).toBe(true);
         expect(compiler.optOutputRequested(['please', "don't", 'recognize'])).toBe(false);
+    });
+
+    it('should keep /app/ on the arguments it reports to the user', () => {
+        expect(
+            compiler['maskPathsInArgumentsForUser']([
+                '-O3',
+                '-o',
+                '/tmp/compiler-explorer-compiler123-4-abc/output.s',
+                '/tmp/compiler-explorer-compiler123-4-abc/example.cpp',
+            ]),
+        ).toEqual(['-O3', '-o', '/app/output.s', '/app/example.cpp']);
+    });
+
+    it('should mask the options of nested results the user is shown', () => {
+        const empty = {code: 0, timedOut: false, stdout: [], stderr: []};
+        const tmp = '/tmp/compiler-explorer-compiler123-4-abc';
+        const result: CompilationResult = {
+            ...empty,
+            compilationOptions: [`${tmp}/example.cpp`],
+            buildResult: {
+                ...empty,
+                downloads: [],
+                executableFilename: `${tmp}/output.s`,
+                compilationOptions: ['-O3', `${tmp}/example.cpp`],
+            },
+            result: {
+                ...empty,
+                compilationOptions: ['-DFOO', `${tmp}/main.cpp`],
+                inputFilename: `${tmp}/main.cpp`,
+            },
+        };
+
+        compiler.cleanupResult(result);
+
+        expect(result.compilationOptions).toEqual(['/app/example.cpp']);
+        expect(result.buildResult?.compilationOptions).toEqual(['-O3', '/app/example.cpp']);
+        expect(result.result?.compilationOptions).toEqual(['-DFOO', '/app/main.cpp']);
+        expect(result.result?.inputFilename).toEqual('main.cpp');
+    });
+
+    it('should check the final output path, whatever produced it', () => {
+        expect(() => compiler.assertInsideDir('/tmp/ce-dir', '/tmp/ce-dir/output.s')).not.toThrow();
+        for (const outside of ['/etc/passwd', '/tmp/ce-dir', '/tmp/ce-dir/../other', '/tmp/ce-dir-sibling/output.s']) {
+            expect(() => compiler.assertInsideDir('/tmp/ce-dir', outside)).toThrow('Invalid filename');
+        }
+    });
+
+    it('should assert on an escaping custom output filename that reached compile()', async () => {
+        await expect(
+            compiler.compile(
+                'int main(){}',
+                [],
+                {customOutputFilename: '../../escape'},
+                makeFakeParseFiltersAndOutputOptions({}),
+                BypassCache.None,
+                [],
+                {},
+                [],
+                [],
+            ),
+        ).rejects.toThrow('Invalid filename');
+    });
+
+    it('should refuse to compile when the output path is outside the directory', async () => {
+        const runCompiler = vi.spyOn(compiler, 'runCompiler');
+        vi.spyOn(compiler, 'getOutputFilename').mockReturnValue('/somewhere/else/output.s');
+        await expect(
+            compiler.doCompilation(
+                '/tmp/ce-dir/example.cpp',
+                '/tmp/ce-dir',
+                {backendOptions: {}} as any,
+                [],
+                makeFakeParseFiltersAndOutputOptions({}),
+                {},
+                [],
+                [],
+            ),
+        ).rejects.toThrow('Invalid filename');
+        expect(runCompiler).not.toHaveBeenCalled();
     });
 
     it('should skip version check if forced to', async () => {
@@ -606,39 +686,6 @@ describe('Compiler execution', () => {
     // it('should run LLVM objdump properly', async () => {
     //     return objdumpTest('llvm', ['-d', 'output', '-l', '-C', '--x86-asm-syntax=intel']);
     // });
-
-    it('should normalize extra file path', () => {
-        const withDemangler = {...noExecuteSupportCompilerInfo, demangler: 'demangler-exe', demanglerType: 'cpp'};
-        const compiler = new BaseCompiler(withDemangler, ce) as any; // to get to the protected...
-        if (process.platform === 'win32') {
-            expect(compiler.getExtraFilepath('c:/tmp/somefolder', 'test.h')).toEqual('c:\\tmp\\somefolder\\test.h');
-        } else {
-            expect(compiler.getExtraFilepath('/tmp/somefolder', 'test.h')).toEqual('/tmp/somefolder/test.h');
-        }
-
-        expect(() => compiler.getExtraFilepath('/tmp/somefolder', '../test.h')).toThrow(Error);
-        expect(() => compiler.getExtraFilepath('/tmp/somefolder', './../test.h')).toThrow(Error);
-
-        expect(compiler.getExtraFilepath('/tmp/somefolder', '/tmp/someotherfolder/test.h')).toEqual(
-            path.normalize('/tmp/somefolder/tmp/someotherfolder/test.h'),
-        );
-
-        if (process.platform === 'win32') {
-            expect(compiler.getExtraFilepath('/tmp/somefolder', '\\test.h')).toEqual('\\tmp\\somefolder\\test.h');
-        }
-
-        expect(() => compiler.getExtraFilepath('/tmp/somefolder', 'test_hello/../../etc/passwd')).toThrow(Error);
-
-        if (process.platform === 'win32') {
-            expect(compiler.getExtraFilepath('c:/tmp/somefolder', 'test.txt')).toEqual('c:\\tmp\\somefolder\\test.txt');
-        } else {
-            expect(compiler.getExtraFilepath('/tmp/somefolder', 'test.txt')).toEqual('/tmp/somefolder/test.txt');
-        }
-
-        expect(compiler.getExtraFilepath('/tmp/somefolder', 'subfolder/hello.h')).toEqual(
-            path.normalize('/tmp/somefolder/subfolder/hello.h'),
-        );
-    });
 });
 
 describe('getDefaultExecOptions', () => {
@@ -711,6 +758,56 @@ describe('Target hints', () => {
         expect(hint).toBe('riscv64');
         const iset = await compiler.getInstructionSetFromCompilerArgs(argArray);
         expect(iset).toBe('riscv64');
+    });
+});
+
+describe('Configured -march versus user-selected CPU', () => {
+    let ce: CompilationEnvironment;
+
+    const riscvOptions = '-target riscv64-unknown-linux-gnu -march=rv64gc -mabi=lp64d';
+
+    function makeCompiler(options: string) {
+        return new ClangCompiler(makeFakeCompilerInfo({exe: 'clang', lang: 'c++', ldPath: [], options}), ce);
+    }
+
+    function prepareArguments(compiler: ClangCompiler, userOptions: string[]) {
+        return compiler.prepareArguments(
+            userOptions,
+            makeFakeParseFiltersAndOutputOptions({}),
+            {},
+            'example.cpp',
+            'output.s',
+            [],
+            [],
+        );
+    }
+
+    beforeAll(() => {
+        ce = makeCompilationEnvironment({languages});
+    });
+
+    it('keeps the configured -march when the user does not pick a CPU or architecture', () => {
+        const args = prepareArguments(makeCompiler(riscvOptions), ['-O3']);
+        expect(args).toContain('-march=rv64gc');
+    });
+
+    it('drops the configured RISC-V -march when the user picks a CPU', () => {
+        const args = prepareArguments(makeCompiler(riscvOptions), ['-O3', '-mcpu=sifive-p670']);
+        expect(args.filter(arg => arg.startsWith('-march='))).toEqual([]);
+        expect(args).toContain('-mcpu=sifive-p670');
+        expect(args).toContain('-mabi=lp64d');
+        expect(args).toContain('riscv64-unknown-linux-gnu');
+    });
+
+    it('leaves only the user -march when the user picks a RISC-V architecture', () => {
+        const args = prepareArguments(makeCompiler(riscvOptions), ['-march=rv64gcv_zbb']);
+        expect(args.filter(arg => arg.startsWith('-march='))).toEqual(['-march=rv64gcv_zbb']);
+    });
+
+    it('keeps the configured -march for other architectures', () => {
+        const compiler = makeCompiler('-target aarch64-linux-gnu -march=armv8.8-a+sve2');
+        const args = prepareArguments(compiler, ['-mcpu=cortex-a53']);
+        expect(args).toContain('-march=armv8.8-a+sve2');
     });
 });
 
@@ -813,5 +910,47 @@ describe('Rust overrides', () => {
                 },
             ]),
         ).toEqual(['-C', 'debuginfo=2', '-o', 'output.txt', '--crate-type', 'bin', '-Clinker=/usr/aarch64/bin/gcc']);
+    });
+});
+
+describe('An executor request whose result is too large to send', () => {
+    // Executor requests return before afterCompilation, so if this path does not store an oversized
+    // result nothing else will, and it goes to the router inline - which at websocket message size
+    // closes the shared connection rather than failing on its own.
+    it('is stored rather than returned bare', async () => {
+        const languages = {
+            'c++': {id: 'c++', name: 'C++', monaco: 'cppp', extensions: ['.cpp'], supportsExecute: true},
+        } as any;
+        const env = makeCompilationEnvironment({languages});
+        const compiler = new BaseCompiler(
+            makeFakeCompilerInfo({
+                remote: undefined,
+                lang: 'c++',
+                exe: '/dev/null',
+                options: '',
+                supportsExecute: true,
+            }),
+            env,
+        );
+
+        const execResult = {code: 0, stdout: [], stderr: [], okToCache: true} as unknown as CompilationResult;
+        vi.spyOn(compiler as any, 'handleExecution').mockResolvedValue(execResult);
+        const stored = vi.spyOn(compiler as any, 'storeOversizedResult').mockResolvedValue(undefined);
+
+        const result = await compiler.compile(
+            'int main() {}',
+            [],
+            {executorRequest: true},
+            makeFakeParseFiltersAndOutputOptions({execute: true}),
+            BypassCache.None,
+            [],
+            {args: [], stdin: ''} as any,
+            [],
+            [],
+        );
+
+        expect(result).toBe(execResult);
+        expect(stored).toHaveBeenCalledOnce();
+        expect(stored.mock.calls[0][0]).toBe(execResult);
     });
 });

@@ -34,6 +34,7 @@ import type {PreliminaryCompilerInfo} from '../../types/compiler.interfaces.js';
 import {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces.js';
 import {SelectedLibraryVersion} from '../../types/libraries/libraries.interfaces.js';
 import {BaseCompiler} from '../base-compiler.js';
+import type {BuildSystemDriver} from '../build-systems/index.js';
 import {CompilerArguments} from '../compiler-arguments.js';
 
 export class FakeCompiler {
@@ -105,7 +106,7 @@ export class FakeCompiler {
         return Promise.resolve(_.extend(this.info.fakeResult || {}, inputBody));
     }
 
-    cmake(files: FiledataPair[], options: string[]) {
+    buildProject(buildSystem: BuildSystemDriver, files: FiledataPair[], options: string[]) {
         return Promise.resolve(
             _.extend(this.info.fakeResult || {}, {
                 input: {

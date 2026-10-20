@@ -35,6 +35,7 @@ import {MessageWithLocation} from '../types/resultline/resultline.interfaces.js'
 import {NewToolSettings, ToolState} from './components.interfaces.js';
 import {Motd} from './motd.interfaces.js';
 import {GccDumpFiltersState, GccDumpViewSelectedPass} from './panes/gccdump-view.interfaces.js';
+import {LeanCOptions} from './panes/leanc-view.interfaces.js';
 import {PPOptions} from './panes/pp-view.interfaces.js';
 import {SiteSettings} from './settings.js';
 import {Theme} from './themes.js';
@@ -56,6 +57,7 @@ export type EventMap = {
         options: string,
         editorId: number,
         treeId: number,
+        sourceName?: string,
     ) => void;
     compilerClose: (compilerId: number, treeId: boolean | number) => void;
     compileResult: (
@@ -70,6 +72,7 @@ export type EventMap = {
     // Right now nothing emits this event, but it might be useful at some point so we keep it
     compilerSetDecorations: (compilerId: number, lineNums: number[], revealLine: boolean, column?: number) => void;
     compiling: (compilerId: number, compiler: CompilerInfo) => void;
+    executeCompiling: (executorId: number, compiler: CompilerInfo) => void;
     conformanceViewClose: (editorId: number) => void;
     conformanceViewOpen: (editorId: number) => void;
     copyShortLinkToClip: () => void;
@@ -78,6 +81,7 @@ export type EventMap = {
     explainViewClosed: (compilerId: number) => void;
     explainViewOpened: (compilerId: number) => void;
     displaySharingPopover: () => void;
+    editor: (editorId: number, source: string, name: string) => void;
     editorChange: (editorId: number, source: string, langId: string, compilerId?: number) => void;
     editorClose: (editorId: number) => void;
     editorDisplayFlow: (editorId: number, flow: MessageWithLocation[]) => void;
@@ -91,6 +95,7 @@ export type EventMap = {
         options: string,
         editorId: number,
         treeId: number,
+        sourceName?: string,
     ) => void;
     executorClose: (executorId: number) => void;
     executorOpen: (executorId: number, editorId: boolean | number) => void;
@@ -114,6 +119,9 @@ export type EventMap = {
     haskellCoreViewOpened: (compilerId: number) => void;
     haskellStgViewClosed: (compilerId: number) => void;
     haskellStgViewOpened: (compilerId: number) => void;
+    leanCViewClosed: (compilerId: number) => void;
+    leanCViewOpened: (compilerId: number) => void;
+    leanCViewOptionsUpdated: (compilerId: number, options: LeanCOptions, recompile: boolean) => void;
     initialised: () => void;
     irViewClosed: (compilerId: number) => void;
     irViewOpened: (compilerId: number) => void;

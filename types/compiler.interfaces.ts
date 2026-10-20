@@ -33,6 +33,11 @@ export type Remote = {
     target: string;
     path: string;
     cmakePath: string;
+    /**
+     * Base of the generic build system route; the build system id is appended. Optional because sub-servers running an
+     * older version don't have the route at all — see `CompileHandler.getRemoteBuildUrl`.
+     */
+    buildPath?: string;
     basePath: string;
 };
 
@@ -71,6 +76,7 @@ export type CompilerInfo = {
     objdumper: string;
     objdumperType: string;
     objdumperArgs: string[];
+    llvmDisassembler: string;
     llvmObjdumper: string;
     intelAsm: string;
     supportsAsmDocs: boolean;
@@ -103,6 +109,7 @@ export type CompilerInfo = {
     supportsHaskellCoreView?: boolean;
     supportsHaskellStgView?: boolean;
     supportsHaskellCmmView?: boolean;
+    supportsLeanCView?: boolean;
     supportsClojureMacroExpView?: boolean;
     supportsYulView?: boolean;
     supportsCfg?: boolean;
@@ -173,9 +180,20 @@ export type CompilerInfo = {
         initialFiltersState?: Record<string, boolean>;
     };
     cachedPossibleArguments?: any;
+    cachedMachTargets?: MachTarget[];
     nvdisasm?: string;
+    ptxas?: string;
     mtime?: any;
     $order: number;
+};
+
+/** One platform tuple a Mach compiler supports, keyed by the name a user passes to `--target`. */
+export type MachTarget = {
+    name: string;
+    isa: string;
+    os: string;
+    abi: string;
+    object: string;
 };
 
 // Compiler information collected by the compiler-finder

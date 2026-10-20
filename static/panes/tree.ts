@@ -29,6 +29,7 @@ import TomSelect from 'tom-select';
 import _ from 'underscore';
 
 import {assert, unwrap, unwrapString} from '../../shared/assert.js';
+import type {BuildSystemId, TreeBuildSystem} from '../../shared/build-systems.js';
 import {escapeHTML} from '../../shared/common-utils.js';
 import {LanguageKey} from '../../types/languages.interfaces.js';
 import {ResultLine} from '../../types/resultline/resultline.interfaces.js';
@@ -39,19 +40,23 @@ import {EventHub} from '../event-hub.js';
 import {Hub} from '../hub.js';
 import {LineColouring} from '../line-colouring.js';
 import {MultifileFile, MultifileService, MultifileServiceState} from '../multifile-service.js';
-import {options} from '../options.js';
+import {languagesService} from '../services/languages.service.js';
 import {Settings, SiteSettings} from '../settings.js';
 import * as utils from '../utils.js';
 import {Alert} from '../widgets/alert.js';
 import {PaneRenaming} from '../widgets/pane-renaming.js';
-import {Toggles} from '../widgets/toggles.js';
-
-const languages = options.languages;
 
 export interface TreeState extends MultifileServiceState {
     id: number;
     cmakeArgs: string;
     customOutputFilename: string;
+    /**
+     * The arguments given to each build system that has been picked, so that switching between them restores what was
+     * typed for each rather than carrying one build system's arguments to the next. Having an entry at all is what
+     * marks a build system as picked before: one selected for the first time is prefilled with its default arguments,
+     * and one whose entry is empty was deliberately cleared and stays that way.
+     */
+    buildSystemArgs?: Partial<Record<BuildSystemId, string>>;
 }
 
 export class Tree {
@@ -69,6 +74,8 @@ export class Tree {
     private langKeys: string[];
     private cmakeArgsInput: JQuery;
     private customOutputFilenameInput: JQuery;
+    /** See {@link TreeState.buildSystemArgs}. Holds the build systems not currently selected; the box holds that one. */
+    private buildSystemArgs: Partial<Record<BuildSystemId, string>>;
     public multifileService: MultifileService;
     private lineColouring: LineColouring;
     private readonly ourCompilers: Record<number, boolean>;
@@ -76,7 +83,8 @@ export class Tree {
     private readonly asmByCompiler: Record<number, ResultLine[]>;
     private selectize: TomSelect;
     private languageBtn: JQuery;
-    private toggleCMakeButton: Toggles;
+    private buildSystemBtn: JQuery;
+    private buildSystemMenu: JQuery;
     private debouncedEmitChange: () => void = () => {};
     private hideable: JQuery;
     private readonly topBar: JQuery;
@@ -101,17 +109,15 @@ export class Tree {
         this.hideable = this.domRoot.find('.hideable');
         this.topBar = this.domRoot.find('.top-bar.mainbar');
 
-        this.langKeys = Object.keys(languages);
+        this.langKeys = Object.keys(languagesService.getLanguagesOrFail());
 
         this.cmakeArgsInput = this.domRoot.find('.cmake-arguments');
         this.customOutputFilenameInput = this.domRoot.find('.cmake-customOutputFilename');
 
-        const usableLanguages = Object.values(languages).filter(language => {
-            return hub.compilerService.getCompilersForLang(language.id);
-        });
-
-        if (!(state.compilerLanguageId as any)) {
-            state.compilerLanguageId = this.settings.defaultLanguage ?? 'c++';
+        const availableLangs = languagesService.getLanguagesOrFail();
+        if (!(state.compilerLanguageId as any) || !(state.compilerLanguageId in availableLangs)) {
+            const fallbackLang = this.settings.defaultLanguage ?? 'c++';
+            state.compilerLanguageId = (fallbackLang in availableLangs ? fallbackLang : 'c++') as LanguageKey;
         }
 
         this.multifileService = new MultifileService(this.hub, this.alertSystem, state);
@@ -133,13 +139,14 @@ export class Tree {
             valueField: 'id',
             labelField: 'name',
             searchField: ['name'],
-            options: usableLanguages,
+            options: Object.values(languagesService.getLanguagesOrFail()),
             items: [this.multifileService.getLanguageId()],
             dropdownParent: 'body',
             plugins: ['input_autogrow'],
             maxOptions: 1000,
             onChange: (val: any) => this.onLanguageChange(val),
         });
+
         this.selectize.on('dropdown_close', () => {
             // scroll back to the selection on the next open
             const selection = this.selectize.getOption(this.multifileService.getLanguageId());
@@ -159,8 +166,20 @@ export class Tree {
             this.cmakeArgsInput.val(state.cmakeArgs);
         }
 
+        // A link predating this carries only the arguments of the build system it was saved with, so credit them to
+        // that one. Every other build system then reads as never picked, and is prefilled when it first is.
+        const savedWith = this.multifileService.getBuildSystem();
+        this.buildSystemArgs =
+            state.buildSystemArgs ?? (savedWith === 'none' ? {} : {[savedWith]: state.cmakeArgs ?? ''});
+
         if (state.customOutputFilename) {
             this.customOutputFilenameInput.val(state.customOutputFilename);
+        }
+
+        const buildSystem = this.multifileService.getBuildSystemDescriptor();
+        if (buildSystem) {
+            this.cmakeArgsInput.prop('placeholder', buildSystem.argsPlaceholder);
+            this.customOutputFilenameInput.prop('placeholder', buildSystem.defaultArtifactName);
         }
     }
 
@@ -172,11 +191,19 @@ export class Tree {
         return escapeHTML(unwrapString(this.customOutputFilenameInput.val()));
     }
 
+    /** What has been given to each build system, the selected one's being whatever the input holds right now. */
+    private getBuildSystemArgs(): Partial<Record<BuildSystemId, string>> {
+        const buildSystem = this.multifileService.getBuildSystem();
+        if (buildSystem === 'none') return this.buildSystemArgs;
+        return {...this.buildSystemArgs, [buildSystem]: this.getCmakeArgs()};
+    }
+
     public currentState(): TreeState {
         const state = {
             id: this.id,
             cmakeArgs: this.getCmakeArgs(),
             customOutputFilename: this.getCustomOutputFilename(),
+            buildSystemArgs: this.getBuildSystemArgs(),
             ...this.multifileService.getState(),
         };
         this.paneRenaming.addState(state);
@@ -217,8 +244,6 @@ export class Tree {
 
         this.eventHub.on('compileResult', this.onCompileResponse, this);
 
-        this.toggleCMakeButton.on('change', this.onToggleCMakeChange.bind(this));
-
         this.cmakeArgsInput.on('change', this.updateCMakeArgs.bind(this));
         this.customOutputFilenameInput.on('change', this.updateCustomOutputFilename.bind(this));
     }
@@ -235,21 +260,59 @@ export class Tree {
         this.debouncedEmitChange();
     }
 
-    private onToggleCMakeChange() {
-        const isOn = this.toggleCMakeButton.get().isCMakeProject;
-        this.multifileService.setAsCMakeProject(isOn);
+    /** Rebuild the menu for the current language and show which build system is selected. */
+    private updateBuildSystemButton() {
+        const available = this.multifileService.getAvailableBuildSystems();
+        const selected = this.multifileService.getBuildSystemDescriptor();
 
-        this.domRoot.find('.cmake-project').prop('title', '[' + (isOn ? 'ON' : 'OFF') + '] CMake project');
+        this.buildSystemBtn.prop('disabled', available.length === 0);
+        this.buildSystemBtn.find('.build-system-name').text(selected ? selected.name : 'No build');
+        this.buildSystemBtn.prop('title', selected ? `Built with ${selected.name}` : 'Not built with a build system');
+
+        this.buildSystemMenu.empty();
+        for (const buildSystem of [null, ...available]) {
+            const id: TreeBuildSystem = buildSystem ? buildSystem.id : 'none';
+            const item = $('<button></button>')
+                .addClass('dropdown-item btn btn-sm btn-light')
+                .toggleClass('active', id === this.multifileService.getBuildSystem())
+                .text(buildSystem ? buildSystem.name : 'No build')
+                .on('click', () => this.onBuildSystemChange(id));
+            this.buildSystemMenu.append(item);
+        }
+    }
+
+    private onBuildSystemChange(buildSystem: TreeBuildSystem) {
+        const previous = this.multifileService.getBuildSystem();
+        if (buildSystem === previous) return;
+
+        if (previous !== 'none') this.buildSystemArgs[previous] = this.getCmakeArgs();
+
+        this.multifileService.setBuildSystem(buildSystem);
+
+        const descriptor = this.multifileService.getBuildSystemDescriptor();
+        if (descriptor) {
+            this.cmakeArgsInput.prop('placeholder', descriptor.argsPlaceholder);
+            this.customOutputFilenameInput.prop('placeholder', descriptor.defaultArtifactName);
+            // Whatever was last given to this build system, or the arguments it is usually driven with if this is the
+            // first time it has been picked. Either way the arguments meant for the last one do not follow it here.
+            const remembered = this.buildSystemArgs[descriptor.id];
+            this.cmakeArgsInput.val(remembered ?? descriptor.defaultArgs);
+        }
+
+        this.updateBuildSystemButton();
         this.updateState();
+        this.debouncedEmitChange();
     }
 
     private onLanguageChange(newLangId: LanguageKey) {
-        if (newLangId in languages) {
+        if (newLangId in languagesService.getLanguagesOrFail()) {
+            // Note this can clear the build system, if it can't build the new language.
             this.multifileService.setLanguageId(newLangId);
             this.eventHub.emit('languageChange', false, newLangId, this.id);
         }
 
-        this.toggleCMakeButton.enableToggle('isCMakeProject', this.multifileService.isCompatibleWithCMake());
+        this.updateBuildSystemButton();
+        this.updateState();
 
         this.refresh();
     }
@@ -529,10 +592,8 @@ export class Tree {
             this.languageBtn.prop('disabled', true);
         }
 
-        this.toggleCMakeButton = new Toggles(
-            this.domRoot.find('.options'),
-            state as unknown as Record<string, boolean>,
-        );
+        this.buildSystemBtn = this.domRoot.find('.build-system');
+        this.buildSystemMenu = this.domRoot.find('.build-system-menu');
 
         let drophereHideTimeout;
         this.root.on('dragover', ev => {
@@ -713,7 +774,7 @@ export class Tree {
     }
 
     private updateButtons(state: TreeState) {
-        if (state.isCMakeProject) {
+        if (state.buildSystem !== 'none') {
             this.cmakeArgsInput.parent().removeClass('d-none');
             this.customOutputFilenameInput.parent().removeClass('d-none');
         } else {
@@ -745,7 +806,7 @@ export class Tree {
 
     updateTitle() {
         const name = this.paneName ? this.paneName : this.getPaneName();
-        this.container.setTitle(escapeHTML(name));
+        this.container.setTitle(name);
     }
 
     private close() {

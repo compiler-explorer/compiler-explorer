@@ -69,19 +69,23 @@ export class CompilerPickerPopup {
         });
     }
 
-    setLang(groups: {value: string; label: string}[], options: (CompilerInfo & {$groups: string[]})[], langId: string) {
+    async setLang(
+        groups: {value: string; label: string}[],
+        options: (CompilerInfo & {$groups: string[]})[],
+        langId: string,
+    ) {
         this.groups = groups;
         this.options = options;
         this.langId = langId;
-        this.setupFilters();
+        await this.setupFilters();
         this.sifter = new sifter.Sifter(options, {
             diacritics: false,
         });
     }
 
-    setupFilters() {
+    async setupFilters() {
         // get available instruction sets
-        const compilers = Object.values(this.compilerPicker.compilerService.getCompilersForLang(this.langId) ?? {});
+        const compilers = Object.values(await this.compilerPicker.compilerService.getCompilersForLang(this.langId));
         // If instructionSet is '', just label it unknown
         const instruction_sets = compilers.map(compiler => compiler.instructionSet || 'other');
         this.architectures.empty();

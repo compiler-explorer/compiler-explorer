@@ -61,6 +61,7 @@ export class AsmParser extends AsmRegex implements IAsmParser {
 
     protected labelFindNonMips: RegExp;
     protected labelFindMips: RegExp;
+    protected numericLocalLabelRef: RegExp;
     protected mipsLabelDefinition: RegExp;
     protected dataDefn: RegExp;
     protected fileFind: RegExp;
@@ -80,6 +81,7 @@ export class AsmParser extends AsmRegex implements IAsmParser {
     protected endAppBlock: RegExp;
     protected startAsmNesting: RegExp;
     protected endAsmNesting: RegExp;
+    protected endOfUnit: RegExp;
     protected cudaBeginDef: RegExp;
     protected cudaEndDef: RegExp;
     protected binaryHideFuncRe: RegExp | null;
@@ -109,6 +111,8 @@ export class AsmParser extends AsmRegex implements IAsmParser {
             this.parsingState.enterCustomAssembly();
         } else if (this.endAppBlock.test(line.trim()) || this.endAsmNesting.test(line.trim())) {
             this.parsingState.exitCustomAssembly();
+        } else if (this.parsingState.isInCustomAssembly() && this.endOfUnit.test(line.trim())) {
+            this.parsingState.closeCustomAssembly();
         } else {
             this.parsingState.setVLIWPacket(this.checkVLIWpacket(line, this.parsingState.inVLIWpacket));
         }
@@ -141,6 +145,13 @@ export class AsmParser extends AsmRegex implements IAsmParser {
             // Check for directives only if it wasn't a label; the regexp would otherwise misinterpret labels as directives.
             if (this.dataDefn.test(line) && context.prevLabel) {
                 // We're defining data that's being used somewhere.
+                return false;
+            }
+            // Between #APP and #NO_APP the directives are the user's own inline asm, and
+            // dropping them changes what the block assembles to: `.rept 5` / `.endr` around
+            // a `nop` collapses to a single `nop`. Only the source-location markers the
+            // compiler interleaves in there are ours to drop.
+            if (this.parsingState.isInCustomAssembly() && !this.sourceLineHandler.isSourceLocationDirective(line)) {
                 return false;
             }
             // .inst generates an opcode, so does not count as a directive, nor does an alias definition that's used.
@@ -343,6 +354,11 @@ export class AsmParser extends AsmRegex implements IAsmParser {
         this.labelFindNonMips = /[.A-Z_a-z][\w$.]*|"[.A-Z_a-z][\w$.]*"/g;
         // MIPS labels can start with a $ sign, but other assemblers use $ to mean literal.
         this.labelFindMips = /[$.A-Z_a-z][\w$.]*|"[$.A-Z_a-z][\w$.]*"/g;
+        // GNU as numeric local labels are defined as `1:` and referred to as `1f` (forwards) or
+        // `1b` (backwards). The finders above only match names that start with a letter, a dot or
+        // an underscore, so those references need a pattern of their own. The lookbehind keeps
+        // NEON element sizes out of it: the `16b` of `add v0.16b, v1.16b, v2.16b` is not a label.
+        this.numericLocalLabelRef = /(?<![\w.$])(\d+)[bf]\b/g;
         this.mipsLabelDefinition = /^\$[\w$.]+:/;
         this.dataDefn =
             /^\s*\.(ascii|asciz|base64|[1248]?byte|dc(?:\.[abdlswx])?|dcb(?:\.[bdlswx])?|ds(?:\.[bdlpswx])?|double|dword|fill|float|half|hword|int|long|octa|quad|short|single|skip|space|string(?:8|16|32|64)?|value|word|xword|zero)/;
@@ -368,6 +384,10 @@ export class AsmParser extends AsmRegex implements IAsmParser {
         this.endAppBlock = /^#NO_APP.*$/;
         this.startAsmNesting = /^# Begin ASM.*$/;
         this.endAsmNesting = /^# End ASM.*$/;
+        // GCC writes #NO_APP only when it next emits a function or a variable, so asm that ends the unit leaves its
+        // #APP block open. What follows is GCC's own end-of-unit output: the debug info, which opens with .Letext0,
+        // or the .ident when there is none.
+        this.endOfUnit = /^(\.Letext\d+:|\.ident\s)/;
         this.cudaBeginDef = /\.(entry|func)\s+(?:\([^)]*\)\s*)?([$.A-Z_a-z][\w$.]*)\($/;
         this.cudaEndDef = /^\s*\)\s*$/;
 
@@ -386,11 +406,9 @@ export class AsmParser extends AsmRegex implements IAsmParser {
         this.asmOpcodeRe = /^\s*(?<address>[\da-f]+):\s*(?<opcodes>([\da-f]{2} ?)+)\s*(?<disasm>.*)/;
         this.relocationRe = /^\s*(?<address>[\da-f]+):\s*(?<relocname>(R_[\dA-Z_]+))\s*(?<relocdata>.*)/;
         this.relocDataSymNameRe = /^(?<symname>[^\d-+][\w.]*)?\s*(?<addend_or_value>.*)$/;
-        if (process.platform === 'win32') {
-            this.lineRe = /^([A-Z]:\/[^:]+):(?<line>\d+).*/;
-        } else {
-            this.lineRe = /^(\/[^:]+):(?<line>\d+).*/;
-        }
+        // The path is whatever objdump printed, not the host: `/file:N`, `C:/file:N`, or `C:\file:N`.
+        // llvm-objdump prefixes that same record with `; `.
+        this.lineRe = /^(?:; )?(?<file>(?:[A-Z]:[\\/]|\/)[^:]+):(?<line>\d+).*/;
 
         // labelRe is made very greedy as it's also used with demangled objdump output (eg. it can have c++ template with <>).
         this.labelRe = /^([\da-f]+)\s+<(.+)>:$/;
@@ -459,6 +477,7 @@ export class AsmParser extends AsmRegex implements IAsmParser {
             mipsLabelDefinition: this.mipsLabelDefinition,
             labelFindNonMips: this.labelFindNonMips,
             labelFindMips: this.labelFindMips,
+            numericLocalLabelRef: this.numericLocalLabelRef,
             startBlock: this.startBlock,
             endBlock: this.endBlock,
             fixLabelIndentation: this.fixLabelIndentation.bind(this),
@@ -644,21 +663,25 @@ export class AsmParser extends AsmRegex implements IAsmParser {
             let match = line.match(this.lineRe);
             if (match) {
                 assert(match.groups);
-                if (dontMaskFilenames) {
-                    source = {
-                        file: utils.maskRootdir(match[1]),
-                        line: Number.parseInt(match.groups.line, 10),
-                        mainsource: true,
-                    };
-                } else {
-                    source = {file: null, line: Number.parseInt(match.groups.line, 10), mainsource: true};
-                }
+                // Subclasses that override lineRe (SASS) capture the path as group 1 and do not name it `file`.
+                const file = match.groups.file ?? match[1];
+                assert(file);
+                const mainsource = this.stdInLooking.test(file);
+                source = {
+                    file: dontMaskFilenames || !mainsource ? utils.maskRootdir(file) : null,
+                    line: Number.parseInt(match.groups.line, 10),
+                    mainsource,
+                };
                 continue;
             }
 
             match = line.match(this.labelRe);
             if (match) {
                 func = match[2];
+                // Don't let a function with no line records (e.g. CRT code without debug info) inherit the previous
+                // function's line; objdump prints a function's first record after its label. `.L` labels are local
+                // labels inside a function (RISC-V keeps `.Lpcrel_hi*` in the symbol table), not new functions.
+                if (!func.startsWith('.L')) source = null;
                 if (func && this.isUserFunction(func)) {
                     asm.push({
                         text: func + ':',
@@ -666,20 +689,19 @@ export class AsmParser extends AsmRegex implements IAsmParser {
                         labels: labelsInLine,
                     });
                     labelDefinitions[func] = asm.length;
-                    if (process.platform === 'win32') source = null;
+                    // each function's label may be dropped again, not only the first after user code
+                    mayRemovePreviousLabel = true;
                 }
                 continue;
             }
 
-            if (func && line === `${func}():`) continue;
+            if (func && (line === `${func}():` || line === `; ${func}():`)) continue;
 
             if (!func || !this.isUserFunction(func)) continue;
 
-            // note: normally the source.file will be null if it's code from example.ext but with
-            //  filters.dontMaskFilenames it will be filled with the actual filename instead we can test
-            //  source.mainsource in that situation
-            const isMainsource = source && (source.file === null || source.mainsource);
-            if (filters.libraryCode && !isMainsource) {
+            // library code is code without line information: code inlined from another file of the program
+            // is still the user's, even though it doesn't belong to the main source
+            if (filters.libraryCode && !source) {
                 if (mayRemovePreviousLabel && asm.length > 0) {
                     const lastLine = asm[asm.length - 1];
                     if (lastLine.text && this.labelDef.test(lastLine.text)) {

@@ -28,6 +28,7 @@ import path from 'node:path';
 import {SemVer} from 'semver';
 import _ from 'underscore';
 
+import {splitArguments} from '../../shared/common-utils.js';
 import {ExecutionOptionsWithEnv} from '../../types/compilation/compilation.interfaces.js';
 import {CompilerOverrideType, ConfiguredOverrides} from '../../types/compilation/compiler-overrides.interfaces.js';
 import {LLVMIrBackendOptions} from '../../types/compilation/ir.interfaces.js';
@@ -39,6 +40,7 @@ import {unwrap} from '../assert.js';
 import {BaseCompiler} from '../base-compiler.js';
 import type {BuildEnvDownloadInfo} from '../buildenvsetup/buildenv.interfaces.js';
 import {CompilationEnvironment} from '../compilation-env.js';
+import type {ParsedRequest} from '../handlers/compile.js';
 import {changeExtension, parseRustOutput} from '../utils.js';
 import {RustParser} from './argument-parsers.js';
 
@@ -173,6 +175,20 @@ export class RustCompiler extends BaseCompiler {
                 ];
             });
         });
+    }
+
+    /**
+     * CMake finds a C or C++ compiler for itself and reads CFLAGS and friends from the environment, but for Rust it
+     * has to be handed both. These two variable names are the ordinary `CMAKE_<LANG>_` ones and stay put, whatever
+     * activation value the project has to give CMake's experimental Rust support in its own CMakeLists.txt.
+     *
+     * Libraries are deliberately left out: getIncludeArguments names rlibs relative to the project root, and CMake
+     * builds in a directory below it, so the Libraries pane needs absolute paths here before it would work.
+     */
+    override getExtraCMakeArgs(key: ParsedRequest): string[] {
+        if (!this.compiler.exe) return [];
+        const options = [...splitArguments(this.compiler.options), ...key.options];
+        return [`-DCMAKE_Rust_COMPILER=${this.compiler.exe}`, `-DCMAKE_Rust_FLAGS=${options.join(' ')}`];
     }
 
     override orderArguments(

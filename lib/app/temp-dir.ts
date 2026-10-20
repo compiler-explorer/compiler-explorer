@@ -23,10 +23,23 @@
 // POSSIBILITY OF SUCH DAMAGE.
 
 import child_process from 'node:child_process';
+import os from 'node:os';
 import path from 'node:path';
 import process from 'node:process';
 
 import {logger} from '../logger.js';
+
+function exportTempDir(tmpDir: string) {
+    // Set every variable os.tmpdir() may consult (TMPDIR first on POSIX; TEMP then TMP on
+    // Windows) so the configured directory wins regardless of platform or inherited
+    // environment, and so spawned tools reading any of them agree. Setting only TMP, as we
+    // once did, let an inherited TMPDIR silently override --tmp-dir. Main thread only: a
+    // worker thread's process.env writes are invisible to os.tmpdir(), which reads the real
+    // environment via safeGetenv.
+    process.env.TMPDIR = tmpDir;
+    process.env.TMP = tmpDir;
+    process.env.TEMP = tmpDir;
+}
 
 /**
  * Set up temporary directory, especially for WSL environments
@@ -34,12 +47,10 @@ import {logger} from '../logger.js';
  * @param isWsl - Whether running under Windows Subsystem for Linux
  */
 export function setupTempDir(tmpDir: string | undefined, isWsl: boolean): void {
-    // If a tempDir is supplied, use it
     if (tmpDir) {
-        if (isWsl) {
-            process.env.TEMP = tmpDir; // for Windows
-        } else {
-            process.env.TMP = tmpDir; // for Linux
+        exportTempDir(tmpDir);
+        if (path.resolve(os.tmpdir()) !== path.resolve(tmpDir)) {
+            throw new Error(`Unable to set the temporary dir to ${tmpDir} - stuck at ${os.tmpdir()}`);
         }
     }
     // If running under WSL without explicit tmpDir, try to use Windows %TEMP%
@@ -48,10 +59,10 @@ export function setupTempDir(tmpDir: string | undefined, isWsl: boolean): void {
             const windowsTemp = child_process.execSync('cmd.exe /c echo %TEMP%').toString().replaceAll('\\', '/');
             const driveLetter = windowsTemp.substring(0, 1).toLowerCase();
             const directoryPath = windowsTemp.substring(2).trim();
-            process.env.TEMP = path.join('/mnt', driveLetter, directoryPath);
+            exportTempDir(path.join('/mnt', driveLetter, directoryPath));
         } catch {
             logger.warn('Unable to invoke cmd.exe to get windows %TEMP% path.');
         }
     }
-    logger.info(`Using temporary dir: ${process.env.TEMP || process.env.TMP}`);
+    logger.info(`Using temporary dir: ${os.tmpdir()}`);
 }
