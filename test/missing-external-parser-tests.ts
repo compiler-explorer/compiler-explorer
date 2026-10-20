@@ -29,7 +29,7 @@ import {afterEach, beforeAll, beforeEach, describe, expect, it, vi} from 'vitest
 
 import {AppArguments} from '../lib/app.interfaces.js';
 import {ExternalParserBase} from '../lib/external-parsers/base.js';
-import {MissingExternalParserError} from '../lib/external-parsers/missing-external-parser-error.js';
+import {MissingExternalParserError} from '../lib/external-parsers/external-parser.interface.js';
 import {PlainParser} from '../lib/external-parsers/plain.js';
 import {CompileHandler, SetTestMode} from '../lib/handlers/compile.js';
 import {logger} from '../lib/logger.js';

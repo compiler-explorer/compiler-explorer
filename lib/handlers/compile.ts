@@ -56,7 +56,7 @@ import {cmakeBuildSystem, getBuildSystem} from '../build-systems/index.js';
 import {parseExecutionParameters, parseTools, parseUserArguments} from '../compilation/compilation-request-parser.js';
 import {CompilationEnvironment} from '../compilation-env.js';
 import {getCompilerTypeByKey} from '../compilers/index.js';
-import {MissingExternalParserError} from '../external-parsers/missing-external-parser-error.js';
+import {MissingExternalParserError} from '../external-parsers/external-parser.interface.js';
 import {logger} from '../logger.js';
 import {ClientOptionsType} from '../options-handler.js';
 import {PropertyGetter} from '../properties.interfaces.js';

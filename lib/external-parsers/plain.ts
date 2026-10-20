@@ -31,8 +31,7 @@ import {CompilerInfo} from '../../types/compiler.interfaces.js';
 import type {TypicalExecutionFunc, UnprocessedExecResult} from '../../types/execution/execution.interfaces.js';
 import type {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces.js';
 import {CompilationEnvironment} from '../compilation-env.js';
-import {IExternalParser} from './external-parser.interface.js';
-import {MissingExternalParserError} from './missing-external-parser-error.js';
+import {IExternalParser, MissingExternalParserError} from './external-parser.interface.js';
 
 export class PlainParser implements IExternalParser {
     protected readonly parserPath: string;

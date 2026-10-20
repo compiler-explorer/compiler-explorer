@@ -31,8 +31,7 @@ import type {TypicalExecutionFunc, UnprocessedExecResult} from '../../types/exec
 import type {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces.js';
 import {CompilationEnvironment} from '../compilation-env.js';
 import {maskRootdir} from '../utils.js';
-import {IExternalParser} from './external-parser.interface.js';
-import {MissingExternalParserError} from './missing-external-parser-error.js';
+import {IExternalParser, MissingExternalParserError} from './external-parser.interface.js';
 
 const starterScriptName = 'dump-and-parse.sh';
 
