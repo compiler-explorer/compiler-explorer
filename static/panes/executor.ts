@@ -216,7 +216,7 @@ export class Executor extends Pane<ExecutorState> {
     }
 
     compilerIsVisible(compiler: CompilerInfo): boolean {
-        return !!(compiler.supportsExecute || compiler.supportsBinary);
+        return !!compiler.supportsExecute;
     }
 
     getEditorIdByFilename(filename: string): number | null {
