@@ -27,7 +27,7 @@ import fs from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
 
-import {describe, expect, it, vi} from 'vitest';
+import {afterEach, describe, expect, it, vi} from 'vitest';
 
 import {BaseCompiler} from '../lib/base-compiler.js';
 import {CargoBuildSystem} from '../lib/build-systems/cargo.js';
@@ -1225,6 +1225,8 @@ describe('Make build system', () => {
 });
 
 describe('Project build cache key', () => {
+    afterEach(() => vi.restoreAllMocks());
+
     class StopsAfterKeying extends MakeBuildSystem {
         override async writeProjectFiles(): Promise<{inputFilename: string}> {
             throw new Error('far enough');
