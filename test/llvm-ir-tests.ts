@@ -22,11 +22,15 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
+import fs from 'node:fs';
+import path from 'node:path';
+
 import {beforeAll, describe, expect, it} from 'vitest';
 
+import {LLCParser} from '../lib/compilers/argument-parsers.js';
 import {LLCCompiler} from '../lib/compilers/llc.js';
 import {OptCompiler} from '../lib/compilers/opt.js';
-import {makeCompilationEnvironment} from './utils.js';
+import {makeCompilationEnvironment, newTempDir} from './utils.js';
 
 const languages = {
     llvm: {id: 'llvm'},
@@ -101,6 +105,56 @@ describe('LLVM IR Compiler', () => {
                 'output.s',
             ),
         ).toEqual(['-o', 'output.s', '-filetype=obj']);
+    });
+
+    it('llc options for binary object', () => {
+        expect(
+            compiler.optionsForFilter(
+                {
+                    intel: true,
+                    binaryObject: true,
+                },
+                'output.s',
+            ),
+        ).toEqual(['-o', 'output.s', '-filetype=obj']);
+    });
+
+    it('llc takes its target triple through -mtriple', () => {
+        expect(compiler.getTargetHintFromCompilerArgs(['-O2', '-mtriple=aarch64-linux-gnu'])).toEqual(
+            'aarch64-linux-gnu',
+        );
+    });
+
+    it('llc links for the host with a native toolchain', () => {
+        expect(compiler.getLinkerArguments(undefined)).toEqual([]);
+        expect(compiler.getLinkerArguments('/opt/gcc-14.2.0')).toEqual(['--gcc-toolchain=/opt/gcc-14.2.0']);
+    });
+
+    it('llc links for the cross toolchain target', () => {
+        const toolchain = path.join(newTempDir(), 'aarch64-unknown-linux-gnu');
+        const sysroot = path.join(toolchain, 'aarch64-unknown-linux-gnu', 'sysroot');
+        fs.mkdirSync(sysroot, {recursive: true});
+
+        expect(compiler.getLinkerArguments(toolchain)).toEqual([
+            '--gcc-toolchain=' + toolchain,
+            '--target=aarch64-unknown-linux-gnu',
+            '--sysroot=' + sysroot,
+        ]);
+    });
+
+    it('llc lists its registered targets', () => {
+        const parser = new LLCParser(compiler);
+        const lines = [
+            'LLVM (http://llvm.org/):',
+            '  LLVM version 21.1.0',
+            '  Default target: x86_64-unknown-linux-gnu',
+            '',
+            '  Registered Targets:',
+            '    aarch64     - AArch64 (little endian)',
+            '    riscv64     - 64-bit RISC-V',
+            '    x86-64      - 64-bit X86: EM64T and AMD64',
+        ];
+        expect(parser.extractPossibleTargets(lines)).toEqual(['aarch64', 'riscv64', 'x86-64']);
     });
 
     it('opt options', () => {

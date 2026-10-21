@@ -457,6 +457,12 @@ export class ClangParser extends BaseParser {
     }
 }
 
+export class LLCParser extends ClangParser {
+    override getTargetsHelpOptions(): string[] {
+        return ['--version'];
+    }
+}
+
 export class ClangirParser extends ClangParser {
     override async setCompilerSettingsFromOptions(options: Record<string, Argument>) {
         await super.setCompilerSettingsFromOptions(options);
