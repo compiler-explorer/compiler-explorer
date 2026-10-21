@@ -136,6 +136,9 @@ export type CompilationRequestOptions = {
         cmakeArgs?: string;
         customOutputFilename?: string;
         overrides?: ConfiguredOverrides;
+        // Whether output is shown on a dark background, so colours made for one suit it better. Ignored by compilers
+        // without `supportsDarkBackgroundColours`.
+        darkBackgroundColours?: boolean;
     };
     executeParameters: UnparsedExecutionParams;
     filters: ParseFiltersAndOutputOptions;

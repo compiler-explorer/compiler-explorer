@@ -1224,6 +1224,39 @@ describe('Make build system', () => {
     });
 });
 
+describe('Project build cache key', () => {
+    class StopsAfterKeying extends MakeBuildSystem {
+        override async writeProjectFiles(): Promise<{inputFilename: string}> {
+            throw new Error('far enough');
+        }
+    }
+
+    async function executableHash(supportsDarkBackgroundColours: boolean, backendOptions: Record<string, any>) {
+        const env = makeCompilationEnvironment({languages, props: {make: '/usr/bin/make'}});
+        const compiler = makeCompiler(env, {supportsDarkBackgroundColours});
+        const getExecutableHash = vi.spyOn(env, 'getExecutableHash');
+
+        await compiler.buildProject(
+            new StopsAfterKeying(),
+            [],
+            makeParsedRequest(backendOptions),
+            BypassCache.Compilation,
+        );
+        return getExecutableHash.mock.results[0].value;
+    }
+
+    it('shares one entry between light and dark themes for a compiler that ignores the background', async () => {
+        const unspecified = await executableHash(false, {});
+        expect(await executableHash(false, {darkBackgroundColours: true})).toEqual(unspecified);
+    });
+
+    it('keeps an entry per background for a compiler that colours for it, defaulting to light', async () => {
+        const unspecified = await executableHash(true, {});
+        expect(await executableHash(true, {darkBackgroundColours: false})).toEqual(unspecified);
+        expect(await executableHash(true, {darkBackgroundColours: true})).not.toEqual(unspecified);
+    });
+});
+
 describe('Project build output path', () => {
     // Called directly, so request parsing never sees these names. CMake's artifact sits a level deeper, in build/.
     const cases = [
