@@ -114,8 +114,8 @@ describe('Duckling compiler', () => {
     });
 
     it('advertises only Duckling outputs implemented for each compiler profile', () => {
-        expect(makeCompiler().compiler.supportsDucklingOutputs).toEqual(['hir', 'mir', 'lir']);
-        expect(makeScriptCompiler().compiler.supportsDucklingOutputs).toEqual(['hir', 'mir', 'lir']);
+        expect(makeCompiler().compiler.supportsDucklingOutputs).toEqual(['hir', 'mir', 'lir', 'dbc']);
+        expect(makeScriptCompiler().compiler.supportsDucklingOutputs).toEqual(['hir', 'mir', 'lir', 'dbc']);
         expect(makeDbcCompiler().compiler.supportsDucklingOutputs).toEqual(['hir', 'mir', 'lir', 'dbc']);
     });
 
@@ -465,6 +465,134 @@ describe('Duckling compiler', () => {
             languageId: 'plaintext',
         });
         await expect(fs.readFile(path.join(workingDirectory, 'example.s'), 'utf8')).resolves.toBe(dbc);
+    });
+
+    it('returns native module DBC from an isolated DVM compile while preserving assembly', async () => {
+        const compiler = makeCompiler();
+        const workingDirectory = newTempDir();
+        const inputFilename = path.join(workingDirectory, 'hello.dk');
+        const assembly = '\t.text\nmain:\n\tretq\n';
+        const dbc = 'module hello { function main() }';
+        let sidecarDirectory: string | undefined;
+        await fs.writeFile(inputFilename, 'fun main() -> i64 = { return 7; }');
+        const exec = vi.spyOn(compiler, 'exec').mockImplementation(async (_exe, args, execOptions) => {
+            if (args.includes('--dvm-backend')) {
+                sidecarDirectory = execOptions.customCwd;
+                expect(sidecarDirectory).toBeDefined();
+                expect(sidecarDirectory).not.toBe(workingDirectory);
+                expect(args).toEqual([
+                    'compile_module',
+                    path.join(sidecarDirectory!, 'hello.dk'),
+                    '--dump-ir',
+                    'dbc',
+                    '--dvm-backend',
+                ]);
+                await expect(fs.readFile(path.join(sidecarDirectory!, 'hello.dk'), 'utf8')).resolves.toBe(
+                    'fun main() -> i64 = { return 7; }',
+                );
+                const artifactsDirectory = path.join(sidecarDirectory!, 'duck_build', 'duck_debug_artifacts');
+                await fs.mkdir(artifactsDirectory, {recursive: true});
+                await fs.writeFile(path.join(artifactsDirectory, 'random-id.hello.dbc'), dbc);
+                return makeExecResult();
+            }
+
+            expect(args).toEqual(['compile_module', inputFilename, '--dump-ir', 'asm']);
+            expect(execOptions.customCwd).toBe(workingDirectory);
+            const artifactsDirectory = path.join(workingDirectory, 'duck_build', 'duck_debug_artifacts');
+            await fs.mkdir(artifactsDirectory, {recursive: true});
+            await fs.writeFile(path.join(artifactsDirectory, 'random-id.hello.s'), assembly);
+            return makeExecResult();
+        });
+
+        const result = await compiler.runCompiler(
+            'duckc',
+            ['compile_module', inputFilename, '--dump-ir', 'asm', '--__ce-duckling-output=dbc'],
+            inputFilename,
+            makeExecOptions(),
+        );
+
+        expect(exec).toHaveBeenCalledTimes(2);
+        expect(result.code).toBe(0);
+        expect(result.ducklingOutput).toEqual({
+            kind: 'dbc',
+            output: dbc.split('\n').map(text => ({text})),
+            languageId: 'plaintext',
+        });
+        await expect(fs.readFile(path.join(workingDirectory, 'example.s'), 'utf8')).resolves.toBe(assembly);
+        await expect(fs.stat(sidecarDirectory!)).rejects.toThrow();
+    });
+
+    it('returns script DBC from an isolated DVM compile and selects the hashed artifact', async () => {
+        const compiler = makeScriptCompiler();
+        const workingDirectory = newTempDir();
+        const inputFilename = path.join(workingDirectory, 'hello.dks');
+        const assembly = '\t.text\nscript_main:\n\tretq\n';
+        const dbc = 'module script { function main() }';
+        await fs.writeFile(inputFilename, 'builtin_output_i64(42);');
+        vi.spyOn(compiler, 'exec').mockImplementation(async (_exe, args, execOptions) => {
+            if (args.includes('--dvm-backend')) {
+                const sidecarDirectory = execOptions.customCwd!;
+                expect(args).toEqual([
+                    'compile_script',
+                    path.join(sidecarDirectory, 'hello.dks'),
+                    '--dump-ir',
+                    'dbc',
+                    '--dvm-backend',
+                ]);
+                const artifactsDirectory = path.join(sidecarDirectory, 'duck_build', 'duck_debug_artifacts');
+                await fs.mkdir(artifactsDirectory, {recursive: true});
+                await fs.writeFile(path.join(artifactsDirectory, 'script_module_abc123.dbc'), dbc);
+                return makeExecResult();
+            }
+
+            expect(args).toEqual(['compile_script', inputFilename, '--dump-ir', 'asm']);
+            const artifactsDirectory = path.join(workingDirectory, 'duck_build', 'duck_debug_artifacts');
+            await fs.mkdir(artifactsDirectory, {recursive: true});
+            await fs.writeFile(path.join(artifactsDirectory, 'script_module_abc123.s'), assembly);
+            return makeExecResult();
+        });
+
+        const result = await compiler.runCompiler(
+            'duckc',
+            ['compile_script', inputFilename, '--dump-ir', 'asm', '--__ce-duckling-output=dbc'],
+            inputFilename,
+            makeExecOptions(),
+        );
+
+        expect(result.code).toBe(0);
+        expect(result.ducklingOutput).toEqual({
+            kind: 'dbc',
+            output: dbc.split('\n').map(text => ({text})),
+            languageId: 'plaintext',
+        });
+        await expect(fs.readFile(path.join(workingDirectory, 'example.s'), 'utf8')).resolves.toBe(assembly);
+    });
+
+    it('shows DVM DBC generation failures without replacing successful native output', async () => {
+        const compiler = makeCompiler();
+        const workingDirectory = newTempDir();
+        const inputFilename = path.join(workingDirectory, 'hello.dk');
+        const assembly = '\t.text\nmain:\n\tretq\n';
+        await fs.writeFile(inputFilename, 'fun main() -> i64 = { return 7; }');
+        vi.spyOn(compiler, 'exec').mockImplementation(async (_exe, args) => {
+            if (args.includes('--dvm-backend')) return makeExecResult(1, '', 'DVM backend is unavailable');
+            const artifactsDirectory = path.join(workingDirectory, 'duck_build', 'duck_debug_artifacts');
+            await fs.mkdir(artifactsDirectory, {recursive: true});
+            await fs.writeFile(path.join(artifactsDirectory, 'random-id.hello.s'), assembly);
+            return makeExecResult();
+        });
+
+        const result = await compiler.runCompiler(
+            'duckc',
+            ['compile_module', inputFilename, '--dump-ir', 'asm', '--__ce-duckling-output=dbc'],
+            inputFilename,
+            makeExecOptions(),
+        );
+
+        expect(result.code).toBe(0);
+        expect(result.ducklingOutput?.kind).toBe('dbc');
+        expect(result.ducklingOutput?.output).toContainEqual({text: 'DVM backend is unavailable'});
+        await expect(fs.readFile(path.join(workingDirectory, 'example.s'), 'utf8')).resolves.toBe(assembly);
     });
 
     it('reports missing HIR in the output pane without failing assembly compilation', async () => {

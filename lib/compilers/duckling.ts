@@ -23,6 +23,7 @@
 // POSSIBILITY OF SUCH DAMAGE.
 
 import fs from 'node:fs/promises';
+import os from 'node:os';
 import path from 'node:path';
 
 import type {
@@ -81,7 +82,7 @@ export class DucklingCompiler extends BaseCompiler {
     constructor(...args: ConstructorParameters<typeof BaseCompiler>) {
         super(...args);
         this.outputFilebase = 'example';
-        this.compiler.supportsDucklingOutputs = ['hir', 'mir', 'lir'];
+        this.compiler.supportsDucklingOutputs = ['hir', 'mir', 'lir', 'dbc'];
     }
 
     protected override getArgumentParserClass(): typeof BaseParser {
@@ -208,6 +209,79 @@ export class DucklingCompiler extends BaseCompiler {
         }
     }
 
+    private async generateDvmOutput(
+        compiler: string,
+        options: string[],
+        inputFilename: string,
+        workingDirectory: string,
+        execOptions: ExecutionOptionsWithEnv,
+        filters?: ParseFiltersAndOutputOptions,
+    ): Promise<NonNullable<CompilationResult['ducklingOutput']>> {
+        let isolatedDirectory: string | undefined;
+        try {
+            const dvmDirectory = await fs.mkdtemp(path.join(os.tmpdir(), 'ce-duckling-dbc-'));
+            isolatedDirectory = dvmDirectory;
+            await fs.cp(workingDirectory, dvmDirectory, {
+                recursive: true,
+                filter: source => {
+                    const relative = path.relative(workingDirectory, source);
+                    if (!relative) return true;
+                    const firstSegment = relative.split(path.sep)[0];
+                    return firstSegment !== 'duck_build' && firstSegment !== '.git';
+                },
+            });
+
+            const mapWorkingPath = (filename: string) => {
+                if (!path.isAbsolute(filename)) return filename;
+                const relative = path.relative(workingDirectory, filename);
+                if (relative === '..' || relative.startsWith(`..${path.sep}`) || path.isAbsolute(relative)) {
+                    return filename;
+                }
+                return path.join(dvmDirectory, relative);
+            };
+            const dvmInputFilename = mapWorkingPath(inputFilename);
+            const dvmOptions = options.map(mapWorkingPath);
+            const dumpIrIndex = dvmOptions.indexOf('--dump-ir');
+            if (dumpIrIndex >= 0 && dumpIrIndex + 1 < dvmOptions.length) {
+                dvmOptions[dumpIrIndex + 1] = 'dbc';
+            } else {
+                dvmOptions.push('--dump-ir', 'dbc');
+            }
+            if (!dvmOptions.includes('--dvm-backend')) dvmOptions.push('--dvm-backend');
+
+            const dvmResult = await super.runCompiler(
+                compiler,
+                dvmOptions,
+                dvmInputFilename,
+                {...execOptions, customCwd: dvmDirectory, env: {...execOptions.env}},
+                filters,
+            );
+            if (dvmResult.code !== 0) {
+                const output = [...dvmResult.stdout, ...dvmResult.stderr];
+                return {
+                    kind: 'dbc',
+                    output: output.length > 0 ? output : [{text: '<DBC generation failed>'}],
+                    languageId: 'plaintext',
+                };
+            }
+
+            const output = await this.readDucklingOutputArtifact(
+                'dbc',
+                path.join(dvmDirectory, 'duck_build', 'duck_debug_artifacts'),
+                dvmInputFilename,
+            );
+            return output;
+        } catch (error) {
+            return {
+                kind: 'dbc',
+                output: [{text: `<Duckling DBC output failed: ${String(error)}>`}],
+                languageId: 'plaintext',
+            };
+        } finally {
+            if (isolatedDirectory) await fs.rm(isolatedDirectory, {recursive: true, force: true}).catch(() => {});
+        }
+    }
+
     override orderArguments(
         options: string[],
         inputFilename: string,
@@ -301,11 +375,12 @@ export class DucklingCompiler extends BaseCompiler {
         const requestedOutputValue = requestedOutputArgument?.slice(ducklingOutputRequestPrefix.length);
         const requestedOutput = this.compiler.supportsDucklingOutputs?.find(kind => kind === requestedOutputValue);
         const compilerOptions = options.filter(option => !option.startsWith(ducklingOutputRequestPrefix));
+        const needsSeparateDvmCompile = requestedOutput === 'dbc' && !compilerOptions.includes('--dvm-backend');
         if (
             requestedOutput === 'hir' ||
             requestedOutput === 'mir' ||
             requestedOutput === 'lir' ||
-            requestedOutput === 'dbc'
+            (requestedOutput === 'dbc' && !needsSeparateDvmCompile)
         ) {
             const dumpIrIndex = compilerOptions.indexOf('--dump-ir');
             if (dumpIrIndex >= 0 && dumpIrIndex + 1 < compilerOptions.length) {
@@ -343,7 +418,16 @@ export class DucklingCompiler extends BaseCompiler {
         const result = await super.runCompiler(compiler, compilerOptions, inputFilename, execOptions, filters);
         this.tagDiagnostics(result.stderr, inputFilename);
         this.tagDiagnostics(result.stdout, inputFilename);
-        if (
+        if (requestedOutput === 'dbc' && needsSeparateDvmCompile) {
+            result.ducklingOutput = await this.generateDvmOutput(
+                compiler,
+                compilerOptions,
+                inputFilename,
+                workingDirectory,
+                execOptions,
+                filters,
+            );
+        } else if (
             requestedOutput === 'hir' ||
             requestedOutput === 'mir' ||
             requestedOutput === 'lir' ||
@@ -403,7 +487,7 @@ export class DucklingScriptCompiler extends DucklingCompiler {
         artifacts: string[],
         inputFilename: string,
     ): string[] {
-        if (kind === 'hir' || kind === 'mir' || kind === 'lir') {
+        if (kind === 'hir' || kind === 'mir' || kind === 'lir' || kind === 'dbc') {
             return artifacts.filter(filename => new RegExp(`^script_module_[a-f0-9]+\\.${kind}$`).test(filename));
         }
         return super.getDucklingOutputArtifactFiles(kind, artifacts, inputFilename);
