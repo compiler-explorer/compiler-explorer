@@ -31,6 +31,7 @@ describe('Duckling mode completions', () => {
     it('suggests keywords, types, and useful source snippets with the current word range', () => {
         const model = {
             getWordUntilPosition: () => ({startColumn: 2, endColumn: 5}),
+            getValue: () => 'fun helper() -> i64 = { return 0; }',
         } as unknown as monaco.editor.ITextModel;
         const position = {lineNumber: 3, column: 5} as monaco.Position;
 
@@ -45,6 +46,11 @@ describe('Duckling mode completions', () => {
         expect(byLabel.get('i64')).toMatchObject({
             kind: monaco.languages.CompletionItemKind.Class,
             insertText: 'i64',
+        });
+        expect(byLabel.get('helper')).toMatchObject({
+            kind: monaco.languages.CompletionItemKind.Function,
+            detail: 'Function declared in this editor',
+            insertText: 'helper',
         });
         expect(byLabel.get('fun main')).toMatchObject({
             kind: monaco.languages.CompletionItemKind.Snippet,

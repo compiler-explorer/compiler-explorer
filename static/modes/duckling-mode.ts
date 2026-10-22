@@ -24,6 +24,8 @@
 
 import * as monaco from 'monaco-editor';
 
+import {getDeclaredFunctionNames} from './duckling-completions.js';
+
 monaco.languages.register({id: 'duckling'});
 
 const keywords = [
@@ -138,6 +140,13 @@ export const ducklingCompletionItemProvider = {
                 ...typeKeywords.map(label => ({
                     label,
                     kind: monaco.languages.CompletionItemKind.Class,
+                    insertText: label,
+                    range,
+                })),
+                ...getDeclaredFunctionNames(model.getValue()).map(label => ({
+                    label,
+                    kind: monaco.languages.CompletionItemKind.Function,
+                    detail: 'Function declared in this editor',
                     insertText: label,
                     range,
                 })),
