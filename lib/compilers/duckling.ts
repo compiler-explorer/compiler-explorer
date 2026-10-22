@@ -41,8 +41,13 @@ export class DucklingCompiler extends BaseCompiler {
         this.outputFilebase = 'example';
     }
 
-    override optionsForFilter(_filters: ParseFiltersAndOutputOptions, _outputFilename: string): string[] {
+    override optionsForFilter(filters: ParseFiltersAndOutputOptions, _outputFilename: string): string[] {
+        if (filters.binary || filters.execute) return ['compile_modules', '--dump-ir', 'asm'];
         return ['compile_module', '--dump-ir', 'asm'];
+    }
+
+    override getExecutableFilename(dirPath: string, _outputFilebase: string): string {
+        return path.join(dirPath, 'duck_build', 'package_llvm.exe');
     }
 
     override orderArguments(
@@ -143,7 +148,7 @@ export class DucklingCompiler extends BaseCompiler {
         execOptions.customCwd = workingDirectory;
 
         const compilerOptions = [...options];
-        if (compilerOptions[0] === 'compile_module') {
+        if (compilerOptions[0] === 'compile_module' || compilerOptions[0] === 'compile_modules') {
             const moduleFiles = await this.getModuleSourceFiles(workingDirectory);
             const otherModuleFiles = moduleFiles
                 .filter(filename => path.resolve(filename) !== path.resolve(inputFilename))
@@ -152,7 +157,7 @@ export class DucklingCompiler extends BaseCompiler {
             if (otherModuleFiles.length > 0) {
                 compilerOptions[0] = 'compile_modules';
                 compilerOptions.splice(2, 0, ...otherModuleFiles);
-                compilerOptions.push('--no-executable');
+                if (!filters?.execute && !filters?.binary) compilerOptions.push('--no-executable');
                 if (!compilerOptions.includes('--no-incremental')) compilerOptions.push('--no-incremental');
             }
         }

@@ -68,6 +68,17 @@ describe('Duckling compiler', () => {
         expect(getCompilerTypeByKey('duckling')).toBe(DucklingCompiler);
     });
 
+    it('uses the Duckling native executable for module execution', () => {
+        const compiler = makeCompiler();
+
+        expect((compiler as any).optionsForFilter({execute: true}, '/tmp/example.s')).toEqual([
+            'compile_modules',
+            '--dump-ir',
+            'asm',
+        ]);
+        expect(compiler.getExecutableFilename('/tmp', 'example')).toBe('/tmp/duck_build/package_llvm.exe');
+    });
+
     it('puts the module path after the subcommand and preserves user options', () => {
         const compiler = makeCompiler();
         const inputFilename = '/tmp/example.dk';
@@ -149,6 +160,41 @@ describe('Duckling compiler', () => {
             ['compile_module', inputFilename, '--dump-ir', 'asm'],
             inputFilename,
             makeExecOptions(),
+        );
+
+        expect(result.code).toBe(0);
+        expect(exec).toHaveBeenCalledOnce();
+    });
+
+    it('keeps executable linking enabled for multi-module execution', async () => {
+        const compiler = makeCompiler();
+        const workingDirectory = newTempDir();
+        const inputFilename = path.join(workingDirectory, 'hello.dk');
+        const helperFilename = path.join(workingDirectory, 'helper.dk');
+        await fs.writeFile(inputFilename, 'import helper;');
+        await fs.writeFile(helperFilename, 'fun value() -> i64 = { return 42; }');
+
+        const exec = vi.spyOn(compiler, 'exec').mockImplementation(async (_exe, args) => {
+            expect(args).toEqual([
+                'compile_modules',
+                inputFilename,
+                helperFilename,
+                '--dump-ir',
+                'asm',
+                '--no-incremental',
+            ]);
+            const artifactsDirectory = path.join(workingDirectory, 'duck_build', 'duck_debug_artifacts');
+            await fs.mkdir(artifactsDirectory, {recursive: true});
+            await fs.writeFile(path.join(artifactsDirectory, 'random-id.hello.s'), '\t.text\nmain:\n\tretq\n');
+            return makeExecResult();
+        });
+
+        const result = await compiler.runCompiler(
+            '/duckling/bin/duckc',
+            ['compile_modules', inputFilename, '--dump-ir', 'asm'],
+            inputFilename,
+            makeExecOptions(),
+            {binary: true, execute: true},
         );
 
         expect(result.code).toBe(0);
