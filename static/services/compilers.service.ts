@@ -93,6 +93,7 @@ export class CompilersService {
         'supportsHaskellCmmView',
         'supportsLeanCView',
         'supportsClojureMacroExpView',
+        'supportsDucklingOutputs',
         'supportsYulView',
         'supportsCfg',
         'supportsGnatDebugViews',

@@ -1,0 +1,76 @@
+// Copyright (c) 2026, Compiler Explorer Authors
+// All rights reserved.
+//
+// Redistribution and use in source and binary forms, with or without
+// modification, are permitted provided that the following conditions are met:
+//
+//     * Redistributions of source code must retain the above copyright notice,
+//       this list of conditions and the following disclaimer.
+//     * Redistributions in binary form must reproduce the above copyright
+//       notice, this list of conditions and the following disclaimer in the
+//       documentation and/or other materials provided with the distribution.
+//
+// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+// AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+// IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+// ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
+// LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+// CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+// SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+// INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+// CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+// ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+// POSSIBILITY OF SUCH DAMAGE.
+
+import $ from 'jquery';
+import {describe, expect, it, vi} from 'vitest';
+
+import {CompilerInfo} from '../../../types/compiler.interfaces.js';
+import {DucklingOutputView} from '../../panes/duckling-output-view.js';
+
+describe('Duckling output view compiler capabilities', () => {
+    function viewWithOutputKind(outputKind: string) {
+        const view = Object.create(DucklingOutputView.prototype) as DucklingOutputView;
+        const outputKindSelect = $(
+            '<select><option value="lexer">Lexer</option><option value="parser">Parser</option><option value="hir">HIR</option><option value="mir">MIR</option><option value="lir">LIR</option><option value="llvm">LLVM IR</option><option value="dbc">DBC</option></select>',
+        );
+        const eventHub = {emit: vi.fn()};
+        const showMessage = vi.fn();
+        Object.assign(view, {
+            compilerInfo: {compilerId: 12, compilerName: '', editorId: 3, treeId: 0},
+            outputKind,
+            outputKindSelect,
+            supportedOutputKinds: [],
+            outputViewOpenAnnounced: false,
+            eventHub,
+            showMessage,
+            updateTitle: vi.fn(),
+            updateState: vi.fn(),
+        });
+        return {view, outputKindSelect, eventHub, showMessage};
+    }
+
+    it('filters unsupported kinds and selects a supported default', () => {
+        const {view, outputKindSelect, eventHub} = viewWithOutputKind('llvm');
+        const compiler = {name: 'Duckling DVM', supportsDucklingOutputs: ['hir', 'mir']} as CompilerInfo;
+
+        view.onCompiler(12, compiler, '', 3, 0);
+
+        expect(outputKindSelect.val()).toBe('hir');
+        expect(outputKindSelect.prop('disabled')).toBe(false);
+        expect(outputKindSelect.find('option[value="llvm"]').prop('hidden')).toBe(true);
+        expect(outputKindSelect.find('option[value="hir"]').prop('hidden')).toBe(false);
+        expect(outputKindSelect.find('option[value="parser"]').prop('hidden')).toBe(true);
+        expect(eventHub.emit).toHaveBeenCalledWith('ducklingOutputViewOpened', 12, 'hir');
+    });
+
+    it('disables selection and explains when the selected compiler has no Duckling outputs', () => {
+        const {view, outputKindSelect, showMessage} = viewWithOutputKind('llvm');
+        const compiler = {name: 'C++ compiler', supportsDucklingOutputs: []} as unknown as CompilerInfo;
+
+        view.onCompiler(12, compiler, '', 3, 0);
+
+        expect(outputKindSelect.prop('disabled')).toBe(true);
+        expect(showMessage).toHaveBeenCalledWith('<Duckling outputs are not supported for this compiler>');
+    });
+});

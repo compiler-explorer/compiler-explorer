@@ -40,7 +40,7 @@ import {
     GccDumpFlags,
 } from '../../types/compilation/compilation.interfaces.js';
 import {OptPipelineBackendOptions} from '../../types/compilation/opt-pipeline-output.interfaces.js';
-import {CompilerInfo} from '../../types/compiler.interfaces.js';
+import {CompilerInfo, DucklingOutputKind} from '../../types/compiler.interfaces.js';
 import {ResultLine} from '../../types/resultline/resultline.interfaces.js';
 import {getAssemblyDocumentation} from '../api/api.js';
 import * as BootstrapUtils from '../bootstrap-utils.js';
@@ -192,6 +192,7 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
     private clangirButton: JQuery<HTMLButtonElement>;
     private optPipelineButton: JQuery<HTMLButtonElement>;
     private deviceButton: JQuery<HTMLButtonElement>;
+    private ducklingOutputButton: JQuery<HTMLButtonElement>;
     private gnatDebugTreeButton: JQuery<HTMLButtonElement>;
     private gnatDebugButton: JQuery<HTMLButtonElement>;
     private rustMirButton: JQuery<HTMLButtonElement>;
@@ -281,6 +282,8 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
     private leanCOptions: LeanCOptions;
     private clojureMacroExpViewOpen: boolean;
     private yulViewOpen: boolean;
+    private ducklingOutputViewOpen: boolean;
+    private ducklingOutputKind: DucklingOutputKind;
     private ppOptions: PPOptions;
     private llvmIrOptions: LLVMIrBackendOptions;
     private clangirOptions: ClangirBackendOptions;
@@ -316,6 +319,8 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
         this.nextRequest = null;
         this.nextBuildRequest = null;
         this.optViewOpen = false;
+        this.ducklingOutputViewOpen = false;
+        this.ducklingOutputKind = 'llvm';
         this.cfgViewOpenCount = 0;
         this.irCfgViewOpenCount = 0;
         this.optPipelineViewOpenCount = 0;
@@ -592,6 +597,21 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
                 this.id,
                 this.source,
                 this.lastResult?.devices,
+                this.getCompilerName(),
+                this.sourceEditorId ?? 0,
+                this.sourceTreeId ?? 0,
+            );
+        };
+
+        const createDucklingOutputView = () => {
+            const supportedOutputKinds = this.compiler?.supportsDucklingOutputs ?? [];
+            const outputKind = supportedOutputKinds.includes(this.ducklingOutputKind)
+                ? this.ducklingOutputKind
+                : (supportedOutputKinds[0] ?? this.ducklingOutputKind);
+            return Components.getDucklingOutputViewWith(
+                this.id,
+                outputKind,
+                this.lastResult?.ducklingOutput,
                 this.getCompilerName(),
                 this.sourceEditorId ?? 0,
                 this.sourceTreeId ?? 0,
@@ -1005,6 +1025,18 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
             insertPoint.addChild(createYulView());
         });
 
+        createDragSource(this.container.layoutManager, this.ducklingOutputButton, () => createDucklingOutputView()).on(
+            'dragStart',
+            hidePaneAdder,
+        );
+
+        this.ducklingOutputButton.on('click', () => {
+            const insertPoint =
+                this.hub.findParentRowOrColumn(this.container.parent) ||
+                this.container.layoutManager.root.contentItems[0];
+            insertPoint.addChild(createDucklingOutputView());
+        });
+
         createDragSource(this.container.layoutManager, this.gccDumpButton, () => createGccDumpView()).on(
             'dragStart',
             hidePaneAdder,
@@ -1404,6 +1436,11 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
                 produceLeanC: this.leanCViewOpen ? this.leanCOptions : null,
                 produceClojureMacroExp: this.clojureMacroExpViewOpen,
                 produceYul: this.yulViewOpen ? this.yulOptions : null,
+                produceDucklingOutput:
+                    this.ducklingOutputViewOpen &&
+                    this.compiler?.supportsDucklingOutputs?.includes(this.ducklingOutputKind)
+                        ? this.ducklingOutputKind
+                        : undefined,
                 overrides: this.getCurrentState().overrides,
             },
             filters: this.getEffectiveFilters(),
@@ -2381,6 +2418,36 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
         }
     }
 
+    onDucklingOutputViewOpened(id: number, outputKind: DucklingOutputKind): void {
+        if (this.id !== id) return;
+
+        this.ducklingOutputButton.prop('disabled', true);
+        this.ducklingOutputViewOpen = true;
+        const supportedOutputKinds = this.compiler?.supportsDucklingOutputs ?? [];
+        this.ducklingOutputKind = supportedOutputKinds.includes(outputKind)
+            ? outputKind
+            : (supportedOutputKinds[0] ?? outputKind);
+        this.compile();
+    }
+
+    onDucklingOutputKindChanged(id: number, outputKind: DucklingOutputKind): void {
+        if (
+            this.id === id &&
+            this.ducklingOutputViewOpen &&
+            this.compiler?.supportsDucklingOutputs?.includes(outputKind)
+        ) {
+            this.ducklingOutputKind = outputKind;
+            this.compile();
+        }
+    }
+
+    onDucklingOutputViewClosed(id: number): void {
+        if (this.id === id) {
+            this.ducklingOutputButton.prop('disabled', false);
+            this.ducklingOutputViewOpen = false;
+        }
+    }
+
     onGccDumpUIInit(id: number): void {
         if (this.id === id) {
             this.compile();
@@ -2562,6 +2629,7 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
         this.clangirButton = this.domRoot.find('.btn.view-clangir');
         this.optPipelineButton = this.domRoot.find('.btn.view-opt-pipeline');
         this.deviceButton = this.domRoot.find('.btn.view-device');
+        this.ducklingOutputButton = this.domRoot.find('.btn.view-ducklingOutput');
         this.gnatDebugTreeButton = this.domRoot.find('.btn.view-gnatdebugtree');
         this.gnatDebugButton = this.domRoot.find('.btn.view-gnatdebug');
         this.rustMirButton = this.domRoot.find('.btn.view-rustmir');
@@ -2871,6 +2939,7 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
         // As per #4112, it's useful to have this available more than once: Don't disable it when it opens
         // this.optPipelineButton.prop('disabled', this.optPipelineViewOpen);
         this.deviceButton.prop('disabled', this.deviceViewOpen);
+        this.ducklingOutputButton.prop('disabled', this.ducklingOutputViewOpen);
         this.rustMirButton.prop('disabled', this.rustMirViewOpen);
         this.haskellCoreButton.prop('disabled', this.haskellCoreViewOpen);
         this.haskellStgButton.prop('disabled', this.haskellStgViewOpen);
@@ -2894,6 +2963,7 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
         this.clangirButton.toggle(!!this.compiler.supportsClangirView);
         this.optPipelineButton.toggle(!!this.compiler.optPipeline);
         this.deviceButton.toggle(!!this.compiler.supportsDeviceAsmView);
+        this.ducklingOutputButton.toggle(!!this.compiler.supportsDucklingOutputs?.length);
         this.rustMirButton.toggle(!!this.compiler.supportsRustMirView);
         this.rustMacroExpButton.toggle(!!this.compiler.supportsRustMacroExpView);
         this.rustHirButton.toggle(!!this.compiler.supportsRustHirView);
@@ -3071,6 +3141,9 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
         this.eventHub.on('optPipelineViewOptionsUpdated', this.onOptPipelineViewOptionsUpdated, this);
         this.eventHub.on('deviceViewOpened', this.onDeviceViewOpened, this);
         this.eventHub.on('deviceViewClosed', this.onDeviceViewClosed, this);
+        this.eventHub.on('ducklingOutputViewOpened', this.onDucklingOutputViewOpened, this);
+        this.eventHub.on('ducklingOutputKindChanged', this.onDucklingOutputKindChanged, this);
+        this.eventHub.on('ducklingOutputViewClosed', this.onDucklingOutputViewClosed, this);
         this.eventHub.on('rustMirViewOpened', this.onRustMirViewOpened, this);
         this.eventHub.on('rustMirViewClosed', this.onRustMirViewClosed, this);
         this.eventHub.on('rustMacroExpViewOpened', this.onRustMacroExpViewOpened, this);

@@ -199,3 +199,57 @@ describe('Compiler default options', () => {
         expect(fixture.sentOptions).toEqual([expectedOptions, expectedOptions]);
     });
 });
+
+describe('Duckling output pane events', () => {
+    function compilerWithDucklingOutputs(supportedOutputKinds: string[]) {
+        const compiler = Object.create(Compiler.prototype) as Compiler;
+        const ducklingOutputButton = $('<button>');
+        Object.assign(compiler, {
+            id: 12,
+            ducklingOutputViewOpen: false,
+            ducklingOutputKind: 'llvm',
+            ducklingOutputButton,
+            compiler: {supportsDucklingOutputs: supportedOutputKinds},
+            compile: vi.fn(),
+        });
+        return {compiler, ducklingOutputButton};
+    }
+
+    it('uses a supported default and compiles when the view opens', () => {
+        const {compiler, ducklingOutputButton} = compilerWithDucklingOutputs(['hir', 'mir']);
+
+        compiler.onDucklingOutputViewOpened(12, 'llvm');
+
+        expect(Reflect.get(compiler, 'ducklingOutputViewOpen')).toBe(true);
+        expect(Reflect.get(compiler, 'ducklingOutputKind')).toBe('hir');
+        expect(ducklingOutputButton.prop('disabled')).toBe(true);
+        expect(compiler.compile).toHaveBeenCalledOnce();
+    });
+
+    it('ignores output kinds unsupported by the current compiler', () => {
+        const {compiler} = compilerWithDucklingOutputs(['hir', 'mir']);
+        compiler.onDucklingOutputViewOpened(12, 'hir');
+        vi.mocked(compiler.compile).mockClear();
+
+        compiler.onDucklingOutputKindChanged(12, 'parser');
+
+        expect(Reflect.get(compiler, 'ducklingOutputKind')).toBe('hir');
+        expect(compiler.compile).not.toHaveBeenCalled();
+    });
+
+    it('allows valid output changes and re-enables the pane button on close', () => {
+        const {compiler, ducklingOutputButton} = compilerWithDucklingOutputs(['hir', 'mir']);
+        compiler.onDucklingOutputViewOpened(12, 'hir');
+        vi.mocked(compiler.compile).mockClear();
+
+        compiler.onDucklingOutputKindChanged(12, 'mir');
+
+        expect(Reflect.get(compiler, 'ducklingOutputKind')).toBe('mir');
+        expect(compiler.compile).toHaveBeenCalledOnce();
+
+        compiler.onDucklingOutputViewClosed(12);
+
+        expect(Reflect.get(compiler, 'ducklingOutputViewOpen')).toBe(false);
+        expect(ducklingOutputButton.prop('disabled')).toBe(false);
+    });
+});

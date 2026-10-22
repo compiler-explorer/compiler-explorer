@@ -1,0 +1,14 @@
+mixin ducklingOutputPane(id)
+  div(id=id)
+    .top-bar.btn-toolbar.bg-light(role="toolbar")
+      .btn-group.btn-group-sm(role="group" aria-label="Duckling output")
+        select.form-select.form-select-sm.duckling-output-kind(aria-label="Duckling output kind")
+          option(value="lexer") Lexer
+          option(value="parser") Parser
+          option(value="hir") HIR
+          option(value="mir") MIR
+          option(value="lir") LIR
+          option(value="llvm") LLVM IR
+          option(value="dbc") DBC
+      include ../../font-size
+    .monaco-placeholder

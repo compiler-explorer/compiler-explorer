@@ -105,7 +105,7 @@ afterEach(() => vi.restoreAllMocks());
 
 describe('Duckling compiler', () => {
     it('validates the typed Duckling output kinds', () => {
-        expect(DUCKLING_OUTPUT_KINDS).toEqual(['llvm', 'hir', 'lir', 'mir', 'dbc', 'lexer', 'parser']);
+        expect(DUCKLING_OUTPUT_KINDS).toEqual(['lexer', 'parser', 'hir', 'mir', 'lir', 'llvm', 'dbc']);
         expect(isDucklingOutputKind('llvm')).toBe(true);
         expect(isDucklingOutputKind('parser')).toBe(true);
         expect(isDucklingOutputKind('asm')).toBe(false);

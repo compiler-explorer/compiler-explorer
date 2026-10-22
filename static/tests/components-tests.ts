@@ -27,6 +27,7 @@ import {describe, expect, it} from 'vitest';
 import {
     COMPILER_COMPONENT_NAME,
     DIFF_VIEW_COMPONENT_NAME,
+    DUCKLING_OUTPUT_VIEW_COMPONENT_NAME,
     EDITOR_COMPONENT_NAME,
     EXECUTOR_COMPONENT_NAME,
     OPT_VIEW_COMPONENT_NAME,
@@ -38,6 +39,7 @@ import {
     createComponentConfig,
     createLayoutItem,
     fromGoldenLayoutConfig,
+    getDucklingOutputViewWith,
     toGoldenLayoutConfig,
 } from '../../static/components.js';
 
@@ -676,6 +678,25 @@ describe('Components validation', () => {
             expect(() => fromGoldenLayoutConfig(complexConfig)).not.toThrow();
             const result = fromGoldenLayoutConfig(complexConfig);
             expect(result).toEqual(complexConfig);
+        });
+    });
+});
+
+describe('Duckling output pane component', () => {
+    it('stores the compiler and selected output kind in the layout state', () => {
+        const component = getDucklingOutputViewWith(8, 'hir', undefined, 'Duckling dev', 3, 0);
+
+        expect(component).toEqual({
+            type: 'component',
+            componentName: DUCKLING_OUTPUT_VIEW_COMPONENT_NAME,
+            componentState: {
+                id: 8,
+                ducklingOutputKind: 'hir',
+                ducklingOutput: undefined,
+                compilerName: 'Duckling dev',
+                editorid: 3,
+                treeid: 0,
+            },
         });
     });
 });

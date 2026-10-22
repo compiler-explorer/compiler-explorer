@@ -53,7 +53,7 @@ export type Remote = {
 export const RELEASE_TRACKS = ['stable', 'nightly', 'prerelease', 'experimental'] as const;
 export type ReleaseTrack = (typeof RELEASE_TRACKS)[number];
 
-export const DUCKLING_OUTPUT_KINDS = ['llvm', 'hir', 'lir', 'mir', 'dbc', 'lexer', 'parser'] as const;
+export const DUCKLING_OUTPUT_KINDS = ['lexer', 'parser', 'hir', 'mir', 'lir', 'llvm', 'dbc'] as const;
 export type DucklingOutputKind = (typeof DUCKLING_OUTPUT_KINDS)[number];
 
 export function isDucklingOutputKind(value: unknown): value is DucklingOutputKind {
