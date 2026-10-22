@@ -28,4 +28,5 @@ import {DucklingOutputKind} from '../../types/compiler.interfaces.js';
 export type DucklingOutputViewState = {
     ducklingOutputKind?: DucklingOutputKind;
     ducklingOutput?: NonNullable<CompilationResult['ducklingOutputs']>[DucklingOutputKind];
+    wrap?: boolean;
 };

@@ -85,6 +85,9 @@ export function formatDucklingParserOutput(source: string): {output: string; lan
 export class DucklingOutputView extends MonacoPane<monaco.editor.IStandaloneCodeEditor, DucklingOutputViewState> {
     private outputKind!: DucklingOutputKind;
     private outputViewOpenAnnounced!: boolean;
+    private wrapLines!: boolean;
+    private wrapButton!: JQuery<HTMLElement>;
+    private wrapTitle!: string;
 
     constructor(hub: Hub, container: Container, state: DucklingOutputViewState & MonacoPaneState) {
         super(hub, container, state);
@@ -95,10 +98,12 @@ export class DucklingOutputView extends MonacoPane<monaco.editor.IStandaloneCode
 
     override initializeDefaults(): void {
         this.outputViewOpenAnnounced = false;
+        this.wrapLines = false;
     }
 
     override initializeStateDependentProperties(state: DucklingOutputViewState): void {
         this.outputKind = isDucklingOutputKind(state.ducklingOutputKind) ? state.ducklingOutputKind : 'hir';
+        this.wrapLines = state.wrap === true;
     }
 
     override getInitialHTML(): string {
@@ -113,6 +118,7 @@ export class DucklingOutputView extends MonacoPane<monaco.editor.IStandaloneCode
                 readOnly: true,
                 glyphMargin: true,
                 lineNumbersMinChars: 3,
+                wordWrap: this.wrapLines ? 'on' : 'off',
             }),
         );
     }
@@ -126,7 +132,15 @@ export class DucklingOutputView extends MonacoPane<monaco.editor.IStandaloneCode
     }
 
     override getCurrentState(): MonacoPaneState & DucklingOutputViewState {
-        return {...super.getCurrentState(), ducklingOutputKind: this.outputKind};
+        return {...super.getCurrentState(), ducklingOutputKind: this.outputKind, wrap: this.wrapLines};
+    }
+
+    override registerButtons(state: DucklingOutputViewState): void {
+        super.registerButtons(state);
+        this.wrapButton = this.domRoot.find('.wrap-lines');
+        this.wrapTitle = this.wrapButton.prop('title') ?? 'Wrap lines';
+        this.updateWrapButton();
+        this.wrapButton.on('click', () => this.toggleWrapLines());
     }
 
     override registerCallbacks(): void {
@@ -189,6 +203,22 @@ export class DucklingOutputView extends MonacoPane<monaco.editor.IStandaloneCode
         this.setOutputText(message);
         const model = this.editor.getModel();
         if (model) monaco.editor.setModelLanguage(model, 'plaintext');
+    }
+
+    private updateWrapButton(): void {
+        this.wrapButton
+            .toggleClass('active', this.wrapLines)
+            .attr('aria-pressed', String(this.wrapLines))
+            .prop('title', `[${this.wrapLines ? 'ON' : 'OFF'}] ${this.wrapTitle}`)
+            .siblings('input[type=checkbox]')
+            .prop('checked', this.wrapLines);
+    }
+
+    private toggleWrapLines(): void {
+        this.wrapLines = !this.wrapLines;
+        this.editor.updateOptions({wordWrap: this.wrapLines ? 'on' : 'off'});
+        this.updateWrapButton();
+        this.updateState();
     }
 
     private setOutputText(text: string): void {

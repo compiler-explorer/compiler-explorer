@@ -22,6 +22,7 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
+import $ from 'jquery';
 import {describe, expect, it, vi} from 'vitest';
 
 import {CompilerInfo} from '../../../types/compiler.interfaces.js';
@@ -80,5 +81,40 @@ describe('Duckling output view compiler capabilities', () => {
         view.onCompiler(12, compiler, '', 3, 0);
 
         expect(showMessage).toHaveBeenCalledWith('<Duckling outputs are not supported for this compiler>');
+    });
+});
+
+describe('Duckling output view line wrapping', () => {
+    it('toggles Monaco wrapping and persists the selected state', () => {
+        const view = Object.create(DucklingOutputView.prototype) as DucklingOutputView;
+        const domRoot = $(
+            '<div><div class="button-checkbox"><button class="wrap-lines" title="Wrap lines"></button><input type="checkbox"></div></div>',
+        );
+        const wrapButton = domRoot.find('.wrap-lines');
+        const editor = {updateOptions: vi.fn()};
+        const updateState = vi.fn();
+        Object.assign(view, {
+            wrapLines: false,
+            wrapButton,
+            wrapTitle: 'Wrap lines',
+            editor,
+            updateState,
+        });
+
+        const toggleWrapLines = Reflect.get(view, 'toggleWrapLines') as () => void;
+        toggleWrapLines.call(view);
+
+        expect(editor.updateOptions).toHaveBeenCalledWith({wordWrap: 'on'});
+        expect(wrapButton.attr('aria-pressed')).toBe('true');
+        expect(wrapButton.prop('title')).toBe('[ON] Wrap lines');
+        expect(wrapButton.hasClass('active')).toBe(true);
+        expect(wrapButton.siblings('input[type=checkbox]').prop('checked')).toBe(true);
+        expect(updateState).toHaveBeenCalledOnce();
+
+        toggleWrapLines.call(view);
+
+        expect(editor.updateOptions).toHaveBeenLastCalledWith({wordWrap: 'off'});
+        expect(wrapButton.attr('aria-pressed')).toBe('false');
+        expect(wrapButton.hasClass('active')).toBe(false);
     });
 });
