@@ -85,7 +85,7 @@ export class DucklingCompiler extends BaseCompiler {
         this.compiler.supportsDucklingOutputs =
             this.compiler.lang === 'duckling-script'
                 ? ['hir', 'mir', 'lir', 'dbc']
-                : ['lexer', 'hir', 'mir', 'lir', 'dbc'];
+                : ['lexer', 'parser', 'hir', 'mir', 'lir', 'dbc'];
     }
 
     protected override getArgumentParserClass(): typeof BaseParser {
@@ -117,6 +117,7 @@ export class DucklingCompiler extends BaseCompiler {
         );
         if (
             requestedOutput === 'lexer' ||
+            requestedOutput === 'parser' ||
             requestedOutput === 'hir' ||
             requestedOutput === 'mir' ||
             requestedOutput === 'lir' ||
@@ -454,10 +455,10 @@ export class DucklingCompiler extends BaseCompiler {
         const result = await super.runCompiler(compiler, compilerOptions, inputFilename, execOptions, filters);
         this.tagDiagnostics(result.stderr, inputFilename);
         this.tagDiagnostics(result.stdout, inputFilename);
-        if (requestedOutput === 'lexer') {
+        if (requestedOutput === 'lexer' || requestedOutput === 'parser') {
             result.ducklingOutput = await this.runDucklingFrontendOutput(
                 compiler,
-                'lexer',
+                requestedOutput,
                 inputFilename,
                 execOptions,
                 filters,
@@ -571,7 +572,7 @@ export class DucklingDbcCompiler extends DucklingCompiler {
         super(...args);
         this.compiler.supportsIrView = false;
         this.compiler.supportsCfg = false;
-        this.compiler.supportsDucklingOutputs = ['lexer', 'hir', 'mir', 'lir', 'dbc'];
+        this.compiler.supportsDucklingOutputs = ['lexer', 'parser', 'hir', 'mir', 'lir', 'dbc'];
         this.dvmExe = this.compilerProps<string>(`compiler.${this.compiler.id}.dvmExe`, 'VM');
     }
 

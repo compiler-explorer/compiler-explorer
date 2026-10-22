@@ -114,9 +114,23 @@ describe('Duckling compiler', () => {
     });
 
     it('advertises only Duckling outputs implemented for each compiler profile', () => {
-        expect(makeCompiler().compiler.supportsDucklingOutputs).toEqual(['lexer', 'hir', 'mir', 'lir', 'dbc']);
+        expect(makeCompiler().compiler.supportsDucklingOutputs).toEqual([
+            'lexer',
+            'parser',
+            'hir',
+            'mir',
+            'lir',
+            'dbc',
+        ]);
         expect(makeScriptCompiler().compiler.supportsDucklingOutputs).toEqual(['hir', 'mir', 'lir', 'dbc']);
-        expect(makeDbcCompiler().compiler.supportsDucklingOutputs).toEqual(['lexer', 'hir', 'mir', 'lir', 'dbc']);
+        expect(makeDbcCompiler().compiler.supportsDucklingOutputs).toEqual([
+            'lexer',
+            'parser',
+            'hir',
+            'mir',
+            'lir',
+            'dbc',
+        ]);
     });
 
     it('adds a typed lexer output request to the prepared module compiler arguments', () => {
@@ -133,6 +147,28 @@ describe('Duckling compiler', () => {
         );
 
         expect(args).toEqual(['compile_module', '/tmp/example.dk', '--dump-ir', 'asm', '--__ce-duckling-output=lexer']);
+    });
+
+    it('adds a typed parser output request to the prepared module compiler arguments', () => {
+        const compiler = makeCompiler();
+
+        const args = compiler.prepareArguments(
+            [],
+            {},
+            {produceDucklingOutput: 'parser'},
+            '/tmp/example.dk',
+            '/tmp/example.s',
+            [],
+            [],
+        );
+
+        expect(args).toEqual([
+            'compile_module',
+            '/tmp/example.dk',
+            '--dump-ir',
+            'asm',
+            '--__ce-duckling-output=parser',
+        ]);
     });
 
     it('adds a typed HIR output request to the prepared compiler arguments', () => {
@@ -280,6 +316,74 @@ describe('Duckling compiler', () => {
         expect(result.code).toBe(0);
         expect(result.ducklingOutput?.kind).toBe('lexer');
         expect(result.ducklingOutput?.output).toContainEqual({text: 'lexer failed'});
+        await expect(fs.readFile(path.join(workingDirectory, 'example.s'), 'utf8')).resolves.toBe(assembly);
+    });
+
+    it('returns parser output from the Duckling parse command while preserving module assembly', async () => {
+        const compiler = makeCompiler();
+        const workingDirectory = newTempDir();
+        const inputFilename = path.join(workingDirectory, 'hello.dk');
+        const assembly = '\t.text\nmain:\n\tretq\n';
+        const parseOutput = 'Module(hello)\nFunction(main)\n';
+        await fs.writeFile(inputFilename, 'fun main() -> i64 = { return 7; }');
+        const exec = vi.spyOn(compiler, 'exec').mockImplementation(async (_exe, args, execOptions) => {
+            if (args[0] === 'parse') {
+                expect(args).toEqual(['parse', inputFilename]);
+                expect(execOptions.customCwd).toBe(workingDirectory);
+                return makeExecResult(0, parseOutput);
+            }
+
+            expect(args).toEqual(['compile_module', inputFilename, '--dump-ir', 'asm']);
+            const artifactsDirectory = path.join(workingDirectory, 'duck_build', 'duck_debug_artifacts');
+            await fs.mkdir(artifactsDirectory, {recursive: true});
+            await fs.writeFile(path.join(artifactsDirectory, 'random-id.hello.s'), assembly);
+            return makeExecResult();
+        });
+
+        const result = await compiler.runCompiler(
+            'duckc',
+            ['compile_module', inputFilename, '--dump-ir', 'asm', '--__ce-duckling-output=parser'],
+            inputFilename,
+            makeExecOptions(),
+        );
+
+        expect(exec).toHaveBeenCalledTimes(2);
+        expect(result.code).toBe(0);
+        expect(result.ducklingOutput).toEqual({
+            kind: 'parser',
+            output: parseOutput
+                .trimEnd()
+                .split('\n')
+                .map(text => ({text})),
+            languageId: 'plaintext',
+        });
+        await expect(fs.readFile(path.join(workingDirectory, 'example.s'), 'utf8')).resolves.toBe(assembly);
+    });
+
+    it('reports parser failures in the output pane without failing assembly compilation', async () => {
+        const compiler = makeCompiler();
+        const workingDirectory = newTempDir();
+        const inputFilename = path.join(workingDirectory, 'hello.dk');
+        const assembly = '\t.text\nmain:\n\tretq\n';
+        await fs.writeFile(inputFilename, 'fun main() -> i64 = { return 7; }');
+        vi.spyOn(compiler, 'exec').mockImplementation(async (_exe, args) => {
+            if (args[0] === 'parse') return makeExecResult(1, '', 'parser failed');
+            const artifactsDirectory = path.join(workingDirectory, 'duck_build', 'duck_debug_artifacts');
+            await fs.mkdir(artifactsDirectory, {recursive: true});
+            await fs.writeFile(path.join(artifactsDirectory, 'random-id.hello.s'), assembly);
+            return makeExecResult();
+        });
+
+        const result = await compiler.runCompiler(
+            'duckc',
+            ['compile_module', inputFilename, '--dump-ir', 'asm', '--__ce-duckling-output=parser'],
+            inputFilename,
+            makeExecOptions(),
+        );
+
+        expect(result.code).toBe(0);
+        expect(result.ducklingOutput?.kind).toBe('parser');
+        expect(result.ducklingOutput?.output).toContainEqual({text: 'parser failed'});
         await expect(fs.readFile(path.join(workingDirectory, 'example.s'), 'utf8')).resolves.toBe(assembly);
     });
 
