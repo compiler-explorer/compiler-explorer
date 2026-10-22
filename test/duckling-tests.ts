@@ -119,6 +119,9 @@ describe('Duckling compiler', () => {
         expect(makeCompiler().compiler.supportsIrView).toBe(true);
         expect(makeScriptCompiler().compiler.supportsIrView).toBe(true);
         expect(makeDbcCompiler().compiler.supportsIrView).toBe(false);
+        expect(makeCompiler().compiler.supportsCfg).toBe(true);
+        expect(makeScriptCompiler().compiler.supportsCfg).toBe(true);
+        expect(makeDbcCompiler().compiler.supportsCfg).toBe(false);
         expect(makeCompiler().compiler.irArg).toEqual(['--dump-ir', 'llvm']);
         expect(makeCompiler().compiler.supportsDucklingOutputs).toEqual([
             'lexer',
@@ -220,6 +223,76 @@ describe('Duckling compiler', () => {
         expect(compiler.compiler.supportsIrView).toBe(true);
         expect(result.code).toBe(0);
         expect(result.asm.map(line => line.text).join('\n')).toContain('define i64 @script_main');
+    });
+
+    it('generates the standard CFG from Duckling LLVM IR', async () => {
+        const compiler = makeCompiler();
+        const workingDirectory = newTempDir();
+        const inputFilename = path.join(workingDirectory, 'hello.dk');
+        const llvmIr = 'define i64 @main() {\nentry:\n  br label %exit\nexit:\n  ret i64 7\n}\n';
+        const irOptions: LLVMIrBackendOptions = {
+            filterDebugInfo: false,
+            filterIRMetadata: false,
+            filterAttributes: false,
+            filterComments: false,
+            demangle: false,
+        };
+        await fs.writeFile(inputFilename, 'fun main() -> i64 = { return 7; }');
+        vi.spyOn(compiler, 'exec').mockImplementation(async (_exe, args, execOptions) => {
+            const irDirectory = execOptions.customCwd!;
+            const irInputFilename = path.join(irDirectory, 'hello.dk');
+            expect(args).toEqual(['compile_module', irInputFilename, '--dump-ir', 'asm,llvm']);
+            const artifactsDirectory = path.join(irDirectory, 'duck_build', 'duck_debug_artifacts');
+            await fs.mkdir(artifactsDirectory, {recursive: true});
+            await fs.writeFile(path.join(artifactsDirectory, 'random-id.hello.s'), '\t.text\nmain:\n\tretq\n');
+            await fs.writeFile(path.join(artifactsDirectory, 'random-id.hello.ll'), llvmIr);
+            return makeExecResult();
+        });
+
+        const result = await compiler.generateIR(
+            inputFilename,
+            ['compile_module', inputFilename, '--dump-ir', 'asm'],
+            irOptions,
+            true,
+            {} as ParseFiltersAndOutputOptions,
+        );
+
+        expect(compiler.compiler.supportsCfg).toBe(true);
+        expect(result.code).toBe(0);
+        expect(result.cfg?.main?.nodes).toHaveLength(2);
+        expect(result.cfg?.main?.edges).toEqual([{from: 'entry', to: 'exit', arrows: 'to', color: 'blue'}]);
+    });
+
+    it('returns an empty standard CFG and a clear IR error when Duckling emits no LLVM artifact', async () => {
+        const compiler = makeCompiler();
+        const workingDirectory = newTempDir();
+        const inputFilename = path.join(workingDirectory, 'hello.dk');
+        const irOptions: LLVMIrBackendOptions = {
+            filterDebugInfo: false,
+            filterIRMetadata: false,
+            filterAttributes: false,
+            filterComments: false,
+            demangle: false,
+        };
+        await fs.writeFile(inputFilename, 'fun main() -> i64 = { return 7; }');
+        vi.spyOn(compiler, 'exec').mockImplementation(async (_exe, _args, execOptions) => {
+            const artifactsDirectory = path.join(execOptions.customCwd!, 'duck_build', 'duck_debug_artifacts');
+            await fs.mkdir(artifactsDirectory, {recursive: true});
+            await fs.writeFile(path.join(artifactsDirectory, 'random-id.hello.s'), '\t.text\nmain:\n\tretq\n');
+            return makeExecResult();
+        });
+
+        const result = await compiler.generateIR(
+            inputFilename,
+            ['compile_module', inputFilename, '--dump-ir', 'asm'],
+            irOptions,
+            true,
+            {} as ParseFiltersAndOutputOptions,
+        );
+
+        expect(result.code).toBe(0);
+        expect(result.asm).toEqual([{text: 'Duckling produced no LLVM IR output'}]);
+        expect(result.cfg).toEqual({});
     });
 
     it('adds a typed lexer output request to the prepared module compiler arguments', () => {

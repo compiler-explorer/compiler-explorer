@@ -83,12 +83,17 @@ export class DucklingCompiler extends BaseCompiler {
     constructor(...args: ConstructorParameters<typeof BaseCompiler>) {
         super(...args);
         this.outputFilebase = 'example';
+        this.compiler.supportsCfg = true;
         this.compiler.supportsIrView = true;
         this.compiler.irArg = ['--dump-ir', 'llvm'];
         this.compiler.supportsDucklingOutputs =
             this.compiler.lang === 'duckling-script'
                 ? ['hir', 'mir', 'lir', 'dbc']
                 : ['lexer', 'parser', 'hir', 'mir', 'lir', 'dbc'];
+    }
+
+    override isCfgCompiler(): boolean {
+        return true;
     }
 
     protected override getArgumentParserClass(): typeof BaseParser {
@@ -687,6 +692,10 @@ export class DucklingDbcCompiler extends DucklingCompiler {
         this.compiler.supportsCfg = false;
         this.compiler.supportsDucklingOutputs = ['lexer', 'parser', 'hir', 'mir', 'lir', 'dbc'];
         this.dvmExe = this.compilerProps<string>(`compiler.${this.compiler.id}.dvmExe`, 'VM');
+    }
+
+    override isCfgCompiler(): boolean {
+        return false;
     }
 
     override optionsForFilter(filters: ParseFiltersAndOutputOptions, _outputFilename: string): string[] {
