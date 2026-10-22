@@ -272,6 +272,7 @@ export class DucklingCompiler extends BaseCompiler {
                     return firstSegment !== 'duck_build' && firstSegment !== '.git';
                 },
             });
+            await fs.mkdir(path.join(dvmDirectory, 'duck_build'), {recursive: true});
 
             const mapWorkingPath = (filename: string) => {
                 if (!path.isAbsolute(filename)) return filename;

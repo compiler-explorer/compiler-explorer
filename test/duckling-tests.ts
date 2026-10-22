@@ -902,6 +902,7 @@ describe('Duckling compiler', () => {
                 await expect(fs.readFile(path.join(sidecarDirectory!, 'hello.dk'), 'utf8')).resolves.toBe(
                     'fun main() -> i64 = { return 7; }',
                 );
+                await expect(fs.stat(path.join(sidecarDirectory!, 'duck_build'))).resolves.toBeDefined();
                 const artifactsDirectory = path.join(sidecarDirectory!, 'duck_build', 'duck_debug_artifacts');
                 await fs.mkdir(artifactsDirectory, {recursive: true});
                 await fs.writeFile(path.join(artifactsDirectory, 'random-id.hello.dbc'), dbc);
