@@ -82,7 +82,10 @@ export class DucklingCompiler extends BaseCompiler {
     constructor(...args: ConstructorParameters<typeof BaseCompiler>) {
         super(...args);
         this.outputFilebase = 'example';
-        this.compiler.supportsDucklingOutputs = ['hir', 'mir', 'lir', 'dbc'];
+        this.compiler.supportsDucklingOutputs =
+            this.compiler.lang === 'duckling-script'
+                ? ['hir', 'mir', 'lir', 'dbc']
+                : ['lexer', 'hir', 'mir', 'lir', 'dbc'];
     }
 
     protected override getArgumentParserClass(): typeof BaseParser {
@@ -113,6 +116,7 @@ export class DucklingCompiler extends BaseCompiler {
             kind => kind === backendOptions.produceDucklingOutput,
         );
         if (
+            requestedOutput === 'lexer' ||
             requestedOutput === 'hir' ||
             requestedOutput === 'mir' ||
             requestedOutput === 'lir' ||
@@ -204,6 +208,38 @@ export class DucklingCompiler extends BaseCompiler {
             return {
                 kind,
                 output: [{text: `Duckling ${kind.toUpperCase()} output failed: ${String(error)}`}],
+                languageId: 'plaintext',
+            };
+        }
+    }
+
+    private async runDucklingFrontendOutput(
+        compiler: string,
+        kind: 'lexer' | 'parser',
+        inputFilename: string,
+        execOptions: ExecutionOptionsWithEnv,
+        filters?: ParseFiltersAndOutputOptions,
+    ): Promise<NonNullable<CompilationResult['ducklingOutput']>> {
+        try {
+            const result = await super.runCompiler(
+                compiler,
+                [kind === 'lexer' ? 'lex' : 'parse', this.filename(inputFilename)],
+                inputFilename,
+                {...execOptions, customCwd: path.dirname(inputFilename), env: {...execOptions.env}},
+                filters,
+            );
+            this.tagDiagnostics(result.stdout, inputFilename);
+            this.tagDiagnostics(result.stderr, inputFilename);
+            const output = result.code === 0 ? result.stdout : [...result.stdout, ...result.stderr];
+            return {
+                kind,
+                output: output.length > 0 ? output : [{text: '<No output>'}],
+                languageId: 'plaintext',
+            };
+        } catch (error) {
+            return {
+                kind,
+                output: [{text: `<Duckling ${kind.toUpperCase()} output failed: ${String(error)}>`}],
                 languageId: 'plaintext',
             };
         }
@@ -418,7 +454,15 @@ export class DucklingCompiler extends BaseCompiler {
         const result = await super.runCompiler(compiler, compilerOptions, inputFilename, execOptions, filters);
         this.tagDiagnostics(result.stderr, inputFilename);
         this.tagDiagnostics(result.stdout, inputFilename);
-        if (requestedOutput === 'dbc' && needsSeparateDvmCompile) {
+        if (requestedOutput === 'lexer') {
+            result.ducklingOutput = await this.runDucklingFrontendOutput(
+                compiler,
+                'lexer',
+                inputFilename,
+                execOptions,
+                filters,
+            );
+        } else if (requestedOutput === 'dbc' && needsSeparateDvmCompile) {
             result.ducklingOutput = await this.generateDvmOutput(
                 compiler,
                 compilerOptions,
@@ -527,7 +571,7 @@ export class DucklingDbcCompiler extends DucklingCompiler {
         super(...args);
         this.compiler.supportsIrView = false;
         this.compiler.supportsCfg = false;
-        this.compiler.supportsDucklingOutputs = ['hir', 'mir', 'lir', 'dbc'];
+        this.compiler.supportsDucklingOutputs = ['lexer', 'hir', 'mir', 'lir', 'dbc'];
         this.dvmExe = this.compilerProps<string>(`compiler.${this.compiler.id}.dvmExe`, 'VM');
     }
 
