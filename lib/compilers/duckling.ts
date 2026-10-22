@@ -81,7 +81,7 @@ export class DucklingCompiler extends BaseCompiler {
     constructor(...args: ConstructorParameters<typeof BaseCompiler>) {
         super(...args);
         this.outputFilebase = 'example';
-        this.compiler.supportsDucklingOutputs = ['hir', 'lir'];
+        this.compiler.supportsDucklingOutputs = ['hir', 'mir', 'lir'];
     }
 
     protected override getArgumentParserClass(): typeof BaseParser {
@@ -111,7 +111,7 @@ export class DucklingCompiler extends BaseCompiler {
         const requestedOutput = this.compiler.supportsDucklingOutputs?.find(
             kind => kind === backendOptions.produceDucklingOutput,
         );
-        if (requestedOutput === 'hir' || requestedOutput === 'lir') {
+        if (requestedOutput === 'hir' || requestedOutput === 'mir' || requestedOutput === 'lir') {
             options.push(`${ducklingOutputRequestPrefix}${requestedOutput}`);
         }
         return options;
@@ -149,7 +149,7 @@ export class DucklingCompiler extends BaseCompiler {
         artifacts: string[],
         inputFilename: string,
     ): string[] {
-        if (kind !== 'hir' && kind !== 'lir') return [];
+        if (kind !== 'hir' && kind !== 'mir' && kind !== 'lir') return [];
         const moduleName = path.basename(inputFilename, path.extname(inputFilename));
         return artifacts.filter(filename => filename.endsWith(`.${moduleName}.${kind}`));
     }
@@ -296,7 +296,7 @@ export class DucklingCompiler extends BaseCompiler {
         const requestedOutputValue = requestedOutputArgument?.slice(ducklingOutputRequestPrefix.length);
         const requestedOutput = this.compiler.supportsDucklingOutputs?.find(kind => kind === requestedOutputValue);
         const compilerOptions = options.filter(option => !option.startsWith(ducklingOutputRequestPrefix));
-        if (requestedOutput === 'hir' || requestedOutput === 'lir') {
+        if (requestedOutput === 'hir' || requestedOutput === 'mir' || requestedOutput === 'lir') {
             const dumpIrIndex = compilerOptions.indexOf('--dump-ir');
             if (dumpIrIndex >= 0 && dumpIrIndex + 1 < compilerOptions.length) {
                 const dumpKinds = compilerOptions[dumpIrIndex + 1].split(',');
@@ -333,7 +333,7 @@ export class DucklingCompiler extends BaseCompiler {
         const result = await super.runCompiler(compiler, compilerOptions, inputFilename, execOptions, filters);
         this.tagDiagnostics(result.stderr, inputFilename);
         this.tagDiagnostics(result.stdout, inputFilename);
-        if (requestedOutput === 'hir' || requestedOutput === 'lir') {
+        if (requestedOutput === 'hir' || requestedOutput === 'mir' || requestedOutput === 'lir') {
             result.ducklingOutput = await this.readDucklingOutputArtifact(
                 requestedOutput,
                 path.join(duckBuildDirectory, 'duck_debug_artifacts'),
@@ -388,7 +388,7 @@ export class DucklingScriptCompiler extends DucklingCompiler {
         artifacts: string[],
         inputFilename: string,
     ): string[] {
-        if (kind === 'hir' || kind === 'lir') {
+        if (kind === 'hir' || kind === 'mir' || kind === 'lir') {
             return artifacts.filter(filename => new RegExp(`^script_module_[a-f0-9]+\\.${kind}$`).test(filename));
         }
         return super.getDucklingOutputArtifactFiles(kind, artifacts, inputFilename);
@@ -428,7 +428,7 @@ export class DucklingDbcCompiler extends DucklingCompiler {
         super(...args);
         this.compiler.supportsIrView = false;
         this.compiler.supportsCfg = false;
-        this.compiler.supportsDucklingOutputs = ['hir', 'lir'];
+        this.compiler.supportsDucklingOutputs = ['hir', 'mir', 'lir'];
         this.dvmExe = this.compilerProps<string>(`compiler.${this.compiler.id}.dvmExe`, 'VM');
     }
 
