@@ -33,6 +33,7 @@ import {getCompilerTypeByKey} from '../lib/compilers/index.js';
 import {languages as languageDefinitions} from '../lib/languages.js';
 import type {ClientOptionsType} from '../lib/options-handler.js';
 import type {CacheKey, ExecutionOptionsWithEnv} from '../types/compilation/compilation.interfaces.js';
+import {DUCKLING_OUTPUT_KINDS, isDucklingOutputKind} from '../types/compiler.interfaces.js';
 import type {
     BasicExecutionResult,
     ExecutableExecutionOptions,
@@ -103,6 +104,25 @@ function makeExecOptions(): ExecutionOptionsWithEnv {
 afterEach(() => vi.restoreAllMocks());
 
 describe('Duckling compiler', () => {
+    it('validates the typed Duckling output kinds', () => {
+        expect(DUCKLING_OUTPUT_KINDS).toEqual(['llvm', 'hir', 'lir', 'mir', 'dbc', 'lexer', 'parser']);
+        expect(isDucklingOutputKind('llvm')).toBe(true);
+        expect(isDucklingOutputKind('parser')).toBe(true);
+        expect(isDucklingOutputKind('asm')).toBe(false);
+        expect(isDucklingOutputKind('unknown')).toBe(false);
+        expect(isDucklingOutputKind(null)).toBe(false);
+    });
+
+    it('advertises only the outputs supported by each Duckling source and backend mode', () => {
+        expect(makeCompiler().compiler.supportsDucklingOutputs).toEqual([...DUCKLING_OUTPUT_KINDS]);
+        expect(makeScriptCompiler().compiler.supportsDucklingOutputs).toEqual(
+            DUCKLING_OUTPUT_KINDS.filter(kind => kind !== 'lexer' && kind !== 'parser'),
+        );
+        expect(makeDbcCompiler().compiler.supportsDucklingOutputs).toEqual(
+            DUCKLING_OUTPUT_KINDS.filter(kind => kind !== 'llvm'),
+        );
+    });
+
     it('is registered as the duckling compiler type', () => {
         expect(getCompilerTypeByKey('duckling')).toBe(DucklingCompiler);
     });

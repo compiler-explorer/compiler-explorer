@@ -31,6 +31,7 @@ import type {
     CompilationResult,
     ExecutionOptionsWithEnv,
 } from '../../types/compilation/compilation.interfaces.js';
+import {DUCKLING_OUTPUT_KINDS} from '../../types/compiler.interfaces.js';
 import type {BasicExecutionResult, ExecutableExecutionOptions} from '../../types/execution/execution.interfaces.js';
 import type {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces.js';
 import type {SelectedLibraryVersion} from '../../types/libraries/libraries.interfaces.js';
@@ -78,6 +79,10 @@ export class DucklingCompiler extends BaseCompiler {
     constructor(...args: ConstructorParameters<typeof BaseCompiler>) {
         super(...args);
         this.outputFilebase = 'example';
+        this.compiler.supportsDucklingOutputs =
+            this.compiler.lang === 'duckling-script'
+                ? DUCKLING_OUTPUT_KINDS.filter(kind => kind !== 'lexer' && kind !== 'parser')
+                : [...DUCKLING_OUTPUT_KINDS];
     }
 
     protected override getArgumentParserClass(): typeof BaseParser {
@@ -321,6 +326,7 @@ export class DucklingDbcCompiler extends DucklingCompiler {
         super(...args);
         this.compiler.supportsIrView = false;
         this.compiler.supportsCfg = false;
+        this.compiler.supportsDucklingOutputs = DUCKLING_OUTPUT_KINDS.filter(kind => kind !== 'llvm');
         this.dvmExe = this.compilerProps<string>(`compiler.${this.compiler.id}.dvmExe`, 'VM');
     }
 
