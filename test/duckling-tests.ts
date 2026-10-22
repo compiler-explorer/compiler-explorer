@@ -31,6 +31,7 @@ import {BaseCompiler} from '../lib/base-compiler.js';
 import {DucklingCompiler, DucklingDbcCompiler, DucklingScriptCompiler} from '../lib/compilers/duckling.js';
 import {getCompilerTypeByKey} from '../lib/compilers/index.js';
 import {languages as languageDefinitions} from '../lib/languages.js';
+import type {ClientOptionsType} from '../lib/options-handler.js';
 import type {CacheKey, ExecutionOptionsWithEnv} from '../types/compilation/compilation.interfaces.js';
 import type {
     BasicExecutionResult,
@@ -118,6 +119,46 @@ describe('Duckling compiler', () => {
             '--dump-ir',
             'asm',
         ]);
+    });
+
+    it('discovers compiler options from module and script help', async () => {
+        const compiler = makeCompiler();
+        const sharedOption = '  -O, --llvm-opt <level>   Set optimization level.\n';
+        const execCompilerCached = vi
+            .spyOn(compiler, 'execCompilerCached')
+            .mockImplementation(async (_exe, args) =>
+                makeExecResult(
+                    0,
+                    args[0] === 'compile_script' ? `${sharedOption}  --linker <path>   Linker path.\n` : sharedOption,
+                ),
+            );
+
+        await (compiler as any).argParser.parse();
+
+        expect(execCompilerCached).toHaveBeenNthCalledWith(1, '/duckling/bin/duckc', ['compile_module', '--help']);
+        expect(execCompilerCached).toHaveBeenNthCalledWith(2, '/duckling/bin/duckc', ['compile_script', '--help']);
+        expect(compiler.possibleArguments.possibleArguments['--llvm-opt <level>']?.description).toBe(
+            'Set optimization level.',
+        );
+        expect(compiler.possibleArguments.possibleArguments['--linker <path>']?.description).toBe('Linker path.');
+        expect(compiler.compiler.cachedPossibleArguments['--linker <path>']?.description).toBe('Linker path.');
+    });
+
+    it('restores discovered options after compiler initialization clears parser options', async () => {
+        const compiler = makeCompiler();
+        const cachedOptions = {
+            '--llvm-opt <level>': {description: 'Set optimization level.', timesused: 0},
+        };
+        vi.spyOn(BaseCompiler.prototype, 'initialise').mockImplementation(async function (this: BaseCompiler) {
+            this.compiler.cachedPossibleArguments = cachedOptions;
+            this.possibleArguments.possibleArguments = {};
+            return this;
+        });
+
+        await compiler.initialise(new Date(), {} as ClientOptionsType);
+
+        expect(compiler.possibleArguments.possibleArguments).toEqual(cachedOptions);
+        expect(compiler.compiler.cachedPossibleArguments).toBeUndefined();
     });
 
     it('compiles a Duckling Script source and selects its script assembly artifact', async () => {

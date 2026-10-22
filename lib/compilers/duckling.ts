@@ -36,13 +36,38 @@ import type {ParseFiltersAndOutputOptions} from '../../types/features/filters.in
 import type {SelectedLibraryVersion} from '../../types/libraries/libraries.interfaces.js';
 import type {ResultLine} from '../../types/resultline/resultline.interfaces.js';
 import {BaseCompiler} from '../base-compiler.js';
+import type {ClientOptionsType} from '../options-handler.js';
 import {filterEscapeSequences} from '../utils.js';
+import {BaseParser} from './argument-parsers.js';
 
 function addDvmProgramArguments(executeParameters: ExecutableExecutionOptions): ExecutableExecutionOptions {
     return {
         ...executeParameters,
         args: executeParameters.args.length > 0 ? ['--args', executeParameters.args.join(',')] : [],
     };
+}
+
+class DucklingParser extends BaseParser {
+    override async parse() {
+        const optionWithDescription = /^ {2}(?:--?[A-Za-z0-9-]+,\s*)?(--?[A-Za-z0-9-]+(?:\s+<[^>]+>)?)\s{2,}(.*)$/;
+        const optionWithoutDescription = /^ {2}(?:--?[A-Za-z0-9-]+,\s*)?(--?[A-Za-z0-9-]+(?:\s+<[^>]+>)?)/;
+        const options = await Promise.all(
+            ['compile_module', 'compile_script'].map(async command => {
+                const result = await this.compiler.execCompilerCached(this.compiler.compiler.exe, [command, '--help']);
+                return result.code === 0
+                    ? this.parseLines(result.stdout + result.stderr, optionWithDescription, optionWithoutDescription)
+                    : {};
+            }),
+        );
+
+        const discoveredOptions = Object.assign({}, ...options);
+        this.compiler.compiler.cachedPossibleArguments = {
+            ...this.compiler.compiler.cachedPossibleArguments,
+            ...discoveredOptions,
+        };
+        this.compiler.possibleArguments.populateOptions(discoveredOptions);
+        return this.compiler;
+    }
 }
 
 export class DucklingCompiler extends BaseCompiler {
@@ -53,6 +78,23 @@ export class DucklingCompiler extends BaseCompiler {
     constructor(...args: ConstructorParameters<typeof BaseCompiler>) {
         super(...args);
         this.outputFilebase = 'example';
+    }
+
+    protected override getArgumentParserClass(): typeof BaseParser {
+        return DucklingParser;
+    }
+
+    override async initialise(
+        mtime: Date,
+        clientOptions: ClientOptionsType,
+        isPrediscovered = false,
+    ): Promise<BaseCompiler | null> {
+        const initialized = await super.initialise(mtime, clientOptions, isPrediscovered);
+        if (initialized && !isPrediscovered && this.compiler.cachedPossibleArguments) {
+            this.possibleArguments.populateOptions(this.compiler.cachedPossibleArguments);
+            delete this.compiler.cachedPossibleArguments;
+        }
+        return initialized;
     }
 
     override optionsForFilter(filters: ParseFiltersAndOutputOptions, _outputFilename: string): string[] {
