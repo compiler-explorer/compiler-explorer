@@ -32,6 +32,7 @@ import type {LLVMIrBackendOptions} from '../../types/compilation/ir.interfaces.j
 import type {PreliminaryCompilerInfo} from '../../types/compiler.interfaces.js';
 import type {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces.js';
 import type {SelectedLibraryVersion} from '../../types/libraries/libraries.interfaces.js';
+import {unwrap} from '../assert.js';
 import {BaseCompiler} from '../base-compiler.js';
 import type {CompilationEnvironment} from '../compilation-env.js';
 import {getAmdGpuInstructionSetFromLabel} from '../instructionsets.js';
@@ -39,10 +40,13 @@ import type {ClientOptionsType} from '../options-handler.js';
 import type {IAsmParser} from '../parsers/asm-parser.interfaces.js';
 import {AmdgpuAsmParser} from '../parsers/asm-parser-amdgpu.js';
 import {PTXAsmParser} from '../parsers/asm-parser-ptx.js';
+import {SassAsmParser} from '../parsers/asm-parser-sass.js';
+import {parseOutput} from '../utils.js';
 import {MojoParser} from './argument-parsers.js';
 
 export class MojoCompiler extends BaseCompiler {
     private deviceParsers: Record<string, IAsmParser>;
+    private sassParser: SassAsmParser;
 
     static get key() {
         return 'mojo';
@@ -57,6 +61,7 @@ export class MojoCompiler extends BaseCompiler {
             '.ptx': new PTXAsmParser(this.compilerProps),
             '.amdgcn': new AmdgpuAsmParser(),
         };
+        this.sassParser = new SassAsmParser(this.compilerProps);
     }
 
     override async initialise(mtime: Date, clientOptions: ClientOptionsType, isPrediscovered = false) {
@@ -171,6 +176,9 @@ export class MojoCompiler extends BaseCompiler {
                         ...parsed,
                         instructionSet,
                     };
+                    if (ext === '.ptx' && this.compiler.ptxas && this.compiler.nvdisasm) {
+                        devices[`SASS (${deviceName})`] = await this.generateSass(filename, data, filters);
+                    }
                 } catch (err) {
                     devices[deviceName] = {
                         code: -1,
@@ -183,6 +191,51 @@ export class MojoCompiler extends BaseCompiler {
         }
         result.devices = devices;
         return result;
+    }
+
+    private async generateSass(
+        filename: string,
+        ptx: string,
+        filters: ParseFiltersAndOutputOptions,
+    ): Promise<CompilationResult> {
+        try {
+            const target = ptx.match(/^\s*\.target\s+(sm_\d+[a-z]?)(?=\s|,|$)/m)?.[1];
+            if (!target) throw new Error('No NVIDIA GPU target found in PTX');
+
+            const cubin = filename.replace(/\.ptx$/, '.cubin');
+            const execOptions = {
+                ...this.getDefaultExecOptions(),
+                customCwd: path.dirname(filename),
+                maxOutput: this.env.ceProps('max-asm-size', 64 * 1024 * 1024),
+            };
+            let tool = unwrap(this.compiler.ptxas);
+            let output = await this.exec(tool, ['-arch', target, filename, '-o', cubin], execOptions);
+            if (output.code === 0 && !output.timedOut) {
+                tool = unwrap(this.compiler.nvdisasm);
+                output = await this.exec(tool, [cubin, '-c', '-g', '-hex'], execOptions);
+            }
+            const failed = output.code !== 0 || output.timedOut;
+            return {
+                code: failed ? output.code || -1 : 0,
+                timedOut: output.timedOut,
+                truncated: output.truncated,
+                stdout: [],
+                stderr: parseOutput(output.stderr),
+                ...(failed
+                    ? {asm: parseOutput(`<${path.basename(tool)} failed to generate SASS>\n${output.stderr}`)}
+                    : this.sassParser.process(output.stdout, {...filters, binary: true})),
+                instructionSet: 'sass',
+            };
+        } catch (err) {
+            return {
+                code: -1,
+                timedOut: false,
+                stdout: [],
+                stderr: [{text: `Unable to generate SASS: ${err}`}],
+                asm: [{text: `<Unable to generate SASS: ${err}>`}],
+                instructionSet: 'sass',
+            };
+        }
     }
 
     override getArgumentParserClass() {
