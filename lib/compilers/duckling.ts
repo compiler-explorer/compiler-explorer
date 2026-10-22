@@ -228,6 +228,17 @@ export class DucklingScriptCompiler extends DucklingCompiler {
     protected override getArtifactFiles(artifacts: string[], _inputFilename: string): string[] {
         return artifacts.filter(filename => /^script_module_[a-f0-9]+\.s$/.test(filename));
     }
+
+    override getExecutableFilename(dirPath: string, outputFilebase: string): string {
+        return path.join(dirPath, `${outputFilebase}.dks`);
+    }
+
+    protected override fixExecuteParametersForInterpreting(
+        executeParameters: ExecutableExecutionOptions,
+        outputFilename: string,
+    ): void {
+        executeParameters.args.unshift('run', outputFilename);
+    }
 }
 
 export class DucklingDbcCompiler extends DucklingCompiler {

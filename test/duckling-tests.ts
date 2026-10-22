@@ -31,7 +31,7 @@ import {BaseCompiler} from '../lib/base-compiler.js';
 import {DucklingCompiler, DucklingDbcCompiler, DucklingScriptCompiler} from '../lib/compilers/duckling.js';
 import {getCompilerTypeByKey} from '../lib/compilers/index.js';
 import {languages as languageDefinitions} from '../lib/languages.js';
-import type {ExecutionOptionsWithEnv} from '../types/compilation/compilation.interfaces.js';
+import type {CacheKey, ExecutionOptionsWithEnv} from '../types/compilation/compilation.interfaces.js';
 import type {
     BasicExecutionResult,
     ExecutableExecutionOptions,
@@ -55,7 +55,13 @@ function makeCompiler() {
 
 function makeScriptCompiler() {
     return new DucklingScriptCompiler(
-        makeFakeCompilerInfo({id: 'duckcscript', lang: 'duckling-script' as LanguageKey, exe: 'duckc'}),
+        makeFakeCompilerInfo({
+            id: 'duckcscript',
+            lang: 'duckling-script' as LanguageKey,
+            exe: 'duckc',
+            interpreted: true,
+            supportsExecute: true,
+        }),
         environment,
     );
 }
@@ -137,6 +143,37 @@ describe('Duckling compiler', () => {
 
         expect(result.code).toBe(0);
         await expect(fs.readFile(path.join(workingDirectory, 'example.s'), 'utf8')).resolves.toBe(assembly);
+    });
+
+    it('runs scripts through Duckling with the run subcommand and returns execution results', async () => {
+        const compiler = makeScriptCompiler();
+        const source = 'builtin_output_i64(42);';
+        const runExecutable = vi.spyOn(compiler, 'runExecutable').mockResolvedValue({
+            code: 0,
+            okToCache: true,
+            filenameTransform: filename => filename,
+            stdout: [{text: '42'}],
+            stderr: [],
+            execTime: 1,
+            timedOut: false,
+        } as BasicExecutionResult);
+        const executeParameters: ExecutableExecutionOptions = {
+            args: ['first', 'second'],
+            stdin: '',
+            ldPath: [],
+            env: {},
+        };
+
+        const result = await compiler.handleInterpreting({source, files: []} as unknown as CacheKey, executeParameters);
+        const [executable, parameters, workingDirectory] = runExecutable.mock.calls[0];
+
+        expect(executable).toBe('duckc');
+        expect(parameters.args).toEqual(['run', path.join(workingDirectory, 'example.dks'), 'first', 'second']);
+        expect(await fs.readFile(path.join(workingDirectory, 'example.dks'), 'utf8')).toBe(source);
+        expect(result.didExecute).toBe(true);
+        expect(result.code).toBe(0);
+        expect(result.stdout).toEqual([{text: '42'}]);
+        expect(result.buildResult?.executableFilename).toBe(path.join(workingDirectory, 'example.dks'));
     });
 
     it('uses the Duckling native executable for module execution', () => {
