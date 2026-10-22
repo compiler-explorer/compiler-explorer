@@ -119,6 +119,34 @@ export class MojoCompiler extends BaseCompiler {
         return await super.generateIR(inputFilename, newOptions, irOptions, produceCfg, filters);
     }
 
+    override async postProcess(
+        result: CompilationResult,
+        outputFilename: string,
+        filters: ParseFiltersAndOutputOptions,
+        produceOptRemarks = false,
+    ) {
+        const processed = await super.postProcess(result, outputFilename, filters, produceOptRemarks);
+        const outputType = result.compilationOptions
+            ?.findLast((option, index, options) => option.startsWith('--emit=') || options[index - 1] === '--emit')
+            ?.replace('--emit=', '');
+        if (
+            result.code === 0 &&
+            result.asmSize !== undefined &&
+            result.asmSize < this.env.ceProps('max-asm-size', 64 * 1024 * 1024) &&
+            (outputType === 'air' || outputType === 'llvm-bitcode')
+        ) {
+            try {
+                result.asm = await this.disassembleBitcode(outputFilename);
+                result.languageId = 'llvm-ir';
+                result.instructionSet = 'llvm';
+            } catch (err) {
+                result.asm = `<Unable to decode LLVM bitcode: ${err}>`;
+                result.stderr.push({text: `Unable to decode LLVM bitcode: ${err}`});
+            }
+        }
+        return processed;
+    }
+
     override async extractDeviceCode(
         result: CompilationResult,
         filters: ParseFiltersAndOutputOptions,
@@ -154,7 +182,7 @@ export class MojoCompiler extends BaseCompiler {
                 if (
                     !file.isFile() ||
                     !prefixes.some(prefix => file.name.startsWith(prefix)) ||
-                    (!parser && ext !== '.ll')
+                    (!parser && ext !== '.ll' && ext !== '.air')
                 ) {
                     continue;
                 }
@@ -162,7 +190,8 @@ export class MojoCompiler extends BaseCompiler {
                 const filename = path.join(directory, file.name);
                 const deviceName = path.relative(result.dirPath, filename);
                 try {
-                    const data = await fs.readFile(filename, 'utf8');
+                    const data =
+                        ext === '.air' ? await this.disassembleBitcode(filename) : await fs.readFile(filename, 'utf8');
                     const parsed = parser
                         ? await parser.process(data, filters)
                         : await this.llvmIr.processFromFilters(data, filters);
@@ -191,6 +220,20 @@ export class MojoCompiler extends BaseCompiler {
         }
         result.devices = devices;
         return result;
+    }
+
+    private async disassembleBitcode(filename: string): Promise<string> {
+        const tool = this.compiler.llvmDisassembler;
+        if (!tool) throw new Error('No LLVM disassembler configured');
+        const output = await this.exec(tool, [filename, '-o', '-'], {
+            ...this.getDefaultExecOptions(),
+            customCwd: path.dirname(filename),
+            maxOutput: this.env.ceProps('max-asm-size', 64 * 1024 * 1024),
+        });
+        if (output.timedOut) throw new Error('LLVM disassembly timed out');
+        if (output.truncated) throw new Error('LLVM disassembly exceeded the output size limit');
+        if (output.code !== 0) throw new Error(`LLVM disassembly failed (${output.code}): ${output.stderr}`);
+        return output.stdout;
     }
 
     private async generateSass(
