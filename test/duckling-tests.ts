@@ -84,7 +84,9 @@ describe('Duckling compiler', () => {
         const workingDirectory = newTempDir();
         const inputFilename = path.join(workingDirectory, 'hello.dk');
         const assembly = '\t.text\nmain:\n\tretq\n';
-        const exec = vi.spyOn(compiler, 'exec').mockImplementation(async (_exe, _args, execOptions) => {
+        await fs.writeFile(inputFilename, 'fun main() -> i64 = { return 7; }');
+        const exec = vi.spyOn(compiler, 'exec').mockImplementation(async (_exe, args, execOptions) => {
+            expect(args).toEqual(['compile_module', inputFilename, '--dump-ir', 'asm']);
             expect(execOptions.customCwd).toBe(workingDirectory);
             await expect(fs.stat(path.join(workingDirectory, 'duck_build'))).resolves.toBeDefined();
             const artifactsDirectory = path.join(workingDirectory, 'duck_build', 'duck_debug_artifacts');
@@ -103,6 +105,54 @@ describe('Duckling compiler', () => {
         expect(result.code).toBe(0);
         expect(exec).toHaveBeenCalledOnce();
         await expect(fs.readFile(path.join(workingDirectory, 'example.s'), 'utf8')).resolves.toBe(assembly);
+    });
+
+    it('compiles sibling modules in deterministic order and excludes scripts and build files', async () => {
+        const compiler = makeCompiler();
+        const workingDirectory = newTempDir();
+        const inputFilename = path.join(workingDirectory, 'main.dk');
+        const modulesDirectory = path.join(workingDirectory, 'modules');
+        const hiddenDirectory = path.join(workingDirectory, '.hidden');
+        const buildDirectory = path.join(workingDirectory, 'duck_build');
+        await fs.mkdir(modulesDirectory, {recursive: true});
+        await fs.mkdir(hiddenDirectory, {recursive: true});
+        await fs.mkdir(buildDirectory, {recursive: true});
+        await fs.writeFile(inputFilename, 'import alpha;');
+        await fs.writeFile(path.join(workingDirectory, 'zeta.dk'), 'fun zeta() = {}');
+        await fs.writeFile(path.join(modulesDirectory, 'beta.dk'), 'fun beta() = {}');
+        await fs.writeFile(path.join(modulesDirectory, 'alpha.dk'), 'fun alpha() = {}');
+        await fs.writeFile(path.join(workingDirectory, 'script.dks'), 'fun script() = {}');
+        await fs.writeFile(path.join(hiddenDirectory, 'hidden.dk'), 'fun hidden() = {}');
+        await fs.writeFile(path.join(buildDirectory, 'stale.dk'), 'fun stale() = {}');
+
+        const exec = vi.spyOn(compiler, 'exec').mockImplementation(async (_exe, args, execOptions) => {
+            expect(args).toEqual([
+                'compile_modules',
+                inputFilename,
+                path.join(modulesDirectory, 'alpha.dk'),
+                path.join(modulesDirectory, 'beta.dk'),
+                path.join(workingDirectory, 'zeta.dk'),
+                '--dump-ir',
+                'asm',
+                '--no-executable',
+                '--no-incremental',
+            ]);
+            expect(execOptions.customCwd).toBe(workingDirectory);
+            const artifactsDirectory = path.join(workingDirectory, 'duck_build', 'duck_debug_artifacts');
+            await fs.mkdir(artifactsDirectory, {recursive: true});
+            await fs.writeFile(path.join(artifactsDirectory, 'random-id.main.s'), '\t.text\nmain:\n\tretq\n');
+            return makeExecResult();
+        });
+
+        const result = await compiler.runCompiler(
+            '/duckling/bin/duckc',
+            ['compile_module', inputFilename, '--dump-ir', 'asm'],
+            inputFilename,
+            makeExecOptions(),
+        );
+
+        expect(result.code).toBe(0);
+        expect(exec).toHaveBeenCalledOnce();
     });
 
     it('fails when Duckling exits successfully but does not write assembly for this module', async () => {

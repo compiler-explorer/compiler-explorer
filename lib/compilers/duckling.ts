@@ -107,6 +107,26 @@ export class DucklingCompiler extends BaseCompiler {
         }
     }
 
+    protected async getModuleSourceFiles(dirPath: string): Promise<string[]> {
+        const files: string[] = [];
+
+        const visitDirectory = async (currentPath: string): Promise<void> => {
+            for (const entry of await fs.readdir(currentPath, {withFileTypes: true})) {
+                const filename = path.join(currentPath, entry.name);
+                if (entry.isDirectory()) {
+                    if (entry.name !== 'duck_build' && !entry.name.startsWith('.')) {
+                        await visitDirectory(filename);
+                    }
+                } else if (entry.isFile() && path.extname(entry.name) === '.dk') {
+                    files.push(filename);
+                }
+            }
+        };
+
+        await visitDirectory(dirPath);
+        return files.sort();
+    }
+
     override async runCompiler(
         compiler: string,
         options: string[],
@@ -122,7 +142,22 @@ export class DucklingCompiler extends BaseCompiler {
         execOptions ??= this.getDefaultExecOptions();
         execOptions.customCwd = workingDirectory;
 
-        const result = await super.runCompiler(compiler, options, inputFilename, execOptions, filters);
+        const compilerOptions = [...options];
+        if (compilerOptions[0] === 'compile_module') {
+            const moduleFiles = await this.getModuleSourceFiles(workingDirectory);
+            const otherModuleFiles = moduleFiles
+                .filter(filename => path.resolve(filename) !== path.resolve(inputFilename))
+                .map(filename => this.filename(filename));
+
+            if (otherModuleFiles.length > 0) {
+                compilerOptions[0] = 'compile_modules';
+                compilerOptions.splice(2, 0, ...otherModuleFiles);
+                compilerOptions.push('--no-executable');
+                if (!compilerOptions.includes('--no-incremental')) compilerOptions.push('--no-incremental');
+            }
+        }
+
+        const result = await super.runCompiler(compiler, compilerOptions, inputFilename, execOptions, filters);
         this.tagDiagnostics(result.stderr, inputFilename);
         this.tagDiagnostics(result.stdout, inputFilename);
         if (result.code !== 0) return result;
