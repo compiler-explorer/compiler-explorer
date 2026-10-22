@@ -2456,7 +2456,7 @@ export class BaseCompiler {
         executeParameters: ExecutableExecutionOptions,
         bypassCache: BypassCache,
     ): Promise<CompilationResult> {
-        if (this.compiler.interpreted) {
+        if (this.shouldInterpret(key)) {
             return this.handleInterpreting(key, executeParameters);
         }
 
@@ -2536,6 +2536,10 @@ export class BaseCompiler {
             didExecute: true,
             buildResult: buildResult,
         });
+    }
+
+    protected shouldInterpret(_key: CacheKey): boolean {
+        return !!this.compiler.interpreted;
     }
 
     async handleExecution(
