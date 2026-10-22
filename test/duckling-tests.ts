@@ -27,10 +27,15 @@ import path from 'node:path';
 
 import {afterEach, describe, expect, it, vi} from 'vitest';
 
-import {DucklingCompiler} from '../lib/compilers/duckling.js';
+import {BaseCompiler} from '../lib/base-compiler.js';
+import {DucklingCompiler, DucklingDbcCompiler} from '../lib/compilers/duckling.js';
 import {getCompilerTypeByKey} from '../lib/compilers/index.js';
 import type {ExecutionOptionsWithEnv} from '../types/compilation/compilation.interfaces.js';
-import type {UnprocessedExecResult} from '../types/execution/execution.interfaces.js';
+import type {
+    BasicExecutionResult,
+    ExecutableExecutionOptions,
+    UnprocessedExecResult,
+} from '../types/execution/execution.interfaces.js';
 import type {LanguageKey} from '../types/languages.interfaces.js';
 import {makeCompilationEnvironment, makeFakeCompilerInfo, newTempDir} from './utils.js';
 
@@ -41,6 +46,21 @@ function makeCompiler() {
     return new DucklingCompiler(
         makeFakeCompilerInfo({lang: 'duckling' as LanguageKey, exe: '/duckling/bin/duckc'}),
         environment,
+    );
+}
+
+function makeDbcCompiler() {
+    const dbcEnvironment = makeCompilationEnvironment({
+        languages,
+        props: {'compiler.duckcdvm.dvmExe': 'test-VM'},
+    });
+    return new DucklingDbcCompiler(
+        makeFakeCompilerInfo({
+            id: 'duckcdvm',
+            lang: 'duckling' as LanguageKey,
+            exe: 'duckc',
+        }),
+        dbcEnvironment,
     );
 }
 
@@ -77,6 +97,76 @@ describe('Duckling compiler', () => {
             'asm',
         ]);
         expect(compiler.getExecutableFilename('/tmp', 'example')).toBe('/tmp/duck_build/package_llvm.exe');
+    });
+
+    it('registers a DVM-backed module compiler profile', () => {
+        const compiler = makeDbcCompiler();
+
+        expect(getCompilerTypeByKey('duckling-dbc')).toBe(DucklingDbcCompiler);
+        expect((compiler as any).optionsForFilter({}, '/tmp/example.s')).toEqual([
+            'compile_module',
+            '--dvm-backend',
+            '--dump-ir',
+            'dbc',
+        ]);
+        expect((compiler as any).optionsForFilter({execute: true}, '/tmp/example.s')).toEqual([
+            'compile_modules',
+            '--dvm-backend',
+            '--dump-ir',
+            'dbc',
+        ]);
+        expect(compiler.getExecutableFilename('/tmp', 'example')).toBe('/tmp/duck_build/package_dvm.dbc');
+        expect(compiler.compiler.supportsIrView).toBe(false);
+        expect(compiler.compiler.supportsCfg).toBe(false);
+    });
+
+    it('copies the module DBC artifact and identifies its output as plaintext', async () => {
+        const compiler = makeDbcCompiler();
+        const workingDirectory = newTempDir();
+        const inputFilename = path.join(workingDirectory, 'hello.dk');
+        await fs.writeFile(inputFilename, 'fun main() -> i64 = { return 7; }');
+        const dbc = 'module hello { function main() }';
+        vi.spyOn(compiler, 'exec').mockImplementation(async () => {
+            const artifactsDirectory = path.join(workingDirectory, 'duck_build', 'duck_debug_artifacts');
+            await fs.mkdir(artifactsDirectory, {recursive: true});
+            await fs.writeFile(path.join(artifactsDirectory, 'random-id.hello.dbc'), dbc);
+            return makeExecResult();
+        });
+
+        const result = await compiler.runCompiler(
+            'duckc',
+            ['compile_module', inputFilename, '--dvm-backend', '--dump-ir', 'dbc'],
+            inputFilename,
+            makeExecOptions(),
+        );
+
+        expect(result.code).toBe(0);
+        expect(result.languageId).toBe('plaintext');
+        await expect(fs.readFile(path.join(workingDirectory, 'example.s'), 'utf8')).resolves.toBe(dbc);
+    });
+
+    it('invokes the configured DVM and passes program arguments as a comma-separated DVM option', async () => {
+        const compiler = makeDbcCompiler();
+        const runExecutable = vi
+            .spyOn(BaseCompiler.prototype, 'runExecutable')
+            .mockResolvedValue({} as BasicExecutionResult);
+        const executeParameters: ExecutableExecutionOptions = {
+            args: ['hello', 'world'],
+            stdin: '',
+            ldPath: [],
+            env: {},
+        };
+
+        await compiler.runExecutable('/tmp/duck_build/package_dvm.dbc', executeParameters, '/tmp');
+
+        expect(runExecutable).toHaveBeenCalledWith(
+            'test-VM',
+            {
+                ...executeParameters,
+                args: ['run', '/tmp/duck_build/package_dvm.dbc', '--args', 'hello,world'],
+            },
+            '/tmp',
+        );
     });
 
     it('puts the module path after the subcommand and preserves user options', () => {

@@ -26,10 +26,18 @@ import fs from 'node:fs/promises';
 import path from 'node:path';
 
 import type {CompilationResult, ExecutionOptionsWithEnv} from '../../types/compilation/compilation.interfaces.js';
+import type {BasicExecutionResult, ExecutableExecutionOptions} from '../../types/execution/execution.interfaces.js';
 import type {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces.js';
 import type {ResultLine} from '../../types/resultline/resultline.interfaces.js';
 import {BaseCompiler} from '../base-compiler.js';
 import {filterEscapeSequences} from '../utils.js';
+
+function addDvmProgramArguments(executeParameters: ExecutableExecutionOptions): ExecutableExecutionOptions {
+    return {
+        ...executeParameters,
+        args: executeParameters.args.length > 0 ? ['--args', executeParameters.args.join(',')] : [],
+    };
+}
 
 export class DucklingCompiler extends BaseCompiler {
     static get key() {
@@ -48,6 +56,19 @@ export class DucklingCompiler extends BaseCompiler {
 
     override getExecutableFilename(dirPath: string, _outputFilebase: string): string {
         return path.join(dirPath, 'duck_build', 'package_llvm.exe');
+    }
+
+    protected getArtifactFiles(artifacts: string[], inputFilename: string): string[] {
+        const moduleName = path.basename(inputFilename, path.extname(inputFilename));
+        return artifacts.filter(filename => filename.endsWith(`.${moduleName}.s`));
+    }
+
+    protected getArtifactDescription(): string {
+        return 'assembly';
+    }
+
+    protected getArtifactLanguageId(): string | undefined {
+        return undefined;
     }
 
     override orderArguments(
@@ -167,7 +188,6 @@ export class DucklingCompiler extends BaseCompiler {
         this.tagDiagnostics(result.stdout, inputFilename);
         if (result.code !== 0) return result;
 
-        const moduleName = path.basename(inputFilename, path.extname(inputFilename));
         const artifactsDirectory = path.join(duckBuildDirectory, 'duck_debug_artifacts');
         let artifacts: string[] = [];
         try {
@@ -176,19 +196,72 @@ export class DucklingCompiler extends BaseCompiler {
             // A successful compiler exit without this directory means there is no assembly to display.
         }
 
-        const assemblyFiles = artifacts.filter(filename => filename.endsWith(`.${moduleName}.s`));
-        if (assemblyFiles.length !== 1) {
+        const outputFiles = this.getArtifactFiles(artifacts, inputFilename);
+        const artifactDescription = this.getArtifactDescription();
+        if (outputFiles.length !== 1) {
             result.code = 1;
             const message =
-                assemblyFiles.length === 0
-                    ? `Duckling produced no assembly for ${path.basename(inputFilename)}`
-                    : `Duckling produced multiple assembly files for ${path.basename(inputFilename)}`;
+                outputFiles.length === 0
+                    ? `Duckling produced no ${artifactDescription} for ${path.basename(inputFilename)}`
+                    : `Duckling produced multiple ${artifactDescription} files for ${path.basename(inputFilename)}`;
             result.stderr.push({text: message});
             return result;
         }
 
         const outputFilename = this.getOutputFilename(workingDirectory, this.outputFilebase);
-        await fs.copyFile(path.join(artifactsDirectory, assemblyFiles[0]), outputFilename);
+        await fs.copyFile(path.join(artifactsDirectory, outputFiles[0]), outputFilename);
+        const artifactLanguageId = this.getArtifactLanguageId();
+        if (artifactLanguageId) result.languageId = artifactLanguageId;
         return result;
+    }
+}
+
+export class DucklingDbcCompiler extends DucklingCompiler {
+    private readonly dvmExe: string;
+
+    static override get key() {
+        return 'duckling-dbc';
+    }
+
+    constructor(...args: ConstructorParameters<typeof DucklingCompiler>) {
+        super(...args);
+        this.compiler.supportsIrView = false;
+        this.compiler.supportsCfg = false;
+        this.dvmExe = this.compilerProps<string>(`compiler.${this.compiler.id}.dvmExe`, 'VM');
+    }
+
+    override optionsForFilter(filters: ParseFiltersAndOutputOptions, _outputFilename: string): string[] {
+        const command = filters.execute || filters.binary ? 'compile_modules' : 'compile_module';
+        return [command, '--dvm-backend', '--dump-ir', 'dbc'];
+    }
+
+    protected override getArtifactFiles(artifacts: string[], inputFilename: string): string[] {
+        const moduleName = path.basename(inputFilename, path.extname(inputFilename));
+        return artifacts.filter(filename => filename.endsWith(`.${moduleName}.dbc`));
+    }
+
+    protected override getArtifactDescription(): string {
+        return 'DBC';
+    }
+
+    protected override getArtifactLanguageId(): string {
+        return 'plaintext';
+    }
+
+    override getExecutableFilename(dirPath: string, _outputFilebase: string): string {
+        return path.join(dirPath, 'duck_build', 'package_dvm.dbc');
+    }
+
+    override runExecutable(
+        executable: string,
+        executeParameters: ExecutableExecutionOptions,
+        homeDir: string,
+    ): Promise<BasicExecutionResult> {
+        const dvmParameters = addDvmProgramArguments(executeParameters);
+        return super.runExecutable(
+            this.dvmExe,
+            {...dvmParameters, args: ['run', executable, ...dvmParameters.args]},
+            homeDir,
+        );
     }
 }
