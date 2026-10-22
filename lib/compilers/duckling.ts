@@ -120,18 +120,14 @@ export class DucklingCompiler extends BaseCompiler {
 
     override optionsForBackend(backendOptions: Record<string, any>, outputFilename: string): string[] {
         const options = super.optionsForBackend(backendOptions, outputFilename);
-        const requestedOutput = this.compiler.supportsDucklingOutputs?.find(
-            kind => kind === backendOptions.produceDucklingOutput,
-        );
-        if (
-            requestedOutput === 'lexer' ||
-            requestedOutput === 'parser' ||
-            requestedOutput === 'hir' ||
-            requestedOutput === 'mir' ||
-            requestedOutput === 'lir' ||
-            requestedOutput === 'dbc'
-        ) {
-            options.push(`${ducklingOutputRequestPrefix}${requestedOutput}`);
+        const requestedOutputs = new Set([
+            ...(Array.isArray(backendOptions.produceDucklingOutputs) ? backendOptions.produceDucklingOutputs : []),
+            backendOptions.produceDucklingOutput,
+        ]);
+        for (const requestedOutput of this.compiler.supportsDucklingOutputs ?? []) {
+            if (requestedOutputs.has(requestedOutput) && requestedOutput !== 'llvm') {
+                options.push(`${ducklingOutputRequestPrefix}${requestedOutput}`);
+            }
         }
         return options;
     }
@@ -524,26 +520,32 @@ export class DucklingCompiler extends BaseCompiler {
         execOptions: ExecutionOptionsWithEnv,
         filters?: ParseFiltersAndOutputOptions,
     ): Promise<CompilationResult> {
-        const requestedOutputArgument = options.find(option => option.startsWith(ducklingOutputRequestPrefix));
-        const requestedOutputValue = requestedOutputArgument?.slice(ducklingOutputRequestPrefix.length);
-        const requestedOutput = this.compiler.supportsDucklingOutputs?.find(kind => kind === requestedOutputValue);
+        const requestedOutputValues = options
+            .filter(option => option.startsWith(ducklingOutputRequestPrefix))
+            .map(option => option.slice(ducklingOutputRequestPrefix.length));
+        const requestedOutputs = (this.compiler.supportsDucklingOutputs ?? []).filter(kind =>
+            requestedOutputValues.includes(kind),
+        );
+        const requestedOutput = requestedOutputs[0];
         const compilerOptions = options.filter(option => !option.startsWith(ducklingOutputRequestPrefix));
         this.combineDumpIrOptions(compilerOptions);
-        const needsSeparateDvmCompile = requestedOutput === 'dbc' && !compilerOptions.includes('--dvm-backend');
-        if (
-            requestedOutput === 'hir' ||
-            requestedOutput === 'mir' ||
-            requestedOutput === 'lir' ||
-            (requestedOutput === 'dbc' && !needsSeparateDvmCompile)
-        ) {
+        const needsSeparateDvmCompile = requestedOutputs.includes('dbc') && !compilerOptions.includes('--dvm-backend');
+        const artifactOutputKinds = requestedOutputs.filter(
+            (kind): kind is 'hir' | 'mir' | 'lir' | 'dbc' =>
+                kind === 'hir' || kind === 'mir' || kind === 'lir' || kind === 'dbc',
+        );
+        const requestedArtifactOutputKinds = artifactOutputKinds.filter(
+            kind => kind !== 'dbc' || !needsSeparateDvmCompile,
+        );
+        for (const requestedArtifactOutput of requestedArtifactOutputKinds) {
             const dumpIrIndex = compilerOptions.indexOf('--dump-ir');
             if (dumpIrIndex >= 0 && dumpIrIndex + 1 < compilerOptions.length) {
                 const dumpKinds = compilerOptions[dumpIrIndex + 1].split(',');
-                if (!dumpKinds.includes(requestedOutput)) {
-                    compilerOptions[dumpIrIndex + 1] = `${compilerOptions[dumpIrIndex + 1]},${requestedOutput}`;
+                if (!dumpKinds.includes(requestedArtifactOutput)) {
+                    compilerOptions[dumpIrIndex + 1] = `${compilerOptions[dumpIrIndex + 1]},${requestedArtifactOutput}`;
                 }
             } else {
-                compilerOptions.push('--dump-ir', requestedOutput);
+                compilerOptions.push('--dump-ir', requestedArtifactOutput);
             }
         }
 
@@ -572,34 +574,40 @@ export class DucklingCompiler extends BaseCompiler {
         const result = await super.runCompiler(compiler, compilerOptions, inputFilename, execOptions, filters);
         this.tagDiagnostics(result.stderr, inputFilename);
         this.tagDiagnostics(result.stdout, inputFilename);
-        if (requestedOutput === 'lexer' || requestedOutput === 'parser') {
-            result.ducklingOutput = await this.runDucklingFrontendOutput(
-                compiler,
-                requestedOutput,
-                inputFilename,
-                execOptions,
-                filters,
-            );
-        } else if (requestedOutput === 'dbc' && needsSeparateDvmCompile) {
-            result.ducklingOutput = await this.generateDvmOutput(
-                compiler,
-                compilerOptions,
-                inputFilename,
-                workingDirectory,
-                execOptions,
-                filters,
-            );
-        } else if (
-            requestedOutput === 'hir' ||
-            requestedOutput === 'mir' ||
-            requestedOutput === 'lir' ||
-            requestedOutput === 'dbc'
-        ) {
-            result.ducklingOutput = await this.readDucklingOutputArtifact(
-                requestedOutput,
-                path.join(duckBuildDirectory, 'duck_debug_artifacts'),
-                inputFilename,
-            );
+        if (requestedOutputs.length > 0) {
+            result.ducklingOutputs = {};
+            for (const outputKind of requestedOutputs) {
+                if (outputKind === 'lexer' || outputKind === 'parser') {
+                    result.ducklingOutputs[outputKind] = await this.runDucklingFrontendOutput(
+                        compiler,
+                        outputKind,
+                        inputFilename,
+                        execOptions,
+                        filters,
+                    );
+                } else if (outputKind === 'dbc' && needsSeparateDvmCompile) {
+                    result.ducklingOutputs[outputKind] = await this.generateDvmOutput(
+                        compiler,
+                        compilerOptions,
+                        inputFilename,
+                        workingDirectory,
+                        execOptions,
+                        filters,
+                    );
+                } else if (
+                    outputKind === 'hir' ||
+                    outputKind === 'mir' ||
+                    outputKind === 'lir' ||
+                    outputKind === 'dbc'
+                ) {
+                    result.ducklingOutputs[outputKind] = await this.readDucklingOutputArtifact(
+                        outputKind,
+                        path.join(duckBuildDirectory, 'duck_debug_artifacts'),
+                        inputFilename,
+                    );
+                }
+            }
+            if (requestedOutput) result.ducklingOutput = result.ducklingOutputs[requestedOutput];
         }
         if (result.code !== 0) return result;
 

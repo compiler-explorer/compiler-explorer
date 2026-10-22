@@ -134,6 +134,7 @@ export type CompilationRequestOptions = {
         produceClojureMacroExp?: boolean;
         produceYul?: YulBackendOptions | null;
         produceDucklingOutput?: DucklingOutputKind;
+        produceDucklingOutputs?: DucklingOutputKind[];
         cmakeArgs?: string;
         customOutputFilename?: string;
         overrides?: ConfiguredOverrides;
@@ -242,6 +243,16 @@ export type CompilationResult = {
         output: ResultLine[];
         languageId: string;
     };
+    ducklingOutputs?: Partial<
+        Record<
+            DucklingOutputKind,
+            {
+                kind: DucklingOutputKind;
+                output: ResultLine[];
+                languageId: string;
+            }
+        >
+    >;
 
     forceBinaryView?: boolean;
 

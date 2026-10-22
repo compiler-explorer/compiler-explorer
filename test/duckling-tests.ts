@@ -381,6 +381,68 @@ describe('Duckling compiler', () => {
         expect(args).toEqual(['compile_module', '/tmp/example.dk', '--dump-ir', 'asm', '--__ce-duckling-output=mir']);
     });
 
+    it('adds multiple typed Duckling output requests to the prepared compiler arguments', () => {
+        const compiler = makeCompiler();
+
+        const args = compiler.prepareArguments(
+            [],
+            {},
+            {produceDucklingOutputs: ['hir', 'mir']},
+            '/tmp/example.dk',
+            '/tmp/example.s',
+            [],
+            [],
+        );
+
+        expect(args).toEqual([
+            'compile_module',
+            '/tmp/example.dk',
+            '--dump-ir',
+            'asm',
+            '--__ce-duckling-output=hir',
+            '--__ce-duckling-output=mir',
+        ]);
+    });
+
+    it('returns multiple module IR outputs from one compiler invocation', async () => {
+        const compiler = makeCompiler();
+        const workingDirectory = newTempDir();
+        const inputFilename = path.join(workingDirectory, 'hello.dk');
+        const assembly = '\t.text\nmain:\n\tretq\n';
+        const hir = 'module hello {\n  fun main()\n}\n';
+        const mir = 'module hello {\n  block main\n}\n';
+        await fs.writeFile(inputFilename, 'fun main() -> i64 = { return 7; }');
+        vi.spyOn(compiler, 'exec').mockImplementation(async (_exe, args) => {
+            expect(args).toEqual(['compile_module', inputFilename, '--dump-ir', 'asm,hir,mir']);
+            const artifactsDirectory = path.join(workingDirectory, 'duck_build', 'duck_debug_artifacts');
+            await fs.mkdir(artifactsDirectory, {recursive: true});
+            await fs.writeFile(path.join(artifactsDirectory, 'random-id.hello.s'), assembly);
+            await fs.writeFile(path.join(artifactsDirectory, 'random-id.hello.hir'), hir);
+            await fs.writeFile(path.join(artifactsDirectory, 'random-id.hello.mir'), mir);
+            return makeExecResult();
+        });
+
+        const result = await compiler.runCompiler(
+            'duckc',
+            [
+                'compile_module',
+                inputFilename,
+                '--dump-ir',
+                'asm',
+                '--__ce-duckling-output=hir',
+                '--__ce-duckling-output=mir',
+            ],
+            inputFilename,
+            makeExecOptions(),
+        );
+
+        expect(result.code).toBe(0);
+        expect(result.ducklingOutputs?.hir?.output.map(line => line.text).join('\n')).toBe(hir);
+        expect(result.ducklingOutputs?.mir?.output.map(line => line.text).join('\n')).toBe(mir);
+        expect(result.ducklingOutput?.kind).toBe('hir');
+        await expect(fs.readFile(path.join(workingDirectory, 'example.s'), 'utf8')).resolves.toBe(assembly);
+    });
+
     it('returns module HIR while preserving the normal assembly output', async () => {
         const compiler = makeCompiler();
         const workingDirectory = newTempDir();
