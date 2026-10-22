@@ -81,7 +81,7 @@ export class DucklingCompiler extends BaseCompiler {
     constructor(...args: ConstructorParameters<typeof BaseCompiler>) {
         super(...args);
         this.outputFilebase = 'example';
-        this.compiler.supportsDucklingOutputs = ['hir'];
+        this.compiler.supportsDucklingOutputs = ['hir', 'lir'];
     }
 
     protected override getArgumentParserClass(): typeof BaseParser {
@@ -108,8 +108,11 @@ export class DucklingCompiler extends BaseCompiler {
 
     override optionsForBackend(backendOptions: Record<string, any>, outputFilename: string): string[] {
         const options = super.optionsForBackend(backendOptions, outputFilename);
-        if (backendOptions.produceDucklingOutput === 'hir' && this.compiler.supportsDucklingOutputs?.includes('hir')) {
-            options.push(`${ducklingOutputRequestPrefix}hir`);
+        const requestedOutput = this.compiler.supportsDucklingOutputs?.find(
+            kind => kind === backendOptions.produceDucklingOutput,
+        );
+        if (requestedOutput === 'hir' || requestedOutput === 'lir') {
+            options.push(`${ducklingOutputRequestPrefix}${requestedOutput}`);
         }
         return options;
     }
@@ -146,9 +149,9 @@ export class DucklingCompiler extends BaseCompiler {
         artifacts: string[],
         inputFilename: string,
     ): string[] {
-        if (kind !== 'hir') return [];
+        if (kind !== 'hir' && kind !== 'lir') return [];
         const moduleName = path.basename(inputFilename, path.extname(inputFilename));
-        return artifacts.filter(filename => filename.endsWith(`.${moduleName}.hir`));
+        return artifacts.filter(filename => filename.endsWith(`.${moduleName}.${kind}`));
     }
 
     protected async readDucklingOutputArtifact(
@@ -186,7 +189,9 @@ export class DucklingCompiler extends BaseCompiler {
             );
             return {
                 kind,
-                output: output ? output.split('\n').map(text => ({text})) : [{text: '<No HIR output>'}],
+                output: output
+                    ? output.split('\n').map(text => ({text}))
+                    : [{text: `<No ${kind.toUpperCase()} output>`}],
                 languageId: 'plaintext',
             };
         } catch (error) {
@@ -288,19 +293,18 @@ export class DucklingCompiler extends BaseCompiler {
         filters?: ParseFiltersAndOutputOptions,
     ): Promise<CompilationResult> {
         const requestedOutputArgument = options.find(option => option.startsWith(ducklingOutputRequestPrefix));
-        const requestedOutput = requestedOutputArgument?.slice(ducklingOutputRequestPrefix.length);
-        const shouldProduceHir =
-            requestedOutput === 'hir' && this.compiler.supportsDucklingOutputs?.includes('hir') === true;
+        const requestedOutputValue = requestedOutputArgument?.slice(ducklingOutputRequestPrefix.length);
+        const requestedOutput = this.compiler.supportsDucklingOutputs?.find(kind => kind === requestedOutputValue);
         const compilerOptions = options.filter(option => !option.startsWith(ducklingOutputRequestPrefix));
-        if (shouldProduceHir) {
+        if (requestedOutput === 'hir' || requestedOutput === 'lir') {
             const dumpIrIndex = compilerOptions.indexOf('--dump-ir');
             if (dumpIrIndex >= 0 && dumpIrIndex + 1 < compilerOptions.length) {
                 const dumpKinds = compilerOptions[dumpIrIndex + 1].split(',');
-                if (!dumpKinds.includes('hir')) {
-                    compilerOptions[dumpIrIndex + 1] = `${compilerOptions[dumpIrIndex + 1]},hir`;
+                if (!dumpKinds.includes(requestedOutput)) {
+                    compilerOptions[dumpIrIndex + 1] = `${compilerOptions[dumpIrIndex + 1]},${requestedOutput}`;
                 }
             } else {
-                compilerOptions.push('--dump-ir', 'hir');
+                compilerOptions.push('--dump-ir', requestedOutput);
             }
         }
 
@@ -329,9 +333,9 @@ export class DucklingCompiler extends BaseCompiler {
         const result = await super.runCompiler(compiler, compilerOptions, inputFilename, execOptions, filters);
         this.tagDiagnostics(result.stderr, inputFilename);
         this.tagDiagnostics(result.stdout, inputFilename);
-        if (shouldProduceHir) {
+        if (requestedOutput === 'hir' || requestedOutput === 'lir') {
             result.ducklingOutput = await this.readDucklingOutputArtifact(
-                'hir',
+                requestedOutput,
                 path.join(duckBuildDirectory, 'duck_debug_artifacts'),
                 inputFilename,
             );
@@ -384,7 +388,9 @@ export class DucklingScriptCompiler extends DucklingCompiler {
         artifacts: string[],
         inputFilename: string,
     ): string[] {
-        if (kind === 'hir') return artifacts.filter(filename => /^script_module_[a-f0-9]+\.hir$/.test(filename));
+        if (kind === 'hir' || kind === 'lir') {
+            return artifacts.filter(filename => new RegExp(`^script_module_[a-f0-9]+\\.${kind}$`).test(filename));
+        }
         return super.getDucklingOutputArtifactFiles(kind, artifacts, inputFilename);
     }
 
@@ -422,7 +428,7 @@ export class DucklingDbcCompiler extends DucklingCompiler {
         super(...args);
         this.compiler.supportsIrView = false;
         this.compiler.supportsCfg = false;
-        this.compiler.supportsDucklingOutputs = ['hir'];
+        this.compiler.supportsDucklingOutputs = ['hir', 'lir'];
         this.dvmExe = this.compilerProps<string>(`compiler.${this.compiler.id}.dvmExe`, 'VM');
     }
 
