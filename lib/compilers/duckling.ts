@@ -31,7 +31,7 @@ import type {
     CompilationResult,
     ExecutionOptionsWithEnv,
 } from '../../types/compilation/compilation.interfaces.js';
-import {DUCKLING_OUTPUT_KINDS} from '../../types/compiler.interfaces.js';
+import type {DucklingOutputKind} from '../../types/compiler.interfaces.js';
 import type {BasicExecutionResult, ExecutableExecutionOptions} from '../../types/execution/execution.interfaces.js';
 import type {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces.js';
 import type {SelectedLibraryVersion} from '../../types/libraries/libraries.interfaces.js';
@@ -47,6 +47,8 @@ function addDvmProgramArguments(executeParameters: ExecutableExecutionOptions): 
         args: executeParameters.args.length > 0 ? ['--args', executeParameters.args.join(',')] : [],
     };
 }
+
+const ducklingOutputRequestPrefix = '--__ce-duckling-output=';
 
 class DucklingParser extends BaseParser {
     override async parse() {
@@ -79,10 +81,7 @@ export class DucklingCompiler extends BaseCompiler {
     constructor(...args: ConstructorParameters<typeof BaseCompiler>) {
         super(...args);
         this.outputFilebase = 'example';
-        this.compiler.supportsDucklingOutputs =
-            this.compiler.lang === 'duckling-script'
-                ? DUCKLING_OUTPUT_KINDS.filter(kind => kind !== 'lexer' && kind !== 'parser')
-                : [...DUCKLING_OUTPUT_KINDS];
+        this.compiler.supportsDucklingOutputs = ['hir'];
     }
 
     protected override getArgumentParserClass(): typeof BaseParser {
@@ -105,6 +104,14 @@ export class DucklingCompiler extends BaseCompiler {
     override optionsForFilter(filters: ParseFiltersAndOutputOptions, _outputFilename: string): string[] {
         if (filters.binary || filters.execute) return ['compile_modules', '--dump-ir', 'asm'];
         return ['compile_module', '--dump-ir', 'asm'];
+    }
+
+    override optionsForBackend(backendOptions: Record<string, any>, outputFilename: string): string[] {
+        const options = super.optionsForBackend(backendOptions, outputFilename);
+        if (backendOptions.produceDucklingOutput === 'hir' && this.compiler.supportsDucklingOutputs?.includes('hir')) {
+            options.push(`${ducklingOutputRequestPrefix}hir`);
+        }
+        return options;
     }
 
     protected override getLibLinkInfo(
@@ -132,6 +139,63 @@ export class DucklingCompiler extends BaseCompiler {
 
     protected getArtifactLanguageId(): string | undefined {
         return undefined;
+    }
+
+    protected getDucklingOutputArtifactFiles(
+        kind: DucklingOutputKind,
+        artifacts: string[],
+        inputFilename: string,
+    ): string[] {
+        if (kind !== 'hir') return [];
+        const moduleName = path.basename(inputFilename, path.extname(inputFilename));
+        return artifacts.filter(filename => filename.endsWith(`.${moduleName}.hir`));
+    }
+
+    protected async readDucklingOutputArtifact(
+        kind: DucklingOutputKind,
+        artifactsDirectory: string,
+        inputFilename: string,
+    ): Promise<NonNullable<CompilationResult['ducklingOutput']>> {
+        let artifacts: string[] = [];
+        try {
+            artifacts = await fs.readdir(artifactsDirectory);
+        } catch {
+            // A successful assembly compile without artifacts is shown in the output pane as a normal result.
+        }
+
+        const outputFiles = this.getDucklingOutputArtifactFiles(kind, artifacts, inputFilename);
+        if (outputFiles.length !== 1) {
+            return {
+                kind,
+                output: [
+                    {
+                        text:
+                            outputFiles.length === 0
+                                ? `Duckling produced no ${kind.toUpperCase()} output`
+                                : `Duckling produced multiple ${kind.toUpperCase()} outputs`,
+                    },
+                ],
+                languageId: 'plaintext',
+            };
+        }
+
+        try {
+            const output = (await fs.readFile(path.join(artifactsDirectory, outputFiles[0]), 'utf8')).replace(
+                /\r\n?/g,
+                '\n',
+            );
+            return {
+                kind,
+                output: output ? output.split('\n').map(text => ({text})) : [{text: '<No HIR output>'}],
+                languageId: 'plaintext',
+            };
+        } catch (error) {
+            return {
+                kind,
+                output: [{text: `Duckling ${kind.toUpperCase()} output failed: ${String(error)}`}],
+                languageId: 'plaintext',
+            };
+        }
     }
 
     override orderArguments(
@@ -223,6 +287,23 @@ export class DucklingCompiler extends BaseCompiler {
         execOptions: ExecutionOptionsWithEnv,
         filters?: ParseFiltersAndOutputOptions,
     ): Promise<CompilationResult> {
+        const requestedOutputArgument = options.find(option => option.startsWith(ducklingOutputRequestPrefix));
+        const requestedOutput = requestedOutputArgument?.slice(ducklingOutputRequestPrefix.length);
+        const shouldProduceHir =
+            requestedOutput === 'hir' && this.compiler.supportsDucklingOutputs?.includes('hir') === true;
+        const compilerOptions = options.filter(option => !option.startsWith(ducklingOutputRequestPrefix));
+        if (shouldProduceHir) {
+            const dumpIrIndex = compilerOptions.indexOf('--dump-ir');
+            if (dumpIrIndex >= 0 && dumpIrIndex + 1 < compilerOptions.length) {
+                const dumpKinds = compilerOptions[dumpIrIndex + 1].split(',');
+                if (!dumpKinds.includes('hir')) {
+                    compilerOptions[dumpIrIndex + 1] = `${compilerOptions[dumpIrIndex + 1]},hir`;
+                }
+            } else {
+                compilerOptions.push('--dump-ir', 'hir');
+            }
+        }
+
         const workingDirectory = path.dirname(inputFilename);
         const duckBuildDirectory = path.join(workingDirectory, 'duck_build');
         await fs.rm(duckBuildDirectory, {recursive: true, force: true});
@@ -231,7 +312,6 @@ export class DucklingCompiler extends BaseCompiler {
         execOptions ??= this.getDefaultExecOptions();
         execOptions.customCwd = workingDirectory;
 
-        const compilerOptions = [...options];
         if (compilerOptions[0] === 'compile_module' || compilerOptions[0] === 'compile_modules') {
             const moduleFiles = await this.getModuleSourceFiles(workingDirectory);
             const otherModuleFiles = moduleFiles
@@ -249,6 +329,13 @@ export class DucklingCompiler extends BaseCompiler {
         const result = await super.runCompiler(compiler, compilerOptions, inputFilename, execOptions, filters);
         this.tagDiagnostics(result.stderr, inputFilename);
         this.tagDiagnostics(result.stdout, inputFilename);
+        if (shouldProduceHir) {
+            result.ducklingOutput = await this.readDucklingOutputArtifact(
+                'hir',
+                path.join(duckBuildDirectory, 'duck_debug_artifacts'),
+                inputFilename,
+            );
+        }
         if (result.code !== 0) return result;
 
         const artifactsDirectory = path.join(duckBuildDirectory, 'duck_debug_artifacts');
@@ -292,6 +379,15 @@ export class DucklingScriptCompiler extends DucklingCompiler {
         return artifacts.filter(filename => /^script_module_[a-f0-9]+\.s$/.test(filename));
     }
 
+    protected override getDucklingOutputArtifactFiles(
+        kind: DucklingOutputKind,
+        artifacts: string[],
+        inputFilename: string,
+    ): string[] {
+        if (kind === 'hir') return artifacts.filter(filename => /^script_module_[a-f0-9]+\.hir$/.test(filename));
+        return super.getDucklingOutputArtifactFiles(kind, artifacts, inputFilename);
+    }
+
     override getExecutableFilename(
         dirPath: string,
         outputFilebase: string,
@@ -326,7 +422,7 @@ export class DucklingDbcCompiler extends DucklingCompiler {
         super(...args);
         this.compiler.supportsIrView = false;
         this.compiler.supportsCfg = false;
-        this.compiler.supportsDucklingOutputs = DUCKLING_OUTPUT_KINDS.filter(kind => kind !== 'llvm');
+        this.compiler.supportsDucklingOutputs = ['hir'];
         this.dvmExe = this.compilerProps<string>(`compiler.${this.compiler.id}.dvmExe`, 'VM');
     }
 
