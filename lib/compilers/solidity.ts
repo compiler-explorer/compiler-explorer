@@ -27,6 +27,8 @@ import path from 'node:path';
 
 import Semver from 'semver';
 
+import type {BasicExecutionResult, UnprocessedExecResult} from '../../types/execution/execution.interfaces.js';
+import type {ResultLine} from '../../types/resultline/resultline.interfaces.js';
 import {BaseCompiler} from '../base-compiler.js';
 import {asSafeVer} from '../utils.js';
 import {ClangParser} from './argument-parsers.js';
@@ -62,6 +64,16 @@ export class SolidityCompiler extends BaseCompiler {
 
     override isCfgCompiler() {
         return false;
+    }
+
+    override processExecutionResult(input: UnprocessedExecResult, inputFilename?: string): BasicExecutionResult {
+        const result = super.processExecutionResult(input, inputFilename);
+        const isNotSuccessMessage = (line: ResultLine) => !line.text.startsWith('Compiler run successful');
+        return {
+            ...result,
+            stdout: result.stdout.filter(isNotSuccessMessage),
+            stderr: result.stderr.filter(isNotSuccessMessage),
+        };
     }
 
     override getOutputFilename(dirPath: string) {
