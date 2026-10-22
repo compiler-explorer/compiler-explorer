@@ -24,7 +24,7 @@
 
 import * as monaco from 'monaco-editor';
 
-import {getDeclaredFunctionNames} from './duckling-completions.js';
+import {getDeclaredFunctionNames, getFunctionDefinitions} from './duckling-completions.js';
 
 monaco.languages.register({id: 'duckling'});
 
@@ -180,6 +180,27 @@ export const ducklingCompletionItemProvider = {
 } satisfies monaco.languages.CompletionItemProvider;
 
 monaco.languages.registerCompletionItemProvider('duckling', ducklingCompletionItemProvider);
+
+export const ducklingDefinitionProvider = {
+    provideDefinition(model: monaco.editor.ITextModel, position: monaco.Position) {
+        const word = model.getWordAtPosition(position);
+        if (!word) return null;
+
+        return getFunctionDefinitions(model.getValue())
+            .filter(definition => definition.name === word.word)
+            .map(definition => ({
+                uri: model.uri,
+                range: new monaco.Range(
+                    definition.lineNumber,
+                    definition.column,
+                    definition.lineNumber,
+                    definition.column + definition.name.length,
+                ),
+            }));
+    },
+} satisfies monaco.languages.DefinitionProvider;
+
+monaco.languages.registerDefinitionProvider('duckling', ducklingDefinitionProvider);
 
 export const ducklingIndentationRules = {
     increaseIndentPattern: /^(?!\s*#).*(?:\{|\[|\()\s*(?:#.*)?$/,

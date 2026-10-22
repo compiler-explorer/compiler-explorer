@@ -34,3 +34,33 @@ export function getDeclaredFunctionNames(source: string): string[] {
 
     return [...names];
 }
+
+export interface DucklingFunctionDefinition {
+    name: string;
+    lineNumber: number;
+    column: number;
+}
+
+export function getFunctionDefinitions(source: string): DucklingFunctionDefinition[] {
+    const definitions: DucklingFunctionDefinition[] = [];
+    const definitionPattern = /^[ \t]*fun[ \t]+([A-Za-z_]\w*)[ \t]*\(/gm;
+    let lineNumber = 1;
+    let scannedThrough = 0;
+    let match = definitionPattern.exec(source);
+
+    while (match) {
+        lineNumber += (source.slice(scannedThrough, match.index).match(/\n/g) ?? []).length;
+        const name = match[1];
+        if (name) {
+            definitions.push({
+                name,
+                lineNumber,
+                column: match[0].indexOf(name) + 1,
+            });
+        }
+        scannedThrough = definitionPattern.lastIndex;
+        match = definitionPattern.exec(source);
+    }
+
+    return definitions;
+}

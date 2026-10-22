@@ -25,7 +25,11 @@
 import * as monaco from 'monaco-editor';
 import {describe, expect, it} from 'vitest';
 
-import {ducklingCompletionItemProvider, ducklingIndentationRules} from '../../modes/duckling-mode.js';
+import {
+    ducklingCompletionItemProvider,
+    ducklingDefinitionProvider,
+    ducklingIndentationRules,
+} from '../../modes/duckling-mode.js';
 
 describe('Duckling mode completions', () => {
     it('suggests keywords, types, and useful source snippets with the current word range', () => {
@@ -74,5 +78,43 @@ describe('Duckling mode indentation', () => {
         expect(ducklingIndentationRules.decreaseIndentPattern.test('    ]')).toBe(true);
         expect(ducklingIndentationRules.decreaseIndentPattern.test(')')).toBe(true);
         expect(ducklingIndentationRules.decreaseIndentPattern.test('return 0;')).toBe(false);
+    });
+});
+
+describe('Duckling go to definition', () => {
+    function createModel(source: string, word: string | null) {
+        return {
+            getValue: () => source,
+            getWordAtPosition: () => (word ? {word, startColumn: 1, endColumn: word.length + 1} : null),
+            uri: monaco.Uri.parse('inmemory://model/duckling'),
+        } as unknown as monaco.editor.ITextModel;
+    }
+
+    it('navigates a function reference to its definition', () => {
+        const model = createModel('fun main() = { return helper(); }\n    fun helper() = {}', 'helper');
+        const definitions = ducklingDefinitionProvider.provideDefinition(model, new monaco.Position(1, 25));
+
+        expect(definitions).toHaveLength(1);
+        expect(definitions?.[0]).toMatchObject({
+            uri: model.uri,
+            range: {startLineNumber: 2, startColumn: 9, endLineNumber: 2, endColumn: 15},
+        });
+    });
+
+    it('returns every matching definition when a name is ambiguous', () => {
+        const model = createModel('fun helper() = {}\nfun helper() = {}', 'helper');
+        const definitions = ducklingDefinitionProvider.provideDefinition(model, new monaco.Position(1, 5));
+
+        expect(definitions).toHaveLength(2);
+    });
+
+    it('returns no location for an unknown name or a position without a word', () => {
+        const source = 'fun main() = {}';
+        expect(
+            ducklingDefinitionProvider.provideDefinition(createModel(source, 'missing'), new monaco.Position(1, 1)),
+        ).toEqual([]);
+        expect(
+            ducklingDefinitionProvider.provideDefinition(createModel(source, null), new monaco.Position(1, 1)),
+        ).toBeNull();
     });
 });

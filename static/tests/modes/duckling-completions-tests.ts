@@ -24,7 +24,7 @@
 
 import {describe, expect, it} from 'vitest';
 
-import {getDeclaredFunctionNames} from '../../modes/duckling-completions.js';
+import {getDeclaredFunctionNames, getFunctionDefinitions} from '../../modes/duckling-completions.js';
 
 describe('Duckling source completions', () => {
     it('suggests function and function declaration names without duplicates', () => {
@@ -37,5 +37,16 @@ describe('Duckling source completions', () => {
 
     it('returns no names when the source has no function declarations', () => {
         expect(getDeclaredFunctionNames('var answer: i64 = 42i64;')).toEqual([]);
+    });
+
+    it('finds function definitions with one-based source positions and ignores declarations', () => {
+        expect(
+            getFunctionDefinitions(
+                '# fun ignored()\nfundecl external() -> i64;\nfun main() -> i64 = {\n    return helper();\n}\n    fun helper() = {}',
+            ),
+        ).toEqual([
+            {name: 'main', lineNumber: 3, column: 5},
+            {name: 'helper', lineNumber: 6, column: 9},
+        ]);
     });
 });
