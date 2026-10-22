@@ -173,6 +173,13 @@
           - 'lib/compilers/dart.ts'
           - 'etc/config/dart.*.properties'
 
+'lang-duckling':
+  - changed-files:
+      - any-glob-to-any-file:
+          - 'lib/compilers/duckling.ts'
+          - 'etc/config/duckling.*.properties'
+          - 'static/modes/duckling-mode.ts'
+
 'lang-fortran':
   - changed-files:
       - any-glob-to-any-file:
