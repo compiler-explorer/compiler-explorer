@@ -57,6 +57,7 @@ export type LanguageKey =
     | 'd'
     | 'dart'
     | 'duckling'
+    | 'duckling-script'
     | 'elixir'
     | 'erlang'
     | 'fortran'

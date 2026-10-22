@@ -28,8 +28,9 @@ import path from 'node:path';
 import {afterEach, describe, expect, it, vi} from 'vitest';
 
 import {BaseCompiler} from '../lib/base-compiler.js';
-import {DucklingCompiler, DucklingDbcCompiler} from '../lib/compilers/duckling.js';
+import {DucklingCompiler, DucklingDbcCompiler, DucklingScriptCompiler} from '../lib/compilers/duckling.js';
 import {getCompilerTypeByKey} from '../lib/compilers/index.js';
+import {languages as languageDefinitions} from '../lib/languages.js';
 import type {ExecutionOptionsWithEnv} from '../types/compilation/compilation.interfaces.js';
 import type {
     BasicExecutionResult,
@@ -39,12 +40,22 @@ import type {
 import type {LanguageKey} from '../types/languages.interfaces.js';
 import {makeCompilationEnvironment, makeFakeCompilerInfo, newTempDir} from './utils.js';
 
-const languages = {duckling: {id: 'duckling' as LanguageKey}};
+const languages = {
+    duckling: {id: 'duckling' as LanguageKey},
+    'duckling-script': {id: 'duckling-script' as LanguageKey},
+};
 const environment = makeCompilationEnvironment({languages});
 
 function makeCompiler() {
     return new DucklingCompiler(
         makeFakeCompilerInfo({lang: 'duckling' as LanguageKey, exe: '/duckling/bin/duckc'}),
+        environment,
+    );
+}
+
+function makeScriptCompiler() {
+    return new DucklingScriptCompiler(
+        makeFakeCompilerInfo({id: 'duckcscript', lang: 'duckling-script' as LanguageKey, exe: 'duckc'}),
         environment,
     );
 }
@@ -86,6 +97,46 @@ afterEach(() => vi.restoreAllMocks());
 describe('Duckling compiler', () => {
     it('is registered as the duckling compiler type', () => {
         expect(getCompilerTypeByKey('duckling')).toBe(DucklingCompiler);
+    });
+
+    it('registers Duckling Script as a separate language and compiler type', () => {
+        const compiler = makeScriptCompiler();
+
+        expect(languageDefinitions['duckling-script'].extensions).toEqual(['.dks']);
+        expect(languageDefinitions['duckling-script'].monaco).toBe('duckling');
+        expect(getCompilerTypeByKey('duckling-script')).toBe(DucklingScriptCompiler);
+        expect((compiler as any).optionsForFilter({}, '/tmp/example.s')).toEqual([
+            'compile_script',
+            '--dump-ir',
+            'asm',
+        ]);
+    });
+
+    it('compiles a Duckling Script source and selects its script assembly artifact', async () => {
+        const compiler = makeScriptCompiler();
+        const workingDirectory = newTempDir();
+        const inputFilename = path.join(workingDirectory, 'hello.dks');
+        const assembly = '\t.text\nscript_main:\n\tretq\n';
+        await fs.writeFile(inputFilename, 'builtin_output_i64(42);');
+        vi.spyOn(compiler, 'exec').mockImplementation(async (_exe, args, execOptions) => {
+            expect(args).toEqual(['compile_script', inputFilename, '--dump-ir', 'asm']);
+            expect(execOptions.customCwd).toBe(workingDirectory);
+            const artifactsDirectory = path.join(workingDirectory, 'duck_build', 'duck_debug_artifacts');
+            await fs.mkdir(artifactsDirectory, {recursive: true});
+            await fs.writeFile(path.join(artifactsDirectory, 'random-id.hello.s'), 'module assembly');
+            await fs.writeFile(path.join(artifactsDirectory, 'script_module_abc123.s'), assembly);
+            return makeExecResult();
+        });
+
+        const result = await compiler.runCompiler(
+            'duckc',
+            ['compile_script', inputFilename, '--dump-ir', 'asm'],
+            inputFilename,
+            makeExecOptions(),
+        );
+
+        expect(result.code).toBe(0);
+        await expect(fs.readFile(path.join(workingDirectory, 'example.s'), 'utf8')).resolves.toBe(assembly);
     });
 
     it('uses the Duckling native executable for module execution', () => {

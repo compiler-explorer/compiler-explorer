@@ -178,6 +178,7 @@
       - any-glob-to-any-file:
           - 'lib/compilers/duckling.ts'
           - 'etc/config/duckling.*.properties'
+          - 'etc/config/duckling-script.*.properties'
           - 'static/modes/duckling-mode.ts'
 
 'lang-fortran':

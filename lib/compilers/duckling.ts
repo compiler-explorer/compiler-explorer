@@ -216,6 +216,20 @@ export class DucklingCompiler extends BaseCompiler {
     }
 }
 
+export class DucklingScriptCompiler extends DucklingCompiler {
+    static override get key() {
+        return 'duckling-script';
+    }
+
+    override optionsForFilter(_filters: ParseFiltersAndOutputOptions, _outputFilename: string): string[] {
+        return ['compile_script', '--dump-ir', 'asm'];
+    }
+
+    protected override getArtifactFiles(artifacts: string[], _inputFilename: string): string[] {
+        return artifacts.filter(filename => /^script_module_[a-f0-9]+\.s$/.test(filename));
+    }
+}
+
 export class DucklingDbcCompiler extends DucklingCompiler {
     private readonly dvmExe: string;
 
