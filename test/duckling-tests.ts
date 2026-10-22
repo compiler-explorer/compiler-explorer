@@ -61,6 +61,7 @@ function makeScriptCompiler() {
             exe: 'duckc',
             interpreted: true,
             supportsExecute: true,
+            supportsBinary: true,
         }),
         environment,
     );
@@ -111,6 +112,7 @@ describe('Duckling compiler', () => {
         expect(languageDefinitions['duckling-script'].extensions).toEqual(['.dks']);
         expect(languageDefinitions['duckling-script'].monaco).toBe('duckling');
         expect(getCompilerTypeByKey('duckling-script')).toBe(DucklingScriptCompiler);
+        expect(compiler.compiler.supportsBinary).toBe(true);
         expect((compiler as any).optionsForFilter({}, '/tmp/example.s')).toEqual([
             'compile_script',
             '--dump-ir',
@@ -185,6 +187,38 @@ describe('Duckling compiler', () => {
             'asm',
         ]);
         expect(compiler.getExecutableFilename('/tmp', 'example')).toBe('/tmp/duck_build/package_llvm.exe');
+    });
+
+    it('does not add generic library linker arguments when no libraries are selected', () => {
+        const compiler = makeCompiler();
+
+        const args = compiler.prepareArguments(
+            [],
+            {binary: true, execute: true},
+            {},
+            '/tmp/example.dk',
+            '/tmp/duck_build/package_llvm.exe',
+            [],
+            [],
+        );
+
+        expect(args).toEqual(['compile_modules', '/tmp/example.dk', '--dump-ir', 'asm']);
+    });
+
+    it('selects native execution for Duckling Script Binary output on the same compiler profile', () => {
+        const compiler = makeScriptCompiler();
+        const interpretedKey = {filters: {binary: false}} as unknown as CacheKey;
+        const binaryKey = {filters: {binary: true}} as unknown as CacheKey;
+
+        expect((compiler as any).shouldInterpret(interpretedKey)).toBe(true);
+        expect((compiler as any).shouldInterpret(binaryKey)).toBe(false);
+        expect(compiler.getExecutableFilename('/tmp', 'example')).toBe('/tmp/example.dks');
+        expect(compiler.getExecutableFilename('/tmp', 'example', binaryKey)).toBe('/tmp/duck_build/example.exe');
+        expect((compiler as any).optionsForFilter(binaryKey.filters, '/tmp/example.s')).toEqual([
+            'compile_script',
+            '--dump-ir',
+            'asm',
+        ]);
     });
 
     it('registers a DVM-backed module compiler profile', () => {

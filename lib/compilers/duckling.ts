@@ -25,9 +25,15 @@
 import fs from 'node:fs/promises';
 import path from 'node:path';
 
-import type {CompilationResult, ExecutionOptionsWithEnv} from '../../types/compilation/compilation.interfaces.js';
+import type {
+    CacheKey,
+    CompilationCacheKey,
+    CompilationResult,
+    ExecutionOptionsWithEnv,
+} from '../../types/compilation/compilation.interfaces.js';
 import type {BasicExecutionResult, ExecutableExecutionOptions} from '../../types/execution/execution.interfaces.js';
 import type {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces.js';
+import type {SelectedLibraryVersion} from '../../types/libraries/libraries.interfaces.js';
 import type {ResultLine} from '../../types/resultline/resultline.interfaces.js';
 import {BaseCompiler} from '../base-compiler.js';
 import {filterEscapeSequences} from '../utils.js';
@@ -52,6 +58,16 @@ export class DucklingCompiler extends BaseCompiler {
     override optionsForFilter(filters: ParseFiltersAndOutputOptions, _outputFilename: string): string[] {
         if (filters.binary || filters.execute) return ['compile_modules', '--dump-ir', 'asm'];
         return ['compile_module', '--dump-ir', 'asm'];
+    }
+
+    protected override getLibLinkInfo(
+        filters: ParseFiltersAndOutputOptions,
+        libraries: SelectedLibraryVersion[],
+        toolchainPath: string | undefined,
+        dirPath: string,
+    ) {
+        if (libraries.length === 0) return {libLinks: [], libPathsAsFlags: [], staticLibLinks: []};
+        return super.getLibLinkInfo(filters, libraries, toolchainPath, dirPath);
     }
 
     override getExecutableFilename(dirPath: string, _outputFilebase: string): string {
@@ -229,8 +245,19 @@ export class DucklingScriptCompiler extends DucklingCompiler {
         return artifacts.filter(filename => /^script_module_[a-f0-9]+\.s$/.test(filename));
     }
 
-    override getExecutableFilename(dirPath: string, outputFilebase: string): string {
+    override getExecutableFilename(
+        dirPath: string,
+        outputFilebase: string,
+        key?: CacheKey | CompilationCacheKey,
+    ): string {
+        if (key && 'filters' in key && key.filters?.binary) {
+            return path.join(dirPath, 'duck_build', `${outputFilebase}.exe`);
+        }
         return path.join(dirPath, `${outputFilebase}.dks`);
+    }
+
+    protected override shouldInterpret(key: CacheKey): boolean {
+        return !!this.compiler.interpreted && !key.filters?.binary;
     }
 
     protected override fixExecuteParametersForInterpreting(
