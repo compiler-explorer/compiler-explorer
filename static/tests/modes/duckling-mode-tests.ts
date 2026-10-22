@@ -25,7 +25,7 @@
 import * as monaco from 'monaco-editor';
 import {describe, expect, it} from 'vitest';
 
-import {ducklingCompletionItemProvider} from '../../modes/duckling-mode.js';
+import {ducklingCompletionItemProvider, ducklingIndentationRules} from '../../modes/duckling-mode.js';
 
 describe('Duckling mode completions', () => {
     it('suggests keywords, types, and useful source snippets with the current word range', () => {
@@ -52,5 +52,21 @@ describe('Duckling mode completions', () => {
         });
         expect(byLabel.get('fun function')?.insertText).toContain(`\${1:name}`);
         expect(byLabel.get('import module')?.insertText).toBe(`import \${1:module} as \${2:Alias};`);
+    });
+});
+
+describe('Duckling mode indentation', () => {
+    it('increases indentation after an opening block or grouped expression, but not comments', () => {
+        expect(ducklingIndentationRules.increaseIndentPattern.test('fun main() -> i64 = {')).toBe(true);
+        expect(ducklingIndentationRules.increaseIndentPattern.test('let values = [')).toBe(true);
+        expect(ducklingIndentationRules.increaseIndentPattern.test('call(')).toBe(true);
+        expect(ducklingIndentationRules.increaseIndentPattern.test('# { comment')).toBe(false);
+    });
+
+    it('decreases indentation when a closing bracket starts the line', () => {
+        expect(ducklingIndentationRules.decreaseIndentPattern.test('}')).toBe(true);
+        expect(ducklingIndentationRules.decreaseIndentPattern.test('    ]')).toBe(true);
+        expect(ducklingIndentationRules.decreaseIndentPattern.test(')')).toBe(true);
+        expect(ducklingIndentationRules.decreaseIndentPattern.test('return 0;')).toBe(false);
     });
 });

@@ -172,6 +172,11 @@ export const ducklingCompletionItemProvider = {
 
 monaco.languages.registerCompletionItemProvider('duckling', ducklingCompletionItemProvider);
 
+export const ducklingIndentationRules = {
+    increaseIndentPattern: /^(?!\s*#).*(?:\{|\[|\()\s*(?:#.*)?$/,
+    decreaseIndentPattern: /^\s*[}\])]/,
+};
+
 monaco.languages.setMonarchTokensProvider('duckling', {
     keywords,
     typeKeywords,
@@ -234,6 +239,7 @@ monaco.languages.setMonarchTokensProvider('duckling', {
 
 monaco.languages.setLanguageConfiguration('duckling', {
     comments: {lineComment: '#'},
+    indentationRules: ducklingIndentationRules,
     brackets: [
         ['{', '}'],
         ['[', ']'],
