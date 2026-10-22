@@ -75,6 +75,15 @@ type LangLibs = Record<string, CompilerLibs>;
 type AvailableLibs = Record<string, LangLibs>;
 type LibInUse = {libId: string; versionId: string} & LibraryVersion;
 
+/** Return an empty bucket while a language/compiler change is loading its library list. */
+export function getAvailableLibsFor(
+    availableLibs: Record<string, Record<string, CompilerLibs>>,
+    langId: string,
+    compilerId: string,
+): CompilerLibs {
+    return availableLibs[langId]?.[compilerId] ?? {};
+}
+
 type FavLibraries = Record<string, string[]>;
 
 type PopupAlertFilter = (compiler: string, langId: string) => {title: string; content: string} | null;
@@ -607,7 +616,7 @@ export class LibsWidget {
 
         this.clearSearchResults();
 
-        const currentAvailableLibs = this.availableLibs[this.currentLangId][this.currentCompilerId];
+        const currentAvailableLibs = this.getCurrentAvailableLibs();
         if (Object.keys(currentAvailableLibs).length === 0) {
             const nolibsMessage = $('#libs-dropdown').children().eq(0).clone();
             this.searchResults.append(nolibsMessage);
@@ -633,7 +642,7 @@ export class LibsWidget {
         for (const libId in selectedLibs) {
             const versionId = selectedLibs[libId];
 
-            const lib = this.availableLibs[this.currentLangId][this.currentCompilerId][libId];
+            const lib = this.getCurrentAvailableLibs()[libId];
             const version = lib.versions[versionId];
 
             const libDiv = this.newSelectedLibDiv(libId, versionId, lib, version);
@@ -644,7 +653,7 @@ export class LibsWidget {
     showSelectedLibsAsSearchResults() {
         this.clearSearchResults();
 
-        const currentAvailableLibs = this.availableLibs[this.currentLangId][this.currentCompilerId];
+        const currentAvailableLibs = this.getCurrentAvailableLibs();
         if (Object.keys(currentAvailableLibs).length === 0) {
             const nolibsMessage = $('#libs-dropdown').children().eq(0).clone();
             this.searchResults.append(nolibsMessage);
@@ -734,14 +743,7 @@ export class LibsWidget {
     }
 
     getLibInfoById(libId: string): Library | undefined {
-        if (
-            this.currentLangId in this.availableLibs &&
-            this.currentCompilerId in this.availableLibs[this.currentLangId] &&
-            libId in this.availableLibs[this.currentLangId][this.currentCompilerId]
-        ) {
-            return this.availableLibs[this.currentLangId][this.currentCompilerId][libId];
-        }
-        return undefined;
+        return this.getCurrentAvailableLibs()[libId];
     }
 
     markLibrary(name: string, versionId: string, used: boolean) {
@@ -776,7 +778,7 @@ export class LibsWidget {
 
     listUsedLibs(): Record<string, string> {
         const libs: Record<string, string> = {};
-        const currentAvailableLibs = this.availableLibs[this.currentLangId][this.currentCompilerId];
+        const currentAvailableLibs = this.getCurrentAvailableLibs();
         for (const libId in currentAvailableLibs) {
             const library = currentAvailableLibs[libId];
             for (const verId in library.versions) {
@@ -790,7 +792,7 @@ export class LibsWidget {
 
     getLibsInUse(): LibInUse[] {
         const libs: LibInUse[] = [];
-        const currentAvailableLibs = this.availableLibs[this.currentLangId][this.currentCompilerId];
+        const currentAvailableLibs = this.getCurrentAvailableLibs();
         for (const libId in currentAvailableLibs) {
             const library = currentAvailableLibs[libId];
             for (const verId in library.versions) {
@@ -800,5 +802,9 @@ export class LibsWidget {
             }
         }
         return libs;
+    }
+
+    private getCurrentAvailableLibs(): CompilerLibs {
+        return getAvailableLibsFor(this.availableLibs, this.currentLangId, this.currentCompilerId);
     }
 }

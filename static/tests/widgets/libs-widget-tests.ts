@@ -25,7 +25,13 @@
 import {describe, expect, it} from 'vitest';
 
 import type {CompilerInfo} from '../../../types/compiler.interfaces.js';
-import {DEFAULT_COMPILER_KEY, stateLibsToLibs, toCompilerKey} from '../../widgets/libs-widget.js';
+import {
+    CompilerLibs,
+    DEFAULT_COMPILER_KEY,
+    getAvailableLibsFor,
+    stateLibsToLibs,
+    toCompilerKey,
+} from '../../widgets/libs-widget.js';
 
 const fakeCompiler = {id: 'g142', name: 'x86-64 gcc 14.2'} as unknown as CompilerInfo;
 
@@ -71,5 +77,18 @@ describe('LibsWidget saved state libraries', () => {
 
     it('drops half-specified entries rather than asking for version undefined', () => {
         expect(stateLibsToLibs([{name: 'abseil'}, {ver: '202601071'}, {}])).toEqual([]);
+    });
+});
+
+describe('LibsWidget available library buckets', () => {
+    it('returns an empty bucket while the new language and compiler libraries are loading', () => {
+        expect(getAvailableLibsFor({}, 'duckling-script', 'ducklingdevscript')).toEqual({});
+        expect(getAvailableLibsFor({'duckling-script': {}}, 'duckling-script', 'ducklingdevscript')).toEqual({});
+    });
+
+    it('returns the compiler-specific libraries when that bucket is available', () => {
+        const libraries: CompilerLibs = {runtime: {dependencies: [], name: 'runtime', versions: {}}};
+        const available = {'duckling-script': {ducklingdevscript: libraries}};
+        expect(getAvailableLibsFor(available, 'duckling-script', 'ducklingdevscript')).toBe(libraries);
     });
 });
