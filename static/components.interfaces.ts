@@ -368,7 +368,7 @@ export type PopulatedDeviceViewState = StateWithId & {
 export type EmptyDucklingOutputViewState = EmptyState;
 export type PopulatedDucklingOutputViewState = StateWithId & {
     ducklingOutputKind: DucklingOutputKind;
-    ducklingOutput?: CompilationResult['ducklingOutput'];
+    ducklingOutput?: NonNullable<CompilationResult['ducklingOutputs']>[DucklingOutputKind];
     compilerName: string;
     editorid: number;
     treeid: number;

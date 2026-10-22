@@ -22,7 +22,6 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import $ from 'jquery';
 import {describe, expect, it, vi} from 'vitest';
 
 import {CompilerInfo} from '../../../types/compiler.interfaces.js';
@@ -31,46 +30,35 @@ import {DucklingOutputView} from '../../panes/duckling-output-view.js';
 describe('Duckling output view compiler capabilities', () => {
     function viewWithOutputKind(outputKind: string) {
         const view = Object.create(DucklingOutputView.prototype) as DucklingOutputView;
-        const outputKindSelect = $(
-            '<select><option value="lexer">Lexer</option><option value="parser">Parser</option><option value="hir">HIR</option><option value="mir">MIR</option><option value="lir">LIR</option><option value="llvm">LLVM IR</option><option value="dbc">DBC</option></select>',
-        );
         const eventHub = {emit: vi.fn()};
         const showMessage = vi.fn();
         Object.assign(view, {
             compilerInfo: {compilerId: 12, compilerName: '', editorId: 3, treeId: 0},
             outputKind,
-            outputKindSelect,
-            supportedOutputKinds: [],
             outputViewOpenAnnounced: false,
             eventHub,
             showMessage,
             updateTitle: vi.fn(),
             updateState: vi.fn(),
         });
-        return {view, outputKindSelect, eventHub, showMessage};
+        return {view, eventHub, showMessage};
     }
 
-    it('filters unsupported kinds and selects a supported default', () => {
-        const {view, outputKindSelect, eventHub} = viewWithOutputKind('llvm');
+    it('announces a pane with its fixed output kind when the compiler supports it', () => {
+        const {view, eventHub} = viewWithOutputKind('hir');
         const compiler = {name: 'Duckling DVM', supportsDucklingOutputs: ['hir', 'mir']} as CompilerInfo;
 
         view.onCompiler(12, compiler, '', 3, 0);
 
-        expect(outputKindSelect.val()).toBe('hir');
-        expect(outputKindSelect.prop('disabled')).toBe(false);
-        expect(outputKindSelect.find('option[value="llvm"]').prop('hidden')).toBe(true);
-        expect(outputKindSelect.find('option[value="hir"]').prop('hidden')).toBe(false);
-        expect(outputKindSelect.find('option[value="parser"]').prop('hidden')).toBe(true);
         expect(eventHub.emit).toHaveBeenCalledWith('ducklingOutputViewOpened', 12, 'hir');
     });
 
-    it('disables selection and explains when the selected compiler has no Duckling outputs', () => {
-        const {view, outputKindSelect, showMessage} = viewWithOutputKind('llvm');
+    it('explains when the selected compiler does not support this pane kind', () => {
+        const {view, showMessage} = viewWithOutputKind('parser');
         const compiler = {name: 'C++ compiler', supportsDucklingOutputs: []} as unknown as CompilerInfo;
 
         view.onCompiler(12, compiler, '', 3, 0);
 
-        expect(outputKindSelect.prop('disabled')).toBe(true);
         expect(showMessage).toHaveBeenCalledWith('<Duckling outputs are not supported for this compiler>');
     });
 });

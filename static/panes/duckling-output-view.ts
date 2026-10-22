@@ -28,12 +28,7 @@ import * as monaco from 'monaco-editor';
 import _ from 'underscore';
 
 import {CompilationResult} from '../../types/compilation/compilation.interfaces.js';
-import {
-    CompilerInfo,
-    DUCKLING_OUTPUT_KINDS,
-    DucklingOutputKind,
-    isDucklingOutputKind,
-} from '../../types/compiler.interfaces.js';
+import {CompilerInfo, DucklingOutputKind, isDucklingOutputKind} from '../../types/compiler.interfaces.js';
 import {Hub} from '../hub.js';
 import {extendConfig} from '../monaco-config.js';
 import {DucklingOutputViewState} from './duckling-output-view.interfaces.js';
@@ -52,8 +47,6 @@ const outputNames: Record<DucklingOutputKind, string> = {
 
 export class DucklingOutputView extends MonacoPane<monaco.editor.IStandaloneCodeEditor, DucklingOutputViewState> {
     private outputKind!: DucklingOutputKind;
-    private outputKindSelect!: JQuery<HTMLSelectElement>;
-    private supportedOutputKinds!: DucklingOutputKind[];
     private outputViewOpenAnnounced!: boolean;
 
     constructor(hub: Hub, container: Container, state: DucklingOutputViewState & MonacoPaneState) {
@@ -64,12 +57,11 @@ export class DucklingOutputView extends MonacoPane<monaco.editor.IStandaloneCode
     }
 
     override initializeDefaults(): void {
-        this.supportedOutputKinds = [];
         this.outputViewOpenAnnounced = false;
     }
 
     override initializeStateDependentProperties(state: DucklingOutputViewState): void {
-        this.outputKind = isDucklingOutputKind(state.ducklingOutputKind) ? state.ducklingOutputKind : 'llvm';
+        this.outputKind = isDucklingOutputKind(state.ducklingOutputKind) ? state.ducklingOutputKind : 'hir';
     }
 
     override getInitialHTML(): string {
@@ -93,32 +85,11 @@ export class DucklingOutputView extends MonacoPane<monaco.editor.IStandaloneCode
     }
 
     override getDefaultPaneName(): string {
-        return 'Duckling Output';
+        return `Duckling ${outputNames[this.outputKind]}`;
     }
 
     override getCurrentState(): MonacoPaneState & DucklingOutputViewState {
         return {...super.getCurrentState(), ducklingOutputKind: this.outputKind};
-    }
-
-    override registerButtons(state: DucklingOutputViewState): void {
-        super.registerButtons(state);
-        this.outputKindSelect = this.domRoot.find('.duckling-output-kind');
-        this.outputKindSelect.val(this.outputKind).prop('disabled', true);
-        this.outputKindSelect.on('change', () => {
-            const selectedKind = this.outputKindSelect.val();
-            if (!isDucklingOutputKind(selectedKind)) return;
-            if (!this.supportedOutputKinds.includes(selectedKind)) {
-                this.outputKindSelect.val(this.outputKind);
-                return;
-            }
-            if (selectedKind === this.outputKind) return;
-
-            this.outputKind = selectedKind;
-            this.updateTitle();
-            this.updateState();
-            this.showMessage('<Compiling...>');
-            this.eventHub.emit('ducklingOutputKindChanged', this.compilerInfo.compilerId, selectedKind);
-        });
     }
 
     override registerCallbacks(): void {
@@ -135,8 +106,11 @@ export class DucklingOutputView extends MonacoPane<monaco.editor.IStandaloneCode
     override onCompileResult(compilerId: number, compiler: CompilerInfo, result: CompilationResult): void {
         if (this.compilerInfo.compilerId !== compilerId) return;
 
-        if (result.ducklingOutput?.kind === this.outputKind) {
-            this.showOutput(result.ducklingOutput);
+        const output =
+            result.ducklingOutputs?.[this.outputKind] ??
+            (result.ducklingOutput?.kind === this.outputKind ? result.ducklingOutput : undefined);
+        if (output) {
+            this.showOutput(output);
         } else if (compiler.supportsDucklingOutputs?.includes(this.outputKind)) {
             this.showMessage('<No output>');
         }
@@ -154,35 +128,12 @@ export class DucklingOutputView extends MonacoPane<monaco.editor.IStandaloneCode
         this.compilerInfo.compilerName = compiler?.name ?? '';
         this.compilerInfo.editorId = editorId;
         this.compilerInfo.treeId = treeId;
-        this.supportedOutputKinds = DUCKLING_OUTPUT_KINDS.filter(kind =>
-            compiler?.supportsDucklingOutputs?.includes(kind),
-        );
-
-        this.outputKindSelect.find('option').each((_index, option) => {
-            const optionKind = $(option).val();
-            $(option).prop(
-                'hidden',
-                !isDucklingOutputKind(optionKind) || !this.supportedOutputKinds.includes(optionKind),
-            );
-        });
-        this.outputKindSelect.prop('disabled', this.supportedOutputKinds.length === 0);
-
-        if (this.supportedOutputKinds.length === 0) {
+        if (!compiler?.supportsDucklingOutputs?.includes(this.outputKind)) {
             this.showMessage('<Duckling outputs are not supported for this compiler>');
         } else {
-            const outputKindChanged = !this.supportedOutputKinds.includes(this.outputKind);
-            if (outputKindChanged) {
-                this.outputKind = this.supportedOutputKinds[0];
-                this.outputKindSelect.val(this.outputKind);
-                this.updateState();
-                this.showMessage('<Compiling...>');
-            }
-
             if (!this.outputViewOpenAnnounced) {
                 this.outputViewOpenAnnounced = true;
                 this.eventHub.emit('ducklingOutputViewOpened', compilerId, this.outputKind);
-            } else if (outputKindChanged) {
-                this.eventHub.emit('ducklingOutputKindChanged', compilerId, this.outputKind);
             }
         }
 
@@ -217,7 +168,7 @@ export class DucklingOutputView extends MonacoPane<monaco.editor.IStandaloneCode
 
     override close(): void {
         this.eventHub.unsubscribe();
-        this.eventHub.emit('ducklingOutputViewClosed', this.compilerInfo.compilerId);
+        this.eventHub.emit('ducklingOutputViewClosed', this.compilerInfo.compilerId, this.outputKind);
         this.editor.dispose();
     }
 }

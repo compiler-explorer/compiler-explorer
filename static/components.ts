@@ -1057,7 +1057,7 @@ export function getDucklingOutputView(): ComponentConfig<typeof DUCKLING_OUTPUT_
 export function getDucklingOutputViewWith(
     id: number,
     ducklingOutputKind: DucklingOutputKind,
-    ducklingOutput: CompilationResult['ducklingOutput'],
+    ducklingOutput: NonNullable<CompilationResult['ducklingOutputs']>[DucklingOutputKind],
     compilerName: string,
     editorid: number,
     treeid: number,

@@ -203,53 +203,43 @@ describe('Compiler default options', () => {
 describe('Duckling output pane events', () => {
     function compilerWithDucklingOutputs(supportedOutputKinds: string[]) {
         const compiler = Object.create(Compiler.prototype) as Compiler;
-        const ducklingOutputButton = $('<button>');
+        const ducklingOutputButtons = new Map([
+            ['hir', $('<button>')],
+            ['mir', $('<button>')],
+        ]);
         Object.assign(compiler, {
             id: 12,
-            ducklingOutputViewOpen: false,
-            ducklingOutputKind: 'llvm',
-            ducklingOutputButton,
+            ducklingOutputViewsOpen: new Set(),
+            ducklingOutputButtons,
             compiler: {supportsDucklingOutputs: supportedOutputKinds},
             compile: vi.fn(),
         });
-        return {compiler, ducklingOutputButton};
+        return {compiler, ducklingOutputButtons};
     }
 
-    it('uses a supported default and compiles when the view opens', () => {
-        const {compiler, ducklingOutputButton} = compilerWithDucklingOutputs(['hir', 'mir']);
+    it('tracks and compiles each supported output pane independently', () => {
+        const {compiler, ducklingOutputButtons} = compilerWithDucklingOutputs(['hir', 'mir']);
 
-        compiler.onDucklingOutputViewOpened(12, 'llvm');
+        compiler.onDucklingOutputViewOpened(12, 'hir');
+        compiler.onDucklingOutputViewOpened(12, 'mir');
 
-        expect(Reflect.get(compiler, 'ducklingOutputViewOpen')).toBe(true);
-        expect(Reflect.get(compiler, 'ducklingOutputKind')).toBe('hir');
-        expect(ducklingOutputButton.prop('disabled')).toBe(true);
-        expect(compiler.compile).toHaveBeenCalledOnce();
+        expect(Reflect.get(compiler, 'ducklingOutputViewsOpen')).toEqual(new Set(['hir', 'mir']));
+        expect(ducklingOutputButtons.get('hir')?.prop('disabled')).toBe(true);
+        expect(ducklingOutputButtons.get('mir')?.prop('disabled')).toBe(true);
+        expect(compiler.compile).toHaveBeenCalledTimes(2);
     });
 
-    it('ignores output kinds unsupported by the current compiler', () => {
-        const {compiler} = compilerWithDucklingOutputs(['hir', 'mir']);
+    it('ignores unsupported outputs and re-enables only the closed pane button', () => {
+        const {compiler, ducklingOutputButtons} = compilerWithDucklingOutputs(['hir', 'mir']);
         compiler.onDucklingOutputViewOpened(12, 'hir');
-        vi.mocked(compiler.compile).mockClear();
+        compiler.onDucklingOutputViewOpened(12, 'parser');
+        compiler.onDucklingOutputViewOpened(12, 'mir');
 
-        compiler.onDucklingOutputKindChanged(12, 'parser');
+        compiler.onDucklingOutputViewClosed(12, 'hir');
 
-        expect(Reflect.get(compiler, 'ducklingOutputKind')).toBe('hir');
-        expect(compiler.compile).not.toHaveBeenCalled();
-    });
-
-    it('allows valid output changes and re-enables the pane button on close', () => {
-        const {compiler, ducklingOutputButton} = compilerWithDucklingOutputs(['hir', 'mir']);
-        compiler.onDucklingOutputViewOpened(12, 'hir');
-        vi.mocked(compiler.compile).mockClear();
-
-        compiler.onDucklingOutputKindChanged(12, 'mir');
-
-        expect(Reflect.get(compiler, 'ducklingOutputKind')).toBe('mir');
-        expect(compiler.compile).toHaveBeenCalledOnce();
-
-        compiler.onDucklingOutputViewClosed(12);
-
-        expect(Reflect.get(compiler, 'ducklingOutputViewOpen')).toBe(false);
-        expect(ducklingOutputButton.prop('disabled')).toBe(false);
+        expect(Reflect.get(compiler, 'ducklingOutputViewsOpen')).toEqual(new Set(['mir']));
+        expect(ducklingOutputButtons.get('hir')?.prop('disabled')).toBe(false);
+        expect(ducklingOutputButtons.get('mir')?.prop('disabled')).toBe(true);
+        expect(compiler.compile).toHaveBeenCalledTimes(3);
     });
 });

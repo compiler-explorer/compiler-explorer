@@ -176,6 +176,12 @@ export type PPOutput = {
     output: string;
 };
 
+export type DucklingOutput = {
+    kind: DucklingOutputKind;
+    output: ResultLine[];
+    languageId: string;
+};
+
 export type CompilationResult = {
     code: number;
     timedOut: boolean;
@@ -238,21 +244,9 @@ export type CompilationResult = {
 
     yulOutput?: ResultLine[];
 
-    ducklingOutput?: {
-        kind: DucklingOutputKind;
-        output: ResultLine[];
-        languageId: string;
-    };
-    ducklingOutputs?: Partial<
-        Record<
-            DucklingOutputKind,
-            {
-                kind: DucklingOutputKind;
-                output: ResultLine[];
-                languageId: string;
-            }
-        >
-    >;
+    /** Legacy alias for the first requested Duckling output; use ducklingOutputs for independent panes. */
+    ducklingOutput?: DucklingOutput;
+    ducklingOutputs?: Partial<Record<DucklingOutputKind, DucklingOutput>>;
 
     forceBinaryView?: boolean;
 
