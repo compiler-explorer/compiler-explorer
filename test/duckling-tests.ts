@@ -116,7 +116,7 @@ describe('Duckling compiler', () => {
     it('advertises only Duckling outputs implemented for each compiler profile', () => {
         expect(makeCompiler().compiler.supportsDucklingOutputs).toEqual(['hir', 'mir', 'lir']);
         expect(makeScriptCompiler().compiler.supportsDucklingOutputs).toEqual(['hir', 'mir', 'lir']);
-        expect(makeDbcCompiler().compiler.supportsDucklingOutputs).toEqual(['hir', 'mir', 'lir']);
+        expect(makeDbcCompiler().compiler.supportsDucklingOutputs).toEqual(['hir', 'mir', 'lir', 'dbc']);
     });
 
     it('adds a typed HIR output request to the prepared compiler arguments', () => {
@@ -434,6 +434,36 @@ describe('Duckling compiler', () => {
         expect(result.code).toBe(0);
         expect(result.ducklingOutput?.kind).toBe('mir');
         expect(result.ducklingOutput?.output.map(line => line.text).join('\n')).toBe(mir);
+        await expect(fs.readFile(path.join(workingDirectory, 'example.s'), 'utf8')).resolves.toBe(dbc);
+    });
+
+    it('returns DBC as a typed output from the DVM module compile', async () => {
+        const compiler = makeDbcCompiler();
+        const workingDirectory = newTempDir();
+        const inputFilename = path.join(workingDirectory, 'hello.dk');
+        const dbc = 'module hello { function main() }';
+        await fs.writeFile(inputFilename, 'fun main() -> i64 = { return 7; }');
+        vi.spyOn(compiler, 'exec').mockImplementation(async (_exe, args) => {
+            expect(args).toEqual(['compile_module', inputFilename, '--dvm-backend', '--dump-ir', 'dbc']);
+            const artifactsDirectory = path.join(workingDirectory, 'duck_build', 'duck_debug_artifacts');
+            await fs.mkdir(artifactsDirectory, {recursive: true});
+            await fs.writeFile(path.join(artifactsDirectory, 'random-id.hello.dbc'), dbc);
+            return makeExecResult();
+        });
+
+        const result = await compiler.runCompiler(
+            'duckc',
+            ['compile_module', inputFilename, '--dvm-backend', '--dump-ir', 'dbc', '--__ce-duckling-output=dbc'],
+            inputFilename,
+            makeExecOptions(),
+        );
+
+        expect(result.code).toBe(0);
+        expect(result.ducklingOutput).toEqual({
+            kind: 'dbc',
+            output: dbc.split('\n').map(text => ({text})),
+            languageId: 'plaintext',
+        });
         await expect(fs.readFile(path.join(workingDirectory, 'example.s'), 'utf8')).resolves.toBe(dbc);
     });
 
