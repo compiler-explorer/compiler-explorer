@@ -33,12 +33,14 @@ import {getCompilerTypeByKey} from '../lib/compilers/index.js';
 import {languages as languageDefinitions} from '../lib/languages.js';
 import type {ClientOptionsType} from '../lib/options-handler.js';
 import type {CacheKey, ExecutionOptionsWithEnv} from '../types/compilation/compilation.interfaces.js';
+import type {LLVMIrBackendOptions} from '../types/compilation/ir.interfaces.js';
 import {DUCKLING_OUTPUT_KINDS, isDucklingOutputKind} from '../types/compiler.interfaces.js';
 import type {
     BasicExecutionResult,
     ExecutableExecutionOptions,
     UnprocessedExecResult,
 } from '../types/execution/execution.interfaces.js';
+import type {ParseFiltersAndOutputOptions} from '../types/features/filters.interfaces.js';
 import type {LanguageKey} from '../types/languages.interfaces.js';
 import {makeCompilationEnvironment, makeFakeCompilerInfo, newTempDir} from './utils.js';
 
@@ -114,6 +116,10 @@ describe('Duckling compiler', () => {
     });
 
     it('advertises only Duckling outputs implemented for each compiler profile', () => {
+        expect(makeCompiler().compiler.supportsIrView).toBe(true);
+        expect(makeScriptCompiler().compiler.supportsIrView).toBe(true);
+        expect(makeDbcCompiler().compiler.supportsIrView).toBe(false);
+        expect(makeCompiler().compiler.irArg).toEqual(['--dump-ir', 'llvm']);
         expect(makeCompiler().compiler.supportsDucklingOutputs).toEqual([
             'lexer',
             'parser',
@@ -131,6 +137,89 @@ describe('Duckling compiler', () => {
             'lir',
             'dbc',
         ]);
+    });
+
+    it('generates standard LLVM IR for module sources in an isolated build directory', async () => {
+        const compiler = makeCompiler();
+        const workingDirectory = newTempDir();
+        const inputFilename = path.join(workingDirectory, 'hello.dk');
+        const llvmIr = 'define i64 @main() {\n  ret i64 7\n}\n';
+        let irDirectory: string | undefined;
+        const irOptions: LLVMIrBackendOptions = {
+            filterDebugInfo: false,
+            filterIRMetadata: false,
+            filterAttributes: false,
+            filterComments: false,
+            demangle: false,
+        };
+        await fs.writeFile(inputFilename, 'fun main() -> i64 = { return 7; }');
+        const exec = vi.spyOn(compiler, 'exec').mockImplementation(async (_exe, args, execOptions) => {
+            irDirectory = execOptions.customCwd;
+            expect(irDirectory).toBeDefined();
+            expect(irDirectory).not.toBe(workingDirectory);
+            const irInputFilename = path.join(irDirectory!, 'hello.dk');
+            expect(args).toEqual(['compile_module', irInputFilename, '--dump-ir', 'asm,llvm']);
+            await expect(fs.readFile(irInputFilename, 'utf8')).resolves.toBe('fun main() -> i64 = { return 7; }');
+            const artifactsDirectory = path.join(irDirectory!, 'duck_build', 'duck_debug_artifacts');
+            await fs.mkdir(artifactsDirectory, {recursive: true});
+            await fs.writeFile(path.join(artifactsDirectory, 'random-id.hello.s'), '\t.text\nmain:\n\tretq\n');
+            await fs.writeFile(path.join(artifactsDirectory, 'random-id.hello.ll'), llvmIr);
+            return makeExecResult();
+        });
+
+        const result = await compiler.generateIR(
+            inputFilename,
+            ['compile_module', inputFilename, '--dump-ir', 'asm'],
+            irOptions,
+            false,
+            {} as ParseFiltersAndOutputOptions,
+        );
+
+        expect(compiler.compiler.supportsIrView).toBe(true);
+        expect(exec).toHaveBeenCalledOnce();
+        expect(result.code).toBe(0);
+        expect(result.asm.map(line => line.text).join('\n')).toContain('define i64 @main');
+        await expect(fs.stat(irDirectory!)).rejects.toThrow();
+    });
+
+    it('generates standard LLVM IR for Duckling Script sources', async () => {
+        const compiler = makeScriptCompiler();
+        const workingDirectory = newTempDir();
+        const inputFilename = path.join(workingDirectory, 'hello.dks');
+        const llvmIr = 'define i64 @script_main() {\n  ret i64 42\n}\n';
+        const irOptions: LLVMIrBackendOptions = {
+            filterDebugInfo: false,
+            filterIRMetadata: false,
+            filterAttributes: false,
+            filterComments: false,
+            demangle: false,
+        };
+        await fs.writeFile(inputFilename, 'builtin_output_i64(42);');
+        vi.spyOn(compiler, 'exec').mockImplementation(async (_exe, args, execOptions) => {
+            const irDirectory = execOptions.customCwd!;
+            const irInputFilename = path.join(irDirectory, 'hello.dks');
+            expect(args).toEqual(['compile_script', irInputFilename, '--dump-ir', 'asm,llvm']);
+            const artifactsDirectory = path.join(irDirectory, 'duck_build', 'duck_debug_artifacts');
+            await fs.mkdir(artifactsDirectory, {recursive: true});
+            await fs.writeFile(
+                path.join(artifactsDirectory, 'script_module_abc123.s'),
+                '\t.text\nscript_main:\n\tretq\n',
+            );
+            await fs.writeFile(path.join(artifactsDirectory, 'script_module_abc123.ll'), llvmIr);
+            return makeExecResult();
+        });
+
+        const result = await compiler.generateIR(
+            inputFilename,
+            ['compile_script', inputFilename, '--dump-ir', 'asm'],
+            irOptions,
+            false,
+            {} as ParseFiltersAndOutputOptions,
+        );
+
+        expect(compiler.compiler.supportsIrView).toBe(true);
+        expect(result.code).toBe(0);
+        expect(result.asm.map(line => line.text).join('\n')).toContain('define i64 @script_main');
     });
 
     it('adds a typed lexer output request to the prepared module compiler arguments', () => {

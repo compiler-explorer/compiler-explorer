@@ -32,6 +32,7 @@ import type {
     CompilationResult,
     ExecutionOptionsWithEnv,
 } from '../../types/compilation/compilation.interfaces.js';
+import type {LLVMIrBackendOptions} from '../../types/compilation/ir.interfaces.js';
 import type {DucklingOutputKind} from '../../types/compiler.interfaces.js';
 import type {BasicExecutionResult, ExecutableExecutionOptions} from '../../types/execution/execution.interfaces.js';
 import type {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces.js';
@@ -82,6 +83,8 @@ export class DucklingCompiler extends BaseCompiler {
     constructor(...args: ConstructorParameters<typeof BaseCompiler>) {
         super(...args);
         this.outputFilebase = 'example';
+        this.compiler.supportsIrView = true;
+        this.compiler.irArg = ['--dump-ir', 'llvm'];
         this.compiler.supportsDucklingOutputs =
             this.compiler.lang === 'duckling-script'
                 ? ['hir', 'mir', 'lir', 'dbc']
@@ -160,9 +163,10 @@ export class DucklingCompiler extends BaseCompiler {
         artifacts: string[],
         inputFilename: string,
     ): string[] {
-        if (kind !== 'hir' && kind !== 'mir' && kind !== 'lir' && kind !== 'dbc') return [];
+        if (kind !== 'llvm' && kind !== 'hir' && kind !== 'mir' && kind !== 'lir' && kind !== 'dbc') return [];
+        const extension = kind === 'llvm' ? 'll' : kind;
         const moduleName = path.basename(inputFilename, path.extname(inputFilename));
-        return artifacts.filter(filename => filename.endsWith(`.${moduleName}.${kind}`));
+        return artifacts.filter(filename => filename.endsWith(`.${moduleName}.${extension}`));
     }
 
     protected async readDucklingOutputArtifact(
@@ -401,6 +405,113 @@ export class DucklingCompiler extends BaseCompiler {
         return files.sort();
     }
 
+    override async generateIR(
+        inputFilename: string,
+        options: string[],
+        irOptions: LLVMIrBackendOptions,
+        produceCfg: boolean,
+        filters: ParseFiltersAndOutputOptions,
+    ): ReturnType<BaseCompiler['generateIR']> {
+        let isolatedDirectory: string | undefined;
+        try {
+            const workingDirectory = path.dirname(inputFilename);
+            const irDirectory = await fs.mkdtemp(path.join(os.tmpdir(), 'ce-duckling-llvm-'));
+            isolatedDirectory = irDirectory;
+            await fs.cp(workingDirectory, irDirectory, {
+                recursive: true,
+                filter: source => {
+                    const relative = path.relative(workingDirectory, source);
+                    if (!relative) return true;
+                    const firstSegment = relative.split(path.sep)[0];
+                    return firstSegment !== 'duck_build' && firstSegment !== '.git';
+                },
+            });
+
+            const mapWorkingPath = (filename: string) => {
+                if (!path.isAbsolute(filename)) return filename;
+                const relative = path.relative(workingDirectory, filename);
+                if (relative === '..' || relative.startsWith(`..${path.sep}`) || path.isAbsolute(relative)) {
+                    return filename;
+                }
+                return path.join(irDirectory, relative);
+            };
+            const irInputFilename = mapWorkingPath(inputFilename);
+            const irCompilerOptions = options
+                .filter(option => !option.startsWith(ducklingOutputRequestPrefix))
+                .map(mapWorkingPath);
+            return await super.generateIR(irInputFilename, irCompilerOptions, irOptions, produceCfg, filters);
+        } catch (error) {
+            return {
+                code: 1,
+                compilationOptions: options,
+                asm: [{text: `Duckling LLVM IR output failed: ${String(error)}`}],
+            };
+        } finally {
+            if (isolatedDirectory) await fs.rm(isolatedDirectory, {recursive: true, force: true}).catch(() => {});
+        }
+    }
+
+    override async processIrOutput(
+        output: CompilationResult,
+        irOptions: LLVMIrBackendOptions,
+        _filters: ParseFiltersAndOutputOptions,
+    ): ReturnType<BaseCompiler['processIrOutput']> {
+        const inputFilename = output.inputFilename;
+        if (!inputFilename) {
+            return {asm: [{text: 'Duckling LLVM IR output has no input filename'}], languageId: 'llvm-ir'};
+        }
+
+        const artifactsDirectory = path.join(path.dirname(inputFilename), 'duck_build', 'duck_debug_artifacts');
+        let artifacts: string[] = [];
+        try {
+            artifacts = await fs.readdir(artifactsDirectory);
+        } catch {
+            // A missing debug artifact directory is reported in the standard IR pane.
+        }
+
+        const outputFiles = this.getDucklingOutputArtifactFiles('llvm', artifacts, inputFilename);
+        if (outputFiles.length !== 1) {
+            return {
+                asm: [
+                    {
+                        text:
+                            outputFiles.length === 0
+                                ? 'Duckling produced no LLVM IR output'
+                                : 'Duckling produced multiple LLVM IR outputs',
+                    },
+                ],
+                languageId: 'llvm-ir',
+            };
+        }
+
+        try {
+            const ir = await fs.readFile(path.join(artifactsDirectory, outputFiles[0]), 'utf8');
+            return await this.llvmIr.process(ir, irOptions);
+        } catch (error) {
+            return {asm: [{text: `Duckling LLVM IR output failed: ${String(error)}`}], languageId: 'llvm-ir'};
+        }
+    }
+
+    private combineDumpIrOptions(options: string[]): void {
+        const firstDumpIrIndex = options.indexOf('--dump-ir');
+        if (firstDumpIrIndex < 0) return;
+
+        const dumpKinds: string[] = [];
+        const withoutDumpOptions: string[] = [];
+        for (let index = 0; index < options.length; index++) {
+            if (options[index] === '--dump-ir' && index + 1 < options.length) {
+                dumpKinds.push(...options[index + 1].split(',').filter(Boolean));
+                index++;
+            } else {
+                withoutDumpOptions.push(options[index]);
+            }
+        }
+
+        if (dumpKinds.length === 0) return;
+        withoutDumpOptions.splice(firstDumpIrIndex, 0, '--dump-ir', [...new Set(dumpKinds)].join(','));
+        options.splice(0, options.length, ...withoutDumpOptions);
+    }
+
     override async runCompiler(
         compiler: string,
         options: string[],
@@ -412,6 +523,7 @@ export class DucklingCompiler extends BaseCompiler {
         const requestedOutputValue = requestedOutputArgument?.slice(ducklingOutputRequestPrefix.length);
         const requestedOutput = this.compiler.supportsDucklingOutputs?.find(kind => kind === requestedOutputValue);
         const compilerOptions = options.filter(option => !option.startsWith(ducklingOutputRequestPrefix));
+        this.combineDumpIrOptions(compilerOptions);
         const needsSeparateDvmCompile = requestedOutput === 'dbc' && !compilerOptions.includes('--dvm-backend');
         if (
             requestedOutput === 'hir' ||
@@ -532,8 +644,9 @@ export class DucklingScriptCompiler extends DucklingCompiler {
         artifacts: string[],
         inputFilename: string,
     ): string[] {
-        if (kind === 'hir' || kind === 'mir' || kind === 'lir' || kind === 'dbc') {
-            return artifacts.filter(filename => new RegExp(`^script_module_[a-f0-9]+\\.${kind}$`).test(filename));
+        if (kind === 'llvm' || kind === 'hir' || kind === 'mir' || kind === 'lir' || kind === 'dbc') {
+            const extension = kind === 'llvm' ? 'll' : kind;
+            return artifacts.filter(filename => new RegExp(`^script_module_[a-f0-9]+\\.${extension}$`).test(filename));
         }
         return super.getDucklingOutputArtifactFiles(kind, artifacts, inputFilename);
     }
