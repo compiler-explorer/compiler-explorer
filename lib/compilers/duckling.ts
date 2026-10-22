@@ -27,7 +27,9 @@ import path from 'node:path';
 
 import type {CompilationResult, ExecutionOptionsWithEnv} from '../../types/compilation/compilation.interfaces.js';
 import type {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces.js';
+import type {ResultLine} from '../../types/resultline/resultline.interfaces.js';
 import {BaseCompiler} from '../base-compiler.js';
+import {filterEscapeSequences} from '../utils.js';
 
 export class DucklingCompiler extends BaseCompiler {
     static get key() {
@@ -66,6 +68,45 @@ export class DucklingCompiler extends BaseCompiler {
         ];
     }
 
+    private tagDiagnostics(lines: ResultLine[], inputFilename: string): void {
+        const locationPattern = /^\s*>\s*(?<filename>.+):(?<line>\d+):(?<column>\d+)\s*$/;
+        const diagnosticPattern = /^\s*(?<severity>error|warning|note|help)(?:\[[^\]]+\])?:/i;
+
+        for (let index = 1; index < lines.length; index++) {
+            const location = filterEscapeSequences(lines[index].text).match(locationPattern);
+            if (!location?.groups) continue;
+
+            const headline = lines[index - 1];
+            const diagnosticText = filterEscapeSequences(headline.text);
+            const diagnostic = diagnosticText.match(diagnosticPattern);
+            if (!diagnostic?.groups) continue;
+
+            const sourceFilename = location.groups.filename;
+            const file =
+                sourceFilename === '<source>'
+                    ? path.basename(inputFilename)
+                    : path
+                          .relative(
+                              path.dirname(inputFilename),
+                              path.resolve(path.dirname(inputFilename), sourceFilename),
+                          )
+                          .split(path.sep)
+                          .join('/');
+            const line = Number.parseInt(location.groups.line, 10);
+            const column = Number.parseInt(location.groups.column, 10);
+            const severity = diagnostic.groups.severity.toLowerCase();
+
+            headline.tag = {
+                file,
+                line,
+                column,
+                text: diagnosticText.trim(),
+                severity: severity === 'warning' ? 2 : severity === 'note' || severity === 'help' ? 1 : 3,
+            };
+            lines[index].tag = {file, line, column, text: '', severity: 3};
+        }
+    }
+
     override async runCompiler(
         compiler: string,
         options: string[],
@@ -82,6 +123,8 @@ export class DucklingCompiler extends BaseCompiler {
         execOptions.customCwd = workingDirectory;
 
         const result = await super.runCompiler(compiler, options, inputFilename, execOptions, filters);
+        this.tagDiagnostics(result.stderr, inputFilename);
+        this.tagDiagnostics(result.stdout, inputFilename);
         if (result.code !== 0) return result;
 
         const moduleName = path.basename(inputFilename, path.extname(inputFilename));
@@ -98,7 +141,7 @@ export class DucklingCompiler extends BaseCompiler {
             result.code = 1;
             const message =
                 assemblyFiles.length === 0
-                    ? `Duckling reported success but produced no assembly for ${path.basename(inputFilename)}`
+                    ? `Duckling produced no assembly for ${path.basename(inputFilename)}`
                     : `Duckling produced multiple assembly files for ${path.basename(inputFilename)}`;
             result.stderr.push({text: message});
             return result;

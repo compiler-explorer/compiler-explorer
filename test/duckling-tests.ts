@@ -125,10 +125,62 @@ describe('Duckling compiler', () => {
 
         expect(result.code).toBe(1);
         expect(result.stderr.map(line => line.text).join('\n')).toContain('Duckling diagnostic');
-        expect(result.stderr.map(line => line.text).join('\n')).toContain(
-            'Duckling reported success but produced no assembly for hello.dk',
-        );
+        expect(result.stderr.map(line => line.text).join('\n')).toContain('Duckling produced no assembly for hello.dk');
         await expect(fs.stat(path.join(workingDirectory, 'example.s'))).rejects.toThrow();
+    });
+
+    it('maps Duckling diagnostic locations to the source editor', async () => {
+        const compiler = makeCompiler();
+        const workingDirectory = newTempDir();
+        const inputFilename = path.join(workingDirectory, 'hello.dk');
+        const diagnostic = [
+            '\u001b[31merror[E0]: Call failed because no matching functions were found.\u001b[0m',
+            '  > <source>:2:5',
+            '  |',
+        ].join('\n');
+        vi.spyOn(compiler, 'exec').mockResolvedValue(makeExecResult(1, '', diagnostic));
+
+        const result = await compiler.runCompiler(
+            '/duckling/bin/duckc',
+            ['compile_module', inputFilename, '--dump-ir', 'asm'],
+            inputFilename,
+            makeExecOptions(),
+        );
+
+        expect(result.stderr[0].tag).toEqual({
+            file: 'hello.dk',
+            line: 2,
+            column: 5,
+            text: 'error[E0]: Call failed because no matching functions were found.',
+            severity: 3,
+        });
+        expect(result.stderr[1].tag).toEqual({file: 'hello.dk', line: 2, column: 5, text: '', severity: 3});
+    });
+
+    it('maps Duckling warning and informational severities', async () => {
+        const compiler = makeCompiler();
+        const workingDirectory = newTempDir();
+        const inputFilename = path.join(workingDirectory, 'hello.dk');
+        const diagnostic = [
+            'warning[W1]: value is unused',
+            '  > <source>:3:2',
+            '  |',
+            'note: value declared here',
+            '  > <source>:1:1',
+            '  |',
+            'help: consider removing it',
+            '  > <source>:4:5',
+        ].join('\n');
+        vi.spyOn(compiler, 'exec').mockResolvedValue(makeExecResult(1, '', diagnostic));
+
+        const result = await compiler.runCompiler(
+            '/duckling/bin/duckc',
+            ['compile_module', inputFilename, '--dump-ir', 'asm'],
+            inputFilename,
+            makeExecOptions(),
+        );
+
+        expect(result.stderr.filter(line => line.tag).map(line => line.tag?.severity)).toEqual([2, 3, 1, 3, 1, 3]);
     });
 
     it('preserves Duckling failure diagnostics', async () => {
