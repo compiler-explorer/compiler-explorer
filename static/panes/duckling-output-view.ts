@@ -45,6 +45,43 @@ const outputNames: Record<DucklingOutputKind, string> = {
     dbc: 'DBC',
 };
 
+export function formatDucklingParserOutput(source: string): {output: string; languageId: string} {
+    const tree = source.replace(/^Parsed tree:\s*/, '').trim();
+    if (!tree) return {output: source, languageId: 'plaintext'};
+
+    let inString = false;
+    let escaped = false;
+    let normalized = '';
+    for (let index = 0; index < tree.length; index++) {
+        const character = tree[index];
+        if (inString) {
+            normalized += character;
+            if (escaped) {
+                escaped = false;
+            } else if (character === '\\') {
+                escaped = true;
+            } else if (character === '"') {
+                inString = false;
+            }
+        } else if (character === '"') {
+            inString = true;
+            normalized += character;
+        } else if (character === ',') {
+            let nextIndex = index + 1;
+            while (nextIndex < tree.length && /\s/.test(tree[nextIndex])) nextIndex++;
+            if (tree[nextIndex] !== '}' && tree[nextIndex] !== ']') normalized += character;
+        } else {
+            normalized += character;
+        }
+    }
+
+    try {
+        return {output: JSON.stringify(JSON.parse(normalized), null, 2), languageId: 'json'};
+    } catch {
+        return {output: source, languageId: 'plaintext'};
+    }
+}
+
 export class DucklingOutputView extends MonacoPane<monaco.editor.IStandaloneCodeEditor, DucklingOutputViewState> {
     private outputKind!: DucklingOutputKind;
     private outputViewOpenAnnounced!: boolean;
@@ -141,9 +178,11 @@ export class DucklingOutputView extends MonacoPane<monaco.editor.IStandaloneCode
     }
 
     private showOutput(result: NonNullable<CompilationResult['ducklingOutput']>): void {
-        this.setOutputText(result.output.length > 0 ? _.pluck(result.output, 'text').join('\n') : '<No output>');
+        const output = result.output.length > 0 ? _.pluck(result.output, 'text').join('\n') : '<No output>';
+        const formattedOutput = this.outputKind === 'parser' ? formatDucklingParserOutput(output) : undefined;
+        this.setOutputText(formattedOutput?.output ?? output);
         const model = this.editor.getModel();
-        if (model) monaco.editor.setModelLanguage(model, result.languageId);
+        if (model) monaco.editor.setModelLanguage(model, formattedOutput?.languageId ?? result.languageId);
     }
 
     private showMessage(message: string): void {

@@ -25,7 +25,27 @@
 import {describe, expect, it, vi} from 'vitest';
 
 import {CompilerInfo} from '../../../types/compiler.interfaces.js';
-import {DucklingOutputView} from '../../panes/duckling-output-view.js';
+import {DucklingOutputView, formatDucklingParserOutput} from '../../panes/duckling-output-view.js';
+
+describe('Duckling parser output formatting', () => {
+    it('expands Duckling’s JSON-shaped AST and removes its trailing commas', () => {
+        const result = formatDucklingParserOutput(
+            'Parsed tree:\n{"position":{"sourceStart":0},"items":[{"name":"main",},],}\n',
+        );
+
+        expect(result).toEqual({
+            output: '{\n  "position": {\n    "sourceStart": 0\n  },\n  "items": [\n    {\n      "name": "main"\n    }\n  ]\n}',
+            languageId: 'json',
+        });
+    });
+
+    it('preserves diagnostics and other non-JSON parser output as plain text', () => {
+        expect(formatDucklingParserOutput('parser failed')).toEqual({
+            output: 'parser failed',
+            languageId: 'plaintext',
+        });
+    });
+});
 
 describe('Duckling output view compiler capabilities', () => {
     function viewWithOutputKind(outputKind: string) {
