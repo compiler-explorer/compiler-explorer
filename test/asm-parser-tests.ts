@@ -219,6 +219,21 @@ describe('AsmParser binary source corner cases', () => {
         expect(kept[0].source).toBeNull();
     });
 
+    it('should map a ./-relative source record from a trimmed-path build', () => {
+        const kept = instructions(dump('./example.go:9'));
+        expect(kept).toHaveLength(2);
+        expect(kept.map(line => line.source)).toEqual([maskedExample(9), maskedExample(9)]);
+    });
+
+    it('should keep the path of a ./-relative library source record', () => {
+        const kept = instructions(dump('; ./runtime/proc.go:482'));
+        expect(kept).toHaveLength(2);
+        expect(kept.map(line => line.source)).toEqual([
+            {file: './runtime/proc.go', line: 482, mainsource: false},
+            {file: './runtime/proc.go', line: 482, mainsource: false},
+        ]);
+    });
+
     it('should ignore a relative source path', () => {
         const kept = instructions(dump('path/to/example.cpp:3'));
         expect(kept).toHaveLength(2);

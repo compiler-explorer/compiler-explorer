@@ -28,7 +28,11 @@ import path from 'node:path';
 import Semver from 'semver';
 import _ from 'underscore';
 
-import type {CacheKey, ExecutionOptionsWithEnv} from '../../types/compilation/compilation.interfaces.js';
+import type {
+    CacheKey,
+    CompilationResult,
+    ExecutionOptionsWithEnv,
+} from '../../types/compilation/compilation.interfaces.js';
 import type {PreliminaryCompilerInfo} from '../../types/compiler.interfaces.js';
 import type {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces.js';
 import type {ResultLine} from '../../types/resultline/resultline.interfaces.js';
@@ -433,17 +437,25 @@ export class GolangCompiler extends BaseCompiler {
             .join('\n');
     }
 
-    override async postProcess(result) {
+    override async postProcess(
+        result: CompilationResult,
+        outputFilename: string,
+        filters: ParseFiltersAndOutputOptions,
+        produceOptRemarks = false,
+    ) {
         let out = result.stderr;
         if (this.compiler.id === '6g141') {
             out = result.stdout;
         }
         const logging = this.extractLogging(out);
-        result.asm = this.convertNewGoL(out);
         result.stderr = this.verboseBuild
             ? out.filter(obj => !obj.text.match(LINE_RE) && !obj.text.match(UNKNOWN_RE) && !obj.text.match(LOGGING_RE))
             : [];
         result.stdout = utils.parseOutput(logging, result.inputFilename);
+        if (filters.binary) {
+            return super.postProcess(result, outputFilename, filters, produceOptRemarks);
+        }
+        result.asm = this.convertNewGoL(out);
         return Promise.all([result, [], []]);
     }
 
