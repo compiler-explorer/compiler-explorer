@@ -117,6 +117,8 @@ describe('msvc tests', () => {
             const args = msvc.getExtraCMakeArgs({});
             expect(args).toContain('-DCMAKE_POLICY_DEFAULT_CMP0141=NEW');
             expect(args).toContain('-DCMAKE_MSVC_DEBUG_INFORMATION_FORMAT=Embedded');
+            expect(args).toContain('-DCMAKE_POLICY_DEFAULT_CMP0091=NEW');
+            expect(args).toContain('-DCMAKE_MSVC_RUNTIME_LIBRARY=MultiThreadedDLL');
         });
     });
 });
