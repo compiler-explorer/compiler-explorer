@@ -406,9 +406,10 @@ export class AsmParser extends AsmRegex implements IAsmParser {
         this.asmOpcodeRe = /^\s*(?<address>[\da-f]+):\s*(?<opcodes>([\da-f]{2} ?)+)\s*(?<disasm>.*)/;
         this.relocationRe = /^\s*(?<address>[\da-f]+):\s*(?<relocname>(R_[\dA-Z_]+))\s*(?<relocdata>.*)/;
         this.relocDataSymNameRe = /^(?<symname>[^\d-+][\w.]*)?\s*(?<addend_or_value>.*)$/;
-        // The path is whatever objdump printed, not the host: `/file:N`, `C:/file:N`, or `C:\file:N`.
+        // The path is whatever objdump printed, not the host: `/file:N`, `C:/file:N`, or `C:\file:N`, or
+        // `./file:N` from a build with trimmed paths (`go build -trimpath`).
         // llvm-objdump prefixes that same record with `; `.
-        this.lineRe = /^(?:; )?(?<file>(?:[A-Z]:[\\/]|\/)[^:]+):(?<line>\d+).*/;
+        this.lineRe = /^(?:; )?(?<file>(?:[A-Z]:[\\/]|\.?\/)[^:]+):(?<line>\d+).*/;
 
         // labelRe is made very greedy as it's also used with demangled objdump output (eg. it can have c++ template with <>).
         this.labelRe = /^([\da-f]+)\s+<(.+)>:$/;
