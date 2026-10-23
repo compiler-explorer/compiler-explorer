@@ -460,6 +460,29 @@ describe('AsmParser library code filtering of statically linked code in binary a
         ]);
     });
 
+    it('should truncate a function whose user code only shows up past the line limit', () => {
+        const header = '/opt/compiler-explorer/gcc-15.1.0/include/c++/15.1.0/bits/stl_vector.h:100';
+        const asm = [
+            '0000000000401000 <main>:',
+            'main():',
+            header,
+            '  401000:\t55                   \tpush   %rbp',
+            '  401001:\t53                   \tpush   %rbx',
+            '0000000000401002 <.Ltmp0>:',
+            '  401002:\t90                   \tnop',
+            '/app/example.cpp:4',
+            '  401003:\tc3                   \tret',
+        ].join('\n');
+        const result = parserWithLineLimit(3).processBinaryAsm(asm, {libraryCode: true});
+        expect(result.asm.map(line => line.text)).toEqual([
+            'main:',
+            ' push   %rbp',
+            ' push   %rbx',
+            '[truncated; too many lines]',
+        ]);
+        expect(Object.keys(result.labelDefinitions ?? {})).toEqual(['main']);
+    });
+
     function functionFrom(file: string) {
         return ['0000000000401000 <helper()>:', 'helper()():', `${file}:3`, '  401000:\tc3                   \tret'];
     }
@@ -467,6 +490,7 @@ describe('AsmParser library code filtering of statically linked code in binary a
     it.each([
         ['in /app', '/app/src/helper.cpp'],
         ["in a local build's temporary directory", '/tmp/compiler-explorer-compiler2026ab/src/helper.cpp'],
+        ["in a Windows build's temporary directory", 'C:\\Temp\\compiler-explorer-compiler2026ab\\src\\helper.cpp'],
     ])('should keep a function from another file of the program %s', (_, file) => {
         expect(texts(new AsmParser(), functionFrom(file).join('\n'), {libraryCode: true})).toEqual([
             'helper():',

@@ -626,6 +626,12 @@ export class AsmParser extends AsmRegex implements IAsmParser {
         return !this.binaryHideFuncRe.test(func);
     }
 
+    // The temp dir matcher only knows forward slashes, but a Windows build records e.g. C:\Temp\<tempdir>\src\helper.cpp
+    private isProgramFile(file: string) {
+        const normalised = file.replaceAll('\\', '/');
+        return utils.maskRootdir(normalised) !== normalised;
+    }
+
     processBinaryAsm(asmResult: string, filters: ParseFiltersAndOutputOptions): ParsedAsmResult {
         const startTime = process.hrtime.bigint();
         const asm: ParsedAsmResultLine[] = [];
@@ -649,6 +655,22 @@ export class AsmParser extends AsmRegex implements IAsmParser {
             asm.splice(functionStart);
             for (const label of functionLabels) delete labelDefinitions[label];
         };
+        const markTruncated = () => {
+            if (truncated) return;
+            asm.push({text: '[truncated; too many lines]', source: null, labels: []});
+            truncated = true;
+        };
+        // A function kept for its user code may have run past the limit while it could still be removed
+        const keepFunction = () => {
+            functionHasUserCode = true;
+            if (asm.length > this.maxAsmLines) {
+                asm.splice(this.maxAsmLines);
+                for (const label of functionLabels) {
+                    if (labelDefinitions[label] > this.maxAsmLines) delete labelDefinitions[label];
+                }
+                markTruncated();
+            }
+        };
 
         // Handle "error" documents.
         if (asmLines.length === 1 && asmLines[0][0] === '<') {
@@ -665,14 +687,7 @@ export class AsmParser extends AsmRegex implements IAsmParser {
             // A function that may still be removed doesn't use up the limit, otherwise a large statically linked
             // runtime would hide the user's functions behind it
             if (asm.length >= this.maxAsmLines && !mayRemoveFunction()) {
-                if (!truncated) {
-                    asm.push({
-                        text: '[truncated; too many lines]',
-                        source: null,
-                        labels: labelsInLine,
-                    });
-                    truncated = true;
-                }
+                markTruncated();
                 continue;
             }
             let match = line.match(this.lineRe);
@@ -682,13 +697,12 @@ export class AsmParser extends AsmRegex implements IAsmParser {
                 const file = match.groups.file ?? match[1];
                 assert(file);
                 const mainsource = this.stdInLooking.test(file);
-                const maskedFile = utils.maskRootdir(file);
                 source = {
-                    file: dontMaskFilenames || !mainsource ? maskedFile : null,
+                    file: dontMaskFilenames || !mainsource ? utils.maskRootdir(file) : null,
                     line: Number.parseInt(match.groups.line, 10),
                     mainsource,
                 };
-                if (mainsource || maskedFile !== file) functionHasUserCode = true;
+                if (!functionHasUserCode && (mainsource || this.isProgramFile(file))) keepFunction();
                 continue;
             }
 
