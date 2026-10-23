@@ -72,23 +72,16 @@ export class MojoCompiler extends BaseCompiler {
         return super.getSharedLibraryPathsAsArguments(libraries, libDownloadPath, toolchainPath, dirPath);
     }
 
-    override async generateIR(
+    override generateIR(
         inputFilename: string,
         options: string[],
         irOptions: LLVMIrBackendOptions,
         produceCfg: boolean,
         filters: ParseFiltersAndOutputOptions,
     ) {
-        const newOptions = options.filter(
-            (opt, idx, arr) =>
-                opt !== '-o' &&
-                opt !== '--emit' &&
-                !opt.startsWith('--emit=') &&
-                arr[idx - 1] !== '-o' &&
-                arr[idx - 1] !== '--emit',
-        );
+        const newOptions = options.filter((opt, idx, arr) => opt !== '-o' && arr[idx - 1] !== '-o');
         newOptions.push('-o', this.getIrOutputFilename(inputFilename));
-        return await super.generateIR(inputFilename, newOptions, irOptions, produceCfg, filters);
+        return super.generateIR(inputFilename, newOptions, irOptions, produceCfg, filters);
     }
 
     protected override isOutputLikelyLlvmIr(options: string[]) {
