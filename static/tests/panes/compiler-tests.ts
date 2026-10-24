@@ -199,3 +199,47 @@ describe('Compiler default options', () => {
         expect(fixture.sentOptions).toEqual([expectedOptions, expectedOptions]);
     });
 });
+
+describe('Duckling output pane events', () => {
+    function compilerWithDucklingOutputs(supportedOutputKinds: string[]) {
+        const compiler = Object.create(Compiler.prototype) as Compiler;
+        const ducklingOutputButtons = new Map([
+            ['hir', $('<button>')],
+            ['mir', $('<button>')],
+        ]);
+        Object.assign(compiler, {
+            id: 12,
+            ducklingOutputViewsOpen: new Set(),
+            ducklingOutputButtons,
+            compiler: {supportsDucklingOutputs: supportedOutputKinds},
+            compile: vi.fn(),
+        });
+        return {compiler, ducklingOutputButtons};
+    }
+
+    it('tracks and compiles each supported output pane independently', () => {
+        const {compiler, ducklingOutputButtons} = compilerWithDucklingOutputs(['hir', 'mir']);
+
+        compiler.onDucklingOutputViewOpened(12, 'hir');
+        compiler.onDucklingOutputViewOpened(12, 'mir');
+
+        expect(Reflect.get(compiler, 'ducklingOutputViewsOpen')).toEqual(new Set(['hir', 'mir']));
+        expect(ducklingOutputButtons.get('hir')?.prop('disabled')).toBe(true);
+        expect(ducklingOutputButtons.get('mir')?.prop('disabled')).toBe(true);
+        expect(compiler.compile).toHaveBeenCalledTimes(2);
+    });
+
+    it('ignores unsupported outputs and re-enables only the closed pane button', () => {
+        const {compiler, ducklingOutputButtons} = compilerWithDucklingOutputs(['hir', 'mir']);
+        compiler.onDucklingOutputViewOpened(12, 'hir');
+        compiler.onDucklingOutputViewOpened(12, 'parser');
+        compiler.onDucklingOutputViewOpened(12, 'mir');
+
+        compiler.onDucklingOutputViewClosed(12, 'hir');
+
+        expect(Reflect.get(compiler, 'ducklingOutputViewsOpen')).toEqual(new Set(['mir']));
+        expect(ducklingOutputButtons.get('hir')?.prop('disabled')).toBe(false);
+        expect(ducklingOutputButtons.get('mir')?.prop('disabled')).toBe(true);
+        expect(compiler.compile).toHaveBeenCalledTimes(3);
+    });
+});

@@ -75,6 +75,7 @@ export {
     DotNetMonoCompiler,
     DotNetNativeAotCompiler,
 } from './dotnet.js';
+export {DucklingCompiler, DucklingDbcCompiler, DucklingScriptCompiler} from './duckling.js';
 export {EDGCompiler} from './edg.js';
 export {ElixirCompiler} from './elixir.js';
 export {ElixirAsmCompiler} from './elixirasm.js';

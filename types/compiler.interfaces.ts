@@ -53,6 +53,13 @@ export type Remote = {
 export const RELEASE_TRACKS = ['stable', 'nightly', 'prerelease', 'experimental'] as const;
 export type ReleaseTrack = (typeof RELEASE_TRACKS)[number];
 
+export const DUCKLING_OUTPUT_KINDS = ['lexer', 'parser', 'hir', 'mir', 'lir', 'llvm', 'dbc'] as const;
+export type DucklingOutputKind = (typeof DUCKLING_OUTPUT_KINDS)[number];
+
+export function isDucklingOutputKind(value: unknown): value is DucklingOutputKind {
+    return typeof value === 'string' && DUCKLING_OUTPUT_KINDS.includes(value as DucklingOutputKind);
+}
+
 export type CompilerInfo = {
     id: string;
     exe: string;
@@ -100,6 +107,7 @@ export type CompilerInfo = {
     supportsStackUsageOutput?: boolean;
     supportsPpView?: boolean;
     supportsAstView?: boolean;
+    supportsDucklingOutputs?: DucklingOutputKind[];
     supportsIrView?: boolean;
     supportsIrViewOptToggleOption?: boolean;
     supportsClangirView?: boolean;

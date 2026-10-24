@@ -24,7 +24,9 @@
 
 import GoldenLayout from 'golden-layout';
 
+import {CompilationResult} from '../types/compilation/compilation.interfaces.js';
 import {ConfiguredOverrides} from '../types/compilation/compiler-overrides.interfaces.js';
+import {DucklingOutputKind} from '../types/compiler.interfaces.js';
 import {ConfiguredRuntimeTools} from '../types/execution/execution.interfaces.js';
 import {CompilerOutputOptions} from '../types/features/filters.interfaces.js';
 import {ResultLine} from '../types/resultline/resultline.interfaces.js';
@@ -79,6 +81,7 @@ export const RUST_MACRO_EXP_VIEW_COMPONENT_NAME = 'rustmacroexp' as const;
 export const RUST_HIR_VIEW_COMPONENT_NAME = 'rusthir' as const;
 export const CLOJURE_MACRO_EXP_VIEW_COMPONENT_NAME = 'clojuremacroexp' as const;
 export const DEVICE_VIEW_COMPONENT_NAME = 'device' as const;
+export const DUCKLING_OUTPUT_VIEW_COMPONENT_NAME = 'ducklingOutput' as const;
 export const EXPLAIN_VIEW_COMPONENT_NAME = 'explain' as const;
 export const YUL_VIEW_COMPONENT_NAME = 'yul' as const;
 
@@ -362,6 +365,15 @@ export type PopulatedDeviceViewState = StateWithId & {
     treeid: number;
 };
 
+export type EmptyDucklingOutputViewState = EmptyState;
+export type PopulatedDucklingOutputViewState = StateWithId & {
+    ducklingOutputKind: DucklingOutputKind;
+    ducklingOutput?: NonNullable<CompilationResult['ducklingOutputs']>[DucklingOutputKind];
+    compilerName: string;
+    editorid: number;
+    treeid: number;
+};
+
 export type EmptyExplainViewState = EmptyState;
 export type PopulatedExplainViewState = StateWithId & {
     compilerName: string;
@@ -414,6 +426,7 @@ export interface ComponentStateMap {
     [RUST_HIR_VIEW_COMPONENT_NAME]: EmptyRustHirViewState | PopulatedRustHirViewState;
     [CLOJURE_MACRO_EXP_VIEW_COMPONENT_NAME]: EmptyClojureMacroExpViewState | PopulatedClojureMacroExpViewState;
     [DEVICE_VIEW_COMPONENT_NAME]: EmptyDeviceViewState | PopulatedDeviceViewState;
+    [DUCKLING_OUTPUT_VIEW_COMPONENT_NAME]: EmptyDucklingOutputViewState | PopulatedDucklingOutputViewState;
     [EXPLAIN_VIEW_COMPONENT_NAME]: EmptyExplainViewState | PopulatedExplainViewState;
     [YUL_VIEW_COMPONENT_NAME]: EmptyYulViewState | PopulatedYulViewState;
 }

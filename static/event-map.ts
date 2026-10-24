@@ -29,7 +29,7 @@ import {CompilationResult} from '../types/compilation/compilation.interfaces.js'
 import {LLVMIrBackendOptions} from '../types/compilation/ir.interfaces.js';
 import {OptPipelineBackendOptions} from '../types/compilation/opt-pipeline-output.interfaces.js';
 import {YulBackendOptions} from '../types/compilation/yul.interfaces.js';
-import {CompilerInfo} from '../types/compiler.interfaces.js';
+import {CompilerInfo, DucklingOutputKind} from '../types/compiler.interfaces.js';
 import {Language, LanguageKey} from '../types/languages.interfaces.js';
 import {MessageWithLocation} from '../types/resultline/resultline.interfaces.js';
 import {NewToolSettings, ToolState} from './components.interfaces.js';
@@ -78,6 +78,8 @@ export type EventMap = {
     copyShortLinkToClip: () => void;
     deviceViewClosed: (compilerId: number) => void;
     deviceViewOpened: (compilerId: number) => void;
+    ducklingOutputViewClosed: (compilerId: number, outputKind: DucklingOutputKind) => void;
+    ducklingOutputViewOpened: (compilerId: number, outputKind: DucklingOutputKind) => void;
     explainViewClosed: (compilerId: number) => void;
     explainViewOpened: (compilerId: number) => void;
     displaySharingPopover: () => void;

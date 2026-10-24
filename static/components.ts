@@ -24,8 +24,9 @@
 
 import GoldenLayout from 'golden-layout';
 
-import {GccDumpOutput} from '../types/compilation/compilation.interfaces.js';
+import {CompilationResult, GccDumpOutput} from '../types/compilation/compilation.interfaces.js';
 import {ConfiguredOverrides} from '../types/compilation/compiler-overrides.interfaces.js';
+import {DucklingOutputKind} from '../types/compiler.interfaces.js';
 import {ConfiguredRuntimeTools} from '../types/execution/execution.interfaces.js';
 import {ParseFiltersAndOutputOptions} from '../types/features/filters.interfaces.js';
 import {LanguageKey} from '../types/languages.interfaces.js';
@@ -43,6 +44,7 @@ import {
     DEVICE_VIEW_COMPONENT_NAME,
     DIFF_VIEW_COMPONENT_NAME,
     DragSourceFactory,
+    DUCKLING_OUTPUT_VIEW_COMPONENT_NAME,
     EDITOR_COMPONENT_NAME,
     EXECUTOR_COMPONENT_NAME,
     EXPLAIN_VIEW_COMPONENT_NAME,
@@ -1038,6 +1040,38 @@ export function getDeviceViewWith(
             compilerName: compilerName,
             editorid: editorid,
             treeid: treeid,
+        },
+    };
+}
+
+/** Get an empty Duckling output view component. */
+export function getDucklingOutputView(): ComponentConfig<typeof DUCKLING_OUTPUT_VIEW_COMPONENT_NAME> {
+    return {
+        type: 'component',
+        componentName: DUCKLING_OUTPUT_VIEW_COMPONENT_NAME,
+        componentState: {},
+    };
+}
+
+/** Get a Duckling output view with the given configuration. */
+export function getDucklingOutputViewWith(
+    id: number,
+    ducklingOutputKind: DucklingOutputKind,
+    ducklingOutput: NonNullable<CompilationResult['ducklingOutputs']>[DucklingOutputKind],
+    compilerName: string,
+    editorid: number,
+    treeid: number,
+): ComponentConfig<typeof DUCKLING_OUTPUT_VIEW_COMPONENT_NAME> {
+    return {
+        type: 'component',
+        componentName: DUCKLING_OUTPUT_VIEW_COMPONENT_NAME,
+        componentState: {
+            id,
+            ducklingOutputKind,
+            ducklingOutput,
+            compilerName,
+            editorid,
+            treeid,
         },
     };
 }

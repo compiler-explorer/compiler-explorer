@@ -66,6 +66,14 @@ describe('Basic compiler invariants', () => {
         compiler = new BaseCompiler(info as CompilerInfo, ce);
     });
 
+    it('preserves the compiler interpreted setting by default', () => {
+        const interpretedCompiler = new BaseCompiler({...info, interpreted: true} as CompilerInfo, ce);
+        const nativeCompiler = new BaseCompiler({...info, interpreted: false} as CompilerInfo, ce);
+
+        expect((interpretedCompiler as any).shouldInterpret({})).toBe(true);
+        expect((nativeCompiler as any).shouldInterpret({})).toBe(false);
+    });
+
     it('should recognize when optOutput has been request', () => {
         expect(compiler.optOutputRequested(['please', 'recognize', '-fsave-optimization-record'])).toBe(true);
         expect(compiler.optOutputRequested(['please', "don't", 'recognize'])).toBe(false);
