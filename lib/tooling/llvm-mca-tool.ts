@@ -50,25 +50,27 @@ export class LLVMMcaTool extends BaseTool {
 
     override async runTool(compilationInfo: CompilationInfo, _inputFilepath?: string, args?: string[]) {
         const isets = new InstructionSets();
+        const isMojo = compilationInfo.compiler.lang === 'mojo';
         let target = isets.getInstructionSetTarget(compilationInfo.compiler.instructionSet);
         const prependArgs: string[] = [];
 
-        // Check if compiler target is overridden with --target=<foo> or -target <foo>.
+        // Check whether compiler options override the configured target.
+        const targetPattern = isMojo ? /^--target(?:-triple)?=/ : /^--target=/;
         let argIsTarget = false;
         for (const arg of compilationInfo.options) {
-            if (arg.startsWith('--target=')) target = arg.replace(/^--target=/, '');
+            if (targetPattern.test(arg)) target = arg.replace(targetPattern, '');
             if (argIsTarget) {
                 target = arg;
                 argIsTarget = false;
             }
-            if (arg === '-target') argIsTarget = true;
+            if (arg === '-target' || (isMojo && arg === '--target-triple')) argIsTarget = true;
         }
 
         if (target) prependArgs.push('-mtriple=' + target);
 
         let haveCPU = false;
         let haveM32 = false;
-        for (const arg of compilationInfo.options) {
+        for (const [index, arg] of compilationInfo.options.entries()) {
             if (arg.startsWith('-march') && (target?.startsWith('x86_64') || target?.startsWith('i386'))) {
                 prependArgs.push(arg.replace(/^-march=/, '-mcpu='));
                 haveCPU = true;
@@ -77,6 +79,18 @@ export class LLVMMcaTool extends BaseTool {
             if (arg.startsWith('-mcpu')) {
                 prependArgs.push(arg);
                 haveCPU = true;
+            }
+            const targetOption = isMojo ? arg.match(/^--target-(cpu|features)(?:=(.*))?$/) : null;
+            if (targetOption) {
+                const value = targetOption[2] ?? compilationInfo.options[index + 1];
+                if (value !== undefined) {
+                    if (targetOption[1] === 'cpu') {
+                        prependArgs.push('-mcpu=' + value);
+                        haveCPU = true;
+                    } else {
+                        prependArgs.push('-mattr=' + value);
+                    }
+                }
             }
         }
 
