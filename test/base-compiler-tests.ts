@@ -832,8 +832,8 @@ describe('Clang demangling for Windows MSVC targets', () => {
                 exe: path.join(binDir, 'clang++'),
                 lang: 'c++',
                 ldPath: [],
+                // What ClangParser detects from clang --help: -target is a hidden alias
                 supportsTargetIs: true,
-                supportsHyphenTarget: true,
                 demanglerType: 'cpp',
                 demanglerArgs: [],
             }),
@@ -871,6 +871,8 @@ describe('Clang demangling for Windows MSVC targets', () => {
         ['--target=x86_64-pc-windows-msvc'],
         ['--target=aarch64-pc-windows-msvc19.40.0'],
         ['-target', 'x86_64-pc-win32'],
+        ['--target', 'x86_64-pc-windows-msvc'],
+        ['--target=x86_64-pc-linux-gnu', '-target', 'x86_64-pc-windows-msvc'],
     ])('uses llvm-undname for %s', async (...target) => {
         const execSpy = mockDemanglerExec();
         const result = await demangle(['-O2', ...target, 'example.cpp']);
@@ -878,11 +880,45 @@ describe('Clang demangling for Windows MSVC targets', () => {
         expect(result.asm[0].text).toBe('int square(int):');
     });
 
-    it.each([[[]], [['--target=x86_64-pc-windows-gnu']]])('does not use llvm-undname for %j', async options => {
+    it.each([
+        [[]],
+        [['--target=x86_64-pc-windows-gnu']],
+        [['-target', 'x86_64-pc-windows-msvc', '--target=x86_64-pc-linux-gnu']],
+    ])('does not use llvm-undname for %j', async options => {
         const execSpy = mockDemanglerExec();
         const result = await demangle(options);
         expect(execSpy.mock.calls.map(([exe]) => exe)).not.toContain(path.join(binDir, 'llvm-undname'));
         expect(result.asm[0].text).toBe('"?square@@YAHH@Z":');
+    });
+
+    it('uses the target from the actual compilation arguments in afterCompilation', async () => {
+        const execSpy = mockDemanglerExec();
+        vi.spyOn(ce, 'cachePut').mockResolvedValue();
+        const result = await compiler.afterCompilation(
+            {
+                code: 0,
+                timedOut: false,
+                stdout: [],
+                stderr: [],
+                okToCache: true,
+                externalParserUsed: true,
+                asm: [{text: '"?square@@YAHH@Z":'}],
+                // As if --target came from the compiler's configured options rather than the user
+                compilationOptions: ['-O2', '--target=x86_64-pc-windows-msvc', 'example.cpp'],
+            } as CompilationResult,
+            false,
+            {compiler: {}, source: '', options: ['-O2'], backendOptions: {}, tools: [], libraries: [], files: []},
+            {} as any,
+            [],
+            {skipPopArgs: true},
+            makeFakeParseFiltersAndOutputOptions({demangle: true}),
+            ['-O2'],
+            undefined,
+            undefined,
+            BypassCache.None,
+        );
+        expect(execSpy.mock.calls[0][0]).toBe(path.join(binDir, 'llvm-undname'));
+        expect(result.asm[0].text).toBe('int square(int):');
     });
 
     it('only uses llvm-undname for zig with an explicit -msvc target', async () => {

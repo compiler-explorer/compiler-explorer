@@ -108,8 +108,18 @@ export class ClangCompiler extends BaseCompiler {
         }
     }
 
+    // Unlike getTargetHintFromCompilerArgs, accepts every spelling the driver does and lets the last one win
+    protected getEffectiveTarget(options: string[]): string | undefined {
+        let target: string | undefined;
+        for (const [i, arg] of options.entries()) {
+            if (arg.startsWith('--target=')) target = arg.substring('--target='.length);
+            else if ((arg === '--target' || arg === '-target') && i + 1 < options.length) target = options[i + 1];
+        }
+        return target;
+    }
+
     protected targetsMsvc(options: string[]): boolean {
-        const target = this.getTargetHintFromCompilerArgs(options);
+        const target = this.getEffectiveTarget(options);
         return !!target && /-(windows|win32)(-msvc|$)/.test(target);
     }
 

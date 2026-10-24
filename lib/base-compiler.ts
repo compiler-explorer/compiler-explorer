@@ -3647,7 +3647,9 @@ export class BaseCompiler {
                 }
             }
             // TODO rephrase this so we don't need to reassign
-            result = filters.demangle ? await this.postProcessAsm(result, filters, options) : result;
+            result = filters.demangle
+                ? await this.postProcessAsm(result, filters, result.compilationOptions ?? options)
+                : result;
             if (this.compiler.supportsCfg && backendOptions.produceCfg?.asm) {
                 const isLlvmIr =
                     this.compiler.instructionSet === 'llvm' ||

@@ -49,7 +49,7 @@ export class ZigCXX extends ClangCompiler {
 
     // Unlike clang, zig defaults Windows targets to the GNU ABI (Itanium mangling)
     protected override targetsMsvc(options: string[]): boolean {
-        return !!this.getTargetHintFromCompilerArgs(options)?.includes('-windows-msvc');
+        return !!this.getEffectiveTarget(options)?.includes('-windows-msvc');
     }
 
     override preProcess(source: string, filters: CompilerOutputOptions): string {
