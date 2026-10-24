@@ -48,8 +48,7 @@ describe('msvc tests', () => {
                 '/c',
                 '/Faoutput.s',
                 '/Fooutput.s.obj',
-                '/Zi',
-                '/Fdoutput.s.pdb',
+                '/Z7',
                 '/EHsc',
                 '/utf-8',
                 'example.cpp',
@@ -72,13 +71,54 @@ describe('msvc tests', () => {
                 '/c',
                 '/Faoutput.s',
                 '/Fooutput.s.obj',
-                '/Zi',
-                '/Fdoutput.s.pdb',
+                '/Z7',
                 '/EHsc',
                 '/O2',
                 '/source-charset:windows-1252',
                 'example.cpp',
             ]);
+        });
+    });
+
+    describe('debug information', async () => {
+        const msvc = new Win32VcCompiler(info as any, makeCompilationEnvironment({languages}));
+        it('should drop debug options that need mspdbsrv', async () => {
+            const prepared: string[] = msvc.prepareArguments(
+                ['/Zi', '-ZI', '/FS', '/Zc:__cplusplus', '/Z7'],
+                {},
+                {},
+                'example.cpp',
+                'output.s',
+                [],
+                [],
+            );
+            expect(prepared).toEqual([
+                '/nologo',
+                '/FA',
+                '/c',
+                '/Faoutput.s',
+                '/Fooutput.s.obj',
+                '/Z7',
+                '/EHsc',
+                '/utf-8',
+                '/Zc:__cplusplus',
+                '/Z7',
+                'example.cpp',
+            ]);
+        });
+
+        it('should use /Z7 when building a binary', async () => {
+            const options = msvc.optionsForFilter({binary: true} as any, 'output.s');
+            expect(options).toContain('/Z7');
+            expect(options).not.toContain('/Zi');
+        });
+
+        it('should embed debug information in CMake builds', async () => {
+            const args = msvc.getExtraCMakeArgs({});
+            expect(args).toContain('-DCMAKE_POLICY_DEFAULT_CMP0141=NEW');
+            expect(args).toContain('-DCMAKE_MSVC_DEBUG_INFORMATION_FORMAT=Embedded');
+            expect(args).toContain('-DCMAKE_POLICY_DEFAULT_CMP0091=NEW');
+            expect(args).toContain('-DCMAKE_MSVC_RUNTIME_LIBRARY=MultiThreadedDLL');
         });
     });
 });
