@@ -33,6 +33,7 @@ import {CompilationEnvironment} from '../lib/compilation-env.js';
 import {ClangCompiler} from '../lib/compilers/clang.js';
 import {RustCompiler} from '../lib/compilers/rust.js';
 import {Win32Compiler} from '../lib/compilers/win32.js';
+import {ZigCXX} from '../lib/compilers/zigcxx.js';
 import * as props from '../lib/properties.js';
 import {splitArguments} from '../shared/common-utils.js';
 import {BypassCache, CompilationResult} from '../types/compilation/compilation.interfaces.js';
@@ -844,8 +845,8 @@ describe('Clang demangling for Windows MSVC targets', () => {
         vi.restoreAllMocks();
     });
 
-    function mockDemanglerExec() {
-        return vi.spyOn(compiler, 'exec').mockImplementation(async (exe, _args, options) => ({
+    function mockDemanglerExec(c: ClangCompiler = compiler) {
+        return vi.spyOn(c, 'exec').mockImplementation(async (exe, _args, options) => ({
             code: 0,
             okToCache: true,
             filenameTransform: f => f,
@@ -858,8 +859,8 @@ describe('Clang demangling for Windows MSVC targets', () => {
         }));
     }
 
-    function demangle(options: string[]) {
-        return compiler.postProcessAsm(
+    function demangle(options: string[], c: ClangCompiler = compiler) {
+        return c.postProcessAsm(
             {okToCache: true, asm: [{text: '"?square@@YAHH@Z":'}, {text: '        imul    ecx, ecx'}]},
             makeFakeParseFiltersAndOutputOptions({demangle: true}),
             options,
@@ -882,6 +883,25 @@ describe('Clang demangling for Windows MSVC targets', () => {
         const result = await demangle(options);
         expect(execSpy.mock.calls.map(([exe]) => exe)).not.toContain(path.join(binDir, 'llvm-undname'));
         expect(result.asm[0].text).toBe('"?square@@YAHH@Z":');
+    });
+
+    it('only uses llvm-undname for zig with an explicit -msvc target', async () => {
+        const zig = new ZigCXX(
+            makeFakeCompilerInfo({
+                exe: path.join(binDir, 'zig'),
+                lang: 'c++',
+                ldPath: [],
+                semver: '0.14.0',
+                supportsHyphenTarget: true,
+                demanglerType: 'cpp',
+                demanglerArgs: [],
+            }),
+            ce,
+        );
+        const execSpy = mockDemanglerExec(zig);
+        expect((await demangle(['-target', 'x86_64-windows'], zig)).asm[0].text).toBe('"?square@@YAHH@Z":');
+        expect((await demangle(['-target', 'x86_64-windows-msvc'], zig)).asm[0].text).toBe('int square(int):');
+        expect(execSpy.mock.calls.map(([exe]) => exe)).toEqual([path.join(binDir, 'llvm-undname')]);
     });
 });
 
