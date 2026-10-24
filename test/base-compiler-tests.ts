@@ -22,9 +22,10 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
+import fs from 'node:fs';
 import path from 'node:path';
 
-import {afterAll, beforeAll, describe, expect, it, vi} from 'vitest';
+import {afterAll, afterEach, beforeAll, describe, expect, it, vi} from 'vitest';
 
 import {BaseCompiler} from '../lib/base-compiler.js';
 import {BuildEnvSetupBase} from '../lib/buildenvsetup/index.js';
@@ -38,7 +39,12 @@ import {BypassCache, CompilationResult} from '../types/compilation/compilation.i
 import {CompilerOverrideType, ConfiguredOverrides} from '../types/compilation/compiler-overrides.interfaces.js';
 import {CompilerInfo} from '../types/compiler.interfaces.js';
 import {SelectedLibraryVersion} from '../types/libraries/libraries.interfaces.js';
-import {makeCompilationEnvironment, makeFakeCompilerInfo, makeFakeParseFiltersAndOutputOptions} from './utils.js';
+import {
+    makeCompilationEnvironment,
+    makeFakeCompilerInfo,
+    makeFakeParseFiltersAndOutputOptions,
+    newTempDir,
+} from './utils.js';
 
 const languages = {
     'c++': {id: 'c++'},
@@ -808,6 +814,74 @@ describe('Configured -march versus user-selected CPU', () => {
         const compiler = makeCompiler('-target aarch64-linux-gnu -march=armv8.8-a+sve2');
         const args = prepareArguments(compiler, ['-mcpu=cortex-a53']);
         expect(args).toContain('-march=armv8.8-a+sve2');
+    });
+});
+
+describe('Clang demangling for Windows MSVC targets', () => {
+    let ce: CompilationEnvironment;
+    let compiler: ClangCompiler;
+    let binDir: string;
+
+    beforeAll(() => {
+        ce = makeCompilationEnvironment({languages});
+        binDir = newTempDir();
+        for (const tool of ['clang++', 'llvm-cxxfilt', 'llvm-undname']) fs.writeFileSync(path.join(binDir, tool), '');
+        compiler = new ClangCompiler(
+            makeFakeCompilerInfo({
+                exe: path.join(binDir, 'clang++'),
+                lang: 'c++',
+                ldPath: [],
+                supportsTargetIs: true,
+                supportsHyphenTarget: true,
+                demanglerType: 'cpp',
+                demanglerArgs: [],
+            }),
+            ce,
+        );
+    });
+
+    afterEach(() => {
+        vi.restoreAllMocks();
+    });
+
+    function mockDemanglerExec() {
+        return vi.spyOn(compiler, 'exec').mockImplementation(async (exe, _args, options) => ({
+            code: 0,
+            okToCache: true,
+            filenameTransform: f => f,
+            // Like llvm-undname: echo each name, then its demangling, then an empty line
+            stdout: exe.endsWith('llvm-undname') ? `${options.input?.trim()}\nint square(int)\n\n` : '',
+            stderr: '',
+            execTime: 0,
+            timedOut: false,
+            truncated: false,
+        }));
+    }
+
+    function demangle(options: string[]) {
+        return compiler.postProcessAsm(
+            {okToCache: true, asm: [{text: '"?square@@YAHH@Z":'}, {text: '        imul    ecx, ecx'}]},
+            makeFakeParseFiltersAndOutputOptions({demangle: true}),
+            options,
+        );
+    }
+
+    it.each([
+        ['--target=x86_64-pc-windows-msvc'],
+        ['--target=aarch64-pc-windows-msvc19.40.0'],
+        ['-target', 'x86_64-pc-win32'],
+    ])('uses llvm-undname for %s', async (...target) => {
+        const execSpy = mockDemanglerExec();
+        const result = await demangle(['-O2', ...target, 'example.cpp']);
+        expect(execSpy.mock.calls[0][0]).toBe(path.join(binDir, 'llvm-undname'));
+        expect(result.asm[0].text).toBe('int square(int):');
+    });
+
+    it.each([[[]], [['--target=x86_64-pc-windows-gnu']]])('does not use llvm-undname for %j', async options => {
+        const execSpy = mockDemanglerExec();
+        const result = await demangle(options);
+        expect(execSpy.mock.calls.map(([exe]) => exe)).not.toContain(path.join(binDir, 'llvm-undname'));
+        expect(result.asm[0].text).toBe('"?square@@YAHH@Z":');
     });
 });
 
