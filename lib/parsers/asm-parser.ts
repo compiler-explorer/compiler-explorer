@@ -406,9 +406,10 @@ export class AsmParser extends AsmRegex implements IAsmParser {
         this.asmOpcodeRe = /^\s*(?<address>[\da-f]+):\s*(?<opcodes>([\da-f]{2} ?)+)\s*(?<disasm>.*)/;
         this.relocationRe = /^\s*(?<address>[\da-f]+):\s*(?<relocname>(R_[\dA-Z_]+))\s*(?<relocdata>.*)/;
         this.relocDataSymNameRe = /^(?<symname>[^\d-+][\w.]*)?\s*(?<addend_or_value>.*)$/;
-        // The path is whatever objdump printed, not the host: `/file:N`, `C:/file:N`, or `C:\file:N`.
+        // The path is whatever objdump printed, not the host: `/file:N`, `C:/file:N`, or `C:\file:N`, or
+        // `./file:N` from a build with trimmed paths (`go build -trimpath`).
         // llvm-objdump prefixes that same record with `; `.
-        this.lineRe = /^(?:; )?(?<file>(?:[A-Z]:[\\/]|\/)[^:]+):(?<line>\d+).*/;
+        this.lineRe = /^(?:; )?(?<file>(?:[A-Z]:[\\/]|\.?\/)[^:]+):(?<line>\d+).*/;
 
         // labelRe is made very greedy as it's also used with demangled objdump output (eg. it can have c++ template with <>).
         this.labelRe = /^([\da-f]+)\s+<(.+)>:$/;
@@ -626,6 +627,12 @@ export class AsmParser extends AsmRegex implements IAsmParser {
         return !this.binaryHideFuncRe.test(func);
     }
 
+    // The temp dir matcher only knows forward slashes, but a Windows build records e.g. C:\Temp\<tempdir>\src\helper.cpp
+    private isProgramFile(file: string) {
+        const normalised = file.replaceAll('\\', '/');
+        return utils.maskRootdir(normalised) !== normalised;
+    }
+
     processBinaryAsm(asmResult: string, filters: ParseFiltersAndOutputOptions): ParsedAsmResult {
         const startTime = process.hrtime.bigint();
         const asm: ParsedAsmResultLine[] = [];
@@ -636,7 +643,35 @@ export class AsmParser extends AsmRegex implements IAsmParser {
         const startingLineCount = asmLines.length;
         let source: AsmResultSource | undefined | null = null;
         let func: string | null = null;
-        let mayRemovePreviousLabel = true;
+        // A function is the user's if any of its code comes from a file of the program, i.e. from the directory it was
+        // built in. Anything else is library code, including a statically linked runtime that keeps the paths it was
+        // built from, e.g. clang's asan runtime refers to /root/llvm-project/compiler-rt/lib/asan/asan_allocator.cpp
+        let functionStart = 0;
+        let functionLabels: string[] = [];
+        let functionHasUserCode = false;
+        let truncated = false;
+        const mayRemoveFunction = () => filters.libraryCode && !functionHasUserCode;
+        const removeFunctionIfLibrary = () => {
+            if (!mayRemoveFunction()) return;
+            asm.splice(functionStart);
+            for (const label of functionLabels) delete labelDefinitions[label];
+        };
+        const markTruncated = () => {
+            if (truncated) return;
+            asm.push({text: '[truncated; too many lines]', source: null, labels: []});
+            truncated = true;
+        };
+        // A function kept for its user code may have run past the limit while it could still be removed
+        const keepFunction = () => {
+            functionHasUserCode = true;
+            if (asm.length > this.maxAsmLines) {
+                asm.splice(this.maxAsmLines);
+                for (const label of functionLabels) {
+                    if (labelDefinitions[label] > this.maxAsmLines) delete labelDefinitions[label];
+                }
+                markTruncated();
+            }
+        };
 
         // Handle "error" documents.
         if (asmLines.length === 1 && asmLines[0][0] === '<') {
@@ -650,14 +685,10 @@ export class AsmParser extends AsmRegex implements IAsmParser {
         for (const line of asmLines) {
             const labelsInLine: AsmResultLabel[] = [];
 
-            if (asm.length >= this.maxAsmLines) {
-                if (asm.length === this.maxAsmLines) {
-                    asm.push({
-                        text: '[truncated; too many lines]',
-                        source: null,
-                        labels: labelsInLine,
-                    });
-                }
+            // A function that may still be removed doesn't use up the limit, otherwise a large statically linked
+            // runtime would hide the user's functions behind it
+            if (asm.length >= this.maxAsmLines && !mayRemoveFunction()) {
+                markTruncated();
                 continue;
             }
             let match = line.match(this.lineRe);
@@ -672,6 +703,7 @@ export class AsmParser extends AsmRegex implements IAsmParser {
                     line: Number.parseInt(match.groups.line, 10),
                     mainsource,
                 };
+                if (!functionHasUserCode && (mainsource || this.isProgramFile(file))) keepFunction();
                 continue;
             }
 
@@ -681,7 +713,13 @@ export class AsmParser extends AsmRegex implements IAsmParser {
                 // Don't let a function with no line records (e.g. CRT code without debug info) inherit the previous
                 // function's line; objdump prints a function's first record after its label. `.L` labels are local
                 // labels inside a function (RISC-V keeps `.Lpcrel_hi*` in the symbol table), not new functions.
-                if (!func.startsWith('.L')) source = null;
+                if (!func.startsWith('.L')) {
+                    source = null;
+                    removeFunctionIfLibrary();
+                    functionStart = asm.length;
+                    functionLabels = [];
+                    functionHasUserCode = false;
+                }
                 if (func && this.isUserFunction(func)) {
                     asm.push({
                         text: func + ':',
@@ -689,8 +727,7 @@ export class AsmParser extends AsmRegex implements IAsmParser {
                         labels: labelsInLine,
                     });
                     labelDefinitions[func] = asm.length;
-                    // each function's label may be dropped again, not only the first after user code
-                    mayRemovePreviousLabel = true;
+                    functionLabels.push(func);
                 }
                 continue;
             }
@@ -699,19 +736,9 @@ export class AsmParser extends AsmRegex implements IAsmParser {
 
             if (!func || !this.isUserFunction(func)) continue;
 
-            // library code is code without line information: code inlined from another file of the program
-            // is still the user's, even though it doesn't belong to the main source
-            if (filters.libraryCode && !source) {
-                if (mayRemovePreviousLabel && asm.length > 0) {
-                    const lastLine = asm[asm.length - 1];
-                    if (lastLine.text && this.labelDef.test(lastLine.text)) {
-                        asm.pop();
-                    }
-                    mayRemovePreviousLabel = false;
-                }
-                continue;
-            }
-            mayRemovePreviousLabel = true;
+            // Within the user's functions, library code is code without line information: code inlined from another
+            // file is still the user's, even though it doesn't belong to the main source
+            if (filters.libraryCode && !source) continue;
 
             match = line.match(this.asmOpcodeRe);
             if (match) {
@@ -754,6 +781,7 @@ export class AsmParser extends AsmRegex implements IAsmParser {
                 });
             }
         }
+        removeFunctionIfLibrary();
 
         this.removeLabelsWithoutDefinition(asm, labelDefinitions);
 
