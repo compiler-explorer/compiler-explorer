@@ -150,6 +150,24 @@ libs.rangesv3.versions.0110.version=0.11.0
 libs.rangesv3.versions.0110.path=/opt/compiler-explorer/libs/rangesv3/0.11.0/include
 ```
 
+### CMake package discovery
+
+For a library version installed with CMake package configuration files, set `cmakeprefixpath` to its installation
+prefix. When a user selects that library in a CMake project, CE appends the configured prefix to CMake's
+`CMAKE_PREFIX_PATH`, allowing the project's `CMakeLists.txt` to locate it with `find_package`:
+
+```INI
+libs.fmt.versions.110.version=11.0.2
+libs.fmt.versions.110.path=/opt/compiler-explorer/libs/fmt/11.0.2/include
+libs.fmt.versions.110.libpath=/opt/compiler-explorer/libs/fmt/11.0.2/lib
+libs.fmt.versions.110.cmakeprefixpath=/opt/compiler-explorer/libs/fmt/11.0.2
+```
+
+Use this only when the prefix contains the library's exported CMake package configuration, commonly under
+`lib/cmake/<Package>` or `share/<Package>`. It is separate from `path` and `libpath`, which supply compiler include
+and linker paths. Multiple prefixes may be separated with `:` on Linux and `;` on Windows. If no selected library
+defines `cmakeprefixpath`, CE leaves `CMAKE_PREFIX_PATH` unchanged.
+
 If you're adding a new library and plan to submit a PR for it, please make sure that its identifier appears in
 alphabetical order in the `libs` property. You should also put all its related configuration in that same order when
 defining it. This helps us keep the config manageable until further automation can be implemented. Thank you!

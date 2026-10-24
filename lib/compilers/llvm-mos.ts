@@ -24,13 +24,15 @@
 
 import path from 'node:path';
 
+import _ from 'underscore';
+
 import type {CompilationResult, FiledataPair} from '../../types/compilation/compilation.interfaces.js';
 import type {PreliminaryCompilerInfo} from '../../types/compiler.interfaces.js';
 import type {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces.js';
+import type {SelectedLibraryVersion} from '../../types/libraries/libraries.interfaces.js';
 import {ArtifactType} from '../../types/tool.interfaces.js';
 import {addArtifactToResult} from '../artifact-utils.js';
 import {CompilationEnvironment} from '../compilation-env.js';
-import {ParsedRequest} from '../handlers/compile.js';
 import * as utils from '../utils.js';
 import {ClangCompiler} from './clang.js';
 
@@ -45,8 +47,9 @@ export class LLVMMOSCompiler extends ClangCompiler {
         this.toolchainPath = path.normalize(path.join(path.dirname(this.compiler.exe), '..'));
     }
 
-    override getExtraCMakeArgs(key: ParsedRequest): string[] {
-        return [`-DCMAKE_PREFIX_PATH=${this.toolchainPath}`];
+    override getCMakePrefixPaths(libraries: SelectedLibraryVersion[]): string[] {
+        const toolchainPrefix = this.toolchainPath ? [this.toolchainPath] : [];
+        return _.union(toolchainPrefix, super.getCMakePrefixPaths(libraries));
     }
 
     override fixFiltersBeforeCacheKey(filters: ParseFiltersAndOutputOptions, options: string[], files: FiledataPair[]) {
