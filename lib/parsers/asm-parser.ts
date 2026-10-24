@@ -251,7 +251,7 @@ export class AsmParser extends AsmRegex implements IAsmParser {
                 continue;
             }
 
-            if (this.parsingState.isInCustomAssembly()) line = this.fixLabelIndentation(line);
+            line = this.fixLabelIndentation(line);
 
             const labelResult = this.processLabelDefinition(
                 line,
@@ -471,10 +471,6 @@ export class AsmParser extends AsmRegex implements IAsmParser {
             definesAlias: this.definesAlias,
             definesFunction: this.definesFunction,
             cudaBeginDef: this.cudaBeginDef,
-            startAppBlock: this.startAppBlock,
-            endAppBlock: this.endAppBlock,
-            startAsmNesting: this.startAsmNesting,
-            endAsmNesting: this.endAsmNesting,
             mipsLabelDefinition: this.mipsLabelDefinition,
             labelFindNonMips: this.labelFindNonMips,
             labelFindMips: this.labelFindMips,

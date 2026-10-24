@@ -648,6 +648,30 @@ describe('AsmParser numeric local labels', () => {
     });
 });
 
+describe('AsmParser indented labels', () => {
+    const parser = new AsmParser();
+    // GCC for Xtensa emits the end label of a zero-overhead loop indented like an instruction.
+    const xtensaLoop = `foo:
+	entry	sp, 32
+	movi.n	a9, 0xa
+	loop	a9, .L2_LEND
+.L2:
+	add.n	a2, a2, a10
+	.L2_LEND:
+	retw.n`;
+
+    it('should keep a used indented label when filtering directives', () => {
+        const result = parser.processAsm(xtensaLoop, {directives: true, labels: true, commentOnly: true});
+        expect(result.asm.map(line => line.text)).toContain('.L2_LEND:');
+        expect(result.labelDefinitions).toHaveProperty('.L2_LEND');
+    });
+
+    it('should still drop an unused indented label', () => {
+        const result = parser.processAsm(xtensaLoop.replace('loop\ta9, .L2_LEND', 'nop'), {labels: true});
+        expect(result.asm.map(line => line.text.trim())).not.toContain('.L2_LEND:');
+    });
+});
+
 describe('PTXAsmParser tests', () => {
     const parser = new PTXAsmParser();
 
