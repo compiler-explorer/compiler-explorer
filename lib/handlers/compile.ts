@@ -693,8 +693,7 @@ export class CompileHandler implements ICompileHandler {
         if (req.body.files) files = req.body.files;
 
         if (source === undefined || Object.keys(req.body).length === 0) {
-            logger.warn('No body found in request', req);
-            return next(new Error('Bad request'));
+            return this.handleApiError(new Error('No source found in request'), res, next);
         }
 
         function textify(array: ResultLine[] | null, filterAnsi: boolean | undefined) {
