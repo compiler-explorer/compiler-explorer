@@ -182,6 +182,7 @@ export type CompilerInfo = {
     cachedPossibleArguments?: any;
     cachedMachTargets?: MachTarget[];
     nvdisasm?: string;
+    tileirdisasm?: string;
     ptxas?: string;
     mtime?: any;
     $order: number;
