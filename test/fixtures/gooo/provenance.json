@@ -1,0 +1,50 @@
+{
+  "compiler_revision": "83928fa4538245abe33b08549da47f8cbdc50ed2",
+  "version": "0.6.32-dev",
+  "command": [
+    "body-codegen",
+    "--json",
+    "--activity",
+    "Double",
+    "<fixture-input.gooo>"
+  ],
+  "fixtures": [
+    {
+      "fixture": "valid.json",
+      "bytes": 14559,
+      "sha256": "75e751119aefdca8b3f542c99f9e26c3b21d68d58b8c252bcdeaeacf438efe9c",
+      "origin": "Recorded public839 darwin/arm64 CLI output; typecheck+emission replay, no generated-code execution",
+      "exit": 0
+    },
+    {
+      "fixture": "changed.json",
+      "bytes": 14555,
+      "sha256": "7f49e15285092f7145b99f80a551e05fc4aad3ea57a4ee9dff02c6c8c3a82f46",
+      "origin": "Recorded public839 darwin/arm64 CLI output; typecheck+emission replay, no generated-code execution",
+      "exit": 0
+    },
+    {
+      "fixture": "repeat.json",
+      "bytes": 14559,
+      "sha256": "75e751119aefdca8b3f542c99f9e26c3b21d68d58b8c252bcdeaeacf438efe9c",
+      "origin": "Recorded public839 darwin/arm64 CLI output; typecheck+emission replay, no generated-code execution",
+      "exit": 0
+    },
+    {
+      "fixture": "fail-closed.json",
+      "bytes": 14100,
+      "sha256": "016978b4bc801303917a17f8328a8883be1f891fec006db2e3ac9ef8bcaa38c8",
+      "origin": "Recorded public839 darwin/arm64 CLI output; typecheck+emission replay, no generated-code execution",
+      "exit": 1
+    },
+    {
+      "fixture": "build-identity-darwin.json",
+      "bytes": 648,
+      "sha256": "9e61c23a1302e7390ba03af0606066a8cca1b13d5bd96864dc3c27a85c00dd5c",
+      "origin": "Recorded actual839 darwin/arm64 version --build --json; noLinuxexecution",
+      "exit": 0
+    }
+  ],
+  "repeat_stdout_byte_exact": true,
+  "generated_code_execution": false
+}

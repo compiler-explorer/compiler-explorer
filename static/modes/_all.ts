@@ -49,6 +49,7 @@ import './fortran-mode';
 import './gccdump-rtl-gimple-mode';
 import './gleam-mode';
 import './glsl-mode';
+import './gooo-mode';
 import './haskell-mode';
 import './hlsl-mode';
 import './hook-mode';

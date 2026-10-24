@@ -1,0 +1,5 @@
+package ce_probe
+namespace ce_probe
+entity Integer id "urn:gooo:type:integer"
+activity Double(Integer) -> Integer id "urn:gooo:ce-probe:double"
+computes `return input + input`
