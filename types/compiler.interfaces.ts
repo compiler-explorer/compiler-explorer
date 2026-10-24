@@ -115,6 +115,9 @@ export type CompilerInfo = {
     supportsCfg?: boolean;
     supportsGnatDebugViews?: boolean;
     supportsLibraryCodeFilter?: boolean;
+    // Whether the compiler colours its output differently when asked for colours that suit a dark background. Only
+    // these compilers cache a compilation separately for light and dark themes.
+    supportsDarkBackgroundColours?: boolean;
     supportsMarch?: boolean;
     supportsTarget?: boolean;
     supportsTargetIs?: boolean;
