@@ -2,6 +2,9 @@
 
 This file provides guidance to AI Agents when working with code in this repository.
 
+Start with [ARCHITECTURE.md](ARCHITECTURE.md) for a map of the codebase: startup sequence, compile pipeline, config
+hierarchy, frontend event bus, test recipes and "how to add X" checklists.
+
 ## Build & Test Commands
 - Build: `npm run webpack`, `npm start`
 - Dev Mode: `make dev`, `make gpu-dev`
