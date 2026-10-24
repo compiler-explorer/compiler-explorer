@@ -1076,6 +1076,8 @@ export class Executor extends Pane<ExecutorState> {
     async onCompilerChange(value: string): Promise<void> {
         this.compiler = await this.hub.compilerService.findCompiler(this.currentLangId, value);
         this.updateLibraries();
+        // Let the overrides catch up with the new compiler before they are saved and compiled with.
+        await this.compilerShared.updateState(this.getCurrentState());
         this.updateState();
         this.compile();
         this.updateCompilerUI();
