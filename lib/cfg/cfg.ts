@@ -44,6 +44,7 @@ function isLLVMBased({compilerType, version}: CompilerInfo) {
         compilerType === 'zig' ||
         compilerType === 'ispc' ||
         compilerType === 'lean' ||
+        compilerType === 'mojo' ||
         compilerType === 'snowball'
     );
 }
@@ -60,7 +61,7 @@ export async function generateStructure(
     fullRes?: CompilationResult,
 ) {
     // figure out what we're working with
-    const isa = isLlvmIr ? 'llvm' : compilerInfo.instructionSet;
+    const isa = isLlvmIr ? 'llvm' : (fullRes?.instructionSet ?? compilerInfo.instructionSet);
     const compilerGroup = isLlvmIr ? 'llvm' : isLLVMBased(compilerInfo) ? 'clang' : compilerInfo.group;
     const instructionSet = new (getInstructionSetByKey(isa ?? 'base'))();
 
