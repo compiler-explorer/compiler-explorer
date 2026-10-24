@@ -24,11 +24,11 @@
 
 import path from 'node:path';
 
-import {CompilationResult, ExecutionOptionsWithEnv} from '../../types/compilation/compilation.interfaces.js';
-import {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces.js';
-import {SelectedLibraryVersion} from '../../types/libraries/libraries.interfaces.js';
-import {unwrap} from '../assert.js';
-import {BaseCompiler} from '../base-compiler.js';
+import { CompilationResult, ExecutionOptionsWithEnv } from '../../types/compilation/compilation.interfaces.js';
+import { ParseFiltersAndOutputOptions } from '../../types/features/filters.interfaces.js';
+import { SelectedLibraryVersion } from '../../types/libraries/libraries.interfaces.js';
+import { unwrap } from '../assert.js';
+import { BaseCompiler } from '../base-compiler.js';
 
 const V_DEFAULT_BACKEND = 'c';
 
@@ -180,8 +180,9 @@ export class VCompiler extends BaseCompiler {
                 output.push('');
                 insertNewLine = false;
             }
-
+            // Detect start of user-defined function or continue inside an existing function body
             if ((scopeDepth === 0 && lineRe.test(line) && line !== mainFunctionCall) || scopeDepth > 0) {
+                // Track brace balance to capture the full function definition across multiple lines
                 const opening = (line.match(/{/g) || []).length - 1;
                 const closing = (line.match(/}/g) || []).length - 1;
                 scopeDepth += opening - closing;
@@ -232,6 +233,6 @@ export class VCompiler extends BaseCompiler {
             finalLines.push(line);
         }
 
-        return {asm: finalLines.map(line => ({text: line}))};
+        return { asm: finalLines.map(line => ({ text: line })) };
     }
 }

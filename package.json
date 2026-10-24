@@ -34,6 +34,8 @@
     "@sentry/node": "^10.63.0",
     "@types/semver": "^7.7.1",
     "big-integer": "^1.6.52",
+    "bintrees": "^1.0.2",
+    "bluebird": "^3.7.2",
     "bootstrap": "^5.3.8",
     "buffer": "^6.0.3",
     "chart.js": "^4.5.1",
