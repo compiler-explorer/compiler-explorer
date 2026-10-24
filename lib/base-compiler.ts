@@ -3647,7 +3647,9 @@ export class BaseCompiler {
                 }
             }
             // TODO rephrase this so we don't need to reassign
-            result = filters.demangle ? await this.postProcessAsm(result, filters) : result;
+            result = filters.demangle
+                ? await this.postProcessAsm(result, filters, result.compilationOptions ?? options)
+                : result;
             if (this.compiler.supportsCfg && backendOptions.produceCfg?.asm) {
                 const isLlvmIr =
                     this.compiler.instructionSet === 'llvm' ||
@@ -3795,7 +3797,7 @@ export class BaseCompiler {
         return this.asm.process(result.asm, filters);
     }
 
-    async postProcessAsm(result, filters?: ParseFiltersAndOutputOptions): Promise<ParsedAsmResult> {
+    async postProcessAsm(result, filters?: ParseFiltersAndOutputOptions, options?: string[]): Promise<ParsedAsmResult> {
         if (!result.okToCache || !this.demanglerClass || !result.asm) return result;
         const demangler = new this.demanglerClass(this.compiler.demangler, this, this.optionsForDemangler(filters));
 

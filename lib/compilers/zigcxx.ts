@@ -47,6 +47,11 @@ export class ZigCXX extends ClangCompiler {
         return ZigCxxParser;
     }
 
+    // Unlike clang, zig defaults Windows targets to the GNU ABI (Itanium mangling)
+    protected override targetsMsvc(options: string[]): boolean {
+        return !!this.getEffectiveTarget(options)?.includes('-windows-msvc');
+    }
+
     override preProcess(source: string, filters: CompilerOutputOptions): string {
         if (this.needsForcedBinary) {
             // note: zig versions > 0.6 don't emit asm, only binary works - https://github.com/ziglang/zig/issues/8153
