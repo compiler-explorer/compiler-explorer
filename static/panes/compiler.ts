@@ -3251,6 +3251,8 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
         this.needsCompile = true;
 
         await this.updateLibraries();
+        // Let the overrides catch up with the new compiler before they are saved and compiled with.
+        await this.compilerShared.updateState(this.getCurrentState());
         this.updateState();
         this.updateCompilerUI();
 
