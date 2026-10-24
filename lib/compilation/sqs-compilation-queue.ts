@@ -457,7 +457,7 @@ export async function sendCompilationResultViaWebsocket(
     }
 }
 
-async function doOneCompilation(
+export async function doOneCompilation(
     queue: SqsCompilationWorkerMode,
     compilationEnvironment: CompilationEnvironment,
     persistentSender: PersistentEventsSender,
@@ -488,8 +488,10 @@ async function doOneCompilation(
                 (msg.receiveCount && msg.receiveCount > 1 ? ` (receive #${msg.receiveCount})` : ''),
         );
 
+        // Until the request is parsed, a failure is the caller's fault, which ce-router answers with a 400 rather
+        // than the 200 it gives a compilation that failed.
+        let badRequest = true;
         try {
-            // Inside the try: an unknown build system is reported to the user like any other failed compilation.
             const buildSystem = getRequestedBuildSystem(msg);
             const compiler = compilationEnvironment.findCompiler(msg.lang as any, msg.compilerId);
             if (!compiler) {
@@ -506,6 +508,7 @@ async function doOneCompilation(
                 compiler,
                 buildSystem,
             );
+            badRequest = false;
 
             let result: CompilationResult;
             const files = (msg.files || []) as FiledataPair[];
@@ -592,6 +595,7 @@ async function doOneCompilation(
                 inputFilename: '',
                 asm: [],
                 tools: [],
+                ...(badRequest ? {error: true, message: errorMessage} : {}),
             };
 
             if (msg.queueTimeMs !== undefined) {
