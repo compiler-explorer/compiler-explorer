@@ -378,12 +378,16 @@ export function anonymizeIp(ip: string): string {
     if (ip.includes('localhost')) {
         return ip;
     }
+    // IPv4, including an IPv4-mapped IPv6 address such as ::ffff:203.0.113.42, which is what
+    // req.ip looks like for IPv4 clients of a dual-stack server
+    if (/\d\.\d{1,3}$/.test(ip)) {
+        return ip.replace(/\.\d{1,3}$/, '.0');
+    }
     if (ip.includes(':')) {
         // IPv6
         return ip.replace(/(?::[\dA-Fa-f]{0,4}){3}$/, ':0:0:0');
     }
-    // IPv4
-    return ip.replace(/\.\d{1,3}$/, '.0');
+    return ip;
 }
 
 /***
