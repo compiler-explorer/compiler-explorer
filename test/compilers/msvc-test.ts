@@ -26,7 +26,7 @@ import fs from 'node:fs/promises';
 
 import {describe, expect, it} from 'vitest';
 
-import {Win32VcCompiler} from '../../lib/compilers/index.js';
+import {ClangCLCompiler, Win32VcCompiler} from '../../lib/compilers/index.js';
 import {makeCompilationEnvironment} from '../utils.js';
 
 describe('msvc tests', () => {
@@ -115,6 +115,34 @@ describe('msvc tests', () => {
             expect(options).not.toContain('/Zi');
         });
 
+        it('should have the linker write the map file', async () => {
+            const prepared = msvc.prepareArguments(['/O2'], {binary: true}, {}, 'example.cpp', 'output.s', [], []);
+            expect(prepared.slice(prepared.indexOf('example.cpp'))).toEqual([
+                'example.cpp',
+                '/link',
+                '/MAP:output.s.map',
+            ]);
+            expect(prepared.some(option => option.startsWith('/Fm'))).toBe(false);
+        });
+
+        it('should keep the map file when the user passes their own linker options', async () => {
+            const prepared = msvc.prepareArguments(
+                ['/O2', '/link', '/STACK:4096'],
+                {binary: true},
+                {},
+                'example.cpp',
+                'output.s',
+                [],
+                [],
+            );
+            expect(prepared.slice(prepared.indexOf('example.cpp'))).toEqual([
+                'example.cpp',
+                '/link',
+                '/MAP:output.s.map',
+                '/STACK:4096',
+            ]);
+        });
+
         it('should embed debug information in CMake builds', async () => {
             const args = msvc.getExtraCMakeArgs({});
             expect(args).toContain('-DCMAKE_POLICY_DEFAULT_CMP0141=NEW');
@@ -132,9 +160,16 @@ describe('msvc tests', () => {
         };
         // An incrementally linked /Z7 build as CE makes them today: .text starts with int3 padding, then jump thunks
         const incrementalFixture = {name: 'test/maps/incremental-z7', encoding: 'utf8' as BufferEncoding};
+        // clang-cl 22 linked by lld-link, its map asked for with /MAP
+        const clangClFixture = {name: 'test/maps/clang-cl', encoding: 'utf8' as BufferEncoding};
 
-        async function disassemble(objdumperType: string, libraryCode: boolean, fixture = staticLibFixture) {
-            const msvc = new Win32VcCompiler(
+        async function disassemble(
+            objdumperType: string,
+            libraryCode: boolean,
+            fixture = staticLibFixture,
+            Compiler: typeof Win32VcCompiler | typeof ClangCLCompiler = Win32VcCompiler,
+        ) {
+            const msvc = new Compiler(
                 {...info, objdumperType} as any,
                 makeCompilationEnvironment({
                     languages,
@@ -165,6 +200,11 @@ describe('msvc tests', () => {
         it('filters an incrementally linked build whose .text starts with padding', async () => {
             const lines = await disassemble('', true, incrementalFixture);
             expect(functionLabels(lines)).toEqual(['?square@@YAHH@Z:', '_vfprintf_l:', 'main:', 'printf:']);
+        });
+
+        it('filters clang-cl output with the map lld-link writes', async () => {
+            const lines = await disassemble('', true, clangClFixture, ClangCLCompiler);
+            expect(functionLabels(lines)).toEqual(['?square@@YAHH@Z:', 'main:', 'printf:']);
         });
 
         it('passes dumpbin output through as it is', async () => {

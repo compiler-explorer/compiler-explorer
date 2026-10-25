@@ -50,7 +50,6 @@ export class Win32Compiler extends BaseCompiler {
     }
 
     binaryAsmParser: AsmParser;
-    supportsMapFile = true;
 
     constructor(compilerInfo: PreliminaryCompilerInfo, env: CompilationEnvironment) {
         super(compilerInfo, env);
@@ -102,6 +101,10 @@ export class Win32Compiler extends BaseCompiler {
 
     override getExecutableFilename(dirPath: string, outputFilebase: string, key?: CacheKey) {
         return this.getOutputFilename(dirPath, outputFilebase, key) + '.exe';
+    }
+
+    getMapFilename(outputFilename: string) {
+        return outputFilename + '.map';
     }
 
     override getObjdumpInputFilename(baseFilename: string, filters?: ParseFiltersAndOutputOptions): string {
@@ -197,7 +200,8 @@ export class Win32Compiler extends BaseCompiler {
         let staticlibLinks: string[] = [];
 
         if (filters.binary) {
-            preLink = ['/link'];
+            // Asked of the linker rather than with /Fm, which clang-cl doesn't pass on
+            preLink = ['/link', '/MAP:' + this.filename(this.getMapFilename(outputFilename))];
             libLinks = this.getSharedLibraryLinks(libraries);
             libPaths = this.getSharedLibraryPathsAsArguments(libraries, undefined, undefined, dirPath);
             const libPathsForLinking = this.getSharedLibraryPaths(libraries, dirPath);
@@ -215,7 +219,7 @@ export class Win32Compiler extends BaseCompiler {
         if (linkIndex !== -1) {
             linkUserOptions = userOptions.slice(linkIndex + 1);
             compileUserOptions = userOptions.slice(0, linkIndex);
-            preLink = ['/link'];
+            if (preLink.length === 0) preLink = ['/link'];
         }
 
         return options.concat(
@@ -262,18 +266,13 @@ export class Win32Compiler extends BaseCompiler {
                 '/Zi', // complete debugging information
             ];
 
-            if (this.supportsMapFile) {
-                const mapFilename = outputFilename + '.map';
-                const mapFileReader = new MapFileReaderVS(mapFilename);
+            const mapFileReader = new MapFileReaderVS(this.getMapFilename(outputFilename));
+            filters.preProcessBinaryAsmLines = asmLines => {
+                const reconstructor = new PELabelReconstructor(asmLines, false, mapFileReader);
+                reconstructor.run('output.s.obj');
 
-                filters.preProcessBinaryAsmLines = asmLines => {
-                    const reconstructor = new PELabelReconstructor(asmLines, false, mapFileReader);
-                    reconstructor.run('output.s.obj');
-
-                    return reconstructor.asmLines;
-                };
-                options.push('/Fm' + this.filename(mapFilename));
-            }
+                return reconstructor.asmLines;
+            };
 
             return options;
         }
