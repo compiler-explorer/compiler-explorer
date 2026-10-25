@@ -229,7 +229,6 @@ export class PELabelReconstructor {
      */
     insertLabels() {
         let currentUnit: string | undefined;
-        let segmentChanged = false;
 
         let lineIdx = 0;
         while (lineIdx < this.asmLines.length) {
@@ -241,10 +240,7 @@ export class PELabelReconstructor {
                 const address = Number.parseInt(addressStr, 16);
 
                 const segmentInfo = this.mapFileReader.getSegmentInfoByStartingAddress(undefined, address);
-                if (segmentInfo) {
-                    if (segmentInfo.unitName) currentUnit = segmentInfo.unitName;
-                    segmentChanged = true;
-                }
+                if (segmentInfo?.unitName) currentUnit = segmentInfo.unitName;
 
                 let namedAddr: Segment | undefined;
                 let labelLine: string | undefined;
@@ -278,15 +274,12 @@ export class PELabelReconstructor {
                 // A Visual Studio segment is a whole section, so the unit a function came from is its symbol's
                 if (namedAddr?.unitName) currentUnit = namedAddr.unitName;
 
+                // Tagged whenever the unit is known: a section that starts with int3 padding has no instruction left
+                // at its start address once shortenInt3s collapsed it, so its start can't be what turns tagging on
                 if (currentUnit && PELabelReconstructor.isProgramUnit(currentUnit)) {
-                    const lineInfo = this.mapFileReader.getLineInfoByAddress(undefined, address);
-                    if (lineInfo) {
-                        this.asmLines.splice(lineIdx, 0, '/app/' + currentUnit + ':' + lineInfo.lineNumber);
-                        lineIdx++;
-                    } else if (segmentChanged) {
-                        this.asmLines.splice(lineIdx, 0, '/app/' + currentUnit + ':0');
-                        lineIdx++;
-                    }
+                    const lineNumber = this.mapFileReader.getLineInfoByAddress(undefined, address)?.lineNumber ?? 0;
+                    this.asmLines.splice(lineIdx, 0, '/app/' + currentUnit + ':' + lineNumber);
+                    lineIdx++;
                 }
             }
 
