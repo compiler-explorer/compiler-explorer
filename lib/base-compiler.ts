@@ -4212,7 +4212,9 @@ but nothing was dumped. Possible causes are:
         if (exeFilename.includes('icc')) {
             return ICCParser;
         }
-        if (exe.includes('clangir')) {
+        // ClangIR compilers share the trunk clang binary, so identify them by name (as
+        // ClangParser does for supportsClangirView), not by exe path.
+        if (this.compiler.name?.includes('clangir')) {
             return ClangirParser;
         }
         if (exeFilename.includes('clang++') || exeFilename.includes('icpx')) {
