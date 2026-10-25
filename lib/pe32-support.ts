@@ -228,7 +228,7 @@ export class PELabelReconstructor {
      *  if an address doesn't have a mapped name, it is called <Laddress>
      */
     insertLabels() {
-        let currentSegment: Segment | undefined;
+        let currentUnit: string | undefined;
         let segmentChanged = false;
 
         let lineIdx = 0;
@@ -242,7 +242,7 @@ export class PELabelReconstructor {
 
                 const segmentInfo = this.mapFileReader.getSegmentInfoByStartingAddress(undefined, address);
                 if (segmentInfo) {
-                    currentSegment = segmentInfo;
+                    if (segmentInfo.unitName) currentUnit = segmentInfo.unitName;
                     segmentChanged = true;
                 }
 
@@ -275,17 +275,31 @@ export class PELabelReconstructor {
                     }
                 }
 
-                const lineInfo = this.mapFileReader.getLineInfoByAddress(undefined, address);
-                if (lineInfo && currentSegment?.unitName) {
-                    this.asmLines.splice(lineIdx, 0, '/app/' + currentSegment.unitName + ':' + lineInfo.lineNumber);
-                    lineIdx++;
-                } else if (segmentChanged && currentSegment) {
-                    this.asmLines.splice(lineIdx, 0, '/app/' + currentSegment.unitName + ':0');
-                    lineIdx++;
+                // A Visual Studio segment is a whole section, so the unit a function came from is its symbol's
+                if (namedAddr?.unitName) currentUnit = namedAddr.unitName;
+
+                if (currentUnit && PELabelReconstructor.isProgramUnit(currentUnit)) {
+                    const lineInfo = this.mapFileReader.getLineInfoByAddress(undefined, address);
+                    if (lineInfo) {
+                        this.asmLines.splice(lineIdx, 0, '/app/' + currentUnit + ':' + lineInfo.lineNumber);
+                        lineIdx++;
+                    } else if (segmentChanged) {
+                        this.asmLines.splice(lineIdx, 0, '/app/' + currentUnit + ':0');
+                        lineIdx++;
+                    }
                 }
             }
 
             lineIdx++;
         }
+    }
+
+    /**
+     * The linker names an object it took from a library archive `<library>:<object>`, and its own entries e.g.
+     * `<absolute>`. Only code from the program's own objects is given them as its source, so that the rest counts as
+     * library code.
+     */
+    static isProgramUnit(unitName: string) {
+        return !unitName.includes(':') && !unitName.startsWith('<');
     }
 }

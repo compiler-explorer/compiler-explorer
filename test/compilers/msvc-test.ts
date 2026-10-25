@@ -22,6 +22,8 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
+import fs from 'node:fs/promises';
+
 import {describe, expect, it} from 'vitest';
 
 import {Win32VcCompiler} from '../../lib/compilers/index.js';
@@ -119,6 +121,46 @@ describe('msvc tests', () => {
             expect(args).toContain('-DCMAKE_MSVC_DEBUG_INFORMATION_FORMAT=Embedded');
             expect(args).toContain('-DCMAKE_POLICY_DEFAULT_CMP0091=NEW');
             expect(args).toContain('-DCMAKE_MSVC_RUNTIME_LIBRARY=MultiThreadedDLL');
+        });
+    });
+
+    describe('binary mode', () => {
+        // Real objdump output of an executable linking a static library, with its linker map
+        const fixture = 'test/maps/squareprintfstaticlib';
+
+        async function disassemble(objdumperType: string, libraryCode: boolean) {
+            const msvc = new Win32VcCompiler(
+                {...info, objdumperType} as any,
+                makeCompilationEnvironment({
+                    languages,
+                    props: {binaryHideFuncRe: '^(__.*|_(init|start|fini))$'},
+                }),
+            );
+            const filters: any = {binary: true, labels: true, libraryCode, directives: true, commentOnly: true};
+            msvc.optionsForFilter(filters, fixture);
+            const asm = await fs.readFile(`${fixture}.asm`, 'utf16le');
+            const result = await msvc.processAsm({asm}, filters);
+            return result.asm.map((line: {text: string}) => line.text);
+        }
+
+        const functionLabels = (lines: string[]) => lines.filter(line => /^[^\s$L].*:$/.test(line));
+
+        it("keeps only the program's own functions when filtering library code, named from the map file", async () => {
+            const lines = await disassemble('', true);
+            expect(functionLabels(lines)).toEqual(['_vfprintf_l:', 'printf:', 'main:', '?square@@YAHH@Z:']);
+        });
+
+        it('names the library code too when it is shown', async () => {
+            const labels = functionLabels(await disassemble('', false));
+            expect(labels).toContain('main:');
+            expect(labels).toContain('mainCRTStartup:');
+            expect(labels).toContain('?getValue@String@Groundfloor@@QEBAPEADXZ:');
+        });
+
+        it('passes dumpbin output through as it is', async () => {
+            const lines = await disassemble('vc', true);
+            expect(functionLabels(lines)).toEqual([]);
+            expect(lines.length).toBeGreaterThan(5000);
         });
     });
 });
