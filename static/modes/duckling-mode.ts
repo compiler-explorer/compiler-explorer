@@ -144,6 +144,7 @@ monaco.languages.setMonarchTokensProvider('duckling', {
     symbols: /[=><!~?:&|+\-*/^%]+/,
     tokenizer: {
         root: [
+            [/#\{/, 'comment', '@blockComment'],
             [/#.*$/, 'comment'],
             {include: '@whitespace'},
             [
@@ -160,6 +161,11 @@ monaco.languages.setMonarchTokensProvider('duckling', {
             [/[;,.]/, 'delimiter'],
         ],
         whitespace: [[/[ \t\r\n]+/, 'white']],
+        blockComment: [
+            [/#\}/, 'comment', '@pop'],
+            [/[^#]+/, 'comment'],
+            [/#/, 'comment'],
+        ],
         doubleString: [
             [/[^\\"]+/, 'string'],
             [/\\./, 'string.escape'],
@@ -174,7 +180,7 @@ monaco.languages.setMonarchTokensProvider('duckling', {
 });
 
 monaco.languages.setLanguageConfiguration('duckling', {
-    comments: {lineComment: '#'},
+    comments: {lineComment: '#', blockComment: ['#{', '#}']},
     brackets: [
         ['{', '}'],
         ['[', ']'],
