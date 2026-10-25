@@ -44,6 +44,7 @@ import {MakeBuildSystem} from '../lib/build-systems/make.js';
 import {MavenBuildSystem} from '../lib/build-systems/maven.js';
 import {CompilationEnvironment} from '../lib/compilation-env.js';
 import {RustCompiler} from '../lib/compilers/rust.js';
+import {Win32VcCompiler} from '../lib/compilers/win32-vc.js';
 import {ParsedRequest} from '../lib/handlers/compile.js';
 import {
     BuildSystems,
@@ -1265,6 +1266,54 @@ describe('Project build output path', () => {
             } finally {
                 vi.restoreAllMocks();
                 for (const dir of dirs) await fs.rm(dir, {recursive: true, force: true});
+            }
+        });
+    }
+});
+
+describe('Project build disassembly', () => {
+    function makeMsvc(env: CompilationEnvironment) {
+        return new Win32VcCompiler(
+            makeFakeCompilerInfo({exe: 'cl.exe', lang: 'c++', ldPath: [], libPath: [], supportsBinary: true}),
+            env,
+        );
+    }
+
+    // With no objdumper to run, reaching that message means the artifact was found where it was looked for.
+    for (const [customOutputFilename, artifact] of [
+        ['the_executable', 'the_executable.exe'],
+        ['tool.exe', 'tool.exe.exe'],
+    ]) {
+        it(`disassembles the ${artifact} the build produced, not a name derived from it`, async () => {
+            const env = makeEnv();
+            const compiler = makeMsvc(env);
+            vi.spyOn(compiler, 'supportsObjdump').mockReturnValue(true);
+            vi.spyOn(compiler as any, 'getObjdumperForResult').mockReturnValue(null);
+            const dirPath = await fs.mkdtemp(path.join(os.tmpdir(), 'ce-project-objdump-'));
+            try {
+                const parsedRequest = makeParsedRequest({customOutputFilename});
+                cmakeBuildSystem.applyRequestDefaults(compiler, parsedRequest);
+                const ctx = {
+                    ...makeContext(compiler, env, parsedRequest),
+                    dirPath,
+                    buildPath: path.join(dirPath, 'build'),
+                };
+                const artifactFilename = cmakeBuildSystem.getArtifactFilename(ctx);
+                expect(path.basename(artifactFilename)).toEqual(artifact);
+                await fs.mkdir(ctx.buildPath);
+                await fs.writeFile(artifactFilename, 'MZ');
+
+                const result = await cmakeBuildSystem.postProcessArtifact(
+                    ctx,
+                    {code: 0, timedOut: false, stdout: [], stderr: []},
+                    artifactFilename,
+                );
+
+                expect(result.asm).toEqual('<No objdumper configured>');
+                expect(result.objdumpInputFilename).toBeUndefined();
+            } finally {
+                vi.restoreAllMocks();
+                await fs.rm(dirPath, {recursive: true, force: true});
             }
         });
     }

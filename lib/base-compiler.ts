@@ -688,7 +688,7 @@ export class BaseCompiler {
         dynamicReloc: boolean,
         filters: ParseFiltersAndOutputOptions,
     ) {
-        const objdumpInputFile = this.getObjdumpInputFilename(outputFilename, filters);
+        const objdumpInputFile = result.objdumpInputFilename ?? this.getObjdumpInputFilename(outputFilename, filters);
 
         if (!(await utils.fileExists(objdumpInputFile))) {
             result.asm = '<No output file ' + objdumpInputFile + '>';
