@@ -22,9 +22,12 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
+import fs from 'node:fs';
+
 import {describe, expect, it} from 'vitest';
 
 import {MapFileReader} from '../lib/mapfiles/map-file.js';
+import {MapFileReaderVS} from '../lib/mapfiles/map-file-vs.js';
 import {PELabelReconstructor} from '../lib/pe32-support.js';
 
 describe('Basic reconstructions', () => {
@@ -32,5 +35,45 @@ describe('Basic reconstructions', () => {
         const lines: string[] = [];
         const reconstructor = new PELabelReconstructor(lines, false, new MapFileReader('unused'), false);
         expect(reconstructor.asmLines.length).toEqual(0);
+    });
+});
+
+describe('Visual Studio reconstruction', () => {
+    function reconstruct() {
+        const asm = fs.readFileSync('test/maps/squareprintfstaticlib.asm', 'utf16le').split('\n');
+        const reconstructor = new PELabelReconstructor(
+            asm,
+            false,
+            new MapFileReaderVS('test/maps/squareprintfstaticlib.map'),
+        );
+        reconstructor.run('output.s.obj');
+        return reconstructor.asmLines;
+    }
+
+    function sourceOf(lines: string[], label: string) {
+        const idx = lines.findIndex(line => line.endsWith(`<${label}>:`));
+        expect(idx).toBeGreaterThan(-1);
+        const next = lines[idx + 1];
+        return next.startsWith('/app/') ? next : null;
+    }
+
+    it("gives the program's own functions their object as source", () => {
+        const lines = reconstruct();
+        expect(sourceOf(lines, 'main')).toEqual('/app/output.s.obj:0');
+        expect(sourceOf(lines, '?square@@YAHH@Z')).toEqual('/app/output.s.obj:0');
+    });
+
+    it('gives functions from library archives no source, although they share a section with the program', () => {
+        const lines = reconstruct();
+        expect(sourceOf(lines, 'mainCRTStartup')).toBeNull();
+        expect(sourceOf(lines, '?getValue@String@Groundfloor@@QEBAPEADXZ')).toBeNull();
+    });
+
+    it('tells library and linker units from the program objects', () => {
+        expect(PELabelReconstructor.isProgramUnit('output.s.obj')).toBe(true);
+        expect(PELabelReconstructor.isProgramUnit('main.cpp.obj')).toBe(true);
+        expect(PELabelReconstructor.isProgramUnit('msvcrt:exe_main.obj')).toBe(false);
+        expect(PELabelReconstructor.isProgramUnit('* CIL library *:* CIL module *')).toBe(false);
+        expect(PELabelReconstructor.isProgramUnit('<absolute>')).toBe(false);
     });
 });

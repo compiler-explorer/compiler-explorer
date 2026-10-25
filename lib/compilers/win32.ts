@@ -39,6 +39,8 @@ import {BaseCompiler} from '../base-compiler.js';
 import {copyNeededDlls} from '../binaries/win-utils.js';
 import {CompilationEnvironment} from '../compilation-env.js';
 import {MapFileReaderVS} from '../mapfiles/map-file-vs.js';
+import {VcObjdumper} from '../objdumper/vc.js';
+import {AsmParser} from '../parsers/asm-parser.js';
 import {VcAsmParser} from '../parsers/asm-parser-vc.js';
 import {PELabelReconstructor} from '../pe32-support.js';
 
@@ -47,13 +49,15 @@ export class Win32Compiler extends BaseCompiler {
         return 'win32';
     }
 
-    binaryAsmParser: VcAsmParser;
+    binaryAsmParser: AsmParser;
     supportsMapFile = true;
 
     constructor(compilerInfo: PreliminaryCompilerInfo, env: CompilationEnvironment) {
         super(compilerInfo, env);
 
-        this.binaryAsmParser = new VcAsmParser();
+        // VcAsmParser only passes dumpbin's output through; objdump's is what AsmParser filters and labels.
+        this.binaryAsmParser =
+            this.compiler.objdumperType === VcObjdumper.key ? new VcAsmParser() : new AsmParser(this.compilerProps);
     }
 
     private findExistingLibFile(libName: string, libPaths: string[]): string | null {
