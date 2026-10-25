@@ -50,6 +50,7 @@ export class Win32Compiler extends BaseCompiler {
     }
 
     binaryAsmParser: AsmParser;
+    supportsMapFile = true;
 
     constructor(compilerInfo: PreliminaryCompilerInfo, env: CompilationEnvironment) {
         super(compilerInfo, env);
@@ -200,8 +201,9 @@ export class Win32Compiler extends BaseCompiler {
         let staticlibLinks: string[] = [];
 
         if (filters.binary) {
+            preLink = ['/link'];
             // Asked of the linker rather than with /Fm, which clang-cl doesn't pass on
-            preLink = ['/link', '/MAP:' + this.filename(this.getMapFilename(outputFilename))];
+            if (this.supportsMapFile) preLink.push('/MAP:' + this.filename(this.getMapFilename(outputFilename)));
             libLinks = this.getSharedLibraryLinks(libraries);
             libPaths = this.getSharedLibraryPathsAsArguments(libraries, undefined, undefined, dirPath);
             const libPathsForLinking = this.getSharedLibraryPaths(libraries, dirPath);
@@ -266,13 +268,16 @@ export class Win32Compiler extends BaseCompiler {
                 '/Zi', // complete debugging information
             ];
 
-            const mapFileReader = new MapFileReaderVS(this.getMapFilename(outputFilename));
-            filters.preProcessBinaryAsmLines = asmLines => {
-                const reconstructor = new PELabelReconstructor(asmLines, false, mapFileReader);
-                reconstructor.run('output.s.obj');
+            if (this.supportsMapFile) {
+                const mapFileReader = new MapFileReaderVS(this.getMapFilename(outputFilename));
 
-                return reconstructor.asmLines;
-            };
+                filters.preProcessBinaryAsmLines = asmLines => {
+                    const reconstructor = new PELabelReconstructor(asmLines, false, mapFileReader);
+                    reconstructor.run('output.s.obj');
+
+                    return reconstructor.asmLines;
+                };
+            }
 
             return options;
         }

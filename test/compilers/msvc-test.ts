@@ -143,6 +143,15 @@ describe('msvc tests', () => {
             ]);
         });
 
+        it('should not ask for a map file from a compiler that does not support one', async () => {
+            const compiler = new Win32VcCompiler(info as any, makeCompilationEnvironment({languages}));
+            compiler.supportsMapFile = false;
+            const filters: any = {binary: true};
+            const prepared = compiler.prepareArguments([], filters, {}, 'example.cpp', 'output.s', [], []);
+            expect(prepared.slice(prepared.indexOf('example.cpp'))).toEqual(['example.cpp', '/link']);
+            expect(filters.preProcessBinaryAsmLines).toBeUndefined();
+        });
+
         it('should embed debug information in CMake builds', async () => {
             const args = msvc.getExtraCMakeArgs({});
             expect(args).toContain('-DCMAKE_POLICY_DEFAULT_CMP0141=NEW');
