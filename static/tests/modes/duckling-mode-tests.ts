@@ -85,6 +85,21 @@ describe('Duckling numeric literals', () => {
     });
 });
 
+describe('Duckling operators', () => {
+    it('highlights builtin and custom symbol sequences', () => {
+        const operators = ['+=', '**', '<<=', '::', '.', '.?', '.*', '+*', '\\', '`'];
+        expect(tokens(operators.join(' '))[0]).toEqual(operators.map(operator => [operator, 'operator']));
+    });
+
+    it.each(['..', '.+'])('keeps %s separate from adjacent numbers', operator => {
+        expect(tokens(`1${operator}2`)[0]).toEqual([
+            ['1', 'number'],
+            [operator, 'operator'],
+            ['2', 'number'],
+        ]);
+    });
+});
+
 describe('Duckling comments', () => {
     it('keeps block comments across lines and resumes after the closing delimiter', () => {
         expect(tokens('#{ comment\nreturn 1;\n#} let')).toEqual([
