@@ -146,6 +146,8 @@ monaco.languages.setMonarchTokensProvider('duckling', {
         '?',
         ':',
     ],
+    operatorChar: /[=><!~?:&|+\-*/^%.\\`]/,
+    numericSuffix: /(?:[iu](?:8|16|32|64|128)|f(?:16|32|64|128))\b/,
     symbols: /[=><!~?:&|+\-*/^%]+/,
     tokenizer: {
         root: [
@@ -156,9 +158,10 @@ monaco.languages.setMonarchTokensProvider('duckling', {
                 /[a-zA-Z_][\w]*/,
                 {cases: {'@typeKeywords': 'type.identifier', '@keywords': 'keyword', '@default': 'identifier'}},
             ],
-            [/0[xX][0-9a-fA-F_]+/, 'number.hex'],
-            [/0[bB][01_]+/, 'number.binary'],
-            [/\d+(?:\.\d+)?(?:[eE][+-]?\d+)?/, 'number'],
+            [/0[xX][0-9a-fA-F]+@numericSuffix?/, 'number.hex'],
+            [/0[bB][01]+@numericSuffix?/, 'number.binary'],
+            [/0[oO][0-7]+@numericSuffix?/, 'number.octal'],
+            [/(?:\d+(?:\.(?!@operatorChar)\d*)?|\.\d+)(?:[eE][+-]?\d+)?@numericSuffix?/, 'number'],
             [/"/, 'string', '@doubleString'],
             [/'/, 'string', '@singleString'],
             [/@symbols/, {cases: {'@operators': 'operator', '@default': ''}}],

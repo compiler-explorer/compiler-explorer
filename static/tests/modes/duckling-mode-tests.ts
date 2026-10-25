@@ -62,6 +62,29 @@ describe('Duckling keywords and types', () => {
     });
 });
 
+describe('Duckling numeric literals', () => {
+    it.each([
+        ['42i32', 'number'],
+        ['0xFFu64', 'number.hex'],
+        ['0B1010u8', 'number.binary'],
+        ['0o755u16', 'number.octal'],
+        ['.5e+2f32', 'number'],
+        ['1.e-3f64', 'number'],
+        ['1.', 'number'],
+    ])('highlights %s as one numeric literal', (literal, type) => {
+        expect(tokens(literal)[0]).toEqual([[literal, type]]);
+    });
+
+    it('ends base-prefixed numbers before underscores', () => {
+        expect(tokens('0xFF_00 0b10_01')[0]).toEqual([
+            ['0xFF', 'number.hex'],
+            ['_00', 'identifier'],
+            ['0b10', 'number.binary'],
+            ['_01', 'identifier'],
+        ]);
+    });
+});
+
 describe('Duckling comments', () => {
     it('keeps block comments across lines and resumes after the closing delimiter', () => {
         expect(tokens('#{ comment\nreturn 1;\n#} let')).toEqual([
