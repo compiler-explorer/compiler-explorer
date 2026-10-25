@@ -126,9 +126,14 @@ describe('msvc tests', () => {
 
     describe('binary mode', () => {
         // Real objdump output of an executable linking a static library, with its linker map
-        const fixture = 'test/maps/squareprintfstaticlib';
+        const staticLibFixture: {name: string; encoding: BufferEncoding} = {
+            name: 'test/maps/squareprintfstaticlib',
+            encoding: 'utf16le',
+        };
+        // An incrementally linked /Z7 build as CE makes them today: .text starts with int3 padding, then jump thunks
+        const incrementalFixture = {name: 'test/maps/incremental-z7', encoding: 'utf8' as BufferEncoding};
 
-        async function disassemble(objdumperType: string, libraryCode: boolean) {
+        async function disassemble(objdumperType: string, libraryCode: boolean, fixture = staticLibFixture) {
             const msvc = new Win32VcCompiler(
                 {...info, objdumperType} as any,
                 makeCompilationEnvironment({
@@ -137,8 +142,8 @@ describe('msvc tests', () => {
                 }),
             );
             const filters: any = {binary: true, labels: true, libraryCode, directives: true, commentOnly: true};
-            msvc.optionsForFilter(filters, fixture);
-            const asm = await fs.readFile(`${fixture}.asm`, 'utf16le');
+            msvc.optionsForFilter(filters, fixture.name);
+            const asm = await fs.readFile(`${fixture.name}.asm`, fixture.encoding);
             const result = await msvc.processAsm({asm}, filters);
             return result.asm.map((line: {text: string}) => line.text);
         }
@@ -155,6 +160,11 @@ describe('msvc tests', () => {
             expect(labels).toContain('main:');
             expect(labels).toContain('mainCRTStartup:');
             expect(labels).toContain('?getValue@String@Groundfloor@@QEBAPEADXZ:');
+        });
+
+        it('filters an incrementally linked build whose .text starts with padding', async () => {
+            const lines = await disassemble('', true, incrementalFixture);
+            expect(functionLabels(lines)).toEqual(['?square@@YAHH@Z:', '_vfprintf_l:', 'main:', 'printf:']);
         });
 
         it('passes dumpbin output through as it is', async () => {
