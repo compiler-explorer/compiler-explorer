@@ -41,6 +41,27 @@ function tokens(source: string): [string, string][][] {
         );
 }
 
+describe('Duckling keywords and types', () => {
+    it('highlights pointer and object keywords', () => {
+        expect(tokens('return ptrof self;')[0]).toEqual([
+            ['return', 'keyword'],
+            ['ptrof', 'keyword'],
+            ['self', 'keyword'],
+            [';', 'delimiter'],
+        ]);
+    });
+
+    it.each(['i64', 'str', 'type', 'void', 'Array', 'Dict', 'Set'])('highlights %s as a builtin return type', type => {
+        expect(tokens(`fundecl describe() -> ${type}`)[0]).toEqual([
+            ['fundecl', 'keyword'],
+            ['describe', 'identifier'],
+            ['()', 'delimiter.parenthesis'],
+            ['->', 'operator'],
+            [type, 'type.identifier'],
+        ]);
+    });
+});
+
 describe('Duckling comments', () => {
     it('keeps block comments across lines and resumes after the closing delimiter', () => {
         expect(tokens('#{ comment\nreturn 1;\n#} let')).toEqual([
