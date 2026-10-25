@@ -103,6 +103,26 @@ function makeExecOptions(): ExecutionOptionsWithEnv {
     return {env: {PATH: '/usr/bin'}} as ExecutionOptionsWithEnv;
 }
 
+function expectDucklingArguments(args: string[], expected: string[]): void {
+    if (!['compile_module', 'compile_modules', 'compile_script'].includes(args[0] ?? '')) {
+        expect(args).toEqual(expected);
+        return;
+    }
+
+    const artifactLocationIndex = args.indexOf('--artifact-location');
+    if (artifactLocationIndex < 0) {
+        expect(args).toEqual(expected);
+        return;
+    }
+
+    expect(args.filter(option => option === '--artifact-location')).toHaveLength(1);
+    expect(args[artifactLocationIndex + 1]).toBe(path.join(path.dirname(args[1]), 'duck_build'));
+
+    const normalizedArguments = [...args];
+    normalizedArguments.splice(artifactLocationIndex, 2);
+    expect(normalizedArguments).toEqual(expected);
+}
+
 afterEach(() => vi.restoreAllMocks());
 
 describe('Duckling compiler', () => {
@@ -161,7 +181,7 @@ describe('Duckling compiler', () => {
             expect(irDirectory).toBeDefined();
             expect(irDirectory).not.toBe(workingDirectory);
             const irInputFilename = path.join(irDirectory!, 'hello.dk');
-            expect(args).toEqual(['compile_module', irInputFilename, '--dump-ir', 'asm,llvm']);
+            expectDucklingArguments(args, ['compile_module', irInputFilename, '--dump-ir', 'asm,llvm']);
             await expect(fs.readFile(irInputFilename, 'utf8')).resolves.toBe('fun main() -> i64 = { return 7; }');
             const artifactsDirectory = path.join(irDirectory!, 'duck_build', 'duck_debug_artifacts');
             await fs.mkdir(artifactsDirectory, {recursive: true});
@@ -201,7 +221,7 @@ describe('Duckling compiler', () => {
         vi.spyOn(compiler, 'exec').mockImplementation(async (_exe, args, execOptions) => {
             const irDirectory = execOptions.customCwd!;
             const irInputFilename = path.join(irDirectory, 'hello.dks');
-            expect(args).toEqual(['compile_script', irInputFilename, '--dump-ir', 'asm,llvm']);
+            expectDucklingArguments(args, ['compile_script', irInputFilename, '--dump-ir', 'asm,llvm']);
             const artifactsDirectory = path.join(irDirectory, 'duck_build', 'duck_debug_artifacts');
             await fs.mkdir(artifactsDirectory, {recursive: true});
             await fs.writeFile(
@@ -241,7 +261,7 @@ describe('Duckling compiler', () => {
         vi.spyOn(compiler, 'exec').mockImplementation(async (_exe, args, execOptions) => {
             const irDirectory = execOptions.customCwd!;
             const irInputFilename = path.join(irDirectory, 'hello.dk');
-            expect(args).toEqual(['compile_module', irInputFilename, '--dump-ir', 'asm,llvm']);
+            expectDucklingArguments(args, ['compile_module', irInputFilename, '--dump-ir', 'asm,llvm']);
             const artifactsDirectory = path.join(irDirectory, 'duck_build', 'duck_debug_artifacts');
             await fs.mkdir(artifactsDirectory, {recursive: true});
             await fs.writeFile(path.join(artifactsDirectory, 'random-id.hello.s'), '\t.text\nmain:\n\tretq\n');
@@ -308,7 +328,13 @@ describe('Duckling compiler', () => {
             [],
         );
 
-        expect(args).toEqual(['compile_module', '/tmp/example.dk', '--dump-ir', 'asm', '--__ce-duckling-output=lexer']);
+        expectDucklingArguments(args, [
+            'compile_module',
+            '/tmp/example.dk',
+            '--dump-ir',
+            'asm',
+            '--__ce-duckling-output=lexer',
+        ]);
     });
 
     it('adds a typed parser output request to the prepared module compiler arguments', () => {
@@ -324,7 +350,7 @@ describe('Duckling compiler', () => {
             [],
         );
 
-        expect(args).toEqual([
+        expectDucklingArguments(args, [
             'compile_module',
             '/tmp/example.dk',
             '--dump-ir',
@@ -346,7 +372,13 @@ describe('Duckling compiler', () => {
             [],
         );
 
-        expect(args).toEqual(['compile_module', '/tmp/example.dk', '--dump-ir', 'asm', '--__ce-duckling-output=hir']);
+        expectDucklingArguments(args, [
+            'compile_module',
+            '/tmp/example.dk',
+            '--dump-ir',
+            'asm',
+            '--__ce-duckling-output=hir',
+        ]);
     });
 
     it('adds a typed LIR output request to the prepared compiler arguments', () => {
@@ -362,7 +394,13 @@ describe('Duckling compiler', () => {
             [],
         );
 
-        expect(args).toEqual(['compile_module', '/tmp/example.dk', '--dump-ir', 'asm', '--__ce-duckling-output=lir']);
+        expectDucklingArguments(args, [
+            'compile_module',
+            '/tmp/example.dk',
+            '--dump-ir',
+            'asm',
+            '--__ce-duckling-output=lir',
+        ]);
     });
 
     it('adds a typed MIR output request to the prepared compiler arguments', () => {
@@ -378,7 +416,13 @@ describe('Duckling compiler', () => {
             [],
         );
 
-        expect(args).toEqual(['compile_module', '/tmp/example.dk', '--dump-ir', 'asm', '--__ce-duckling-output=mir']);
+        expectDucklingArguments(args, [
+            'compile_module',
+            '/tmp/example.dk',
+            '--dump-ir',
+            'asm',
+            '--__ce-duckling-output=mir',
+        ]);
     });
 
     it('adds multiple typed Duckling output requests to the prepared compiler arguments', () => {
@@ -394,7 +438,7 @@ describe('Duckling compiler', () => {
             [],
         );
 
-        expect(args).toEqual([
+        expectDucklingArguments(args, [
             'compile_module',
             '/tmp/example.dk',
             '--dump-ir',
@@ -413,7 +457,7 @@ describe('Duckling compiler', () => {
         const mir = 'module hello {\n  block main\n}\n';
         await fs.writeFile(inputFilename, 'fun main() -> i64 = { return 7; }');
         vi.spyOn(compiler, 'exec').mockImplementation(async (_exe, args) => {
-            expect(args).toEqual(['compile_module', inputFilename, '--dump-ir', 'asm,hir,mir']);
+            expectDucklingArguments(args, ['compile_module', inputFilename, '--dump-ir', 'asm,hir,mir']);
             const artifactsDirectory = path.join(workingDirectory, 'duck_build', 'duck_debug_artifacts');
             await fs.mkdir(artifactsDirectory, {recursive: true});
             await fs.writeFile(path.join(artifactsDirectory, 'random-id.hello.s'), assembly);
@@ -451,7 +495,7 @@ describe('Duckling compiler', () => {
         const hir = 'module hello {\n  fun main()\n}\n';
         await fs.writeFile(inputFilename, 'fun main() -> i64 = { return 7; }');
         vi.spyOn(compiler, 'exec').mockImplementation(async (_exe, args) => {
-            expect(args).toEqual(['compile_module', inputFilename, '--dump-ir', 'asm,hir']);
+            expectDucklingArguments(args, ['compile_module', inputFilename, '--dump-ir', 'asm,hir']);
             const artifactsDirectory = path.join(workingDirectory, 'duck_build', 'duck_debug_artifacts');
             await fs.mkdir(artifactsDirectory, {recursive: true});
             await fs.writeFile(path.join(artifactsDirectory, 'random-id.hello.s'), assembly);
@@ -484,12 +528,12 @@ describe('Duckling compiler', () => {
         await fs.writeFile(inputFilename, 'fun main() -> i64 = { return 7; }');
         const exec = vi.spyOn(compiler, 'exec').mockImplementation(async (_exe, args, execOptions) => {
             if (args[0] === 'lex') {
-                expect(args).toEqual(['lex', inputFilename]);
+                expectDucklingArguments(args, ['lex', inputFilename]);
                 expect(execOptions.customCwd).toBe(workingDirectory);
                 return makeExecResult(0, lexOutput);
             }
 
-            expect(args).toEqual(['compile_module', inputFilename, '--dump-ir', 'asm']);
+            expectDucklingArguments(args, ['compile_module', inputFilename, '--dump-ir', 'asm']);
             const artifactsDirectory = path.join(workingDirectory, 'duck_build', 'duck_debug_artifacts');
             await fs.mkdir(artifactsDirectory, {recursive: true});
             await fs.writeFile(path.join(artifactsDirectory, 'random-id.hello.s'), assembly);
@@ -552,12 +596,12 @@ describe('Duckling compiler', () => {
         await fs.writeFile(inputFilename, 'fun main() -> i64 = { return 7; }');
         const exec = vi.spyOn(compiler, 'exec').mockImplementation(async (_exe, args, execOptions) => {
             if (args[0] === 'parse') {
-                expect(args).toEqual(['parse', inputFilename]);
+                expectDucklingArguments(args, ['parse', inputFilename]);
                 expect(execOptions.customCwd).toBe(workingDirectory);
                 return makeExecResult(0, parseOutput);
             }
 
-            expect(args).toEqual(['compile_module', inputFilename, '--dump-ir', 'asm']);
+            expectDucklingArguments(args, ['compile_module', inputFilename, '--dump-ir', 'asm']);
             const artifactsDirectory = path.join(workingDirectory, 'duck_build', 'duck_debug_artifacts');
             await fs.mkdir(artifactsDirectory, {recursive: true});
             await fs.writeFile(path.join(artifactsDirectory, 'random-id.hello.s'), assembly);
@@ -619,7 +663,7 @@ describe('Duckling compiler', () => {
         const lir = 'module hello {\n  fun main()\n}\n';
         await fs.writeFile(inputFilename, 'fun main() -> i64 = { return 7; }');
         vi.spyOn(compiler, 'exec').mockImplementation(async (_exe, args) => {
-            expect(args).toEqual(['compile_module', inputFilename, '--dump-ir', 'asm,lir']);
+            expectDucklingArguments(args, ['compile_module', inputFilename, '--dump-ir', 'asm,lir']);
             const artifactsDirectory = path.join(workingDirectory, 'duck_build', 'duck_debug_artifacts');
             await fs.mkdir(artifactsDirectory, {recursive: true});
             await fs.writeFile(path.join(artifactsDirectory, 'random-id.hello.s'), assembly);
@@ -651,7 +695,7 @@ describe('Duckling compiler', () => {
         const mir = 'module hello {\n  fun main()\n}\n';
         await fs.writeFile(inputFilename, 'fun main() -> i64 = { return 7; }');
         vi.spyOn(compiler, 'exec').mockImplementation(async (_exe, args) => {
-            expect(args).toEqual(['compile_module', inputFilename, '--dump-ir', 'asm,mir']);
+            expectDucklingArguments(args, ['compile_module', inputFilename, '--dump-ir', 'asm,mir']);
             const artifactsDirectory = path.join(workingDirectory, 'duck_build', 'duck_debug_artifacts');
             await fs.mkdir(artifactsDirectory, {recursive: true});
             await fs.writeFile(path.join(artifactsDirectory, 'random-id.hello.s'), assembly);
@@ -683,7 +727,7 @@ describe('Duckling compiler', () => {
         const hir = 'script module {\n  fun main()\n}\n';
         await fs.writeFile(inputFilename, 'builtin_output_i64(42);');
         vi.spyOn(compiler, 'exec').mockImplementation(async (_exe, args) => {
-            expect(args).toEqual(['compile_script', inputFilename, '--dump-ir', 'asm,hir']);
+            expectDucklingArguments(args, ['compile_script', inputFilename, '--dump-ir', 'asm,hir']);
             const artifactsDirectory = path.join(workingDirectory, 'duck_build', 'duck_debug_artifacts');
             await fs.mkdir(artifactsDirectory, {recursive: true});
             await fs.writeFile(path.join(artifactsDirectory, 'script_module_abc123.s'), assembly);
@@ -712,7 +756,7 @@ describe('Duckling compiler', () => {
         const lir = 'script module {\n  fun main()\n}\n';
         await fs.writeFile(inputFilename, 'builtin_output_i64(42);');
         vi.spyOn(compiler, 'exec').mockImplementation(async (_exe, args) => {
-            expect(args).toEqual(['compile_script', inputFilename, '--dump-ir', 'asm,lir']);
+            expectDucklingArguments(args, ['compile_script', inputFilename, '--dump-ir', 'asm,lir']);
             const artifactsDirectory = path.join(workingDirectory, 'duck_build', 'duck_debug_artifacts');
             await fs.mkdir(artifactsDirectory, {recursive: true});
             await fs.writeFile(path.join(artifactsDirectory, 'script_module_abc123.s'), assembly);
@@ -741,7 +785,7 @@ describe('Duckling compiler', () => {
         const mir = 'script module {\n  fun main()\n}\n';
         await fs.writeFile(inputFilename, 'builtin_output_i64(42);');
         vi.spyOn(compiler, 'exec').mockImplementation(async (_exe, args) => {
-            expect(args).toEqual(['compile_script', inputFilename, '--dump-ir', 'asm,mir']);
+            expectDucklingArguments(args, ['compile_script', inputFilename, '--dump-ir', 'asm,mir']);
             const artifactsDirectory = path.join(workingDirectory, 'duck_build', 'duck_debug_artifacts');
             await fs.mkdir(artifactsDirectory, {recursive: true});
             await fs.writeFile(path.join(artifactsDirectory, 'script_module_abc123.s'), assembly);
@@ -770,7 +814,7 @@ describe('Duckling compiler', () => {
         const hir = 'module hello {\n  fun main()\n}\n';
         await fs.writeFile(inputFilename, 'fun main() -> i64 = { return 7; }');
         vi.spyOn(compiler, 'exec').mockImplementation(async (_exe, args) => {
-            expect(args).toEqual(['compile_module', inputFilename, '--dvm-backend', '--dump-ir', 'dbc,hir']);
+            expectDucklingArguments(args, ['compile_module', inputFilename, '--dvm-backend', '--dump-ir', 'dbc,hir']);
             const artifactsDirectory = path.join(workingDirectory, 'duck_build', 'duck_debug_artifacts');
             await fs.mkdir(artifactsDirectory, {recursive: true});
             await fs.writeFile(path.join(artifactsDirectory, 'random-id.hello.dbc'), dbc);
@@ -799,7 +843,7 @@ describe('Duckling compiler', () => {
         const lir = 'module hello {\n  fun main()\n}\n';
         await fs.writeFile(inputFilename, 'fun main() -> i64 = { return 7; }');
         vi.spyOn(compiler, 'exec').mockImplementation(async (_exe, args) => {
-            expect(args).toEqual(['compile_module', inputFilename, '--dvm-backend', '--dump-ir', 'dbc,lir']);
+            expectDucklingArguments(args, ['compile_module', inputFilename, '--dvm-backend', '--dump-ir', 'dbc,lir']);
             const artifactsDirectory = path.join(workingDirectory, 'duck_build', 'duck_debug_artifacts');
             await fs.mkdir(artifactsDirectory, {recursive: true});
             await fs.writeFile(path.join(artifactsDirectory, 'random-id.hello.dbc'), dbc);
@@ -828,7 +872,7 @@ describe('Duckling compiler', () => {
         const mir = 'module hello {\n  fun main()\n}\n';
         await fs.writeFile(inputFilename, 'fun main() -> i64 = { return 7; }');
         vi.spyOn(compiler, 'exec').mockImplementation(async (_exe, args) => {
-            expect(args).toEqual(['compile_module', inputFilename, '--dvm-backend', '--dump-ir', 'dbc,mir']);
+            expectDucklingArguments(args, ['compile_module', inputFilename, '--dvm-backend', '--dump-ir', 'dbc,mir']);
             const artifactsDirectory = path.join(workingDirectory, 'duck_build', 'duck_debug_artifacts');
             await fs.mkdir(artifactsDirectory, {recursive: true});
             await fs.writeFile(path.join(artifactsDirectory, 'random-id.hello.dbc'), dbc);
@@ -856,7 +900,7 @@ describe('Duckling compiler', () => {
         const dbc = 'module hello { function main() }';
         await fs.writeFile(inputFilename, 'fun main() -> i64 = { return 7; }');
         vi.spyOn(compiler, 'exec').mockImplementation(async (_exe, args) => {
-            expect(args).toEqual(['compile_module', inputFilename, '--dvm-backend', '--dump-ir', 'dbc']);
+            expectDucklingArguments(args, ['compile_module', inputFilename, '--dvm-backend', '--dump-ir', 'dbc']);
             const artifactsDirectory = path.join(workingDirectory, 'duck_build', 'duck_debug_artifacts');
             await fs.mkdir(artifactsDirectory, {recursive: true});
             await fs.writeFile(path.join(artifactsDirectory, 'random-id.hello.dbc'), dbc);
@@ -892,7 +936,7 @@ describe('Duckling compiler', () => {
                 sidecarDirectory = execOptions.customCwd;
                 expect(sidecarDirectory).toBeDefined();
                 expect(sidecarDirectory).not.toBe(workingDirectory);
-                expect(args).toEqual([
+                expectDucklingArguments(args, [
                     'compile_module',
                     path.join(sidecarDirectory!, 'hello.dk'),
                     '--dump-ir',
@@ -909,7 +953,7 @@ describe('Duckling compiler', () => {
                 return makeExecResult();
             }
 
-            expect(args).toEqual(['compile_module', inputFilename, '--dump-ir', 'asm']);
+            expectDucklingArguments(args, ['compile_module', inputFilename, '--dump-ir', 'asm']);
             expect(execOptions.customCwd).toBe(workingDirectory);
             const artifactsDirectory = path.join(workingDirectory, 'duck_build', 'duck_debug_artifacts');
             await fs.mkdir(artifactsDirectory, {recursive: true});
@@ -945,7 +989,7 @@ describe('Duckling compiler', () => {
         vi.spyOn(compiler, 'exec').mockImplementation(async (_exe, args, execOptions) => {
             if (args.includes('--dvm-backend')) {
                 const sidecarDirectory = execOptions.customCwd!;
-                expect(args).toEqual([
+                expectDucklingArguments(args, [
                     'compile_script',
                     path.join(sidecarDirectory, 'hello.dks'),
                     '--dump-ir',
@@ -958,7 +1002,7 @@ describe('Duckling compiler', () => {
                 return makeExecResult();
             }
 
-            expect(args).toEqual(['compile_script', inputFilename, '--dump-ir', 'asm']);
+            expectDucklingArguments(args, ['compile_script', inputFilename, '--dump-ir', 'asm']);
             const artifactsDirectory = path.join(workingDirectory, 'duck_build', 'duck_debug_artifacts');
             await fs.mkdir(artifactsDirectory, {recursive: true});
             await fs.writeFile(path.join(artifactsDirectory, 'script_module_abc123.s'), assembly);
@@ -1014,7 +1058,7 @@ describe('Duckling compiler', () => {
         const inputFilename = path.join(workingDirectory, 'hello.dk');
         await fs.writeFile(inputFilename, 'fun main() -> i64 = { return 7; }');
         vi.spyOn(compiler, 'exec').mockImplementation(async (_exe, args) => {
-            expect(args).toEqual(['compile_module', inputFilename, '--dump-ir', 'asm,hir']);
+            expectDucklingArguments(args, ['compile_module', inputFilename, '--dump-ir', 'asm,hir']);
             const artifactsDirectory = path.join(workingDirectory, 'duck_build', 'duck_debug_artifacts');
             await fs.mkdir(artifactsDirectory, {recursive: true});
             await fs.writeFile(path.join(artifactsDirectory, 'random-id.hello.s'), '\t.text\nmain:\n\tretq\n');
@@ -1097,7 +1141,7 @@ describe('Duckling compiler', () => {
         const assembly = '\t.text\nscript_main:\n\tretq\n';
         await fs.writeFile(inputFilename, 'builtin_output_i64(42);');
         vi.spyOn(compiler, 'exec').mockImplementation(async (_exe, args, execOptions) => {
-            expect(args).toEqual(['compile_script', inputFilename, '--dump-ir', 'asm']);
+            expectDucklingArguments(args, ['compile_script', inputFilename, '--dump-ir', 'asm']);
             expect(execOptions.customCwd).toBe(workingDirectory);
             const artifactsDirectory = path.join(workingDirectory, 'duck_build', 'duck_debug_artifacts');
             await fs.mkdir(artifactsDirectory, {recursive: true});
@@ -1172,7 +1216,7 @@ describe('Duckling compiler', () => {
             [],
         );
 
-        expect(args).toEqual(['compile_modules', '/tmp/example.dk', '--dump-ir', 'asm']);
+        expectDucklingArguments(args, ['compile_modules', '/tmp/example.dk', '--dump-ir', 'asm']);
     });
 
     it('selects native execution for Duckling Script Binary output on the same compiler profile', () => {
@@ -1279,7 +1323,7 @@ describe('Duckling compiler', () => {
         const assembly = '\t.text\nmain:\n\tretq\n';
         await fs.writeFile(inputFilename, 'fun main() -> i64 = { return 7; }');
         const exec = vi.spyOn(compiler, 'exec').mockImplementation(async (_exe, args, execOptions) => {
-            expect(args).toEqual(['compile_module', inputFilename, '--dump-ir', 'asm']);
+            expectDucklingArguments(args, ['compile_module', inputFilename, '--dump-ir', 'asm']);
             expect(execOptions.customCwd).toBe(workingDirectory);
             await expect(fs.stat(path.join(workingDirectory, 'duck_build'))).resolves.toBeDefined();
             const artifactsDirectory = path.join(workingDirectory, 'duck_build', 'duck_debug_artifacts');
@@ -1319,7 +1363,7 @@ describe('Duckling compiler', () => {
         await fs.writeFile(path.join(buildDirectory, 'stale.dk'), 'fun stale() = {}');
 
         const exec = vi.spyOn(compiler, 'exec').mockImplementation(async (_exe, args, execOptions) => {
-            expect(args).toEqual([
+            expectDucklingArguments(args, [
                 'compile_modules',
                 inputFilename,
                 path.join(modulesDirectory, 'alpha.dk'),
@@ -1357,7 +1401,7 @@ describe('Duckling compiler', () => {
         await fs.writeFile(helperFilename, 'fun value() -> i64 = { return 42; }');
 
         const exec = vi.spyOn(compiler, 'exec').mockImplementation(async (_exe, args) => {
-            expect(args).toEqual([
+            expectDucklingArguments(args, [
                 'compile_modules',
                 inputFilename,
                 helperFilename,

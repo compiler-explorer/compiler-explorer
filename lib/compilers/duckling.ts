@@ -50,6 +50,19 @@ function addDvmProgramArguments(executeParameters: ExecutableExecutionOptions): 
     };
 }
 
+function withDucklingArtifactLocation(options: string[], directory: string): string[] {
+    const compilerOptions: string[] = [];
+    for (let index = 0; index < options.length; index++) {
+        const option = options[index];
+        if (option === '--artifact-location' || option === '-a') {
+            index++;
+        } else if (!option.startsWith('--artifact-location=') && !option.startsWith('-a=')) {
+            compilerOptions.push(option);
+        }
+    }
+    return [...compilerOptions, '--artifact-location', directory];
+}
+
 const ducklingOutputRequestPrefix = '--__ce-duckling-output=';
 
 class DucklingParser extends BaseParser {
@@ -438,9 +451,12 @@ export class DucklingCompiler extends BaseCompiler {
                 return path.join(irDirectory, relative);
             };
             const irInputFilename = mapWorkingPath(inputFilename);
-            const irCompilerOptions = options
-                .filter(option => !option.startsWith(ducklingOutputRequestPrefix))
-                .map(mapWorkingPath);
+            const irArtifactDirectory = path.join(irDirectory, 'duck_build');
+            await fs.mkdir(irArtifactDirectory, {recursive: true});
+            const irCompilerOptions = withDucklingArtifactLocation(
+                options.filter(option => !option.startsWith(ducklingOutputRequestPrefix)).map(mapWorkingPath),
+                irArtifactDirectory,
+            );
             return await super.generateIR(irInputFilename, irCompilerOptions, irOptions, produceCfg, filters);
         } catch (error) {
             return {
@@ -528,7 +544,12 @@ export class DucklingCompiler extends BaseCompiler {
             requestedOutputValues.includes(kind),
         );
         const requestedOutput = requestedOutputs[0];
-        const compilerOptions = options.filter(option => !option.startsWith(ducklingOutputRequestPrefix));
+        const workingDirectory = path.dirname(inputFilename);
+        const duckBuildDirectory = path.join(workingDirectory, 'duck_build');
+        const compilerOptions = withDucklingArtifactLocation(
+            options.filter(option => !option.startsWith(ducklingOutputRequestPrefix)),
+            duckBuildDirectory,
+        );
         this.combineDumpIrOptions(compilerOptions);
         const needsSeparateDvmCompile = requestedOutputs.includes('dbc') && !compilerOptions.includes('--dvm-backend');
         const artifactOutputKinds = requestedOutputs.filter(
@@ -550,8 +571,6 @@ export class DucklingCompiler extends BaseCompiler {
             }
         }
 
-        const workingDirectory = path.dirname(inputFilename);
-        const duckBuildDirectory = path.join(workingDirectory, 'duck_build');
         await fs.rm(duckBuildDirectory, {recursive: true, force: true});
         await fs.mkdir(duckBuildDirectory, {recursive: true});
 
