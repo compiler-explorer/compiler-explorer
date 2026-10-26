@@ -302,4 +302,25 @@ describe('msvc tests', () => {
             expect(lines.length).toBeGreaterThan(5000);
         });
     });
+
+    describe('clang-cl option discovery', () => {
+        it('should read the options from -help, as clang-cl rejects --help', async () => {
+            const clangCl = new ClangCLCompiler(
+                {...info, exe: 'Z:/compilers/clang-cl-22.1.6/bin/clang-cl.exe'} as any,
+                makeCompilationEnvironment({languages}),
+            ) as any;
+            clangCl.execCompilerCached = async (exe: string, args: string[]) =>
+                args[0] === '-help'
+                    ? {
+                          code: 0,
+                          stdout: '  -fcolor-diagnostics\n  -fno-crash-diagnostics\n  --target=<value>\n',
+                          stderr: '',
+                      }
+                    : {code: 1, stdout: '', stderr: 'clang-cl: error: no input files'};
+            const result = await clangCl.argParser.parse();
+            expect(result.compiler.options).toContain('-fcolor-diagnostics');
+            expect(result.compiler.options).toContain('-fno-crash-diagnostics');
+            expect(result.compiler.supportsTargetIs).toBe(true);
+        });
+    });
 });

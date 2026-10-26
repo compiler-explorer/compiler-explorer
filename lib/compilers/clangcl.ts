@@ -32,6 +32,7 @@ import {ResultLine} from '../../types/resultline/resultline.interfaces.js';
 import {unwrap} from '../assert.js';
 import {CompilationEnvironment} from '../compilation-env.js';
 import type {ParsedRequest} from '../handlers/compile.js';
+import {ClangCLParser} from './argument-parsers.js';
 import {Win32Compiler} from './win32.js';
 
 export class ClangCLCompiler extends Win32Compiler {
@@ -47,6 +48,10 @@ export class ClangCLCompiler extends Win32Compiler {
         this.compiler.minIrArgs = ['-emit-llvm'];
         this.compiler.supportsIntel = false;
         this.compiler.includeFlag = '/clang:-isystem';
+    }
+
+    protected override getArgumentParserClass() {
+        return ClangCLParser;
     }
 
     override async generateIR(
